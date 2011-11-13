@@ -1,0 +1,14 @@
+!
+! Operators time-reversal symmetry flip forced by the new ".OPERATOR" keyword.
+! 
+! MgF, 2_Sigma_1/2, open shell spinor (#11) contributions of alpha_z*rho: 
+!                      Mg  -0.37506841D-01 a.u.
+!                       F  -0.16860534D-01 a.u.
+!
+!                open shell spinor (#11) contributions of alpha_z*overlap:
+!                       0.11909725D-05 a.u.
+!
+! For the Na atom elements of the operator "alpha_x*rho + alpha_y*rho + alpha_z*rho" are
+! zero due to the spatial symmetry: rho is symmetric operator, alpha_x/y/z span non-symmetric representations.
+!
+!

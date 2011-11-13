@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : hergp.F
 C
 C
 #ifdef UNDEF
@@ -1844,6 +1841,9 @@ C
       END
 C  /* Deck dp0pri */
       SUBROUTINE DP0PRI(DIPOLE)
+!
+! prints the nuclear dipole moment
+!
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1866,7 +1866,7 @@ C  /* Deck dp0pri */
   100    CONTINUE
          WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 Debye = ',DEBYE,' a.u. '
       END IF
-      WRITE (LUPRI,'(//)')
+      !WRITE (LUPRI,'(//)')
       RETURN
       END
 C  /* Deck cmmass */

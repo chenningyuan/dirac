@@ -1,0 +1,4 @@
+quick
+
+dhf.inp H2O.large+small.mol
+dhf.inp H2O.usingfiles.mol --put="O.ccpvdz.bas H.ccpvdz.bas"

@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -36,6 +36,8 @@ module dirac_cfg
   logical, public :: dirac_cfg_hf_calculation     = .false.
 !                    hf or ks
   logical, public :: dirac_cfg_scf_calculation    = .false.
+!                    MCSCF-srDFT
+  logical, public :: dirac_cfg_mcsrdft_calculation = .false.
 !                    openrsp module
   logical, public :: dirac_cfg_openrsp            = .false.
 !                    visualization module

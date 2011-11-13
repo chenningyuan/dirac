@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,9 +18,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
 C
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : krmcluci.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_SETUP()
@@ -38,34 +35,145 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :
 C
 C***********************************************************************
+      use memory_allocator
+      use mospinor_info
+      use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "maxorb.h"
+#include "../krmc/dcbbos.h"
 #include "../luciarel/cprnt.inc"
+#include "../luciarel/mxpdim.inc"
+#include "../luciarel/cgas.inc"
+#include "dcborb.h"
+#include "dgroup.h"
 #include "parluci.h"
+!     scratch
+      integer, allocatable  :: orb_sym_vec(:)
+      integer               :: orb_sym_fh
+      character (len=11)    :: orb_sym_fn
+      character (len= 4)    :: mynum_str
 C
 C     set "I/O node master" + "shared memory node master"
       N_MASTER    = 0
       N_MASTER_SM = 0
-C
-C     Assign disk units
+ 
+!     assign disk units
       CALL DISKUN_REL
-C
-C. Ratio beteeen real and integer word length
-      CALL ZIRAT_REL
-C. From shells to orbitals
+
+!     setup double group multiplication table
+      call symmetry_setup_init(dougrp,nirr_dg)
+
+!     initialize mo-spinor information arrays
+      call mospinor_info_init()
+      
+!     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
+      if(dougrp .ge. 10)then
+        call num2str(myproc,mynum_str)
+        call alloc(orb_sym_vec,norbt)
+        write(orb_sym_fn,'(a7,a4)') 'orbsym.',mynum_str
+        orb_sym_vec = 0
+        orb_sym_fh = 99
+        open(orb_sym_fh,file=orb_sym_fn,status='old',
+     &       form='unformatted',action='readwrite',position='rewind')
+        read(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
+        close(orb_sym_fh)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+        print *, 'content of orb_sym_vec is: ',myproc
+        call iwrtma(orb_sym_vec,1,norbt,1,norbt)
+#endif
+!#undef LUCI_DEBUG
+      end if
+
+!     generalized routine for handling of all double groups including
+!     linear symmetry (dougrp == 10 or 11)
+!     write(lupri,*) 'bla - go in here???? '
+#if defined VAR_IFORT && !defined INT_STAR8
+!     write(lupri,*) 'bla - go in here, yes!!!! '
+      if(myproc .eq. master)then
+        luxxx = lupri
+      else
+        luxxx = luwrt
+      end if
+      write(luxxx,*) ' '
+      call flshfo(luxxx)
+#endif
+      call match_spinor_2_boson_irrep(ngsob,ngsob2,ibosym,ngsh,
+     &                                orb_sym_vec,iorb,npsh,nish,
+     &                                mxndgirr,mxpngas,nfsym,ngas,
+     &                                dougrp,nirr_dg,mj2rep,
+     &                                imosp_dirac_counter1,
+     &                                imosp_dirac_counter2)
+
+      if(dougrp .ge. 10) call dealloc(orb_sym_vec)
+
+!     setup shell, orbital and spinor index lists 
+!     (in short: fill arrays stored in module mospinor_info)
       CALL ORBINF_REL(LUPRI,IPRORB)
-C. Types of determinants to be included
+
+!     types of determinants to be included
       CALL DETTYP(IPRSTR)
-C. Number of string types
+
+#if defined VAR_IFORT && !defined INT_STAR8
+      write(luxxx,*) ' '
+      call flshfo(luxxx)
+#endif
+!     number of string types
       CALL STRTYP_GAS_REL(IPRSTR)
-C. Symmetry information
-      CALL SYMINF_REL(IPRORB)
-C. Number of integrals
+
+!     number of integrals
       CALL INTDIM_REL(IPRTRA)
 C
-      RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUCI_CLOSEDOWN()
+!**********************************************************************
+!     purpose: 
+!
+!       - close LUCIAREL files and keep them
+!       - destroy arrays containing symmetry information
+!
+!     written by Stefan Knecht   April 24, 2007
+!
+!**********************************************************************
+      use mospinor_info
+      use symmetry_setup_krci
+      IMPLICIT REAL*8           (A-H,O-Z)
+#include "../luciarel/clunit.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#endif
+#include "parluci.h"
+#include "krciprop.h"
+*
+!     close files
+      close(unit=ludia,status='KEEP')
+      if(myproc.eq.master.and..not.runxprop)
+     &   close(unit=luc,status='KEEP')
+      if(myproc.eq.master) close(unit=lu_info,status='KEEP')
+      close(unit=luhc,  status='KEEP')
+      close(unit=lusc1, status='KEEP')
+      close(unit=lusc2, status='KEEP')
+      close(unit=lusc3, status='KEEP')
+      close(unit=lusc34,status='KEEP')
+      close(unit=lusc35,status='KEEP')
+      close(unit=lusc36,status='KEEP')
+      close(unit=lusc37,status='KEEP')
+      close(unit=lusc38,status='KEEP')
+      close(unit=lusc39,status='KEEP')
+      close(unit=lusc41,status='KEEP')
+      close(unit=lusc61,status='DELETE')
+      close(unit=lusc62,status='DELETE')
+
+!     deallocate mo-spinor information arrays
+      call mospinor_info_delete()
+
+!     deallocate symmetry arrays
+      call symmetry_setup_delete()
+     
+      END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRMC_LUCI(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
 C***********************************************************************
@@ -115,7 +223,7 @@ C
       END IF
 C
 C     Transfer data to LUCIAREL common blocks (only for NODES) 
-C     --> communication is enabled.
+C     --> "1" means that communication is enabled.
       CALL TRKRLUCI(CIRUN,1)
 #endif
 C
@@ -157,6 +265,8 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+      use symmetry_setup_krci
+      use os_utils
       IMPLICIT REAL*8(A-H,O-Z)
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
@@ -171,16 +281,13 @@ C***********************************************************************
 #include "../luciarel/clunit.inc"
 *.Print flags
 #include "../luciarel/cprnt.inc"
-#include "../luciarel/lucinp.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
 #include "../luciarel/cicisp.inc"
 #include "../luciarel/oper.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/glbbas.inc"
-#include "../luciarel/csm.inc"
 #include "../luciarel/cintfo.inc"
-#include "../luciarel/picasso.inc"
 #include "../luciarel/ctcc.inc"
 C information for property run
 #include "krciprop.h"
@@ -198,11 +305,18 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
+      integer global_scratch_disk
+!     integer(8) :: kbla_blubb
 C
 C*******************************************
       CALL QENTER('KRMC_LUCI2')
 C*******************************************
 C
+
+#ifdef LUCI_DEBUG
+      if(myproc .eq. master) call print_ci_info()
+#endif
+
       MZ_NUM = 0
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
@@ -217,7 +331,12 @@ C
       KADD = MXPWRD
 C     initialize memory
       call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+!     write(luwrt,*) 'K_OFFSET ==> ',K_OFFSET
 C
+!     IDUM = 0
+!     CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
+!     call memmar(kbla_blubb,4,'ADDS  ',1,'BLABLU')
+!     call izero(work(kbla_blubb),4)
 C     ... no memchecks as default
       IMEMCK = 0
       NTEST = 0
@@ -231,7 +350,7 @@ C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
 C
 C     Internal subspaces
-      CALL LCISPC_REL(LCSBLK,IPRCIX)
+      CALL LCISPC_REL(LCSBLK,IPRCIX,CIRUN)
 C
 ******************************************
       if (CIRUN.eq.'NDET  ') GO TO 9999
@@ -256,6 +375,7 @@ C
       CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
 C
       CALL MEMMAR(KPROCLIST,  NMPROC,'ADDS  ',1,'IHOSTL')
+!     call RMEMCHK_opt('bla bla check 1     ')
       CALL MEMMAR(KGROUPLIST, NMPROC,'ADDS  ',1,'IHOST2')
       CALL MEMMAR(KPROCLENGTH,NMPROC,'ADDS  ',1,'INAMEL')
       CALL MEMMAR(KPROCLIST2, NMPROC,'ADDS  ',1,'IHOST3')
@@ -273,30 +393,40 @@ C     hardwired to 1, otherwise it fails...
 C
       IPARALLELIO = 1
 C
-#if defined (SYS_LOCALDISKS)
 C
-C     checking only if parallel file I/O in general is requested
+      global_scratch_disk = get_environment_integer('GLBSCR',
+     &global_scratch_disk)
+
+      if(global_scratch_disk .ne. 0 .or. global_scratch_disk.ne. 1)then
+!       fall back to default: 0
+        global_scratch_disk = 0
+      end if
+
+      call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
+     &               MASTER,MPI_COMM_WORLD,ierr)
+
+
+      if(global_scratch_disk .eq. 0)then
+        NAMELENGTH = 0
 C
-      IF( IPARALLELIO .eq. 1 ) THEN
-C  
-         NAMELENGTH = 0
+        CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+
+        CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
+     &                               WORK(KPROCLIST),
+     &                               WORK(KPROCLENGTH))
 C
-         CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
-C
-         CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
-     &                                WORK(KPROCLIST),
-     &                                WORK(KPROCLENGTH))
-C
-C        number of groups sharing a file ( = NFLGRPS ) is determined
-C        in the subroutine above. If there is only one group
-C        than we can simulate a shared filesystem.
-C
-      END IF
-#else
-C     in case of a parallel filesystem, we should use it
-      NFLGRPS_REL = 1
-      CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-#endif /* ifdef SYS_LOCALDISKS */
+C       number of groups sharing a file ( = NFLGRPS ) is determined
+C       in the subroutine above. If there is only one group
+C       than we can simulate a shared filesystem.
+        IF( NFLGRPS .eq. 1 ) THEN 
+          CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+        END IF
+      else
+!       in case of a parallel filesystem, we should use it
+        NFLGRPS_REL = 1
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+      end if
+!
 C     no integral broadcast necessary
       IF( NFLGRPS_REL .eq. 1 ) IIOMOD_REL = 1
 C
@@ -362,24 +492,14 @@ C
       CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
       NFLGRPS_REL = 0
 #endif
-C
 C     Finished with preparation for parallelization.
-C
-**********************************************************
-C     Allocate work space for general arrays and matrices
-      CALL ALLOC_REL
-**********************************************************
-C
+
 C     IDGSTYP determines the integral classes and corresponding operator
 C     classes depending on the double group in use.
-C
       IDGSTYP = -1
-C
-      if (PNTGRP.le.4) then
-        IDGSTYP = 1
-      else if (PNTGRP.eq.6.or.PNTGRP.eq.5) then
+      if(PNTGRP.eq.6.or.PNTGRP.eq.5) then
         IDGSTYP = 3
-      else if (PNTGRP.ge.7.and.PNTGRP.le.9) then
+      else if (PNTGRP.ge.7)then
         IDGSTYP = 2
       end if
 C
@@ -442,9 +562,6 @@ C
 C       loop over natural spinors (currently hardwired to 1)
         do INATIT=1,NATITER,1
 C
-C         Generate symmetry info and the like
-          IF (INATIT .eq. 1 ) call luc2pic(ISO1,IPRTRA)
-C
           RUN_SHMEM_T = .FALSE.
 C
           IF( IT_SHL .ge. 0 .or. SPLIT_IJKL ) THEN
@@ -458,9 +575,9 @@ C
 ************************************************************
           IF (CIRUN.ne.'ANALYZ') THEN
 CSK         IDUMMY ==> IT_TTPL
-            call picasso(INTSPACE,ISO1,IPRTRA,MCSCF,
+            call picasso(IPRTRA,MCSCF,
      &                   NL2D,IBU2D,ISM2D,F1,F2,DUMMY1,DUMMY2,
-     &                   IDUMMY,IBOSYM,CIRUN,RUN_SHMEM_T)
+     &                   IDUMMY,ibosym,CIRUN,RUN_SHMEM_T)
           END IF
 ************************************************************
           IF ( CIRUN .eq. 'IJKLRO' ) GOTO 300
@@ -573,24 +690,17 @@ C               CI vectors
                 IRESTR = 1
               END IF
               IF(ISEQCI(JSEQ,JCMBSPC).GT.0) THEN
-                IF(JSEQ.EQ.1.AND.JCMBSPC.EQ.2.AND.IRST2.EQ.0) THEN
-C                 No restart from previous vectors - 
-C                 IRST2 has been set to zero
-                  IRESTR = 0
-                  WRITE(LUWRT,*) ' No restart from previous vectors'
-                END IF
 C
 C               Good old normal CI !!!!
 C               do CI in space JCMBPSC
-C
                 MAXIT = ISEQCI(JSEQ,JCMBSPC)
 C
                 ISPC = JCMBSPC
-                ISM = IREFSM
+                ISM  = IREFSM
 C
 C###############################################################
                 CALL GASCI_REL(F1,F2,
-     &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
+     &                         IREFSM,JCMBSPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))
 C###############################################################
@@ -623,6 +733,7 @@ C
 #endif
 C
  9999 CALL QEXIT('KRMC_LUCI2')
+
 C
       RETURN
       END
@@ -731,12 +842,12 @@ C
 C     Compute the number of determinants for this setup and return.
       CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
 C
+C     transfer number of dets to common block variable
+      NDET = INT(XISPSM(ISYM_KRMC,1))
 C
-C     close files ...
-C
+C     close files and release symmetry arrays
       CALL LUCI_CLOSEDOWN()
 C
-      NDET = INT(XISPSM(ISYM_KRMC,1))
 C
       RETURN
       END
@@ -857,23 +968,12 @@ C
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 
-!       get dimensions for scracth matrices
-        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
-   
         stop 'FIXME: this interface is not complete'
+        call memget('INTE',kibeig,norbt,work,kfree,lfree)
+        call izero(work(kibeig),norbt)
 
-        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &               work(khmat),work(kh2xy),work(kh2yx),
-     &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               ipropt,lupri)
+        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &              .true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C
@@ -900,12 +1000,9 @@ C         Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
 CSK       WRITE(LUPRI,'(//A/)') 'CMO input '
 CSK       CALL WRTMATMN(CMO,1,NCMOTQ,1,NCMOTQ,LUPRI)
-          CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+          CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
@@ -945,7 +1042,7 @@ CSK     IPROPT = 0
 C
 C       WORK(KFCACM) now contains all 1-e integrals
 C
-        CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+        CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C       read two-electron integrals in luciarel/transform_r.F 
 C       (subroutine itrctl)
@@ -1055,23 +1152,12 @@ C
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 
-!       get dimensions for scracth matrices
-        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
-
         stop 'FIXME: this interface is not complete'
+        call memget('INTE',kibeig,norbt,work,kfree,lfree)
+        call izero(work(kibeig),norbt)
 
-        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &               work(khmat),work(kh2xy),work(kh2yx),
-     &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               ipropt,lupri)
+        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &              .true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C
@@ -1096,12 +1182,9 @@ C
 C
 C         Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
-          CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+          CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
@@ -1133,7 +1216,7 @@ C
 C
 C       WORK(KFCACM) now contains all 1-e integrals
 C
-        CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+        CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C       read two-electron integrals in luciarel/transform_r.F 
 C       (subroutine itrctl)
@@ -1177,17 +1260,14 @@ C
 CC      CALL KR_LUCI_IO(0,0,1,DUMMY,1,DUMMY,1,
 CC   &                  WORK(KFCACM),N2ASHXQ,WORK(KH2AC),
 CC   &                  (2*NASHT)**4*2,
-CC   &                  DUMMY,DUMMY,2,IRIQ,
+CC   &                  2,IRIQ,
 CC   &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         REWIND LUC
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,2,MZ,
+     &                  2,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-C       release memory
-        CALL MEMREL('LUCI_SIG 1',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C
 C
@@ -1206,10 +1286,9 @@ C   memory is too small for CREF.
 *        files. Activation flags (IO_RCIST_OUT) should be controlled
 *        from the outside, not hardwired.
         IF (IO_RCIST_OUT.EQ.1) THEN
-          CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
           CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,DUMMY,1,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KRSCR),DUMMY,1,MZ,
+     &                    1,MZ,
      &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         END IF
       END IF
@@ -1278,12 +1357,9 @@ C
 C
 C       Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
-        CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+        CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
       END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
       IF (IPROPT.GE.1) THEN
         WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
@@ -1317,7 +1393,7 @@ C
         END IF
       END IF
 C
-      CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+      CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
@@ -1399,14 +1475,11 @@ C
 CSK      IPROPT = 10
       IF (IO_SIGMA_IN.eq.1) THEN
         REWIND LUC
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CB,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,2,MZ,
+     &                  2,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-C       release memory
-        CALL MEMREL('LUCI_SIG 1',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 CSK      IPROPT = 0
 C
@@ -1416,25 +1489,21 @@ C
 C     Read sigma vector on file to SB array.
       IO_SIGMA_OUT = 1
       IF (IO_SIGMA_OUT.eq.1) THEN
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,SB,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,MZ,
+     &                  1,MZ,
      &                  LUHC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-        CALL MEMREL('LUCI_SIG 2',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C     ... only MASTER should do it
       CALL REWINE(LUC,-1)
       IO_C_VEC_OUT = 1
       IF (IO_C_VEC_OUT .eq. 1 ) THEN
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CB,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,MZ,
+     &                  1,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-        CALL MEMREL('LUCI_SIG 3',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C
       IF (SAVDIA) THEN
@@ -1443,23 +1512,13 @@ C
 C       only "real part" of diagonal needed!
 C       loop over ILOOP_DIA instead of IRIQ! /SK - June 30 2007
         ILOOP_DIA = 1
-        CALL MEMGET('REAL',KDIAG,NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(0,1,0,
-     &                  DUMMY,1,WORK(KDIAG),NZCONF,
+     &                  DUMMY,1,DIAG,NZCONF,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,ILOOP_DIA,
+     &                  1,ILOOP_DIA,
      &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
-CSKold        CALL KR_LUCI_IO(0,1,0,
-CSKold     &                  DUMMY,1,WORK(KDIAG),2*NZCONF,
-CSKold     &                  DUMMY,1,DUMMY,1,
-CSKold     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
-CSKold     &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
-C       Copy "real part" of diagonal to DIAG.
-        CALL DCOPY(NZCONF,WORK(KDIAG),1,DIAG,1)
-        CALL MEMREL('LUCI_SIG D',WORK,1,KDIAG,KFREE,LFREE)
       END IF
 CSK      IPROPT = 0
-      CALL MEMREL('LUCI_SIGMA',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C
 C     close files ...
@@ -1508,7 +1567,7 @@ C
 #include "dgroup.h"
 #include "krmcluci_inf.h"
 C
-      LOGICAL CALCR1,CALCR2
+      LOGICAL CALCR1,CALCR2, natolcr_temp
       CHARACTER*6 CIRUN
 C
       DIMENSION WORK(*),RHO1(*),RHO2(*),CREFL(*),CREFR(*)
@@ -1529,6 +1588,10 @@ C
       else
         call quit('Check CALCR setting in LUCI_DENS')
       end if
+
+!     check for natural orbital occupation number flag
+      natolcr_temp = natolcr 
+      if(calcr2) natolcr = .false.
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
@@ -1549,77 +1612,83 @@ C     Initialize density matrices to zero
 C
       LF2_ZERO = L2
 C
-#if defined MCSCF_DEBUG
-C     Write current CI vector(s) to file
+#ifdef MCSCF_DEBUG
+C     Write current CI vector(s) to file - debug version
       idothishere = 1
-      if(idothishere .eq. 0) goto 10
-      CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
       REWIND LUC
       CALL KR_LUCI_IO(1,0,0,CREFL,NZCONF*MZ,
      &                DUMMY,1,
      &                DUMMY,1,DUMMY,1,
-     &                WORK(KRSCR),IDUMMY,2,MZ,
+     &                2,MZ,
      &                LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
      &                CREFR,NZCONF*MZ,
      &                DUMMY,1,DUMMY,1,
-     &                WORK(KRSCR),IDUMMY,2,MZ,
+     &                2,MZ,
      &                LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
-      CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
- 10   CONTINUE
 #else
-      IF( .NOT. NATOLCR ) THEN
-C       
-C       Write current CI vector(s) to file
-        IO_DENS_IN = 1
-        IF (IO_DENS_IN.EQ.1) THEN
-          CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
-          CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
-     &                          CREFR,NZCONF*MZ,
-     &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KRSCR),IDUMMY,2,MZ,
-     &                    LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
-          CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
-        END IF
+!     print *, 'decide branch: natolcr    ==> ',natolcr
+!     print *, 'decide branch: cana_mcscf ==> ',cana_mcscf
+!     print *, 'decide branch: calcr1     ==> ',calcr1
+!     print *, 'decide branch: calcr2     ==> ',calcr2
+      if((calcr1.and..not.natolcr.and..not.cana_mcscf) .or. calcr2)then ! 
+
+        ! mcscf 1-/2-particle density matrix calculation
+
+!       print *, 'decide branch: calcr2     ==> ',calcr2
+!       xxx = 0.0d0
+!       print *, 'NZCONF is ==> ',NZCONF
+!       xxx = ddot(NZCONF*MZ,CREFL,1,CREFL,1)
+!       print *, 'xxx lhs is ==> ',xxx
+!       xxx = ddot(NZCONF*MZ,CREFR,1,CREFR,1)
+!       print *, 'xxx hhs is ==> ',xxx
+      
+!       Write current CI vector(s) to file - choice 1: MCSCF run setup:
+!       lhs --> LUSC61
+!       rhs --> LUSC62
+        CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
+     &                  CREFR,NZCONF*MZ,
+     &                  DUMMY,1,DUMMY,1,
+     &                  2,MZ,
+     &                  LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
+      end if ! mcscf run setup
+
+      if(cana_mcscf)then ! ci analysis of mcscf vector (restart from the file KRMCOLD)
+!       Write current CI vector(s) to file - choice 1: MCSCF run setup:
+!       vector --> LUC 
+!       internally we copy the 
+!       lhs --> LUSC61
+!       rhs --> LUSC62
+        print *, 'read mcscf vector from file KRMCOLD (unit 59)...'
+        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+        CALL REAKRMC(59,'CREF    ',WORK(KRSCR),NZCONF*MZ)
+        REWIND LUC
+!       xxx = 0.0d0
+!       xxx = ddot(NZCONF*MZ,WORK(KRSCR),1,WORK(KRSCR),1)
+!       print *, 'xxx is ==> ',xxx
+        CALL KR_LUCI_IO(1,0,0,WORK(KRSCR),NZCONF*MZ,
+     &                  DUMMY,1,
+     &                  DUMMY,1,DUMMY,1,
+     &                  2,MZ,
+     &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+      
+        CALL MEMREL('LUCI_DENS',WORK,1,KFRSAV,KFREE,LFREE)
       END IF
 #endif
-C
-C     Density run of LUCIAREL only
 C
 C     RHO1 and RHO2 are always allocated in the calling routines.
 C     RHO2 is essential for communication in parallel runs.
 C     / SK June 29 2007.
 C
-CSK      if (CALCR2) then
-        CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
-CSK      else
-CSK        CALL KRMC_LUCI(RHO1,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
-CSK      end if
-C
-C     Write CI densities to file or keep the arrays
-C     Currently, densities are directly passed up to LUCI_DENS.
-c     IO_DENS_OUT = 0
-c     IF (IO_DENS_OUT.EQ.1) then
-c       CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
-c       CALL KR_LUCI_IO(0,0,1,
-c    &                  DUMMY,1,DUMMY,1,
-c    &                  WORK(KRSCR),IDUMMY,1,IRIQ,
-c    &                  LUDUM,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-c     END IF
-C
-C     Do symmetrizations.
-C     FIXME: write me  ??
-C
-csk   WRITE(LUPRI,*) ' THIS IS MY RHO1'
-csk   CALL WRTMATMN(RHO1,1,L1,1,L1,LUPRI)
-C
-      CALL MEMREL('LUCI_DENS',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
+
+!
+!     possibly re-set the natural orbital occupation number flag to its entry value
+      natolcr = natolcr_temp
 C
 C     close files ...
-C
       CALL LUCI_CLOSEDOWN()
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_ANAL(CREF,WORK,KFREE,LFREE)
@@ -1667,13 +1736,11 @@ C
         IO_ANAL_IN = 1
         IF (IO_ANAL_IN.EQ.1) THEN
           REWIND LUC
-          CALL MEMGET('REAL',KASCR,NZCONF*MZ,WORK,KFREE,LFREE)
           CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
      &                          DUMMY,1,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KASCR),IDUMMY,2,MZ,
+     &                    2,MZ,
      &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-          CALL MEMREL('LUCI_ANALYZ1',WORK,1,KASCR,KFREE,LFREE)
         END IF
       ELSE IF (NCIROOT.GT.1) THEN
         CONTINUE
@@ -1681,10 +1748,6 @@ C
 C
 C     Call LUCIAREL for analysis of CI vectors.
       CALL KRMC_LUCI(DUMMY,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
-C
-      IF (NCIROOT.EQ.1) THEN
-        CALL MEMREL('LUCI_ANALYZ',WORK,1,KFRSAV,KFREE,LFREE)
-      END IF
 C
 C     close files ...
 C
@@ -1707,8 +1770,6 @@ C
 C
       CHARACTER*6 CIRUN
       DIMENSION WORK(*)
-C
-#include "../luciarel/cstate.inc"
 C
       CIRUN = 'RSTRMC'
 C
@@ -1755,12 +1816,14 @@ C
       DIMENSION VPROP_KRCI(*), WORK(*)
 C               VPROP_KRCI(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,MZ)
 #include "parluci.h"
+      integer :: print_level
 C
 #include "memint.h"
 C
       CALL QENTER('KRCIGETPRP')
 C
-      MZ    = MIN(NZ,2)
+      print_level = 0
+      MZ          = MIN(NZ,2)
 C     output file handle
       LUWRT = LUPRI
 C
@@ -1777,7 +1840,7 @@ C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
 C     Determine operator symmetries in sub-double group used in LUCIAREL
-      CALL GET_PRPOPSYM_KRCI(WORK(KFREE),LFREE,0)
+      CALL GET_PRPOPSYM_KRCI(WORK(KFREE),LFREE,print_level)
 C
 C     Get reordered operator matrices - write back to KRMC_FOCK on label 
 C     LABEL = PRPNAM(property operator)(1:6)RO (first 6 chars of
@@ -1798,7 +1861,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KR_LUCI_IO(IVA,IVB,II,VA,IDIMA,VB,IDIMB,
      &                      X1,IDIM1,X2,IDIM2,
-     &                      SCR,ISCR,IOTYPE,IRILP,
+     &                      IOTYPE,IRILP,
      &                      LU1,LU2,LU3,LU4,IPRNT)
 C***********************************************************************
 C
@@ -1827,8 +1890,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 *
-      dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2),SCR(*)
-      dimension ISCR(*)
+      dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2)
 *
       NTESTL = 00
 CSK      IPRNT = 000
@@ -1865,20 +1927,20 @@ CSK      IPRNT = 000
 *  Load vector A (ket)
         if (IVA.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Loading vector A ***'
-          call rdvcdc(VA,SCR,LU1,-1,IRILP,IPRNT)
+          call rdvcdc(VA,LU1,-1,IRILP,IPRNT)
         end if
 *
 *  Load vector B (bra)
         if (IVB.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Loading vector B ***'
-          call rdvcdc(VB,SCR,LU2,-1,IRILP,IPRNT)
+          call rdvcdc(VB,LU2,-1,IRILP,IPRNT)
         end if
 *
 *  Load 1-particle quantity
 *  Load 2-particle quantity
         if (II.eq.1) then
-          call rdvcdc(X1,SCR,LU3,-1,IRILP,IPRNT)
-          call rdvcdc(X2,SCR,LU4,-1,IRILP,IPRNT)
+          call rdvcdc(X1,LU3,-1,IRILP,IPRNT)
+          call rdvcdc(X2,LU4,-1,IRILP,IPRNT)
         end if
 *
 *===============
@@ -1889,13 +1951,13 @@ CSK      IPRNT = 000
 *  Save vector A (ket)
         if (IVA.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Saving vector A ***'
-          call savevcdc(VA,SCR,LU1,IRILP,IPRNT)
+          call savevcdc(VA,LU1,IRILP,IPRNT)
         end if
 *
 *  Save vector B (bra)
         if (IVB.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Saving vector B ***'
-          call savevcdc(VB,SCR,LU2,IRILP,IPRNT)
+          call savevcdc(VB,LU2,IRILP,IPRNT)
         end if
 *
 *  Save integral quantity
@@ -1973,7 +2035,7 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCINOD_REL(WORK,LWORK)
+      SUBROUTINE LUCIAREL_NODE(WORK,LWORK)
 C
 C     KRMC-LUCIAREL driver routine for the slaves
 C
@@ -1986,6 +2048,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT REAL*8(A-H,O-Z)
 C
+#include "priunit.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "parluci.h"
@@ -2034,7 +2097,7 @@ C     file. You don't really want to do this.
          WRITE (LUCIFILN_REL,'(A12,A1,I3)') LUCITABASF_REL,'.',MYPROC
          LUFIL=16
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD_REL MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCIAREL_NODE MODULE")
       ENDIF
 C
 C     open the local input file and the node specific output file.
@@ -2043,7 +2106,9 @@ C     to the corresponding output file.
       OPEN(MSLVOUT_REL,FILE = LUCIFILN_REL(1:LUFIL))
 C
 C     transfer file handle to common block
-      LUWRT = MSLVOUT_REL
+      LUWRT      = MSLVOUT_REL
+      lupri_save = lupri
+      lupri      = LUWRT
 C
 C     synchronize nodes, part 1
       CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,MSLVOUT_REL)
@@ -2087,27 +2152,18 @@ C
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 
-!       get dimensions for scracth matrices
+!       get dimensions for scratch matrices
 !       SK - Aug 2010: FIXME: this structure as it is cannot work 
 !       if the integral files are not available to the co-workers... 
 !       @ Timo: before continuing (if ever) we have to think about how
 !       to handle this issue properly.
-        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
 
         stop 'FIXME: this interface is not complete'
+        call memget('INTE',kibeig,norbt,work,kfree,lfree)
+        call izero(work(kibeig),norbt)
 
-        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &               work(khmat),work(kh2xy),work(kh2yx),
-     &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               0,luwrt)
+        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &              .true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C
@@ -2149,12 +2205,12 @@ C
         L1 = (2*NASHT)**2 * MZ
         CALL MEMGET('REAL',KRHO1,L1,WORK,KFREE,LFREE)
         CALL DZERO(WORK(KRHO1),L1)
-        L2 = (2*NASHT)**4 * MZ
+        L2       = (2*NASHT)**4 * MZ
         LF2_ZERO = (2*NASHT)**4 * MZ
 C
       ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN 
 C
-        N_FCACM = (2*NASHT)*(2*NASHT)
+        N_FCACM     = (2*NASHT)*(2*NASHT)
         LEN_ALL_INT = NASHT*NASHT*NNASHX*NZ*3
 C
         CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
@@ -2201,14 +2257,14 @@ C
 C       Call LUCIAREL for calculating sigma vector(s).
         CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
      &                  ECORE_KRMC,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF( CIRUN .eq. 'DENS1' .or. CIRUN .eq. 'DENS2' ) THEN 
 C
 C       Call LUCIAREL for calculating density matrix elements.
         CALL KRMC_LUCI2(WORK(KRHO1),WORK(KRHO2),WORK(KFREE),
      &                  LFREE,DUMMY,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF( CIRUN .eq. 'ANALYZ' ) THEN 
 C
@@ -2232,13 +2288,13 @@ C
 C       Call LUCIAREL for integral reordering.
         CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
      &                  DUMMY,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
       ELSE IF( CIRUN .eq. 'PROP1 ' ) THEN 
 C
 C       Call LUCIAREL for property calculation.
         CALL KRMC_LUCI2(DUMMY,WORK(KXPRPKRCI),WORK(KFREE),LFREE,
      &                  DUMMY,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
 C
       END IF
 C
@@ -2247,6 +2303,8 @@ C     close files ...
 C
 C     LUCIAREL run is finished for the slaves ...
       CLOSE (MSLVOUT_REL,STATUS='KEEP')
+
+      lupri = lupri_save
 C
 C     .. wait for the master
       LUEND = .FALSE.
@@ -2264,4 +2322,4 @@ C
 C
       END
 #endif    /* ifdef VAR_MPI2 */
-
+C --- end of krmcluci.F ---

@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,8 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : diropen.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -184,8 +182,11 @@ C..........negative energy solutions are occupied
          ENDIF
 C........also include contribution to active-active block !
 C........add factor half since this is a diagonal block
-         FAC = GAMMA*DP5
-         CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
+C        hjaaj Aug 2011: including this term will give a wrong setup of BMAT 
+C        and leads to bad convergens. 
+         ! FAC = GAMMA*DP5
+         ! CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
+C .. end HJAaJ
 C
          IOFFTDINV = 1
          DO 20 I = 1,NFSYM
@@ -376,3 +377,4 @@ C
       CALL FLSHFO(LUPRI)
       RETURN
       END
+! -- end of diropen.F --

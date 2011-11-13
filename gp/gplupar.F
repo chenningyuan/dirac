@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5436,80 +5436,14 @@ C
               IVCOFF_IN1( IOFFSET_INT + NUM_A_B - 1 ) = 1
             END IF
 C
-CSK              WRITE(LUWRT,*) 'JOFF,ILEN2,ILEN again for block 
-CSK     & IOFFSET_INT+ NUM_A_B -1',JOFF,ILEN2,ILEN,IOFFSET_INT+ NUM_A_B -1
-              CALL MPI_FILE_WRITE_AT(MY_LUOUT,IOFFSET,SCR(JOFF),
-     &                               ILEN2,MPI_REAL8,ISTAT,IERR)
-C
- 100        CONTINUE
-C
-          ENDIF 
-C
-          IOFFSET = IOFFSET + ILEN2
-C
-        END DO
-C       ^ loop over blocks in batch
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE WTVEC_BATCH_DRV4SP(MY_LUOUT,SCR,NBATCH_BLK,NBATCH_INF,
-     &                              IOFFSET,IOFFSET_INT,IVCOFF_IN1,
-     &                              NUM_A_B,IDEBUGPRNT)
-C
-C     write batch from segment SCR to MPI-file MY_LUOUT
-C
-C     active blocks on the MPI-file are flagged by a nonzero entry in 
-C     file list
-C
-C     Last revision:     S. Knecht       - May  2007
-C
-************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
-      INTEGER JOFF
-      JOFF = 0
-C
-      NUM_A_B = 0
-C
-        DO IBLK = 1, NBATCH_BLK
-C
-          ILEN2 = NBATCH_INF(8,IBLK) 
-CSK          WRITE(LUWRT,*) 'ILEN2 for block IBLK',
-CSK     &                    ILEN2,IBLK
-          IF( ILEN2 .gt. 0 ) THEN
-C
-C           memory offset
-            JOFF  = NBATCH_INF(6,IBLK)
-            NUM_A_B = NUM_A_B + 1
-C           check norm of vector
-            XXX = 0.0D0
-            XXX = DDOT(ILEN2,SCR(JOFF),1,SCR(JOFF),1)
-C
-            IF( XXX .eq. 0.0D0 ) THEN
-              IVCOFF_IN1( IOFFSET_INT + NUM_A_B - 1 ) = 0
-              GOTO 100
-            ELSE
-              IVCOFF_IN1( IOFFSET_INT + NUM_A_B - 1 ) = 1
-            END IF
-C
-            IF( IDEBUGPRNT .ne. 0 ) THEN
+#ifdef LUCI_DEBUG
               WRITE(LUWRT,'(A,1X,I6,1X,I6,1X,I6,1X,A,1X,I14)') 'JOFF, 
      & ILEN2 for block',JOFF,ILEN2,IOFFSET_INT+ NUM_A_B -1,'at off',
      & IOFFSET
               CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
-            END IF
-            CALL MPI_FILE_WRITE_AT(MY_LUOUT,IOFFSET,SCR(JOFF),
-     &                             ILEN2,MPI_REAL8,ISTAT,IERR)
+#endif
+              CALL MPI_FILE_WRITE_AT(MY_LUOUT,IOFFSET,SCR(JOFF),
+     &                               ILEN2,MPI_REAL8,ISTAT,IERR)
 C
  100        CONTINUE
 C

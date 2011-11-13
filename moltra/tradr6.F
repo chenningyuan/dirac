@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -84,6 +84,8 @@ C***********************************************************************
       REAL*8 XINTSTAT(8)
       INTEGER ILEN_STAT
 #endif
+      Integer, Allocatable :: LSORT(:,:,:)
+      Integer, Allocatable :: INDXB12(:,:),INDXB34(:,:),INDXKR12(:,:)
 C
       CALL QENTER('TRDR6T')
       KFRSAV = KFREE
@@ -115,13 +117,10 @@ C
          NSTR1T = NSTR1T + NSTR(IREPI,0,1)
          NSTR2T = NSTR2T + NSTR(IREPI,0,2)
       ENDDO
-      CALL MEMGET('INTE',KLSORT,3*NFPCK12T*NBSYM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KLDIST,NSTR2T,WORK,KFREE,LFREE)
+
+      Allocate (LSORT(3,NFPCK12T,0:7))
       CALL DEFINE_SORT (NSTR,NSTR1T,NSTR2T,TRIAN,MEM,KL_IN_BUF,
-     &                  WORK(KLDIST),WORK(KLSORT),IPRINT)
-      CALL MEMREL('TR6T',WORK,KLDIST,KLDIST,KFREE,LFREE)
-      CALL MEMGET('REAL',KRMBUF,MEM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIMBUF,2*MEM,WORK,KFREE,LFREE)
+     &                  LSORT,IPRINT)
 C
 C     Initialize the buffer files for the halftransformed integrals
 C
@@ -135,17 +134,14 @@ C
 #endif
          CALL FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     KGAB,KDRIJ,
-     &                     WORK(KRMBUF),WORK(KIMBUF),WORK(KLSORT))
+     &                     KGAB,KDRIJ,MEM,LSORT)
 #if defined (VAR_MPI)
       ELSE
          CALL FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     KGAB,KDRIJ,
-     &                     WORK(KRMBUF),WORK(KIMBUF),WORK(KLSORT))
+     &                     KGAB,KDRIJ,MEM,LSORT)
       ENDIF
 #endif
-      CALL MEMREL('TRDR6T',WORK,KRMBUF,KRMBUF,KFREE,LFREE)
       CALL XTIME(5,2,' First halftransformation      ')
 C
 C     Initialize MOLFDIR integral file
@@ -154,17 +150,18 @@ C
 C
 C     Make index arrays to translate pair index to individual indices
 C
-      CALL MEMGET('INTE',KDXKR12,NFPCK12T*2,WORK,KFREE,LFREE)
-      CALL MKINDXKR (NSTR,.FALSE.,WORK(KDXKR12))
-C
-      CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
+      Allocate (INDXKR12(NFPCK12T,2))
+      Allocate (INDXB12 (NFPCK12T,2))
+      Allocate (INDXB34 (NFPCK34T,2))
+
+      CALL MKINDXKR (NSTR,.FALSE.,INDXKR12)
+ 
       CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
      &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
-     &              .FALSE.,WORK(KDXB12))
-      CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
+     &              .FALSE.,INDXB12)
       CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
      &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
-     &              .FALSE.,WORK(KDXB34))
+     &              .FALSE.,INDXB34)
 C
 C     Perform the second half transformation
 C
@@ -174,9 +171,12 @@ C
       CALL MS6IN2 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
      &             NSTR,NDMOQR(1,1,3),ICMOQR(1,3),
      &             NFPCK12,WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &             WORK(KLSORT),WORK(KDXKR12),
-     &             WORK(KDXB12),WORK(KDXB34))
+     &             LSORT,INDXKR12,
+     &             INDXB12,INDXB34)
 C
+      DeAllocate (INDXKR12)
+      DeAllocate (INDXB12)
+      DeAllocate (INDXB34)
       CALL XTIME(5,2,' Second halftransformation     ')
 C     
 C     Close integral file
@@ -186,6 +186,7 @@ C
 C     Remove buffer file
 C
       CALL BUFFER_FILE_REMOVE (1)
+      DeAllocate (LSORT)
 C
 C     Screening statistics
 C     Note : it would be more logical to have the call to MPI_REDUCE inside
@@ -218,7 +219,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck First_HalfTr_Serial */
       SUBROUTINE FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                  KGAB,KDRIJ,RGBUF,IGBUF,LSORT)
+     &                  KGAB,KDRIJ,MEM,LSORT)
 C***********************************************************************
 C
 C     Loop over distributions (**|rs), transform 2 indices 
@@ -259,14 +260,16 @@ C***********************************************************************
 
 #include "blocks.h"
       DIMENSION LSORT(3,NFPCK12T,0:7)
-      DIMENSION RGBUF(*)
-      DIMENSION IGBUF(2,*)
+      Real(8), Allocatable :: RGBUF(:)
+      Integer, Allocatable :: IGBUF(:,:)
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
       CHARACTER*7 CIC(3)
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
 C
+      Allocate (RGBUF(MEM))
+      Allocate (IGBUF(2,MEM))
       CALL GETTIM(CPUBEF,WALLBEF)
       DO IC = 1, 2
 CLV:Gaunt       DO IC = 1, 3
@@ -295,8 +298,10 @@ CLV:Gaunt       DO IC = 1, 3
      &                  WORK(KGAB),WORK(KDRIJ),DINTSKP,
      &                  LSORT,RGBUF,IGBUF)
           ENDDO
-       ENDDO
-       CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
+      ENDDO
+      CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
+      DeAllocate (RGBUF)
+      DeAllocate (IGBUF)
 #if defined (VAR_PFS)
        CALL GLOBAL_FILE_CLOSE_WRITE
 #endif
@@ -307,7 +312,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck First_HalfTr_Parallel */
       SUBROUTINE FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                  KGAB,KDRIJ,RGBUF,IGBUF,LSORT)
+     &                  KGAB,KDRIJ,MEM,LSORT)
 C***********************************************************************
 C
 C     Loop over distributions (**|rs), transform 2 indices 
@@ -351,8 +356,8 @@ C***********************************************************************
 
 #include "blocks.h"
       DIMENSION LSORT(3,NFPCK12T,0:7)
-      DIMENSION RGBUF(*)
-      DIMENSION IGBUF(2,*)
+      Real(8), Allocatable :: RGBUF(:)
+      Integer, Allocatable :: IGBUF(:,:)
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -460,6 +465,8 @@ C
 C
 C     Wait for tasks until we receive the end message
 C
+         Allocate (RGBUF(MEM))
+         Allocate (IGBUF(2,MEM))
   100    CONTINUE
          ITEST = 0
 C        ... ask for new set of A,B shells
@@ -494,6 +501,8 @@ C
       ELSE
          CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
          CALL BUFFER_FILE_END ()
+         DeAllocate (RGBUF)
+         DeAllocate (IGBUF)
       ENDIF
 #if defined (VAR_PFS)
       CALL GLOBAL_FILE_CLOSE_WRITE
@@ -505,7 +514,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck define_sort */
       SUBROUTINE DEFINE_SORT (NSTR,NSTR1T,NSTR2T,TRIAN,MEM,KL_IN_BUF,
-     &                        LDIST,LSORT,IPRINT)
+     &                        LSORT,IPRINT)
 C***********************************************************************
 C
 C     Define the distribution and sorting of the 2-index transformed integrals
@@ -516,7 +525,6 @@ C             IPRINT (print level)
 C
 C     Output : MEM (Memory required for the buffers)
 C              KL_IN_BUF (Maximum number of iz,ireprs,k,l combis in one buffer)
-C              LDIST (for each spinor the node to which it is allocated)
 C              LSORT (for each spinor pair the buffer to which it should go)
 C
 C     Written by L.Visscher
@@ -593,7 +601,7 @@ C
       IF (MOD(NBSYMP*NSTR1T,NBUF_L).GT.0) KL_IN_BUF = KL_IN_BUF + 1
 
 c temporarty storage for 1HT fine-sorting 
-      call alloc(node_for_buffer,N_BUFFER)
+      call alloc(node_for_buffer,N_BUFFER, id="node_for_buffer")
 
 C
 C     Assign each (ireprs,k,l) combination to a buffer
@@ -925,6 +933,7 @@ C
       DIMENSION IGBUF(2,*)
       LOGICAL   TRIAN
       DIMENSION IND(2)
+      Real(8), Allocatable :: HTMP(:),HMAT(:)
 C
 C     For the buffered input
 C
@@ -949,11 +958,16 @@ C
 C     Allocate memory for (gg,iz),(uu,iz),.. -> (gg+uu,iz),(gu+ug,iz) sort
 C 
       IF (NFSYM .GT. 1) THEN
-         LHTMP = MAX(NFPCK12(1),NFPCK12(2))*NZ
-      ELSE  
-         LHTMP = 0
+         LHMAT = MAX(NFPCK12(1),NFPCK12(2))*NZ
+         Allocate (HTMP(LHMAT))
+       ELSE
+         LHMAT = NFPCK12(1)*NZ
       END IF
-      CALL MEMGET ('REAL',KHTMP,LHTMP,WORK,KFREE,LFREE)
+
+C
+C     Allocate memory for half-transformed integral block
+C 
+      Allocate (HMAT(LHMAT))
 C
       IRS = 0
       DO IPASS = 1, NPASS
@@ -961,15 +975,11 @@ C
 C        Get the scalar integrals that are processed in this pass
 C        The integral are already in GMAT when NPASS = 1
 C
-         IF (NPASS.GT.1) THEN
+          IF (NPASS.GT.1) THEN
              CALL DZERO(GMAT,NSIZG)
              IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
-         ENDIF
+             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
+          ENDIF
 C
 C        Do first step of index transformation :
 C        Transform lefthand indices to molecular spinor basis
@@ -988,9 +998,6 @@ C
             IREPIJ = JBTOF(IREPPQ,1)
             IF (ICS.EQ.3) IREPIJ = JBTOF(IREPPQ,2)
 C
-            CALL MEMGET('REAL',KHMAT,NFPCK12(IREPIJ)*NZ,
-     &                   WORK,KFREE,LFREE)
-C
 C           Loop over the distributions with this boson symmetry in this
 C           shell-block batch
 C
@@ -999,7 +1006,7 @@ C
 C
 C              Initialize the halftransformed block of integrals
 C
-               CALL DZERO (WORK(KHMAT),NFPCK12(IREPIJ)*NZ)
+               CALL DZERO (HMAT,NFPCK12(IREPIJ)*NZ)
 C
 C              Loop over the compound component (LL, SS, SL) of the lefthand
 C              densities
@@ -1046,7 +1053,7 @@ C
                      IF (NFSYM.GT.1) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
      &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
-     &                    WORK(KHTMP),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
+     &                    HTMP,NI,NJ,NZ,IPQTOQ(1,IREPPQ),
      &                    Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
      &                    Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
      &                    WORK(KFREE),LFREE,IPRINT)
@@ -1055,16 +1062,16 @@ C                      Order the integrals with NKL as first and IZ
 C                      as second index
 C              
                        DO IZ = 1, NZ
-                          JOFF1 = KHMAT + (IZ-1)*NFPCK12(IREPIJ) +
+                          JOFF1 = 1 + (IZ-1)*NFPCK12(IREPIJ) +
      &                                   IFPCK12(IREPI,IREPJ)
-                          JOFF2 = KHTMP + (IZ-1)*NI*NJ
-                          CALL DAXPY(NI*NJ,D1,WORK(JOFF2),1,
-     &                               WORK(JOFF1),1)
+                          JOFF2 = 1 + (IZ-1)*NI*NJ
+                          CALL DAXPY(NI*NJ,D1,HTMP(JOFF2),1,
+     &                               HMAT(JOFF1),1)
                        ENDDO
                      ELSE
                        CALL QTRANS('AOMO','S',D1,NP,NQ,NI,NJ,
      &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
-     &                    WORK(KHMAT),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
+     &                    HMAT,NI,NJ,NZ,IPQTOQ(1,IREPPQ),
      &                    Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
      &                    Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
      &                    WORK(KFREE),LFREE,IPRINT)
@@ -1092,11 +1099,11 @@ C
 C
 C              Write the block of transformed integrals to disk
 C
-               JOFF = KHMAT
+               JOFF = 1
                DO IZ = 1, NZ
                   CALL BUFFER_FILE_OUT (1,RGBUF,IGBUF,
      &                 LSORT(1,1,IREPPQ),
-     &                 WORK(JOFF),NFPCK12(IREPIJ),
+     &                 HMAT(JOFF),NFPCK12(IREPIJ),
      &                 IRS_IZ,TRESHOLD)
                   JOFF = JOFF + NFPCK12(IREPIJ)
                   IRS_IZ = IRS_IZ + NSPCK(IREPPQ,0)
@@ -1109,6 +1116,9 @@ C        ... END DO IREPPQ
       ENDDO
 C     ... END DO IPASS
 C
+      IF (NFSYM .GT. 1) DeAllocate (HTMP)
+      DeAllocate (HMAT)
+
       CALL QEXIT('MS6IN1')
       RETURN
       END
@@ -1152,6 +1162,7 @@ C
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL INIT
+      Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1186,16 +1197,16 @@ C
       write (*,*) '<<< Starting 2HT on node ',mytid
       write (*,*) ' '
 c
+      Allocate (GMAT(maxval(NSPCK(:,0))*NZ))
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
 C       Allocate space for sorted and unsorted fully transformed integrals
-        CALL MEMGET('REAL',KHMAT,NFPCK34(IREPIJ)*NZ*4,
-     &               WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KHTMP,NFPCK34(IREPIJ)*NZ,WORK,KFREE,LFREE)
+        Allocate (HMAT(NFPCK34(IREPIJ)*NZ*4))
+        Allocate (HTMP(NFPCK34(IREPIJ)*NZ))
 C       Loop over index pairs in the MO-basis
         DO 100 IJ = 1, IJPAIRS(IREPIJ)
-          JOFF = KHMAT
+          JOFF = 1
           INIT = .FALSE.
           DO IREPPQ = 0, NBSYM-1
             IF (IREPIJ.EQ.JBTOF(IREPPQ,1)) THEN
@@ -1204,22 +1215,19 @@ C       Loop over index pairs in the MO-basis
             IF (INOD.EQ.MYTID) THEN
 C           Initialize the array for the fully transformed integrals
             IF (.NOT.INIT) THEN
-               CALL DZERO (WORK(KHMAT),NFPCK34(IREPIJ)*NZ*4)
+               CALL DZERO (HMAT,NFPCK34(IREPIJ)*NZ*4)
                INIT = .TRUE.
             ENDIF
 C           Allocate space to read halftransformed integrals
-            CALL MEMGET('REAL',KGMAT,NZ*NSPCK(IREPPQ,0),
-     &                   WORK,KFREE,LFREE)
             ICOL = LSORT(2,IJ,IREPPQ)
 #if defined (VAR_PFS)
-            CALL GLOBAL_FILE_READ (WORK(KGMAT),
-     &                             NZ*NSPCK(IREPPQ,0),ICOL,IBUF)
+            CALL GLOBAL_FILE_READ (GMAT,NZ*NSPCK(IREPPQ,0),ICOL,IBUF)
 #else
-            CALL BUFFER_FILE_READ (1,IBUF,WORK(KGMAT),
+            CALL BUFFER_FILE_READ (1,IBUF,GMAT,
      &                             NZ*NSPCK(IREPPQ,0),ICOL,do_finesort)
 #endif
-            CALL GMAT_SYM (IREPPQ,WORK(KGMAT),NSPCK(IREPPQ,0),ICS,ICF)
-            IOFF = KGMAT
+            CALL GMAT_SYM (IREPPQ,GMAT,NSPCK(IREPPQ,0),ICS,ICF)
+            IOFF = 1
             DO IZ = 1, NZ
                DO IC = ICS, ICF
                   IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
@@ -1248,8 +1256,8 @@ C           Allocate space to read halftransformed integrals
                      ENDIF
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
-     &                      WORK(IOFF),NP,NQ,1,IPQTOQ(1,0),
-     &                      WORK(KHTMP),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
+     &                      GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
+     &                      HTMP,NI,NJ,NZ,IPQTOQ(1,IREPPQ),
      &                      Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
      &                      Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
      &                      WORK(KFREE),LFREE,IPRINT)
@@ -1260,9 +1268,9 @@ C
                        DO IZ2 = 1, NZ
                           JOFF1 = JOFF + (IZ2-1)*NFPCK34(IREPIJ) +
      &                                   IFPCK34(IREPI,IREPJ)
-                          JOFF2 = KHTMP + (IZ2-1)*NI*NJ
-                          CALL DAXPY(NI*NJ,D1,WORK(JOFF2),1,
-     &                               WORK(JOFF1),1)
+                          JOFF2 = 1 + (IZ2-1)*NI*NJ
+                          CALL DAXPY(NI*NJ,D1,HTMP(JOFF2),1,
+     &                               HMAT(JOFF1),1)
                         ENDDO
                      ENDIF
                      IOFF = IOFF + NP * NQ
@@ -1271,7 +1279,6 @@ C
                JOFF = JOFF + NFPCK34(IREPIJ) * NZ
 C...........End of loop over IZ (for the first transformed density)
             ENDDO
-            CALL MEMREL('MS6IN2',WORK,KGMAT,KGMAT,KFREE,LFREE)
 C.........End of if clause for task on node
           ENDIF
 C.........End of if clause for parity
@@ -1285,11 +1292,15 @@ C         Only call SYMFINT if this matrix was formed
           IF (INIT) CALL SYMFINT(IPRINT,IREPIJ,
      &                 INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
      &                 IJ,IKR,JKR,NSTR(1,0,3),NSTR(1,0,4),NKL,
-     &                 WORK(KHMAT),WORK,KFREE,LFREE)
+     &                 HMAT)
  100    CONTINUE
         NIJOFF = NIJOFF + NFPCK12(IREPIJ)
         NKLOFF = NKLOFF + NFPCK34(IREPIJ)
+        DeAllocate (HMAT)
+        DeAllocate (HTMP)
       ENDDO
+
+      DeAllocate (GMAT)
 C
       CALL MEMREL('MS6IN2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 #if defined (VAR_PFS)

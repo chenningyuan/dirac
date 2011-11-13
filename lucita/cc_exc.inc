@@ -1,2 +1,2 @@
-*comdeck cc_exc.inc $Revision: 2268 $ 
+*comdeck cc_exc.inc $Revision$ 
       COMMON/CC_EXC/ICC_EXC

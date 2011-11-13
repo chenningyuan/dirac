@@ -1,4 +1,4 @@
-*comdeck clunit.inc $Revision: 5454 $ 
+*comdeck clunit.inc $Revision$ 
 * CLUNIT
       COMMON/CLUNIT/LUIN,LUOUT,LUCIVI,LU1INT,LU2INT,LUPRP,
      &              LUDIA,LUC,LUHC,

@@ -1,4 +1,3 @@
-C FILE    : pdpack/dge.F
 C
 C
 C  /* Deck dgeinv */

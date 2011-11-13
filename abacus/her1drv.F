@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : her1drv.F
 C
 C
 #ifdef UNDEF
@@ -546,7 +543,7 @@ C                                           0  1  1  2
          DODERM = .FALSE.
 C        jth - if it is a LS integral and we have requested PROPTY 
 C              (= derivatives) then calculate the derivatives of
-C              the momentum integral. If DODERM then we don't do
+C              the momentum integral. If DODERM then we do not do
 C              (derivatives) of nuclear attraction and \beta matrix
 C              etc.
          IF ( (ICA.NE.ICB) .AND. PROPTY ) THEN

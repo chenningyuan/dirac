@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -57,9 +57,7 @@ C
 C
 C
       CALL QENTER('XRSSVC')
-#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,18)
-#endif /* MOD_KRMC */
 C
 C     Initialize sigma vectors
 C     ========================
@@ -82,20 +80,17 @@ C     Construct configurational part of sigma vectors
 C     for the configurational trial vectors
 C     ===============================================
 C
-#ifdef MOD_KRMC
       IF (NCSIM.GT.0) THEN
          CALL XRSSCI(BCVEC,SCVEC,IBCVC,WORK,KFREE,LFREE)
       END IF
 C
       CALL RTKTIME(.FALSE.,18)
-#endif /* MOD_KRMC */
       CALL QEXIT('XRSSVC')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssci */
-#ifdef MOD_KRMC
       SUBROUTINE XRSSCI(BCVEC,SCVEC,IBCVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -264,7 +259,6 @@ C
       CALL QEXIT ('XRSSCIM')
       RETURN
       END
-#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrsphp */
       SUBROUTINE XRSPHP(SCVEC,WORK,LWORK)
@@ -299,7 +293,8 @@ C
 C     Get CI ref. vector from record 1 on LUBCI.
 C
       CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-      CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+!     CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+      CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCREF))
 C
 C     Do projection.
 C
@@ -474,9 +469,7 @@ C
 #include "dcbxrs.h"
 C
       CALL QENTER('XRSSEP')
-#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,13)
-#endif /* MOD_KRMC */
 C
       KFRSAV = KFREE
 C
@@ -491,18 +484,18 @@ C
 C     Transition densities
 C     ---------------------
 C
-      CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-      IF ( NZCONF .GT. 0) CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
-C
       CALL MEMGET('REAL',KDVT,NCSIM * N2ASHXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPVT,
      &     NCSIM * NASHT * NASHT * N2ASHX * NZ * 3,WORK,KFREE,LFREE)
-#ifdef MOD_KRMC
+      CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
+!     IF ( NZCONF .GT. 0) CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+      IF ( NZCONF .GT. 0) CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCREF))
+C
       IF ( NCSIM .GT. 0 ) THEN
          CALL XRSTDM(WORK(KCREF),BCVEC,WORK(KDVT),WORK(KPVT),
      &        WORK,KFREE,LFREE)
       END IF
-#endif /* MOD_KRMC */
+      CALL MEMREL('after XRSTDM',WORK,1,KCREF,KFREE,LFREE)
 C
 C     Wf. densities
 C     -------------
@@ -559,7 +552,6 @@ C     ********************************
 C     *** Generate FQT, FQX, H2XAC ***
 C     ********************************
 C
-#ifdef MOD_KRMC
       IF (NASHT.GT.1) THEN
          CALL MEMGET('REAL',KFQT,NCSIM * NASHT * NORBT * NZ,
      &        WORK,KFREE,LFREE)
@@ -616,7 +608,6 @@ C
      &        WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
      &        IBCVC,IBTYP,WORK(KFREE),LFREE)
       END IF
-#endif /* MOD_KRMC */
 C
 C
 C     *********************************************************
@@ -629,14 +620,12 @@ C
      &        WORK(KFQX),WORK(KDV),
      &        WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
      &        IBEVC,IBPVC,IBTYP,WORK(KFREE),LFREE)
-#ifdef MOD_KRMC
          IF (FKRMC) THEN
             CALL RSIGOOGB(SEVEC,SPVEC,
      &           GPOE,GPOP,BEVEC,BPVEC,
      &           WORK(KZXOPE),WORK(KZXOPP),
      &           WORK(KFREE),LFREE)
          END IF
-#endif /* MOD_KRMC */
       END IF
 C
 C
@@ -645,14 +634,12 @@ C     *** Calculate conf. part of orbital sigma vector(s) ***
 C     *******************************************************
 C
 C
-#ifdef MOD_KRMC
       IF ( NOSIM .GT. 0 .AND. NZCONF .GT. 0) THEN
          CALL RSIGCO(SCVEC,IBCVC,WORK(KF),WORK(KH2ACX),
      &        WORK,KFREE,LFREE)
       END IF
 C
       CALL RTKTIME(.FALSE.,13)
-#endif /* MOD_KRMC */
 C
       CALL MEMREL('XRSSEP',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT ('XRSSEP')
@@ -688,9 +675,9 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0 = 0.0D0, DP5 = 0.5D00)
 C
 #include "dcborb.h"
@@ -701,7 +688,6 @@ C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ)
       LOGICAL   LBIT, LBIT_1
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialization
 C     ==============
@@ -861,9 +847,7 @@ C
      &          IBEVC(*),IBPVC(*),WORK(*)
 C
       CALL QENTER('FMOLI')
-#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,6)
-#endif /* MOD_KRMC */
       KFRSAV = KFREE
       CALL MEMGET('REAL',KBMAT,N2BBASXQ,WORK,KFREE,LFREE)
       IFAC = 1
@@ -887,9 +871,7 @@ C
      &            IBEVC,IBPVC,IBTYP,WORK,KFREE,LFREE)
 C
       CALL MEMREL('FMOLI',WORK,1,KFRSAV,KFREE,LFREE)
-#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,6)
-#endif /* MOD_KRMC */
       CALL QEXIT('FMOLI')
       RETURN
       END
@@ -1186,9 +1168,9 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -1203,11 +1185,8 @@ C
       DIMENSION WORK(*)
       DIMENSION IPH1X(*), IPH1(*), IPBMAT(*)
 C
-      EXTERNAL BDQALGEBRA
 C
-#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,15)
-#endif /* MOD_KRMC */
 C
 C     Generate one-index transformed Fock matrix
 C     ------------------------------------------
@@ -1253,9 +1232,7 @@ C
          CALL PRQMAT(H1X,NORBT,NORBT,NORBT,
      &        NORBT,NZ,IPH1X,LUPRI)
       ENDIF
-#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,15)
-#endif /* MOD_KRMC */
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1875,7 +1852,8 @@ C
         IND = IBVEC(IREC)
         IH  = IBTYP(2,IND)
         IF(IH.EQ.ITYP) THEN
-          CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+!         CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
           IBOFF = 1
           DO IFREQ = 1,MFREQ
             IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
@@ -1943,6 +1921,8 @@ C
 C         Accumulate T(-) = S[2}X(+) in buffer
 C         ------------------------------------
 C
+!radovan: bepvc, bppvc, bcpvc can go out of bounds
+!         if corresponding degrees of freedom are zero
           CALL XRSTVC(BEPVC(1,I),1,NBEVC,0,
      &                BPPVC(1,I),1,NBPVC,0,
      &                BCPVC(1,I),1,NBCVC,0,
@@ -1952,6 +1932,8 @@ C
 C         Accumulate T(+) = S[2}X(-) in b(+)
 C         ------------------------------------
 C
+!radovan: bepvc, bppvc, bcpvc can go out of bounds
+!         if corresponding degrees of freedom are zero
           CALL XRSTVC(BEMVC(1,I),1,NBEVC,0,
      &                BPMVC(1,I),1,NBPVC,0,
      &                BCMVC(1,I),1,NBCVC,0,
@@ -2083,7 +2065,8 @@ C
       DO IREC = 1,NZRED
         IH  = IBTYP(2,IREC)
         IF(IH.EQ.ITYP) THEN
-          CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+!         CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
           IBOFF = 1
           DO IFREQ = 1,MFREQ
             CALL DAXPY(NBDIM,EVECR(IREC,IFREQ),BVBUF,1,BVEC(IBOFF),1)
@@ -2268,7 +2251,7 @@ C           Print section
             CALL DZERO(XNORM(1,IPCP),NCSIM)
           ENDIF
         ENDIF
-      ELSE
+      ELSE ! from IF(STATIC) THEN
 C
 C       In frequency-dependent case, the resultant X-vectors
 C       split into X(+) and X(-).
@@ -2446,7 +2429,7 @@ C
             CALL DZERO(XNORM(1,IPCM),MFREQ)
           ENDIF
         ENDIF
-      ENDIF
+      ENDIF ! from IF(STATIC) THEN
 C
       NTSIM = NESIM + NPSIM + NCSIM
 C
@@ -2570,7 +2553,7 @@ C
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
-      ENDIF
+      ENDIF ! from IF(IPRXRS.GE.5) THEN
 C
 C     If (LINEQ) add gradient
 C     =======================
@@ -2588,39 +2571,39 @@ C
 C
 C       Print section
 C
-      IF(IPRXRS.GE.5) THEN
-        IF(NZXOPE.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-e) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
-          IF(.NOT.STATIC) THEN
+        IF(IPRXRS.GE.5) THEN
+          IF(NZXOPE.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-e) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+     &       ' orbital (e-e) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-e) (E[2}X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+            ENDIF
           ENDIF
-        ENDIF
-        IF(NZXOPP.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-p) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
-          IF(.NOT.STATIC) THEN
+          IF(NZXOPP.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-p) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+     &       ' orbital (e-p) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-p) (E[2}X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+            ENDIF
           ENDIF
-        ENDIF
-        IF(NZCONF.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' configurational (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
-          IF(.NOT.STATIC) THEN
+          IF(NZCONF.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' configurational (E[2}X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+            IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       ' configurational (E[2}X(-)-WS[2]X(+)) residual vectors'
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            ENDIF
           ENDIF
         ENDIF
-      ENDIF
-      ENDIF
+      ENDIF ! from IF(LINEQ) THEN
 C
       CALL FLSHFO(LUPRI)
 C
@@ -2830,7 +2813,6 @@ C                both the X(+) and the X(-) vectors to keep the paired structure
                END IF
             END IF
          ELSE
-#ifdef MOD_KRMC
 C
 C           **** KRMCSCF code **** (FKRMC is .true.)
 C
@@ -2858,7 +2840,6 @@ C              if less than a fraction (0.2) of convergence threshold.
      &                 D5*RNORM(I,IFREQ).LE.THCXRS) IVECS(IFREQ,I) = 0
                ENDDO
             ENDIF
-#endif /* MOD_KRMC */
          ENDIF
          WRITE(LUPRI,'(F15.8,1P,11(2X,E8.2))')
      &        EVALR(IFREQ),THCXRS,RTNORM,(RNORM(I,IFREQ),I=1,NVPAR)
@@ -3206,7 +3187,6 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrstdm */
-#ifdef MOD_KRMC
       SUBROUTINE XRSTDM(CREF,BCVEC,DVT,PVT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3337,7 +3317,7 @@ C        Calculate density matrices
 C        --------------------------
 C
          IF ( XRS_CIPROGRAM .EQ. 'GASCIP' ) THEN
-            CALL GASCIP_RMAKDM(NZCONF,.TRUE.,.TRUE.,WORK(KZCONF),
+            CALL GASCIP_RMAKDM(.TRUE.,.TRUE.,NZCONF,WORK(KZCONF),
      &           CLREF,CRREF,WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
          ELSE
 C           LUCIAREL:
@@ -3377,7 +3357,6 @@ C
       CALL QEXIT('XRSDM')
       RETURN
       END
-#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx */
       SUBROUTINE GMOLITX(FMO,DVT,DV,
@@ -3425,9 +3404,7 @@ C
 C
 C
       CALL QENTER('GMOLITX')
-#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,5)
-#endif /* MOD_KRMC */
       KFRSAV = KFREE
 C
 C
@@ -3473,14 +3450,12 @@ C
      &               TOTERG,IOPT,WORK,KFREE,LFREE)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
-#ifdef MOD_KRMC
 C
 C        We are doing a KRMCSCF opt. Read orbitals from KRMCSCF
          JRDMO = 1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
          call izero(work(kbeig),norbt)
          if(spinfr) call ireakrmc(lukrmc,'IBEIG   ',work(kbeig),norbt)
-#endif /* MOD_KRMC */
       ENDIF
 C
 C     Print MO coefficients ?
@@ -3504,9 +3479,7 @@ C
      &     WORK,KFREE,LFREE)
 C
       CALL MEMREL('GMOLITX',WORK,1,KFRSAV,KFREE,LFREE)
-#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,5)
-#endif /* MOD_KRMC */
       CALL QEXIT('GMOLITX')
       RETURN
       END
@@ -3537,7 +3510,10 @@ C
 C***********************************************************************
         use dirac_cfg
         use dft_cfg
-        use xc_driver
+        use xcint_main
+        use fde_mod
+        use fde_integrate
+        use num_grid_gen
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3550,13 +3526,14 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 C
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
-
+      type(fde_import) :: itmp
 C
 C
       CALL QENTER('GMOLITX1')
@@ -3611,23 +3588,25 @@ C
           call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
           call genden(work(kbuf), cmo, 1, iprxrs)
 
-!                           buf holds the unperturbed density matrix
+!                     buf holds the unperturbed density matrix
 !                     fmo is actually the perturbed ao density matrix
 !                     fao is really fao (confusing naming reuses memory)
 
-         call xc_mpi_wake_up_coworkers()
-         call xc_integrator(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = work(kbuf),
-     &                      xc_nr_dmat           = ndmat,
-     &                      xc_nr_fmat           = ndmat,
-     &                      xc_dmat              = fmo,
-     &                      xc_fmat              = fao,
-     &                      xc_fmat_pg_sym       = isymop,
-     &                      xc_dmat_pg_sym       = isymop,
-     &                      xc_dmat_ih_sym       = ihrmop,
-     &                      xc_response_order_mo = 1)
-         call xc_mpi_release_coworkers()
+          call generate_num_grid(work(kbuf))
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(4)
+#endif
+          call integrate_xc (xc_mat_dim            = ntbas(0),
+     &                       xc_nz                 = nz,
+     &                       xc_dmat_0             = work(kbuf),
+     &                       xc_nr_dmat            = ndmat,
+     &                       xc_nr_fmat            = ndmat,
+     &                       xc_dmat               = fmo,
+     &                       xc_fmat               = fao,
+     &                       xc_fmat_pg_sym        = isymop,
+     &                       xc_dmat_pg_sym        = isymop,
+     &                       xc_dmat_ih_sym        = ihrmop,
+     &                       xc_response_order_mo = 1)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
@@ -4362,7 +4341,6 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rsigoc */
-#ifdef MOD_KRMC
       SUBROUTINE RSIGOC(SEVEC,SPVEC,DVT,FVT,FQT,
      &     JXOPE,NXOPE,JXOPP,NXOPP,
      &     IBCVC,IBTYP,WORK,LWORK)
@@ -4485,7 +4463,6 @@ C
 C
       RETURN
       END
-#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rsigoo */
       SUBROUTINE RSIGOO(SEVEC,SPVEC,FX,FQX,DV,
@@ -4519,9 +4496,7 @@ C
 #include "memint.h"
 C
       CALL QENTER('RSIGOO')
-#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,16)
-#endif /* MOD_KRMC */
       CALL MEMGET('REAL',KFPV,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
 C
 C
@@ -4663,15 +4638,12 @@ C
         ENDIF
       ENDIF
 C
-#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,16)
-#endif /* MOD_KRMC */
       CALL QEXIT('RSIGOO')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rsigoogb */
-#ifdef MOD_KRMC
       SUBROUTINE RSIGOOGB(SEVEC,SPVEC,GPOE,GPOP,BEVEC,BPVEC,
      &                    JXOPE,JXOPP,WORK,LWORK)
 C***********************************************************************
@@ -4964,7 +4936,8 @@ C
       IF (XRS_CIPROGRAM .EQ. 'GASCIP' .OR.
      &    XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
          CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-         CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+!        CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+         CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCREF))
 C        use routine with MOLFDIR format for integrals
          CALL RSIGCOM(WORK(KCREF),SCVEC,FX,H2ACX,IBCVC,
      &        WORK,KFREE,LFREE)
@@ -5089,7 +5062,6 @@ C
       CALL QEXIT ('RSIGCOM')
       RETURN
       END
-#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Fmoli3 */
       SUBROUTINE FMOLI3(ITYP,FMO,BMAT,FBUF,WORK,KFREE,LFREE)
@@ -5111,9 +5083,9 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -5125,7 +5097,6 @@ C
       DIMENSION FMO(NORBT,NORBT,NZ),FBUF(NORBT,NORBT,NZ),
      &          BMAT(NORBT,NORBT,NZ),WORK(*)
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialization
 C     ==============
@@ -5295,7 +5266,6 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrsappfq */
-#ifdef MOD_KRMC
       SUBROUTINE XRSAPPFQ(FQX,FX,DV,WORK,LWORK)
 C***********************************************************************
 C
@@ -5343,4 +5313,3 @@ C
       CALL QEXIT('XRSAPPFQ')
       RETURN
       END
-#endif /* MOD_KRMC */

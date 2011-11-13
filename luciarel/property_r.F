@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,139 +17,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETINT_NTS(YINT,INDEX,IRI,IDIM,DMFC,IPRNT)
-C***********************************************************************
-C
-C     fetch integral to YINT for non-totally symmetric operators 
-C     from Molfdir-type array DMFC.  
-C
-C     order in DIRAC (Molfdir format) matrix DMFC:
-C                                 _
-C           p spinors followed by p
-C                                                 _     _
-C           if NFSYM = 2 (inversion symmetry): p, p, q, q
-C
-C    *********************************************************
-C    * NOTE: the ordering is GA space independent, e.g.      *
-C    *                                                       *
-C    * .GASSH   yields the very same DMFC matrix as   .GASSH *
-C    * 3                                              2      *
-C    * 1 1                                            1 1    *
-C    * 0 2                                            1 2    *
-C    * 1 0                                                   *
-C    *********************************************************
-C
-C     The present routine exhibits a new and more general offset 
-C     calculation for accessing the integral matrix DMFC compared to 
-C     GETIND_NZ3. The old offset calculation in GETIND_NZ3 is *NOT* valid 
-C     for general one-elctron operators.
-C     The new one looks a little more complicated though...
-C
-C     Written by S. Knecht - Dec 2009
-C
-C     Last revision :
-C
-C***********************************************************************
-!     use memory_allocator
-#include "implicit.h"
-#include "dgroup.h"
-#include "dcborb.h"
-!
-      DIMENSION DMFC(*), ICSAVE(4), INDEX(4)
-      integer jc_fsym, ja_fsym, nasht2, n2ashx2
-!
-      NTESTL = 0
-      NTEST = MAX(NTESTL,IPRNT)
-!
-!     set dimensions for DMFC matrix. Note that we here access the
-!                         _   _
-!     matrix in spinor (p,p,q,q) and NOT quaternion-packed Kramers-paired 
-!     basis.
-!     E.g. IASH(2) refers in the usual Dirac notation to the 
-!     offset in fermion symmetry 2 wrt to the Kramers-paired basis. 
-!     This means that we must multiply the offset by 2 to get the 
-!     correct spinor offset.
-!
-      nasht2  = NASHT  * 2
-      n2ashx2 = nasht2 * nasht2
-!
-!     input print
-c     IF(NTEST .ge. 5)THEN
-c       WRITE(6,*) ' GETIND_NTS : '
-c       WRITE(6,*) '  No. of active orbitals : ',NASHT
-c       WRITE(6,*) '  Compound index dimension: ',NNASHX
-c       WRITE(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
-c       WRITE(6,*) '1-el. integral array in GETIND_NTS:'
-c       CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
-c     END IF
-!
-      NCT = 0
-      DO IC=1,4,1
-        IF( INDEX(IC).ne. 0)THEN
-          NCT = NCT + 1
-          ICSAVE(NCT) = IC
-        END IF
-      END DO
-!
-!     NCT = 2: pick out one-electron integral identified by 
-!     two indices IORI (creator index) and JORI (annihilator index)
-      IORI = INDEX(ICSAVE(1))
-      JORI = INDEX(ICSAVE(2))
-!
-!     get fermion symmetry of creator and annihilator 
-      jc_fsym = 1
-      ja_fsym = 1
-      IF( INDEX(ICSAVE(1)) .gt. NASH(1)) jc_fsym = 2
-      IF( INDEX(ICSAVE(2)) .gt. NASH(1)) ja_fsym = 2
-!
-!     compute input address on array DMFC:
-!     compute a relative creator and annihilator spinor 
-!     (not Kramers pair) index
-!
-!     1. creator index
-      I_REL = IORI + ((ICSAVE(1)-1)*NASH(jc_fsym))+IASH(jc_fsym)
-!
-!     2. annihilator index
-      J_REL = JORI + ((ICSAVE(2)-3)*NASH(ja_fsym))+IASH(ja_fsym)
-!
-!     combine I_REL and J_REL to compute the address IIN
-!     --------------------------------------------------
-!     first  line: offset wrt real/imaginary
-!     second line: offset wrt annihilator index
-!     third  line: offset wrt the creator index
-      IIN =  ((IRI-1)  * n2ashx2) +
-     &       ((J_REL-1)* nasht2)  +
-     &         I_REL
-!
-!     print section
-c     if (NTEST.ge.1) then
-c       write(6,*) 'orig. index pair ',IORI,JORI,' address :',IIN
-c       write(6,'(A,I5)') ' I_REL = ',I_REL
-c       write(6,'(A,I5)') ' J_REL = ',J_REL
-c       DO LLLL = 1, (n2ashx2 * NZ)
-c         WRITE(6,*) ' element ',LLLL,'in matrix DMFC is = ',DMFC(LLLL)
-c       END DO
-c     end if
-!
-!     fetch integral
-      YINT = DMFC(IIN)
-!
-!     sign for imaginary 1-electron integrals:
-!     (according to h_(IJ) = -h_(I_J_), reference are the 
-!     unbarred spinors.)
-!
-!     stefan: the comment above does not apply anymore to the new 
-!     sorting scheme. here, we pick out the proper integral h_(I_J_) 
-!     by default.
-!     if (IRI.eq.2.and.INDEX(1).eq.0) YINT = - YINT
-
-!     write(6,*) '1-electron integral.'
-!     write(6,'(3I4,2X,1E14.8)') I_REL,J_REL,IIN,YINT
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_IAIB_DIRAC(IASP_KRCI_SYM,IBSP_KRCI_SYM,ELM_ABSMAX,
-     &                          AMAT,NROW,NCOL,LRQ,LCQ,JZ,IQP,NTEST)
+     &                          AMAT,NROW,NCOL,LRQ,LCQ,NA1,NA2,
+     &                          JZ,IQP,NTEST)
 C***********************************************************************
 C
 C     get symmetry indices of spinors which are connected by the 
@@ -170,28 +40,24 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION AMAT(NROW,NCOL,JZ), IQP(*)
-      CHARACTER M(4)*13
-      LOGICAL INDICES_FOUND
-      INDICES_FOUND = .FALSE.
-      M(1) = 'Matrix A real'
-      M(2) = 'Matrix A imag'
-      M(3) = 'Matrix B real'
-      M(4) = 'Matrix B imag'
-C
+      logical :: indices_found
+
+      indices_found = .false.
+!
       DO 10 IZ = 1, JZ
-        IQ = IQP(IZ)
-        IF( NTEST .gt. 5 )THEN
-           WRITE(LUPRI,'(/A,A13,A,2I4/)')
-     &     '*** ',M(IQ),' part ***;    NROW,NCOL:',NROW,NCOL
-        END IF
-        CALL GET_KRCI_SPINOR_IND(AMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,1,
-     &                           ELM_ABSMAX,IASP_KRCI_SYM,IBSP_KRCI_SYM,
-     &                           INDICES_FOUND,NTEST)
+
+#ifdef LUCI_DEBUG
+        call header('property mat',-1)
+        call prqmat(amat,NROW,NCOL,NROW,NCOL,iz,iqp,lupri)
+#endif
+
+        CALL GET_KRCI_SPINOR_IND(AMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,NA1,
+     &                           NA2,1,ELM_ABSMAX,IASP_KRCI_SYM,
+     &                           IBSP_KRCI_SYM,INDICES_FOUND,NTEST)
  10   CONTINUE
-C
-C     error exit if no indices pair is found
-C
-      IF( .NOT. INDICES_FOUND ) THEN
+!
+!     error exit if no indices pair is found
+      IF(.NOT. INDICES_FOUND)THEN
         WRITE(LUPRI,'(/A)')'  *** ERROR in GET_IAIB_DIRAC ***'//
      &                     ' failed to find indices pair'//
      &                     ' of DIRAC spinors for largest element in'//
@@ -202,243 +68,198 @@ C
       END IF
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!***********************************************************************
+
       SUBROUTINE GET_KRCI_SPINOR_IND(AMATRX,ROWLOW,ROWHI,COLLOW,
-     &                               COLHI,ROWDIM,COLDIM,NCTL,
+     &                               COLHI,ROWDIM,COLDIM,NA1,NA2,NCTL,
      &                               ELM_ABSMAX,
      &                               IASP_KRCI_SYM,IBSP_KRCI_SYM,
      &                               INDICES_FOUND,NTEST)
-C***********************************************************************
-C
-C     find spinor indices IASP_DC and IBSP_DC and determine the 
-C     corresponding symmetry indices IASP_KRCI_SYM and IBSP_KRCI_SYM.
-C
-C     order in DIRAC (Molfdir format) matrix:
-C                                 _
-C           p spinors followed by p
-C                                                 _     _
-C           if NFSYM = 2 (inversion symmetry): p, p, q, q
-C
-C     Written by S. Knecht - Sep 2008
-C
-C     Last revision :
-C
-C***********************************************************************
-#include "implicit.h"
+!***********************************************************************
+!
+!     find spinor indices IASP_DC and IBSP_DC and determine the 
+!     corresponding symmetry indices IASP_KRCI_SYM and IBSP_KRCI_SYM.
+!
+!     order in DIRAC (Molfdir format) matrix:
+!                                 _
+!           p spinors followed by p
+!                                                 _     _
+!           if NFSYM = 2 (inversion symmetry): p, p, q, q
+!
+!     Written by S. Knecht - Sep 2008
+!
+!     Last revision :
+!
+!***********************************************************************
+      use symmetry_setup_krci
+      use mospinor_info
+      implicit none
 #include "priunit.h"
-C
-#include "mxpdim.inc"
-#include "lucinp.inc"
-#include "symm.inc"
-#include "cgas.inc"
-      INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
-      DIMENSION AMATRX(ROWDIM,COLDIM)
-      PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
-      LOGICAL INDICES_FOUND
-C
+!-------------------------------------------------------------------------------
+      integer, intent(in)    :: rowlow, rowhi, collow, colhi 
+      integer, intent(in)    :: rowdim, coldim
+      integer, intent(in)    :: na1, na2
+      integer, intent(in)    :: nctl
+      real(8), intent(in)    :: amatrx(rowdim,coldim)
+      real(8), intent(in)    :: elm_absmax
+      integer, intent(inout) :: iasp_krci_sym, ibsp_krci_sym
+      integer, intent(inout) :: ntest
+      logical, intent(inout) :: indices_found
+!-------------------------------------------------------------------------------
+      integer, parameter     :: kcolp = 4, kcoln = 6
+      integer                :: iasp_dc, ibsp_dc
+      integer                :: irassign, icassign
+      integer                :: kcol, last, begin, k, i
+!-------------------------------------------------------------------------------
+!#define LUCI_DEBUG
+ 
+#ifdef LUCI_DEBUG
+      ntest = 100 ! debug
+#endif
       CALL QENTER('GET_KRCI_SPINOR_IND')
-C
-C     ... check if we already have what we want...
-C
+!
+!     ... check if we already have what we want...
       IF (INDICES_FOUND) GOTO 999
-C
+ 
       IASP_KRCI_SYM = 0
       IBSP_KRCI_SYM = 0
       IASP_DC       = 0
       IBSP_DC       = 0
-C
+ 
       IF (NCTL .LT. 0) THEN
          KCOL = KCOLN
       ELSE
          KCOL = KCOLP
       END IF
-C
+ 
       LAST = MIN(COLHI,COLLOW+KCOL-1)
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          DO 1 K = ROWLOW,ROWHI
             DO 4 I = BEGIN,LAST
-               IF (AMATRX(K,I).NE.ZERO) GO TO 5
+               IF (AMATRX(K,I).NE.0.0d0) GO TO 5
     4       CONTINUE
          GO TO 1
     5       CONTINUE
             DO 7 I = BEGIN,LAST 
               IF( INDICES_FOUND ) GO TO 7
-              IF( DABS(AMATRX(K,I)) .eq. ELM_ABSMAX )THEN
+              IF( ABS(AMATRX(K,I)) .eq. ELM_ABSMAX )THEN
                  IASP_DC = K
                  IBSP_DC = I
                  INDICES_FOUND = .TRUE.
-C                WRITE(LUPRI,*) ' indices K, I',K,I
-C                WRITE(LUPRI,*) ' AMATRX(K,I)',AMATRX(K,I)
+!                WRITE(LUPRI,*) ' indices K, I',K,I
+!                WRITE(LUPRI,*) ' AMATRX(K,I)',AMATRX(K,I)
               END IF
     7       CONTINUE
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-C
-C     row and column index determined - translate to LUICAREL symmetry
-C     indices
-C
+ 
+!     row and column index determined - translate to LUCIAREL symmetry indices
       IF( .NOT. INDICES_FOUND ) GOTO 999
-C
-C     test print:    
-C
-      IF( NTEST .gt. 0 ) THEN
-        WRITE(LUPRI,'(/A,I5,A,I5)') '  SPINOR indices: index a',
+!
+!     test print:    
+      if(ntest .GT. 0)then
+        write(lupri,'(/a,i5,a,i5)') '  SPINOR indices: index a',
      &                                 IASP_DC,' and SPINOR '//
      &                                 'index b',IBSP_DC
       END IF
-C
-C     loop over all spinors (GAS1, GAS2, ...) in a given irrep 
-C     until we find the correct index:
-C
-C     hardwired order in C2h:  Ag  Bg ||  Au  Bu
-C
-C     gerade   unbarred spinors: Ag
-C     gerade     barred spinors: Bg
-C
-C     ungerade unbarred spinors: Au
-C     ungerade   barred spinors: Bu
-C
-C     --> therefore the following loop structure is chosen:
-C
-C     loop over irreps
-C         loop over GA spaces for unbarred spinors
-C         end loop
-C         loop over GA spaces for barred spinors
-C         end loop
-C     end loop
-C
-C     get "A spinor" symmetry for spinor index IASP_DC
-C
-      ILOOP_INDEX = 0
-      IXSYM_REP   = 0
-      INUMORB_GAS = 0
- 10   CONTINUE
-      IXSYM_REP = IXSYM_REP + 1
-C
-C     ... unbarred spinors p
-      IGAS = 0
- 20   CONTINUE
-      IGAS = IGAS + 1
-      INUMORB_GAS = NGSOB(IXSYM_REP,IGAS)
-      IF( INUMORB_GAS .gt. 0) THEN
-         ISNUMORBL = 0
- 22      CONTINUE
-         ILOOP_INDEX = ILOOP_INDEX + 1
-         ISNUMORBL   = ISNUMORBL + 1
-C        ... index matches
-         IF( ILOOP_INDEX .eq. IASP_DC ) GOTO 30
-C        ... next spinor in this GA space
-         IF ( ISNUMORBL .lt. INUMORB_GAS ) GOTO 22
-      END IF
-C     ... next GA space     
-      IF( IGAS .lt. NGAS ) GOTO 20
-C                        _
-C     ... barred spinors p
-      IGAS = 0
- 25   CONTINUE
-      IGAS = IGAS + 1
-      INUMORB_GAS = NGSOB2(IXSYM_REP,IGAS)
-      IF( INUMORB_GAS .gt. 0) THEN
-         ISNUMORBL = 0
- 27      CONTINUE
-         ILOOP_INDEX = ILOOP_INDEX + 1
-         ISNUMORBL   = ISNUMORBL + 1
-C        ... index matches
-         IF( ILOOP_INDEX .eq. IASP_DC ) GOTO 30
-C        ... next spinor in this GA space
-         IF ( ISNUMORBL .lt. INUMORB_GAS ) GOTO 27
-      END IF
-C     ... next GA space     
-      IF( IGAS .lt. NGAS ) GOTO 25
-C     ... goto next irrep - start at GAS 1 for unbarred p
-      IF( IXSYM_REP .lt. NSMOB ) GOTO 10
-C
- 30   CONTINUE
-C
-C     assign corresponding irrep.
-C     =========================
-      IASP_KRCI_SYM = IXSYM_REP
-C     =========================
-C
-C     get "B spinor" symmetry for spinor index IBSP_DC
-C
-      ILOOP_INDEX = 0
-      IXSYM_REP   = 0
-C
- 40   CONTINUE
-      IXSYM_REP = IXSYM_REP + 1
-C
-C     ... unbarred spinors p
-      IGAS = 0
- 50   CONTINUE
-      IGAS = IGAS + 1
-      INUMORB_GAS = NGSOB(IXSYM_REP,IGAS)
-      IF( INUMORB_GAS .gt. 0) THEN
-         ISNUMORBL = 0
- 52      CONTINUE
-         ILOOP_INDEX = ILOOP_INDEX + 1
-         ISNUMORBL   = ISNUMORBL + 1
-C        ... index matches
-         IF( ILOOP_INDEX .eq. IBSP_DC ) GOTO 60
-C        ... next spinor in this GA space
-         IF ( ISNUMORBL .lt. INUMORB_GAS ) GOTO 52
-      END IF
-C     ... next GA space     
-      IF( IGAS .lt. NGAS ) GOTO 50
-C                        _
-C     ... barred spinors p
-      IGAS = 0
- 55   CONTINUE
-      IGAS = IGAS + 1
-      INUMORB_GAS = NGSOB2(IXSYM_REP,IGAS)
-      IF( INUMORB_GAS .gt. 0) THEN
-         ISNUMORBL = 0
- 57      CONTINUE
-         ILOOP_INDEX = ILOOP_INDEX + 1
-         ISNUMORBL   = ISNUMORBL + 1
-C        ... index matches
-         IF( ILOOP_INDEX .eq. IBSP_DC ) GOTO 60
-C        ... next spinor in this GA space
-         IF ( ISNUMORBL .lt. INUMORB_GAS ) GOTO 57
-      END IF
-C     ... next GA space     
-      IF( IGAS .lt. NGAS ) GOTO 55
-C     ... goto next irrep - start at GAS 1 for unbarred p
-      IF( IXSYM_REP .lt. NSMOB ) GOTO 40
-C
- 60   CONTINUE
-C     assign corresponding irrep.
-C     =========================
-      IBSP_KRCI_SYM = IXSYM_REP
-C     =========================
-C
-      IF( NTEST .gt. 0 )THEN
-        WRITE(LUPRI,'(/A,/A)') 
+
+      select case(dougrp)
+        case(5,6,8,10) ! double group without inversion symmetry
+
+          if(iasp_dc.gt.rowdim/2)then
+            irassign = imosp_dirac_counter2(iasp_dc-rowdim/2)
+          else
+            irassign = imosp_dirac_counter1(iasp_dc)
+          end if
+          if(ibsp_dc.gt.coldim/2)then
+            icassign = imosp_dirac_counter2(ibsp_dc-coldim/2)
+          else
+            icassign = imosp_dirac_counter1(ibsp_dc)
+          end if
+
+        case(4,7,11) ! double group with inversion symmetry
+
+!         row index - ungerade or gerade
+#ifdef LUCI_DEBUG
+          print *, 'na1, na2, iasp_dc, ibsp_dc',
+     &              na1, na2, iasp_dc, ibsp_dc
+#endif
+          if(iasp_dc.gt.2*na1)then ! ungerade
+            if(iasp_dc.gt.(2*na1+na2))then ! barred
+              irassign = imosp_dirac_counter2(iasp_dc-na1-na2)
+            else ! unbarred
+              irassign = imosp_dirac_counter1(iasp_dc-na1)
+            end if
+          else ! gerade
+            if(iasp_dc.gt.na1)then ! barred
+              irassign = imosp_dirac_counter2(iasp_dc-na1)
+            else ! unbarred
+              irassign = imosp_dirac_counter1(iasp_dc)
+            end if
+          end if
+!         column index - ungerade or gerade
+          if(ibsp_dc.gt.2*na1)then ! ungerade
+            if(ibsp_dc.gt.(2*na1+na2))then ! barred
+              icassign = imosp_dirac_counter2(ibsp_dc-na1-na2)
+            else ! unbarred
+              icassign = imosp_dirac_counter1(ibsp_dc-na1)
+            end if
+          else ! gerade
+            if(ibsp_dc.gt.na1)then ! barred
+              icassign = imosp_dirac_counter2(ibsp_dc-na1)
+            else ! unbarred
+              icassign = imosp_dirac_counter1(ibsp_dc)
+            end if
+          end if
+        case default
+          call quit('*** error in GET_KRCI_SPINOR_IND: unknown double'//
+     &              ' group. ***')
+      end select ! double group switch (o/w inversion symmetry)
+
+      if(ntest .gt. 0)then
+        print *, 'my irrep assigment row - col ==> ',irassign,icassign
+      end if
+
+!     assign luciarel symmetry irreps
+!     ===============================
+      IASP_KRCI_SYM = irassign
+      IBSP_KRCI_SYM = icassign
+!     ===============================
+
+      if(ntest .gt. 0)then
+        write(lupri,'(/a,/a)') 
      &  '  GET_KRCI_SPINOR_IND:        IASP_DC          IBSP_DC   ',
      &  '  (indices pair found)     _____________    _____________'
 C                                                  
-        WRITE(LUPRI,'(I35,I17)') IASP_DC,IBSP_DC
-        WRITE(LUPRI,'(/A,/A)') 
+        write(lupri,'(i35,i17)') iasp_dc,ibsp_dc
+        write(lupri,'(/a,/a)') 
      &  '                           IASP_KRCI_SYM    IBSP_KRCI_SYM',
      &  '  (irreps assigned)        _____________    _____________'
-C                                                  
-        WRITE(LUPRI,'(I35,I17)') IASP_KRCI_SYM,IBSP_KRCI_SYM
-      END IF
+!                                                  
+        write(lupri,'(i35,i17)') iasp_krci_sym,ibsp_krci_sym
+      end if
+
  999  CALL QEXIT('GET_KRCI_SPINOR_IND')
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#ifdef LUCI_DEBUG
+      ntest = 000 ! debug
+#endif
+#undef LUCI_DEBUG
+      end
+!***********************************************************************
+
       SUBROUTINE GET_XPROP_REOD_KRCI(LUF1MAT,WRK,LWRK,CIRUN)
-C***********************************************************************
-C
-C     property operator matrix in DIRAC (Molfdir format) order. 
-C     Reorder to KR-CI format according to SIGDEN formalism and store 
-C     on file KRMC_FOCK (file handle LUF1MAT).
-C                                  
-C     Written by S. Knecht - Sep 2008
-C
-C     Last revision :
-C
-C***********************************************************************
+!***********************************************************************
+!
+!     property operator matrix in DIRAC (Molfdir format) order. 
+!     Reorder to KR-CI format according to SIGDEN formalism and store 
+!     on file KRMC_FOCK (file handle LUF1MAT).
+!                                  
+!     Written by S. Knecht - Sep 2008
+!
+!     Last revision :
+!
+!***********************************************************************
+      use symmetry_setup_krci
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
@@ -454,10 +275,8 @@ C print flags
 #include "cprnt.inc"
 C required common blocks
 #include "mxpdim.inc"
-#include "lucinp.inc"
 #include "crun.inc"
 #include "cintfo.inc"
-#include "picasso.inc"
 #include "ctcc.inc"
 #include "glbbas.inc"
 C information for property run
@@ -505,7 +324,7 @@ C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
 C
 C     Internal subspaces
-      CALL LCISPC_REL(LCSBLK,IPRCIX)
+      CALL LCISPC_REL(LCSBLK,IPRCIX,CIRUN)
 C
 C     IDGSTYP determines the integral classes and corresponding operator
 C     classes depending on the double group in use.
@@ -516,7 +335,7 @@ C
         IDGSTYP = 1
       ELSE IF ( PNTGRP .eq. 6 .or. PNTGRP .eq. 5 ) THEN
         IDGSTYP = 3
-      ELSE IF ( PNTGRP .ge. 7 .and. PNTGRP .le. 9 ) THEN
+      ELSE IF ( PNTGRP .ge. 7)THEN
         IDGSTYP = 2
       END IF
 C
@@ -559,9 +378,6 @@ C
 C
         CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
 C
-C       generate symmetry info for PICASSO
-        CALL LUC2PIC(ISO1,IPRTRA)
-C
 C       read property matrix from file
         CALL DZERO(WORK(KXPROPM),4*N2ASHX*MZ)
         FILELAB = PRPNAM(INDXPR)(1:8)
@@ -574,9 +390,9 @@ C       ... reorder always at this point: RUN_SHMEM_T = .FALSE.
      &                             FILELAB
         CALL WRTMATMN(WORK(KXPROPM),1,4*N2ASHX*MZ,1,4*N2ASHX*MZ,LUWRT)
 #endif
-        CALL PICASSO(INTSPACE,ISO1,IPRTRA,MCSCF,NL2D,IUB2D,ISM2D,
-     &               WORK(KXPROPM),DUMMY,DUMMY,DUMMY,IDUMMY,IBOSYM,
-     &               CIRUN,RUN_SHMEM_T)
+        CALL PICASSO(IPRTRA,MCSCF,NL2D,IUB2D,ISM2D,
+     &               WORK(KXPROPM),DUMMY,DUMMY,DUMMY,IDUMMY,
+     &               ibosym,CIRUN,RUN_SHMEM_T)
 C
 C       write sorted property matrix back to file
         WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
@@ -670,6 +486,7 @@ C     Last revision :
 C
 C***********************************************************************
       use krci_properties
+      use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
@@ -684,8 +501,6 @@ C print flags
 #include "cprnt.inc"
 C required common blocks
 #include "mxpdim.inc"
-#include "symm.inc"
-#include "lucinp.inc"
 #include "crun.inc"
 #include "cands.inc"
 #include "cicisp.inc"
@@ -693,7 +508,6 @@ C required common blocks
 #include "oper.inc"
 #include "cintfo.inc"
 #include "clunit.inc"
-#include "picasso.inc"
 #include "ctcc.inc"
 #include "glbbas.inc"
 #include "cstate.inc"
@@ -725,7 +539,6 @@ C
       MZ = MIN(NZ,2)
 C     set required variables
       IMEMCK  = 0
-      IPERTOP = 0
       INTIMP  = 7
 C     ... no two-electron excitations
       NO_TTWO   = 1
@@ -943,16 +756,22 @@ C           read new property integrals from disk
      &                            LENGTH_BLK,MPI_REAL8,ISTAT,IERR)
             IOFFSET_SCRATCH = IOFFSET_SCRATCH + LENGTH_BLK
 C
+#else
+            WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
+            CALL KRCI_PRPFILE(LUPROP_MAT,FILELAB_REOD,WORK(KT_CC),
+     &                        LENGTH_BLK,1)
+#endif
+!#define MOD_DEBUG
 #ifdef MOD_DEBUG
 C
 C           debug print
             WRITE(LUWRT,*) ' matrix of property:',PRPNAM(INDXPR)
             CALL WRTMATMN(WORK(KT_CC),1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
-#endif
-#else
-            WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
-            CALL KRCI_PRPFILE(LUPROP_MAT,FILELAB_REOD,WORK(KT_CC),
-     &                        LENGTH_BLK,1)
+            WRITE(LUWRT,*) ' symmetry of property    ==>', ISYM_T
+            WRITE(LUWRT,*) ' symmetry of sigma state ==>', 
+     &                       IDBGMULT(ICSM,ISYM_T)
+            WRITE(LUWRT,*) ' active sigma irrep      ==>', 
+     &                       IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISSM)
 #endif
             ISSM      = IDBGMULT(ICSM,ISYM_T)
             L_COMBI_S =   XISPSM(ISSM,ISSPC)
@@ -979,7 +798,7 @@ C           inner loop over all eigenstates
 #if defined (VAR_MPI2)
 C 
 #ifdef MOD_DEBUG
-            WRITE(LUWRT,*) '<S_ISSM|prop|C_ICSM> for C_# and IPROP_X',
+            WRITE(LUWRT,*) 'par - <S_ISSM|prop|C_ICSM> for C_#,IPROP_X',
      &                         ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
 #endif
            CALL Z_BLKFO_XPRP_PAR(IDC,NMS2VAL,ISSPC,ISSM,WORK(KPCLBXXS),
@@ -1042,7 +861,7 @@ C300        CONTINUE
 C           ^ end of inner loop over all eigenstates
 #else
 #ifdef MOD_DEBUG
-            WRITE(LUWRT,*) '<S_ISSM|prop|C_ICSM> for C_# and IPROP_X',
+            WRITE(LUWRT,*) 'seq - <S_ISSM|prop|C_ICSM> for C_#,IPROP_X',
      &                         ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
 #endif
 !           close current c-vector file
@@ -1108,13 +927,16 @@ C
 C     print section
 C     _____________
 C
+#ifdef MOD_DEBUG
+      NTESTX = 10
+#else
       NTESTX = 00
+#endif
       IF( NTESTX .gt. 5 .and. myproc.eq.0)THEN
         WRITE(LUWRT,*) ' calculation of XPROPMAT finished'
         WRITE(LUWRT,*) ' content of XPROPMAT'
         CALL WRTMATMN(XPROPMAT,1,LXPRPKRCI,1,LXPRPKRCI,LUWRT)
       END IF
-      NTESTX = 00
 C     release memory
  9999 call MEMMAR(KDUMMY,IDUMMY,'FLUSM ',IDUM,'XPROP ')
 C
@@ -1129,6 +951,7 @@ C     set back to default
       DOSIGPROP = .FALSE.
 C      
       CALL QEXIT('XPROP_KRCI')
+!#undef MOD_DEBUG
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     end of file property_r.F

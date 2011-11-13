@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -114,7 +114,7 @@
          WRITE (NLUSCR_MPI,'(A9,A1,I3)') LUSCR_MPIN,'.',MYPROC
          LUSCR_MPIL=15
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
 #else
       NLUSCR_MPI=LUSCR_MPIN
@@ -142,7 +142,7 @@
          WRITE (NLUDIA_MPI,'(A5,A1,I3)') LUDIA_MPIN,'.',MYPROC
          LUDIA_MPIL=9
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
 *#elif defined (VAR_MPI2)
       
@@ -167,7 +167,7 @@
          WRITE (NLUC_MPI,'(A7,A1,I3)') LUC_MPIN,'.',MYPROC
          LUC_MPIL=11
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
 #else
       NLUC_MPI=LUC_MPIN
@@ -189,7 +189,7 @@
          WRITE (NLUHC_MPI,'(A6,A1,I3)') LUHC_MPIN,'.',MYPROC
          LUHC_MPIL=10
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
 #else
       NLUHC_MPI=LUHC_MPIN
@@ -223,7 +223,7 @@
          WRITE (NLUSC3_MPI,'(A5,A1,I3)') LUSC3_MPIN,'.',MYPROC
          LUSC123_MPIL=9
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
 #else
       NLUSC1_MPI=LUSC1_MPIN
@@ -286,7 +286,7 @@
          WRITE (NLUSC41_MPI,'(A6,A1,I3)') LUSC41_MPIN,'.',MYPROC
          LUSC344_MPIL=10
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
 #else
       NLUSC34_MPI=LUSC34_MPIN

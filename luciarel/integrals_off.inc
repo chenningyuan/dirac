@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 6375 $
-! DATE    : $Date: 2007-11-23 13:33:36 +0100 (Fri, 23 Nov 2007) $
 ! FILE    : integrals_off.inc
 !
 !     =========================================

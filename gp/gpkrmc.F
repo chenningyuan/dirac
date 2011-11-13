@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : gpkrmc.F
 C
 C Purpose: General Purpose utility routines originally made for krmc,
 C          but some are now also used other places (e.g. prp/).
@@ -195,12 +192,12 @@ C
 !
 !***********************************************************************
       use memory_allocator
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "dcbqal.h"
       integer orb_info_array(2,norbt,norbt)
       dimension ibeig(*)
       integer, allocatable  :: orb_sym_vec(:)
@@ -531,7 +528,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION EVEC(*), NKRCI_CIROOTS(*)
-      CHARACTER*1 XSYMFLAB(*) 
+      CHARACTER*3 XSYMFLAB(*) 
       CHARACTER*8 FILELAB
       LOGICAL EX, PRINT_EV, FNDLAB
 C
@@ -548,7 +545,7 @@ C     read final energies from file KRCI_CVECS.INFO
       NXSCR = 1
       DO I = 1, NKRCI_MAX_SYM
         IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
-          WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
+          WRITE(FILELAB,'(A5,A3)') "eroot",XSYMFLAB(I)
           REWIND LU_INFO
           PRINT_EV = FNDLAB(FILELAB,LU_INFO)
           IF(PRINT_EV) THEN 
@@ -1332,13 +1329,13 @@ C   MAXLIN    : max. lines of output with vector elements
 C   LUOUT     : output unit
 C
 C
+      use quaternion_algebra
 #include "implicit.h"
       DIMENSION VEC(NDIM*INCVEC,NZ)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10)
       LOGICAL   VSCALE
       DIMENSION IPQ(4)
-#include "dcbqal.h"
 C
 C     Test input
 C
@@ -1622,22 +1619,71 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), IBEIG(*)
+      real(8), parameter :: threshold = 1.0d-12
 C
+!     print *, 'MATGAT_symm start is_symm ==> ',is_symm
       DO IZ = 1, NZ
          do 5 J = 1, NCB
             JJ = IDX(J)
+!           print *, ' JJ jz ==> ',JJ, ibeig(jj)
             if(IBEIG(JJ).ne.is_symm) goto 5
             do 10 K = 1, NRB
                KK = IDX(K)
+!              print *, ' KK jz ==> ',JJ, ibeig(KK)
                if(IBEIG(kk).ne.is_symm) goto 10
-               BMAT(K,J,IZ) = AMAT(KK,JJ,IZ)
+               if(abs(AMAT(KK,JJ,IZ)).lt.threshold)then
+                 BMAT(K,J,IZ) = 0.0d0
+               else
+                 BMAT(K,J,IZ) = AMAT(KK,JJ,IZ)
+               end if
  10         continue
   5      continue
       END DO
+!     print *, 'MATGAT_symm end  is_symm ==> ',is_symm
       RETURN
       END
+!***********************************************************************
+
+      subroutine create_jzbos_sym_vec(jzbos_vec,nvjz,jzbos_tot,nvjz_tot,
+     &                                idx,joffset)
+!***********************************************************************
+!
+!     Construct a jz/boson irrep sub-block vector out of the total 
+!     jz/boson irrep vector (jzbos_tot) using the IDX array and starting 
+!     at a given offset.
+!
+!     written by S. Knecht - june 2011
+!
+!***********************************************************************
+      implicit none
+
+      integer, intent(in)  :: nvjz, nvjz_tot
+      integer, intent(out) :: jzbos_vec(nvjz) 
+      integer, intent(in)  :: jzbos_tot(nvjz_tot)
+      integer, intent(in)  :: idx(*)
+      integer, intent(in)  :: joffset
+
+      integer              :: j, jj
+!----------------------------------------------------------------------
+
+      call izero(jzbos_vec,nvjz)
+#ifdef MCSCF_debug
+      print *, 'create_jzbos_sym_vec start   ==> ',joffset
+      print *, 'create_jzbos_sym_vec total # ==> ',nvjz_tot
+      print *, 'create_jzbos_sym_vec sub   # ==> ',nvjz
+#endif
+
+      do j = 1, nvjz
+        jj           = idx(j+joffset)
+        jzbos_vec(j) = jzbos_tot(jj)
+#ifdef MCSCF_debug
+        print *, ' j JJ jz ==> ',j,jj, jzbos_tot(jj)
+#endif
+      end do
+
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck matgatx */
+
       SUBROUTINE MATGATX(AMAT,NDIMA,BMAT,NDIMB,ISKIP,NZ)
 C***********************************************************************
 C
@@ -1713,10 +1759,20 @@ C
       DO IZ = 1, NZ
          DO 5 J = 1, NCB
             JJ = IDX(J)
+#ifdef MCSCF_debug
+            print *, ' JJ jz ==> ',JJ, ibeig(jj)
+#endif
             if(ibeig(jj).ne.is_symm) goto 5
             DO 10 K = 1, NRB
                KK = IDX(K)
+#ifdef MCSCF_debug
+               print *, ' KK jz ==> ',KK,ibeig(KK)
+#endif
                if(ibeig(KK).ne.is_symm) goto 10
+#ifdef MCSCF_debug
+      print *,' put in b(k,j) value in a(KK,JJ) ==> ', 
+     &                   k,j,BMAT(K,J,IZ),kk,jj
+#endif
                AMAT(KK,JJ,IZ) = BMAT(K,J,IZ)
  10         continue
   5      continue
@@ -1760,12 +1816,17 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
-      CHARACTER*1 XSYMFLAB(IXSYM), XLAB(16)
-      DATA (XLAB(I),I=1,16) /"a","b","c","d","e","f","g","h","i","j",
-     &                       "k","l","m","n","o","p"/
-      DO I = 1, IXSYM
-        XSYMFLAB(I) = XLAB(I)
-      END DO
+      CHARACTER*3 XSYMFLAB(IXSYM) 
+       
+      do i = 1, IXSYM
+        if(i.lt.10)then
+          write(XSYMFLAB(I),'(i1,a2)') i,'  '
+        else if(i.lt.100)then
+          write(XSYMFLAB(I),'(i2,a1)') i,' '
+        else
+          write(XSYMFLAB(I),'(i3)')i
+        end if
+      end do
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FIND_XPRPINDEX */

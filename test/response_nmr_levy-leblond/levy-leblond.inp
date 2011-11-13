@@ -12,7 +12,7 @@ Water molecule. Levy-Leblond calculation. Spin-spin couplings
 **HAMILTONIAN
 .LEVY-LEBLOND
 **WAVE FUNCTIONS
-.DHF
+.SCF
 **PROPERTIES
 #.SPIN-SPIN
 #.DSO

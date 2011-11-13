@@ -1,5 +1,7 @@
 !
-!$Id: optinf.h 3426 2004-05-26 13:06:58Z cjacob $
+! FILE:  optinf.h
+!
+! Variables for geometry optimization in ABACUS
 !
       INTEGER MAXPRE
       PARAMETER (MAXPRE = 10)

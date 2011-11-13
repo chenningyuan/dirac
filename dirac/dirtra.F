@@ -1,4 +1,5 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+#define DEBUG_mat_transform
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +18,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : dirtra.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getlab */
@@ -90,8 +88,7 @@ C
  40         CONTINUE
             NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
-            DEG = '  '
-            IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
+            WRITE(DEG,'(I2)') IDEG
             IATTR(NLAB,1) = JLAB
             PLABEL(NLAB,1) = CLS(ICLS)//' '//NAMN(ICENT)(1:3)//
      &          DEG//' '//GTOTYP(ITYP)
@@ -125,8 +122,7 @@ C           Define new label
 C           ================
             NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
-            DEG = '  '
-            IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
+            WRITE(DEG,'(I2)') IDEG
             IATTR(NLAB,1) = JLAB
             PLABEL(NLAB,1) = CLS(ICLS)//' '//NAMN(ICENT)(1:3)//
      &         DEG//' '//GTOTYP(ITYP)
@@ -228,17 +224,16 @@ C     Theory: T.Saue &  H.J.Aa.Jensen
 C     Written by T.Saue October 1994
 C     Last revision: Nov 7 2001 - hjaaj
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
       LOGICAL DIAG,SAME
       DIMENSION ONEINT(NNBBASX), IDOINT(2,2)
       PARAMETER (IL = 2, IR = 1)
-      EXTERNAL BDQALGEBRA
 C
 #include "ibtfun.h"
 C
@@ -298,6 +293,7 @@ C              q2phase  (this routine) is for Hermit sorted matrices
 C              q2bphase (next routine) is for DIRAC  sorted matrices
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -308,11 +304,9 @@ C
 C
 #include "symmet.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "dgroup.h"
       CHARACTER TYP*1
       DIMENSION AMAT(*)
-      EXTERNAL BDQALGEBRA
 C
       IF(TYP.NE.'F'.AND.TYP.NE.'D') THEN
         CALL QUIT('Q2PHASE: Unknown TYP !')
@@ -363,6 +357,7 @@ C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -373,11 +368,9 @@ C
 C
 #include "symmet.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "dgroup.h"
       CHARACTER TYP*1
       DIMENSION AMAT(*)
-      EXTERNAL BDQALGEBRA
 C
       IF(TYP.NE.'F'.AND.TYP.NE.'D') THEN
         CALL QUIT('Q2BPHASE: Unknown TYP !')
@@ -413,9 +406,76 @@ CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
    20   CONTINUE
    10 CONTINUE
 C
-      RETURN
-C
       END
+
+      subroutine q2bphase_nonquadmat_LS_L(typ,im,jfac,amat)
+C***********************************************************************
+C
+C     Quaternion phase insertion in non-quadratic matrices amat(LS,L)
+C       TYP = F:  (e_K1)(e_IM)(e_K2*)   as Fock matrix
+C       TYP = D:  (e_K1*)(e_IM)(e_K2)   as density matrix
+C
+C     based on q2bphase; adaption for non-quadratic matrices by S. Knecht
+C
+C***********************************************************************
+      use quaternion_algebra
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DM1 = -1.0D0)
+C
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+C
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      CHARACTER TYP*1
+      DIMENSION AMAT(*)
+C
+#ifdef DEBUG_mat_transform
+      print '(a,i4)', ' phase factor insertion: jfac is',jfac
+#endif
+      do irp1 = 0, nbsym-1
+        do ic1 = 1, 2
+
+          nb1  = nbbas(irp1,ic1)
+          k1   = jqbas(irp1,ic1)
+
+          if(nb1.gt.0) then
+
+            do irp2 = 0, nbsym-1
+
+              nb2 = nbbas(irp2,1)
+              k2  = jqbas(irp2,1)
+
+              if(nb2.gt.0)then
+
+                if     (typ.eq.'F')then
+                  kfac = jfac*iqphase(k1,k2,im)*iqph(k1,1)*iqph(k2,2)
+                else if(typ.eq.'D')then
+                  iq   = iqmult(k1,k2,im)
+                  kfac = jfac*iqphase(k1,k2,iq)*iqph(k1,2)*iqph(k2,1)
+                end if
+
+                if(kfac.eq.-1)then
+                  ioff = i2bbasx(irp1,irp2,ic1,1)
+                  do icol = 1, nb2
+                    call dscal(nb1,dm1,amat(ioff+1),1)
+#ifdef DEBUG_mat_transform
+                   print *, ' scaling w -1 at off, l, COL ,i1,i2,c1,c2',
+     &                        IOFF,NB1,ICOL,IRP1,IRP2,IC1,1
+#endif
+                    ioff = ioff + ntbas(0)
+                  end do
+                endif
+              end if ! NB2 > 0
+            end do ! loop over boson irreps in columns
+          end if ! NB1 > 0
+        end do ! loop over L,S
+      end do ! loop over boson irreps in rows
+C
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rpgen */
       SUBROUTINE RPGEN(IREPA)
@@ -452,13 +512,13 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
@@ -471,7 +531,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -501,13 +560,13 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 -jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
@@ -520,7 +579,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -549,12 +607,12 @@ C     Vector Transform: QO-basis to SO-basis
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
-#include "dcbqal.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
@@ -569,7 +627,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -599,13 +656,13 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
@@ -618,7 +675,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -730,6 +786,134 @@ CTOND               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
          CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
+      END
+
+C***********************************************************************
+      SUBROUTINE MTSOAO_nonquadmatL(ASO,AAO,NBAST1,NBAST2,IREPDM,IPRINT)
+
+C
+C     Matrix transform: SO-basis to AO-basis
+C     Based on HERMIT routine DSOTAO (880418  PRT)
+C
+C     Written by T.Saue - Sept 10 1995
+C     Last revision: Sep 10 1995 - tsaue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0)
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+      DIMENSION ASO(NBAST1,NBAST2), AAO(NBAST1,NBAST2)
+      DIMENSION IR(2)
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
+      IF(IPRINT .GE. 10) 
+     &  CALL HEADER('Subroutine MTSOAO_nonquadmatL',-1)
+C
+C     Loop over all irreps in molecule
+C
+      IR(1) = IREPDM
+      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      ISTRA = 1
+      CALL DZERO(AAO,NBAST1*NBAST2)
+      DO 100 IREPA = 0, MAXREP
+         DO 150 II = 1,2
+         NBA   = NCOS(IREPA+1,II)
+         DO 200 I = ISTRA,ISTRA + NBA - 1
+            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
+            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            NHKTA  = NHKT(IA)
+            KHKTA  = KHKT(IA)
+            MULA   = ISTBAO(IA)
+            INDA   = KSTRT(IA) + NA - KHKTA
+            AN     = D1/FMULT(MULA)
+            print *, 'NA, IA, KSTRT(IA), NHKTA, KHKTA',
+     &                NA, IA, KSTRT(IA), NHKTA, KHKTA
+            DO 300 ISYMA = 0, MAXOPR
+            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+               INDA = INDA + KHKTA
+               FACA = AN*
+     &              PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               ISTRB_tmp   = 1
+               icount_S_ao = 0
+               print *,'new INDA --> II',INDA,II
+               DO 400 IREPB = 0, MAXREP
+                DO 450 JJ = 1,1
+                  ID    = MOD(II+JJ,2)+1
+                  NBB   = NCOS(IREPB+1,JJ)
+                  print *, 'IREPA,IREPB',
+     &                      IREPA,IREPB
+                  print *, 'component is',
+     &            LCLASS(IBTAND(IBTSHR(IPIND(ISTRB_tmp),16),65535))
+                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  DO 500 J = ISTRB_tmp,ISTRB_tmp + NBB - 1
+                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
+                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     NHKTB  = NHKT(IB)
+                     KHKTB  = KHKT(IB)
+                     MULB   = ISTBAO(IB)
+                     INDB   = KSTRT(IB) + NB - KHKTB
+                     BN     = D1/FMULT(MULB)
+                     print *, 'class of a, b = ',LCLASS(ia),lclass(ib)
+                     print *, 'NB, IB, KSTRT(IB), NHKTB, KHKTB',
+     &                         NB, IB, KSTRT(IB), NHKTB, KHKTB
+                     DO 600 ISYMB = 0, MAXOPR
+                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                        INDB = INDB + KHKTB
+                        FACB = BN*PT(IBTAND(ISYMB,
+     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        AAO(INDA,INDB) = AAO(INDA,INDB)
+     &                                 + FACA*FACB*ASO(I,J-icount_S_ao)
+!    &                                 + FACA*FACB*ASO(I,J)
+                        print *, 
+     &                  'ISYMB, ASO(',
+     &                   I,J-icount_S_ao,') ==> AAO(',INDA,INDB,')',
+     &                   ISYMB, ASO(I,J-icount_S_ao)
+                     END IF
+  600                CONTINUE
+  500             CONTINUE
+                  END IF
+                  ISTRB_tmp = ISTRB_tmp + NBB
+                  print *, 'NBB',NBB,'added: --> ISTRB_tmp =',ISTRB_tmp
+  450             CONTINUE
+                  ISTRB       = 1
+                  icount_S_ao = 0
+                  do irepb_tmp = 0,IREPB
+                    do ic2_tmp = 1, 2
+                      ISTRB = ISTRB + NCOS(irepb_tmp+1,ic2_tmp)
+                      print '(a,i3,a,i3,a,i4,a,i5)', 
+     &                          ' extra computing for component:',
+     &                          ic2_tmp,' and boson irrep ',irepb_tmp,
+     &                          ' yields with',
+     &                          NCOS(irepb_tmp+1,ic2_tmp),
+     &                          ' basis func. the new offset:',ISTRB
+                      if(ic2_tmp.eq.2) icount_S_ao =
+     &                icount_S_ao + ncos(irepb_tmp+1,ic2_tmp)
+                      print '(a,i4)', 'total # of S-AOs so far:',
+     &                                         icount_S_ao
+                    end do
+                  end do
+                  ISTRB_tmp = ISTRB
+                  print *, 'reset ISTRB_tmp (L+S) --> ',ISTRB_tmp
+  400          CONTINUE
+            END IF
+  300       CONTINUE
+  200    CONTINUE
+         ISTRA = ISTRA + NBA
+  150    CONTINUE
+  100 CONTINUE
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('INPUT: Total matrix in SO basis',-1)
+         CALL OUTPUT(ASO,1,NBAST1,1,NBAST2,NBAST1,NBAST2,-1,LUPRI)
+         CALL HEADER('OUTPUT: Total matrix in AO basis',-1)
+         CALL OUTPUT(AAO,1,NBAST1,1,NBAST2,NBAST1,NBAST2,-1,LUPRI)
+      END IF
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtaoso */
@@ -1155,7 +1339,7 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in SO basis',-1)
          CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
-         CALL HEADER('INPUT: Vectors in AO basis',-1)
+         CALL HEADER('OUTPUT: Vectors in AO basis',-1)
          CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
@@ -1475,8 +1659,7 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck bstobu */
+
       SUBROUTINE BSTOBU_no_work(AMAT,MZ)
 C***********************************************************************
 C
@@ -1501,7 +1684,7 @@ C
 C
       DIMENSION AMAT(*)
       real(8), allocatable :: buf(:)
-      CALL QENTER('BSTOBU')
+      CALL QENTER('BSTOBU_no_work')
 C
 C     Memory allocation
 C
@@ -1518,6 +1701,8 @@ C
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
+!                 print *,'copy IREP,IC, in JREP  ,JC: nbbas =',
+!    &                          IREP,IC,JREP  ,JC, NBBAS(IREP,IC)
                   IF(NBBAS(IREP,IC).GT.0)
      &              CALL DCOPY(NBBAS(IREP,IC),buf(1+ISOFF),1,
      &                                        AMAT(IUOFF+1)   ,1)
@@ -1532,10 +1717,108 @@ C
 C     Memory deallocation
 C
       call dealloc(buf)
-      CALL QEXIT ('BSTOBU')
-      RETURN
-C
+      CALL QEXIT ('BSTOBU_no_work')
       END
+
+      subroutine bstobu_no_work_nonquadmat_LS_L(amat,mz)
+!***********************************************************************
+!
+!     non-quadratic matrix amat transformation 
+!     row dimension   : L+S
+!     column dimension: L
+!     from class/symmetry sorted basis (  "sorted basis" =  Dirac sorted)
+!     to symmetry/class   sorted basis ("unsorted basis" = Hermit sorted)
+!
+!     adaption of bstobu for non-quadratic matrices: S. Knecht, Feb 2011
+!
+!***********************************************************************
+      use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      real(8), intent(inout) :: amat(*)
+      real(8), allocatable   :: bufx(:)
+      integer                :: ndim_mat
+
+      call qenter('bstobu_no_work_nonquadmat_LS_L')
+#ifdef DEBUG_mat_transform
+      print *,'bstobu...: dim of buf is',mz*ntbas(0)*ntbas(1)
+#endif
+      ! component L (1) S (2)
+      do i = 1, 2
+        do j = 0, maxrep
+          print '(a,i3,a,i3,a,i5)', 'jbtof(',j,',',i,') =',jbtof(j,i)
+          print '(a,i3,a,i3,a,i5)', 'nbbas(',j,',',i,') =',nbbas(j,i)
+          print '(a,i3,a,i3,a,i5)', 'nfbas(',jbtof(j,i),',',i,') =',
+     &                               nfbas(jbtof(j,i),i)
+        end do
+      end do
+      do i = 1, nfsym
+        print '(a,i3,a,i3,a,i5)', 'nfbas(',i,',',0,') =',
+     &                             nfbas(i,0)
+      end do
+      call flshfo(6)
+C
+C     Memory allocation
+      call alloc(bufx, mz*ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
+
+      call dcopy(mz*ntbas(0)*ntbas(1),amat,1,bufx,1)
+      call dzero(amat,mz*ntbas(0)*ntbas(1))
+
+!     IREP+1 for icos because loop indices in herrdn.F run from 
+!     1 --> maxrep+1 for icos!
+
+
+      izoff = 0
+      do iz = 1,mz
+#ifdef DEBUG_mat_transform
+        print '(a,i3,a,i6)',' loop over iz =',iz,' starts now with off',
+     &                        izoff
+#endif
+        do jrep = 0,maxrep
+          do j = 0,nbbas(jrep,1)-1
+            joff = izoff + (ibbas(jrep,1)+j)*ntbas(0)
+            print *,'joff ==> column in L part', joff
+            do ic = 1, 2
+              do irep = 0,maxrep
+                print *,'IC, IREP', IC, IREP
+                isoff = joff + ibbas(irep  ,ic)
+                iuoff = joff + icos (irep+1,ic)
+                if(nbbas(irep,ic).gt.0)then
+
+                   call dcopy(nbbas(irep,ic),bufx(1+isoff),1,
+     &                                       amat(1+iuoff),1)
+
+#ifdef DEBUG_mat_transform
+                   print *,'copy: NBBAS(IREP,IC) irep',
+     &                            NBBAS(IREP,IC),irep
+                   print *,'2nd   loop: ISOFF, IUOFF',ISOFF, IUOFF
+                   do jjj = 1, NBBAS(IREP,IC)
+                     print *,'copy: AMAT(',IUOFF+1+jjj-1,') = ',
+     &                              AMAT(  IUOFF+1+jjj-1)
+                   end do
+#endif
+                end if
+
+              end do
+            end do
+          end do
+        end do
+        izoff = izoff + ntbas(1)*ntbas(0)
+      end do
+C
+C     Memory deallocation
+      call dealloc(bufx)
+
+      call qexit('bstobu_no_work_nonquadmat_LS_L')
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck butobs */
       SUBROUTINE BUTOBS_no_work(AMAT,MZ)
@@ -1566,7 +1849,7 @@ C
       CALL QENTER('BUTOBS')
 C
 
-      call alloc(buf, mz*n2bbasx)
+      call alloc(buf, mz*n2bbasx, id='buf in butobs')
       CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
       IZOFF = 0
       DO IZ = 1,MZ
@@ -2496,7 +2779,7 @@ C***********************************************************************
 #include "symmet.h"
 #include "pgroup.h"
 #include "ibtfun.h"
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
+      IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)
 C
 C     Loop over all irreps in molecule
 C
@@ -3005,7 +3288,7 @@ C
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
-        CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+        CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &         FMO(IMO),NTMO(IFRP),NTMO(IFRP),1,IPQTOQ(1,0),
@@ -3138,13 +3421,12 @@ C
          write(lupri,'(2X,A)')
      &  'TWOC=.false. => Used four-component mode'
        ENDIF
-       IF (TWOCOMPBSS.AND.BSS) THEN
+       IF (TWOCOMPBSS.AND.(BSS.or.x2c)) THEN
         WRITE(LUPRI,'(2X,A)') 
-     &  'IOTC in is pure two-component mode!' 
-       ELSE IF (.NOT.TWOCOMPBSS.AND.BSS) THEN
+     &  'X2C/IOTC in two-component mode!' 
+       ELSE IF (.NOT.TWOCOMPBSS.AND.(BSS.or.x2c)) THEN
         WRITE(LUPRI,'(2X,A)') 
-     &  'IOTC in pure four-component mode'//
-     &  '(full 4comp matrixes, but wasting memory space)!' 
+     &  'X2C/IOTC in four-component mode!'
        ENDIF
       ENDIF
       
@@ -3171,6 +3453,7 @@ C
 C     Get AO overlap matrix
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
+!     SSMTRC is 1.0d0 when doing 4c-->2c for h1 == 4c-fock operator
       CALL GTOVLX(WORK(KSAO),SSMTRC)
 C
       IOFF = 1

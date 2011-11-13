@@ -13,9 +13,9 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment.
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
-*DHFCAL
+*SCF
 .EVCCNV
 1.0E-8
 **PROPERTIES

@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision: 5954 $
-C DATE    : $Date: 2007-07-09 09:55:46 +0200 (Mon, 09 Jul 2007) $
-C FILE    : results.inc
 C
 C     Register the status of the independent parts of the code
 C

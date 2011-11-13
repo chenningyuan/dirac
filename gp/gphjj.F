@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : gphjj.F
 C
 C
 C  /* Deck flshfo */
@@ -46,336 +43,6 @@ C
 C 21-02-2007  LV : Removed outdated machines, after 24 years (!) the
 C                  whole routine can now probably be deleted (we always call FLUSH)
       CALL FLUSH(IUNIT)
-      RETURN
-      END
-C  /* Deck getdat */
-      SUBROUTINE GETDAT(CDATE,CTIME)
-C
-C     24-Jan-1988 Hans Joergen Aa. Jensen
-C
-C     Return date and time as character*8, for labels.
-C
-      CHARACTER*(8) CDATE, CTIME
-C
-C     The fortran90 variables
-C
-      character*8 date_f90,time_f90*10,zone_f90*5
-      integer values(8)
-CLV : Kept the old code, we may consider calling always the f90 implementation...
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      INTEGER IDATE, ITIME, DATE, CLOCK
-      IDATE = DATE()
-      ITIME = CLOCK()
-      WRITE (CDATE,'(A8)') IDATE
-      WRITE (CTIME,'(A8)') ITIME
-#else
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
-   || defined (SYS_DEC) || defined (SYS_IRIX)  || defined (SYS_PARAGON) \
-   || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
-   || defined (SYS_SX) || defined (SYS_DARWIN)
-      CHARACTER*(24) FFDATE, FDATE
-      FFDATE = FDATE()
-      CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
-      CTIME  = FFDATE(12:19)
-#else
-#if defined (SYS_IBM)
-      CHARACTER DAOFWK*9
-      CALL DATE(DAOFWK,CDATE)
-      CALL TIME(CTIME)
-#else
-C
-C     LV : Use fortran90 implementation
-      CALL DATE_AND_TIME(date_f90,time_f90,zone_f90,values)
-      CDATE = DATE_F90(1:8)
-      CTIME = TIME_F90(1:2)//':'//TIME_F90(3:4)//':'//TIME_F90(5:6)
-#endif
-#endif
-#endif
-      RETURN
-      END
-C  /* Deck gettim */
-      SUBROUTINE GETTIM(TIMCPU,TIMWAL)
-C
-C Written 18-Dec-1984 Hans Joergen Aa. Jensen
-C
-C Return elapsed CPU time and elapsed real time.
-C
-#include "implicit.h"
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C...  Cray unicos timing code
-      REAL    TCPU0, TWALL0
-      LOGICAL FIRST
-      PARAMETER ( DP001 = 0.001 )
-      SAVE TCPU0, TWALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-#if defined (SYS_CRAY)
-         TCPU0  = SECOND()
-#else
-         TCPU0 = TSECND()
-#endif
-         TWALL0 = TIMEF()
-      ENDIF
-#if defined (SYS_CRAY)
-      TIMCPU = SECOND() - TCPU0
-#else
-      TIMCPU = TSECND() - TCPU0
-#endif
-      TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || defined (SYS_SX) \
- || defined (SYS_AIX)
-#if defined (SYS_IRIX) || defined (SYS_SUN)  || defined (SYS_SUN) \
- || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_AIX)
-C...  SGI IRIX code
-C      external time
-      DOUBLE PRECISION TIMCPU, TIMWAL
-      EXTERNAL TIME
-C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
-#else
-C...  HP-UX code
-#endif
-C      integer*4 time
-C      real*4  etime, tarray(2)
-C      logical first
-C      save    first,iwall0
-C      data    first /.true./
-C
-      INTEGER*4 TIME
-      REAL*4 ETIME, TARRAY(2)
-      LOGICAL FIRST
-      SAVE    FIRST,IWALL0
-      DATA    FIRST /.TRUE./
-C
-C      if (first) then
-C         first = .false.
-C         iwall0 = time()
-C      end if
-C      write(mydebugfile,*) 'after if'
-C      TIMCPU = etime(tarray)
-C      write(mydebugfile,*) 'TIMCPU : ', TIMCPU
-C      itimwl = time() - iwall0
-C      TIMWAL = itimwl
-C      write(mydebugfile,*) 'TIMWAL : ', TIMWAL
-C      close(mydebugfile)
-C
-#ifdef VAR_EKO
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-      END IF
-      TIMCPU = ETIME(TARRAY)
-      TIMWAL = 0D0
-#else
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         IWALL0 = TIME()
-      END IF
-      TIMCPU = ETIME(TARRAY)
-      ITIMWL = TIME() - IWALL0
-      TIMWAL = ITIMWL
-#endif
-#endif
-#if defined (SYS_IBM)
-      LOGICAL FIRST
-      SAVE    FIRST
-      DATA    FIRST /.TRUE./
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-         CALL SETTIM
-         TIMCPU = 0.0
-         TIMWAL = 0.0
-      ELSE
-         CALL TIMING(CPUA,CPUE,TIOA,TIOE)
-         TIMCPU = CPUA
-         TIMWAL = TIOA
-      END IF
-#endif
-#if !defined (SYS_VAX)    && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) \
- && !defined (SYS_CONVEX) && !defined (SYS_IBM)  && !defined (SYS_AIX) \
- && !defined (SYS_HPUX)   && !defined (SYS_IRIX) && !defined (SYS_PARAGON) \
- && !defined (SYS_T3D)    && !defined (SYS_SUN)  && !defined (SYS_LINUX) \
- && !defined (SYS_DEC)    && !defined (SYS_SX)
-      PARAMETER (D0 = 0.0D0)
-      TIMCPU = SECOND()
-C insert appropriate routine to get elapsed real time (wall time)
-C here
-      TIMWAL = D0
-#endif
-C
-      RETURN
-      END
-C  /* Deck settim */
-#if defined (SYS_IBM)
-      SUBROUTINE SETTIM
-C
-C IBM timing routine 24-Jun-1988 hjaaj
-C (emulating Lund IBM timing routines)
-C
-      REAL*4 ECPU, ETIME, ETCPU
-      REAL*4 SCPU, STIME, STCPU
-      REAL*4 PCPU, PTIME, PTCPU
-      REAL*8 CPUE, CPUA, TIOE, TIOA
-      CHARACTER*23 DATTIM
-      SAVE   SCPU, STIME, STCPU
-      SAVE   PCPU, PTIME, PTCPU
-C
-      CALL DATETM(DATTIM,SCPU,STIME,STCPU)
-      PCPU  = SCPU
-      PTIME = STIME
-      PTCPU = STCPU
-      RETURN
-C
-C     ----- entry timing -----
-C
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CALL DATETM(DATTIM,ECPU,ETIME,ETCPU)
-      CPUA   = ETCPU - STCPU
-      CPUE   = ETCPU - PTCPU
-      PTCPU  = ETCPU
-      TIOA   = ETIME - STIME
-      TIOE   = ETIME - PTIME
-      PTIME  = ETIME
-C
-      RETURN
-      END
-#endif
-#if !defined (VAR_MOTECC) && !defined (SYS_IBM)
-      SUBROUTINE SETTIM()
-#include "implicit.h"
-      PARAMETER ( D0 = 0.0D0 )
-      PRINT *,'DUMMY SETTIM called'
-      RETURN
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CPUA = D0
-      CPUE = D0
-      TIOA = D0
-      TIOE = D0
-      PRINT *,'DUMMY TIMING called'
-      RETURN
-      END
-#endif
-C  /* Deck timtxt */
-      SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
-C
-C TIMTXT based on TIMER by TUH //900709-hjaaj
-C
-#include "implicit.h"
-      CHARACTER*(*) TEXT
-      CHARACTER AHOUR*6, ASEC*8, AMIN*8
-C
-      ISECND = NINT(TIMUSD)
-      IF (ISECND .GE. 60) THEN
-         MINUTE = ISECND/60
-         IHOURS = MINUTE/60
-         MINUTE = MINUTE - 60*IHOURS
-         ISECND = ISECND - 3600*IHOURS - 60*MINUTE
-         IF (IHOURS .EQ. 1) THEN
-            AHOUR = ' hour '
-         ELSE
-            AHOUR = ' hours'
-         END IF
-         IF (MINUTE .EQ. 1) THEN
-            AMIN = ' minute '
-         ELSE
-            AMIN = ' minutes'
-         END IF
-         IF (ISECND .EQ. 1) THEN
-            ASEC = ' second '
-         ELSE
-            ASEC = ' seconds'
-         END IF
-         IF (IHOURS .GT. 0) THEN
-            WRITE(LUPRIN,100)
-     *            TEXT, IHOURS, AHOUR, MINUTE, AMIN, ISECND, ASEC
-         ELSE
-            WRITE(LUPRIN,200) TEXT, MINUTE, AMIN, ISECND, ASEC
-         END IF
-      ELSE
-         WRITE(LUPRIN,300) TEXT,TIMUSD
-      END IF
-  100 FORMAT(1X,A,I4,A,I3,A,I3,A)
-  200 FORMAT(1X,A,     I3,A,I3,A)
-  300 FORMAT(1X,A,F7.2,' seconds')
-      RETURN
-      END
-C  /* Deck tstamp */
-      SUBROUTINE TSTAMP(TEXT,LUPRIN)
-C
-C Copyright Hans Joergen Aa. Jensen 9-Jul-1990
-C
-C Purpose: To stamp as many as possible of
-C          text, date, time, computer, and hostname to LUPRIN
-C
-#include "implicit.h"
-      CHARACTER*(*) TEXT
-C
-#if defined (SYS_IBM)
-      CHARACTER CDATE*8,CTIME*8,DAOFWK*9
-#endif
-#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
-      CHARACTER*(24) FDATE
-      CHARACTER*(40) HSTNAM
-#endif
-C
-      LTEXT = LEN(TEXT)
-      IF (LTEXT .GT. 0) THEN
-         WRITE (LUPRIN,'(/A)') TEXT
-      ELSE
-         WRITE (LUPRIN,'()')
-      END IF
-#if defined (SYS_IBM)
-      CALL DATE(DAOFWK,CDATE)
-      CALL TIME(CTIME)
-      WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
-     *   'Date and time (IBM) : ',CDATE,CTIME
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CDATE = DATE()
-      CTIME = CLOCK()
-      WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
-     *   'Date and time (CRAY) : ',CDATE,CTIME
-#endif
-#if 0 && defined (SYS_HPUX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
-#endif
-#if defined (SYS_DEC)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
-#endif
-#if defined (SYS_IRIX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (IRIX)   : ',FDATE()
-#endif
-#if defined (SYS_SUN)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
-#endif
-#if defined (SYS_LINUX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
-#endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
-#ifndef VAR_EKO
-C
-C     CALL HOSTNM(HSTNAM)
-C
-      CALL GETENV('HOSTNAME',HSTNAM)
-      WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
-#endif
-#endif
-#if defined (SYS_AIX)
-!C 930414-hjaaj: apparent error IBM's xlf library routines:
-!C    when 'T6' then column 1-5 not blanked but contains text
-!C    from a previous print statement!
-!C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
-C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-C     CALL hostnm_(HSTNAM)
-      CALL hostnm(HSTNAM)
-      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
-C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
-#endif
-C
       RETURN
       END
 C  /* Deck ordrss */
@@ -481,41 +148,6 @@ C
           ENDIF
         ENDIF
         IN = IN + NEVEC
-   10 CONTINUE
-      RETURN
-      END
-C  /* Deck order2 */
-      SUBROUTINE ORDER2(EVEC,EVAL,N,NEVEC)
-C
-C Purpose: order the N values in EVAL and their associated vectors
-C          in EVEC so EVAL(i+1) .le. EVAL(i)
-C          (this is opposite order of "ORDER")
-C
-C Revisions:
-C   29-Jul-1992 hjaaj (only dswap if nevec .gt. 0)
-C    5-Aug-1985 hjaaj (first version, based on ORDER)
-C
-#include "implicit.h"
-      DIMENSION EVEC(*),EVAL(*)
-      IF (N.LE.1) RETURN
-      IN = 1
-      DO 10 I=1,N-1
-         EMAX = EVAL(I)
-         IMAX = I
-         DO 20 J=I+1,N
-            IF (EVAL(J) .GT. EMAX) THEN
-               EMAX = EVAL(J)
-               IMAX = J
-            ENDIF
-   20    CONTINUE
-         IF (IMAX.NE.I) THEN
-            EVAL(IMAX)=EVAL(I)
-            EVAL(I)=EMAX
-            IF (NEVEC .GT. 0) THEN
-              CALL DSWAP(NEVEC,EVEC(IN),1,EVEC((IMAX-1)*NEVEC+1),1)
-            ENDIF
-         ENDIF
-         IN = IN + NEVEC
    10 CONTINUE
       RETURN
       END
@@ -721,25 +353,6 @@ C
 C
       DO 100 I=1,LENGTH8
   100    INTI8(I) = IMIN1
-C
-      RETURN
-      END
-C  /* Deck lzero */
-      SUBROUTINE LZERO(LOGI,LENGTH)
-C...................................................................
-C
-C   Subroutine LZERO sets all members of logical array of length *LENGTH*
-C   to .FALSE.
-C
-C   Wriiten by Miro Ilias, Tel Aviv, April 2007
-C...................................................................
-      LOGICAL LOGI(LENGTH)
-      INTEGER LENGTH
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH
-  100    LOGI(I) = .FALSE.
 C
       RETURN
       END
@@ -1082,90 +695,6 @@ C
     1 REWIND (LU)
       RETURN
       END
-!C  /* Deck readi */
-      SUBROUTINE READI (IT,N,INTX)
-C
-C (30-Jan-1984) hjaaj
-C
-      DIMENSION INTX(N)
-      READ (IT) INTX
-      RETURN
-      END
-C  /* Deck readi2 */
-      SUBROUTINE READI2 (IT,N,INTX)
-C
-C (30-Jan-1984) hjaaj
-C
-#if defined (VAR_STAR2)
-      INTEGER*2 INTX(N)
-#else
-      INTEGER   INTX(N)
-#endif
-      READ (IT) INTX
-      RETURN
-      END
-C  /* Deck readdi */
-      SUBROUTINE READDI(IT,IU,N,IX)
-      DIMENSION IX(N)
-#if defined (VAR_FASTIO)
-      ERROR - READDI is not programmed for VAR_FASTIO
-#else
-      READ(IT,REC=IU) IX
-#endif
-      RETURN
-      END
-C  /* Deck readt */
-      SUBROUTINE READT (IT,N,X)
-#include "implicit.h"
-      CHARACTER*30 STRING
-      DIMENSION X(N)
-      READ (IT,END=10,ERR=20) X
-      RETURN
- 10   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: END reading unit  ',IT
-      CALL QUIT(STRING)
- 20   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: Error reading unit',IT
-      CALL QUIT(STRING)
-      END
-!C  /* Deck writi */
-      SUBROUTINE WRITI (IT,N,INTX)
-!C
-!C (30-Jan-1984) hjaaj
-!C
-      DIMENSION INTX(N)
-      WRITE (IT) INTX
-      RETURN
-      END
-C  /* Deck writi2 */
-      SUBROUTINE WRITI2 (IT,N,INTX)
-C
-C (30-Jan-1984) hjaaj
-C
-#if defined (VAR_STAR2)
-      INTEGER*2 INTX(N)
-#else
-      INTEGER   INTX(N)
-#endif
-      WRITE (IT) INTX
-      RETURN
-      END
-C  /* Deck writdi */
-      SUBROUTINE WRITDI(IT,IU,N,IX)
-      DIMENSION IX(N)
-#if !defined (VAR_FASTIO)
-      WRITE(IT,REC=IU) IX
-#endif
-      RETURN
-      END
-C  /* Deck writt */
-      SUBROUTINE WRITT(IT,N,X)
-#include "implicit.h"
-      DIMENSION X(N)
-      WRITE (IT) X
-      RETURN
-C
-      END
 C  /* Deck mollab */
       SUBROUTINE MOLLAB(A,LU,LUERR)
 C
@@ -1486,8 +1015,17 @@ C  Write new MOLECULE-type label to LU
 C
       CHARACTER*8 LABEL, LTIME, LDATE, LSTARS
       DATA LSTARS /'********'/
+      character*100 msg
       CALL GETDAT(LDATE,LTIME)
+
+#if !defined VAR_G95 && !defined VAR_IFORT
+!miro: g95 does not know the "iomsg" parameter ....
+!the same for ifort 10.1
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
+     &              LSTARS,LDATE,LTIME,LABEL
+#else
       WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL
+#endif
       RETURN
 C
  1000 IF (LUERR .LT. 0) THEN
@@ -1497,6 +1035,11 @@ C
          WRITE (LUERR,'(/3A,I5/A,I7)')
      &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
+         WRITE(LUERR,*) 'LSTARS=',LSTARS
+         WRITE(LUERR,*) 'LDATE=',LDATE,' LTIME=',LTIME
+#if !defined VAR_G95  && !defined VAR_IFORT
+         WRITE (LUERR,'(A,A)') 'message:',msg
+#endif
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLAB: output error writing label')
       END IF
@@ -1518,7 +1061,7 @@ C
          RETURN
       ELSE
          WRITE (LUERR,'(/3A,I5/A,I7)')
-     &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
+     &      ' NEWLAB2: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLB2: output error writing label')

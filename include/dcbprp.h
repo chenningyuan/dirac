@@ -1,7 +1,5 @@
 
 !
-! VERSION : $Revision: 11261 $
-! DATE    : $Date: 2010-08-05 21:39:37 +0200 (Thu, 05 Aug 2010) $
 !
 !*****************************************************************************
 ! *** Property module ***
@@ -29,8 +27,8 @@
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,DOEXCPRP,DOVDW,                               &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
-     &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,DORKBIMP,        &
-     &        BXLAO, BYLAO, BZLAO
+     &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,                 &
+     &        BXLAO, BYLAO, BZLAO, EFFDEN
 
       INTEGER MXPRPWF,EXCPRPTYP
       PARAMETER (MXPRPWF = 4)
@@ -42,8 +40,8 @@
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
-     &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,DORKBIMP,   &
-     &                BXLAO, BYLAO, BZLAO
+     &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,            &
+     &                BXLAO, BYLAO, BZLAO, EFFDEN
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &

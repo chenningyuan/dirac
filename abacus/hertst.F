@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : hertst.F
 C
 C
 C  /* Deck sochk2 */
@@ -220,7 +217,6 @@ C
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0
@@ -256,25 +252,25 @@ C
                NSANG = NHKT(ISSHL) - 1
 C
                IF (JCOOR .EQ. 1) THEN
-                  RENR1(2) = SDPRE(NRANG - ISTEP(IRCMP))
-                  RENS2(2) = SDPRE(NSANG - ISTEP(ISCMP))
+                  RENR1(2) = dble(NRANG - ISTEP(IRCMP))
+                  RENS2(2) = dble(NSANG - ISTEP(ISCMP))
                ELSE IF (JCOOR .EQ. 2) THEN
-                  RENR1(2) = SDPRE(MVAL(IRCMP))
-                  RENS2(2) = SDPRE(MVAL(ISCMP))
+                  RENR1(2) = dble(MVAL(IRCMP))
+                  RENS2(2) = dble(MVAL(ISCMP))
                ELSE
-                  RENR1(2) = SDPRE(NVAL(IRCMP))
-                  RENS2(2) = SDPRE(NVAL(ISCMP))
+                  RENR1(2) = dble(NVAL(IRCMP))
+                  RENS2(2) = dble(NVAL(ISCMP))
                END IF
 C
                IF (KCOOR .EQ. 1) THEN
-                  RENS1(2) = SDPRE(NSANG - ISTEP(ISCMP))
-                  RENR2(2) = SDPRE(NRANG - ISTEP(IRCMP))
+                  RENS1(2) = dble(NSANG - ISTEP(ISCMP))
+                  RENR2(2) = dble(NRANG - ISTEP(IRCMP))
                ELSE IF (KCOOR .EQ. 2) THEN
-                  RENS1(2) = SDPRE(MVAL(ISCMP))
-                  RENR2(2) = SDPRE(MVAL(IRCMP))
+                  RENS1(2) = dble(MVAL(ISCMP))
+                  RENR2(2) = dble(MVAL(IRCMP))
                ELSE
-                  RENS1(2) = SDPRE(NVAL(ISCMP))
-                  RENR2(2) = SDPRE(NVAL(IRCMP))
+                  RENS1(2) = dble(NVAL(ISCMP))
+                  RENR2(2) = dble(NVAL(IRCMP))
                END IF
 C
 C Find the shells and components of the orbitals that result from
@@ -311,7 +307,7 @@ C
                  DO 21 NS = 1,2
                     SGNRS = SGNR
                     IF (NS .EQ. 2) SGNRS = - SGNR
-                    FACTOR = SDPRE(NR*NS)*FACEXP*SGNRS
+                    FACTOR = dble(NR*NS)*FACEXP*SGNRS
                     NX = JR(NR)
                     NY = KS(NS)
                     VAL = VAL + RENR1(NR)*RENS1(NS)*FACTOR*ONEINT(NX,NY)
@@ -587,7 +583,6 @@ C
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0
@@ -625,25 +620,25 @@ C
                      NSANG = NHKT(ISSHL) - 1
 C
                      IF (JCOOR .EQ. 1) THEN
-                        RENR1(2) = SDPRE(NRANG - ISTEP(IRCMP))
-                        RENS2(2) = SDPRE(NSANG - ISTEP(ISCMP))
+                        RENR1(2) = dble(NRANG - ISTEP(IRCMP))
+                        RENS2(2) = dble(NSANG - ISTEP(ISCMP))
                      ELSE IF (JCOOR .EQ. 2) THEN
-                        RENR1(2) = SDPRE(MVAL(IRCMP))
-                        RENS2(2) = SDPRE(MVAL(ISCMP))
+                        RENR1(2) = dble(MVAL(IRCMP))
+                        RENS2(2) = dble(MVAL(ISCMP))
                      ELSE
-                        RENR1(2) = SDPRE(NVAL(IRCMP))
-                        RENS2(2) = SDPRE(NVAL(ISCMP))
+                        RENR1(2) = dble(NVAL(IRCMP))
+                        RENS2(2) = dble(NVAL(ISCMP))
                      END IF
 C
                      IF (KCOOR .EQ. 1) THEN
-                        RENS1(2) = SDPRE(NSANG - ISTEP(ISCMP))
-                        RENR2(2) = SDPRE(NRANG - ISTEP(IRCMP))
+                        RENS1(2) = dble(NSANG - ISTEP(ISCMP))
+                        RENR2(2) = dble(NRANG - ISTEP(IRCMP))
                      ELSE IF (KCOOR .EQ. 2) THEN
-                        RENS1(2) = SDPRE(MVAL(ISCMP))
-                        RENR2(2) = SDPRE(MVAL(IRCMP))
+                        RENS1(2) = dble(MVAL(ISCMP))
+                        RENR2(2) = dble(MVAL(IRCMP))
                      ELSE
-                        RENS1(2) = SDPRE(NVAL(ISCMP))
-                        RENR2(2) = SDPRE(NVAL(IRCMP))
+                        RENS1(2) = dble(NVAL(ISCMP))
+                        RENR2(2) = dble(NVAL(IRCMP))
                      END IF
 C
 C Find the shells and components of the orbitals that result from
@@ -690,7 +685,7 @@ C
                        DO 21 NS = 1,2
                           SGNRS = SGNR
                           IF (NS .EQ. 2) SGNRS = - SGNR
-                          FACTOR = SDPRE(NR*NS)*FACEXP*SGNRS
+                          FACTOR = dble(NR*NS)*FACEXP*SGNRS
 C
 C First term
 C
@@ -830,7 +825,7 @@ C
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
-      CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
+      CALL TSTDAT(NONTPP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
       IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR') THEN
          NCOUN2 = NCOUNT*ICOUNT
@@ -930,7 +925,7 @@ C
                   IADR2 = NCOUNT*(NCOUNT + 1)/2
                   NROW2 = NCOUNT
                   NNUC = 0
-                  DO 100 I2 = NDIFNU + 1, NONTYP
+                  DO 100 I2 = NDIFNU + 1, NONTPP
                      DO 100 II2 = 1, NONTVC(I2)
                      NNUC = NNUC + 1
                      DO 100 J2 = 1, IQM(I2)
@@ -1076,7 +1071,7 @@ C
      &                                    0,2,3,5,6,7,0,3,4,7,8,9,
      &                                    0,3,4,7,8,9,0,3,4,7,8,9/
 C
-      CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
+      CALL TSTDAT(NONTPP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
       ICOUN2 = ICOUNT*(ICOUNT + 1)/2
       NCOUN2 = NCOUNT*(NCOUNT + 1)/2
@@ -1139,7 +1134,7 @@ C
                   IADR2 = NCOUN2
                   NROW2 = NCOUNT
                   NNUC = 0
-                  DO 100 I2 = NDIFNU + 1, NONTYP
+                  DO 100 I2 = NDIFNU + 1, NONTPP
                      DO 100 II2 = 1, NONTVC(I2)
                      NNUC = NNUC + 1
                      DO 100 J2 = 1, IQM(I2)
@@ -1314,7 +1309,7 @@ C
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
-      CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
+      CALL TSTDAT(NONTPP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
       NCOUN2 = NCOUNT*ICOUNT
       ICOUN2 = ICOUNT*(ICOUNT + 1)/2
@@ -1391,7 +1386,7 @@ C
                   END IF
                   NNUC = 0
                   NROW = NCOUNT
-                  DO 100 I2 = NDIFNU + 1, NONTYP
+                  DO 100 I2 = NDIFNU + 1, NONTPP
                      DO 100 II2 = 1, NONTVC(I2)
                      NNUC = NNUC + 1
                      DO 100 J2 = 1, IQM(I2)
@@ -1523,7 +1518,7 @@ C
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
-      CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
+      CALL TSTDAT(NONTPP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
       ICOUN2 = ICOUNT*(ICOUNT + 1)/2
       NCOUN2 = NCOUNT*(NCOUNT + 1)/2
@@ -1589,7 +1584,7 @@ C
                   IADR2 = NCOUN2
                   NROW2 = NCOUNT
                   NNUC = 0
-                  DO 100 I2 = NDIFNU + 1, NONTYP
+                  DO 100 I2 = NDIFNU + 1, NONTPP
                      DO 100 II2 = 1, NONTVC(I2)
                      NNUC = NNUC + 1
                      DO 100 J2 = 1, IQM(I2)
@@ -1744,7 +1739,7 @@ C
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
-      CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
+      CALL TSTDAT(NONTPP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
       ICOUN2 = ICOUNT*(ICOUNT + 1)/2
       NCOUN2 = NCOUNT*(NCOUNT + 1)/2
@@ -1811,7 +1806,7 @@ C
                   IADR2 = NCOUN2
                   NROW2 = NCOUNT
                   NNUC = 0
-                  DO 100 I2 = NDIFNU + 1, NONTYP
+                  DO 100 I2 = NDIFNU + 1, NONTPP
                      DO 100 II2 = 1, NONTVC(I2)
                      NNUC = NNUC + 1
                      DO 100 J2 = 1, IQM(I2)
@@ -1976,7 +1971,7 @@ C
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
-      CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
+      CALL TSTDAT(NONTPP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
       ICOUN2 = ICOUNT*(ICOUNT + 1)/2
       NCOUN2 = NCOUNT*(NCOUNT + 1)/2
@@ -2036,7 +2031,7 @@ C
                   IADR2 = NCOUN2
                   NROW2 = NCOUNT
                   NNUC = 0
-                  DO 100 I2 = NDIFNU + 1, NONTYP
+                  DO 100 I2 = NDIFNU + 1, NONTPP
                      DO 100 II2 = 1, NONTVC(I2)
                      NNUC = NNUC + 1
                      DO 100 J2 = 1, IQM(I2)
@@ -2371,7 +2366,7 @@ C
 C
 C     Read necessary data from LUONEL
 C
-      CALL TSTDAT(NONTYP,WORK(KNONTV),WORK(KIQM),WORK(KJCO),ICOUNT,
+      CALL TSTDAT(NONTPP,WORK(KNONTV),WORK(KIQM),WORK(KJCO),ICOUNT,
      &            NCOUNT,NDIFNU)
 C
 C     More memory allocations
@@ -2391,13 +2386,13 @@ C
       CALL MM2TS1(WORK(KIQM),WORK(KJCO),WORK(KBUF),WORK(KIBUF),
      &            WORK(KNONTV),WORK(KQMN),WORK(KTSTVE),WORK(KTSVE1),
      &            WORK(KTSVE2),WORK(KRESV1),WORK(KRESV2),
-     &            WORK(KTWOEL),WORK(KLAST),NONTYP,ICOUNT,NCOUNT,
+     &            WORK(KTWOEL),WORK(KLAST),NONTPP,ICOUNT,NCOUNT,
      &            WORK(KDONE),LWRK,NDIFNU,PRTHRS,IPRINT)
       RETURN
       END
 C  /* Deck mm2ts1 */
       SUBROUTINE MM2TS1(IQM,JCO,BUF,IBUF,NONTVC,QMN,TSTVEC,TSVEC1,
-     &                  TSVEC2,RESVE1,RESVE2,TWOEL,WORK,NONTYP,ICOUNT,
+     &                  TSVEC2,RESVE1,RESVE2,TWOEL,WORK,NONTPP,ICOUNT,
      &                  NCOUNT,DONE,LWORK,NDIFNU,PRTHRS,IPRINT)
 C
 C     K.Ruud, September 1992
@@ -2510,7 +2505,7 @@ C
                   QMN(3,1) = - QMN(1,3)
                   QMN(3,2) = - QMN(2,3)
                   NROW2 = NCOUNT
-                  DO 200 I5 = NDIFNU + 1, NONTYP
+                  DO 200 I5 = NDIFNU + 1, NONTPP
                      DO 200 II5 = 1, NONTVC(I5)
                      DO 200 J5 = 1, IQM(I5)
                         DO 200 K5 = 1, JCO(I5,J5)
@@ -2548,7 +2543,7 @@ C
                   QMN(3,1) = - QMN(1,3)
                   QMN(3,2) = - QMN(2,3)
                   NROW2 = NCOUNT
-                  DO 250 I6 = NDIFNU + 1, NONTYP
+                  DO 250 I6 = NDIFNU + 1, NONTPP
                      DO 250 II6 = 1, NONTVC(I6)
                      DO 250 J6 = 1, IQM(I6)
                         DO 250 K6 = 1, JCO(I6,J6)
@@ -2722,7 +2717,7 @@ C
       RETURN
       END
 C  /* Deck tstdat */
-      SUBROUTINE TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
+      SUBROUTINE TSTDAT(NONTPP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
 C     Resided previously inside magnetic properties test routines.
 C     K.Ruud, sept 1992
@@ -2741,15 +2736,15 @@ C
      &        ' Label TESTDATA not found on file AOONEINT'
          CALL QUIT('Error in magnetic properties test')
       END IF
-      READ (LUONEL) NONTYP, (NONTVC(I), I = 1, NONTYP),
-     &              (IQM(I), (JCO(I,J), J = 1, IQM(I)), I = 1, NONTYP)
+      READ (LUONEL) NONTPP, (NONTVC(I), I = 1, NONTPP),
+     &              (IQM(I), (JCO(I,J), J = 1, IQM(I)), I = 1, NONTPP)
 C
 C     Number of basis functions
 C
       ICOUNT = 0
       NCOUNT = 0
-      NDIFNU = NONTYP/2
-      DO 5 I = 1, NONTYP
+      NDIFNU = NONTPP/2
+      DO 5 I = 1, NONTPP
          DO 5 II = 1, NONTVC(I)
             DO 5 J = 1, IQM(I)
                DO 5 K = 1, JCO(I,J)

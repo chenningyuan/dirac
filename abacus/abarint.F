@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,7 +17,7 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C$Id: abarint.F 11757 2010-10-10 07:06:37Z hjj $
+C$Id$
 C
 C#include "single.h"
 #ifdef UNDEF
@@ -2217,6 +2217,13 @@ C     The transpose of Wilsons B matrix is decomposed to:
 C
 C           B^t = U W V^t  ;   U,V orthogonal, W diagonal
 C
+
+!radovan: this routine is numerically very unstable
+!         if checks with .eq. d0,
+!         if checks with a+b .eq. b,
+!         sign functions with noisy input variables,
+!         and more
+
       BMTNRM = D0
       SCL    = D0
       SGNFAC = D0
@@ -3783,7 +3790,7 @@ C
 
 C  /* Deck dobrki */
       SUBROUTINE DOBRKI(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,EVEC,
-     &     BMTINV,CSTEP,TMPVEC,TMPMAT,NONT)
+     &     BMTINV,CSTEP,TMPVEC,TMPMAT,NONTVC)
 C
 C     This procedure does the actual breaking of symmetry.
 C
@@ -3803,7 +3810,7 @@ C
 #include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
-      DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
+      DIMENSION GEINFO(0:ITRMAX,6), NONTVC(MXCENT)
       DIMENSION EVEC(MX2CRD,MX2CRD), BMTINV(MXRCRD,MXCOOR)
       DIMENSION CSTEP(MXCOOR)
       DIMENSION TMPVEC(IINTCR), TMPMAT(IINTCR*IINTCR)
@@ -3942,8 +3949,8 @@ C
       IATOM = 1
       I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
-         READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
-         IATOM = IATOM + NONT(J)
+         READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONTVC(J)
+         IATOM = IATOM + NONTVC(J)
          I = NCLINE(IATOM)-1
  50   CONTINUE
 C
@@ -3954,7 +3961,7 @@ C
       IATOM = 1
       DO 60 ITYP = 1, NONTYP
          IXTRA = 0
-         DO 70 I = 1, NONT(ITYP)
+         DO 70 I = 1, NONTVC(ITYP)
             MULCNT = ISTBNU(IATOM)
             DO 80 ISYMOP = 1, MAXOPR
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
@@ -3977,9 +3984,9 @@ C
  80         CONTINUE
             IATOM = IATOM + 1
  70      CONTINUE
-         TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
-         WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
-         MLINE(NCLINE(IATOM - NONT(ITYP)) - 1) = TMPLN
+         TMPLN = MLINE(NCLINE(IATOM - NONTVC(ITYP)) - 1)
+         WRITE(TMPLN(11:15),'(I5)') NONTVC(ITYP) + IXTRA
+         MLINE(NCLINE(IATOM - NONTVC(ITYP)) - 1) = TMPLN
  60   CONTINUE
 C
 C     Write updated geometry to files.

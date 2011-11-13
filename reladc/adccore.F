@@ -1,5 +1,4 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,23 +15,13 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
+!      DIRAC program, see: http://dirac.chem.vu.nl
 !
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-C      ****  D H F - A D C   M O D U L E  ****
-C
-C      ****  COMPLEX GROUP VERSION  ****
-C
-C      ****  BUILT-IN LANCZOS DIAGONALIZERS  ****
-C      ****     FOR REAL/COMPLEX  CASE       ****
-C
-C      ****  USABLE FOR SINGLE IONIZATION    ****
-C      ****              AND                 ****
-C      ****    DOUBLE IONIZATION SPECTRA     ****
-C
-C      ****  AUTHOR: M.Pernpointner
-C
+#ifdef HAVE_MKL_BLAS
+!radovan: workaround for strange crash when using MKL zdotc
+#define ZDOTC z_dot_c
+#define zdotc z_dot_c
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMADC (CC,MAXCOR)
 C
@@ -283,10 +272,12 @@ C
       IF(DOSIPS.OR.DODIPS) DOCCSETI=.TRUE.
 
       WRITE (IW,*) '       *** GENERAL JOB SPECIFICATION ***'
-      WRITE (IW,1006) DOSIPS,DODIPS,DOCCSETI
-1006  FORMAT (/" Calculate Single ionization spectra :",T40,L1
-     &        /" Calculate double ionization spectra :",T40,L1
-     &        /" Perform integral sorting (if necc.) :",T40,L1/)
+      WRITE (IW,1006) DOSIPS,DODIPS,DOCCSETI,USEOE,NORECMP
+1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
+     &        /" Calculate double ionization spectra:",T50,L1
+     &        /" Perform integral sorting (if necc.):",T50,L1
+     &        /" Use orbital energies from HF calc.):",T50,L1
+     &        /" Recalculating of Fock matrix forbidden:",T50,L1/)
 C     
 C     Check the memory requirements of the active modules
 C     Hereby the variable ICALC determines if there is a
@@ -433,11 +424,13 @@ C------------- Execution starts -------------------------------------
 C
       NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
-     &                 DOCONST,VCONV
-      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,SIPPRNT,DIPPRNT
+     &                 DOCONST,DOADCPOP,DOFULL,VCONV
+      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,SIPPRNT,DIPPRNT
 c
 c  set input default values and read ADC input
 c  from ADC namelist input.
+c  the ADC population analysis currently only refers to the
+c  two-hole part since this is of major interest!
 c
       OPEN (5,FILE='DIRAC.INP', FORM='FORMATTED')
       ADCLEVEL = 1
@@ -453,16 +446,17 @@ c
       ADCPRINTNM(7)='SIGMA-matrix'
       ADCPRINTNM(8)=' '
 
-      DOSIPS=.FALSE.
-      DODIPS=.FALSE.
+      DOSIPS = .FALSE.
+      DODIPS = .FALSE.
 
       DO IX=1,32
         XREPS(IX)=0
       ENDDO
-      READQKL = .FALSE.
-      DOCONST = .TRUE.
-      VCONV = 1.0D-06
-c     DIAGTYPE = 'LANC'
+      READQKL  = .FALSE.
+      DOCONST  = .TRUE.
+      VCONV    = 1.0D-06
+      DOADCPOP = .FALSE.
+      DOFULL   = .FALSE.
 c 
 c  next read in actual parameters from ADC input
 c
@@ -486,23 +480,6 @@ c  check consistencies
 c
       IF( (ADCLEVEL.LT.1).OR.(ADCLEVEL.GT.3))
      &  CALL QUIT('Illegal ADC level for SIPS in namelist RELADC')
-
-c     IF(DIAGTYPE.NE.'EXTN') THEN
-c      IF(DIAGTYPE.NE.'FULL') THEN
-c       IF(DIAGTYPE.NE.'LANC') THEN
-c        IF(DIAGTYPE.NE.'DAVI') THEN
-c          WRITE(IW,*) '*** Unknown type of requested diagonalization'
-c          WRITE(IW,*) '*** Defaulting to Band-Lanczos.'
-c          DIAGTYPE='LANC'
-c        ENDIF
-c       ENDIF
-c      ENDIF
-c     ENDIF
-c
-c  single reference open-shell issue is not clarified!
-c  we therefore do not allow a non closed-shell reference state for the
-c  moment
-c
 c
 c  set Lanczos defaults and read input from DIRAC.INP
 c  * A minimum of 500 iterations
@@ -517,6 +494,7 @@ c
       DIPPRNT = 50.0d0
       DO J=1,32
         SIPEIGV(J) = 0
+        DIPEIGV(J) = 0
       ENDDO
       REWIND (5)
       CALL LOCATE('LANINP',5,ITEST)
@@ -780,23 +758,14 @@ C  allocate memory needed in all types of ADC calculations
 C
 C  **** ALLOCATIONS #  1-8
 C
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',CKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',BUF1A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',BUF1B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',BUF4,NDIMT4,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',BUF5A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',BUF5B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',EAJL,MXNVOOT,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('INTE',ICRA,6*LADCM,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
 C
 C  allocate memory for I/O buffers, h/h2p buffer
 C  and for one ADC matrix column plus the diagonal
@@ -805,17 +774,11 @@ C
 C  **** ALLOCATIONS #  9-14
 C
       CALL MEMOPT('REAL',ADCL,LADCM*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',DIAG,LADCM*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',BUFIO,INTBUF*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('REAL',BUFY1,LBUFUIH*RCW,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('INTE',IOI,INTBUF,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       CALL MEMOPT('INTE',IOJ,INTBUF,CC,KFREE,LFREE,ALLOC)
-        IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
 C
 C  For ADC-2X and ADC-3 we need one more OOOO and VOVO buffer 
 C  for the satellite block and the occ/occ lookup table
@@ -825,11 +788,8 @@ C
       IF(ADCLEVEL.GE.2) THEN
         OOLTL=MXNO*MXNO*NREP
         CALL MEMOPT('INTE',OOLT,OOLTL,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFO1,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF9A,NV4*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       ENDIF
 C
 C  For ADC(3) we need additional buffers.
@@ -839,93 +799,54 @@ C
 C  **** ALLOCATIONS #  18-30
 C
         CALL MEMOPT('REAL',CKKSA,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',FKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF1C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF1D,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF5C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF9B,NV4*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF9C,NV4*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFO2,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFO3,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFU1,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFU2,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFU3,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFU4,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFW1,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
 C
 C  **** ALLOCATIONS #  31-42
 C
         CALL MEMOPT('REAL',BUFW2,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFW3,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFW4,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFX1,LBUFUAP*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',EJAB,MXNOVVT,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',ADIAG1,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC)
         CALL MEMOPT('REAL',ADIAG2,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC)
         CALL MEMOPT('REAL',BDIAG1,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BDIAG2,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFQOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFQVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFQVOI,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
 C
 C  **** ALLOCATIONS #  43-58
 C
         CALL MEMOPT('REAL',BUFQVOA,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFQVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFBOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFBVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFXVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFYVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFBVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFXVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('INTE',BUFIVV,MVV(1),CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFBVO2,2*MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUFSIG,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         N=4*MVO(1)*MVO(1)*RCW
         CALL MEMOPT('REAL',CSIGM,N,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('INTE',ICRB,6*MXICRB,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('INTE',IPIVOT,2*MVO(1),CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         N=MXNV*MXNV*NREP
         CALL MEMOPT('INTE',VVLT,N,CC,KFREE,LFREE,ALLOC)
-         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
       ENDIF
 C
 C  The remaining memory (major part) has to be enough for
@@ -978,8 +899,15 @@ C  We therefore test, if there is enough memspace for these buffers
 C  when it comes to a real allocation.
 C
       IF(ICALC.EQ.1) THEN
+        write(IW,*)  ' *** Overview memory pointers: ***'
+        write(IW,*)  ' *** KFREE:    ',KFREE
+        write(IW,*)  ' *** LFREE:    ',LFREE
+        write(IW,*)  ' *** NDIMTV:   ',NDIMTV
+        write(IW,*)  ' *** IVMAX:    ',IVMAX
         MXCORR=KFREE+IVMAX
+        write(IW,*)  ' *** MXCORR:   ',MXCORR
         VREMAIN = NDIMTV - IVMAX
+        write(IW,*)  ' *** VREMAIN:  ',VREMAIN
         WRITE(IW,*) 'MWORDS allocated for the <VV|VV>/<VO|VV> class:',
      &             IVMAX/(1024*1024)
         WRITE(IW,*) 'MWORDS available for additional buffering:',
@@ -1173,9 +1101,7 @@ C
           CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
           IX1 = JVVVO (NREP+1) 
           CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC)
-           IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
           CALL MEMOPT('REAL',BUFVOW,IX1*RCW,CC,KFREE,LFREE,ALLOC)
-           IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
 C
 C
 C  next we generate the remaining two U arrays in order to
@@ -1520,15 +1446,31 @@ C
         CLOSE(ITAPADC+4)
         CLOSE(ITAPADC+5)
         CALL MEMCHK('AFTER ADC-MATRIX CONSTRUCTION',CC,KFRSAV)
+c
+c  Do a full diagonalization of the ADC matrix (for debugging
+c  purposes) with eigenvalues and -vectors written to disk.
+c  This is only allowed for matrices with a dimension smaller than
+c  5000. Otherwise this routine is automatically exited.
+c  This feature is especially useful when it comes to eigenvector
+c  analysis. Due to simplicity FULLDIAR is wirtten in F90 and
+c  retrievable in the separate module adcanal.F90 with dynamic
+c  allocation of workspace.
+c
+        IF(DOFULL) THEN
+          IF(CARITH) THEN
+            CALL FULLDIAC(ITAPADC+4, FILEN4, FILEN5, INTBUF, LADC, KREP)
+          ELSE
+            CALL FULLDIAR(ITAPADC+4, FILEN4, FILEN5, INTBUF, LADC, KREP)
+          ENDIF
+        ENDIF
 C
-C  create the corresponding file name for the config info
-C  (hole space only) and write it out. 
+C  call configuration creator for 1h/2h1p configurations
 C  File handle ITAPADC+2 is available. closed after sub call!
 C
-        CALL WHOLECNF(ITAPADC+2,FILEN2,IRECL,KREP,EPS,IONIZLEVEL)
         WRITE(IW,*) 'ADC hole space configurations written to ',FILEN2
-        WRITE(IW,*) 'Record length of direct access file:     ',IRECL
         WRITE(IW,*) 'Number of chunks in ADC matfile:         ',NBUFS
+        CALL WCONDAT_S(ITAPADC+2,FILEN2,IRECL,KREP,LADC)
+        WRITE(IW,*) 'Record length determined by WCONDAT_S:     ',IRECL
 C
 C -------------------------------------------------------------
 C ---- from here ADC matrix construction has terminated   -----
@@ -1595,56 +1537,6 @@ C
  1041 FORMAT (/5X,"Q_kl successfully loaded")
  1042 FORMAT (/5X,"Q_kl not available on disk. Will be computed")
 C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ALLREP(IC,KFREE,LFREE)
-      IMPLICIT INTEGER (A-Z)
-
-      INTEGER IC,KFREE,LFREE
-C
-C definitions of allocations (related to the main program)
-C
-C  attention: this subroutine changes its own calling parameter IC
-C  subsequent calls will lead to the next entry !
-C  IC must then initialized by the calling program to zero !
-C
-      INTEGER MAXSTR
-      PARAMETER(MAXSTR=63)
-
-      CHARACTER*7 ALLSTR(MAXSTR)
-      DATA ALLSTR/
-     & 'CKKS   ','BUF1A  ','BUF1B  ','BUF4   ','BUF5A  ','BUF5B  ',
-     & 'EAJL   ','ICRA   ','ADCL   ','DIAG   ','BUFIO  ','BUFHP  ',
-     & 'IOI    ','IOJ    ','OOLT   ','BUFO1  ','BUF9A  ','CKKSA  ',
-     & 'BUF1C  ','BUF1D  ','BUF5C  ','BUF9B  ','BUF9C  ','BUFO2  ',
-     & 'BUFO3  ','BUFU1  ','BUFU2  ','BUFU3  ','BUFU4  ','BUFW1  ',
-     & 'BUFW2  ','BUFW3  ','BUFW4  ','BUFX1  ','BUFY1  ','EJAB   ',
-     & 'BDIAG1 ','BDIAG2 ','BUFQOO ','       ','BUFQVO ','BUFQVOI',
-     & 'BUFQVOA','BUFQVV ','BUFBOO ','BUFBVO ','BUFXVO ','BUFYVO ',
-     & 'BUFBVV ','BUFBVO2','BUFSIG ','CSIGM  ','ICRB   ','IPIVOT ',
-     & 'VVLT   ','BUFVVVV','BUFVOV ','BUFVOW ','LANCZOS','       ',
-     & 'P      ','T      ','ADCDIAG'/
-
-#include  "../relccsd/files.inc"
-
-      IF(IC.EQ.0) THEN
-        WRITE(IW,*)
-        WRITE(IW,'(10X,A)') '------ CORE  ALLOCATIONS ---------------'
-        WRITE(IW,'(A18,A8,I12,A8,I12)') '   Initial values:',' KFREE: ',
-     &  KFREE,' LFREE: ',LFREE
-        WRITE(IW,'(10X,A)') '----------------------------------------'
-        WRITE(IW,*)
-      ELSE IF ( (IC.GE.1).AND.(IC.LE.MAXSTR)) THEN
-        WRITE(IW,'(A15,I3,2A8,I12,A8,I12)') 'Allocation',IC,ALLSTR(IC),
-     &              'KFREE:',KFREE,'LFREE: ',LFREE
-      ELSE
-        WRITE(IW,'(A15,A8,I12,A8,I12)') 'No all. inform.',
-     &              'KFREE:',KFREE,'LFREE: ',LFREE
-      ENDIF
-
-      IC = IC + 1
-
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1822,6 +1714,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer JVVVO_I48(MXREP+1)   !mxrep+1 is defined in symm.inc !
       LOGICAL DONE
       real*8 ddot,getimag
       complex*16 zdotc
@@ -1832,6 +1725,9 @@ c     CALL PST('Calculating coupling block AFFIN/PART+')
 C
       LENU = NV(KREP)*NOVVT(KREP)
       OFFS = LVOVVT(KREP)*RCW
+      DO I=1,NREP+1
+        JVVVO_I48(I) = JVVVO(I)
+      ENDDO
 
       IF(IVOVVT(NREP+1) .NE. LVOVVT(NREP+1)) THEN
         WRITE(IW,*) 'Unexpected size differences of arrays'
@@ -1852,8 +1748,9 @@ c     else
 c       write(*,*) 'vovv1 chksum (r)',ddot(nv5,vovv1,1,vovv1,1)
 c     endif
 
+      NV5_I48 = NV5  ! transfer true I8 variable to the default length variable
       CALL RDVOVV(VOVV1)
-      IF(CARITH) CALL CONJUGA(NV5,VOVV1,1)
+      IF(CARITH) CALL CONJUGA(NV5_I48,VOVV1,1)
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NV,NO,NVVT,LVOVVT,LLOVVT,
      &             VOVV1,VOVV2)
       CALL SRT1C1N (NREP,NV,NOVVT,VOVV2,VOVV1)
@@ -1904,9 +1801,8 @@ C  no additional complex conjugation ! the transposition is accounted
 C  for in the 'T' parameter of the XGEMM routine.
 C
       CALL RDVOVV(VOVV2)
-      CALL SRT26 (NREP,MULTB,LFA,LFA,NV,NO,NV,NV,MVV,JVVVO,JJVV,JJVO,
-     &            VOVV2,VOVV1)
-c     write(*,*) '** chksum (c) SRT26:',zdotc(JVVVO(NREP+1),vovv1,1,vovv1,1)
+      CALL SRT26 (NREP,MULTB,LFA,LFA,NV,NO,NV,NV,MVV,JVVVO_I48,
+     &            JJVV,JJVO,VOVV2,VOVV1)
 C
 C  here again special contraction, with 'T' in XGEMM
 C
@@ -3537,8 +3433,15 @@ C
       LOGICAL DONE
       COMPLEX*16 zdotc
       REAL*8 ddot,getimag
+      INTEGER JVVVO_I48(MXREP+1)   !MXREP is defined in symm.inc !
+      INTEGER IVOVVTAUX
 C---------------Executable Code --------------------------------------
 C
+C  preparation of aux array by implicit type conversion
+C
+      DO I=1,NREP+1
+        JVVVO_I48(I) = JVVVO(I)
+      ENDDO
 C****************
 C***** b_oo
 C****************
@@ -3684,9 +3587,10 @@ C  the first irrep is taken !
 C  afterwards contract over Q_bc = Q^*_cb. restored after contraction
 C
       CALL RDVOVV (VOVV1)
-      IF(CARITH) CALL CONJUGA(IVOVVT(NREP+1),VOVV1,1)
+      IVOVVTAUX = IVOVVT(NREP+1)
+      IF(CARITH) CALL CONJUGA(IVOVVTAUX,VOVV1,1)
       CALL SRT20M(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,
-     &            JVVVO,JJVV,JJVO,VOVV1,VOVV2)
+     &            JVVVO_I48,JJVV,JJVO,VOVV1,VOVV2)
       IF(CARITH) CALL CONJUGA(MVV(1),QVV,1)
       CALL XGEMV ('T',MVV(1),MVO(1),A1,VOVV2,MVV(1),QVV,1,A1,BVO,1)
       IF(CARITH) CALL CONJUGA(MVV(1),QVV,1)
@@ -4490,14 +4394,6 @@ C
       CALL CNTRCT('T','N',NO,NO,NVVOT,A1,VVOO2,VVOO4,A0,VVOO3,NREP)
       CALL XAXPY (LENC,A1,VVOO3(OFFS),1,CKKS,1)
       IF (S4P) CALL XAXPY (LENC,A1,VVOO3(OFFS),1,FKKS,1)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
-
-c debug
-c     call xcopy (LENC,A0,0,CKKS(OFFS),1)
-c     write(iw,*) 'matrix control output after part A'
-c     call cmatout(ckks,no(krep),no(krep))
-c debug end
-
 C
 C  ................................................................calculation of C(B)_kk'
 C
@@ -4557,7 +4453,6 @@ C   instead of 'C'
 C  
       CALL CNTRCT('T','N',NO,NO,NVVOT,-A1,VVOO3,VOVO3,A0,VVOO2,NREP)
       CALL XAXPY (LENC,A1,VVOO2(OFFS),1,CKKS,1)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
 C
 C  ............................................................calculation of C(C)_kk'
 C
@@ -4590,8 +4485,7 @@ C
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
       CALL HERMCON(NO(KREP),CKKSAUX,CKKSAUX)
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
-
+C
 C  ............................................................calculation of C(D)_kk'
 C
 C   v_ba,ml (VVOO1) ==> v_bm,al (VOVO1)
@@ -4645,7 +4539,6 @@ C
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
       CALL HERMCON(NO(KREP),CKKSAUX,CKKSAUX)
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
 
       RETURN
       END
@@ -6588,27 +6481,23 @@ C
       LOGICAL DONE
       complex*16 zdotc
       real*8 ddot
+      integer*8 off1
 C
 C---------------Executable code--------------------------------------
 C
       OFF1 = 1
       DO 30 IRP = 1, NREP
 
-c        write(iw,*) '    irep for getvovv:',irp
-
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
          MINT = NVVT(IRP)
          CALL GETVOVV (IRP,ISTART,NINT,DONE,VOVV(OFF1),MINT)
-
-c        write(iw,*) '    mint/nint/done after getvovv:',mint,nint,done
 
          IF (.NOT.DONE) THEN
             WRITE(IW,*) 'Irrep',IRP,' unfinished'
             CALL QUIT('VOVV reading error in RDVOVV')
          ENDIF
          OFF1 = OFF1 + NVO(IRP)*NVVT(IRP)*RCW
-c        write(iw,*) '    off1 after getvovv:',off1
  30   CONTINUE
 
       RETURN
@@ -6640,12 +6529,12 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
+      integer*8 off1
 C
 C---------------Executable code--------------------------------------
 C
       OFF1 = 1
       DO 30 IRP = 1, NREP
-c        WRITE(IW,*) 'GETVVVV irep:',IRP
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
          MINT = NVVT(IRP)
@@ -6655,9 +6544,7 @@ c        WRITE(IW,*) 'GETVVVV irep:',IRP
             CALL QUIT('VVVV reading error in RDVVVV')
          ENDIF
          OFF1 = OFF1 + NVVT(IRP)*NVVT(IRP)*RCW
-c        WRITE(IW,*) 'VVVV array pointer:    ',OFF1
  30   CONTINUE
-c     WRITE(IW,*) 'total # of VVVV:',IVVVVTT(NREP+1)
 
       RETURN
       END
@@ -6740,291 +6627,6 @@ C
         WRITE(IOCH) (QVV(IX),IX=1,SLEN)
         CLOSE(IOCH)
         
-      ENDIF
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WHOLECNF(LUN,FILENAME,IRECL,DESREP,EPS,IZLEVEL)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Writes explicit names and spinor numbers for single and double
-C     ionization 1h/2h spaces.
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : MP
-C
-C---------------Calling variables--------------------------------------
-C
-      CHARACTER*6 FILENAME
-      INTEGER LUN,IRECL,DESREP,IZLEVEL
-      REAL*8  EPS(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "../relccsd/files.inc"
-#include "../relccsd/symm.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      INTEGER lcount
-      CHARACTER*22 FIELD22
-      INTEGER bl_conf
-      CHARACTER*4 bl_irna
-      
-C
-C---------------Executable code--------------------------------------
-C
-C  Do the hole space configuration analysis for the
-C  SIP and DIP case (determined by IZLEVEL)
-C  record length is fixed here and transferred to caller!
-c-------------------------------------------------------------
-C
-C -------------------------------  SIPS
-C
-
-      BL_CONF = 0
-      BL_IRNA = '    '
-      IRECL=22
-
-      IF(IZLEVEL.EQ.1) THEN
-
-        WRITE(IW,*) 'Writing SIP configs, Reclen, handle, name: ',
-     &      IRECL,LUN,FILENAME
-        OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
-     &           STATUS='UNKNOWN')
-
-        DO K=1,no(DESREP)
-          WRITE(FIELD22,382) 
-     &            k,repna(DESREP),bl_conf,bl_irna
- 382      FORMAT(2(I3,'(',A4,')  '))
-          WRITE(LUN,REC=K) FIELD22
-        ENDDO
-        CLOSE(LUN)
-C
-C -------------------------------  DIPS
-C
-      ELSE IF(IZLEVEL.EQ.2) THEN
-
-        WRITE(IW,*) 'Writing DIP configs, Reclen, handle, name: ',
-     &      IRECL,LUN,FILENAME
-        OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
-     &           STATUS='UNKNOWN')
-
-        COOC=1
-        DO 14 JRP = 1, NREP
-          IRP = MULTB(JRP,DESREP+NREP,2)
-          IF (IRP.LT.JRP) GOTO 14
-          DO J = 1, NO(JRP)
-            IMIN = 1
-            IF (IRP.EQ.JRP) IMIN = J + 1
-            DO I = IMIN, NO(IRP)
-c
-              WRITE(FIELD22,382) I,REPNA(IRP),J,REPNA(JRP)
-              WRITE(LUN,REC=COOC) FIELD22
-              COOC = COOC + 1
-c
-            ENDDO
-          ENDDO
-  14    CONTINUE
-        IF( (COOC-1).NE.NOOT(DESREP)) 
-     &         STOP '2H counting error in WHOLECNF'
-        CLOSE(LUN)
-
-      ELSE
-
-        CALL QUIT('Illegal tag in WHOLECNF')
-
-      ENDIF
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WCONDAT(LUN,FILENAME,IRECL,DESREP,LENADCM,EPS,IZLEVEL)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Writes explicit names and spinor numbers in the implicit 1p-2h
-C     symmetry ordering to the formatted file ADCCOD in the current
-C     symmetry DESREP (=KREP in the main program). This is of use to an
-C     external diagonalizer to assign configuration numbers to actual
-C     quasiparticle occupations, spinor energies and irrep names.
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : MP
-C
-C---------------Calling variables--------------------------------------
-C
-      CHARACTER*6 FILENAME
-      INTEGER LUN,IRECL,DESREP,LENADCM,IZLEVEL
-      REAL*8  EPS(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "../relccsd/files.inc"
-#include "../relccsd/symm.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      INTEGER lcount
-      CHARACTER*78 FIELD78
-      CHARACTER*44 FIELD44
-      INTEGER bl_conf
-      CHARACTER*4 bl_irna
-      REAL*8 bl_orbe
-      
-C
-C---------------Executable code--------------------------------------
-C
-C  Do the hole space configuration analysis for the
-C  SIP and DIP case (determined by IZLEVEL)
-c-------------------------------------------------------------
-C
-C -------------------------------  SIPS
-C
-      IF(IZLEVEL.EQ.1) THEN
-        WRITE(IW,*) 'Writing SIP configs, Reclen, handle: ',IRECL,LUN
-        WRITE(IW,*) 'ADC configuration data written to ',FILENAME
-        OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
-     &           STATUS='UNKNOWN')
-
-        bl_conf = 0
-        bl_irna = '    '
-        bl_orbe = 0.0d0
-        lcount = 1
-
-        DO k=1,no(DESREP)
-          koff=io(DESREP)+k
-        
-          WRITE(FIELD78,381) 
-     &            bl_conf,bl_irna,
-     &            bl_conf,bl_irna,
-     &            k,repna(DESREP),
-     &            bl_orbe,bl_orbe,eps(koff)
-
-          WRITE(LUN,REC=lcount) FIELD78
-
-          lcount = lcount + 1
-        
-        ENDDO
-
-c---------- now print the 2h/1p configurations in the form
-c---------- 1p 1h 1h:  this is the canonical order internally followed
-c------ the output format is 
-c------  conf#, #a, symm, #k, symm, #l, symm,   epsa,  epsk,  epsl
-c
-
-        DO 60 KLREP=1,NREP
-          AREP=MULTB(DESREP,KLREP+NREP,2)
-          DO 45 LREP=1,NREP
-           KREP=MULTB(LREP,KLREP+NREP,2)
-           IF(KREP.LT.LREP) GOTO 45
-           DO L=1,NO(LREP)
-             LOFF=IO(LREP)+L
-             KMIN=1
-             IF(KREP.EQ.LREP) KMIN = L + 1
-             DO K=KMIN,NO(KREP)
-               KOFF=IO(KREP)+K
-               DO A=1,NV(AREP)
-                 AOFF=IO(NREP+1)+IV(AREP)+A
-                 WRITE(FIELD78,381) 
-     &                A,REPNA(AREP),
-     &                K,REPNA(KREP),
-     &                L,REPNA(LREP),
-     &                EPS(AOFF),EPS(KOFF),EPS(LOFF)
-                 WRITE(LUN,REC=lcount) FIELD78
-                 LCOUNT=LCOUNT+1
-               ENDDO
-             ENDDO
-           ENDDO
- 45       CONTINUE
- 60     CONTINUE
-
-        CLOSE(LUN)
-
-        LCOUNT = LCOUNT - 1
-
- 381    FORMAT(3(I4,2X,A5),3(F15.8))
-
-C
-C  compare with actual length of ADC matrix. should match
-C  LENADCM minus the hole space
-C
-        IF(LCOUNT.NE.LENADCM) THEN
-          WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,LENADCM
-          CALL QUIT('Error in WCONDAT')
-        ENDIF
-C
-C -------------------------------  DIPS
-C
-      ELSE IF(IZLEVEL.EQ.2) THEN
-
-        WRITE(IW,*) 'Writing DIP 2h configs, Reclen, handle: ',IRECL,LUN
-        WRITE(IW,*) 'ADC configuration data written to ',FILENAME
-        OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
-     &           STATUS='UNKNOWN')
-
-        COOC=1
-        DO 14 JRP = 1, NREP
-          IRP = MULTB(JRP,DESREP+NREP,2)
-          IF (IRP.LT.JRP) GOTO 14
-          DO J = 1, NO(JRP)
-            IMIN = 1
-            IF (IRP.EQ.JRP) IMIN = J + 1
-            DO I = IMIN, NO(IRP)
-c
-              WRITE(FIELD44,382) I,REPNA(IRP),J,REPNA(JRP),
-     &    0,'        ',0,'        '
-              WRITE(LUN,REC=COOC) FIELD44
-              COOC = COOC + 1
-c
-            ENDDO
-          ENDDO
-  14    CONTINUE
-        IF( (COOC-1).NE.NOOT(DESREP)) 
-     &         STOP '2H counting error in BUILD_SAT!'
- 382    FORMAT(4(I3,'(',A4,')  '))
-c|
-c| ATT** No 3h1p config information for the DIP case!
-c| This is because we will not calculate long eigenvectors
-c| belonging to the 3h1p case. This is only required for the
-c| SIP case! We therefore comment out original code.
-c|
-c|
-c       DO K=1,MAXOCCSP
-c         KSP = IROOO(K,1)
-c         KRP = IROOO(K,2)
-c         DO J=K+1,MAXOCCSP
-c           JSP = IROOO(J,1)
-c           JRP = IROOO(J,2)
-c           JKRP = MULTB(JRP,KRP,1)
-c           DO I=J+1,MAXOCCSP
-c             ISP = IROOO(I,1)
-c             IRP = IROOO(I,2)
-c             IJKRP = MULTB(IRP,JKRP+NREP,1)
-c             RRP = MULTB(DESREP+NREP,IJKRP,2)
-c             DO RSP = 1,NV(RRP)
-c
-c             WRITE(FIELD44,382) RSP,REPNA(RRP),ISP,REPNA(IRP),
-c    &                         JSP,REPNA(JRP),KSP,REPNA(KRP)
-c             WRITE(LUN,REC=COOC) FIELD44
-c             COOC = COOC + 1
-c
-c             ENDDO
-c           ENDDO
-c         ENDDO
-c       ENDDO
-        CLOSE(LUN)
-
-      ELSE
-        CALL QUIT('Illegal tag in WCONDAT')
       ENDIF
 
       RETURN
@@ -7325,3 +6927,60 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     
 
+
+      DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
+*     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE COMPLEX ZX(*),ZY(*)
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  ZDOTC forms the dot product of a vector.
+*
+*  Further Details
+*  ===============
+*
+*     jack dongarra, 3/11/78.
+*     modified 12/3/93, array(1) declarations changed to array(*)
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      DOUBLE COMPLEX ZTEMP
+      INTEGER I,IX,IY
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC DCONJG
+*     ..
+      ZTEMP = (0.0d0,0.0d0)
+      ZDOTC = (0.0d0,0.0d0)
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+*
+*        code for both increments equal to 1
+*
+         DO I = 1,N
+            ZTEMP = ZTEMP + DCONJG(ZX(I))*ZY(I)
+         END DO
+      ELSE
+*
+*        code for unequal increments or equal increments
+*          not equal to 1
+*
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            ZTEMP = ZTEMP + DCONJG(ZX(IX))*ZY(IY)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      ZDOTC = ZTEMP
+      RETURN
+      END

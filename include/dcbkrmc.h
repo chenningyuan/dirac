@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 11283 $
-! DATE    : $Date: 2010-08-09 14:37:27 +0200 (Mon, 09 Aug 2010) $
 ! FILE    : dcbkrmc.h
 !
 !*** KR-MCSCF calculations ***
@@ -9,10 +7,12 @@
 
       LOGICAL MCFLAG(NMCFLAG), KRMC_SKIPEE, KRMC_SKIPEP
       LOGICAL KRMC_NOCI, KRMC_UCIBOS, KRMC_MKCNST, KRMC_CHCKJZ
+      LOGICAL KRMC_NO1pdens
       CHARACTER*8 KRMC_CIPROGRAM
       CHARACTER*72 KRMC_FRZSTR(2), KRMC_DELSTR(2)
       COMMON /DCLKRMC/ MCFLAG, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_NOCI,     &
-     &                 KRMC_UCIBOS, KRMC_MKCNST, KRMC_CHCKJZ
+     &                 KRMC_UCIBOS, KRMC_MKCNST, KRMC_CHCKJZ,           &
+     &                 KRMC_NO1pdens
 
       INTEGER NKRMCISH(2), NKRMCASH(2), NKRMCSSH(2),                    &
      &        NKRMCGSH(2, MXMCGAS), NKRMCGSP(2, MXMCGAS), NKRMCESH(2),  &

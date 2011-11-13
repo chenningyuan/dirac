@@ -1,0 +1,4559 @@
+===========================================================================================
+Size of all static allocations (pam script) : 92.723 MB
+DIRAC master    (fe6) allocating 104857600 words (800 MB) of memory
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                      VERSION 10.00  10 October 2010                        *
+ *                                                                            *
+ ******************************************************************************
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
+ *                                                                            *
+ *    with new contributions since the DIRAC08 release from:                  *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsø              Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linköping University              Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsø              Norway       *
+ *    Jørn Thyssen             University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
+ *                                                                            *
+ ******************************************************************************
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : fe6
+ Operating system  : Linux 2.6.18-128.el5
+ Machine           : x86_64
+ Run               : Parallel
+ Last compilation  : 13:42:51 Nov  3 2010 (by hjj@fe6.dcsc.sdu.dk:/people/disk2/hjj/prog/dirac10_dev_gfortran)
+ FORTRAN compiler  : /people/disk2/stefan/lib64/int4/openmpi-1.3.2/bin/mpif90 -O3 -ffast-math -funroll-loops -g -fno-range-check -fcray-pointer -Iinclude -Jmodules -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN=433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=104857600 -DVAR_MPI -DSYS_LOCALDISKS -DVAR_MFDS -DVAR_MPI2 -DMOD_XCFUN -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
+ C compiler        : /people/disk2/stefan/lib64/int4/openmpi-1.3.2/bin/mpicc -O3 -ffast-math -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_XCFUN -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=104857600 -DVAR_MPI -DSYS_LOCALDISKS -DVAR_MPI2 -DSYS_FLAVOR=LINUX 
+ External libraries: -Lxcfun/lib -lxcfun 
+ Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
+ ILP data model    : I32LP64 
+ SVN URL           : http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk 
+ SVN Revision      : 11825 
+
+ 
+     Date and time (Linux)  : Wed Nov  3 15:38:40 2010 
+     Host name              : fe6                                     
+
+
+ *******************************************************************************
+ ************************** Input read from DIRAC.INP **************************
+ *******************************************************************************
+
+#################################
+**DIRAC
+.TITLE
+ Testing 4-component CI calculation on F atom in C2h, complex CMICDV optimizatio
+.WAVE FUNCTION
+#################################
+**WAVE FUNCTION
+.DHF
+.KR CI
+#########
+*DHFCAL
+.CLOSED SHELL
+  4  0
+.OPEN SHELL
+ 1
+ 5/0,6
+#########
+*KRCICALC
+.CI PROGRAM
+LUCIAREL
+.INACTIVE
+  1  0
+.GASSH
+ 2
+  1  3
+  1  3   ! p,s
+.GASSPC
+  5  7
+  7  7
+.MK2REF
+ 0
+.MK2DEL
+ 7
+.CIROOTS
+ 7  3
+.MAX CI
+ 20
+.MXCIVE
+  60
+.ANALYZ
+.RSTRCI
+ 0
+#################################
+*END OF
+
+
+    **************************************************************************
+    ***********  Testing 4-component CI calculation on F atom in C ***********
+    **************************************************************************
+
+ Jobs in this run:
+   * Wave function
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in the four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+   F atom in 10s6p3d basis                                                
+   LUCIAREL test basis set                                                
+
+  Nuclear Gaussian exponent for atom of charge   9.000 :    5.3546911034D+08
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C2h
+
+   * The point group was generated by:
+
+      Reflection in the xy-plane
+      Inversion centre
+
+   * Group multiplication table
+
+        |  E   C2z   i   Oxy
+   -----+--------------------
+     E  |  E   C2z   i   Oxy
+    C2z | C2z   E   Oxy   i 
+     i  |  i   Oxy   E   C2z
+    Oxy | Oxy   i   C2z   E 
+
+   * Character table
+
+        |  E   C2z   i   Oxy
+   -----+--------------------
+    Ag  |   1    1    1    1
+    Bg  |   1   -1    1   -1
+    Bu  |   1   -1   -1    1
+    Au  |   1    1   -1   -1
+
+   * Direct product table
+
+        | Ag   Bg   Bu   Au 
+   -----+--------------------
+    Ag  | Ag   Bg   Bu   Au 
+    Bg  | Bg   Ag   Au   Bu 
+    Bu  | Bu   Au   Ag   Bg 
+    Au  | Au   Bu   Bg   Ag 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Complex group. NZ = 2
+   * Direct product decomposition:
+          E1g x E1g : Ag  + Ag  + Bg  + Bg 
+          E1u x E1g : Au  + Au  + Bu  + Bu 
+          E1u x E1u : Ag  + Ag  + Bg  + Bg 
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  Ag (1)  |                La  |  Au (1)  Au (1)  |
+      Sa  |  Au (1)  Au (1)  |                Sa  |  Ag (1)  Ag (1)  |
+      Lb  |  Bg (4)  Bg (4)  |                Lb  |  Bu (4)  Bu (4)  |
+      Sb  |  Bu (4)  Bu (4)  |                Sb  |  Bg (4)  Bg (4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1  i
+    Bg   k  j
+    Bu   k  j
+    Au   1  i
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  F  1        1       9      46      46      L  - [10s6p3d|10s6p3d]                                              
+                            111     111      S  - [6s13p6d3f|6s13p6d3f]                                          
+  ----------------------------------------------------------------------
+                             46      46      L  - large components
+                            111     111      S  - small components
+  ----------------------------------------------------------------------
+  total:      1       9     157     157
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-13
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+  Basis set typed explicitly in input file                                        
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  3
+
+
+   1   F  1     x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   0  0  2  1
+
+
+  Symmetry 3
+
+   1   F  1  x    1
+   2   F  1  y    2
+
+
+  Symmetry 4
+
+   3   F  1  z    3
+  Nuclear repulsion energy :    0.000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L F     s        2  L F     px       3  L F     py       4  L F     pz       5  L F     dxx      6  L F     dxy 
+     7  L F     dxz      8  L F     dyy      9  L F     dyz     10  L F     dzz 
+   * Small components:   20
+    11  S F     s       12  S F     px      13  S F     py      14  S F     pz      15  S F     dxx     16  S F     dxy 
+    17  S F     dxz     18  S F     dyy     19  S F     dyz     20  S F     dzz     21  S F     fxxx    22  S F     fxxy
+    23  S F     fxxz    24  S F     fxyy    25  S F     fxyz    26  S F     fxzz    27  S F     fyyy    28  S F     fyyz
+    29  S F     fyzz    30  S F     fzzz
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L Ag F  s        2  L Ag F  dxx      3  L Ag F  dxy      4  L Ag F  dyy      5  L Ag F  dzz      6  L Bg F  dxz 
+     7  L Bg F  dyz      8  L Bu F  px       9  L Bu F  py      10  L Au F  pz  
+   * Small components:   20
+    11  S Ag F  s       12  S Ag F  dxx     13  S Ag F  dxy     14  S Ag F  dyy     15  S Ag F  dzz     16  S Bg F  dxz 
+    17  S Bg F  dyz     18  S Bu F  px      19  S Bu F  py      20  S Bu F  fxxx    21  S Bu F  fxxy    22  S Bu F  fxyy
+    23  S Bu F  fxzz    24  S Bu F  fyyy    25  S Bu F  fyzz    26  S Au F  pz      27  S Au F  fxxz    28  S Au F  fxyz
+    29  S Au F  fyyz    30  S Au F  fzzz
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           52    18    56    31
+  Number of large orbitals in each symmetry:     22     6    12     6
+  Number of small orbitals in each symmetry:     30    12    44    25
+
+* Large component functions
+
+  Symmetry  Ag ( 1)
+
+       10 functions:    F  s   
+        3 functions:    F  dxx 
+        3 functions:    F  dxy 
+        3 functions:    F  dyy 
+        3 functions:    F  dzz 
+
+  Symmetry  Bg ( 2)
+
+        3 functions:    F  dxz 
+        3 functions:    F  dyz 
+
+  Symmetry  Bu ( 3)
+
+        6 functions:    F  px  
+        6 functions:    F  py  
+
+  Symmetry  Au ( 4)
+
+        6 functions:    F  pz  
+
+* Small component functions
+
+  Symmetry  Ag ( 1)
+
+        6 functions:    F  s   
+        6 functions:    F  dxx 
+        6 functions:    F  dxy 
+        6 functions:    F  dyy 
+        6 functions:    F  dzz 
+
+  Symmetry  Bg ( 2)
+
+        6 functions:    F  dxz 
+        6 functions:    F  dyz 
+
+  Symmetry  Bu ( 3)
+
+       13 functions:    F  px  
+       13 functions:    F  py  
+        3 functions:    F  fxxx
+        3 functions:    F  fxxy
+        3 functions:    F  fxyy
+        3 functions:    F  fxzz
+        3 functions:    F  fyyy
+        3 functions:    F  fyzz
+
+  Symmetry  Au ( 4)
+
+       13 functions:    F  pz  
+        3 functions:    F  fxxz
+        3 functions:    F  fxyz
+        3 functions:    F  fyyz
+        3 functions:    F  fzzz
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     1
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+ * Kramers restricted CI calculation
+===========================================================================
+ DHFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+ * Open shell SCF calculation using Average-of-Configuration
+
+ * Shell specifications:
+
+                                        Orbitals
+                        #electrons  irrep 1  irrep 2     f        a      alpha
+                        ----------  -------  -------  -------  -------  -------
+   Closed shell            4             2        0    1.0000   1.0000   0.0000
+   Open shell no. 1        5.00          0        3    0.8333   0.9600   0.2400
+   ----------------------------------------------------------------------------
+   Total                   9.00          2        3
+
+   f is the fraction occupation; a and alpha open shell coupling coefficients.
+
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+   SS-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+===========================================================================
+ *KRCICALC: General set-up for KR-CI calculation:
+===========================================================================
+ * Inactive orbitals     :    1   0
+ * Active orbitals       :    2   6
+ * Active electrons      :    7
+ * GAS space setup for   2 GAS space(s) : 
+   - GAS space   1       :    1   3
+    (constraints: min/max active electrons after space :   5/  7)
+   - GAS space   2       :    1   3
+    (constraints: min/max active electrons after space :   7/  7)
+ * CI program used       : LUCIAREL
+ * optimization of wave function(s) in the following symmetries:
+    **   3 eigenstate(s) in symmetry (fermion):  au
+    -- Allowed interval of 2 * MK :  -7 to   7
+ * Using symmetry nomenclature for LUCIAREL. 
+      Boson and Fermion irreps of complex (sub)groups  
+
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    0
+   SS-integrals from iteration    0
+ * General print level   :    0
+===========================================================================
+ Control parameters for KR-CI optimization
+===========================================================================
+ * Maximum number of CI iterations for each symmetry:  20
+ * Maximum subspace dimension set to  60
+ * Integrals on slave nodes provided by the MASTER
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          3(Proj:          3, Lindep:          0)
+   L   Bg    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   Bu    * Deleted:          6(Proj:          6, Lindep:          0)
+   S   Au    * Deleted:          3(Proj:          3, Lindep:          0)
+   L   Bu    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   Ag    * Deleted:          6(Proj:          6, Lindep:          0)
+   S   Bg    * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    25      18      43
+No. of positronic orbitals (NPSH):    25      18      43
+Total no. of orbitals      (NORB):    50      36      86
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Wed Nov  3 15:38:40 2010
+
+It.   1    -52.28490521034      1.00D+20  0.00D+00  0.00D+00               0.01199800s   Scr. nuclei    Wed Nov  3
+
+########## START ITERATION NO.   2 ##########   Wed Nov  3 15:38:40 2010
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   47.91%    7.77%   29.30%   0.00599900s
+SOfock:SL  1.00D-12   10.02%   47.03%    7.88%   29.49%   0.04899198s
+SOfock:SS  1.00D-12   11.22%   49.32%    7.50%   29.14%   0.13398001s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.23896497s
+
+########## END ITERATION NO.   2 ##########   Wed Nov  3 15:38:40 2010
+
+It.   2    -99.15785235088      4.69D+01  9.42D+00  1.97D+00               0.23896497s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   3 ##########   Wed Nov  3 15:38:40 2010
+
+    3 *** Differential density matrix. DCOVLP     = 1.0600
+    3 *** Differential density matrix. DVOVLP( 1) = 0.9619
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   48.08%    7.67%   28.80%   0.00599903s
+SOfock:SL  1.00D-12   10.02%   47.70%    7.14%   29.17%   0.04799300s
+SOfock:SS  1.00D-12   11.22%   51.15%    7.21%   28.31%   0.13198000s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.20396805s
+
+########## END ITERATION NO.   3 ##########   Wed Nov  3 15:38:40 2010
+
+It.   3    -99.48157983703      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.20396805s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   4 ##########   Wed Nov  3 15:38:41 2010
+
+    4 *** Differential density matrix. DCOVLP     = 0.9978
+    4 *** Differential density matrix. DVOVLP( 1) = 1.0167
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   48.27%   10.69%   30.34%   0.00599903s
+SOfock:SL  1.00D-12   10.28%   48.23%    8.43%   28.76%   0.04699296s
+SOfock:SS  1.00D-12   11.22%   53.19%    6.88%   27.33%   0.12998003s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.19997001s
+
+########## END ITERATION NO.   4 ##########   Wed Nov  3 15:38:41 2010
+
+It.   4    -99.48856277664      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.19997001s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   5 ##########   Wed Nov  3 15:38:41 2010
+
+    5 *** Differential density matrix. DCOVLP     = 1.0024
+    5 *** Differential density matrix. DVOVLP( 1) = 1.0045
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   48.30%   10.71%   29.90%   0.00599903s
+SOfock:SL  1.00D-12   10.28%   49.44%    8.12%   28.20%   0.04699302s
+SOfock:SS  1.00D-12   11.22%   55.99%    6.57%   25.86%   0.12698090s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.19696999s
+
+########## END ITERATION NO.   5 ##########   Wed Nov  3 15:38:41 2010
+
+It.   5    -99.48908894590      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.19696999s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   6 ##########   Wed Nov  3 15:38:41 2010
+
+    6 *** Differential density matrix. DCOVLP     = 0.9998
+    6 *** Differential density matrix. DVOVLP( 1) = 1.0021
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   48.44%    7.59%   29.81%   0.00599897s
+SOfock:SL  1.00D-12   10.02%   50.23%    6.87%   27.81%   0.04799294s
+SOfock:SS  1.00D-12   11.22%   57.41%    6.39%   25.12%   0.12498105s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.19596994s
+
+########## END ITERATION NO.   6 ##########   Wed Nov  3 15:38:41 2010
+
+It.   6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.19596994s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   7 ##########   Wed Nov  3 15:38:41 2010
+
+    7 *** Differential density matrix. DCOVLP     = 0.9999
+    7 *** Differential density matrix. DVOVLP( 1) = 1.0003
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   49.11%   10.41%   28.99%   0.00599909s
+SOfock:SL  1.00D-12   10.28%   52.52%    7.61%   26.42%   0.04599297s
+SOfock:SS  1.00D-12   11.22%   64.33%    5.69%   21.32%   0.11898196s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.18797207s
+
+########## END ITERATION NO.   7 ##########   Wed Nov  3 15:38:41 2010
+
+It.   7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.18797207s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   8 ##########   Wed Nov  3 15:38:41 2010
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+    8 *** Differential density matrix. DVOVLP( 1) = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   51.11%   10.03%   30.04%   0.00599897s
+SOfock:SL  1.00D-12   10.28%   58.57%    6.90%   23.04%   0.04399395s
+SOfock:SS  1.00D-12   11.22%   74.69%    5.13%   15.47%   0.10798311s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.17397308s
+
+########## END ITERATION NO.   8 ##########   Wed Nov  3 15:38:41 2010
+
+It.   8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.17397308s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   9 ##########   Wed Nov  3 15:38:42 2010
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+    9 *** Differential density matrix. DVOVLP( 1) = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   52.21%    9.60%   29.46%   0.00499904s
+SOfock:SL  1.00D-12   10.28%   60.74%    6.43%   22.16%   0.04299402s
+SOfock:SS  1.00D-12   11.22%   78.39%    4.73%   13.50%   0.10298395s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.16897380s
+
+########## END ITERATION NO.   9 ##########   Wed Nov  3 15:38:42 2010
+
+It.   9    -99.48914238139      4.57D-11  1.65D-06  2.01D-06   DIIS   8    0.16897380s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.  10 ##########   Wed Nov  3 15:38:42 2010
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+   10 *** Differential density matrix. DVOVLP( 1) = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   54.34%    6.73%   28.10%   0.00499892s
+SOfock:SL  1.00D-12   10.02%   65.65%    5.54%   19.77%   0.04099405s
+SOfock:SS  1.00D-12   11.22%   83.76%    4.56%   11.20%   0.09698498s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.15997601s
+
+########## END ITERATION NO.  10 ##########   Wed Nov  3 15:38:42 2010
+
+It.  10    -99.48914238139      2.36D-12 -2.59D-07  1.63D-07   DIIS   9    0.15997601s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.  11 ##########   Wed Nov  3 15:38:42 2010
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+   11 *** Differential density matrix. DVOVLP( 1) = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   58.08%    6.60%   24.73%   0.00500011s
+SOfock:SL  1.00D-12   10.02%   73.93%    5.14%   15.82%   0.03699398s
+SOfock:SS  1.00D-12   11.92%   87.42%    4.64%    9.55%   0.09098577s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.14797807s
+
+########## END ITERATION NO.  11 ##########   Wed Nov  3 15:38:42 2010
+
+It.  11    -99.48914238139      8.81D-13  5.98D-08  3.77D-09   DIIS   9    0.14797807s   LL SL SS       Wed Nov  3
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1    -52.28490521034      1.00D+20  0.00D+00  0.00D+00               0.01199800s   Scr. nuclei    Wed Nov  3
+It.   2    -99.15785235088      4.69D+01  9.42D+00  1.97D+00               0.23896497s   LL SL SS       Wed Nov  3
+It.   3    -99.48157983703      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.20396805s   LL SL SS       Wed Nov  3
+It.   4    -99.48856277664      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.19997001s   LL SL SS       Wed Nov  3
+It.   5    -99.48908894590      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.19696999s   LL SL SS       Wed Nov  3
+It.   6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.19596994s   LL SL SS       Wed Nov  3
+It.   7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.18797207s   LL SL SS       Wed Nov  3
+It.   8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.17397308s   LL SL SS       Wed Nov  3
+It.   9    -99.48914238139      4.57D-11  1.65D-06  2.01D-06   DIIS   8    0.16897380s   LL SL SS       Wed Nov  3
+It.  10    -99.48914238139      2.36D-12 -2.59D-07  1.63D-07   DIIS   9    0.15997601s   LL SL SS       Wed Nov  3
+It.  11    -99.48914238139      8.81D-13  5.98D-08  3.77D-09   DIIS   9    0.14797807s   LL SL SS       Wed Nov  3
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   11 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL SL SS     :    0.20000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -99.489142381389513
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      0.000000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -99.489142381389513
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1g
+  * Closed shell, f = 1.0000
+   -26.41639945535  ( 2)       -1.57727610776  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+     0.31104503750  ( 2)        0.82018640649  ( 6)        0.82025716217  ( 4)        2.22131617223  ( 2)        3.01093114697  ( 4)
+     3.01115027598  ( 6)       10.78943851550  ( 4)       10.79227226723  ( 6)       15.29678355008  ( 2)       70.77214728161  ( 2)
+   263.68296406286  ( 2)      971.32251115843  ( 2)     3857.33949050744  ( 2)    17131.06473439464  ( 2)
+
+* Fermion symmetry E1u
+  * Open shell #1, f = 0.8333
+    -0.73206287872  ( 2)       -0.72947241728  ( 4)
+  * Virtual eigenvalues, f = 0.0000
+     0.24298715700  ( 2)        0.24318805683  ( 4)        1.18596083863  ( 2)        1.18725706156  ( 4)        4.85389263945  ( 2)
+     4.85889791632  ( 4)       19.58722956586  ( 2)       19.60922562480  ( 4)       95.51145679019  ( 2)       95.72887759340  ( 4)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.24298716 au (symmetry E1u)
+  - E(HOMO) :    -0.72947242 au (symmetry E1u)
+  ------------------------------------------
+    gap     :     0.97245957 au
+
+
+
+ *******************************************************************************
+ ****************************** KR-CI calculation ******************************
+ *******************************************************************************
+
+   This is output from DIRAC KR-CI
+   - a relativistic four-component CI wave function program.
+
+
+   General structure: 
+     Stefan Knecht and Hans Joergen Aa. Jensen 
+
+   Integral transformation: 
+     Luuk Visscher, Jon K. Laerdahl, and Trond Saue
+
+   GASCIP CI code: 
+     Joern Thyssen and Hans Joergen Aa. Jensen
+
+   LUCIAREL CI code: 
+     Timo Fleig and Jeppe Olsen
+
+   Parallel LUCIAREL CI code: 
+     Stefan Knecht, Hans Joergen Aa. Jensen and Timo Fleig
+
+ *******************************************************************************
+
+ This module is published in:
+
+    GASCIP: J Thyssen, T Fleig, and H J Aa Jensen
+                       J Chem Phys 129, 034109 (2008), suppl. material.
+    DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher
+                       J Chem Phys, 119,6 (2003) 2963
+    PARALLEL LUCIAREL:
+                    S. Knecht, H J Aa Jensen, and T Fleig
+                       J Chem Phys, 132,1 (2010) 014108
+
+ *******************************************************************************
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    1
+&&& Number of CI roots for this symmetry       0
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    2
+&&& Number of CI roots for this symmetry       0
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    3
+&&& Number of CI roots for this symmetry       0
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    4
+&&& Number of CI roots for this symmetry       0
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    5
+&&& Number of CI roots for this symmetry       0
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    6
+&&& Number of CI roots for this symmetry       0
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    7
+&&& Number of CI roots for this symmetry       3
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+  //  LUCIAREL called
+  //  CIRUN = NDET  
+  //  The number of CI determinants will be computed
+
+ (RSETCI) Number of determinants:          451 (dimension          902)
+
+ CPU (Wall) time for generation of determinants:  0.00199890s( 0.00000000s)
+
+ (RSETWOP) Orbital classes:
+   Fermion irrep 1
+     Inactive orbitals   :    1..   1                                        
+     Active orbitals     :    2..   3                                        
+     Secondary orbitals  :  -25..  -1,   4..  25                             
+   Fermion irrep 2
+     Inactive orbitals   :                                                   
+     Active orbitals     :    1..   6                                        
+     Secondary orbitals  :  -18..  -1,   7..  18                             
+
+ (ROPTST)  Start orbitals read from file DFCOEF
+
+ -> Gram-Schmidt orthonormalizing MO coefficients.
+
+ (RTRACTL1) Starting 4-index integral transformation.
+ - Integral class 1 : (LL|??)
+   - Beginning task   1 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   3 after      0. seconds and      0. CPU-seconds
+ - Integral class 2 : (SS|??)
+   - Beginning task   4 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   5 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   6 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   7 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   8 of   8 after      1. seconds and      0. CPU-seconds
+ - Starting symmetrization after           1.00 seconds
+ - Finished symmetrization after           1.00 seconds
+
+------ Timing report (in CPU seconds) of module  integral transformation      
+
+ Time in  Initializing MS4IND fi       0.001 seconds
+ Time in  Computing+transform. i       0.696 seconds
+
+------ End of timing report ------
+
+
+ (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:01)
+            Transformation ended Wed Nov  3 15:38:43 2010
+  //  LUCIAREL called
+  //  CIRUN = KR-CI 
+  //  Running large-scale CI calculation
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   78.23%    9.97%    3.63%   11.97%   0.00200009s
+SOfock:SL  1.00D-12   73.74%   13.73%    3.47%    7.02%   0.01599693s
+SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.05399179s
+  Allocating for              784 diagonal integrals.
+
+
+  Allocating for            12064 integrals.
+
+ Reading from file : 4INDINFO 
+ Reading from file : 4IND1XXXX0
+ Reading from file : 4IND2XXXX0
+
+ Number of integrals/CC amplitudes:            12064
+ (including imaginary parts) 
+
+  Number of determinants/combinations           451
+
+       ===================================================
+        parallel distribution setup for symmetry irrep  7
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :                320
+  total number of active blocks              :                 17
+  size of largest TTSS block                 :                120
+  overall weighted active block length       :              58414
+  Maximum weighted block size                :              21120
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     17 blocks with a total weight of              58414
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:       104814536
+   allocate two CI vectors each of length:                    451
+   allocate resolution vector of length:                     2160
+   ==============================================================
+
+  
+   
+   
+  IROOT NDEG            1           2
+  WARNING WARNING WARNING WARNING ! 
+  DEGENERATE INITIAL VECTORS FOR CI 
+  IROOT NDEG            2           1
+  IROOT NDEG            3           1
+
+        ===========================================
+        start of complex Davidson solver CMICDV_PAR
+        ===========================================
+
+
+       ==============================================
+        I will take you to a place 
+        Where we shall find our
+         ROOTS, BLOODY ROOTS 
+
+                      Sepultura 
+       ==============================================
+
+
+  Nuclear repulsion + core energy:       -75.555932064281549
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02278185s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00259995s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00430107s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02270699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00262094s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00434017s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00001192s
+ >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.08201003s
+
+    
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02267385s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00260282s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00429606s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02270699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00264096s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00433302s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.08294892s
+
+    
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02263618s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00260186s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00429296s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02283216s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00265789s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00433922s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.08330894s
+
+    
+ >>>  WALL TIME FOR INITIAL ITERATION            :  0.24862409s
+
+
+ Info from iteration      1
+ _______________________
+ Iter RNORM EIGAPR          1   .1017522604433E+00      -99.489783902859
+ Iter RNORM EIGAPR          1   .1017522604431E+00      -99.489783902859
+ Iter RNORM EIGAPR          1   .1017543992457E+00      -99.487859338447
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34410191s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703904s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12560296s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34546185s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706384s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12552595s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.03634596s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34380198s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703117s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12582111s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34439301s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03714108s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12566185s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.03163791s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34370017s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03691983s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12585902s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34500408s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03686595s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12581491s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.03276205s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.10171294s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.10357809s
+
+
+ Info from iteration      2
+ _______________________
+ Iter RNORM EIGAPR          2   .3127060330443E-01      -99.494097567121
+ Iter RNORM EIGAPR          2   .3127476110038E-01      -99.494097441045
+ Iter RNORM EIGAPR          2   .3119328187490E-01      -99.492169125405
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35201788s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703785s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18040800s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35261822s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03709888s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18050098s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16271400s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35246706s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692198s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18035197s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35369205s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03700614s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18078995s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16734695s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35247207s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03694105s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18057704s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35344005s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03712296s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18038702s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16524696s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.49686384s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.50029206s
+
+
+ Info from iteration      3
+ _______________________
+ Iter RNORM EIGAPR          3   .1861843886374E-01      -99.494641463714
+ Iter RNORM EIGAPR          3   .1862211865872E-01      -99.494641392551
+ Iter RNORM EIGAPR          3   .1855280572616E-01      -99.492708861433
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35326600s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18057990s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35332608s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03711009s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18024611s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16091204s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35231090s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03688788s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18060803s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35364699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706884s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18042994s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16483402s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35379100s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703690s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18014598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35332298s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03693581s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18044209s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16603708s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.49384785s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49908900s
+
+
+ Info from iteration      4
+ _______________________
+ Iter RNORM EIGAPR          4   .1058536810607E-01      -99.494863211737
+ Iter RNORM EIGAPR          4   .1058565737511E-01      -99.494863203369
+ Iter RNORM EIGAPR          4   .1060925622487E-01      -99.492929849637
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35295701s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03701305s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18050909s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35305381s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708601s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18065405s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16630101s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35284400s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03700495s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18020892s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35349488s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03689194s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18034720s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15645909s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35276413s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03713012s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18026996s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35344696s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03704810s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18051291s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15723205s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48259211s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.48966193s
+
+
+ Info from iteration      5
+ _______________________
+ Iter RNORM EIGAPR          5   .3236695273725E-02      -99.494920201013
+ Iter RNORM EIGAPR          5   .3240020906758E-02      -99.494920188102
+ Iter RNORM EIGAPR          5   .3249765222537E-02      -99.492987196078
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35283685s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706622s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18073988s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35254598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03700900s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18034720s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15563393s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35303712s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03712392s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18042302s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35272598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03710699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18038297s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16539192s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35335994s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708410s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18040299s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35396504s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03696799s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18036509s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15801501s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48215008s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49107003s
+
+
+ Info from iteration      6
+ _______________________
+ Iter RNORM EIGAPR          6   .1203011184805E-02      -99.494925194128
+ Iter RNORM EIGAPR          6   .1205043306611E-02      -99.494925191837
+ Iter RNORM EIGAPR          6   .1206016616910E-02      -99.492992228177
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35245180s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03697896s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18028998s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35346508s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707504s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18043995s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16119695s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35268092s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698206s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18047619s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35387897s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03687096s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18003702s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15673590s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35219502s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03699899s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18041301s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35337496s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03701091s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18036699s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15605903s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47763491s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.48830795s
+
+
+ Info from iteration      7
+ _______________________
+ Iter RNORM EIGAPR          7   .3984462090853E-03      -99.494925821498
+ Iter RNORM EIGAPR          7   .3986984606660E-03      -99.494925821384
+ Iter RNORM EIGAPR          7   .3979490224993E-03      -99.492992857190
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35238314s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03696084s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18041396s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35341001s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03696799s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18009186s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16033602s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35253286s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698087s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18017912s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35395598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702688s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18035603s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15732598s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35297894s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692889s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18073583s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35293198s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703213s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18061399s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15649509s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47831011s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49088120s
+
+
+ Info from iteration      8
+ _______________________
+ Iter RNORM EIGAPR          8   .1928807608354E-03      -99.494925903439
+ Iter RNORM EIGAPR          8   .1929787343477E-03      -99.494925903394
+ Iter RNORM EIGAPR          8   .1916924588309E-03      -99.492992938589
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35352302s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692508s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18045688s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35350704s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703213s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18042016s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16784692s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35249996s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03693104s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18047976s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35300398s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707218s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18002105s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15434885s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35228586s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706312s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18031502s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35433698s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708291s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18065786s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15788293s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48474884s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49909091s
+
+
+ Info from iteration      9
+ _______________________
+ Iter RNORM EIGAPR          9   .6641289687835E-04      -99.494925931488
+ Iter RNORM EIGAPR          9   .6653262299759E-04      -99.494925931479
+ Iter RNORM EIGAPR          9   .6721719554435E-04      -99.492992966509
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35292792s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03689981s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18047214s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35313201s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03704095s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18032098s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15568614s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35447598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03714514s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18081212s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35277486s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707099s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18027592s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15774107s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35332203s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03699207s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18025899s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35241103s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707004s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18037510s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000620s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15507388s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47368193s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.48987293s
+
+
+ Info from iteration     10
+ _______________________
+ Iter RNORM EIGAPR         10   .2092821277734E-04      -99.494925933592
+ Iter RNORM EIGAPR         10   .2094045818378E-04      -99.494925933592
+ Iter RNORM EIGAPR         10   .2162380176565E-04      -99.492992968663
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35354614s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03705406s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18057513s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35286283s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692102s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18063283s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000882s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16410494s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35179210s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698015s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18061399s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35292196s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708315s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18049097s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15419078s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35256100s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708386s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18062901s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35274410s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702903s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18026423s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15623713s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48022604s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49831796s
+
+
+ Info from iteration     11
+ _______________________
+ Iter RNORM EIGAPR         11   .6638375736808E-05      -99.494925933757
+ Iter RNORM EIGAPR         11   .6640296448388E-05      -99.494925933757
+ Iter RNORM EIGAPR         11   .6725309690976E-05      -99.492992968839
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35227418s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702998s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18046594s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35346508s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702998s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18051004s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16122413s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35215902s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706503s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18066120s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35374308s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702903s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18053198s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15613604s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35212302s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698301s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18059492s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35342908s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03710103s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18043423s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15523696s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47880316s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49883199s
+
+
+ Info from iteration     12
+ _______________________
+ Iter RNORM EIGAPR         12   .2966698033145E-05      -99.494925933778
+ Iter RNORM EIGAPR         12   .2964961029822E-05      -99.494925933778
+ Iter RNORM EIGAPR         12   .2962520377128E-05      -99.492992968860
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.00998807s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.01969409s
+
+
+  Convergence was obtained in  12 iterations
+
+ *++++++++++++++++++++++++++++++++++++++++++++*
+
+ The final eigenvalue    1        -99.4949259338 (converged)
+ The final eigenvalue    2        -99.4949259338 (converged)
+ The final eigenvalue    3        -99.4929929689 (converged)
+
+ *++++++++++++++++++++++++++++++++++++++++++++*
+
+
+  I have completed task  KR-CI 
+
+  //  LUCIAREL called
+  //  CIRUN = ANALYZ
+  //  Analyzing the current CI vector(s).
+  Number of determinants/combinations           451
+
+       ===================================================
+        parallel distribution setup for symmetry irrep  7
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :                320
+  total number of active blocks              :                 17
+  size of largest TTSS block                 :                120
+  overall weighted active block length       :              58414
+  Maximum weighted block size                :              21120
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     17 blocks with a total weight of              58414
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:       104830288
+   allocate two CI vectors each of length:                    451
+   allocate resolution vector of length:                     2160
+   ==============================================================
+
+
+ ***************************************************
+ Analysis of Optimized Wave Function for ROOT =   1
+ ***************************************************
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     1  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+  Coefficient of combination        1 is -.99825479E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   2   3
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.99651262E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           1  0.99651262E+00    0.99651262E+00
+  10- 2 TO 10- 1           8  0.97210379E-03    0.99748472E+00
+  10- 3 TO 10- 2          63  0.11426231E-02    0.99862735E+00
+  10- 4 TO 10- 3          71  0.18028202E-04    0.99864538E+00
+  10- 5 TO 10- 4          99  0.23381579E-06    0.99864561E+00
+  10- 6 TO 10- 5          44  0.82503525E-09    0.99864561E+00
+  10- 7 TO 10- 6          16  0.32506590E-11    0.99864561E+00
+  10- 8 TO 10- 7           5  0.26737075E-13    0.99864561E+00
+  10- 9 TO 10- 8           8  0.99021169E-16    0.99864561E+00
+  10-10 TO 10- 9           6  0.14760399E-17    0.99864561E+00
+  Number of coefficients less than  10-11 IS             6
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11       270
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           3  0.30903143E-03    0.30903143E-03
+  10- 3 TO 10- 2          38  0.87548268E-03    0.11845141E-02
+  10- 4 TO 10- 3          63  0.16165418E-04    0.12006795E-02
+  10- 5 TO 10- 4          94  0.20312311E-06    0.12008827E-02
+  10- 6 TO 10- 5          43  0.82182877E-09    0.12008835E-02
+  10- 7 TO 10- 6          16  0.32506590E-11    0.12008835E-02
+  10- 8 TO 10- 7           4  0.25665900E-13    0.12008835E-02
+  10- 9 TO 10- 8           4  0.88078594E-16    0.12008835E-02
+  10-10 TO 10- 9           5  0.12039038E-17    0.12008835E-02
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        48
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           5  0.66307236E-03    0.66307236E-03
+  10- 3 TO 10- 2          25  0.26714045E-03    0.93021281E-03
+  10- 4 TO 10- 3           8  0.18627843E-05    0.93207559E-03
+  10- 5 TO 10- 4           5  0.30692680E-07    0.93210629E-03
+  10- 6 TO 10- 5           1  0.32064757E-11    0.93210629E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.93210629E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.93210629E-03
+  10- 9 TO 10- 8           3  0.86526995E-17    0.93210629E-03
+  10-10 TO 10- 9           1  0.27213616E-18    0.93210629E-03
+
+       Occupation of active sets :  7  0
+         Number of coefficients larger than 10-11         3
+
+  10- 1 TO 10- 0           1  0.99651262E+00    0.99651262E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.99651262E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.99651262E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.99651262E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.99651262E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.99651262E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.99651262E+00
+  10- 8 TO 10- 7           1  0.10711759E-14    0.99651262E+00
+  10- 9 TO 10- 8           1  0.22898754E-17    0.99651262E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.99651262E+00
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+       270   .1201E-02       .1201E-02    5  2
+        48   .9321E-03       .2133E-02    6  1
+         3   .9965E+00       .9986E+00    7  0
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     3  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     5  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.53598526E-05    0.53598526E-05
+  10- 4 TO 10- 3           5  0.42626335E-06    0.57861159E-05
+  10- 5 TO 10- 4           2  0.59462425E-08    0.57920622E-05
+  10- 6 TO 10- 5           2  0.44467887E-11    0.57920666E-05
+  10- 7 TO 10- 6           1  0.72728440E-13    0.57920667E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.57920667E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.57920667E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.57920667E-05
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.53598526E-05    0.53598526E-05
+  10- 4 TO 10- 3           5  0.42626335E-06    0.57861159E-05
+  10- 5 TO 10- 4           2  0.59462425E-08    0.57920622E-05
+  10- 6 TO 10- 5           2  0.44467887E-11    0.57920666E-05
+  10- 7 TO 10- 6           1  0.72728440E-13    0.57920667E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.57920667E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.57920667E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.57920667E-05
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        12   .5792E-05       .5792E-05    5  2
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     7  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -7  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -5  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -3  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           9  0.13081118E-03    0.13081118E-03
+  10- 4 TO 10- 3          27  0.35360059E-05    0.13434718E-03
+  10- 5 TO 10- 4          32  0.11635133E-06    0.13446353E-03
+  10- 6 TO 10- 5          21  0.42711169E-09    0.13446396E-03
+  10- 7 TO 10- 6           6  0.19937562E-11    0.13446396E-03
+  10- 8 TO 10- 7           1  0.47982332E-15    0.13446396E-03
+  10- 9 TO 10- 8           3  0.14188784E-15    0.13446396E-03
+  10-10 TO 10- 9           7  0.16955450E-17    0.13446396E-03
+  Number of coefficients less than  10-11 IS             6
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        94
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.84041341E-05    0.84041341E-05
+  10- 4 TO 10- 3          25  0.31527602E-05    0.11556894E-04
+  10- 5 TO 10- 4          31  0.11384784E-06    0.11670742E-04
+  10- 6 TO 10- 5          21  0.42711169E-09    0.11671169E-04
+  10- 7 TO 10- 6           6  0.19937562E-11    0.11671171E-04
+  10- 8 TO 10- 7           1  0.47982332E-15    0.11671171E-04
+  10- 9 TO 10- 8           2  0.10171311E-15    0.11671171E-04
+  10-10 TO 10- 9           6  0.16793205E-17    0.11671171E-04
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           7  0.12240704E-03    0.12240704E-03
+  10- 4 TO 10- 3           2  0.38324574E-06    0.12279029E-03
+  10- 5 TO 10- 4           1  0.25034934E-08    0.12279279E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.12279279E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.12279279E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.12279279E-03
+  10- 9 TO 10- 8           1  0.40174726E-16    0.12279279E-03
+  10-10 TO 10- 9           1  0.16224453E-19    0.12279279E-03
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        94   .1167E-04       .1167E-04    5  2
+        12   .1228E-03       .1345E-03    6  1
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -1  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     1  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           2  0.30784369E-03    0.30784369E-03
+  10- 3 TO 10- 2          36  0.65993761E-03    0.96778130E-03
+  10- 4 TO 10- 3          81  0.15218712E-04    0.98300001E-03
+  10- 5 TO 10- 4          86  0.22410545E-06    0.98322412E-03
+  10- 6 TO 10- 5          49  0.15241359E-08    0.98322564E-03
+  10- 7 TO 10- 6          14  0.37960264E-11    0.98322565E-03
+  10- 8 TO 10- 7           3  0.94141468E-14    0.98322565E-03
+  10- 9 TO 10- 8           9  0.60762225E-16    0.98322565E-03
+  10-10 TO 10- 9          16  0.25318548E-17    0.98322565E-03
+  Number of coefficients less than  10-11 IS            31
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11       248
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2          23  0.46692418E-03    0.46692418E-03
+  10- 4 TO 10- 3          67  0.13563119E-04    0.48048730E-03
+  10- 5 TO 10- 4          82  0.20730601E-06    0.48069460E-03
+  10- 6 TO 10- 5          49  0.15241359E-08    0.48069613E-03
+  10- 7 TO 10- 6          13  0.37709128E-11    0.48069613E-03
+  10- 8 TO 10- 7           3  0.94141468E-14    0.48069613E-03
+  10- 9 TO 10- 8           5  0.28049913E-16    0.48069613E-03
+  10-10 TO 10- 9           6  0.42021694E-18    0.48069613E-03
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        46
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           2  0.30784369E-03    0.30784369E-03
+  10- 3 TO 10- 2          13  0.19301344E-03    0.50085712E-03
+  10- 4 TO 10- 3          14  0.16555931E-05    0.50251272E-03
+  10- 5 TO 10- 4           4  0.16799436E-07    0.50252952E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.50252952E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.50252952E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.50252952E-03
+  10- 9 TO 10- 8           4  0.32712312E-16    0.50252952E-03
+  10-10 TO 10- 9           9  0.20690030E-17    0.50252952E-03
+
+       Occupation of active sets :  7  0
+         Number of coefficients larger than 10-11         2
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           1  0.25113645E-13    0.25113645E-13
+  10- 8 TO 10- 7           0  0.00000000E+00    0.25113645E-13
+  10- 9 TO 10- 8           0  0.00000000E+00    0.25113645E-13
+  10-10 TO 10- 9           1  0.42634840E-19    0.25113688E-13
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+       248   .4807E-03       .4807E-03    5  2
+        46   .5025E-03       .9832E-03    6  1
+         2   .2511E-13       .9832E-03    7  0
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     3  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     5  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           6  0.14358048E-05    0.14358048E-05
+  10- 5 TO 10- 4           2  0.22182800E-08    0.14380231E-05
+  10- 6 TO 10- 5           3  0.57641265E-10    0.14380807E-05
+  10- 7 TO 10- 6           1  0.56080499E-12    0.14380813E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.14380813E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.14380813E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.14380813E-05
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           6  0.14358048E-05    0.14358048E-05
+  10- 5 TO 10- 4           2  0.22182800E-08    0.14380231E-05
+  10- 6 TO 10- 5           3  0.57641265E-10    0.14380807E-05
+  10- 7 TO 10- 6           1  0.56080499E-12    0.14380813E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.14380813E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.14380813E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.14380813E-05
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        12   .1438E-05       .1438E-05    5  2
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     7  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -7  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -5  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -3  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           1  0.11294155E-03    0.11294155E-03
+  10- 3 TO 10- 2          11  0.11314123E-03    0.22608278E-03
+  10- 4 TO 10- 3          28  0.32874681E-05    0.22937025E-03
+  10- 5 TO 10- 4          39  0.10000831E-06    0.22947026E-03
+  10- 6 TO 10- 5          11  0.20016500E-09    0.22947046E-03
+  10- 7 TO 10- 6           5  0.12997294E-11    0.22947046E-03
+  10- 8 TO 10- 7           1  0.16237109E-15    0.22947046E-03
+  10- 9 TO 10- 8           5  0.93995359E-16    0.22947046E-03
+  10-10 TO 10- 9           6  0.11204355E-17    0.22947046E-03
+  Number of coefficients less than  10-11 IS             5
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        95
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           3  0.69310189E-05    0.69310189E-05
+  10- 4 TO 10- 3          27  0.29964173E-05    0.99274362E-05
+  10- 5 TO 10- 4          39  0.10000831E-06    0.10027445E-04
+  10- 6 TO 10- 5          11  0.20016500E-09    0.10027645E-04
+  10- 7 TO 10- 6           5  0.12997294E-11    0.10027646E-04
+  10- 8 TO 10- 7           1  0.16237109E-15    0.10027646E-04
+  10- 9 TO 10- 8           3  0.78199728E-16    0.10027646E-04
+  10-10 TO 10- 9           6  0.11204355E-17    0.10027646E-04
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           1  0.11294155E-03    0.11294155E-03
+  10- 3 TO 10- 2           8  0.10621021E-03    0.21915176E-03
+  10- 4 TO 10- 3           1  0.29105083E-06    0.21944281E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.21944281E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.21944281E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.21944281E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.21944281E-03
+  10- 9 TO 10- 8           2  0.15795630E-16    0.21944281E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.21944281E-03
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        95   .1003E-04       .1003E-04    5  2
+        12   .2194E-03       .2295E-03    6  1
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -1  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ***************************************************
+ Analysis of Optimized Wave Function for ROOT =   2
+ ***************************************************
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     1  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+  Coefficient of combination        2 is -.20188159E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   2   4
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.40756178E-01
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           1  0.40756178E-01    0.40756178E-01
+  10- 2 TO 10- 1           4  0.42662652E-03    0.41182804E-01
+  10- 3 TO 10- 2          56  0.81746629E-03    0.42000270E-01
+  10- 4 TO 10- 3         100  0.19809904E-04    0.42020080E-01
+  10- 5 TO 10- 4         106  0.24598244E-06    0.42020326E-01
+  10- 6 TO 10- 5          28  0.89000558E-09    0.42020327E-01
+  10- 7 TO 10- 6           9  0.19287262E-11    0.42020327E-01
+  10- 8 TO 10- 7           4  0.69141711E-14    0.42020327E-01
+  10- 9 TO 10- 8           7  0.16831623E-15    0.42020327E-01
+  10-10 TO 10- 9           6  0.15027000E-17    0.42020327E-01
+  Number of coefficients less than  10-11 IS             6
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11       271
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           1  0.10013373E-03    0.10013373E-03
+  10- 3 TO 10- 2          36  0.67337918E-03    0.77351292E-03
+  10- 4 TO 10- 3          81  0.12000581E-04    0.78551350E-03
+  10- 5 TO 10- 4         104  0.23963329E-06    0.78575313E-03
+  10- 6 TO 10- 5          28  0.89000558E-09    0.78575402E-03
+  10- 7 TO 10- 6           8  0.19025416E-11    0.78575402E-03
+  10- 8 TO 10- 7           4  0.69141711E-14    0.78575402E-03
+  10- 9 TO 10- 8           5  0.14116517E-15    0.78575402E-03
+  10-10 TO 10- 9           4  0.12693170E-17    0.78575402E-03
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        47
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           3  0.32649278E-03    0.32649278E-03
+  10- 3 TO 10- 2          20  0.14408711E-03    0.47057989E-03
+  10- 4 TO 10- 3          19  0.78093224E-05    0.47838922E-03
+  10- 5 TO 10- 4           2  0.63491566E-08    0.47839556E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.47839556E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.47839556E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.47839556E-03
+  10- 9 TO 10- 8           2  0.27151062E-16    0.47839556E-03
+  10-10 TO 10- 9           1  0.18863631E-19    0.47839556E-03
+
+       Occupation of active sets :  7  0
+         Number of coefficients larger than 10-11         3
+
+  10- 1 TO 10- 0           1  0.40756178E-01    0.40756178E-01
+  10- 2 TO 10- 1           0  0.00000000E+00    0.40756178E-01
+  10- 3 TO 10- 2           0  0.00000000E+00    0.40756178E-01
+  10- 4 TO 10- 3           0  0.00000000E+00    0.40756178E-01
+  10- 5 TO 10- 4           0  0.00000000E+00    0.40756178E-01
+  10- 6 TO 10- 5           0  0.00000000E+00    0.40756178E-01
+  10- 7 TO 10- 6           1  0.26184535E-13    0.40756178E-01
+  10- 8 TO 10- 7           0  0.00000000E+00    0.40756178E-01
+  10- 9 TO 10- 8           0  0.00000000E+00    0.40756178E-01
+  10-10 TO 10- 9           1  0.21451937E-18    0.40756178E-01
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+       271   .7858E-03       .7858E-03    5  2
+        47   .4784E-03       .1264E-02    6  1
+         3   .4076E-01       .4202E-01    7  0
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     3  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     5  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.49379102E-05    0.49379102E-05
+  10- 4 TO 10- 3           4  0.70654988E-06    0.56444601E-05
+  10- 5 TO 10- 4           4  0.77131351E-08    0.56521732E-05
+  10- 6 TO 10- 5           2  0.54435844E-10    0.56522277E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56522277E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56522277E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56522277E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56522277E-05
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.49379102E-05    0.49379102E-05
+  10- 4 TO 10- 3           4  0.70654988E-06    0.56444601E-05
+  10- 5 TO 10- 4           4  0.77131351E-08    0.56521732E-05
+  10- 6 TO 10- 5           2  0.54435844E-10    0.56522277E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56522277E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56522277E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56522277E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56522277E-05
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        12   .5652E-05       .5652E-05    5  2
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     7  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -7  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -5  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -3  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2          12  0.20438721E-03    0.20438721E-03
+  10- 4 TO 10- 3          31  0.36787509E-05    0.20806596E-03
+  10- 5 TO 10- 4          32  0.73657282E-07    0.20813962E-03
+  10- 6 TO 10- 5          16  0.34257678E-09    0.20813996E-03
+  10- 7 TO 10- 6           3  0.11355554E-11    0.20813996E-03
+  10- 8 TO 10- 7           5  0.10343115E-13    0.20813996E-03
+  10- 9 TO 10- 8           4  0.26556109E-16    0.20813996E-03
+  10-10 TO 10- 9           3  0.69003617E-19    0.20813996E-03
+  Number of coefficients less than  10-11 IS             6
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        94
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           3  0.75462588E-05    0.75462588E-05
+  10- 4 TO 10- 3          30  0.34198875E-05    0.10966146E-04
+  10- 5 TO 10- 4          32  0.73657282E-07    0.11039804E-04
+  10- 6 TO 10- 5          16  0.34257678E-09    0.11040146E-04
+  10- 7 TO 10- 6           3  0.11355554E-11    0.11040147E-04
+  10- 8 TO 10- 7           5  0.10343115E-13    0.11040147E-04
+  10- 9 TO 10- 8           2  0.15003064E-16    0.11040147E-04
+  10-10 TO 10- 9           3  0.69003617E-19    0.11040147E-04
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           9  0.19684095E-03    0.19684095E-03
+  10- 4 TO 10- 3           1  0.25886331E-06    0.19709981E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.19709981E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.19709981E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.19709981E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.19709981E-03
+  10- 9 TO 10- 8           2  0.11553046E-16    0.19709981E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.19709981E-03
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        94   .1104E-04       .1104E-04    5  2
+        12   .1971E-03       .2081E-03    6  1
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -1  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     1  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+  Coefficient of combination        2 is 0.97762797E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   2   4
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.95575644E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           1  0.95575644E+00    0.95575644E+00
+  10- 2 TO 10- 1           3  0.39593614E-03    0.95615238E+00
+  10- 3 TO 10- 2          83  0.14548022E-02    0.95760718E+00
+  10- 4 TO 10- 3          97  0.13145398E-04    0.95762033E+00
+  10- 5 TO 10- 4          92  0.23218108E-06    0.95762056E+00
+  10- 6 TO 10- 5          18  0.57605889E-09    0.95762056E+00
+  10- 7 TO 10- 6           9  0.23621306E-11    0.95762056E+00
+  10- 8 TO 10- 7           6  0.87582958E-14    0.95762056E+00
+  10- 9 TO 10- 8           3  0.15358800E-16    0.95762056E+00
+  10-10 TO 10- 9          10  0.22385783E-17    0.95762056E+00
+  Number of coefficients less than  10-11 IS             5
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11       272
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           1  0.10118163E-03    0.10118163E-03
+  10- 3 TO 10- 2          49  0.78033093E-03    0.88151256E-03
+  10- 4 TO 10- 3          90  0.11757553E-04    0.89327012E-03
+  10- 5 TO 10- 4          91  0.23052040E-06    0.89350064E-03
+  10- 6 TO 10- 5          18  0.57605889E-09    0.89350121E-03
+  10- 7 TO 10- 6           9  0.23621306E-11    0.89350122E-03
+  10- 8 TO 10- 7           5  0.86294098E-14    0.89350122E-03
+  10- 9 TO 10- 8           2  0.10390846E-16    0.89350122E-03
+  10-10 TO 10- 9           7  0.69958445E-18    0.89350122E-03
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        48
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           2  0.29475451E-03    0.29475451E-03
+  10- 3 TO 10- 2          34  0.67447130E-03    0.96922581E-03
+  10- 4 TO 10- 3           7  0.13878451E-05    0.97061366E-03
+  10- 5 TO 10- 4           1  0.16606713E-08    0.97061532E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.97061532E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.97061532E-03
+  10- 8 TO 10- 7           1  0.12888602E-15    0.97061532E-03
+  10- 9 TO 10- 8           0  0.00000000E+00    0.97061532E-03
+  10-10 TO 10- 9           3  0.15389938E-17    0.97061532E-03
+
+       Occupation of active sets :  7  0
+         Number of coefficients larger than 10-11         2
+
+  10- 1 TO 10- 0           1  0.95575644E+00    0.95575644E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.95575644E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.95575644E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.95575644E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.95575644E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.95575644E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.95575644E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.95575644E+00
+  10- 9 TO 10- 8           1  0.49679543E-17    0.95575644E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.95575644E+00
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+       272   .8935E-03       .8935E-03    5  2
+        48   .9706E-03       .1864E-02    6  1
+         2   .9558E+00       .9576E+00    7  0
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     3  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     5  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           1  0.34296888E-05    0.34296888E-05
+  10- 4 TO 10- 3           6  0.12768013E-05    0.47064901E-05
+  10- 5 TO 10- 4           3  0.48228039E-08    0.47113129E-05
+  10- 6 TO 10- 5           2  0.48791070E-10    0.47113617E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.47113617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.47113617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.47113617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.47113617E-05
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           1  0.34296888E-05    0.34296888E-05
+  10- 4 TO 10- 3           6  0.12768013E-05    0.47064901E-05
+  10- 5 TO 10- 4           3  0.48228039E-08    0.47113129E-05
+  10- 6 TO 10- 5           2  0.48791070E-10    0.47113617E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.47113617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.47113617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.47113617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.47113617E-05
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        12   .4711E-05       .4711E-05    5  2
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     7  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -7  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -5  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -3  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           8  0.13677016E-03    0.13677016E-03
+  10- 4 TO 10- 3          29  0.37738529E-05    0.14054401E-03
+  10- 5 TO 10- 4          34  0.65827299E-07    0.14060984E-03
+  10- 6 TO 10- 5          19  0.48002915E-09    0.14061032E-03
+  10- 7 TO 10- 6           4  0.11637282E-11    0.14061032E-03
+  10- 8 TO 10- 7           5  0.97527525E-14    0.14061032E-03
+  10- 9 TO 10- 8           4  0.28609525E-16    0.14061032E-03
+  10-10 TO 10- 9           3  0.24310517E-18    0.14061032E-03
+  Number of coefficients less than  10-11 IS             6
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        94
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           3  0.68959329E-05    0.68959329E-05
+  10- 4 TO 10- 3          26  0.29007430E-05    0.97966759E-05
+  10- 5 TO 10- 4          32  0.52432809E-07    0.98491087E-05
+  10- 6 TO 10- 5          19  0.48002915E-09    0.98495888E-05
+  10- 7 TO 10- 6           4  0.11637282E-11    0.98495899E-05
+  10- 8 TO 10- 7           5  0.97527525E-14    0.98495899E-05
+  10- 9 TO 10- 8           2  0.17489675E-16    0.98495899E-05
+  10-10 TO 10- 9           3  0.24310517E-18    0.98495899E-05
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           5  0.12987423E-03    0.12987423E-03
+  10- 4 TO 10- 3           3  0.87310984E-06    0.13074734E-03
+  10- 5 TO 10- 4           2  0.13394490E-07    0.13076073E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.13076073E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.13076073E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.13076073E-03
+  10- 9 TO 10- 8           2  0.11119850E-16    0.13076073E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.13076073E-03
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        94   .9850E-05       .9850E-05    5  2
+        12   .1308E-03       .1406E-03    6  1
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -1  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ***************************************************
+ Analysis of Optimized Wave Function for ROOT =   3
+ ***************************************************
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     1  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+  Coefficient of combination        3 is -.98912985E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   3   4
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.97837785E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           1  0.97837785E+00    0.97837785E+00
+  10- 2 TO 10- 1           4  0.63117613E-03    0.97900903E+00
+  10- 3 TO 10- 2          71  0.12380677E-02    0.98024710E+00
+  10- 4 TO 10- 3          88  0.15988259E-04    0.98026309E+00
+  10- 5 TO 10- 4          76  0.19288868E-06    0.98026328E+00
+  10- 6 TO 10- 5          30  0.98990440E-09    0.98026328E+00
+  10- 7 TO 10- 6           9  0.15479209E-11    0.98026328E+00
+  10- 8 TO 10- 7           4  0.14854802E-13    0.98026328E+00
+  10- 9 TO 10- 8           8  0.29770434E-15    0.98026328E+00
+  10-10 TO 10- 9          18  0.45892120E-17    0.98026328E+00
+  Number of coefficients less than  10-11 IS            18
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11       261
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2          50  0.88216858E-03    0.88216858E-03
+  10- 4 TO 10- 3          80  0.13549571E-04    0.89571815E-03
+  10- 5 TO 10- 4          74  0.18220838E-06    0.89590036E-03
+  10- 6 TO 10- 5          30  0.98990440E-09    0.89590135E-03
+  10- 7 TO 10- 6           6  0.12657200E-11    0.89590135E-03
+  10- 8 TO 10- 7           1  0.12619629E-14    0.89590135E-03
+  10- 9 TO 10- 8           3  0.25118946E-15    0.89590135E-03
+  10-10 TO 10- 9          17  0.42601675E-17    0.89590135E-03
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        45
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           4  0.63117613E-03    0.63117613E-03
+  10- 3 TO 10- 2          21  0.35589909E-03    0.98707522E-03
+  10- 4 TO 10- 3           8  0.24386875E-05    0.98951391E-03
+  10- 5 TO 10- 4           2  0.10680302E-07    0.98952459E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.98952459E-03
+  10- 7 TO 10- 6           3  0.28220093E-12    0.98952459E-03
+  10- 8 TO 10- 7           3  0.13592840E-13    0.98952459E-03
+  10- 9 TO 10- 8           3  0.39049641E-16    0.98952459E-03
+  10-10 TO 10- 9           1  0.32904455E-18    0.98952459E-03
+
+       Occupation of active sets :  7  0
+         Number of coefficients larger than 10-11         3
+
+  10- 1 TO 10- 0           1  0.97837785E+00    0.97837785E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.97837785E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.97837785E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.97837785E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.97837785E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.97837785E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.97837785E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.97837785E+00
+  10- 9 TO 10- 8           2  0.74652441E-17    0.97837785E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.97837785E+00
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+       261   .8959E-03       .8959E-03    5  2
+        45   .9895E-03       .1885E-02    6  1
+         3   .9784E+00       .9803E+00    7  0
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     3  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     5  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           1  0.16984491E-05    0.16984491E-05
+  10- 4 TO 10- 3           6  0.14192941E-05    0.31177432E-05
+  10- 5 TO 10- 4           2  0.84680320E-08    0.31262112E-05
+  10- 6 TO 10- 5           1  0.49912137E-10    0.31262611E-05
+  10- 7 TO 10- 6           1  0.56243709E-12    0.31262617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.31262617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.31262617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.31262617E-05
+  Number of coefficients less than  10-11 IS             1
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        11
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           1  0.16984491E-05    0.16984491E-05
+  10- 4 TO 10- 3           6  0.14192941E-05    0.31177432E-05
+  10- 5 TO 10- 4           2  0.84680320E-08    0.31262112E-05
+  10- 6 TO 10- 5           1  0.49912137E-10    0.31262611E-05
+  10- 7 TO 10- 6           1  0.56243709E-12    0.31262617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.31262617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.31262617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.31262617E-05
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        11   .3126E-05       .3126E-05    5  2
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     7  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -7  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -5  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -3  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           8  0.12376867E-03    0.12376867E-03
+  10- 4 TO 10- 3          27  0.34126970E-05    0.12718136E-03
+  10- 5 TO 10- 4          28  0.67555194E-07    0.12724892E-03
+  10- 6 TO 10- 5          15  0.32249611E-09    0.12724924E-03
+  10- 7 TO 10- 6          11  0.32805797E-11    0.12724924E-03
+  10- 8 TO 10- 7           6  0.12831377E-13    0.12724924E-03
+  10- 9 TO 10- 8           9  0.22385539E-15    0.12724924E-03
+  10-10 TO 10- 9           1  0.68777342E-19    0.12724924E-03
+  Number of coefficients less than  10-11 IS             7
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        94
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           3  0.68532863E-05    0.68532863E-05
+  10- 4 TO 10- 3          25  0.25053987E-05    0.93586850E-05
+  10- 5 TO 10- 4          27  0.58330555E-07    0.94170156E-05
+  10- 6 TO 10- 5          15  0.32249611E-09    0.94173381E-05
+  10- 7 TO 10- 6          10  0.31050791E-11    0.94173412E-05
+  10- 8 TO 10- 7           5  0.38237612E-14    0.94173412E-05
+  10- 9 TO 10- 8           8  0.20066216E-15    0.94173412E-05
+  10-10 TO 10- 9           1  0.68777342E-19    0.94173412E-05
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        11
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           5  0.11691538E-03    0.11691538E-03
+  10- 4 TO 10- 3           2  0.90729824E-06    0.11782268E-03
+  10- 5 TO 10- 4           1  0.92246388E-08    0.11783190E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.11783190E-03
+  10- 7 TO 10- 6           1  0.17550061E-12    0.11783190E-03
+  10- 8 TO 10- 7           1  0.90076160E-14    0.11783190E-03
+  10- 9 TO 10- 8           1  0.23193235E-16    0.11783190E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.11783190E-03
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        94   .9417E-05       .9417E-05    5  2
+        11   .1178E-03       .1272E-03    6  1
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -1  1
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     1  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+  Coefficient of combination        3 is -.13470662E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   3   4
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.18145874E-01
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           1  0.18145874E-01    0.18145874E-01
+  10- 2 TO 10- 1           3  0.42948923E-03    0.18575363E-01
+  10- 3 TO 10- 2          49  0.77393330E-03    0.19349296E-01
+  10- 4 TO 10- 3          91  0.19144913E-04    0.19368441E-01
+  10- 5 TO 10- 4          93  0.27858935E-06    0.19368720E-01
+  10- 6 TO 10- 5          28  0.60576212E-09    0.19368720E-01
+  10- 7 TO 10- 6           8  0.15172752E-11    0.19368720E-01
+  10- 8 TO 10- 7           6  0.11140663E-13    0.19368720E-01
+  10- 9 TO 10- 8           7  0.28423285E-15    0.19368720E-01
+  10-10 TO 10- 9          14  0.15807335E-17    0.19368720E-01
+  Number of coefficients less than  10-11 IS            27
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11       251
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           1  0.10027468E-03    0.10027468E-03
+  10- 3 TO 10- 2          34  0.66550795E-03    0.76578263E-03
+  10- 4 TO 10- 3          75  0.15840267E-04    0.78162290E-03
+  10- 5 TO 10- 4          91  0.26923537E-06    0.78189213E-03
+  10- 6 TO 10- 5          28  0.60576212E-09    0.78189274E-03
+  10- 7 TO 10- 6           8  0.15172752E-11    0.78189274E-03
+  10- 8 TO 10- 7           3  0.58890912E-14    0.78189274E-03
+  10- 9 TO 10- 8           4  0.28180956E-16    0.78189274E-03
+  10-10 TO 10- 9           7  0.17975240E-18    0.78189274E-03
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        47
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           2  0.32921455E-03    0.32921455E-03
+  10- 3 TO 10- 2          15  0.10842534E-03    0.43763989E-03
+  10- 4 TO 10- 3          16  0.33046462E-05    0.44094454E-03
+  10- 5 TO 10- 4           2  0.93539803E-08    0.44095389E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.44095389E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.44095389E-03
+  10- 8 TO 10- 7           3  0.52515715E-14    0.44095389E-03
+  10- 9 TO 10- 8           3  0.25605190E-15    0.44095389E-03
+  10-10 TO 10- 9           6  0.13077509E-17    0.44095389E-03
+
+       Occupation of active sets :  7  0
+         Number of coefficients larger than 10-11         2
+
+  10- 1 TO 10- 0           1  0.18145874E-01    0.18145874E-01
+  10- 2 TO 10- 1           0  0.00000000E+00    0.18145874E-01
+  10- 3 TO 10- 2           0  0.00000000E+00    0.18145874E-01
+  10- 4 TO 10- 3           0  0.00000000E+00    0.18145874E-01
+  10- 5 TO 10- 4           0  0.00000000E+00    0.18145874E-01
+  10- 6 TO 10- 5           0  0.00000000E+00    0.18145874E-01
+  10- 7 TO 10- 6           0  0.00000000E+00    0.18145874E-01
+  10- 8 TO 10- 7           0  0.00000000E+00    0.18145874E-01
+  10- 9 TO 10- 8           0  0.00000000E+00    0.18145874E-01
+  10-10 TO 10- 9           1  0.93230204E-19    0.18145874E-01
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+       251   .7819E-03       .7819E-03    5  2
+        47   .4410E-03       .1223E-02    6  1
+         2   .1815E-01       .1937E-01    7  0
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     3  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     5  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.50481991E-05    0.50481991E-05
+  10- 4 TO 10- 3           4  0.59603947E-06    0.56442386E-05
+  10- 5 TO 10- 4           4  0.45090884E-08    0.56487477E-05
+  10- 6 TO 10- 5           1  0.54559191E-11    0.56487531E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56487531E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56487531E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56487531E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56487531E-05
+  Number of coefficients less than  10-11 IS             1
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        11
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.50481991E-05    0.50481991E-05
+  10- 4 TO 10- 3           4  0.59603947E-06    0.56442386E-05
+  10- 5 TO 10- 4           4  0.45090884E-08    0.56487477E-05
+  10- 6 TO 10- 5           1  0.54559191E-11    0.56487531E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56487531E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56487531E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56487531E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56487531E-05
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        11   .5649E-05       .5649E-05    5  2
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im     7  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -7  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -5  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -3  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           1  0.11621199E-03    0.11621199E-03
+  10- 3 TO 10- 2           6  0.11022059E-03    0.22643258E-03
+  10- 4 TO 10- 3          31  0.54723941E-05    0.23190498E-03
+  10- 5 TO 10- 4          31  0.69230584E-07    0.23197421E-03
+  10- 6 TO 10- 5          12  0.22918748E-09    0.23197444E-03
+  10- 7 TO 10- 6           7  0.24674594E-11    0.23197444E-03
+  10- 8 TO 10- 7           8  0.15982323E-13    0.23197444E-03
+  10- 9 TO 10- 8           8  0.28418255E-15    0.23197444E-03
+  10-10 TO 10- 9           3  0.97919869E-18    0.23197444E-03
+  Number of coefficients less than  10-11 IS             5
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+       Occupation of active sets :  5  2
+         Number of coefficients larger than 10-11        95
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           2  0.75602878E-05    0.75602878E-05
+  10- 4 TO 10- 3          28  0.42339326E-05    0.11794220E-04
+  10- 5 TO 10- 4          31  0.69230584E-07    0.11863451E-04
+  10- 6 TO 10- 5          12  0.22918748E-09    0.11863680E-04
+  10- 7 TO 10- 6           6  0.23496402E-11    0.11863683E-04
+  10- 8 TO 10- 7           7  0.99536190E-14    0.11863683E-04
+  10- 9 TO 10- 8           7  0.26971054E-15    0.11863683E-04
+  10-10 TO 10- 9           2  0.42531374E-18    0.11863683E-04
+
+       Occupation of active sets :  6  1
+         Number of coefficients larger than 10-11        12
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           1  0.11621199E-03    0.11621199E-03
+  10- 3 TO 10- 2           4  0.10266030E-03    0.21887230E-03
+  10- 4 TO 10- 3           3  0.12384615E-05    0.22011076E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.22011076E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.22011076E-03
+  10- 7 TO 10- 6           1  0.11781915E-12    0.22011076E-03
+  10- 8 TO 10- 7           1  0.60287036E-14    0.22011076E-03
+  10- 9 TO 10- 8           1  0.14472008E-16    0.22011076E-03
+  10-10 TO 10- 9           1  0.55388495E-18    0.22011076E-03
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+        95   .1186E-04       .1186E-04    5  2
+        12   .2201E-03       .2320E-03    6  1
+
+ ----------------------------------------------
+ Contrib. Kramers proj., real/im    -1  2
+ ----------------------------------------------
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
+  =========================================================
+
+    ( no coefficients )
+
+  Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
+  =========================================================
+
+    ( no coefficients )
+  Norm of printed CI vector ..  0.00000000E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.00000000E+00
+  10- 9 TO 10- 8           0  0.00000000E+00    0.00000000E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.00000000E+00
+  Number of coefficients less than  10-11 IS             0
+
+   Magnitude of CI coefficients for each excitation level 
+  =========================================================
+
+
+   Total weight and number of SD's (> 10 ** -11 )  : 
+  =================================================
+
+         N      Weight      Acc. Weight   Occupation 
+  ===================================================
+
+  I have completed task  ANALYZ
+
+
+ (RCIST) CI energy:        -23.93899387
+
+ (ROPTST)  KR-CI calculation ended after   20 CI iterations.
+
+>>> TOTAL CPU (WALL) TIME IN KR-CI: 40.62282562s(42.00000000s)
+
+
+
+
+ 
+     Date and time (Linux)  : Wed Nov  3 15:39:24 2010 
+     Host name              : fe6                                     
+*****************************************************
+>>>> Node 0, utime: 42, stime: 0, minflt: 207794, majflt: 0, nvcsw: 615, nivcsw: 256, maxrss: 0
+>>>> Total WALL time used in DIRAC: 44s
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+

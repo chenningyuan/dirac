@@ -1,4 +1,3 @@
-#ifdef MOD_AMFI
 
       subroutine readbas(Lhigh,makemean,bonn,breit,
      *symmetry,AIMP,ncont4,numballcart,IN,ifinite,
@@ -2171,5 +2170,3 @@ c     enddo
 *----------------------------------------------------------------------*
 200   Return
       End 
-
-#endif /* MOD_AMFI */

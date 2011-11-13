@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,10 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-#ifdef MOD_STEX
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : pamstex.F
 C
 C MAIN AUTHOR : Ulf Ekstroem, 2005-2006.
 C ORIGINAL PUBLICATION OF THIS WORK :
@@ -1390,9 +1386,9 @@ C     tA*
      &     WORK,LWRK)
 C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1796,9 +1792,9 @@ C
 C     Written by panor 1999/ulfek&hjj 2006
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1893,9 +1889,5 @@ C
      &     'N',OP,IPQTOQ(1,0),CORB1,NTBAS(0),1,NZ,
      &     'H','N',IPQTOQ(1,0),CORB2,NTBAS(0),1,NZ,
      &     0.0D0,IPQTOQ(1,0),DAO,NTBAS(0),NTBAS(0),NZ)
-      END
-#endif
-#else
-      SUBROUTINE STEX_DUMMY
       END
 #endif

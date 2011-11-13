@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision: 5452 $
-C DATE    : $Date: 2007-01-30 14:51:43 +0100 (Tue, 30 Jan 2007) $
-C FILE    : files.inc
 C
 C     Files to be used in LUCITA ( afore RELCCSD)
       PARAMETER (NCCFIL=11) ! Number of word addressable files

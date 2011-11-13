@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -449,7 +449,6 @@ C
 C
 C---------------Calling variables--------------------------------------
 
-CMI   REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(NDT)
       REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(RCW,NDT)
 C---------------Local variables -----------------------------------
       REAL*8, ALLOCATABLE :: EVR(:),EVI(:)
@@ -519,9 +518,6 @@ CMI    ... control print out
 
          CALL CG(NDT,NDT,HR,HI,EVR,EVI,1,VECR,VECI,
      &           SCR,SCR(1,2),SCR(1,3),IERR)
-Cluuk       uncomment when debugging, gives huge output
-Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
-Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
          DEALLOCATE (HR,STAT=IERR)
          IF (IERR.NE.0) THEN
             CALL QUIT('Error in HR deallocation !')
@@ -531,8 +527,6 @@ Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
            CALL QUIT('Error in HI deallocation !')
          ENDIF
       ELSE
-Cluuk       uncomment when debugging, gives huge output
-Cluuk       call output (h,1,ndt,1,ndt,ndt,ndt,1,iw)
             IF (IPRNT.GE.10) THEN
 CMI    ... control print out
            WRITE(IW,'(2X,A)')
@@ -556,21 +550,8 @@ C
 C.....Store the eigenvalues 
 CMI/July07 both real and imaginary
       DO I = 1, NDT
-CMI    EV(I) = EVR(INDX(I))
        EV(1,I) = EVR(INDX(I))
        IF (CARITH) EV(2,I) = EVI(INDX(I))
-CMI    ... temporary print out
-       IF (CARITH) THEN
-C       write(IW,*) I,'.  re:',EVR(I),' im:',EVI(I)
-C       write(IW,*) I,'.> re:',EV(1,I),'> im:',EV(2,I)
-       ELSE
-C       write(IW,*) I,'.  re:',EVR(I)
-C       write(IW,*) I,'.> re:',EV(1,I)
-       ENDIF
-C      write(IW,*) I,'.  re:',EVR(I)
-C      write(IW,*) I,'.> re:',EV(1,I)
-C      write(IW,*) I,'+  re:',EVR(INDX(I))
-C      write(IW,*) I,'+> re:',EV(1,INDX(I))
       ENDDO
 C
 C.....Store the eigenvectors in EVEC

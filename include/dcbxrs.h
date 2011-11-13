@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 9277 $
-! DATE    : $Date: 2009-07-18 01:21:16 +0200 (Sat, 18 Jul 2009) $
 ! FILE    : dcbxrs.h
 !
 !*** Reduced response equations

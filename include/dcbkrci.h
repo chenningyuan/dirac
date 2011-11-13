@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 7317 $
-! DATE    : $Date: 2008-08-07 16:47:12 +0200 (Do, 07 Aug 2008) $
 ! FILE    : dcbkrci.h
 !
 !
@@ -10,13 +8,14 @@
       LOGICAL KRCI_MKCNST, KRCI_UCIBOS, CRDFO_MAT_KRCI, CWRTFO_MAT_KRCI,&
      &        CSHMEMO_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI,           &
      &        NATOLCR_KRCI, CHCKPT_KRCI, CUSE_PBLFL_KRCI, GENFOCK_KRCI, &
-     &        TRANATO_KRCI, LOWSORT_KRCI, STATE_SELECT_KRCI
+     &        TRANATO_KRCI, LOWSORT_KRCI, STATE_SELECT_KRCI,            &
+     &        domcana_krci
       CHARACTER*8 KRCI_CIPROGRAM
       COMMON /DCLKRCI/ KRCI_MKCNST, KRCI_UCIBOS, CRDFO_MAT_KRCI,        &
      &                 CWRTFO_MAT_KRCI, CSHMEMO_KRCI, CINT_REORD_KRCI,  &
      &                 CINT_SPLIT_KRCI, NATOLCR_KRCI, CHCKPT_KRCI,      &
      &                 CUSE_PBLFL_KRCI, GENFOCK_KRCI, TRANATO_KRCI,     &
-     &                 LOWSORT_KRCI, STATE_SELECT_KRCI
+     &                 LOWSORT_KRCI, STATE_SELECT_KRCI, domcana_krci
 
       INTEGER NKRCIISH(2), NKRCIASH(2), NKRCISSH(2),                    &
      &        NKRCIGSH(2, MXMCGAS), NKRCIGSP(2, MXMCGAS), NKRCIESH(2),  &
@@ -28,7 +27,7 @@
      &        MAXCIT_KRCI, MXCIV_KRCI,               IANACI_KRCI,       &
      &        KTRLVL_KRCI, IRESTRK_KRCI, IDOPARIO_KRCI, IKRCI_MEMFAC,   &
      &        NKRCI_SELOM
-      PARAMETER (MAX_NKRCI_MAX_SYM = 16)
+      PARAMETER (MAX_NKRCI_MAX_SYM = 128)
       COMMON /DCIKRCI/ NKRCIISH, NKRCIASH, NKRCISSH, NKRCIGSH, NKRCIGSP,&
      &                 NKRCIESH, NKRCIPSH, NKRCIFRO, NKRCIAELEC,        &
      &                 NKRCIGAS, NKRCI_MK2REF, NKRCI_MK2DEL,            &

@@ -1,0 +1,530 @@
+#!/usr/bin/env python
+
+'''
+runtest - script to run tests and compare results with reference data
+(c) Radovan Bast 2010 <radovan.bast@irsamc.ups-tlse.fr>
+
+menu format: free form
+             blank lines are ignored
+             lines starting with "#" are ignored
+             sections can start with "quick" or "regular" or "benchmark"
+             "regular" is default and can be omitted
+             shell commands are triggered with "sh"
+
+how to add new tests to the testset "--all":
+             developers: add them to pamadm which generates test/list_of_tests
+             users:      add them to test/list_of_tests
+'''
+
+import os
+import sys
+import string
+import subprocess
+import time
+import signal
+from optparse import OptionParser, OptionGroup
+
+if sys.version < '2.4':
+    print('runtest requires python version >= 2.4')
+    sys.exit(1)
+
+root_directory = os.path.realpath(__file__)[:-8]
+current_directory = os.path.realpath('.')
+
+def extract_time(time_string):
+# extract time (in seconds) from the entering time string "hh:mm:ss"
+# returns time in secs
+    def error_printout():
+        error_message = 'runtest: timestring must be hh:mm:ss, entering %s' % time_string
+        print(error_message)
+        sys.exit(3)
+
+    if len(time_string) != 8:
+        error_printout()
+    if (time_string[2] != ":" or time_string[5] != ":"):
+        error_printout()
+    try:
+        hours=int(time_string[0:2])
+        mins=int(time_string[3:5])
+        secs=int(time_string[6:8])
+    except:
+        error_printout()
+    # sum up the total time and return
+    total_time=secs+(60*mins)+(60*60*hours)
+    return total_time
+
+def backup(file):
+    import os.path, shutil
+    max_depth = 7
+    for i in range(max_depth-1, -1, -1):
+        file_from = file + '.' + str(i)
+        file_to   = file + '.' + str(i+1)
+        if (os.path.isfile(file_from)):
+            shutil.copy(file_from, file_to)
+    if (os.path.isfile(file)):
+        shutil.copy(file, file + '.0')
+
+# define example usage
+
+usage = '''
+  typically ./%prog --all [--mpi=4]
+         or ./%prog --tests="some_test another_test"
+         or ./%prog --tests=visual*'''
+
+# initialize parser
+
+parser = OptionParser(usage)
+
+# define options
+
+group = OptionGroup(parser, 'Select the test set')
+group.add_option('--all',
+                 action='store_true',
+                 dest='all',
+                 default=False,
+                 help='run all tests [default: %default]')
+group.add_option('--tests',
+                 type='string',
+                 action='store',
+                 dest='individual',
+                 default=None,
+                 help='select individual test(s)',
+                 metavar='\"test1 test2 anothertest\"')
+group.add_option('--quick',
+                 action='store_true',
+                 dest='quick',
+                 default=False,
+                 help='run only a subset that is quick but has less coverage [default: %default]')
+group.add_option('--benchmark',
+                 action='store_true',
+                 dest='benchmark',
+                 default=False,
+                 help='run only benchmark runs [default: %default]')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'MPI parallelization')
+group.add_option('--mpi',
+                 type='int',
+                 action='store',
+                 dest='mpi',
+                 default=1,
+                 help='set number of cores [default: %default]',
+                 metavar='INTEGER')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'Change default paths')
+group.add_option('--binary',
+                 dest='binary',
+                 default=None,
+                 help='full path to binary to test [default: default binary picked by pam]')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'Development options')
+group.add_option('--giveup',
+                 action='store_true',
+                 dest='giveup',
+                 default=False,
+                 help='give up after first failing test [default: %default]')
+group.add_option('--timeout',
+                 action='store',
+                 dest='timeout',
+                 default=None,
+                 help='time limit for runtest [default: %default]',
+                 metavar='"hh:mm:ss"')
+group.add_option('--overwrite',
+                 action='store_true',
+                 dest='overwrite',
+                 default=False,
+                 help='overwrite reference files [default: %default]')
+group.add_option('--verbose',
+                 action='store_true',
+                 dest='verbose',
+                 default=False,
+                 help="verbose output, if, you know, you're not into the whole brevity thing [default: %default]")
+group.add_option('--showdiff',
+                 action='store_true',
+                 dest='showdiff',
+                 default=False,
+                 help="show differences in numbers [default: %default]")
+parser.add_option_group(group)
+
+# process input
+
+(options, args) = parser.parse_args()
+
+list_of_tests_to_run = []
+
+executed_from_subdir = os.path.isfile('%s/menu' % current_directory)
+if len(sys.argv) == 1:
+    if executed_from_subdir:
+        list_of_tests_to_run.append(root_directory + '/test/' + current_directory.split('/')[-1])
+    else:
+        # user has given no arguments and we are not in a test subdir: print help and exit
+        print(parser.format_help().strip())
+        sys.exit()
+
+if options.all or (options.quick and not options.individual):
+    file = root_directory + '/test/list_of_tests'
+    if os.path.isfile(file):
+        f = open(file, 'r')
+        for line in f.readlines():
+            list_of_tests_to_run.append(root_directory + '/test/' + line.strip('\n'))
+        f.close()
+    else:
+        print('file %s does not exist, run pamadm first' % file)
+        sys.exit()
+
+if options.individual:
+    s = options.individual.split()
+    l = ''
+    for w in s:
+        l += root_directory + '/test/' + w + ' '
+#   this complicated code is to allow --tests="foo* *bar* *oof"
+    command = 'find %s -type d -maxdepth 0' % l
+    p = subprocess.Popen(command,
+                         shell=True,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
+    for test in p.communicate()[0].split('\n'):
+        if test != '':
+            list_of_tests_to_run.append(test)
+
+if options.timeout:
+    # extract the total time in seconds
+    timeout = extract_time(options.timeout)
+
+# write the html header
+
+os.chdir(root_directory)
+html_header = '''
+<HTML>
+<TITLE> Error report for DIRAC test runs </TITLE>
+<BODY TEXT="#FFFFFF" BGCOLOR="#000000">
+<PRE>
+<H1>drep output by color</H1>
+
+<p>The colors are determined using relative errors for numbers larger than 0.001,
+and absolute errors otherwise.</p>
+<p>Only those digits that actually differ are yellow or red, the others are white.</p>
+<p>The coloring scheme used:</p>
+1.23456789  white: difference can be neglected (less than 1e-12)
+1.23456<FONT COLOR="#FFFF00">789</FONT> yellow: difference probably neglegible (less than 0.001)
+1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
+<p> </p><hr><p> </p>'''
+
+# create directory LOGS
+if not os.path.isdir('test/LOGS'):
+    os.mkdir('test/LOGS')
+
+global pam_output_file 
+backup('test/LOGS/runtest.htm')
+f = open('test/LOGS/runtest.htm', 'w')
+f.write(html_header)
+f.close()
+
+class run:
+     def __init__(self, test, line, kind):
+         self.test = test
+         self.kind = kind
+         pam_flags = ''
+
+         if (line.split()[0] == 'noref'):
+             self.noref = True
+             self.inp   = line.split()[1]
+             self.mol   = line.split()[2]
+         else:
+             self.noref = False
+             self.inp   = line.split()[0]
+             self.mol   = line.split()[1]
+
+         # pretty please no timeout when executed interactively
+         if not executed_from_subdir:
+            # default timeouts for quick, regular and benchmark tests
+            if self.kind == 'q':
+                pam_flags +=  '--timeout=21m '
+            elif self.kind == 'r':
+                pam_flags +=  '--timeout=21m '
+            else:
+                pam_flags +=  '--timeout=1h '
+
+         if len(line.split()) > 2:
+             for i in range(2, len(line.split())):
+                 pam_flags += line.split()[i] + ' '
+         if not options.verbose:
+             pam_flags += '--silent '
+         pam_flags += '--nobackup '
+         pam_flags += '--noarch '
+         if options.binary:
+             pam_flags += '--dirac=%s ' % options.binary
+         if options.mpi > 1:
+             pam_flags += '--mpi=%i ' % options.mpi
+         self.pam_flags = pam_flags
+     def get_output_name(self):
+         inp_file_strip = string.replace(self.inp,       '.inp', '')
+         mol_file_strip = string.replace(self.mol,       '.mol', '')
+         mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
+         return '%s_%s.out' % (inp_file_strip, mol_file_strip)
+     def get_test_name(self):
+         return string.split(self.test, '/')[-1]
+     def run_and_normal_exit(self):
+         pgid = None # process group id of the "dirac" process
+         def child_signaller(signum, frame):
+             '''Pass on signals to pam to its children'''
+             if pgid is not None:
+                 print('runtest: got signal %s, passing on to children' % signum)
+                 os.killpg(pgid,signum) # TODO: adapt for Windows
+             sys.exit()
+         if sys.platform != 'win32':
+             signal.signal(signal.SIGHUP,child_signaller)
+             signal.signal(signal.SIGPIPE,child_signaller)
+         signal.signal(signal.SIGTERM,child_signaller)
+         signal.signal(signal.SIGINT,child_signaller)
+
+         os.chdir(self.test)
+         # run pam
+         command = '%s/pam --inp=%s --mol=%s %s' \
+             % (root_directory, self.inp, self.mol, self.pam_flags)
+         if sys.platform != 'win32':
+             p = subprocess.Popen(command,
+                                  shell=True,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  preexec_fn=os.setsid)
+             pgid = p.pid
+         else:
+             p = subprocess.Popen(command,
+                                  shell=True,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE)
+         
+         pam_output = p.communicate()[0]
+         global pam_output_file
+         pam_output_file.write(pam_output) 
+         # check whether DIRAC terminated normally
+         if 'exit           : normal' in pam_output:
+             return True
+         else:
+             return False
+     def print_result(self, progress, result_text, elapsed):
+         """
+          print result of the test
+         """
+         inp_file_strip = string.replace(self.inp,       '.inp', '')
+         mol_file_strip = string.replace(self.mol,       '.mol', '')
+         mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
+
+         elapsed_str = time.strftime('%Mm%Ss', time.gmtime(elapsed))
+
+         print('%6s %10s %30s %35s %25s %s' % \
+             (progress, result_text, self.get_test_name(),        \
+              inp_file_strip, mol_file_strip, elapsed_str))
+
+     def apply_filter(self):
+         # apply the filter on output; TODO: replace crep, bdrep
+         os.system('../../utils/crep %s        result/filter > compare/%s.own' \
+                   % (self.get_output_name(), self.get_output_name()))
+         # apply the filter on reference output
+         os.system('../../utils/crep result/%s result/filter > compare/%s.ref' \
+                   % (self.get_output_name(), self.get_output_name()))
+         # compare filtered result with reference
+         os.system('../../utils/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
+                   % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
+         # generate individual html
+         os.system('../../utils/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
+                   % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
+         # generate the one big html
+         os.system('../../utils/hdrep compare/%s.own compare/%s.ref >> ../LOGS/runtest.htm' \
+                   % (self.get_output_name(), self.get_output_name()))
+     def is_shell_command(self):
+         return False
+     def is_run(self):
+         return True
+
+class shell_command:
+     def __init__(self, test, line):
+         self.test    = test
+         self.command = line[2:]
+     def execute(self):
+         os.chdir(self.test)
+         os.system(self.command)
+     def is_shell_command(self):
+         return True
+     def is_run(self):
+         return False
+
+def use_this_line(current_section):
+    if options.quick:
+        if current_section == 'quick':
+            return True
+    elif options.benchmark:
+        if current_section == 'benchmark':
+            return True
+    else:
+        if current_section == 'quick':
+            return True
+        if current_section == 'regular':
+            return True
+    return False
+
+def get_current_section(line, current_section):
+    word = line.split()[0]
+    if word in ['quick', 'regular', 'benchmark']:
+        return word
+    return current_section
+
+def line_is_keyword(line):
+    return line.split()[0] in ['sh', 'quick', 'regular', 'benchmark']
+
+# main function
+def main(*args):
+
+#  get list of tasks
+    l = []
+    for test in list_of_tests_to_run:
+        os.chdir(test)
+        file = 'menu'
+        if os.path.isfile(file):
+            f = open(file, 'r')
+            current_section = 'regular'
+            for line in f.readlines():
+                if len(line.split()) > 0:
+                    if line[0:1] != '#':
+                        current_section = get_current_section(line, current_section)
+                        if use_this_line(current_section):
+                            if line[0:2] == 'sh':
+                                l.append(shell_command(test, line))
+                            else:
+                                if not line_is_keyword(line):
+                                    l.append(run(test, line, current_section[0]))
+            f.close()
+        else:
+            print('WARNING: %s has no menu file' % test)
+
+    # get number of actual runs
+
+    total_nr_of_tests = 0
+    for task in l:
+        if task.is_run():
+            total_nr_of_tests += 1
+
+    # print screen header
+
+    print('')
+    print('%17s %30s %35s %25s %6s' % ('result', 'test', 'inp', 'mol/xyz', 'time'))
+    print('')
+
+    # run the tests
+
+    nr_of_tests_done = 0
+    nr_ok            = 0
+    nr_crashed       = 0
+    nr_failed        = 0
+    nr_without_ref   = 0
+    nr_marked_noref  = 0
+    nr_bad_filter    = 0
+    global_elapsed   = 0.0
+
+    testname_0=None
+    for task in l:
+
+        testname_1=string.split(task.test, '/')[-1]
+        open_new_log_file=(testname_0 != testname_1)
+
+        if open_new_log_file : 
+            global pam_output_file
+            log_file=root_directory+'/test/LOGS/runtest_'+testname_1+'.log'
+            backup(log_file)
+            pam_output_file = open(log_file,'w', 0)
+            pam_output_file.write(" runtest pam outputs \n\n ")
+            #TODO: how to ensure closing of pam_output_file files ?
+
+        if task.is_shell_command():
+            task.execute()
+        else:
+            nr_of_tests_done += 1
+            start = time.time()
+            if task.run_and_normal_exit():
+                if os.path.isfile('result/%s' % task.get_output_name()):
+                    # overwrite reference files
+                    if options.overwrite:
+                        os.system('cp %s result/%s' % (task.get_output_name(), task.get_output_name()))
+                
+                    # create directory where outputs are compared
+                    if not os.path.isdir('compare'):
+                        os.mkdir('compare')
+               
+                    task.apply_filter() 
+                
+                    if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
+                        # filter does not produce anything
+                        if os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
+                            result_text = 'BAD FILTER'
+                            nr_bad_filter += 1
+                        else:
+                            result_text = 'OK'
+                            nr_ok += 1
+                    else:
+                        result_text = 'FAIL'
+                        nr_failed += 1
+
+                else:
+                    if task.noref:
+                        result_text = '(noref)'
+                        nr_marked_noref += 1
+                    else:
+                        result_text = 'NO REF'
+                        nr_without_ref += 1
+            else:
+                result_text = 'CRASH'
+                nr_crashed += 1
+
+            elapsed = (time.time() - start)
+            global_elapsed += elapsed
+
+            progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
+            task.print_result(progress, result_text, elapsed)
+
+            if options.showdiff:
+                if result_text == 'FAIL':
+                    os.system('more compare/%s.txt' % task.get_output_name())
+        
+            if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
+                print('')
+                print('cowardly gave up after the first problem')
+                print('(fix your code or remove --giveup to continue)')
+                sys.exit(1)
+
+            if options.timeout:
+                if global_elapsed > timeout:  
+                    error_message = '\n Giving up runtest. Total allowed time of %s seconds exceeded.\n' % timeout
+                    print(error_message)
+                    sys.exit(1)
+
+        testname_0 = testname_1
+
+    print('')
+    print('summary: %5i ok'                     % nr_ok)
+    if nr_failed > 0:
+         print('         %5i failed'            % nr_failed)
+    if nr_crashed > 0:
+         print('         %5i crashed'           % nr_crashed)
+    if nr_without_ref > 0:
+         print('         %5i without reference' % nr_without_ref)
+    if nr_bad_filter > 0:
+         print('         %5i with bad filter'   % nr_bad_filter)
+    if nr_marked_noref > 0:
+         print('         %5i marked as noref'   % nr_marked_noref)
+    print('')
+
+    global_elapsed_str = time.strftime('%Hh%Mm%Ss', time.gmtime(global_elapsed))
+    print('total time: %s\n' % global_elapsed_str)
+
+    # return code
+    if (nr_failed + nr_crashed + nr_without_ref + nr_bad_filter) > 0 :
+        return 1
+    else:
+        return 0
+
+# launch the main function
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv))

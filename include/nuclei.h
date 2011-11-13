@@ -5,7 +5,7 @@
      &        ISTBNU(MXCENT), NUCIND, NUCDEP, NTRACO, ITRACO(3), NATOMS,&
      &        NFLOAT, NBASIS, NLARGE, NSMALL, NPBAS, NPLRG, NPSML,      &
      &        NUCNET, INCENT(MXCENT), INUNIQ(MXCENT), NDEGNM(MXCENT),   &
-     &        NAMFA, IAMFA(MXCENT),                                     &
+     &        NAMFA, IAMFA(MXCENT),NONTYP,NONT(MXATOM),                 &
 !C density fitting basis info
      &                NBASISAUX, NPBASAUX, NAUX, NPAUX,                 &
      &        NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT, &
@@ -14,7 +14,7 @@
      &                ISTBNU, GNUEXP, NAMN, NUCIND, NUCDEP, NTRACO,     &
      &                ITRACO, NATOMS, NFLOAT, NBASIS, NLARGE, NSMALL,   &
      &                NPBAS, NPLRG, NPSML, NUCNET, INCENT, INUNIQ,      &
-     &                GAUNUC, NDEGNM, NAMFA, IAMFA,                     &
+     &                GAUNUC, NDEGNM, NAMFA, IAMFA,NONTYP,NONT,         &
 !C density fitting basis info
      &                NBASISAUX, NPBASAUX, NAUX, NPAUX,                 &
      &        NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT, &

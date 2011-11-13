@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 8501 $
-! DATE    : $Date: 2009-02-24 12:17:14 +0100 (Tue, 24 Feb 2009) $
 ! FILE    : dcbdhf.h
 !
 !*** Dirac-Fock calculations ***
@@ -35,14 +33,14 @@
      &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF,           &
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
      &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,DOCCNV,              &
-     &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE, DOLEVEL          
+     &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE, DOLEVEL, ATOMST
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
      &                FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, AUTOCC, &
      &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,     &
      &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,DOCCNV,     &
-     &                DOLEVEL                                           
+     &                DOLEVEL, ATOMST                                           
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &

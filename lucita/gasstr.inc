@@ -1,4 +1,4 @@
-*comdeck gasstr.inc $Revision: 2268 $ 
+*comdeck gasstr.inc $Revision$ 
       COMMON/GASSTR/MNGSOC(MXPNGAS),MXGSOC(MXPNGAS),NGPSTR(MXPNGAS),
      &              IBGPSTR(MXPNGAS),NELFGP(MXPSTT),IGSFGP(MXPSTT),
      &              NSTFGP(MXPSTT),MNELFGP(MXPNGAS),MXELFGP(MXPNGAS),

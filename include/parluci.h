@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 10420 $
-! DATE    : $Date: 2010-03-22 00:46:02 +0100 (Mon, 22 Mar 2010) $
 ! FILE    : parluci.h
 !
 !                     PARALLEL INFORMATION
@@ -94,5 +92,5 @@ C
      &        CKRCIONLY, LOWSRT_IJKL
 !     character block
       CHARACTER*9 NIIJKL_ROD
-	CHARACTER*1 SYMFLABEL
+	CHARACTER*3 SYMFLABEL
       COMMON/LUCI_CHAR/ NIIJKL_ROD, SYMFLABEL

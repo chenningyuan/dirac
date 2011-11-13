@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,8 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamgrd.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -215,9 +213,7 @@ C
 #include "dcbham.h"
 #include "mxcent.h"
 #include "dcbprp.h"
-#ifdef MOD_KRMC
 #include "dcbpsi.h"
-#endif
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          PRPMO(NORBT,NORBT,NZ),CMO(*),IBEIG(*),WORK(*)
@@ -230,7 +226,6 @@ C
 C     Read coefficients
 C     =================
 C
-#ifdef MOD_KRMC
 C
 C     check for coefficients from the current KRMCSCF run
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
@@ -250,7 +245,6 @@ C       CLOSE (LUKRM5,STATUS='KEEP')
 C       ... set to zero
         TOTERG = 0.0D0
       ELSE
-#endif /* MOD_KRMC */
 C
 C       read HF coefficients 
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
@@ -262,9 +256,7 @@ C       read HF coefficients
      &                WORK,KFREE,LFREE)
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
-#ifdef MOD_KRMC
       END IF
-#endif /* MOD_KRMC */
 C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
@@ -280,11 +272,9 @@ CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
-#ifdef MOD_LONDON
         IB = 7 ! 0111 = full H(B) prop. gradient
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
-#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &              WORK,KFREE,LFREE,IPRINT)
@@ -523,6 +513,7 @@ C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
 C     Dec 2005, MI - adapting for both triangular and square operators
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -534,9 +525,6 @@ C
 #include "dcborb.h"
 #include "dcbxpr.h"
 #include "dummy.h"
-!gosia: temporarily i need it
-#include "dcbprl.h"
-#include "dcbqal.h"
 C
       LOGICAL FIRST(*),QBTR, IS_SQUARE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
@@ -593,45 +581,6 @@ CMI   ENDIF
         write(lupri,*) 'PRPMA1: N2BBASX,NNBBASX=',N2BBASX,NNBBASX
         CALL QUIT('PRPMA1: wrong parameters ! ')
       ENDIF
-
-!gosia: 
-! temporarily i need this info for visual+london
-        open(11, file='property_info', status = 'unknown',
-     &       form   = 'formatted', access = 'append')
-        write(11, *) prpnam(indxpr)
-        write(11, *) iprptyp(indxpr)
-        write(11, *) iprpsym(indxpr)
-        write(11, *) iprptim(indxpr)
-!      
-        write(11, *) nz
-        do i = 1, nz
-         write(11,*) ihqmat(ipqtoq(i,iprpsym(indxpr)-1),iprptim(indxpr))
-        end do
-!
-!       how many 'components' (1:3):
-        write(11, *) mcmp(iprptyp(indxpr))
-        do i = 1, mcmp(iprptyp(indxpr))
-          write(11, *) facprp(i, indxpr)
-          write(11, *) iprplbl(i, indxpr)
-          write(11, *) pdoint(iprplbl(i, indxpr))(1:4)
-          write(11, *) iprlrep(iprplbl(i, indxpr))
-          write(11, *) iprltyp(iprplbl(i, indxpr))
-          write(11, *) jm4(i, iprptyp(indxpr))
-          write(11, *) jm4pos(jm4(i, iprptyp(indxpr)))
-!repeated... but i need it
-          if (pdoint(iprplbl(i, indxpr))(2:3) .eq. '00') then
-            ic = 1
-          else if ((pdoint(iprplbl(i, indxpr))(1:1) .eq. '0') .and.
-     &             (pdoint(iprplbl(i, indxpr))(4:4) .eq. '0')) then
-            ic = 2
-          end if
-          i1 = jqbas(iprlrep(iprplbl(i, indxpr)), ic)
-          i2 = jm4pos(jm4(i, iprptyp(indxpr)))
-          write(11, *) iqmult(1, i1, i2) 
-          write(11, *) iqtopq(iqmult(1, i1, i2), iprpsym(indxpr) - 1)
-        end do
-        close(11)
-! 
 C
 C
 C     Get property matrix in AO-basis
@@ -650,14 +599,11 @@ C     ===============================
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
       IF (IPRINT.GE.7) THEN
-!gosia        if ((prpnam(indxpr)(1:5) == 'dS/dB') .or. 
-!gosia     &      (prpnam(indxpr)(1:7) == 'd|S>/dB')) then
         WRITE(LUPRI,'(/A,A16)')
      &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
-!gosia        endif
       ENDIF
 !
 C
@@ -698,8 +644,6 @@ C
          ENDIF
 
          IF (IPRINT.GE.7) THEN
-        if ((prpnam(indxpr) == 'dS/dBX') .or. 
-     &      (prpnam(indxpr) == 'd|S>/dBX')) then
           CALL HEADER('PRPMA1: Symm.blocked AO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &    '* Fermion irps no.',I1,I2,' of ',NFSYM
@@ -712,7 +656,6 @@ C
           CALL PRQMAT(PRPMO(J2PMOX(I1,I2),1),NPMO(I1),NPMO(I2),
      &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
           CALL FLSHFO(LUPRI)
-          endif
          ENDIF
 !
          IF (IPRINT.GE.10) THEN
@@ -905,11 +848,9 @@ C
      &         FILE='AOPROPER')
 #endif
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
-#ifdef MOD_LONDON
         IB = 7 ! 111
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
-#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)

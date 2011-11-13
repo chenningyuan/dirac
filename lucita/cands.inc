@@ -1,2 +1,2 @@
-*comdeck cands.inc $Revision: 2268 $ 
+*comdeck cands.inc $Revision$ 
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC

@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,93 +19,101 @@
 
 module visual_cfg
 
-  implicit none
+   implicit none
 
-  save
+   save
 
-  integer, parameter, public :: max_nr_xvectors       = 6
-  integer, parameter, public :: max_nr_points_in_list = 100
+   integer,      public, parameter :: max_para = 100
+   integer,      public            :: visual_cfg_nr_dmat = 0
+   character(6), public            :: visual_cfg_dmat_file(max_para)
+   integer,      public            :: visual_cfg_dmat_file_record(max_para)
+   integer,      public            :: visual_cfg_ref_nucleus(max_para)
+   integer,      public            :: visual_cfg_property(max_para)
+   logical,      public            :: visual_cfg_skip(max_para) = .false.
+   integer,      public            :: visual_cfg_property_to_matrix(max_para) = 0
+   integer,      public            :: visual_cfg_irep_xvector(max_para)
 
-  character(6),  public :: visual_cfg_xvector_file(max_nr_xvectors)
-  character(8),  public :: visual_cfg_conmat_file(max_nr_xvectors)
-  character(9),  public :: visual_cfg_connection_key(max_nr_xvectors)
-  character(1),  public :: visual_cfg_lao_chcomp(max_nr_xvectors)
-  character(72), public :: visual_cfg_orbital_string(2)
+   integer, public :: iq_gamma5   =  1
+   integer, public :: iq_density  =  2
+   integer, public :: iq_elf      =  3
+   integer, public :: iq_j        =  4
+   integer, public :: iq_rotj     =  5
+   integer, public :: iq_divj     =  6
+   integer, public :: iq_s        =  7
+   integer, public :: iq_rots     =  8
+   integer, public :: iq_divs     =  9
+   integer, public :: iq_jdia     = 10
+   integer, public :: iq_edipx    = 11
+   integer, public :: iq_edipy    = 12
+   integer, public :: iq_edipz    = 13
+   integer, public :: iq_bdipx    = 14
+   integer, public :: iq_bdipy    = 15
+   integer, public :: iq_bdipz    = 16
+   integer, public :: iq_ndipx    = 17
+   integer, public :: iq_ndipy    = 18
+   integer, public :: iq_ndipz    = 19
+   integer, public :: iq_bdipxdia = 20
+   integer, public :: iq_bdipydia = 21
+   integer, public :: iq_bdipzdia = 22
+   integer, public :: iq_ndipxdia = 23
+   integer, public :: iq_ndipydia = 24
+   integer, public :: iq_ndipzdia = 25
+   integer, public :: iq_esp      = 26
+   integer, public :: iq_esprho   = 27
 
-  logical,       public :: visual_cfg_list               = .false.
-  logical,       public :: visual_cfg_line               = .false.
-  logical,       public :: visual_cfg_2d                 = .false.
-  logical,       public :: visual_cfg_3d                 = .false.
-  logical,       public :: visual_cfg_use_orbital_string = .false.
-  logical,       public :: visual_cfg_integrate          = .false.
-  logical,       public :: visual_cfg_radial             = .false.
-  logical,       public :: visual_cfg_force_small_ao     = .false.
-  logical,       public :: visual_cfg_london             = .false.
-  logical,       public :: visual_cfg_london_with_sym    = .true.
+!                     visualization in 2d
+   logical, public :: visual_cfg_2d             = .false.
+   real(8), public :: visual_cfg_2d_p_origin(3) = 0.0d0
+   real(8), public :: visual_cfg_2d_p_right(3)  = 0.0d0
+   real(8), public :: visual_cfg_2d_p_top(3)    = 0.0d0
+   integer, public :: visual_cfg_2d_nr_right    = 0
+   integer, public :: visual_cfg_2d_nr_top      = 0
 
-  integer,       public :: visual_cfg_ncube(0:3)                         = 80
-  integer,       public :: visual_cfg_nr_points_in_list                  = 0
-  integer,       public :: visual_cfg_nr_xvectors                        = 0
-  integer,       public :: visual_cfg_iq_xvector(max_nr_xvectors)        = 0
-  integer,       public :: visual_cfg_irep_xvector(max_nr_xvectors)      = 0
-  integer,       public :: visual_cfg_irep_conmat(max_nr_xvectors)       = 0
-  integer,       public :: visual_cfg_itim_conmat(max_nr_xvectors)       = 0
-  integer,       public :: visual_cfg_iwhich_xvector(max_nr_xvectors)    = 1
-  integer,       public :: visual_cfg_ioption_xvector(max_nr_xvectors)   = 0
-  integer,       public :: visual_cfg_line_nr_steps                      = 0
-  integer,       public :: visual_cfg_orientation                        = 1
-  integer,       public :: visual_cfg_lao_icomp(max_nr_xvectors)         = 0
-  integer,       public :: visual_cfg_connection(max_nr_xvectors)        = 1
-  integer,       public :: visual_cfg_lao_contributions(max_nr_xvectors) = 7 !all contributions by default
+!                     integration in 2d
+   logical, public :: visual_cfg_2d_integration             = .false.
+   real(8), public :: visual_cfg_2d_integration_p_origin(3) = 0.0d0
+   real(8), public :: visual_cfg_2d_integration_p_right(3)  = 0.0d0
+   real(8), public :: visual_cfg_2d_integration_p_top(3)    = 0.0d0
+   integer, public :: visual_cfg_2d_integration_nr_right    = 0
+   integer, public :: visual_cfg_2d_integration_nr_top      = 0
+   integer, public :: visual_cfg_2d_integration_order       = 0
 
-  real(8),       public :: visual_cfg_add_3d                             = 4.0d0
-  real(8),       public :: visual_cfg_common_factor                      = 1.0d0
-  real(8),       public :: visual_cfg_xyz_list(max_nr_points_in_list, 3) = 0.0d0
-  real(8),       public :: visual_cfg_origin_2d(3)                       = 0.0d0
-  real(8),       public :: visual_cfg_gauge_origin(3)                    = 0.0d0
-  real(8),       public :: visual_cfg_add_2d                             = 4.0d0
-  real(8),       public :: visual_cfg_step_2d                            = 0.1d0
-  real(8),       public :: visual_cfg_line_from(3)                       = 0.0d0
-  real(8),       public :: visual_cfg_line_to(3)                         = 0.0d0
+!                     visualization in 3d
+   logical, public :: visual_cfg_3d         = .false.
+   integer, public :: visual_cfg_ncube(1:3) = 0
+   real(8), public :: visual_cfg_add_3d     = 4.0d0
 
+!                     integration in 3d
+   logical, public :: visual_cfg_3d_integration = .false.
 
-  integer,       public :: vector_to_matrix(max_nr_xvectors) = 0
-  integer,       public :: vector_to_matrix_con(max_nr_xvectors) = 0
+!                     visualization along line
+   logical, public :: visual_cfg_line          = .false.
+   real(8), public :: visual_cfg_line_from(3)  = 0.0d0
+   real(8), public :: visual_cfg_line_to(3)    = 0.0d0
+   integer, public :: visual_cfg_line_nr_steps = 0
 
-  integer, parameter, public :: IQ_N           =  1 !                  \psi^\dag        \psi = n
-  integer, parameter, public :: IQ_M           =  2 !                  \psi^\dag \Sigma \psi
-  integer, parameter, public :: IQ_DIVM        =  3 !    \nabla \cdot  \psi^\dag \Sigma \psi
-  integer, parameter, public :: IQ_ROTM        =  4 !    \nabla \times \psi^\dag \Sigma \psi
-  integer, parameter, public :: IQ_J           =  5 !-ec               \psi^\dag \alpha \psi = j
-  integer, parameter, public :: IQ_DIVJ        =  6 !-ec \nabla \cdot  \psi^\dag \alpha \psi
-  integer, parameter, public :: IQ_ROTJ        =  7 !-ec \nabla \times \psi^\dag \alpha \psi
-  integer, parameter, public :: IQ_JPARA       =  8 !                  j_para
-  integer, parameter, public :: IQ_DIVJPARA    =  9 !    \nabla \cdot  j_para
-  integer, parameter, public :: IQ_ROTJPARA    = 10 !    \nabla \times j_para
-  integer, parameter, public :: IQ_JDIA        = 11 !                  j_dia (hardcoded for B along z)
-  integer, parameter, public :: IQ_ELF         = 12 !                  ELF
-  integer, parameter, public :: IQ_K           = 13 !                c \psi^\dag (\alpha \cdot p) \psi
-  integer, parameter, public :: IQ_H           = 14 !                  \psi^\dag (\Sigma \cdot p) \psi
-  integer, parameter, public :: IQ_GAMMA5      = 15 !                  \psi^\dag  \gamma^5        \psi
+!                                  densities for a list of points
+   logical, public              :: visual_cfg_list              = .false.
+   integer, public              :: visual_cfg_nr_points_in_list = 0
+   real(8), public, allocatable :: visual_cfg_xyz_list(:, :)
 
-! WARNING: the factor 1/c^2 is missing on purpose for compatibility with the
-!          operators defined in prp/pamprp.F
-  integer, parameter, public :: IQ_NUCDIPX     = 16 !      -1/(r_K^3) (r_K \times j)_x
-  integer, parameter, public :: IQ_NUCDIPY     = 17 !      -1/(r_K^3) (r_K \times j)_y
-  integer, parameter, public :: IQ_NUCDIPZ     = 18 !      -1/(r_K^3) (r_K \times j)_z
+   logical,       public :: visual_cfg_use_orbital_string = .false.
+   character(72), public :: visual_cfg_orbital_string(2)
+   real(8),       public :: visual_cfg_scale              = 1.0d0
+   real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
+   logical,       public :: visual_cfg_radial             = .false.
+   logical,       public :: visual_cfg_force_small_ao     = .false.
 
-  integer, parameter, public :: IQ_EDIPX       = 19 !                  r_x n
-  integer, parameter, public :: IQ_EDIPY       = 20 !                  r_y n
-  integer, parameter, public :: IQ_EDIPZ       = 21 !                  r_z n
-  integer, parameter, public :: IQ_MDIPX       = 22 !            -1/2 (r_gauge \times j)_x
-  integer, parameter, public :: IQ_MDIPY       = 23 !            -1/2 (r_gauge \times j)_y
-  integer, parameter, public :: IQ_MDIPZ       = 24 !            -1/2 (r_gauge \times j)_z
+   logical,      public :: visual_cfg_london               = .false.
+   logical,      public :: visual_cfg_london_skip_kappa    = .false.
+   logical,      public :: visual_cfg_london_skip_direct   = .false.
+   logical,      public :: visual_cfg_london_skip_ro       = .false.
+   logical,      public :: visual_cfg_london_none          = .false.
+   character(1), public :: visual_cfg_london_component
 
-  integer, parameter, public :: IQ_GRADIENT    = 25 ! \nabla   n 
-  integer, parameter, public :: IQ_LAPLACIAN   = 26 ! \nabla^2 n
+   integer,      public :: visual_cfg_irep_conmat = 0
+   integer,      public :: visual_cfg_itim_conmat = 0
 
-
-
-  private
+   private
 
 end module

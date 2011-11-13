@@ -1,0 +1,14 @@
+$ERROR 1.E-7
+
+Nlines 1:DFT exchange-correlation energy
+Nlines 1:number of electrons from numerical integration
+Nlines 1:Electronic energy
+Nlines 1:ZZSECMOM
+
+$ERROR 1.E-4
+
+Nlines 1:Nonrel. sym.
+
+$ERROR 1.E-6
+
+Nlines 1:  ZDIPLEN   ZDIPLEN   ZDIPLEN

@@ -1,5 +1,5 @@
 /*
- *     Copyright (c) 2010 by the authors of DIRAC.
+ *     Copyright (c) 2011 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -21,8 +21,6 @@
 
 /*
  *
- * VERSION : $Revision: 11757 $
- * DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
  * FILE    : gpc.c
  *
  * frac2i:
@@ -40,11 +38,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#if !defined (SYS_WINDOWS)
 #include <sys/utsname.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
+
+#include <math.h>
 #include "patchlevel.h"
-#include "compinfo.h"
 #include "fortran_interface.h"
 
 void printaddr_(void *p)
@@ -107,6 +109,7 @@ static void print_time(time_t secs, FILE *dst)
 /* Start timers, or stop and print cpu and wall time*/
 void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 {
+#if !defined (SYS_WINDOWS)
     static struct timeval start_wall;
     if (*start)
     {
@@ -132,7 +135,7 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 	    gettimeofday(&end_wall, NULL);
 
 	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld, maxrss: %ld\n",
-		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
+		   (int)*node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
 		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
 
 	    printf(">>>> Total WALL time used in DIRAC: ");
@@ -140,47 +143,7 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 	    printf("\n");
 	}
     }
-}
-
-void sysinf_(fortran_int_t *parcal)
-
-{
-   struct utsname *un;
-
-   un = (struct utsname *) malloc(sizeof(struct utsname));
-
-   if ( un != NULL )
-   {
-      uname(un);
-   }
-
-   printf( " Version           : %s %i.%i (patchlevel %i) \n" , \
-      VER_STR,MAJOR_REV,MINOR_REV,PATCHLEVEL);
-   if ( un != NULL )
-   {
-      printf( " Hostname          : %s\n" , un->nodename);
-      printf( " Operating system  : %s %s\n" , un->sysname, un->release);
-      printf( " Machine           : %s\n" , un->machine);
-   }
-   if ( ! *parcal )
-      printf( " Run               : Sequential\n");
-   else
-      printf( " Run               : Parallel\n");
-
-   /* Information about compilation */
-
-   printf(" Last compilation  : %s %s (by %s@%s:%s)\n", 
-      __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED, COMPILED_DIRAC_DIR);
-
-   printf(" FORTRAN compiler  : %s \n", FCOMP);
-   printf(" C compiler        : %s \n", CCOMP);
-   printf(" External libraries: %s \n", LIBRARIES);
-   printf(" Internal libraries: DIRAC_BLAS=%s  DIRAC_LAPACK=%s \n", DIRAC_BLAS, DIRAC_LAPACK);
-   printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
-   printf(" SVN URL           : %s \n", DIRAC_SVN_URL);
-   printf(" SVN Revision      : %s \n", DIRAC_SVN_REVISION);
-   fflush(stdout);
-   free(un);
+#endif
 }
 
 #define quit        quit_
@@ -198,9 +161,9 @@ void compoff_(double *wrk, double *work, fortran_int8_t *k_offset) {
   if ( sizeof(*k_offset) != 8 )
   {
     printf( "ERROR in COMPOFF in gpc.c: long is not I*8");
-    printf( "compoff: wrk=%p work=%p diff=%d\n", wrk, work, wrk-work+1);
+    printf( "compoff: wrk=%p work=%p diff=%li\n", wrk, work, (long)(wrk-work+1));
     printf( "k_offset=%li\n", (long)*k_offset );
-    printf( "int %d long %d short int %d fortran_int8_t %d\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(fortran_int8_t));
+    printf( "int %i long %i short int %i fortran_int8_t %i\n", (int)sizeof(int), (int)sizeof(long), (int)sizeof(short int),(int)sizeof(fortran_int8_t));
     quit( "ERROR in COMPOFF in gpc.c: long is not I*8",42);
     exit(1);
   }
@@ -279,7 +242,7 @@ int csystem_(const char *cmd, fortran_int_t cmdlen)
   return i;
 }
 
-#ifdef VAR_IFC
+#ifdef VAR_IFORT
  /* extra routines needed by intel's ifc compiler which does not
  * provide them itself.
  * Pawel Salek, pawsa@theochem.kth.se, 2002.01.31
@@ -326,7 +289,7 @@ void system_(char* str, fortran_int_t len)
     char *buf = alloca(len+1);
     buf[len] = 0;
     strncpy(buf,str,len);
-    printf("VAR_IFC defined. Ignoring call system(%s)\n",buf);
+    printf("VAR_IFORT defined. Ignoring call system(%s)\n",buf);
 }
 
 void flush_(fortran_int_t* lu)
@@ -367,11 +330,11 @@ void hostnm_(char* buf, fortran_int_t buflen)
     buf[i] = ' ';
 }
 
-double* malloc_(fortran_int_int cnt)
+double* malloc_(fortran_int_t cnt)
 {
   return malloc(cnt);
 }
-#endif /* VAR_IFC */
+#endif /* VAR_IFORT */
 
 /* Try to cause a segmentation fault, to enable debuggers to
    trap this and inspect the program.
@@ -380,3 +343,49 @@ void crash_(void)
 {
   *(int *)0 = 0;
 }
+
+/*
+ Often  we need to detect "ill" real numbers - NaN, +Inf, -Inf.
+ For that we use C <math.h> functions isnan(x), isinf(x).
+ since not all Fortran compilers have these, IMHO(MI) functions.
+*/
+int is_ill_number_(double x)
+{
+if (isnan(x) != 0 || isinf(x) ==-1 || isinf(x) ==+1)
+{
+ return 1;
+}
+else{return 0;}
+}
+
+
+static double *mem_start = 0;
+static double *mem_high = 0;
+
+void set_mem_start_(double *here)
+{
+  mem_start = here;
+  mem_high = here;
+}
+
+void push_water_mark_(double *here)
+{
+  if (mem_high < here)
+    mem_high = here;
+}
+
+int high_water_mark_(void)
+{
+  return mem_high - mem_start;
+}
+
+/* 
+Make break of given amount of seconds. Call if no Fortran SLEEP() intrinsic.
+*/
+void make_pause_(int *sec)
+{
+  printf("making pause of %d seconds\n",*sec);
+  sleep(*sec);
+  return;
+}
+

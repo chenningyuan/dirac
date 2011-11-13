@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1010,6 +1010,7 @@ C
 * Modifications wrt to a MPI implementation by 
 * Stefan Knecht, Feb. 06 
 *
+      use os_utils
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
 #if defined (VAR_MPI2)
@@ -1040,6 +1041,7 @@ C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
       INTEGER*8 K_OFFSET, K8BASE_LUCITA
+      integer global_scratch_disk
 C
       MIN_ONE    = - 1
       NAMELENGTH =   0
@@ -1118,29 +1120,35 @@ C     initialize number of process groups sharing a c-vector file
 C
 #if defined (VAR_MPI2)
 C
-C     parallel I/O mode for parallel runs / executable
+      global_scratch_disk = get_environment_integer('GLBSCR',
+     &global_scratch_disk)
+
+      if(global_scratch_disk .ne. 0 .or. global_scratch_disk.ne. 1)then
+!       fall back to default: 0
+        global_scratch_disk = 0
+      end if
+
+      call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
+     &               MASTER,MPI_COMM_WORLD,ierr)
+
+      if(global_scratch_disk .eq. 0)then
+
+C       parallel I/O mode for parallel runs / executable
+        IIOMOD = 1
 C
-      IIOMOD = 1
+        CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
 C
-#if defined (SYS_LOCALDISKS)
-      IF( IIOMOD .eq. 1 ) THEN
+        CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
+     &                           WORK(KPROCLIST),WORK(KPROCLENGTH))
 C
-         CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
-C
-         CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
-     &                            WORK(KPROCLIST),WORK(KPROCLENGTH))
-C
-         IF( NFLGRPS .eq. 1 ) THEN 
-            CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-         END IF
-      END IF
-#else
-C     in case of a parallel filesystem, we should use it
-      IF( IIOMOD .eq. 1 ) THEN
+        IF( NFLGRPS .eq. 1 ) THEN 
+           CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+        END IF
+      else
+!       in case of a parallel filesystem, we should use it
         NFLGRPS = 1
         CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-      END IF
-#endif
+      end if
 C
 C     compatibilty with LUCIAREL
 C
@@ -1676,7 +1684,7 @@ C
          WRITE (NNIN_MPI,'(A7,A1,I3)') IN_MPINN,'.',MYPROC
          IN_MPILL=11
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
       ENDIF
 #else
       NNIN_MPI=IN_MPINN
@@ -5669,8 +5677,8 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck LUCINOD */
-      SUBROUTINE LUCINOD(WRK,LWRK)
+C/* Deck LUCITA_NODE */
+      SUBROUTINE LUCITA_NODE(WRK,LWRK)
 *
 *     LUCITA routine (DIRAC interface) for the slaves
 *
@@ -5736,7 +5744,7 @@ C
          WRITE (LUCIFILN,'(A10,A1,I3)') LUCITABASF,'.',MYPROC
          LUFIL=14
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
       ENDIF
 *
 *     open the local input file and the node specific output file.
@@ -5771,8 +5779,8 @@ C
 *
 *     pointer in DIRAC.INP should now be positioned behind *LUCITA
 *
-      CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
-      CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
+      CALL LUCITA_INP(WORD,.FALSE.,WORK,LWRK)
+      CALL LUCITA_INP(WORD,.TRUE.,WORK,LWRK)
 *
 *     now let's call the working routine!
 *

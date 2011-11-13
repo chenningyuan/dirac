@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : dirana.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paman */
@@ -147,9 +144,7 @@ C  LABELS: NLAB
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M,ORBDEF_M,ORBDEF
       LOGICAL FNDLAB,CINATORB
-#ifdef MOD_KRMC
       LOGICAL MJVEC_AVAIL
-#endif
       CHARACTER FILELABEL*8
       DIMENSION WORK(LWORK)
 C
@@ -193,15 +188,11 @@ C
 C
 C     Check if coefficients are on file
 C
-#ifdef MOD_KRMC
       IF( MP2NATPOP ) THEN
          INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
       ELSE
          INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       END IF
-#else
-      TOBEK=.FALSE.
-#endif /* MOD_KRMC */
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
@@ -218,7 +209,6 @@ C
 C     Read coefficients, eigenvalues and 
 C     irrep identification + restart info
 C
-#ifdef MOD_KRMC
       IF (TOBEK) THEN
          IF( MP2NATPOP )THEN
            CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','MULPOP')
@@ -273,7 +263,6 @@ C            occupancies
          END IF
          CLOSE (LUKRMC)
       ELSE
-#endif /* MOD_KRMC */
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
@@ -289,9 +278,7 @@ C        long run, occupancies should also be stored on DFCOEF. FIXME!
            CALL DCOPY(NORBT,WORK(KEIG),1,WORK(KOCC),1)
            KRMC_FLG = 3
          END IF
-#ifdef MOD_KRMC
       END IF
-#endif /* MOD_KRMC */
 C
 C     Get labels for population analysis
 C
@@ -418,7 +405,8 @@ C
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL NUMLST(VECPOP(IFRP),WORK(KJVEC),NORB(IFRP),
      &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS)
-        CALL ORBCNT(WORK(KJVEC),NVECS,IFRP,NPVECS,NEVECS)
+        CALL ORBCNT(WORK(KJVEC),NVECS,NPSH(IFRP),NESH(IFRP),
+     &              NPVECS,NEVECS)
         IF(NVECS.EQ.0) GOTO 20
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
 C
@@ -1586,9 +1574,9 @@ C                                    MCSCF-NO coefficients, occupation
 C                                    numbers (and mj-values)
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbprj.h"
@@ -1887,7 +1875,6 @@ C
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
-#ifdef MOD_KRMC
 C
 C     Check if MCSCF coefficients are on file
 C
@@ -1922,7 +1909,6 @@ C
 C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
-#endif /* MOD_KRMC */
 C
 C     No MCSCF, then check if RHF on DFCOEF :
 C
@@ -2242,7 +2228,6 @@ C
 #include "dcbham.h"
 #include "dcbrho1.h"
 C
-#include "sdpre.h"
 C
 C     Calculate distance between centers
 C
@@ -2256,7 +2241,7 @@ C
       ASTEP  = DSTEP/XTANG
       NPOINT = INT(DISTAN/ASTEP)
       IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
-      ASTEP  = DISTAN/SDPRE(NPOINT)
+      ASTEP  = DISTAN/dble(NPOINT)
 C
 C     Calculate density along between centers:
 C     If bond distance is 2R, then points are calculated between (-R,3R)
@@ -2264,7 +2249,7 @@ C
       IP1 = -NPOINT/2
       IP2 = NPOINT - IP1 
       DO IP = IP1,IP2
-        PP  = SDPRE(IP)*ASTEP
+        PP  = dble(IP)*ASTEP
         PX  = COORD(1,1) + PP*DX
         PY  = COORD(2,1) + PP*DY
         PZ  = COORD(3,1) + PP*DZ
@@ -2530,7 +2515,6 @@ C
 #include "dcbham.h"
 #include "dcbrho.h"
 C
-#include "sdpre.h"
 C     
       DO I1 = 1,NCUBE(1)
         DO I2 = 1,NCUBE(2)
@@ -3087,7 +3071,8 @@ C      DO IFRP = 1,NFSYM
          CALL NUMLST(VECREF(IFRP,I),WORK(KVEC(IFRP,I)),
      &        NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
      &        IFRP,NSTR(IFRP,0,I))
-         CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
+         CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
+     &        NPSH(IFRP),NESH(IFRP),
      &        NSTR(IFRP,2,I),NSTR(IFRP,1,I))
          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
          NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
@@ -4129,7 +4114,6 @@ C=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
-#include "sdpre.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 

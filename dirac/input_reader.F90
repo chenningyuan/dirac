@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,587 +19,868 @@
 
 module input_reader
 
-! radovan: - this module should not initialize anything
-!            it is a reader
+! radovan: - this module should not initialize anything - it is a reader
 !          - when we have only modules and no common blocks the initialization
 !            problem goes away since variables can be initialized at definition
+!          - please feel free to copy/use/improve this inside DIRAC/Dalton
+!            without asking
 
-  use keyword
-  use character_processing
-  use dirac_cfg
+   use keyword
+   use character_processing
+   use dirac_cfg
+   use interface_input
 
-  implicit none
+   implicit none
 
-  public read_input
-  public move_to_next_star
+   public read_input
+   public move_to_next_star
 
-  private
+   private
 
 #include "dgroup.h"
 
 contains
 
-  subroutine set_lscale_dft_gaunt()
+   subroutine read_input()
 
-#include "dcbham.h"
+!    radovan: - this routine should not include any common blocks
+!               this should be done in called subroutines
+!             - please keep ifndef traps inside subroutines for better readability
+!               of this subroutine
 
-    lscale_dft_gaunt = .true.
+!     --------------------------------------------------------------------------
+      character(kw_length) :: word
+      character(kw_length) :: kw_section
+!     --------------------------------------------------------------------------
 
-  end subroutine
+!     this is to catch keywords that appear before some section starts
+      kw_section = '       '
 
-  subroutine read_input()
+      open(unit_in, file='DIRAC.INP')
+      rewind unit_in
 
-!   radovan: - this routine should not include any common blocks
-!              this should be done in called subroutines
-!            - keep ifndef traps inside subroutines for better readability
-!              of this subroutine
+      do while (.true.)
 
-!   ----------------------------------------------------------------------------
-    character(kw_length) :: word
-    character(kw_length) :: kw_section
-!   ----------------------------------------------------------------------------
+         read(unit_in, '(a7)', end=1) word
 
-!   this is to catch keywords that appear before some section starts
-    kw_section = '       '
+         if (word == '       ') then
+!           blank line
+         else
+            select case (word(1:1))
 
-    open(unit_in, file='DIRAC.INP')
-    rewind unit_in
+               case ('!', '#')
+!                 comment
 
-    do while (.true.)
+               case ('*')
+!                 section
+                  kw_section = uppercase(word)
 
-      read(unit_in, '(a7)', end=1) word
+               case default
+!                 keyword
+                  select case (kw_section)
 
-      select case (word(1:1))
+!                    case ('**METHO', '**WAVE ')
+!                       call read_input_method(word, kw_section)
 
-        case ('!', '#')
-!         comment
+                     case ('*DFT   ')
+                        call read_input_dft(word, kw_section)
 
-        case ('*')
-!         section
-          kw_section = uppercase(word)
+                     case ('**GRID ')
+                        call read_input_grid(word, kw_section)
 
-        case default
-!         keyword
-          select case (kw_section)
+!                    *VISUAL is for backward compatibility
+!                    *VISUAL used to be under **ANALYZE
+                     case ('**VISUA', '*VISUAL')
+                        call read_input_visual(word, kw_section)
 
-!           case ('**METHO', '**WAVE ')
-!             call read_input_method(word, kw_section)
+                     case ('*OPENRS')
+                        call read_input_openrsp(word, kw_section)
 
-            case ('*DFT   ')
-              call read_input_dft(word, kw_section)
+                     case ('*X2C')
+                        call read_input_x2c(word, kw_section)
 
-!           *VISUAL is for backward compatibility
-!           *VISUAL used to be under **ANALYZE
-            case ('**VISUA', '*VISUAL')
-              call read_input_visual(word, kw_section)
+                     case ('**RELCC')
+                        call read_input_relcc(word, kw_section)
 
-            case ('*OPENRS')
-              call read_input_openrsp(word, kw_section)
+                     case ('*CCENER')
+                        call read_input_ccener(word, kw_section)
 
-            case ('**RELCC')
-              call read_input_relcc(word, kw_section)
+                     case ('*CCFOPR')
+                        call read_input_ccfopr(word, kw_section)
 
-            case ('*END OF')
-              go to 1
+                     case ('*CCFSPC')
+                        call read_input_ccfspc(word, kw_section)
 
-!           case ('       ')
-!             call quit('keyword '//word//' without section')
+                     case ('*CCIH  ')
+                        call read_input_ccih(word, kw_section)
 
-            case default
-!             activate as soon as everything is merged to here
-!             call quit('section '//kw_section//' not recognized')
+                     case ('*END OF')
+                        go to 1
 
-          end select
+!                    case ('       ')
+!                       call quit('keyword '//word//' without section')
 
-      end select
+                     case default
+!                       activate as soon as everything is merged to here
+!                       call quit('section '//kw_section//' not recognized')
 
-    end do
+                  end select
 
-1   close(unit_in)
+            end select
+         end if
 
-  end subroutine
-
-  subroutine move_to_next_star(word_io)
-
-!   ----------------------------------------------------------------------------
-    character(kw_length), intent(inout) :: word_io
-!   ----------------------------------------------------------------------------
-    character(kw_length)                :: word
-!   ----------------------------------------------------------------------------
-
-    do while (.true.)
-      read(unit_in, '(a7)') word
-      if (word(1:1) == '*') then
-        word_io = word
-        return
-      end if
-    end do
-
-  end subroutine
-
-  subroutine read_input_dft(word, kw_section)
-
-    use dft_cfg
-    use dirac_cfg
-
-!   ----------------------------------------------------------------------------
-    character(kw_length), intent(in) :: word
-    character(kw_length), intent(in) :: kw_section
-!   ----------------------------------------------------------------------------
-    character(80)                    :: line
-    character(4)                     :: first_4
-    integer                          :: i, n
-!   ----------------------------------------------------------------------------
-
-    if (.not. dirac_cfg_dft_calculation) return
-
-    call reset_available_kw_list()
-
-    if (kw_matches(word, '.SMALLD')) then
-      call kw_read(word, dft_cfg_dfthr0)
-    end if
-
-    if (kw_matches(word, '.RADINT')) then
-      call kw_read(word, dft_cfg_radint)
-    end if
-
-    if (kw_matches(word, '.ANGINT')) then
-      call kw_read(word, dft_cfg_angint)
-    end if
-
-    if (kw_matches(word, '.NOPRUN')) then
-!     turn off pruning of angular grid
-      dft_cfg_no_pruning = .true.
-    end if
-
-    if (kw_matches(word, '.ANGMIN')) then
-      call kw_read(word, dft_cfg_angmin)
-    end if
-
-    if (kw_matches(word, '.ATSIZE')) then
-!     estimate relative atomic sizes for use in the Becke
-!     partitioning scheme from atomic contributions
-      dft_cfg_estimate_radii = .true.
-    end if
-
-    if (kw_matches(word, '.ERRELS')) then
-!     threshold for accepted error in integrated number of electrons
-      call kw_read(word, dft_cfg_accepted_error)
-    end if
-
-    if (kw_matches(word, '.EXPORT')) then
-      dft_cfg_export_grid = .true.
-      call kw_read(word, dft_cfg_gridfile)
-    end if
-
-    if (kw_matches(word, '.IMPORT')) then
-      dft_cfg_import_grid = .true.
-      call kw_read(word, dft_cfg_gridfile)
-    end if
-
-!radovan: not documented on wiki, i plan to remove this option
-    if (kw_matches(word, '.MULTIG')) then
-      dft_cfg_multigrid = .true.
-      call kw_read(word, n)
-      dft_cfg_multigrid_max = n
-      allocate(dft_cfg_multigrid_file(0:n))
-      allocate(dft_cfg_multigrid_file_unit(0:n))
-      do i = 0, n
-        call kw_read(word, dft_cfg_multigrid_file(i))
       end do
-    end if
+
+1     close(unit_in)
+
+   end subroutine
+
+   subroutine move_to_next_star(word_io)
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(inout) :: word_io
+!     --------------------------------------------------------------------------
+      character(kw_length)                :: word
+!     --------------------------------------------------------------------------
+
+      do while (.true.)
+         read(unit_in, '(a7)') word
+         if (word(1:1) == '*') then
+            word_io = word
+            return
+         end if
+      end do
+
+   end subroutine
+
+   subroutine read_input_grid(word, kw_section)
+
+      use num_grid_cfg
+
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.RADINT')) then
+         call kw_read(word, num_grid_cfg_radint)
+      end if
+
+      if (kw_matches(word, '.ANGINT')) then
+         call kw_read(word, num_grid_cfg_angint)
+      end if
+
+      if (kw_matches(word, '.NOPRUN')) then
+!        turn off pruning of angular grid
+         num_grid_cfg_no_pruning = .true.
+      end if
+
+      if (kw_matches(word, '.ANGMIN')) then
+         call kw_read(word, num_grid_cfg_angmin)
+      end if
+
+      if (kw_matches(word, '.ATSIZE')) then
+!        estimate relative atomic sizes for use in the Becke
+!        partitioning scheme from atomic contributions
+         num_grid_cfg_estimate_radii = .true.
+      end if
+
+      if (kw_matches(word, '.IMPORT')) then
+         num_grid_cfg_import_grid = .true.
+         call kw_read(word, num_grid_cfg_gridfile)
+      end if
 
 !radovan: not documented on wiki
-    if (kw_matches(word, '.ZIPGRI')) then
-!     is true by default, keep for backward compatibimity
-      dft_cfg_zipgrid = .true.
-    end if
+      if (kw_matches(word, '.ZIPGRI')) then
+!        is true by default, keep for backward compatibimity
+         num_grid_cfg_zipgrid = .true.
+      end if
 
-    if (kw_matches(word, '.NOZIP ')) then
-      dft_cfg_zipgrid = .false.
-    end if
+      if (kw_matches(word, '.NOZIP ')) then
+         num_grid_cfg_zipgrid = .false.
+      end if
 
-    if (kw_matches(word, '.4CGRID')) then
-!     include small component in the grid generation
-!     also for 1- and 2-c dft calculations
-      dft_cfg_force_4c_grid = .true.
-    end if
+      if (kw_matches(word, '.4CGRID')) then
+!        include small component in the grid generation
+!        also for 1- and 2-c dft calculations
+         num_grid_cfg_force_4c_grid = .true.
+      end if
 
-    if (kw_matches(word, '.DEBUG ')) then
-      dft_cfg_radint = 1.0d-3
-      dft_cfg_angint = 10
-    end if
+      if (kw_matches(word, '.DEBUG ')) then
+         num_grid_cfg_radint = 1.0d-3
+         num_grid_cfg_angint = 10
+      end if
 
-    if (kw_matches(word, '.COARSE')) then
-      dft_cfg_radint = 1.0d-11
-      dft_cfg_angint = 35
-    end if
+      if (kw_matches(word, '.COARSE')) then
+         num_grid_cfg_radint = 1.0d-11
+         num_grid_cfg_angint = 35
+      end if
 
-    if (kw_matches(word, '.ULTRAF')) then
-      dft_cfg_radint = 2.0d-15
-      dft_cfg_angint = 64
-    end if
+      if (kw_matches(word, '.ULTRAF')) then
+         num_grid_cfg_radint = 2.0d-15
+         num_grid_cfg_angint = 64
+      end if
 
-    if (kw_matches(word, '.INTCHK')) then
-      call kw_read(word, dft_cfg_integration_check_level)
-    end if
+      if (kw_matches(word, '.INTCHK')) then
+         call kw_read(word, num_grid_cfg_integration_check_level)
+      end if
 
-    if (kw_matches(word, '.GRAC  ')) then
-!     gradient regulated asymptotic correction
-      dft_cfg_grac = .true.
-      read(unit_in, '(a4)') first_4
-      if      (lowercase(first_4) == 'lb94') then
-        dft_cfg_asymptote_is_lb94 = .true.
-      else if (lowercase(first_4) == 'lbal') then
-        dft_cfg_asymptote_is_lbalpha = .true.
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_visual(word, kw_section)
+
+      use visual_cfg
+      use character_processing
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: i
+      real(8)                          :: s, v_12(3), v_13(3)
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      dirac_cfg_visual = .true.
+
+      if (kw_matches(word, '.LIST  ')) then
+         visual_cfg_list = .true.
+         call kw_read(word, visual_cfg_nr_points_in_list)
+         allocate(visual_cfg_xyz_list(visual_cfg_nr_points_in_list, 3))
+         do i = 1, visual_cfg_nr_points_in_list
+            call kw_read(word, visual_cfg_xyz_list(i, 1), &
+                               visual_cfg_xyz_list(i, 2), &
+                               visual_cfg_xyz_list(i, 3))
+         end do
+      end if
+
+      if (kw_matches(word, '.LINE  ')) then
+         visual_cfg_line = .true.
+         call kw_read(word, visual_cfg_line_from(1), &
+                            visual_cfg_line_from(2), &
+                            visual_cfg_line_from(3))
+         call kw_read(word, visual_cfg_line_to(1), &
+                            visual_cfg_line_to(2), &
+                            visual_cfg_line_to(3))
+         call kw_read(word, visual_cfg_line_nr_steps)
+      end if
+
+      if (kw_matches(word, '.2D    ')) then
+         visual_cfg_2d = .true.
+         read(unit_in, *) visual_cfg_2d_p_origin(1:3)
+         read(unit_in, *) visual_cfg_2d_p_right(1:3)
+         read(unit_in, *) visual_cfg_2d_nr_right
+         read(unit_in, *) visual_cfg_2d_p_top(1:3)
+         read(unit_in, *) visual_cfg_2d_nr_top
+!        check that angle between 1-2 and 1-3 is 90 degs
+         v_12 = visual_cfg_2d_p_right - visual_cfg_2d_p_origin
+         v_13 = visual_cfg_2d_p_top   - visual_cfg_2d_p_origin
+         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
+         if (s > tiny(0.0d0)) then
+            call quit('.2D: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
+         end if
+      end if
+
+      if (kw_matches(word, '.2D_INT')) then
+         visual_cfg_2d_integration = .true.
+         read(unit_in, *) visual_cfg_2d_integration_p_origin(1:3)
+         read(unit_in, *) visual_cfg_2d_integration_p_right(1:3)
+         read(unit_in, *) visual_cfg_2d_integration_nr_right
+         read(unit_in, *) visual_cfg_2d_integration_p_top(1:3)
+         read(unit_in, *) visual_cfg_2d_integration_nr_top
+         read(unit_in, *) visual_cfg_2d_integration_order
+!        check that angle between 1-2 and 1-3 is 90 degs
+         v_12 = visual_cfg_2d_integration_p_right - visual_cfg_2d_integration_p_origin
+         v_13 = visual_cfg_2d_integration_p_top   - visual_cfg_2d_integration_p_origin
+         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
+         if (s > tiny(0.0d0)) then
+            call quit('.2D_INT: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
+         end if
+      end if
+
+      if (kw_matches(word, '.3D    ')) then
+         visual_cfg_3d = .true.
+         call kw_read(word, visual_cfg_ncube(1), &
+                            visual_cfg_ncube(2), &
+                            visual_cfg_ncube(3))
+      end if
+
+      if (kw_matches(word, '.3D_ADD')) then
+         call kw_read(word, visual_cfg_add_3d)
+      end if
+
+      if (kw_matches(word, '.3D_INT')) then
+         visual_cfg_3d_integration = .true.
+      end if
+
+      if (kw_matches(word, '.SCALE ')) then
+         call kw_read(word, visual_cfg_scale)
+      end if
+
+      if (kw_matches(word, '.DENSIT')) then
+         call read_input_visual_helper(iq_density)
+      end if
+
+      if (kw_matches(word, '.ELF   ')) then
+         call read_input_visual_helper(iq_elf)
+      end if
+
+      if (kw_matches(word, '.GAMMA5')) then
+         call read_input_visual_helper(iq_gamma5)
+      end if
+
+      if (kw_matches(word, '.JDIA  ')) then
+         call read_input_visual_helper(iq_jdia)
+      end if
+
+      if (kw_matches(word, '.J     ')) then
+         call read_input_visual_helper(iq_j)
+      end if
+
+      if (kw_matches(word, '.DIVJ  ')) then
+         call read_input_visual_helper(iq_divj)
+      end if
+
+      if (kw_matches(word, '.ROTJ  ')) then
+         call read_input_visual_helper(iq_rotj)
+      end if
+
+      if (kw_matches(word, '.S     ')) then
+         call read_input_visual_helper(iq_s)
+      end if
+
+      if (kw_matches(word, '.DIVS  ')) then
+         call read_input_visual_helper(iq_divs)
+      end if
+
+      if (kw_matches(word, '.ROTS  ')) then
+         call read_input_visual_helper(iq_rots)
+      end if
+
+      if (kw_matches(word, '.EDIPX ')) then
+         call read_input_visual_helper(iq_edipx)
+      end if
+      if (kw_matches(word, '.EDIPY ')) then
+         call read_input_visual_helper(iq_edipy)
+      end if
+      if (kw_matches(word, '.EDIPZ ')) then
+         call read_input_visual_helper(iq_edipz)
+      end if
+
+      if (kw_matches(word, '.BDIPX ')) then
+         call read_input_visual_helper(iq_bdipx)
+      end if
+      if (kw_matches(word, '.BDIPY ')) then
+         call read_input_visual_helper(iq_bdipy)
+      end if
+      if (kw_matches(word, '.BDIPZ ')) then
+         call read_input_visual_helper(iq_bdipz)
+      end if
+
+      if (kw_matches(word, '.NDIPX ')) then
+         call read_input_visual_helper2(iq_ndipx)
+      end if
+      if (kw_matches(word, '.NDIPY ')) then
+         call read_input_visual_helper2(iq_ndipy)
+      end if
+      if (kw_matches(word, '.NDIPZ ')) then
+         call read_input_visual_helper2(iq_ndipz)
+      end if
+
+      if (kw_matches(word, '.BDIPXD')) then
+         call read_input_visual_helper(iq_bdipxdia)
+      end if
+      if (kw_matches(word, '.BDIPYD')) then
+         call read_input_visual_helper(iq_bdipydia)
+      end if
+      if (kw_matches(word, '.BDIPZD')) then
+         call read_input_visual_helper(iq_bdipzdia)
+      end if
+
+      if (kw_matches(word, '.NDIPXD')) then
+         call read_input_visual_helper2(iq_ndipxdia)
+      end if
+      if (kw_matches(word, '.NDIPYD')) then
+         call read_input_visual_helper2(iq_ndipydia)
+      end if
+      if (kw_matches(word, '.NDIPZD')) then
+         call read_input_visual_helper2(iq_ndipzdia)
+      end if
+      if (kw_matches(word, '.ESP   ')) then
+         call read_input_visual_helper(iq_esp)
+      end if
+      if (kw_matches(word, '.ESPRHO')) then
+         call read_input_visual_helper(iq_esprho)
+      end if
+
+      if (kw_matches(word, '.GAUGE ')) then
+         call kw_read(word, visual_cfg_gauge_origin(1), &
+                            visual_cfg_gauge_origin(2), &
+                            visual_cfg_gauge_origin(3))
+      end if
+
+      if (kw_matches(word, '.RADIAL')) then
+         visual_cfg_radial = .true.
+      end if
+
+      if (kw_matches(word, '.SMALLA')) then
+         visual_cfg_force_small_ao = .true.
+      end if
+
+      if (kw_matches(word, '.ORBSTR')) then
+         visual_cfg_use_orbital_string = .true.
+         call kw_read(word, visual_cfg_orbital_string(1))
+         if (nfsym > 1) then
+            call kw_read(word, visual_cfg_orbital_string(2))
+         end if
+      end if
+
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_visual_helper(j)
+
+      use visual_cfg
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: j
+!     --------------------------------------------------------------------------
+      integer             :: i
+      character(80)       :: line
+!     --------------------------------------------------------------------------
+
+      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
+      i = visual_cfg_nr_dmat
+      visual_cfg_property(i) = j
+      read(unit_in, *) line
+      backspace(unit_in)
+      if (word_contains(line, 'DFCOEF')) then
+         read(unit_in, *) visual_cfg_dmat_file(i)
       else
-        call quit('keyword following .GRAC not recognized')
+         read(unit_in, *) visual_cfg_dmat_file(i), &
+                          visual_cfg_dmat_file_record(i)
       end if
-      call kw_read(word,               &
-                   dft_cfg_grac_alpha, &
-                   dft_cfg_grac_beta,  &
-                   dft_cfg_ac_ip,      &
-                   dft_cfg_ac_threshold)
-    end if
 
-    if (kw_matches(word, '.SAOP  ')) then
-!     statistical averaging of (model) orbital potentials
-      dft_cfg_saop = .true.
-      read(unit_in, '(a4)') first_4
-      if      (lowercase(first_4) == 'lb94') then
-        dft_cfg_asymptote_is_lb94 = .true.
-      else if (lowercase(first_4) == 'lbal') then
-        dft_cfg_asymptote_is_lbalpha = .true.
-      else
-        call quit('keyword following .SAOP not recognized')
+   end subroutine
+
+   subroutine read_input_visual_helper2(j)
+
+      use visual_cfg
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: j
+!     --------------------------------------------------------------------------
+      integer             :: i
+!     --------------------------------------------------------------------------
+
+      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
+      i = visual_cfg_nr_dmat
+      visual_cfg_property(i) = j
+      read(unit_in, *) visual_cfg_ref_nucleus(i), &
+                       visual_cfg_dmat_file(i),   &
+                       visual_cfg_dmat_file_record(i)
+
+   end subroutine
+
+   subroutine read_input_openrsp(word, kw_section)
+
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: i
+!     --------------------------------------------------------------------------
+
+      call quit(kw_section//' not available in this version')
+
+   end subroutine
+
+   subroutine read_input_relcc(word, kw_section)
+
+      use relcc_cfg
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.NELEC ')) then
+         nelec_input = .true.
+         call kw_read(word, relcc_nelec, 2*nfsym)
       end if
-    end if
 
-    if (kw_matches(word, '.SAOP! ')) then
-!     "original" SAOP as in JCP 112, 1344 (2000).
-      dft_cfg_saop                    = .true.
-      dft_cfg_saop_with_response_part = .true.
-      dft_cfg_asymptote_is_lbalpha    = .true.
-      dft_cfg_alda_hs                 = .true.
-      dft_cfg_alda_ha                 = .true.
-      call setaldahs(.true.) !activate alda for the h+ part
-      call setaldaha(.true.) !activate alda for the h- part
-    end if
-
-    if (kw_matches(word, '.NOSDFT')) then
-      dft_cfg_no_sdft = .true.
-    end if
-
-    if (kw_matches(word, '.COLLIN')) then
-      dft_cfg_sdft_collinear = .true.
-    end if
-
-    if (kw_matches(word, '.BETASI')) then
-      dft_cfg_betasigma = .true.
-    end if
-
-    if (kw_matches(word, '.ALDA  ')) then
-      dft_cfg_alda_hs = .true.
-      dft_cfg_alda_ha = .true.
-      call setaldahs(.true.) !activate alda for the h+ part
-      call setaldaha(.true.) !activate alda for the h- part
-    end if
-
-    if (kw_matches(word, '.XALDA ')) then
-!     use        (1-f)*S + VWN + f*HFx
-!     instead of       S + VWN
-      dft_cfg_xalda   = .true.
-      dft_cfg_alda_hs = .true.
-      dft_cfg_alda_ha = .true.
-      call setxalda(.true.)
-      call setaldahs(.true.) !activate alda for the h+ part
-      call setaldaha(.true.) !activate alda for the h- part
-    end if
-
-    if (kw_matches(word, '.ALDA+ ')) then
-!     use alda only for the      hermitian part
-      dft_cfg_alda_hs = .true.
-      call setaldahs(.true.) !activate alda for the h+ part
-    end if
-
-    if (kw_matches(word, '.ALDA- ')) then
-!     use alda only for the anti-hermitian part
-      dft_cfg_alda_ha = .true.
-      call setaldaha(.true.) !activate alda for the h- part
-    end if
-
-    if (kw_matches(word, '.XALDA+')) then
-!     use xalda only for the      hermitian part
-      dft_cfg_xalda   = .true.
-      dft_cfg_alda_hs = .true.
-      call setxalda(.true.)
-      call setaldahs(.true.) !activate alda for the h+ part
-    end if
-
-    if (kw_matches(word, '.XALDA-')) then
-!     use xalda only for the anti-hermitian part
-      dft_cfg_xalda   = .true.
-      dft_cfg_alda_ha = .true.
-      call setxalda(.true.)
-      call setaldaha(.true.) !activate alda for the h- part
-    end if
-
-!radovan: not documented on wiki, code not perfectly tested
-    if (kw_matches(word, '.ALDAOR')) then
-      call kw_read(word, dft_cfg_alda_order)
-    end if
-
-    if (kw_matches(word, '.PRINT ')) then
-      call kw_read(word, dft_cfg_print_level)
-    end if
-
-    if (kw_matches(word, '.GAUTSC')) then
-      call set_lscale_dft_gaunt()
-    end if
-
-!radovan: not documented on wiki
-    if (kw_matches(word, '.FROMVX')) then
-      call quit('explicit xc potential (.FROMVX) not available')
-    end if
-
-!radovan: not documented on wiki, code not perfectly tested
-    if (kw_matches(word, '.VRG   ')) then
-      dft_cfg_cdft_vrg = .true.
-    end if
-
-!radovan: not documented on wiki, code not perfectly tested
-    if (kw_matches(word, '.SCREEN')) then
-      dft_cfg_screening = .true.
-    end if
-
-!radovan: not documented on wiki, code not perfectly tested
-    if (kw_matches(word, '.BLOCKE')) then
-      dft_cfg_blocked = .true.
-    end if
-
-!radovan: not documented on wiki, code not perfectly tested
-    if (kw_matches(word, '.LAMBDA')) then
-      dirac_cfg_overlap_diagnostic = .true.
-    end if
-
-    call check_whether_kw_found(word, kw_section)
-
-  end subroutine
-
-  subroutine read_input_visual(word, kw_section)
-
-#ifdef MOD_VISUAL
-    use visual_cfg
-#endif
-
-!   ----------------------------------------------------------------------------
-    character(kw_length), intent(in) :: word
-    character(kw_length), intent(in) :: kw_section
-!   ----------------------------------------------------------------------------
-    integer                          :: i
-    character(6)                     :: reply
-!   ----------------------------------------------------------------------------
-
-#ifndef MOD_VISUAL
-    call quit(kw_section//' not available in this version')
-#else
-
-    dirac_cfg_visual = .true.
-
-    call reset_available_kw_list()
-
-    if (kw_matches(word, '.LIST  ')) then
-      visual_cfg_list = .true.
-      call kw_read(word, visual_cfg_nr_points_in_list)
-      do i = 1, visual_cfg_nr_points_in_list
-        call kw_read(word, visual_cfg_xyz_list(i, 1), &
-                           visual_cfg_xyz_list(i, 2), &
-                           visual_cfg_xyz_list(i, 3))
-      end do
-    end if
-
-    if (kw_matches(word, '.LINE  ')) then
-      visual_cfg_line = .true.
-      call kw_read(word, visual_cfg_line_nr_steps)
-      call kw_read(word, visual_cfg_line_from(1), &
-                         visual_cfg_line_from(2), &
-                         visual_cfg_line_from(3))
-      call kw_read(word, visual_cfg_line_to(1), &
-                         visual_cfg_line_to(2), &
-                         visual_cfg_line_to(3))
-    end if
-
-    if (kw_matches(word, '.2D    ')) then
-      visual_cfg_2d = .true.
-    end if
-
-    if (kw_matches(word, '.3D    ')) then
-      visual_cfg_3d = .true.
-    end if
-
-    if (kw_matches(word, '.QUANTI')) then
-      call kw_read(word, visual_cfg_nr_xvectors)
-      do i = 1, visual_cfg_nr_xvectors
-        read(unit_in, *) visual_cfg_xvector_file(i),   &
-                         visual_cfg_iwhich_xvector(i), &
-                         visual_cfg_iq_xvector(i),     &
-                         visual_cfg_ioption_xvector(i)
-      end do
-    end if
-
-    if (kw_matches(word, '.DENSIT')) then
-      visual_cfg_nr_xvectors        = 1
-      visual_cfg_xvector_file(1)    = 'ZORDER'
-      visual_cfg_iwhich_xvector(1)  = 1
-      visual_cfg_iq_xvector(1)      = 1
-      visual_cfg_ioption_xvector(1) = 0
-    end if
-
-    if (kw_matches(word, '.GAMMA5')) then
-      visual_cfg_nr_xvectors        = 1
-      visual_cfg_xvector_file(1)    = 'ZORDER'
-      visual_cfg_iwhich_xvector(1)  = 1
-      visual_cfg_iq_xvector(1)      = 15
-      visual_cfg_ioption_xvector(1) = 0
-    end if
-
-    if (kw_matches(word, '.ELF   ')) then
-      visual_cfg_nr_xvectors        = 1
-      visual_cfg_xvector_file(1)    = 'ZORDER'
-      visual_cfg_iwhich_xvector(1)  = 1
-      visual_cfg_iq_xvector(1)      = 12
-      visual_cfg_ioption_xvector(1) = 0
-    end if
-
-    if (kw_matches(word, '.INTEGR')) then
-      visual_cfg_integrate = .true.
-    end if
-
-    if (kw_matches(word, '.RADIAL')) then
-      visual_cfg_radial = .true.
-    end if
-
-    if (kw_matches(word, '.SMALLA')) then
-      visual_cfg_force_small_ao = .true.
-    end if
-
-    if (kw_matches(word, '.ORBSTR')) then
-      visual_cfg_use_orbital_string = .true.
-      call kw_read(word, visual_cfg_orbital_string(1))
-      if (nfsym > 1) then
-        call kw_read(word, visual_cfg_orbital_string(2))
+      if (kw_matches(word, '.NEL_F1')) then
+         call kw_read(word, relcc_nelec_f1, 2*nfsym)
       end if
-    end if
 
-    if (kw_matches(word, '.COMMON')) then
-      call kw_read(word, visual_cfg_common_factor)
-    end if
+      if (kw_matches(word, '.NEL_F2')) then
+         call kw_read(word, relcc_nelec_f2, 2*nfsym)
+      end if
 
-    if (kw_matches(word, '.2DADD ')) then
-      call kw_read(word, visual_cfg_add_2d)
-    end if
+      if (kw_matches(word, '.NFROZ ')) then
+         call kw_read(word, relcc_nfroz, 2*nfsym)
+      end if
 
-    if (kw_matches(word, '.3DADD ')) then
-      call kw_read(word, visual_cfg_add_3d)
-    end if
+      if (kw_matches(word, '.DEBUG ')) then
+         relcc_debug = .true.
+      end if
 
-    if (kw_matches(word, '.CUBE  ')) then
-      call kw_read(word, visual_cfg_ncube(1), &
-                         visual_cfg_ncube(2), &
-                         visual_cfg_ncube(3))
-    end if
+      if (kw_matches(word, '.CARITH')) then
+         relcc_carith = .true.
+      end if
 
-    if (kw_matches(word, '.2DORIE')) then
-      call kw_read(word, reply)
-      if(reply(1:2) .EQ. 'XY') then
-        visual_cfg_orientation = 1
-      elseif(reply(1:2) .EQ. 'XZ') then
-        visual_cfg_orientation = 2
-      elseif(reply(1:2) .EQ. 'YZ') then
-        visual_cfg_orientation = 3
-      endif
-    end if
+      if (kw_matches(word, '.TIMING')) then
+         relcc_timing = .true.
+      end if
 
-    if (kw_matches(word, '.2DORIG')) then
-      call kw_read(word, visual_cfg_origin_2d(1), &
-                         visual_cfg_origin_2d(2), &
-                         visual_cfg_origin_2d(3))
-    end if
+      if (kw_matches(word, '.NOSORT')) then
+         relcc_do_sort = .false.
+      end if
 
-    if (kw_matches(word, '.2DSTEP')) then
-      call kw_read(word, visual_cfg_step_2d)
-    end if
+      if (kw_matches(word, '.ENERGY')) then
+         relcc_do_energy = .true.
+      end if
 
-    if (kw_matches(word, '.GAUGE ')) then
-      call kw_read(word, visual_cfg_gauge_origin(1), &
-                         visual_cfg_gauge_origin(2), &
-                         visual_cfg_gauge_origin(3))
-    end if
+      if (kw_matches(word, '.GRADIE')) then
+         relcc_do_gradient = .true.
+      end if
 
+      if (kw_matches(word, '.FOCKSP')) then
+         relcc_do_fspc     = .true.
+      end if
 
-    call check_whether_kw_found(word, kw_section)
-#endif /* ifndef MOD_VISUAL */
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, relcc_print)
+      end if
 
-  end subroutine
+      call check_whether_kw_found(word, kw_section)
 
-  subroutine read_input_openrsp(word, kw_section)
+   end subroutine
 
+   subroutine read_input_ccener(word, kw_section)
 
-!   ----------------------------------------------------------------------------
-    character(kw_length), intent(in) :: word
-    character(kw_length), intent(in) :: kw_section
-!   ----------------------------------------------------------------------------
-    integer                          :: i
-!   ----------------------------------------------------------------------------
+      use relcc_cfg
 
-    call quit(kw_section//' not available in this version')
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
 
-  end subroutine
+      call reset_available_kw_list()
 
-  subroutine read_input_relcc(word, kw_section)
+      if (kw_matches(word, '.DOMP2 ')) then
+         relcc_do_mp2 = .true.
+      end if
 
-    use relcc_cfg
+      if (kw_matches(word, '.NOSING')) then
+         relcc_do_singles = .false.
+      end if
 
-!   ----------------------------------------------------------------------------
-    character(kw_length), intent(in) :: word
-    character(kw_length), intent(in) :: kw_section
-!   ----------------------------------------------------------------------------
-    character(80)                    :: line
-    character(4)                     :: first_4
-!   ----------------------------------------------------------------------------
+      if (kw_matches(word, '.NODOUB')) then
+         relcc_do_doubles = .false.
+      end if
 
-    call reset_available_kw_list()
+      if (kw_matches(word, '.NOSD  ')) then
+         relcc_do_ccsd = .false.
+      end if
 
-    if (kw_matches(word, '.DEBUG ')) then
-      relcc_debug = .true.
-    end if
+      if (kw_matches(word, '.NOSDT ')) then
+         relcc_do_ccsd_t = .false.
+      end if
 
-    if (kw_matches(word, '.TIMING')) then
-      relcc_timing = .true.
-    end if
+      if (kw_matches(word, '.MAXIT ')) then
+         read(unit_in,'(i5)') relcc_ccener_max_iterations
+      end if
 
-    if (kw_matches(word, '.NOSORT')) then
-      relcc_do_sort = .false.
-    end if
+      if (kw_matches(word, '.MAXDIM')) then
+         read(unit_in,'(i5)') relcc_ccener_max_dimension_diis
+      end if
 
-    if (kw_matches(word, '.ENERGY')) then
-      relcc_do_energy = .true.
-    end if
+      if (kw_matches(word, '.NTOL  ')) then
+         read(unit_in,'(i5)') relcc_ccener_desired_convergence
+      end if
 
-    if (kw_matches(word, '.GRADIE')) then
-      relcc_do_gradient = .true.
-    end if
+      call check_whether_kw_found(word, kw_section)
 
-    if (kw_matches(word, '.FOCKSP')) then
-      relcc_do_fspc     = .true.
-    end if
+   end subroutine
 
-    if (kw_matches(word, '.PRINT ')) then
-      call kw_read(word, relcc_print)
-    end if
+   subroutine read_input_ccfopr(word, kw_section)
 
-    call check_whether_kw_found(word, kw_section)
+      use relcc_cfg
 
-  end subroutine
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
 
- end module
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.MP2G   ')) then
+         relcc_do_mp2gradient = .true.
+      end if
+
+      if (kw_matches(word, '.MP2G_O')) then
+         relcc_do_oldmp2gradient = .true.
+      end if
+
+      if (kw_matches(word, '.CCSDG ')) then
+         relcc_do_ccsdgradient = .true.
+      end if
+
+      if (kw_matches(word, '.CCSDTG')) then
+         relcc_do_ccsdtgradient = .true.
+      end if
+
+      if (kw_matches(word, '.NATORB')) then
+         relcc_do_naturalorbitals = .true.
+      end if
+
+      if (kw_matches(word, '.NOZG  ')) then
+         relcc_do_zipgrid = .true.
+      end if
+
+      if (kw_matches(word, '.NEOPER')) then
+         read(unit_in,'(i5)') relcc_ne_oper
+      end if
+
+      if (kw_matches(word, '.MAXIT ')) then
+         read(unit_in,'(i5)') relcc_fopr_max_iterations
+      end if
+
+      if (kw_matches(word, '.MAXDIM')) then
+         read(unit_in,'(i5)') relcc_fopr_max_dimension_diis
+      end if
+
+      if (kw_matches(word, '.NTOL  ')) then
+         read(unit_in,'(i5)') relcc_fopr_desired_convergence
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_ccfspc(word, kw_section)
+
+      use relcc_cfg
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: i
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.DOEA  ')) then
+         relcc_fs_do_ea = .true.
+      end if
+
+      if (kw_matches(word, '.DOIE  ')) then
+         relcc_fs_do_ie = .true.
+      end if
+
+      if (kw_matches(word, '.DOEA2 ')) then
+         relcc_fs_do_ea2 = .true.
+      end if
+
+      if (kw_matches(word, '.DOIE2 ')) then
+         relcc_fs_do_ie2 = .true.
+      end if
+
+      if (kw_matches(word, '.DOEXC ')) then
+         relcc_fs_do_exc = .true.
+      end if
+
+      if (kw_matches(word, '.FSSECT ')) then
+         read(unit_in,*) (relcc_fs_fssect(i), i=1,6)
+      end if
+
+      if (kw_matches(word, '.DOIH  ')) then
+         relcc_fs_do_ih = .true.
+      end if
+
+      if (kw_matches(word, '.NACTH ')) then
+         call kw_read(word, relcc_fs_nacth, 2*NFSYM)
+      end if
+
+      if (kw_matches(word, '.NACTP ')) then
+         call kw_read(word, relcc_fs_nactp, 2*NFSYM)
+      end if
+
+      if (kw_matches(word, '.MAXIT ')) then
+         read(unit_in,'(i5)') relcc_fs_max_iterations
+      end if
+
+      if (kw_matches(word, '.MXIT02')) then
+         read(unit_in,'(i5)') relcc_fs_max02_iterations
+      end if
+
+      if (kw_matches(word, '.MXIT01')) then
+         read(unit_in,'(i5)') relcc_fs_max01_iterations
+      end if
+
+      if (kw_matches(word, '.MXIT20')) then
+         read(unit_in,'(i5)') relcc_fs_max20_iterations
+      end if
+
+      if (kw_matches(word, '.MXIT10')) then
+         read(unit_in,'(i5)') relcc_fs_max10_iterations
+      end if
+
+      if (kw_matches(word, '.MXIT11')) then
+         read(unit_in,'(i5)') relcc_fs_max11_iterations
+      end if
+
+      if (kw_matches(word, '.MXIT00')) then
+         read(unit_in,'(i5)') relcc_fs_max00_iterations
+      end if
+
+      if (kw_matches(word, '.MAXDIM')) then
+         read(unit_in,'(i5)') relcc_fs_max_dimension_diis
+      end if
+
+      if (kw_matches(word, '.NTOL  ')) then
+         read(unit_in,'(i5)') relcc_fs_desired_convergence
+      end if
+
+      if (kw_matches(word, '.TSHOLD')) then
+         read(unit_in,'(i5)') relcc_fs_tshold
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_ccih(word, kw_section)
+
+      use relcc_cfg
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.IHSCHE')) then
+         read(unit_in,'(i5)') relcc_ih_scheme
+      end if
+
+      if (kw_matches(word, '.SH_H11')) then
+         read(unit_in,'(f15.8)') relcc_ih_shift_h11
+      end if
+
+      if (kw_matches(word, '.SH_H12')) then
+         read(unit_in,'(f15.8)') relcc_ih_shift_h12
+      end if
+
+      if (kw_matches(word, '.SH_P11')) then
+         read(unit_in,'(f15.8)') relcc_ih_shift_p11
+      end if
+
+      if (kw_matches(word, '.SH_P12')) then
+         read(unit_in,'(f15.8)') relcc_ih_shift_p12
+      end if
+
+      if (kw_matches(word, '.SH_P2 ')) then
+         read(unit_in,'(f15.8)') relcc_ih_shift_p2
+      end if
+
+      if (kw_matches(word, '.SH_H2 ')) then
+         read(unit_in,'(f15.8)') relcc_ih_shift_h2
+      end if
+
+      if (kw_matches(word, '.SH_HP ')) then
+         read(unit_in,'(f15.8)') relcc_ih_shift_hp
+      end if
+
+      if (kw_matches(word, '.AIH   ')) then
+         read(unit_in,'(f15.8)') relcc_ih_aih
+      end if
+
+      if (kw_matches(word, '.EHMIN ')) then
+         read(unit_in,'(f15.8)') relcc_ih_eh_min
+      end if
+
+      if (kw_matches(word, '.EHMAX ')) then
+         read(unit_in,'(f15.8)') relcc_ih_eh_max
+      end if
+
+      if (kw_matches(word, '.EPMIN ')) then
+         read(unit_in,'(f15.8)') relcc_ih_ep_min
+      end if
+
+      if (kw_matches(word, '.EPMAX ')) then
+         read(unit_in,'(f15.8)') relcc_ih_ep_max
+      end if
+
+      if (kw_matches(word, '.NIH   ')) then
+         read(unit_in,'(i5)') relcc_ih_nih
+      end if
+
+      if (kw_matches(word, '.NACTHI')) then
+         call kw_read(word, relcc_ih_nacthi, 2*NFSYM)
+      end if
+
+      if (kw_matches(word, '.NACTPI')) then
+         call kw_read(word, relcc_ih_nactpi, 2*NFSYM)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_x2c(word, kw_section)
+
+      use x2cmod_cfg
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.FGMx2c')) then
+!        x2cmod_fragment_x2c = .true.
+         x2cmod_fragment_x2c = .false.
+      end if
+
+      if (kw_matches(word, '.DEBUG ')) then
+         x2cmod_debug = .true.
+      end if
+
+      if (kw_matches(word, '.hdirty')) then
+         x2cmod_h1dirty = .true.
+      end if
+
+!     free-particle matrix as defining h1 hamiltonian
+      if (kw_matches(word, '.freeh1')) then
+         x2c_free_part_mtx_defh1 = .true.
+      end if
+
+!     use DIRACs in-house AMFI
+!     (full keyword: .diramfi)
+      if (kw_matches(word, '.diramf')) then
+         x2c_add_amfi = 2
+      end if
+      if (kw_matches(word, '.fockao')) then
+         x2c_fock_saao_basis = .true.
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+end module

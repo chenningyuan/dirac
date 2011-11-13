@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -318,11 +318,9 @@ contains
   do j = 1, 2 * number_of_abelian_irreps
      write (filenumber_55,'(8i6)') (reordered_multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
   end do 
-! temporary fix (adding two zeroes) as the 2009 version of mrcc appears to always want to read 4 irreps 
-  write (filenumber_55,'(8i6)') (number_of_spinors_in_irrep(i),i=1,number_of_abelian_irreps),0,0
+  write (filenumber_55,'(8i6)') (number_of_spinors_in_irrep(i),i=1,number_of_abelian_irreps)
 !  call process_2e
 !  call process_1e
-  write (filenumber_55,'(E28.20,4i4)') core_energy,0,0,0,0
   close (filenumber_55, status='keep')
 
   deallocate (multiplication_table)
@@ -335,7 +333,7 @@ contains
 
   subroutine write_mrcc_fort56
 
-! Write a sample mrcc input file fort.56. 
+! Write a sample mrcc input file fort.56.
 ! We will default the excitation level to doubles, this can be changed by the user
 
   integer       ::  i
@@ -344,8 +342,11 @@ contains
 
 ! First line of the input contains all the options, we specify the default values for a closed shell CCSD. Has to be modified by the user.
 ! Second line of the input is a comment line with the names of all of the options. Taken from the 2010 version of mrcc.
-  write (filenumber_56,'(A)') "     2     0     0     0     1     0     0     1     0     0     1     0     1     0     0    12     0     0   0.00     0    750 0 0.000E-00"
-  write (filenumber_56,'(A)') "ex.lev,nsing,ntrip, rest,method,dens,conver,symm, diag, CS ,spatial, HF, ndoub,nacto,nactv, tol, maxex, sacc, freq,  dboc,   mem, locno, eps"
+  write (filenumber_56,'(A)') "     2     0     0     0     1     0     0     1     0"// &
+ &                            "     0     1     0     1     0     0    12     0     0"// &
+ &                            "   0.00     0    750 0 0.000E-00"
+  write (filenumber_56,'(A)') "ex.lev,nsing,ntrip, rest,method,dens,conver,symm, diag,"// &
+ &      " CS ,spatial, HF, ndoub,nacto,nactv, tol, maxex, sacc, freq,  dboc,   mem, locno, eps"
 
 ! Third line of the input contains a string with occupation numbers.
   write (filenumber_56,'(40i2)') (spinor(i)%occupation,i=1,number_of_spinors)

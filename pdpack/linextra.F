@@ -1,4 +1,3 @@
-C FILE    : linextra.F
 C
 C
 C  /* Deck dnorm2 */

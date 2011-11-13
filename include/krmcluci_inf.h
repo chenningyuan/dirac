@@ -5,8 +5,7 @@
 !  1) CI energy
 !  2) IRIQ for real/imaginary mismatch when running real groups
 !     in LUCIAREL (preliminary implementation)
-!  3) Some auxiliary variables
 !
       REAL*8 ECI
-      INTEGER IRIQ, NIRR_DG_LOC
-      COMMON /CIVCINF/ ECI, IRIQ, NIRR_DG_LOC
+      INTEGER IRIQ
+      COMMON /CIVCINF/ ECI, IRIQ

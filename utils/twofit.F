@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -94,7 +94,7 @@ C
       i=LNBLNK(POTFIL)
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
-      OPEN(ILOGG,FILE=POTFIL(1:i)//'.res',STATUS='UNKNOWN',
+      OPEN(ILOGG,FILE=POTFIL(1:i)//'.twofit',STATUS='UNKNOWN',
      &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
       GOTO 30
  20   CONTINUE

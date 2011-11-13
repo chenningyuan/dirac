@@ -12,8 +12,8 @@ Water molecule. Unrestricted kinetic balance because of contracted basis sets
 1 1 0
 .URKBAL
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .CNVINT
 0.01 0.0001
 *END OF

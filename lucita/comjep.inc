@@ -1,2 +1,2 @@
-*comdeck comjep.inc $Revision: 2268 $ 
+*comdeck comjep.inc $Revision$ 
       COMMON/COMJEP/MXACJ,MXACIJ,MXAADST

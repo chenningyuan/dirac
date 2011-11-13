@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : dirgeo.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgeo */
@@ -46,20 +43,23 @@ C
 C
       CALL QENTER('PAMGEO')
 C
-C     Determine whether analytical or numerical gradient is to 
-C     be used. Analytical gradient is at the moment only available
-C     for the HF module with the Levy-Leblond or DC Hamiltonian.
+C     Determine whether analytical or numerical gradient is available
 C
       NOGRAD= BSS.OR.ZORA.OR.(SPINFR .AND. .NOT.LEVYLE)
 C
       IF(.NOT.DONGRD) THEN
 C       We want the analytical gradient, check whether it is implemented
-        DONGRD = NOGRAD.OR.dirac_cfg_dft_calculation
-     &           .OR.DOMP2.OR.DORES.OR.DOCCM.OR.DOCIM.OR.
-     &           DOLUCT.OR.DOKRMC.OR.DOLUCIAR
+        DONGRD = NOGRAD
+     &           .or. domp2
+     &           .or. dores
+     &           .or. doccm
+     &           .or. docim
+     &           .or. doluct
+     &           .or. dokrmc
+     &           .or. doluciar
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
-     &     ' * PAMGEO INFO: will use numerical molecular gradient',
+     &     ' * PAMGEO INFO: will use NUMERICAL MOLECULAR GRADIENT',
      &     '         (analytical gradient not implemented for this wave'
      *     //' function type).'
         ENDIF

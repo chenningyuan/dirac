@@ -1,0 +1,66 @@
+**DIRAC
+.TITLE
+Testing xyz-reader with ghost centers and point charges (this requires nosym)
+.WAVE FUNCTION
+.ANALYZE
+**HAMILTONIAN
+.X2C
+.SPINFREE
+**WAVE FUNCTION
+.SCF
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**MOLECULE
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT 
+cc-pVDZ
+.SPECIAL
+O.PC NOBASIS
+.SPECIAL
+H.PC NOBASIS
+.SPECIAL
+O.GH EXPLICIT
+    3   1   1   1
+    9    0    3
+  11720.0000000
+   1759.0000000
+    400.8000000
+    113.7000000
+     37.0300000
+     13.2700000
+      5.0250000
+      1.0130000
+      0.3023000
+    4    0    3
+     17.7000000
+      3.8540000
+      1.0460000
+      0.2753000
+    1    0    3
+      1.1850000
+        1.    1
+.SPECIAL
+H.GH EXPLICIT
+    2   1   1
+    4    0    3
+     13.0100000
+      1.9620000
+      0.4446000
+      0.1220000
+    1    0    3
+      0.7270000
+*CENTERS
+.NUCLEUS
+O.GH 0.0
+.NUCLEUS
+H.GH 0.0
+.NUCLEUS
+O.PC -0.6
+.NUCLEUS
+H.PC  0.3
+**ANALYSIS
+.MULPOP
+*END OF 

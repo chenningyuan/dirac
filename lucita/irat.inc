@@ -1,2 +1,2 @@
-*comdeck irat.inc $Revision: 2268 $ 
+*comdeck irat.inc $Revision$ 
       COMMON/IRATC/IRAT 

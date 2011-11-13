@@ -1,4 +1,4 @@
-*comdeck spinfo.inc $Revision: 2268 $ 
+*comdeck spinfo.inc $Revision$ 
 *./SPINFO/
       COMMON/SPINFO/MULTSP,MS2P,
      &              MINOP,MAXOP,NTYP,NDPCNT(MXPCTP),NCPCNT(MXPCTP),

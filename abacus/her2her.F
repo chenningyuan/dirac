@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : her2her.F
 C
 C
 C  /* Deck hr2drv */
@@ -175,7 +172,6 @@ C
 #include "dcbham.h"
 #include "twosta.h"
 #include "subdir.h"
-#include "sdpre.h"
       CALL QENTER('R0001')
 #include "memint.h"
 C-----------------------------------------------------------------------
@@ -245,7 +241,7 @@ C.................this is -2tau, where tau is from eq. (46)
          IF (JMAX .GT. 0) THEN
             CALL DCOPY(NUABCD,TALPHA,1,SCLFAC,1)
             DO 200 J = 1, JMAX
-               FAC = D1/SDPRE(2*J + 1)
+               FAC = D1/dble(2*J + 1)
                DO 210 I = 1, NUABCD
                   RJ000(I,J) = FAC*SCLFAC(I)*RJ000(I,0)
                   SCLFAC(I) = TALPHA(I)*SCLFAC(I)
@@ -479,13 +475,12 @@ C  /* Deck getgam */
       DIMENSION FJWS(NODS,0:JMAX), INDADR(*),
      &          WVALU(*), RJ000(NUABCD,0:JMAX), INDADS(NODS,3),
      &          WVALS(NODS,3), REXPW(NODS)
-#include "sdpre.h"
 C-----------------------------------------------------------------------
 C
       NODS1 = 0
       NODS2 = 0
       NODS3 = 0
-      D2JP36 = SDPRE(2*JMAX + 36)
+      D2JP36 = dble(2*JMAX + 36)
       DO 100 I = 1, NODS
          WVAL = WVALU(I)
          IF (WVAL .LT. D12) THEN
@@ -510,7 +505,7 @@ C
          DO 200 I = 1, NODS1
             WVAL = WVALS(I,1)
             IPNT = NINT(D10*WVAL)
-            WDIF = WVAL - TENTH*SDPRE(IPNT)
+            WDIF = WVAL - TENTH*dble(IPNT)
             ISTART = ISTRT0 + IPNT
             FJWS(I,JMAX) = (((((COEF6*TABFJW(ISTART + 726)*WDIF
      &                         + COEF5*TABFJW(ISTART + 605))*WDIF
@@ -525,7 +520,7 @@ C
                REXPW(I) = HALF*EXP(-WVALS(I,1))
   300       CONTINUE
             DO 310 J = JMAX - 1, 0, -1
-               FCT = D2/SDPRE(2*J + 1)
+               FCT = D2/dble(2*J + 1)
                DO 320 I = 1, NODS1
                   FJWS(I,J) = FCT*(WVALS(I,1)*FJWS(I,J+1) + REXPW(I))
   320          CONTINUE
@@ -558,7 +553,7 @@ C
             RJ000(INDADS(I,2),0) = FJWS(I,0)
   420    CONTINUE
          DO 430 J = 1, JMAX
-            FCT = SDPRE(J) - HALF
+            FCT = dble(J) - HALF
             DO 440 I = 1, NODS2
                FJWS(I,J) = (FCT*FJWS(I,J-1) - REXPW(I))*WVALS(I,2)
   440       CONTINUE
@@ -581,7 +576,7 @@ C
             RJ000(INDADS(I,3),0) = FJWS(I,0)
   520    CONTINUE
          DO 530 J = 1, JMAX
-            FACTOR = PID4I*(SDPRE(J) - HALF)
+            FACTOR = PID4I*(dble(J) - HALF)
             DO 540 I = 1, NODS3
                FJWS(I,J) = FACTOR*FJWS(I,J-1)*WVALS(I,3)
   540       CONTINUE
@@ -706,7 +701,6 @@ C
 #include "hertop.h"
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -755,7 +749,7 @@ C
                CUR(I,2) = PQX(I)*OLD(I,1)
   200       CONTINUE
             DO 300 T = 2, MIN(MAXT,JVAL)
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = dble(T - 1)
                TUV   = INDHER(T  ,0,0)
                M1T   = INDHER(T-1,0,0)
                M2T   = INDHER(T-2,0,0)
@@ -765,7 +759,7 @@ C
   300       CONTINUE
          ELSE
             DO 400 T = 2, MIN(MAXT,JVAL), 2
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = dble(T - 1)
                TUV   = INDHER(T  ,0,0)
                M2T   = INDHER(T-2,0,0)
                DO 410 I = 1, NUABCD
@@ -785,7 +779,7 @@ C
   510          CONTINUE
   500       CONTINUE
             DO 600 U = 2, MIN(MAXU,JVAL)
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = dble(U - 1)
                DO 610 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M1U = INDHER(T,U-1,0)
@@ -797,7 +791,7 @@ C
   600       CONTINUE
          ELSE
             DO 700 U = 2, MIN(MAXU,JVAL), 2
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = dble(U - 1)
                DO 710 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M2U = INDHER(T,U-2,0)
@@ -822,7 +816,7 @@ C
   810          CONTINUE
   800       CONTINUE
             DO 900 V = 2, MIN(MAXV,JVAL)
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  = dble(V - 1)
                IUMAX  = JVAL - V
                DO 910 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 920 T = 0, MIN(MAXT,IUMAX - U), IPQX
@@ -837,7 +831,7 @@ C
   900       CONTINUE
          ELSE
             DO 1000 V = 2, MIN(MAXV,JVAL), 2
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  = dble(V - 1)
                IUMAX  = JVAL - V
                DO 1010 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 1020 T = 0, MIN(MAXT,IUMAX - U), IPQX

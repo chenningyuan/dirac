@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision: 2691 $
-C DATE    : $Date: 2003-02-06 10:16:55 +0100 (Thu, 06 Feb 2003) $
-C FILE    : eqns.inc
 C
       COMMON/CCEQNS/EQNS
       CHARACTER*6 EQNS

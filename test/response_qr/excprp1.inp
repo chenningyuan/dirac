@@ -10,8 +10,8 @@ ExcPrp -- LiH
 .NUCMOD
  1                    !!! this means point nuclei
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .ERGCNV
  1.0E-9 1.0E-9
 .CLOSED SHELL

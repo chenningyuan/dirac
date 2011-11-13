@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -487,7 +487,6 @@ C
 #include "primit.h"
 #include "sphtrm.h"
 C
-#include "sdpre.h"
 C
       PA2 = PAX**2 + PAY**2 + PAZ**2
       FIRST = .TRUE.
@@ -556,9 +555,9 @@ C
 C
 C              down contributions
 C
-               IF(L.GT.0)GAX=GAX+SDPRE(L)*(PAX**(L-1))*(PAY**M)*(PAZ**N)
-               IF(M.GT.0)GAY=GAY+SDPRE(M)*(PAX**L)*(PAY**(M-1))*(PAZ**N)
-               IF(N.GT.0)GAZ=GAZ+SDPRE(N)*(PAX**L)*(PAY**M)*(PAZ**(N-1))
+               IF(L.GT.0)GAX=GAX+dble(L)*(PAX**(L-1))*(PAY**M)*(PAZ**N)
+               IF(M.GT.0)GAY=GAY+dble(M)*(PAX**L)*(PAY**(M-1))*(PAZ**N)
+               IF(N.GT.0)GAZ=GAZ+dble(N)*(PAX**L)*(PAY**M)*(PAZ**(N-1))
 C
                IF (SPHRA) THEN
                   IF (FIRST) THEN
@@ -628,7 +627,6 @@ C
 #include "primit.h"
 #include "sphtrm.h"
 C
-#include "sdpre.h"
 C
       PA2 = PAX**2 + PAY**2 + PAZ**2
       FIRST = .TRUE.   
@@ -647,15 +645,15 @@ C
             PXD = D0
             PYD = D0
             PZD = D0
-            IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PAX**(L-2))
-            IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PAY**(M-2))
-            IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PAZ**(N-2))
+            IF (L.GT.1) PXD = dble(L*(L-1))*(PAX**(L-2))
+            IF (M.GT.1) PYD = dble(M*(M-1))*(PAY**(M-2))
+            IF (N.GT.1) PZD = dble(N*(N-1))*(PAZ**(N-2))
             PXM = D0
             PYM = D0
             PZM = D0
-            IF (L.GT.0) PXM = SDPRE(L)*(PAX**(L-1))
-            IF (M.GT.0) PYM = SDPRE(M)*(PAY**(M-1))
-            IF (N.GT.0) PZM = SDPRE(N)*(PAZ**(N-1))
+            IF (L.GT.0) PXM = dble(L)*(PAX**(L-1))
+            IF (M.GT.0) PYM = dble(M)*(PAY**(M-1))
+            IF (N.GT.0) PZM = dble(N)*(PAZ**(N-1))
             PX0 = PAX**L
             PY0 = PAY**M
             PZ0 = PAZ**N
@@ -664,9 +662,9 @@ C
             PZP = TAPAZ*PZ0
             P000 = PX0*PY0*PZ0 
 C
-            GAXX = (TAPAX**2 + TALPH*SDPRE(2*L + 1))*P000 + PXD*PY0*PZ0
-            GAYY = (TAPAY**2 + TALPH*SDPRE(2*M + 1))*P000 + PX0*PYD*PZ0
-            GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N + 1))*P000 + PX0*PY0*PZD
+            GAXX = (TAPAX**2 + TALPH*dble(2*L + 1))*P000 + PXD*PY0*PZ0
+            GAYY = (TAPAY**2 + TALPH*dble(2*M + 1))*P000 + PX0*PYD*PZ0
+            GAZZ = (TAPAZ**2 + TALPH*dble(2*N + 1))*P000 + PX0*PY0*PZD
             GAXY = TAPAX*TAPAY*P000 + (PXP*PYM + PXM*PYP + PXM*PYM)*PZ0
             GAXZ = TAPAX*TAPAZ*P000 + (PXP*PZM + PXM*PZP + PXM*PZM)*PY0
             GAYZ = TAPAY*TAPAZ*P000 + (PYP*PZM + PYM*PZP + PYM*PZM)*PX0

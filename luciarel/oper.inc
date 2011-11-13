@@ -5,4 +5,4 @@
 !     the operator handling inside the KR-CI module.
 !
 !
-      COMMON/OPER/IHAM12,IPERTOP,IAPR,MNRS1E,MXRS3E,IPART
+      COMMON/OPER/IHAM12

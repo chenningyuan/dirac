@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision: 4258 $
-C DATE    : $Date: 2005-02-10 20:19:14 +0100 (Thu, 10 Feb 2005) $
-C FILE    : dcbexp.h
 C
 C*****************************************************************************
 C  DCBEXP:  Expectation values

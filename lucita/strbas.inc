@@ -1,4 +1,4 @@
-*comdeck strbas.inc $Revision: 2268 $ 
+*comdeck strbas.inc $Revision$ 
       COMMON/STRBAS/KSTINF,KOCSTR(MXPSTT),KNSTSO(MXPSTT),KISTSO(MXPSTT),
      &              KSTSTM(MXPSTT,2),KZ(MXPSTT),
      &              KSTREO(MXPSTT),KSTSM(MXPSTT),KSTCL(MXPSTT),

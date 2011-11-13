@@ -1,4 +1,3 @@
-C FILE    : dsp.F
 C
 C
 C  /* Deck dspsol */

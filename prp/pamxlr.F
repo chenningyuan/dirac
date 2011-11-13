@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : pamxlr.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXLR */
@@ -158,6 +155,7 @@ C
 
       integer, allocatable :: ibeig(:)
       real(8), allocatable :: cmo(:)
+      logical :: parcal_save
 
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          WORK(*)
@@ -190,8 +188,8 @@ C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
-#ifdef MOD_LONDON
       if (london) then
+
         call alloc(cmo,   ncmotq)
         call alloc(ibeig, ntbas(0))
 
@@ -199,20 +197,18 @@ c.......direct contribution
         call onelon(cmo, ibeig, work, kfree, lfree)
 
         if (.not.notwol) then
-!          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
-          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
+          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
         end if
 
 c.......reorthonormalization contribution
-        if ((.not. noonei) .or. (.not. noorth)) then
+        if (.not. noonei) then
           call london_reort_hb(cmo, ibeig, work(kfree), lfree)
-!old code         call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
         end if
 
         call dealloc(cmo)
         call dealloc(ibeig)
+
       endif
-#endif /* MOD_LONDON */
 
 C
 C     Memory allocation

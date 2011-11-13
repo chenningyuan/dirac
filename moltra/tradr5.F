@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -545,15 +545,11 @@ C
 C        Get the scalar integrals that are processed in this pass
 C        The integral are already in GMAT when NPASS = 1
 C
-         IF (NPASS.GT.1) THEN
-             CALL DZERO(GMAT,NSIZG)
-             IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
-         ENDIF
+          IF (NPASS.GT.1) THEN
+              CALL DZERO(GMAT,NSIZG)
+              IREC = LGREC(IPASS)
+              CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
+          ENDIF
 C
 C        Calculate the offset of the H-matrix for this pass
 C

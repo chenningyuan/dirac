@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 9029 $
-! DATE    : $Date: 2009-06-03 23:42:33 +0200 (Wed, 03 Jun 2009) $
 ! FILE    : krmc_shmem.h
 !
 !                MPI memory pointer 

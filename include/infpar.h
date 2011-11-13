@@ -63,8 +63,9 @@ extern struct common_diracinfpar {
 !
 !     radovan: it is not ideal that istat type is not defined ifndef INT_STAR8
 !              i do not want to fix it, because maybe there is a reason
-      INTEGER   ISTAT
+!     stefan : you are right, changed it.
 #endif
+      INTEGER   ISTAT
 
 !C -- end of infpar.h --
 #endif

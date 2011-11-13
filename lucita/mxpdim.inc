@@ -1,4 +1,4 @@
-*comdeck mxpdim.inc $Revision: 5542 $ 
+*comdeck mxpdim.inc $Revision$ 
 *
       INTEGER IMAXLBLKSZ
       COMMON /CMXPWRD/ MXPWRD,IMAXLBLKSZ

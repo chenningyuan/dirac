@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +17,11 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-! VERSION : $Revision: 11757 $
-! DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 ! FILE    : hercen.F
 !
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */
-      SUBROUTINE CENINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,           &
+      SUBROUTINE CENINP(LUINFO,WORK,LWORK,IQM,NBLCK,                       &
      &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,   &
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
 !*****************************************************************************
@@ -70,7 +68,7 @@
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),     &
+      DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),                 &
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS), &
      &          SEG(KBLOCK,KSETS),                                      &
      &          ALPHA(KPRIM,KBLOCK,KSETS),                              &
@@ -451,7 +449,7 @@
 #endif
           CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
      &         ALPHA,CPRIM,CPRIMU,                                       &
-     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,1,DSM,                        &
+     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,1,DSM,                      &
      &         BASREF)
           NBLCK = NBLCK + NBLOCK
 #if defined (DIRAC_DENSFIT_DEBUG)
@@ -604,7 +602,7 @@
      &                 ALPHAT(1,IBLOCK1),                               &
      &                 CPRIMT(1,1,IBLOCK1),                             &
      &                 CPRIMUT(1,1,IBLOCK1),                            &
-     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,1,DSM,    &
+     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,Q,1,DSM,  &
      &                 BASREFT(1,M))
           BASREF(3*(M-1)+4) = BASREFT(1,M)
 !
@@ -632,6 +630,7 @@
 ! momentum. in this reordering variable kt is the "final" index of a given block
 !
        IQM = MAXIQM
+!radovan: iblock is not set
        KT = IBLOCK
        DO 466 IQ=1,MAXIQM
        DO 467 IR=1,IBLOCK1 - 1

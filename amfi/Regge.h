@@ -1,4 +1,4 @@
-*Comdeck Regge $Revision: 4230 $
+*Comdeck Regge $Revision$
       Integer facul,prim,nprim,iwork 
       parameter (nprim=11,mxLinRE=36)
 cbs   nprim is the number of prime-numbers

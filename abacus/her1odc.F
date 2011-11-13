@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : her1odc.F
 C
 C
 C  /* Deck getodc */
@@ -171,7 +168,6 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3)
 #include "onecom.h"
-#include "sdpre.h"
 C
       PAX = CORPX - CORAX
       PAY = CORPY - CORAY
@@ -189,13 +185,13 @@ C
             DO 200 T = 0, A
                ODCUND(A,0,T,0,0,1) = EXPPIH*ODCUND(A-1,0,T-1,0,0,1)
      *                            + PAX*ODCUND(A-1,0,T  ,0,0,1)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,1)
+     *                     + dble(T+1)*ODCUND(A-1,0,T+1,0,0,1)
                ODCUND(A,0,T,0,0,2) = EXPPIH*ODCUND(A-1,0,T-1,0,0,2)
      *                            + PAY*ODCUND(A-1,0,T  ,0,0,2)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,2)
+     *                     + dble(T+1)*ODCUND(A-1,0,T+1,0,0,2)
                ODCUND(A,0,T,0,0,3) = EXPPIH*ODCUND(A-1,0,T-1,0,0,3)
      *                            + PAZ*ODCUND(A-1,0,T  ,0,0,3)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,3)
+     *                     + dble(T+1)*ODCUND(A-1,0,T+1,0,0,3)
   200       CONTINUE
          END IF
          DO 300 B = 1, JMAXBP
@@ -204,13 +200,13 @@ C
             DO 400 T = 0, AB
                ODCUND(A,B,T,0,0,1) = EXPPIH*ODCUND(A,B-1,T-1,0,0,1)
      &                            + PBX*ODCUND(A,B-1,T  ,0,0,1)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,1)
+     &                     + dble(T+1)*ODCUND(A,B-1,T+1,0,0,1)
                ODCUND(A,B,T,0,0,2) = EXPPIH*ODCUND(A,B-1,T-1,0,0,2)
      &                            + PBY*ODCUND(A,B-1,T  ,0,0,2)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,2)
+     &                     + dble(T+1)*ODCUND(A,B-1,T+1,0,0,2)
                ODCUND(A,B,T,0,0,3) = EXPPIH*ODCUND(A,B-1,T-1,0,0,3)
      &                            + PBZ*ODCUND(A,B-1,T  ,0,0,3)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,3)
+     &                     + dble(T+1)*ODCUND(A,B-1,T+1,0,0,3)
   400          CONTINUE
   300    CONTINUE
   100 CONTINUE
@@ -245,12 +241,11 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "sdpre.h"
 C
       TEXPA1 = EXPA + EXPA
       DO 10 D = 1, JMAXD
          DO 20 A = 0, JMAXAP
-            FAC10A = SDPRE(A)
+            FAC10A = dble(A)
             DO 30 B = 0, JMAXBP
                DO 40 T = 0, A + B + D
                DO 40 X = 1, 3
@@ -294,13 +289,12 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "sdpre.h"
 C
       TEXPB1 = EXPB + EXPB
       DO 10 D = 1, JMAXD
          DO 20 A = 0, JMAXAP
             DO 30 B = 0, JMAXBP
-               FAC10B = SDPRE(B)
+               FAC10B = dble(B)
                DO 40 T = 0, A + B + D
                DO 40 X = 1, 3
                   ODCUND(A,B,T,D,0,X) = TEXPB1*ODCUND(A,B + 1,T,D-1,0,X)
@@ -456,7 +450,6 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "sdpre.h"
       TEXPA1 = EXPA + EXPA
       TEXPA2 = TEXPA1*TEXPA1
       IF (JMAXD .LT. 2) THEN
@@ -466,7 +459,7 @@ C
          CALL QUIT('JMAXD too small in TODC')
       END IF
       DO 100 A = 0, JMAXA
-         FAC21A = TEXPA1*SDPRE(2*A + 1)
+         FAC21A = TEXPA1*dble(2*A + 1)
          IF (A .LT. 2) THEN
             DO 200 B = 0, JMAXB
                ODC(A,B,0,2,0,1) = TEXPA2*ODCUND(A+2,B,0,0,0,1)
@@ -477,7 +470,7 @@ C
      &                          - FAC21A*ODCUND(A  ,B,0,0,0,3)
   200       CONTINUE
          ELSE
-            FAC20A = SDPRE(A*(A - 1))
+            FAC20A = dble(A*(A - 1))
             DO 300 B = 0, JMAXB
                ODC(A,B,0,2,0,1) = TEXPA2*ODCUND(A+2,B,0,0,0,1)
      &                        - FAC21A*ODCUND(A  ,B,0,0,0,1)
@@ -513,12 +506,11 @@ C
 #include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
 #include "onecom.h"
-#include "sdpre.h"
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*SDPRE(A) + 1)/(D2*EXPA)
+         FA = (D2*dble(A) + 1)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*SDPRE(B) + 1)/(D2*EXPB)
+            FB = (D2*dble(B) + 1)/(D2*EXPB)
             DO 30 T = 0 , JMAXTP
                ODCUND(A,B,T,0,1,1) = FA*ODCUND(A + 1,B,T,0,0,1)
      &                             + FB*ODCUND(A,B + 1,T,0,0,1)
@@ -569,12 +561,11 @@ C
 #include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
 #include "onecom.h"
-#include "sdpre.h"
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*SDPRE(A) + 1)/(D2*EXPA)
+         FA = (D2*dble(A) + 1)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*SDPRE(B) + 1)/(D2*EXPB)
+            FB = (D2*dble(B) + 1)/(D2*EXPB)
                ODCUND(A,B,0,2,1,1) = FA*ODCUND(A + 1,B,0,2,0,1)
      &                             + FB*ODCUND(A,B + 1,0,2,0,1)
                ODCUND(A,B,0,2,1,2) = FA*ODCUND(A + 1,B,0,2,0,2)

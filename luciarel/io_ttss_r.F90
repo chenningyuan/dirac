@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -54,7 +54,7 @@
 !
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SAVEVCDC(VECT,SCR,LU,IRILP,IPRNT)
+      SUBROUTINE SAVEVCDC(VECT,LU,IRILP,IPRNT)
 !*********************************************************************
 !
 !     use vector partitioning information to save a vector
@@ -69,7 +69,7 @@
 use memory_allocator
       implicit none
 !
-      real(8), intent(inout) :: VECT(*), SCR(*)
+      real(8), intent(inout) :: VECT(*)
       integer, intent(in)    :: LU, IRILP, IPRNT
       integer                :: NTESTL, NTEST
       integer                :: LUX, NMK2VAL, NBLOCK, LEN
@@ -107,7 +107,7 @@ use memory_allocator
                             NBLOCK,LUX)
       CLOSE(LUX)
 !
-      CALL SAVEVCDC_RUN(VECT,SCR,LU,IRILP,NTEST,NBLOCK,NMK2VAL,& 
+      CALL SAVEVCDC_RUN(VECT,LU,IRILP,NTEST,NBLOCK,NMK2VAL,& 
                         NBAT_MS2_MC,LEBATS_MC,LBATS_MC,I1BATS_MC,&
                         IBATS_MC)
 !
@@ -120,7 +120,7 @@ use memory_allocator
 !
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SAVEVCDC_RUN(VECT,SCR,LU,IRILP,NTEST,NBLOCK,NMK2VAL,&
+      SUBROUTINE SAVEVCDC_RUN(VECT,LU,IRILP,NTEST,NBLOCK,NMK2VAL,&
                               NBAT_MS2_MC,LEBATS_MC,LBATS_MC,I1BATS_MC,&
                               IBATS_MC)
 !*********************************************************************
@@ -135,7 +135,7 @@ use memory_allocator
 !**********************************************************************
       implicit none
 !
-      real(8), intent(inout) :: VECT(*), SCR(*)
+      real(8), intent(inout) :: VECT(*)
       integer, intent(in)    :: LU, IRILP, NTEST
       integer                :: IMK2, JBATS, JBATABS
       integer                :: JOFF, LENGTH, IRI, LS, KBATSEND, IOFF

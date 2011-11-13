@@ -1,2 +1,2 @@
-C $Id: 2gbdef.h 2417 2002-08-20 16:00:58Z tsaue $
+C $Id$
       PARAMETER (I2GB = 134217728)

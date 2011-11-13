@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision: 4775 $
-C DATE    : $Date: 2006-05-07 09:28:26 +0200 (Sun, 07 May 2006) $
-C FILE    : symm.inc
 C SOURCE  : $Source$
 C
       PARAMETER (MXREP=32)

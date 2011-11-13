@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11760 $
-C DATE    : $Date: 2010-10-11 07:04:49 +0200 (Mon, 11 Oct 2010) $
-C FILE    : mempkg.F
 C
 C
 #ifdef UNDEF
@@ -171,6 +168,7 @@ C
       LFREE  = LFREE - (LREAL + LENID)
       MEMID(2) = 0
       WORK(KFREE-LENID) = WMEMID(1)
+      call push_water_mark(work(kfree))
       IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
 Chj1  CALL QEXIT('MEMGET  ')
       RETURN

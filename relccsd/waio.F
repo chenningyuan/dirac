@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -262,7 +262,8 @@ C
 C
 C        Read the first partial record  
 C
-         EXTRA = MIN(NWORDS,NWORDS_ON_RECORD-OFFB)
+         EXTRA = NWORDS_ON_RECORD-OFFB
+         IF (NWORDS.LT.EXTRA) EXTRA=NWORDS
          OFFB = OFFB + 1
          IF (DO_READ) THEN
             READ (ITAPE,REC=IREC) BUFF

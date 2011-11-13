@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision: 9679 $
-C DATE    : $Date: 2009-09-22 10:26:34 +0200 (Tue, 22 Sep 2009) $
-C FILE    : inpt.inc
 C
       PARAMETER (MAXOP=15,MAXFR=25)
       COMMON/CCINTR/INTERFACE

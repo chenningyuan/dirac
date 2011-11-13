@@ -19,19 +19,16 @@
 #.SOFOCK
 **HAMILTONIAN
 .SPINFREE
-!.LEVY-LEBLOND
-!.URKBAL
 .BSS
 102
 .CMPEIG
 .PRINT
 1
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
-.DHF
+.SCF
 .RELCCSD
 .LUCITA
-#.MP2
-*DHFCAL ! DHF specifications...
+*SCF
 .CLOSED SHELL
 10  
 .INTFLG ! Specify what 2-el.integrals to include
@@ -45,11 +42,6 @@
   SDCI
 .MULTIP
   3
-#.CNVINT
-#1.0D-4 1.0D-15
-###########################################################
-# Set up correlation step
-############################################################
 **MOLTRA
 .SCHEME
 4

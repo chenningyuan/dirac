@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 7379 $
-! DATE    : $Date: 2008-08-15 16:39:09 +0200 (Fri, 15 Aug 2008) $
 ! FILE    : dcborb.h
 !
 !*** Dimensions for MO-basis ***

@@ -1,3 +1,3 @@
-*comdeck machine.inc $Revision: 2268 $ 
+*comdeck machine.inc $Revision$ 
       CHARACTER*6 MACHINE
       COMMON/CMACHINE/MACHINE

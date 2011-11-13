@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -30,6 +30,9 @@ program dirprg
   use memory_allocator
   use os_utils
   use dft_cfg
+  use xmlout
+  use interface_ao
+  use interface_mo
 
   implicit none
 #include "priunit.h"
@@ -40,8 +43,10 @@ program dirprg
 #include "mpif.h"
 #endif
   real(kind=8), allocatable :: memory(:)
-  integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
+  integer :: memsize, iparcal, status, length, ios, idummy, ierr
+  integer(kind=8) :: maxsize = -1
   integer :: iscr_mem
+  integer :: high_water_mark
 ! initialize common variables (parallel and sequential run)
   mytid   = 0
   mparid  = 0
@@ -92,38 +97,60 @@ program dirprg
   if (parcal) then
     call mpi_barrier(mpi_comm_world,ierr)
     call allocator_init()
-    call allocator_setmax(maxsize)
-    call sync_nodes(memsize,0)
+    call allocator_set_max(maxsize)
+    call sync_nodes(int(memsize,8),0)
     call sync_nodes(maxsize,2)
   else
 !   iparex <= 0
     call allocator_init()
-    call allocator_setmax(maxsize)
-    print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
+    call allocator_set_max(maxsize)
+    print '(a,i20,a,i14,a)', 'DIRAC serial starts by allocating ',memsize,' words (',memsize/2**17,' MB)'
+    if (maxsize.gt.0) then
+       print '(a,i20,a,i14,a)', '             of memory out of the allowed',  &
+          maxsize,' words (',maxsize/2**17,' MB)'
+    else
+       print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
+    endif
 #else
     call allocator_init()
-    call allocator_setmax(maxsize)
-    print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
-!    print '(a,i0,a,i0,a)', 'DIRAC serial will attempt to use at most ',  &
-!         maxsize,' words (',memsize/2**17,' MB) of memory in dynamic allocations'
+    call allocator_set_max(maxsize)
+    print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
+    if (maxsize.gt.0) then
+       print '(a,i20,a,i14,a)', '             out of the allowed',  &
+          maxsize,' words (',maxsize/2**17,' MB)'
+    else
+       print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
+    endif
 #endif
+    print '(a)',' '
+    print '(a)','Note: maximum allocatable memory for serial run can be set by pam --aw'
+    print '(a)',' '
 #ifdef VAR_MPI
   endif
 #endif
   if (mytid == 0) then
-     call alloc(memory,memsize)
-     !call print_static_alloc
+     call alloc(memory,memsize, id="work array at main")
+     call set_mem_start(memory)
      call printtitle
      call printlogo
      call printsubtitle
      call flush(lupri)
-     call sysinf(iparcal)
+
+     write(lupri, *)
+     write(lupri, *)
+     write(lupri, '(a)') 'Compilation info'
+     write(lupri, '(a)') '----------------'
+     write(lupri, *)
+
+     call print_compilation_info()
+     call print_git_revision_info()
+
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
 #ifndef NO_SELFTEST
      call selftest_lapack()
 #ifdef VAR_MPI
-!    MASTER checks MPI library compatibility
+!    MASTER checks MPI library compatibility (now done at compile time)
      if ( parcal ) call selftest_mpi()
 #endif
 #endif
@@ -136,9 +163,6 @@ program dirprg
      call quit('Internal error in main.F90. Quitting.')
 #endif
   endif
-  if (mytid == 0) then
-     print '(a)', '*****************************************************'
-  endif
 #ifdef VAR_MPI
   if ( iparcal .eq. 1 ) then
     call sync_nodes(idummy,1)
@@ -148,11 +172,18 @@ program dirprg
      call stopwatch(0,mytid)
      print '(a)', '********** E N D   of   D I R A C  output  **********'
      print '(a/)','*****************************************************'
+     if (doxml) call xml_close_file
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
   if (iparcal .eq. 1 ) call mpixfinalize()
 #endif
+
+ call allocator_report(mytid,0)
+  if (mytid == 0) then
+      print '(A,F8.2,A)',' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
+      print '(/,a)','*****************************************************'
+  endif
 
 
 #if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
@@ -163,6 +194,11 @@ program dirprg
    call HIGH_SECTOR_FSCC_METHODS
  endif
 #endif
+
+   call allocator_cleanup()
+
+   call interface_ao_clear()
+   call interface_mo_clear()
 
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 end subroutine dirprg

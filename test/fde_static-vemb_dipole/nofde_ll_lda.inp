@@ -7,14 +7,16 @@ electric properties for frozen density embedding
 .LEVY-LEBLOND
 .DFT
  LDA
-*DFT
+**GRID
 .4CGRID !here only to reproduce the reference outputs
 **INTEGRALS
 .NUCMOD
 1
+*READIN
+.CONTRACTED
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .PRINT
 2
 **PROPERTIES

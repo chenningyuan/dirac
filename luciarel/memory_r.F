@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,252 +18,20 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE ALLOC_REL
-*
-* Dimensions and
-* Allocation of static memory
-*
-* =====
-* Input
-* =====
-*
-* KFREE : Pointer to first element of free space
-* Information in /LUCINP/,/ORBINP/,/CSYM/
-*
-* ======
-* Output
-* ======
-* KFREE : First array of free space after allocation of
-*         static memory
-* /GLBBAS/,/CDIM/
-*
-*
-* =======
-* Version
-* =======
-*
-* Modified Jan 1997
-* SIGDEN_ROUTE SIGDEN added by Timo Fleig, May-June 2001
-*  Allocation of T (KT_CC) now optimized, done in itrctl
-*     Timo Fleig, April 2005
 
-*. Input
-      IMPLICIT REAL*8(A-H,O-Z)
+      SUBROUTINE RMEMCHK_opt(check_label)
 #include "ipoist8.inc"
-#include "mxpdim.inc"
-#include "lucinp.inc"
-#include "orbinp.inc"
-#include "cstate.inc"
-#include "csm.inc"
-#include "crun.inc"
-#include "cprnt.inc"
-#include "cintfo.inc"
-#include "ctcc.inc"
-*.CSMPRD
-      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
-      COMMON/CSMPRDR/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
-     &              ADSXA(MXPOBS,2*MXPOBS),
-     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
-
-*.Output
-#include "glbbas.inc"
-CTF adding global info
-      common/glbref/ISPC/ISM/ITERGLB
+#include "priunit.h"
+      character (len=20) :: check_label
+      write(lupri,'(a,a20)') ' memcheck for label ==> ',check_label
 *
-*     15-11-2007: SK removed allocation of old integral stuff
+* Check memory allocated  with the memory manager
 *
-      IF( SIGDEN_ROUTE .ne. 'SIGDEN' )THEN
-*       1e- integrals( Complete matrix allocated )
-        call memmar(KINT1,NTOOB ** 2,'ADDS  ',2,'INT1   ')
-*       Inactive fock matrix
-        call memmar(KFI  ,NTOOB ** 2,'ADDS  ',2,'FI     ')
-*       2e- integrals
-        IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
-        write(6,*) ' allocating KINT2 with NINT2',NINT2
-        call memmar(KINT2,NINT2,'ADDS  ',2,'INT2   ')
-        END IF
-*       Pointers to symmetry block of integrals
-        call memmar(KPINT1,NBINT1,'ADDS  ',2,'PINT1   ')
-        call memmar(KPINT2,NBINT2,'ADDS  ',2,'PINT2   ')
-*. Symmetry of last index as a function of initial index
-        call memmar(KLSM1,NBINT1,'ADDS  ',2,'LSM1   ')
-        call memmar(KLSM2,NBINT2,'ADDS  ',2,'LSM2   ')
-      END IF
+      call memmar(KDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
 *
-* =============================
-*. For double group integrals
-* =============================
-* Caution!
-* Double group calculation can also be non-relativistic!
-* (Well, at least technically!)
-      IF(IDBG.EQ.1) THEN
-        if (SIGDEN_ROUTE.eq.'TRADIT') then
-*. 1e integrals
-          DO IL1 = 1, NL1D
-*. Real part
-            call memmar(KINT1D(1,IL1),NTOOB ** 2,'ADDS  ',2,'INT1D ')
-*. Imaginary part
-            call memmar(KINT1D(2,IL1),NTOOB ** 2,'ADDS  ',2,'INT1D ')
-*. and a pointer
-            call memmar(KPINT1D(IL1),NBINT1,'ADDS  ',2,'PINT1D')
-          END DO
-          call memmar(KPINT1,NBINT1,'ADDS  ',2,'PINT1   ')
-          call memmar(KPINT2,NBINT2,'ADDS  ',2,'PINT2   ')
-*. 2e integrals
-          DO IL2 = 1, NL2D
-*. Real part
-            LENGTH = L2D(IL2)
-C?          write(6,*) 'Current LENGTH is  ',LENGTH,'IL2 is  ',IL2
-            call memmar(KINT2D(1,IL2),LENGTH,'ADDS  ',2,'INT2D ')
-*. Imaginary part
-            call memmar(KINT2D(2,IL2),LENGTH,'ADDS  ',2,'INT2D ')
-*. and a pointer
-            call memmar(KPINT2D(IL2),NBINT2,'ADDS  ',2,'PINT2D')
-          END DO
-*
-*  Allocation of density matrices
-*  See readin.f for explanations
-          if (IDENSI.eq.1.or.IDENSI.eq.2) then
-            call memmar(KRHO1,NTOOB ** 2,'ADDS  ',2,'RHO1  ')
-            if (IDENSI.eq.2) then
-              LRHO2 = NTOOB**2*(NTOOB**2+1)/2
-              call memmar(KRHO2,LRHO2     ,'ADDS  ',2,'RHO2  ')
-              write(6,*) 'Message from alloc:'
-              write(6,*) 'These density routines are not operating yet.'
-              write(6,*) 'Change DENSI in input or ask the experts.'
-              Call Abend2( 'LUCIAREL is quitting.' )
-            end if
-          else if (IDENSI.eq.3.or.IDENSI.eq.4) then
-* We will calculate UU and UB, real and imaginary parts
-            LRHO1 = NTOOB ** 2
-            do IROOTCT = 1,NROOT,1
-              do IRI = 1,2,1
-                do JBU = 1,2,1
-                  do IBU = 1,2,1
-* Redundant density blocks!
-c                   IBU = 2
-                    call memmar(KRHO1_DBG(IBU,JBU,IRI,IROOTCT),
-     &                          LRHO1,'ADDS  ',2,'RHO_DB')
-                  end do
-                end do
-              end do
-            end do
-            if (IDENSI.eq.4) then
-* Still to be allocated !!
-              write(6,*) 'Spin-dependent two-particle densities '
-              write(6,*) 'not yet debugged. '
-              Call Abend2( 'I would better quit.' )
-            end if
-          end if
-*
-* We set the pointer for the T array here as well. There is no
-* explicit access to the array in this case, so no memory faults
-* should occur.
-          call memmar(KT_CC,1,'ADDS  ',2,'KT_CC ')
-        else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-*
-* Allocate the amplitude array T only with general sigden
-* structure for integrals or densities.
-          NINT_CC = 0
-          do IL1=1,NL1D,1
-            NINT_CC = NINT_CC + 2 * NTOOB**2
-          end do
-*
-          do IL2=1,NL2D,1
-            NINT_CC = NINT_CC + 2 * L2D(IL2)
-          end do
-C
-          IF( NINT_CC .lt. 0) WRITE(6,*)
-     &      ' Integer overflow for integral counter ..., check
-     & program correctness'
-C         call memmar(KT_CC,NINT_CC,'ADDS  ',2,'KT_CC ')
-C         done dynamically in itrctl using LEN_T_VEC
-        end if
-      end if
-*        4. Integrals (ij!kk) -(ik!kj), pointer and space
-CSK      call memmar(KPNIJ,NTOOB ** 2,'ADDS  ',1,'KPNIJ ')
-CSK      call memmar(KIJKK,NTOOB**2 *(NTOOB+1) / 2, 'ADDS  '
-CSK     &            ,2,'KIJKK ')
-CTF  Allocate memory for initial guess for CI vector
-      IF(MXP1+MXP2+MXQ. NE. 0 .OR. IPROCC.NE.0 ) THEN
-*. Allocate memory for explicit hamiltonian and roots
-        NSBDET = MXP1 + MXP2 + MXQ
-        NSBDETP = MAX(NSBDET,IPROCC)
-        MXP = MXP1 + MXP2
-        call memmar(KSBEVC,NSBDETP*NROOT,'ADDS  ',2,'KSBEVC')
-        call memmar(KSBEVL,       NROOT,'ADDS  ',2,'KSBEVL')
-*. KSBIDT must be able to hold list of subspace dets / print dets
-        LSCR = NSBDETP+1
-        call memmar(KSBIDT,LSCR,'ADDS  ',1,'KSBIDT')
-*. ( NSBDET + 1 elements allocated since NSBDET+1 values are
-* obtained in order to check for degenerencies )
-CADDB
-        call memmar(KSBCNF,LSCR        ,'ADDS  ',1,'KSBCNF')
-CADDE
-        call memmar(KSBIA ,LSCR        ,'ADDS  ',1,'KSBIA ')
-        call memmar(KSBIB ,LSCR        ,'ADDS  ',1,'KSBIB ')
-*
-        LH0 = MXP*(MXP+1)/2 + MXP1*MXQ + MXQ
-        call memmar(KH0,LH0,'ADDS  ',2,'KH0   ')
-*. Scratch space for manipulating with H0
-        LH0SCR =
-     &  MAX(6*NSBDETP,4*NSBDETP+4*NOCOB,
-     &      MXP1*(MXP1+1)/2+MXP1**2)
-        call memmar(KH0SCR,LH0SCR      ,'ADDS  ',2,'KH0SCR')
-      ELSE
-        KSBEVC = 1
-        KSBEVL = 1
-        KSBIDT = 1
-        KSBCNF = 1
-        KH0    = 1
-        KH0SCR = 1
-      END IF
-      IF (SIGDEN_ROUTE .ne. 'SIGDEN') THEN
-C
-CSK     22-11-2007 not needed for SIGDEN_ROUTE == SIGDEN
-C
-C
-C       indices for pair of orbitals symmetry ordered
-C
-        call memmar(KINH1,NTOOB*NTOOB,'ADDS  ',2,'KINH1  ')
-      END IF
-      IF (NOMOFL.EQ.0) THEN
-        write(6,*)
-        WRITE(6,*)
-     &  ' Alloc : General allocation for SPAO trafo '
-        WRITE(6,*)
-     &  '         still to be done !! (now locally)'
-*. MO-AO transformation
-CTF     CALL MEMMAR(KMOAOIN,NTOOB ** 2,'ADDS  ',2,'MOAOIN')
-CTF     CALL MEMMAR(KMOAOUT,NTOOB ** 2,'ADDS  ',2,'MOAOUT')
-*. Spinor-spin atomic orbital transformation
-CTF     CALL MEMMAR(KSPSAOIN,4*NTOOB**2,'ADDS  ',2,'SPOAIN')
-CTF     CALL MEMMAR(KSPSAOUT,4*NTOOB**2,'ADDS  ',2,'SPOAUT')
-*. and their offsets
-CTF     CALL MEMMAR(KISPSAOIN,4,'ADDS  ',1,'ISPOAI')
-CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
-*
-      ELSE
-        KMOAOIN = 0
-        KMOAOUT = 0
-        KSPSAOIN = 0
-        KSPSAOUT = 0
-        KISPSAOIN = 0
-        KISPSAOUT = 0
-      END IF
-*. (more to come )
-      call memmar(KDUMMY,IDUMMY,'CHECK',IDUMMY,'Dummy ')
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE RMEMCHK
 #include "ipoist8.inc"
 *
@@ -271,13 +39,9 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 *
       call memmar(KDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
 *
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MEMMAR(KBASE,KADD,TASK,IR,IDENT)
 C
 C     Memory manager routine for LUCIAREL "R"
@@ -299,7 +63,6 @@ C             = FLUSM  : Flush local memory to previous mark
 C             = PRINT  : Print memory allocations
 C             = SFREEM : Print memory allocations
 C     IR    : 1 => integer , 2 => real, 3 => integer*8
-C             ratio between integer and real is IRAT
 C     IDENT : identifier of memory slice, CHARACTER*6
 C
 C     NOTE:    Local Memory not flushed before allocation of additional 
@@ -321,13 +84,12 @@ C
       REAL*8    XBASE_LOCAL
 C
 #include "mxpdim.inc"
-#include "irat.inc"
 #include "wrkspc.inc"
 #include "parluci.h"
 C
       KBASE_LOCAL = 0
       XBASE_LOCAL = 0.0D0
-      ILPRNT = 0
+      ILPRNT      = 0
       IF(ILPRNT .NE. 0 ) THEN
         WRITE(LUWRT,*) ' KBASE KADD, IR ', KBASE,KADD,IR
         WRITE(LUWRT,'(3A)') ' TASK , IDENT ', TASK,IDENT
@@ -370,8 +132,13 @@ C     Static memory
 C
       ELSE IF(TASK(1:4).EQ.'ADDS') THEN
         KBASE = KFREEL+NPAD
+#ifdef LUCI_DEBUG
+        write(luwrt,*) 'bla adds:  KBASE ==> ',KBASE
+        write(luwrt,*) 'bla adds: KFREEL ==> ',KFREEL
+        write(luwrt,*) 'bla adds: NPAD   ==> ',NPAD
+#endif
         IF( IR .EQ. 1 ) THEN
-          KFREES = KFREEL +(KADD+1)/IRAT + 2*NPAD
+          KFREES = KFREEL +(KADD+1) + 2*NPAD
         ELSE IF( IR .EQ. 2) THEN
           KFREES = KFREEL + KADD + 2*NPAD
         ELSE
@@ -402,23 +169,48 @@ C
         IF(NS.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
           write(LUWRT,*) ' NS has value  ',NS
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call QUIT( ' *** ERROR in MEMMAR: too many levels. ***' )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS) = IDENT
         KFREEL = KFREES
         IBASE(NS) = KBASE
+        
+#ifdef LUCI_DEBUG
+        write(luwrt,*) 'bla adds: IBASE(NS) ==> ',IBASE(NS)
+        write(luwrt,*) 'bla adds: IIDENT(NS)==> ',IIDENT(NS)
+        write(luwrt,*) 'bla adds: KFREEL    ==> ',KFREEL
+        write(luwrt,*) 'bla adds: KBASE     ==> ',KBASE
+#endif
+
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 10 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    10   CONTINUE
+#endif
+        WORK(KBASE-1 ) = PAD1
+        WORK(KFREEL-1) = PAD2
+
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
+
+#ifdef LUCI_DEBUG
+        write(luwrt,*) 'bla adds: work(pad1)    ==> ',
+     &                  WORK(KBASE-1),KBASE-1
+        write(luwrt,*) 'bla adds: work(pad2)    ==> ',
+     &                  WORK(KFREEL-1),KFREEL-1
+#endif
 C
 C     Local memory
 C
       ELSE IF(TASK(1:4).EQ.'ADDL') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
-          KFREEL = KFREEL +(KADD+1)/IRAT + 2*NPAD
+          KFREEL = KFREEL +(KADD+1) + 2*NPAD
         ELSE IF( IR .EQ. 2) THEN
           KFREEL = KFREEL + KADD + 2*NPAD
         ELSE
@@ -446,15 +238,22 @@ C
         NSNLI = NS+NL
         IF(NS+NL.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call QUIT( ' *** ERROR in MEMMAR: too many levels. ***' )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS+NL) = IDENT
         IBASE(NS+NL) = KBASE
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 20 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    20   CONTINUE
+#endif
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
 C
 C     Flush local memory
 C
@@ -529,6 +328,7 @@ C
           ELSE
            JBASEN = KFREEL + 1
           END IF
+!         write(luwrt,*) 'bla bla: JBASE, JBASEN ==> ',JBASE, JBASEN
           L1OK = 1
           L2OK = 1
           DO IPAD = 1, NPAD
@@ -619,24 +419,24 @@ C
           END DO
 C
           IF(ITSOK.EQ.0) THEN
-            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                         IDENT 
-            Call QUIT( ' *** ERROR in MEMMAR: problem with IDENT:.*** ')
+            WRITE(LUWRT,*) ' *** error in memmar: array with'//
+     &      ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &      ' prior to the memory check. ***'
+            call quit(
+     &      ' *** quit in MEMMAR: out-of-bounds access detected. *** ')
           ENDIF
         END IF
 C
       IF(ISTOP.NE.0) THEN
-        WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                     IDENT
-        Call QUIT( ' *** ERROR in MEMMAR: problem with IDENT:.*** ')
+            WRITE(LUWRT,*) ' *** error in memmar: array with'//
+     &      ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &      ' prior to the memory check. ***'
+        Call QUIT(
+     &      ' *** quit in MEMMAR: out-of-bounds access detected. *** ')
       END IF
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MEMMAR_I8(KBASE,KADD,TASK,IR,IDENT)
 C
 C     Memory manager routine for LUCIAREL "R"
@@ -658,7 +458,6 @@ C             = FLUSM  : Flush local memory to previous mark
 C             = PRINT  : Print memory allocations
 C             = SFREEM : Print memory allocations
 C     IR    : 1 => integer , 2 => real, 3 => integer*8
-C             ratio between integer and real is IRAT
 C     IDENT : identifier of memory slice, CHARACTER*6
 C
 C     NOTE:    Local Memory not flushed before allocation of additional
@@ -682,7 +481,6 @@ C
       DATA PAD2/0.987654321D0/
 C
 #include "mxpdim.inc"
-#include "irat.inc"
 #include "wrkspc.inc"
 #include "parluci.h"
 C
@@ -698,39 +496,12 @@ C
       ITSOK  = 1
       IPRNTMP = 0
 C
-      IF(TASK(1:5).EQ.'PRINT') THEN
-        IPRNTMP = 1
-        NSNLI = NS + NL
-C
-      ELSE IF(TASK(1:3).EQ.'INI') THEN
-C
-C      Initialize
-C
-        NS = 0
-        NL = 0
-        NSNLI = 0
-        NM = 0
-        KFREES = KBASE
-        KFREEL = KBASE
-C
-C       Compute pointer to end element
-C
-        NWORD = KBASE + MXPWRD-1
-        IPRNTMP = 0
-        ISTOP = 0
-C
-C     First free word
-C
-      ELSE IF (TASK(1:4).EQ.'FREE') THEN
-        KBASE = KFREEL
-        NSNLI = NS+NL
-C
 C     Static memory
 C
-      ELSE IF(TASK(1:4).EQ.'ADDS') THEN
+      IF(TASK(1:4).EQ.'ADDS') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
-          KFREES = KFREEL +(KADD+1)/IRAT + 2*NPAD
+          KFREES = KFREEL +(KADD+1) + 2*NPAD
         ELSE IF( IR .EQ. 2) THEN
           KFREES = KFREEL + KADD + 2*NPAD
         ELSE
@@ -761,23 +532,31 @@ C
         IF(NS.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
           write(LUWRT,*) ' NS has value  ',NS
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1( 11 )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar_i8: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS) = IDENT
         KFREEL = KFREES
         IBASE(NS) = KBASE
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 10 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    10   CONTINUE
+#endif
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
+
 C
 C     Local memory
 C
       ELSE IF(TASK(1:4).EQ.'ADDL') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
-          KFREEL = KFREEL +(KADD+1)/IRAT + 2*NPAD
+          KFREEL = KFREEL +(KADD+1) + 2*NPAD
         ELSE IF( IR .EQ. 2) THEN
           KFREEL = KFREEL + KADD + 2*NPAD
         ELSE
@@ -805,69 +584,27 @@ C
         NSNLI = NS+NL
         IF(NS+NL.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1( 11 )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar_i8: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS+NL) = IDENT
         IBASE(NS+NL) = KBASE
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 20 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    20   CONTINUE
-C
-C     Flush local memory
-C
-      ELSE IF(TASK(1:5).EQ.'FLUSH') THEN
-        NSNLI = NS+NL
-        KFREEL = KFREES
-        NL = 0
-C       Flush output unit
-        LU6 = 6
-        CALL GFLUSH(LU6)
-      ELSE IF(TASK(1:4).EQ.'MARK') THEN
-C       Set a mark at current free address
-        NM = NM + 1
-        IF(NM.GT.MAXMRK) THEN
-          WRITE(LUWRT,*) ' Too many marks  in MEMMAR '
-          WRITE(LUWRT,*) ' Increase MAXMRK from ', MAXMRK
-          Call Abend1( 11 )
-        END IF
-        MARKC(NM) = IDENT
-        MARK_ACT = IDENT 
-        IMARK(NM) = KFREEL
-        MARKL(NM) = NL
-        MARKS(NM) = NS
-        NSNLI = NS + NL
-      ELSE IF (TASK(1:5).EQ.'FLUSM') THEN
-        I_AM_INTOLERANT = 1
-        IF(I_AM_INTOLERANT.EQ.1.AND.IDENT(1:6).NE.MARK_ACT(1:6)) THEN
-          WRITE(LUWRT,*) ' Error in Flushing :  MARKS not consistent '
-          WRITE(LUWRT,'(A,A,A,A)')
-     &    ' Actual MARK and MARK to be flushed ',
-     &     IDENT,' versus ',MARK_ACT
-          STOP ' Error in memory flushing '
-        END IF
-C
-        NSNLI = NS+NL
-        KFREEL = IMARK(NM)
-        IF(KFREES.GT.IMARK(NM)) KFREES = IMARK(NM)
-        IF(NM.GT.1) MARK_ACT = MARKC(NM-1)
-        NL = MARKL(NM)
-        NS = MARKS(NM)
-        NM = NM - 1
-C       Flush output unit
-        LU6 = 6
-        CALL GFLUSH(LU6)
-      ELSE IF( TASK(1:5).EQ.'CHECK') THEN
-        NSNLI = NS+ NL
-      ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
-C       compute current free memory
-        KBASE = NWORD - KFREEL - 1
-        NSNLI = NS+ NL
+#endif
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
+
       ELSE
-          WRITE(LUWRT,*) ' MEMMAR : Unknown task parameter ',TASK
-          WRITE(LUWRT,*) ' Too confused to continue  '
-          Call Abend1( 11 )
+        WRITE(LUWRT,*) ' MEMMAR_I8 : Unknown task parameter ',TASK
+        WRITE(LUWRT,*) ' Too confused to continue  '
+        call quit('*** error in MEMMAR_I8: unknown task parameter.***')
       END IF
 C
 C     Check paddings
@@ -972,16 +709,19 @@ C
           END DO
 C
           IF(ITSOK.EQ.0) THEN
-            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                         IDENT 
-            Call Abend2( ' Error observed by  memory manager ' )
+            WRITE(LUWRT,*) ' *** error in memmar_i8: array with'//
+     &    ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &    ' prior to the memory check. ***'
+            Call QUIT(
+     &    ' *** quit in MEMMAR_i8: out-of-bounds access detected. *** ')
           END IF
         END IF
 C
       IF(ISTOP.NE.0) THEN       
-            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                         IDENT 
-            Call Abend2( ' Error observed by  memory manager ' )
+        WRITE(LUWRT,*) ' *** error in memmar_i8: array with'//
+     &  ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &  ' prior to the memory check. ***'
+        Call QUIT(
+     &  ' *** quit in MEMMAR_i8: out-of-bounds access detected. *** ')
       END IF
-      RETURN
       END

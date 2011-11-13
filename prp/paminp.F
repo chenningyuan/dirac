@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : paminp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpinp */
@@ -78,9 +75,9 @@ C
 !                    29        30        31        32
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
 !                    33        34        35        36
-     &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
+     &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.XXXXXX','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -131,10 +128,11 @@ C
       ESRANISO     = .FALSE.
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
-      DORKBIMP     = .FALSE.
-      BXLAO       = .FALSE.
-      BYLAO       = .FALSE.
-      BZLAO       = .FALSE.
+      BXLAO        = .FALSE.
+      BYLAO        = .FALSE.
+      BZLAO        = .FALSE.
+      EFFDEN       = .FALSE.
+
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -327,11 +325,7 @@ C&&&& FIRST HYPERPOLARIZABILITY - compute complete beta tensor
             GO TO 100
  124     CONTINUE
 C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
-#ifdef MOD_XPP
             CALL DEF_TPA(WORK,LWORK,DOTPA)
-#else
-            CALL QUIT('TPA not included in this version')
-#endif
             GO TO 100
  125     CONTINUE
 C&&&& .VERDET - Calculates the Verdet constant with the QR module
@@ -361,12 +355,8 @@ C             do NOT activate picture change transformation...
             GO TO 100
   130    CONTINUE 
 C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
-#ifdef MOD_XPP
             CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
             CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
-#else
-            CALL QUIT('EXCPRP not included in this version')
-#endif
             GO TO 100
   131    CONTINUE 
 C&&&& .MAGOUT - specify the hard-output for the magnetizability
@@ -384,8 +374,6 @@ C&&&& .C6 - evaluate C6 dispersion coefficients
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
-C&&&& RKBIMPort; read RKB coefficients and add complementary UKB space
-            DORKBIMP = .TRUE.
             GO TO 100
   135    CONTINUE 
 C&&&& BXLAO 
@@ -406,11 +394,12 @@ C&&&& BZLAO
             london = .true.
             GO TO 100
   138    CONTINUE
-C&&&& XXXXXX
+C&&&& EFFDEN; calculate effective electronic densities at the nuclei
+            DOEXP  = .TRUE.
+            EFFDEN = .TRUE. 
             GO TO 100
   139    CONTINUE
-C&&&& XXXXXX
-            GO TO 100
+         GO TO 100
   140    CONTINUE
 C&&&& XXXXXX
             GO TO 100
@@ -448,7 +437,7 @@ CMI   g_tensors operator centers might be changed
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
 
-!     set compulsary default values for X2C module.
+!     set compulsory default values for X2C module.
       if(x2c)then
         DOPCT = .true.
         NOPCT = .false.
@@ -468,17 +457,6 @@ CMI   g_tensors operator centers might be changed
         WRITE (LUPRI,'(1X,A)')
      &  '* do NOT perform the picture change transformation of the'//
      &  ' four-component property operators'
-      ENDIF
-      IF(DORKBIMP) THEN
-        IF(URKBAL) THEN
-          WRITE(LUPRI,'(1X,A,A)')
-     &    '* Read RKB coefficients ',
-     &    'and extended with complementary UKB space'
-        ELSE
-          DORKBIMP = .FALSE.
-          WRITE(LUPRI,'(1X,A)') 
-     &      '*** WARNING! RKBIMPort ignored since no URKBAL'
-        ENDIF
       ENDIF
 C
 C     Process input for various program sections
@@ -513,11 +491,7 @@ C
         CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     4 CONTINUE
-#ifdef MOD_XPP
         CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
-#else
-        CALL QUIT('*EXCITA not included in this version')
-#endif
         GO TO 200
     5 CONTINUE
         CALL GRDINP(WORD,.FALSE.)
@@ -537,11 +511,7 @@ CMI ... changed for LAO-based magnetic properties
          GO TO 200
 C     *STEX
     9 CONTINUE
-#ifdef MOD_STEX
          CALL STEX_INPUT(WORD,.FALSE.,WORK,LWORK)
-#else
-         CALL QUIT('*STEX not included in this version')
-#endif
          GO TO 200
 
 !     *OPENRSP    
@@ -561,9 +531,7 @@ CMI ... read again the input
       end if
 !
       CALL GRDINP(WORD,.TRUE.)
-#ifdef MOD_XPP
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
-#endif
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
 C===========================================================================
 C Define special operators for the list of properties programmed in DIRAC
@@ -789,6 +757,7 @@ C***********************************************************************
 C
 C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 C  Last revision: May 14 1996 - tsaue
+C                 Febr. 2011   M Ilias (TRS_FLIP)
 C
 C  Assign a new property operator based on the input
 C  and the /XCBPRP/ list.
@@ -874,29 +843,34 @@ C     2   Property labels (to be found on file)
 C     3   Class label
 C     4   Separate factor for each component
 C     5   Common factor for all components
+C     6   Keyword to force the time-reversal symmetry flip
 C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 28)
+      PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
       CHARACTER   PLABEL(3)*8, PNAME*16
-      LOGICAL     CLABEL
+      LOGICAL     CLABEL 
+      LOGICAL     TRS_FLIP
 C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
       DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',
+     &           'TRS_FLIP',
      &           'FOCKMAT ', 'DIAGONAL', 'XALPHA  ', 'YALPHA  ',
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-     &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
+     &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
+     &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
 C
       CALL QENTER('XPRINP')
 C
@@ -910,6 +884,9 @@ C
       PFAC(2) = D1
       PFAC(3) = D1
       CLABEL  = .FALSE.
+      TRS_FLIP = .FALSE.
+      !mi - position of the Fock operator in the TABKW list, or "border" index
+      I_FOCKMAT=6
 C
       IKW = 0
 C
@@ -918,7 +895,7 @@ C     *** Read line ***
 C     *****************
 C
   100 READ (LUCMDX,'(A)',END=8000) LINE
-      IF (IPRINT .GT. 100) THEN
+      IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(A)') '***** Input line read in XPRINP:'
          WRITE (LUPRI,'(A)') LINE
       END IF
@@ -982,7 +959,7 @@ C        default diagonal operator name = label
          NFAC      = 0
          IKW       = 1
       ELSE IF (IKW .EQ. 1) THEN
-C        IKW .eq. 1 :  Keywords
+C        IKW .eq. 1 :  Property operator keywords
          LKW = MIN(8,LTKN)
          READ(LINE(ITKN:80),'(A)') KEYWD(1:LKW)
          IF (LKW .LT. 3) THEN
@@ -1002,21 +979,22 @@ C
 C          If keyword defines operator type, then initialize
 C          =================================================
 C
-           IF (I .GT. 5) THEN
+           IF ( I .GT. I_FOCKMAT ) THEN
 C             (the first five entries in TABKW are not operator types)
-CMI      ---- assignement of IPTYP -----
-              IPTYP = I - 5
+CMI      ---- assignement of IPTYP needed in further routines -----
+              IPTYP = I - I_FOCKMAT
               NLABEL= 0
               NFAC  = 0
               IKW = 2
            END IF
+
 C
 C          If keyword Fock defines matrix read, then initialize
 C          ====================================================
 C          (the matrix is assumed totally symmetric 
 C           under point group and time reversal symmetry)
 C
-           IF (I .EQ. 5) THEN
+           IF (I .EQ. I_FOCKMAT) THEN
               IPTYP = 0
               NLABEL= 0
               NFAC  = 0
@@ -1024,7 +1002,14 @@ C
               ISYXPR = 1
               ITRXPR = 1
            END IF
-           GO TO (4,5,6,7,1,1,1,1,1,2,2,2,3,
+ 
+           ! ... initialize ...
+           TRS_FLIP=.FALSE.
+           ! write(LUPRI,*) 'operatorik:',I,KEYWD(1:LKW)
+
+!mi     ...jump on operator types according to the variable I prepared above, I : 1-26
+!           4-8 are operators characteritics, TABKW(1-5)
+           GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
      &            1,1,1,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
@@ -1034,7 +1019,7 @@ C
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
 C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
-C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT,iBETAGAMMA5
+C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT, iBETAGAMMA5
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1048,25 +1033,31 @@ C&&&&    Three components: ALPHADOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
-C&&&&    Class keyword
+C&&&&    Class keyword, CLASS, TABKW(1)
     4    CONTINUE
            CLABEL = .TRUE.
            IKW = 3
          GO TO 300
-C&&&&    Read a multiplicative factor for each component
+C&&&&    Read a multiplicative factor for each component, FACTORS, TABKW(2)
     5    CONTINUE
            IKW  = 4
          GO TO 300
-C&&&&    Read a common factor for each component
+C&&&&    Read a common factor for each component, COMFACTOR, TABKW(3)
     6    CONTINUE
            IKW  = 5
          GO TO 300
-C&&&     Multiply with current value of the speed of light
+C&&&     Multiply with current value of the speed of light, CMULT
     7    CONTINUE
            PFAC(1) = PFAC(1)*CVAL          
            PFAC(2) = PFAC(2)*CVAL          
-           PFAC(3) = PFAC(3)*CVAL          
-         GO TO 100
+           PFAC(3) = PFAC(3)*CVAL 
+         GO TO 300
+C&&&     miro: Time-reversal symmetry flip, TRS_FLIP, as newly added operator characteristic
+    8    CONTINUE
+           TRS_FLIP=.TRUE.
+           IKW=6
+         GO TO 300
+         !GO TO 100
 C
 C     Read property labels for each component
 C     =======================================
@@ -1085,9 +1076,10 @@ C
       ELSE IF (IKW .EQ. 3) THEN
 C        IKW .eq. 3 :  Class label
 CHJMAERKE: implement interpretation of class keyword
+!miro - missing field, HJJ has an idea...
 C
-C     Read factor for each component
-C     ==============================
+C     FACTORS, read factor for each component
+C     ==================================================
 C
       ELSE IF (IKW .EQ. 4) THEN
 C        IKW .eq. 4 :  Separate factor for each component
@@ -1100,7 +1092,7 @@ C        IKW .eq. 4 :  Separate factor for each component
          PFAC(NFAC) = TMP*PFAC(NFAC)
          IF (NFAC .GE. NPCOMP) IKW = 1
 C
-C     Read a common factor for all components
+C     COMFACTOR, read a common factor for all components
 C     =======================================
       ELSE IF (IKW .EQ. 5) THEN
 C        IKW .eq. 5 :  Common factor for all components
@@ -1113,6 +1105,12 @@ C        IKW .eq. 5 :  Common factor for all components
          PFAC(2) = COMFAC*PFAC(2)
          PFAC(3) = COMFAC*PFAC(3)
          IKW = 1
+
+!         TRS_FLIP
+      ELSE IF (IKW .EQ. 6) THEN
+         write(LUPRI,*) 'TRS_FLIP !'
+         TRS_FLIP=.TRUE.
+         IKW=1
 C
 C     Unknown IKW
 C     ===========
@@ -1141,7 +1139,8 @@ CHJMAERKE: implement interpretation of class keyword
      &      ' XPRINP: INPUT ERROR following '//WORD,
      &      ' Keyword "'//KEYWD(1:LKW)//'" not implemented yet.'
       ELSE
-         IF (IPRINT.GE.15) THEN
+      ! miro-output and XPRIND
+         IF (IPRINT.GE.5) THEN
            WRITE(LUPRI,'(/,6x,a)') '*** Output from XPRINP ***'
            WRITE(LUPRI,'(2x,a,a16)') 'PNAME=',PNAME
            WRITE(LUPRI,'(2x,a,i2,a,i2)') 
@@ -1151,12 +1150,19 @@ CHJMAERKE: implement interpretation of class keyword
            WRITE(LUPRI,'(2x,a,3f10.6)') 
      &     'PFAC(1-NPCOMP)=',(PFAC(I),I=1,NPCOMP)
            WRITE(LUPRI,'(2x,a,i2,a,i2,a,i2)') 
-     &     'INDXPR=',INDXPR,' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
+     &     'initial values: INDXPR=',INDXPR,
+     &    ' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
          ENDIF
 CMI      ... assign remaining parameters
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-         IF (IPRINT.GE.20) THEN
+         IF (TRS_FLIP) THEN
+           ! miro: perform the time-reversal symmetry flip of the operaror
+           CALL OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                            INDXPR,ISYXPR,ITRXPR,IPRINT)
+           TRS_FLIP=.FALSE.
+         ENDIF
+         IF (IPRINT.GE.8) THEN
            WRITE(LUPRI,'(/,6x,a)')
      &      '*** Output from XPRINP after XPRIND ***'
            WRITE(LUPRI,'(2x,a,i2,a,i2,a,i2)') 
@@ -1228,6 +1234,27 @@ C
  9999 CALL QEXIT('XPRTKN')
       RETURN
       END
+      SUBROUTINE OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
+! Perform the operator time-reversal symmetry flip (thanks to TRS_FLIP characteritics)
+!
+! Called by XPRINT
+!
+! M.Ilias, Banska Bystrica, February 2011
+!
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+      CHARACTER PNAME*16
+      DIMENSION PFAC(NPCOMP)
+      WRITE(LUPRI,*)
+     &'Flipping time reversal symmetry for the selected operator ',
+     & PNAME
+      IPRPTIM(INDXPR) =  - IPRPTIM(INDXPR)
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -1360,7 +1387,6 @@ C
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 
-
       IF (IPRINT .GE. 6) THEN
          WRITE (LUPRI,'(/,4X,A/2A/A,I5/A,I5/A,1P,3(D20.10))')
      &   '*** XPRADD called for specifying PCOMB ***',
@@ -1420,7 +1446,6 @@ C
 C        ALPHA and GAMMA5:
 C
     2    PCOMB = '0++0'
-Chj      PCOMB = 'FTTF'
          GO TO 100
 C
 C        "BETA" and "BETA SIGMA":
@@ -1570,6 +1595,9 @@ C
       ELSEIF(PLABEL(1:3).EQ.'EDM') THEN
         CLASLB = 'EDM    '
         IORDER   = 0
+      ELSEIF(PLABEL(1:2).EQ.'ED') THEN
+        CLASLB = 'EFFDEN '
+        IORDER   = 0
       ELSE
         CALL GETCLS(PLABEL,CLASLB,IORDER,IPRINT)
         IF(CLASLB.EQ.'Unknown') THEN
@@ -1667,6 +1695,11 @@ C     Traceless theta quadrupole integrals
 C
       ELSE IF(LABINT(3:7).EQ.'THETA') THEN
         CLASLB = 'THETA  '
+
+!requested by Malaya Kumar Nayak <mk.nayak72@gmail.com>
+      ELSE IF(LABINT(2:8).EQ.'NUCFIEL') THEN
+        CLASLB = 'NUCFIEL'
+
 C
 C     Cartesian/spherical/electronic solvent moments integrals
 C
@@ -2080,6 +2113,12 @@ C
         SQUARE    = .FALSE.
         ANTI      = .FALSE.
         CALL SMTYP(IORDER,NOPTYP,INTREP,LABINT)
+      ELSEIF(CLASLB .EQ. 'EFFDEN ') THEN
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        CALL SETATM(DOATOM,NATOM,-99)
+        CALL EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
       ELSE
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
@@ -2260,12 +2299,13 @@ C Miro: for determination of IATIm why not not use rather ITYP ?
 C
       SKIP_JM4 = .TRUE.
 !     SKIP_JM4 = .FALSE.
+
 CMI ... catch possible exotic IAND...
       IF (IAIND.GE.16 .AND.IAIND.LE.18) THEN 
         CALL QUIT('quit here due to IAIND !')
       ENDIF
 
-C  remove this part (THEN block) if everythink goes well 
+CMI  remove this part (THEN block) if everythink goes well and keep only ELSE branch
       IF (.NOT.SKIP_JM4) THEN
 
       IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
@@ -2286,10 +2326,11 @@ CMI    exception for the i*BETA*GAMMA5 operator
       ENDIF
 
       ELSE
-!  ---------------------------------------------------------------------
-!       ... scalar , gamma5, and beta matrix operators have IATIM=+1
+!  -------------------------------------------------------------------------------------------------
+!   Simplification branch:
+!       ...only  scalar , gamma5, and beta matrix operators have IATIM=+1, the rest has IATIM=-1
 ! FYI: only this part (ELSE block) is to be kept for the future
-!  ---------------------------------------------------------------------
+!  --------------------------------------------------------------------------------------------------
        IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19) THEN
         IATIM=+1
        ELSE ! the rest ....
@@ -2297,6 +2338,14 @@ CMI    exception for the i*BETA*GAMMA5 operator
        ENDIF
 
       ENDIF
+
+CMI - TODO force change of the time rev.symm. if wanted
+!     IF (IPRPTYP(INDXPR).EQ.2.OR.
+!    &   IPRPTYP(INDXPR).EQ.3.OR.IPRPTYP(INDXPR).EQ.4) THEN
+!       IATIM=+1
+!       WRITE(LUPRI,*) 'forcing IATIM=1 for IPRPTYP(INDXPR)!'
+!     ENDIF
+
 
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)

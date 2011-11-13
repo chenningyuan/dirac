@@ -1,5 +1,8 @@
+! FILE: dgroup.h
 !
-!     NZ - number of matrices (1,2,4)
+!     NZ    - number of fermion matrices (1,2,4)
+!     NZC1  - number of fermion matrices in C1 symmetry (1 or 4)
+!     NZ_in_CI = min(2,NZ), if 2 then complex CI vectors, if 1 then real CI vectors
 !     NFSYM - number of fermion irreps
 !     NBSYM - number of boson irreps
 !     JSPINR(IM,IC,IFRP) - boson irrep for a given spinor position
@@ -24,11 +27,12 @@
       INTEGER I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP(4, 2), JBTOF(0:7, 2), &
      &        JMROI(4), JSPINR(4, 2, 2), JQBAS(0:7, 2), JFSYM(4, 2),    &
      &        IPQTOQ(4, 0:7), IQTOPQ(4, 0:7), IQPH(4, 2),               &
-     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT, NZC1 ,    &
-     &        I2_DGROUP
+     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT,           &
+     &        NZC1, NZ_in_CI, I2_DGROUP
       COMMON /DGROUP/ I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP, JBTOF, JMROI,&
      &                JSPINR, JQBAS, JFSYM, IPQTOQ, IQTOPQ, IQPH,       &
-     &                IHQMAT, IRQMAT, IQDEF, ITOT, NZC1, I2_DGROUP
+     &                IHQMAT, IRQMAT, IQDEF, ITOT,                      &
+     &                NZC1, NZ_in_CI, I2_DGROUP
 
 !     Do NOT add any variables after the end tag !
       LOGICAL LINEAR
@@ -39,17 +43,16 @@
 ! These are: 
 ! 1. P, 2. i[alpha_x]P,3. i[alpha_y]P,...19. beta, 20. iS.P,21 iBETAGAMA5
 ! =========================================================
-      INTEGER NOPTYP
-      PARAMETER (NOPTYP = 21)
+      INTEGER NOPTYP,NMATTYP
+      PARAMETER (NOPTYP = 21,NMATTYP=16)
 
 ! *** 4-component operators : Matrix part ***
 !
 !     M = I_4,iA_z,iA_y,iA_x
 !
-!     JM4REP(0:7) - bosonirrep of matrix operator
-!     JM4POS(0:7) - quaternionic position of matrix operator 
+!     JM4REP(0:16) - bosonirrep of matrix operator
+!     JM4POS(0:16) - quaternionic position of matrix operator 
 !                   (1,2(i),3(j),4(k))
-!     JM4FAS(0:7) - sign of matrix operator (+/- 1)
 !
 !     OPERATORS (NOPTYP types):
 !
@@ -58,7 +61,8 @@
 !     JCOM  - coefficient of component
 !
       INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
-     &        JM4REP(0:7),JM4POS(0:7),JM4FAS(0:7)
-      CHARACTER*4 M4COMB(0:7)
-      COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4FAS
-      COMMON /ONECMB/ M4COMB
+     &        JM4REP(0:NMATTYP),JM4POS(0:NMATTYP)
+      CHARACTER*4 M4COMB
+      COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS
+      COMMON /ONECMB/ M4COMB(0:NMATTYP)
+! -- end of dgroup.h --

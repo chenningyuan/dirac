@@ -1,0 +1,39 @@
+#################################
+**DIRAC
+.TITLE
+ FO
+.WAVE FUNCTION
+.ANALYZ
+#################################
+**ANALYZE
+.PRIVEC
+*PRIVEC
+.VECPRI
+1..10
+#################################
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**HAMILTONIAN
+.GAUNT
+.X2C
+#################################
+**WAVE FUNCTION
+.SCF
+.RELCCSD
+*SCF
+.CLOSED SHELL
+ 18
+.EVCCNV
+1.0D-8
+.MAXITR
+ 100
+#####################################################
+**MOLTRA
+.ACTIVE
+energy -6.0 20.0 1.0
+**END OF
+
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1 TIMING=T NELEC=7,7 DEBUG=F &END
+ &CCSORT USEOE=T, NORECMP=T &END
+ &CCFSPC MAXIT=100, NACTH=2,2, NACTP=0,0, DOIE=T &END

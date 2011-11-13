@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : gpluuk.F
 C
 C
 C  /* Deck inpck */
@@ -193,20 +190,7 @@ C
 #if  defined (INT_STAR8)
       IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
-#if defined (SYS_IRIX) || defined (SYS_SX) || defined (SYS_DEC)
-C     SGI IRIX counts recl in *4 words
-      IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#else
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
-#else
-#if defined (SYS_IBM) || defined (SYS_SUN)
-      IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
-#else
-     ===== insert definition for specification of record length
-#endif
-#endif
-#endif
 #endif
 C
       IRECLEN = IRECL

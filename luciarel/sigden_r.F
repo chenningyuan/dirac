@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,405 +16,8 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
+***********************************************************************
 
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE ANA_GENCC(T,ISM)
-*
-* Analyze T-coefficients of general coupled cluster wavefunction
-*
-* Jeppe Olsen, September 1999 ( modified GASANA)
-*
-*
-#include "implicit.inc"
-#include "ipoist8.inc"
-*. specific input Coefficients and types
-      DIMENSION T(*)
-*
-* =====
-*.Input
-* =====
-*
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "strbas.inc"
-#include "cicisp.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "cgas.inc"
-#include "gasstr.inc"
-#include "cprnt.inc"
-#include "ctcc.inc"
-C     INCLUDE 'cc_exc.inc'
-*
-      CALL QENTER('ANAGC')
-      call memmar(KLOFF,IDUMMY,'MARK  ',DUMMY,'ANAGCC')
-*
-*. Four blocks of string occupations
-      call memmar(KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC1')
-      call memmar(KLSTR2_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC2')
-      call memmar(KLSTR3_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC3')
-      call memmar(KLSTR4_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC4')
-*. Number of terms to be printed 
-      IF(IPRNCIV.EQ.0) THEN
-        THRES = 0.02 
-        MAXTRM = 200
-      ELSE
-        THRES = 0.0D0
-*. Well atmost 100000 coefs - to save disk ..
-        MAXTRM = 100000
-      END IF
-*Numbers and weight of spinorbital excitation type 
-      LENGTH_SOX = NSPOBEX_TP*10
-      call memmar(KNCPMT_SOX,LENGTH_SOX,'ADDL  ',1,'KNCPMT')
-      call memmar(KWCPMT_SOX,LENGTH_SOX,'ADDL  ',2,'KWCPMT')
-*. Number and weight of orbital excitation type
-      LENGTH_OX = NOBEX_TP*10
-      call memmar(KNCPMT_OX,LENGTH_OX,'ADDL  ',1,'KNCPMT')
-      call memmar(KWCPMT_OX,LENGTH_OX,'ADDL  ',1,'KNCPMT')
-      IUSLAB = 0
-*
-* FIXME
-* !!! Define KLOBEX,KLSOX_TO_OX when debugging !!!
-*
-*. Occupation of strings of given sym and supergroup
-      CALL ANA_GENCCS(T,WORK(KLSOBEX),WORK(KLOBEX),
-     &            NSPOBEX_TP,NOBEX_TP,ISM,
-     &            THRES,MAXTRM,
-     &            WORK(KLSTR1_OCC),WORK(KLSTR2_OCC),
-     &            WORK(KLSTR3_OCC),WORK(KLSTR4_OCC),
-     &            IUSLAB,
-     &            IDUMMY,WORK(KNCPMT_SOX),WORK(KWCPMT_SOX),      
-     &            WORK(KNCPMT_OX),WORK(KWCPMT_OX),      
-     &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX))
-   
-      call memmar(KDUM,IDUM,'FLUSM',IDUM,'GASGCC')
-      CALL QEXIT('ANAGC')
-*
-      RETURN
-      END
-      SUBROUTINE ANA_GENCCS(T,ISPOBEX_TP,IOBEX_TP,
-     &                 NSPOBEX_TP,NOBEX_TP,ISM,
-     &                 THRES,MAXTRM,
-     &                 IOCC_CA, IOCC_CB, IOCC_AA, IOCC_AB,
-     &                 IUSLAB,
-     &                 IOBLAB,NCPMT_SOX,WCPMT_SOX,
-     &                        NCPMT_OX, WCPMT_OX,
-     &                 NORB,IPRNCIV,ISOX_TO_OX)
-*
-* Analyze T-CC vector :
-*
-*      1) Print atmost MAXTRM  operators with coefficients
-*         larger than THRES
-*
-*      2) Number of coefficients in given range
-*
-*      3) Number of coefficients in given range for given 
-*         excitation type, spin orbital types and orbital types
-*
-* Jeppe Olsen , September 1999 
-*               July 2000, MSCOMB_CC added
-*                                                  
-
-*. If IUSLAB  differs from zero Character*6 array IOBLAB is used to identify
-*  Orbitals
-*
-#include "implicit.inc"
-#include "ipoist8.inc"
-#include "mxpdim.inc"
-#include "cgas.inc"
-#include "symm.inc"
-#include "csm.inc"
-#include "orbinp.inc"
-*. Specific input
-      INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
-      INTEGER IOBEX_TP(2*NGAS,NOBEX_TP)
-      DIMENSION T(*)
-      DIMENSION ISOX_TO_OX(NSPOBEX_TP)
-*. Scratch
-      INTEGER IOCC_CA(*),IOCC_CB(*),IOCC_AA(*),IOCC_AB(*)
-*. Local scratch
-      INTEGER IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS) 
-      INTEGER IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
-      CHARACTER*6 IOBLAB(*)
-*. Output
-      DIMENSION NCPMT_SOX(10,NSPOBEX_TP)                           
-      DIMENSION WCPMT_SOX(10,NSPOBEX_TP)                          
-      DIMENSION NCPMT_OX(10,NOBEX_TP)                           
-      DIMENSION WCPMT_OX(10,NOBEX_TP)                          
-*
-      CALL ISETVC(NCPMT_SOX,0    ,10*NSPOBEX_TP)
-      CALL SETVEC(WCPMT_SOX,0.0D0,10*NSPOBEX_TP)
-      CALL ISETVC(NCPMT_OX,0    ,10*NOBEX_TP)
-      CALL SETVEC(WCPMT_OX,0.0D0,10*NOBEX_TP)
-*
-* ===========================================================
-*.1 : Printout of coefficients and largest occupation vectors       
-*.2 : Group coefficients by type and size
-* ===========================================================
-*
-      WRITE(6,*)
-      WRITE(6,*) ' Operators are written as : '
-      WRITE(6,*)
-      WRITE(6,*)   ' Creation of alpha '
-      WRITE(6,*)   ' Creation of beta '
-      WRITE(6,*)   ' Annihilation of alpha '
-      WRITE(6,*)   ' Annihilation of beta '
-      WRITE(6,*)
-      MINPRT = 0
-      ITRM = 0
-      ILOOP = 0
-      NTVAR = 0
-      IF(THRES .LT. 0.0D0 ) THRES = ABS(THRES)
-      TNORM = 0.0D0
-      TTNORM = 0.0D0
-2001  CONTINUE
-      ILOOP = ILOOP + 1
-      IF ( ILOOP  .EQ. 1 ) THEN
-        XMAX = 1.0D0
-        XMIN = 1.0D0/SQRT(10.0D0)
-      ELSE
-        XMAX = XMIN
-        XMIN = XMIN/SQRT(10.0D0)
-      END IF
-      IF(XMIN .LT. THRES  ) XMIN =  THRES
-      IF(IPRNCIV.EQ.1) THEN
-*. Print in one shot
-       XMAX = 3006.1956
-       XMIN =-3006.1956
-      END IF
-*
-      WRITE(6,*)
-      WRITE(6,'(A,E10.4,A,E10.4)')
-     &'  Printout of coefficients in interval  ',XMIN,' to ',XMAX
-      WRITE(6,'(A)')
-     &'  ========================================================='
-      WRITE(6,*)
-*
-      IT = 0
-      IIT = 0
-      DO ITSS = 1, NSPOBEX_TP
-C?     WRITE(6,*) ' NSPOBEX_TP = ', NSPOBEX_TP
-*. Transform from occupations to groups
-       CALL OCC_TO_GRP(ISPOBEX_TP(1+0*NGAS,ITSS),IGRP_CA,1)
-       CALL OCC_TO_GRP(ISPOBEX_TP(1+1*NGAS,ITSS),IGRP_CB,1)
-       CALL OCC_TO_GRP(ISPOBEX_TP(1+2*NGAS,ITSS),IGRP_AA,1)
-       CALL OCC_TO_GRP(ISPOBEX_TP(1+3*NGAS,ITSS),IGRP_AB,1)
-*
-       NEL_CA = IELSUM(ISPOBEX_TP(1+0*NGAS,ITSS),NGAS)
-       NEL_CB = IELSUM(ISPOBEX_TP(1+1*NGAS,ITSS),NGAS)
-       NEL_AA = IELSUM(ISPOBEX_TP(1+2*NGAS,ITSS),NGAS)
-       NEL_AB = IELSUM(ISPOBEX_TP(1+3*NGAS,ITSS),NGAS)
-*. Diagonal restricted type of spinorbital excitation ?
-C      IF(MSCOMB_CC.EQ.1) THEN
-C        CALL DIAG_EXC_CC(
-C    &        ISPOBEX_TP(1+0*NGAS,ITSS),ISPOBEX_TP(1+1*NGAS,ITSS),
-C    &        ISPOBEX_TP(1+2*NGAS,ITSS),ISPOBEX_TP(1+3*NGAS,ITSS),
-C    &        NGAS,IDIAG)
-C      ELSE
-         IDIAG = 0
-C      END IF
-*
-       DO ISM_C = 1, NSMST
-        ISM_A = IDBGMULT(ISM,INVELM(ISM_C)) 
-        DO ISM_CA = 1, NSMST
-         ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
-         DO ISM_AA = 1, NSMST
-          ISM_AB =  IDBGMULT(ISM_A,INVELM(ISM_AA))
-          ISM_ALPHA = (ISM_AA-1)*NSMST + ISM_CA
-          ISM_BETA  = (ISM_AB-1)*NSMST + ISM_CB
-*
-          IF(IDIAG.EQ.1.AND.ISM_ALPHA.LT.ISM_BETA) GOTO 777
-          IF(IDIAG.EQ.1.AND.ISM_ALPHA.EQ.ISM_BETA) THEN 
-           IRESTRICT_LOOP = 1
-          ELSE
-           IRESTRICT_LOOP = 0
-          END IF
-*. obtain strings
-          IUB = 1
-          CALL GETSTR2_TOTSM_SPGP_REL(IUB,IGRP_CA,NGAS,ISM_CA,NEL_CA,
-     &                                NSTR_CA,
-     &                                IOCC_CA,NORB,0,IDUM,IDUM)
-          IUB = 2
-          CALL GETSTR2_TOTSM_SPGP_REL(IUB,IGRP_CB,NGAS,ISM_CB,NEL_CB,
-     &                                NSTR_CB,
-     &                                IOCC_CB,NORB,0,IDUM,IDUM)
-          IUB = 1
-          CALL GETSTR2_TOTSM_SPGP_REL(IUB,IGRP_AA,NGAS,ISM_AA,NEL_AA,
-     &                                NSTR_AA,
-     &                                IOCC_AA,NORB,0,IDUM,IDUM)
-          IUB = 2
-          CALL GETSTR2_TOTSM_SPGP_REL(IUB,IGRP_AB,NGAS,ISM_AB,NEL_AB,
-     &                                NSTR_AB,
-     &                                IOCC_AB,NORB,0,IDUM,IDUM)
-*. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
-          DO I_AB = 1, NSTR_AB
-           IF(IRESTRICT_LOOP.EQ.1) THEN
-             I_AA_MIN = I_AB
-           ELSE
-             I_AA_MIN = 1
-           END IF
-           DO I_AA = I_AA_MIN, NSTR_AA
-            DO I_CB = 1, NSTR_CB
-             IF(IRESTRICT_LOOP.EQ.1.AND.I_AA.EQ.I_AB) THEN
-               I_CA_MIN = I_CB
-             ELSE
-               I_CA_MIN = 1
-             END IF
-             DO I_CA = I_CA_MIN, NSTR_CA
-              IT = IT + 1
-C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
-*
-              IF(ILOOP .EQ. 1 ) THEN 
-                NTVAR = NTVAR + 1
-                TNORM = TNORM + T(IT)**2
-*. Classify element according to size 
-                DO IPOT = 1, 10
-                  IF(10.0D0 ** (-IPOT+1).GE.ABS(T(IT)).AND.
-     &            ABS(T(IT)).GT. 10.0D0 ** ( - IPOT )      )THEN
-                    IOEX = ISOX_TO_OX(ITSS)
-                    NCPMT_OX(IPOT,IOEX)= NCPMT_OX(IPOT,IOEX)+1  
-                    WCPMT_OX(IPOT,IOEX)= WCPMT_OX(IPOT,IOEX)+T(IT)**2
-                  END IF
-                END DO
-*             ^ End of loop over powers of ten
-              END IF
-*             ^ end if we are in loop 1
-              IF( XMAX .GE. ABS(T(IT)) .AND.
-     &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
-                ITRM = ITRM + 1
-                IIT = IIT + 1
-                TTNORM = TTNORM + T(IT) ** 2
-                WRITE(6,'(A)')
-                WRITE(6,'(A)')
-     &          '                 =================== '
-                WRITE(6,*)
-
-                WRITE(6,'(A,2I8,2X,E14.8)')
-     &          '  Type, number, size of amplitude : ',
-     &          ITSS, IT, T(IT)
-                IF(IUSLAB.EQ.0) THEN
-                  WRITE(6,'(4X,10I4)')
-     &            (IOCC_CA(IEL+(I_CA-1)*NEL_CA),IEL = 1, NEL_CA)
-                  WRITE(6,'(4X,10I4)')
-     &            (IOCC_CB(IEL+(I_CB-1)*NEL_CB),IEL = 1, NEL_CB)
-                  WRITE(6,'(4X,10I4)')
-     &            (IOCC_AA(IEL+(I_AA-1)*NEL_AA),IEL = 1, NEL_AA)
-                  WRITE(6,'(4X,10I4)')
-     &            (IOCC_AB(IEL+(I_AB-1)*NEL_AB),IEL = 1, NEL_AB)
-                END IF
-              END IF
-*             ^ End if could and should be printed
-             END DO
-*            ^ End of loop over alpha creation strings
-            END DO
-*           ^ End of loop over beta creation strings
-           END DO
-*          ^ End of loop over alpha annihilation 
-          END DO 
-*         ^ End of loop over beta annihilation 
-  777    CONTINUE
-         END DO
-        END DO
-       END DO
-*      ^ End of loop over symmetry blocks
-      END DO
-*     ^ End of loop over over types of excitations
-       IF(IIT .EQ. 0 ) WRITE(6,*) '   ( no coefficients )'
-       IF( XMIN .GT. THRES .AND. ILOOP .LE. 20 ) GOTO 2001
-*
-       WRITE(6,'(A,E15.8)')
-     & '  Norm of printed coefficients .. ', TTNORM
-       WRITE(6,'(A,E15.8)')
-     & '  Norm of all     coefficients .. ',  TNORM
-*
-      WRITE(6,'(A)')
-      WRITE(6,'(A)') '   Magnitude of T coefficients '
-      WRITE(6,'(A)') '  =============================='
-      WRITE(6,'(A)')
-      WACC = 0.0D0
-      NACC = 0
-      DO 300 IPOT = 1, 10
-        W = 0.0D0
-        N = 0
-        DO 290 ITSS = 1, NOBEX_TP
-            N = N + NCPMT_OX(IPOT,ITSS)                    
-            W = W + WCPMT_OX(IPOT,ITSS)                    
-  290   CONTINUE
-        WACC = WACC + W
-        NACC = NACC + N
-        WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
-     &  '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC           
-  300 CONTINUE
-*
-      WRITE(6,*) ' Number of coefficients less than  10-11',
-     &           ' IS  ',NTVAR - NACC
-*
-      WRITE(6,'(A)')
-      WRITE(6,'(A)') 
-     & '   Magnitude of CI coefficients for each type of excitation '
-      WRITE(6,'(A)') 
-     & '  ========================================================='
-      WRITE(6,'(A)')
-      DO 400 ITSS   = 1, NOBEX_TP 
-          N = 0
-          DO 380 IPOT = 1, 10
-            N = N + NCPMT_OX(IPOT,ITSS)                     
-  380     CONTINUE
-          IF(N .NE. 0 ) THEN
-            WRITE(6,*) ' Orbital excitation type = ', ITSS
-            WRITE(6,'(A,I9)')  
-     &      '         Number of coefficients larger than 10-11 ', N
-            WRITE(6,*)
-            WACC = 0.0D0
-            DO IPOT = 1, 10
-              N =  NCPMT_OX(IPOT,ITSS)                    
-              W =  WCPMT_OX(IPOT,ITSS)                    
-              WACC = WACC + W
-              WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
-     &        '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC           
-            END DO
-          END IF 
-  400 CONTINUE
-*
-*. Total weight and number of dets per excitation level
-*
-      WRITE(6,'(A)')
-      WRITE(6,'(A)') 
-     & '   Total weight and number of SD''s (> 10 ** -11 )  : '          
-      WRITE(6,'(A)') 
-     & '  ================================================='
-      WRITE(6,'(A)')
-      WRITE(6,*) '        N      Weight      Acc. Weight   Exc. type '
-      WRITE(6,*) ' ==================================================='
-      WACC = 0.0D0
-      DO ITSS = 1, NOBEX_TP  
-          N = 0
-          W = 0.0D0
-          DO IPOT = 1, 10
-            N = N + NCPMT_OX(IPOT,ITSS)                   
-            W = W + WCPMT_OX(IPOT,ITSS)                   
-          END DO
-          WACC = WACC + W
-          IF(N .NE. 0 ) THEN
-            WRITE(6,'(1X,I9,3X,E9.4,7X,E9.4,2X,I3)') 
-     &      N,W,WACC,ITSS                                   
-          END IF
-      END DO
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
       SUBROUTINE CAAB_INCLUDED(IEXOP,INCLUDED_CAAB)
 *
 * Is excitation operator CAAB included in the 
@@ -451,16 +54,10 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
       END IF
 #endif
 *
-      RETURN
       END
+***********************************************************************
 
-    
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE CCEX_OCC_OCC(INOCC,IOUTOCC,NGAS,IAC,ICCEXC,IZERO)
+      SUBROUTINE CCEX_OCC_OCC(INOCC,IOUTOCC,NGAS,ICCEXC,ISZERO)
 *
 * A set of occupations INOCC is given
 *
@@ -477,19 +74,16 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *. Output
       INTEGER IOUTOCC(NGAS)
 *
-      IZERO = 0
-      DO JGAS = 1, NGAS
-        IF(IAC.EQ.1) THEN
-          JDELTA = - ICCEXC(JGAS)
-        ELSE
-          JDELTA = ICCEXC(JGAS)
-        END IF
-        IOUTOCC(JGAS) = INOCC(JGAS) + JDELTA
-        IF(IOUTOCC(JGAS).LT.0) IZERO = 1
-      END DO
+      min_occ = 0
+      do jgas = 1, ngas
+        IOUTOCC(JGAS) = INOCC(JGAS) - ICCEXC(JGAS)
+        min_occ       = min(min_occ,IOUTOCC(JGAS))
+      end do
+      ISZERO = 0
+      if(min_occ.lt.0) ISZERO = 1
 *
-      NTEST = 000
 #if defined LUCI_DEBUG
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         write(6,*) 'CCEX_OCC_OCC speaking:'
         WRITE(6,*) ' Input occupation '   
@@ -505,48 +99,9 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
       END IF
 #endif
 *
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DIAG_EXC_CC(NCA,NCB,NAA,NAB,NGAS,IDIAG)
-*
-* Check of alpha and betaexcitation parts are identical
-*
-*. Output
-* IDIAG = 0 : Not diagonal in alpha, beta
-* IDIAG = 1 : Diag in alpha, beta
-*
-*
-#include "implicit.inc"
-#include "ipoist8.inc"
-*. Input
-      INTEGER NCA(NGAS),NCB(NGAS),NAA(NGAS),NAB(NGAS)
-*
-      IDIAG = 1 
-      DO IGAS = 1, NGAS
-        IF(NCA(IGAS).NE.NCB(IGAS)) IDIAG = 0
-        IF(NAA(IGAS).NE.NAB(IGAS)) IDIAG = 0
-      END DO
-*
-      NTEST = 00
-#if defined LUCI_DEBUG
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' NCA, NCB, NAA, NAB = '
-        CALL IWRTMA(NCA,1,NGAS,1,NGAS)
-        CALL IWRTMA(NCB,1,NGAS,1,NGAS)
-        CALL IWRTMA(NAA,1,NGAS,1,NGAS)
-        CALL IWRTMA(NAB,1,NGAS,1,NGAS)
-        WRITE(6,*) ' IDIAG = ', IDIAG
-      END IF
-#endif
-*
-      RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                       IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
      &                       IHX_LOC,IHX,IHINDX,
@@ -1436,11 +991,9 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
             END DO
           END DO
         END DO
-      end if
-*     end if (IHTYPE .eq. 4)
+      end if ! end if (IHTYPE .eq. 4)
 *
-      end if
-*     end if (NO_TTWO .gt. 0)
+      end if ! end if (NO_TTWO .gt. 0)
 *
 #if defined LUCI_DEBUG
       if (IFLAG.ne.1.and.NTEST.ge.50) then
@@ -1456,24 +1009,17 @@ C     if(IFLAG.ne.1)then
 *
       if (IFLAG.ne.1) then
 #if defined LUCI_DEBUG
-        if (NTEST.ge.100) then
-          write(LUWRT,'(/A)') '  Max. no of electrons per GAS:'
-          call iwrtma(MXNELGS,1,NGAS,1,NGAS)
-          WRITE(LUWRT,*) ' The excitation types '
-          CALL WRT_SPOX_TP(IHX,NHX)
+        write(LUWRT,'(/A)') '  Max. no of electrons per GAS:'
+        call iwrtma(MXNELGS,1,NGAS,1,NGAS)
+        WRITE(LUWRT,*) ' The excitation types '
+        CALL WRT_SPOX_TP(IHX,NHX)
 C              WRT_SPOX_TP(IEX_TP,NEX_TP)
-        end if
 #endif
       end if
 *
-      RETURN
       END 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GNSIDE_REL(ISD,IRIS,IRIC,ICA,ICB,IAA,IAB,
      &           IAOC,IBOC,JAOC,JBOC,
      &           NIA,NIB,NJA,NJB,
@@ -1484,8 +1030,9 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
      &           ICA_STR,ICB_STR,IAA_STR,IAB_STR,
      &           KJA,XKJA,KJB,XKJB,KIA,XKIA,KIB,XKIB,
      &           KJAD,XKJAD,KJBD,XKJBD,KIAD,XKIAD,KIBD,XKIBD,
-     &           ITDIAG,IC_RESTRICT,IS_RESTRICT,
-     &           SIGN_EXTERNAL,IPRS,IPRD,ISMDST
+     &           SIGN_EXTERNAL,IPRS,IPRD,ISMDST,
+     &           IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &           NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM
 #if defined (VAR_MPI2)
      &          ,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S
 #endif
@@ -1500,18 +1047,6 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 * to Sigma vector with occupation IAOC, IBOC
 *
 * All symmetryblocks of C and Sigma are treated 
-*
-* ITDIAG = 1 => Diagonal T-block 
-*               Only symmetry blocks with 
-*                  (ICASM,IAASM).GE.(ICBSM,IABSM)
-*               are included, and blocks with 
-*                  (ICASM,IAASM) = (ICBSM,IABSM)
-*               are given in diagonal form 
-*               (Iaa.ge.Iab, if Iaa=Iab, Ica .ge. Icb)
-* ITABTRSNP = 1 => alpha-beta transposed block, input block is 
-*               T(ICB,ICA,IAB,IAA)
-* IX_RESTRICT = 1: BLocks in X are restricted to those with IASM.GE.IBSM
-* IX_RESTRICT =-1: BLocks in X are restricted to those with IASM.LT.IBSM
 *
 * SIGN_EXTERNAL : A sign multiplying all contributions
 *                 ( And he said : Mighty Lord, Give me a sign)
@@ -1534,19 +1069,17 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *                     August 2003, ISMDST 
 *
 *
+      use mospinor_info
+      use symmetry_setup_krci
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 *. General input
 #include "mxpdim.inc"
 #include "gasstr.inc"
-#include "orbinp.inc"
-#include "csm.inc"
-#include "symm.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
@@ -1564,41 +1097,41 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       DIMENSION SB(*)
       dimension TB(*), T_BUFF(*)
 *.Local Scratch
-      INTEGER KAOC(MXPNGAS),KBOC(MXPNGAS)
-      INTEGER NIKAINTM(MXPOBS,MXPLCCOP),NIKBINTM(MXPOBS,MXPLCCOP)
-      INTEGER NJKAINTM(MXPOBS,MXPLCCOP),NJKBINTM(MXPOBS,MXPLCCOP)
-      INTEGER NKA(MXPOBS),NKB(MXPOBS)
-*. 
-      INTEGER NICA(MXPOBS),NICB(MXPOBS),NIAA(MXPOBS),NIAB(MXPOBS)
-      INTEGER ICA_EXP(MXNOP),ICB_EXP(MXNOP),
-     &        IAA_EXP(MXNOP),IAB_EXP(MXNOP)
+      INTEGER KAOC(MXPNGAS), KBOC(MXPNGAS)
+      integer KAGP(MXPNGAS), KBGP(MXPNGAS)
+      integer JAGP(MXPNGAS), JBGP(MXPNGAS)
       INTEGER ICAGP(MXPNGAS),ICBGP(MXPNGAS)
       INTEGER IAAGP(MXPNGAS),IABGP(MXPNGAS)
-      integer KAGP(MXPNGAS),KBGP(MXPNGAS)
-      integer JAGP(MXPNGAS),JBGP(MXPNGAS)
-      INTEGER IAC_AR(MXNOP)
-      INTEGER IB_CA(MXNDGIRR,MXNDGIRR,MXPLCCOP),
-     &        IB_CB(MXNDGIRR,MXNDGIRR,MXPLCCOP)
-      INTEGER IB_AA(MXNDGIRR,MXNDGIRR,MXPLCCOP),
-     &        IB_AB(MXNDGIRR,MXNDGIRR,MXPLCCOP)
-      INTEGER IB_T(MXNDGIRR,MXNDGIRR,MXNDGIRR)
+      INTEGER NKA(MXNDGIRR), NKB(MXNDGIRR)
+      INTEGER NICA(MXNDGIRR),NICB(MXNDGIRR)
+      INTEGER NIAA(MXNDGIRR),NIAB(MXNDGIRR)
+*. 
+      INTEGER ICA_EXP(MXNOP),ICB_EXP(MXNOP)
+      INTEGER IAA_EXP(MXNOP),IAB_EXP(MXNOP)
+
       INTEGER IB_C(MXNDGIRR),IB_S(MXNDGIRR)
 *. Scratch through input 
       DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
       DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
       DIMENSION TBSUB(*), T_SCR_CC(*)
       DIMENSION ISMDST(*)
-      INTEGER KJA(MAXLB),KJB(MAXLB),KIA(MAXLB),KIB(MAXLB)
+      INTEGER    KJA(MAXLB), KJB(MAXLB), KIA(MAXLB), KIB(MAXLB)
       DIMENSION XKJA(MAXLB),XKJB(MAXLB),XKIA(MAXLB),XKIB(MAXLB)
-      INTEGER KJAD(MAXLB),KJBD(MAXLB),KIAD(MAXLB),KIBD(MAXLB)
+      INTEGER    KJAD(MAXLB), KJBD(MAXLB), KIAD(MAXLB), KIBD(MAXLB)
       DIMENSION XKJAD(MAXLB),XKJBD(MAXLB),XKIAD(MAXLB),XKIBD(MAXLB)
+      INTEGER IB_CA(MXNDGIRR,MXNDGIRR,MXNOP) 
+      INTEGER IB_CB(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_AA(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_AB(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_T(MXNDGIRR,MXNDGIRR,MXNDGIRR)
+      INTEGER NIKAINTM(MXPOBS,MXNOP),NIKBINTM(MXPOBS,MXNOP)
+      INTEGER NJKAINTM(MXPOBS,MXNOP),NJKBINTM(MXPOBS,MXNOP)
 *. ... Must hold excitations for all intermediate strings of given sym 
 *. and all orbitals of given type
       INTEGER ICA_STR(*),ICB_STR(*),IAA_STR(*),IAB_STR(*)
 *     ... Must hold strings of given sym for T ops.
       DIMENSION CJRES(*),SIRES(*)
 *
-      COMMON/KKKDUMMY/LEN_C2,LEN_S2
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
       COMMON/CMXCJ/MXCJ
       INTEGER*8 ITOFF
@@ -1609,17 +1142,16 @@ csk   NTEST = 100
 *
       ISKIP = 0
 #if defined (VAR_MPI2)
-      LEN_C = LEN_TT_BLOCK_PAR(ICSM,NJA,NJB,NSMST,IACT_C,IOFF_BLK_C,0)
+      LEN_C = LEN_TT_BLOCK_PAR(ICSM,NJA,NJB,IACT_C,IOFF_BLK_C,0)
 #else
-      LEN_C = LEN_TT_BLOCK(ICSM,NJA,NJB,NSMST)
+      LEN_C = LEN_TT_BLOCK(ICSM,NJA,NJB)
 #endif
+      print *,'C (input) ==> LEN_C',LEN_C
+      call wrtmat(CB,1,LEN_C,1,LEN_C)
 C     check norm
       XCNORM = DDOT(LEN_C,CB,1,CB,1)
-      IF(XCNORM.EQ.0.0D0) GOTO 9999
+      IF(XCNORM.EQ.0.0d0) GOTO 9999
 *
-CSK   if (NTEST.ge.100) write(LUWRT,*) 'Coupling with type ',IXTP
-*
-CSK   IF(NTEST.GE.500) THEN
 C       WRITE(LUWRT,*) ' ================ '
 C       WRITE(LUWRT,*) ' GNSIDE speaking '
 C       WRITE(LUWRT,*) ' ================ '
@@ -1641,22 +1173,6 @@ CSK       WRITE(LUWRT,*) ' Sigma generation '
 CSK     ELSE 
 CSK       WRITE(LUWRT,*) ' Density generation '
 CSK     END IF
-*
-CSK   WRITE(LUWRT,*) ' Input C vector '
-#if defined (VAR_MPI2)
-CSK   CALL WRTVH1_PAR(CB,ICSM,NJA,NJB,NSMST,0,IACT_C,IOFF_BLK_C,0)
-#else
-CSK   CALL WRTVH1(CB,ICSM,NJA,NJB,NSMST,0)
-#endif
-CSK   if (ISD.eq.2) then
-CSK      WRITE(LUWRT,*) ' Input S vector '
-#if defined (VAR_MPI2)
-CSK      CALL WRTVH1_PAR(SB,ISSM,NIA,NIB,NSMST,0,IACT_S,IOFF_BLK_S,1)
-#else
-CSK      CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
-#endif
-CSK    end if
-CSK   END IF
 C
 C     symmetry of operator (Hamiltonian)
 C     ----------------------------------
@@ -1664,14 +1180,18 @@ C     ----------------------------------
 C
 C     total length of sigma block
 #if defined (VAR_MPI2)
-      LEN_S = LEN_TT_BLOCK_PAR(ISSM,NIA,NIB,NSMST,IACT_S,IOFF_BLK_S,1)
+      LEN_S = LEN_TT_BLOCK_PAR(ISSM,NIA,NIB,IACT_S,IOFF_BLK_S,1)
 #else
-      LEN_S = LEN_TT_BLOCK(ISSM,NIA,NIB,NSMST)
+      LEN_S = LEN_TT_BLOCK(ISSM,NIA,NIB)
 #endif
-C     check S norm (only density runs)
-      IF(ISD.EQ.2) THEN
-       XSNORM = DDOT(LEN_S,SB,1,SB,1)
-       IF(XSNORM.EQ.0.0D0) GOTO 9999
+      print *,'LEN_S is',LEN_S
+      if(LEN_S.eq.0)then
+        print *,"oops, zero sigma vector???"
+        goto 9999
+      end if
+      IF(ISD.EQ.2)THEN ! check S norm (only density runs)
+        XSNORM = DDOT(LEN_S,SB,1,SB,1)
+        IF(XSNORM.EQ.0.0D0) GOTO 9999
       END IF
 #if defined (VAR_MPI2)
 C
@@ -1679,15 +1199,15 @@ C     vector partitioning has been changed! we have to be careful
 C     calculating the proper offset for each block ( sigma and c )!!!
 C
 C     adapted offset of c and sigma routines
-      CALL IOFF_SYMBLK_MAT_PAR(NSMST,NJA,NJB,ICSM,IB_C,IC_RESTRICT,
+      CALL IOFF_SYMBLK_MAT_PAR(NSMST,NJA,NJB,ICSM,IB_C,
      &                         IACT_C,IOFF_BLK_C,0)
-      CALL IOFF_SYMBLK_MAT_PAR(NSMST,NIA,NIB,ISSM,IB_S,IS_RESTRICT,
+      CALL IOFF_SYMBLK_MAT_PAR(NSMST,NIA,NIB,ISSM,IB_S,
      &                         IACT_S,IOFF_BLK_S,1)
 C
 #else
 C     offset of c and sigma routines
-      CALL IOFF_SYMBLK_MAT(NSMST,NJA,NJB,ICSM,IB_C,IC_RESTRICT)
-      CALL IOFF_SYMBLK_MAT(NSMST,NIA,NIB,ISSM,IB_S,IS_RESTRICT)
+      CALL IOFF_SYMBLK_MAT(NSMST,NJA,NJB,ICSM,IB_C)
+      CALL IOFF_SYMBLK_MAT(NSMST,NIA,NIB,ISSM,IB_S)
 #endif
 C     types of strings in T in groupnotation
       CALL OCC_TO_GRP(ICA,ICAGP,1)
@@ -1702,7 +1222,7 @@ C     operators in T in expanded form
       CALL REF_OP(IAB,IAB_EXP,NAB_OP,NGAS,1,MXNOP)
 C          REF_OP(IOPGAS,IOP,NOP,NGAS,IWAY)
 C     sign for bringing operators and amplitudes into new order
-      NPERM =  NAA_OP*NCB_OP 
+      NPERM =  NAA_OP* NCB_OP 
      &       + NAA_OP*(NAA_OP-1)/2
      &       + NAB_OP*(NAB_OP-1)/2
       IF(MOD(NPERM,2).EQ.1) THEN
@@ -1712,433 +1232,1031 @@ C       WRITE(LUWRT,*) ' new SIGNXXX for type IXTP =',IXTP
 C       WRITE(LUWRT,*) ' old SIGNXXX for type IXTP =',IXTP
         SIGNXXX = SIGN_EXTERNAL
       END IF
+
 C     type of Ka and Kb
-      CALL CCEX_OCC_OCC(JAOC,KAOC,NGAS,1,IAA,IKA_ZERO)
-      CALL CCEX_OCC_OCC(JBOC,KBOC,NGAS,1,IAB,IKB_ZERO)
+      CALL CCEX_OCC_OCC(JAOC,KAOC,NGAS,IAA,IKA_ZERO)
+      CALL CCEX_OCC_OCC(JBOC,KBOC,NGAS,IAB,IKB_ZERO)
+
 C     check that annihilation has not acted upon empty GAS:
       IF(IKA_ZERO.EQ.0.AND.IKB_ZERO.EQ.0) THEN
-C      get group of K mapped occupations
-       call occ_to_grp(KAOC,KAGP,1)
-       call occ_to_grp(KBOC,KBGP,1)
-C      number of strings in this supergroup (new DBG routine)
-       do KSM = 1,NSMST,1
-         call nst_spgrp_dbg(NGAS,KAGP,KSM,NSMST,NKA(KSM),NKADST,1)
-         call nst_spgrp_dbg(NGAS,KBGP,KSM,NSMST,NKB(KSM),NKBDST,2)
-       end do
-C      number of strings in excitation ops
-       do ISYM = 1,NSMST,1
-         call nst_spgrp_dbg(NGAS,ICAGP,ISYM,NSMST,NICA(ISYM),NCADST,1)
-         call nst_spgrp_dbg(NGAS,ICBGP,ISYM,NSMST,NICB(ISYM),NCBDST,2)
-C        all arrays refer to strings of creation operators of given occ.
-C        so do not bother with difference between anni and crea here.
-         call nst_spgrp_dbg(NGAS,IAAGP,ISYM,NSMST,NIAA(ISYM),NAADST,1)
-         call nst_spgrp_dbg(NGAS,IABGP,ISYM,NSMST,NIAB(ISYM),NABDST,2)
-       end do
-C      offset for symmetryblocks of T
-       CALL Z_TCC_OFF(IB_T,NICA,NICB,NIAA,NIAB,IOPSM,NSMST,ITDIAG)
-C           Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM,NSMST)
-C      creation path from C/S strings to K strings
-C      mappings from !I> to !K> are annihilations mappings 
-       NMXOP_T = MAX(NCA_OP,NCB_OP,NAA_OP,NAB_OP)
-       DO JOP = 1, NMXOP_T
-         IAC_AR(JOP) = 1
-       END DO
-C      CA : KA => IA mappings in 1
-C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
-       IAB_MAP = 1
-       CALL MAP_EXSTR(ICA_EXP,IAC_AR,NCA_OP,IAOC,I1,XI1S,
-     &                NIKAINTM,IB_CA,1.0D0,ISMDST,IAB_MAP)
-C      CB : KB => IB     
-       IAB_MAP = 2
-       CALL MAP_EXSTR(ICB_EXP,IAC_AR,NCB_OP,IBOC,I2,XI2S,
-     &                NIKBINTM,IB_CB,1.0D0,ISMDST,IAB_MAP)
-C      AA : KA => JA
-       IAB_MAP = 1
-       CALL MAP_EXSTR(IAA_EXP,IAC_AR,NAA_OP,JAOC,I3,XI3S,
-     &                NJKAINTM,IB_AA,1.0D0,ISMDST,IAB_MAP)
-C      AB : KB => JB
-       IAB_MAP = 2
-       CALL MAP_EXSTR(IAB_EXP,IAC_AR,NAB_OP,JBOC,I4,XI4S,
-     &                NJKBINTM,IB_AB,1.0D0,ISMDST,IAB_MAP)
-C      loop over symmetry-blocks of C and Sigma
+C       get group of K mapped occupations
+        call occ_to_grp(KAOC,KAGP,1)
+        call occ_to_grp(KBOC,KBGP,1)
+C       number of strings in this supergroup (new DBG routine)
+        do KSM = 1,NSMST,1
+          call nst_spgrp_dbg(NGAS,KAGP,KSM,NSMST,NKA(KSM),NKADST,1)
+          call nst_spgrp_dbg(NGAS,KBGP,KSM,NSMST,NKB(KSM),NKBDST,2)
+        end do
+C       number of strings in excitation ops
+        print *,'in gnside... NSMST is:',NSMST
+        do ISYM = 1,NSMST,1
+          call nst_spgrp_dbg(NGAS,ICAGP,ISYM,NSMST,NICA(ISYM),NCADST,1)
+          call nst_spgrp_dbg(NGAS,ICBGP,ISYM,NSMST,NICB(ISYM),NCBDST,2)
+C         all arrays refer to strings of creation operators of given occ.
+C         so do not bother with difference between anni and crea here.
+          call nst_spgrp_dbg(NGAS,IAAGP,ISYM,NSMST,NIAA(ISYM),NAADST,1)
+          call nst_spgrp_dbg(NGAS,IABGP,ISYM,NSMST,NIAB(ISYM),NABDST,2)
+        end do
+C       offset for symmetryblocks of T
+        CALL Z_TCC_OFF(IB_T,NICA,NICB,NIAA,NIAB,IOPSM)
+C            Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM)
+C       creation path from C/S strings to K strings
+C       mappings from !I> to !K> are annihilations mappings 
+
+C       CA : KA => IA mappings in 1
+C            MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,ISMDST,IAB)
+        IAB_MAP = 1
+        CALL MAP_EXSTR(ICA_EXP,NCA_OP,IAOC,I1,XI1S,
+     &                 NIKAINTM,IB_CA,ISMDST,IAB_MAP)
+C       CB : KB => IB     
+        IAB_MAP = 2
+        CALL MAP_EXSTR(ICB_EXP,NCB_OP,IBOC,I2,XI2S,
+     &                 NIKBINTM,IB_CB,ISMDST,IAB_MAP)
+C       AA : KA => JA
+        IAB_MAP = 1
+        CALL MAP_EXSTR(IAA_EXP,NAA_OP,JAOC,I3,XI3S,
+     &                 NJKAINTM,IB_AA,ISMDST,IAB_MAP)
+C       AB : KB => JB
+        IAB_MAP = 2
+        CALL MAP_EXSTR(IAB_EXP,NAB_OP,JBOC,I4,XI4S,
+     &                 NJKBINTM,IB_AB,ISMDST,IAB_MAP)
+C       loop over symmetry-blocks of C and Sigma
 #if defined (VAR_MPI2)
-C      initialize offsets for sigma- and c-block loops
-       I_BLK_S_SCR = 0
-       I_BLK_C_SCR = 0
-       I_BLK_S_SCR = IOFF_BLK_S
-       I_BLK_C_SCR = IOFF_BLK_C
+C       initialize offsets for sigma- and c-block loops
+        I_BLK_S_SCR = 0
+        I_BLK_C_SCR = 0
+        I_BLK_S_SCR = IOFF_BLK_S
+        I_BLK_C_SCR = IOFF_BLK_C
 #endif
-       DO IASM = 1, NSMST 
+!      relativistic calculation, spinor symmetries!
+       DO IASM =           1, NSMST 
+!      DO IASM = NSMST/2 + 1, NSMST
 C        parallel calculation: - sigma-blocks distributed
 C                              - check of 'active' c-blocks enabled
 #if defined (VAR_MPI2)
-        IF( IACT_S( I_BLK_S_SCR ) .ne. MYPROC ) GOTO 3003
+         IF( IACT_S( I_BLK_S_SCR ) .ne. MYPROC ) GOTO 3003
 #endif
-        IBSM = IDBGMULT(ISSM,INVELM(IASM))
+         IBSM = IDBGMULT(ISSM,INVELM(IASM))
 #if defined (VAR_MPI2)
 C
 C        reset offset for c-block loop
          I_BLK_C_SCR = 0
          I_BLK_C_SCR = IOFF_BLK_C
 #endif
-        DO JASM = 1, NSMST
+!        relativistic calculation, spinor symmetries!
+         DO JASM =           1, NSMST
+!        DO JASM = NSMST/2 + 1, NSMST
 #if defined (VAR_MPI2)
-        IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
+           IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
 #endif
-         JBSM = IDBGMULT(ICSM,INVELM(JASM))
-CSK      IF(NTEST.GE.1000) WRITE(LUWRT,'(A,4I4)') 
-CSK  &   ' IASM, IBSM, JASM, JBSM ', IASM,IBSM,JASM,JBSM
-         DO KASM = 1, NSMST
-C         IAA_SM is symmetry of ANNIHILATOR string
-          IAA_SM = IDBGMULT(KASM,INVELM(JASM))
-          ICA_SM = IDBGMULT(IASM,INVELM(KASM))
-C         to obtain the number of annnihilator strings of a given sym
-C         we find the number of creator strings of conjugated symmetry
-          LIAA_SM = NIAA(INVELM(IAA_SM))
-          LICA_SM = NICA(ICA_SM)
-          LKA_SM = NKA(KASM)
+           JBSM = IDBGMULT(ICSM,INVELM(JASM))
+           DO 100 KASM = 1, NSMST
+C            IAA_SM is symmetry of ANNIHILATOR string
+             IAA_SM  = IDBGMULT(KASM,INVELM(JASM))
+             ICA_SM  = IDBGMULT(IASM,INVELM(KASM))
+C            to obtain the number of annnihilator strings of a given sym
+C            we find the number of creator strings of conjugated symmetry
+             LIAA_SM = NIAA(INVELM(IAA_SM))
+             LICA_SM = NICA(ICA_SM)
+             LKA_SM  = NKA(KASM)
+             if(LIAA_SM*LICA_SM*LKA_SM.le.0) goto 100
+             print *, ' alpha nonzero'
 C
-          DO KBSM = 1, NSMST
+             DO KBSM = 1, NSMST
 C
-           IAB_SM = IDBGMULT(KBSM,INVELM(JBSM))
-           ICB_SM = IDBGMULT(IBSM,INVELM(KBSM))
+              IAB_SM = IDBGMULT(KBSM,INVELM(JBSM))
+              ICB_SM = IDBGMULT(IBSM,INVELM(KBSM))
 C
-           LIAB_SM = NIAB(INVELM(IAB_SM))
-           LICB_SM = NICB(ICB_SM)
+              LIAB_SM = NIAB(INVELM(IAB_SM))
+              LICB_SM = NICB(ICB_SM)
 C
-           LKB_SM = NKB(KBSM)
+              LKB_SM  = NKB(KBSM)
 C
-           ICBOFF = IB_C(JASM)
-           ISBOFF = IB_S(IASM)
+              ICBOFF = IB_C(JASM)
+              ISBOFF = IB_S(IASM)
 C
-           IF(LIAA_SM*LICA_SM*LIAB_SM*LICB_SM*LKA_SM*LKB_SM.NE.0)
-     &     THEN
+              if(LIAB_SM*LICB_SM*LKB_SM.gt.0)then
+                print *, ' beta nonzero'
 C
-CSK          IF(NTEST.GE.700) THEN
-CSK            WRITE(LUWRT,*) ' ICA_SM, ICB_SM, IAA_SM,IAB_SM =',
-CSK  &                      ICA_SM, ICB_SM, IAA_SM,IAB_SM
-CSK          END IF 
-*
-CSK          IF(NTEST.GE.1000) 
-CSK  &       WRITE(LUWRT,'(A,2I4)') ' KASM,KBSM ', KASM, KBSM
-CSK          IF(NTEST.GE.1000) 
-CSK  &       WRITE(LUWRT,*) ' LKA_SM, LKB_SM', LKA_SM, LKB_SM
-CSK          IF(NTEST.GE.1000) 
-CSK  &       WRITE(LUWRT,'(A,4I3)')      
-CSK  &       'LIAA_SM, LICA_SM,LIAB_SM,LICB_SM',
-CSK  &        LIAA_SM, LICA_SM,LIAB_SM,LICB_SM
+C               the operator strings of ICA, ICB, IAA, IAB 
+                IUB = 1
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,ICAGP,NGAS,ICA_SM,
+     &                                      NCA_OP,LICA_SM2,ICA_STR)
+                IUB = 2
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,ICBGP,NGAS,ICB_SM,
+     &                                      NCB_OP,LICB_SM2,ICB_STR)
+                IUB = 1
+*               we are generating strings of creation operators so 
+                IAA_SM_ADJ = INVELM(IAA_SM)
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,IAAGP,NGAS,IAA_SM_ADJ,
+     &                                      NAA_OP,LIAA_SM2,IAA_STR)
+                IUB = 2
+                IAB_SM_ADJ = INVELM(IAB_SM)
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,IABGP,NGAS,IAB_SM_ADJ,
+     &                                      NAB_OP,LIAB_SM2,IAB_STR)
+C               batching                   
+                LEN_KA_BAT = MAXLB
+                LEN_KB_BAT = MAXLB
 C
-C           the operator strings of ICA, ICB, IAA, IAB 
-            IUB = 1
-            CALL GETSTR2_TOTSM_SPGP_REL(IUB,ICAGP,NGAS,ICA_SM,NCA_OP,
-     &                                  LICA_SM2,ICA_STR,NORBT,0,0,0)
-            IUB = 2
-            CALL GETSTR2_TOTSM_SPGP_REL(IUB,ICBGP,NGAS,ICB_SM,NCB_OP,
-     &                                  LICB_SM2,ICB_STR,NORBT,0,0,0)
-            IUB = 1
-*           we are generating strings of creation operators so 
-            IAA_SM_ADJ = INVELM(IAA_SM)
-            CALL GETSTR2_TOTSM_SPGP_REL(IUB,IAAGP,NGAS,IAA_SM_ADJ,
-     &                                  NAA_OP,
-     &                                  LIAA_SM2,IAA_STR,NORBT,0,0,0)
-            IUB = 2
-            IAB_SM_ADJ = INVELM(IAB_SM)
-            CALL GETSTR2_TOTSM_SPGP_REL(IUB,IABGP,NGAS,IAB_SM_ADJ,
-     &                                  NAB_OP,
-     &                                  LIAB_SM2,IAB_STR,NORBT,0,0,0)
-C          batching                   
-           LEN_KA_BAT = MAXLB
-           LEN_KB_BAT = MAXLB
+                IF(LKA_SM.LT.MAXLB) THEN
+                  LEN_KA_BAT = LKA_SM
+                  LEN_KB_BAT = MIN(LKB_SM,MAXLB*MAXLB/LKA_SM)
+                END IF
 C
-           IF(LKA_SM.LT.MAXLB) THEN
-             LEN_KA_BAT = LKA_SM
-             LEN_KB_BAT = MIN(LKB_SM,MAXLB*MAXLB/LKA_SM)
-           END IF
+                IF(LKB_SM.LT.MAXLB) THEN
+                  LEN_KB_BAT = LKB_SM
+                  LEN_KA_BAT = MIN(LKA_SM,MAXLB*MAXLB/LKB_SM)
+                END IF
 C
-           IF(LKB_SM.LT.MAXLB) THEN
-             LEN_KB_BAT = LKB_SM
-             LEN_KA_BAT = MIN(LKA_SM,MAXLB*MAXLB/LKB_SM)
-           END IF
+                NKA_BT = LKA_SM/LEN_KA_BAT
+                IF(NKA_BT*LEN_KA_BAT. LT. LKA_SM) NKA_BT = NKA_BT + 1
+                NKB_BT = LKB_SM/LEN_KB_BAT
+                IF(NKB_BT*LEN_KB_BAT. LT. LKB_SM) NKB_BT = NKB_BT + 1
 C
-           NKA_BT = LKA_SM/LEN_KA_BAT
-           IF(NKA_BT*LEN_KA_BAT. LT. LKA_SM) NKA_BT = NKA_BT + 1
-           NKB_BT = LKB_SM/LEN_KB_BAT
-           IF(NKB_BT*LEN_KB_BAT. LT. LKB_SM) NKB_BT = NKB_BT + 1
+                NCA_BT = LICA_SM/MAXLB
+                IF(NCA_BT*MAXLB.LT.LICA_SM) NCA_BT = NCA_BT + 1
+                NCB_BT = LICB_SM/MAXLB
+                IF(NCB_BT*MAXLB.LT.LICB_SM) NCB_BT = NCB_BT + 1
+                NAA_BT = LIAA_SM/MAXLB
+                IF(NAA_BT*MAXLB.LT.LIAA_SM) NAA_BT = NAA_BT + 1
+                NAB_BT = LIAB_SM/MAXLB
+                IF(NAB_BT*MAXLB.LT.LIAB_SM) NAB_BT = NAB_BT + 1
+C               loop over batches
+                DO IKA_BT = 1, NKA_BT
+                  DO IKB_BT = 1, NKB_BT
+                    IKA_B  = (IKA_BT-1)*LEN_KA_BAT + 1
+                    IKA_E  = MIN(LKA_SM,IKA_B + LEN_KA_BAT - 1)
+                    NKA_B  = IKA_E - IKA_B + 1
+                    NKA_B0 = NKA_B
+                    IKB_B  = (IKB_BT-1)*LEN_KB_BAT + 1
+                    IKB_E  = MIN(LKB_SM,IKB_B +  LEN_KB_BAT - 1)
+                    NKB_B  = IKB_E - IKB_B + 1
+                    NKB_B0 = NKB_B
+C                   loop over annihilation batches
+                    DO IAA_BT = 1, NAA_BT
+                      IAA_B = (IAA_BT-1)*MAXLB + 1
+                      IAA_E = MIN(LIAA_SM,IAA_B + MAXLB -1)
+                      NAA_B = IAA_E-IAA_B+1
+C                     KA => JA mapping
+                      IUB_KJ = 1
+                      print *,'KASM, IAA_SM ==> ',KASM,IAA_SM
+                      CALL K_TO_J_TOT(KJAD,XKJAD,KASM,IKA_B,IKA_E,
+     &                                IAA_STR,NAA_B,IAA_B,IAA_E,
+     &                                I3,XI3S,IB_AA,NJKAINTM,NAA_OP,
+     &                                IZEROKAJA,IUB_KJ)
+                      IF(IZEROKAJA.EQ.0) THEN
+                        DO IAB_BT = 1, NAB_BT
+C                         B(eginning) and E(nd) of each Batch
+                          IAB_B = (IAB_BT-1)*MAXLB + 1
+                          IAB_E = MIN(LIAB_SM,IAB_B + MAXLB -1)
+                          NAB_B = IAB_E-IAB_B+1
+C                         KB => JB mapping
+                          IUB_KJ = 2
+                          CALL K_TO_J_TOT(KJBD,XKJBD,KBSM,IKB_B,IKB_E,
+     &                                    IAB_STR,NAB_B,IAB_B,
+     &                                    IAB_E,I4,XI4S,IB_AB,NJKBINTM,
+     &                                    NAB_OP,IZEROKBJB,IUB_KJ)
+                          IF(IZEROKBJB.EQ.0) THEN
+C                           loop over creation batches 
+                            DO ICA_BT = 1, NCA_BT
+                              ICA_B = (ICA_BT-1)*MAXLB + 1
+                              ICA_E = MIN(LICA_SM,ICA_B + MAXLB -1)
+                              NCA_B = ICA_E-ICA_B+1
+C                             KA => IA mapping
+                              IUB_KJ = 1
+                              CALL K_TO_J_TOT(KIAD,XKIAD,KASM,IKA_B,
+     &                                        IKA_E,ICA_STR,
+     &                                        NCA_B,ICA_B,ICA_E,I1,
+     &                                        XI1S,IB_CA,NIKAINTM,
+     &                                        NCA_OP,IZEROKAIA,IUB_KJ)
+                              IF(IZEROKAIA.eq.0)THEN
+                              DO ICB_BT = 1, NCB_BT
+                                ICB_B = (ICB_BT-1)*MAXLB + 1
+                                ICB_E = MIN(LICB_SM,ICB_B + MAXLB -1)
+                                NCB_B = ICB_E-ICB_B+1
+C                               KB => IB mapping
+                                IUB_KJ = 2
+                                CALL K_TO_J_TOT(KIBD,XKIBD,KBSM,IKB_B,
+     &                                          IKB_E,ICB_STR,
+     &                                          NCB_B,ICB_B,ICB_E,
+     &                                          I2,XI2S,IB_CB,NIKBINTM,
+     &                                          NCB_OP,IZEROKBIB,IUB_KJ)
+                                IF(IZEROKBIB.eq.0)THEN
+C                                 Compress Ka and Kb strings to active subset 
+C                                 Ka
+                                  CALL COMPRS2LST_B(KIAD,XKIAD,NCA_B,
+     &                                              KJAD,XKJAD,NAA_B,
+     &                                              NKA_B0,NKA_B,KIA,
+     &                                              XKIA,KJA,XKJA)
+C                                 Kb
+                                  CALL COMPRS2LST_B(KIBD,XKIBD,NCB_B,
+     &                                              KJBD,XKJBD,NAB_B,
+     &                                              NKB_B0,NKB_B,KIB,
+     &                                              XKIB,KJB,XKJB)
+                                  IM_ACTIVE = 1
+C                                 offset and form of T-coefficients
+                                  ITOFF = 
+     &                              IB_T(ICA_SM,ICB_SM,INVELM(IAA_SM))
+C                                 WRITE(LUWRT,*) 
+!    &                          ' output of IB_T for current block',ITOFF
+                                  IDIAG = 0
+                                  IF(ITOFF.LT.0) THEN
+                                    ITOFF = -ITOFF
+                                    ITRNSP = 1
+                                  ELSE
+                                    ITRNSP = 0
+                                  END IF
 C
-           NCA_BT = LICA_SM/MAXLB
-           IF(NCA_BT*MAXLB.LT.LICA_SM) NCA_BT = NCA_BT + 1
-           NCB_BT = LICB_SM/MAXLB
-           IF(NCB_BT*MAXLB.LT.LICB_SM) NCB_BT = NCB_BT + 1
-           NAA_BT = LIAA_SM/MAXLB
-           IF(NAA_BT*MAXLB.LT.LIAA_SM) NAA_BT = NAA_BT + 1
-           NAB_BT = LIAB_SM/MAXLB
-           IF(NAB_BT*MAXLB.LT.LIAB_SM) NAB_BT = NAB_BT + 1
-C          loop over batches
-           DO IKA_BT = 1, NKA_BT
-           DO IKB_BT = 1, NKB_BT
-            IKA_B = (IKA_BT-1)*LEN_KA_BAT + 1
-            IKA_E = MIN(LKA_SM,IKA_B + LEN_KA_BAT - 1)
-            NKA_B = IKA_E - IKA_B + 1
-            NKA_B0 = NKA_B
-            IKB_B = (IKB_BT-1)*LEN_KB_BAT + 1
-            IKB_E = MIN(LKB_SM,IKB_B +  LEN_KB_BAT - 1)
-            NKB_B = IKB_E - IKB_B + 1
-            NKB_B0 = NKB_B
-C           loop over annihilation batches
-            DO IAA_BT = 1, NAA_BT
-             IAA_B = (IAA_BT-1)*MAXLB + 1
-             IAA_E = MIN(LIAA_SM,IAA_B + MAXLB -1)
-             NAA_B = IAA_E-IAA_B+1
-C            KA => JA mapping
-             IUB_KJ = 1
-             CALL K_TO_J_TOT(KJAD,XKJAD,KASM,IKA_B,IKA_E,
-     &                       IAA_STR,IAA_SM,NAA_B,IAA_B,IAA_E,
-     &                       I3,XI3S,IB_AA,NJKAINTM,NAA_OP,IZEROKAJA,
-     &                       IUB_KJ)
-            IF(IZEROKAJA.EQ.0) THEN
-            DO IAB_BT = 1, NAB_BT
-C            B(eginning) and E(nd) of each Batch
-             IAB_B = (IAB_BT-1)*MAXLB + 1
-             IAB_E = MIN(LIAB_SM,IAB_B + MAXLB -1)
-             NAB_B = IAB_E-IAB_B+1
-C            KB => JB mapping
-             IUB_KJ = 2
-             CALL K_TO_J_TOT(KJBD,XKJBD,KBSM,IKB_B,IKB_E,
-     &                       IAB_STR,IAB_SM,NAB_B,IAB_B,IAB_E,
-     &                       I4,XI4S,IB_AB,NJKBINTM,NAB_OP,IZEROKBJB,
-     &                       IUB_KJ)
-            IF(IZEROKBJB.EQ.0) THEN
-C           loop over creation batches 
-            DO ICA_BT = 1, NCA_BT
-             ICA_B = (ICA_BT-1)*MAXLB + 1
-             ICA_E = MIN(LICA_SM,ICA_B + MAXLB -1)
-             NCA_B = ICA_E-ICA_B+1
-C            KA => IA mapping
-             IUB_KJ = 1
-             CALL K_TO_J_TOT(KIAD,XKIAD,KASM,IKA_B,IKA_E,
-     &                       ICA_STR,ICA_SM,NCA_B,ICA_B,ICA_E,
-     &                       I1,XI1S,IB_CA,NIKAINTM,NCA_OP,IZEROKAIA,
-     &                       IUB_KJ)
-            DO ICB_BT = 1, NCB_BT
-             ICB_B = (ICB_BT-1)*MAXLB + 1
-             ICB_E = MIN(LICB_SM,ICB_B + MAXLB -1)
-             NCB_B = ICB_E-ICB_B+1
-C            KB => IB mapping
-             IUB_KJ = 2
-             CALL K_TO_J_TOT(KIBD,XKIBD,KBSM,IKB_B,IKB_E,
-     &                       ICB_STR,ICB_SM,NCB_B,ICB_B,ICB_E,
-     &                       I2,XI2S,IB_CB,NIKBINTM,NCB_OP,IZEROKBIB,
-     &                       IUB_KJ)
-             IF(IZEROKBJB.EQ.0.AND.IZEROKAJA.EQ.0.AND.
-     &          IZEROKBIB.EQ.0.AND.IZEROKAIA.EQ.0     ) THEN
-C            Compress Ka and Kb strings to active subset 
-C            COMPRS2LST(I1,XI1,N1,I2,XI2,N2,NKIN,NKOUT)
-C            Ka
-             CALL COMPRS2LST_B(KIAD,XKIAD,NCA_B,KJAD,XKJAD,NAA_B,
-     &                         NKA_B0,NKA_B,KIA,XKIA,KJA,XKJA)
-C            Kb
-             CALL COMPRS2LST_B(KIBD,XKIBD,NCB_B,KJBD,XKJBD,NAB_B,
-     &                         NKB_B0,NKB_B,KIB,XKIB,KJB,XKJB)
-             IM_ACTIVE = 1
-C            offset and form of T-coefficients
-             ITOFF = IB_T(ICA_SM,ICB_SM,INVELM(IAA_SM))
-C            WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
-             IF(ITOFF.LT.0) THEN
-               ITOFF = -ITOFF
-               ITRNSP = 1
-             ELSE
-               ITRNSP = 0
-             END IF
-             IF(ITDIAG.EQ.1.AND.ICA_SM.EQ.ICB_SM.AND.
-     &          IAA_SM.EQ.IAB_SM) THEN
-                IDIAG = 1
-             ELSE
-                IDIAG = 0
-             END IF
-C
-             IF(ISD.EQ.1) THEN
-               if ((IRIS.eq.1.and.IRIC.eq.2).or.
-     &             (IRIS.eq.2.and.IRIC.eq.1)) then
-                 if( SPLIT_IJKL )then
-                   ITOFF = ITOFF + LEN_T_BUFF
-                 end if
-               end if
-               CALL TCC_SUBBLK(TB(ITOFF),T_BUFF(ITOFF),T_SCR_CC(ITOFF),
-     &                         TBSUB,1,
-     &                         LICA_SM,NCA_B,ICA_B,LICB_SM,NCB_B,ICB_B,
-     &                         LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
-     &                         ITRNSP,IDIAG,NTEST)
-C             WRITE(LUWRT,*) ' TBSUB for IRIC and IRIS',IRIC,IRIS
-C             CALL WRTMATMN(TBSUB,1,NCA_B*NCB_B*NAA_B*NAB_B,1,
-C    &                      NCA_B*NCB_B*NAA_B*NAB_B,LUWRT)
-             ELSE
-C             zero density subblock
-              CALL DZERO(TBSUB,NCA_B*NCB_B*NAA_B*NAB_B)
-             END IF
+                                  IF(ISD.EQ.1) THEN
+                                    if ((IRIS.eq.1.and.IRIC.eq.2).or.
+     &                                  (IRIS.eq.2.and.IRIC.eq.1)) then
+                                      if( SPLIT_IJKL )then
+                                        ITOFF = ITOFF + LEN_T_BUFF
+                                      end if
+                                    end if
+                                    CALL TCC_SUBBLK(TB(ITOFF),
+     &                                              T_BUFF(ITOFF),
+     &                                              T_SCR_CC(ITOFF),
+     &                                              TBSUB,1,LICA_SM,
+     &                                              NCA_B,ICA_B,
+     &                                              LICB_SM,NCB_B,ICB_B,
+     &                                              LIAA_SM,NAA_B,IAA_B,
+     &                                              LIAB_SM,NAB_B,IAB_B,
+     &                                              ITRNSP,IDIAG,NTEST)
+                                  ELSE
+C                                   zero density subblock
+                                    CALL DZERO(TBSUB,
+     &                                         NCA_B*NCB_B*NAA_B*NAB_B)
+                                  END IF
 C  
-C            C(Ka,Kb,Iaa,Iab) = sum(Ja,Jb) <Ka!Iaa!Ja><Kb!Iab!Jb> C(Ja,Jb)
-C            -------------------------------------------------------------
-             CALL C_TO_CKK(CB(ICBOFF),CJRES,1,
-     &                     NJA(JASM),NJB(JBSM),
-     &                     NKA_B,NKB_B,NAA_B,NAB_B,
-     &                     KJA,XKJA,KJB,XKJB)
+C                                 C(Ka,Kb,Iaa,Iab) = sum(Ja,Jb) <Ka!Iaa!Ja><Kb!Iab!Jb> C(Ja,Jb)
+C                                 -------------------------------------------------------------
+                                  CALL C_TO_CKK(CB(ICBOFF),CJRES,1,
+     &                                          NJA(JASM),NJB(JBSM),
+     &                                          NKA_B,NKB_B,NAA_B,NAB_B,
+     &                                          KJA,XKJA,KJB,XKJB)
 C
-             IF(ISD.EQ.2) THEN
-               CALL C_TO_CKK(SB(ISBOFF),SIRES,1,
-     &                       NIA(IASM),NIB(IBSM),
-     &                       NKA_B,NKB_B,NCA_B,NCB_B,
-     &                       KIA,XKIA,KIB,XKIB)
-             END IF
+                                  IF(ISD.EQ.2) THEN
+                                    CALL C_TO_CKK(SB(ISBOFF),SIRES,1,
+     &                                            NIA(IASM),NIB(IBSM),
+     &                                            NKA_B,NKB_B,NCA_B,
+     &                                            NCB_B,KIA,XKIA,KIB,
+     &                                            XKIB)
+                                  END IF
+           print '(a,6i3)', 
+     &     ' calc sigma ==> IASM, IBSM, JASM, JBSM, KASM, KBSM', 
+     &                      IASM, IBSM, JASM, JBSM, KASM, KBSM
 C
-C            ISD == 1:
-C            SIRES(Ka,Kb,Ica,Icb) = CJRES(Ka,Kb,Iaa,Iab)*T(Ica,Icb,Iaa,Iab)
-C            ----------------------------------------------------------------
-C            ISD == 2:
-C            T(Ica,Icb,Iaa,Iab)   = SIRES(Ka,Kb,Ica,Icb)*CJRES(Ka,Kb,Ica,Icb)
-C            ----------------------------------------------------------------
-             LKAB = NKA_B*NKB_B
-             LCAB = NCA_B*NCB_B 
-             LAAB = NAA_B*NAB_B
-             FACTORC = 0.0D0
-             FACTORAB = 1.0D0*SIGNXXX
-C            statistics
-             XNCALL = XNCALL + 1
-             T_INI = Second()
-C
-#if defined (VAR_MPI2)
-             xxxsitime = MPI_WTIME()
-#endif
-             IF(ISD.EQ.1) THEN
-C
-C              call DGEMM - statistics
-               XLCROW = XLCROW + LKAB
-               XLCCOL = XLCCOL + LCAB
-               XLCROWCOL = XLCROWCOL + LKAB*LCAB
-               XNFLOP = XNFLOP + 2*LKAB*LCAB*LAAB
-C              input
-               LDA = MAX(1,LKAB)
-               LDB = MAX(1,LCAB)
-C              output
-               LDC = MAX(1,LKAB)
-C
-               CALL DGEMM('N','T',LKAB,LCAB,LAAB,FACTORAB,CJRES,LDA,
-     &                    TBSUB,LDB,FACTORC,SIRES,LDC)
-             ELSE
-C
-C              call DGEMM - statistics
-               XLCROW = XLCROW + LCAB
-               XLCCOL = XLCCOL + LAAB
-               XLCROWCOL = XLCROWCOL + LCAB*LAAB
-               XNFLOP = XNFLOP + 2*LCAB*LAAB*LKAB
-C              input
-               LDA = MAX(1,LKAB)
-               LDB = MAX(1,LKAB)
-C              output
-               LDC = MAX(1,LCAB)
-C
-               CALL DGEMM('T','N',LCAB,LAAB,LKAB,FACTORAB,SIRES,LDA,
-     &                    CJRES,LDB,FACTORC,TBSUB,LDC)
-C
-             END IF
-C
-             T_END = Second()
-             TMULT = TMULT + T_END - T_INI
+C                                 ISD == 1:
+C                                 SIRES(Ka,Kb,Ica,Icb) = CJRES(Ka,Kb,Iaa,Iab)*T(Ica,Icb,Iaa,Iab)
+C                               ----------------------------------------------------------------
+C                                 ISD == 2:
+C                                 T(Ica,Icb,Iaa,Iab)   = SIRES(Ka,Kb,Ica,Icb)*CJRES(Ka,Kb,Ica,Icb)
+C                                 ----------------------------------------------------------------
+                                  LKAB = NKA_B*NKB_B
+                                  LCAB = NCA_B*NCB_B 
+                                  LAAB = NAA_B*NAB_B
+                                  FACTORC = 0.0D0
+                                  FACTORAB = 1.0D0*SIGNXXX
+C                                 statistics
+                                  XNCALL = XNCALL + 1
+                                  T_INI = Second()
 C
 #if defined (VAR_MPI2)
-             xcomputesi = xcomputesi - xxxsitime + MPI_WTIME()
+                                  xxxsitime = MPI_WTIME()
 #endif
-C            ISD == 1:
-C            S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
-C            ----------------------------------------------------------------
-C            ISD == 2:
-C            just scatter out to complete density block
-C            ----------------------------------------------------------------
-             IF(ISD.EQ.1) THEN
-               CALL C_TO_CKK(SB(ISBOFF),SIRES,
-     &                       2,NIA(IASM),NIB(IBSM),
-     &                       NKA_B,NKB_B,NCA_B,NCB_B,
-     &                       KIA,XKIA,KIB,XKIB)
-             ELSE IF(ITRNSP.EQ.0) THEN
-               if ((IRIS.eq.1.and.IRIC.eq.2).or.
-     &             (IRIS.eq.2.and.IRIC.eq.1)) then
-                 if( SPLIT_IJKL )then
-                   ITOFF = ITOFF + LEN_T_BUFF
-                 end if
-               end if
-               CALL TCC_SUBBLK(TB(ITOFF),T_BUFF(ITOFF),T_SCR_CC(ITOFF),
-     &                         TBSUB,2,
-     &                         LICA_SM,NCA_B,ICA_B,LICB_SM,NCB_B,ICB_B,
-     &                         LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
-     &                         ITRNSP,IDIAG,NTEST)
-             END IF
-            END IF
-*           ^ End if all maps are nonvanishings
-            END DO
-            END DO
-*           ^ End of loop over batches of creation   operators
-            END IF
-*           ^ End if batch of beta annihilation was nontrivial
-            END DO
-            END IF
-*           ^ End if batch of alpha annihilation was nontrivial
-            END DO
-*           ^ End of loop over batches of annihilation operators
-           END DO
-           END DO
-*          ^ End of loop over batches of Ka,Kb
-           END IF
-*          ^ End if symmetry combinations have nonvanishing dimensions
-         END DO
-         END DO
-*        ^ End of loop over KASM, KBSM
-#if defined (VAR_MPI2)
- 2002  CONTINUE
-*      ^ skip c-block not included in active-block-list; only in parallel
-*        calculations
-       I_BLK_C_SCR = I_BLK_C_SCR + 1
-#endif
-        END DO
-*       ^ End of loop over JASM
-#if defined (VAR_MPI2)
- 3003  CONTINUE
-*      ^ skip s-block not included in node-list; only in parallel
-*        calculations
-       I_BLK_S_SCR = I_BLK_S_SCR + 1
-#endif
-       END DO
-*      ^ End of loop over IASM
-      END IF
-*     ^ End if Ka and Kb are nontrivial strings
+                                  IF(ISD.EQ.1) THEN
 C
-C     debug print section
+C                                   call DGEMM - statistics
+                                    XLCROW = XLCROW + LKAB
+                                    XLCCOL = XLCCOL + LCAB
+                                    XLCROWCOL = XLCROWCOL + LKAB*LCAB
+                                    XNFLOP = XNFLOP + 2*LKAB*LCAB*LAAB
+C                                   input
+                                    LDA = MAX(1,LKAB)
+                                    LDB = MAX(1,LCAB)
+C                                   output
+                                    LDC = MAX(1,LKAB)
 C
-CSK   IF(NTEST.GE.300) THEN 
-C       IF(ISD.EQ.1) THEN
-CSK       WRITE(LUWRT,*) ' Updated sigma block '
+                                    CALL DGEMM('N','T',LKAB,LCAB,LAAB,
+     &                                         FACTORAB,CJRES,LDA,TBSUB,
+     &                                         LDB,FACTORC,SIRES,LDC)
+                                  ELSE
+C
+C                                   call DGEMM - statistics
+                                    XLCROW = XLCROW + LCAB
+                                    XLCCOL = XLCCOL + LAAB
+                                    XLCROWCOL = XLCROWCOL + LCAB*LAAB
+                                    XNFLOP = XNFLOP + 2*LCAB*LAAB*LKAB
+C                                   input
+                                    LDA = MAX(1,LKAB)
+                                    LDB = MAX(1,LKAB)
+C                                   output
+                                    LDC = MAX(1,LCAB)
+C
+                                    CALL DGEMM('T','N',LCAB,LAAB,LKAB,
+     &                                         FACTORAB,SIRES,LDA,CJRES,
+     &                                         LDB,FACTORC,TBSUB,LDC)
+C
+                                  END IF
+C
+                                  T_END = Second()
+                                  TMULT = TMULT + T_END - T_INI
+C
 #if defined (VAR_MPI2)
-CSK       CALL WRTVH1_PAR(SB,ISSM,NIA,NIB,NSMST,0,IACT_S,IOFF_BLK_S,1)
-#else
-CSK       CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
+                                  xcomputesi = xcomputesi - xxxsitime 
+     &                                       + MPI_WTIME()
 #endif
-C       ELSE IF (ISD.EQ.2) THEN
-C         WRITE(LUWRT,*) ' Updated density block '
-C         CALL WRT_TCC_BLK(TB,1,NICA,NICB,NIAA,NIAB,NSMST)
-C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
-C       END IF
-CSK   END IF
-      NTEST = 000
+C                                 ISD == 1:
+C                                 S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
+C                                 ----------------------------------------------------------------
+C                                 ISD == 2:
+C                                 just scatter out to complete density block
+C                                 ----------------------------------------------------------------
+                                  IF(ISD.EQ.1) THEN
+                                    CALL C_TO_CKK(SB(ISBOFF),SIRES,
+     &                                            2,NIA(IASM),NIB(IBSM),
+     &                                            NKA_B,NKB_B,NCA_B,
+     &                                            NCB_B,KIA,XKIA,KIB,
+     &                                            XKIB)
+                                  ELSE IF(ITRNSP.EQ.0) THEN
+                                    if ((IRIS.eq.1.and.IRIC.eq.2).or.
+     &                                  (IRIS.eq.2.and.IRIC.eq.1)) then
+                                      if( SPLIT_IJKL )then
+                                        ITOFF = ITOFF + LEN_T_BUFF
+                                      end if
+                                    end if
+                                    CALL TCC_SUBBLK(TB(ITOFF),
+     &                                              T_BUFF(ITOFF),
+     &                                              T_SCR_CC(ITOFF),
+     &                                              TBSUB,2,
+     &                                              LICA_SM,NCA_B,ICA_B,
+     &                                              LICB_SM,NCB_B,ICB_B,
+     &                                              LIAA_SM,NAA_B,IAA_B,
+     &                                              LIAB_SM,NAB_B,IAB_B,
+     &                                              ITRNSP,IDIAG,NTEST)
+                                  END IF
+                                END IF ! if all maps are nonvanishings
+                              END DO
+                              END IF ! IZEROKAIA
+                            END DO ! loop over batches of creation   operators
+                          END IF ! if batch of beta annihilation was nontrivial
+                        END DO
+                      END IF ! if batch of alpha annihilation was nontrivial
+                    END DO ! loop over batches of annihilation operators
+                  END DO
+                END DO ! loop over batches of Ka,Kb
+              END IF ! if symmetry combinations have nonvanishing dimensions
+            END DO ! loop over KBSM
+  100     CONTINUE ! loop over KASM
+#if defined (VAR_MPI2)
+ 2002     CONTINUE ! skip c-block not included in active-block-list (parallel run)
+          I_BLK_C_SCR = I_BLK_C_SCR + 1
+#endif
+        END DO ! loop over JASM
+#if defined (VAR_MPI2)
+ 3003   CONTINUE ! skip s-block not included in node-list (parallel run)
+        I_BLK_S_SCR = I_BLK_S_SCR + 1
+#endif
+       END DO ! loop over IASM
+      END IF ! if Ka and Kb are nontrivial strings
+C
  9999 RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
+      SUBROUTINE GNSIDE_REL_opt(ISD,IRIS,IRIC,ICA,ICB,IAA,IAB,
+     &           IAOC,IBOC,JAOC,JBOC,
+     &           NIA,NIB,NJA,NJB,
+     &           TB,T_BUFF,T_SCR_CC,IXTP,
+     &           SB,CB,ISSM,ICSM,
+     &           I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &           TBSUB,CJRES,SIRES,MAXLB,
+     &           ICA_STR,ICB_STR,IAA_STR,IAB_STR,
+     &           KJA,XKJA,KJB,XKJB,KIA,XKIA,KIB,XKIB,
+     &           KJAD,XKJAD,KJBD,XKJBD,KIAD,XKIAD,KIBD,XKIBD,
+     &           SIGN_EXTERNAL,IPRS,IPRD,ISMDST,
+     &           NICA,NICB,NIAA,NIAB,NKA,NKB,
+     &           IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &           NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM
+#if defined (VAR_MPI2)
+     &          ,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S
+#endif
+     &           )
+
+*
+* Sigma routine and density routine for general operator 
+*
+* sum(Ica,Icb,Iaa,Iab) T(Ica,Icb,Iaa,Iab) Ica+ Icb+ Iaa Iab
+*
+* contribution from C vector with occupation JAOC,IBOC
+* to Sigma vector with occupation IAOC, IBOC
+*
+* All symmetryblocks of C and Sigma are treated 
+*
+* SIGN_EXTERNAL : A sign multiplying all contributions
+*                 ( And he said : Mighty Lord, Give me a sign)
+*
+* ======
+* Output
+* ======
+* SB : updated sigma block
+*
+* =======
+* Scratch
+* =======
+*
+*
+* Jeppe Olsen, August 1999    
+* Timo Fleig, June 2001, modified for relativistic case
+*             cont´d, 11th of July, Mallorca, around noon (I´m crazy)
+*                     15th of July
+*                     August 2001
+*                     August 2003, ISMDST 
+*
+*
+      use mospinor_info
+      use symmetry_setup_krci
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+#endif
+*. General input
+#include "mxpdim.inc"
+#include "gasstr.inc"
+#include "cgas.inc"
+#include "ctcc.inc"
+#include "parluci.h"
+#include "krmc_shmem.h"
+*     
+*.Input
+      DIMENSION CB(*)
+      INTEGER NIA(*),NIB(*),NJA(*),NJB(*)
+      INTEGER IAOC(*),IBOC(*),JAOC(*),JBOC(*)
+      INTEGER ICA(*),ICB(*),IAA(*),IAB(*)
+#if defined (VAR_MPI2)
+      INTEGER IACT_C(*), IACT_S(*)
+#endif
+*.Input or Output
+      DIMENSION SB(*)
+      dimension TB(*), T_BUFF(*)
+*.Local Scratch
+      INTEGER KAOC(MXPNGAS), KBOC(MXPNGAS)
+      integer KAGP(MXPNGAS), KBGP(MXPNGAS)
+      integer JAGP(MXPNGAS), JBGP(MXPNGAS)
+      INTEGER ICAGP(MXPNGAS),ICBGP(MXPNGAS)
+      INTEGER IAAGP(MXPNGAS),IABGP(MXPNGAS)
+
+*. 
+      INTEGER ICA_EXP(MXNOP),ICB_EXP(MXNOP)
+      INTEGER IAA_EXP(MXNOP),IAB_EXP(MXNOP)
+
+      INTEGER IB_C(MXNDGIRR),IB_S(MXNDGIRR)
+*. Scratch through input 
+      DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
+      DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
+      DIMENSION TBSUB(*), T_SCR_CC(*)
+      DIMENSION ISMDST(*)
+      INTEGER    KJA(MAXLB), KJB(MAXLB), KIA(MAXLB), KIB(MAXLB)
+      DIMENSION XKJA(MAXLB),XKJB(MAXLB),XKIA(MAXLB),XKIB(MAXLB)
+      INTEGER    KJAD(MAXLB), KJBD(MAXLB), KIAD(MAXLB), KIBD(MAXLB)
+      DIMENSION XKJAD(MAXLB),XKJBD(MAXLB),XKIAD(MAXLB),XKIBD(MAXLB)
+
+      INTEGER NICA(MXNDGIRR),NICB(MXNDGIRR)
+      INTEGER NIAA(MXNDGIRR),NIAB(MXNDGIRR)
+      INTEGER NKA(MXNDGIRR), NKB(MXNDGIRR)
+
+      INTEGER IB_CA(MXNDGIRR,MXNDGIRR,MXNOP) 
+      INTEGER IB_CB(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_AA(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_AB(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_T(MXNDGIRR,MXNDGIRR,MXNDGIRR)
+      INTEGER NIKAINTM(MXPOBS,MXNOP),NIKBINTM(MXPOBS,MXNOP)
+      INTEGER NJKAINTM(MXPOBS,MXNOP),NJKBINTM(MXPOBS,MXNOP)
+*. ... Must hold excitations for all intermediate strings of given sym 
+*. and all orbitals of given type
+      INTEGER ICA_STR(*),ICB_STR(*),IAA_STR(*),IAB_STR(*)
+*     ... Must hold strings of given sym for T ops.
+      DIMENSION CJRES(*),SIRES(*)
+*
+      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
+      COMMON/CMXCJ/MXCJ
+      INTEGER*8 ITOFF
+*
+!     NTESTL = 5000 ! debug
+      NTESTL = 0000 
+!#define LUCI_DEBUG
+      NTEST = MAX(NTESTL,max(IPRS,IPRD))
+*
+      ISKIP = 0
+#if defined (VAR_MPI2)
+      LEN_C = LEN_TT_BLOCK_PAR(ICSM,NJA,NJB,IACT_C,IOFF_BLK_C,0)
+#else
+      LEN_C = LEN_TT_BLOCK(ICSM,NJA,NJB)
+#endif
+!     print *,'C (input) ==> LEN_C',LEN_C
+!     call wrtmat(CB,1,LEN_C,1,LEN_C)
+C     check norm
+      XCNORM = DDOT(LEN_C,CB,1,CB,1)
+      IF(XCNORM.EQ.0.0d0) GOTO 9999
+*
+C
+C     symmetry of operator (Hamiltonian)
+C     ----------------------------------
+      IOPSM = IDBGMULT(INVELM(ICSM),ISSM)
+!
+!     print '(a,i4)', ' symmetry of Hamiltonian ==>',IOPSM
+!     print '(a,i4)', ' symmetry of c-vector    ==>',ICSM
+!     print '(a,i4)', ' symmetry of s-vector    ==>',ISSM
+!
+C
+C     total length of sigma block
+#if defined (VAR_MPI2)
+      LEN_S = LEN_TT_BLOCK_PAR(ISSM,NIA,NIB,IACT_S,IOFF_BLK_S,1)
+#else
+      LEN_S = LEN_TT_BLOCK(ISSM,NIA,NIB)
+#endif
+!     print *,'LEN_S is',LEN_S
+      if(LEN_S.eq.0) goto 9999
+      IF(ISD.EQ.2)THEN ! check S norm (only density runs)
+        XSNORM = DDOT(LEN_S,SB,1,SB,1)
+        IF(XSNORM.EQ.0.0D0) GOTO 9999
+      END IF
+#if defined (VAR_MPI2)
+C
+C     vector partitioning has been changed! we have to be careful
+C     calculating the proper offset for each block ( sigma and c )!!!
+C
+C     adapted offset of c and sigma routines
+      CALL IOFF_SYMBLK_MAT_PAR(NSMST,NJA,NJB,ICSM,IB_C,
+     &                         IACT_C,IOFF_BLK_C,0)
+      CALL IOFF_SYMBLK_MAT_PAR(NSMST,NIA,NIB,ISSM,IB_S,
+     &                         IACT_S,IOFF_BLK_S,1)
+C
+#else
+C     offset of c and sigma routines
+      CALL IOFF_SYMBLK_MAT(NSMST,NJA,NJB,ICSM,IB_C)
+      CALL IOFF_SYMBLK_MAT(NSMST,NIA,NIB,ISSM,IB_S)
+#endif
+C     types of strings in T in groupnotation
+      CALL OCC_TO_GRP(ICA,ICAGP,1)
+      CALL OCC_TO_GRP(ICB,ICBGP,1)
+      CALL OCC_TO_GRP(IAA,IAAGP,1)
+      CALL OCC_TO_GRP(IAB,IABGP,1)
+#ifdef LUCI_DEBUG
+      write(6,*) ' GNSID... Output from OCC_TO_GRP : '
+      write(6,*) ' ICA_GRP : ',(ICAGP(I),I=1,NGAS,1)
+      write(6,*) ' ICB_GRP : ',(ICBGP(I),I=1,NGAS,1)
+      write(6,*) ' IAA_GRP : ',(IAAGP(I),I=1,NGAS,1)
+      write(6,*) ' IAB_GRP : ',(IABGP(I),I=1,NGAS,1)
+#endif
+C     operators in T in expanded form
+      CALL REF_OP(ICA,ICA_EXP,NCA_OP,NGAS,1,MXNOP)
+      CALL REF_OP(ICB,ICB_EXP,NCB_OP,NGAS,1,MXNOP)
+      CALL REF_OP(IAA,IAA_EXP,NAA_OP,NGAS,1,MXNOP)
+      CALL REF_OP(IAB,IAB_EXP,NAB_OP,NGAS,1,MXNOP)
+C          REF_OP(IOPGAS,IOP,NOP,NGAS,IWAY)
+C     sign for bringing operators and amplitudes into new order
+      NPERM =  NAA_OP* NCB_OP 
+     &       + NAA_OP*(NAA_OP-1)/2
+     &       + NAB_OP*(NAB_OP-1)/2
+      IF(MOD(NPERM,2).EQ.1) THEN
+        SIGNXXX  =  -1.0D0*SIGN_EXTERNAL
+!       WRITE(LUWRT,*) ' new SIGNXXX for type IXTP =',IXTP
+      ELSE
+!       WRITE(LUWRT,*) ' old SIGNXXX for type IXTP =',IXTP
+        SIGNXXX = SIGN_EXTERNAL
+      END IF
+
+C     type of Ka and Kb
+      CALL CCEX_OCC_OCC(JAOC,KAOC,NGAS,IAA,IKA_ZERO)
+      CALL CCEX_OCC_OCC(JBOC,KBOC,NGAS,IAB,IKB_ZERO)
+
+C     check that annihilation has not acted upon empty GAS:
+      IF(IKA_ZERO.EQ.0.AND.IKB_ZERO.EQ.0) THEN
+C       get group of K mapped occupations
+        call occ_to_grp(KAOC,KAGP,1)
+        call occ_to_grp(KBOC,KBGP,1)
+C       number of strings in this supergroup (new DBG routine)
+!       NEL_KA = IELSUM(KAOC,NGAS)
+!       NEL_KB = IELSUM(KBOC,NGAS)
+        do KSM = 1, NSMST
+          call nst_spgrp_dbg(NGAS,KAGP,KSM,NSMST,NKA(KSM),NKADST,1)
+!         call getstr2_totsm_spgp_rel(1,KAGP,NGAS,KSM,NEL_KA,
+!    &                                NKA(KSM),NKADST)
+          call nst_spgrp_dbg(NGAS,KBGP,KSM,NSMST,NKB(KSM),NKBDST,2)
+!         call getstr2_totsm_spgp_rel(2,KBGP,NGAS,KSM,NEL_KB,
+!    &                                NKB(KSM),NKBDST)
+        end do
+!       NEL_CA = IELSUM(ICA,NGAS)
+!       NEL_CB = IELSUM(ICB,NGAS)
+!       NEL_AA = IELSUM(IAA,NGAS)
+!       NEL_AB = IELSUM(IAB,NGAS)
+C       number of strings in excitation ops
+        do ISYM = 1, NSMST
+
+!         call getstr2_totsm_spgp_rel(1,ICAGP,NGAS,ISYM,NEL_CA,
+!    &                                NICA(ISYM),NCADST)
+!         call getstr2_totsm_spgp_rel(2,ICBGP,NGAS,ISYM,NEL_CB,
+!    &                                NICB(ISYM),NCBDST)
+!         call getstr2_totsm_spgp_rel(1,IAAGP,NGAS,ISYM,NEL_AA,
+!    &                                NIAA(ISYM),NAADST)
+!         call getstr2_totsm_spgp_rel(2,IABGP,NGAS,ISYM,NEL_AB,
+!    &                                NIAB(ISYM),NABDST)
+          call nst_spgrp_dbg(NGAS,ICAGP,ISYM,NSMST,NICA(ISYM),NCADST,1)
+          call nst_spgrp_dbg(NGAS,ICBGP,ISYM,NSMST,NICB(ISYM),NCBDST,2)
+          call nst_spgrp_dbg(NGAS,IAAGP,ISYM,NSMST,NIAA(ISYM),NAADST,1)
+          call nst_spgrp_dbg(NGAS,IABGP,ISYM,NSMST,NIAB(ISYM),NABDST,2)
+        end do
+C       offset for symmetryblocks of T
+        CALL Z_TCC_OFF_opt(IB_T,NICA,NICB,NIAA,NIAB,IOPSM)
+C            Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM)
+C       creation path from C/S strings to K strings
+C       mappings from !I> to !K> are annihilations mappings 
+
+C       CA : KA => IA mappings in 1
+C            MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,ISMDST,IAB)
+        IAB_MAP = 1
+        CALL MAP_EXSTR(ICA_EXP,NCA_OP,IAOC,I1,XI1S,
+     &                 NIKAINTM,IB_CA,ISMDST,IAB_MAP)
+C       CB : KB => IB     
+        IAB_MAP = 2
+        CALL MAP_EXSTR(ICB_EXP,NCB_OP,IBOC,I2,XI2S,
+     &                 NIKBINTM,IB_CB,ISMDST,IAB_MAP)
+C       AA : KA => JA
+        IAB_MAP = 1
+        CALL MAP_EXSTR(IAA_EXP,NAA_OP,JAOC,I3,XI3S,
+     &                 NJKAINTM,IB_AA,ISMDST,IAB_MAP)
+C       AB : KB => JB
+        IAB_MAP = 2
+        CALL MAP_EXSTR(IAB_EXP,NAB_OP,JBOC,I4,XI4S,
+     &                 NJKBINTM,IB_AB,ISMDST,IAB_MAP)
+C       loop over symmetry-blocks of C and Sigma
+#if defined (VAR_MPI2)
+C       initialize offsets for sigma-block loop
+        I_BLK_S_SCR = 0
+        I_BLK_S_SCR = IOFF_BLK_S
+#endif
+!
+!      sigma-vector loop
+       DO IASM = 1, NSMST
+C        parallel calculation: - sigma-blocks distributed
+C                              - check of 'active' c-blocks enabled
+#if defined (VAR_MPI2)
+         IF( IACT_S( I_BLK_S_SCR ) .ne. MYPROC ) GOTO 3003
+#endif
+         IBSM = IDBGMULT(ISSM,INVELM(IASM))
+!        print *,'IASM, IBSM ==> ',IASM,IBSM,NIA(IASM)*NIB(IBSM)
+         if(NIA(IASM)*NIB(IBSM).eq.0) goto 3003
+#if defined (VAR_MPI2)
+C
+C        reset offset for c-block loop
+         I_BLK_C_SCR = 0
+         I_BLK_C_SCR = IOFF_BLK_C
+#endif
+!        c-vector loop
+         DO JASM = 1, NSMST
+#if defined (VAR_MPI2)
+           IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
+#endif
+           JBSM = IDBGMULT(ICSM,INVELM(JASM))
+!          print *,'JASM, JBSM ==> ',JASM,JBSM,NJA(JASM)*NJB(JBSM)
+           if(NJA(JASM)*NJB(JBSM).eq.0) goto 2002
+
+           DO 100 KASM = 1, NSMST
+C            IAA_SM is symmetry of ANNIHILATOR string
+             IAA_SM  = IDBGMULT(KASM,INVELM(JASM))
+             ICA_SM  = IDBGMULT(IASM,INVELM(KASM))
+C            to obtain the number of annnihilator strings of a given sym
+C            we find the number of creator strings of conjugated symmetry
+             LIAA_SM = NIAA(INVELM(IAA_SM))
+             LICA_SM = NICA(ICA_SM)
+             LKA_SM  = NKA(KASM)
+             if(LIAA_SM*LICA_SM*LKA_SM.le.0) goto 100
+!             print *, ' alpha nonzero'
+C
+             DO KBSM = 1, NSMST
+C
+              IAB_SM = IDBGMULT(KBSM,INVELM(JBSM))
+              ICB_SM = IDBGMULT(IBSM,INVELM(KBSM))
+C
+              LIAB_SM = NIAB(INVELM(IAB_SM))
+              LICB_SM = NICB(ICB_SM)
+              LKB_SM  = NKB(KBSM)
+C
+              if(LIAB_SM*LICB_SM*LKB_SM.gt.0)then
+
+                ICBOFF = IB_C(JASM)
+                ISBOFF = IB_S(IASM)
+!               print *, ' beta nonzero'
+C
+C               the operator strings of ICA, ICB, IAA, IAB 
+                IUB = 1
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,ICAGP,NGAS,ICA_SM,
+     &                                      NCA_OP,LICA_SM2,ICA_STR)
+                IUB = 2
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,ICBGP,NGAS,ICB_SM,
+     &                                      NCB_OP,LICB_SM2,ICB_STR)
+                IUB = 1
+*               we are generating strings of creation operators so 
+                IAA_SM_ADJ = INVELM(IAA_SM)
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,IAAGP,NGAS,IAA_SM_ADJ,
+     &                                      NAA_OP,LIAA_SM2,IAA_STR)
+                IUB = 2
+                IAB_SM_ADJ = INVELM(IAB_SM)
+                CALL GETSTR2_TOTSM_SPGP_REL(IUB,IABGP,NGAS,IAB_SM_ADJ,
+     &                                      NAB_OP,LIAB_SM2,IAB_STR)
+C               batching                   
+                LEN_KA_BAT = MAXLB
+                LEN_KB_BAT = MAXLB
+C
+                IF(LKA_SM.LT.MAXLB) THEN
+                  LEN_KA_BAT = LKA_SM
+                  LEN_KB_BAT = MIN(LKB_SM,MAXLB*MAXLB/LKA_SM)
+                END IF
+C
+                IF(LKB_SM.LT.MAXLB) THEN
+                  LEN_KB_BAT = LKB_SM
+                  LEN_KA_BAT = MIN(LKA_SM,MAXLB*MAXLB/LKB_SM)
+                END IF
+C
+                NKA_BT = LKA_SM/LEN_KA_BAT
+                IF(NKA_BT*LEN_KA_BAT. LT. LKA_SM) NKA_BT = NKA_BT + 1
+                NKB_BT = LKB_SM/LEN_KB_BAT
+                IF(NKB_BT*LEN_KB_BAT. LT. LKB_SM) NKB_BT = NKB_BT + 1
+C
+                NCA_BT = LICA_SM/MAXLB
+                IF(NCA_BT*MAXLB.LT.LICA_SM) NCA_BT = NCA_BT + 1
+                NCB_BT = LICB_SM/MAXLB
+                IF(NCB_BT*MAXLB.LT.LICB_SM) NCB_BT = NCB_BT + 1
+                NAA_BT = LIAA_SM/MAXLB
+                IF(NAA_BT*MAXLB.LT.LIAA_SM) NAA_BT = NAA_BT + 1
+                NAB_BT = LIAB_SM/MAXLB
+                IF(NAB_BT*MAXLB.LT.LIAB_SM) NAB_BT = NAB_BT + 1
+C               loop over batches
+                DO IKA_BT = 1, NKA_BT
+                  DO IKB_BT = 1, NKB_BT
+                    IKA_B  = (IKA_BT-1)*LEN_KA_BAT + 1
+                    IKA_E  = MIN(LKA_SM,IKA_B + LEN_KA_BAT - 1)
+                    NKA_B  = IKA_E - IKA_B + 1
+                    NKA_B0 = NKA_B
+                    IKB_B  = (IKB_BT-1)*LEN_KB_BAT + 1
+                    IKB_E  = MIN(LKB_SM,IKB_B +  LEN_KB_BAT - 1)
+                    NKB_B  = IKB_E - IKB_B + 1
+                    NKB_B0 = NKB_B
+C                   loop over annihilation batches
+                    DO IAA_BT = 1, NAA_BT
+                      IAA_B = (IAA_BT-1)*MAXLB + 1
+                      IAA_E = MIN(LIAA_SM,IAA_B + MAXLB -1)
+                      NAA_B = IAA_E-IAA_B+1
+C                     KA => JA mapping
+                      IUB_KJ = 1
+!                     print *,'KASM, IAA_SM, invelm(KASM) ==> ',
+!    &                         KASM, IAA_SM, invelm(KASM)
+                  CALL K_TO_J_TOT(KJAD,XKJAD,KASM , IKA_B,IKA_E,
+     &                                IAA_STR,NAA_B,IAA_B,IAA_E,
+     &                                I3,XI3S,IB_AA,NJKAINTM,NAA_OP,
+     &                                IZEROKAJA,IUB_KJ)
+!                     print *,'IZEROKAJA ==> ',IZEROKAJA
+                      IF(IZEROKAJA.EQ.0) THEN
+                        DO IAB_BT = 1, NAB_BT
+C                         B(eginning) and E(nd) of each Batch
+                          IAB_B = (IAB_BT-1)*MAXLB + 1
+                          IAB_E = MIN(LIAB_SM,IAB_B + MAXLB -1)
+                          NAB_B = IAB_E-IAB_B+1
+C                         KB => JB mapping
+                          IUB_KJ = 2
+!                      print *,'KBSM, IAB_SM, invelm(IAB_SM) ==> ',
+!    &                          KBSM, IAB_SM,invelm(IAB_SM)
+                  CALL K_TO_J_TOT(KJBD,XKJBD,        KBSM, IKB_B,IKB_E,
+     &                                    IAB_STR,NAB_B,IAB_B,
+     &                                    IAB_E,I4,XI4S,IB_AB,NJKBINTM,
+     &                                    NAB_OP,IZEROKBJB,IUB_KJ)
+!                         print *,'IZEROKBJB ==> ',IZEROKBJB
+                          IF(IZEROKBJB.EQ.0) THEN
+C                           loop over creation batches 
+                            DO ICA_BT = 1, NCA_BT
+                              ICA_B = (ICA_BT-1)*MAXLB + 1
+                              ICA_E = MIN(LICA_SM,ICA_B + MAXLB -1)
+                              NCA_B = ICA_E-ICA_B+1
+C                             KA => IA mapping
+                              IUB_KJ = 1
+!                           print *,'ICA_BT: enter K_TO_J_TOT'
+                              CALL K_TO_J_TOT(KIAD,XKIAD,KASM,IKA_B,
+     &                                        IKA_E,ICA_STR,
+     &                                        NCA_B,ICA_B,ICA_E,I1,
+     &                                        XI1S,IB_CA,NIKAINTM,
+     &                                        NCA_OP,IZEROKAIA,IUB_KJ)
+!                           print *,'ICA_BT: left K_TO_J_TOT',IZEROKAIA
+                              IF(IZEROKAIA.eq.0)THEN
+                              DO ICB_BT = 1, NCB_BT
+                                ICB_B = (ICB_BT-1)*MAXLB + 1
+                                ICB_E = MIN(LICB_SM,ICB_B + MAXLB -1)
+                                NCB_B = ICB_E-ICB_B+1
+C                               KB => IB mapping
+                                IUB_KJ = 2
+!                           print *,'ICB_BT: enter K_TO_J_TOT'
+                                CALL K_TO_J_TOT(KIBD,XKIBD,KBSM,IKB_B,
+     &                                          IKB_E,ICB_STR,
+     &                                          NCB_B,ICB_B,ICB_E,
+     &                                          I2,XI2S,IB_CB,NIKBINTM,
+     &                                          NCB_OP,IZEROKBIB,IUB_KJ)
+!                           print *,'ICB_BT: left K_TO_J_TOT',IZEROKBIB
+                                IF(IZEROKBIB.eq.0)THEN
+C                                 Compress Ka and Kb strings to active subset 
+C                                 Ka
+                                  CALL COMPRS2LST_B(KIAD,XKIAD,NCA_B,
+     &                                              KJAD,XKJAD,NAA_B,
+     &                                              NKA_B0,NKA_B,KIA,
+     &                                              XKIA,KJA,XKJA)
+C                                 Kb
+                                  CALL COMPRS2LST_B(KIBD,XKIBD,NCB_B,
+     &                                              KJBD,XKJBD,NAB_B,
+     &                                              NKB_B0,NKB_B,KIB,
+     &                                              XKIB,KJB,XKJB)
+                                  IM_ACTIVE = 1
+C                                 offset and form of T-coefficients
+!                           print *,'after COMPRS2LST_B'
+                                  ITOFF = 
+     &                            IB_T(ICA_SM,ICB_SM,IAA_SM_ADJ)
+!                               WRITE(LUWRT,*) 
+!    &                        ' output of IB_T for current block',ITOFF
+                                  IDIAG = 0
+                                  IF(ITOFF.LT.0) THEN
+                                    ITOFF = -ITOFF
+                                    ITRNSP = 1
+                                  ELSE
+                                    ITRNSP = 0
+                                  END IF
+C
+                                  IF(ISD.EQ.1) THEN
+                                    if ((IRIS.eq.1.and.IRIC.eq.2).or.
+     &                                  (IRIS.eq.2.and.IRIC.eq.1)) then
+                                      if( SPLIT_IJKL )then
+                                        ITOFF = ITOFF + LEN_T_BUFF
+                                      end if
+                                    end if
+                                    CALL TCC_SUBBLK(TB(ITOFF),
+     &                                              T_BUFF(ITOFF),
+     &                                              T_SCR_CC(ITOFF),
+     &                                              TBSUB,1,LICA_SM,
+     &                                              NCA_B,ICA_B,
+     &                                              LICB_SM,NCB_B,ICB_B,
+     &                                              LIAA_SM,NAA_B,IAA_B,
+     &                                              LIAB_SM,NAB_B,IAB_B,
+     &                                              ITRNSP,IDIAG,NTEST)
+                                  ELSE
+C                                   zero density subblock
+                                    CALL DZERO(TBSUB,
+     &                                         NCA_B*NCB_B*NAA_B*NAB_B)
+                                  END IF
+C  
+C                                 C(Ka,Kb,Iaa,Iab) = sum(Ja,Jb) <Ka!Iaa!Ja><Kb!Iab!Jb> C(Ja,Jb)
+C                                 -------------------------------------------------------------
+                                  CALL C_TO_CKK(CB(ICBOFF),CJRES,1,
+     &                                          NJA(JASM),NJB(JBSM),
+     &                                          NKA_B,NKB_B,NAA_B,NAB_B,
+     &                                          KJA,XKJA,KJB,XKJB)
+C
+                                  IF(ISD.EQ.2) THEN
+                                    CALL C_TO_CKK(SB(ISBOFF),SIRES,1,
+     &                                            NIA(IASM),NIB(IBSM),
+     &                                            NKA_B,NKB_B,NCA_B,
+     &                                            NCB_B,KIA,XKIA,KIB,
+     &                                            XKIB)
+                                  END IF
+!          print '(a,6i3)', 
+!    &     ' calc sigma ==> IASM, IBSM, JASM, JBSM, KASM, KBSM', 
+!    &                      IASM, IBSM, JASM, JBSM, KASM, KBSM
+C
+C                                 ISD == 1:
+C                                 SIRES(Ka,Kb,Ica,Icb) = CJRES(Ka,Kb,Iaa,Iab)*T(Ica,Icb,Iaa,Iab)
+C                               ----------------------------------------------------------------
+C                                 ISD == 2:
+C                                 T(Ica,Icb,Iaa,Iab)   = SIRES(Ka,Kb,Ica,Icb)*CJRES(Ka,Kb,Ica,Icb)
+C                                 ----------------------------------------------------------------
+                                  LKAB = NKA_B*NKB_B
+                                  LCAB = NCA_B*NCB_B 
+                                  LAAB = NAA_B*NAB_B
+                                  FACTORC = 0.0D0
+                                  FACTORAB = 1.0D0*SIGNXXX
+C                                 statistics
+                                  XNCALL = XNCALL + 1
+                                  T_INI = Second()
+C
+#if defined (VAR_MPI2)
+                                  xxxsitime = MPI_WTIME()
+#endif
+                                  IF(ISD.EQ.1) THEN
+C
+C                                   call DGEMM - statistics
+                                    XLCROW = XLCROW + LKAB
+                                    XLCCOL = XLCCOL + LCAB
+                                    XLCROWCOL = XLCROWCOL + LKAB*LCAB
+                                    XNFLOP = XNFLOP + 2*LKAB*LCAB*LAAB
+C                                   input
+                                    LDA = MAX(1,LKAB)
+                                    LDB = MAX(1,LCAB)
+C                                   output
+                                    LDC = MAX(1,LKAB)
+C
+                                    CALL DGEMM('N','T',LKAB,LCAB,LAAB,
+     &                                         FACTORAB,CJRES,LDA,TBSUB,
+     &                                         LDB,FACTORC,SIRES,LDC)
+                                  ELSE
+C
+C                                   call DGEMM - statistics
+                                    XLCROW = XLCROW + LCAB
+                                    XLCCOL = XLCCOL + LAAB
+                                    XLCROWCOL = XLCROWCOL + LCAB*LAAB
+                                    XNFLOP = XNFLOP + 2*LCAB*LAAB*LKAB
+C                                   input
+                                    LDA = MAX(1,LKAB)
+                                    LDB = MAX(1,LKAB)
+C                                   output
+                                    LDC = MAX(1,LCAB)
+C
+                                    CALL DGEMM('T','N',LCAB,LAAB,LKAB,
+     &                                         FACTORAB,SIRES,LDA,CJRES,
+     &                                         LDB,FACTORC,TBSUB,LDC)
+C
+                                  END IF
+C
+                                  T_END = Second()
+                                  TMULT = TMULT + T_END - T_INI
+C
+#if defined (VAR_MPI2)
+                                  xcomputesi = xcomputesi - xxxsitime 
+     &                                       + MPI_WTIME()
+#endif
+C                                 ISD == 1:
+C                                 S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
+C                                 ----------------------------------------------------------------
+C                                 ISD == 2:
+C                                 just scatter out to complete density block
+C                                 ----------------------------------------------------------------
+                                  IF(ISD.EQ.1) THEN
+                                    CALL C_TO_CKK(SB(ISBOFF),SIRES,
+     &                                            2,NIA(IASM),NIB(IBSM),
+     &                                            NKA_B,NKB_B,NCA_B,
+     &                                            NCB_B,KIA,XKIA,KIB,
+     &                                            XKIB)
+!                                   print *,'ISBOFF, length',
+!    &                                       ISBOFF,NIA(IASM)*NIB(IBSM)
+                                  ELSE IF(ITRNSP.EQ.0) THEN
+                                    if ((IRIS.eq.1.and.IRIC.eq.2).or.
+     &                                  (IRIS.eq.2.and.IRIC.eq.1)) then
+                                      if( SPLIT_IJKL )then
+                                        ITOFF = ITOFF + LEN_T_BUFF
+                                      end if
+                                    end if
+                                    CALL TCC_SUBBLK(TB(ITOFF),
+     &                                              T_BUFF(ITOFF),
+     &                                              T_SCR_CC(ITOFF),
+     &                                              TBSUB,2,
+     &                                              LICA_SM,NCA_B,ICA_B,
+     &                                              LICB_SM,NCB_B,ICB_B,
+     &                                              LIAA_SM,NAA_B,IAA_B,
+     &                                              LIAB_SM,NAB_B,IAB_B,
+     &                                              ITRNSP,IDIAG,NTEST)
+                                  END IF
+                                END IF ! if all maps are nonvanishings
+                              END DO
+                              END IF ! IZEROKAIA
+                            END DO ! loop over batches of creation   operators
+                          END IF ! if batch of beta annihilation was nontrivial
+                        END DO
+                      END IF ! if batch of alpha annihilation was nontrivial
+                    END DO ! loop over batches of annihilation operators
+                  END DO
+                END DO ! loop over batches of Ka,Kb
+              END IF ! if symmetry combinations have nonvanishing dimensions
+            END DO ! loop over KBSM
+  100     CONTINUE ! loop over KASM
+ 2002     CONTINUE ! skip c-block not included in active-block-list (parallel run)
+#if defined (VAR_MPI2)
+          I_BLK_C_SCR = I_BLK_C_SCR + 1
+#endif
+        END DO ! loop over JASM
+ 3003   CONTINUE ! skip s-block not included in node-list (parallel run)
+#if defined (VAR_MPI2)
+        I_BLK_S_SCR = I_BLK_S_SCR + 1
+#endif
+       END DO ! loop over IASM
+      END IF ! if Ka and Kb are nontrivial strings
+C
+ 9999 RETURN
+!#undef LUCI_DEBUG
+      END
+!***********************************************************************
       SUBROUTINE IDIM_TCC_DBG(ITSOSO_TP,NTSOSO_TP,ISYM,
      &                        MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
-     &                        MSCOMB_CC,MX_TBLK_AS,IFTONE,IFTTWO,
-     &                        ILTTWO,IFSFLT1,ILSFLT1,N1ELINT,IPRCC)
+     &                        MX_TBLK_AS,IFTTWO,
+     &                        IFSFLT1,ILSFLT1,N1ELINT,IPRCC,
+     &                        ica_grp,icb_grp,iaa_grp,iab_grp,
+     &                        ndist_ca,ndist_cb,ndist_aa,ndist_ab)
 *
 * Dimension of T operators in spin-orbital basis
 *
@@ -2151,24 +2269,20 @@ CSK   END IF
 *
 * Double group version
 *
+      use symmetry_setup_krci
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
-#include "csm.inc"
-#include "symm.inc"
 #include "integrals_off.inc"
 *. Specific input
       INTEGER ITSOSO_TP(4*NGAS,NTSOSO_TP)
 *. Local scratch 
-      INTEGER ICA_GRP(MXPNGAS), ICB_GRP(MXPNGAS)
-      INTEGER IAA_GRP(MXPNGAS), IAB_GRP(MXPNGAS)
+      INTEGER ICA_GRP(NGAS), ICB_GRP(NGAS)
+      INTEGER IAA_GRP(NGAS), IAB_GRP(NGAS)
+      INTEGER ndist_ca(*), ndist_cb(*), ndist_aa(*), ndist_ab(*)
 *.Output : offset for each type
-csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
       INTEGER*8 LEN_SCR1, LEN_SCR2, LEN_SCR3, LEN_SCR4
       INTEGER*8 LEN_SCR5, LEN_SCR6, LEN_SCR7, LEN_SCR8
       INTEGER*8 LENGTH, LENGTH2, N2ELINT_I8
@@ -2187,12 +2301,6 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
       NTEST = 0000
       NTEST = MAX(NTEST,IPRCC)
 *
-#if defined LUCI_DEBUG
-      IF(NTEST.GE.100) THEN 
-        WRITE(6,*) ' IDIM_TCC : MSCOMB_CC, ISYM = ', MSCOMB_CC,ISYM
-      END IF
-#endif
-*
       LENGTH = 0
       LENGTH2 = 0
       MX_ST_TSOSO = 0
@@ -2203,9 +2311,10 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
       N1ELINT = 0
 *
       DO ITSS_TP = 1, NTSOSO_TP
-#if defined LUCI_DEBUG
-       IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP 
-#endif
+!#if defined LUCI_DEBUG
+!      IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP 
+!      WRITE(6,*) ' ITSS_TP = ', ITSS_TP 
+!#endif
 *. Occupation to group translation 
        CALL OCC_TO_GRP(ITSOSO_TP(1+0*NGAS,ITSS_TP),ICA_GRP,1)
        CALL OCC_TO_GRP(ITSOSO_TP(1+1*NGAS,ITSS_TP),ICB_GRP,1)
@@ -2216,9 +2325,9 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
        if (NTEST.ge.50) then
          write(6,*) ' Output from OCC_TO_GRP : '
          write(6,*) ' ICA_GRP : ',(ICA_GRP(I),I=1,NGAS,1)
-         write(6,*) ' ICA_GRP : ',(ICB_GRP(I),I=1,NGAS,1)
-         write(6,*) ' ICA_GRP : ',(IAA_GRP(I),I=1,NGAS,1)
-         write(6,*) ' ICA_GRP : ',(IAB_GRP(I),I=1,NGAS,1)
+         write(6,*) ' ICB_GRP : ',(ICB_GRP(I),I=1,NGAS,1)
+         write(6,*) ' IAA_GRP : ',(IAA_GRP(I),I=1,NGAS,1)
+         write(6,*) ' IAB_GRP : ',(IAB_GRP(I),I=1,NGAS,1)
        end if
 #endif
 *
@@ -2232,9 +2341,11 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
        IBTSOSO_TP(ITSS_TP_I8) = LEN_SCR8
        DO I_CR_SM = 1, NSMST
 *. symmetry of annihilation strings
+!       print *, 'I_CR_SM',I_CR_SM
         I_AN_SM = IDBGMULT(ISYM,INVELM(I_CR_SM))
 *. symmetry of creation strings corresponding to annihilation strings ...
         I_AN_SM = IADJSYM(I_AN_SM)
+!       print *, 'I_AN_SM',I_AN_SM
         DO I_CR_AL_SM = 1, NSMST
           DO II_AN_AL_SM = 1, NSMST
              I_AN_AL_SM = IADJSYM(II_AN_AL_SM)
@@ -2253,11 +2364,11 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
 *
 #if defined LUCI_DEBUG
              IF(NTEST.GE.1000) THEN
-               WRITE(6,'(A,4I5)') ' sym of CA CB AA AB',
+              WRITE(6,'(A,4I5)') ' sym of CA CB AA AB',
      &         I_CR_AL_SM, I_CR_BE_SM, I_AN_AL_SM, I_AN_BE_SM
                WRITE(6,'(A,4I5)') ' LEN_CA, LEN_CB, LEN_AA, LEN_AB ',
      &                      LEN_CA, LEN_CB, LEN_AA, LEN_AB
-             END IF
+              END IF
 #endif
 *
              LEN_SCR3 = LEN_CA
@@ -2275,7 +2386,13 @@ C            count one-electron integrals
      &           .and.ITSS_TP.le.ILSFLT1)) N1ELINT = N1ELINT + LEN_SCR7
 #if defined LUCI_DEBUG
              if (NTEST.ge.2000) then
-               write(6,*) 'LENGTH ', LEN_SCR1 * LEN_SCR2
+               if(LEN_SCR7.gt.0)then
+                 write(6,*) 'LENGTH ', LEN_SCR1 * LEN_SCR2
+                 print *, ' tcc_dim...: I_CR_BE_SM ',I_CR_BE_SM
+                 print *, ' tcc_dim...: I_CR_AL_SM ',I_CR_AL_SM
+                 print *, ' tcc_dim...: I_AN_BE_SM ',I_AN_BE_SM
+                 print *, ' tcc_dim...: I_AN_AL_SM ',I_AN_AL_SM
+               end if
              end if
 #endif
 *
@@ -2284,8 +2401,7 @@ C            count one-electron integrals
              MX_ST_TSOSO_BLK = 
      &       MAX(MX_ST_TSOSO_BLK,LEN_CA*NEL_CA,LEN_CB*NEL_CB,
      &                           LEN_AA*NEL_CA,LEN_AB*NEL_CB)
-             MX_TBLK = MAX(MX_TBLK, LEN_SCR7)
-             MX_SBSTR = MAX(MX_SBSTR,LEN_CA,LEN_CB,LEN_AA,LEN_AB)
+             MX_TBLK  = MAX(MX_TBLK, LEN_SCR7)
           END DO
         END DO
        END DO
@@ -2295,22 +2411,17 @@ C
       I_TOT_DIM_T = LENGTH
 C
 C     determine number of one-electron and two-electron integrals
-C
-CSK   N1ELINT = IBTSOSO_TP(IFTTWO)  - IBTSOSO_TP(IFTONE)
-C
       NINT_2E    = LENGTH - N1ELINT
-      
       N2ELINT_I8 = LENGTH - N1ELINT
 *
-CSK   NTEST = 5
 #if defined LUCI_DEBUG
+      NTEST = 5
       IF(NTEST.GE.3) THEN
         WRITE(6,*) ' Number of 1e-integrals : ', N1ELINT
         WRITE(6,*) ' Number of 2e-integrals : ', NINT_2E
         WRITE(6,*) ' total number of integrals: ', NINT_2E + N1ELINT
         WRITE(6,*) ' Largest symmetry block of T ', MX_TBLK
         WRITE(6,*) ' Largest block of T ', MX_TBLK_AS
-        WRITE(6,*) ' Largest substring : ', MX_SBSTR
       END IF
 *
       IF(NTEST.GE.5) THEN
@@ -2326,15 +2437,204 @@ CSK   NTEST = 5
          END DO
       END IF
 #endif
-      NTEST = 0000
+      END 
+!***********************************************************************
+      SUBROUTINE IDIM_TCC_DBG_opt(ITSOSO_TP,NTSOSO_TP,ISYM,
+     &                            MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
+     &                            MX_TBLK_AS,IFTTWO,
+     &                            IFSFLT1,ILSFLT1,N1ELINT,NGAS,
+     &                            IPRCC,
+     &                            ica_grp,icb_grp,iaa_grp,iab_grp,
+     &                            ndist_ca,ndist_cb,ndist_aa,ndist_ab)
+!
+! Dimension of T operators in spin-orbital basis
+!
+! Largest number of strings of given sym in T(ICA,ICB,IAA,IAB)
+! i.e. largest block of ICA, ICB,IAA,IAB of given sym 
+!
+! Size of block required to hold above blocks
+!
+! Jeppe Olsen, Summer of 99
+!
+! Double group version
+! -------------------------------------------------------------------
+! new loop structure which should improve the performance but does it
+! still work then?
+! S. Knecht - Dec 2010
+! -------------------------------------------------------------------
+ 
+      use symmetry_setup_krci
+#include "implicit.inc"
+*. General input
+#include "mxpdim.inc"
+#include "integrals_off.inc"
+*. Specific input
+      INTEGER ITSOSO_TP(NGAS,4,NTSOSO_TP)
+*. Local scratch 
+      integer, intent(inout) :: ica_grp(ngas), icb_grp(ngas)
+      integer, intent(inout) :: iaa_grp(ngas), iab_grp(ngas)
+      integer, intent(inout) :: ndist_ca(*), ndist_cb(*) 
+      integer, intent(inout) :: ndist_aa(*), ndist_ab(*)
+
+*.Output : offset for each type
+      INTEGER*8 LEN_SCR3, LEN_SCR4, LEN_SCR5, LEN_SCR6 
+      INTEGER*8 LEN_SCR7, LEN_SCR8
+      INTEGER*8 LENGTH, N2ELINT_I8
+      INTEGER*8 MX_TBLK, MX_TBLK_AS
+
+      LEN_SCR3   = 0
+      LEN_SCR4   = 0
+      LEN_SCR5   = 0
+      LEN_SCR6   = 0
+      LEN_SCR7   = 0
+      LEN_SCR8   = 0
 *
-      RETURN
+      NTEST = 0000
+      NTEST = MAX(NTEST,IPRCC)
+
+!     initialize
+      LENGTH          = 0
+      MX_ST_TSOSO     = 0
+      MX_ST_TSOSO_BLK = 0
+      MX_TBLK         = 0
+      MX_TBLK_AS      = 0
+      N1ELINT         = 0
+*
+      DO ITSS_TP = 1, NTSOSO_TP
+
+        IBTSOSO_TP(ITSS_TP) = LENGTH + 1
+!       print *, 'new offset for type ITSS_TP',LENGTH+1, ITSS_TP
+
+*. Occupation to group translation 
+        CALL OCC_TO_GRP(ITSOSO_TP(1,1,ITSS_TP),ICA_GRP,1)
+        CALL OCC_TO_GRP(ITSOSO_TP(1,2,ITSS_TP),ICB_GRP,1)
+        CALL OCC_TO_GRP(ITSOSO_TP(1,3,ITSS_TP),IAA_GRP,1)
+        CALL OCC_TO_GRP(ITSOSO_TP(1,4,ITSS_TP),IAB_GRP,1)
+*
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+        write(6,*) ' Output from OCC_TO_GRP (type): ',ITSS_TP
+        write(6,*) ' ICA_GRP : ',(ICA_GRP(I),I=1,NGAS,1)
+        write(6,*) ' ICB_GRP : ',(ICB_GRP(I),I=1,NGAS,1)
+        write(6,*) ' IAA_GRP : ',(IAA_GRP(I),I=1,NGAS,1)
+        write(6,*) ' IAB_GRP : ',(IAB_GRP(I),I=1,NGAS,1)
+#endif
+!#undef LUCI_DEBUG
+*
+        NEL_CA = IELSUM(ITSOSO_TP(1,1,ITSS_TP),NGAS)
+        NEL_CB = IELSUM(ITSOSO_TP(1,2,ITSS_TP),NGAS)
+        NEL_AA = IELSUM(ITSOSO_TP(1,3,ITSS_TP),NGAS)
+        NEL_AB = IELSUM(ITSOSO_TP(1,4,ITSS_TP),NGAS)
+!      
+!       set loop limits according to an even/odd number of e:
+        if(mod(NEL_CA+NEL_CB,2) .ne. 0)then
+          ISMCSTA  = 1 + NIRR_DG/2
+          ISMCEND  =     NIRR_DG
+        else
+          ISMCSTA  = 1
+          ISMCEND  = NIRR_DG/2
+        end if
+        if(mod(NEL_CA,2) .ne. 0)then
+          ISMCASTA = 1 + NIRR_DG/2
+          ISMCAEND =     NIRR_DG
+        else
+          ISMCASTA = 1
+          ISMCAEND = NIRR_DG/2
+        end if
+
+#ifdef LUCI_DEBUG
+        print *, 'C  symmetry loop: ',ISMCSTA,ISMCEND
+        print *, 'CA symmetry loop: ',ISMCASTA,ISMCAEND
+#endif
+
+        DO 101 I_CR_AL_SM = ISMCASTA, ISMCAEND
+
+          call getstr2_totsm_spgp_rel(1,ICA_GRP,NGAS,I_CR_AL_SM,
+     &                                NEL_CA,LEN_CA,NDIST_CA)
+          if(LEN_CA.le.0) goto 101
+          DO 202 I_AN_AL_SM = 1, NIRR_DG
+
+            call getstr2_totsm_spgp_rel(1,IAA_GRP,NGAS,I_AN_AL_SM,
+     &                                  NEL_AA,LEN_AA,NDIST_AA)
+            if(LEN_AA.le.0) goto 202
+            DO 303 I_CR_SM = ISMCSTA, ISMCEND
+
+!             print *, ' next I_CR_SM ==>',I_CR_SM
+*
+              call getstr2_totsm_spgp_rel(2,ICB_GRP,NGAS,
+     &             IDBGMULT(I_CR_SM,INVELM(I_CR_AL_SM)),
+     &                                    NEL_CB,LEN_CB,
+     &                                    NDIST_CB)
+              call getstr2_totsm_spgp_rel(2,IAB_GRP,NGAS,
+     &             IDBGMULT(IDBGMULT(I_CR_SM,IADJSYM(ISYM)),
+     &                      INVELM(I_AN_AL_SM)),
+     &                                    NEL_AB,LEN_AB,
+     &                                    NDIST_AB)
+ 
+              LEN_SCR3 = LEN_CA
+              LEN_SCR4 = LEN_CB
+              LEN_SCR5 = LEN_AA
+              LEN_SCR6 = LEN_AB
+C
+              LEN_SCR7 = LEN_SCR3 * LEN_SCR4 * LEN_SCR5 * LEN_SCR6
+              LENGTH   = LENGTH  + LEN_SCR7
+C             count one-electron integrals
+              IF((ITSS_TP.lt.IFTTWO).or.
+     &           (ITSS_TP.ge.IFSFLT1.and.ITSS_TP.le.ILSFLT1))then
+                N1ELINT = N1ELINT + LEN_SCR7
+              end if
+#ifdef LUCI_DEBUG
+              if(LEN_SCR7.gt.0)then
+                print *, ' tcc_dim...: I_CR_SM    ',I_CR_SM
+              end if
+#endif
+*
+              MX_ST_TSOSO = 
+     &        MAX(MX_ST_TSOSO,LEN_CA,LEN_CB,LEN_AA,LEN_AB)
+              MX_ST_TSOSO_BLK = 
+     &        MAX(MX_ST_TSOSO_BLK,LEN_CA*NEL_CA,LEN_CB*NEL_CB,
+     &                            LEN_AA*NEL_CA,LEN_AB*NEL_CB)
+              MX_TBLK  = MAX(MX_TBLK, LEN_SCR7)
+ 303        continue
+ 202      continue ! loop over all II_AN_AL_SM
+ 101    continue ! loop over all II_CR_AL_SM
+
+        MX_TBLK_AS = MAX( MX_TBLK_AS, LENGTH )
+      end do ! loop over NTSOSO_TP
+C
+      I_TOT_DIM_T = LENGTH
+!
+!     determine number of two-electron integrals
+      NINT_2E    = LENGTH - N1ELINT
+      N2ELINT_I8 = NINT_2E
+*
+#ifdef LUCI_DEBUG
+      IF(NTEST.GE.3) THEN
+        NTEST = 5
+        WRITE(6,*) ' Number of 1e-integrals     :', N1ELINT
+        WRITE(6,*) ' Number of 2e-integrals     :', NINT_2E
+        WRITE(6,*) ' total number of integrals  :', NINT_2E + N1ELINT
+        WRITE(6,*) ' Largest symmetry block of T:', MX_TBLK
+        WRITE(6,*) ' Largest block of T         :', MX_TBLK_AS
+      END IF
+*
+      IF(NTEST.GE.5) THEN
+        WRITE(6,*) 
+     &  ' Largest number of strings of given sym and type ',
+     &               MX_ST_TSOSO
+        WRITE(6,*) 
+     & ' Largest block of strings of given sym and type ',
+     &               MX_ST_TSOSO_BLK
+        WRITE(6,*) ' Offset for each block '
+         DO II = 1, NTSOSO_TP
+           WRITE(6,*) 'IBTSOSO_TP(',II,') is ',IBTSOSO_TP(II)
+         END DO
+      END IF
+#endif
+
       END 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       FUNCTION ITDIANUM(ICA,ICB,IAA,IAB,NC,NA)
 *
 * Find adress of element T(ICA,ICB,IAA,IAB) in diagonal 
@@ -2371,13 +2671,9 @@ CSK   NTEST = 5
       END IF
 #endif
 *
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE LEN_GENOP_STR_MAP(NGENOP,IGENOP,NSPGRP,ISPGRP,NOBPT,
      &                             NGAS,MAXLEN)
 *
@@ -2454,8 +2750,8 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       END DO
       END DO
 *
-      NTEST = 000
 #if defined LUCI_DEBUG
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
       END IF
@@ -2464,23 +2760,18 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      FUNCTION LEN_TT_BLOCK(ISM,NIA,NIB,NSMST)
+
+      FUNCTION LEN_TT_BLOCK(ISM,NIA,NIB)
 *
 * Length of TT block with total sym ISM
 *
 * Jeppe Olsen, May 99 in Aarhus
 * Modified for relativistic case, Timo Fleig, June 2001
 *
+      use symmetry_setup_krci
 #include "implicit.inc"
-#include "mxpdim.inc"
 *. Specific input
       INTEGER NIA(*), NIB(*)
-*. General input
-#include "symm.inc"
 *
       LEN = 0
       DO IASM = 1, NSMST
@@ -2490,20 +2781,14 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *
       LEN_TT_BLOCK = LEN
 *
-      NTEST = 000
 #if defined LUCI_DEBUG
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' LEN_TT_BLOCK = ', LEN_TT_BLOCK 
-      END IF
+      WRITE(6,*) ' LEN_TT_BLOCK = ', LEN_TT_BLOCK 
 #endif
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      FUNCTION LEN_TT_BLOCK_PAR(ISM,NIA,NIB,NSMST,INCLUDE_LIST,IOFF1,
+
+      FUNCTION LEN_TT_BLOCK_PAR(ISM,NIA,NIB,INCLUDE_LIST,IOFF1,
      &                          IVERS)
 *
 * Length of TT block with total sym ISM
@@ -2515,12 +2800,11 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 * IOFF1: absolute address value
 * IVERS: 0: c-block version; 1: s-block version
 *
+      use symmetry_setup_krci
 #include "implicit.inc"
-#include "mxpdim.inc"
 *. Specific input
       INTEGER NIA(*), NIB(*), IOFF1, IOFF2, INCLUDE_LIST(*)
 *. General input
-#include "symm.inc"
 #include "parluci.h"
 *
       LEN   = 0
@@ -2560,12 +2844,8 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SSX,NK,IBX,SCLFAC,
-     &                     ISMDST,IAB)
+
+      SUBROUTINE MAP_EXSTR(IOP,NOP,IREFOC,IX,SSX,NK,IBX,ISMDST,IAB)
 
 * Information for mapping |Kstr> = IOP |Irefoc>
 *
@@ -2576,172 +2856,173 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 *                 IAB added for alpha (unbarred) and beta (barred)
 *                 ISMDST added Aug. 2003
 *
+      use mospinor_info
+      use symmetry_setup_krci
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "lucinp.inc"
-#include "orbinp.inc"
-#include "glbbas.inc"
 #include "cgas.inc"
-#include "csm.inc"
-#include "symm.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *. Input
-      INTEGER IOP(NGAS),IAC(NGAS),IREFOC(NGAS)
+      INTEGER IOP(NGAS),IREFOC(NGAS)
 *. Output
       INTEGER IX(*),IBX(MXNDGIRR,MXNDGIRR,NOP)
-      INTEGER NK(MXPOBS,NOP)
+      INTEGER NK(MXNDGIRR,NOP)
       DIMENSION SSX(*)
 *. Local Scratch
       INTEGER KOC(MXPNGAS),KGRP(MXPNGAS)
       INTEGER ISMDST(*)
+      integer, allocatable :: NOBPTSx(:,:)
 *. IBX(ISM,JSM,JOP) : Start of map in JX for orbitals of symmetry ISM,
 *.                    input strings of symmetry JSM for operator JOP
 *. Notice at each level N the mapping is from !K(N)> to !K(N-1)> 
 *  where !K(0)> is input type and !K(NOP)> is output type
 *
-C     MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SSX,NK,IB,SCLFAC)
+C     MAP_EXSTR(IOP,NOP,IREFOC,IX,SSX,NK,IB,SCLFAC)
 *
-      NTEST = 000
-#if defined LUCI_DEBUG
-      IF(NTEST.GE.100) THEN 
-        WRITE(6,*) ' MAP_EXSTR speaking' 
-         WRITE(6,*) ' =================='
-        WRITE(6,*) ' Reference occupation '
-        CALL IWRTMA(IREFOC,1,NGAS,1,NGAS) 
-        WRITE(6,*) ' NOP = ', NOP
-        WRITE(6,*) ' Operator string, Orbspaces and C/A '
-        CALL IWRTMA(IOP,1,NOP,1,NOP)
-        CALL IWRTMA(IAC,1,NOP,1,NOP)
-      END IF
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(6,*) ' MAP_EXSTR speaking' 
+      WRITE(6,*) ' =================='
+      WRITE(6,*) ' Reference occupation '
+      CALL IWRTMA(IREFOC,1,NGAS,1,NGAS) 
+      WRITE(6,*) ' NOP = ', NOP
+      WRITE(6,*) ' Operator string'
+      CALL IWRTMA(IOP,1,NOP,1,NOP)
 #endif
+!#undef LUCI_DEBUG
 *
       CALL ICOPY(NGAS,IREFOC,1,KOC,1)
       CALL OCC_TO_GRP(KOC,KGRP,1)
-      IOFF = 1
-#if defined LUCI_DEBUG
-      IF(NTEST.GE.1000) WRITE(6,*) ' NOP = ', NOP
-#endif
+      call izero(NK,MXNDGIRR*NOP)
+      call izero(IBX,MXNDGIRR*MXNDGIRR*NOP)
+
+!     allocate scratch space for internal gas/# of spinor 2d-array
+      allocate(NOBPTSx(max_num_gaspaces,nsmob/2))
+      if(iab.eq.1)then
+        do j = 1, nsmob/2
+          do i = 1, max_num_gaspaces
+            NOBPTSx(i,j) = NOBPTS(i,j+nsmob/2)
+          end do
+        end do
+      else ! barred spinors
+        do j = 1, nsmob/2
+          do i = 1, max_num_gaspaces
+            NOBPTSx(i,j) = NOBPTS2(i,j+nsmob/2)
+          end do
+        end do
+      end if
+
+      IOFF = 1 ! initialize offset
+
       DO JOP = NOP,1,-1
-#if defined LUCI_DEBUG
-       IF(NTEST.GE.1000) WRITE(6,*) ' JOP = ', JOP
-#endif
-*
-       JGAS = IOP(JOP)
-       JAC  = IAC(JOP)
-*
-       IF(JAC.EQ.1) THEN 
-         JAC_ADJ = 2 
-       ELSE 
-         JAC_ADJ = 1 
-         WRITE(6,*)' Map <I|a|K> not debugged for DBG symmetry'
-         STOP' Map <I|a|K> not debugged for DBG symmetry'
-       END IF
-*. 
+
+        JGAS = IOP(JOP)
 COLD
 CTF Depending on the evaluation "direction" of the coupling coefficient,
 CTF the symmetry handling changes: If |K> is on the right, the inverse
 CTF element is correct (INVELM(JSMOB)), if |J> is on the right, the
 CTF element is NOT inversed!
 CTF
-       DO JSMOB = 1, NSMOB
-        DO JSMSPGP = 1, NSMST
-*. Symmmetry of |Kgrp> = a(JSMOB) |JSMSPGP>
-*. = symmetry obtained from |JSMSPGP> = a+(JSMOB) |Kgrp>
-         KSMSPGP = IDBGMULT(INVELM(JSMOB),JSMSPGP)
-*
-         IBX(JSMOB,KSMSPGP,JOP) = IOFF
-         CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
-     &                  IX(IOFF),SSX(IOFF),NKSTR,IEND,
-     &                  IFRST,KFRST,KACT,SCLFAC,JAC_ADJ,ISMDST,IAB)
+!
+!       stefan: in relativistic runs this loop might be restricted to
+!       spinor symmetries -->  NSMOB/2 + 1, NSMOB
+!       for spinfree LUCIAREL runs this needs to be considered!
+!       sk - march 2011
+!       DO JSMOB = 1, NSMOB
+!       print *, 'warning: restricted loop in map_ex...'
+        DO JSMOB = NSMOB/2 + 1, NSMOB
+!         loop restriction yields approx. 50% speed-up 
+!         for linsym where NSMOB/2 == 64 and NSMST == 128
+!         stefan - april 2011
+!         if(NOBPTSx(JGAS,JSMOB).gt.0)then
+          if(NOBPTSx(JGAS,JSMOB-NSMOB/2).gt.0)then 
+            DO JSMSPGP = 1, NSMST
+
+!             print *, 'JSMOB,JGAS,NGAS',JSMOB,JGAS,NGAS
+              CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
+     &                           IX(IOFF),SSX(IOFF),NKSTR,IEND,
+     &                           IFRST,KFRST,KACT,1.0d0,2,ISMDST,IAB)
 C             ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
-C    &                  I1,XI1S,NKSTR,IEND,
-C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
-         NK(KSMSPGP,JOP) = NKSTR
-         if (IAB.eq.1) then
-           IOFF = IOFF + NOBPTS(JGAS,JSMOB)*NKSTR
-         else if (IAB.eq.2) then
-           IOFF = IOFF + NOBPTS2(JGAS,JSMOB)*NKSTR
-         end if
-         IF(IOFF-1.GT. MAXLEN_I1) THEN
-           WRITE(6,*) ' MAP... MAXLEN_I1 too small '
-           WRITE(6,*) ' IOFF and MAXLEN_I1 = ', IOFF, MAXLEN_I1
-           STOP       ' MAP... MAXLEN_I1 too small '
-         END IF
+C    &                      I1,XI1S,NKSTR,IEND,
+C    &                      IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
+
+!             Symmmetry of |Kgrp>    = a(JSMOB)  |JSMSPGP>
+!             =            |JSMSPGP> = a+(JSMOB) |Kgrp>
+!             -----------------------------------------------------
+              KSMSPGP                = IDBGMULT(INVELM(JSMOB),JSMSPGP)
+              IBX(JSMOB,KSMSPGP,JOP) = IOFF
+              NK(KSMSPGP,JOP)        = NKSTR
+
+!             IOFF = IOFF + NOBPTSx(JGAS,JSMOB)*NKSTR
+              IOFF = IOFF + NOBPTSx(JGAS,JSMOB-NSMOB/2)*NKSTR
+!      print '(a,5i4)', 'IOFF, JSMOB, NKSTR, JSMSPGP, IX(IOFF)',
+!    &                   IOFF, JSMOB, NKSTR, JSMSPGP, IX(IOFF)
+              IF(IOFF-1.GT. MAXLEN_I1) THEN
+                WRITE(6,*) ' MAP... MAXLEN_I1 too small '
+                WRITE(6,*) ' IOFF and MAXLEN_I1 = ', IOFF, MAXLEN_I1
+                call quit('error in MAP_EXSTR: MAXLEN_I1 too small.')
+              end if
+            end do ! loop over string symmetries ==> JSMSPGP
+          else
+            do i = 1, nsmst
+              ibx(jsmob,i,jop) = ioff
+            end do
+          end if
+        end do ! loop over spinor symmetries ==> jsmob
+
+!       Updated Kgroup  
+!       Info on !K(JOP)> 
+        KOC(JGAS) = KOC(JGAS) - 1
+        CALL OCC_TO_GRP(KOC,KGRP,1)
+ 
+      end do ! inverse loop over operators JOP 
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(6,*) ' Output from MAP_EXSTR '
+      WRITE(6,*) ' Mappings from a+/a !K(J)> to !K(J-1)> '
 *
-        END DO
-       END DO
-*. Updated Kgroup  
-*. Info on !K(JOP)> 
-       IF(JAC.EQ.1) THEN 
-         JDELTA = -1 
-       ELSE 
-         JDELTA = +1
-       END IF
-       KOC(JGAS) = KOC(JGAS) + JDELTA
-       CALL OCC_TO_GRP(KOC,KGRP,1)
-#if defined LUCI_DEBUG
-       IF(NTEST.GE.1000) THEN
-         WRITE(6,*) ' KOC and KGRP '
-         CALL IWRTMA(KOC,1,NGAS,1,NGAS)
-         CALL IWRTMA(KGRP,1,NGAS,1,NGAS)
-       END IF
-#endif
-*
-      END DO
-*
-#if defined LUCI_DEBUG
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Output from MAP_EXSTR '
-        WRITE(6,*) ' Mappings from a+/a !K(J)> to !K(J-1)> '
-*
-        DO JOP = 1, NOP
-         IF(IAC(JOP).EQ.1) THEN
-           WRITE(6,*) 
-     &     ' Operator ', JOP, ' is annihilation operator of type',
-     &     IOP(NOP) 
-         ELSE
-           WRITE(6,*) 
-     &     ' Operator ', JOP, ' is creation     operator of type',
-     &     IOP(NOP) 
-         END IF
-         DO JSM = 1, NSMOB
-           DO KNSM = 1, NSMST
-             WRITE(6,*) ' Sym of operator and !K(N)> ',
-     &       JSM,KNSM 
-             LK = NK(KNSM,JOP)
+      ioff2 = 1
+      DO JOP = 1, NOP
+         WRITE(6,*) 
+     &   ' Operator ', JOP, ' is creation     operator of type',
+     &    2
+!      DO JSM = 1,NSMOB
+       DO JSM = NSMOB/2+1,NSMOB
+         DO KNSM = NSMST, NSMST
+           KSMSPGP = IDBGMULT(INVELM(JSM),KNSM)
+           WRITE(6,*) ' Sym of operator and !K(N)> ',
+     &                  JSM, KSMSPGP 
+           LK = NK(KSMSPGP,JOP)
+           if(LK.gt.0)then
              WRITE(6,*) ' Number of strings !K(N)> ',LK
-             if (IAB.eq.1) then
-               LJ = NOBPTS(IOP(JOP),JSM) 
-             else if (IAB.eq.2) then
-               LJ = NOBPTS2(IOP(JOP),JSM) 
-             end if
+             LJ = NOBPTSx(IOP(JOP),JSM-NSMOB/2)
              DO JJ = 1, LJ
               WRITE(6,*) ' Info for orbital ', JJ
               WRITE(6,*) ' Excited strings and sign '
-              IOFF2 = IBX(JSM,KNSM,JOP) + (JJ-1)*LK
-              WRITE(6,*) ' JOP JSM KNSM LK ',JOP,JSM,KNSM,LK
-              WRITE(6,*) ' IOFF2 ', IOFF2
+              IOFF2 = IOFF2 + (JJ-1)*LK
+              print '(a,5i4)', ' JOP,JSM KSMSPGP LK, offset ',
+     &                           JOP,JSM,KSMSPGP,LK,IOFF2
               CALL IWRTMA(IX(IOFF2),1,LK,1,LK)        
-              CALL WRTMAT(SSX(IOFF2),1,LK,1,LK)        
              END DO
-           END DO
+           end if
          END DO
-        END DO
-      END IF
+       END DO
+      END DO
 #endif
+!#undef LUCI_DEBUG
+
+!     release scratch memory
+      deallocate(NOBPTSx)
 *
-      RETURN
       END 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
+      integer*8 function nelm_cc(ITP,NXTP,NT_SCRATCH)
 * Find number of elements in a given excitation class.
 *
-      integer*8 function nelm_cc(ITP,NXTP,NT_SCRATCH)
 *
 #include "implicit.inc"
 #include "mxpdim.inc"
@@ -2756,16 +3037,12 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
       else
         write(6,*) 'Requested excitation type ',ITP
         write(6,*) 'exceeds total number of types ',NXTP
-        stop 'QUITTING in integer*8 function nelm_cc.'
+        CALL QUIT('QUITTING in integer*8 function nelm_cc.')
       end if
 *
-      return
       end
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       FUNCTION NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *
 * A supergroup is defined by NELEC_PER_GAS. Find the 
@@ -2796,13 +3073,9 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
       END IF
 #endif
 *
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE OCC_TO_GRP(IOCC,IGRP,IWAY)
 *. Translate between occupation and group labels of supergroup
 *
@@ -2825,7 +3098,6 @@ C     INTEGER JGRP(MXPNGAS)
 *. Specific input/output
       INTEGER IOCC(NGAS),IGRP(NGAS)
 *
-      NTEST = 000
 *
       IF(IWAY.EQ.1) THEN 
 *. Occupation => Group number 
@@ -2837,6 +3109,7 @@ C     INTEGER JGRP(MXPNGAS)
           IGRP(IOBTP) = JJGRP
 *
 #if defined LUCI_DEBUG
+          NTEST = 10
           IF(NTEST.ge.10) THEN
            WRITE(6,*) ' Group not included in list '
            WRITE(6,*) ' Input occupations : '
@@ -2867,20 +3140,14 @@ C     INTEGER JGRP(MXPNGAS)
       END IF
 *
 #if defined LUCI_DEBUG
-      IF(NTEST.GE.100) THEN 
-        WRITE(6,*) ' Occupation and corresponding group array '
-        CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
-        CALL IWRTMA(IGRP,1,NGAS,1,NGAS) 
-      END IF
+      WRITE(6,*) ' Occupation and corresponding group array '
+      CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
+      CALL IWRTMA(IGRP,1,NGAS,1,NGAS) 
 #endif
 *
-      RETURN
       END 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REF_OP(IOPGAS,IOP,NOP,NGAS,IWAY,MXNOP)
 * An operatorstring may be specifed as
 *
@@ -2895,7 +3162,6 @@ C     INTEGER JGRP(MXPNGAS)
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. Input/Output
       INTEGER IOPGAS(NGAS),IOP(MXNOP)
 *
@@ -2923,27 +3189,22 @@ C     INTEGER JGRP(MXPNGAS)
         END DO
       END IF
 *
-#if defined LUCI_DEBUG
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        IF(IWAY.EQ.1) THEN
-         WRITE(6,*) ' IOPGAS => IOP '
-        ELSE
-         WRITE(6,*) ' IOP => IOPGAS '
-        END IF
-        WRITE(6,*) ' IOPGAS and IOP '
-        CALL IWRTMA(IOPGAS,1,NGAS,1,NGAS)
-        CALL IWRTMA(IOP,1,NOP,1,NOP)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      IF(IWAY.EQ.1) THEN
+       WRITE(6,*) ' IOPGAS => IOP '
+      ELSE
+       WRITE(6,*) ' IOP => IOPGAS '
       END IF
+      WRITE(6,*) ' IOPGAS and IOP: dim(ngas), dim(nop)',ngas,nop
+      CALL IWRTMA(IOPGAS,1,NGAS,1,NGAS)
+      CALL IWRTMA(IOP,1,NOP,1,NOP)
 #endif
-*
-      RETURN
+!#undef LUCI_DEBUG
+ 
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
 *
 *     Construct orbital excitation types for different choices
@@ -2959,6 +3220,8 @@ C     INTEGER JGRP(MXPNGAS)
 *
 *     added INTEGER*8 adaption: S. Knecht - Nov. 2007
 *
+      use memory_allocator
+      use mospinor_info
 #include "implicit.inc"
 #include "ipoist8.inc"
 *  
@@ -2967,7 +3230,6 @@ C     INTEGER JGRP(MXPNGAS)
 #include "wrkspc.inc"
 #include "cgas.inc"
 #include "cprnt.inc"
-#include "orbinp.inc"
 C
 C         OUTPUT
 C
@@ -2977,21 +3239,36 @@ C
 C
 C     specific input in order to handle large integral arrays
 C     even on 32-bit systems
-      INTEGER*8 MX_TBLK, MX_TBLK_AS, MSCOMB_T
+      INTEGER*8 MX_TBLK, MX_TBLK_AS
+!     T excitation types
+      integer, allocatable :: spobex_temp(:)
+!     string groups
+      integer, allocatable :: ca_group(:)
+      integer, allocatable :: cb_group(:)
+      integer, allocatable :: aa_group(:)
+      integer, allocatable :: ab_group(:)
+!     symmetry distribution of string groups
+      integer, allocatable :: ca_symdist(:)
+      integer, allocatable :: cb_symdist(:)
+      integer, allocatable :: aa_symdist(:)
+      integer, allocatable :: ab_symdist(:)
+!     define an initial max. number of symmetry distribution of string groups
+      integer, parameter   :: max_symdist_string_groups = 500 000
+      
 C
 C     number of spin-orbital excitation operators in H
-C
-      call memmar(KLSOBEX_TEMP,4*NGAS,'ADDS  ',1,'SPOBET')
+      call alloc(spobex_temp,4*NGAS)
       IFLAG = 1
       CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
-     &                 WORK(KLSOBEX_TEMP),
+     &                 spobex_temp,
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
      &                 IPRNT)
       NSPOBEX_TP = NHX
 C
 C     actual spin-orbital excitations
 C
+C     all spinorbital excitations are by default active
       call memmar(KLSOBEX,4*NGAS*NSPOBEX_TP,'ADDS  ',1,'SPOBEX')
       call memmar(KLIHIND,     4*NSPOBEX_TP,'ADDS  ',1,'IHINDX')
       call memmar(KSIGNNHX,      NSPOBEX_TP,'ADDS  ',2,'SIGNDX')
@@ -3001,55 +3278,65 @@ C
       IFLAG = 0
       CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
-     &                 WORK(KLSOBEX_TEMP),
+     &                 spobex_temp,
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 I2DIATP,WORK(KLABEXTP),WORK(KLOP_REO),
      &                 WORK(KSIOPREO),IPRNT)
-C
-C     Space for info in the different parts of Hamiltonian
-C
-C     KLSPOBEX_AC : Is this spinorbital excitation active
-C
-      call memmar(KLSPOBEX_AC,NSPOBEX_TP,'ADDS  ',1,'SPOBAC')
-C
-C     all spinorbital excitations are initially active
-C
-      IONE     = 1
-      IZERO_I8 = 0
+      call dealloc(spobex_temp)
 C
       IF( NSPOBEX_TP .gt. MXINT_TP ) THEN
-          WRITE(LUWRT,*) ' STOP in subroutine SET_HOP_DBG !!!'
-          WRITE(LUWRT,*) ' Number of SO-integral types       '
-          WRITE(LUWRT,*) ' larger than MXINT_TP: ', NSPOBEX_TP, MXINT_TP
-          WRITE(LUWRT,*) ' increase MXINT_TP (mxpdim.inc): to',
-     &                     NSPOBEX_TP
-          stop ' Quitting in subroutine SET_HOP_DBG'
+        WRITE(LUWRT,*) ' STOP in subroutine SET_HOP_DBG !!!'
+        WRITE(LUWRT,*) ' Number of SO-integral types       '
+        WRITE(LUWRT,*) ' larger than MXINT_TP: ', NSPOBEX_TP, MXINT_TP
+        WRITE(LUWRT,*) ' increase MXINT_TP (mxpdim.inc): to',
+     &                   NSPOBEX_TP
+        CALL QUIT(' Quitting in subroutine SET_HOP_DBG')
       END IF
 C
-      CALL ISETVC(WORK(KLSPOBEX_AC),IONE,NSPOBEX_TP)
-      CALL ISETVC8_2(IBTSOSO_TP,IONE,NSPOBEX_TP)
+      call izero8(ibtsoso_tp,nspobex_tp)
 C
-C     dimensions for operator of symmetry ISYM_T (set in KRMC_LUCI2)
-C
-      MSCOMB_T = 0
-C
-      CALL IDIM_TCC_DBG(WORK(KLSOBEX),NSPOBEX_TP,ISYM_T,MX_ST_TSOSO,
-     &                  MX_ST_TSOSO_BLK,MX_TBLK,MSCOMB_T,MX_TBLK_AS,
-     &                  IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,N1ELINT,
-     &                  IPRNT)
+      call alloc(ca_group,ngas)
+      call alloc(cb_group,ngas)
+      call alloc(aa_group,ngas)
+      call alloc(ab_group,ngas)
+      call alloc(ca_symdist,max_symdist_string_groups)
+      call alloc(cb_symdist,max_symdist_string_groups)
+      call alloc(aa_symdist,max_symdist_string_groups)
+      call alloc(ab_symdist,max_symdist_string_groups)
+
+      CALL IDIM_TCC_DBG_opt(WORK(KLSOBEX),NSPOBEX_TP,ISYM_T,MX_ST_TSOSO,
+     &                      MX_ST_TSOSO_BLK,MX_TBLK,MX_TBLK_AS,
+     &                      IFTTWO,IFSFLT1,ILSFLT1,
+     &                      N1ELINT,NGAS,IPRNT,
+     &                      ca_group,cb_group,aa_group,ab_group,
+     &                      ca_symdist,cb_symdist,aa_symdist,ab_symdist)
+      call dealloc(ab_symdist)
+      call dealloc(aa_symdist)
+      call dealloc(cb_symdist)
+      call dealloc(ca_symdist)
+      call dealloc(ab_group)
+      call dealloc(aa_group)
+      call dealloc(cb_group)
+      call dealloc(ca_group)
 C
 C     output -- transfer information to common block
-C
       LEN_T_VEC          = I_TOT_DIM_T
       NALLINT            = LEN_T_VEC * MIN(NZ,2)
       N2ELINT            = NINT_2E
       MX_TBLK_MX         = MX_TBLK
       MX_ST_TSOSO_MX     = MX_ST_TSOSO
+      if(MX_ST_TSOSO_BLK.gt.max_symdist_string_groups)then
+        print '(a,a,i8)', ' *** error in set_hop_dbg: possible memory'//
+     &               ' corruption occured.',
+     &               '     raise the parameter'//
+     &               ' max_symdist_string_groups to at least ==>',
+     &                 MX_ST_TSOSO_BLK
+      end if
+
       MX_ST_TSOSO_BLK_MX = MX_ST_TSOSO_BLK
 C
 C     print section
-C
-      IF( IPRNT .gt. 0)THEN
+      IF(IPRNT .gt. 0)THEN
         WRITE(LUWRT,'(/A )')'  *** OUTPUT FROM SET_HOP_DBG *** ' 
         WRITE(LUWRT,'( A/)')'      _______________________     ' 
         WRITE(LUWRT,'(A,I20)')'  symmetry of T op. :',ISYM_T
@@ -3062,11 +3349,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SIGDEN_CTRL(C,HC,LUC,LUHC,T,T_BUFF,ISIGDEN
 #if defined (VAR_MPI2)
      &                   ,LUCLIST,LUHCLIST,IBLOCKL_C,NPARBLOCK_C,
@@ -3179,6 +3462,8 @@ C
 C     revision and (parallel) generalization: Stefan Knecht - Oct 2008
 C
 C***********************************************************************
+      use symmetry_setup_krci
+      use mospinor_info
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3187,20 +3472,16 @@ C***********************************************************************
 *.Input
 * =====
 #include "cands.inc"
-#include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "csm.inc"
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
-#include "lucinp.inc"
 #include "cprnt.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
@@ -3247,7 +3528,8 @@ C***********************************************************************
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'SIGDEN')
 *
-      NTESTL = 0000
+!     NTESTL = 0000
+      NTESTL = 5000 ! debug
       if (ISIGDEN.eq.1) then
         NTEST = max(NTESTL,IPRSIG)
       else if (ISIGDEN.eq.2) then
@@ -3257,7 +3539,7 @@ C***********************************************************************
         call quit('*** ERROR in SIGDEN_REL ***')
       end if
 *
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
       IF(NTEST.GE.50) THEN 
         write(LUWRT,*)
         write(LUWRT,*)
@@ -3276,27 +3558,6 @@ C***********************************************************************
       Open(Unit=LUSC37,File=NLUSC37_MPI(1:LUSC344_MPIL),
      &     Status='UNKNOWN',Form='UNFORMATTED')
 #endif
-*
-*=====================================================
-* Implementing time-reversal symmetry 
-* in the even-particle case, according to
-*   Cm_ = Cm*
-*   Cm  = Cm_*
-* No signs here, phase factors always 1. (In odd-particle
-* case -1 for Nbeta odd, Nalpha even!)
-*
-*  Timo Fleig, 31.07.2001
-*
-* define symmetry, factors, and loop restrictions
-      call evenodd(IEONELEC,NACTEL)
-      if (IEONELEC.eq.1) then
-        IKRA_SYM = 0
-      else if (IEONELEC.eq.2) then
-        IKRA_SYM = 1
-      end if
-      IKRA_SYM = 0         ! FOR THE MOMENT !
-* 
-*=====================================================
 *
       LBLK = -1
 *
@@ -3354,7 +3615,8 @@ C***********************************************************************
 #else
 *=====================================================
 
-#if defined LUCI_DEBUG
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
       if (NTEST.ge.1000) then
         write(LUWRT,*) '--------------------------------------'
         write(LUWRT,*) ' Printing vectors in SIGDEN_REL.      '
@@ -3374,9 +3636,7 @@ C***********************************************************************
 #endif /* if def VAR_MPI2 */
 *=====================================================
 *
-*
 *     loop over vectors of sigma and C : MK2 space
-*
       DO IRIS = 1,IRILP,1
 #if defined (VAR_MPI2)
 *       initialize writing (ISIGDEN == 1) resp. reading (ISIGDEN == 2)
@@ -3391,15 +3651,12 @@ C***********************************************************************
         INT_IOFF1  = 1 + MY_ACT_BLK2 * ( JVEC_SF )
      &                 + MY_ACT_BLK1 * ( IRIS -1 )
 *
-C?      WRITE(LUWRT,*) 'INT_IOFF1 in SIGDEN',INT_IOFF1
-*
-*
         NUM_BLK_ACT_S   = 0
         IOFFSET_SCRATCH = 0
 *
 #endif /* if def VAR_MPI2 */
 *
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
         if (NTEST.ge.50) then
           write(LUWRT,*)
           write(LUWRT,*) '-----------------------'
@@ -3409,13 +3666,12 @@ C?      WRITE(LUWRT,*) 'INT_IOFF1 in SIGDEN',INT_IOFF1
 #endif
 *
 *       count the 'active' sigma blocks
-* 
         NUM_SBLK_ACT_BT = 0
 *
         JBATABS = 0
         DO IMK2_S = 1, NMS2VAL
           MK2_S = MS2VAL(IMK2_S)
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
           if (NTEST.ge.50) then
             write(LUWRT,*) '- - - - - - - - - - - -'
             write(LUWRT,*) ' MK2_S LOOP , MK2_S = ',MK2_S
@@ -3429,16 +3685,13 @@ C?      WRITE(LUWRT,*) 'INT_IOFF1 in SIGDEN',INT_IOFF1
           NOCTPB_S = NOCTYP(IBSTP)
 *
 *         arrays giving allowed type combinations (of alpha and beta)
-*         (integer!)
           call memmar(KSIOIO,NOCTPA_S*NOCTPB_S,'ADDL  ',1,'SIOIO ')
-C         call memmar(KSIOIO,NOCTPA_S*NOCTPB_S,'ADDL  ',2,'SIOIO ')
           CALL IAIBCM_REL(ISSPC,IASTP,IBSTP,WORK(KSIOIO))
 *
-*         arrays giving block type (integer!)
+*         arrays giving block type
           KSVST = 1
           call memmar(KSBLTP,NSMST,'ADDL  ',1,'SBLTP ')
-C         call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
-          CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP))
+          CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,WORK(KSBLTP))
 *
 * Loop over batches of sigma for this MK2_S projection value
           do JBATS = 1,NBAT_MS2(IMK2_S)
@@ -3471,8 +3724,6 @@ C         call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
                 IOFFSET_SCRATCH = IOFFSET_SCRATCH + IBLOCKL_S(ISBLK)
               END IF
             END DO
-CSK         WRITE(LUWRT,*) 'ICOMPUTE for batch JBATABS is',
-CSK  &                      ICOMPUTE,JBATABS
             IF( ICOMPUTE .eq. 0 ) THEN
               starttimer = MPI_WTIME()
               GOTO 60
@@ -3482,7 +3733,7 @@ C
             LS = LEBATS(JBATABS)
             CALL DZERO(HC,LS)
             if (ISIGDEN.eq.1) then
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
               if (NTEST.ge.500) then
                  WRITE(LUWRT,*)
                  WRITE(LUWRT,*)
@@ -3536,7 +3787,7 @@ C
 *
               DO IMK2_C = 1, NMS2VAL
                 MK2_C = MS2VAL(IMK2_C)
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
                 if (NTEST.ge.50) then
                   write(LUWRT,*) '- - - - - - - - - - - -'
                   write(LUWRT,*) ' MK2_C LOOP , MK2_C = ',MK2_C
@@ -3544,10 +3795,11 @@ C
                 end if
 #endif
                 MK2_DIFF = ABS(MK2_C - MK2_S)
-                max_MK2_DIFF = 4
-#if defined LUCI_DEBUG
-                IF( NTEST .ge. 50 )THEN
-                  IF (MK2_DIFF .gt. max_MK2_DIFF) THEN
+                max_MK2_DIFF =  4  ! max delta delta MK
+#ifdef LUCI_DEBUG
+                IF(NTEST .ge. 50)THEN
+                  write(LUWRT,*) 'MK2_DIFF =',MK2_DIFF
+                  IF(MK2_DIFF .gt. max_MK2_DIFF) THEN
                     write(LUWRT,*) 'MK2 skip, MK2_DIFF =',MK2_DIFF
                   END IF
                 END IF
@@ -3558,53 +3810,40 @@ C
 *                   k-imaginary) /HJAAJ Aug 2008. TODO TODO to define
 *                   max_MK2_DIFF
 *
-* Kramers symmetry restriction
-                if (IKRA_SYM.eq.1.and.MK2_C.lt.0) then
-                  if (IRIC.eq.1) IKSFAC = 1
-                  if (IRIC.eq.2) IKSFAC = -1
-* copy relevant block of sigma vector to position and 
-* multiply with IKSFAC.
-* FIXME !!
-                  stop 'KS not implemented yet.'
-                else
-                  IACTP = IST_FOR_DT(1,IMK2_C)
-                  IBCTP = IST_FOR_DT(2,IMK2_C)
-                  NBL_C = NBLK_MS2(IMK2_C)
-C                 C and sigma may have different symmetry in general
-                  IF( DOSIGPROP ) NBL_C = NBLK_MS2_C(IMK2_C)
+                IACTP = IST_FOR_DT(1,IMK2_C)
+                IBCTP = IST_FOR_DT(2,IMK2_C)
+                NBL_C = NBLK_MS2(IMK2_C)
+C               C and sigma may have different symmetry in general
+                IF( DOSIGPROP ) NBL_C = NBLK_MS2_C(IMK2_C)
 #if defined (VAR_MPI2)
-*                 set new offset
-                  IOFF_SCR1_C = IOFF_SCR1_C + IOFF_SCR2_C
-                  INT_IOFF1_C = INT_IOFF1_C + INT_IOFF2_C
-CSK               WRITE(LUWRT,*) ' NEW OFFSET FOR C-VECTOR FILE',
-CSK     &                          IOFF_SCR1_C, INT_IOFF1_C
+*               set new offset
+                IOFF_SCR1_C = IOFF_SCR1_C + IOFF_SCR2_C
+                INT_IOFF1_C = INT_IOFF1_C + INT_IOFF2_C
 #else
-                  IF (MK2_DIFF .LE. max_MK2_DIFF) THEN
-C                   copy blocks with given MK2_C to LUSC37
-                    CALL REWINE(LUSC37,-1)
-                    CALL COPNBLKD(LLUC,LUSC37,C,NBL_C,0,LBLK)
-C                   end of vector mark
-                    CALL ITODS(-1,1,-1,LUSC37)
-                  ELSE
-C                   skip blocks with given MK2_C
-                    CALL COPNBLKD(LLUC,-1,C,NBL_C,0,LBLK)
-                  END IF
+                IF (MK2_DIFF .LE. max_MK2_DIFF) THEN
+C                 copy blocks with given MK2_C to LUSC37
+                  CALL REWINE(LUSC37,-1)
+                  CALL COPNBLKD(LLUC,LUSC37,C,NBL_C,0,LBLK)
+C                 end of vector mark
+                  CALL ITODS(-1,1,-1,LUSC37)
+                ELSE
+C                 skip blocks with given MK2_C
+                  CALL COPNBLKD(LLUC,-1,C,NBL_C,0,LBLK)
+                END IF
 #endif /* if def VAR_MPI2 */
-                  IF (MK2_DIFF .LE. max_MK2_DIFF)
-     &            call sigden_rel2(C,HC,JBATABS,LBATS,LEBATS,I1BATS,
-     &                             IBATS,LUSC37,LLUHC,T,T_BUFF,
-     &                             ISIGDEN,IASTP,IBSTP,IRIS,IRIC,
-     &                             IMK2_C,IPRDEN,SBLK_READS2
+                IF (MK2_DIFF .LE. max_MK2_DIFF)
+     &          call sigden_rel2(C,HC,JBATABS,LBATS,LEBATS,I1BATS,
+     &                           IBATS,LUSC37,LLUHC,T,T_BUFF,
+     &                           ISIGDEN,IASTP,IBSTP,IRIS,IRIC,
+     &                           IMK2_C,IPRDEN,SBLK_READS2
 #if defined (VAR_MPI2)
-     &                            ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
-     &                             ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
-     &                             LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC,
-     &                             IT_TTPL,IT_TTOL
-     &                            ,IBLOCKL_S,NPARBLOCK_S
+     &                          ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
+     &                           ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
+     &                           LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC,
+     &                           IT_TTPL,IT_TTOL
+     &                          ,IBLOCKL_S,NPARBLOCK_S
 #endif
-     &                             )
-                end if
-*               ^ End if Kramers restriction
+     &                           )
 #if defined (VAR_MPI2)
 *               keep track of correct offset
                 IOFF_SCR2_C = 0
@@ -3615,14 +3854,12 @@ C                   skip blocks with given MK2_C
                 NUM_BLK = NUM_BLK + NBL_C
                 INT_IOFF2_C = NBL_C
 #endif /* if def VAR_MPI2 */
-              END DO
-*             ^ End of loop over IMK2_C
-            END DO
-*           ^ End of loop over IRIC
+              END DO ! IMK2_C
+            END DO ! IRIC
 *
  60       CONTINUE
             if(ISIGDEN.eq.1) then
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
               if(NTEST.ge.100) then
                 WRITE(LUWRT,'(/A)') ' ******************'
                 WRITE(LUWRT,'( A)') ' *  final sbatch  *'
@@ -3651,9 +3888,6 @@ C                   skip blocks with given MK2_C
 *               check norm of the block
                 XXX = 0.0D0
                 XXX = DDOT(LEN_T,HC(IOFF),1,HC(IOFF),1)
-CSK             IF( XXX .eq. 0.0D0 ) THEN
-CSK               WRITE(LUWRT,*) ' Norm of block', ISBLK,' is 0.0D0'
-CSK             END IF
                 IF( XXX .ne. 0.0D0 ) THEN
 C                 mark block as nonzero
                   LUHCLIST(INT_IOFF1) = IONE
@@ -3773,13 +4007,10 @@ C
 *
 #endif /* if !def VAR_MPI2 */
 *
+!#undef LUCI_DEBUG
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SIGDEN_REL2(CB,SB,JBATABS,LBATS,LEBATS,I1BATS,IBATS,
      &                       LUC,LUHC,T,T_BUFF,ISIGDEN,IASTP,IBSTP,
      &                       IRIS,IRIC,IMK2_C,IPRNT,SBLK_READS2
@@ -3802,6 +4033,7 @@ C
 * Input
 * =====
 *
+      use symmetry_setup_krci
 #include "implicit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -3820,7 +4052,6 @@ C
 #include "cstate.inc"
 #include "wrkspc.inc"
 #include "strbas.inc"
-#include "csm.inc"
 *. Batches of sigma
       INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 *.Scratch
@@ -3831,7 +4062,7 @@ C
       NTESTL = 000
       NTEST = MAX(NTESTL,IPRNT)
 *
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*) ' ================='
         WRITE(LUWRT,*) ' SIGDEN2 speaking :'
@@ -3884,13 +4115,12 @@ C           CPU-block - test if non-zero
             CALL GSTTBLD2(SB(ISOFF),LUHC)
 #endif
 *
-C           NTEST = 100
-C           IF ( LEN2 .gt. 0 .and. NTEST .ge. 100) THEN
-C             WRITE(LUWRT,'(/A,2I6)') 
-C    &        '  lhs vector block:',ISBLK, ISOFF
-C             CALL WRTMATMN(SB(ISOFF),1,LEN2,1,LEN2,LUWRT)
-C           END IF
-C           NTEST = 000
+            IF (LEN2 .gt. 0 .and. NTEST .ge. 100) THEN
+              WRITE(LUWRT,'(/A,2I6)') 
+     &        '  lhs vector block:',ISBLK, ISOFF
+              CALL WRTMATMN(SB(ISOFF),1,LEN2,1,LEN2,LUWRT)
+            END IF
+
   80        CONTINUE
 #if defined (VAR_MPI2)
             IOFF_SCR2 = LEN2
@@ -3918,11 +4148,7 @@ C           NTEST = 000
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SIGDEN_REL3(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,T,T_BUFF,
      &                       ISIGDEN,IRIS,IRIC
 #if defined (VAR_MPI2)
@@ -3947,6 +4173,8 @@ C           NTEST = 000
 *    Timo Fleig, March 31, 2003
 *============================================
 *
+      use symmetry_setup_krci
+      use mospinor_info
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3959,28 +4187,21 @@ C           NTEST = 000
       INTEGER IBLOCK(8,*)
 *
 #include "cands.inc"
-#include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "csm.inc"
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
-#include "lucinp.inc"
 #include "cprnt.inc"
-#include "glbbas.inc"
 #include "oper.inc"
 #include "ctcc.inc"
       COMMON/CMXCJ/MXCJ
 *
-      COMMON/HIDSCRR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
-C
 C     integer array may become very long
-C
       INTEGER*8 INTSCR
 C
 #if defined (VAR_MPI)
@@ -4049,6 +4270,7 @@ C     release pure local scratch
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'SIGD3X')
 C
       MAXLEN_I1 = MAX(MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS)
+!     print *,'SIGDEN3... MAXLEN_I1 is',MAXLEN_I1
       LSCR3 = MAXLEN_I1
 C
 C     non-local scratch - used in called subroutines
@@ -4066,6 +4288,11 @@ C
 C
       call memmar(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
       call memmar(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
+C
+      call izero(work(KI1), LSCR3)
+      call izero(work(KI2), LSCR3)
+      call izero(work(KI3), LSCR3)
+      call izero(work(KI4), LSCR3)
 C
 C     T-elements
       INTSCR = MXINKA**4
@@ -4116,7 +4343,7 @@ C     arrays giving allowed type combinations
 C
 C     arrays giving block type
       call memmar(KCBLTP,NSMST,'ADDL  ',1,'CBLTP ')
-      CALL ZBLTP_REL(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP))
+      CALL ZBLTP_REL(ISMOST(1,ICSM),NSMST,WORK(KCBLTP))
 C     use all symmetryblocks of given TT
       ITTSS_ORD = 2
 C
@@ -4142,7 +4369,6 @@ C     &     WORK(KNSTSO2(IBCTP)),NOCTPA_C,NOCTPB_C,NSMST,L0BLOCK,
      &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
 #endif
 C
-ctf   CALL MEMMAR(KLISMDST,MAX_NSYMDIST,  'ADDL  ',1,'ISMDST')
       CALL MEMMAR(KLISMDST,MAX_NSYMDIST+1,  'ADDL  ',1,'ISMDST')
 C
       LSIRES = MXINKA**4
@@ -4151,6 +4377,27 @@ C
 C     allocation of resolution matrices: sigma + C
       call memmar(KSIRES,LSIRES,'ADDL  ',2,'KSIRES')
       call memmar(KCJRES,LCJRES,'ADDL  ',2,'KCJRES')
+
+!     allocation for string length handling of unbarred (alpha)/ barred
+!     (beta) creation / annihilation strings
+      call memmar(KNICA    ,MXNDGIRR              ,'ADDL  ',1,'KNICA ')
+      call memmar(KNICB    ,MXNDGIRR              ,'ADDL  ',1,'KNICB ')
+      call memmar(KNIAA    ,MXNDGIRR              ,'ADDL  ',1,'KNIAA ')
+      call memmar(KNIAB    ,MXNDGIRR              ,'ADDL  ',1,'KNIAB ')
+      call memmar(KNKA     ,MXNDGIRR              ,'ADDL  ',1,'KNKA  ')
+      call memmar(KNKB     ,MXNDGIRR              ,'ADDL  ',1,'KNKB  ')
+
+!     allocation for string length handling of unbarred (alpha)/ barred
+!     (beta) creation / annihilation strings
+      call memmar(KIB_CA   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_CA')
+      call memmar(KIB_CB   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_CB')
+      call memmar(KIB_AA   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_AA')
+      call memmar(KIB_AB   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_AB')
+      call memmar(KIB_T    ,MXNDGIRR**2 * MXNDGIRR,'ADDL  ',1,'KIB_T ')
+      call memmar(KNIKAINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNIKA ')
+      call memmar(KNIKBINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNIKB ')
+      call memmar(KNJKAINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNJKA ')
+      call memmar(KNJKBINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNJKB ')
 C
 C     set offset for T_BUFF array
       LEN_T_BUFF_NZ = LEN_T_VEC
@@ -4169,14 +4416,19 @@ C
      &                 IPRSIG,IPRDEN,LUC,WORK(KCJRES),WORK(KSIRES),
      &                 WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),
      &                 WORK(KLIBT),ISSM,ICSM,ISIGDEN,NCBATCH,T,T_BUFF,
-     &                 IDIAG,IRIS,IRIC,WORK(KLSOBEX),WORK(KLSPOBEX_AC),
+     &                 IDIAG,IRIS,IRIC,WORK(KLSOBEX),
      &                 WORK(KTOCC1),WORK(KTOCC2),WORK(KTOCC3),
      &                 WORK(KTOCC4),WORK(KI1G),WORK(KXI1G),WORK(KI2G),
      &                 WORK(KXI2G),WORK(KI3G),WORK(KXI3G),WORK(KI4G),
      &                 WORK(KXI4G),WORK(KI1GE),WORK(KXI1GE),WORK(KI2GE),
      &                 WORK(KXI2GE),WORK(KI3GE),WORK(KXI3GE),
      &                 WORK(KI4GE),WORK(KXI4GE),WORK(KSIGNNHX),
-     &                 WORK(KLISMDST)
+     &                 WORK(KLISMDST),
+     &                 WORK(KNICA),WORK(KNICB),WORK(KNIAA),WORK(KNIAB),
+     &                 WORK(KNKA),WORK(KNKB),
+     &                 WORK(KIB_CA),WORK(KIB_CB),WORK(KIB_AA),
+     &                 WORK(KIB_AB),WORK(KIB_T),WORK(KNIKAINTM),
+     &                 WORK(KNIKBINTM),WORK(KNJKAINTM),WORK(KNJKBINTM)
 #if defined (VAR_MPI2)
      &                ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                 ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
@@ -4195,31 +4447,30 @@ C
 #endif
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SIGDEN_REL4(NSBLOCK,ISBLOCK,CB,SB,
-     &           NSSOA_S,NSSOB_S,NSSOA_C,NSSOB_C,
-     &           IASTP,IBSTP,IACTP,IBCTP,MAXK,
-     &           XINT,
-     &           I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
-     &           IPRS,IPRD,LUC,CJRES,SIRES,
-     &           LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
-     &           ISSM,ICSM,ISIGDEN,NCBATCH,
-     &           T,T_BUFF,
-     &           IDIAG,IRIS,IRIC,ITSPOBEX_TP,ISPOBEX_AC,
-     &           ITOCC1,ITOCC2,ITOCC3,ITOCC4,
-     &           I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
-     &           I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
-     &           SIGN_NHX,ISMDST
+     &                       NSSOA_S,NSSOB_S,NSSOA_C,NSSOB_C,
+     &                       IASTP,IBSTP,IACTP,IBCTP,MAXK,
+     &                       XINT,
+     &                       I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &                       IPRS,IPRD,LUC,CJRES,SIRES,
+     &                       LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
+     &                       ISSM,ICSM,ISIGDEN,NCBATCH,
+     &                       T,T_BUFF,
+     &                       IDIAG,IRIS,IRIC,ITSPOBEX_TP,
+     &                       ITOCC1,ITOCC2,ITOCC3,ITOCC4,
+     &                       I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
+     &                       I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,
+     &                       I4GE,XI4GE,SIGN_NHX,ISMDST,
+     &                       NICA,NICB,NIAA,NIAB,NKA,NKB,
+     &                       IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &                       NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM
 #if defined (VAR_MPI2)
-     &          ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
-     &           ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
-     &           LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC,T_SCR_CC,
-     &           IT_TTPL,IT_TTOL
-     &          ,IBLOCKL_S,NPARBLOCK_S
+     &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
+     &                       ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
+     &                       LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC,
+     &                       T_SCR_CC,IT_TTPL,IT_TTOL,IBLOCKL_S,
+     &                       NPARBLOCK_S
 #endif
      &           )
 *
@@ -4265,6 +4516,8 @@ C
 * either fetches/disposes symmetry blocks or
 * Symmetry-occupation-occupation blocks
 *
+      use symmetry_setup_krci
+      use mospinor_info
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 *
@@ -4282,9 +4535,6 @@ C
 #include "parluci.h"
 C     general input
 #include "mxpdim.inc"
-#include "csm.inc"
-#include "orbinp.inc"
-#include "lucinp.inc"
 #include "gasstr.inc"
 #include "wrkspc.inc"
 #include "cgas.inc"
@@ -4294,6 +4544,8 @@ C     general input
 #include "ctcc.inc"
 C     memory window
 #include "krmc_shmem.h"
+!         FOR debug!!!
+#include "dgroup.h"
 C     specific input
       INTEGER ISBLOCK(8,*)
       INTEGER LCBLOCK(*),I1CBLOCK(*),ICBLOCK(8,*),LECBLOCK(*)
@@ -4318,8 +4570,8 @@ C
 #endif
 
       dimension ITSPOBEX_TP(4*NGAS,*)
-      INTEGER ISPOBEX_AC(*), ICPL
-      INTEGER*8 ITB, ITB_BUFF, ITB_BUFF_ADD
+      INTEGER ICPL
+      INTEGER*8 ITB, ITB_BUFF, ITB_BUFF_ADD, nelm_cc
 C
       ONEM = -1.0D0
       IZERO = 0
@@ -4334,7 +4586,6 @@ C
       NTESTL = 000
       NTEST = MAX(NTESTL,max(IPRS,IPRD))
 C
-      NTEST = 000
 #if defined LUCI_DEBUG
       IF(NTEST.GE.800) THEN
         WRITE(LUWRT,*) ' ================'
@@ -4351,10 +4602,9 @@ C
           END DO
       END IF
 #endif
-      NTEST = 000
 *
 #if !defined (VAR_MPI2)
-#if defined LUCI_DEBUG
+#ifdef LUCI_DEBUG
       IF(NTEST.GE.500) THEN
         WRITE(LUWRT,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
@@ -4391,8 +4641,8 @@ C
         NJBLOCK = LCBLOCK(JCBATCH)
         NCTT_BLK = NJBLOCK/NSMST
         I1C = I1CBLOCK(JCBATCH)
-CSK     WRITE(LUWRT,*) ' JCBATCH, NJBLOCK, NCTT_BLK, I1C',
-CSK  &                   JCBATCH, NJBLOCK, NCTT_BLK, I1C
+!       WRITE(LUWRT,*) ' NJBLOCK, NCTT_BLK, I1C, NSBLOCK, NSTT_BLK',
+!    &                   NJBLOCK, NCTT_BLK, I1C, NSBLOCK, NSTT_BLK
 C
 C       loop over TT blocks of sigma and C in batches and 
 C       obtain contributions 
@@ -4502,8 +4752,8 @@ C             check connections
      &                    ITSPOBEX_TP(ICB_OFF,ITTP), 
      &                    ITSPOBEX_TP(IAB_OFF,ITTP),
      &                    NGAS,ICON)
-csk           WRITE(LUWRT,*) ' type ITTP and ICON',ITTP,ICON
-              IF( ICON .eq. 1 .and. ISPOBEX_AC(ITTP) .eq. 1 ) THEN
+!             WRITE(LUWRT,*) ' type ITTP and ICON',ITTP,ICON
+              IF(ICON .eq. 1)THEN
 C
 C                offset for T array
                  ITB = IBTSOSO_TP(ITTP)
@@ -4598,25 +4848,12 @@ C                    read block in core
 #else
                      CALL GSTTBLD2(CB(JOFF),LUC)
 #endif
-C
                      IBI_MULT_BL = IBI_MULT_BL + 1
 C                    real/imaginary scaling according to:
 C                    S_r = (H_r . C_r) - (H_i . C_i)
                      if (IRIS.eq.1.and.IRIC.eq.2) then
                        CALL DSCAL(JLEN,ONEM,CB(JOFF),1)
                      end if
-C                    NTEST = 200
-C                    IF (NTEST.GE.200) THEN
-C                      LEN = ICBLOCK(7,JBLK)
-C                      IF( LEN .gt. 0 ) THEN
-C                        WRITE(LUWRT,*) ' C block read in, '//
-C    &                                  'JBLK, JOFF, IRIS, IRIC:',
-C    &                   JBLK,JOFF,IRIS,IRIC
-C                        LEN = ICBLOCK(7,JBLK)
-C                        CALL WRTMATMN(CB(JOFF),1,LEN,1,LEN,LUWRT)
-C                      END IF
-C                    END IF
-C                    NTEST = 000
 #if defined (VAR_MPI2)
  8888                CONTINUE
                      IOFF_SCR_C = IOFF_SCR_C + JLEN
@@ -4626,14 +4863,42 @@ C                    NTEST = 000
                  END IF
 C                ^ End if block should be read in 
 C
-C                setting undefined variables to zero:
-                 ICRESTRICT = 0
-                 ISRESTRICT = 0
-                 ITDIAG = 0
-C                proper multiplication sign
-                 SIGN_EXTERNAL = SIGN_NHX(ITTP)
-C
-                 CALL GNSIDE_REL(ISIGDEN,IRIS,IRIC,
+                 if(linear.or.dougrp.lt.10)then
+                   CALL GNSIDE_REL_opt(ISIGDEN,IRIS,IRIC,
+     &                                 ITSPOBEX_TP(ICA_OFF,ITTP),
+     &                                 ITSPOBEX_TP(ICB_OFF,ITTP),
+     &                                 ITSPOBEX_TP(IAA_OFF,ITTP),
+     &                                 ITSPOBEX_TP(IAB_OFF,ITTP),
+     &                                 NELFSPGP(1,ILATP),
+     &                                 NELFSPGP(1,ILBTP),
+     &                                 NELFSPGP(1,IRATP),
+     &                                 NELFSPGP(1,IRBTP),
+     &                                 NSSOA_S(1,IATP),NSSOB_S(1,IBTP),
+     &                                 NSSOA_C(1,JATP),NSSOB_C(1,JBTP),
+     &                                 T(ITB),T_BUFF(ITB_BUFF),T_SCR_CC,
+     &                                 ITTP,SB(ISOFF),CB(ICOFF),ISSM,
+     &                                 ICSM,I1,XI1S,I2,XI2S,I3,XI3S,I4,
+     &                                 XI4S,XINT,CJRES,SIRES,MAXK,
+     &                                 ITOCC1,ITOCC2,ITOCC3,ITOCC4,
+     &                                 I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,
+     &                                 XI4G,I1GE,XI1GE,I2GE,XI2GE,I3GE,
+     &                                 XI3GE,I4GE,XI4GE,SIGN_NHX(ITTP),
+     &                                 IPRS,IPRD,ISMDST,
+     &                                 NICA,NICB,NIAA,NIAB,NKA,NKB,
+     &                                 IB_CA,IB_CB,
+     &                                 IB_AA,IB_AB,IB_T,
+     &                                 NIKAINTM,NIKBINTM,
+     &                                 NJKAINTM,NJKBINTM
+#if defined (VAR_MPI2)
+     &                                ,INT_IOFF1_C+ICBLK-1,
+     &                                 IS_OFF_BLK+ISBLK-1,
+     &                                 ISCLFAC_GROUP,NPARBLOCK_S
+#endif
+     &           )
+                 else
+                   call quit('*** sigden_rel4: this branch is no'//
+     &                       ' longer active.***')
+                   CALL GNSIDE_REL(ISIGDEN,IRIS,IRIC,
      &                           ITSPOBEX_TP(ICA_OFF,ITTP),
      &                           ITSPOBEX_TP(ICB_OFF,ITTP),
      &                           ITSPOBEX_TP(IAA_OFF,ITTP),
@@ -4649,13 +4914,15 @@ C
      &                           ITOCC1,ITOCC2,ITOCC3,ITOCC4,
      &                           I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &                           I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,
-     &                           XI4GE,ITDIAG,ICRESTRICT,ISRESTRICT,
-     &                           SIGN_EXTERNAL,IPRS,IPRD,ISMDST
+     &                           XI4GE,SIGN_NHX(ITTP),IPRS,IPRD,ISMDST,
+     &                           IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &                           NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM
 #if defined (VAR_MPI2)
      &                          ,INT_IOFF1_C+ICBLK-1,IS_OFF_BLK+ISBLK-1,
      &                           ISCLFAC_GROUP,NPARBLOCK_S
 #endif
      &           )
+                 end if
 C
 C                ISIGDEN ==2
 C
@@ -4679,39 +4946,31 @@ C                       window offset determined above
      &                                 ITB_I8,ICPL,2,MY_T_WIN)
 #endif
                      END IF
-                   END IF
-C                  ^ ISIGDEN
-                 END IF
-C                ^ IT_SHL
-               END IF
-C              ^ end if connection 
+                   END IF ! ISIGDEN
+                 END IF ! IT_SHL
+               END IF ! connection check
 #if defined (VAR_MPI2)
             ITB_BUFF = ITB_BUFF + ITB_BUFF_ADD
 #endif
 C
- 8000       CONTINUE
-C           ^  end of loop over spinorbital-excitation types 
+ 8000       CONTINUE ! loop over spinorbital-excitation types 
 C
-#if defined LUCI_DEBUG
-            NTEST = 300
-            IF(NTEST.GE.300) THEN
-              WRITE(LUWRT,*) ' Updated sigma blocks ' 
-#if defined (VAR_MPI2)
-              CALL WRTVH1_PAR(SB(ISOFF),ISSM,NSSOA_S(1,IATP),
-     &                        NSSOB_S(1,IBTP),NSMST,0,NPARBLOCK_S,
-     &                        IS_OFF_BLK+ISBLK-1,1)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            WRITE(LUWRT,*) ' Updated sigma blocks ' 
+#ifdef VAR_MPI2
+            CALL WRTVH1_PAR(SB(ISOFF),ISSM,NSSOA_S(1,IATP),
+     &                      NSSOB_S(1,IBTP),NPARBLOCK_S,
+     &                      IS_OFF_BLK+ISBLK-1,1)
 #else
-              CALL WRTVH1(SB(ISOFF),ISSM,NSSOA_S(1,IATP),
-     &                    NSSOB_S(1,IBTP),NSMST,0)
+            CALL WRTVH1(SB(ISOFF),ISSM,NSSOA_S(1,IATP),
+     &                  NSSOB_S(1,IBTP))
 #endif
-            END IF
-            NTEST = 000
 #endif /* debug mode */
+!#undef LUCI_DEBUG
 C
- 9999       CONTINUE
-C           ^ skip TT-blocks for sigma if not included in nodelist
-10000     CONTINUE
-C         ^ End of loop over blocks of sigma 
+ 9999       CONTINUE ! skip TT-blocks for sigma if not included in nodelist
+10000     CONTINUE ! loop over blocks of sigma 
 #if defined (VAR_MPI2)
           IF(IREAD.EQ.0) THEN
 C
@@ -4722,10 +4981,8 @@ CSK  &                         IST_C_BLK_CT+JBLK - 1
               IOFF_SCR_C = IOFF_SCR_C + IBLOCKL_C(IST_C_BLK_CT+JBLK-1)
             END DO
 C
-          END IF 
-C         ^ unused c-blocks
- 8999     CONTINUE
-C         ^ skip TT-c-blocks if not 'active'
+          END IF ! unused c-blocks
+ 8999     CONTINUE ! skip TT-c-blocks if not 'active'
           IF( ICOMPUTE_C .eq. 0 ) THEN
 C           skip c-blocks on file
             DO JBLK = ICBLK, ICBLK + NCBLK - 1
@@ -4743,16 +5000,11 @@ C           these C blocks were not needed, skip them
             END DO
           END IF
 #endif
- 9000   CONTINUE
-C       ^ End of loop over TT C blocks in batch
-20000 CONTINUE
-C     ^End of loop over batches of C blocks
+ 9000   CONTINUE ! loop over TT C blocks in batch
+20000 CONTINUE ! loop over batches of C blocks
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE TCC_SUBBLK(TCC,TCC_BUFF,T_SCR_CC,TCC_SUB,IWAY,
      &                      NCA,NCA_SUB,ICA_B,NCB,NCB_SUB,ICB_B,
      &                      NAA,NAA_SUB,IAA_B,NAB,NAB_SUB,IAB_B,
@@ -4783,11 +5035,12 @@ C     ^End of loop over batches of C blocks
       DIMENSION TCC(NCA*NCB*NAA*NAB), TCC_BUFF(*), T_SCR_CC(*)
       DIMENSION TCC_SUB(NCA_SUB,NCB_SUB,NAA_SUB,NAB_SUB)
 *
+!     NTESTL = 500 ! debug
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
-csk      NTEST = 500
 *
-#if defined LUCI_DEBUG
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
       IF(NTEST.GE.500) THEN
         WRITE(LUWRT,*) ' Input to TCC_SUBBLK '
         WRITE(LUWRT,*) ' NCA, NCB, NAA, NAB', NCA,NCB,NAA,NAB
@@ -4935,72 +5188,17 @@ C        ^ "shared memory" / split mode
        END DO
       END IF
 *
-#if defined LUCI_DEBUG
-      IF(NTEST.GE.500) THEN 
-        WRITE(LUWRT,*) ' TCC_SUBBLK : TCC_SUB '
-        NCAB_SUB = NCA_SUB*NCB_SUB
-        NAAB_SUB = NAA_SUB*NAB_SUB
-        CALL WRTMATMN(TCC_SUB,NCAB_SUB,NAAB_SUB,NCAB_SUB,NAAB_SUB,LUWRT)
-      END IF
+#ifdef LUCI_DEBUG
+      WRITE(LUWRT,*) ' TCC_SUBBLK : TCC_SUB '
+      NCAB_SUB = NCA_SUB*NCB_SUB
+      NAAB_SUB = NAA_SUB*NAB_SUB
+      CALL WRTMATMN(TCC_SUB,NCAB_SUB,NAAB_SUB,NCAB_SUB,NAAB_SUB,LUWRT)
 #endif
+!#undef LUCI_DEBUG
 *  
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
-*
-*. Write TCC block containing all symmetries, total sym of T is ITCC_SM
-*
-* Jeppe Olsen, summer of 99
-*
-*  Adapted to double group symmetry
-*    Timo Fleig, Apr. 07, 2003
-*
-#include "implicit.inc"
-#include "ipoist8.inc"
-#include "mxpdim.inc"
-#include "symm.inc"
-*
-*. Input
-       DIMENSION TCC(*)
-       INTEGER NCA(*), NCB(*), NAA(*), NAB(*)
-*
-       WRITE(6,*) ' Block of Computed Density Matrices '
-       WRITE(6,*) '===================================='
-       IOFF = 1
-       DO ISM_C = 1, NSMST
-         ISM_A = IDBGMULT(ISM_C,IADJSYM(ITCC_SM)) 
-         DO ISM_CA = 1, NSMST
-           ISM_CB = IDBGMULT(ISM_C,IADJSYM(ISM_CA))
-           DO ISM_AA = 1, NSMST
-             ISM_AB = IDBGMULT(ISM_A,IADJSYM(ISM_AA))
-C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
-             LCA = NCA(ISM_CA)
-             LCB = NCB(ISM_CB)
-             LAA = NAA(ISM_AA)
-             LAB = NAB(ISM_AB)
-             LENGTH = LCA*LCB*LAA*LAB
-*
-             IF(LENGTH.NE.0) THEN
-               WRITE(6,'(A,4I4)') ' Sym of CA, CB, AA, AB ',
-     &         ISM_CA, ISM_CB, ISM_AA, ISM_AB  
-               CALL WRTMAT(TCC(IOFF),1,LENGTH,1,LENGTH)
-             END IF
-             IOFF = IOFF + LENGTH
-           END DO
-         END DO
-       END DO
-*
-       RETURN
-       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRT_TP_GENOP(ICA,ICB,IAA,IAB,NGAS)
 *
 * Write occupation in each GASspace for general operator
@@ -5023,10 +5221,7 @@ C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
 * Print types of spin-orbital excitations
@@ -5060,66 +5255,51 @@ C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
      &  (IEX_TP(I+3*NGAS,JEX_TP),I=1,NGAS)
       END DO
 *
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE WRTVH1(H,IHSM,NRPSM,NCPSM,NSMOB,ISYM)
+
+      SUBROUTINE WRTVH1(H,IHSM,NRPSM,NCPSM)
 *
 * Write one-electron integrals with symmetry IVSM
-* ISYM = 1 => Only lower triangular matrix included
 *
 * Jeppe Olsen, Jan. 1999
 * Timo Fleig, June 2001: relativistic case
 *
+      use symmetry_setup_krci
 #include "implicit.inc"
-#include "mxpdim.inc"
 *. General input
-#include "symm.inc"
       INTEGER NRPSM(NSMOB),NCPSM(NSMOB)
 *. Specific input
       DIMENSION H(*)
 *
       IOFF = 1
-        DO ISM = 1, NSMOB
+!       DO ISM = 1, NSMOB
+        DO ISM = NSMOB/2+1,NSMOB
           JSM = IDBGMULT(INVELM(ISM),IHSM)
           NI = NRPSM(ISM)
           NJ = NCPSM(JSM)
-          IF(ISYM.EQ.0.OR.ISM.GT.JSM) THEN
-*. Complete block
+          if(NI*NJ.gt.0)then
             WRITE(6,*) ' Block with symmetry ISM, JSM ',ISM,JSM
             CALL WRTMAT(H(IOFF),NI,NJ,NI,NJ)
-            IOFF = IOFF + NI*NJ
-          ELSE IF (ISYM.EQ.1.AND.ISM.EQ.JSM) THEN
-            CALL PRSYM(H(IOFF),NI)
-            IOFF = IOFF * NI*(NI+1)/2
-          END IF
+          end if
+          IOFF = IOFF + NI*NJ
         END DO
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE WRTVH1_PAR(H,IHSM,NRPSM,NCPSM,NSMOB,ISYM,IACTL,IOFFLST,
-     &                      IVERS)
+
+      SUBROUTINE WRTVH1_PAR(H,IHSM,NRPSM,NCPSM,IACTL,
+     &                      IOFFLST,IVERS)
 *
 * Write one-electron integrals with symmetry IVSM
-* ISYM = 1 => Only lower triangular matrix included
 *
 * Jeppe Olsen, Jan. 1999
 * Timo Fleig, June 2001: relativistic case
 * Stefan Knecht, May 2007: parallel adaption
 *
+      use symmetry_setup_krci
 #include "implicit.inc"
-#include "mxpdim.inc"
 *. General input
-#include "symm.inc"
 #include "parluci.h"
       INTEGER NRPSM(NSMOB),NCPSM(NSMOB), IACTL(*)
 *. Specific input
@@ -5129,38 +5309,30 @@ C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
       IRUN = 0
       IRUN = IOFFLST
       IF( IVERS .eq. 0 ) THEN
-        DO ISM = 1, NSMOB
+!       DO ISM = 1,NSMOB
+        DO ISM = NSMOB/2+1,NSMOB
           IF( IACTL( IRUN ) .eq. 0 ) GOTO 100
           JSM = IDBGMULT(INVELM(ISM),IHSM)
           NI = NRPSM(ISM)
           NJ = NCPSM(JSM)
-          IF(ISYM.EQ.0.OR.ISM.GT.JSM) THEN
 *. Complete block
-            WRITE(LUWRT,*) ' Block with symmetry ISM, JSM ',ISM,JSM
-            CALL WRTMATMN(H(IOFF),NI,NJ,NI,NJ,LUWRT)
-            IOFF = IOFF + NI*NJ
-          ELSE IF (ISYM.EQ.1.AND.ISM.EQ.JSM) THEN
-            CALL PRSYM(H(IOFF),NI)
-            IOFF = IOFF * NI*(NI+1)/2
-          END IF
+          WRITE(LUWRT,*) ' Block with symmetry ISM, JSM ',ISM,JSM
+          CALL WRTMATMN(H(IOFF),NI,NJ,NI,NJ,LUWRT)
+          IOFF = IOFF + NI*NJ
  100      CONTINUE
           IRUN = IRUN + 1
         END DO
       ELSE
-        DO ISM = 1, NSMOB
+!       DO ISM = 1, NSMOB
+        DO ISM = NSMOB/2+1,NSMOB
           IF( IACTL( IRUN ) .ne. MYPROC ) GOTO 200
           JSM = IDBGMULT(INVELM(ISM),IHSM)
           NI = NRPSM(ISM)
           NJ = NCPSM(JSM)
-          IF(ISYM.EQ.0.OR.ISM.GT.JSM) THEN
 *. Complete block
-            WRITE(LUWRT,*) ' Block with symmetry ISM, JSM ',ISM,JSM
-            CALL WRTMATMN(H(IOFF),NI,NJ,NI,NJ,LUWRT)
-            IOFF = IOFF + NI*NJ
-          ELSE IF (ISYM.EQ.1.AND.ISM.EQ.JSM) THEN
-            CALL PRSYM(H(IOFF),NI)
-            IOFF = IOFF * NI*(NI+1)/2
-          END IF
+          WRITE(LUWRT,*) ' Block with symmetry ISM, JSM ',ISM,JSM
+          CALL WRTMATMN(H(IOFF),NI,NJ,NI,NJ,LUWRT)
+          IOFF = IOFF + NI*NJ
  200      CONTINUE
           IRUN = IRUN + 1
         END DO
@@ -5269,24 +5441,20 @@ C     ----------------------------------
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM,NSMST,IDIAG)
+
+      SUBROUTINE Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM)
 *
 * Offsets for symmetryblocks of TCC elements, sym of CA,CB,AA used 
-* If Idiag.eq.1 only blocks (Icasm,Iaasm).ge.(Icbsm,Iabsm) are included
 *
 *
 * Jeppe Olsen, Summer of 99
 *              July 2000, HNIE : IDIAG added
 * Timo Fleig, summer of 2001, modified for relativistic case
 *
+      use symmetry_setup_krci
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "symm.inc"
 *. Input
 *. Number of strings of different types, assumed to be 
 *. creations strings
@@ -5294,8 +5462,8 @@ C
 *. Output
       INTEGER IBT(MXNDGIRR,MXNDGIRR,MXNDGIRR)
 *
-      NTEST = 000
 #if defined LUCI_DEBUG
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Z_TCC_OFF speaking '
         WRITE(6,*) ' NSMST, IDIAG = ', NSMST, IDIAG
@@ -5314,19 +5482,16 @@ C
             ISM_ALPHA = (ISM_AA-1)*NSMST+ISM_CA
             ISM_BETA  = (ISM_AB-1)*NSMST+ISM_CB
 *
-            IF((IDIAG.EQ.0).OR.
-     &         (IDIAG.EQ.1.AND.ISM_ALPHA.GT.ISM_BETA)) THEN
-              IBT(ISM_CA,ISM_CB,ISM_AA) = IOFF
-              IF(IDIAG.EQ.1.AND.ISM_ALPHA.GT.ISM_BETA) 
-     &        IBT(ISM_CB,ISM_CA,ISM_AB) = -IOFF
-              IOFF = IOFF + 
-     &          NCA(ISM_CA)*NCB(ISM_CB)*NAA(ISM_AA)*NAB(ISM_AB)
-*                 ^ NAA was number of creation strings per sym
-            ELSE IF (IDIAG.EQ.1.AND.ISM_ALPHA.EQ.ISM_BETA) THEN
-              IBT(ISM_CA,ISM_CB,ISM_AA) = IOFF
-              LEN = NCA(ISM_CA)*NAA(ISM_AA)
-              IOFF = IOFF + LEN*(LEN+1)/2
-            END IF
+            IBT(ISM_CA,ISM_CB,ISM_AA) = IOFF
+            IOFF = IOFF + 
+     &      NCA(ISM_CA)*NCB(ISM_CB)*NAA(ISM_AA)*NAB(ISM_AB)
+*           ^ NCA was number of creation strings per sym
+!
+!           debug print
+!           if(NCA(ISM_CA)*NCB(ISM_CB)*NAA(ISM_AA)*NAB(ISM_AB).gt.0) 
+!    &      print '(a,5i4)', 'nonzero length: symmetries + length ==>',
+!    &      ISM_CA,ISM_CB,ISM_AA,ISM_AB,
+!    &      NCA(ISM_CA)*NCB(ISM_CB)*NAA(ISM_AA)*NAB(ISM_AB)
 #if defined LUCI_DEBUG
             if (NTEST.ge.100) then
               write(6,'(A,I2,A,I2,A,I2,A,I5)') 
@@ -5339,5 +5504,154 @@ C
         END DO
       END DO
 *
-      RETURN
+      END
+***********************************************************************
+
+      SUBROUTINE Z_TCC_OFF_opt(IBT,NCA,NCB,NAA,NAB,ITSYM)
+*
+* Offsets for symmetryblocks of TCC elements, sym of CA,CB,AA used 
+*
+*
+* Jeppe Olsen, Summer of 99
+*              July 2000, HNIE : IDIAG added
+* Timo Fleig, summer of 2001, modified for relativistic case
+*
+      use symmetry_setup_krci
+#include "implicit.inc"
+#include "mxpdim.inc"
+*. Input
+*. Number of strings of different types, assumed to be 
+*. creations strings
+      INTEGER NCA(*),NCB(*),NAA(*),NAB(*)
+*. Output
+      INTEGER IBT(MXNDGIRR,MXNDGIRR,MXNDGIRR)
+*
+!     print *,'ITSYM is',ITSYM
+      IOFF = 1
+      DO ISM_CA = 1, NSMST
+        if(NCA(ISM_CA).gt.0)then
+!         print '(a,i4)', 'nonzero ISM_CA ==>',ISM_CA
+          DO ISM_AA = 1, NSMST
+          if(NAA(ISM_AA).gt.0)then
+!         print '(a,i4)', 'nonzero ISM_AA ==>',ISM_AA
+            DO ISM_C = 1, NSMST
+
+              ISM_A  = IDBGMULT(ISM_C,IADJSYM(ITSYM))
+              ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
+              ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
+*
+              IBT(ISM_CA,ISM_CB,ISM_AA) = IOFF
+              IOFF = IOFF + 
+     &        NCA(ISM_CA)*NCB(ISM_CB)*NAA(ISM_AA)*NAB(ISM_AB)
+*             ^ NCA was number of creation strings per sym
+!
+!           debug print
+!           if(NCA(ISM_CA)*NCB(ISM_CB)*NAA(ISM_AA)*NAB(ISM_AB).gt.0) 
+!    &      print '(a,5i4)', 'nonzero length: symmetries + length ==>',
+!    &      ISM_CA,ISM_CB,ISM_AA,ISM_AB,
+!    &      NCA(ISM_CA)*NCB(ISM_CB)*NAA(ISM_AA)*NAB(ISM_AB)
+#if defined LUCI_DEBUG
+            write(6,'(A,I2,A,I2,A,I2,A,I5)') 
+     &            'IBT(',ISM_CA,',',ISM_CB,',',ISM_AA,') =',
+     &             IBT(ISM_CA,ISM_CB,ISM_AA)
+#endif
+*
+            END DO
+           end if
+          END DO
+        end if
+      END DO
+*
+      END
+
+***********************************************************************
+      SUBROUTINE SPOBEX_TO_ABOBEX(ISPOBEX_TP,NSPOBEX_TP,NGAS,
+     &                            IFLAG,NAOBEX_TP,NBOBEX_TP,IAOBEX_TP,
+     &                            IBOBEX_TP)
+*
+* Split spin-orbital excitations into alpha- and beta-orbital excitations
+*
+* IFLAG = 1 : Find only number of alpha- and beta- orbital excitations
+*
+* Jeppe Olsen, July 2000
+*
+#include "implicit.inc"
+*
+*. Input
+      INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
+*. Output
+      INTEGER IAOBEX_TP(2*NGAS,*),IBOBEX_TP(2*NGAS,*)
+*
+C?    WRITE(6,*) ' SPOBEX_TO_ABOBEX : NSPOBEX_TP = ', NSPOBEX_TP
+      DO IAB = 1, 2
+        LEX_TP = 0
+        DO JSPOBEX_TP = 1, NSPOBEX_TP
+*. Has this a or b excitation been observed before
+          I_AM_OLD_HAT = 0
+          DO KSPOBEX_TP = 1, LEX_TP
+            I_DENTICAL = 1
+            DO ICA = 1, 2
+              IEXP_OFF = (IAB-1)*NGAS + (ICA-1)*2*NGAS + 1
+              DO IGAS = 1, NGAS
+                IF(ISPOBEX_TP(IGAS+IEXP_OFF-1,JSPOBEX_TP).NE.
+     &             ISPOBEX_TP(IGAS+IEXP_OFF-1,KSPOBEX_TP)    )
+     &             I_DENTICAL = 0
+              END DO
+            END DO
+            IF(I_DENTICAL.EQ.1) I_AM_OLD_HAT = 1
+          END DO
+          IF(I_AM_OLD_HAT.EQ.0) THEN
+            LEX_TP = LEX_TP + 1
+            IF(IFLAG.EQ.0) THEN
+              DO ICA = 1, 2
+               IEXP_OFF =  (IAB-1)*NGAS + (ICA-1)*2*NGAS + 1
+               IAB_OFF  =  (ICA-1)*NGAS + 1
+               IF(IAB.EQ.1) THEN
+                 CALL ICOPVE(ISPOBEX_TP(IEXP_OFF,JSPOBEX_TP),
+     &                        IAOBEX_TP(IAB_OFF,LEX_TP),NGAS)
+               ELSE IF (IAB.EQ.2) THEN
+                 CALL ICOPVE(ISPOBEX_TP(IEXP_OFF,JSPOBEX_TP),
+     &                        IBOBEX_TP(IAB_OFF,LEX_TP),NGAS)
+               END IF
+              END DO
+            END IF
+          END IF ! I_AM_OLD_HAT = 0
+        END DO ! loop over JSPOBEX_TP
+      IF(IAB.EQ.1) THEN
+        NAOBEX_TP = LEX_TP
+      ELSE
+        NBOBEX_TP = LEX_TP
+      END IF
+      END DO ! loop over IAB
+*
+#ifdef LUCI_DEBUG
+      WRITE(6,*) ' Number of alpha-excitation operators ', NAOBEX_TP
+      WRITE(6,*) ' Number of beta-excitation operators ',  NBOBEX_TP
+      IF(IFLAG.EQ.0) THEN
+        WRITE(6,*) ' Alpha-excitation operators : '
+        WRITE(6,*) ' ============================='
+        WRITE(6,*)
+        DO JEX_TP = 1, NAOBEX_TP  
+         WRITE(6,*)
+         WRITE(6,*) ' alpha-orbital excitation ', JEX_TP
+         WRITE(6,'(A,16I4)') 
+     &   ' Creation      :',  (IAOBEX_TP(I+0*NGAS,JEX_TP),I=1,NGAS)
+         WRITE(6,'(A,16I4)') 
+     &   ' Annihilation  :',  (IAOBEX_TP(I+1*NGAS,JEX_TP),I=1,NGAS)
+        END DO
+        WRITE(6,*)
+        WRITE(6,*) ' beta-excitation operators : '
+        WRITE(6,*) ' ============================='
+        WRITE(6,*)
+        DO JEX_TP = 1, NBOBEX_TP  
+         WRITE(6,*)
+         WRITE(6,*) ' beta-orbital excitation ', JEX_TP
+         WRITE(6,'(A,16I4)') 
+     &   ' Creation      :',  (IBOBEX_TP(I+0*NGAS,JEX_TP),I=1,NGAS)
+         WRITE(6,'(A,16I4)') 
+     &   ' Annihilation  :',  (IBOBEX_TP(I+1*NGAS,JEX_TP),I=1,NGAS)
+        END DO
+      END IF ! iflag
+#endif
+*
       END

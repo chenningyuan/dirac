@@ -1,4 +1,4 @@
-*Comdeck ired $Revision: 4230 $
+*Comdeck ired $Revision$
 cbs   irreducible representation of the cartesian functions in D2H
 cbs   order taken from Tables for Group theory:
 cbs   Atkins, Child and Phillips   Oxford University Press 1970

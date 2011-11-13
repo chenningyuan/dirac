@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision: 10002 $
-C DATE    : $Date: 2009-11-30 13:08:32 +0100 (Mon, 30 Nov 2009) $
-C FILE    : goscom.inc
 C SOURCE  : $Source$
 C
 C     DEFINITION PARAMETERS GOSCIP

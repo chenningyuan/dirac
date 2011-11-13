@@ -23,9 +23,9 @@ Fluorine atom.
 .NUCMOD
 1
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .DIRRCI
-*DHFCAL
+*SCF
 .CLOSED
 4 4
 .OPEN S

@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : abatro.F
 C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
@@ -1472,7 +1469,6 @@ C
 #include "trkoor.h"
 #include "symmet.h"
 C
-#include "sdpre.h"
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)
          WRITE (LUPRI,'(/A,2I5)') ' NROW, NCOL ', NROW, NCOL
@@ -1602,9 +1598,9 @@ C
                ELSE IF (DODMAT) THEN
                   IF (ISYMAX(ITRO,1) .EQ. IREP) THEN
                      IF (TC) THEN
-                        AMAT(ITR,IPTCOL(IPTAX(ITRO,1))) = SDPRE(ICHRGE)
+                        AMAT(ITR,IPTCOL(IPTAX(ITRO,1))) = dble(ICHRGE)
                      ELSE
-                        AMAT(IPTCOL(IPTAX(ITRO,1)),ITR) = SDPRE(ICHRGE)
+                        AMAT(IPTCOL(IPTAX(ITRO,1)),ITR) = dble(ICHRGE)
                      END IF
                   END IF
                END IF

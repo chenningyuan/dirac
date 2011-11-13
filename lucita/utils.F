@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -35,16 +35,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine center
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE CHAR_TO_INTEGER(CHAR_X,INT_X)
 
 *     Convert an integer number given as a string into
@@ -55,7 +45,6 @@
       CHARACTER*12 STRING
 
       CALL STDFMT(CHAR_X,STRING)
-      CALL RIGHTAD(STRING)
       READ (STRING,'(I12)',IOSTAT=IOS,ERR=100,END=200) INT_X
       RETURN
 
@@ -126,7 +115,7 @@
          WRITE (SCRFLL,'(A6,A1,I3)') SCRFL,'.',MYPROC
          FLLNGTH=10
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
 #else
       SCRFLL=SCRFL
@@ -167,7 +156,6 @@
       CHARACTER*12 STRING
 
       CALL STDFMT(CHAR_X,STRING)
-      CALL RIGHTAD(STRING)
       READ (STRING,'(F18.10)',IOSTAT=IOS,ERR=100,END=200) REAL_X
       RETURN
 
@@ -194,26 +182,6 @@
       CALL QUIT(16)
 
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine clscom
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine datimx
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -356,16 +324,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine leftad
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE NXTNUM2_REV(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
 *
 * An set of numbers INUM(I),I=1,NELMNT is
@@ -418,16 +376,6 @@
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine opncom
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -504,17 +452,6 @@ C
 *
       subroutine rdnlst
       read(5,*)
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine rightad(string)
-      character*12 string
       return
       end
 ***********************************************************************
@@ -647,16 +584,6 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      subroutine start(CDUMMY)
-      implicit none
-      character*6 CDUMMY
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -895,43 +822,7 @@ C
         Call Abend2( 'UNPCPC ' )
       END IF
 *
-      RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-* Copy vector to defined partition of matrix
-* (Simply the way the vector is arranged in memory)
-*
-      subroutine lvectomat(VEC,WMAT,ILEN,NROW,NCOL,
-     &                     NPARTROW,NPARTCOL,IROWOFF,ICOLOFF)
-*
-      implicit real*8 (A-H,O-Z)
-*
-      dimension WMAT(NROW,NCOL)
-      dimension VEC(ILEN)
-*
-*   VEC: Input matrix in vector format
-*   WMAT: Output matrix (can be a partition of a bigger matrix!)
-*   ILEN: Length of input vector
-*   NROW: Rows of WMAT
-*   NCOL: Columns of WMAT
-*   NPARTROW: Number of rows in output partition
-*   NPARTCOL: Number of columns in output partition
-*   IROWOFF: Output row offset
-*   ICOLOFF: Output column offset
-*
-      K = 1
-      do I=ICOLOFF,(ICOLOFF+NPARTCOL-1),1
-         do J=IROWOFF,(IROWOFF+NPARTROW-1),1
-            WMAT(J,I) = VEC(K)
-            K = K + 1
-         end do
-      end do
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *

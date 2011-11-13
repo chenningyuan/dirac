@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,10 +17,10 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-! $Id: test_allocator.F90 11757 2010-10-10 07:06:37Z hjj $
+! $Id$
 !
 !
-! $Id: test_allocator.F90 11757 2010-10-10 07:06:37Z hjj $
+! $Id$
 !
 ! memory allocation subsystem
 !

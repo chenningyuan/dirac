@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,8 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -66,13 +64,13 @@ C
      &     3X,'Molecular gradient',/,
      &     3X,'Joern Thyssen',//,
      &     3X,'Additional contributions from:',/,
-     &     3X,'Thomas Enevoldsen'//)
+     &     3X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
       DO I = 1, NPRPWF
          WF = PRPWF(I)
 C
          IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
-            CALL TDHFORB
+            CALL TDHFORB('FULLCI')
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'KRMC') THEN
             CALL TKRMCORB
@@ -122,11 +120,7 @@ C
 C***********************************************************************
 
       use dirac_cfg
-
-#ifdef MOD_EMB
-!     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
-      USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
-#endif
+      use fde_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -141,6 +135,8 @@ C
 C
       DIMENSION WORK(LWORK)
       CHARACTER WF*4
+      CHARACTER WFEXPORT*4
+      logical :: export_n,export_gn,export_vc
 C
       CALL QENTER('PAMPR1')
 C
@@ -149,10 +145,6 @@ C
 C     Make sure common block dcbidx is set
 C
       CALL SETDCBIDX()
-C
-C     Extend RKB coeffcients with complementary UKB space
-C
-      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK)
 C
 C***********************************************************************
 C*****  M O L E C U L A R    G R A D I E N T ***************************
@@ -186,7 +178,6 @@ C***********************************************************************
 C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
 C***********************************************************************
 C
-#ifdef MOD_XPP
       IF (DOXPP) THEN
          IF (WF. EQ. 'DHF') THEN
             CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KSSYM,KFREE,LFREE)
@@ -195,7 +186,6 @@ C
      &           'PP excitation energies not implemented for ' // WF )
          END IF
       END IF
-#endif
 C
 C***********************************************************************
 C*****  L I N E A R   R E S P O N S E  *********************************
@@ -223,21 +213,17 @@ C
      &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
      &        'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
-#ifdef MOD_XPP
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
          IF (DOEXCPRP) CALL EXCPRP(WORK(KFREE),LFREE)
-#endif
       ENDIF
 C
 C***********************************************************************
 C*****  S T E X  *******************************************************
 C***********************************************************************
 C
-#ifdef MOD_STEX
       IF (DOSTEX) THEN
          CALL STEX(WORK(KFREE),LFREE)
       ENDIF
-#endif
 
 C
 C***********************************************************************
@@ -260,11 +246,6 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-#ifdef MOD_EMB
-      IF (DO_GRID_OUT) THEN
-         call quit("FDE density export unsupported in this version.")
-      END IF
-#endif /* #ifdef MOD_EMB */
 
 
 C
@@ -1356,7 +1337,15 @@ C
       IF (BXLAO .OR. BYLAO .OR. BZLAO) THEN
         CALL DEF_BLAO(WORK, LWORK, IPRPRP)
       ENDIF
-
+C
+C     Effective electronic densities at the nuclei
+C
+      IF(EFFDEN) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
 
       RETURN
       END
@@ -3944,9 +3933,7 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-#ifdef MOD_LONDON
         CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
-#endif
       ELSE
 C
 C         Conventional atomic orbitals
@@ -4055,9 +4042,6 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(A)') ' NMR shieldings:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE (LUPRI,'(A,F9.4,A)')
-     &   ' Shieldings printed for atoms with '//
-     &   'abundance greater than', ABUND,' %'
 C
 C     A operators
 C     ===========
@@ -4941,7 +4925,6 @@ C        ... DMATLO contains extracted 'diamagnetic' term (NSNL)
          ENDIF
       END IF
 
-#ifdef MOD_LONDON
 C ------------------------------------------------------
 C  Get the London orbital contributions to the exp.value
 C  ... these are RNST terms
@@ -4978,6 +4961,8 @@ C--------------------------------------------------------------------
          CALL DZERO(TMPMAT,NCMAT)
          CALL DZERO(PMAT,NCMAT)
 C  ...  get the expect. value {T,h(mK)} reorthonormalization term
+!todo from Trond's email:
+!check the use of GETCON in  PRP_SHIELD1(pamprp.F). Can it be completely removed ?
          CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
      &               WORK,KFREE,LFREE,IPRPRP)
 CMI   ...  sign convention !!!
@@ -4992,7 +4977,6 @@ C         ... extract the reorthonormalization part into the PMAT
 C         ... add the reorthonormalization terms to the DMAT
          CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
       END IF
-#endif /* MOD_LONDON */
 C
 C     *** Extract shieldings ***
 C
@@ -5182,8 +5166,9 @@ C
          WRITE (LUPRI,'(A/A/A/A)')
      &        '@            isotropic shielding',
      &        '@        ----------------------------',
-     &        '@atom       total       dia      para      skew'//
-     &        '      span      anis      asym',
+     &        '@atom          total          dia         para'//     
+     &        '            skew'//
+     &        '            span            anis            asym',
      &        '@-----------------------------------------------------'//
      &        '-----------------------'
 
@@ -5193,7 +5178,7 @@ C
                IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
                   IF (DOATOM(I)) THEN
-                      WRITE (LUPRI,'(A,A,7F10.4)') '@',
+                      WRITE (LUPRI,'(A,A,7F14.4)') '@',
      &                 NAMDEP(IATOM),TISO(IATOM),DISO(IATOM),PISO(IATOM)
      &                 ,SKEW(IATOM),SPAN(IATOM),ANIS(IATOM),ASYM(IATOM)
                    END IF
@@ -5924,7 +5909,7 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     INTTYP = 9: One-electron Fermi contact integrals
-      CALL SETATM(WORK(KDATOM),NATOM,9)
+      CALL SETATM(WORK(KDATOM),NATOM,-9)
       CALL DEF_RHONU1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_RHONUC',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -6903,9 +6888,7 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-#ifdef MOD_LONDON
         CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
-#endif
       ELSE
 C
 C     Conventional atomic orbitals
@@ -7163,4 +7146,75 @@ C
       ENDDO
 
 
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C**********************************************************
+C     Define effective density operator
+C     Written by R. van Meer September 2010
+C**********************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     (-99: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-99)
+      CALL DEF_EFF_DENS1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_EFF_DENS',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN  
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_EFF_DENS1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
+     &               IPRINT)
+C**********************************************************
+C     Define effective density operator
+C     Written by R. van Meer September 2010
+C**********************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER (D1 = 1.0D0)
+C
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "ibtfun.h"
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      DO 100 IREP = 0, MAXREP
+        DO 200 IATOM = 1, NUCIND
+          IF (DOATOM(IATOM)) THEN
+            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+              PLABEL(1) = 'ED '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                          //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                          //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              PNAME = 'Eff._Dens '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                              //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                     INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+              CALL OP1IND('EFFDEN',IDUM,LEXPP,NEXPP,INDXPR,MAXEXP)
+            END IF
+          END IF
+  200   CONTINUE
+  100 CONTINUE
+      RETURN
       END

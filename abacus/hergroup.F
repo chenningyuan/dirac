@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -48,7 +48,6 @@ C
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
       DATA IS/0,1,1,2,1,2,2,3/
-#include "sdpre.h"
 #include "ibtfun.h"
 C
 C     Initialization
@@ -160,7 +159,7 @@ C     =======================================================
 C
       DO 101 I = 0,7
          MULT(I)  = 2**MAX(0,NSYMOP-IS(I))
-         FMULT(I) = SDPRE(MULT(I))
+         FMULT(I) = dble(MULT(I))
   101 CONTINUE
 C
       RETURN
@@ -181,6 +180,7 @@ C                           Modified activation of LSYMOP
 C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
+      use xmlout
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -344,6 +344,12 @@ C
 C     Output section
 C     ==============
 C
+      IF (doxml) THEN
+         call xml_begin('point-group')
+         write(luxml,*) GROUP
+         call xml_end('point-group')
+      ENDIF
+
       IF(IPREAD.GT.0) THEN
         CALL HEADER('SYMGRP:Point group information',-1)
 C
@@ -429,6 +435,7 @@ C     Sep 24 1996 - tsaue: Updated version
 C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
@@ -440,10 +447,8 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       LOGICAL LBUF(8)
-      EXTERNAL BDQALGEBRA
 C
 #include "ibtfun.h"
 C
@@ -470,6 +475,8 @@ C       NZ = 4  quaternionic group        no    totally symmetric rotations
 C       NZ = 2  complex group             one   totally symmetric rotation
 C       NZ = 1  real group                three totally symmetric rotations
 C
+C       NZ_in_CI is 1 for real CI coefficients, 2 for complex CI coefficients
+C
       NZ = 1
       DO 30 I = 1,3
         IF(ISYMAX(I,2).EQ.0) THEN
@@ -477,6 +484,7 @@ C
           ITOT = I
         ENDIF
    30 CONTINUE
+      NZ_in_CI = MIN(2,NZ)
 C
 C     Align rotations and quaternion irreps,
 C     for complex groups this is important....
@@ -832,76 +840,186 @@ C     ********************************************
 C     *****   Define 4-component matrices   ******
 C     ********************************************
 C
-C     An imaginary phase is inserted if necessary to make all
-C     matrices time symmetric
+C     Time symmetric matrices: 
+C        I_4, gamma_5, beta, beta x gamma_5
+C     Time anti-symmetric matrices:
+C        Sigma, alpha, beta x Sigma, beta x alpha
 C
+C     NOTE: An imaginary phase is inserted if necessary 
+C           to make all matrices time symmetric to accomodate
+C           the quaternion symmetry scheme of DIRAC.
+C
+C     The matrices are given in terms of their quaternion forms.
+C     The forms are obtained by a reordering of the 4-component matrices
+C     corresponding to
+C
+C     | La |     | La |
+C     | Lb | --> | Sa |
+C     | Sa |     | Lb |
+C     | Sb |     | Sb |
+C
+C     Time symmetric matrices then attain the structure:
+C
+C     |   A    B  |
+C     |  -B*   A* |
+C
+C     with the quaternion form given by
+C
+C     A + Bj 
+C
+C     The end result is:
+C     
+C                1                  | i                | j                  | k                 |
+C     -------------------------------------------------------------------------------------------
+C     I_2     |  I_4                | i(Sigma_z)       | i(Sigma_y)         | i(Sigma_x)        |
+C     sigma_z |  beta               | i(beta x Sigma_z)| i(beta x Sigma_y)  | i(beta x Sigma_x) |
+C     sigma_y |  -i(beta x alpha_z) | beta x gamma_5   | -i(beta x alpha_y) | -i(betax alpha_x) |
+C     sigma_x |  gamma_5            | i(alpha_z)       | i(alpha_y)         | i(alpha_x)        |
+C     -------------------------------------------------------------------------------------------
+C     
+C     The spatial symmetry of these basis matrices is given in terms of the totally symmetric irrep Gamma_0,
+C     the rotations R_q, the coordinates q and the function xyz:
+C
+C     Gamma_0: I_4       , beta
+C     R_z    : i(Sigma_z), i(beta x Sigma_z)
+C     R_y    : i(Sigma_y), i(beta x Sigma_y)
+C     R_x    : i(Sigma_x), i(beta x Sigma_x)
+C     xyz    : gamma_5   , beta x gamma_5
+C     z      : i(alpha_z), i(beta x alpha_z)
+C     y      : i(alpha_y), i(beta x alpha_y)
+C     x      : i(alpha_x), i(beta x alpha_x)
+C
+C     This information is contained in JM4REP.
+C     
+C     Commutation: 
 C     beta commutes with Sigma_i and anticommutes with gamma_5
 C     Sigma_i commutes with gamma_5, alpha_i = gamma_5 x Sigma_i
 C
-C     I_4       -->  I_2
-C     ==================
+C     For each basis matrix we define
+C       JM4REP: spatial symmetry
+C       JM4POS: position in quaternion matrix (1 -> real, 2 -> i, 3 -> j, 4 -> k)
+C       M4COMB: character string (LL,SL,LS,SS) giving the overall phase for each block
+C
+C     0. I_4 -->  I_2
+C     ================
 C
       JM4REP(0) =  0
       JM4POS(0) =  1
-      JM4FAS(0) =  1
       M4COMB(0) =  '+00+'
 C
-C     i(alpha_z)   --> i(sigma_x)
-C     ===========================
+C     1. i(alpha_z) --> (sigma_x)i
+C     ============================
 C
       JM4REP(1) =  ISYMAX(3,1)
       JM4POS(1) =  IZQ
-      JM4FAS(1) =  1
       M4COMB(1) =  '0++0'
 C
-C     i(alpha_y)   --> j(sigma_x)
-C     ===========================
+C     2. i(alpha_y) --> (sigma_x)j
+C     ============================
 C
       JM4REP(2) =  ISYMAX(2,1)
       JM4POS(2) =  IYQ
-      JM4FAS(2) =  1
       M4COMB(2) =  '0++0'
 C
-C     i(alpha_x)   --> k(sigma_x)
-C     ===========================
+C     3. i(alpha_x) --> (sigma_x)k
+C     ============================
 C
       JM4REP(3) =  ISYMAX(1,1)
       JM4POS(3) =  IXQ
-      JM4FAS(3) =  1
       M4COMB(3) =  '0++0'
 C
-C     | 0 I |       | 0 1 |
-C     | I 0 |  -->  | 1 0 |
-C     =====================
+C     4. gamma_5  --> (sigma_x)
+C     =========================
 C
       JM4REP(4) =  IXYZ
       JM4POS(4) =  1
-      JM4FAS(4) =  1
       M4COMB(4) =  '0++0'
 C
-C     i(Sigma_z)   --> i(I_2)
-C     =======================
+C     5. i(Sigma_z) --> (I_2)i
+C     ========================
 C
       JM4REP(5) =  ISYMAX(3,2)
       JM4POS(5) =  IZQ
-      JM4FAS(5) =  1
       M4COMB(5) =  '+00+'
 C
-C     i(Sigma_y)   --> j(I_2)
-C     =======================
+C     6. i(Sigma_y) --> (I_2)j
+C     ========================
 C
       JM4REP(6) =  ISYMAX(2,2)
       JM4POS(6) =  IYQ
-      JM4FAS(6) =  1
       M4COMB(6) =  '+00+'
 C
-C     i(Sigma_x)   --> k(I_2)
-C     =======================
+C     7. i(Sigma_x) --> (I_2)k
+C     ========================
 C
       JM4REP(7) =  ISYMAX(1,2)
       JM4POS(7) =  IXQ
-      JM4FAS(7) =  1
       M4COMB(7) =  '+00+'
+C
+C     8. beta --> (sigma_z)
+C     =====================
+C
+      JM4REP(8) = 0
+      JM4POS(8) = 1
+      M4COMB(8) = '+00-'
+C
+C
+C     9. beta x gamma_5 --> (sigma_y)i
+C     ================================
+C
+      JM4REP(9) = IXYZ
+      JM4POS(9) = IYQ
+      M4COMB(9) = '0-+0'
+C
+C     10. i(beta x Sigma_z) --> (sigma_z)i
+C     ====================================
+C     
+      JM4REP(10) = ISYMAX(3,2)
+      JM4POS(10) = IZQ
+      M4COMB(10) = '+00-'
+C
+C     11. i(beta x Sigma_y) --> (sigma_z)j
+C     ====================================     
+C
+      JM4REP(11) = ISYMAX(2,2)
+      JM4POS(11) = IYQ
+      M4COMB(11) = '+00-'
+C
+C     12. i(beta x Sigma_x) --> (sigma_z)k
+C     =====================================     
+C
+      JM4REP(12) = ISYMAX(1,2)
+      JM4POS(12) = IXQ
+      M4COMB(12) = '+00-'
+C
+C     13. i(beta x alpha_z) --> -(sigma_y)
+C     ====================================
+C
+      JM4REP(13) = ISYMAX(3,1)
+      JM4POS(13) = 1
+      M4COMB(13) = '0-+0'
+C
+C     14. i(beta x alpha_y) --> -(sigma_y)j
+C     ======================================
+C
+      JM4REP(14) = ISYMAX(2,1)
+      JM4POS(14) = IYQ
+      M4COMB(14) = '0-+0'
+C
+C     15. i(beta x alpha_x) --> -(sigma_y)k
+C     ======================================
+C
+      JM4REP(15) = ISYMAX(1,1)
+      JM4POS(15) = IXQ
+      M4COMB(15) = '0-+0'
+C
+C     16. (beta - I_4)/2 
+C     ==================
+C
+      JM4REP(16) = 0
+      JM4POS(16) = 1
+      M4COMB(16) = '000-'
+C
 C
 C     ***************************************
 C     ***** Definition of full operator *****

@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : krmcvec.F
 C
       SUBROUTINE KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &     DKAPPA,CREF,WORK,LWORK)
@@ -48,6 +45,7 @@ C
      &     IBPVC(*),EVALR(*),EVECR(NREDM,*),DKAPPA(*)
       DIMENSION CREF(*)
       DIMENSION WORK(*)
+      logical old_dx
 C
 #include "memint.h"
 C
@@ -57,8 +55,7 @@ C     Solution vector - orbital (e-e) part
 C
       IF(NZXOPE.GT.0) THEN
          CALL MEMGET('REAL',KBBUF,NZXOPEQ,WORK,KFREE,LFREE)
-         OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
-     &        ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
+         call open_dx(LUBOE,'PAMBOE',NZXOPEQ,'UNKNOWN',old_dx)
          CALL XRSXV1(JTIMOP,JBENDX,DKAPPA,EVECR,NFREQ,
      &        IBTYP,IBEVC,IVEC,WORK(KBBUF))
          CLOSE(LUBOE,STATUS='KEEP')
@@ -69,8 +66,7 @@ C     Solution vector - orbital (e-p) part
 C
       IF(NZXOPP.GT.0) THEN
          CALL MEMGET('REAL',KBBUF,NZXOPPQ,WORK,KFREE,LFREE)
-         OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
-     &        ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
+         call open_dx(LUBOP,'PAMBOP',NZXOPPQ,'UNKNOWN',old_dx)
          CALL XRSXV1(JTIMOP,JBPNDX,DKAPPA(1+NZXOPEQ),EVECR,NFREQ,
      &        IBTYP,IBPVC,IVEC,WORK(KBBUF))
          CLOSE(LUBOP,STATUS='KEEP')
@@ -81,17 +77,15 @@ C     Solution vector - conf. part
 C
       IF ( NZCONF .GT. 0 ) THEN
          CALL MEMGET('REAL',KBBUF,NZCONFQ,WORK,KFREE,LFREE)
-         OPEN(LUBCI,FILE='PAMBCI',FORM='UNFORMATTED',
-     &        ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
+         call open_dx(LUBCI,'PAMBCI',NZCONFQ,'UNKNOWN',old_dx)
          CALL XRSXV1(JTIMOP,JBCNDX,CREF,EVECR,NFREQ,
      &        IBTYP,IBCVC,IVEC,WORK(KBBUF))
          CLOSE(LUBCI,STATUS='KEEP')
          CALL MEMREL('KRMCVEC.conf',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
 C
-C     Write to KAPPA to LUKRM1:
-C
       REWIND(LUKRM1)
+C     Write KAPPA to LUKRM1:
 C
 C     Scale with .5 (Y+Z=2Y is saved from xrs)
 C     ...and scale with 4 from new RSP code.
@@ -103,6 +97,8 @@ C
       CALL QEXIT('KRMCVEC')
       RETURN
       END
+C*****************************************************************************
+
       SUBROUTINE krmcvec1(NBTYP,IBTYP,IBVEC,
      &     EVALR,EVECR,XPO,BBUF,NZXPAR)
 C*****************************************************************************
@@ -143,6 +139,7 @@ C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1,RSPTYP*5
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),
      &          XPO(NZXPAR,NZ,NFREQ),BBUF(*)
+      logical old_dx
 C
       CALL QENTER('KRMCVEC1')
 C
@@ -174,8 +171,9 @@ C     Construct response solution vectors by summing the trial
 C     vectors multiplied by the eigenvectors in the reduced
 C     system.
 C
-      OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
-     &     ACCESS='DIRECT',RECL=8*NZXPAR*NZ,STATUS='UNKNOWN')
+!     OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
+!    &     ACCESS='DIRECT',RECL=8*NZXPAR*NZ,STATUS='UNKNOWN')
+      call open_dx(LUBVEC,FILNAM,NZXPAR*NZ,'UNKNOWN',old_dx)
       CALL DZERO(XPO,NZXPAR*NZ*NFREQ)
       CALL XRSXV1(JTIMOP,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,IVEC,BBUF)
       CLOSE(LUBVEC,STATUS='KEEP')

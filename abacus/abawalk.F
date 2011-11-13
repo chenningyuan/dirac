@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : abawalk.F
 C
 #ifndef PRG_DIRAC
 #include "single.h"
@@ -780,12 +777,11 @@ C
 #include "prkoor.h"
 #include "taymol.h"
 C
-#include "sdpre.h"
 C
       IF (IPRWLK .GT. 5) CALL TITLER('Output from WLKDR1','*',103)
 C
       OLD = .NOT.START
-      SGNMOD = SDPRE(SIGN(1,IMODE))
+      SGNMOD = dble(SIGN(1,IMODE))
       IMODE = ABS(IMODE)
 C
 C     ***************************
@@ -3144,6 +3140,8 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
+      print *,'yc-WLKINC'
+      iprint = 12
 C
 C     ***** STPSYM *****
 C

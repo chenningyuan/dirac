@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : krmctra.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rtractl */
@@ -798,7 +795,8 @@ C         ... -1 tells NUMLST to _not_ reorder orbital list
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                 IFRP,NSTR(IFRP,0,I))
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
+          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
@@ -972,7 +970,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2 */
-      SUBROUTINE RGETH2(FQ,H2AC,PV,ibeig,WORK,LWORK)
+      SUBROUTINE RGETH2(FQ,H2AC,PV,ibeig,dofq,doh2ac,read_master_file,
+     &                  WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate FQ and get H2AC (two-electron integrals
@@ -1002,6 +1001,9 @@ C
       DIMENSION H2AC(*)
       DIMENSION PV(*), ibeig(*)
       DIMENSION WORK(*)
+      logical, intent(in) :: dofq 
+      logical, intent(in) :: doh2ac
+      logical, intent(in) :: read_master_file
 C
 C
 #include "memint.h"
@@ -1010,7 +1012,8 @@ C
       CALL RTKTIME(.TRUE.,3)
 C
       IF ( OPT_CIPROGRAM .EQ. 'GASCIP' .OR.
-     &     OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+     &     OPT_CIPROGRAM .EQ. 'LUCIAREL' .OR.
+     &     OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
 C
 C        Two electron integrals
 C        ----------------------
@@ -1030,10 +1033,10 @@ C        =========================================
          call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
 
 !        b. read integrals and construct fq
-         call rgeth21(.true.,.true.,pv,fq,h2ac,
+         call rgeth21(dofq,doh2ac,pv,fq,h2ac,
      &                work(khmat),work(kh2xy),work(kh2yx),
      &                work(kdxkr12),work(kdxb12),work(kdxb34),
-     &                ibeig,ipropt,lupri)
+     &                ibeig,read_master_file,ipropt,lupri)
 
          call memrel('rgeth2',work,1,khmat,kfree,lfree)
 C
@@ -1112,10 +1115,10 @@ C
 !
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rgeth21 */
       SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,
      &                   hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
-     &                   ibeig,iprint,print_unit)
+     &                   ibeig,int_file_is_master_file,
+     &                   iprint,print_unit)
 C***********************************************************************
 C
 C     Calculate FQ and H2AC.
@@ -1137,6 +1140,7 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
+#include "infpar.h"  
 #include "maxash.h"
 C
 #include "dcbopt.h"
@@ -1152,6 +1156,9 @@ C
       dimension hmat(*),h2xy(*),h2yx(*), ibeig(*)
       dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
       LOGICAL DOFQ, DOH2AC
+!     controls whether or not we read only from the integral file
+!     associated with the master process.
+      logical, intent(in) :: int_file_is_master_file
 C     index arrays
       DIMENSION NFPCK12(2), NFPCK34(2)
       DIMENSION NSTR(2,0:2,4)
@@ -1165,6 +1172,7 @@ C     strings
       integer, allocatable :: indxb34_reod(:,:)
       integer, allocatable :: orb_info_array(:,:,:)
       logical              :: set_qphaseFAC
+      integer              :: mytid_save
 
       CALL QENTER('RGETH21')
 C
@@ -1255,6 +1263,15 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
      &               IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
+
+!        if enabled always read from the integral files associated with the master
+         if(int_file_is_master_file)then
+           mytid_save = mytid
+           mytid      = 0
+           fnode      = lfnam(fnam)
+           mytid      = mytid_save
+         end if
+
          WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)

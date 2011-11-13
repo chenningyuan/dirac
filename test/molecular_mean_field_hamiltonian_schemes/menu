@@ -1,0 +1,5 @@
+regular   
+4dcg_mmf_x.inp     fo.mol --mw=110 --aw=120
+4dcg_mmf_xx.inp    fo.mol --mw=110 --aw=120
+2dcg_x2c.inp       fo.mol --mw=110 --aw=120
+2dcg_mmf.inp       fo.mol --mw=110 --aw=120

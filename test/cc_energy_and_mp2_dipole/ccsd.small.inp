@@ -11,15 +11,13 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment.
 .WAVE F
 .PROPER
 .4INDEX
-**INTEGRALS
-.PROPRI
 **HAMILTONIAN
 .INTFLG      
 1 0 0 0
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
-*DHFCAL
+*SCF
 .EVCCNV
 1.0E-8
 **PROPERTIES

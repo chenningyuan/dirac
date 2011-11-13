@@ -4,11 +4,14 @@
 .LEVY-LEBLOND
 .DFT
  LDA
-*DFT
+**GRID
 .COARSE         !for the test we use a coarse grid
+**INTEGRALS
+*READIN
+.CONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .MAXITR
  4              !we stop after 4 iterations
 .EVCCNV

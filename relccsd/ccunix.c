@@ -1,5 +1,5 @@
 /*
- *     Copyright (c) 2010 by the authors of DIRAC.
+ *     Copyright (c) 2011 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -21,8 +21,6 @@
 
  /*
  *
- * VERSION : $Revision: 11757 $
- * DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
  * FILE    : ccunix.c
  *
         Access to C I/O routrines from FORTAN.
@@ -55,8 +53,12 @@ I/O routines:   openc(unit,fname,size,status)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#if !defined (SYS_WINDOWS)
 #include <sys/times.h>
+#endif
+/*
 #include <sys/param.h>
+*/
 
 extern char  *getenv(); 
 
@@ -72,7 +74,7 @@ extern char  *getenv();
 
 /* Check that the large file option is enabled, if not use normal lseek */
 
-#if defined (SMALL_CFILES) || (SYS_DEC) || (SYS_LINUX)
+#if defined (SMALL_CFILES) || (SYS_DEC) || (SYS_LINUX) || (SYS_DARWIN)
 typedef off_t off64_t;
 #define lseek64 lseek
 #elif defined (SYS_HPUX)

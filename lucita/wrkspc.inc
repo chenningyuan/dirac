@@ -1,2 +1,2 @@
-*comdeck wrkspc.inc $Revision: 2268 $ 
+*comdeck wrkspc.inc $Revision$ 
       COMMON/BIGGY/WORK(1)

@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : cigosc.F
 C
       SUBROUTINE PAMGOS(CI,MAXCORE,NELECT,NGAS,IGAS,
      &                  MINE,MAXE,NGASO)
@@ -2024,7 +2021,9 @@ C
 !#    LENREC = LEN * 2 * 8
       LENW   = NDETMX
       LENR0  = LENW * NRIVEC * K8BYTE 
+!radovan: K1WORD is not initialized
       LENR2  = (K1WORD + NDETMX) * KXBYTE
+!radovan: K4WORD is not initialized
       LENR1  = K4WORD * KXBYTE + NDETMX * K8BYTE
       LENREC = MAX(LENR0,LENR2,LENR1)
 !.q
@@ -2037,9 +2036,16 @@ C
       END IF
       OPEN(LUCIVC,FILE=VECFIL,ACCESS='DIRECT',RECL=LENREC,
      &     STATUS='OLD',ERR=900,IOSTAT=IST)
-!
+      IF (IST.NE.0) THEN
+        CALL QUIT('Error in opening file with lu=LUCIVC !')
+      ENDIF
+! miro: with the g95/ILP64/ownlibs/opt there is a reading hangup ! Please fix it !
       READ(LUCIVC,REC=2,ERR=901,IOSTAT=IST) 
      &  NZCONF,(IXDET(I),I=1,NZCONF)
+      IF (IST.NE.0) THEN
+! miro: TODO - fix ERR GOTO 901 
+        CALL QUIT('Error in reading file with lu=LUCIVC !')
+      ENDIF
       IF( IPRINT .GE. 20 ) THEN
         DO I = 1, NZCONF
           WRITE(6,"(I5,2X,B32)") I, IXDET(I)

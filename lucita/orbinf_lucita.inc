@@ -1,4 +1,4 @@
-*comdeck orbinf.inc $Revision: 2268 $
+*comdeck orbinf.inc $Revision$
 *----------------------------------------------------------------------*
 *     Global Variables describing chemical system                      *
 *----------------------------------------------------------------------*

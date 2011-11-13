@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,6 +24,8 @@ module visual_integrate
    use memory_allocator
    use visual_cfg
    use visual_in_point
+   use interface_grid
+   use file_units
 
   public visual_integration
 
@@ -33,7 +35,7 @@ module visual_integrate
 
 contains
 
-      subroutine visual_integration(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
+      subroutine visual_integration(nr_dmat, D, D_0, ao, buffer)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -44,8 +46,7 @@ contains
       real(8), intent(in) :: ao(*)
       real(8), intent(in) :: buffer(*)
 
-      integer, intent(in) :: nr_dmat_con
-      type(matrix), optional :: D_con(nr_dmat_con)
+      type(matrix)        :: D_0
 
       dimension QUANTITY_INTEGRAL(0:3), &
                 QUANTITY_INTEGRAL_LAST(0:3)
@@ -57,19 +58,21 @@ contains
       character(2) :: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
 
       CALL DZERO(QUANTITY_INTEGRAL,4)
-      if (visual_cfg_3d) then
+      if (visual_cfg_3d_integration) then
 
         CALL AROUND('3D numerical integration')
 
-        LUNIT = 44
-
         call dftgrd(D(1)%elms, 1)
 
-
-        REWIND LUNIT
+        open(interface_file_unit,       &
+             file   = 'numerical_grid', &
+             status = 'unknown',        &
+             form   = 'formatted',      &
+             access = 'sequential')
+        rewind(interface_file_unit)
 
  1      CONTINUE
-        READ(LUNIT) NR_POINTS
+        READ(interface_file_unit, *) NR_POINTS
 
         IF(NR_POINTS .LE. 0) GOTO 2
 
@@ -78,18 +81,16 @@ contains
         call alloc(z, nr_points)
         call alloc(w, nr_points)
 
-        call reaqua(x, y, z, w, lunit, nr_points)
+        call num_grid_read(x, y, z, w, interface_file_unit, nr_points)
 
-
-          CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                            AO, &
-     &                            x, y, z, &
-     &                            buffer, &
-     &                            QUANTITY_INTEGRAL, &
-     &                            w, &
-     &                            NR_POINTS, &
-     &                            0)
-
+        call integrate_quantity(nr_dmat, d,        &
+                                d_0,               &
+                                ao,                &
+                                x, y, z,           &
+                                buffer,            &
+                                quantity_integral, &
+                                w,                 &
+                                nr_points)
 
         call dealloc(x)
         call dealloc(y)
@@ -99,8 +100,7 @@ contains
         GOTO 1
  2      CONTINUE
 
-
-        CLOSE(LUNIT,STATUS = 'DELETE')
+        close(interface_file_unit, status = 'keep')
 
         WRITE(LUPRI,'(A)')
         WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &
@@ -122,125 +122,87 @@ contains
 
       ENDIF !3D
 
-      if (visual_cfg_2d) then
 
-        CALL AROUND('2D Gauss-Lobatto numerical integration')
+      if (visual_cfg_2d_integration) then
 
-        DO IORIENTATION = visual_cfg_orientation,visual_cfg_orientation
-!radovan: this means that i want xz plane
-!         1 = xy
-!         2 = xz
-!         3 = yz
-!         i avoided whole loop because with the aromatic compounds
-!         one of the planes cut through an atom and it's difficult to 
-!         converge then
+         call around('2D Gauss-Lobatto numerical integration')
 
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A3)') 'orientation:', &
-     &                   grid_orientation(IORIENTATION)
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A25,2A20,A14,2A13)') 'scalar', &
-     &                                           'x-component', &
-     &                                           'y-component', &
-     &                                           'z-component', &
-     &                                           'pieces', &
-     &                                           'order', &
-     &                                           'error'
-          WRITE(LUPRI,'(A)')
+         write(lupri, *)
+         write(lupri, '(6x, a)')          'plane is spanned by 3 points:'
+         write(lupri, *)                  
+         write(lupri, '(6x, a, 3f10.4)')  '"origin" ', visual_cfg_2d_integration_p_origin
+         write(lupri, '(6x, a, 3f10.4)')  '"right"  ', visual_cfg_2d_integration_p_right
+         write(lupri, '(6x, a, 3f10.4)')  '"top"    ', visual_cfg_2d_integration_p_top
+         write(lupri, *)                  
+         write(lupri, '(6x, a, i4)')      'nr of pieces to "right"', visual_cfg_2d_integration_nr_right
+         write(lupri, '(6x, a, i4)')      'nr of pieces to "top"  ', visual_cfg_2d_integration_nr_top
+         write(lupri, *)                  
+         write(lupri, '(6x, a, i22)')     'order', visual_cfg_2d_integration_order
+         write(lupri, *)
+         write(lupri, '(a12, a25, 2a20)') 'scalar', 'x-component', 'y-component', 'z-component'
+         write(lupri, *)
 
-          NR_PIECES = 5
-          N         = 10
-!radovan: this means i integrate from 0,0 to 10,10 a.u.
-!         due to planar symmetry i integrated only one half!!!
-          DIMI      = 10.0D0
-          DIMJ      = 10.0D0
-          LUNIT     = 45
+         lunit = 45
 
-          CALL DZERO(QUANTITY_INTEGRAL_LAST,4)
+         call lobatto_2d_grid(visual_cfg_2d_integration_order,    &
+                              visual_cfg_2d_integration_p_origin, &
+                              visual_cfg_2d_integration_p_right,  &
+                              visual_cfg_2d_integration_p_top,    &
+                              visual_cfg_2d_integration_nr_right, &
+                              visual_cfg_2d_integration_nr_top,   &
+                              lunit)
 
-          DO WHILE(.TRUE.)
+         rewind lunit
+         read(lunit, *) nr_points
 
-            CALL LOBATTO_2D_GRID(IORIENTATION, &
-     &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
+         call alloc(x, nr_points)
+         call alloc(y, nr_points)
+         call alloc(z, nr_points)
+         call alloc(w, nr_points)
 
-            REWIND LUNIT
-            READ(LUNIT) NR_POINTS
+         call num_grid_read(x, y, z, w, lunit, nr_points)
 
-            call alloc(x, nr_points)
-            call alloc(y, nr_points)
-            call alloc(z, nr_points)
-            call alloc(w, nr_points)
+         quantity_integral = 0.0d0
 
-            call reaqua(x, y, z, w, lunit, nr_points)
+         CALL INTEGRATE_QUANTITY(nr_dmat, D, &
+                                 D_0, &
+                                 AO, &
+                                 x, y, z, &
+                                 buffer, &
+                                 QUANTITY_INTEGRAL, &
+                                 w, &
+                                 NR_POINTS)
 
-            CALL DZERO(QUANTITY_INTEGRAL,4)
+         call dealloc(x)
+         call dealloc(y)
+         call dealloc(z)
+         call dealloc(w)
 
-              CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                                AO, &
-     &                                x, y, z, &
-     &                                buffer, &
-     &                                QUANTITY_INTEGRAL, &
-     &                                w, &
-     &                                NR_POINTS, 0)
+         CLOSE(LUNIT,STATUS = 'DELETE')
 
-            call dealloc(x)
-            call dealloc(y)
-            call dealloc(z)
-            call dealloc(w)
+         WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                            QUANTITY_INTEGRAL(1), &
+     &                            QUANTITY_INTEGRAL(2), &
+     &                            QUANTITY_INTEGRAL(3)
 
-            CLOSE(LUNIT,STATUS = 'DELETE')
+         WRITE(LUPRI,'(A)')
+         CALL PRSYMB(LUPRI,'-',100,0)
 
-            ERROR = D0
-            DO IXYZ = 0,3
-              SOMETHING = QUANTITY_INTEGRAL(IXYZ) &
-     &                  - QUANTITY_INTEGRAL_LAST(IXYZ)
-              ERROR = ERROR + DABS(SOMETHING)
-            ENDDO
+         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(A)')
 
-            WRITE(LUPRI,'(4E20.10,I8,I14,E23.10)') QUANTITY_INTEGRAL(0), &
-     &                                             QUANTITY_INTEGRAL(1), &
-     &                                             QUANTITY_INTEGRAL(2), &
-     &                                             QUANTITY_INTEGRAL(3), &
-     &                                             NR_PIECES, N, ERROR
+      end if
 
-            IF(ERROR .LT. 1.0D-7) GOTO 3
+   end subroutine
 
-            N = N + 10
-
-            CALL DZERO(QUANTITY_INTEGRAL_LAST,4)
-            CALL DAXPY(4,D1,QUANTITY_INTEGRAL,1, &
-     &                      QUANTITY_INTEGRAL_LAST,1)
-          ENDDO
- 3        CONTINUE
-
-          WRITE(LUPRI,'(A)')
-          CALL PRSYMB(LUPRI,'-',100,0)
-
-          WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A)')
-
-        ENDDO
-      ENDIF !2D
-
-      RETURN
-      END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* INTEGRATE_QUANTITY */
       SUBROUTINE INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                              AO, &
-     &                              PX,PY,PZ, &
-     &                              buffer, &
-     &                              QUANTITY_INTEGRAL, &
-     &                              WEIGHT, &
-     &                              NR_POINTS, &
-     &                              nr_dmat_con, D_con)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
+                                    D_0, &
+                                    AO, &
+                                    PX,PY,PZ, &
+                                    buffer, &
+                                    QUANTITY_INTEGRAL, &
+                                    WEIGHT, &
+                                    NR_POINTS)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -248,9 +210,9 @@ contains
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      integer, intent(in) :: nr_dmat, nr_dmat_con
+      integer, intent(in) :: nr_dmat
       type(matrix)        :: D(nr_dmat)
-      type(matrix), optional :: D_con(nr_dmat_con)
+      type(matrix)        :: D_0
       dimension AO(*), &
      &          PX(*), &
      &          PY(*), &
@@ -263,15 +225,15 @@ contains
 
       DO IPOINT = 1,NR_POINTS
 
-
-          CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                               AO, &
-     &                               PX(IPOINT), &
-     &                               PY(IPOINT), &
-     &                               PZ(IPOINT), &
-     &                               buffer, &
-     &                               QUANTITY)
-
+           call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                      D,                  &
+                                      D_0,                &
+                                      px(ipoint),         &
+                                      py(ipoint),         &
+                                      pz(ipoint),         &
+                                      ao,                 &
+                                      buffer,             &
+                                      quantity)
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)
@@ -280,15 +242,9 @@ contains
 
       RETURN
       END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* LEGENDRE_POLYNOMIAL */
+
+
       SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
 
 #include "implicit.h"
 
@@ -305,17 +261,10 @@ contains
         P(I+1) = P(I+1)/(I+1)
       ENDDO
 
-      RETURN
       END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* LEGENDRE_POLYNOMIAL_DERIVATIVES */
+
+
       SUBROUTINE LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
 
 #include "implicit.h"
 
@@ -331,15 +280,8 @@ contains
 
       RETURN
       END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* LOBATTO_1D_GRID */
+
       SUBROUTINE LOBATTO_1D_GRID(N,X,W)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
 
 #include "implicit.h"
 
@@ -347,8 +289,8 @@ contains
       PARAMETER (NMAX = 1000)
       PARAMETER (THRESHOLD = 1.0D-12)
 
-      DIMENSION X(NMAX), &
-     &          W(NMAX), &
+      DIMENSION X(*), &
+     &          W(*), &
      &          P(0:NMAX), &
      &          DP(NMAX)
 
@@ -388,17 +330,11 @@ contains
       W(1) = D2/(N*(N - D1))
       W(N) = W(1)
 
-      RETURN
       END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* LEGENDRE_1D_GRID */
+
+
+
       SUBROUTINE LEGENDRE_1D_GRID(N,X,W)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
 
 #include "implicit.h"
 
@@ -406,8 +342,8 @@ contains
       PARAMETER (NMAX = 1000)
       PARAMETER (THRESHOLD = 1.0D-12)
 
-      DIMENSION X(NMAX), &
-     &          W(NMAX), &
+      DIMENSION X(*), &
+     &          W(*), &
      &          P(0:NMAX), &
      &          DP(NMAX)
 
@@ -439,89 +375,89 @@ contains
         W(I) = D2/W(I)
       ENDDO
 
-      RETURN
       END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* LOBATTO_2D_GRID */
-      SUBROUTINE LOBATTO_2D_GRID(IORIENTATION, &
-     &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
 
-#include "implicit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
-      PARAMETER (NMAX = 1000)
 
-      CHARACTER*30 FILE_NAME
-      INTEGER      IORIENTATION
-      DIMENSION X(NMAX), W(NMAX)
-      real(8), allocatable :: px(:), py(:), pz(:), weight(:)
 
-      call alloc(px,     nmax*nmax)
-      call alloc(py,     nmax*nmax)
-      call alloc(pz,     nmax*nmax)
-      call alloc(weight, nmax*nmax)
 
-      WRITE(FILE_NAME,'(A5,I2)') 'GRID.', LUNIT
+   subroutine lobatto_2d_grid(n,         &
+                              p_origin,  &
+                              p_right,   &
+                              p_top,     &
+                              nr_right,  &
+                              nr_top,    &
+                              u)
 
-      OPEN(LUNIT, &
-     &     FILE = FILE_NAME, &
-     &     STATUS = 'UNKNOWN', &
-     &     ACCESS = 'SEQUENTIAL', &
-     &     FORM = 'UNFORMATTED')
-      REWIND LUNIT
+      implicit none
 
-      CALL LOBATTO_1D_GRID(N,X,W)
-      IPOINT = 0
-      DO IPIECE = 0,NR_PIECES-1
-        OFFI = IPIECE*DIMI/NR_PIECES
-        DO JPIECE = 0,NR_PIECES-1
-          OFFJ = JPIECE*DIMJ/NR_PIECES
-!         OFFJ = OFFJ - DIMJ/D2
-          DO I = 1,N
-            DO J = 1,N
-              IPOINT = IPOINT + 1
-! 'xy'
-              IF(IORIENTATION .EQ. 1) THEN
-                PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
-                PY(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PZ(IPOINT) = visual_cfg_origin_2d(3)
-              ENDIF
-! 'xz'
-              IF(IORIENTATION .EQ. 2) THEN
-                PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
-                PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PY(IPOINT) = visual_cfg_origin_2d(2)
-              ENDIF
-! 'yz'
-              IF(IORIENTATION .EQ. 3) THEN
-                PY(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
-                PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PX(IPOINT) = visual_cfg_origin_2d(1)
-              ENDIF
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: n
+      real(8), intent(in)  :: p_origin(3)
+      real(8), intent(in)  :: p_right(3)
+      real(8), intent(in)  :: p_top(3)
+      integer, intent(in)  :: nr_right
+      integer, intent(in)  :: nr_top
+      integer, intent(in)  :: u
+!     --------------------------------------------------------------------------
+      integer              :: ipoint, ix, iy, i, j
+      character(30)        :: file_name
+      real(8), allocatable :: rx(:), ry(:), rz(:), rw(:), x(:), w(:)
+      real(8)              :: vx(3), vy(3), p_off(3), p(3)
+      real(8)              :: sx, sy
+!     --------------------------------------------------------------------------
 
-              WEIGHT(IPOINT) = W(I)*W(J)*DIMI*DIMJ
-              WEIGHT(IPOINT) = WEIGHT(IPOINT)/(D2*D2)
-              WEIGHT(IPOINT) = WEIGHT(IPOINT)/(NR_PIECES*NR_PIECES)
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
-      NR_POINTS = IPOINT
+      write(file_name, '(a5,i2)') 'GRID.', u
+      open(u,                   &
+         file   = file_name,    &
+         status = 'unknown',    &
+         access = 'sequential', &
+         form = 'formatted')
+      rewind u
 
-      CALL WRTQUA(PX,PY,PZ,WEIGHT,LUNIT,NR_POINTS)
+      vx = p_right - p_origin
+      vy = p_top   - p_origin
+      sx = (vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))**0.5d0
+      sy = (vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))**0.5d0
 
-      call dealloc(px)
-      call dealloc(py)
-      call dealloc(pz)
-      call dealloc(weight)
+      call alloc(x,  n)
+      call alloc(w,  n)
+      call alloc(rx, nr_right*nr_top*n*n)
+      call alloc(ry, nr_right*nr_top*n*n)
+      call alloc(rz, nr_right*nr_top*n*n)
+      call alloc(rw, nr_right*nr_top*n*n)
 
-      RETURN
-      END subroutine
+      call lobatto_1d_grid(n, x, w)
+
+      ipoint = 0
+      do ix = 0, nr_right - 1
+         do iy = 0, nr_top - 1
+            p_off = p_origin + ix*vx/nr_right + iy*vy/nr_top
+            do i = 1, n
+               do j = 1, n
+                  ipoint = ipoint + 1
+
+                  p = p_off + 0.5d0*(x(i) + 1.0d0)*vx/nr_right  &
+                            + 0.5d0*(x(j) + 1.0d0)*vy/nr_top
+
+                  rx(ipoint) = p(1)
+                  ry(ipoint) = p(2)
+                  rz(ipoint) = p(3)
+                  rw(ipoint) = w(i)*w(j)*sx*sy/(4.0d0*nr_right*nr_top)
+               end do
+            end do
+         end do
+      end do
+
+      call num_grid_write(rx, ry, rz, rw, u, ipoint)
+
+      call dealloc(x)
+      call dealloc(w)
+      call dealloc(rx)
+      call dealloc(ry)
+      call dealloc(rz)
+      call dealloc(rw)
+
+   end subroutine
 
 end module

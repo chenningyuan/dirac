@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,7 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C FILE    : her1cat.F
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck catdrv */
       SUBROUTINE CATDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
@@ -629,6 +628,8 @@ C
 C output: VCMAT with Coulomb attraction integrals
 C
 C*****************************************************************************
+
+      use quaternion_algebra
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -650,7 +651,6 @@ C
 #ifdef PRG_DIRAC
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "dcbgrd.h"
 #else
 #include "energy.h"

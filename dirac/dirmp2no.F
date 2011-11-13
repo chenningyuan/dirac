@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : dirmp2no.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mp2noinp */
@@ -619,8 +616,9 @@ C
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                 IFRP,NSTR(IFRP,0,I))
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
-     &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
+     &                NPSH(IFRP),NESH(IFRP),
+     &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('MP2DEN.1',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
@@ -785,7 +783,8 @@ C
             CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                  IFRP,NSPC(IFRP,0))
-            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
+            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)

@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : qpack.F
 C
 C
 #ifdef UNDEF
@@ -193,11 +190,6 @@ C
       COMMON /QSTACK/ LEVELQ, LQTREE
 #include "qnames.h"
 C
-#if defined (SYS_LINUX)
-C aspg, replacing trace with os-provided traceback facilities. linux support for now  
-C 3 = pretty print traceback to stdout...
-      CALL GET_TRACEBACK_INFO (3,BLA,1)
-#else
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'
       WRITE (LUPRI,'(3(/A))')
@@ -213,9 +205,13 @@ C 3 = pretty print traceback to stdout...
   100 CONTINUE
       WRITE (LUPRI,'(A/)')
      & ' ==============================================='
+ 9000 CONTINUE
 C920522-hjaaj: do not call TRACE because it will abort on some computers
 C9000 CALL TRACE
+#if defined (SYS_LINUX)
+C aspg, replacing trace with os-provided traceback facilities. linux support for now  
+C 3 = pretty print traceback to stdout...
+      CALL GET_TRACEBACK_INFO (3,BLA,1)
 #endif /* SYS_LINUX */
- 9000 CONTINUE
       RETURN
       END

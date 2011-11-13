@@ -1,5 +1,4 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,8 +15,13 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
+!      DIRAC program, see: http://dirac.chem.vu.nl
 !
+#ifdef HAVE_MKL_BLAS
+!radovan: workaround for strange crash when using MKL zdotc
+#define ZDOTC z_dot_c
+#define zdotc z_dot_c
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C
@@ -117,7 +121,7 @@ c
       CARITH=.FALSE.
       IF(RCW.EQ.2) CARITH=.TRUE.
 
-      CALL PST('    Matrix attributes for this diagrun:+')
+      CALL PST('    Interfacing iterative diagonalizer+')
 
       WRITE(IW,*)
       WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP):      ',IONIZLEVEL
@@ -180,8 +184,6 @@ C
 
       IF(CARITH.EQV..TRUE.) THEN
 
-        CALL PST('Entering (complex) LANCZOS routine+')
-
         CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
      &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
      &          CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
@@ -191,8 +193,6 @@ C
          CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
 
       ELSE
-
-        CALL PST('Entering (real) LANCZOS routine+')
 
         CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
      &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
@@ -209,6 +209,9 @@ C  from here the Lanczos matrix T is available. we acquire work
 C  space for the LAPACK Band-diagonalizer.
 C  After the BANDDIA runs the corresponding eigenVECTORS of the
 C  Lanczos matrix are available in ZEV  resp. in CC(WRK_ZEV)
+C  ITAP5 will be provided as a free file handle. 
+C  It is only used locally and reusable after finishing RBANDDIA/ZBANDDIA
+C  This file handle is used for storing the T eigenvector matrix
 C
       N=NITER
       CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC)
@@ -220,11 +223,11 @@ C
       CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC)
 
       IF(CARITH) THEN
-        CALL ZBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
       ELSE
-        CALL RBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
       ENDIF
@@ -308,9 +311,32 @@ c
       IF(IOLDNEW.EQ.1) CLOSE(ITAP2,STATUS='DELETE')
 
       CALL MEMREL('ADC-memrel',CC,KFRSAV,KFREESAVE,KFREE,LFREE)
+c
+c  from here the file handles itap1 - itap3 are available again and we
+c  can perform the detailed analysis of the long ADC eigenvectors together
+c  with their configurations
+c
+c  All the memory is released and we do the analysis with a F90 routine.
+c  irecl still contains the record length of the configuration file.
+c
+      itap1=infohandle+1
+      itap2=infohandle+2
+      itap3=infohandle+3
+c
+c  call long vector analyzer
+c  handles 1-3 are exclusively used there, all files are closed
+c  on exit.
+c
+      IF(NEIGENV.GT.0) THEN
+        IF(CARITH) THEN
+          CALL ZADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
+     &                            nocc,irecl,filecnf,ionizlevel)
+        ELSE
+          CALL RADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
+     &                            nocc,irecl,filecnf,ionizlevel)
+        ENDIF
+      ENDIF
 
-c     write(*,*) 'Memory pointers after diagexe:',
-c    &  KFRSAV,KFREESAVE,KFREE,LFREE
 
       RETURN
       END
@@ -370,13 +396,19 @@ c
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',IRREP
       ENDIF
 
-      WRITE(IW,*) ' Symmetry ',IRREP
-      WRITE(IW,*) ' Matrix dimension:',LADC
-      WRITE(IW,*) ' Band width:      ',NP
-      WRITE(IW,*) ' Number of iterations:',NITER
       IF(CFLAG) THEN
-        WRITE(IW,*) ' Number of requested eigenvectors         ',NEIGENV
-        WRITE(IW,*) ' Long eigenvectors stored in              ',LEVECFN
+        CALL PST('Entering real Lanczos for Eigenvectors+')
+      ELSE
+        CALL PST('Entering real Lanczos for Eigenvalues+')
+      ENDIF
+
+      WRITE(IW,'(A30,I7)') ' Symmetry:',IRREP
+      WRITE(IW,'(A30,I7)') ' Matrix dimension:',LADC
+      WRITE(IW,'(A30,I7)') ' Band width:',NP
+      WRITE(IW,'(A30,I7)') ' Number of iterations:',NITER
+      IF(CFLAG) THEN
+        WRITE(IW,'(A30,I7)') ' Requested eigenvectors:',NEIGENV
+c       WRITE(IW,'(A30,A)') ' Long eigenvectors in:',LEVECFN
       ENDIF
       WRITE(IW,*)
 c
@@ -402,8 +434,8 @@ c
         REWIND(IO_LAN)
         READ(IO_LAN) N1
         READ(IO_LAN) N2
-        WRITE(IW,*) 'There are',N1,' Lanczos eigenvectors available.'
-        WRITE(IW,*) 'Reading TMATEVC.'
+        WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
+     &              N2,' on TMATEVC'
         IF(NEIGENV.gt.N1) THEN
           WRITE(*,*) 'More EVCs requested than available.'
           WRITE(*,*) 'Adjusting to the value given above.'
@@ -412,7 +444,7 @@ c
         IF(N2.NE.NITER)
      &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
         DO I=1,NEIGENV
-          READ(IO_LAN) rdummy
+          READ(IO_LAN) CEVL(I)
           READ(IO_LAN) (Z(IX,I),IX=1,N2)
         ENDDO
         CLOSE(IO_LAN,STATUS='DELETE')
@@ -612,13 +644,19 @@ C
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',IRREP
       ENDIF
 
-      WRITE(IW,*) ' Symmetry ',IRREP
-      WRITE(IW,*) ' Matrix dimension:',LADC
-      WRITE(IW,*) ' Band width:      ',NP
-      WRITE(IW,*) ' Number of iterations:',NITER
       IF(CFLAG) THEN
-        WRITE(IW,*) ' Number of requested eigenvectors         ',NEIGENV
-        WRITE(IW,*) ' Long eigenvectors stored in              ',LEVECFN
+        CALL PST('Entering complex Lanczos for Eigenvectors+')
+      ELSE
+        CALL PST('Entering complex Lanczos for Eigenvalues+')
+      ENDIF
+
+      WRITE(IW,'(A30,I7)') ' Symmetry:',IRREP
+      WRITE(IW,'(A30,I7)') ' Matrix dimension:',LADC
+      WRITE(IW,'(A30,I7)') ' Band width:',NP
+      WRITE(IW,'(A30,I7)') ' Number of iterations:',NITER
+      IF(CFLAG) THEN
+        WRITE(IW,'(A30,I7)') ' Requested eigenvectors:',NEIGENV
+c       WRITE(IW,'(A30,A)') ' Long eigenvectors in:',LEVECFN
       ENDIF
       WRITE(IW,*)
 c
@@ -644,8 +682,8 @@ c
         REWIND(IO_LAN)
         READ(IO_LAN) N1
         READ(IO_LAN) N2
-        WRITE(IW,*) 'There are',N1,' Lanczos eigenvectors available.'
-        WRITE(IW,*) 'Reading TMATEVC.'
+        WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
+     &              N2,' on TMATEVC'
         IF(NEIGENV.gt.N1) THEN
           WRITE(*,*) 'More EVCs requested than available.'
           WRITE(*,*) 'Adjusting to the value given above.'
@@ -653,8 +691,8 @@ c
         ENDIF
         IF(N2.NE.NITER)
      &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
-        DO I=1,N1
-          READ(IO_LAN) rdummy
+        DO I=1,NEIGENV
+          READ(IO_LAN) CEVL(I)
           READ(IO_LAN) (Z(IX,I),IX=1,N2)
         ENDDO
         CLOSE(IO_LAN,STATUS='DELETE')
@@ -743,8 +781,6 @@ c  and will be normalized
 c  form t_i+p,i = |r|, q_i+p,i = r/|r|
 c
         Y = ZDOTC(LADC,R,1,R,1)
-c       Y = ZSQRT(Y)
-c  att: the PGI compiler does not know zsqrt
 c
         Y = SQRT(Y)
         T(NP+1,IL) = Y
@@ -827,8 +863,6 @@ c  to the short vector array z(2*np,n)
 c
 c  the number N corresponds to the number of L-iterations == NITER
 c
-c  The array a, a1, b and IPIV  are needed for the numerical recipes routines. 
-c
 c  *** attention *** in the analysis some components of z are added
 c  together or multiplied by some scaling factor stemming from the
 c  multiplicity of some eigenvales. These modifications should also be applied
@@ -866,7 +900,7 @@ C
 
       CHARACTER*8 SPECFILE
       REAL*8 THTHR,WTHR
-      CHARACTER*22 FIELD
+      CHARACTER*44 FIELD
 C
 C---------------Executable code--------------------------------------
 C
@@ -1021,7 +1055,6 @@ C
   36     CONTINUE
   35   Z(I+NP,J) = XM
   30  CONTINUE     
-
 c
 c    * * * * * *     S P E C T R U M     * * * * * * * * * * * *
 c  spectrum is purged and available: all eigenvalues with corresponding
@@ -1041,7 +1074,7 @@ c
         write(SPECFILE,'(a5,a2,i1)') NMSPEC,'.0',irrep
       endif
       OPEN(IOUNIT,FILE=SPECFILE,FORM='FORMATTED',STATUS='UNKNOWN')
-      
+
       cntev=0
       DO J = 1, JND 
 c
@@ -1066,28 +1099,42 @@ c  together with their pole strengths and error estimates are written
 c  to the XSPEC.XX files.
 c
         IF(IONIZLEVEL.EQ.1) THEN
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)')
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of single ionizations
+c
+           isipcount=0
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) isipcount = isipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount
+           DO iths=1,nholes
+             ththr=z(iths,j)*z(iths,j)
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A,A22)')
+               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A8,A22)')
      &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'   conf:',field
              endif
            ENDDO
-c          write(iounit,'(8x,500I12)')   (ix,ix=1,nholes)
-c          write(iounit,'(8x,500F12.6)') (z(ix,j),ix=1,nholes)
-c          write(iounit,'(8x,500F12.6)') (z(ix,j)*z(ix,j),ix=1,nholes)
+
         ELSE
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)') 
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of double ionizations
+c
+           idipcount=0
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) idipcount = idipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)') 
+     &        d(j)*AUEV,x1,y1,'@',idipcount
+           DO iths=1,nholes
+             ththr=z(iths,j)*z(iths,j)
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A,A22)') 
-     &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'   conf:',field
+               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A8,A44)') 
+     &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'  conf: ',field
              endif
            ENDDO          
         ENDIF
@@ -1125,22 +1172,6 @@ c
       ENDDO
 
       CLOSE(IOUNIT)
-c
-c   write out the eigenvectors of the Lanczos matrix.
-c   Since this file is normally
-c   processed immediately after this subroutine call we do
-c   not attribute a separate symmetry label to it. This file
-c   is needed only for hole population analysis and the
-c   calculation for the **long** eigenvectors.
-c
-      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) JND
-      WRITE(IOUNIT) N
-      DO J=1,JND 
-        WRITE(IOUNIT) D(J)
-        WRITE(IOUNIT) (Z(IX,J),IX=1,N)
-      ENDDO
-      CLOSE(IOUNIT)
 
       RETURN
       END
@@ -1175,9 +1206,6 @@ c  only. in order to use the unmodified code we copy those components
 c  to the short vector array z(2*np,n)
 c
 c  the number N corresponds to the number of L-iterations == NITER
-c  the number NEIGENV is the number of desired eigenvectors
-c
-c  The array a, a1, b and IPIV  are needed for the numerical recipes routines. 
 c
 c  *** attention *** in the analysis some components of z are added
 c  together or multiplied by some scaling factor stemming from the
@@ -1219,7 +1247,7 @@ C
       CHARACTER*8 SPECFILE
 c variables for hole-configuration analysis
       REAL*8 THTHR,WTHR
-      CHARACTER*22 FIELD
+      CHARACTER*44 FIELD
 C
 C---------------Executable code--------------------------------------
 C
@@ -1377,7 +1405,7 @@ C
 
 c
 c    * * * * * *     S P E C T R U M     * * * * * * * * * * * *
-c  spectrum is purged and available (all eigenvalues with corresponding
+c  spectrum is purged and available: all eigenvalues with corresponding
 c  intensities obtained as squares of the hole/hole components
 c  (pole strengths). IMPORTANT: the band width of the Lanczos matrix
 c  can be larger than the number of actual hole states due to stability
@@ -1387,7 +1415,7 @@ c
 c  print eigenvalues and accuracy in a more convenient format
 c  threshold applies only to the screen output. pole strength = square of
 c  eigenvector component. Write all eigenvalues and pole strength
-c  to file SPECFILE
+c  to file named in SPECFILE
 c
       if(irrep.gt.9) then
         write(SPECFILE,'(a5,a1,i2)') NMSPEC,'.',irrep
@@ -1399,7 +1427,7 @@ c
       cntev=0
       DO J = 1, JND 
 c
-c  pole strength
+c  pole strength calculation
 c
         x1 = 0.0d0
         do i = 1, nholes
@@ -1420,30 +1448,43 @@ c  together with their pole strengths and error estimates are written
 c  to the XSPEC.XX files.
 c
         IF(IONIZLEVEL.EQ.1) THEN
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)')
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of single ionizations
+c
+           isipcount=0
+           DO iths=1,nholes
+             ththr=z(iths,j)*dconjg(z(iths,j))
+             if(ththr.gt.0.001) isipcount = isipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,2F12.5,1X,"(",F7.5,")",A,A22)')
+               write(iounit,'(10X,I5,A3,2F12.5,1X,"(",F7.5,")",A8,A22)')
      &         iths,':  ',z(iths,j),dble(z(iths,j)*dconjg(z(iths,j))),
      &         '   conf:',field
              endif
            ENDDO
-c          write(iounit,'(8x,500I24)')   (ix,ix=1,nholes)
-c          write(iounit,'(8x,500F12.6)') (z(ix,j),ix=1,nholes)
-c          write(iounit,'(8x,500F24.6)')
-c    &           (dble(z(ix,j)*dconjg(z(ix,j))),ix=1,nholes)
+
         ELSE
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)')
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of double ionizations
+c
+           idipcount=0
+           DO iths=1,nholes
+             ththr=z(iths,j)*dconjg(z(iths,j))
+             if(ththr.gt.0.001) idipcount = idipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
+     &        d(j)*AUEV,x1,y1,'@',idipcount
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(12X,I5,A3,2F12.5,A22)')
-     &            iths,':  ',z(iths,j),field
+               write(iounit,'(10X,I5,A3,2F12.5,1X,"(",F7.5,")",A8,A44)')
+     &            iths,':  ',z(iths,j),ththr,'  conf: ',field
              endif
            ENDDO
         ENDIF
@@ -1480,32 +1521,15 @@ c
       ENDDO
 
       CLOSE(IOUNIT)
-c
-c   write the hole part of the short eigenvectors either
-c   for the single or double ionization case for all 
-c   remaining unpurged vectors. Since this file is normally
-c   processed immediately after this subroutine call we do
-c   not attribute a separate symmetry label to it. This file
-c   is needed only for hole population analysis and the
-c   calculation for the **long** eigenvectors.
-c
-      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) JND
-      WRITE(IOUNIT) N
-      DO J=1,JND
-        WRITE(IOUNIT) D(J)
-        WRITE(IOUNIT) (Z(IX,J),IX=1,N)
-      ENDDO
-      CLOSE(IOUNIT)
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RBANDDIA(N,NP,LDAB,AB,EVL,Z,RWORK)
+      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,RWORK)
 C
       IMPLICIT INTEGER (A-Z)
 
-      INTEGER N,NP,LDAB
+      INTEGER IOUNIT,N,NP,LDAB
       REAL*8 AB(LDAB,*),Z(N,*)
       REAL*8 RWORK(6*N),EVL(N)
       
@@ -1519,6 +1543,12 @@ C  arguments.
 C  The Lanczos matrix T from the caller comes in the AB array.
 C     ****  ATTENTION ****  due to the usual programming conventions
 C  of the LAPACK routines the original matrix T is DESTROYED !!!
+C
+C  important: we used to save the eigenvectors of the Lanc matrix
+C  *after* purging. But when one analyzes the rebuilding of the long ADC
+C  vectors inconsistencies may arise. We therefore store *all* evecs of
+C  L and deal with multitudes separately.
+
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1541,30 +1571,25 @@ C but not the length of the original ADC matrix!
 C In the original formulation only
 C the first and last NP components were available and the whole
 C eigenvector was calculated by inverse iteration. We do not pursue this
-C direction due to problems with the inverse interation
+C direction due to serious problems with the inverse interation
+C algorithm
 C
+C N is the dimension of the band matrix (not the number of sidebands!)
 
       JOBZ='V'
       UPLO='L'
       LDZ=N
 
-c     CALL PST('Diagonalizing real tridiagonal matrix+')
-
-
-c     WRITE(IW,*) 'Parameters for real band diagonalizer'
-c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
-
-c     WRITE(IW,*) 'Calling ORIGINAL  DSBEV...'
       CALL DSBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           RWORK, INFO)
-c     WRITE(IW,*) 'Code from DSBEV:',INFO
+
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in DSBEV')
       ENDIF
 
       WRITE(IW,*)
       WRITE(IW,*) '---------------------------------------------------'
-      WRITE(IW,*) 'First 20 RAW Lanczos EVAL/EVECS + intensity.'
+      WRITE(IW,*) 'First 60 RAW Lanczos EVAL/EVECS + intensity.'
       WRITE(IW,*) '---------------------------------------------------'
       WRITE(IW,*)
       WRITE(IW,*) ' No.         (a.u.)      (eV)'
@@ -1572,7 +1597,7 @@ c     WRITE(IW,*) 'Code from DSBEV:',INFO
 
       AUEV=27.2113957D0
 
-      DO I=1,MIN(20,N)
+      DO I=1,MIN(60,N)
         Y = 0.0D0
         DO J=1,NP
           Y = Y + Z(J,I)*Z(J,I)
@@ -1581,12 +1606,27 @@ c     WRITE(IW,*) 'Code from DSBEV:',INFO
       ENDDO
 
  111  FORMAT(I5,2x,2F12.6,3x,'mean-res',2x,F10.4)
+c
+c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
+c Since each final state symmetry is treated immediately after
+c calculation, TMATVEC does not get an individual symmetry label.
+c
 
+      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+      DO J=1,N
+        WRITE(IOUNIT) EVL(J) ! eigenvalue
+        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+      ENDDO
+      CLOSE(IOUNIT)
+    
+      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZBANDDIA(N,NP,LDAB,AB,EVL,Z,WORK,RWORK)
+      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,WORK,RWORK)
 C
       IMPLICIT INTEGER (A-Z)
 
@@ -1610,9 +1650,9 @@ C
 C---------------Local variables--------------------------------------
 C
       INTEGER INFO,LDZ
-      CHARACTER JOBZ,UPLO
+      CHARACTER*1 JOBZ,UPLO
       COMPLEX*16 Y
-      DOUBLE PRECISION AUEV
+      REAL*8 AUEV
 
 C
 C---------------Executable code--------------------------------------
@@ -1628,22 +1668,16 @@ C
       UPLO='L'
       LDZ=N
 
-c     CALL PST('Diagonalizing hermitian tridiagonal matrix+')
-
-c     WRITE(IW,*) 'Parameters for complex band diagonalizer'
-c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
-
-c     WRITE(IW,*) 'Calling Alternative ZHBEV...'
       CALL ZHBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           WORK, RWORK, INFO)
-c     WRITE(IW,*) 'Code from ALZHBEV:',INFO
+
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in ZHBEV')
       ENDIF
 
       WRITE(IW,*)
       WRITE(IW,*) '---------------------------------------------------'
-      WRITE(IW,*) 'First 20 RAW Lanczos EVAL/EVECS + intensity.'
+      WRITE(IW,*) 'First 60 RAW Lanczos EVAL/EVECS + intensity.'
       WRITE(IW,*) '---------------------------------------------------'
       WRITE(IW,*)
       WRITE(IW,*) ' No.         (a.u.)      (eV)'
@@ -1651,7 +1685,7 @@ c     WRITE(IW,*) 'Code from ALZHBEV:',INFO
 
       AUEV=27.2113957D0
 
-      DO I=1,MIN(20,N)
+      DO I=1,MIN(60,N)
         Y = (0.0D0,0.0D0)
         DO J=1,NP
           Y = Y + Z(J,I)*DCONJG(Z(J,I))
@@ -1660,6 +1694,22 @@ c     WRITE(IW,*) 'Code from ALZHBEV:',INFO
       ENDDO
 
  111  FORMAT(I5,2x,2F12.6,3x,'mean-res',2x,F10.4)
+c
+c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
+c Since each final state symmetry is treated immediately after
+c calculation, TMATVEC does not get an individual symmetry label.
+c
+
+      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+      DO J=1,N
+        WRITE(IOUNIT) EVL(J) ! eigenvalue
+        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+      ENDDO
+      CLOSE(IOUNIT)
+    
+      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
 
       RETURN
       END
@@ -1758,11 +1808,11 @@ C---------------Description--------------------------------------------
 C
 C  Perform the real symmetric multiplication of the ADC matrix
 C  with the Krylov vectors. Here *NO* separate diagonal entries are
-C  processed ! They are contained in the packed matrix storage and
+C  processed ! They are contained in the matrix already and
 C  a single multiplication suffices.
 c
 c  att! the required number of buffers is communicated through this
-c  common block.  **AND** the row/column indices are now in packed form!
+c  common block.
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1773,17 +1823,15 @@ C---------------Local variables--------------------------------------
 C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       REAL*8 A
-      INTEGER LONGRC,MASK
-      DATA MASK/Z'00000000FFFFFFFF'/
 C
 C---------------Executable code--------------------------------------
-
 
 C  for the matrix elements we note that only the lower triangular
 C  part *AND* the diagonal of the ADC-matrix is stored. 
 C  the missing contribution is from the symmetric upper triangular part !
 
 c  the if takes care of not double counting the diagonal.
+c  since the diagonal is now *contained* in the matrix
 c
 c  new vector has to be zeroed!
       DO J = 1, LADC
@@ -1796,11 +1844,11 @@ c  .. read off-diagonal elements and multiply on the fly
       DO IREC = 1,NBUFS
         READ(IO_OFF,ERR=889) (BUF(IXX),IXX=1,INTBUF),
      &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
      &                        NACT,JDUMMY
         DO K = 1, NACT
-          LONGRC = IOI(K)
-          ICOL = IAND(LONGRC,MASK)
-          IROW = ISHFT(LONGRC,-32)
+          IROW = IOI(K)
+          ICOL = IOJ(K)
           A    = BUF(K)
 
           PN(IROW) = PN(IROW) + PO(ICOL) * A
@@ -1897,11 +1945,11 @@ C---------------Description--------------------------------------------
 C
 C  Perform the complex hermitian multiplication of the ADC matrix
 C  with the Krylov vectors. Here *NO* separate diagonal entries are
-C  processed ! They are contained in the packed matrix storage and
+C  processed ! They are contained in the matrix and
 C  a single multiplication suffices.
 c
 c  att! the required number of buffers is communicated through this
-c  common block.  **AND** the row/column indices are now in packed form!
+c  common block.
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1912,11 +1960,8 @@ C---------------Local variables--------------------------------------
 C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       COMPLEX*16 A
-      INTEGER LONGRC,MASK
-      DATA MASK/Z'00000000FFFFFFFF'/
 C
 C---------------Executable code--------------------------------------
-
 
 C  for the matrix elements we note that only the lower triangular
 C  part *AND* the diagonal of the ADC-matrix is stored. 
@@ -1936,11 +1981,11 @@ c  .. read off-diagonal elements and multiply on the fly
       DO IREC = 1,NBUFS
         READ(IO_OFF,ERR=889) (BUF(IXX),IXX=1,INTBUF),
      &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
      &                        NACT,JDUMMY
         DO K = 1, NACT
-          LONGRC = IOI(K)
-          ICOL = IAND(LONGRC,MASK)
-          IROW = ISHFT(LONGRC,-32)
+          IROW = IOI(K)
+          ICOL = IOJ(K)
           A    = BUF(K)
 
           PN(IROW) = PN(IROW) + PO(ICOL) * A
@@ -1952,5 +1997,256 @@ c  .. read off-diagonal elements and multiply on the fly
 
  889  CALL QUIT('Matrix read error in CMATBLK_ND')
 
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WCONDAT_S(LUN,FILENAME,IRECL,DESREP,LENADCM)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Writes explicit irep names and spinor numbers for the various
+C     final state configurations belonging to symmetry DESREP.
+C     Avoiding too complicated things we fix IRECL in this routine
+c     no matter which value is transferred to this routine. Therefore
+c     IRECL is an OUTPUT parameter.
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*6 FILENAME
+      INTEGER LUN,IRECL,DESREP,LENADCM
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER lcount
+      CHARACTER*44 FIELD44
+      INTEGER bl_conf
+      CHARACTER*4 bl_irna,bl_abs
+      
+C
+C---------------Executable code--------------------------------------
+C
+C  Code for ** single ionization **:  1h/2h1p
+C
+c fix record length for the direct access file and set some
+c blank variables. Then open file and initialize configuration
+c counter.
+ 
+      IRECL = 44
+      BL_CONF = 0
+      BL_IRNA = '    '
+      BL_ABS  = 'abs.'
+      OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+      LCOUNT = 1
+
+C_________________________ SIPS ______________________________
+C|
+C|
+C|
+        WRITE(IW,*) 'Writing SIP configs to ',FILENAME
+        WRITE(IW,*) 'Final state symmetry: ',DESREP
+
+c ** start with 1h configurations
+
+        DO k=1,no(DESREP)
+          koff=io(DESREP)+k
+          WRITE(FIELD44,381) 
+     &            k,repna(DESREP),
+     &            koff,bl_abs,
+     &            bl_conf,bl_irna,
+     &            bl_conf,bl_irna 
+          WRITE(LUN,REC=lcount) FIELD44
+          lcount = lcount + 1
+        ENDDO
+
+c ** continue with 2h1p configurations
+
+        DO 60 KLREP=1,NREP
+          AREP=MULTB(DESREP,KLREP+NREP,2)
+          DO 45 LREP=1,NREP
+           KREP=MULTB(LREP,KLREP+NREP,2)
+           IF(KREP.LT.LREP) GOTO 45
+           DO L=1,NO(LREP)
+             LOFF=IO(LREP)+L
+             KMIN=1
+             IF(KREP.EQ.LREP) KMIN = L + 1
+             DO K=KMIN,NO(KREP)
+               KOFF=IO(KREP)+K
+               DO A=1,NV(AREP)
+                 AOFF=IO(NREP+1)+IV(AREP)+A
+                 WRITE(FIELD44,381) 
+     &             K,REPNA(KREP),
+     &             L,REPNA(LREP),
+     &             A,REPNA(AREP),
+     &             BL_CONF,BL_IRNA
+                 WRITE(LUN,REC=lcount) FIELD44
+                 LCOUNT=LCOUNT+1
+               ENDDO
+             ENDDO
+           ENDDO
+ 45       CONTINUE
+ 60     CONTINUE
+
+C ** file is open only within this subroutine
+
+        CLOSE(LUN)
+
+C ** correct configuration counter
+
+        LCOUNT = LCOUNT - 1
+        IF(LCOUNT.NE.LENADCM) THEN
+          WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,LENADCM
+          CALL QUIT('Error in WCONDAT_S for single ionizations')
+        ENDIF
+C|
+C|
+C|____________________________________________________________
+
+ 381  FORMAT(4(I3,'(',A4,')  '))
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM,
+     &                     MAXOCCSP,IROOO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Writes explicit irep names and spinor numbers for the various
+C     final state configurations belonging to  symmetry DESREP.
+C     Avoiding too complicated things we fix IRECL in this routine
+c     no matter which value is transferred to this routine. Therefore
+c     IRECL is an OUTPUT parameter.
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*6 FILENAME
+      INTEGER LUN,IRECL,DESREP,LENADCM
+      INTEGER MAXOCCSP,IROOO(MAXOCCSP,2)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER lcount
+      CHARACTER*44 FIELD44
+      INTEGER bl_conf
+      CHARACTER*4 bl_irna,bl_abs
+      
+C
+C---------------Executable code--------------------------------------
+C
+C  Do the hole space configuration analysis for the
+C  DIP case exclusively in this routine.
+c  Initialize arrays:
+c
+      IX=1
+      Do KRP=1,NREP
+        Do K=1,NO(KRP)
+          IROOO(IX,1)=K
+          IROOO(IX,2)=KRP
+          IX = IX + 1
+        Enddo
+      Enddo
+C
+c fix record length for the direct access file and set some
+c blank variables. Then open file and initialize configuration
+c counter.
+ 
+      IRECL = 44
+      BL_CONF = 0
+      BL_IRNA = '    '
+      BL_ABS  = 'abs.'
+      OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+      LCOUNT = 1
+
+C____________ START WITH DIPS ______________________________
+C|
+C|
+C|
+      WRITE(IW,*) 'Writing DIP configs to ',FILENAME
+      WRITE(IW,*) 'Final state symmetry: ',DESREP
+
+      DO 14 JRP = 1, NREP
+        IRP = MULTB(JRP,DESREP+NREP,2)
+        IF (IRP.LT.JRP) GOTO 14
+        DO J = 1, NO(JRP)
+          IMIN = 1
+          IF (IRP.EQ.JRP) IMIN = J + 1
+          DO I = IMIN, NO(IRP)
+c
+c  -- additionally determine absolute spinor numbers
+c  -- in the active space for mulpop
+c
+            ISPINOR=IO(IRP)+I
+            JSPINOR=IO(JRP)+J
+            WRITE(FIELD44,381)
+     &         I,REPNA(IRP),
+     &         J,REPNA(JRP),
+     &         ISPINOR,BL_ABS,
+     &         JSPINOR,BL_ABS 
+            WRITE(LUN,REC=LCOUNT) FIELD44
+            LCOUNT = LCOUNT + 1
+c
+          ENDDO
+        ENDDO
+  14  CONTINUE
+      IF( (LCOUNT-1).NE.NOOT(DESREP)) THEN
+        WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,NOOT(DESREP)
+        CALL QUIT('Error in WCONDAT_D!')
+      ENDIF
+c
+c  determine satellite configurations
+c  Since we work in a Kramers-paired formalism (closed shell)
+c  then number of virtuals in RRP is equal to the number in its
+c  Kramers irrep (RRP*). For the output RRP has to be the Kramers
+c  partner since internally the cc of this orbital is used !
+c
+      DO K=1,MAXOCCSP
+        KSP = IROOO(K,1)
+        KRP = IROOO(K,2)
+        DO J=K+1,MAXOCCSP
+          JSP = IROOO(J,1)
+          JRP = IROOO(J,2)
+          JKRP = MULTB(JRP,KRP,1)
+          DO I=J+1,MAXOCCSP
+            ISP = IROOO(I,1)
+            IRP = IROOO(I,2)
+            IJKRP = MULTB(IRP,JKRP+NREP,1)
+            RRP = MULTB(DESREP+NREP,IJKRP,2)
+c determine Kramers-partner of RRP (is cc of RRP)
+            RRPKR = MULTB(RRP,1+NREP,2)
+            DO RSP = 1,NV(RRP)
+            WRITE(FIELD44,381) ISP,REPNA(IRP),
+     &                         JSP,REPNA(JRP),
+     &                         KSP,REPNA(KRP),
+     &                         RSP,REPNA(RRPKR)
+            WRITE(LUN,REC=LCOUNT) FIELD44
+            LCOUNT = LCOUNT + 1
+
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      CLOSE(LUN)
+C|
+C|
+C|____________________________________________________________
+
+ 381  FORMAT(4(I3,'(',A4,')  '))
+
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

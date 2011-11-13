@@ -1,0 +1,5 @@
+$ERROR 1.E-7
+Nlines 1:Electronic energy
+
+$ERROR 1.E-4
+Nlines 37:                          Redundant internal coordinates

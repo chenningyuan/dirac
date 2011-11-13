@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : pamxpp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXPP */
@@ -369,7 +366,7 @@ C
       DATA SET/.FALSE./
       DATA TABLE /'.PRINT ','.A OPER','.ANALYZ','.OPERAT',
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
-     &            '.SKIPEP','.MAXRED','-------','.NONORM',
+     &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
      &            '-------','-------','.INTFLG','-------',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
      &            '.ITRINT','.CNVINT','.REAXVC','-------',
@@ -435,6 +432,7 @@ Chj: MAXRM, MXLOAD
       XPP_LSFG(1)= .TRUE.
       XPP_LSFG(2)= .TRUE.
       XPP_TRIPLET = .FALSE.
+      XPP_E2CHEK = .FALSE.
       DO I = 1,NFSYM
          XPP_INDSTR(2,I) = ' '
          XPP_INDSTR(1,I) = ' '
@@ -523,7 +521,8 @@ C&&&& MAXRED: max dimension of matrix in reduced system
                   READ(LUCMD,*) MAXRM
                GOTO 100
  11            CONTINUE
-C&&&&
+C&&& E2CHEK: explicit contruction of the electronic Hessian E2
+               XPP_E2CHEK = .TRUE.
                GOTO 100
  12            CONTINUE
 C&&&& XPPNRM: normalize trial vectors
@@ -656,6 +655,8 @@ C
      &   '* Print level                 :',IPRXPP
       IF(XPPANA) WRITE(LUPRI,'(A)')
      &   ' * Analysis of solution vectors.'
+      IF(XPP_E2CHEK) WRITE(LUPRI,'(A)')
+     &   ' * Explicit contruction of the electronic Hessian'
       IF(ORBXPP) WRITE(LUPRI,'(A)')
      &   ' * Analysis of individual orbital contributions.'
       IF(XPPFIL.NE.'NORXVC') WRITE(LUPRI,'(A,A,A6)')
@@ -814,6 +815,8 @@ C     special variables only for linear equations (LINEQ true):
       STERNH    = .FALSE.
       STATIC    = .FALSE.
       TRIPLET   = XPP_TRIPLET
+      E2CHEK    = XPP_E2CHEK
+      IF(E2CHEK) DIAGHE=.FALSE.
 C
 C     Indicate from vectors are read...
 C
@@ -926,6 +929,7 @@ C
         CALL MEMGET('REAL',KBBUF,NZXOPEQ       ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NESIM         ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBMAX,NEXCNV        ,WORK,KFREE,LFREE)
+!fixme ATMPPF can get out of bounds (run test dft_response)
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBEVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
@@ -1570,12 +1574,8 @@ C
 Chj jan 2001> accept all with non-zero norm;
 C             we may get a very small norm
 C             when XPPNRM false
-C     PARAMETER (ZEROT=1.0D-8)
       PARAMETER (ZEROT=1.0D-14, PAIRT = 1.0D-8)
-C
-CHJMAERKE: comparison of transition moments with Dalton
-C          shows that eigenvectors should be multiplied
-C          with sqrt(2); FIND EN FORKLARING !!!
+C     This factor is connected to not normalizing excitation operators
       ROOT2 = SQRT( D2 )
 C
       IF (IPRINT .GT. 5) THEN
@@ -1595,25 +1595,23 @@ C
 C           singularities
             WRITE(LUPRI,1010)I, ALFAR(I),ALFAI(I),BETA(I)
          END IF
-C        IF(ABS(ALFAR(I)).GT.ZEROT) THEN
-C    +   .OR.(ABS(ALFAR(I)).LE.ZEROT.AND.ABS(ALFAI(I)).GT.ZCRIT)) THEN
-C           complex eigenvalues
-C        RATIO= ABS(ALFAI(I)/ALFAR(I))
-C        IF(RATIO.GT.ZCRIT) WRITE(6,1020) ALFAR(I),ALFAI(I)
          IF(ALFAI(I).NE.D0) THEN
             WRITE(LUPRI,1020) I,ALFAR(I),ALFAI(I)
+            WRITE(LUPRI,'(A,E7.1)')
+     &   'The corresponding eigenvalue is set to :',COMPLX
 C
-C SET EIGENVALUE EQUAL TO COMPLX IN ORDER TO BE ABLE TO SKIP
+C SET EIGENVALUE EQUAL TO a very large factor 
+C COMPLX IN ORDER TO BE ABLE TO SKIP
 C CONTRIBUTIONS FROM THIS ROOT WHEN SUMMING UP TERMS
 C IN THE CALCULATION OF THE EFFECTIVE SPECTRUM IN C6 CALCULATIONS
 C
             ALFAR(I) = COMPLX
          END IF
   10  CONTINUE
- 1010 FORMAT(/' WARNNG *** SINGULARITY IN REDUCED PP MATRIX:'
+ 1010 FORMAT(/' WARNING *** Singularity in reduced PP matrix:'
      &      ,/'     I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
- 1020 FORMAT(/' WARNING *** COMPLEX EIGENVALUE IN REDUCED PP MATRIX :'
-     &      ,/'     REAL AND IMAGINARY PART :',I8,1P,2D20.8)
+ 1020 FORMAT(/' WARNING *** Complex eigenvalue in reduced PP matrix :'
+     &      ,/'     Real and imaginary part :',I8,1P,2D20.8)
       IF (IPRINT .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2)  :'
          WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
@@ -1635,7 +1633,7 @@ C
       END IF
 C
 C     Select eigenvectors with positive norm and store them
-C      as the first eigenvectors.
+C     as the first eigenvectors.
 C
       IPOS = 0
       IZER = 0
@@ -1690,8 +1688,8 @@ C
      *       /'     EIGENVECTORS WITH ZERO METRIC:    ',I6,
      *       /'     EIGENVECTORS WITH NEGATIVE METRIC:',I6)
 C
-C order eigensolutions in ascending order of eigenvalues.
-C
+C Order eigensolutions in ascending order of eigenvalues.
+C.....first the ones with positive metric
       DO 100 I=1,IPOS
          JMIN = I
          AMIN = ALFAR(I)
@@ -1709,6 +1707,7 @@ C
   100 CONTINUE
       INOPAIR = 0
       TSTPAIR = ALFAMX*PAIRT
+C.....next the ones with negative metric
       DO 110 I=IPOS+1,IPOS+INEG
          JMIN = I
          AMIN = ALFAR(I)
@@ -1754,9 +1753,6 @@ C
  116        CONTINUE
          END IF
       END IF
-chj: is that OK ? /jan. 2001 MAERKE
-chj   IF (INEG.NE.IPOS .OR. IZER.GT.0)
-chj  &   CALL QUIT('XPPORD: error in metric eigenvalues')
 C
       RETURN
       END

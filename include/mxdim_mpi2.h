@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 6364 $
-! DATE    : $Date: 2007-11-19 18:47:25 +0100 (Mon, 19 Nov 2007) $
 ! FILE    : mxdim_mpi2.h
 !
 !     MPI-2 memory window dimensioning

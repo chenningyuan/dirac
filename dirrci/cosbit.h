@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 1.0 $
-! DATE    : $Date: 2007/01/30 15:15:00 $
 ! FILE    : cosbit.h
 ! AUTHOR  : sya
 ! PURPOSE : a table of 1-byte integer to speed counting bits in a

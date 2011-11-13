@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : ccgetv.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FMTOFILE (PUT,FVO,FOO,FVV)
@@ -258,7 +255,7 @@ C---------------Executable code--------------------------------------
 C
       DONE = .FALSE.
       MTOT = NVO(IREP)     ! one (VV)_ij batch has length NVO
-      ISTART = MAX(ISTART,IDIST(1,2,IREP))
+      IF (IDIST(1,2,IREP).GT.ISTART) ISTART=IDIST(1,2,IREP)
       NTOT = IDIST(2,2,IREP)     ! local # of VO batches in this IRREP
       NINT = MIN0(MINT,NTOT-ISTART)  ! # of batches which will actually be read
       JSTART = IDIST(5,2,IREP)      ! compute relative local offset
@@ -327,7 +324,7 @@ C     nodes for parallel runs. Take only the part that is on our node
 C
       DONE = .FALSE.
       MTOT = NVVT(IREP)
-      ISTART = MAX(ISTART,IDIST(1,1,IREP))
+      IF (IDIST(1,1,IREP).GT.ISTART) ISTART=IDIST(1,1,IREP)
       NTOT = IDIST(2,1,IREP)
       NINT = MIN0(MINT,NTOT-ISTART)
       JSTART = IDIST(5,1,IREP)

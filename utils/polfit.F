@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -32,7 +32,7 @@
       WRITE(LUPRI,'(A)') 'Name input file with potential curve(A16)'
       READ(LUCMD,'(A)') POTFIL
       i=LNBLNK(POTFIL)
-      RESFIL = POTFIL(1:i)//'.res'
+      RESFIL = POTFIL(1:i)//'.polfit'
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=5)
       OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',

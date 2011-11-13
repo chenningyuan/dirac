@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +17,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 
-C VERSION : $Revision: 11757 $
-C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
-C FILE    : tradr1.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR1T */
@@ -603,8 +600,7 @@ C
          JKR = INDXKR(2,IJ+NIJOFF)
          CALL SYMFINT(IPRINT,IREPIJ,
      &                INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
-     &                IJ,IKR,JKR,NSTR3,NSTR4,NKL,FMAT(1,IJ),
-     &                WORK,KFREE,LFREE)
+     &                IJ,IKR,JKR,NSTR3,NSTR4,NKL,FMAT(1,IJ))
       ENDDO
 C
       RETURN

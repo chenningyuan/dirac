@@ -1,0 +1,6 @@
+$ERROR 0.000000001 
+Nlines 5:Sum of all contributions to the energy
+
+$ERROR 1.E-5 
+From:Energy     1
+To:Energy     2

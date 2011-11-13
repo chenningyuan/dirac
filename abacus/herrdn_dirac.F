@@ -1,4 +1,4 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -54,6 +54,7 @@ C
      &          ALPIN(KPRIM),CPRIN(KPRIM*KPRIM)
       CHARACTER*80 BASREF(10,KATOM)
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "cbirea.h"
 #include "ccom.h"
 #include "gencon.h"
