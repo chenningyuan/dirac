@@ -1,0 +1,3 @@
+      INTEGER LUCMD, LUPRI
+      PARAMETER (LUCMD = 5, LUPRI = 6)
+

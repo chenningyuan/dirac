@@ -1,0 +1,11 @@
+/*
+ *
+ * VERSION : $Revision: 1.1.46.1 $
+ * DATE    : $Date: 2004/09/01 10:35:40 $
+ * FILE    : main/get_memsize.head
+ * DESCR.  : Header file for get_memsize
+ * AUTHOR  : J. Thyssen - 980713
+ *
+ */
+
+int get_memsize(int mytid, int *size)

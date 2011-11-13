@@ -1,0 +1,47 @@
+#################################
+**DIRAC
+.TITLE
+ Testing LUCITA
+.WAVE FUNCTION
+.4INDEX
+#################################
+**HAMILTONIAN
+.SPINFREE
+#################################
+**WAVE FUNCTION
+.DHF
+.LUCITA
+#########
+*DHFCAL
+.CLOSED SHELL
+ 36
+#########
+*LUCITA
+.TITLE
+ HBr molecule ground state (1Sigma+), symmetry A1 of C2v
+.INIWFC
+  DHFSCF
+.CITYPE
+  GASCI
+.MULTIP
+  1
+.NACTEL
+  8
+.GASSHE
+ 3
+  2, 1, 0, 1
+ 30,16, 7,16
+  3, 0, 0, 0
+.GASSPC
+ 1
+  6  8
+  6  8
+  8  8
+#################################
+**MOLTRA
+.INTFLG
+ 1 1 1
+.ACTIVE
+energy  -2.  100.  0.1
+#################################
+*END OF

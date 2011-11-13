@@ -1,0 +1,6 @@
+!
+! This test will do a B3LYP calculation of carbon monoxide at the experimental
+! bond length and calculate the electronic density at nuclei using the
+! expectation value module. This means that the expectation value can be analyzed
+! using various tools.
+!

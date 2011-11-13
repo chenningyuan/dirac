@@ -1,0 +1,9 @@
+$ERROR 0.000000001 
+Nlines 8:Electronic energy
+
+$ERROR 1.E-5 
+From:Eigenvalues
+ToRE:HOMO - LUMO
+
+$ERROR 1.E-4 
+Nlines 7:* Total gross contributions

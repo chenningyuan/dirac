@@ -1,0 +1,8 @@
+!
+! This test calculates the energy and dipole moment
+! of the water molecule at different levels of theory.
+! Note that we consistently leave out the SS integrals.
+!
+! The small run is ONLY for testing pruposes : it is NOT a good approximation
+! to leave out SL integrals without any compensation and also the virtual space 
+! is too much truncated !

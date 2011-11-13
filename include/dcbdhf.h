@@ -1,0 +1,66 @@
+!
+! VERSION : $Revision: 1.21 $
+! DATE    : $Date: 2004/05/26 13:06:53 $
+! FILE    : dcbdhf.h
+!
+!*** Dirac-Fock calculations ***
+!     PROJEC     - any projection, defined by a set of coefficients
+
+      INTEGER MFMAT, MXOPEN
+      PARAMETER (MFMAT = 10, MXOPEN = 10)
+
+      INTEGER MPRJREF
+      PARAMETER (MPRJREF = 6)
+
+      CHARACTER*9 DHF_INTTYP
+      CHARACTER*8 CACC
+      CHARACTER*6 PRJFIL(MPRJREF)
+      CHARACTER*72 VCPROJ(2, MPRJREF), VCFROZ(2)
+
+      COMMON /DCCDHF/ DHF_INTTYP, CACC, PRJFIL, VCPROJ, VCFROZ
+
+      LOGICAL DHFCONV(2), DHFEXIT, TRIVEC, TRIFCK, ERGCNV, EVCCNV,      &
+     &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL, PHCOEF,   &
+     &        FIXDIF, DIISAO, DIISMO, DYNSEL, AUTOCC, INIOCC,           &
+     &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF
+      COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
+     &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
+     &                PHCOEF, FIXDIF, DIISAO, DIISMO, DYNSEL, AUTOCC,   &
+     &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF
+
+      INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
+     &        INTDEF, INTFLG, INTBUF, ITRINT(2), IPREIG, NEVEC(2),      &
+     &        N2EVECQ(2), I2EVECTQ(2), N2EVECTQ, NSMOTQ, ISMOQ(2),      &
+     &        ITRSCF(0:7), NFMAT, ISYMOP(MFMAT), IFCKOP(MFMAT),         &
+     &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NPRJREF, &
+     &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),                   &
+     &        NACSHMF(2, MXOPEN), NASHMFT
+      COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
+     &                NELMBM, INTDEF, INTFLG, INTBUF, ITRINT, IPREIG,   &
+     &                NEVEC, N2EVECQ, I2EVECTQ, N2EVECTQ, NSMOTQ, ISMOQ,&
+     &                ITRSCF, NFMAT, ISYMOP, IFCKOP, IHRMOP, NEWOCC,    &
+     &                MXMACRO, MXMICRO, MAXBCK, NPRJREF, NTMO, I2TMOT,  &
+     &                N2TMOTQ, NISHMF, NACSHMF, NASHMFT
+!..number of closed and open shell orbitals with frozen ones subtracted
+
+      REAL*8 SCFCNV(2), ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY, E1PART, &
+     &       E2PART, ERGBUF, CONVRG, TDF2, TDDG, DNSDHF, DAMPFC, DIISTH,&
+     &       BMCOND, CNVINT(2), SCFTID(0:7), ESOLVE, ESOLVN, PRJTHR
+      COMMON /DCRDHF/ SCFCNV, ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY,   &
+     &                E1PART, E2PART, ERGBUF, CONVRG, TDF2, TDDG,       &
+     &                DNSDHF, DAMPFC, DIISTH, BMCOND, CNVINT, SCFTID,   &
+     &                ESOLVE, ESOLVN, PRJTHR
+
+      REAL*8 DF(0:MXOPEN), DA(0:MXOPEN), DALPHA(0:MXOPEN)
+      INTEGER NISH_DHF(2), NASH_DHF(2), NSSH_DHF(2), NESH_DHF(2),       &
+     &        NPSH_DHF(2), NFRO_DHF(2), NELEC_DHF(2), NELECT_DHF,       &
+     &        NAELEC_DHF, NACSH(2, MXOPEN), NOPEN
+      COMMON /DCODHF/ DF, DA, DALPHA, NISH_DHF, NASH_DHF, NSSH_DHF,     &
+     &                NESH_DHF, NPSH_DHF, NFRO_DHF, NELEC_DHF,          &
+     &                NELECT_DHF, NAELEC_DHF, NACSH, NOPEN
+
+      INTEGER LUCYCL, LUFCK1, LUFCK2, LUFOCK, LUDIIS, LUDENS, LUEVEC,   &
+     &        LUCMOS, LUSMOS
+      COMMON /DHFIOU/ LUCYCL, LUFCK1, LUFCK2, LUFOCK, LUDIIS, LUDENS,   &
+     &                LUEVEC, LUCMOS, LUSMOS
+

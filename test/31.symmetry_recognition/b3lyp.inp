@@ -1,0 +1,15 @@
+!
+! This test calculates the B3LYP energy of various closed shell molecules
+!
+**DIRAC
+.TITLE
+Generic input for NR B3LYP energy
+.WAVE F
+**HAMILTONIAN
+.LEVY-LEBLOND
+.DFT
+B3LYP
+**WAVE FUNCTIONS
+.DHF
+*END OF
+

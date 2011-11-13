@@ -1,0 +1,26 @@
+!
+! This test calculates the NMR spin-spin couplings in the water molecule
+! The no-pair approach is used, so that we calculate the DSO term via the
+! Sternheimer approximation. 
+! Note that we consistently leave out the SS integrals by specifying .INTFLG under Hamiltonian.
+!
+**DIRAC
+.TITLE
+Water molecule. Restricted kinetic balance. Spin-spin couplings
+.WAVE F
+.PROPER
+**HAMILTONIAN
+.INTFLG
+ 1 1 0
+**WAVE FUNCTIONS
+.DHF
+**PROPERTIES
+.SPIN-SPIN
+.DSO
+*LINEAR RESPONSE
+.SKIPEP
+.CNVINT
+0.01 0.0001
+.THRESH
+1.0E-8
+*END OF

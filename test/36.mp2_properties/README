@@ -1,0 +1,13 @@
+!
+! MP2 first order property calculations of various molecular properties.
+!
+! The properties caclulated are:
+! - PVC: Parity Violation (Chirality) energies
+! - EFG: the electric field gradient
+! - DIPOLE: the dipole moment
+! - EFN: the electric field at nuclei 
+! - NQCC: nuclear quadrupole couplings constants
+!
+! Note: - The geometrical parameters are the same as described in the 
+!         Chem. Phys paper about MP2 first order properties with
+!         dihedral angle 45 degrees

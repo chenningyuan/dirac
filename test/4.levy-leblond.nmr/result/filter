@@ -1,0 +1,13 @@
+
+$ERROR 0.0000001 
+From:Nuclear repulsion + core energy
+ToI:SCF energy
+
+From:Expectation values
+To:    s0 = T : Expectation value zero by point group symmetry.
+
+From:DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS
+ToI:DIRAC - DSO contribution to spin-spin-couplings
+
+$ERROR 1.0E-3
+Nlines 4:At1  #  iso 

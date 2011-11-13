@@ -1,0 +1,14 @@
+ $Revision: 1.2.6.1 $
+ $Date: 2004/09/01 10:34:52 $
+ $File: utils/README
+
+Misc. utilities for Dirac
+-------------------------
+
+1. labread
+
+Check for MOLECULE records on files.
+
+2. basis_set
+
+Reads basis sets from various sources and produces library file.

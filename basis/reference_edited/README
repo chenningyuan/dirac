@@ -1,0 +1,22 @@
+These files are adapted for reading with the C programme basis_set
+
+Philosophy of the dedicated read is to preserve the original format in which the basis set were published.
+
+Required are identifiers :
+ - for each element as " ** Elm **" with Elm the element name (max. 3 characters),
+   followed by a free format line with the atomic number.
+ - for each block of basis functions an identifier $BLOCK
+   followed by a free format line with the component (large 0, small 1), the l-value,
+   the j-value (l-1/2=0, l+1/2=1), the number of exponents, the number of contracted
+  functions.
+
+The exponents and contraction coefficients are read in free format assuming a first (dummy) integer
+The order should be (with n the number of contracted functions in the block) :
+
+exponent number, exponent value, contraction coefficient 1, contraction coefficient 2, ..., contraction coefficient n
+
+Additional diffuse or correlating functions are identified by an indentifier followed by a line
+with the maximum l-value and number of exponenents of each type (this information is assumed constant for all elements)
+The exponents themselves are then on one line started by the element name 
+
+Luuk Visscher, 21-5-2003.

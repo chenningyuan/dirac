@@ -1,0 +1,17 @@
+TEST INPUT FILES FOR DIRAC
+
+run
+% runtest
+
+If pam is not in your path then run
+% runtest --pampath="path to pam"
+
+See
+% runtest --help
+
+An exerpt of the output is compared with the standard output contained in the
+directory result in each example directory.  The differences are written both
+in plain text (dif.txt) and html (dif.htm) format.
+
+When adding new test runs don't forget to provide the sample output AND the
+filter file in the directory result.

@@ -1,0 +1,14 @@
+$ERROR 0.000000001 
+Nlines 8:Electronic energy                        :
+
+$ERROR 1.E-5 
+From:Eigenvalues
+ToRE:HOMO - LUMO
+
+$ERROR 1.E-9 
+From:Overview of calculated energies
+ToI:@ Total CCSD-T  energy
+
+$ERROR 1.E-5 
+From:Dipole length: X
+To:s0 = T : Expectation value zero by point group symmetry.

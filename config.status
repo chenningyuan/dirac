@@ -1,0 +1,9 @@
+#!/bin/sh 
+if [ $# != 1 ]; then
+   echo "Usage $0 variable"
+   exit 1
+fi
+if [ ! -r Makefile.config ]; then
+   exit 1
+fi
+echo `grep "$1 .*= " Makefile.config | sed 's/.*= *//'`

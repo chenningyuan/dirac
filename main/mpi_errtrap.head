@@ -1,0 +1,28 @@
+/*
+ *
+ * VERSION : $Revision: 1.4.46.1 $
+ * DATE    : $Date: 2004/09/01 10:35:41 $
+ * FILE    : main/mpi_errtrap.head
+ * DESCR.  : Header file for mpi_errtrap
+ * AUTHOR  : J. Thyssen - 980713
+ *
+ */
+
+#if defined (VAR_MPI)
+#include <mpi.h>
+
+#if defined (SYS_AIX)
+
+void mpi_errtrap(MPI_Comm *comm,int *err,char *errmesg,int *oeh1,int *oeh2)
+
+#else /* SYS_AIX */
+
+void mpi_errtrap(MPI_Comm *comm, int *err, ...)
+
+#endif /* SYS_AIX */
+
+#else /* VAR_MPI */
+
+void mpi_errtrap(int *bla1, int *bla2)
+
+#endif /* VAR_MPI */

@@ -1,0 +1,13 @@
+**DIRAC
+.TITLE
+ Coupled cluster to test linear symmetry
+.WAVE FUNCTION
+**HAMILTONIAN
+.LVCORR
+**WAVE FUNCTION
+.DHF
+.RELCCSD
+*END OF
+
+ &RELCCSD DOENER=T IPRNT=1 &END
+

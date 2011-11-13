@@ -1,0 +1,6 @@
+!
+! This test calculates the NMR spin-spin couplings in the water molecule
+! The no-pair approach is used, so that we calculate the DSO term via the
+! Sternheimer approximation.
+! Note that we consistently leave out the SS integrals.
+!

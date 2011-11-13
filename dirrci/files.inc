@@ -1,0 +1,9 @@
+C
+C VERSION : $Revision: 1.2.46.1 $
+C DATE    : $Date: 2004/09/01 10:35:36 $
+C FILE    : dirrci/files.inc
+C
+      COMMON/FNUMBS/MRCONEE,MDCINT,MDBINT,MRCTRIV,MRCFINV,MRCEXCS,
+     &              MRCVECS,MRCTWOE
+      COMMON/FNAMES/FNAM(8)
+      CHARACTER*7 FNAM

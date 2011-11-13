@@ -1,0 +1,12 @@
+! Nonrelativistic optimization using the default Gaussian nuclear model
+**DIRAC
+.OPTIMIZE
+*OPTIMIZE
+.BAKER
+.PRINT
+1
+**HAMILTONIAN
+.LEVY-LEBLOND
+**WAVE FUNCTIONS
+.DHF
+*END OF 

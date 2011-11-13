@@ -1,0 +1,805 @@
+#
+#...   Copyright (c) 2004 by the authors of Dirac (see below).
+#...   All Rights Reserved.
+#...
+#...   This code is provided under a written licence and may be 
+#...   used, copied, transmitted, or stored only in accord with that
+#...   written licence.
+#...
+#...   In particular, no part of the source code or compiled modules may 
+#...   be distributed outside the research group of the licence holder. 
+#...   This means also that persons (e.g. post-docs) leaving the research
+#...   group of the licence holder may not take any part of Dirac,
+#...   including modified files, with him/her, unless that person has
+#...   obtained his/her own licence. 
+#...
+#...   For questions concerning this copyright write to:
+#...      dirac-admin@dirac.chem.sdu.dk
+#...
+#...   For information on how to get a licence see:
+#...      http://dirac.chem.sdu.dk
+#
+#
+# Shell Script for running Dirac
+#
+# VERSION : $Revision: 1.68.2.4 $
+# DATE    : $Date: 2004/09/03 06:27:01 $
+# FILE    : pam.in
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# Does 'echo' understand backslash commands
+#
+if [ "	" = "`echo '\t'`" ]; then
+   echo="echo"
+else
+   echo="echo -e"
+fi
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Function usage
+#    - prints usage to stdout
+#
+#
+shortusage ()
+{
+   echo
+   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
+   echo '   For information about flags enter "'$0'" without any options.'
+}
+usage ()
+{
+   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
+   echo '   Flags:'
+   echo '     -mpi n                 : Run MPI with n nodes; default sequential'
+   echo '     -machinefile filename  : Specify file with list of machines to be used in MPI run'
+   echo '     -mpiarg string         : Any other arguments to be passed on to MPI run'
+   echo '     -mw mem                : Set memory (in megawords) for master'
+   echo '                              (and slave nodes if "-nw mem" not specified)'
+   echo '     -nw mem                : Set memory (in megawords) for the slave nodes'
+   echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
+   echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.'$$"'
+   echo '     -clean                 : Clean work area before calculation'
+   echo '     -keepwrk               : Keep work area after calculation (default: remove)'
+   echo '     -copy "file1 file2 .." : Copy specified files from job directory to   work area'
+   echo '     -get "file1 file2 .."  : Get  specified files to   job directory from work area'
+   echo '     -incmo                 : Copy DFCOEF from job directory to   work area (when restarting)'
+   echo '     -outcmo                : Save DFCOEF to   job directory from work area (for restart)'
+   echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
+   echo '     -outfck                : Save DFFCK2 to   job directory from work area'
+   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
+   echo '     -run name              : File suffix for output; default "'$RUN'"'
+   echo '     -nice                  : execute Dirac with nice/npri'
+   echo '     -notify                : Notify when finished to user starting job'
+   echo '     -user e-mail           : Notify when finished using specified e-mail address'
+   echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
+   echo '     -ssrun exp_type        : use ssrun exp_type (SGI profiler) to execute Dirac'
+   echo '                              (path must be included if executable is not in input directory)'
+   echo '     -help                  : More help on pam than this'
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Notify user
+#
+#
+notify_user()
+{
+   if [ -n "$NOTIFY_USER" ]; then
+      TO=$NOTIFY_USER
+   else
+      if [ -n "$USER" ]; then
+         TO="$USER@`hostname`"
+      else
+         TO="$LOGNAME@`hostname`"
+      fi
+   fi
+   mail $TO <<EOF
+   cat <<EOF
+
+Your job has has returned with exit status: $EXIT
+
+Command      : $0 $ARG_SAVE
+Hostname     : `hostname`
+Input dir    : $LOC
+Menu file    : $MENU
+Molecule file: $MOL
+Output file  : $OUTPUT_FILE
+
+EOF
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SET UP COMMAND TO RUN
+#
+#
+setup_command()
+{
+   #
+   # Execute Dirac "nicely"?
+   #
+   if [ -n "$NICE" ]; then
+      if [ -x /usr/sbin/npri ]; then
+         NICE_CMD="npri -h129"
+      else
+         NICE_CMD="nice -20"
+      fi
+   else
+      NICE_CMD=
+   fi
+   #
+   # Dirac executable
+   #
+   if [ -n "$ALT_DIRAC" ]; then
+      DIRAC=${ALT_DIRAC##*/}
+      BIN_DIR=${ALT_DIRAC%/*}
+      if [ -z "$BIN_DIR" ]; then
+         BIN_DIR=$LOC
+      fi
+   else
+      DIRAC=dirac.x
+   fi
+   #
+   # Execute Dirac with ssrun ?
+   #
+   if [ -n "$SSRUN" ]; then
+      SSRUN_CMD="ssrun -$SSRUN"
+      mkdir $LOC/speedshop.$$
+      ln -s $BIN_DIR/$DIRAC $LOC/speedshop.$$/$DIRAC
+      export _SPEEDSHOP_OUTPUT_DIRECTORY=$LOC/speedshop.$$
+   else
+      SSRUN_CMD=""
+   fi
+   #
+   # MPI?
+   #
+   if [ "$DIRPAR" = "1" ]; then
+#  Parallel run ($MPIARG allows any MPI run argument):
+      DIRAC_CMD="$MPIRUN $MPIARG"
+#     Set number of processors:      
+      if [ "$MPIRUN" = 'mpirun' ]; then
+        DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC"
+#       Include machinefile
+        if [ -n "$MACH_FILE" ]; then
+          if [ -r "$MACH_FILE" ]; then
+            DIRAC_CMD="$DIRAC_CMD -machinefile $MACH_FILE"
+          else
+            echo "ERROR: Machinefile $MACH_FILE cannot be read"
+            exit 1
+          fi
+        fi
+
+      fi
+   else
+#  Sequential run:
+      DIRAC_CMD=
+   fi
+   DIRAC_CMD="$DIRAC_CMD $SSRUN_CMD $DIRAC"
+   #
+   # Debug
+   #
+   if [ -n "$DEBUG" ]; then
+      if [ "$DEBUGGER" = "gdb" ]; then
+        DIRAC_CMD="gdb -directory=$SRC_DIR/dirac -directory=$SRC_DIR/abacus  -directory=$SRC_DIR/prp "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/main "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/moltra -directory=$SRC_DIR/relccsd "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/esr -directory=$SRC_DIR/prp/xpp "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/xqr -directory=$SRC_DIR/relccsd/ccfocksp "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/pdpack -directory=$SRC_DIR/gp"
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/include $DIRAC"
+      else
+        DIRAC_CMD="$DEBUGGER -I $SRC_DIR/dirac -I $SRC_DIR/abacus  -I $SRC_DIR/prp "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/main "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/esr -I $SRC_DIR/prp/xpp "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/xqr -I $SRC_DIR/relccsd/ccfocksp "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/pdpack -I $SRC_DIR/gp"
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include $DIRAC"
+      fi
+   fi
+
+   $echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
+
+   #
+   # Delete $WRK/$DIRAC if the executable is older than the
+   # executable in $BIN_DIR. This is useful when you've compiled
+   # a new executable, but didn't delete your scratch directory
+   # in the previous calculation.
+   #
+
+   if [ -f $WRK/$DIRAC ]; then
+      if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
+         echo "Old $WKR/$DIRAC deleted because it is older than $BIN_DIR/$DIRAC"
+         rm $WRK/$DIRAC
+      fi
+   fi
+
+   if [ ! -f $WRK/$DIRAC ]; then
+      if [ -x $BIN_DIR/$DIRAC ]; then
+         cp $BIN_DIR/$DIRAC . || \
+            ( \
+               echo "   Error copying $BIN_DIR/$DIRAC" ; \
+               EXIT=1 ;\
+               exitfunc \
+            )
+         echo "ok"
+      else
+         echo "not found"
+         EXIT=1
+         exitfunc
+      fi
+   else
+      echo "was already there"
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# EXECUTE DIRAC
+#
+#
+execute_dirac()
+{
+
+   echo "   Executing: $NICE_CMD $DIRAC_CMD with BASDIR(S) :"
+   BDIR=$BASDIR
+   while [ -n "`echo $BDIR | grep ':'`" ]; do
+      TDIR=`echo $BDIR | cut -d ":" -f 1`
+      echo "   $TDIR"
+      BDIR=`echo $BDIR | cut -d ":" -f 2-`
+   done
+   $echo "   $BDIR \n"
+   if [ -n "$DEBUG"  ]; then
+      $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
+   else
+      $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
+         ( \
+            echo "   $DIRAC returned non-zero exit code" ; \
+            EXIT=1 ; export EXIT \
+         )
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Print header
+#
+#
+print_header()
+{
+   echo "   ****************************************"
+   echo "   **** OUTPUT FROM DIRAC SHELL SCRIPT ****"
+   echo "   ****************************************"
+   echo
+   echo '   $Revision: 1.68.2.4 $'
+   echo "   Host        : `hostname`"
+   echo "   Date        : `date`"
+   echo "   PID         : $$"
+   echo "   Input dir   : $LOC"
+   echo "   Work dir    : $WRK"
+   echo
+   echo
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Exit
+#
+#
+exitfunc()
+{
+   if [ $EXIT -eq 0 ]; then
+      echo
+      echo "   Exit date: `date`"
+      echo "   *** NORMAL EXIT"
+   else
+      echo
+      echo "   Exit date: `date`"
+      echo "   *** ABNORMAL EXIT"
+   fi
+   if [ -n "$NOTIFY" ]; then
+      notify_user
+   fi
+   exit $EXIT
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# REMOVE WORK DIRECTORY
+#
+#
+remove_work_dir()
+{
+#
+#  We alays delete the work directories on remote machines.
+#  These directories are not suited for restart.
+#
+   master=`hostname`
+   for node in ` uniq $WRK/dirac_machines `; do
+       if [ $node != $master ]; then
+          echo "Contents of work directory $WRK on slave node $node"
+          $RSH $node "ls -l $WRK"
+          $RSH $node "rm -fr $WRK"
+       fi
+   done
+#
+#  Now delete work directory on primary machine if requested
+#
+   echo "Contents of work directory $WRK on master node $master"
+   cd ..
+   ls -l $WRK
+   if [ " $RMWRK" -eq 1 ]; then
+      if [ $EXIT -eq 0 ]; then
+         rm -fr $WRK
+      else
+         echo '*** DIRAC terminated with an error exit code'
+         echo "- THEREFORE scratch work directory $WRK is not deleted as normal"
+         echo "  so you may restart the calculation, or debug, if possible"
+         echo "  ( $WRK may be deleted by your queueing system )"
+         echo "- REMEMBER to delete $WRK yourself !!!"; echo
+      fi
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SET WORKING DIRECTORY
+#
+#
+set_work_dir()
+{
+   if [ -n "$SCR_DIR" ]; then
+      WRK=$SCR_DIR
+   else
+      WRK=$SCR/$MOL.$$
+   fi
+   #
+   # Make $WRK if non-existing
+   # The -p switch makes all parent directories first
+   #
+   mkdir -p $WRK || echo "   MKDIR error\!"
+   if [ ! -d $WRK ]; then
+      echo "   Could not create work directory: $WRK"
+      EXIT=1
+      exitfunc
+   fi
+   #
+   # Remove contents of $WRK if requested ( RMSCR )
+   #
+   if [ -n "$RMSCR" ]; then
+      rm -f $WRK/* 2> /dev/null || echo "rm $WRK error\!"
+   fi
+cd $WRK
+}
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# COPY CONTENTS OF WORKING DIRECTORY TO REMOTE NODES 
+#
+#
+distribute_work_dir()
+{
+#  This routine is only called when local disks
+#  The list of machines available to dirac.x
+#
+   if [ -n "$MACH_FILE" ]; then
+#     Serial run of parallel program
+      echo `hostname` > dirac_machines 
+   else
+      cp $MACH_FILE dirac_machines
+   fi
+#
+#  Initialize value of master
+#
+   master=`hostname` 
+#
+#  Loop over the remote machines and copy the contents of the work directory.
+#
+   for node in `uniq dirac_machines `; do
+       if [ $node != $master ]; then
+          echo "copying contents of $master:$WRK to $node:$WRK"
+          $RSH $node "mkdir -p $WRK"
+          if [ -n "$RMSCR" ]; then
+             $RSH $node rm -f $WRK/*
+          fi
+          for file in ` ls `; do
+              $RCP $file $node:$WRK/$file
+          done
+       fi
+   done
+   #
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SAVE REQUESTED FILES
+#
+#
+save_files()
+{
+   #
+   # GET REQUESTED FILES FROM WORKING DIRECTORY
+   #
+   if [ -n "$GET_FILES" ]; then
+      for file in $GET_FILES; do
+         $echo "   Saving $WRK/$file : \c"
+         if [ -a $WRK/$file ]; then
+            cp $WRK/$file $LOC || $echo "not \c"
+            echo "ok"
+         else
+            echo "not found"
+         fi
+      done
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# COPY FILES TO WORKING DIRECTORY
+#
+#
+copy_files()
+{
+   #
+   # COPY MOLECULE AND MENU FILE
+   #
+   $echo "   Copying $LOC/$MOL.mol to working directory : \c"
+#   if [ -a $LOC/$MOL.mol ]; then
+   if [ -f $LOC/$MOL.mol ]; then
+      cp $LOC/$MOL.mol MOLECULE.INP || \
+         ( \
+            echo "   Error copying $LOC/$MOL.mol" ; \
+            EXIT=1 ; \
+            exitfunc \
+         )
+      echo "ok"
+   else
+      echo "not found"
+      EXIT=1
+      exitfunc
+   fi
+   $echo "   Copying $LOC/$MENU.inp to working directory : \c"
+#   if [ -a $LOC/$MENU.inp ]; then
+   if [ -f $LOC/$MENU.inp ]; then
+      cp $LOC/$MENU.inp DIRAC.INP || \
+         ( \
+            echo "   Error copying $LOC/$MENU.inp" ; \
+            EXIT=1 ; \
+            exitfunc \
+         )
+      echo "ok"
+   else
+      echo "not found"
+      EXIT=1
+      exitfunc
+   fi
+   #
+   # COPY REQUESTED FILES TO WORKING DIRECTORY
+   #
+   if [ -n "$COPY_FILES" ]; then
+      for file in $COPY_FILES; do
+         $echo "   Copying $LOC/$file to working directory : \c"
+         if [ -a $LOC/$file ]; then
+            cp $LOC/$file . || \
+               ( \
+                  echo "   Error copying $LOC/$file" ; \
+                  EXIT=1 ; \
+                  exitfunc \
+               )
+            echo "ok"
+         else
+            echo "not found"
+         fi
+      done
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SAVE OLD OUTPUT FILE
+#
+#
+save_old_output()
+{
+   if [ "$MOL" = "$MENU" ]; then
+      OUTPUT_FILE=${LOC}/${MOL}.${RUN}
+   else
+      OUTPUT_FILE=${LOC}/${MENU}_${MOL}.${RUN}
+   fi
+   #
+   # Save old output file
+   #
+#   if [ -a $OUTPUT_FILE ]; then
+   if [ -f $OUTPUT_FILE ]; then
+      $echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
+      mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
+         ( \
+            echo "   Error renaming $OUTPUT_FILE" ; \
+            EXIT=1 ; \
+            exitfunc \
+         )
+      echo "ok"
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# EXPORT ENVIRONMENTAL VARIABLES TO CONTROL DIRAC (BOTH MASTER AND NODES)
+#
+#
+set_dirac_environment()
+{
+   export DIRPAR # tell dirac.x if parallel run or not
+   export BASDIR # tell dirac.x which directories to search for basis sets
+   if [ -n "$MEMORY" ]; then
+      DIRWRK=$MEMORY; export DIRWRK
+      DIRNOD=$MEMORY; export DIRNOD
+   fi
+   if [ -n "$NODE_MEMORY" ]; then
+      DIRNOD=$NODE_MEMORY; export DIRNOD
+   fi
+#  Next line is for IBM only but will not hurt other systems
+   XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
+
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#  Set working directory, set work memory, print header
+#  copy files to working directory, save existing output file,
+#  setup command to run, execute dirac, save files, and delete
+#  working directory
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Set default values
+#
+#
+initialize()
+{
+   LOC=`pwd`
+
+   EXIT=0
+
+   RMWRK=0
+   RMSCR=
+
+   COPY_FILES=
+
+   DEBUG=
+
+   GET_FILES=
+
+   MEMORY=
+   NODE_MEMORY=
+
+   RUN='out'
+
+   if [ "$LOGNAME" = "" ]; then
+      SCR=$SCR_DEFAULT/$USER
+   else
+      SCR=$SCR_DEFAULT/$LOGNAME
+   fi
+
+   SCR_DIR=
+
+   MPI_NPROC=
+   DIRPAR=0 # initialize to sequential
+   MPIARG=
+
+   NICE=
+   SSRUN=
+
+   NOTIFY=
+   NOTIFY_USER=
+
+   ALT_DIRAC=
+
+#  set default search path for basis sets:
+#  1) job directory
+#  2) basis set directory in Dirac distribution
+
+   BASDIR="$LOC/:$BASDIR"
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Parse arguments
+#
+#
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+initialize
+ARG_SAVE="$*"
+if [ -z "$1" ]; then
+   usage
+   exitfunc
+fi
+
+while [ -n "$1" ]; do
+   case $1 in
+      -basdir)
+         shift
+         BASDIR="$1:${BASDIR}"
+         ;;
+      -copy)
+         shift
+         COPY_FILES="$COPY_FILES $1"
+         ;;
+      -debug)
+         DEBUG=1
+         ;;
+      -get)
+         shift
+         GET_FILES="$GET_FILES $1"
+         ;;
+      -infck)
+         COPY_FILES="$COPY_FILES DFFCK2"
+         ;;
+      -outfck|-utfck)
+         GET_FILES="$GET_FILES DFFCK2"
+         ;;
+      -incmo)
+         COPY_FILES="$COPY_FILES DFCOEF"
+         ;;
+      -outcmo|-utcmo)
+         GET_FILES="$GET_FILES DFCOEF"
+         ;;
+      -mw|-memory)
+         shift
+         let MEMORY=$1*1000000
+         ;;
+      -nw|-nodememory)
+         shift
+         let NODE_MEMORY=$1*1000000
+         ;;
+      -clean|-rmscr)
+         RMSCR=1
+         ;;
+      -keepwrk|-keepwork)
+         RMWRK=0
+         ;;
+      -rmwrk)  # for backwards compatibility
+         RMWRK=1
+         ;;
+      -run)
+         shift
+         RUN=$1
+         ;;
+      -wrkdir|-workdir|-scr|-scratch)
+         shift
+         SCR_DIR=$1
+         ;;
+      -machinefile|-mf)
+         shift
+         MACH_FILE=$1
+         ;;
+      -mpi)
+         shift
+         MPI_NPROC=$1
+         DIRPAR=1 # set to parallel run
+         ;;
+      -mpiarg)
+         shift
+         MPIARG=$1
+         ;;
+      -nice)
+         NICE=1
+         ;;
+      -ssrun)
+         shift
+         SSRUN=$1
+         ;;
+      -notify)
+         NOTIFY=1
+         ;;
+      -user)
+         NOTIFY=1
+         shift
+         NOTIFY_USER=$1
+         ;;
+      -dirac)
+         shift
+         ALT_DIRAC=$1
+         ;;
+      -t)
+         shift
+         ;;
+      -q)
+         shift
+         ;;
+      -qsys)
+         shift
+         ;;
+      -help)
+         if [ -z "$PAGER" ]; then
+            PAGER=more
+         fi
+         nroff -man $SRC_DIR/pam.1 | $PAGER
+         EXIT=0
+         exitfunc
+         ;;
+      -*)
+         echo "ERROR: Flag $1 not recognized"
+         usage
+         EXIT=2
+         exitfunc
+         ;;
+      *)
+         MOL=${1%\.mol}
+         shift 
+         if [ -z "$1" ]; then
+            echo "ERROR: No Dirac menu file given"
+            shortusage
+            EXIT=1
+            exitfunc
+         fi
+         MENU=${1%\.inp}
+         ;;
+   esac
+   shift
+done
+#
+if [ -z "$MOL" ]; then
+   echo "ERROR: molecule and Dirac menu files not specified"
+   shortusage
+   EXIT=1
+   exitfunc
+fi
+#
+EXIT=0
+set_work_dir  # set and go to work directory
+set_dirac_environment
+print_header
+copy_files
+save_old_output
+setup_command
+if [ "$LOCALDISKS" = "yes" ]; then
+  distribute_work_dir 
+fi
+execute_dirac
+save_files
+remove_work_dir
+#
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Exit 
+#
+#
+exitfunc

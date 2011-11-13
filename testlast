@@ -1,0 +1,208 @@
+#!/bin/sh
+#
+# Test latest version of DIRAC by updating the working copy and
+# running the standard testset.
+#
+# Written by Luuk Visscher - May 15 2002
+#
+# Set defaults
+pampath=`pwd`
+dirac=`pwd`/dirac.x
+testdir=`pwd`/test
+mpi=" "
+nodes=1
+queue="none"
+# Define exit procedure
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Does 'echo' understand escapes?
+#
+#
+echo_style=sysv
+if [ "	" = "`echo '\t'`" ]; then
+   echo="echo"
+else
+   echo="echo -e"
+fi
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# CHECK OPTIONS
+#
+#
+usage='Usage: '$0'\n'\
+'--help\n'\
+'\tPrint this\n'\
+'\tA common error is to forget the = character, e.g. -q long instead of the correct -q=long\n'\
+'--tests=TESTS\n'\
+'\tThe tests that should be run (default: short) \n'\
+'\tKnown tests: "short", "medium", "long", "all", or the numbers of some specific tests\n'\
+'--testdir=TESTDIR\n'\
+'\tDirectory in which the tests should be run (default: -testdir=test)\n'\
+'--mpi=MPI\n'\
+'\tNumber of nodes to be used (default: run serial job)\n'\
+'--q=QUEUE\n'\
+'\tQueue to be used in qsub (default: -q=none meaning run interactively)\n'
+
+while [ $# != 0 ]; do
+   arg="$1"; shift
+   case "${arg}" in
+      -*=*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\([^=]*\)=.*$:\1:'`
+         val=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*[^=]*=\(.*\)$:\1:'`
+         valomitted=no
+         ;;
+      -*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\(.*\)$:\1:'`
+         val="yes"
+         valomitted=yes
+         ;;
+      *)
+         $echo $usage
+         exit 
+   esac
+   optname="${opt}"
+   opt="`echo '' ${opt} | sed -e 's:^ ::' | tr - _`"
+   case "${opt}" in
+      "help")
+         $echo $usage
+         exit
+         ;;
+      "testdir")
+         if [ "${valomitted}" = "no" ]; then
+            testdir="$val"
+         fi
+         ;;
+      "tests")
+         if [ "${valomitted}" = "no" ]; then
+            tests="$val"
+         fi
+         ;;
+      "mpi")
+         if [ "${valomitted}" = "no" ]; then
+            nodes=$val
+            mpi="--mpi=$nodes"
+         fi
+         ;;
+      "q")
+         if [ "${valomitted}" = "no" ]; then
+            queue="$val"
+         fi
+         ;;
+      "queue")
+         if [ "${valomitted}" = "no" ]; then
+            queue="$val"
+         fi
+         ;;
+      *)
+         echo  'Unknown option: '$opt''
+         $echo $usage
+         exit 1
+         ;;
+   esac
+done
+#
+# Define the output and log files
+#
+errfile=${testdir}/logs/lastrun
+if [ -f $errfile ]; then
+   rm $errfile
+fi
+if [  -z "$tests" ]; then
+   run=default_test;
+   tests=short;
+else
+   case "${tests}" in
+      "short")
+      run=short_test;
+      ;;
+      "medium")
+      run=medium_test;
+      ;;
+      "long")
+      run=long_test;
+      ;;
+      "all")
+      run=all_test;
+      ;;
+      *)
+      run=user_test;
+      ;;
+   esac
+fi
+#
+makelog=make_log;
+runlog=${run}_run.log;
+txtlog=${run}_dif.txt;
+htmlog=${run}_dif.htm;
+#
+# Make sure that we do not overwrite recent logfiles
+#
+echo " Saving old log files ..." 
+if [ ! -d "${testdir}/logs" ]; then
+   mkdir ${testdir}/logs;
+fi
+cd ${testdir}/logs;
+for i in $makelog $runlog $txtlog $htmlog ; do
+    if [ -f "${i}" ]; then
+        if [ -f "${i}.6" ]; then mv -f "${i}.6" "${i}.7"; fi
+        if [ -f "${i}.5" ]; then mv -f "${i}.5" "${i}.6"; fi
+        if [ -f "${i}.4" ]; then mv -f "${i}.4" "${i}.5"; fi
+        if [ -f "${i}.3" ]; then mv -f "${i}.3" "${i}.4"; fi
+        if [ -f "${i}.2" ]; then mv -f "${i}.2" "${i}.3"; fi
+        if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.2"; fi
+        if [ -f "${i}.0" ]; then mv -f "${i}.0" "${i}.1"; fi
+        if [ -f "${i}" ]; then mv -f "${i}" "${i}.0" ; fi
+    fi
+done
+cd ${pampath};
+#
+cat <<EOF >job_testlast.sh
+#!/bin/sh
+#
+# This file is a test job script created by the 'testlast' script
+#
+echo " Starting test at \`date\`"
+cd ${testdir};
+./runtest --tests="$tests" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ./logs/$runlog 2>&1 || \
+{ echo " runtest failed" ; \
+  echo " Here is the logfile ${testdir}/logs/$runlog" ; \
+  cat ${testdir}/logs/$runlog ; \
+  exit 1 ;\
+}
+if [ -f logs/$txtlog ]; then
+   if [ -s logs/$txtlog ]; then
+      echo " Calculations completed at \`date\` with one or more errors"
+      echo " Below follows the list of tests that failed :"
+      cat logs/$txtlog
+    else
+      echo " Calculations completed at \`date\` : no errors were detected"
+    fi
+else
+    echo ' Calculations were not completed : the run_log follows'
+    cat logs/$runlog
+fi
+EOF
+if [ "${queue}" = "none" ]; then
+# The tests are default run interactively.
+echo ' Starting test calculations interactively ... '
+chmod u+x job_testlast.sh
+./job_testlast.sh
+else
+echo " Submitting test calculations to queue $queue ... "
+echo " When they are done please check the results in the directory ${testdir}/logs. "
+#
+# This is a script that works with the pbs (qsub) batch environment
+#
+qsub -j oe -o $errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
+#
+# Other queue systems used in Amsterdam. Add you own as new comment line if you like
+#
+#pbs:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
+#bsub: bsub <job_testlast.sh
+fi
+rm job_testlast.sh
+#

@@ -1,0 +1,15 @@
+INTGRL
+Methane (a standard MOLFDIR test at that geometry)
+Contracted non-relativistic 6-311G* basis
+C   2              A
+        6.    1
+C   0.0000    0.0000    0.0000 
+LARGE BASIS 6-311G*
+        1.    4
+H     .629889144   .629889144  .629889144
+H    -.629889144  -.629889144  .629889144
+H     .629889144  -.629889144 -.629889144
+H    -.629889144   .629889144 -.629889144
+LARGE BASIS 6-311G*
+FINISH
+

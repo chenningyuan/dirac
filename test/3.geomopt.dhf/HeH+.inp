@@ -1,0 +1,48 @@
+! Very short test for geometry optimization. Detailed print out and molecular properties
+! at optimized structure.
+**DIRAC
+.TITLE
+HeH+ molecule
+.OPTIMIZE
+.PROPERTIES
+*OPTIMIZE
+.PRINT
+ 2
+.GRADIE
+1.0D-6
+**GENERAL
+.PRINT
+ 3
+.DIRECT
+1 1 1
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.CLOSED SHELL
+ 2 0
+**PRP F
+.DIPOLE
+.DSO
+.NMR
+*MOLGRD
+.PRINT
+ 2
+.TRICK
+*LINEAR RESPONSE
+.PRINT
+1
+.B FREQUENCY
+ 1
+ 0.00
+.XLRNRM
+.MAXITR
+ 30
+.MAXRED
+ 200
+.THRESH
+ 1.0D-5
+**ANALYZE
+.PRIVEC
+*PRIVEC
+.AOLAB
+*END OF 
