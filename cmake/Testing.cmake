@@ -6,12 +6,15 @@ set(BUILDNAME
     )
 
 # set ctest's own timeout
+#miro: if test is terminated with "DART_TESTING_TIMEOUT", it shows empty field in CDash web;
+# therefore I prefer huge value of this parameter, DART_TESTING_TIMEOUT=99999
 set(DART_TESTING_TIMEOUT
     "600"
     CACHE STRING
     "Set default timeout in seconds for every single test"
     )
 
+# set number of CPU for test
 if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
     set(RUNTEST_FLAG_NR_PROC "--mpi=${RUNTEST_NR_PROC}")
     message("-- runtest extra flag active, RUNTEST_FLAG_NR_PROC=\"${RUNTEST_FLAG_NR_PROC}\" ")
@@ -20,6 +23,12 @@ if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
     set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
     message("-- runtest extra flag active, RUNTEST_FLAG_TIMEOUT=\"${RUNTEST_FLAG_TIMEOUT}\" ")
 endif()
+# choose full path binary - override diracrc setting
+if(NOT "${RUNTEST_BINARY}" STREQUAL "")
+    set(RUNTEST_FLAG_BINARY "--binary=${RUNTEST_BINARY}")
+    message("-- runtest extra flag active, RUNTEST_FLAG_BINARY=\"${RUNTEST_FLAG_BINARY}\" ")
+endif()
+
 
 include(Tests)
 include(CTest)
