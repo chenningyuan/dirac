@@ -52,7 +52,7 @@ C
 C     Summary of calculation
 C     ======================
 C
-      LVCON = DOLVC.AND.(INTFLG.EQ.3)
+      LVCON = DOLVC.AND.(INTFLG.EQ.3 .or. INTFLG.EQ.11)
       IF(.NOT.ONESYS) THEN
         CALL HEADER('SCF - CYCLE',-1)
         IF(ERGCNV) THEN
