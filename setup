@@ -136,6 +136,11 @@ group.add_option('--nochecks',
                  dest='nochecks',
                  default=False,
                  help='disable compatibility checks [default: %default]')
+group.add_option('--static',
+                 action='store_true',
+                 dest='static',
+                 default=False,
+                 help='link statically [default: %default]')
 group.add_option('-D',
                  action="append",
                  dest='cmake',
@@ -221,6 +226,8 @@ def gen_cmake_command():
         command += ' -DENABLE_CODE_COVERAGE=ON'
     if options.nochecks:
         command += ' -DENABLE_SANITY_CHECKS=OFF'
+    if options.static:
+        command += ' -DENABLE_STATIC_LINKING=ON'
     if options.install:
             command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 
