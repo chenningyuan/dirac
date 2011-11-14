@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : dirden.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -284,10 +282,10 @@ CMI ... inserted control print-out of variables
      &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
 
-          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
+          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
      &              D1,FAC,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
- 20    CONTINUE           
+ 20    CONTINUE
       IF (ITEST.NE.0) FAC= D1
       ENDIF
  10   CONTINUE
@@ -363,7 +361,7 @@ CTROND      CALL DZERO(DMAT,N2BBASXQ)
             ISTART = ISTART + NACSH(ISYM,JOPEN)
          END DO
          IF (ITEST.EQ.0) GOTO 20
-         CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+1),NTBAS(0),NTBAS(0),
+         CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+1),NTBAS(0),NTBAS(0),NZ,
      &              ALPHA,BETA,
      &              CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
      &              ISTART,ILOOP,NFBAS(ISYM,0))
@@ -466,7 +464,7 @@ CTROND
       CALL DZERO(DMAT,N2BBASXQ) 
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
+        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,D1,D0,
      &              CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &              NPSH(I)+1,NISH(I),NFBAS(I,0))
    10 CONTINUE
@@ -486,11 +484,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck denst1 */
-      SUBROUTINE DENST1(DMAT,LRD,LCD,ALPHA,BETA,
-     &                  CMO,LRC,LCC,JVEC,NVEC,NBAS)
+      SUBROUTINE DENST1(DMAT,LRD,LCD,NZ,ALPHA,BETA,
+     &                   CMO,LRC,LCC,JVEC,NVEC,NBAS)
 C*****************************************************************************
 C
 C     Construct density matrix for fermion corep IFRP
+C
+C     DMAT:= alpha*CMO*CMO(H) +  beta*DMAT
 C
 C     Written by T.Saue Mar 3 1995
 C
@@ -503,13 +503,13 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dgroup.h"
 C
-      DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ)
+      DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ),IQ(4)
+      DATA IQ/1,2,3,4/
       CALL QGEMM(NBAS,NBAS,NVEC,ALPHA,
-     &     'N','N',IPQTOQ(1,0),CMO(1,JVEC,1),LRC,LCC,NZ,
-     &     'H','N',IPQTOQ(1,0),CMO(1,JVEC,1),LRC,LCC,NZ,
-     &          BETA,IPQTOQ(1,0),DMAT,LRD,LCD,NZ)
+     &     'N','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,
+     &     'H','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,
+     &          BETA,IQ,DMAT,LRD,LCD,NZ)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -787,7 +787,7 @@ C
         ISTART = 1
         ILOOP  = NPSH(IFRP)
         IF(ITEST.GT.0) THEN
-          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
+          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
      &              DP5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
         ENDIF
@@ -795,7 +795,7 @@ C
         ISTART = NPSH(IFRP)+1
         ILOOP  = NESH(IFRP)
         IF(ITEST.GT.0) THEN
-          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
+          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
      &              DPM5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
         ENDIF

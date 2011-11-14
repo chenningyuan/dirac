@@ -11,13 +11,14 @@
 module prop_contribs
 
    use matrix_defop
+   use fc
 
 #ifdef PRG_DIRAC
    use dirac_interface
+   use openrsp_cfg
    use openrsp_interface_1el
    use openrsp_interface_2el
    use character_processing
-   use xc_driver
    use memory_allocator
 #elif defined(BUILD_AORSP)
    use dalton_ifc,    &
@@ -153,10 +154,11 @@ module prop_contribs
    !> ajt may10: FREQ is also a ZERO (no) perturbation, and is introduced to
    !>            allow the same code to contract response functions and
    !>            frequency-differentiated response functions.
-   type(prop_field_info) :: field_list(13) = &                         !nc an ba ln qu
+   type(prop_field_info) :: field_list(14) = &                         !nc an ba ln qu
       (/prop_field_info('EXCI', 'Generalized "excitation" field'      , 1, F, F, T, T), &
         prop_field_info('FREQ', 'Generalized "freqency" field'        , 1, F, F, T, T), &
         prop_field_info('AUX*', 'Auxiliary integrals on file'         , 1, F, F, T, F), &
+        prop_field_info('PNC' , 'PNC'                                 , 1, F, F, T, F), &
         prop_field_info('EL'  , 'Electric field'                      , 3, F, F, T, F), &
         prop_field_info('VEL' , 'Velocity'                            , 3, T, F, T, F), &
         prop_field_info('MAGO', 'Magnetic field w/o. London orbitals' , 3, T, F, F, T), &
@@ -427,6 +429,9 @@ contains
          do j=0, max(0,nd-1)
             E(1+j) = tr(A(1),D(1+j))
          end do
+      else if (np==1 .and. p(1)=='PNC') then
+         call get_fc_integrals(A(1), openrsp_cfg_pnc_center)
+         E(1) = tr(A(1),D(1))
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='EL') then
          ! contract -dipole integrals '?DIPLEN ' with densities
@@ -716,6 +721,13 @@ contains
             end do
             deallocate(RR)
          end if
+      else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
+            do i = 0, dp(1)-1 !GEO indices
+               call get_fc_integrals(A(1), openrsp_cfg_pnc_center, component=i+1)
+               do k = 0, max(0,nd-1) !density indices
+                  E(1+i+dp(1)*(dp(2)*k)) = tr(A(1), D(k+1))
+               end do
+            end do
       ! GEO MAGO has no nd==0 because MAGO anti-symmetric
       else if (np==2 .and. all(p==(/'GEO ','MAGO'/)) .and. nd/=0) then
          do j = 0, dp(2)-1
@@ -1533,6 +1545,10 @@ contains
 !> \todo #endif
          end do
 #endif
+      else if (np==1 .and. p(1)=='PNC') then
+         do i = 0, dp(1)-1
+            call get_fc_integrals(F(i+1), openrsp_cfg_pnc_center)
+         end do
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='VEL') then
          do i = 0, dp(1)-1
@@ -1701,6 +1717,10 @@ contains
                F(1+i+dp(1)*j) = -F(1+i+dp(1)*j) !minus sign
             end do
          end do
+      else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
+            do i = 0, dp(1)-1 !GEO indices
+               call get_fc_integrals(F(1+i), openrsp_cfg_pnc_center, component=i+1)
+            end do
       else if (np==2 .and. all(p==(/'GEO ','MAGO'/))) then
          do j = 0, dp(2)-1
             do i = 0, dp(1)-1
@@ -2198,6 +2218,8 @@ contains
 
 
    subroutine twofck_ks(n, D, F)
+      use xcint_main
+      use num_grid_gen
       integer,      intent(in)    :: n
 #ifdef PRG_DIRAC
       type(matrix)                :: D(n+1)
@@ -2212,6 +2234,7 @@ contains
       real(8)              :: sum_norm
       real(8), allocatable :: container(:, :, :, :)
       integer              :: ones(200), nr_dmat, nz, order
+#include "dcbgen.h"
 #endif
 
       if (.not. do_dft()) then
@@ -2330,18 +2353,21 @@ contains
 
 !radovan:
 !           in many situations one could pass F directly
-!           to xc_integrator but the gga symmetrization can make problems
+!           to integrate_xc but the gga symmetrization can make problems
 !           with hybrid functionals and anti-hermitian contributions (nonzero frequencies)
 !           so in other words while A is always symmetric, F is non necessarily so
-!           and it would get symmetrized inside xc_integrator
+!           and it would get symmetrized inside integrate_xc
             
 !           note to myself:
 !           geometric derivatives of 2nd order properties
 !           are incorrect with conventional derivatives, correct with xcfun
-!           (this is due to handling of options inside xc_driver)
+!           (this is due to handling of options inside xcint_main)
             
-            call xc_mpi_wake_up_coworkers()
-            call xc_integrator(xc_mat_dim      = A%nrow,                              &
+            call generate_num_grid(D(1)%elms)
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
+            call integrate_xc(xc_mat_dim      = A%nrow,                              &
                                xc_nz           = nz,                                  &
                                xc_dmat_0       = D(1)%elms,                           &
                                xc_nr_dmat      = nr_dmat - 1,                         &
@@ -2351,7 +2377,6 @@ contains
                                xc_dmat_pg_sym  = (/(D(i)%irep + 1, i = 2, nr_dmat)/), &
                                xc_fmat_pg_sym  = (/A%irep + 1/),                      &
                                xc_response_order_ao = order)
-            call xc_mpi_release_coworkers()
             
             F = F + A
             call dealloc(container)

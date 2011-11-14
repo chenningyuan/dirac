@@ -1,5 +1,5 @@
 !
-!
+!   .... mi: replace 17 by parameter ??
 ! 
       integer nsym,nclass,iclass(16),isym(16,8),ibias(17)
 

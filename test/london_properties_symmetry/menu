@@ -1,0 +1,23 @@
+dft_lda_ll_shielding.inp    co2_d2h.mol
+dft_lda_dc_shielding.inp    co2_d2h.mol
+
+dft_b3lyp_ll_shielding.inp  co2_d2h.mol
+dft_b3lyp_dc_shielding.inp  co2_d2h.mol
+
+sdft_lda_dc_shielding.inp   co2_c1.mol
+sdft_lda_dc_shielding.inp   co2_cs.mol
+sdft_lda_dc_shielding.inp   co2_ci.mol
+sdft_lda_dc_shielding.inp   co2_c2.mol
+sdft_lda_dc_shielding.inp   co2_c2v.mol
+sdft_lda_dc_shielding.inp   co2_c2h.mol
+sdft_lda_dc_shielding.inp   co2_d2.mol
+sdft_lda_dc_shielding.inp   co2_d2h.mol
+
+sdft_b3lyp_dc_shielding.inp co2_c1.mol
+sdft_b3lyp_dc_shielding.inp co2_cs.mol
+sdft_b3lyp_dc_shielding.inp co2_ci.mol
+sdft_b3lyp_dc_shielding.inp co2_c2.mol
+sdft_b3lyp_dc_shielding.inp co2_c2v.mol
+sdft_b3lyp_dc_shielding.inp co2_c2h.mol
+sdft_b3lyp_dc_shielding.inp co2_d2.mol
+sdft_b3lyp_dc_shielding.inp co2_d2h.mol

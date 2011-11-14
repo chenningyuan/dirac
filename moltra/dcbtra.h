@@ -3,12 +3,21 @@ C
 C     Length of common block : keep up to date !!
       LOGICAL TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
       LOGICAL FKRMC, NOMDCINT, MDCSCAT, TRA_ASCII, PRPSYA
-c aspg, 20090424, for fine-sort of 1HT
+c     aspg, 20090424, for fine-sort of 1HT
       logical do_finesort,set_auto_finesort
 c
       CHARACTER*72 TRA_INDSTR,TRA2_INDSTR,TRA4_INDSTR,TRA_CORSTR,
      &             TRA2_INDPRP
-      PARAMETER (NDCBTRI=267,NDCBTRR=258,NDCBTRL=12)
+
+C vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+C     NDCBTRI, NDCBTRR, NDCBTRL are *4 lengths of the three
+C     common blocks DCBTRI, DCBTRR, DCBTRL. They are used
+C     to transfer the common blocks to slaves when parallel
+C     with MPI.
+C     NBNBNB! THEY MUST BE UPDATED IF YOU CHANGE THE COMMON BLOCKS!!!!
+      PARAMETER (NDCBTRI=283,NDCBTRR=258,NDCBTRL=14)
+C ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
       COMMON/DCBTC/TRA_INDSTR(2),TRA2_INDSTR(2,2),TRA4_INDSTR(4,2),
      &             TRA_CORSTR(2), TRA2_INDPRP(2)
       COMMON/DCBTRI/IPRTRA,ISTRAT,ITRA_INTFLG,ITRA_INTFL2,ITRA_INTFL4,
@@ -27,4 +36,4 @@ C     Units for scratch files (LUTRA1 is an offset (-1) for 2 files !)
       PARAMETER (LUTRA1=78,LUTRA2=81)
 #include <comdis.h>
 
-
+C -- end of dcbtra.h --

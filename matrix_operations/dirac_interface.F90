@@ -4,7 +4,7 @@ module dirac_interface
    use matrix_defop
    use character_processing
    use dirac_cfg
-   use xc_driver
+   use num_grid_gen
 
    implicit none
 
@@ -124,14 +124,19 @@ contains
 
    subroutine di_get_geomDeriv_molgrad_DFT(g, nr_atoms, D)
 
+      use xcint_main
+
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
       integer,      intent(in)    :: nr_atoms
       type(matrix), intent(in)    :: D
 !     --------------------------------------------------------------------------
 
-      call xc_mpi_wake_up_coworkers()
-      call xc_integrator(xc_mat_dim           = ntbas(0), &
+      call generate_num_grid(D%elms)
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
+      call integrate_xc(xc_mat_dim           = ntbas(0), &
                          xc_nz                = nz,       &
                          xc_dmat_0            = D%elms,   &
                          xc_nr_dmat           = 0,        &
@@ -139,11 +144,12 @@ contains
                          xc_nr_atoms          = nr_atoms, &
                          xc_property_gradient = g,        &
                          xc_do_geo_0          = .true.)
-      call xc_mpi_release_coworkers()
 
    end subroutine
 
    subroutine di_get_geomderiv_fxd_dft(g, nr_atoms, D, T1)
+
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
@@ -155,8 +161,11 @@ contains
          return
       end if
 
-      call xc_mpi_wake_up_coworkers()
-      call xc_integrator(xc_mat_dim           = ntbas(0),    &
+      call generate_num_grid(D%elms)
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
+      call integrate_xc(xc_mat_dim           = ntbas(0),    &
                          xc_nz                = nz,          &
                          xc_dmat_0            = D%elms,      &
                          xc_nr_dmat           = 1,           &
@@ -165,11 +174,12 @@ contains
                          xc_nr_atoms          = nr_atoms,    &
                          xc_property_gradient = g,           &
                          xc_do_geo_1          = .true.)
-      call xc_mpi_release_coworkers()
 
    end subroutine
 
    subroutine di_get_geomderiv_gxd_dft(g, nr_atoms, D, T1, T2)
+
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
@@ -181,8 +191,11 @@ contains
          return
       end if
 
-      call xc_mpi_wake_up_coworkers()
-      call xc_integrator(xc_mat_dim           = ntbas(0),             &
+      call generate_num_grid(D%elms)
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
+      call integrate_xc(xc_mat_dim           = ntbas(0),             &
                          xc_nz                = nz,                   &
                          xc_dmat_0            = D%elms,               &
                          xc_nr_dmat           = 2,                    &
@@ -191,11 +204,12 @@ contains
                          xc_nr_atoms          = nr_atoms,             &
                          xc_property_gradient = g,                    &
                          xc_do_geo_2          = .true.)
-      call xc_mpi_release_coworkers()
 
    end subroutine
 
    subroutine di_get_magderiv_fxd_dft(F, D)
+
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       type(matrix)              :: F(3)
@@ -207,8 +221,11 @@ contains
       call alloc(mat, ntbas(0), ntbas(0), nz, 3)
       mat = 0.0d0
 
-      call xc_mpi_wake_up_coworkers()
-      call xc_integrator(xc_mat_dim      = ntbas(0),    &
+      call generate_num_grid(D%elms)
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
+      call integrate_xc(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
                          xc_nr_dmat      = 0,           &
@@ -216,7 +233,6 @@ contains
                          xc_fmat         = mat,         &
                          xc_fmat_pg_sym  = (/1, 1, 1/), &
                          xc_do_london_ks = .true.)
-      call xc_mpi_release_coworkers()
 
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
@@ -226,6 +242,8 @@ contains
    end subroutine
 
    subroutine di_get_magderiv_gxd_dft(D, T, F)
+
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       type(matrix), intent(in)  :: D
@@ -238,8 +256,11 @@ contains
       call alloc(mat, ntbas(0), ntbas(0), nz, 3)
       mat = 0.0d0
 
-      call xc_mpi_wake_up_coworkers()
-      call xc_integrator(xc_mat_dim      = ntbas(0),    &
+      call generate_num_grid(D%elms)
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
+      call integrate_xc(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
                          xc_nr_dmat      = 1,           &
@@ -249,7 +270,6 @@ contains
                          xc_fmat         = mat,         &
                          xc_fmat_pg_sym  = (/1, 1, 1/), &
                          xc_do_london_lr = .true.)
-      call xc_mpi_release_coworkers()
 
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
@@ -543,6 +563,8 @@ contains
 
   subroutine get_F(D, F)
 
+      use xcint_main
+
     type(matrix), intent(in)    :: D
     type(matrix), intent(inout) :: F
 !   ----------------------------------------------------------------------------
@@ -572,15 +594,17 @@ contains
 
 !   xc contribution to ks matrix
     if (dirac_cfg_dft_calculation) then
-        call xc_mpi_wake_up_coworkers()
-        call xc_integrator(xc_mat_dim      = ntbas(0), &
+        call generate_num_grid(D%elms)
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(4)
+#endif
+        call integrate_xc(xc_mat_dim      = ntbas(0), &
                            xc_nz           = nz,       &
                            xc_dmat_0       = D%elms,   &
                            xc_nr_dmat      = 0,        &
                  	    xc_nr_fmat      = 1,        &
                            xc_fmat         = F%elms,   &
                            xc_do_potential = .true.)
-        call xc_mpi_release_coworkers()
     end if
 
   end subroutine
@@ -675,25 +699,24 @@ contains
 
    end subroutine
 
-  subroutine get_C(C, i, s, g, u)
+  subroutine get_C(C, cmo_from_file, i, s, g, u)
 
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: C
-    real(8),      intent(in)    :: i, s, g, u
+    type(matrix)        :: C
+    real(8), intent(in) :: cmo_from_file(*)
+    real(8), intent(in) :: i, s, g, u
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: C_file
-
-    integer                     :: nr_g_mo_ns
-    integer                     :: nr_g_mo_pi
-    integer                     :: nr_g_mo_ps
-    integer                     :: nr_u_mo_ns
-    integer                     :: nr_u_mo_pi
-    integer                     :: nr_u_mo_ps
-    integer                     :: nr_g_mo
-    integer                     :: nr_u_mo
-    integer                     :: nr_g_ao
-    integer                     :: nr_u_ao
-    integer                     :: k, l, m, n, ir, iw1, iw2, iz
+    integer             :: nr_g_mo_ns
+    integer             :: nr_g_mo_pi
+    integer             :: nr_g_mo_ps
+    integer             :: nr_u_mo_ns
+    integer             :: nr_u_mo_pi
+    integer             :: nr_u_mo_ps
+    integer             :: nr_g_mo
+    integer             :: nr_u_mo
+    integer             :: nr_g_ao
+    integer             :: nr_u_ao
+    integer             :: k, l, m, n, ir, iw1, iw2, iz
 !   ----------------------------------------------------------------------------
 
     nr_g_mo_ns = npsh(1)
@@ -710,10 +733,6 @@ contains
     if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
     C%elms = 0.0d0
 
-    call init_mat(C_file, ntbas(0), norbt)
-    C_file%elms = 0.0d0
-    call read_mo_coef(C_file%elms)
-
     ir = 0
 
     do iz = 1, nz
@@ -726,7 +745,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*g*s
+          C%elms(iw2) = cmo_from_file(ir)*g*s
         end do
       end do
 
@@ -735,12 +754,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! radovan: will check this soon for g95
-        !          now reactivating gfortran
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-             C%elms(iw2) = C_file%elms(ir)*g*i
-        ! endif
+          C%elms(iw2) = cmo_from_file(ir)*g*i
         end do
       end do
 
@@ -749,10 +763,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-             C%elms(iw2) = C_file%elms(ir)*g*s
-        ! endif
+          C%elms(iw2) = cmo_from_file(ir)*g*s
         end do
       end do
 
@@ -770,10 +781,7 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-           C%elms(iw2) = C_file%elms(ir)*u*s
-        ! endif
+          C%elms(iw2) = cmo_from_file(ir)*u*s
         end do
       end do
 
@@ -782,10 +790,7 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-            C%elms(iw2) = C_file%elms(ir)*u*i
-        ! endif
+          C%elms(iw2) = cmo_from_file(ir)*u*i
         end do
       end do
 
@@ -794,16 +799,12 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-    !     if (associated(C%elms).and.associated(C_file%elms) ) then
-           C%elms(iw2) = C_file%elms(ir)*u*s
-    !     endif
+          C%elms(iw2) = cmo_from_file(ir)*u*s
         end do
       end do
 
     end do
     end if !if (nfsym == 2) then
-    C_file = 0
 
   end subroutine
 

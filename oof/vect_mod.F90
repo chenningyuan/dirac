@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -888,7 +888,7 @@ if (self%is_alloc) then
   else if (.not.self%is_real.and..not.self%is_logi) then
      call IZERO( self%p_iA1D, self%array_size )
   else if (.not.self%is_real.and.self%is_logi) then
-     call LZERO( self%p_lA1D, self%array_size )
+     self%p_lA1D = .false.
   else
      call print_vect_attrib(self)
      call QUIT('ZeroVector: dead branch !')

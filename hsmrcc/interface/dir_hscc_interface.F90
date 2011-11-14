@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -303,7 +303,7 @@ end function get_moltra_index
 function get_moltra_integral(i,j,k,l) result(moint)
 !-----------------------------------------------------------------------------
 !
-!  get MOLTRA integral (IJ|KL) from MOLTRA integral list
+!  get MOLTRA integral (IJ|KL) from the MOLTRA integral list
 !
 !  if none found, simply returns zero
 !
@@ -453,7 +453,11 @@ use hsfs_parameters
    write(LUPRI,*) luhsfs,' file open'
 
    read(luhsfs,iostat=ios) nirp,nort
-   if (ios.ne.0) call quit('error in luhsfs reading 1!')
+   if (ios.ne.0) then
+     write(LUPRI,*) 'broken reading, nirp=',nirp,' nort=',nort
+     call quit('error in luhsfs reading 1!')
+   endif
+
    write(LUPRI,'(2x,a,i2,a,i4)') 'read nirp=',nirp,' nort=',nort
 
    read(luhsfs,iostat=ios) (irreps(i),i=1,nirp)

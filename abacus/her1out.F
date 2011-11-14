@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her1out.F
 C
 C
 #ifdef UNDEF
@@ -50,9 +47,8 @@ C
       CHARACTER*8 LAB123(3), TITLES, TITLEH, TITLET
       DATA LAB123/'********','        ','        '/
       DATA TITLES/'OVERLAP '/, TITLEH/'ONEHAMIL'/, TITLET/'KINETINT'/
-#include "sdpre.h"
       ITRI(I,J) = I*(I-1)/2 + J
-      INDEX1(IJ) = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+      INDEX1(IJ) = INT(SQRT(dble(2*IJ) + 0.25D0) + 0.4999D0)
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C
 #if defined (SYS_VAX)
@@ -121,7 +117,7 @@ C
   500        CONTINUE
          END IF
          WRITE (LUONEL) BUF, IBUF, -1
-         PERCNT = SDPRE(100*NCOUNT) / SDPRE(IAB)
+         PERCNT = dble(100*NCOUNT) / dble(IAB)
          IF (ITYPE .EQ. 1) THEN
             WRITE (LUPRI,'(//,I6,A,I4,A)') NCOUNT,
      *        ' atomic overlap integrals written in',NBUF,' buffers.'
@@ -182,41 +178,11 @@ C
       MXABF2 = IRAT*MXABUF
       LABUF1 = LABUFI - 1
 C
-C     Open direct access file
+C     Open direct access file (giving record length in bytes)
 C
-#if defined (SYS_VAX)
-      OPEN (UNIT=LUDA1,STATUS='NEW',ACCESS='DIRECT',
-     *      RECL=LABUFI)
-#endif
-#if defined (SYS_IRIX) || defined (SYS_SX)
-      OPEN (UNIT=LUDA1,STATUS='UNKNOWN',ACCESS='DIRECT',
-     *      RECL=LABUFI)
-#endif
-#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_ALLIANT) || defined (SYS_DEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_DARWIN)
       IRECL = 4*LABUFI
       OPEN (UNIT=LUDA1,STATUS='UNKNOWN',ACCESS='DIRECT',
      *  FILE='ABACUS.DA1',RECL=IRECL)
-#endif
-#if defined (SYS_IBM)
-      IRECL = 4*LABUFI
-      OPEN (UNIT=LUDA1,STATUS='NEW',ACCESS='DIRECT',
-     *  FILE='ABADA1',RECL=IRECL)
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IRECL = 8*LABUFI
-      OPEN (UNIT=LUDA1,STATUS='UNKNOWN',ACCESS='DIRECT',
-     *  FILE='ABACUS.DA1',RECL=IRECL)
-#endif
-#if !defined (SYS_VAX) && !defined (SYS_IRIX)\
-&& !defined (SYS_CONVEX) && !defined (SYS_AIX)\
-&& !defined (SYS_PARAGON) && !defined (SYS_ALLIANT)\
-&& !defined (SYS_IBM) && !defined (SYS_CRAY)\
-&& !defined (SYS_DEC) && !defined (SYS_T3D)\
-&& !defined (SYS_LINUX) && !defined (SYS_SUN)\
-&& !defined (SYS_HPUX) && !defined(SYS_SX)\
-&& !defined (SYS_DARWIN)
-    ==== insert DA open for ABACUS.DA1
-#endif
       NMAT = LSOINT/INDMAX
       IF (NMAT .EQ. 0) THEN
          WRITE (LUPRI,'(//A/)') ' >>>> ERROR in SORONE: NMAT = 0.'

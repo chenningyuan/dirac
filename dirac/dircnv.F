@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : dircnv.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -55,8 +53,10 @@ C
       LOGICAL OLDFMO, DAMPON
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),TINV(*),WORK(LWORK), FAO(*)
-      SAVE EVCOLD
-      DATA EVCOLD/1.0D20/
+      PARAMETER (N_OLD = 6)
+      DIMENSION ERGOLD(N_OLD), EVCOLD(N_OLD)
+      SAVE      ERGOLD, EVCOLD
+      DATA      ERGOLD/N_OLD*1.0D20/, EVCOLD/N_OLD*1.0D20/
 C
 C     Calculate error vector for this iteration
 C     =========================================
@@ -87,8 +87,9 @@ C
 C
         CALL FCKCMP(FMO,FBUF,WORK,LWORK)
       ELSE
-        EVCOLD = 1.0D20
-C       ... reinitialize EVCOLD /hjaaj
+        ERGOLD(1:N_OLD) = 1.0D20
+        EVCOLD(1:N_OLD) = 1.0D20
+C       ... reinitialize ERGOLD and EVCOLD /hjaaj
       ENDIF
 
 C     ...and write current MO Fock matrix to file
@@ -108,8 +109,32 @@ C     Check convergence
 C     =================
 C
       ERGVAL = ERGBUF - DHFERG
-      EVCDIF = EVCVAL - EVCOLD
-      EVCOLD = EVCVAL
+!
+!     Data for anti-oscillation test:
+!     both gradient and energy must be lower compared to the
+!     minimum gradient and energy until N_OLD iterations ago.
+!
+      ERGDIF = DHFERG - ERGOLD(N_OLD)
+      EVCDIF = EVCVAL - EVCOLD(N_OLD)
+      ERGDIF = ERGDIF + 1.D-10*DHFERG
+!     ... avoid erroneous predicted energy increase (ERGVAL negative)
+!         because of round-off errors /hjaaj
+      ERGOLD(N_OLD) = MIN(ERGOLD(N_OLD), ERGOLD(N_OLD-1))
+      EVCOLD(N_OLD) = MIN(EVCOLD(N_OLD), EVCOLD(N_OLD-1))
+      DO I = N_OLD-1,2,-1
+         ERGOLD(I) = ERGOLD(I-1)
+         EVCOLD(I) = EVCOLD(I-1)
+      END DO
+      ERGOLD(1) = DHFERG
+      EVCOLD(1) = EVCVAL
+      IF (iprscf .GE. 2) THEN
+         WRITE(LUPRI,'(/A)') 'DHFCNV: anti-oscillation test data dump'
+         WRITE(LUPRI,'(A,1P,10D10.2)')
+     &      '- ERGDIF, ERGOLD(:) ',ERGDIF, ERGOLD(1:N_OLD)
+         WRITE(LUPRI,'(A,1P,10D10.2)')
+     &      '- EVCDIF, EVCOLD(:) ',EVCDIF, EVCOLD(1:N_OLD)
+      END IF
+!
       IF    (ERGCNV .AND. OLDFMO) THEN
         CONVRG = ERGVAL
       ELSEIF(FCKCNV .AND. OLDFMO) THEN
@@ -189,17 +214,14 @@ C
 C     DIIS --- Direct Inversion of Iterative Subspace
 C     ===============================================
 C
-      ERGVAL1 = ERGVAL - 1.D-10*DHFERG
-C     ... avoid erroneous predicted energy increase (ERGVAL negative)
-C         because of round-off errors /hjaaj
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL1 .GT. D0) THEN
+        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL .GT. D0) THEN
 C          ... often wild oscillations in the beginning,
 C              which may settle down reasonably.
-           WRITE(LUPRI,'(/A)')
+           WRITE(LUPRI,'(/A/A)')
      &        ' DIIS aborted because of the last two iterations',
-     &        ' the lowest energy has the largest gradient and',
+     &        ' the lowest energy has the largest gradient and'//
      &        ' DIIS minimizes gradient !!!'
            CLOSE(LUDIIS,STATUS='DELETE')
            ITDIIS = 0
@@ -472,14 +494,14 @@ C             Transform Fock matrix to current orthonormal MO-basis
             ENDIF
 C...........closed shell
             ISTART=NPSHMF(I)+1
-            CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+            CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &                  D1,D0,
      &                  EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                  ISTART,NISHMF(I),NTMO(I))
 C...........open shells
             ISTART = ISTART+NISHMF(I)
             DO IOPEN = 1,NOPEN
-              CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+              CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &                    DF(IOPEN),D1,
      &                    EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                    ISTART,NACSHMF(I,IOPEN),NTMO(I))
@@ -682,7 +704,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
 C Used from COMMON blocks:
-C   DHFCAL: MXDIIS
+C   dcbdhf: MXDIIS
 C
 #include "dcbdhf.h"
       DIMENSION BMAT(*),EVEC(*),FOCK(*),EBUF(*),WORK(LWORK)
@@ -714,12 +736,13 @@ C*****************************************************************************
       PARAMETER(DM1 = -1.0D0,D0 = 0.0D0)
 C
 C Used from COMMON blocks:
-C   DHFCAL: LUEVEC,IPRSCF,ITDIIS,MXDIIS
+C   dcbdhf: LUEVEC,IPRSCF,ITDIIS,MXDIIS
 C
 #include "dcbham.h"
 #include "dcbdhf.h"
       DIMENSION BMAT(MXDIIS*MXDIIS),EVEC(*),FOCK(*),EBUF(*),CVEC(*),
      &          WORK(*)
+      logical exists
 
       IPRINT = IPRSCF
 C
@@ -759,7 +782,18 @@ C
         WRITE (LUDIIS) ITDIIS,MXDIIS,NELMBM,BMAT
       ELSEIF(IBSTAT.EQ.1) THEN
          IF (.NOT.(START2C.AND..NOT.DO4C2C)) THEN
-           CLOSE(LUDIIS,STATUS='DELETE')
+           inquire(LUDIIS,exist=exists)
+           if(DO4C2C)then
+!            stefan: if we delete the file here, the program crashes
+!            (because the file does not exist on disc) when 
+!            we restart the 2c-SCF after we have done a 4c-SCF +
+!            transformation of the 4c-Fock operator.
+!            @ miro: did this ever work after your change 2007? 
+!            i tried it also with older trunk versions and it did not...
+             if(exists) CLOSE(LUDIIS)
+           else
+             if(exists) CLOSE(LUDIIS,STATUS='DELETE')
+           end if
          ENDIF
       ENDIF
 C
@@ -802,7 +836,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C Used from COMMON blocks:
-C   DHFCAL: MXDIIS
+C   dcbdhf: MXDIIS
 #include "dcbdhf.h"
       DIMENSION BMAT(*),CVEC(*),EVEC(*),EBUF(*),WORK(LWORK)
 C
@@ -840,7 +874,7 @@ C*****************************************************************************
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),
      &          KPVT(*),WORK(*)
 C Used from COMMON blocks
-C  DHFCAL: NELMBM
+C  dcbdhf: NELMBM
 C
 #include "dcbdhf.h"
 C
@@ -880,7 +914,7 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 C Used from COMMON blocks:
-C  DHFCAL: LUEVEC,NELMBM,ITDIIS,MXDIIS
+C  dcbdhf: LUEVEC,NELMBM,ITDIIS,MXDIIS
 C  DGROUP: NZ
 C  DCBBAS: N2VCTQ
 C
@@ -1030,7 +1064,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
 C Used from COMMON blocks:
-C  DHFCAL: LUFOCK,NITER,NELMBM
+C  dcbdhf: LUFOCK,NITER,NELMBM
 C  DCIDHF: NFMAT
 C  DGROUP: NZ
 C

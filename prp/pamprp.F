@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -68,13 +66,13 @@ C
      &     3X,'Molecular gradient',/,
      &     3X,'Joern Thyssen',//,
      &     3X,'Additional contributions from:',/,
-     &     3X,'Thomas Enevoldsen'//)
+     &     3X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
       DO I = 1, NPRPWF
          WF = PRPWF(I)
 C
          IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
-            CALL TDHFORB
+            CALL TDHFORB('FULLCI')
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'KRMC') THEN
             CALL TKRMCORB
@@ -127,9 +125,7 @@ C***********************************************************************
 #ifdef MOD_OPENRSP
       use openrsp_main
 #endif
-
-!     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
-      USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
+      use fde_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -145,6 +141,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
+      logical :: export_n,export_gn,export_vc
 C
       CALL QENTER('PAMPR1')
 C
@@ -153,10 +150,6 @@ C
 C     Make sure common block dcbidx is set
 C
       CALL SETDCBIDX()
-C
-C     Extend RKB coeffcients with complementary UKB space
-C
-      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK)
 C
 C***********************************************************************
 C*****  M O L E C U L A R    G R A D I E N T ***************************
@@ -188,9 +181,11 @@ C
 #ifdef MOD_ESR
       IF (DOESR) THEN
          KFRSAV = KFREE
-         CALL ESR_INIT(WF,IPRESR,NCIESR,WORK,KFREE,LFREE)
+         CALL ESR_INIT(WF,IPRESR,N_CIESR,SPINPOLESR,WORK,KFREE,LFREE)
 C
-         CALL MEMGET('REAL',KESR,2*NCIESR*NCIESR*NESRP,WORK,KFREE,LFREE)
+         LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
+C        max(4,nesrp): make sure sufficient space for ESRPHASE
+         CALL MEMGET('REAL',KESR,LENESR,WORK,KFREE,LFREE)
          CALL PRPESR(WF,WORK(KESR),WORK,KFREE,LFREE)
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
@@ -269,14 +264,13 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-      call get_xml_export_level(wfexport)
-      IF (DO_GRID_OUT.and.(WF.eq.wfexport)) THEN
+#ifdef MOD_UNRELEASED
+      if (dirac_cfg_fde) then
 #ifdef MOD_XML
-         CALL FDE_GRIDOUT(WORK,LFREE)
-#else
-         call quit("FDE density export unsupported in this version.")
+         call fde_export_write_data_to_file(wf)
 #endif
       END IF
+#endif
 
 #ifdef MOD_OPENRSP
       if (dirac_cfg_openrsp) then
@@ -1387,7 +1381,15 @@ C
       IF (BXLAO .OR. BYLAO .OR. BZLAO) THEN
         CALL DEF_BLAO(WORK, LWORK, IPRPRP)
       ENDIF
-
+C
+C     Effective electronic densities at the nuclei
+C
+      IF(EFFDEN) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
 
       RETURN
       END
@@ -4089,9 +4091,6 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(A)') ' NMR shieldings:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE (LUPRI,'(A,F9.4,A)')
-     &   ' Shieldings printed for atoms with '//
-     &   'abundance greater than', ABUND,' %'
 C
 C     A operators
 C     ===========
@@ -5286,12 +5285,12 @@ C -----------------------------------
 
 C ... RDSUSLL terms,  IPDSUSC(19-27)
 C ... off-diagonal terms need to be symmetrized !
-C       IF (LEVYLE) THEN
         IF (RDSUSLLMOD) THEN
            FACLL = -2.0D0
         ELSE
 !radovan:  why is this factor different?
 !          in which situation is this needed?
+!miro: this is to be carefully examined
            FACLL = -1.0D0
         ENDIF
 
@@ -5592,7 +5591,7 @@ C***********************************************************************
       LOGICAL D12, D23, MAGOUT1,MAGOUT2,MAGOUT3
       DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6),PVAL1(6),
      &         PVAL2(6),DIASUSC(3,3),PARSUS(3,3)
-      DIMENSION SUSREL_EP(3,3,2),SUSDIA_EX(3,3), EXPVAL_NS(6)
+      DIMENSION SUSREL_EP(3,3,2),SUSDIA_EX(3,3), EXPVAL_NS(9)
       CHARACTER*6 ABC(3)
       CHARACTER*1 JCA,JCB
       INTEGER ICONVXYZ
@@ -5608,8 +5607,10 @@ C=============================================================================
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
 
-C     ... evaluate expectation value terms
-      IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
+C     ... evaluate expectation value terms first
+      IF (LONDON) THEN
+        CALL EXPVSUSLO(WORK(KFREE),LFREE)
+      ENDIF
 
       KFRSAV = KFREE
       CALL TITLER('MAGNETIZABILITIES','*',124)
@@ -5639,14 +5640,10 @@ C     ... evaluate expectation value terms
      &   "PRP_MSUSCP: NEXPP is exceeded!"
          IF (XLR_SKIPEP) THEN
 C  -1 is for the compatibility with Dalton
-C         SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-C         SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
           SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
          ELSE                
-C         SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
           SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-C         SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
           SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
          ENDIF
         ENDDO
@@ -5662,9 +5659,9 @@ C         SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
 
       ELSE IF (LONDON) THEN 
 C ... accumulate one-electron expectation values into SUSDIA
-C................................................................
+C.......................................................................................
 C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3, 
-C   IPDSUSC(19-27_...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
+C   IPDSUSC(19-27)...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
 C
         CALL DZERO(SUSDIA,9)
         IJ = 0
@@ -5693,7 +5690,7 @@ C              22  23  24
 C              25  26  27
 C
 
-C       ... symmetrize off-diagonal terms ...
+C       ...     symmetrize off-diagonal terms ...
         PLLXY = (EXPVAL(IPDSUSC(20))+EXPVAL(IPDSUSC(22)))/D2
         PLLXZ = (EXPVAL(IPDSUSC(21))+EXPVAL(IPDSUSC(25)))/D2
         PLLYZ = (EXPVAL(IPDSUSC(24))+EXPVAL(IPDSUSC(26)))/D2
@@ -5701,13 +5698,11 @@ C       ... symmetrize off-diagonal terms ...
 C       ... store non-symmetrized data ...
         IIC=1
         DO II = 19, 27
-!fixme
-!radovan: this goes out of bounds of EXPVAL_NS
          EXPVAL_NS(IIC) = EXPVAL(IPDSUSC(II))
          IIC = IIC + 1
         ENDDO
 
-C ......... store RDSUSLL symmetrized off-diagonal quantities ...
+C ......... store RDSUSLL symmetrized off-diagonal terms ...
         EXPVAL(IPDSUSC(20))=PLLXY
         EXPVAL(IPDSUSC(22))=PLLXY
         EXPVAL(IPDSUSC(21))=PLLXZ
@@ -5716,7 +5711,7 @@ C ......... store RDSUSLL symmetrized off-diagonal quantities ...
         EXPVAL(IPDSUSC(26))=PLLYZ
 
 C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as well
-        IF (IPRPRP.GE.3) THEN
+        IF (IPRPRP.GE.2) THEN
          WRITE(LUPRI,'(/,10X,A)')
      &   'RDSUSLL contributions to the expect.values:'
          WRITE(LUPRI,'(A)')
@@ -5727,8 +5722,6 @@ C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as w
      &   '  symmetrized       diff. from unsymmetrized'
          IIC = 1
          DO II = 19, 27
-!fixme
-!radovan: this goes out of bounds of EXPVAL_NS
            INDXPR = LEXPP(IPDSUSC(II))
            WRITE(LUPRI,'(2X,A16,1X,F24.12,4X,D12.5)')
      &     PRPNAM(INDXPR),EXPVAL(IPDSUSC(II)),
@@ -5778,8 +5771,8 @@ C ... This is needed for compatibility with Dalton
 
         ENDIF
 
-C ... Write output...
-       IF (IPRPRP.GE.1) THEN
+C ... Write output - always print out partial results
+       IF (IPRPRP.GE.0) THEN
         CALL HEADER('One-electron expectation values',-1)
         CALL POLPRI(SUSDIA,'   ',-2)
         AVERAG = (SUSDIA(1,1) + SUSDIA(2,2) + SUSDIA(3,3))/D3
@@ -5855,7 +5848,6 @@ CMI  ...    extract first character, like 'X magnetic field'
            JA = ICONVXYZ(JCA)  
           ELSE
            IAX = IPMSUSC(1,IA)
-CMI        READ (PRPNAM(LLRAPU(IAX)),'(6X,A1)') JCA
            READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
            JA = ICONVXYZ(JCA)
            IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
@@ -5989,10 +5981,6 @@ C
        MAGOUT3 = .TRUE.
       ELSE
        write(lupri,*)
-C      write(lupri,*)
-C    & '....forced output, D12DIFF,D23DIFF,THRESHM:',
-C    &  D12DIFF,D23DIFF,THRESHM
-
        IF (D12.AND.D23) THEN
          write(lupri,'(3X,A)')
      &   'forced output, otherwise would be magnetizability output 1'
@@ -6029,8 +6017,8 @@ C
      &  ' London atomic orbitals used in calculations.'
       END IF
 
-CMI   ... we have theree defferent types of output !!!
-CMI  =========================================================
+CMI   ...there are three defferent types of the magnetizability output 
+CMI  ====================================================================
 CMI   IF (D12 .AND. D23) THEN
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
@@ -6321,6 +6309,8 @@ C--------------------------------------------------------------------
          CALL DZERO(TMPMAT,NCMAT)
          CALL DZERO(PMAT,NCMAT)
 C  ...  get the expect. value {T,h(mK)} reorthonormalization term
+!todo from Trond's email:
+!check the use of GETCON in  PRP_SHIELD1(pamprp.F). Can it be completely removed ?
          CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
      &               WORK,KFREE,LFREE,IPRPRP)
 CMI   ...  sign convention !!!
@@ -6524,8 +6514,6 @@ C
          WRITE (LUPRI,'(A/A/A/A)')
      &        '@            isotropic shielding',
      &        '@        ----------------------------',
-!gosia     &        '@atom       total       dia      para      skew'//
-!gosia     &        '      span      anis      asym',
      &        '@atom          total          dia         para'//     
      &        '            skew'//
      &        '            span            anis            asym',
@@ -6538,7 +6526,6 @@ C
                IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
                   IF (DOATOM(I)) THEN
-                      !gosia WRITE (LUPRI,'(A,A,7F10.4)') '@',
                       WRITE (LUPRI,'(A,A,7F14.4)') '@',
      &                 NAMDEP(IATOM),TISO(IATOM),DISO(IATOM),PISO(IATOM)
      &                 ,SKEW(IATOM),SPAN(IATOM),ANIS(IATOM),ASYM(IATOM)
@@ -7270,7 +7257,7 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     INTTYP = 9: One-electron Fermi contact integrals
-      CALL SETATM(WORK(KDATOM),NATOM,9)
+      CALL SETATM(WORK(KDATOM),NATOM,-9)
       CALL DEF_RHONU1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_RHONUC',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -8507,4 +8494,75 @@ C
       ENDDO
 
 
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C**********************************************************
+C     Define effective density operator
+C     Written by R. van Meer September 2010
+C**********************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     (-99: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-99)
+      CALL DEF_EFF_DENS1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_EFF_DENS',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN  
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_EFF_DENS1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
+     &               IPRINT)
+C**********************************************************
+C     Define effective density operator
+C     Written by R. van Meer September 2010
+C**********************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER (D1 = 1.0D0)
+C
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "ibtfun.h"
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      DO 100 IREP = 0, MAXREP
+        DO 200 IATOM = 1, NUCIND
+          IF (DOATOM(IATOM)) THEN
+            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+              PLABEL(1) = 'ED '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                          //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                          //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              PNAME = 'Eff._Dens '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                              //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                     INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+              CALL OP1IND('EFFDEN',IDUM,LEXPP,NEXPP,INDXPR,MAXEXP)
+            END IF
+          END IF
+  200   CONTINUE
+  100 CONTINUE
+      RETURN
       END

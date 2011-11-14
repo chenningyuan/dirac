@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#crontab inscription:
+#00 21 * * 1,2,3,4,5,6,7  timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/ilias/Work/qch_software/dirac_git/ompi_gfortran_gcc_ownmath_ilp64_cdash/maintenance/cdash; $DIRAC/cdash.PCdesk_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64 > $DIRAC/cdash_buildup_log_$timestamp
+
+# enviroment
+export PATH=/home/ilias/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:.
+export LD_LIBRARY_PATH=/usr/local/lib
+
+# the directory where your DIRAC sits
+DIRAC=/home/ilias/Work/qch_software/dirac_git/trunk
+BUILD=build_mpi_gfortran_gcc_ownmath_ilp64_cdash
+
+# go to the local DIRAC directory
+cd $DIRAC
+
+/bin/rm -rf $BUILD
+git pull 
+./pamadm -a 
+# configure step
+
+./setup --mpi --fc=mpif90 --cc=mpicc --cpp=mpiCC --int64 --internal-math -D BUILDNAME="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2  -D RUNTEST_TIMEOUT="00:40:00"  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build="$DIRAC/$BUILD"
+
+cd $DIRAC/$BUILD
+cmake ..
+make Experimental
+
+exit 0

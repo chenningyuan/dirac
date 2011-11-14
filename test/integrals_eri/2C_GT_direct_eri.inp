@@ -16,7 +16,7 @@ H2O2 molecule, integral calculations with ERI in pure two-component mode, SOO in
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 **PROPERTIES
 .DIPOLE
 .POLARIZABILITY

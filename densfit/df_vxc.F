@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -60,7 +60,6 @@ C files "FITXCG" and "FITVXC", respectively, in order to avoid
 C much change to the current function calls.
 C 
         use dft_cfg
-        use xc_driver
 
 #include "implicit.h"
 #include "mxcent.h"

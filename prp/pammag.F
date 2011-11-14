@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -45,6 +45,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
+#include "dcbxlr.h"
 C
 
       PARAMETER (NTABLE = 15)
@@ -98,14 +99,14 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       ENDIF
       MODRDSUSLL = .FALSE.
 
-CMI     as the default, do not sum reorthonormalization terms 
-C     over negative("positronic") shells 
-      DOEPRN = .FALSE.
-C ... for the unrestricted kinetic balance sum by default
-C     reorthonormalization terms over positronic shells
-C ... when you want to change the DOEPRN default value in URKBAL,
-C      use the NOEPRN keyword (see below)
-      !IF (URKBAL) DOEPRN=.TRUE.
+! gosia: DOEPRN=true unless skipep is on
+!     if (XLR_SKIPEP) then
+!        DOEPRN = .FALSE.
+!     else
+!        DOEPRN = .TRUE.
+!     end if
+cmi: restore to fix tests, later to be refined throughout the code
+       DOEPRN=.FALSE.
 
 C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
 C  so it has its own default value
@@ -322,17 +323,11 @@ C ... call the routine in abacus/hergp.F
        IF (.NOT.DOEPRN) THEN
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over '//
-     & 'electronic shells (default for ee-LR rotations )'
-!        IF (URKBAL) WRITE(LUPRI,'(/1X,A)')
-!     &'...though the URKBAL scheme is on, the DOEPRN is .false.!'
+     & 'electronic shells'
        ELSE
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over both '//
-     & '"positronic" and electronic shells '//
-     &' (recommended as the default for ee+ep rotations in the LR) '
-        IF (.NOT.URKBAL) WRITE(LUPRI,'(1X,A,/,1X,A)')
-     & 'THIS IS WRONG FOR THE RESTRICTED KINETIC BALANCE SCHEME !',
-     & '------  This option is only experimental ! --------'
+     & 'positronic and electronic shells '
        ENDIF
 
        IF (SYMCON) THEN
@@ -575,565 +570,6 @@ C ... release the memmory...
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck TWOLON */
-      SUBROUTINE TWOLON(CMO,IBEIG,WORK,LWORK)
-C***********************************************************************
-C
-C   PURPOSE: 
-C     Construct the two electron contribution
-C     to the magnetic property gradient dH~(B)/dB|B=0
-C     of the differentiated Dirac Hamiltonian,dg(B)/dB|B=0,
-C     when using London atomic orbitals.
-C
-C   On input: CMO - MO coefficients
-C             IBEIG - boson info
-C
-C     Written by T. Enevoldsen Feb 4 1998
-C     Added by MI & HJAaJ, 2002/2003
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "shells.h"
-#include "dcbprp.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "iratdef.h"
-#include "ccom.h"
-#include "symmet.h"
-C
-      DIMENSION CMO(*),IBEIG(*),WORK(LWORK)
-      CALL QENTER('TWOLON')
-#include "memint.h"
-C
-C     Memory allocation
-C
-      NCOMP = 3 ! x.y,z components 
-      NDMAT = 4 ! 4 quatern. components
-C ... Fock matrices
-      CALL MEMGET('REAL',KFMAT,N2BBASX*NDMAT*NCOMP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIREP,NDMAT*NCOMP,WORK,KFREE,LFREE)
-C ... quaternionic densities
-      CALL MEMGET('REAL',KDMAT,N2BBASX*NDMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIFCT,NDMAT*NCOMP,WORK,KFREE,LFREE)
-C.....Get skeleton AO-Fock matrix with two-electron London integrals
-      CALL TWOLO1A(WORK(KFMAT),WORK(KDMAT),CMO,
-     &             IBEIG,NCOMP,WORK(KIREP),WORK(KIFCT),
-     &             WORK(KFREE),LFREE,IPRPRP)
-      CALL MEMREL('TWOLON.TWOLON1A',WORK,KWORK,KDMAT,KFREE,LFREE)
-C
-      CALL MEMGET('REAL',KSKLTN,NDMAT*N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFAC, NTBAS(0)*(MAXREP+1),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KINDEX,(KMAX*(MAXREP+1)*KHK(NHTYP)+1)/IRAT,
-     &             WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPOINT, (NTBAS(0)*(MAXREP + 1) + 1)/IRAT,
-     &             WORK,KFREE,LFREE)
-C.....Get full AO-Fock matrix with two-electron London integrals
-      CALL RSKLOND(WORK(KFMAT),WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
-     &             WORK(KPOINT),NDMAT,WORK(KIREP),IPRPRP)
-      CALL MEMREL('TWOLON.RSKLOND',WORK,KWORK,KSKLTN,KFREE,LFREE)
-
-      CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL TWOLO1B(WORK(KFMAT),WORK(KFOCK),NCOMP,
-     &             WORK(KFREE),LFREE,IPRPRP)
-      CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
-
-!     it has to happen after TWOLO1B
-!     because XC is done in SA-AO basis
-      call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
-      call add_dft_to_twolon(work(kfmat),work(kdmat0),cmo,
-     &                       work(kfree),lfree,iprprp)
-      call memrel('twolon.dft',work,kwork,kdmat0,kfree,lfree)
-!fixme: radovan:
-!     XC contribution with nz < 4 does not work
-!     i think this is because twolon works with unpacked AO matrices
-!     and XC with packed
-!     i don't know why we don't work with packed AO matrices here
-!     and at the moment don't feel like unpacking the dft contribution
-!     because i would have to allocate extra space
-!     (dft adds on top), sort to hermit sorting, unpack, etc.
-
-      CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL TWOLO1C(WORK(KGBMO),WORK(KFMAT),CMO,NCOMP,
-     &             WORK(KFREE),LFREE,IPRPRP)
-      CALL MEMREL('TWOLON.TWOLO1C',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('TWOLON')
-
-      RETURN
-      END
-!-----------------------------------------------------------------------
-      subroutine add_dft_to_twolon(fmat,dmat0,cmo,work,lwork,iprint)
-!
-      use dirac_cfg
-      use xc_driver
-      use dft_cfg
-
-      implicit none
-!
-#include "priunit.h"  
-#include "dummy.h"   
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "shells.h"
-#include "ccom.h"
-#include "cbihr2.h"
-#include "symmet.h"
-#include "dgroup.h"
-#include "dcbqal.h"
-#include "iratdef.h"
-C
-#include "aovec.h"
-#include "blocks.h"
-#include "dcbgen.h"
-#include "dcbnmr.h"
-#include "dcbfir.h"
-C
-      real(8) :: fmat(*), dmat0(*), cmo(*), work(*)
-      integer :: isymop(3), ihrmop(3), lwork, iprint, nr_fmat, i
-
-      CALL QENTER('add_dft_to_twolon')
-
-      if (dirac_cfg_dft_calculation) then
-      nr_fmat = 3
-
-      call genden(dmat0, cmo, 1, iprint)
-
-!     CALL DZERO(FMAT,NTBAS(0)*NTBAS(0)*NZ*3)
-      DO I=1,3
-!        isymop(i) = 1
-         isymop(i) = isymax(i, 2) + 1
-!        anti hermitian
-         IHRMOP(I) = -1
-!     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
-!    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
-      END DO
-      call xc_mpi_wake_up_coworkers()
-      if (dft_cfg_no_sdft) then
-         call xc_integrator(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = dmat0,
-     &                      xc_nr_dmat           = 0,
-     &                      xc_nr_fmat           = nr_fmat,
-     &                      xc_fmat              = fmat,
-     &                      xc_fmat_pg_sym       = isymop,
-     &            xc_do_london_rhs_direct = .true.)
-      else
-         call xc_integrator(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = dmat0,
-     &                      xc_nr_dmat           = 0,
-     &                      xc_nr_fmat           = nr_fmat,
-     &                      xc_fmat              = fmat,
-     &                      xc_fmat_pg_sym       = isymop,
-     &            xc_response_order_mo = 1,
-     &            xc_do_london_rhs_direct = .true.)
-      end if
-      call xc_mpi_release_coworkers()
-
-      endif
-      call qexit('add_dft_to_twolon')
-
-      return
-      end
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck TWOLO1A */
-      SUBROUTINE TWOLO1A(FMAT,DMAT,CMO,IBEIG,NCOMP,IREPDM,IFCTYP,
-     &                  WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Construct two electron part of differentiated Hamiltonian
-C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z|B=0
-C
-C     Written by T. Enevoldsen Feb 4 1998
-C
-C     Added by MI&HJAaJ, 2002
-C
-C     Last modif: Dec 2005, MI - extended for .SPINFREE case
-C                 March 2006,MI
-C
-C***********************************************************************
-      use dirac_cfg
-      use xc_driver
-      use dft_cfg
-
-#include "implicit.h"
-#include "priunit.h"  
-#include "dummy.h"   
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "shells.h"
-#include "ccom.h"
-#include "cbihr2.h"
-#include "symmet.h"
-#include "dgroup.h"
-#include "dcbqal.h"
-#include "iratdef.h"
-C
-#include "aovec.h"
-#include "blocks.h"
-#include "dcbgen.h"
-#include "dcbnmr.h"
-#include "dcbfir.h"
-C
-      DIMENSION FMAT(N2BBASX,4,NCOMP),
-     &          IBEIG(*),
-     &          DMAT(N2BBASXQ),CMO(*),WORK(*)
-      DIMENSION IFCTYP(4,NCOMP),IREPDM(4,NCOMP)
-      DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3),MTOTTK(3)
-      LOGICAL LBIT,NODV,NOPV,NOCONT,RETUR,
-     &         FCKDDR,DDFOCK,LONDON,FIRST,PARCAL_SAVE
-
-      CALL QENTER('TWOLO1A')
-#include "memint.h"
-C  ... Initialize
-
-      NDMAT = 4 ! 4 matrixes for each quater.unit. - closed-shell
-
-      ITYPE = -5  ! Integral type - London orbitals !
-      MAXDIF = 1  ! First derivative...
-      NODV = .TRUE.
-      NOPV = .TRUE.
-      IATOM = 0
-      NOCONT = .FALSE.
-      RETUR  = .FALSE.
-      RELCAL = .TRUE.
-      DDFOCK = .TRUE.
-      FCKDDR = .TRUE.
-      LONDON = .TRUE.  !
-      FIRST = .TRUE.
-C
-      DO I=1,3
-         ISYMOP(I) = 1
-         !ISYMOP(I) = isymax(i,2)+1
-C anti hermitisk
-!radovan: ??? but it's hermitian
-         IHRMOP(I) = 1
-         !IHRMOP(I) = - 1
-         IFCKOP(I) = 1
-      END DO
-
-C ...  routine in 'dirac/dirtwo.F'
-C      Set up IFCTYP and IREPDM
-      CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
-C
-C     Get contravariant density matrix, no folding
-C  --------------------------------------------------
-!      gosia: here dmat(n2bbasxq) even though in twolon there is
-!      n2bbasx*4 allocated and in gtcnvd we need n2bbasx*4*nr_fmat and not n2bbasx*nz
-!      so i don't understand why it works...
-       CALL GTCNVD(DMAT,CMO,IBEIG,IPRINT,WORK(KFREE),LWORK)
-
-C
-C     Prepare for two-electron contribution
-C
-      LWRK = LWORK - KFREE + 1
-      CALL DZERO(FMAT,NCOMP*NDMAT*N2BBASX)
-C
-C     Check what type of two-electron integrals to include
-C
-#if defined (VAR_MPI) || defined (VAR_PVM)
-      MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! 
-      MTOTTK(2) = NLRGBL*(NLRGBL+1)/2 ! MI: lenght OK ...
-      MTOTTK(3) = NSMLBL*(NSMLBL+1)/2
-      FIRST1 = .TRUE.
-      FIRST2 = .TRUE.
-      FIRST3 = .TRUE.
-#endif
-
-! here if dft, then scale HF exchange
-!      do i = 1, 3
-!      do j = 1, 4
-!        write(*, *) 'ifctyp(j, i)=', j, i, ifctyp(j, i)
-!      enddo
-!      enddo
-
-CMI   ... fix the parallel run...
-C     PARCAL_SAVE = PARCAL
-C     PARCAL = .FALSE.
-
-      CALL GETTIM(CPU1,WALL1)
-
-      DO I2TYP = 1,3  ! LL,LS,SS
-        IF (LBIT(INTNMR,I2TYP)) THEN
-#if defined (VAR_MPI) || defined (VAR_PVM)
-         IF (PARCAL) THEN
-            CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
-CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK
-            CALL DIRAC_PARCTL( 1 )
-CMI ... 11.8.'03 - replaced SCRFCK by DUMMY 
-CMI   - Cauchy-Schwarz inequality does not hold for dg(1,2)/dB integrals !
-            CALL HER_PARDRV(WORK(KFREE),LWRK,FMAT,DMAT,NDMAT,IREPDM,
-     &            IFCTYP,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
-     &            TKTIME,.FALSE.,FIRST,WORK(KNPOS),MTOTTK(I2TYP),
-     &            I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &            DUMMY)
-         ELSE
-#endif
-             CALL TWOINT(WORK(KFREE),LWRK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP
-     &        ,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT
-     &        ,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
-     &        ,I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,.false.
-     &        ,IDUMMY,DUMMY)
-
-
-#if defined (VAR_MPI) || defined (VAR_PVM)
-         ENDIF
-#endif
-         ENDIF
-      ENDDO
-
-C     PARCAL = PARCAL_SAVE
-
-      CALL GETTIM(CPU2,WALL2)
-C
-      CPUTOT = CPU2 - CPU1
-      WLLTOT = WALL2 - WALL1
-      WRITE(LUPRI,'(/A,F13.4,A,F13.4,A/)') 
-     &'Cpu time:',CPUTOT,' Wall time:',WLLTOT,
-     &' used in call to TWOINT(in TWOLO1).'
-      CALL FLSHFO(LUPRI)
-      CALL QEXIT('TWOLO1A')
-      RETURN
-      END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck TWOLO1B */
-      SUBROUTINE TWOLO1B(FMAT,FOCK,NCOMP,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Construct two electron part of differentiated Hamiltonian
-C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z|B=0
-C
-C     Written by T. Enevoldsen Feb 4 1998
-C
-C     Added by MI&HJAaJ, 2002
-C
-C     Last modif: Dec 2005, MI - extended for .SPINFREE case
-C                 March 2006,MI
-C
-C***********************************************************************
-      use dirac_cfg
-      use xc_driver
-      use dft_cfg
-
-#include "implicit.h"
-#include "priunit.h"  
-#include "dummy.h"   
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "shells.h"
-#include "ccom.h"
-#include "cbihr2.h"
-#include "symmet.h"
-#include "dgroup.h"
-#include "dcbqal.h"
-#include "iratdef.h"
-C
-#include "aovec.h"
-#include "blocks.h"
-#include "dcbgen.h"
-#include "dcbnmr.h"
-#include "dcbfir.h"
-C
-      DIMENSION FMAT(N2BBASX,4,NCOMP),
-     &          FOCK(N2BBASX,NZ),WORK(*)
-      CALL QENTER('TWOLO1B')
-#include "memint.h"
-
-C----------------------------------------------------------------
-C       Transform Fock matrix from AO to QO
-C       ===================================
-C----------------------------------------------------------------
-      DO I = 1, NCOMP  ! x,y,z components
-         CALL DZERO(FOCK,N2BBASXQ)
-         IREP = ISYMAX(I,2)       ! irep of x,y and z
-         IPARI = JBTOF(IREP,1)    !  ??parity ??
-
-         DO IZ = 1,4
-            IREPD = IRQMAT(IZ,IREP)
-            IQ    = IQMULT(1,JQBAS(IREPD,IPARI),IZ)            
-            IPQ   = IQTOPQ(IQ,IREP)
-
-C ...    transform AO - SO
-            CALL MTAOSO(FMAT(1,IZ,I),FOCK(1,IPQ),
-     &           NTBAS(0),IREPD,IPRINT)
-         ENDDO
-
-         IF(IPRINT.GE.5) THEN
-          CALL HEADER(
-     &'TWOLO1: Transformed g(B) matrix in QO basis',-1)
-          WRITE(LUPRI,'(2X,A,I2)') '** component: ',I
-          CALL PRQMAT(FOCK(1,1),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                 NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-         ENDIF  
-C
-C     Insert half-phases and symmetrize
-C     =================================
-C
-         IF(NZ.LT.4) THEN
-           DO IZ = 1,NZ
-             IQ = IPQTOQ(IZ,IREP)
-             CALL Q2PHASE('D',IQ,1,FOCK(1,IZ))
-           ENDDO
-           IF(IPRINT.GE.5) THEN
-             CALL HEADER(
-     & 'TWOLO1: Unsorted g(B) matrix with half-phases inserted',-1)
-             WRITE(LUPRI,'(2X,A,I2)') '** component: ',I
-             CALL PRQMAT(FOCK(1,1),NTBAS(0),NTBAS(0),
-     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-           ENDIF
-         ENDIF
-
-C ... finally get g(B) into SA-AO basis - copy to lower triangle of symm.matrix
-         DO IZ = 1, NZ
-           CALL DSLTSP(NTBAS(0),FOCK(1,IZ),FMAT(1,IZ,I))
-         END DO
-
-C ... unpack to the full AO - form
-         CALL DZERO(FOCK,N2BBASXQ)
-         ITIM = -1 ! g(B)_comp derivatives are TR antisymmetric 
-         DO IZ = 1, NZ
-          IQ = IPQTOQ(IZ,IREP)
-          IH = IHQMAT(IQ,ITIM)
-          IF    (IH.EQ.1) THEN
-           CALL DSPTSI(NTBAS(0),FMAT(1,IZ,I),FOCK(1,IZ))
-          ELSEIF(IH.EQ.2) THEN
-           CALL DAPTGE(NTBAS(0),FMAT(1,IZ,I),FOCK(1,IZ))
-          ELSE
-           CALL QUIT('TWOLO1: Not defined IH!')
-          ENDIF
-         ENDDO
-
-C     ...sort AO to SO-AO, so somehow ...
-         CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
-C ...    
-         CALL DCOPY(N2BBASXQ,FOCK,1,FMAT(1,1,I),1)
-         IF(IPRINT.GE.5) THEN
-           CALL HEADER(
-     & 'TWOLO1:Total SA-AO two-electron London contribution',-1)
-           WRITE(LUPRI,'(2X,A,I2)') '** component: ',I
-           CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),
-     &            NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-         ENDIF
-!
-      ENDDO ! Of I = x,y,z
-      CALL QEXIT('TWOLO1B')
-      RETURN
-      END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck TWOLO1C */
-      SUBROUTINE TWOLO1C(GBMO,FMAT,CMO,NCOMP,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Construct two electron part of differentiated Hamiltonian
-C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z|B=0
-C
-C     Written by T. Enevoldsen Feb 4 1998
-C
-C     Added by MI&HJAaJ, 2002
-C
-C     Last modif: Dec 2005, MI - extended for .SPINFREE case
-C                 March 2006,MI
-C
-C***********************************************************************
-      use dirac_cfg
-      use xc_driver
-      use dft_cfg
-
-#include "implicit.h"
-#include "priunit.h"  
-#include "dummy.h"   
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "shells.h"
-#include "ccom.h"
-#include "cbihr2.h"
-#include "symmet.h"
-#include "dgroup.h"
-#include "dcbqal.h"
-#include "iratdef.h"
-C
-#include "aovec.h"
-#include "blocks.h"
-#include "dcbgen.h"
-#include "dcbnmr.h"
-#include "dcbfir.h"
-C
-      DIMENSION GBMO(N2ORBXQ),FMAT(N2BBASX,4,NCOMP),
-     &          CMO(*),WORK(*)
-      CALL QENTER('TWOLO1C')
-#include "memint.h"
-
-C----------------------------------------------------------------
-C   Open new file for MO-transformed g(B) x,y,z matrixes
-C----------------------------------------------------------------
-      OPEN(LUTWOL,FILE='TWOLON',FORM='UNFORMATTED',
-     &     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN')
-      DO I = 1, NCOMP  ! x,y,z components
-         IREP = ISYMAX(I,2)       ! irep of x,y and z
-C
-C     Transform to MO-basis only the blocks of correct fermion symmetry
-C     =================================================================
-C
-C   ....  it would be good to add also QBTRANS for spin-free case
-     
-      CALL DZERO(GBMO,N2ORBXQ)
-      IOPSY = JBTOF(IREP,1)
-      DO I1 = 1, NFSYM
-         I2 = MOD(I1+IOPSY,2) + 1
-         CALL QTRANS('AOMO','S',D0,
-     &      NFBAS(I1,0),NFBAS(I2,0),
-     &      NORB(I1),NORB(I2),
-     &     FMAT(I2BASX(I1,I2)+1,1,I),
-     &      NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
-     &     GBMO(1+I2ORBX(I1,I2)),
-     &      NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &     CMO(ICMOQ(I1)+1),
-     &      NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &     CMO(ICMOQ(I2)+1),
-     &      NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &     WORK(KFREE),LFREE,IPRINT)
-      ENDDO
-
-      IF(IPRINT.GE.5) THEN
-        CALL HEADER(
-     & 'TWOLO1: Two-electron London contribution in MO',-1)
-        WRITE(LUPRI,'(2X,A,I2)') '** component: ',I
-        CALL PRQMAT(GBMO,NORBT,NORBT,NORBT,NORBT,
-     &               NZ,IPQTOQ(1,IREP),LUPRI)
-      ENDIF
-
-       CALL WRTDAC(LUTWOL,N2ORBXQ,GBMO,I)
-
-      ENDDO ! Of I = x,y,z
-
-      CLOSE(LUTWOL,STATUS='KEEP')
-      CALL QEXIT('TWOLO1C')
-      RETURN
-      END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck TTRA */
       SUBROUTINE TTRA(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
@@ -1233,13 +669,19 @@ C    & 'IREPT,IREPH,IREPTH:',IREPT,IREPH,IREPTH
          IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
 
 C        ... do TH(I2,I3) := dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NORB(I2),NORB(I3),NORB(I1),DSGN,
-     &    'H','N',IPQTOQ(1,IREPT),
-     &    TMAT(IORB(I2)+1,IORB(I1)+1,1),NORBT,NORBT,NZ,
-     &    'N','N',IPQTOQ(1,IREPH),
-     &    HMAT(IORB(I1)+1,IORB(I3)+1,1),NORBT,NORBT,NZ, 
-     &    D0,IPQTOQ(1,IREPTH),
-     &    THMAT(IORB(I2)+1,IORB(I3)+1,1),NORBT,NORBT,NZ)
+          CALL QGEMM(NORB(I2), NORB(I3), NORB(I1), DSGN,
+!                    -----------------------------------
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
+     &               NORBT,NORBT,NZ,
+!                    -----------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ, 
+!                    -----------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I2)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ)
 
           IF(IPRINT.GE.5) THEN
             WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
@@ -1250,13 +692,19 @@ C        ... do TH(I2,I3) := dsgn*T^{H}(I2,I1).H(I1,I3)
           ENDIF
 
 C  ...  do TH(I3,I2) := TH(I3,I2) + H(I3,I1).T(I1,I2)
-          CALL QGEMM(NORB(I3),NORB(I2),NORB(I1),D1,
-     &   'N','N',IPQTOQ(1,IREPH),
-     &   HMAT(IORB(I3)+1,IORB(I1)+1,1),NORBT,NORBT,NZ,
-     &   'N','N',IPQTOQ(1,IREPT),
-     &   TMAT(IORB(I1)+1,IORB(I2)+1,1),NORBT,NORBT,NZ, 
-     &   D1,IPQTOQ(1,IREPTH),
-     &   THMAT(IORB(I3)+1,IORB(I2)+1,1),NORBT,NORBT,NZ)
+          CALL QGEMM(NORB(I3), NORB(I2), NORB(I1), D1,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I3)+1, IORB(I1)+1, 1),
+     &               NORBT, NORBT, NZ,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I1)+1, IORB(I2)+1, 1), 
+     &               NORBT, NORBT, NZ, 
+!                    ---------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I3)+1, IORB(I2)+1, 1),
+     &               NORBT,NORBT,NZ)
 
          IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -1269,15 +717,19 @@ C  ...  do TH(I3,I2) := TH(I3,I2) + H(I3,I1).T(I1,I2)
          ELSE  ! Transformation in the e-e space only
 
 C        ... do TH(I2,I1) = dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NESH(I2),NESH(I3),NESH(I1),DSGN,
-     &    'H','N',IPQTOQ(1,IREPT),
-     &    TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
-     &    NORBT,NORBT,NZ,
-     &    'N','N',IPQTOQ(1,IREPH),
-     &    HMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &    NORBT,NORBT,NZ,D0,IPQTOQ(1,IREPTH),
-     &    THMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &    NORBT,NORBT,NZ)
+          CALL QGEMM(NESH(I2), NESH(I3), NESH(I1), DSGN,
+!                    ---------------------------------------------- --
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
 
           IF(IPRINT.GE.5) THEN
             WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
@@ -1289,14 +741,18 @@ C        ... do TH(I2,I1) = dsgn*T^{H}(I2,I1).H(I1,I3)
 
 C        ...  do TH(I3,I2) = TH(I3,I2) + H(I3,I1)*T(I1,I2)
           CALL QGEMM(NESH(I3),NESH(I2),NESH(I1),D1,
-     &   'N','N',IPQTOQ(1,IREPH),
-     &   HMAT(IORB(I3)+NPSH(I3)+1,IORB(I1)+NPSH(I1)+1,1),
-     &   NORBT,NORBT,NZ,
-     &   'N','N',IPQTOQ(1,IREPT),
-     &   TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &   NORBT,NORBT,NZ,D1,IPQTOQ(1,IREPTH),
-     &   THMAT(IORB(I3)+NPSH(I3)+1,IORB(I2)+NPSH(I2)+1,1),
-     &   NORBT,NORBT,NZ)
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I3)+NPSH(I3)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I3)+NPSH(I3)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT,NORBT,NZ)
 
          IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -1311,299 +767,6 @@ C        ...  do TH(I3,I2) = TH(I3,I2) + H(I3,I1)*T(I1,I2)
       ENDDO
 
       CALL QEXIT('TTRA')
-      RETURN
-      END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck RNTLON */
-      SUBROUTINE RNTLON(CMO,IBEIG,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C   PURPOSE: Calculate the {T(1),H(0)} contribution
-C            to the  magnetic field property gradient matrix dH~(B)/dB|B=0
-C            for NMR shieldings and magnetizabilities
-C            with London atomic orbitals.
-C            Write resulting matrix (in the MO basis)
-C            to the DA file 'FCKLON'. 
-C
-C   Definition (Helgaker et al: JCP  84(1986) 6266)
-C -----------------------------------------------------
-C     {T(1),H(0)} =  {T(1),F(0)} + W(0)
-C
-C   Called from:  pamxlr.F/PRPXL1
-C
-C On input: CMO - MO coefficientsa
-C           IBEIG  - info on boson irreps (LevyLe or SpinFREE)
-C
-C   Written by M.Ilias & HJAaJ
-C     (based on T. Enevoldsen's codes), august 2003, Odense 
-C
-C   Last revisons: 
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"  
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbnmr.h"
-#include "dcbxpr.h"
-#include "dgroup.h"
-#include "mxcent.h"
-#include "dcbprp.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "blocks.h"
-#include "dummy.h"
-#include "dcbfir.h"
-#include "dcbham.h"
-
-      PARAMETER (D1=1.0D0,D0=0.0D0)
-
-      DIMENSION CMO(*),IBEIG(*),WORK(*)
-      DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
-      DIMENSION IREP(3),IOPSY(3),ISYM(3)
-      DIMENSION KF1TR(3),KF2TR(3),KMDM(3)
-
-      LOGICAL EPMIX,HERM,AH,DOPCTRA_SAVE
-
-
-      CALL QENTER('RNTLON')
-      KFRSAV = KFREE
-C Open file for the London reorthonormalization contribution, {T(1),H(0)} 
-      OPEN(LUFCKL,FILE='FCKLON',FORM='UNFORMATTED',
-     &     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN') ! Why 8* and not 3*?
-
-C Get the total Fock matrix in MO basis
-      CALL MEMGET('REAL',KFMAT,N2BBASXQ,WORK,KFREE,LFREE)
-C    .... prp/pamset.F
-      CALL GETFCK(WORK(KFMAT),IPRPRP,WORK,KFREE,LFREE) 
-      IPRINT = IPRPRP
-
-      IF (IPRINT.GE.5) THEN
-        CALL HEADER(
-     &'RNTLON: Total Fock matrix in MO basis:',-1)
-        CALL PRQMAT(WORK(KFMAT),NORBT,NORBT,NORBT,
-     &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
-
-C ... get space for one-index transformed Fock matrixes,
-C     {T(1),F(0)}_x/y/z, in MO basis - 1. part of {T(1),H(0)}
-      CALL MEMGET('REAL',KF1TR(1),3*N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KF1TRC,N2ORBXQ,WORK,KFREE,LFREE)
-      KF1TR(2) = KF1TR(1) + N2ORBXQ
-      KF1TR(3) = KF1TR(2) + N2ORBXQ
-
-
-C ... get space for (1) connection matrix, T(1)_x/y/z, in MO basis
-      CALL MEMGET('REAL',KTMATC,N2ORBXQ,WORK,KFREE,LFREE)
-
-C  ... get the space for all three symmetrized 
-C      modified density matrixes, MDM_x/y/z, in AO basis
-      CALL MEMGET('REAL',KMDM(1),3*N2BBASXQ,WORK,KFREE,LFREE)
-      KMDM(2) = KMDM(1) + N2BBASXQ
-      KMDM(3) = KMDM(2) + N2BBASXQ
-
-      CALL MEMGET('REAL',KMDMC,N2BBASXQ,WORK,KFREE,LFREE)
-
-C ... define e-p/e shells for reorthonormalization
-      EPMIX = DOEPRN
-C Open property file (needed connection matrixes, Fock MO matrix)
-      CALL OPNFIL(LU1INT,'AOPROPER','OLD','RNTLON')
-C
-      DOPCTRA_SAVE=DOPCT
-      DOPCT=.FALSE.
-C ... run over components x/y/z
-      DO ICOMP = 1, 3
-C ... get connection matrixes (may be SQUARE for natural connection!),
-C     T(1)_ICOMP, in MO basis, into WORK(KTMATC)
-       INDXPR          =  IPCON(ICOMP)
-       ITIM            =  IPRPTIM(INDXPR)
-       ISYM(ICOMP)     =  IPRPSYM(INDXPR)
-       IOPSY(ICOMP)    =  JBTOF(ISYM(ICOMP)-1,1)
-       IREP(ICOMP)     =  ISYM(ICOMP) - 1 
-       CALL DZERO(WORK(KTMATC),N2ORBXQ)
-C ...      routine generalized for square matrixes too... 
-       CALL PRPMAT(INDXPR,IOPSY,WORK(KTMATC),CMO,
-     &           IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
-       IF(IPRINT.GE.5) THEN
-        CALL HEADER(
-     &  'RNTLON: T(1)_ic connection matrix in MO basis ',-1)
-        WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
-        CALL PRQMAT(WORK(KTMATC),NORBT,NORBT,NORBT,NORBT,
-     &               NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
-       ENDIF
-C
-C ...  get 1.transformed term, {T(1),F(0)}_ICOMP, in MO basis
-C      into WORK(KF1TRC)
-C
-       ITYP = 1 ! e-e only !
-       HERM  = .FALSE.  ! antisymmetric
-       CALL DZERO(WORK(KF1TRC),N2ORBXQ)
-
-       ISYMH = 1 ! Do {T,F}
-       AH = .TRUE. ! 
-       CALL TTRA(EPMIX,AH,ISYM(ICOMP),ISYMH,WORK(KTMATC),
-     &           WORK(KFMAT),WORK(KF1TRC),IPRPRP)
-
-C  ... and store them into WORK(KF1TR(1-3))
-       CALL DCOPY(N2ORBXQ,WORK(KF1TRC),1,WORK(KF1TR(ICOMP)),1)
-
-       IF(IPRINT.GE.5) THEN
-        CALL HEADER(
-     &  'RNTLON: Transformed {T(1),F(0)}_icomp in MO basis ',-1)
-        WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
-        CALL PRQMAT(WORK(KF1TRC),NORBT,NORBT,NORBT,NORBT,
-     &               NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
-       ENDIF
-  
-C ...  get symmetrized modified density matrix in AO basis
-C ...  into WORK(KMDMC)
-       ITYP = 1 
-       IH = -1 ! Anti-hermitian
-       CALL DZERO(WORK(KMDMC),N2BBASXQ)
-
-       CALL GETMDM(EPMIX,ISYM(ICOMP),
-     &            WORK(KMDMC),CMO,IBEIG,WORK(KTMATC),
-     &            WORK,KFREE,LFREE,IPRPRP)
-
-C ... and store it into WORK(KMDM(ICOMP))
-       CALL DCOPY(N2BBASXQ,WORK(KMDMC),1,WORK(KMDM(ICOMP)),1)
-
-       IF(IPRINT.GE.5) THEN
-         CALL HEADER(
-     &'RNTLON: Total SYMMETRIZED modified density matrix',-1)
-        WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
-         CALL PRQMAT(WORK(KMDM(ICOMP)),NTBAS(0),NTBAS(0),
-     &     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
-         CALL FLSHFO(LUPRI)
-       ENDIF
-
-      ENDDO ! x/y/z
-
-C===================================================================
-C Needed: space for {T(1),g(0)_add} and mod.symm.dens.matrixes
-C===================================================================
-C  Get space for two-electron contributions, {T(1),g(0)_add}  in AO basis
-C===================================================================
-      CALL MEMGET('REAL',KF2TR(1),3*N2BBASXQ,WORK,KFREE,LFREE)
-      KF2TR(2) = KF2TR(1) + N2BBASXQ 
-      KF2TR(3) = KF2TR(2) + N2BBASXQ 
-
-      ISYMOP(1) = ISYM(1)
-      ISYMOP(2) = ISYM(2)
-      ISYMOP(3) = ISYM(3)
-      IHRMOP(1) = -1
-      IHRMOP(2) = -1
-      IHRMOP(3) = -1
-C     IFCKOP(1) = 1
-      IFCKOP(1) = JBTOF(ISYM(1)-1,1)
-C     IFCKOP(2) = 1
-      IFCKOP(2) = JBTOF(ISYM(2)-1,1)
-C     IFCKOP(3) = 1
-      IFCKOP(3) = JBTOF(ISYM(3)-1,1)
-
-      NFMTX = 3 ! Number of Fock matrixes - 3(x,y,z)
-
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /)) 
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
-
-C ... get all 3 terms, {T(1),g(0)-add}_x/y/z,
-C ...  into WORK(KF2TR(1-3)) AT ONCE !
-      CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,
-     &      WORK(KF2TR(1)),WORK(KMDM(1)),
-     &      NFMTX,WORK(KPOS),INTNMR,
-     &      IPRINT,WORK(KFREE),LFREE)
-
-
-
-!!!!!do transformation AO- MO !!!!!!!!!!!!!11
-C  ... run over components
-      DO ICOMP = 1, 3
-
-C  copy WORK(KF2TR(ICOMP)) -> WORK(KMDMC)
-        CALL DCOPY(N2BBASXQ, WORK(KF2TR(ICOMP)),
-     &                    1,WORK(KMDMC),1)
-
-C  Control output
-       IF(IPRINT.GE.5) THEN
-        CALL HEADER(
-     &  'RNTLON: {T(1),g(0)_add}_ic in AO basis ',-1)
-        WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
-        CALL PRQMAT(WORK(KMDMC),NTBAS(0),NTBAS(0),
-C       CALL PRQMAT(WORK(KF2TR(ICOMP)),NTBAS(0),NTBAS(0),
-     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
-       ENDIF
-
-C  Make transformation of {T(1),g(0)_add}_icomp from AO to the MO basis.
-C  Transform to MO-basis only the blocks of correct fermion symmetry
-C  WORK(KF2TR(ICOMP)) ->  WORK(KTMATC)
-C  =================================================================
-C  ... it would be good to extend it using QBTRANS....
-       CALL DZERO(WORK(KTMATC),N2ORBXQ)
-
-       DO I1 = 1, NFSYM
-          I2 = MOD(I1+IOPSY(ICOMP),2) + 1
-          CALL QTRANS('AOMO','S',D0,
-     &     NFBAS(I1,0),NFBAS(I2,0),
-     &     NORB(I1),NORB(I2),
-     &     WORK(KMDMC+I2BASX(I1,I2)),   !result in AO basis
-     &     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP(ICOMP)),
-     &     WORK(KTMATC+I2ORBX(I1,I2)),  !space for new result in MO basis
-     &     NORBT,NORBT,NZ,IPQTOQ(1,IREP(ICOMP)),
-     &     CMO(1+ICMOQ(I1)),
-     &     NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &     CMO(1+ICMOQ(I2)),
-     &     NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &     WORK(KFREE),LFREE,IPRINT)
-       ENDDO
-
-       IF (IPRINT.GE.5) THEN
-         CALL HEADER(
-     &'RNTLON: Total transf. term, {T(1),g(0)_add}_ic, in MO:',-1)
-         WRITE(LUPRI,'(2X,A,I2)') '*** component :',ICOMP
-         CALL PRQMAT(WORK(KTMATC),NORBT,NORBT,
-     &               NORBT,NORBT,NZ,
-     &            IPQTOQ(1,IREP(ICOMP)),LUPRI)
-       ENDIF
-
-C Sum {T(1),F(0)}_c + {T(1),g(0)_add}_c into WORK(KF1TR)
-C         ****  F1TR = F1TR + F2TR  ****
-C  MI(27.11'03) - D2h symmetry does not work correctly for F2TR evaluation!
-C      CALL DAXPY(N2ORBXQ,D0,WORK(KTMATC),1,WORK(KF1TR(ICOMP)),1) 
-      CALL DAXPY(N2ORBXQ,D1,WORK(KTMATC),1,WORK(KF1TR(ICOMP)),1) 
-      IF (IPRINT.GE.5) THEN
-        CALL HEADER(
-     &'RNTLON: Total transformed term, {T(1),H(0)}_comp, in MO:',-1)
-        WRITE(LUPRI,'(2X,A,I1)') '*** Component x-1/y-2/z-3:',ICOMP
-        CALL PRQMAT(WORK(KF1TR(ICOMP)),
-     &              NORBT,NORBT,NORBT,NORBT,NZ,
-     &            IPQTOQ(1,IREP(ICOMP)),LUPRI)
-       ENDIF
-
-C  Write the total reorthonormalization term to the DA file
-       CALL WRTDAC(LUFCKL,N2ORBXQ,WORK(KF1TR(ICOMP)),ICOMP)
-
-      ENDDO    
-
-C ... restore the picture change transformation keyword
-      DOPCT=DOPCTRA_SAVE
-
-C
-C close property and FCKLON files
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
-      CLOSE(LUFCKL,STATUS = 'KEEP') 
-
-C     .... release the whole block used in this subroutine
-      CALL MEMREL('RNTLON',WORK,1,KFRSAV,KFREE,LFREE)
-
-      CALL QEXIT('RNTLON')
       RETURN
       END
 
@@ -1657,6 +820,7 @@ C     and the full relativistic (fermion symm.) mode
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,
      &            TOTERG,IOPT,WORK,KFREE,LFREE)
+
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -1747,9 +911,9 @@ C  Written by Miro Ilias (based on TEC's routine TECTR2),
 C    august 2003, Odense.
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -1794,11 +958,12 @@ C
 C  DMAT_{ab} = Sum_{i,o}[ c_{ao} T_{oi} c_{bi}^* ] ... C T(oi) C^+
 C
         IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
+
           IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
-         CALL QTRANS(
-     &    'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+            CALL QTRANS(
+     &      'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &                  NORB(I1),NOCC(I2),
-     &     DMAT(I2BASX(I1,I2)+1,1),
+     &       DMAT(I2BASX(I1,I2)+1,1),
      &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
 !          T(o,i)
      &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
@@ -1810,57 +975,65 @@ C
      &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
      &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &     WORK(KFREE),LFREE,IPRINT)
-         ENDIF
+          ENDIF
+
         ELSE ! Run o only over electronic states
+
         IF (NOCC(I2).GT.0.AND.NESH(I1).GT.0) THEN
-      IF (IPRINT.GE.10) THEN
-        CALL HEADER(
-     &'GETMDM: Before QTRANS whole modified density matrix',-1)
-        IF (EPMIX) THEN
-         WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
-        ELSE
-         WRITE(LUPRI,'(2X,A)') "summation over e shells..."
-        ENDIF
-        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-        CALL HEADER(
-     &'GETMDM: Before QTRANS BLOCK modified density matrix',-1)
-        Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
-        CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
-     &              NFBAS(I2,0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+
+          IF (IPRINT.GE.10) THEN
+            CALL HEADER(
+     &      'GETMDM: Before QTRANS whole modified density matrix',-1)
+            IF (EPMIX) THEN
+              WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
+            ELSE
+              WRITE(LUPRI,'(2X,A)') "summation over e shells..."
+            ENDIF
+            CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+            CALL HEADER(
+     &      'GETMDM: Before QTRANS BLOCK modified density matrix',-1)
+            Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
+            CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
+     &                       NFBAS(I2,0),NTBAS(0),
+     &                       NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
           ENDIF
-         CALL QTRANS(
-     &    'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
-     &       NESH(I1),NOCC(I2),
-     &    DMAT(I2BASX(I1,I2)+1,1),
-     &       NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
-     &    TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &    CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
-     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &    CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
-     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &    WORK(KFREE),LFREE,IPRINT)
-      IF (IPRINT.GE.10) THEN
-        CALL HEADER(
-     &'GETMDM: Actual WHOLE modified density matrix',-1)
-        IF (EPMIX) THEN
-         WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
-        ELSE
-         WRITE(LUPRI,'(2X,A)') "summation over e shells..."
-        ENDIF
-        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-         CALL HEADER(
-     &'GETMDM: After QTRANS BLOCK modified density matrix',-1)
-         Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
-         CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
-     &              NFBAS(I2,0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+
+          CALL QTRANS(
+     &            'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+     &             NESH(I1),NOCC(I2),
+     &             DMAT(I2BASX(I1,I2)+1,1),
+     &             NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+     &             TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &             NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &             CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
+     &             NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &             CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+     &             NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &             WORK(KFREE),LFREE,IPRINT)
+
+          IF (IPRINT.GE.10) THEN
+            CALL HEADER(
+     &      'GETMDM: Actual WHOLE modified density matrix',-1)
+
+            IF (EPMIX) THEN
+              WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
+            ELSE
+              WRITE(LUPRI,'(2X,A)') "summation over e shells..."
+            ENDIF
+
+            CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+            CALL HEADER(
+     &        'GETMDM: After QTRANS BLOCK modified density matrix',-1)
+              Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
+            CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
+     &                  NFBAS(I2,0),NTBAS(0),
+     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
           ENDIF
-          ENDIF
+
         ENDIF
+      ENDIF
       ENDDO
       IF (IPRINT.GE.6) THEN
         CALL HEADER(
@@ -1928,7 +1101,6 @@ C*****************************************************************************
 #include "shells.h"
 #include "symmet.h"
 #include "ibtfun.h"
-#include "sdpre.h"
 
       CALL QENTER('RSKLOND')
 C
@@ -2063,7 +1235,7 @@ C
             END DO
          END DO
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1/dble(MAXREP + 1)
          NN = NDMAT*3*NBASIS*NBASIS
          CALL DSCAL(NN,FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
@@ -2168,6 +1340,7 @@ C     Written by T.Saue October 1994
 C     Last revision: May 27 1998 - tec
 C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
@@ -2178,11 +1351,9 @@ C
 #include "symmet.h"
 C
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
       LOGICAL DOINT(2,2),DIAG,SAME
       DIMENSION ONEINT(*)
-      EXTERNAL BDQALGEBRA
       CHARACTER TYP*1
 C
 #include "ibtfun.h"
@@ -2278,6 +1449,7 @@ C                     1998  TEC
 C                     jan.2003 MI 
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2289,7 +1461,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbqal.h"
 #include "dummy.h"
 C
 #include "ibtfun.h"
@@ -2482,6 +1653,7 @@ C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
@@ -2494,7 +1666,6 @@ C*****************************************************************************
 #include "cbihr2.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "iratdef.h"
 C
 #include "aovec.h"
@@ -2654,7 +1825,6 @@ C*****************************************************************************
 
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL EPMIX,HERM,AH,DOPCTRA_SAVE
-      EXTERNAL BDQALGEBRA
 
       CALL QENTER('HORDRNT')
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -295,7 +295,8 @@ C
 C     Get CI ref. vector from record 1 on LUBCI.
 C
       CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-      CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+!     CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+      CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCREF))
 C
 C     Do projection.
 C
@@ -485,16 +486,18 @@ C
 C     Transition densities
 C     ---------------------
 C
-      CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-      IF ( NZCONF .GT. 0) CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
-C
       CALL MEMGET('REAL',KDVT,NCSIM * N2ASHXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPVT,
      &     NCSIM * NASHT * NASHT * N2ASHX * NZ * 3,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
+!     IF ( NZCONF .GT. 0) CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+      IF ( NZCONF .GT. 0) CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCREF))
+C
       IF ( NCSIM .GT. 0 ) THEN
          CALL XRSTDM(WORK(KCREF),BCVEC,WORK(KDVT),WORK(KPVT),
      &        WORK,KFREE,LFREE)
       END IF
+      CALL MEMREL('after XRSTDM',WORK,1,KCREF,KFREE,LFREE)
 C
 C     Wf. densities
 C     -------------
@@ -674,9 +677,9 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0 = 0.0D0, DP5 = 0.5D00)
 C
 #include "dcborb.h"
@@ -687,7 +690,6 @@ C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ)
       LOGICAL   LBIT, LBIT_1
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialization
 C     ==============
@@ -1168,9 +1170,9 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -1185,7 +1187,6 @@ C
       DIMENSION WORK(*)
       DIMENSION IPH1X(*), IPH1(*), IPBMAT(*)
 C
-      EXTERNAL BDQALGEBRA
 C
       CALL RTKTIME(.TRUE.,15)
 C
@@ -1854,7 +1855,8 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
@@ -1873,7 +1875,8 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(INDR,IFREQ)).GT.DTOL) THEN
@@ -1957,43 +1960,30 @@ C
 C         Accumulate T(-) = S[2]X(+) in buffer
 C         ------------------------------------
 C
+!radovan: bepvc, bppvc, bcpvc can go out of bounds
+!         if corresponding degrees of freedom are zero
           CALL XRSTVC(BEPVC(1,II),1,NBEVC,0,
      &                BPPVC(1,II),1,NBPVC,0,
      &                BCPVC(1,I) ,1,NBCVC,0,
      &                BEBUF(1,1),BPBUF(1,1),BCBUF,1,0,
      &                IBTYP,WORK,KFREE,LFREE)
-CTROND
-C          WRITE(6,*) '* S[2]X(+) :'
-C          DO K = 1,NBEVC
-C            WRITE(6,*) BEPVC(K,II),BEBUF(K,1)
-C          ENDDO
           IF(DAMPFREQ.NE.D0) THEN
             CALL XRSTVC(BEPVC(1,II+1),1,NBEVC,0,
      &                  BPPVC(1,II+1),1,NBPVC,0,
      &                  BCPVC(1,I)   ,1,NBCVC,0,
      &                  BEBUF(1,2),BPBUF(1,2),BCBUF,1,0,
      &                  IBTYP,WORK,KFREE,LFREE)
-CTROND
-C          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
-C          DO K = 1,NBEVC
-C            WRITE(6,*) BEPVC(K,II+1),BEBUF(K,2)
-C          ENDDO
           ENDIF
 C
 C         Accumulate T(+) = S[2]X(-) in b(+)
 C         ------------------------------------
 C
+!radovan: bepvc, bppvc, bcpvc can go out of bounds
+!         if corresponding degrees of freedom are zero
           CALL XRSTVC(BEMVC(1,II),1,NBEVC,0,
      &                BPMVC(1,II),1,NBPVC,0,
      &                BCMVC(1,I) ,1,NBCVC,0,
      &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),1,0,
-     &                IBTYP,WORK,KFREE,LFREE)
-CTROND
-C          WRITE(6,*) '* S[2]X(+) :'
-C          DO K = 1,NBEVC
-C            WRITE(6,*) BEMVC(K,II),BEPVC(K,II)
-C          ENDDO
-
           IF(DAMPFREQ.NE.D0) THEN
             CALL XRSTVC(BEMVC(1,II+1),1,NBEVC,0,
      &                  BPMVC(1,II+1),1,NBPVC,0,
@@ -2001,11 +1991,6 @@ C          ENDDO
      &                  BEPVC(1,II+1),BPPVC(1,II+1),BCPVC(1,I),1,0,
      &                  IBTYP,WORK,KFREE,LFREE)
           ENDIF
-CTROND
-C          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
-C          DO K = 1,NBEVC
-C            WRITE(6,*) BEMVC(K,II+1),BEPVC(K,II+1)
-C          ENDDO
 C
 C         Scale T = S[2]X with negative frequency
 C         ---------------------------------------
@@ -2129,12 +2114,12 @@ C
         CALL QUIT('ADDSV1: Unknown NBTYP !')
       ENDIF
 C
-CPP ... compare with XRSXV1 and figure out why IBVEC is not used
       IF(DAMPFREQ.EQ.D0) THEN
         DO IREC = 1,NZRED
           IH  = IBTYP(2,IREC)
           IF(IH.EQ.ITYP) THEN
-            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+ !           CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               CALL DAXPY(NBDIM,EVECR(IREC,IFREQ),BVBUF,1,BVEC(IBOFF),1)
@@ -2148,7 +2133,8 @@ CPP ... compare with XRSXV1 and figure out why IBVEC is not used
           INDR = 2*IREC - 1
           INDI = 2*IREC
           IF(IH.EQ.ITYP) THEN
-            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               CALL DAXPY(NBDIM,EVECR(INDR,IFREQ),BVBUF,1,BVEC(IBOFF),1)
@@ -2338,7 +2324,7 @@ C           Print section
             CALL DZERO(XNORM(1,IPCP),NCSIM)
           ENDIF
         ENDIF
-      ELSE
+      ELSE ! from IF(STATIC) THEN
 C
 C       In frequency-dependent case, the resultant X-vectors
 C       split into X(+) and X(-).
@@ -2583,7 +2569,7 @@ C
             CALL DZERO(XNORM(1,IPCM),MFREQ)
           ENDIF
         ENDIF
-      ENDIF
+      ENDIF ! from IF(STATIC) THEN
 C
       NTSIM = NESIM + NPSIM + NCSIM
 C
@@ -2787,7 +2773,7 @@ C
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
-      ENDIF
+      ENDIF ! from IF(IPRXRS.GE.5) THEN
 C
 C     If (LINEQ) add gradient
 C     =======================
@@ -2865,10 +2851,10 @@ CPP...need to take care of complex case printing
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       ' configurational (E[2]X(-)-WS[2]X(+)) residual vectors'
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            ENDIF
           ENDIF
         ENDIF
-      ENDIF
-      ENDIF
+      ENDIF ! from IF(LINEQ) THEN
 C
       CALL FLSHFO(LUPRI)
 C
@@ -3768,7 +3754,7 @@ C        Calculate density matrices
 C        --------------------------
 C
          IF ( XRS_CIPROGRAM .EQ. 'GASCIP' ) THEN
-            CALL GASCIP_RMAKDM(NZCONF,.TRUE.,.TRUE.,WORK(KZCONF),
+            CALL GASCIP_RMAKDM(.TRUE.,.TRUE.,NZCONF,WORK(KZCONF),
      &           CLREF,CRREF,WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
          ELSE
 C           LUCIAREL:
@@ -3961,7 +3947,10 @@ C
 C***********************************************************************
         use dirac_cfg
         use dft_cfg
-        use xc_driver
+        use xcint_main
+        use fde_mod
+        use fde_integrate
+        use num_grid_gen
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3974,6 +3963,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #ifdef MOD_DNF
 #include "densfit.h"
 #endif
@@ -3983,7 +3973,7 @@ C
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
-
+      type(fde_import) :: itmp
 C
 C
       CALL QENTER('GMOLITX1')
@@ -4044,23 +4034,25 @@ C
           call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
           call genden(work(kbuf), cmo, 1, iprxrs)
 
-!                           buf holds the unperturbed density matrix
+!                     buf holds the unperturbed density matrix
 !                     fmo is actually the perturbed ao density matrix
 !                     fao is really fao (confusing naming reuses memory)
 
-         call xc_mpi_wake_up_coworkers()
-         call xc_integrator(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = work(kbuf),
-     &                      xc_nr_dmat           = ndmat,
-     &                      xc_nr_fmat           = ndmat,
-     &                      xc_dmat              = fmo,
-     &                      xc_fmat              = fao,
-     &                      xc_fmat_pg_sym       = isymop,
-     &                      xc_dmat_pg_sym       = isymop,
-     &                      xc_dmat_ih_sym       = ihrmop,
-     &                      xc_response_order_mo = 1)
-         call xc_mpi_release_coworkers()
+          call generate_num_grid(work(kbuf))
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(4)
+#endif
+          call integrate_xc (xc_mat_dim            = ntbas(0),
+     &                       xc_nz                 = nz,
+     &                       xc_dmat_0             = work(kbuf),
+     &                       xc_nr_dmat            = ndmat,
+     &                       xc_nr_fmat            = ndmat,
+     &                       xc_dmat               = fmo,
+     &                       xc_fmat               = fao,
+     &                       xc_fmat_pg_sym        = isymop,
+     &                       xc_dmat_pg_sym        = isymop,
+     &                       xc_dmat_ih_sym        = ihrmop,
+     &                       xc_response_order_mo = 1)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
@@ -4070,6 +4062,35 @@ C
 
         end if
 
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+
+           if (.not.dirac_cfg_dft_calculation) then
+!         generate standard density matrix
+              call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
+              call genden(work(kbuf), cmo, 1, iprxrs)
+           endif
+
+!          call fde_set_nz(nz)
+!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
+
+          call integrate_fde(fde_mat_dim            = ntbas(0),
+     &                       fde_nz                 = nz,
+     &                       fde_dmat_0             = work(kbuf),
+     &                       fde_nr_dmat            = ndmat,
+     &                       fde_nr_fmat            = ndmat,
+     &                       fde_dmat               = fmo,
+     &                       fde_fmat               = fao,
+     &                       fde_fmat_pg_sym        = isymop,
+     &                       fde_dmat_pg_sym        = isymop,
+     &                       fde_dmat_ih_sym        = ihrmop,
+     &                       fde_response_order_mo = 1)
+
+          call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
+
+        endif
+#endif
 C
 C     Add solvent contributions
 C     -------------------------
@@ -5400,7 +5421,8 @@ C
       IF (XRS_CIPROGRAM .EQ. 'GASCIP' .OR.
      &    XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
          CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-         CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+!        CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+         CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCREF))
 C        use routine with MOLFDIR format for integrals
          CALL RSIGCOM(WORK(KCREF),SCVEC,FX,H2ACX,IBCVC,
      &        WORK,KFREE,LFREE)
@@ -5546,9 +5568,9 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -5560,7 +5582,6 @@ C
       DIMENSION FMO(NORBT,NORBT,NZ),FBUF(NORBT,NORBT,NZ),
      &          BMAT(NORBT,NORBT,NZ),WORK(*)
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialization
 C     ==============

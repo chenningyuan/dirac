@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : pamstex.F
 C
 C MAIN AUTHOR : Ulf Ekstroem, 2005-2006.
 C ORIGINAL PUBLICATION OF THIS WORK :
@@ -1391,9 +1388,9 @@ C     tA*
      &     WORK,LWRK)
 C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1797,9 +1794,9 @@ C
 C     Written by panor 1999/ulfek&hjj 2006
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"

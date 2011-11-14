@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -157,8 +157,13 @@ C***********************************************************************
 #include "pi.h"
 #include "gauss_legendre.h"
 C
-C     transformation of integration interval is made with w0=0.3 
-C     in accordance with J. Phys. Chem. XX, XXXXXX (2006)
+C     Transformation of integration interval is made with w0=0.3 
+C     in accordance with
+C       R. D. Amos, N. C. Handy, P. J. Knowles, J. E. Rice and A. J. Stone
+C       J. Phys. Chem. 89 (1985) 2186-2192
+C     There is a slight typo in Eq. 9. The correct equation is Eq. 4 of
+C       A. Jiemchooroj, P. Norman and B. E. Sernelius,
+C       J. Chem. Phys. 125 (2006) 124306
 C
       parameter ( w0 =0.3D0 )
 C

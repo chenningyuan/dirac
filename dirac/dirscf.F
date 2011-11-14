@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -35,6 +35,8 @@ C                     2005/6 MI to make BSS2DC/DC2BSS available
 C
 C***********************************************************************
          use dirac_cfg
+         use x2cmod_cfg
+         use xmlout
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -60,6 +62,13 @@ C
 #include "memint.h"
 C
       WFCONV = .FALSE.
+      if (doxml) then
+         call xml_begin('task','type="SCF optimization"')
+         call xml_begin('input')
+         call xml_comment('method, convergence thresholds etc')
+         call xml_end('input')
+         call xml_begin('output')
+      endif
       IF(dirac_cfg_dft_calculation) THEN
         IF (BSS) THEN
           CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
@@ -256,74 +265,76 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
       DO4C2C = DO4C2C_SAVE
 
-      IF (DO4C2C) THEN
-        write(lupri,'(/,4X,A)')
-     &  '*** PSIDHF: Descending to two-component'// 
-     &  ' mode after previous four-component HF cycles.'
-        CALL TITLER('Two-component BSS/DKH Kohn-Sham calculations',
-     &      '*',125)
-        BSS     = .TRUE.
+      IF(DO4C2C) THEN
+        if(x2cmod_mmf)then
+          x2c      = .true.
+        else 
+          BSS      = .TRUE.
+          CMPEIG   = .TRUE. ! this flag is needed for preparing transformed data
+          write(lupri,'(/A)')
+     &    '     *** PSIDHF: Descending to two-component'// 
+     &    ' mode after previous four-component SCF cycles. ***'
+        end if
         TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
-        TWOCOMP = .FALSE.
-
-        ! needs this flag for preparing transformed data
-        CMPEIG = .TRUE. 
+        TWOCOMP    = .FALSE.
 
         START2C = .FALSE.
+
+!
+!       call the x2c/bss transformation module (branch 2 inside gmotra)
         CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
 
-CMI      ... DO NOT continue with SCF iterations !!!
-        IF (.NOT.CONT2C) THEN
-CMI ... consider TRMO4C2C ...
-C        ... only one iteration 
-           MAXITR = 1
-           IF (.NOT.ONESYS) THEN
-             TRIFCK_SAVE = TRIFCK
-             TRIVEC_SAVE = TRIVEC
-             TRIFCK = .FALSE.
-             TRIVEC = .FALSE.
-           ENDIF
-           DODAMP = .FALSE.
-           DODIIS = .FALSE.
-           DODSCF = .FALSE.
-           BNCRON = .FALSE.
+        IF(.NOT.CONT2C) THEN
+CMI ... consider TRMO4C2C ...???
+          DHFCONV(1)=.TRUE. 
+          DHFCONV(2)=.TRUE. 
         ELSE ! continue with 2c-SCF iterations
-           BNCRON = .FALSE.
+
+          if(BSS)then
+            CALL TITLER('Two-component BSS/DKH SCF calculation',
+     &         '*',125)
+          end if
+
+          BNCRON = .FALSE.
 C         ... need to reset them...
-           DHFCONV(1)=.FALSE.
-           DHFCONV(2)=.FALSE.
-           DHFEXIT=.FALSE.
-        ENDIF
+          DHFCONV(1)=.FALSE.
+          DHFCONV(2)=.FALSE.
+          DHFEXIT=.FALSE.
 
-CMI  ... remove some file from previous SCF cycle ...
-        INQUIRE(FILE='DFDIIS',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
-        INQUIRE(FILE='DFEVEC',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
-        INQUIRE(FILE='DFCOEF',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
+CMI    ...remove some files from the previous 4c-SCF cycle ...
+          INQUIRE(FILE='DFDIIS',EXIST=EX)
+          IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
+          INQUIRE(FILE='DFEVEC',EXIST=EX)
+          IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
+          INQUIRE(FILE='DFCOEF',EXIST=EX)
+          IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
 
-        CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
-!       IF (.NOT.TRMO4C2C) RESTFCK = .TRUE.
-        RESTFCK = .TRUE.
-        CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
-     &        WORK(KFREE),LFREE)
+!         IF (.NOT.TRMO4C2C) RESTFCK = .TRUE.
+          RESTFCK = .TRUE.
+          CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+     &          WORK(KFREE),LFREE)
 
-        CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &            LFREE,IPRINT)
+          CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+     &              LFREE,IPRINT)
 
-        CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
-      ENDIF
+          CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+        END IF ! continue in 2c-mode switch
+      END IF ! 4c --> 2c switch
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
 C
-      WFCONV = DHFCONV(1) .OR. DHFCONV(2)
+ 101  WFCONV = DHFCONV(1) .OR. DHFCONV(2)
 C
       CALL FLSHFO(LUPRI)
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task')
+      endif
       CALL QEXIT('PSIDHF')
       RETURN
 C
@@ -361,8 +372,13 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xc_driver
+      use xcint_main
+      use interface_mo_specific
       use dft_cfg
+      use fde_types
+      use fde_mod
+      use num_grid_gen
+      use xmlout
 
 #include "implicit.h"
 #include "priunit.h"
@@ -383,6 +399,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
+      type(fde_import) :: itmp
       LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -437,16 +454,23 @@ C
 C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
-C
-C     1) - using trial vectors
-C     -------------------------
-C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
 CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
 
-      IF(TRIVEC) THEN
+C
+C     1) - atomic start
+C     -------------------------
+      IF(ATOMST) THEN
+        CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
+        CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
+     &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+C
+C     2) - using trial vectors
+C     ------------------------
+C
+      ELSEIF(TRIVEC) THEN
 C
 C       We calculate a regular Fock matrix so we can check convergence ...
 C
@@ -471,7 +495,7 @@ C        Generate density matrix/matrices
 C        Be aware: All density matrices are normalized to 1,
 C                  occupation is in the DF(*) factor
 C
-         CALL DENMAT(DMAT,CMO,IPRSCF)
+        CALL DENMAT(DMAT,CMO,IPRSCF)
 C
 C       Differential density matrix approach
 C
@@ -543,28 +567,39 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDXC = SECOND()
-        TDF2 = TDXC - TDF2
+        TDfde = SECOND()
+        TDF2 = TDfde - TDF2
 
+        call interface_mo_write()
+        
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
 
+           tdfde =  second() - tdfde
+        endif
+#endif
 
+        tdxc = second()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
-           call xc_mpi_wake_up_coworkers()
-           call xc_integrator(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.)
-           call xc_mpi_release_coworkers()
-           
+           call generate_num_grid(dmat)
+#ifdef VAR_MPI
+           if (parcal) call dirac_parctl(4)
+#endif
+           call integrate_xc(xc_mat_dim      = ntbas(0),
+     &                       xc_nz           = nz,
+     &                       xc_dmat_0       = dmat,
+     &                       xc_nr_dmat      = 0,
+     &                       xc_nr_fmat      = 1,
+     &                       xc_fmat         = fock,
+     &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
 
-
-
+       
 C
 C       Solvent contribution
 C
@@ -611,7 +646,7 @@ C
 C     Calculate correction according to the One-center app. models 
 C     ============================================================
 C
-        IF (TRIVEC) THEN
+        IF (TRIVEC.OR.ATOMST) THEN
            IF (ONECAP.AND. .NOT.SMLV1C) THEN
               CALL CATCORR(CMO,FOCK,DMAT,WORK(KFREE),LFREE,IPRSCF)
            END IF 
@@ -734,6 +769,11 @@ C
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
           ENDIF
+          if (dirac_cfg_fde) then
+             cputid = sectid(tdfde)
+             write(lupri,'(3X,A,A12)')
+     &      '* FDE Fock matrix           (CPU):',CPUTID
+          endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)
@@ -742,6 +782,11 @@ C
         CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
+        if (doxml) then
+           call xml_begin('scf-iteration')
+           call xml_quantity('SCF energy',DHFERG,'Hartree')
+           call xml_end('scf-iteration')
+        endif
       ENDIF
 C
       IF (TRIFCK) THEN
@@ -759,7 +804,7 @@ C
  666  CONTINUE
       CALL QEXIT('PREDHF')
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1046,6 +1091,9 @@ C
 C   Called from PSIDHF
 C
 C*****************************************************************************
+
+      use interface_ao_specific
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1072,6 +1120,12 @@ C       in ONEFCK ... no need to prepare LUFCK1 !!!!
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
       CLOSE(LUFCK1,STATUS='KEEP')
+
+!     write info to files
+!     this is then used in dft and visualization
+!     if you move this to somewhere else think about
+!     geometry optimization!
+      call interface_ao_write()
 
       IF(ONESYS) THEN
 C
@@ -1150,7 +1204,12 @@ C*****************************************************************************
 
       use dirac_cfg
       use dft_cfg
-      use xc_driver
+      use xcint_main
+      use fde_types
+      use fde_mod
+      use num_grid_gen
+      use interface_mo_specific
+      use xmlout
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1170,6 +1229,7 @@ C
 #include "dcbreo.h"
 #include "densfit.h"
       LOGICAL   LBIT
+      type(fde_import) :: itmp
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
@@ -1202,14 +1262,8 @@ C
 C     Start cycle
 C
       CALL FLSHFO(LUPRI)
-!     asymptotic correction
-      old_homo_eigenvalue = 0.0d0
-      DO 10 ITER = 2,MAXITR
 
-!       asymptotic correction
-        if(dft_cfg_grac .or. dft_cfg_saop) then
-          call dftac_eigenvalues(eig, old_homo_eigenvalue)
-        end if
+      DO 10 ITER = 2,MAXITR
 
          NITER  = NITER + 1
          KITER  = KITER + 1
@@ -1224,6 +1278,8 @@ C
 C        Check what integral types contribute
 C        ====================================
 C
+         if (ECPCALC) INTDEF = 1
+
          CALL INTCON(INTFLG,INTBUF,INTDEF,
      &               ERGVAL,CNVINT,NITER,ITRINT,DHF_INTTYP)
 C
@@ -1233,7 +1289,7 @@ C
 C        Get density matrices (normed to one)
 C
          CALL DENMAT(DMAT,CMO,IPRSCF)
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
          call matexport_text('% In SCFCYC1')
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
@@ -1329,23 +1385,35 @@ C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
 !       mi - variable initialization (otherwise runtime-check failure)
-        TDXC = SECOND()
+        
+        tdfde= second()
+        call interface_mo_write()
 
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           tdfde = second() - tdfde
+        endif
+#endif
+        
+        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
-           call xc_mpi_wake_up_coworkers()
-           call xc_integrator(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.)
-           call xc_mpi_release_coworkers()
-           
+           call generate_num_grid(dmat)
+#ifdef VAR_MPI
+           if (parcal) call dirac_parctl(4)
+#endif
+           call integrate_xc(xc_mat_dim      = ntbas(0),
+     &                       xc_nz           = nz,
+     &                       xc_dmat_0       = dmat,
+     &                       xc_nr_dmat      = 0,
+     &                       xc_nr_fmat      = 1,
+     &                       xc_fmat         = fock,
+     &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
-
 
 C
 C        Solvent contribution
@@ -1456,6 +1524,11 @@ CMI    ... we may get the DHFEXIT
         CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
+        if (doxml) then
+           call xml_begin('scf-iteration')
+           call xml_quantity('SCF energy',DHFERG,'Hartree')
+           call xml_end('scf-iteration')
+        endif
         CALL FLSHFO(LUPRI)
 C
 C       switch off onecap approximation ?
@@ -1497,7 +1570,7 @@ C
 
       CALL QEXIT('SCFCY1')
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1523,7 +1596,8 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xc_driver
+      use xcint_main
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1552,10 +1626,9 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-#ifdef SAVE_BEST
+      real(kind=8) :: fde_energy
       data besterg /1.0D100/
       save besterg
-#endif
 C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
@@ -1643,6 +1716,13 @@ C
         elergy = elergy + get_xc_energy()
       end if
 
+!     if (dirac_cfg_fde) then
+!        call fde_export_write_data_to_memory('DHF') 
+!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
+!        write (*,*) 'FDE energy: ',fde_energy
+!     endif
+
+
       DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN
@@ -1703,15 +1783,8 @@ CMI      ... print out matrixes ...
                END DO
    30          CONTINUE
             ENDIF
-            IF (dirac_cfg_dft_calculation) then
-               xc_energy = get_xc_energy()
-               WRITE(LUPRI,'(6X,A,'//FMT//')')
-     &         '* DFT xc energy              :  ',
-     &         xc_energy
-            end IF
          END IF
       ENDIF
-#ifdef SAVE_BEST
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
@@ -1719,7 +1792,6 @@ c     save the DFCOEF file as DFCOEF.BEST
          call system('cp DFCOEF DFCOEF.BEST')
          besterg = dhferg
       endif
-#endif
       CALL QEXIT('ERGCAL')
       RETURN
 C
@@ -1924,7 +1996,7 @@ C***********************************************************************
 #include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
 C Used from COMMON blocks:
-C  DHFCAL: NSMOTQ
+C  dcbdhf: NSMOTQ
 C
 #include "dcbdhf.h"
 #include "memint.h"
@@ -2141,7 +2213,7 @@ C
 CTROND
       CALL DZERO(DMAT,N2BBASXQ)     
       JOFF = NPSH(IFRP) + JVEC
-      CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),D1,D0,
+      CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,D1,D0,
      &              CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              JOFF,NVEC,NFBAS(IFRP,0))
 C
@@ -2921,7 +2993,7 @@ C
          KPOS = KFREE
       endif
 C
-      CALL MVOGE1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
+      CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2931,8 +3003,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck mvoge1 */
-      SUBROUTINE MVOGE1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
+C/* Deck mvogen_1 */
+      SUBROUTINE MVOGEN_1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
 C***********************************************************************
 C     Generate modified virtual orbitals
 C
@@ -2974,8 +3046,9 @@ C     Get all coefficients
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('MVOGEN: No coefficients !')
+         WRITE(LUPRI,'(//A)')
+     &   'MVOGEN ERROR: MO coefficient file DFCOEF not present'
+         CALL QUIT('MVOGEN: No MO coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
@@ -2986,7 +3059,7 @@ C
 C       Generate MVOs by the Bauschlicher method (ionic Fock)
 C
         CALL DENMVO(DMAT,CMO,FOCK,WORK(KFREE),LFREE)
-        IF (ABS(MVOWEIGHT-1).GT.1.0D-14) THEN
+        IF (ABS(MVOWEIGHT-1.0D0).GT.1.0D-14) THEN
 C     Make a weighted average density D = w*Dmvo + (1 - w)D0, where
 C     w = MVOWEIGHT and D0 is the full inactive density matrix.
            CALL GENDEN(FOCK,CMO,1,IPRMVO)
@@ -2997,7 +3070,7 @@ C     w = MVOWEIGHT and D0 is the full inactive density matrix.
      &              INTMVO,IPRMVO,WORK(KFREE),LFREE)
         INQUIRE(FILE='DFFCK1',EXIST=TOBE)
         IF(TOBE) THEN
-          CALL OPNFIL(LUBUF,'DFFCK1','OLD','MVOGE1')
+          CALL OPNFIL(LUBUF,'DFFCK1','OLD','MVOGEN_1')
           CALL REAFCK(LUBUF,DMAT,.TRUE.,1)
           CLOSE(LUBUF,STATUS='KEEP')
         ELSE
@@ -3133,7 +3206,8 @@ C
         CALL  NUMLST(VECMVO(IFRP),WORK(KVEC(IFRP,1)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &               IFRP,NVEC(IFRP,0))
-        CALL ORBCNT(WORK(KVEC(IFRP,1)),NVEC(IFRP,0),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,1)),NVEC(IFRP,0),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NVEC(IFRP,2),NVEC(IFRP,1))
         NVEC(IFRP,0) = NVEC(IFRP,1) + NVEC(IFRP,2)
         CALL MEMREL('DENMVO',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
@@ -3164,7 +3238,7 @@ CTROND
       CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
+        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,D1,D0,
      &              BUF(ICMV(I)+1),NFBAS(I,0),NVEC(I,0),
      &              1,NVEC(I,0),NFBAS(I,0))
    10 CONTINUE
@@ -3172,7 +3246,7 @@ C
 C     Print section
 C
       IF(IPRMVO.GE.4) THEN
-        CALL TITLER('Output from DENMVO','*',103)
+        CALL TITLER('Output density matrix from DENMVO','*',103)
         DO 20 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 20
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
@@ -3194,7 +3268,7 @@ C
 C     Last modification: MI, July 2005 for BSSpostDC-SCF calculation
 C
 C***********************************************************************
-      use dft_cfg
+      use num_grid_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3236,11 +3310,19 @@ C     ***************************************
 C     **** Looking for old wave function ****
 C     ***************************************
 C
+C
+C     * ATOMST: Atomic start
+C     ------------------------------------------------
+C
+      IF(ATOMST) THEN
+        BARNUC = .FALSE.
+        CACC    = 'Atomic s'
+      ENDIF
+C
 C     * TRIFCK: Looking for old 2-electron Fock matrix
 C     ------------------------------------------------
 C
       IF(TRIFCK.AND.NASHT.GT.0) THEN
-C         jth April 98
          WRITE(LUPRI,'(/A/A/)') '*** WARNING *** '//
      &      'Trial 2-electron Fock matrix not possible for open shell.',
      &      'Looking for trial vectors instead'
@@ -3278,7 +3360,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
      &    "estimate of the electronic screening (Slater's rules)."
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
-          dft_cfg_estimate_radii = .false.
+          num_grid_cfg_estimate_radii = .false.
         ENDIF
       ENDIF
 C
@@ -3287,10 +3369,7 @@ C     **** Looking for cycle history ****
 C     ***********************************
 C
       INQUIRE(FILE='DFCYCL',EXIST=TOBE)
-CMI   TOBE = TOBE.AND.(TRIVEC.OR.TRIFCK)
-
 CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
-C     IF (.NOT.FD2CMO) TOBE = TOBE.AND.(TRIVEC.OR.TRIFCK)
       IF (.NOT.RESTFCK) TOBE = TOBE.AND.(TRIVEC.OR.TRIFCK)
 
       IF(TOBE) THEN
@@ -3307,8 +3386,6 @@ C        backspace on multifile systems for correct positioning
 C        at the end of the file
         BACKSPACE LUCYCL
 #endif
-
-C       IF (FD2CMO) THEN
         IF (RESTFCK) THEN
          IF (DO4C2C) THEN
           WRITE(LUPRI,'(/2X,A/)')
@@ -3380,7 +3457,7 @@ C
         NITER  = 1
         OPEN(LUCYCL,FILE ='DFCYCL',STATUS='UNKNOWN',
      &     ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
-        IF(TRIVEC) CALL INTCON(INTFLG,INTBUF,INTDEF,
+        IF(TRIVEC.OR.ATOMST) CALL INTCON(INTFLG,INTBUF,INTDEF,
      &                  DUMMY,CNVINT,NITER,ITRINT,DHF_INTTYP)
       ENDIF
 C
@@ -3388,13 +3465,13 @@ C     If (oldfmo) we can check all convergence criteria
 C
       IF (OLDFMO) ICHKCNV = 1
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
- 1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1020 FORMAT(4X,    I4,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C     ... 1020 is used for reading, thus no '1P' !!! /hjaaj
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck fndocc */
-      SUBROUTINE FNDOCC(EIG)
+      subroutine fndocc(eig, skip_check_for_sym_broken_occ)
 C***********************************************************************
 C
 C     Find DHF occupation based on eigenvalues
@@ -3406,16 +3483,48 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
+#include "dcbgen.h"
 #include "dgroup.h"
 C
       DIMENSION EIG(*)
-      DIMENSION IEIGMIN(2)
-C
+      DIMENSION IEIGMIN(NFSYM)
+      logical   symmetry_broken
+      integer, save :: icharge       = 0
+      integer       :: total_num_e
+
+!     radovan: the check below is skipped if fndocc is called from visual
+!              this is to avoid modification of occupation if converged homo-lumo gap
+!              is very small
+      logical, intent(in) :: skip_check_for_sym_broken_occ
+      logical             :: skip_check = .false.
+
+      skip_check = skip_check_for_sym_broken_occ
+
+!     (re-)set NELECT_DHF as it might have changed from last time 
+!     because of the detection of symmetry broken solution...
+!     -----------------------------------------------------------
+
+!     a. get total number of electrons: sum_of_atomic_numbers - sum_of_charges
+      if(icharge.lt.1)then
+!       determine total # of electrons
+        call rmolchr(icharge)
+      end if
+      total_num_e = icharge - kcharg
+
+!     b. set nelect_dhf
+      nelect_dhf = total_num_e
+      naelec_dhf = 0
+      if(mod(nelect_dhf,2).eq.1) then
+        nelect_dhf = nelect_dhf - 1
+        naelec_dhf = 1
+      end if
+      
+!     initialize arrays
       DO I = 1,NFSYM
-         IEIGMIN(I) = 1+IORB(I) + NPSH(I)
-         NISH(I) = 0
-         NASH(I) = 0
-         NACSH(I,1) = 0
+         IEIGMIN(I)     = 1+IORB(I) + NPSH(I)
+         NISH(I)        = 0
+         NASH(I)        = 0
+         NACSH(I,1)     = 0
       END DO
 C
       NELEC2GO = NELECT_DHF
@@ -3424,41 +3533,61 @@ C
      &      NELECT_DHF,' electrons but only ',NESHT,' orbitals.'
          CALL QUIT('ERROR: Not enough eigenvalues for FNDOCC.')
       END IF
+!     no closed shell orbitals
+      IF(NELEC2GO .eq. 0) GOTO 190
 C
 C     100 loop is over electron pairs (closed shell orbitals)
 C
  100  CONTINUE
 C        Find the irrep that has the lowest eigenvalue
-         IEIGSYM = 0
- 110     IEIGSYM = IEIGSYM + 1
+         IEIGSYM          = 0
+ 110     IEIGSYM          = IEIGSYM + 1
          IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 110
-         J = IEIGSYM
-         DO I = J+1,NFSYM
-            IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
-     &         IEIGSYM = I
-         END DO
+         J                = IEIGSYM
+!        stefan: add test if fermion irrep J+1 contains any orbitals
+           DO I = J+1,NFSYM
+            if(norb(I)+iorb(i).ge.IEIGMIN(I))then
+               IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
+     &         IEIGSYM    = I
+            end if
+           END DO
 C        We found the lowest yet unoccupied MO, occupy it
-         NISH(IEIGSYM) = NISH(IEIGSYM) + 1
+         NISH(IEIGSYM)    = NISH(IEIGSYM) + 1
          IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
-         NELEC2GO = NELEC2GO - 2
+         NELEC2GO         = NELEC2GO - 2
 C        More orbitals to be filled ?
       IF (NELEC2GO .GT. 0) GOTO 100
 C
 C     Same procedure for the open shell (works only for one e in one open shell)
+C     we take care of degeneracies in the following...
 C
-      IF (NAELEC_DHF .GT. 0) THEN
-         IEIGSYM = 0
- 200     IEIGSYM = IEIGSYM + 1
+ 190  IF (NAELEC_DHF .gt. 0) THEN
+         IEIGSYM          = 0
+ 200     IEIGSYM          = IEIGSYM + 1
             IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
-         J = IEIGSYM
+         J                = IEIGSYM
          DO I = J+1,NFSYM
             IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
-     &         IEIGSYM = I
+     &         IEIGSYM    = I
          END DO
-         NASH(IEIGSYM) = 1
+         NASH(IEIGSYM)    = 1
          NACSH(IEIGSYM,1) = 1
+         IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
       END IF
 C
+!     stefan + hjaaj - jan 2011:
+!     check for symmetry-broken solutions "caused" by the Aufbau
+!     principle and correct it.
+!     stop if "fractional occupation" is not in use?
+      symmetry_broken = .false.
+      if (.not. skip_check) then
+         if (.not. aoc) then
+           call check_for_symmetry_broken_occupations(eig,nish,nash,
+     &                             norb,norbt,ieigsym,nfsym,ieigmin,
+     &                             total_num_e,symmetry_broken)
+         end if
+      end if
+!
       NASHMFT = 0
       DO I = 1, NFSYM
          NOCC(I) = NISH(I) + NASH(I)
@@ -3475,8 +3604,296 @@ C
       END DO
 C     Subtract frozen orbitals (if any) from orbital classes
       CALL SUBFRZ()
-      RETURN
+
+      if(symmetry_broken)then
+        write(lupri,'(/a)') '  INFO from FNDOCC: following the'//
+     &  ' Aufbau principle led to a symmetry_broken solution -'//
+     &  ' the program corrected it for you.'
+        write(lupri,'(a/)') '  INFO from FNDOCC: the new occupation'//
+     &  ' will follow below:'
+      end if
+
       END
+
+C***********************************************************************
+      subroutine check_for_symmetry_broken_occupations(eig,nish,nash,
+     &                     norb,norbt,ieigsym_last_occ,nfsym,ieigmin,
+     &                     total_num_e,symmetry_broken)
+!***********************************************************************
+!
+!     purpose: detect symmetry-broken solutions when using the
+!     Aufbau principle to set-up an (initial) electronic configuration.
+!
+!     written by s. knecht - jan 2011
+!
+!***********************************************************************
+      use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbdhf.h"
+      real(8), parameter   :: dthrs_null     = 1.0d-13
+      real(8), parameter   :: degeneracy_thr = 6.0d-02
+      real(8), parameter   :: d0             = 0.0d0
+      real(8), parameter   :: dp5            = 0.5d0
+      real(8), parameter   :: d1             = 1.0d0
+      real(8), parameter   :: d2             = 2.0d0
+      integer, parameter   :: max_degeneracy = 128
+
+      real(8), intent(in)    :: eig(*)
+      integer, intent(inout) :: nish(nfsym), nash(nfsym), norb(nfsym)
+      integer, intent(inout) :: ieigmin(nfsym)
+      logical, intent(inout) :: symmetry_broken
+      integer, intent(in)    :: total_num_e
+
+      real(8), allocatable :: eig_deg(:)
+      integer, allocatable :: ieig_deg(:)
+      real(8)              :: eig_last
+      integer              :: orboff, deg_counter, subtract_nish
+      logical              :: debug_print
+
+      debug_print      = .false.
+!     debug_print      = .true.
+      if(debug_print)then 
+        orboff           = 0
+        do i = 1, nfsym
+          print *, 'eigenvalues for isym =',i,' # of orbs =',norb(i)
+          call wrtmat(eig(1+orboff),1,norb(i),1,norb(i))
+          orboff = orboff + norb(i)
+        end do
+      end if
+
+!     initialize the last Kramers-pair in which electron(s) was (were) put 
+      ilast           = ieigmin(ieigsym_last_occ) - 1
+      naelec_dhf_save = naelec_dhf
+
+      call alloc(ieig_deg,max_degeneracy,
+     &           id='pointer to degenerate orbs')
+      call alloc(eig_deg, max_degeneracy,
+     &           id='eigenvalues of degenerate orbs')
+
+ 400  call izero(ieig_deg,max_degeneracy)
+      call dzero(eig_deg, max_degeneracy)
+
+      orboff   = 0
+      do i = 1, ieigsym_last_occ-1
+        orboff = orboff + norb(i)
+      end do
+
+
+      if(debug_print)then
+        print *, '  naelec_dhf is',naelec_dhf
+        print *, '  ieigsym_last_occ is',ieigsym_last_occ,
+     &           '  the last e- was put into ',ilast
+        print *, '  the eigenvalue is: ',eig(ilast)
+      end if
+
+
+      eig_last              = eig(ilast)
+      deg_counter           = 1
+      ieig_deg(deg_counter) = ilast
+      eig_deg( deg_counter) = eig_last
+      iup                   = ilast
+      idown                 = ilast
+
+!     search up and down for degenerate (or near-degenerate) kramers-pairs
+!     a. up
+ 500  continue
+        iup = iup + 1
+        if(iup.le.orboff+norb(ieigsym_last_occ))then
+          if(abs(eig(iup)-eig_last).le.degeneracy_thr)then
+            deg_counter           = deg_counter + 1
+            ieig_deg(deg_counter) = iup
+            eig_deg( deg_counter) = eig(iup)
+            goto 500
+          end if
+        end if
+!       b. down
+ 600  continue
+        idown = idown - 1
+        if(idown.gt.orboff)then
+          if(abs(eig(idown)-eig_last).le.degeneracy_thr)then
+            deg_counter           = deg_counter + 1
+            ieig_deg(deg_counter) = idown
+            eig_deg( deg_counter) = eig(idown)
+            goto 600
+          end if
+        end if
+
+!     set new # of active e- according to degeneracies
+!     ==> (ilast - idown ) * 2 - naelec_dhf_save
+!     naelec_dhf_save: 1 for odd numbers of total e-, 0 otherwise
+      naelec_dhf =  2*(ilast-idown) - naelec_dhf_save
+
+      if(debug_print)then
+        print *, '  active e- initial, revised (for re-distribution):',
+     &              naelec_dhf_save, naelec_dhf
+      end if
+      d_nr_acte_revised = real(naelec_dhf,8)
+
+      dalpha(0) = d0
+      df(0)     = d1
+      da(0)     = d1
+      nashmft   = 0
+
+      nopen     = 1
+
+      if(debug_print)then
+        print *,'  found degeneracy in irrep:', ieigsym_last_occ
+        do i = 1,deg_counter
+          print *,'  orbital #:',ieig_deg(i), '; eigenvalue = ',
+     &                                           eig_deg(i)
+        end do
+      end if
+
+!     start revised automatic occupation taking into account degeneracy
+
+!     case a. number of e- == 2 * number of degenerate orbs; the "closed-shell case"
+      if(naelec_dhf .eq. 2*deg_counter) then 
+        nopen      = 0
+        naelec_dhf = 0
+        nasht_dhf  = 0
+        nelect_dhf = 0
+        call izero(nash_dhf,nfsym)
+        call izero(nash    ,nfsym)
+        call icopy(nfsym,nish,1,nish_dhf,1)
+        do ifrp = 1,nfsym
+          nelec_dhf(ifrp) = nish_dhf(ifrp)*2
+          nelect_dhf      = nelect_dhf + nelec_dhf(ifrp)
+        end do
+!       consistency check
+        if(nelect_dhf.ne.total_num_e)then
+          print *, 'calculated # of e-: ',nelect_dhf
+          print *, 'total # of e-     : ',total_num_e
+          call quit(' *** error in automatic occupation module: 
+     & calculated # of e- does not match the total # of e-.***')
+        end if
+
+      else ! naelec_dhf != 2*deg_counter
+
+!       case b. number of e- < 2*deg_counter and # of degenerate orbs > 1
+!       --> p-shell, d-shell, f-shell, or near-degenerate MOs...
+        if(deg_counter .gt. 1)then
+
+          if(debug_print)then
+            print *,' number of active e- for redistribution ==',
+     &                naelec_dhf
+          end if
+!      
+          call izero(nacsh,nfsym*mxopen)
+          nacsh(ieigsym_last_occ,1) = deg_counter
+          call icopy(nfsym*mxopen,nacsh,1,nacshmf,1)
+  
+          df(1)             = d_nr_acte_revised/real(deg_counter*2,8)
+          dm                = d2*(real(nacsh(1,1)+nacsh(2,1),8))
+          dn                = dm*df(1)
+          da(1)             = (dm*(dn-d1))/(dn*(dm-d1))
+          if(abs(da(1)).le.dthrs_null) da(1) = d0
+          dalpha(1)         = (d1-da(1))/(d1-df(1))
+
+          if(debug_print)then
+            print *,'dm,dn,df(iopen),da(iopen),dalpha(iopen)',
+     &               dm,dn,df(1),da(1),dalpha(1)
+            print *,'nish(1), nish(2), nish_dhf(1), nish_dhf(2)',
+     &               nish(1), nish(2), nish_dhf(1), nish_dhf(2)
+            print *,' ilast, idown =',ilast, idown
+            print *,' naelec_dhf_save, naelec_dhf =',
+     &                naelec_dhf_save, naelec_dhf
+          end if
+
+!         reset nish array - take into account whether an unpaired e-
+!         had been placed in the last orb.
+          subtract_nish          = ilast - idown
+          if(naelec_dhf_save.gt.0) subtract_nish = subtract_nish - 1
+
+          if(debug_print)then
+            print *, 'nish(ieigsym_last...), subtract_nish, naelec_dhf',
+     &                nish(ieigsym_last_occ),subtract_nish, naelec_dhf
+          end if
+
+          nish(ieigsym_last_occ) = nish(ieigsym_last_occ)-subtract_nish
+          call icopy(nfsym,nish,1,nish_dhf,1)
+
+          call izero(nash_dhf,nfsym)
+          call izero(nash,    nfsym)
+          nasht_dhf  = 0
+          nelect_dhf = 0
+          do ifrp = 1,nfsym
+            do iopen = 1,nopen
+              nash_dhf(ifrp) = nash_dhf(ifrp) + nacsh(ifrp,iopen)
+              nashmft        = nashmft + nacshmf(ifrp,iopen)
+            end do
+            nelec_dhf(ifrp) = nish_dhf(ifrp)*2
+            nasht_dhf       = nasht_dhf  + nash_dhf(ifrp)
+            nelect_dhf      = nelect_dhf + nelec_dhf(ifrp)
+          end do
+          call icopy(nfsym,nash_dhf,1,nash,1)
+
+!         consistency check
+          if(nelect_dhf+naelec_dhf.ne.total_num_e)then
+            print *, 'calculated # of e-: ',nelect_dhf+naelec_dhf
+            print *, 'total # of e-     : ',total_num_e
+            call quit(' *** error in automatic occupation module: 
+     & calculated # of e- does not match the total # of e-.***')
+          end if
+
+!         initial occupation from the Aufbau principle ended up with a
+!         symmetry broken solution - therefore set flag to .true.
+          symmetry_broken  = .true.
+
+!       case c. number of e- < 2*deg_counter and # of degenerate orbs == 1
+!       --> s-shell or a "lonely" MO...
+        else if(deg_counter.eq.1)then
+
+!         consistency check
+          if(naelec_dhf.ne.1)then
+            print *, 'calculated # of active e- : ',naelec_dhf
+            print *, 'total # of degenerate orbs: ',deg_counter
+            call quit(' *** error in automatic occupation module:
+     & calculated # of active e- does not match the # of deg. orbs.***')
+          end if
+
+          nasht_dhf  = naelec_dhf
+          nelect_dhf = 0
+          call izero(nacsh,nfsym*mxopen)
+          call izero(nash_dhf,nfsym)
+          call izero(nash,    nfsym)
+
+          nacsh(ieigsym_last_occ,1) = deg_counter
+
+          df(1)             = d_nr_acte_revised/real(deg_counter*2,8)
+          dm                = d2*(real(nacsh(1,1)+nacsh(2,1),8))
+          dn                = dm*df(1)
+          da(1)             = (dm*(dn-d1))/(dn*(dm-d1))
+          if(abs(da(1)).le.dthrs_null) da(1) = d0
+          dalpha(1)         = (d1-da(1))/(d1-df(1))
+
+          call icopy(nfsym,nish,1,nish_dhf,1)
+          do ifrp = 1,nfsym
+            nash_dhf(ifrp)  = nash_dhf(ifrp) + nacsh(ifrp,1)
+            nashmft         = nashmft + nacshmf(ifrp,1)
+            nelec_dhf(ifrp) = nish_dhf(ifrp)*2
+            nelect_dhf      = nelect_dhf + nelec_dhf(ifrp)
+          end do
+          call icopy(nfsym,nash_dhf,1,nash,1)
+
+        end if ! deg_counter > 1
+
+        if(debug_print)then
+          print *,'nash(1), nash(2), nash_dhf(1), nash_dhf(2)',
+     &             nash(1), nash(2), nash_dhf(1), nash_dhf(2)
+          print *,'nelect_dhf - end:',nelect_dhf
+          print *,'nelec_dhf(1), nelec_dhf(2) - end:',
+     &             nelec_dhf(1), nelec_dhf(2)         
+          print *,'nish(1), nish(2), nish_dhf(1), nish_dhf(2)',
+     &             nish(1), nish(2), nish_dhf(1), nish_dhf(2)  
+        end if
+
+      end if ! naelec_dhf .eq. 2*deg_counter ?
+
+      call dealloc( eig_deg)
+      call dealloc(ieig_deg)
+
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfdiag */
       SUBROUTINE DFDIAG(FMO,EIG,IBEIG,FAO,DODBG,WORK,KFREE,LFREE)
@@ -3535,7 +3952,7 @@ C
 
 
 C ... control print out of the matrix to be diagonalized
-         IF (DODBG.AND.IPRHAM.GE.7) THEN
+         IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(
      &   'DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -3572,7 +3989,7 @@ C
      &      (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
          ENDIF
          IF (DODBG) THEN
-          IF (IPRHAM.GE.7) THEN
+          IF (IPRHAM.GE.3) THEN
            CALL HEADER(
      &     'DFDIAG: Eigenvalues (normal diagonalization) :',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -3581,7 +3998,7 @@ C
      &     (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
           ENDIF
 C
-          IF (IPRHAM.GE.9) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER(
      &     'DFDIAG: Eigenvectors :',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -3667,7 +4084,7 @@ C
             ENDIF
 
             IF (DODBG) THEN
-             IF (IPRHAM.GE.7) THEN
+             IF (IPRHAM.GE.3) THEN
              CALL HEADER(
      &       'DFDIAG: Eigenvalues (special_subbblock) :',-1)
              WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
@@ -3676,7 +4093,7 @@ C
              WRITE(LUPRI,'(I5,F25.10)') (IX,EIG(IX),IX=IEIG,IEIG+NBO-1) 
              ENDIF
 
-             IF (IPRHAM.GE.9) THEN
+             IF (IPRHAM.GE.5) THEN
               CALL HEADER(
      &       'DFDIAG: Eigenvectors(special_subblock)',-1)
              WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
@@ -3705,7 +4122,7 @@ C
      &                 FMO(I2TMOT(I)+1),WORK(KIDUM),IPRHAM)
           CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
 
-          IF (DODBG.AND.IPRHAM.GE.8) THEN
+          IF (DODBG.AND.IPRHAM.GE.3) THEN
            write(lupri,'(/,2x,a)') 'DFDIAG(subbl) - IBEIG values'
            write(lupri,'(2x,a,i3,a)') 'IBEIG sym',I,' >: '
            do K=1,NTMO(I)
@@ -4008,7 +4425,7 @@ C
 C
 C     Determine new occupation
 C
-      CALL FNDOCC(EIG)
+      CALL FNDOCC(EIG, .false.)
 C
       TEST = .FALSE.
       DO IFRP = 1,NFSYM
@@ -4182,7 +4599,7 @@ C
         ISTART = NPSH(I)+NISHMF(I)+1
         DO IOPEN = 1,NOPEN
           IF(OLEV(IOPEN).NE.D0) THEN
-            CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+            CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              OLEV(IOPEN),D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              ISTART,NACSHMF(I,IOPEN),NTMO(I))
@@ -4191,7 +4608,7 @@ C
         ENDDO
         NVEC = NESH(I) - NOCCMF(I)
         IF(DLSHIF.NE.D0) THEN
-          CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+          CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              DLSHIF,D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              ISTART,NVEC,NTMO(I))
@@ -4649,4 +5066,217 @@ C.....  Rotate orbitals into place
       ENDIF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for atomic start
+C     NNEG - number of positronic solutions
+C     NPOS - number of electronic solutions
+C     NBAS - number of AO-basis functions
+C
+C***********************************************************************
+      use quaternion_algebra
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "mxcent.h"
+C
+#include "dcbdhf.h"
+#include "dcbatom.h"
+#include "nuclei.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
+C.....Local variables
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      INTEGER NNEG,NPOS,NBAS
+C
+      KFRSAV=KFREE
+C.....Say hello
+      IF(IPRINT.GE.1) THEN
+        CALL HEADER('Atomic start',-1)
+      ENDIF
+C.....Initialize buffer density matrix
+      NDMAT=NTBAS(0)*NTBAS(0)*NZ
+      NDBUF=NTBAS(0)*NTBAS(0)*4
+      CALL MEMGET('REAL',KDBUF,NDBUF,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KDBUF),NDBUF)
+C.....Loop over atomic types
+      LUATOM=137
+      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      ICENT = 1
+      DO IATOM = 1,NONTYP
+C.......Find the total number of basis functions for this atom type
+        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
+C.......Read atomic coefficients in C1 format
+        INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
+        IF(.NOT.TOBE) THEN
+           WRITE(LUPRI,'(A,A6,A)') 
+     &     'ATOMIC_START: Atomic coefficient file ',ATOMFIL(IATOM),
+     &     ' not found !'
+           CALL QUIT
+     &     ('ATOMIC_START: Atomic coefficient file not found !')
+        ENDIF
+        CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
+        READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+C.......add test fro NSYM
+        IF(NBAS.NE.MBAS) THEN
+           WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
+     &     'ATOMIC_START: ',
+     &     'Wrong number of basis function for atomic type ',IATOM,
+     &     'Correct number          : ', MBAS,
+     &     'Number read from ',ATOMFIL(IATOM),' : '  ,NBAS
+           CALL QUIT
+     &     ('ATOMIC_START: Wrong number of basis functions !')
+        ENDIF
+        IF(IPRINT.GE.1) THEN
+          WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
+          WRITE(LUPRI,*) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+        ENDIF
+        NAORB  = NNEG+NPOS
+        NACMO  = NBAS*NAORB
+        NACMOQ = NACMO*4
+        NADEN  = NBAS*NBAS*4
+        CALL MEMGET('REAL',KADE,NADEN ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCMO,NACMOQ,WORK,KFREE,LFREE)
+        CALL READT(LUATOM,NACMOQ,WORK(KCMO))
+C.......Loop over closed/open shells and construct contribution to atomic density matrix
+        CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
+        NDIM=MAX(NAORB,NBAS)
+        CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
+        FAC = D0
+        DO ISHELL = 1,NVECATOM(IATOM)
+          NSEL=1
+          CALL NUMLS1(VECATOM(ISHELL,IATOM),WORK(KVEC),
+     &        NAORB,-NNEG,NPOS,NSEL,WORK(KIBUF))
+          CALL ORBCNT(WORK(KVEC),NSEL,NNEG,NPOS,NPVEC,NEVEC)
+          CALL MEMGET('REAL',KCBUF,NBAS*NSEL*4,WORK,KFREE,LFREE)
+          CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
+          CALL SELOWC(4,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
+     &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
+     &                 NPVEC,NEVEC)
+          IF(IPRINT.GE.4) THEN
+            WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+           WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+           CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
+     &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
+         ENDIF
+         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
+         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
+     &              4,IPQTOQ(1,0),LUPRI)
+          FAC = D1
+          CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
+        ENDDO
+C.......Now we have the atomic density matrix. 
+C       Put all contributions from this atomic type into the 
+C       molecular C1 density matrix
+        CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
+     &                   NUCDEG(ICENT),
+     &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
+     &                   WORK,KFREE,LFREE)
+C.......Release memory        
+        CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
+        CLOSE(LUATOM,STATUS='KEEP')
+        ICENT = ICENT+NONT(IATOM)
+      ENDDO
+C
+      IF(NBSYM.EQ.1) THEN
+        CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
+        IF(IPRINT.GE.4) THEN
+          WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+          CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+      ELSE
+        CALL DZERO(DMAT,NDMAT)
+        IREP = 0
+        IOFF = 0
+        NOFF = NTBAS(0)*NTBAS(0)
+        DO IZ = 1,4
+           IREPD = IRQMAT(IZ,IREP)
+           IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+           IPQ   = IQTOPQ(IQ,IREP)
+           CALL DTAOSO(WORK(KDBUF+IOFF),DMAT(1,1,IPQ),NTBAS(0),
+     &                 IREPD,IPRINT)
+           IOFF = IOFF + NOFF
+        ENDDO
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,
+     &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
+     &                       WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Put an atomic block into a molecular matrix
+C       AMOL        - molecular matrix
+C       NBAS        - dimension of molecular matrix
+C       INUC        - index of first atom of this type in list of
+C                     symmetry-independent centers
+C       NONT        - number of symmetry-independent centers of this type
+C       NDEG(ICENT) - degeneracy of symmetry-independent center ICENT
+C
+C       ATOM        - atomic matrix with leading row LR and column LC
+C       NR          - real rows of atomic matrix
+C       NC          - real columns of atomic matrix            
+C
+C     Written by T. Saue March 31 2011
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION AMOL(NBAS,NBAS,4),ATOM(LR,LC,4),NDEG(*),
+     &          WORK(*)
+      KFRSAV=KFREE
+      ICENT=INUC
+      CALL MEMGET('INTE',KRBUF,NBAS,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KCBUF,NBAS,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
+      DO ITYP = 1,NONT
+        DO IDEG = 1,NDEG(ITYP)
+C.........Create pointer mol->atom for rows
+          CALL LABCOUNT(N1,WORK(KRBUF),NBAS,1,IR_CLS,ICENT,IDEG,-1)
+          IF(N1.NE.NR) THEN
+            WRITE(6,'(A,2(/A,I5))') 
+     &                'PUT_AOBLOCK: Error in row number',
+     &                'Expected  : ',NR,
+     &                'Found     : ',N1
+            CALL QUIT('PUT_AOBLOCK: Error in row number !')
+          ENDIF
+C.........Create reverse pointer atom->mol
+          CALL REVINDEX(WORK(KRBUF),NBAS,WORK(KIBUF),NR)
+C.........Create pointer mol->atom for rows
+          CALL LABCOUNT(N2,WORK(KCBUF),NBAS,1,IC_CLS,ICENT,IDEG,-1)
+          IF(N2.NE.NC) THEN
+            WRITE(6,'(A,2(/A,I5))') 
+     &                'PUT_AOBLOCK: Error in column number',
+     &                'Expected  : ',NC,
+     &                'Found     : ',N2
+            CALL QUIT('PUT_AOBLOCK: Error in column number !')
+          ENDIF
+C.........Create reverse pointer atom->mol
+          CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
+          DO IZ = 1,4
+            CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
+     &                 WORK(KIBUF),WORK(KJBUF))
+          ENDDO
+        ENDDO
+        ICENT = ICENT + 1
+      ENDDO
+      CALL MEMREL('PUT_AOBLOCK',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
 
+
+      
+
+      

@@ -33,7 +33,7 @@
       REAL*8 INPROD
       CHARACTER*6 CCTYPE
 #include "mxpdim.inc"
-C#include "wrkspc.inc"
+#include "ipoist8.inc"
 #include "crun.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -41,16 +41,13 @@ C#include "wrkspc.inc"
 #include "cecore.inc"
 #include "clunit.inc"
 #include "ctcc.inc"
-#include "cprnt.inc"
-#include "cc_exc.inc"
+#include "ctccp.inc"
 #include "cands.inc"
 #include "cstate.inc"
 #include "cintfo.inc"
 #include "cgas.inc"
-#include "oper.inc"
 C added
 #include "cicisp.inc"
-      COMMON/CNTDL_MAX/NTDL_MAX_ACT
 *. Scratch 
       DIMENSION VEC1(*),VEC2(*), CCVEC1(*), CCVEC2(*)
 *. Input and output
@@ -62,20 +59,15 @@ C added
 C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
 *
       LBLK = -1
-      NTDL_MAX_ACT = 0
 *
       NTEST = 000 
-      NTEST = MAX(NTEST,IPRCC)
       IF(NTEST.GE.5) THEN
         WRITE(6,'(A,A)') ' OPTIM_CC: Form of CC expansion ',CCTYPE
       END IF
 *. Optimization of coupled cluster wavefunction defines symmetry as
       ICSM = IREFSM
       ISSM = IREFSM
-      ITEX_SM = 1
 *      
-*. Coupled cluster flag
-      ICC_EXC = 1
 *
 * Switch between real and complex algebra
 * a multiplication factor to determine lenght of vector
@@ -95,20 +87,16 @@ C Inactive Fock Matrix only used in new cc vector function hence only contructed
 C Comes in a lttle differently in CI-driven
 * Obtain Inactive Fock matrix
 *
-      CALL FI_KRCC(WORK(KT_CC),WORK(KFI),ECC,1,ENVIRO,ISPINFREE)
+      CALL FI_KRCC(WORK(KT_CC),WORK(KFI),ECC,1,ISPINFREE)
 C Imaginary part of inactive fock-matrix, At the moment only real.
 *      CALL FI_REL(WORK(KT_CC+N1ELINT+N2ELINT),WORK(KFI+NTOOB ** 2)
-*     &                 ECCCOM,1,ENVIRO,ISPINFREE)
-*C      CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
+*     &                 ECCCOM,1,ISPINFREE)
 *. New CC vector function uses particle hole form so 
 *. use inactive Fock matrix and modified core-energy 
 * May need to be changed. Lasse (look if these quantities are present)
         ECORE_H = ECORE_AB
         ECORE = ECORE_ORIG + ECORE_H
         WRITE(6,*) ' Updated core energy ',ECORE 
-C Changed to a copy to KT_CC to save memory
-Cori        CALL COPVEC(WORK(KFI),WORK(KINT1),NINT1)
-CNEW        CALL COPVEC(WORK(KFI),WORK(KT_CC),NINT1)
 C     ELSE
 C       ECORE_H = 0.0D0
 C       ECORE_ORIG = 0.D0
@@ -121,26 +109,17 @@ C      print*,(WORK(KT_CC+II),II=N1ELINT+N2ELINT,2*(N1ELINT+N2ELINT))
       ZERO = 0.0D0
       CALL SETVEC(CCVEC1,ZERO,IMULTFAC*N_CC_AMP)
 C
-C     IF(I_DO_NEWCCV.EQ.0) THEN
-C     CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,CCVEC1,
-C    &      1,WORK(KVEC1P),WORK(KVEC2P),MX_ST_TSOSO_MX,
-C    &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
-C    &      WORK,KFREE,LFREE)
-C     ELSE
 !!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-      IAMTOIMPLEMENT = 0
-      IF(IAMTOIMPLEMENT.EQ.1) THEN
+! should be since this is the starting!!
       print*,'call GENCC_F_DIAG_M_KRCC'
-      CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,CCVEC1,
+! not NSPOBEX_TP_CC but NSPOBEX_TPE since identity will be first!
+      CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,CCVEC1,
      &      1,KDUM,KDUM,MX_ST_TSOSO_MX,
      &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
      &      WORK,KFREE,LFREE)
-      stop 'after GENCC_F_DIAG_M_KRCC' 
-      END IF
-C     END IF
 *
 *
       NTEST = 00
@@ -148,16 +127,6 @@ C     END IF
         WRITE(6,*) ' OPTIM_CC : Diagonal '
         CALL WRTMAT(CCVEC1,1,2*N_CC_AMP,1,2*N_CC_AMP)
       END IF
-*******
-* Not in use. Lasse
-*******
-C     IF(I_DO_MASK_CC.EQ.1) THEN
-*. Mask the excitations not arising from Mask det
-C       VALUE = 1.0D+15
-C       CALL MASK_CCVEC(WORK(KLSOBEX),NSPOBEX_TP_CC,CCVEC1,1,
-C    &       MASK_SD,MSK_AEL,MSK_BEL,VALUE,MX_ST_TSOSO_BLK_MX)
-C     END IF
-C?    STOP ' Enforced stop after diagonal '
 *. Save Diagonal on Disc 
 *  Should probably also save the imaginary part, needed later
 *  so just here a null vector.
@@ -165,17 +134,11 @@ C?    STOP ' Enforced stop after diagonal '
 C reset CCVEC1
       ZERO = 0.0D0
       CALL SETVEC(CCVEC1,ZERO,IMULTFAC*N_CC_AMP)
-C      print*,'n_cc_amp',n_cc_amp
-C setup vector structure
-C XISPSM(MXPCSM,MXPICI)
-C
-C
 *
       MAX_DIIS_VEC=MXCIV_ORIG
       NVEC = 0
       NPVEC = -1
       IM_CONVERGED = 0
-      stop 'to the iterations'
 *. (Maxit is obtained from CRUN)
       DO ITER = 1, MAXIT
         IITER = ITER
@@ -191,15 +154,16 @@ C
 *. result in CCVEC1
         IF(NTEST.GE.100) THEN
           WRITE(6,*) ' Current CC amplitudes '
-          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE)
+          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE,
+     &                     WORK,KFREE,LFREE)
         END IF
 C**************************************************************
 C NOTE perhaps CCVEC6 should be added, Done
 C ADD ECC1_IMG ?
-C       CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,
-C    &                       WORK,KFREE,LFREE)
-        stop 'after CC_VEC_FNC_KRCC'
-        call rmemchk               
+        CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,ITER,
+     &                       WORK,KFREE,LFREE)
+C       stop 'after CC_VEC_FNC_KRCC'
+        CALL MEMCHK_KRCC(WORK)
 C**************************************************************
 *. Save on LUHC
 C Save real and imagenary if complex algebra otherwise just real
@@ -245,7 +209,7 @@ C Norm of real + imagenary
         END IF
           XNORM = SQRT(INPROD(CCVEC1,CCVEC1,IMULTFAC*N_CC_AMP))
 C        print*,'after XNORM',XNORM
-        call rmemchk
+         CALL MEMCHK_KRCC(WORK)
 ****************************************
 ****************************************
 **  Convergence threshold
@@ -264,7 +228,8 @@ CDEBUG        CCCONV = 1.0D-13
         IF(IM_CONVERGED.EQ.1) GOTO 1001
         IF(NTEST.GE.100) THEN
           WRITE(6,*) ' vector function : '
-          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE)
+          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE,
+     &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
         IF(XNORM.GE.50) STOP 'NOT CONVERGING'
@@ -291,7 +256,7 @@ C Both real and imagenary
 C          print*,'before VEC_FROM_DISC'
           CALL VEC_FROM_DISC(CCVEC2,IMULTFAC*N_CC_AMP,1,LBLK,LUDIA)
 C          print*,'after VEC_FROM_DISC'
-          call rmemchk
+          CALL MEMCHK_KRCC(WORK)
 C          print*,'after rmemchk'
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1,CCVEC2',CCVEC1(i),CCVEC2(i),i
@@ -301,7 +266,7 @@ C          print*,'after DIAVC2'
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1',CCVEC1(i),CCVEC2(i),i
 C          end do
-          call rmemchk
+          CALL MEMCHK_KRCC(WORK)
 C          stop
 C          print*,'after 2'
           ONEM = -1.0D0
@@ -468,7 +433,8 @@ C          CALL SCALVE(CCVEC1,ONEM,2*N_CC_AMP)
         END IF
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Correction  vector '
-          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE)
+          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE,
+     &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
 *
@@ -520,7 +486,8 @@ C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
 *       ^ End of PERT/DIIS switch 
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Updated amplitudes '
-          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE)
+          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE,
+     &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
 *. Dump to LU_CCAMP
@@ -558,7 +525,8 @@ C      stop
       NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Final set of CC_amplitudes '
-        CALL WRT_CC_VEC_REL(CC_AMP,6)
+        CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE,
+     &                   WORK,KFREE,LFREE)
       END IF
 *
       WRITE(6,*) ' Largest T(D,L) block in use = ', NTDL_MAX_ACT
@@ -681,7 +649,6 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
         CALL REWINO(LUSCR)
         CALL SKPVCD(LUVEC,JVEC-1,VEC1,1,LBLK)
         CALL COPVCD(LUVEC,LUSCR,VEC1,0,LBLK)
-C  INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
         SJJ = INPRDD(VEC1,VEC2,LUSCR,LUSCR,1,LBLK)
         JJ = JVEC*(JVEC+1)/2
         SCR(KLS-1+JJ) = SJJ
@@ -804,7 +771,6 @@ C trying to switch to 2
       DO J = 1,NVEC_SUB
 *. Diagonal times Jx_j
         ZERO = 0.0D0
-C            DMTVCD(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,LBLK)
         CALL REWINO(LUJDIA)
         CALL REWINO(LUSCR)
         CALL DMTVCD(VEC1,VEC2,LUJDIA,LUJVEC,LUSCR,ZERO,0,1,LBLK)
@@ -812,7 +778,6 @@ C            DMTVCD(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,LBLK)
         DO I = 1, NVEC_SUB
 *. x_i^t J0^{-1}Jx_j
           CALL REWINO(LUSCR)
-C               INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
           UIJ = INPRDD(VEC1,VEC2,LUVEC,LUSCR,0,LBLK)
           IJEXP = (J-1)*NVEC_SUB + I
           SCR(KLU-1+IJEXP) = UIJ
@@ -840,12 +805,10 @@ C trying to switch to 2
 * And then J0{-1} R U{-1} T^t J0^{-1} VEC
 *
 *. 1 : J0^{-1} VEC
-C            DMTVCD(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,LBLK)
       CALL DMTVCD(VEC1,VEC2,LUJDIA,LUIN,LUSCR,ZERO,1,1,LBLK)
 *. 2 : T^t J0^{-1} VEC
       CALL SKPVCD(LUVEC,NVEC_SKIP,VEC1,1,LBLK)
       DO I = 1, NVEC_SUB
-C               INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
         CALL REWINO(LUSCR)
         SCR(KLVEC-1+I) = INPRDD(VEC1,VEC2,LUVEC,LUSCR,0,LBLK)
       END DO
@@ -894,7 +857,6 @@ C               INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
         CALL WRTVCD(VEC1,LUSCR,1,LBLK)
       END IF
 *. and the synthesis in LUOUT
-C  VECSMD(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK
       ONE = 1.0D0
       ONEM = -1.0D0
       CALL VECSMD(VEC1,VEC2,ONE,ONEM,LUSCR2,LUSCR,LUOUT,1,LBLK)

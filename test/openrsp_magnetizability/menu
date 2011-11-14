@@ -1,0 +1,6 @@
+nr_hf.inp                 fh.mol 
+nr_hf_shifted.inp         fh.mol 
+dc_hf_skipep.inp          fh.mol 
+dc_hf_skipep_cval=900.inp fh.mol 
+dc_hf_cval=30.inp         fh.mol 
+dc_hf_shifted_cval=30.inp fh.mol 

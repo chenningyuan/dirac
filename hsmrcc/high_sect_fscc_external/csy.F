@@ -99,8 +99,9 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
         call rdfile  (59,1,"t33 ",-1)
       end if
 
+#if defined HSFS_DYN_ALLOC
       call check_modules
-
+#endif
       nvalo=0
       do 20 j=1,120
         if (icv(j).eq.1) then

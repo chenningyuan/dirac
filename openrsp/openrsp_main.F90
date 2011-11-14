@@ -33,6 +33,7 @@ contains
     complex(8), allocatable :: tsr2(:)
     real(8), parameter :: zero = 0.0d0
     complex(8), parameter :: cplx_one = (1.0d0, 0.0d0)
+    real(8), allocatable :: cmo_from_file(:)
 
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
@@ -50,7 +51,10 @@ contains
     call get_natoms(number_atoms)
     mol = prop_molcfg(0d0*S, number_atoms, lupri)
 
-    call get_C(C_i, i=1.0d0, s=0.0d0, g=1.0d0, u=1.0d0)
+    allocate(cmo_from_file(n2bbasxq))
+    call read_mo_coef(cmo_from_file)
+    call get_C(C_i, cmo_from_file, i=1.0d0, s=0.0d0, g=1.0d0, u=1.0d0)
+    deallocate(cmo_from_file)
     D = C_i*dag(C_i)
 
     call get_F(D, F)
@@ -65,11 +69,6 @@ contains
       call elec_quadrupole(mol,S, D, F, tsr)
       deallocate(tsr)
     end if
-
-!radovan: this needs an if check
-!   allocate(tsr(3))
-!   call elec_dipmom(S, D, F, tsr)
-!   deallocate(tsr)
 
     if (openrsp_cfg_alpha) then
       n = 2
@@ -155,6 +154,11 @@ contains
                                 (/(0d0,i=1,27*l*4)/),lupri)
            deallocate(tsr)
         endif
+
+        if (openrsp_cfg_pnc) then
+           call get_natoms(number_atoms)
+           call pnc_gradient(mol, S, D, F, number_atoms)
+        end if
 
         ! calculates vibrational hyperpolarizability
         if (openrsp_cfg_pv_beta) then

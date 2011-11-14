@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : pamexp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp */
@@ -977,42 +974,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck getiopen */
-      INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
-C***********************************************************************
-C     
-C     Which shell does electron orbital IORBITAL belong to?
-C
-C     Written by J. Thyssen - Feb 11 1999
-C     
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbdhf.h"
-#include "dcborb.h"
-C
-      IF (IORBITAL .LT. 1)
-     &   CALL QUIT('illegal value in GETIOPEN(neg)')
-C
-      IF (IORBITAL .LE. NISH(IFRP)) THEN
-         GETIOPEN = 0
-         RETURN
-      END IF
-C
-      ILOW = NISH(IFRP)+1
-      DO IOPEN = 1,NOPEN
-         IHIGH = ILOW + NACSH(IFRP,IOPEN)
-         IF ( (IORBITAL .GE. ILOW) .AND. (IORBITAL .LE. IHIGH) ) THEN
-            GETIOPEN = IOPEN
-            RETURN
-         END IF
-         ILOW = IHIGH+1
-      END DO
-      CALL QUIT('illegal value in GETIOPEN(pos)')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_nef */
       SUBROUTINE NUC_EFN(IPRINT,DOATOM,EFNNUC,GEOM)
 C***********************************************************************
@@ -1114,7 +1075,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D2=2.0D0,D0=0.0D0,DTOL=1.0D-4)
+      PARAMETER(D2=2.0D0,D0=0.0D0,DTOL=1.0D-8)
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
@@ -1122,7 +1083,6 @@ C
       DIMENSION PTRI(IDIMENS),PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),
      &          NR(*),PBUF(*),IBUF(*),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*)
 C
-#include "sdpre.h"
 C
 C     Make population matrix
 C
@@ -1171,7 +1131,7 @@ C
         DO M = 1,NTRI
           IJ = IBUF(M)
           IF(ABS(PTRI(IJ)/EXPVAL).LT.DTOL) GOTO 10
-          J  = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+          J  = INT(SQRT(dble(2*IJ) + 0.25D0) + 0.4999D0)
           I  = IJ - J*(J-1)/2
           JR = INDX(1,J)
           JJ = INDX(2,J)
@@ -1215,13 +1175,13 @@ C
       IPB = 1
       DO 10 IFRP = 1,NFSYM
         IF(NMO(IFRP).EQ.0) GOTO 10
-        CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),D1,D0,
+        CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),NZ,D1,D0,
      &              BVEC(IPB),NFO(IFRP),NMO(IFRP),
      &              1,NISH(IFRP),NFO(IFRP))  
         ISTART = NISH(IFRP)+1
         DO IOPEN = 1,NOPEN
           NVEC = NACSH(IFRP,IOPEN)
-          CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),DF(IOPEN),D1,
+          CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),NZ,DF(IOPEN),D1,
      &                BVEC(IPB),NFO(IFRP),NMO(IFRP),
      &                ISTART,NVEC,NFO(IFRP))  
           ISTART = ISTART + NVEC

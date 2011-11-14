@@ -8,11 +8,11 @@ C Written by Lasse Soerensen 2010
 C
 C***********************************************************************
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "priunit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"
-#include "cprnt.inc"
 #include "lucinp.inc"
 * other blocks
 #include "dgroup.h"
@@ -45,7 +45,7 @@ C
       ELSE
          SET = .TRUE.
       END IF
-      print*,'LWORK,LFREE',LWORK,LFREE
+!     print*,'LWORK,LFREE',LWORK,LFREE
 C
       CALL IZERO(IKWSET,NTABLE)
 C
@@ -75,9 +75,9 @@ C
           DO K =1, NFSYM
             NGSSH(K,I) = 0
             IF(J.EQ.1) THEN
-              NGSSHK(K,1,I) = 0
+              NGSSHK(K,I,1) = 0
             ELSE
-              NGSSHK(K,2,I) = 0
+              NGSSHK(K,I,2) = 0
             END IF
           END DO
         END DO
@@ -114,7 +114,7 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in KRCICA.'
+     *            '" not recognized in KRCCCA.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in KRCICA.')
     1          CONTINUE

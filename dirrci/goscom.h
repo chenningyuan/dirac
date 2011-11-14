@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : goscom.inc
 C SOURCE  : $Source$
 C
 C     DEFINITION PARAMETERS GOSCIP

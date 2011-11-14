@@ -1,0 +1,285 @@
+#!/bin/sh
+#
+# This script was originally written by Olivier Visser
+# Scientific Computing & Modelling NV (SCM)
+# Modified and ported to DIRAC by Lucas Visscher, January 2002.
+#
+
+SCRIPT=/tmp/$$.pl
+cat <<\eor >$SCRIPT
+
+# radovan: i have commented this
+#          i think it is unneccesary
+#          this information is already in the reference output
+#          now if the filter does not match the result is empty
+#          this is then easy to check
+# #-----------------------------------------------------------------
+# # Make sure that the header including compilation info is read.
+# #-----------------------------------------------------------------
+# $from2[0] = ' Version           : ';
+# $to2[0]   = 7;
+
+# ---------------------------------------------------------
+# determine names of file to scan, and file with directives
+# ---------------------------------------------------------
+
+$sfile = $ARGV[0];
+$filterfile = $ARGV[1];
+
+# ---------------------------------------
+# read directives
+# i1, from1, to1: From - To directive
+# i2, from2, to2: NLines n directive
+# ---------------------------------------
+
+open (SUMDAT, "<$filterfile") || die "Error opening $filterfile\n";
+$i1 = 0;
+$i2 = 1;
+$i3 = 0;
+$i4 = 0;
+
+$deferror = "\$ERROR 1.0e-4";
+$defsigncheck = "\$SIGNCHECK";
+
+$errorvalue = $deferror;
+$signcheck = $defsigncheck;
+foreach $line (<SUMDAT>) {
+    chop ($line);
+
+    # -----
+    # error
+    # -----
+
+    if ($line =~ /^\$ERROR/) {
+        $errorvalue = $line;
+        }
+    if ($line =~ /^\$IGNORESIGN/) {
+        $signcheck = "\$IGNORESIGN";
+        }
+
+    # ----
+    # from
+    # ----
+    if ($line =~ /^from *:/i) {
+        $data = $line;
+        $data =~ s/^from *://i;
+        $data =~ s/(\W)/\\$1/g;
+        $from1[$i1] = '^ *'.$data;
+        $eval1[$i1] = $errorvalue;
+        $errorvalue = $deferror;
+        $signcheck1[$i1] = $signcheck;
+        $signcheck = $defsigncheck;
+        }
+
+    # --
+    # to
+    # --
+    if ($line =~ /^to *:/i) {
+        $data = $line;
+        $data =~ s/^to *://i;
+        $data =~ s/(\W)/\\$1/g;
+        $to1[$i1] = '^ *'.$data;
+        $inclusive[$i1] = 0;
+        $i1++;
+        }
+
+    # ---
+    # toi
+    # ---
+    if ($line =~ /^toi *:/i) {
+        $data = $line;
+        $data =~ s/^toi *://i;
+        $data =~ s/(\W)/\\$1/g;
+        $to1[$i1] = '^ *'.$data;
+        $inclusive[$i1] = 1;
+        $i1++;
+        }
+
+    # ------
+    # fromRE
+    # ------
+    if ($line =~ /^fromRE *:/i) {
+        $data = $line;
+        $data =~ s/^fromRE *://i;
+        $from1[$i1] = $data;
+        $eval1[$i1] = $errorvalue;
+        $errorvalue = $deferror;
+        $signcheck1[$i1] = $signcheck;
+        $signcheck = $defsigncheck;
+        }
+
+    # ----
+    # toRE
+    # ----
+    if ($line =~ /^toRE *:/i) {
+        $data = $line;
+        $data =~ s/^toRE *://i;
+        $to1[$i1] = $data;
+        $inclusive[$i1] = 0;
+        $i1++;
+        }
+
+    # -----
+    # toiRE
+    # -----
+    if ($line =~ /^toiRE *:/i) {
+        $data = $line;
+        $data =~ s/^toiRE *://i;
+        $to1[$i1] = $data;
+        $inclusive[$i1] = 1;
+        $i1++;
+        }
+
+    # ------
+    # NLines
+    # ------
+    if ($line =~ /^nlines /i) {
+        $data = $line;
+        $data =~ s/^nlines[^:]*://i;
+        $data =~ s/(\W)/\\$1/g;
+        $from2[$i2] = '^ *'.$data; 
+        $eval2[$i2] = $errorvalue;
+        $errorvalue = $deferror;
+        $signcheck2[$i2] = $signcheck;
+        $signcheck = $defsigncheck;
+        $data = $line;
+        $data =~ s/^nlines[^0-9]*//i;
+        $data =~ s/:.*$//i;
+        $to2[$i2] = $data;
+        $i2++;
+        }
+
+    # --------
+    # NLinesRE
+    # --------
+    if ($line =~ /^nlinesRE /i) {
+        $data = $line;
+        $data =~ s/^nlinesRE[^:]*://i;
+        $from2[$i2] = $data;
+        $eval2[$i2] = $errorvalue;
+        $errorvalue = $deferror;
+        $signcheck2[$i2] = $signcheck;
+        $signcheck = $defsigncheck;
+        $data = $line;
+        $data =~ s/^nlines[^0-9]*//i;
+        $data =~ s/:.*$//i;
+        $to2[$i2] = $data;
+        $i2++;
+        }
+    }
+close (SUMDAT);
+
+
+# -------------------------------------
+# initialize scan and dumping to output
+#
+# SEPAFTER: print bar after line to print
+# SEPBEFORE: print bar before line to print
+# NPRINT: number of lines to print
+# SEARCH: 0 - not in directive
+#         1 - in From To directive
+#         2 - in NLines directive
+# -------------------------------------
+
+$NPRINT = 0;
+
+#
+# -------------------------------
+# loop over all lines of the file
+# -------------------------------
+ 
+open (SUBS, "<$sfile") || die "Error opening $sfile\n";
+foreach $line (<SUBS>) {
+    chop ($line);
+
+    $SEPBEFORE = 0;
+    $SEPAFTER = 0;
+
+    if ($NPRINT == 0) {
+        $SEARCH = 0;
+        }
+
+    if ($SEARCH == 1) {
+        if ($line =~ /$TOLINE/) {
+            $SEARCH = 0;
+            if ($PRINTMATCH) {
+                $NPRINT = 1;
+                }
+            else {
+                $NPRINT = 0;
+                }
+            }
+        else {
+            $NPRINT = 2;
+            }
+        }
+
+    if ($SEARCH == 0) {
+
+        for ($i=0; $i<$i2; $i++) {
+            if ($line =~ /$from2[$i]/) {
+                $ERVAL = $eval2[$i];
+                $SIGNCHK = $signcheck2[$i];
+                $NPRINT = $to2[$i];
+                if ($NPRINT > 1) {
+                    $SEPBEFORE = 1;
+                    }
+                else {
+                    $SEPBEFORE = 0;
+                    }
+                $SEPAFTER = 0;
+                $SEARCH = 2;
+                }
+            }
+
+        for ($i=0; $i<$i1; $i++) {
+            if ($line =~ /$from1[$i]/) {
+                $ERVAL = $eval1[$i];
+                $SIGNCHK = $signcheck1[$i];
+                $NPRINT = 2;
+                $TOLINE = $to1[$i];
+                $PRINTMATCH = $inclusive[$i];
+                $SEPBEFORE = 1;
+                $SEPAFTER = 0;
+                $SEARCH = 1;
+                }
+            }
+        }
+
+    elsif ($SEARCH == 2) {
+        # nothing to do, count is decremented automatically
+        }
+    
+
+    if ($SEPBEFORE == 1) {
+         print "\n =========================================================================\n";
+        }
+
+    if ($NPRINT != 0) {
+        if ($ERVAL !~ /^ *$/) {
+          print "$ERVAL\n";
+          $ERVAL = " ";
+          }
+        if ($SIGNCHK !~ /^ *$/) {
+          print "$SIGNCHK\n";
+          $SIGNCHK = " ";
+          }
+        $NPRINT--;
+        $prline = $line;
+         $prline =~ s/=/ /g;
+#        if ($prline !~ /^ *$/) {
+            print "$prline\n";
+#            }
+        }
+
+    if ($SEPAFTER == 1) {
+         print " =========================================================================\n\n";
+        }
+    }
+close (SUBS);
+
+
+
+eor
+perl -X -s $SCRIPT $@
+rm $SCRIPT

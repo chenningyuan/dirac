@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : trapam.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
@@ -43,6 +40,7 @@ C***********************************************************************
 #include "dummy.h"
 C
 #include "maxorb.h"
+#include "dcbpsi.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -55,6 +53,8 @@ C
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
+      Real(8), Allocatable :: CMO(:),EIG(:)
+      Integer, Allocatable :: IBEIG(:)
 C
       CALL QENTER('PAMTRA')
 #include "memint.h"
@@ -94,7 +94,8 @@ C
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                 IFRP,NSTR(IFRP,0,I))
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
+          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
@@ -186,15 +187,15 @@ C
 C
 C     Get all coefficients
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      Allocate (CMO(NCMOTQ))
+      Allocate (EIG(NORBT))
+      Allocate (IBEIG(NORBT))
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
-         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         CALL RREADMO(CMO,JRDMO,1,LUKRMC)
          IF (JRDMO .EQ. 0) THEN
             IF (IPRTRA .GE. 0) THEN
                WRITE(LUPRI,'(/A)')
@@ -211,8 +212,8 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
+     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
             CLOSE(LUCOEF,STATUS='KEEP')
          END IF
       END IF
@@ -222,13 +223,13 @@ C
       DO I = 1, 4
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
-             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
+             CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -237,19 +238,21 @@ C
 C
 C     Throw away the complete set, keep only the selected sets
 C
-      CALL MEMREL('PAMTRA.2',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      DeAllocate (CMO)
+      DeAllocate (EIG)
+      DeAllocate (IBEIG)
 C
 C     If necessary recanonize (virtual) orbitals
 C     Assuming that all sets are equal, we use the first index !!!
 C     ============================================================
 C
       IF (RCORBS) THEN
-C        Overdimension KCMO because it is used as Focksize scratch space
-         CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+C        Overdimension CMO because it is used as Focksize scratch space
+         Allocate (CMO(N2BBASXQ))
          CALL VIRCAN(WORK,KFREE,LFREE,IPRTRA,KQ(1,1),KE(1,1),
      &               KIBE(1,1),NDMOQR(1,1,1),ICMOQR(1,1),
-     &               WORK(KCMO))
-         CALL MEMREL('PAMTRA.3',WORK,KFRSAV,KCMO,KFREE,LFREE)
+     &               CMO)
+         DeAllocate (CMO)
       ENDIF
 C
 C     Set up index arrays for core orbitals
@@ -278,7 +281,8 @@ C
             CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                  IFRP,NSPC(IFRP,0))
-            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
+            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
@@ -353,14 +357,14 @@ C
 C
 C     Get all coefficients
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      Allocate (CMO(NCMOTQ))
+      Allocate (EIG(NORBT))
+      Allocate (IBEIG(NORBT))
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
-         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         CALL RREADMO(CMO,JRDMO,1,LUKRMC)
          IF (JRDMO .EQ. 0) THEN
             IF (IPRTRA .GE. 0) THEN
                WRITE(LUPRI,'(/A)')
@@ -376,15 +380,15 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
+     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
          ENDIF
       END IF
 C
 C     Select the set that we need
 C
       DO IFRP = 1, NFSYM
-         CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
+         CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
      &                NSPC(IFRP,0),WORK(KVEC(IFRP,5)),
      &                NSPC(IFRP,2),NSPC(IFRP,1),
      &                NFBAS(IFRP,0),NORB(IFRP))
@@ -392,7 +396,9 @@ C
 C
 C     Throw away the complete set, keep only the selected sets
 C
-      CALL MEMREL('PAMTRA.5',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      DeAllocate (CMO)
+      DeAllocate (EIG)
+      DeAllocate (IBEIG)
 C
       CALL FLSHFO(LUPRI)
 C
@@ -445,14 +451,14 @@ C
       CALL FLSHFO(LUPRI)
 
 #ifdef MOD_HSCC
-!     ... interface from HSCC module
-      CALL HSCC_STUFF(WORK,LWORK)
+!     ... interface for the HSCC module
+      IF (DOHSCC) CALL HSCC_STUFF(WORK,LWORK)
 #endif
 
-!#ifdef MOD_HSFS
-!     ... interface from HSFS module
-!      CALL HSFS_STUFF(WORK,LWORK)
-!#endif
+#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
+!     ... interface for the HSFS module
+      IF (DOHSFS) CALL HSFS_STUFF(WORK,LWORK)
+#endif
 
       CALL QEXIT('PAMTRA')
       RETURN
@@ -512,6 +518,9 @@ C
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,2),KQ(2,4),KIBE(2,4),
      &          NR(2),IR(2,2),NQ(2),KE(2,4)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
+
+      Real(8), Allocatable :: CMO(:),EIG(:)
+      Integer, Allocatable :: IBEIG(:)
 C
       CALL QENTER('PSIMP2')
 #include "memint.h"
@@ -564,7 +573,8 @@ C
         CALL NUMLST(MP2_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,1))
-        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
         NSTR(IFRP,0,1)   = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
       ENDDO
@@ -589,7 +599,8 @@ C
         CALL  NUMLST(MP2_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &               IFRP,NSTR(IFRP,0,2))
-        CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
       ENDDO
@@ -649,10 +660,10 @@ C     Get all coefficients and eigenvalues
 C     ====================================
 C
       KBUF = KFREE
-      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
+      Allocate (CMO(N2BBASXQ))
+      Allocate (EIG(NORBT))
+      Allocate (IBEIG(NORBT))
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
      &            ESCF,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
@@ -663,13 +674,13 @@ C
       DO I = 1, 2
         ISAME(I)   = I
         DO IFRP = 1, NFSYM
-          CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),
+          CALL SELCFS (CMO(1+ICMOQ(IFRP)),
      &         IFRP,WORK(KQ(IFRP,I)),NSTR(IFRP,0,I),
      &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &         NFBAS(IFRP,0),NORB(IFRP))
-          CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+          CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
      &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+          CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                  WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                  NSTR(IFRP,2,I),NSTR(IFRP,1,I))
         ENDDO
@@ -700,12 +711,14 @@ C     ========================================
 C
       CALL VIRCAN(WORK,KFREE,LFREE,IPRMP2,KQ(1,2),KE(1,2),
      &            KIBE(1,2),NDMOQR(1,1,2),ICMOQR(1,2),
-     &            WORK(KCMO))
+     &            CMO)
 C
 C     Throw away the full coefficients and eigenvalues
 C     ================================================
 C
-      CALL MEMREL('PSIMP2.cfs',WORK,KBUF,KBUF,KFREE,LFREE)
+      DeAllocate (CMO)
+      DeAllocate (EIG)
+      DeAllocate (IBEIG)
 C
 C
 C     Print section
@@ -790,6 +803,9 @@ C
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
+
+      Real(8), Allocatable :: CMO(:),EIG(:)
+      Integer, Allocatable :: IBEIG(:)
 C     
       CALL QENTER('LAGTAU')
 #include "memint.h"
@@ -834,7 +850,8 @@ C
         CALL NUMLST(MPR_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,1))
-        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
         NSTR(IFRP,0,1) = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
       ENDDO
@@ -867,7 +884,8 @@ C
         CALL NUMLST(MPR_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,2))
-        CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
       ENDDO
@@ -900,7 +918,8 @@ C
         CALL NUMLST(MPR_INDSTR(3,IFRP),WORK(KVEC(IFRP,3)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,3))
-        CALL ORBCNT(WORK(KVEC(IFRP,3)),NSTR(IFRP,0,3),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,3)),NSTR(IFRP,0,3),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,3),NSTR(IFRP,1,3))
         NSTR(IFRP,0,3)   = NSTR(IFRP,1,3) + NSTR(IFRP,2,3)
       ENDDO
@@ -936,7 +955,8 @@ C
         CALL NUMLST(MPR_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &              IFRP,NSTR(IFRP,0,4))
-        CALL ORBCNT(WORK(KVEC(IFRP,4)),NSTR(IFRP,0,4),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,4)),NSTR(IFRP,0,4),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,4),NSTR(IFRP,1,4))
         NSTR(IFRP,0,4)   = NSTR(IFRP,1,4) + NSTR(IFRP,2,4)
       ENDDO
@@ -1000,9 +1020,9 @@ C
 C     Get all coefficients
 C     
       KBUF = KFREE
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE) 
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      Allocate (CMO(NCMOTQ))
+      Allocate (EIG(NORBT))
+      Allocate (IBEIG(NORBT))
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(/A)')
@@ -1010,7 +1030,7 @@ C
          CALL QUIT('LAGTAU: No MO coefficient file !')
       ELSE  
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTAU')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
      &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF 
@@ -1021,13 +1041,13 @@ C
         ISAME(I)   = I
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
-             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
+             CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -1036,19 +1056,20 @@ C
 C     
 C     Throw away the complete set, keep only the selected sets
 C     
-      CALL MEMREL('LAGTAU.2',WORK,KBUF,KCMO,KFREE,LFREE)
+      DeAllocate (CMO)
+      DeAllocate (EIG)
+      DeAllocate (IBEIG)
 C     
 C     If necessary recanonize (virtual) orbitals
 C     Assuming that all sets are equal, we use the first index !!!
 C     ============================================================
 C     
       IF (RCORBS) THEN 
-C        Overdimension KCMO because it is used as Focksize scratch space
-         CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL VIRCAN(WORK,KFREE,LFREE,IPRMP2,KQ(1,2),KE(1,2),
-     &            KIBE(1,2),NDMOQR(1,1,2),ICMOQR(1,2),
-     &            WORK(KCMO))
-         CALL MEMREL('LAGTAU.3',WORK,KBUF,KCMO,KFREE,LFREE)
+C        Overdimension CMO because it is used as Focksize scratch space
+         Allocate (CMO(N2BBASXQ))
+         CALL VIRCAN(WORK,KFREE,LFREE,IPRMP2,KQ(1,2),KE(1,2),
+     &            KIBE(1,2),NDMOQR(1,1,2),ICMOQR(1,2),CMO)
+         DeAllocate (CMO)
       ENDIF
 C
 C     Call driver for 4-index transformation
@@ -2116,7 +2137,9 @@ C
 C
 #include "ibtfun.h"
 C
-      IF (IPRINT .GT. 6) CALL HEADER('Subroutine NINSH',-1)
+!     hjaaj: disabled print of header
+!     as no other print in this routine!
+!     IF (IPRINT .GT. 6) CALL HEADER('Function NINSH',-1)
 C
       IF (ISHELA.NE.0) THEN
          ISHELS = ISHELA
@@ -2251,9 +2274,9 @@ C
 C
 #include "ibtfun.h"
 C
-C     hjaaj: increased level for print of header
-C     as no other print in this routine!
-      IF (IPRINT .GT. 5) CALL HEADER('Subroutine NDISTRN',-1)
+!     hjaaj: disabled print of header
+!     as no other print in this routine!
+!     IF (IPRINT .GT. 5) CALL HEADER('Function NDISTRN',-1)
       IF (MKINAB.AND.(.NOT.ABSPOI).AND.(.NOT.MKIJPA))
      &    CALL QUIT ('Conflicting options in NDISTRN')
 C
@@ -3469,7 +3492,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "cbihr2.h"
-CTOBS: Note the use of dhfcal ! Should be generalized !!!
+CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),

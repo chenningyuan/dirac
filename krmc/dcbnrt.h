@@ -1,10 +1,12 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dcbnrt.h
-C
-C     dependencies: maxorh.h
-C
+C -- FILE : dcbnrt.h
+!
+! FILE : dcbnrt.h
+!
+! For freezing ("NO ROTATION") orbitals in MCSCF
+!
+!     Dependencies: maxorb.h
+!
       LOGICAL LNOROT
       COMMON /DCINRT/ NOROT(MXCORB), NOROTC(MXCORB)
       COMMON /DCLNRT/ LNOROT
+! -- end of dcbnrt.h --

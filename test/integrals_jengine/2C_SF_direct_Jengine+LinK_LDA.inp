@@ -7,7 +7,7 @@ LDA calculations with Jengine in pure two-component mode
  LDA
 .IOTC
 .SPINFREE
-*DFT
+**GRID
 .4CGRID !here only to reproduce the reference outputs
 **INTEGRALS
 .JENGINE
@@ -18,5 +18,5 @@ LDA calculations with Jengine in pure two-component mode
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

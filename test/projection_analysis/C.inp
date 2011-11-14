@@ -7,6 +7,8 @@ Fragment C
 *TWOINT
 .SCREEN
 1.0D-11
+*READIN
+.CONTRACT
 **HAMILTONIAN
 .LVCORR
 ! We add a small electric field to split degeneracy
@@ -16,8 +18,8 @@ Fragment C
  FACTOR
  1.0D-04
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .CLOSED SHELL
 4
 .OPEN SHEL

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -378,7 +378,7 @@ subroutine get_HSFS_indexes()
 !
 !
 !----------------------------------------------------------------------------------
-#if defined MOD_HSFS
+#if defined MOD_HSFS || HSFS_DYN_ALLOC
 use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
@@ -397,7 +397,7 @@ write(LUPRI,*)  '... hsfs_indx vector allocated'
 do isp=1, nsp
 
   if (iprint_hsfs >= 4) then
-   write (LUPRI,'(2x,a,i3,a,2i3,a,f18.10,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   write (LUPRI,'(2x,a,i4,a,2i3,a,f18.10,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
    IREPSP(ISP),IREPSP(NSP+ISP),                                                      &
    ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP))
   endif
@@ -460,7 +460,7 @@ do isp=1,nsp
 if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
 
   if ( iprint_hsfs >= 6) then
-    write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+    write (LUPRI,'(2x,a,i4,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
   IREPSP(ISP),IREPSP(NSP+ISP), &
  ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
   endif
@@ -577,7 +577,7 @@ ENDDO
 
 write (LUPRI,'(/,2x,a)') '*** EPS1, IREPSP:'
 DO ISP = 1, NSP
-   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   write (LUPRI,'(2x,a,i4,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
    IREPSP(ISP),IREPSP(NSP+ISP), &
    ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP))
 ENDDO
@@ -924,7 +924,7 @@ subroutine read_mdcint_hsfs
 !
 !
 !-------------------------------------------------------------------------
-#if defined MOD_HSFS
+#if defined MOD_HSFS || HSFS_DYN_ALLOC
 use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"

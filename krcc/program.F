@@ -12,28 +12,22 @@ C common blocks needs cleaning!!!!!!!!!!!!!!!!
 C
 C***********************************************************************
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. Parameters for dimensioning
 #include "mxpdim.inc"
 C will probably have to delete most of these again
 *.File numbers
 #include "clunit.inc"
 *.Print flags
-#include "cprnt.inc"
 #include "lucinp.inc"
 #include "cstate.inc"
 #include "crun.inc"
 #include "cicisp.inc"
-#include "oper.inc"
 #include "cgas.inc"
-C#include "chktyp.inc"
 #include "glbbas.inc"
-C#include "wrkspc.inc"
 C added by lasse
 #include "cintfo.inc"
-C#include "iratdef.h"
-#include "ipoist8.inc"
 C
-C#include "memint.h"
       DIMENSION WORK(LWORK)
 C
 C
@@ -55,20 +49,18 @@ C
       CALL DISKUN_KRCC
 *. Header 
       CALL WRTHD_KRCC(LUOUT) !ok
-      CALL MEMCHK('LL1',WORK,KLOOK)
 *. Ratio beteeen real and integer word length
 C      CALL ZIRAT_KRCC !ok
 *. From shells to orbitals
-      CALL ORBINF_KRCC(LUOUT,IPRORB)
+      CALL ORBINF_KRCC(LUOUT)
 *. Types of determinants to be included
-      CALL DETTYP_KRCC(IPRSTR)
+      CALL DETTYP_KRCC
 *. Number of string types
-      CALL MEMCHK('LL2',WORK,KLOOK)
-      CALL STRTYP_GAS_KRCC(IPRSTR)
+      CALL STRTYP_GAS_KRCC
 *. Symmetry information
-      CALL SYMINF_KRCC(IPRORB)
+      CALL SYMINF_KRCC
 *. Number of integrals
-      CALL INTDIM_KRCC(IPRTRA)
+      CALL INTDIM_KRCC
 *. Allocate local and global arrays 
 !!!!use allocate here!!!!
 !!!!needs updating!!!!
@@ -76,20 +68,16 @@ C      CALL ZIRAT_KRCC !ok
 !!!!needs updating!!!!
 !!!!needs updating!!!!
       CALL ALLOC_KRCC(WORK,KFREE,LFREE)
-      CALL MEMCHK('LULU6',WORK,KLOOK)
 *. Internal string information (stored in WORK, bases in /STRBAS/)
-      CALL STRINF_GAS_KRCC(WORK,KFREE,LFREE,IPRSTR)
-      CALL MEMCHK('LULU5',WORK,KLOOK)
+      CALL STRINF_GAS_KRCC(WORK,KFREE,LFREE)
 *. Internal subspaces
-      CALL LCISPC_KRCC(WORK,KFREE,LFREE,LCSBLK,IPRCIX)
-      CALL MEMCHK('LULU1',WORK,KLOOK)
+      CALL LCISPC_KRCC(WORK,KFREE,LFREE,LCSBLK)
 *. Divide orbital spaces into inactive/active/secondary!!!!not sure to include!!!!
 C      CALL GASSPC_KRCC
 * Find occupation of GAS
 C Notice JCMBSPC is hardwired
       JCMBSPC = 1
       CALL GET_GASOCC_KRCC(JCMBSPC)
-      CALL MEMCHK('LULU3',WORK,KLOOK)
 * Get Hamiltonian strings. 
 * Notice a similar routine is called later which does the actual setup for the cc runs. 
 * This is just for the integral sorting
@@ -101,14 +89,10 @@ C assumes totally symmetric hamiltonian
 !!!!!May need updating to elminate obsolete operators!!!!!
       ISYM_T = 1
       CALL SET_HOP_DBG_FOR_NEWCCV(4,1,WORK,KFREE,LFREE)
-      CALL MEMCHK('LULU2',WORK,KLOOK)
+C     CALL SET_HOP_DBG_KRCC(4,1,WORK,KFREE,LFREE)
 C      CALL MEMCHK_KRCC(WORK)
       print*,'after SET_HOP_DBG_KRCC'
-*. Read in integrals !!!!Notice non-matching call!!!!
-C       call picasso(INTSPACE,ISO1,IPRTRA,
-C    &               NL2D,IUB2D,ISM2D)
       CALL INTIM_KRCC(INTSPACE,MCSCF,WORK,KFREE,LFREE)
-      CALL MEMCHK('LUL22',WORK,KLOOK)
 *
 *******************************************************
 C
@@ -118,9 +102,9 @@ C We will only assume that we can do CC calculations
 C
 *******************************************************
 *
-      CALL KRCC_GENCC(IREFSM,ITSPC,JCMBSPC,IPRDIA,
+      CALL KRCC_GENCC(IREFSM,ISPC,JCMBSPC,
      &                I_TRANS_WF,II_RES_EXC,
-     &                II_DO_CMPCCI,ECORE_KRMC,
+     &                ECORE_KRMC,
      &                WORK,KFREE,LFREE)
 
 
@@ -130,8 +114,8 @@ C
       RETURN
       END
 *
-       SUBROUTINE KRCC_GENCC(ISM,ISPC,ICISPC,IPRNT,
-     &                       I_TRANS_WF,II_RES_EXC,II_DO_CMPCCI,
+       SUBROUTINE KRCC_GENCC(ISM,ISPC,ICISPC,
+     &                       I_TRANS_WF,II_RES_EXC,
      &                       ECORE_KRMC,
      &                       WORK,KFREE,LFREE)
 *
@@ -149,19 +133,16 @@ C
 #include "strinp.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
-C#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "glbbas.inc"
 #include "cands.inc"
 #include "crun.inc"
 #include "clunit.inc"
-#include "cc_exc.inc"
 #include "cecore.inc"
 #include "cstate.inc"
-#include "cprnt.inc"
 #include "csm.inc"
 #include "ctcc.inc"
-#include "oper.inc"
+#include "ctccp.inc"
 #include "cintfo.inc"
 *
 * for real or complex groups
@@ -174,7 +155,7 @@ C#include "wrkspc.inc"
 *                                                           *
 * Things not yet appliable (or never will be?)              *
 *                                                           *
-* I_TRANS_WF, II_DO_CMPCCI, ICCSOLVE, II_DO_CMPCCI,         *
+* I_TRANS_WF, ICCSOLVE         *
 * II_RES_EXC, MXSPOX                          *
 *                                                           *
 *                                                 Lasse     *
@@ -192,9 +173,7 @@ C#include "wrkspc.inc"
       ISPC = ICISPC
 * def
       JCMBSPC=ICISPC
-      I_DO_CC = 1
       ECORE = ECORE_KRMC
-      ISIMSYM = 0
 *
 * Check if real or complex/quarternion algebra is used
       IF(NZ.EQ.1) THEN
@@ -218,8 +197,6 @@ C     END IF
       END IF
 *. General CC so
       CCTYPE(1:6) = 'GEN_CC'
-* ADDED BY LASSE SINCE ONLY FORM HERE ALLOWED
-      CCFORM(1:3) = 'TCC'
 *
       WRITE(6,*)
       WRITE(6,*) ' ========================================'
@@ -229,28 +206,15 @@ C     END IF
       WRITE(6,*) ' Reference space ',ICISPC
       WRITE(6,*) ' Space defining T-operators ', ISPC
       WRITE(6,*) ' I_TRANS_WF  = ',  I_TRANS_WF
-      WRITE(6,*) ' II_DO_CMPCCI = ', II_DO_CMPCCI
 *
       NTEST = 0
-      IPRNT = MAX(IPRNT,NTEST)
-* Taken print level from CI. Lasse
-      IPRCC = IPRNT
 *
       I12 = 2
       IDUM = 0
 *
 * Routine added for integral fetching will just set up an array needed for NEWCCV
 * Always on now
-C     IF(I_DO_NEWCCV.EQ.1) THEN
-        CALL SUM_ARRAY
-C     END IF
-* Dimensioning
-* ADDED FOR REL CALC
-C     CALL Z_BLKFO_KRCC(IDC,NMS2VAL,
-C    &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
-C    &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-C    &                 IBAT_MS2,
-C    &                 WORK,KFREE,LFREE)
+      CALL SUM_ARRAY
       CALL MEMCHK_KRCC(WORK)
 *
 *
@@ -263,8 +227,8 @@ C Hardwirering of optimizer
         MXDIM = MAX(MAXIT,MXCIV_ORIG)+1
         LENB = MXDIM*(MXDIM+1)/2
         LENSCR = 3*(MXDIM+1)**2 + MXDIM + 1
-        CALL MEMMAR(KBMAT,LENB,'ADDL  ',2,'BM_DIS')
-        CALL MEMMAR(KSCDIIS,LENSCR,'ADDL  ',2,'SC_DIS')
+        CALL MEMGET('REAL',KBMAT,LENB,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KSCDIIS,LENSCR,WORK,KFREE,LFREE)
       ELSE
         KBMAT = 0
         KSDIIS = 0
@@ -277,7 +241,6 @@ C Hardwirering of optimizer
       ELSE
         LSBSPJA = 0
       END IF
-C     CALL MEMMAR(KSBSPJA,LSBSPJA,'ADDL  ',2,'SBSPJA')
       CALL MEMGET('REAL',KSBSPJA,LSBSPJA,WORK,KFREE,LFREE)
       CALL MEMCHK_KRCC(WORK)
 *
@@ -289,8 +252,6 @@ C     CALL MEMMAR(KSBSPJA,LSBSPJA,'ADDL  ',2,'SBSPJA')
 *
 * End the addition of determinant
 *
-      ITSPC  = ISPC
-      IETSPC = ICISPC
 *. The reference space is the first space
       IREFSPC = 1
 *
@@ -320,7 +281,7 @@ C     CALL MEMMAR(KSBSPJA,LSBSPJA,'ADDL  ',2,'SBSPJA')
           NHOL_SPC = NHOL_SPC + 1
         END IF
       END DO
-      IF(IPRNT.GE.5)
+      IF(NTEST.GE.5)
      &WRITE(6,*) ' Number of hole spaces = ', NHOL_SPC
 *
       IF(NACT_SPC.GT.1) THEN
@@ -329,15 +290,14 @@ C     CALL MEMMAR(KSBSPJA,LSBSPJA,'ADDL  ',2,'SBSPJA')
         WRITE(6,*) ' NACT_SPC = ',  NACT_SPC
         CALL ABEND2(' GENCC :  More than one active orbital spaces ')
       END IF
-      IF(IPRNT.GE.5)
+      IF(NTEST.GE.5)
      &WRITE(6,*) ' GENCC : IACT_SPC,NACT_SPC',IACT_SPC,NACT_SPC
 *
 *. Info on active-active excitation types
-      CALL ACAC_EXC_TYP_KRCC(IAAEXC_TYP,MX_AAEXC,IPRCC)
-C     print*,'IAAEXC_TYP,MX_AAEXC,IPRCC',IAAEXC_TYP,MX_AAEXC,IPRCC
+      CALL ACAC_EXC_TYP_KRCC(IAAEXC_TYP,MX_AAEXC)
       CALL MEMCHK_KRCC(WORK)
 *. pt active rotations are eliminated for CAS
-      IF(IPRNT.GE.5)
+      IF(NTEST.GE.5)
      &WRITE(6,*) ' GENCC : MX_AAEXC ', MX_AAEXC
 *
 * 1 : Find the set of T amplitudes.
@@ -362,8 +322,6 @@ C     print*,'IAAEXC_TYP,MX_AAEXC,IPRCC',IAAEXC_TYP,MX_AAEXC,IPRCC
 *
       ICSPC = ICISPC
       ISSPC = ICISPC
-*. Routines use complete TT blocks so
-C     ISIMSYM = 1
 *
 * ========================
 * info for reference space
@@ -386,10 +344,6 @@ C       STOP
 C    &  ' Reference space is not a single occupation space'
 C     END IF
 *. and the reference occupation space
-C     CALL MEMMAR(KLOCCLS_REF,NGAS,'ADDL  ',1,'OCC_RF')
-C     CALL MEMGET('INTE',KLOCCLS_REF,NGAS,WORK,KFREE,LFREE)
-C     CALL OCCLSE_KRCC(2,NOCCLS_REF,WORK(KLOCCLS_REF),NEL,IREFSPC,0,0,
-C    &                NOBPT)
 *
 * ====================================
 * Info for space defining excitations
@@ -398,11 +352,8 @@ C    &                NOBPT)
 *. Number
       CALL OCCLSE_KRCC(1,NOCCLS,IOCCLS,NEL,ISPC,0,0,NOBPT)
 *. And the occupation classes
-C     CALL MEMMAR(KLOCCLS,NOCCLS*NGAS,'ADDL  ',1,'OCCLS ')
       CALL MEMGET('INTE',KLOCCLS,NOCCLS*NGAS,WORK,KFREE,LFREE)
       CALL OCCLSE_KRCC(2,NOCCLS,WORK(KLOCCLS),NEL,ISPC,0,0,NOBPT)
-*. Number of occupation classes for T-operators
-      NTOCCLS = NOCCLS
 *. It could be an idea to check that reference space is included
 *
 * ========================
@@ -417,9 +368,9 @@ C     CALL MEMMAR(KLOCCLS,NOCCLS*NGAS,'ADDL  ',1,'OCCLS ')
      &             WORK(IDUM),WORK(IDUM),
      &             WORK(KLOCCLS),WORK(KLOCCLS_REF),MX_NCREA,MX_NANNI,
      &             MX_EXC_LEVEL,WORK(IDUM),MX_AAEXC,IFLAG,
-     &             NOBEX_TP,IPRCC)
+     &             NOBEX_TP)
 *
-      IF(IPRNT.GE.5)
+      IF(NTEST.GE.5)
      &WRITE(6,*) ' NOBEX_TP,MX_EXC_LEVEL = ', NOBEX_TP,MX_EXC_LEVEL
 *. And the actual orbital excitations
 *.  An orbital excition operator is defined by
@@ -429,37 +380,23 @@ C     CALL MEMMAR(KLOCCLS,NOCCLS*NGAS,'ADDL  ',1,'OCCLS ')
 *. The number of orbital excitations is increased by one to include
 *. excitations within the reference space
       NOBEX_TPE = NOBEX_TP+1
-C     CALL MEMMAR(KLCOBEX_TP,NOBEX_TPE,'ADDL  ',1,'LCOBEX')
-C     CALL MEMMAR(KLAOBEX_TP,NOBEX_TPE,'ADDL  ',1,'LAOBEX')
-C     CALL MEMMAR(KOBEX_TP ,NOBEX_TPE*2*NGAS,'ADDL  ',1,'IOBE_X')
       CALL MEMGET('INTE',KLCOBEX_TP,NOBEX_TPE,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLAOBEX_TP,NOBEX_TPE,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KOBEX_TP,NOBEX_TPE*2*NGAS,WORK,KFREE,LFREE)
 *. Excitation type => Original occupation class
-C     CALL MEMMAR(KEX_TO_OC,NOBEX_TPE,'ADDL  ',1,'EX__OC')
       CALL MEMGET('INTE',KEX_TO_OC,NOBEX_TPE,WORK,KFREE,LFREE)
-C      CALL MEMMAR(KEX_OCCC,NOBEX_TPE,'ADDL  ',1,'EX_OCC')
       CALL MEMCHK_KRCC(WORK)
       IFLAG = 0
       CALL TP_OBEX2_KRCC(NOCCLS,NEL,NGAS,WORK(KOBEX_TP),
      &             WORK(KLCOBEX_TP),WORK(KLAOBEX_TP),
      &             WORK(KLOCCLS),WORK(KLOCCLS_REF),MX_NCREA,MX_NANNI,
      &             MX_EXC_LEVEL,WORK(KEX_TO_OC),MX_AAEXC,IFLAG,
-     &             NOBEX_TP,IPRCC)
+     &             NOBEX_TP)
       CALL MEMCHK_KRCC(WORK)
 *
 * =======================
 * Spinorbital excitations
 * =======================
-*
-*. Spin combinations of CC excitations : Currently we assume that
-*. The T-operator is a singlet, can 'easily' be changed. Done Lasse
-      WRITE(6,*) ' MSCOMB_CC in LUCIA_GENCC ', MSCOMB_CC
-*
-*. Notice : The first time in OBEX_TO_SPOBEX we always use MSCOMB_CC = 0.
-*. This may lead to the allocation of too much space for
-*. spinorbital excitations, but MSCOMB_CC = 1, requires access
-*. to WORK(KLSOBEX) which has not been defined
 *
 *. Largest spin-orbital excitation level
 *
@@ -480,36 +417,31 @@ C    &             MXSPOX, MXSPOX_L, MX_EXC_LEVEL
 * It is taken from common block on inside
       CALL OBEX_TO_SPOBEX_KRCC(1,WORK(KOBEX_TP),WORK(KLCOBEX_TP),
      &     WORK(KLAOBEX_TP),NOBEX_TP,IDUMMY,NSPOBEX_TP_CC,NGAS,
-     &     NOBPT,0,IZERO ,IAAEXC_TYP,IACT_SPC,IPRCC,IDUMMY,
-     &     MXSPOX_L,WORK(KNSOX_FOR_OX),
-     &     WORK(KIBSOX_FOR_OX),WORK(KISOX_FOR_OX),NAEL,NBEL,IREFSPC,
+     &     NOBPT,0,IAAEXC_TYP,IACT_SPC,IDUMMY,
+     &     MXSPOX_L,IDUMMY,
+     &     IDUMMY,IDUMMY,NAEL,NBEL,IREFSPC,
      &     IRECOM,WORK,KFREE,LFREE)
 *. Extended number of spin-orbital excitations : Include
 *. unit operator as last spinorbital excitation operator
 C allowing ample space for all operator that is yet to be found
 C Notice OBEX_TO_SPOBEX_REL has been changed significantly inside. Lasse
       NSPOBEX_TPE = NSPOBEX_TP_CC + 1
-      IF(IPRNT.GE.5) WRITE(6,*) ' NSPOBEX_TP_CC = ', NSPOBEX_TP_CC
+      IF(NTEST.GE.5) WRITE(6,*) ' NSPOBEX_TP_CC = ', NSPOBEX_TP_CC
 C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
 *. And the actual spinorbital excitation operators
-C     CALL MEMMAR(KLSOBEX_CC,4*NGAS*NSPOBEX_TPE,'ADDL  ',1,'SPOBEX')
       CALL MEMGET('INTE',KLSOBEX_CC,4*NGAS*NSPOBEX_TPE,WORK,KFREE,LFREE)
 *. Map spin-orbital exc type => orbital exc type
-C     CALL MEMMAR(KLSOX_TO_OX,NSPOBEX_TPE,'ADDL  ',1,'SPOBEX')
       CALL MEMGET('INTE',KLSOX_TO_OX,NSPOBEX_TPE,WORK,KFREE,LFREE)
 *. First SOX of given OX ( including zero operator )
-C     CALL MEMMAR(KIBSOX_FOR_OX,NOBEX_TP+1,'ADDL  ',1,'IBSOXF')
       CALL MEMGET('INTE',KIBSOX_FOR_OX,NOBEX_TP+1,WORK,KFREE,LFREE)
 *. Number of SOX's for given OX
-C     CALL MEMMAR(KNSOX_FOR_OX,NOBEX_TP+1,'ADDL  ',1,'IBSOXF')
       CALL MEMGET('INTE',KNSOX_FOR_OX,NOBEX_TP+1,WORK,KFREE,LFREE)
 *. SOX for given OX
-C     CALL MEMMAR(KISOX_FOR_OX,NSPOBEX_TPE,'ADDL  ',1,'IBSOXF')
       CALL MEMGET('INTE',KISOX_FOR_OX,NSPOBEX_TPE,WORK,KFREE,LFREE)
       CALL OBEX_TO_SPOBEX_KRCC(2,WORK(KOBEX_TP),WORK(KLCOBEX_TP),
      &     WORK(KLAOBEX_TP),NOBEX_TP,WORK(KLSOBEX_CC),NSPOBEX_TP_CC,
-     &     NGAS,NOBPT,0,MSCOMB_CC,IAAEXC_TYP,IACT_SPC,
-     &     IPRCC,WORK(KLSOX_TO_OX),MXSPOX_L,WORK(KNSOX_FOR_OX),
+     &     NGAS,NOBPT,0,IAAEXC_TYP,IACT_SPC,
+     &     WORK(KLSOX_TO_OX),MXSPOX_L,WORK(KNSOX_FOR_OX),
      &     WORK(KIBSOX_FOR_OX),WORK(KISOX_FOR_OX),NAEL,NBEL,IREFSPC,
      &     IRECOM,WORK,KFREE,LFREE)
       NSPOBEX_TPE = NSPOBEX_TP_CC + 1
@@ -518,15 +450,12 @@ C     CALL MEMMAR(KISOX_FOR_OX,NSPOBEX_TPE,'ADDL  ',1,'IBSOXF')
       IZERO = 0
       CALL ISTVC3(WORK(KLSOBEX_CC),(NSPOBEX_TPE-1)*4*NGAS+1,IZERO,
      &            4*NGAS)
-      IF(IPRNT.GE.5) THEN
+      IF(NTEST.GE.5) THEN
         WRITE(6,*) ' Extended list of spin-orbital excitations : '
         CALL WRT_SPOX_TP_CC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE)
       END IF
       CALL ISTVC3(WORK(KLSOX_TO_OX),NSPOBEX_TPE,NOBEX_TP+1,1)
 *. Mapping spinorbital excitations => occupation classes
-C     CALL MEMMAR(KIBSOX_FOR_OCCLS,NOCCLS,'ADDL  ',1,'IBSXOC')
-C     CALL MEMMAR(KNSOX_FOR_OCCLS,NOCCLS,'ADDL  ',1,' NSXOC')
-C     CALL MEMMAR(KISOX_FOR_OCCLS,NSPOBEX_TPE,'ADDL  ',1,' ISXOC')
       CALL MEMGET('INTE',KIBSOX_FOR_OCCLS,NOCCLS,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNSOX_FOR_OCCLS,NOCCLS,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KISOX_FOR_OCCLS,NSPOBEX_TPE,WORK,KFREE,LFREE)
@@ -535,21 +464,8 @@ C     CALL MEMMAR(KISOX_FOR_OCCLS,NSPOBEX_TPE,'ADDL  ',1,' ISXOC')
      &     WORK(KIBSOX_FOR_OCCLS))
       CALL MEMCHK_KRCC(WORK)
 *
-*. Frozen spin-orbital excitation types
-C     CALL MEMMAR(KLSPOBEX_FRZ, NSPOBEX_TP_CC+1,'ADDL  ',1,'SPOBFR')
-*******
-* setting NFRZ_CC = 0 Lasse, FRZ_SPOBEX not yet appliable
-*******
-C     NFRZ_CC = 0
-C     CALL FRZ_SPOBEX(WORK(KLSPOBEX_FRZ),WORK(KLCOBEX_TP),NSPOBEX_TP_CC,
-C    &                WORK(KLSOX_TO_OX),IFRZ_CC_AR,NFRZ_CC)
-C     IZERO = 0
-C     CALL ISTVC3(WORK(KLSPOBEX_FRZ),NSPOBEX_TP_CC+1,IZERO,1)
 *. Spin-orbital excitation types related by spin-flip
-C     CALL MEMMAR(KLSPOBEX_AB,2*NSPOBEX_TP_CC+1,'ADDL  ',1,'SPOBAB')
-      CALL MEMGET('INTE',KLSPOBEX_AB,2*NSPOBEX_TP_CC+1,WORK,KFREE,LFREE)
-C NEXT ARRAY ONLY ALLOCATED FOR THE PROGAM TO RUN LASSE
-      CALL MEMGET('INTE',KLSPOBEX22,2*NSPOBEX_TP_CC+1,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLSPOBEX_AB,2*NSPOBEX_TPE,WORK,KFREE,LFREE)
       CALL SPOBEXTP_PAIRS_KRCC(NSPOBEX_TP_CC+1,WORK(KLSOBEX_CC),NGAS,
      &                    WORK(KLSPOBEX_AB))
       IF(NTEST.GE.5) WRITE(6,*) ' After SPOBEXTP_PAIRS'
@@ -570,9 +486,8 @@ C NEXT ARRAY ONLY ALLOCATED FOR THE PROGAM TO RUN LASSE
       CALL MEMCHK_KRCC(WORK)
       print*,'LENA,LENB,KFREE,LFREE',LENA,LENB,KFREE,LFREE
       CALL MEMCHK_KRCC(WORK)
-C     CALL MEMMAR(KLAOBEX_CC,LENA,'ADDL  ',2,'IAOBEX')
-C     CALL MEMMAR(KLBOBEX_CC,LENB,'ADDL  ',2,'IAOBEX')
       CALL MEMGET('INTE',KLAOBEX_CC,LENA,WORK,KFREE,LFREE)
+      print*,'after KLAOBEX_CC'
       CALL MEMGET('INTE',KLBOBEX_CC,LENB,WORK,KFREE,LFREE)
       CALL SPOBEX_TO_ABOBEX_CC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,NGAS,
      &     0,NAOBEX_TP,NBOBEX_TP,WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
@@ -593,105 +508,15 @@ C     CALL MEMMAR(KLBOBEX_CC,LENB,'ADDL  ',2,'IAOBEX')
      &     NBOBEX_TP,WORK(KLBOBEX_CC),NOCTPB,NELFSPGP(1,IOCTPB),
      &     NOBPT,NGAS,MAXLENB)
       IF(NTEST.GE.10) WRITE(6,*) ' After LEN_GENOP_STR_MAP_CC '
-      MAXLEN_I1 = MAX(MAXLENA,MAXLENB)
-      IF(IPRNT.GE.5) WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 *
 * Max Dimension of spinorbital excitation operators
 *
-C           CALL MEMMAR(KLLSOBEX_CC,NSPOBEX_TPE,'ADDL  ',1,'LSPOBX')
-C           CALL MEMMAR(KLIBSOBEX_CC,NSPOBEX_TPE,'ADDL  ',1,'LSPOBX')
-C           CALL MEMMAR(KLSPOBEX_AC_CC,NSPOBEX_TPE,'ADDL  ',1,'SPOBAC')
       CALL MEMGET('INTE',KLLSOBEX_CC,NSPOBEX_TPE,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLIBSOBEX_CC,NSPOBEX_TPE,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KLSPOBEX_AC_CC,NSPOBEX_TPE,WORK,KFREE,LFREE)
-*. KLSPOBEX_AC allocated for later and transfered via common blocks
-*. ALl spinorbital excitations are initially active
-*
-* It boggles the mind why ISETVC doesn't set IONE in vec?
-            IONE = 1
-            CALL ISETVC(WORK(KLSPOBEX_AC_CC),IONE,NSPOBEX_TPE)
-            DO I=1,NSPOBEX_TPE
-              print*,'WORK(KLSPOBEX_AC_CC+I)',WORK(KLSPOBEX_AC_CC+I)
-            END DO
-*
-CLasse      MX_ST_TSOSO_MX = 0
-CLasse      MX_ST_TSOSO_BLK_MX = 0
-CLasse      MX_TBLK_MX = 0
-CLasse      MX_TBLK_AS_MX = 0
-CLasse      LEN_T_VEC_MX = 0
-*
-C      print*,'IFTTWO,ILTTWO ',IFTTWO,ILTTWO
-CLasse    DO ICCAMP_SM = 1, NSMST
-CLasse        print*,'ICCAMP_SM ',ICCAMP_SM
-*
-COri        CALL IDIM_TCC_DBG(WORK(KLSOBEX),NSPOBEX_TP,ICCAMP_SM,
-COri     &       MX_ST_TSOSOL,MX_ST_TSOSO_BLKL,MX_TBLKL,
-COri     &       WORK(KLLSOBEX),WORK(KLIBSOBEX),LEN_T_VECL,
-COri     &       MSCOMB_CC,MX_TBLK_AS,
-COri     &       WORK(KISOX_FOR_OCCLS),NOCCLS,WORK(KIBSOX_FOR_OCCLS),
-COri     &       NTCONF,IPRCC)
-CLasse        CALL IDIM_TCC_DBG(WORK(KLSOBEX),NSPOBEX_TP,ICCAMP_SM,
-CLasse     &       MX_ST_TSOSOL,MX_ST_TSOSO_BLKL,MX_TBLKL,
-CLasse     &       WORK(KLLSOBEX),WORK(KLIBSOBEX),LEN_T_VECL,
-CLasse     &       MSCOMB_CC,MX_TBLK_AS,
-CLasse     &       IFTONE,IFTTWO,ILTTWO,N1ELINT,N2ELINT,
-CLasse     &       IPRCC)
-*
-CLasse        MX_ST_TSOSO_MX = MAX(MX_ST_TSOSO_MX,MX_ST_TSOSOL)
-CLasse        MX_ST_TSOSO_BLK_MX = MAX(MX_ST_TSOSO_BLK_MX,MX_ST_TSOSO_BLKL)
-CLasse        MX_TBLK_MX = MAX(MX_TBLK_MX,MX_TBLKL)
-CLasse        MX_TBLK_AS_MX = MAX(MX_TBLK_AS_MX,MX_TBLK_AS)
-CLasse        LEN_T_VEC_MX = MAX(LEN_T_VEC_MX, LEN_T_VECL)
-C        print*,'N1ELINT,N2ELINT ',N1ELINT,N2ELINT
-*
-CLasse      END DO
-      IF(IPRNT.GE.5) WRITE(6,*) ' MX_TBLK_AS_MX = ', MX_TBLK_AS_MX
-      IF(IPRNT.GE.5) WRITE(6,*) ' LEN_T_VEC_MX = ', LEN_T_VEC_MX
-C      stop 'after IDIM'
-*
-*. And dimensions for symmetry 1
-      ITOP_SM = 1
 *
 *
-* NOT SURE IDIM_TCC_KRCC WORKS AS IT SHOULD!!!! LASSE
+      IF(NTEST.GE.5) WRITE(6,*) ' LEN_T_VEC_MX = ', LEN_T_VEC_MX
 *
-      CALL IDIM_TCC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,ITOP_SM,
-     &     MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
-     &     WORK(KLLSOBEX_CC),WORK(KLIBSOBEX_CC),LEN_T_VEC_CC,
-     &     MSCOMB_CC,MX_SBSTR,
-     &     IFTONE,IFTTWO,-1,N1ELINT,N2ELINT,
-     &     IPRCC)
-*
-      IF(NTEST.GE.100) WRITE(6,*) ' After IDIM_TCC section '
-      MX_TBLK_MX = MX_TBLK
-      MX_ST_TSOSO_MX =  MX_ST_TSOSO
-C temp change in size
-      MX_ST_TSOSO_BLK_MX = 2*MX_ST_TSOSO_BLK
-      N_CC_AMP = LEN_T_VEC_CC
-*. Hard wire info for unit operator stored as last spinorbital excitation
-C  ISTVC2(IVEC,IBASE,IFACT,NDIM)
-      IONE = 1
-C
-      CALL ISTVC3(WORK(KLLSOBEX_CC),NSPOBEX_TPE,IONE,1)
-      N_CC_AMPP1 = N_CC_AMP + 1
-      CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
-      IF(IPRNT.GE.5)
-     &WRITE(6,*) ' LUCIA_GENCC : N_CC_AMP = ', N_CC_AMP
-*
-*. Pointers to KVEC1 and KVEC2, transferred through GLBBAS
-       KVEC1P = KVEC1
-       KVEC2P = KVEC2
-       WRITE(6,*) ' KVEC3 after GET_3BLKS.. ', KVEC3
-*. and two CC vectors , extra element for unexcited SD at end of vectors
-       N_SD_INT = 1
-* next line added by Lasse not sure if correct but thinks so
-       LEN_T_VEC_MX = LEN_T_VEC_CC
-*
-       LENNY = LEN_T_VEC_MX + N_SD_INT
-C      CALL MEMMAR(KCC1,IMULTFAC*LENNY,'ADDL  ',2,'CC1_VE')
-C      CALL MEMMAR(KCC2,IMULTFAC*LENNY,'ADDL  ',2,'CC2_VE')
-      CALL MEMGET('REAL',KCC1,IMULTFAC*LENNY,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCC2,IMULTFAC*LENNY,WORK,KFREE,LFREE)
 *
 * Cluster operator setup is now finshed
 * Find the number of holes and particles to be contracted for a given H
@@ -709,13 +534,64 @@ C      CALL MEMMAR(KCC2,IMULTFAC*LENNY,'ADDL  ',2,'CC2_VE')
 *
       CALL SORT_OP_MASTER(WORK,KFREE,LFREE)
 *
+* Not so pretty temp solution (need to dimension T after sort!)
+*
+*. And dimensions for symmetry 1
+      ITOP_SM = 1
+*
+*
+* NOT SURE IDIM_TCC_KRCC WORKS AS IT SHOULD!!!! LASSE
+* Should be moved since T is resorted!!!!! Lasse 2011 dont ignore
+      CALL IDIM_TCC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,ITOP_SM,
+     &     MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
+     &     WORK(KLLSOBEX_CC),WORK(KLIBSOBEX_CC),LEN_T_VEC_CC,
+     &     MX_SBSTR,
+     &     IFTONE,IFTTWO,-1,N1ELINT,N2ELINT)
+*
+      IF(NTEST.GE.100) WRITE(6,*) ' After IDIM_TCC section '
+      MX_ST_TSOSO_MX =  MX_ST_TSOSO
+C temp change in size
+      MX_ST_TSOSO_BLK_MX = 2*MX_ST_TSOSO_BLK
+      N_CC_AMP = LEN_T_VEC_CC
+*. Hard wire info for unit operator stored as last spinorbital excitation
+C  ISTVC2(IVEC,IBASE,IFACT,NDIM)
+      IONE = 1
+C
+      CALL ISTVC3(WORK(KLLSOBEX_CC),NSPOBEX_TPE,IONE,1)
+      N_CC_AMPP1 = N_CC_AMP + 1
+*. Why is this done???
+C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
+      IF(NTEST.GE.5)
+     &WRITE(6,*) ' LUCIA_GENCC : N_CC_AMP = ', N_CC_AMP
+*
+*. Pointers to KVEC1 and KVEC2, transferred through GLBBAS
+      CALL GET_3BLKS_GCC_REL(KVEC1,KVEC2,KVEC3,MXCJ,
+     &                       WORK,KFREE,LFREE)
+       WRITE(6,*) ' KVEC3 after GET_3BLKS.. ', KVEC3
+*. and two CC vectors , extra element for unexcited SD at end of vectors
+       N_SD_INT = 1
+* next line added by Lasse not sure if correct but thinks so
+       LEN_T_VEC_MX = LEN_T_VEC_CC
+*
+       LENNY = LEN_T_VEC_MX + N_SD_INT
+       print*,'LENNY',LENNY
+      CALL MEMGET('REAL',KCC1,IMULTFAC*LENNY,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCC2,IMULTFAC*LENNY,WORK,KFREE,LFREE)
+*
+* End not so pretty temp solution
+*
+*
 * Now that operators are found and sorted it is time to solve the cc
 * equations. This will be done by first finding all possible
 * contractions and then eliminating the redundant ones and in the
 * process calculate permutation factors and signs for contractions
 *
       CALL CONTRACTION_SOLVER(WORK,KFREE,LFREE)
-      stop 'enough for now'
+*
+* Now to dimension and setup arrays for intermediates.
+* This should later be moved to CC_VEC_FNC_KRCC to save space
+*
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
 *
 * ============================================================
 * Initialize : Restart, set coefs to zero, start from CI coefs
@@ -768,8 +644,10 @@ C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
 * ======================
 *
       WRITE(6,*) ' KVEC3 before ANA_GCC ', KVEC3
-      CALL ANA_GENCC_CC_KRCC(WORK(KCC1),1)
+      CALL ANA_GENCC_CC_KRCC(WORK(KCC1),1,
+     &                       WORK,KFREE,LFREE)
       WRITE(6,*) ' KVEC3 after ANA_GCC ', KVEC3
+      STOP 'AFTER ANALYZE'
 *
 *
 * =========================
@@ -780,25 +658,19 @@ C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
       I_DO_CC_EXP = 0
       IF(I_DO_CC_EXP.EQ.1) THEN
       MX_TERM = 100
-      ICC_EXC = 1
       XCONV = 1.0D-20
       I_USE_SIMTRH = 0
 *
-      ICSPC = IETSPC
-      ISSPC = IETSPC
+      ICSPC = ICISPC
+      ISSPC = ICISPC
 *
 C     CALL EXPT_REF(LUC,LUSC1,LUHC,LUSC2,LUSC3,XCONV,MX_TERM,
 C    &             WORK(KVEC1),WORK(KVEC2),CCTYPE)
 *. H Exp T !ref>
-      ICC_EXC = 0
 C?    WRITE(6,*) ' Input to MV7 '
 C?    CALL WRTVCD(WORK(KVEC1),LUSC1,1,-1)
 *. Regenerate inactive Fock matrix - different definition of
 *. inactive Fock matrix may have been used in CC calculation
-      CALL COPVEC(WORK(KINT1O),WORK(KINT1),NINT1)
-      I_USE_SIMTRH = 0
-      CALL FI(WORK(KINT1),ECCX,1)
-      ECORE = ECORE_INI
 
       CALL MV7(WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC)
 C?    WRITE(6,*) ' Output from MV7 '
@@ -852,17 +724,12 @@ C?    CALL WRTVCD(WORK(KVEC1),LUHC,1,-1)
 *.    ^ End if properties should be calculated
       END IF
 *     ^ End of expectation values are calculated
-C     IF(I_DO_CC3.EQ.1) THEN
-C       CALL CC3_JACO(WORK(KCC1),WORK(KVEC1),WORK(KVEC2),
-C    &                WORK(KCC2))
-C     END IF
 *
 *. Test Jacobian by explicit calculation
 *
       I_TEST_JACO = 0
       IF(I_TEST_JACO.EQ.1) THEN
         WRITE(6,*) ' Control will be transferred to TEST_JACO'
-!radovan:
         call quit('subroutine JACO_TEST missing')
 !       CALL JACO_TEST(WORK(KCC1),WORK(KVEC1),WORK(KVEC2),
 !    &                 WORK(KCC2))
@@ -886,46 +753,6 @@ C
 C       CALL CC_EXC_E_REL(WORK(KVEC1),WORK(KVEC2),WORK(KCC1),
 C    &                WORK(KCC2),WORK(KCC3),WORK(KCC4),
 C    &                WORK(KDIA),II_RES_EXC,ECC)
-      END IF
-*
-* =====================================
-* Reform CC to CI form and store on LUC
-* =====================================
-*
-      I_TRANS_WF = 0
-      IF(I_TRANS_WF.EQ.1) THEN
-*. CI will be used in the following,
-*. Regenerate inactive Fock matrix - different definition of
-*. inactive Fock matrix may have been used in CC calculation
-        CALL COPVEC(WORK(KINT1O),WORK(KINT1),NINT1)
-        ICC_EXC = 0
-        I_USE_SIMTRH = 0
-        CALL FI(WORK(KINT1),ECCX,1)
-        ECORE = ECORE_INI
-
-        WRITE(6,*) ' cc wf is normalized and transferred to LUC '
-        MX_TERM = 100
-        ICC_EXC = 1
-        XCONV = 1.0D-20
-        I_USE_SIMTRH = 0
-*
-        ICSPC = IETSPC
-        ISSPC = IETSPC
-*
-C       CALL EXPT_REF(LUC,LUSC1,LUHC,LUSC2,LUSC3,XCONV,MX_TERM,
-C    &               WORK(KVEC1),WORK(KVEC2),CCTYPE)
-        CC = INPRDD(WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC1 ,1,LBLK)
-        XNORM = SQRT(CC)
-        FACTOR = 1.0D0/XNORM
-        CALL SCLVCD(LUSC1,LUC,FACTOR,WORK(KVEC1),1,-1)
-      END IF
-*
-      II_DO_CMPCCI = 0
-      IF(II_DO_CMPCCI.EQ.1) THEN
-*. Compare the expanded CI vector with the CI vector on LU17
-C ANADIFF(C1,C2,INSPC,LUC1,LUC2,ICISTR)
-        LU17 = 17
-C       CALL ANADIFF(WORK(KVEC1),WORK(KVEC2),ICISPC,ISM,LU17,LUC)
       END IF
 *
       WRITE(6,*)  ' Returning from LUCIA_GENCC_REL '

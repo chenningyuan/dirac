@@ -952,7 +952,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         write(LUPRI,*) 'namef=',namef
         write(LUPRI,*) 'namet=',namet
         write(LUPRI,*) 'iord=',iord
-        call check_modules
+        !call check_modules
       endif
 
       do 500 i=1,8
@@ -1057,7 +1057,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       end do  
       call dcopy (nsize,tmp(1),1,gen(istrt12+1),1)
 
-      call check_modules
+      !call check_modules
 
       return
       end
@@ -1115,7 +1115,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         write(LUPRI,*) 'iord=',iord
         write(LUPRI,*) 'ndp8=ndp3/nir=',ndp8
         write(LUPRI,*) 'ndp4=',ndp4
-        call check_modules
+        !call check_modules
       endif
 
       ndp8=ndp3/nir
@@ -1191,12 +1191,17 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         end if
         do 80 j=1,lngth
 ! miro: might get index leak for the "itmp" array !
+          itmp_indx=ndp3+(ii-1)*ndp8+j
+          if (itmp_indx.gt.ndp4) then
+            call quit('reord6: itmp ugly index leak!')
+          endif
           gen(istrtt2+ije1(i-1)+j)=
-     1    gen(istrtf2+ije2(i-1)+itmp(ndp3+(ii-1)*ndp8+j))
+!    1    gen(istrtf2+ije2(i-1)+itmp(ndp3+(ii-1)*ndp8+j))
+     1    gen(istrtf2+ije2(i-1)+itmp(itmp_indx))
 80      continue
 10    continue
 
-      call check_modules
+      !call check_modules
 
       call prtime ("reord6   ",0,1)
       return
@@ -1241,7 +1246,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension ia(6),ja(6),msk(3)
       data msk / z'ff0000',z'ff00',z'ff' /
 
-      call check_modules
+      !call check_modules
 
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
@@ -1286,7 +1291,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
      1  gen(istrt12+ije1(i-1)+1),1)
 30    continue
 
-      call check_modules
+      !call check_modules
 
       call prtime ("reord7  ",0,1)
 
@@ -1338,7 +1343,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension ia(10),ja(10),msk(5),iord(10)
       data msk / z'f0000',z'f000',z'f00',z'f0',z'f' /
 
-      call check_modules
+      !call check_modules
 
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
@@ -1356,7 +1361,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       istrtf1=nstrt(1,ntapef-1)+2*nij2+4
       istrtf2=nstrt(2,ntapef-1)
 
-      call check_modules
+      !call check_modules
 
       do 10 i=1,nij2
         lngth=ije1(i)-ije1(i-1)
@@ -1389,7 +1394,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 10    continue
       call prtime ("reord10  ",0,1)
 
-      call check_modules
+      !call check_modules
 
       return
       end
@@ -1438,7 +1443,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       data msk / z'f0000',z'f000',z'f00',z'f0',z'f' /
 
-      call check_modules
+      !call check_modules
 
       i1=iord(1)
       i2=iord(2)
@@ -1505,7 +1510,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 10    continue
       call dcopy (k,tmp,1,gen(istrtt2+1),1)   
 
-      call check_modules
+      !call check_modules
 
       call prtime ("reord11 ",0,2)
       return
@@ -1556,7 +1561,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension ia(12),ja(12),msk(6),iord(12)
       data msk / z'f00000',z'f0000',z'f000',z'f00',z'f0',z'f' /
 
-      call check_modules
+      !call check_modules
 
       call files_ccsd (namef,ntapef,new,2,-1,-1)
 
@@ -1609,7 +1614,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       call prtime ("reord12  ",0,1)
 
-      call check_modules
+      !call check_modules
 
       return
       end
@@ -1658,7 +1663,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       data msk / z'f00000',z'f0000',z'f000',z'f00',z'f0',z'f' /
 
-      call check_modules
+      !call check_modules
 
       i1=iord(1)
       i2=iord(2)
@@ -1725,7 +1730,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 10    continue
       call dcopy (k,tmp,1,gen(istrtt2+1),1)   
 
-      call check_modules
+      !call check_modules
 
       call prtime ("reord13 ",0,2)
       return
@@ -1806,7 +1811,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         write(LUPRI,'(2x,a,i6)') 'nij1=',nij1
         write(LUPRI,'(2x,a,i6)') 'nflcur=',nflcur
         write(LUPRI,*)
-        call check_modules
+        !call check_modules
       endif
 
       call tmplt(iii,iiv,name,num)
@@ -1893,7 +1898,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        call check_modules
+       ! call check_modules
       endif
 
 110   if (j1.eq.j3) go to 120
@@ -1914,7 +1919,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        call check_modules
+        !call check_modules
       endif
 
 
@@ -1936,7 +1941,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        call check_modules
+        !call check_modules
       endif
 
 130   if ((j1.eq.j3).or.(j2.eq.j4)) go to 140
@@ -1955,7 +1960,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        call check_modules
+        !call check_modules
       endif
 
 140   if ((j1.eq.j2).and.(j3.eq.j4)) go to 190
@@ -1975,7 +1980,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        call check_modules
+        !call check_modules
       endif
 
 150   if (j1.eq.j3) go to 160
@@ -1994,7 +1999,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        call check_modules
+        !call check_modules
       endif
 
 160   if (j2.eq.j4) go to 170
@@ -3690,7 +3695,7 @@ c
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
 
-        call check_ctmp_mod
+        !call check_ctmp_mod
 
       call files_ccsd (name4,ntape4,new,1,-1,-1)
       if (new.ne.0) then
@@ -3763,7 +3768,7 @@ c
      1    gen(istrt12+ije1(i-1)+1),igen(istrt11+ije1(i-1)+1))
         end if
 80    continue
-        call check_ctmp_mod
+        !call check_ctmp_mod
 
       call add (namet,1.d0,name4,1.d0,namet)
 
@@ -3827,7 +3832,7 @@ c
         call header('Output from "t2sqr"',-1)
         write(LUPRI,*) 'iparm=',iparm     
       endif
-        call check_ctmp_mod
+        !call check_ctmp_mod
 
       iparm=iparm-1
       call files_ccsd (name4,ntape4,new,1,-1,-1)
@@ -3891,7 +3896,7 @@ c
 30      continue
 20    continue
 
-      call check_ctmp_mod
+      !call check_ctmp_mod
        
       do 70 i=1,nij1
         if (ninds(i).gt.0) then
@@ -3900,11 +3905,11 @@ c
         end if
 70    continue
 
-      call check_ctmp_mod
+      !call check_ctmp_mod
 
       call add (namet,1.d0,name4,1.d0,namet)
 
-      call check_ctmp_mod
+      !call check_ctmp_mod
 
       return
       end
@@ -4033,7 +4038,7 @@ c
       if (getiprint() >= 5) then ! control printout
         call header('Output from "tchng8"',-1)
         write(LUPRI,*)  'nij=',nij
-        call check_ctmp_mod
+        !call check_ctmp_mod
       endif
 
       call dimx (ije(nij),ndp3,"tchng8  ")
@@ -4054,7 +4059,7 @@ c
 20      continue
 10    continue
 
-      call check_ctmp_mod
+      !call check_ctmp_mod
 
       call dimx (nij1,ndij,"tchng8  ")
       ije1(nij1)=ije(nij)

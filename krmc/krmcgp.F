@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,
@@ -50,7 +48,6 @@ C
       logical   set_qphaseFAC
       real(8)   qphase_FAC
 C
-#include "sdpre.h"
 C
       CALL DZERO(VNZ3,NELEM*NZ*3)
 C
@@ -130,14 +127,14 @@ C
                      IQ2 = IPQTOQ(IZ2,IREPAB)
                      IFAC = IFACNZ3(ICLASS,1,IQ1,IQ2)
                      IF (IFAC .NE. 0) THEN
-                        CALL DAXPY(NELEM,SDPRE(IFAC),
+                        CALL DAXPY(NELEM,dble(IFAC),
      &                       VCL(1,IZ2,IZ1,IREPABR),1,
      &                       VNZ3(1,1,ICLASS),1)
                      END IF
                      IF (NZ .GT. 1) THEN
                         IFAC = IFACNZ3(ICLASS,2,IQ1,IQ2)
                         IF (IFAC .NE. 0) THEN
-                           CALL DAXPY(NELEM,SDPRE(IFAC),
+                           CALL DAXPY(NELEM,dble(IFAC),
      &                          VCL(1,IZ2,IZ1,IREPABR),1,
      &                          VNZ3(1,2,ICLASS),1)
                         END IF
@@ -172,13 +169,13 @@ C
                         IQ2 = IPQTOQ(IZ2,IREPAB)
                         IFAC = IFACNZ3(ICLASS,3,IQ1,IQ2)
                         IF (IFAC .NE. 0) THEN
-                           CALL DAXPY(NELEM,SDPRE(IFAC),
+                           CALL DAXPY(NELEM,dble(IFAC),
      &                          VCL(1,IZ2,IZ1,IREPABR),1,
      &                          VNZ3(1,3,ICLASS),1)
                         END IF
                         IFAC = IFACNZ3(ICLASS,4,IQ1,IQ2)
                         IF (IFAC .NE. 0) THEN
-                           CALL DAXPY(NELEM,SDPRE(IFAC),
+                           CALL DAXPY(NELEM,dble(IFAC),
      &                          VCL(1,IZ2,IZ1,IREPABR),1,
      &                          VNZ3(1,4,ICLASS),1)
                         END IF
@@ -193,7 +190,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck x2uu */
       SUBROUTINE X2UU(HX,H2XY)
 C***********************************************************************
 C
@@ -239,7 +235,6 @@ C
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck x2gu */
       SUBROUTINE X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C***********************************************************************
 C
@@ -270,6 +265,8 @@ C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
       LOGICAL   ONLYXY, DOH2AC, DOFQ
 C
+!     IPRINT_local = max(IPROPT,31)
+      IPRINT_local = IPROPT
       IF (DOH2AC) THEN
 C
          if(.not.spinfr_krmc)then
@@ -296,34 +293,34 @@ C
 C
 C        Print section
 C
-         IF(IPROPT .GE. 30 .AND. DOH2AC) THEN
+         IF(IPRINT_local .GE. 30 .AND. DOH2AC) THEN
 #if defined MCSCF_DEBUG_SPINFREE
-!          WRITE(LUPRI,'(1X,A)') '(X2GU) input HX(*,*,*,*): '
-!          DO I3 = 1, 3
-!             DO IZ = 1, NZ
-!                WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
-!    &                'Matrix no. (',IZ,',',I3,'): '
-!                CALL OUTPUT(HX(1,1,IZ,I3),1,norbt,1,norbt,
-!    &                norbt,norbt,1,LUPRI)
-!             END DO
-!          END DO
+           WRITE(LUPRI,'(1X,A)') '(X2GU) input HX(*,*,*,*): '
+           DO I3 = 1, 3
+              DO IZ = 1, NZ
+                 WRITE(LUPRI,'(A,I3,A,I3,A)')
+     &                ' HX (NZ,3) matrix no. (',IZ,',',I3,'): '
+                 CALL OUTPUT(HX(1,1,IZ,I3),1,norbt,1,norbt,
+     &                norbt,norbt,-1,LUPRI)
+              END DO
+           END DO
 #endif
            WRITE(LUPRI,'(1X,A,I3,A)') '(X2GU) output H2AC(*,*,',IUU,'):'
            DO I3 = 1, 3
               DO IZ = 1, NZ
-                 WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
-     &                'Matrix no. (',IZ,',',I3,'): '
+                 WRITE(LUPRI,'(A,I3,A,I3,A)')
+     &                ' H2AC (NZ,3) matrix no. (',IZ,',',I3,'): '
                  CALL OUTPUT(H2AC(1,1,IUU,IZ,I3),1,NASHT,1,NASHT,
-     &                       NASHT,NASHT,1,LUPRI)
+     &                       NASHT,NASHT,-1,LUPRI)
               END DO
            END DO
          END IF
       END IF
 
 !     get rid of noise
-      CALL DZERO(H2XY, n2orbx * nz * nz * nbsym / nfsym)
+      CALL DZERO(H2XY, NORBT*NASHT * NZ * 3)
       IF (.NOT. ONLYXY) 
-     &CALL DZERO(H2YX, n2orbx * nz * nz * nbsym / nfsym)
+     &CALL DZERO(H2YX, NORBT*NASHT * NZ * 3)
 C
 C     Collect (gu) and (ug) elements.
 C
@@ -370,7 +367,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gu2ug */
       SUBROUTINE GU2UGT(GUINT,UGTINT,IREPIJ,NORBI,NASHI)
 C***********************************************************************
 C
@@ -395,7 +391,6 @@ C
       DIMENSION GUINT(NORBI,NASHI,NZ,NZ,*)
       DIMENSION UGTINT(NORBI,NASHI,NZ,NZ,*)
 C
-#include "sdpre.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DCOPY(NORBI*NASHI*NCLASS,GUINT,1,UGTINT,1)
@@ -442,7 +437,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck ifacnz3 */
       FUNCTION IFACNZ3(I3,IZ,IQ1,IQ2)
 C***********************************************************************
 C
@@ -552,7 +546,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck btch2f */
       SUBROUTINE BTCH2F(HT,IZ2,IREPABR,HX,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -610,7 +603,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck intb2x */
       SUBROUTINE INTB2X(HT,IZ2,IREPABR,IREPAB,HX,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -831,7 +823,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck f2btch */
       SUBROUTINE F2BTCH(HX,HT,IZ2,IREPABR,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -894,7 +885,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck f2gu */
       SUBROUTINE F2GU(HX,HT,IZ2,IREPABR,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -936,7 +926,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck blkzero */
       SUBROUTINE BLKZERO(J1MO,N1MO,J2MO,N2MO,AMAT,NRDIM,NCDIM,
      &              NZ,NFSYM,IREPIJ)
 C***********************************************************************
@@ -968,7 +957,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck blkunit */
       SUBROUTINE BLKUNIT(JMO,NMO,AMAT,NRDIM,NCDIM,NZ,NFSYM)
 C***********************************************************************
 C
@@ -999,7 +987,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rprci */
       SUBROUTINE RPRCI(CIVEC,NZCONF,NZ,CIPRG,THRPCI,LUPRI)
 C***********************************************************************
 C
@@ -1051,7 +1038,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rappbos */
       SUBROUTINE RAPPBOS(CMO,IBOSYM,IBEIG,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
@@ -1092,7 +1078,6 @@ C
 C
       DIMENSION WEIGHT(8)
 C
-#include "sdpre.h"
 #include "ibtfun.h"
 #include "memint.h"
 C
@@ -1185,7 +1170,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rgmcmo */
       SUBROUTINE RGMCMO(CMO,WORK,LWORK)
 C***********************************************************************
 C
@@ -1294,7 +1278,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck appfq */
       SUBROUTINE APPFQ(CTL,FQ,DV,FV,WORK,LWORK)
 C***********************************************************************
 C
@@ -1416,7 +1399,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dcsct */
       SUBROUTINE DCSCT(DC)
 C***********************************************************************
 C
@@ -1450,7 +1432,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotfc */
       SUBROUTINE ROTFC(C,U,FC,WORK,LWORK)
 C***********************************************************************
 C
@@ -1514,7 +1495,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotfc1 */
       SUBROUTINE ROTFC1(C,U,FC,FCOLD,WORK,LWORK)
 C***********************************************************************
 C
@@ -1564,7 +1544,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotfc */
       SUBROUTINE ROTFQ(C,U,FQ,WORK,LWORK)
 C***********************************************************************
 C
@@ -1629,7 +1608,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotorb */
       SUBROUTINE ROTORB(C,U,CMO,WORK,LWORK)
 C***********************************************************************
 C
@@ -1708,13 +1686,12 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck diagc */
       SUBROUTINE DIAGC(C,AM,EIG,EIGVEC,NDIM,WORK,LWORK)
 C***********************************************************************
 C
 C     diagonalize square matrix AM, return eigenvectors and eigenvalues.
 C
-C     C controls which type of matrix is diagonalized - dimension NDIM2
+C     C controls which type of matrix is diagonalized - dimension NDIMI
 C
 C     Written by S. Knecht - July 2008
 C
@@ -1736,62 +1713,9 @@ C
 C
       CALL QENTER('DIAGC')
 C
-      IOFF2 = 1
-C
-C     special matrix X
-      IF (C .EQ. 'X') GOTO 100
-C
-      DO IFSYM = 1, NFSYM
-C
-        IF (C .EQ. 'E') THEN
-           NDIM2 = NESH(IFSYM)
-        ELSE IF (C .EQ. 'P') THEN
-           NDIM2 = NPSH(IFSYM)
-        ELSE IF (C .EQ. 'I') THEN
-           NDIM2 = NISH(IFSYM)
-        ELSE IF (C .EQ. 'A') THEN
-           NDIM2 = NASH(IFSYM)
-        ELSE IF (C .EQ. 'V') THEN
-           NDIM2 = NVSH(IFSYM)
-        ELSE
-           WRITE(LUPRI,'(2A)')
-     &          '*** ERROR in DIAGC *** Unknown control character: ',C
-           CALL QUIT('*** ERROR in DIAGC *** Unknown control character')
-        END IF
-C
-C       diagonalize AM
-C
-C
-        IF( NZ .eq. 1 ) THEN
-C          ... calculate eigenvalues and eigenvectors
-           IJOB   = 1
-C          ... ascending order
-           IORDER = 1
-           IPACK  = 0
-           CALL RSJACO(NDIM,NDIM2,NDIM2,AM(IOFF2,IOFF2,1),
-     &                 EIG(IOFF2),IJOB,IORDER,IPACK,
-     &                 EIGVEC(IOFF2,IOFF2,1),WORK(KFREE),LFREE)
-        ELSE
-C          ... calculate eigenvalues and eigenvectors
-           MATZ = 1
-           CALL QDIAG(NZ,NDIM2,AM(IOFF2,IOFF2,1),NDIM,NDIM,
-     &                EIG(IOFF2),MATZ,EIGVEC(IOFF2,IOFF2,1),NDIM,NDIM2,
-     &                WORK(KFREE),LFREE,IERR)
-           IF( IERR .ne. 0 ) THEN
-                  WRITE(LUPRI,'(/,1X,4A,I4)')
-     &                 '*** ERROR in DIAGC ***: ',
-     &                 '*** ERROR for control parameter: ',C,
-     &                 'QDIAG failed with error code ',IERR
-                  CALL QUIT('*** ERROR in DIAGC: block diag ***')
-           END IF
-        ENDIF
-C       ... new offset
-        IOFF2 = IOFF2 + NDIM2
-      ENDDO
-C
-C     special matrix X
- 100  IF (C .EQ. 'X') THEN
-        NDIM2 = NDIM
+C     routine only for the special matrix X
+      IF (C .EQ. 'X') THEN
+        NDIMI = NDIM
 C
 C       ... calculate eigenvalues and eigenvectors
         IF (NZ .EQ. 1) THEN
@@ -1799,12 +1723,12 @@ C       ... calculate eigenvalues and eigenvectors
 C          ... no sorting
            IORDER = 0
            IPACK  = 0
-           CALL RSJACO(NDIM,NDIM2,NDIM2,AM,EIG,IJOB,IORDER,IPACK,
+           CALL RSJACO(NDIM,NDIMI,NDIM,AM,EIG,IJOB,IORDER,IPACK,
      &                 EIGVEC,WORK(KFREE),LFREE)
         ELSE
            MATZ = 1
-           CALL   QDIAG(NZ,NDIM2,AM,NDIM,NDIM,EIG,MATZ,EIGVEC,
-     &                  NDIM,NDIM2,WORK(KFREE),LFREE,IERR)
+           CALL   QDIAG(NZ,NDIMI,AM,NDIM,NDIM,EIG,MATZ,EIGVEC,
+     &                  NDIM,NDIMI,WORK(KFREE),LFREE,IERR)
            IF (IERR .NE. 0) THEN
               WRITE(LUPRI,'(/,1X,4A,I4)')
      &        '*** ERROR in DIAGC ***: ',
@@ -1817,37 +1741,213 @@ C          ... no sorting
 C
       CALL QEXIT('DIAGC')
       END
+C***********************************************************************
+
+      SUBROUTINE DIAG_piv2fock(C,AM,EIG,EIGVEC,idx,ibeig,WORK,LWORK)
+C***********************************************************************
+C
+C     diagonalize square matrix AM, return eigenvectors and eigenvalues.
+C
+C     C controls which type of matrix is diagonalized - dimension NDIMI
+C
+C     AM is destroyed!
+C
+C     Written by S. Knecht - July 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "maxorb.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+C
+      CHARACTER C*1
+      DIMENSION EIG(*), EIGVEC(*), AM(*), idx(*), ibeig(*)
+      DIMENSION WORK(LWORK)
+      integer :: nshell_tmp(nfsym), nshellt_tmp
+C
+#include "memint.h"
+C
+      CALL QENTER('DIApiv')
+
+      IF (C .EQ. 'E') THEN
+         nshell_tmp(1:nfsym) = NESH(1:nfsym)
+         nshellt_tmp     = NESHT
+      ELSE IF (C .EQ. 'P') THEN
+         nshell_tmp(1:nfsym) = NPSH(1:nfsym)
+         nshellt_tmp     = NPSHT
+      ELSE IF (C .EQ. 'I') THEN
+         nshell_tmp(1:nfsym) = NISH(1:nfsym)
+         nshellt_tmp     = NISHT
+      ELSE IF (C .EQ. 'A') THEN
+         nshell_tmp(1:nfsym) = NASH(1:nfsym)
+         nshellt_tmp     = NASHT
+      ELSE IF (C .EQ. 'V') THEN
+         nshell_tmp(1:nfsym) = NVSH(1:nfsym)
+         nshellt_tmp     = NVSHT
+      ELSE
+         WRITE(LUPRI,'(2A)')
+     &        '*** ERROR in DIApiv *** Unknown control character: ',C
+         CALL QUIT('*** ERROR in DIApiv *** Unknown control character')
+      END IF
+
+      CALL MEMGET('INTE',KJZBOS,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVECTM,nshellt_tmp**2*nz,WORK,KFREE,LFREE)
+      call izero(work(kjzbos),norbt)
+      call dzero(work(kvectm),nshellt_tmp**2*nz)
+
+C
+C     ... pointers to first fermion symmetry (updated at end of DO IFSYM loop)
+      JOFF2    = 1
+      JOFF_eig = 1
+      joffset  = 0
+
+      DO IFSYM = 1, NFSYM
+C
+        NDIMI = nshell_tmp(ifsym)
+        NDIM  = nshellt_tmp
+
+C       diagonalize AM
+C
+        if(NDIMI .gt. 0)then
+
+#ifdef MCSCF_debug
+          CALL HEADER('DIAG_piv2fock:: full amat :',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',IFSYM,'/',NFSYM
+          CALL PRQMAT(am(1),
+     &                NDIM,NDIM,NDIM,NDIM,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#endif
+ 
+!         make possibly a square matrix (relevant only when nfsym == 2)
+          if(NDIMI .ne. NDIM)then
+            do iz = 1, nz
+              JOFF_mat = JOFF2
+              do i = 1, NDIMI
+                call dcopy(NDIMI,AM(JOFF_mat+((iz-1)*NDIM**2)),1,
+     &                     am(((iz-1)*NDIM**2)+(i-1)*NDIMI+1),1)
+                JOFF_mat = JOFF_mat + NDIM
+              end do
+            end do
+          end if
+
+#ifdef MCSCF_debug
+          CALL HEADER('DIAG_piv2fock:: sub matrix :',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',IFSYM,'/',NFSYM
+          CALL PRQMAT(am,
+     &                NDIMI,NDIMI,NDIMI,NDIMI,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+
+          IF( NZ .eq. 1 ) THEN
+!            calculate eigenvalues and eigenvectors
+             IJOB   = 1
+!            -------------------------------------------------------------
+!            no sorting: in case of linear symmetry / spinfree
+!            calculations we must avoid any solely eigenvalue based 
+!            sorting in order to NOT destroy the j_z / boson irrep sorting
+!            in the orbital rotation matrix. 
+!            we achieve the sub-block sorting in a second step 
+!            below by taking into account a given j_z / boson irrep value.
+!            stefan + hans joergen - june 2011. 
+!            -------------------------------------------------------------
+             IORDER = 0
+!            full matrix
+             IPACK  = 0
+
+!            step 1: diagonalize
+             CALL RSJACO(NDIMI,NDIMI,NDIMI,am,
+     &                   EIG(JOFF_eig),IJOB,IORDER,IPACK,
+     &                   work(kvectm),WORK(KFREE),LFREE)
+
+#ifdef MCSCF_debug
+             CALL HEADER('DIAG_piv2fock: eigenvalues:',-1)
+             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',IFSYM,'/',NFSYM
+             WRITE(LUPRI,'(I5,F25.10)')
+     &             (J,EIG(JOFF_eig+J-1),J=1,NDIMI)
+C
+             CALL HEADER('DIAG_piv2fock:: eigenvectors :',-1)
+              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',IFSYM,'/',NFSYM
+             CALL PRQMAT(work(kvectm),
+     &                   NDIMI,NDIMI,NDIMI,NDIMI,
+     &                   NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+
+!            step 2: sort in ascending order with respect to a given j_z / boson irrep value
+             call create_jzbos_sym_vec(work(kjzbos),ndimi,ibeig,norbt,
+     &                                 idx,joffset)
+
+             call ordrss(work(kvectm),eig(joff_eig),work(kjzbos),
+     &                   ndimi,ndimi)
+
+#ifdef MCSCF_debug
+             CALL HEADER('DIAG_piv2fock:: eigenvectors (reordered):',-1)
+              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',IFSYM,'/',NFSYM
+             CALL PRQMAT(work(kvectm),
+     &                   NDIMI,NDIMI,NDIMI,NDIMI,
+     &                   NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+
+          ELSE
+C            ... calculate eigenvalues and eigenvectors
+             MATZ = 1
+             CALL QDIAG(NZ,NDIMI,AM,NDIMI,NDIMI,
+     &                  EIG(JOFF_eig),MATZ,work(kvectm),NDIMI,NDIMI,
+     &                  WORK(KFREE),LFREE,IERR)
+             IF( IERR .ne. 0 ) THEN
+                    WRITE(LUPRI,'(/,1X,4A,I4)')
+     &                   '*** ERROR in  DIAG_piv2fock ***: ',
+     &                   '*** ERROR for control parameter: ',C,
+     &                   'QDIAG failed with error code ',IERR
+                CALL QUIT('*** ERROR in DIAG_piv2fock: block diag ***')
+             END IF
+          ENDIF
+
+!         return eigenvectors in full matrix (nothing happens here if nfsym == 1)
+          do iz = 1, nz
+            JOFF_mat = JOFF2
+            do i = 1, NDIMI
+              call dcopy(NDIMI,
+     &                   work(kvectm+(iz-1)*NDIM**2+(i-1)*NDIMI),1,
+     &                   EIGVEC(JOFF_mat+((iz-1)*NDIM**2)),1)
+              JOFF_mat = JOFF_mat + NDIM
+            end do
+          end do
+
+#ifdef MCSCF_debug
+          CALL HEADER('DIAG_piv2fock:: full eigenvectors (re):',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',IFSYM,'/',NFSYM
+          CALL PRQMAT(EIGVEC(1),
+     &                NDIM,NDIM,NDIM,NDIM,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+        end if ! ndimi > 0
+
+        JOFF2    = JOFF2    + NDIM * NDIMI + NDIMI
+        JOFF_eig = JOFF_eig +        NDIMI
+        joffset  = joffset  +        NDIMI
+      END DO
+C 
+
+      CALL MEMREL('DIApiv',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      CALL QEXIT('DIApiv')
+      END
 !***********************************************************************
-!     SUBROUTINE ONEDENS_DIAG_BLOCK(WORK,LWORK)
-!***********************************************************************
-!
-!     diagonalize matrix in terms of mj-blocks, 
-!     return eigenvectors and eigenvalues.
-!
-!
-!     written by S. Knecht - April 2010
-!
-!***********************************************************************
-!#include "implicit.h"
-!#include "priunit.h"
-!
-!     DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
-!     DIMENSION WORK(*)
-!
-!#include "memint.h"
-!     IOFF2 = 1
-!
-!     ... calculate eigenvalues and eigenvectors
-!     IJOB   = 1
-!     ... no ordering
-!     IORDER = 0
-!     IPACK  = 0
-!     CALL RSJACO(NDIM,NDIM2,NDIM2,AM(IOFF2,IOFF2,1),
-!    &            EIG(IOFF2),IJOB,IORDER,IPACK,
-!    &            EIGVEC(IOFF2,IOFF2,1),WORK(KFREE),LFREE)
-!
-!     END
-!***********************************************************************
+
       subroutine block_one_dens(mjvector,amat)
 !***********************************************************************
 !
@@ -1863,12 +1963,20 @@ C
 #include "dgroup.h"
       dimension mjvector(norbt), amat(nasht,nasht,nz)
       parameter(xtol_dens = 1.0D-3, d0=0.0D0)
-	logical call_quit
+      logical call_quit
 
       call_quit = .false.
       ioff1 = 0
       ioff2 = 0
       dmj_offmax = 1.0D-15
+      immax = 0
+      inmax = 0
+
+#ifdef MCSCF_DEBUG	
+      print *, ' block_one_dens: input matrix'
+      call prqmat(amat,nasht,nasht,
+     &            nasht,nasht,nz,ipqtoq(1,0),lupri)
+#endif
 !
 !     loop over active orbitals in each fermion corep
       do ifsym = 1, nfsym
@@ -1891,6 +1999,11 @@ C
 !
 !             test element
               do iz = 1, nz
+                if(dabs(amat(ioff1+mjorb,ioff1+njorb,iz)).ge.dmj_offmax)
+     &          then
+                  immax = mjorb
+                  inmax = njorb
+                end if
                 dmj_offmax =
      &          max(dmj_offmax,dabs(amat(ioff1+mjorb,ioff1+njorb,iz)))
               end do
@@ -1937,15 +2050,21 @@ C
         ioff1 = ioff1 + nash(ifsym)
         ioff2 = ioff2 + norb(ifsym)
       end do
-#if defined MCSCF_DEBUG	
-      write(lupri,'(1X,A,1F14.9)') 
-     &	' * block_one_dens info: largest mj-symmetry breaking'//
-     &      ' off-diagonal element in the DV matrix is',dmj_offmax
+      if(dmj_offmax .ne. 1.0d-15)then
+        write(lupri,'(a,1F20.15,a,i3,a,i3,a)') 
+     &        '  debug info from block_one_dens: largest mj-symmetry'//
+     &        ' breaking off-diagonal element in the DV matrix is',
+     &          dmj_offmax,
+     &        ' with indices: (',immax,',',inmax,')'
+      end if
+#ifdef MCSCF_DEBUG	
+      print *, ' block_one_dens: output matrix'
+      call prqmat(amat,nasht,nasht,
+     &            nasht,nasht,nz,ipqtoq(1,0),lupri)
 #endif
 
       end subroutine block_one_dens
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck TRKRLUCI */
       SUBROUTINE TRKRLUCI(CIRUN,ISYNC_NODES)
 C***********************************************************************
 C
@@ -1961,6 +2080,8 @@ C
 C     Last revision:
 C
 C***********************************************************************
+      use symmetry_setup_krci
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
@@ -1975,79 +2096,229 @@ C***********************************************************************
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "dcbbos.h"
 #include "../luciarel/mxpdim.inc"
-#include "../luciarel/lucinp.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
 #include "../luciarel/cprnt.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/oper.inc"
-#include "../luciarel/machine.inc"
 #include "../luciarel/cands.inc"
-#include "../luciarel/input.inc"
 #include "../luciarel/noccn_inf.inc"
 #include "krmc_shmem.h"
 #include "krmcluci_inf.h"
 #include "krciprop.h"
 C
       CHARACTER*6 CIRUN
-C
-      CHARACTER*72 TITLEC(3)
-C
-C     TITLE
-      IF( JKRRUNTYPE .eq. 1) THEN
-         TITLEC(1) = ' --------------------------- '
-         TITLEC(2) = '    Relativistic MCSCF run   '
-         TITLEC(3) = ' --------------------------- '
-      ELSE IF( JKRRUNTYPE .eq. 2 )THEN
-         TITLEC(1) = ' --------------------------- '
-         TITLEC(2) = '    Relativistic KR-CI run   '
-         TITLEC(3) = ' --------------------------- '
-      END IF
-#if defined (VAR_MPI)
-      IF( ISYNC_NODES .eq. 1 ) 
-     &  CALL MPI_BCAST(GROUP,3,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
+      logical isopen, ex_mcdf, ex_mcol
+!     scratch
+      integer, allocatable  :: orb_sym_vec(:)
+      integer               :: orb_sym_fh
+      character (len=11)    :: orb_sym_fn
+      character (len= 4)    :: mynum_str
+ 
+!     check consistency of # of GA spaces in KR-CI/KR-MC
+      if(MXPNGAS .ne. MXMCGAS)then
+        write(lupri,'(/a,i3,a,i3)') 
+     &  ' *** programming error: maximum # of '//
+     &  'GA spaces in KR-CI (set in luciarel/mxpdim.inc)'// 
+     &  ' and KR-MC (set in mxmcgas.h)'//
+     &  ' must match. you have (KR-CI):',
+     &  MXPNGAS,' vs. (KR-MC):', MXMCGAS
+      end if
+
+!     introduce CI program
+#ifdef VAR_MPI
+      if(isync_nodes .eq. 1)then
+       CALL MPI_BCAST(OPT_CIPROGRAM, 8,MPI_CHARACTER,MASTER,
+     &                MPI_COMM_WORLD,IERR)
+      end if
 #endif
-C     Double group
+
+!     basic symmetry information
+#ifdef VAR_MPI
+      if(isync_nodes .eq. 1)then
+       CALL MPI_BCAST(GROUP, 3,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
+       CALL MPI_BCAST(spinfr,1,MPI_LOGICAL,  MASTER,MPI_COMM_WORLD,IERR)
+       CALL MPI_BCAST(linear,1,MPI_LOGICAL,  MASTER,MPI_COMM_WORLD,IERR)
+      end if
+#endif
+
+!     distribute orbital symmetry information (if applicable)
+      if(linear.or.spinfr)then
+
+        call alloc(orb_sym_vec,norbt)
+        orb_sym_vec = 0
+
+!       read data from master file krmcscf or dfcoef
+        if(myproc.eq.master)then
+          inquire(file="KRMCSCF",opened=isopen,exist=ex_mcdf)
+          if(ex_mcdf)then
+            if(.not.isopen) open(lukrmc,status="old",
+     &                           form="unformatted")
+            rewind(lukrmc)
+            if(linear)then
+              call ireakrmc(lukrmc,'MJVEC   ',orb_sym_vec,norbt)
+            else if(spinfr)then
+              call ireakrmc(lukrmc,'IBEIG   ',orb_sym_vec,norbt)
+            end if
+            if(.not.isopen) close(lukrmc,status="keep")
+          else
+            inquire(file="KRMCOLD",opened=isopen,exist=ex_mcol,
+     &              number=luxxxx)
+            if(ex_mcol)then
+              if(.not.isopen) then 
+                luxxxx = 99
+                open(luxxxx,status="old",form="unformatted")
+              end if
+              rewind(luxxxx)
+              if(linear)then
+                call ireakrmc(luxxxx,'MJVEC   ',orb_sym_vec,norbt)
+              else if(spinfr)then
+                call ireakrmc(luxxxx,'IBEIG   ',orb_sym_vec,norbt)
+              end if
+              if(.not.isopen) close(luxxxx,status="keep")
+            else
+              call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
+              call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,
+     &                            orb_sym_vec,dummy,8)
+              close(lucoef,status='KEEP')
+            end if
+          end if
+        end if
+!       communicate data
+#ifdef VAR_MPI
+        if(isync_nodes .eq. 1)then
+          call mpi_bcast(orb_sym_vec,norbt,my_MPI_INTEGER,master,
+     &                   MPI_COMM_WORLD,ierr)
+        end if
+#endif
+!       store orbital symmetry information on file 'orbsym.xxxx' 
+!       where xxxx is the process id.
+        orb_sym_fh = 99
+        call num2str(myproc,mynum_str)
+        write(orb_sym_fn,'(a7,a4)') 'orbsym.',mynum_str
+        open(orb_sym_fh,file=orb_sym_fn,status='replace',
+     &       form='unformatted',action='readwrite',position='rewind')
+        write(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
+        close(orb_sym_fh)
+
+        call dealloc(orb_sym_vec)
+      end if
+
+!     set double group and point group (for historical reasons and it is
+!     still widely used in the code)
+
+!     initialize PNTGRP and DOUGRP
+      pntgrp = 0
+      dougrp = 0
+
       IF (GROUP.eq.'C1 ') THEN
-         PNTGRP = 5
-         NIRREP = 2
-         IRIQ = 2
+         PNTGRP      = 5
+         DOUGRP      = 8
+         NIRR_DG     = 2
+         NIRR_PN     = 1
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'Ci ') THEN
-         PNTGRP = 6
-         NIRREP = 4
-         IRIQ = 2
+         PNTGRP      = 6
+         DOUGRP      = 7
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'Cs ') THEN
-         PNTGRP = 7
-         NIRREP = 4
-         IRIQ = 2
+         PNTGRP      = 7
+         DOUGRP      = 6
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'C2 ') THEN
-         PNTGRP = 8
-         NIRREP = 4
-         IRIQ = 2
-      ELSE IF (GROUP.eq.'C2h') THEN
-         PNTGRP = 9
-         NIRREP = 8
-         IRIQ = 2
-      ELSE IF (GROUP.eq.'C2v') THEN
-         PNTGRP = 8
-         NIRREP = 4
-         IRIQ = 1
+         PNTGRP      = 8
+         DOUGRP      = 5
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'D2 ') THEN
-         PNTGRP = 8
-         NIRREP = 4
-         IRIQ = 1
+!        D2 treated as C2 inside KR-CI
+         PNTGRP      = 8
+         DOUGRP      = 5
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 1
+      ELSE IF (GROUP.eq.'C2h') THEN
+         PNTGRP      = 9
+         DOUGRP      = 4
+         NIRR_DG     = 8
+         NIRR_PN     = 4
+         IRIQ        = 2
+      ELSE IF (GROUP.eq.'C2v') THEN
+         if(linear)then
+!          Cinfv (known as C2v + linear) treated as C32 inside KR-CI
+           PNTGRP      = 10
+           DOUGRP      = 10
+           NIRR_DG     = 128
+           NIRR_PN     = NIRR_DG/2
+           IRIQ        = 1
+         else
+!          C2v treated as C2 inside KR-CI
+           PNTGRP      = 8
+           DOUGRP      = 5
+           NIRR_DG     = 4
+           NIRR_PN     = 2
+           IRIQ        = 1
+         end if
       ELSE IF (GROUP.eq.'D2h') THEN
-         PNTGRP = 9
-         NIRREP = 8
-         IRIQ = 1
+         if(linear)then
+!          Dinfh (known as D2h + linear) treated as C16h inside KR-CI
+           PNTGRP      = 11
+           DOUGRP      = 11
+           NIRR_DG     = 128
+           NIRR_PN     = NIRR_DG/2
+           IRIQ        = 1
+         else if(spinfr.and..not.linear)then
+!          D2h spinfree
+           PNTGRP      = 9
+           DOUGRP      = 9
+           NIRR_DG     = 8
+           NIRR_PN     = 8
+           IRIQ        = 1
+           print *,
+     & '*** error in trkrluci: no spinfree formalism yet in KR-CI. ***'
+           call quit(
+     & '*** error in trkrluci: no spinfree formalism in KR-CI! ***')
+         else
+!          D2h treated as C2h inside KR-CI
+           PNTGRP      = 9
+           DOUGRP      = 4
+           NIRR_DG     = 8
+           NIRR_PN     = 4
+           IRIQ        = 1
+         end if
       ELSE
-         CALL QUIT('Illegal double group.')
+         call quit(
+     & '*** error in trkrluci: unknown double group in KR-CI 
+     &  specified! ***')
       END IF
-      NSMSH = NIRREP/2
-      NSMOB = NIRREP
-      NIRR_DG_LOC = NIRREP
+
+!     consistency check
+      if(max(2,NIRR_DG).gt.mxndgirr)then
+        write(6,*) '   *** error in trkrluci: number of double'//
+     &  ' group irreps exceeds current limit of 128 (mxpdim.inc).***'
+        call quit('*** error in trkrluci. max number of double group
+     &  irreps exceeded.***')
+      end if
+
+!     set symmetry relations for excitation, etc.
+      NSMOB       = NIRR_DG
+      NSMSX       = NIRR_DG
+      NSMDX       = NIRR_DG
+      NSMST       = NIRR_DG
+      NSMCI       = NIRR_DG
+      NSMXT       = NIRR_DG
+      itssx       = 1
+      itsdx       = 1
+      itsxt       = 1
+
 C     Reference symmetry
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
@@ -2135,8 +2406,6 @@ C     Maximum number of CI vectors
       END IF
 C     CI storage mode
       ICISTR = 3
-C     Using determinants
-      NOCSF = 1
 C     No integrals (we use this to calculate just #determinants)
       IF( CIRUN .eq. 'NDET  ') THEN
          NOINT = 1
@@ -2144,7 +2413,8 @@ C     No integrals (we use this to calculate just #determinants)
          NOINT = 0
       END IF
 C     Dimension of resolution matrices (used in SIGDEN_REL3)
-      MXINKA = 50
+!     MXINKA = 50 
+      MXINKA = 64 ! testing a slightly larger value...
 C     Core energy from DIRAC
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
@@ -2176,9 +2446,9 @@ C     been initialized on the outside.
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NGSH,2*MXPNGAS,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NGSHT,MXPNGAS,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(IORB,NFSYM,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
@@ -2192,45 +2462,6 @@ C     been initialized on the outside.
      &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
-C     erase first
-      DO I= 1, MXPIRR
-        DO J = 1, NGAS
-          NGSSH(I,J) = 0
-        END DO
-      END DO
-!     write(6,*) 'OPT_UCIBOS is',OPT_UCIBOS
-      DO IFSYM = 1, NFSYM
-         IOFF = 0
-         IF (.NOT.OPT_UCIBOS) THEN
-C           To get correct Fermion symmetry labeling in
-C           LUCIAREL we need to specify same(!) gerade boson
-C           irrep for all gerade orbitals and same ungerade
-C           boson irrep for all ungerade orbitals (note: which
-C           gerade or ungerade boson irrep we choose doesn't
-C           matter). Now find first ungerade irrep
-C    FIXME: This is hardwired now to be irrep number 3.
-C           Should be made flexible later on to account for
-C           different symmetry generator setup.
-            IBOSYMI = 0
-            IF( IFSYM .ne. 1 ) IBOSYMI = IFSYM
-            IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM))=IBOSYMI
-         END IF
-         DO IGAS = 1, NGAS
-!           write(6,*) 'NGSH(IFSYM,IGAS) is',NGSH(IFSYM,IGAS)
-            DO I = 1, NGSH(IFSYM,IGAS)
-               IOFF = IOFF + 1
-               IF( OPT_UCIBOS )THEN
-                  IBOSYMI = 
-     &            IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+IOFF)
-!              write(6,*) 'IBOSYMI is',IBOSYMI
-               END IF
-               IADR = IBOSYMI + 1 + (IGAS-1) * MXPIRR
-!              write(6,*) 'IADR is',IADR
-               CALL ADD_TO_GSS(NGSSH,IADR,0,1)
-CSK            NGSSH(IADR) = NGSSH(IADR) + 1
-            END DO
-         END DO
-      END DO
             
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
@@ -2270,10 +2501,6 @@ C     Density matrices requested
       ELSE IF ( CIRUN .eq. 'DENS2 ' ) THEN 
         IDENSI = 4
       END IF
-C     Double group CI
-      IDBGCI = 1
-C     Relativistic CI
-      IRELACI = 1
 C     Type of operator wrt. relativity
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) THEN
@@ -2281,12 +2508,9 @@ C     Type of operator wrt. relativity
         CALL MPI_BCAST(LEVYLE,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
       END IF
 #endif
-      ISO1 = 1
-      ISO2 = 1
+C     Relativistic CI
       ISPINFREE = 0
       IF( SPINFR .or. LEVYLE ) THEN
-        ISO1 = 0
-        ISO2 = 0
         ISPINFREE = 1
       END IF
 C     Reference value for two times M_K projection
@@ -2309,8 +2533,6 @@ C     Reference value for two times Delta M_K projection (coupling range)
            CALL QUIT( ' *** ERROR *** Spin-dependent calculation'//
      &                ' and MK2DEL = 0.' ) 
       END IF
-C     Initial spinor expansion type
-      ISPEXP_INI = 3
 C     COMHAM option
       IF (ISEQCI(1,1) .LT. 0 ) THEN
 C        ISEQCI(1,1) = MAXCIT from KRMC/KRCI
@@ -2357,39 +2579,24 @@ C     S and L are no good quantum numbers. Don't use combinations.
       IDC = 1
 C     C(Ka,Jb,j) matrices will be used in alpha-beta loop
       ICJKAIB = 1
-C     Using N-2 projection method in sigma vector
-      MOCAA = 0
-      MOCAB = 0
 C     Only 1 GAS space combination in use.
       LCMBSPC(1) = 1
       ICMBSPC(1,1) = 1
 C     No use of F + Lambda(H-F) instead of H as operator
       XLAMBDA = 1.0D0
-C     No MO file, transformation is performed by moltra.
-      NOMOFL = 1
-C     No initial integral transformation (done with moltra).
-      ITRANS = 0
-C     Final orbitals are computed externally (KRMC). No iterative 
-C     natural spinors
-      IFINMO = 0
+C     No iterative natural spinors
       NATITER = 1
 C     No class selection performed.
       ICLSSEL = 0
-C     Restart option
-C     Restarting is determined from the outside (sigma, density),
-C     so set to default value
-      IRST2 = 1         ! sic
 C     Never skip evaluation of energy (only used in pico3, anyway)
       ISKIPEI = 0
 C     No property calculations here (yet)
       NPROP = 0
-C     External Fock matrix always assumed. Specification not allowed
-C     in DIRAC environment.
-      IFOCKEX = 0
-C     No orbitals/spinors on external file.
-      ORBFILE = .false.
-C     Currently always SIGDEN route (excitation class formalism)
+C     SIGDEN route is default (excitation class formalism)
       SIGDEN_ROUTE = 'SIGDEN'
+      if(SIGDEN_ROUTE .eq.'TRADIT') 
+     & call quit(' *** error in trkrluci: TRADIT route
+     & no longer supported.***')
 C     integral handling in parallel runs
       IIOMOD_REL = 0
 #if defined (VAR_MPI)
@@ -2575,102 +2782,52 @@ C     DIAPAR.1
         END IF
       END IF 
 #endif
-C
-C     *****************************************
-C     Print section (only for testing purposes)
-C     *****************************************
-C
-      IF ( IPROPT .ge. 1 .and. MYPROC .eq. MASTER ) then
 
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) '******************'
-      WRITE(LUPRI,*) '*  Title of run  *'
-      WRITE(LUPRI,*) '******************'
-      WRITE(LUPRI,*)
-      CALL PRTITL(TITLEC)
-      WRITE(LUPRI,*)
+      END 
+!**********************************************************************
+
+      subroutine print_ci_info()
+!**********************************************************************
+      use symmetry_setup_krci
+#include "implicit.h"
+#include "priunit.h"
+#include "parluci.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "maxorb.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbbos.h"
+#include "../luciarel/mxpdim.inc"
+#include "../luciarel/cstate.inc"
+#include "../luciarel/crun.inc"
+#include "../luciarel/cprnt.inc"
+#include "../luciarel/cgas.inc"
+#include "../luciarel/oper.inc"
+#include "../luciarel/cands.inc"
+#include "../luciarel/noccn_inf.inc"
+#ifdef VAR_MPI
+#include "mpif.h"
+#include "krmc_shmem.h"
+#endif
+#include "krmcluci_inf.h"
+#include "krciprop.h"
+!**********************************************************************
 *
 *. Type of calculation
 *
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) '************************'
       WRITE(LUPRI,*) '*  Type of calculation *'
       WRITE(LUPRI,*) '************************'
-      WRITE(LUPRI,*)
-      IF(IDBGCI.EQ.0.AND.IRELACI.EQ.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Non-relativistic calculation in spatial pointgroup'
-      ELSE IF(IDBGCI.EQ.1.AND.IRELACI.EQ.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Non-relativistic calculation in double group '
-      ELSE IF(IDBGCI.EQ.1.AND.IRELACI.EQ.1) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Relativistic calculation in double group '
-      ELSE IF(IDBGCI.EQ.0.AND.IRELACI.EQ.1) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Relativistic calculation in spatial pointgroup '
-        WRITE(LUPRI,'(A)')
-     &  '     This is dangerous. You better think about it! '
-      END IF
-      IF(IRELACI.EQ.1) THEN
-        IF(ISO1.EQ.1.AND.ISO2.EQ.1) then
-          if (ENVIRO(1:6).ne.'DIRAC ') then
-            WRITE(LUPRI,'(A)')
-     &  '         One- and two- electron spin-orbit operator '
-          else
-            WRITE(LUPRI,'(A)')
-     &  '         Dirac-Coulomb Hamiltonian        '
-          end if
-        end if
-        IF(ISO1.EQ.1.AND.ISO2.EQ.0) then
-          if (ENVIRO(1:6).ne.'DIRAC ') then
-            WRITE(LUPRI,'(A)')
-     &  '         One-electron spin-orbit (mean-field) operator '
-          else
-            WRITE(LUPRI,'(A)')
-     &  '         Dirac-Coulomb Hamiltonian        '
-          end if
-        end if
-        if (ISO1.eq.0.and.ISO2.eq.0.and.ENVIRO(1:6).eq.'DIRAC ') then
-          write(LUPRI,'(A)')
-     &  '         Dirac-Coulomb Hamiltonian        '
-          write(LUPRI,'(A)')
-     &  '         Spinfree formalism               '
-        end if
-        if (ISO1.EQ.0.AND.ISO2.EQ.1) then
-          if (ENVIRO(1:6).eq.'DIRAC ') then
-            write(LUPRI,*) 'Setting of relativistic operators not'
-            write(LUPRI,*) 'allowed in DIRAC environment.'
-            write(LUPRI,*) 'This is relativistic theory!'
-            call Abend2 ('Input error.')
-          end if
-          WRITE(LUPRI,'(A)')
-     &  '         Two-electron spin-orbit operator '
-        end if
-      END IF
-      if (IFOCKEX.eq.1) then
-        WRITE(LUPRI,'(A)')
-     &  '         Fock matrix gen. externally for inactive orbitals '
-        WRITE(LUPRI,'(A43,8I4)')
-     &  '         Full orbital basis in symmetries: ',
-     &            (NORB_F(ISYM),ISYM=1,NSMSH,1)
-      end if
-      if (INTIMP.eq.1) then
-        if (ORBFILE) then
-          WRITE(LUPRI,'(A)')
-     &    '         MO vector read from formatted ASCII file INPORB '
-      else
-          WRITE(LUPRI,'(A)')
-     &    '         MO vector read from RASSCF file JOBIPH          '
-        end if
-      end if
+
+      WRITE(LUPRI,'(A)')
+     &'     Relativistic calculation in double group '
 *
 *. Type of reference state
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) '*************************************'
       WRITE(LUPRI,*) '*  Symmetry and spin of CI vectors  *'
       WRITE(LUPRI,*) '*************************************'
-      WRITE(LUPRI,*)
 *. Point group
       IF(PNTGRP.EQ.1) THEN
         WRITE(LUPRI,'(A)')
@@ -2699,6 +2856,12 @@ C
       ELSE IF(PNTGRP.EQ.9) THEN
         WRITE(LUPRI,'(A)')
      &  '     Double group ........... C2H'
+      ELSE IF(PNTGRP.EQ.10) THEN
+        WRITE(LUPRI,'(A)')
+     &  '     Double group ........... Cinf'
+      ELSE IF(PNTGRP.EQ.11) THEN
+        WRITE(LUPRI,'(A)')
+     &  '     Double group ........... Cinfh'
       END IF
 *.Spatial symmetry
       IF(PNTGRP.EQ.1) THEN
@@ -2723,58 +2886,38 @@ C
      &  '     Parity   ..............  Gerade'
         IF(IREFPA.EQ.2) WRITE(LUPRI,'(A)')
      &  '     Parity   ..............  Ungerade'
-       ELSE IF(PNTGRP.GE.5.AND.PNTGRP.LE.9) THEN
+       ELSE IF(PNTGRP.GE.5)THEN
+        print *,'@timo+stefan: check this print (krmcgp.F) here...'
         WRITE(LUPRI,'(A,I1)')
      &  '     Double group symmetry... ', IREFSM
       END IF
 *.Spin
-      WRITE(LUPRI,*)
-      IF(IRELACI.EQ.0.AND.IDBGCI.EQ.0) THEN
-C       WRITE(LUPRI,'(A,I2)')
-C    &    '     2 times spinprojection  ', MS2
-C       WRITE(LUPRI,'(A,I2)')
-C    &    '     Spin multiplicity ....  ', MULTS
-      ELSE
         WRITE(LUPRI,'(A,I2)')
      &    '     2*reference value of MK ', MK2REF_CI
         WRITE(LUPRI,'(A,I2,A,I2)')
      &    '     Allowed interval of MK2 ',
      &          MK2REF_CI-MK2DEL_CI,' to ', MK2REF_CI+MK2DEL_CI
-        WRITE(6,*)
-      END IF
 *.Number of active electrons
       WRITE(LUPRI,'(A,I2)')
      &  '     Active electrons .....  ', NACTEL
 *
 *. GAS space
 *
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) ' *************************'
       WRITE(LUPRI,*) ' Generalized active space '
       WRITE(LUPRI,*) ' *************************'
-      WRITE(LUPRI,*)
-      IF(IRELACI.EQ.0) THEN
-        WRITE(LUPRI,'(A/A)') ' Orbital subspaces:',
-     &                       ' =================='
-      ELSE
         WRITE(LUPRI,'(A/A)')
      &  ' Orbital subspaces in molecular pointgroup',
      &  ' ========================================='
-      END IF
       WRITE(LUPRI,'(A,10I4,A)')
-     &  '                Irrep ',(I,I = 1,NSMSH)
+     &  '                Irrep ',(I,I = 1,nirr_dg/2)
       WRITE(LUPRI,'(A,2X,10A,A)')
-     &  '                ===== ',('====',I = 1,NSMSH )
+     &  '                ===== ',('====',I = 1,nirr_dg/2 )
       DO IGAS = 1, NGAS
         WRITE(LUPRI,'(A,I2,A,10I4,6X,2I6)')
      &  '        GAS',IGAS,'          ',
-     &  (NGSSH(IRREP,IGAS),IRREP = 1, NSMSH )
+     &  (NGSSH(IRREP,IGAS),IRREP = 1, nirr_dg/2 )
       END DO
-*
-      IF(IRELACI.NE.0) THEN
-        WRITE(6,*)
-     &' ( Information about spinors in double group comes later)'
-      END IF
 *
       WRITE(LUPRI,'(A,I3)')
      & ' Number of Occupation spaces : ',NCISPC
@@ -2793,8 +2936,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
       END DO
       END DO
 *
-      WRITE(6,*)
-      WRITE(6,'(A,I3)')
+      WRITE(6,'(/A,I3)')
      &' Number of CI spaces included : ', NCMBSPC
       WRITE(6,*)
       DO JCMBSPC = 1, NCMBSPC
@@ -2828,11 +2970,9 @@ C    &    '     Spin multiplicity ....  ', MULTS
         END DO
       END DO
 *
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) '***********'
       WRITE(LUPRI,*) '*  Roots  *'
       WRITE(LUPRI,*) '*********** '
-      WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I3)')
      &  '     Number of roots to be obtained ', NROOT
       WRITE(LUPRI,'(A,(20I3))')
@@ -2845,22 +2985,6 @@ C    &    '     Spin multiplicity ....  ', MULTS
       WRITE(LUPRI,*)
 *. Program environment
       WRITE(6,'(A,A6)') '      Program environment... ', ENVIRO
-*. Integral transformation
-      IF(ITRANS.NE.0) THEN
-        WRITE(LUPRI,'(A,I1)')
-     &  '     Initial integral transformation, level = ', ITRANS
-      END IF
-*. Initial spinor transformation
-      IF(ISPEXP_INI.EQ.1) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Initial spinor expansion obtained from MO expansion'
-      ELSE IF (ISPEXP_INI.EQ.2) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Initial spinor expansion read in '
-      else if (ISPEXP_INI.eq.3) then
-        WRITE(LUPRI,'(A)')
-     &  '     Reading integrals over transformed spinors. '
-      END IF
 *. No. of particle Hamiltonian
       if (IHAM12.eq.1) then
         WRITE(LUPRI,'(A)')
@@ -2912,26 +3036,12 @@ C    &    '     Spin multiplicity ....  ', MULTS
         WRITE(LUPRI,'(A)')
      &  '     two-electron ints from unit 13, transformed '
       END IF
-*. Integral storage
-      IF(INCORE.EQ.1) WRITE(LUPRI,'(A)')
-     &  '     All integrals stored in core'
-      END IF
-* ( END IF for NOINT
-*. CSF or SD expansion
-      IF(NOCSF.EQ.0) THEN
-        WRITE(LUPRI,'(/A/)')
-     &  '     CI optimization performed with CSF''s '
-      ELSE
-        WRITE(LUPRI,'(/A/)')
+      WRITE(LUPRI,'(/A/)')
      &  '     CI optimization performed with SD''s '
-      END IF
 *. Initial approximation to vectors
-      IF(IRESTR.EQ.1.AND.IRESTRF.EQ.0) THEN
+      IF(IRESTR.EQ.1)THEN
          WRITE(LUPRI,'(A)')
      &  '     Restarted calculation '
-      ELSE IF(IRESTRF.EQ.1) THEN
-         WRITE(LUPRI,'(A)')
-     &  '     Restarted calculation from REFERENCE space expansion'
       ELSE
          IF(MXP1.NE.0) THEN
            WRITE(LUPRI,'(A)')
@@ -2953,15 +3063,8 @@ C    &    '     Spin multiplicity ....  ', MULTS
      &  '     No combination of degenerate initial vectors'
       END IF
 *. CI storage mode
-      if (SIGDEN_ROUTE.eq.'SIGDEN') then
         WRITE(LUPRI,'(/A)')
      &  '     SIGDEN route for sigma vectors and densities invoked   '
-      else
-        WRITE(LUPRI,'(/A)')
-     &  '     SIGDEN keyword: ',SIGDEN_ROUTE
-        call quit('Unallowed keyword value')
-      end if
-      WRITE(LUPRI,*)
       IF(ICISTR.EQ.1) THEN
         WRITE(LUPRI,*)
      &  '     3 symmetry blocks and two vectors will be held in core '
@@ -2980,12 +3083,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
         WRITE(LUPRI,*)
      &  '     C(Ka,Jb,j) matrices will be used in alpha-beta loop '
       END IF
-      IF(MOCAA.NE.0) WRITE(LUPRI,'(A,I4)')
-     &  '     MOC method used for alpha-alpha+beta-beta loop '
-      IF(MOCAB.NE.0) WRITE(LUPRI,'(A,I4)')
-     &  '     MOC method used for alpha-beta loop            '
 *
-      WRITE(LUPRI,*)
       IF(IDENSI.EQ.0) THEN
         WRITE(LUPRI,'(A)')
      &  '     No calculation of density matrices  '
@@ -3036,11 +3134,6 @@ C    &    '     Spin multiplicity ....  ', MULTS
         END IF
       END IF
 *
-*. No restart in CI calc 2
-      IF(IRST2.EQ.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '        No restart from previous vectors in second calc '
-      END IF
       IF(ISKIPEI.EQ.1) THEN
         WRITE(LUPRI,'(A/A)')
      &  '        Initial energy evaluations skipped after first calc',
@@ -3075,34 +3168,6 @@ C    &    '     Spin multiplicity ....  ', MULTS
         END IF
       END IF
 *
-*
-*. Print levels
-*
-      WRITE(LUPRI,'(/A)')  '     Print levels : '
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for string    information = ', IPRSTR
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for wave function info    = ', IPRWFC
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for CI space  information = ', IPRCIX
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for orbital   information = ', IPRORB
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for density matrix        = ', IPRDEN
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for iterative information = ', IPRDIA
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for External blocks       = ', IPRXT
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for transformation info   = ', IPRTRA
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for sigma vector info     = ', IPRSIG
-*
-      IF(IPROCC.NE.0) THEN
-        WRITE(LUPRI,'(A,I3)')
-     &  '      Occupation of SD''s/ configurations           = ',IPROCC
-      END IF
-C
       END IF
 C     ^ end if IPROPT for input printing.
       END
@@ -3144,19 +3209,19 @@ C
       DO IFSYM = 1, NFSYM
 C
         IF (C .EQ. 'E') THEN
-           NDIM2 = NESH(IFSYM)
+           NDIMI = NESH(IFSYM)
            IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
         ELSE IF (C .EQ. 'P') THEN
-           NDIM2 = NPSH(IFSYM)
+           NDIMI = NPSH(IFSYM)
            IOFF1 = IORB(IFSYM) + 1
         ELSE IF (C .EQ. 'I') THEN
-           NDIM2 = NISH(IFSYM)
+           NDIMI = NISH(IFSYM)
            IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
         ELSE IF (C .EQ. 'A') THEN
-           NDIM2 = NASH(IFSYM)
+           NDIMI = NASH(IFSYM)
            IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + NISH(IFSYM) + 1
         ELSE IF (C .EQ. 'V') THEN
-           NDIM2 = NVSH(IFSYM)
+           NDIMI = NVSH(IFSYM)
            IOFF1 = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+NASH(IFSYM)+1
         ELSE
            WRITE(LUPRI,'(2A)')
@@ -3166,7 +3231,7 @@ C
         END IF
 C
         INUM_S = 0
-        DO I = 1, NDIM2
+        DO I = 1, NDIMI
            SUMDIAG = SUMDIAG + AMAT(IOFF1+INUM_S,IOFF1+INUM_S,1)
            INUM_S = INUM_S + 1
         END DO
@@ -3175,7 +3240,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* deck GET_XOMEGALIST */
       SUBROUTINE GET_XOMEGALIST(OMLISTREOD,XEIGVC,NXSTATES,
      &                          STATEREP,XEIGVL)
 C***********************************************************************

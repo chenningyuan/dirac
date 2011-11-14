@@ -82,7 +82,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       write (LUPRI,'(/,2X,A)')
      &    '   $$$$$$$$$   csu / (0,2)   $$$$$$$$$  '
 
-      call check_modules
+      !call check_modules
 
       csdstim = cputime(real(0.))
       csdltim = csdstim

@@ -16,7 +16,7 @@ Water molecule. Restricted kinetic balance. Spin-spin couplings
 999
 .CMPEIG
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
 **PROPERTIES
 .SPIN-SPIN

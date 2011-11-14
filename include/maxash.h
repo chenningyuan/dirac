@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : maxash.h
 !
 !     MAXASH = maximum number of active orbitals in KR-MCSCF

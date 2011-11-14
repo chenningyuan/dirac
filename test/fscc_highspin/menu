@@ -1,0 +1,4 @@
+hf.inp           O2.mol
+uccsd.inp        O2.mol
+uccsd_linsym.inp O2.mol
+fsccsd.inp       O2.mol

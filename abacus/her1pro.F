@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1925,6 +1925,8 @@ C
          INTREP(3) = ISYMAX(3,2)
          ANTI = .TRUE.
          SQUARE = .TRUE. 
+      GO TO 200
+
 C                           
 C       V_dc integrals coming with CAP_d term  
 C  -------------------------------------------------    
@@ -2344,28 +2346,31 @@ C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C
-      IF (INTTYP .ne. 73) then
+      IF (INTTYP .NE. 73) THEN
       CALL PR1DRV(SOINT,NELMNT,WORK,LWORK,
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
      &            IORDER,DOATOM,INTADR,TRIANG,NATOM,SQUARE,
      &            IPRINT,DOINT)
       ELSE
 c
-c Read in and print the x, y, z component of ARGOS SOPP integrals
+c Read in and print the x, y, z component of ARGOS SOREP integrals
 c
         DO 601 I = 1, NOPTYP
           WRITE(RTNLBL(2)(3:4),'(I2)') INTREP(I)+1
-            if (I .eq. 1) then
-              open(60,form='unformatted',file='sox',err=5557)
+            IF (I .EQ. 1) THEN
+              OPEN(60,FORM='UNFORMATTED',FILE='RECP_INT_X',ERR=5557)
               READ(60) (SOINT(N,I),N=1,N2BBASX)
-            elseif (I .eq. 2) then
-              open(61,form='unformatted',file='soy',err=5557)
+              CLOSE(60)
+            ELSEIF (I .EQ. 2) THEN
+              OPEN(61,FORM='UNFORMATTED',FILE='RECP_INT_Y',ERR=5557)
               READ(61) (SOINT(N,I),N=1,N2BBASX)
-            elseif (I .eq. 3) then
-              OPEN(62,form='unformatted',file='soz',err=5557)
+              CLOSE(61)
+            ELSEIF (I .EQ. 3) THEN
+              OPEN(62,FORM='UNFORMATTED',FILE='RECP_INT_Z',ERR=5557)
               READ(62) (SOINT(N,I),N=1,N2BBASX)
-            end if     !  end of read in 
- 601    continue
+              CLOSE(62)
+            END IF     !  end of read in 
+ 601    CONTINUE
       END IF     !  end of SOPP    
 C
 C     *********************************************************
@@ -3846,7 +3851,6 @@ C  /* Deck sphco1 */
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 C
-#include "sdpre.h"
 C
       LVAL1 = LVAL + 1
 C
@@ -3855,7 +3859,7 @@ C     ---------------------
 C
       CALL DZERO(PL(0),LVAL1)
       DO 100 K = 0, LVAL/2
-         PL(LVAL-2*K) = (SDPRE((-1)**K)/SDPRE(2**LVAL))
+         PL(LVAL-2*K) = (dble((-1)**K)/dble(2**LVAL))
      &                    *BINOM(LVAL,K)*BINOM(2*(LVAL-K),LVAL)
   100 CONTINUE
 C
@@ -3866,7 +3870,7 @@ C
       DO 200 M = 0, LVAL
          COSSIN(M,0) = D1
          DO 210 K = 1, M
-            COSSIN(M,K) = COSSIN(M-1,K-1)*SDPRE((-1)**(K-1))
+            COSSIN(M,K) = COSSIN(M-1,K-1)*dble((-1)**(K-1))
             IF (M .GT. K) COSSIN(M,K) = COSSIN(M,K) + COSSIN(M-1,K)
   210    CONTINUE
   200 CONTINUE
@@ -3888,7 +3892,7 @@ C
          IF (M .EQ. 0) CM = D1
          IF (MINTEG.EQ.2) CM = CM/SQRT(FACUL2(2*LVAL-1))
          DO 400 K = MOD(LVAL - M,2), LVAL - M, 2
-            IF (M .GT. 0) PL(K) = SDPRE((K+1))*PL(K+1)
+            IF (M .GT. 0) PL(K) = dble((K+1))*PL(K+1)
             CMK = CM*PL(K)
             DO 500 I = 0, (LVAL - K - M)/2
                CMKI = CMK*BINOM((LVAL - K - M)/2,I)
@@ -3942,7 +3946,6 @@ C  /* Deck facult */
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
-#include "sdpre.h"
       IF (N .LT. 0) THEN
          WRITE (LUPRI,'(/,A,I10,/A)')
      &         ' Argument less than zero in FACULT:',N,
@@ -3951,7 +3954,7 @@ C  /* Deck facult */
       ELSE
         FACULT = D1
         DO 100 I = 1, N
-           FACULT = FACULT*SDPRE(I)
+           FACULT = FACULT*dble(I)
   100   CONTINUE
       END IF
       RETURN
@@ -3964,16 +3967,15 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
-#include "sdpre.h"
 C
 C     N < 0
 C
       IF (N .LT. 0) THEN
-         FACUL2 = SDPRE(N + 2)
+         FACUL2 = dble(N + 2)
          DO I = N + 4, 1, 2
-            FACUL2 = FACUL2*SDPRE(I)
+            FACUL2 = FACUL2*dble(I)
          END DO
-         IF (FACUL2 .EQ. SDPRE(0)) THEN
+         IF (FACUL2 .EQ. dble(0)) THEN
             WRITE (LUPRI,'(/,A,I10,/A)')
      &            ' Double factorial undefined for ',N,
      &            ' Program cannot continue.'
@@ -3990,9 +3992,9 @@ C
 C     N > 0
 C
       ELSE
-        FACUL2 = SDPRE(N)
+        FACUL2 = dble(N)
         DO I = N - 2, 1, -2
-           FACUL2 = FACUL2*SDPRE(I)
+           FACUL2 = FACUL2*dble(I)
         END DO
       END IF
       RETURN
@@ -4229,4 +4231,37 @@ C
       CALL NTYPTS(NOPTYP)
       RETURN
       END
+C  /* Deck effdentyp */
+      SUBROUTINE EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(9*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+      NOPTYP = NATOM
+      CALL NTYPTS(NOPTYP)
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'ED '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  INTREP(ITYP) = IREP
+               END IF
+            END IF
+  200    CONTINUE
+  100 CONTINUE
 
+      RETURN
+      END

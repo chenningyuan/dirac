@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her2fck.F
 C
 C
 #ifdef UNDEF
@@ -918,7 +915,6 @@ C*****************************************************************************
 #include "shells.h"
 #include "symmet.h"
 #include "ibtfun.h"
-#include "sdpre.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -1086,7 +1082,7 @@ C
   430       CONTINUE
          END IF
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1/dble(MAXREP + 1)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLFC1",1)
@@ -1252,7 +1248,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
@@ -1323,7 +1318,7 @@ C
                GRADEE(AP) = GRADEE(AP) + FACTOR(A,ISYMOP)*SKLTON(A,1)
   310       CONTINUE
   300    CONTINUE
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1/dble(MAXREP + 1)
          CALL DSCAL(MXCOOR,   FAC,GRADEE,1)
 #ifndef PRG_DIRAC
 C
@@ -1340,7 +1335,7 @@ C
                   HESSEE(AP,BP) = HESSEE(AP,BP) + FAC*SKLTON(A,B)
   410          CONTINUE
   400       CONTINUE
-            FAC = D1/SDPRE(MAXREP + 1)
+            FAC = D1/dble(MAXREP + 1)
             CALL DSCAL(MXCOOR**2,FAC,HESSEE,1)
          END IF
 #endif
@@ -1448,7 +1443,6 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C
@@ -1539,7 +1533,7 @@ C
   610       CONTINUE
   600    CONTINUE
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1/dble(MAXREP + 1)
          CALL DSCAL(3*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLOND",1)

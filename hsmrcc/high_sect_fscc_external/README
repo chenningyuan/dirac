@@ -115,9 +115,9 @@ line 2 - iopt(1:20) (20i3)
  iopt (16) = 1 : sixp does not follow
                = 2 : sixp does follow
 
- iopt (17) = 1 : CCSDT-1a
-               = 2 : CCSDT-1b (= CCSDT-1)
-               = 3 : CCSDT
+ iopt (17) = 1 : CCSDT-1a               (noniterative ?)
+           = 2 : CCSDT-1b (= CCSDT-1)
+           = 3 : CCSDT
            = 0 : CCSD
 
  iopt (19) = 1 : ACES II (miro: not working now)

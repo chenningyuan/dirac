@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,105 +20,6 @@
 !dirac_copyright_end
 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-*
-*   Routine for (complex) transposing rectangular matrix A
-*
-      subroutine adjoint(B,A,NROWS,NCOLUMNS,IMRECO)
-*
-#include "implicit.inc"
-*
-      dimension A(NROWS,NCOLUMNS),B(NROWS,NCOLUMNS)
-*
-*   Write zeroes to matrix B
-*
-      ZERO = 0.D0
-      do K=1,NCOLUMNS,1
-         do L=1,NROWS,1
-            B(L,K) = ZERO
-         end do
-      end do
-*
-*  transpose
-*
-      do I=1,NCOLUMNS,1
-         do J=1,NROWS,1
-            B(I,J) = IMRECO * A(J,I)
-         end do
-      end do
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine clsone
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-*
-*   Routine(1) for error message
-*
-      subroutine hammer(LAST,IMAX)
-      implicit none
-      integer LAST,IMAX
-      write(*,*) 'The dimensions have exceeded the maximum work space!'
-      write(*,*) 'Dimensions are  ',LAST
-      write(*,*) 'Maximum space for this part is ',IMAX
-      write(*,*) 'Picasso will put down the brush.'
-      write(*,*) 'Bye-bye.'
-      Call Abend()
-      end
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      FUNCTION I_GET_ADJSYM(ISYM)
-*
-* Obtain conjugate symmetry of ISYM
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "mxpdim.inc"
-#include "symm.inc"
-#include "lucinp.inc"
-*
-      IF(PNTGRP.EQ.1) THEN
-*. Usual pointgroup, symmetry and complex symmetry identical
-        I_GET_ADJSYM = ISYM
-      ELSE
-*. Currently only working alternative is double group symmetry
-        I_GET_ADJSYM = IADJSYM(ISYM)
-      END IF
-*
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' I_GET_ADJSYM , ISYM, IADJSYM',
-     &  ISYM, IADJSYM(ISYM)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
       FUNCTION IFRMR_REL(WORK,IROFF,IELMNT)
 *
 * An integer array is stored in real array WORK,
@@ -127,20 +28,13 @@
 *
       INTEGER WORK(*)
 *
-#include "irat.inc"
-C     PARAMETER(IRAT = 2 )
-*     offset when work is integer array
-      IIOFF = 1 + IRAT * (IROFF-1)
+      IIOFF     = 1 + IROFF-1
       IFRMR_REL = WORK(IIOFF-1+IELMNT)
 *
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       FUNCTION IMNMX_REL(IVEC,NDIM,MINMAX)
 *
 *     Find smallest (MINMAX=1) or largest (MINMAX=2)
@@ -167,9 +61,9 @@ C     PARAMETER(IRAT = 2 )
 *
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+***********************************************************************
+
       INTEGER FUNCTION ISACTIVE_CPU(NPARBLOCK,NDIM,ISPROC)
-*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *
 *     determine whether CPU is active or not
 *
@@ -188,17 +82,14 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
+
+      subroutine index_exch(I,J,IFAC,INDFAC,IFLOC)
 ***********************************************************************
 * Use Kramers symmetry (if flag is activated) on a particle
 * of an integral.
 * Generalized to all kinds of index exchange, including complex
 * conjugation symmetry.
 *
-      subroutine index_exch(I,J,IFAC,INDFAC,IFLOC)
 *
 *  I,J are indices to be interchanged (by some symmetry)
 *  IFAC: Total factor multiplied to integral
@@ -227,11 +118,7 @@ C     IFAC = IFAC * IFLOC
 *
       end
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE INPRDDC(VEC1,VEC2,LU1,LU2,
      &                   I1,I2,IREW,LBLK,XR,XI)
 *
@@ -305,7 +192,8 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 *
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C***********************************************************************     
+
       SUBROUTINE INPRDD_REAL_CPLX(VEC1,VEC2,LU1,LU2,I1,I2,
      &                            IREW,LBLK,XR,XI,MZ)
 C***********************************************************************     
@@ -396,11 +284,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-C**********************************************************************
+
       INTEGER FUNCTION IPICK_T_ACTIVE(IT_CTALL,IT_CTONE,LPROC_NM,
      &                                NDIM,IMULT)
 C
@@ -465,11 +349,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-C**********************************************************************
+
       INTEGER*8 FUNCTION IGET_MY_T_LEN(IT_TTPL,IDIM,N1INT,IMULT)
 C
 C     find all active T-blocks for all CPU's 
@@ -488,7 +368,7 @@ C**********************************************************************
 #include "ipoist8.inc"
 #include "ctcc.inc"
       DIMENSION IT_TTPL(*)
-      INTEGER*8 J_COUNT_LEN, IILENGTH
+      INTEGER*8 J_COUNT_LEN, IILENGTH, nelm_cc
 C
       IGET_MY_T_LEN = 0
       J_COUNT_LEN   = 0
@@ -533,83 +413,11 @@ C
 csk   WRITE(LUWRT,*) ' IGET_MY_T_LEN:', IGET_MY_T_LEN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine unfold(ARRAY,VECTOR,IDIM,ISYM,NTRIAEL,IFAC)
 ***********************************************************************
-*  Unfold lower triangle square matrix to full size;
-*  I suppose that the input matrix is a one-dim. field with
-*  N(N/2 + 1) elements
-*  1) write vector to matrix
-*  2) unfold considering symmetry (e.g. hermitian or not)
-***********************************************************************
-*
-      implicit real*8 (A-H,O-Z)
-      dimension ARRAY(IDIM,IDIM),VECTOR(NTRIAEL)
-*
-*  unfold
-*
-      ICOUNT = 0
-      do N = 1,IDIM,1
-         do M = 1,N,1
-            ARRAY(N,M) = IFAC * VECTOR(ICOUNT+M)
-         end do
-         ICOUNT = ICOUNT + N
-      end do
-*
-*  multiply with sign
-*
-      do I=1,IDIM,1
-         do J=I+1,IDIM,1
-            ARRAY(I,J) = ISYM * ARRAY(J,I)
-         end do
-      end do
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-* Copy vector to defined partition of matrix
-* (Simply the way the vector is arranged in memory)
-*
-      subroutine vectomat(VEC,WMAT,ILEN,NROW,NCOL,
-     &                    NPARTROW,NPARTCOL,IROWOFF,ICOLOFF)
-*
-      implicit real*8 (A-H,O-Z)
-*
-      dimension WMAT(NROW,NCOL)
-      dimension VEC(ILEN)
-*
-*   VEC: Input matrix in vector format
-*   WMAT: Output matrix (can be a partition of a bigger matrix!)
-*   ILEN: Length of input vector
-*   NROW: Rows of WMAT
-*   NCOL: Columns of WMAT
-*   NPARTROW: Number of rows in output partition
-*   NPARTCOL: Number of columns in output partition
-*   IROWOFF: Output row offset
-*   ICOLOFF: Output column offset
-*
-      K = 1
-      do I=ICOLOFF,(ICOLOFF+NPARTCOL-1),1
-         do J=IROWOFF,(IROWOFF+NPARTROW-1),1
-            WMAT(J,I) = VEC(K)
-            K = K + 1
-         end do
-      end do
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
+      subroutine read_indices(IN,NINTS_I8)
 * Read indices from file INDICES
 *
-      subroutine read_indices(IN,NINTS_I8)
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -631,13 +439,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *
       end
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
-     &                        INTSPACE,IPRNT,IOFF_T_IJKL)
+     &                        IPRNT,IOFF_T_IJKL)
 C**********************************************************************
 C
 C     write sorted integrals back on file - driver routine                         
@@ -649,27 +453,24 @@ C     Last revision :
 C
 C
 C***********************************************************************
+      use mospinor_info
+      use symmetry_setup_krci
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 * =====
 *.Input
 * =====
 *
-*./ORBINP/ : NACOB used
-*
 #include "mxpdim.inc"
-#include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "csm.inc"
 #include "wrkspc.inc"
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
-#include "symm.inc"
 #include "oper.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -714,14 +515,12 @@ C
       CALL DZERO(WORK(KLK2)  ,NTOOB**2)
 C
       if (IHAM12.eq.1.or.IHAM12.eq.2) then
-        call geth1dia4(WORK(KLH1DA),WORK(KLH1DB),DUMMY,
-     &                   INTSPACE,T_BUFF,ENVIRO,SIGDEN_ROUTE)
+        call geth1dia4(WORK(KLH1DA),WORK(KLH1DB),T_BUFF)
       end if
 C     obtain 2e integrals needed for diagonal
       if (IHAM12.EQ.2.or.IHAM12.eq.3) then
         call get_dia_2e(WORK(KLJ),WORK(KLK),WORK(KLK2),T_BUFF,0,
-     &                  ISPINFREE,NGAS,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &                  ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRNT)
+     &                  ISPINFREE,NGAS,IPRNT)
       end if
 C
 C     write out to disk
@@ -800,16 +599,12 @@ C     flush local memory
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRITE_IJKL_GAS(T,T_BUFF,INTIMP,ISPINFREE,ISYM_T,
      &                          ISOBEX,ISTR_CA,ISTR_CB,ISTR_AA,
      &                          ISTR_AB,NASHT,F1,MDIASV,IBOSYM, 
      &                          LABEL,CIRUN,IPRNT,NDIAMINT,ENVIRO,
-     &                          ibeig,SIGDEN_ROUTE,INTSPACE)
+     &                          ibeig,SIGDEN_ROUTE)
 C**********************************************************************
 C
 C     write sorted integrals back on file - driver routine                         
@@ -821,6 +616,7 @@ C     Last revision :
 C
 C
 C***********************************************************************
+      use symmetry_setup_krci
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -839,9 +635,7 @@ C***********************************************************************
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
-#include "symm.inc"
 #include "glbbas.inc"
-#include "input.inc"
 #include "clunit.inc"
 #include "oper.inc"
 #include "ctcc.inc"
@@ -856,15 +650,11 @@ C***********************************************************************
 #include "typesz_mpi2.h"
       real*8,  allocatable :: t_buffx(:)
 #endif
+      logical              :: int_file_is_master_file
 !     scratch memory
       real(8), allocatable :: t_unsort(:)
       real(8), allocatable :: t_buff_lowsort(:)
       real(8), allocatable :: hmat(:)
-      real(8), allocatable :: h2xy(:)
-      real(8), allocatable :: h2yx(:)
-      integer, allocatable :: indxb12(:,:)
-      integer, allocatable :: indxb34(:,:)
-      integer, allocatable :: idxkr12(:,:)
 C
       allocate(t_unsort(len_all_int))
 C
@@ -873,28 +663,23 @@ C
 !       get dimensions for scratch matrices
         call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
  
-!       allocate scratch matrices
-        allocate(hmat(ndim_h12_tmp))
-        allocate(h2xy(ndim_h12_tmp))
-        allocate(h2yx(ndim_h12_tmp))
+!       allocate space for scratch matrices (+ dummy space)
+        is_space_req = 3*ndim_h12_tmp + 4*ndim_ij + 2*ndim_kl + 100
 
-        allocate(indxb12(2,ndim_ij))
-        allocate(indxb34(2,ndim_kl))
-        allocate(idxkr12(2,ndim_ij))
-        
+        allocate(hmat(is_space_req))
+        lfree = is_space_req - 2
+
+!       make sure we always read from the integral file(s) associated
+!       with the master process
+        int_file_is_master_file = iiomod_rel .eq. 1
+     &                            .or. myproc .eq. master
+
 !       get integrals on t_unsort
-        call rgeth21(.false.,.true.,dummy,dummy,t_unsort,
-     &               hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
-     &               ibeig,iprnt,luwrt)
+        call rgeth2(dummy,t_unsort,dummy,ibeig,.false.,
+     &              .true.,int_file_is_master_file,hmat,lfree)
 
 !       release scratch space
-        deallocate(idxkr12)
-        deallocate(indxb34)
-        deallocate(indxb12)
-
         deallocate(hmat)
-        deallocate(h2xy)
-        deallocate(h2yx)
       end if
 C     ^ iiomod_rel == 1 or myproc == master
 
@@ -986,7 +771,7 @@ C
 !       allocate new array for all sorted integrals
         allocate(t_buff_lowsort(nallint))
         t_buff_lowsort  = 0
-        call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+        call dist_ints_sigden_opt(INTIMP,ISPINFREE,ISYM_T,
      &                        ISOBEX,t_buff_lowsort,T_BUFF,
      &                        ISTR_CA,ISTR_CB,ISTR_AA,
      &                        ISTR_AB,NASHT,F1,dummy,
@@ -997,7 +782,7 @@ C
         t_buffx = 0
 #endif
 !
-        call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,
+        call dist_ints_sigden_opt(INTIMP,ISPINFREE,ISYM_T,ISOBEX,
 #if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
      &                        t_buffx,
 #else
@@ -1021,7 +806,7 @@ C
       if( lowsrt_ijkl )then
         CALL IJKL_OUTPUT( t_buff_lowsort,T_BUFF,MDIASV,
      &                    NDIAMINT,ENVIRO,SIGDEN_ROUTE,ISPINFREE, 
-     &                    INTSPACE, IPRNT,N1DIAINT )
+     &                    IPRNT,N1DIAINT )
       else
         CALL IJKL_OUTPUT( 
 #if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
@@ -1030,7 +815,7 @@ C
      &                    T,
 #endif
      &                    T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
-     &                    SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT,
+     &                    SIGDEN_ROUTE, ISPINFREE, IPRNT,
      &                    N1DIAINT )
       end if
 !
@@ -1046,13 +831,9 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
-     &                        SIGDEN_ROUTE, ISPINFREE,INTSPACE,IPRNT,
+     &                        SIGDEN_ROUTE, ISPINFREE,IPRNT,
      &                        NTEST_DIA)
 C**********************************************************************
 C
@@ -1221,7 +1002,7 @@ C     WRITE(LUWRT,*) ' IOFFSET, IWRITE_BYTE, IOFF_T_IJKL',
 C    &                 IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
 C
       CALL WRITE_T_DIAG(T,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
-     &                  INTSPACE,IPRNT,IOFF_T_IJKL)
+     &                  IPRNT,IOFF_T_IJKL)
 C
       CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
 C
@@ -1229,11 +1010,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE READ_IJKL_GAS(T,T_BUFF,T_BUFF_D,IT_TTPL,
      &                         MDIASV,NDIAMINT,IDIM_TYP,N1_INT)
 C**********************************************************************
@@ -1247,6 +1024,7 @@ C     Last revision :
 C
 C
 C***********************************************************************
+      use mospinor_info
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -1266,7 +1044,6 @@ C***********************************************************************
 #include "ipoist8.inc"
 #include "ctcc.inc"
 #include "integrals_off.inc"
-#include "orbinp.inc"
 #include "typesz_mpi2.h"
       DIMENSION T_BUFF(*),T(NALLINT),MDIASV(*),IT_TTPL(*)
       DIMENSION T_BUFF_D(*)
@@ -1438,7 +1215,7 @@ C
 C
       END
 #if defined (VAR_MPI2)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE CHECK_CONSIST( ICHECK_VEC, NDIM )
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -1469,6 +1246,7 @@ C
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE DIST_XPROP(XPROP,LUPROP_MAT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -1558,6 +1336,7 @@ C            new offset
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE GET_BLOCKFILE_DATA(BLOCKFLE,DIST_COMPLETE,NMPROC_FILE,
      &                              SPLIT_IJKL_FILE,SHARED_M_FILE,
      &                              ICCTOS,RCCTOS,NPARBLOCK,ICWEIGHTF,
@@ -1579,7 +1358,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
       DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)
-      CHARACTER BLOCKFLE*16
+      CHARACTER BLOCKFLE*18
       LOGICAL SPLIT_IJKL_FILE, SHARED_M_FILE, DIST_COMPLETE
 C
 C     initialize
@@ -1621,6 +1400,7 @@ C     check whether all information was available and correct
       END IF
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE PUT_BLOCKFILE_DATA(BLOCKFLE,ICCTOS,RCCTOS,NPARBLOCK,
      &                              ICWEIGHTF,IT_TTPL,LEN_TTPL)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1640,7 +1420,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
       DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)
-      CHARACTER BLOCKFLE*16
+      CHARACTER BLOCKFLE*18
       LOGICAL EX
 C
 C     initialize

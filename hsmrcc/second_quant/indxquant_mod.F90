@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,8 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-#if !defined (VAR_IFC)
 Module Indexed_Quantities
+#if !defined (VAR_IFORT)
 !----------------------------------------------------------------------------
 !
 !       Module for handling various indexed tems (quantities)
@@ -402,6 +402,5 @@ endif
 
 call QExit('equal_IndxTerms')
 end function equal_IndxTerms
-
-End Module Indexed_Quantities
 #endif
+End Module Indexed_Quantities

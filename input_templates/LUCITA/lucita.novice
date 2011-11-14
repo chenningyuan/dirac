@@ -13,7 +13,7 @@
 .DHF
 .LUCITA
 #
-*DHFCAL
+*SCF
 # here we insert the number of electrons
 # (if inversion for gerade and ungerade separately)
 .CLOSED SHELL

@@ -5,7 +5,7 @@
 .LEVY-LEBLOND
 .DFTAUTO
  pbe
-*DFT
+**GRID
 .DEBUG          !very coarse grid
 .ZIPGRID
 **INTEGRALS
@@ -14,8 +14,8 @@
 *READIN
 .UNCONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .ITRINT
  0 0
 .EVCCNV

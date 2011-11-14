@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : tradr3.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR3T */
@@ -573,8 +570,7 @@ C
            IKR = INDXKR(1,IJ)
            JKR = INDXKR(2,IJ)
            CALL SYMFINT(IPRINT,IREPIJ,INDXB12(1,IJ),INDXB34,IJ,IKR,JKR,
-     &                  NSTR3,NSTR4,NKL,WORK(KGMAT),
-     &                  WORK,KFREE,LFREE)
+     &                  NSTR3,NSTR4,NKL,WORK(KGMAT))
         ELSEIF (ISTRAT.EQ.4) THEN
            CALL MDSCRU(IREPIJ,IJS+IJ,LGMAT,WORK(KGMAT),WORK(KGTMP))
         ENDIF
@@ -802,15 +798,11 @@ C
 C        Get the scalar integrals that are processed in this pass
 C        The integral are already in GMAT when NPASS = 1
 C
-         IF (NPASS.GT.1) THEN
+          IF (NPASS.GT.1) THEN
              CALL DZERO(GMAT,NSIZG)
              IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
-         ENDIF
+             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
+          ENDIF
 C
 C        Calculate the size of the H-matrix for this pass
 C
@@ -848,7 +840,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck READGBF */
-      SUBROUTINE READGBF(LGFIL,IREC,RBUF,LBUF,NGBFSZ,GMAT)
+      SUBROUTINE READGBF(LGFIL,IREC,NGBFSZ,GMAT)
 C
 C     Read a batch of scalar integrals into memory
 C
@@ -857,9 +849,13 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION RBUF(NGBFSZ),LBUF(NGBFSZ),GMAT(*)
 C
+      Real(8)              :: GMAT(*)
+      Real(8), allocatable :: RBUF(:)
+      Integer, allocatable :: LBUF(:)
       IF (IREC.EQ.0) RETURN
+      Allocate (RBUF(NGBFSZ))
+      Allocate (LBUF(NGBFSZ))
 C
 C     Read a batch and the link to the previous record.
 C
@@ -875,6 +871,8 @@ C
 C     We read in reverse order, if we have the first block we're done
 C
       IF (IREC.NE.0) GOTO 1
+      DeAllocate (RBUF)
+      DeAllocate (LBUF)
 C
       RETURN
       END

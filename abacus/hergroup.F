@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -50,7 +50,6 @@ C
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
       DATA IS/0,1,1,2,1,2,2,3/
-#include "sdpre.h"
 #include "ibtfun.h"
 C
 C     Initialization
@@ -162,7 +161,7 @@ C     =======================================================
 C
       DO 101 I = 0,7
          MULT(I)  = 2**MAX(0,NSYMOP-IS(I))
-         FMULT(I) = SDPRE(MULT(I))
+         FMULT(I) = dble(MULT(I))
   101 CONTINUE
 C
       RETURN
@@ -183,6 +182,7 @@ C                           Modified activation of LSYMOP
 C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
+      use xmlout
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -273,6 +273,7 @@ c     export it to ARGOS
 c     ==================
 #ifdef MOD_ECP
       ndptag = ndptags(IGROUP)
+      IGRPAG = IGROUP
 #endif
 C
 C     Generate character table
@@ -349,6 +350,12 @@ C
 C     Output section
 C     ==============
 C
+      IF (doxml) THEN
+         call xml_begin('point-group')
+         write(luxml,*) GROUP
+         call xml_end('point-group')
+      ENDIF
+
       IF(IPREAD.GT.0) THEN
         CALL HEADER('SYMGRP:Point group information',-1)
 C
@@ -437,6 +444,7 @@ C     Sep 24 1996 - tsaue: Updated version
 C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
@@ -448,10 +456,8 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       LOGICAL LBUF(8)
-      EXTERNAL BDQALGEBRA
 C
 #include "ibtfun.h"
 C
@@ -478,6 +484,8 @@ C       NZ = 4  quaternionic group        no    totally symmetric rotations
 C       NZ = 2  complex group             one   totally symmetric rotation
 C       NZ = 1  real group                three totally symmetric rotations
 C
+C       NZ_in_CI is 1 for real CI coefficients, 2 for complex CI coefficients
+C
       NZ = 1
       DO 30 I = 1,3
         IF(ISYMAX(I,2).EQ.0) THEN
@@ -485,6 +493,7 @@ C
           ITOT = I
         ENDIF
    30 CONTINUE
+      NZ_in_CI = MIN(2,NZ)
 C
 C     Align rotations and quaternion irreps,
 C     for complex groups this is important....

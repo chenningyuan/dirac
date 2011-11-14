@@ -1,0 +1,20 @@
+noref O.inp O.mol --outcmo  
+sh mv DFCOEF cf.O
+sh ln -sf cf.O DFPROJ
+
+H2O.inp H2O.mol --put=DFPROJ  
+sh rm DFPROJ cf.O
+
+noref O.2c_iotc.inp O.mol --outcmo   
+sh mv DFCOEF cf.O
+sh ln -sf cf.O DFPROJ
+
+H2O.2c_iotc.inp H2O.mol --put=DFPROJ  
+sh rm DFPROJ cf.O
+
+noref O.2c_iotc_noamfi.inp O.mol --outcmo  
+sh mv DFCOEF cf.O
+sh ln -sf cf.O DFPROJ
+
+H2O.2c_iotc_noamfi.inp H2O.mol --put=DFPROJ 
+sh rm DFPROJ cf.O

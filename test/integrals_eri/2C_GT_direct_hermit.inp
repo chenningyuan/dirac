@@ -17,7 +17,7 @@ H2O2 molecule, integral calculations with ERI in pure one-component mode
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 **PROPERTIES
 .DIPOLE
 .POLARIZABILITY

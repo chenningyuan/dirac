@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : gpluuk.F
 C
 C
 C  /* Deck inpck */
@@ -195,20 +192,7 @@ C
 #if  defined (INT_STAR8)
       IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
-#if defined (SYS_IRIX) || defined (SYS_SX) || defined (SYS_DEC)
-C     SGI IRIX counts recl in *4 words
-      IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#else
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
-#else
-#if defined (SYS_IBM) || defined (SYS_SUN)
-      IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
-#else
-     ===== insert definition for specification of record length
-#endif
-#endif
-#endif
 #endif
 C
       IRECLEN = IRECL
@@ -1484,7 +1468,11 @@ C
       PERC = N_WRITTEN+N_DELETED
       PERC = 100.D0/PERC
       PERC = PERC*N_WRITTEN
+#if defined (INT_STAR8)
+      GIGABYTES = N_WRITTEN * 24.0
+#else
       GIGABYTES = N_WRITTEN * 16.0
+#endif
       GIGABYTES = GIGABYTES / (1024.0**3)
       WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
  1000 FORMAT (/" Node",I5," finished first half transformation",I16,

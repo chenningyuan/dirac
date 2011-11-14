@@ -1,85 +1,146 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+
+project(DIRAC Fortran C)
+add_definitions(-DPRG_DIRAC)
+
+# set version
+set(VERSION_MAJOR 11)
+set(VERSION_MINOR 0)
+set(VERSION_PATCH 0)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif ()
+include(CheckFortranSourceCompiles)
 
-project(Dirac Fortran C)
+# for windows need substitute (type)
+set(cat_program cat)
 
-option(DIRAC_ENABLE_PROFILING     "Enable profiling"          OFF)
-option(DIRAC_ENABLE_BOUNDS_CHECK  "Enable bounds check"       OFF)
-option(DIRAC_ENABLE_CODE_COVERAGE "Enable code coverage"      OFF)
-option(DIRAC_ENABLE_EXTERNAL_MATH "Use external math library" ON)
-option(DIRAC_ENABLE_MPI           "Use MPI parallelization"   OFF)
-option(DIRAC_ENABLE_XCFUN         "Use XCFun library"         ON)
+# set build type
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE
+        Debug
+        CACHE STRING
+        "Choose the type of build, options are: None Debug Release."
+        FORCE
+        )
+endif()
+string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
+if(    NOT cmake_build_type_tolower STREQUAL "debug"
+		AND NOT cmake_build_type_tolower STREQUAL "release"
+		AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo")
+	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
+	Allowed values are Debug, Release, RelWithDebInfo (case-insensitive).")
+endif()
 
-add_definitions(-DPRG_DIRAC)
+# do not rebuild if rules (compiler flags) change
+# this has advantages and disadvantages
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-set(DIRAC_WORK_MEM_WORDS
+# check whether pamadm-generated files exist
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
+    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
+    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
+else()
+    # they do not exist: run pamadm -a
+    execute_process(
+        COMMAND python pamadm -a
+        TIMEOUT 1
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_QUIET
+    )
+    message("-- You are lazy. Running pamadm -a for you ...")
+endif()
+
+option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
+option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
+option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
+option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
+option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
+option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
+option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
+option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
+option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
+option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
+option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
+option(ENABLE_UTILITIES       "Enable utitilites"                                         OFF)
+option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
+option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
+option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
+
+if(ENABLE_STATIC_LINKING)
+##ifort: command line remark #10010: option '-pthread' is deprecated and will be removed in a future release. See '-help deprecated'
+#miro: I haven't checked whether -pthread is needed in static linking for others compilers, like GNU...needs check
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+#miro - temporarily we have to block non-internal math and parallel ...
+    if(NOT ENABLE_INTERNAL_MATH)
+        message(FATAL_ERROR "For static linking you need internal math library !")
+    endif()
+    if (ENABLE_MPI OR ENABLE_OMP)
+        message(FATAL_ERROR "Static linking works in serial mode, no MPI/OMPI!")
+    endif()
+endif()
+
+option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
+option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
+mark_as_advanced(FORCE_DIRAC_BLAS)
+mark_as_advanced(FORCE_DIRAC_LAPACK)
+
+# set work memory
+set(WORK_MEM_WORDS
     "64000000"
     CACHE STRING
-    "DIRAC work memory in words"
+    "Work memory in words"
     )
-add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
+add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
-# radovan: note to myself for later
-# mark_as_advanced(VALGRIND_EXECUTABLE)
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
 
-# now only Linux, later add more machine info
-add_definitions(-DSYS_LINUX)
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
 
-include(ConfigCompilerFlags)
-if (CMAKE_COMPILER_IS_GNUC)
-    set (CMAKE_C_FLAGS "-Wall")
-    set (CMAKE_C_FLAGS_DEBUG "-O0 -g3")
-    set (CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
-elseif (CMAKE_C_COMPILER_ID MATCHES Intel)
-    set (CMAKE_C_FLAGS "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
-    set (CMAKE_C_FLAGS_DEBUG "-g -O0")
-    set (CMAKE_C_FLAGS_RELEASE "-g -O2")
-    set (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
-endif ()
-config_compiler_flags(C)
+include(Testing)
+include(Definitions)
+include(Archs)
+include(FCompilers)
+include(CCompilers)
+include(Parallel)
 
-if (CMAKE_COMPILER_IS_GNUFORTRAN)
-#   set(CMAKE_Fortran_FLAGS         "-Wall")
-    set(CMAKE_Fortran_FLAGS         "     ")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
-    add_definitions(-DVAR_GFORTRAN)
-elseif (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
-    add_definitions(-DVAR_IFC)
-endif ()
-config_compiler_flags(Fortran)
+set(LIBS)
 
-set(DIRAC_LIBRARIES_TO_LINK)
+include(Math)
+if(NOT BLAS_FOUND OR FORCE_DIRAC_BLAS)
+    message("-- Using own BLAS library (slow)")
+    add_definitions(-DUSE_DIRAC_BLAS)
+endif()
+if(NOT LAPACK_FOUND OR FORCE_DIRAC_LAPACK)
+    message("-- Using own LAPACK library (slow)")
+    add_definitions(-DUSE_DIRAC_DLAMCH)
+    add_definitions(-DUSE_DIRAC_DLAPACK)
+    add_definitions(-DUSE_DIRAC_ZLAPACK)
+endif()
 
-if (DIRAC_ENABLE_EXTERNAL_MATH)
-    find_package(BLAS)
-    find_package(LAPACK)
-    set(DIRAC_LIBRARIES_TO_LINK
-        ${DIRAC_LIBRARIES_TO_LINK}
-        blas
-        lapack
-        )
-endif ()
+if(ENABLE_64BIT_INTEGERS)
+    add_definitions(-DINT_STAR8)
+endif()
 
-if (DIRAC_ENABLE_MPI)
-    find_package(MPI)
-    add_definitions(-DVAR_MPI)
-    if (MPI_FOUND)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
-        include_directories(${MPI_INCLUDE_PATH})
-    endif ()
-endif ()
+if(ENABLE_CUDA)
+    find_package(CUDA)
+    if(CUDA_FOUND)
+        set(LIBS
+            ${LIBS}
+            ${CUDA_CUBLAS_LIBRARIES}
+            )
+        add_definitions(-DUSE_CUBLAS)
+    endif()
+endif()
 
 add_custom_command(
     OUTPUT
@@ -92,30 +153,13 @@ add_custom_command(
 
 add_executable(
     gen_fortran_interface_h
-    ${PROJECT_SOURCE_DIR}/build/gen_fortran_interface_h.c
-    )
-
-add_custom_command(
-    OUTPUT
-    ${PROJECT_SOURCE_DIR}/gp/compinfo.h
-    DEPENDS
-    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.sh
-    COMMAND
-    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.sh > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
-    )
-
-set(GENERATED_FILES
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
-    ${PROJECT_SOURCE_DIR}/gp/compinfo.h
-    )
-
-set(DIRAC_INTERFACES_LIST
-    ${GENERATED_FILES}
+    ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
+    ${PROJECT_BINARY_DIR}/xcint/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -126,33 +170,104 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-include(cmake/Definitions.cmake)
-include(cmake/Sources.cmake)
-
-if (DIRAC_ENABLE_XCFUN)
-    add_subdirectory(xcfun)
-    set(DIRAC_INTERFACES_LIST
-        ${DIRAC_INTERFACES_LIST}
+if(ENABLE_XCFUN)
+    add_subdirectory(xcint/xcfun)
+    set(LIBS
+        ${LIBS}
         xcfun
         )
-    set(DIRAC_LIBRARIES_TO_LINK
-        ${DIRAC_LIBRARIES_TO_LINK}
-        xcfun
-        )
-endif ()
+endif()
 
+include(CompilationInfo)
+
+# copy pam to build dir
+configure_file(
+    ${CMAKE_SOURCE_DIR}/pam
+    ${CMAKE_BINARY_DIR}/pam
+    COPYONLY
+    )
+
+set(GENERATED_FILES
+    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    )
 add_custom_target(dirac_interfaces
     ALL
     DEPENDS
-    ${DIRAC_INTERFACES_LIST}
+    ${GENERATED_FILES}
 )
 
-add_executable(dirac.x
-    ${DIRAC_SOURCES}
-    ${GENERATED_FILES}
+include(Sources)
+
+set(DIRAC_SOURCES
+    ${C_SOURCES}
+    ${FREE_FORTRAN_SOURCES}
+    ${FIXED_FORTRAN_SOURCES}
     )
 
-target_link_libraries(
-    dirac.x
-    ${DIRAC_LIBRARIES_TO_LINK}
+add_library(
+    dirac 
+    ${DIRAC_SOURCES} 
+    ${GENERATED_FILES} 
     )
+
+# get size of static allocations in dirac.x
+add_custom_target(
+    info
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    )
+
+# get size of static allocations in dirac.x and print sorted list of object 
+add_custom_target(
+    info_ext
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
+)
+
+set(LIST_OF_EXECUTABLES)
+macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
+    add_executable(
+        ${_executable}
+        ${_source}
+    )
+    set(LIST_OF_EXECUTABLES
+        ${LIST_OF_EXECUTABLES}
+        ${_executable}
+    )
+endmacro()
+compile_standalone(dirac.x                   main/main.F90                     "${LIST_OF_EXECUTABLES}")
+if(ENABLE_UTILITIES)
+    compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${LIST_OF_EXECUTABLES}")
+    compile_standalone(rspread.x                 utils/rspread.F                   "${LIST_OF_EXECUTABLES}")
+    compile_standalone(labread.x                 utils/labread.F                   "${LIST_OF_EXECUTABLES}")
+    compile_standalone(twofit.x                  utils/twofit.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(cfread.x                  utils/cfread.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
+endif()
+foreach(
+    EXECUTABLE
+    ${LIST_OF_EXECUTABLES}
+    )
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
+    endif()
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
+    endif()
+    target_link_libraries(
+        ${EXECUTABLE}
+        dirac
+        ${LIBS}
+        )
+endforeach()
+
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
+
+include(Install)
+include(Release)
+include(Report)
+include(Documentation)

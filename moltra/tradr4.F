@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : tradr4.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
@@ -118,7 +115,7 @@ C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
         IF (NOMDCINT) THEN
            CALL XTIME(1,1,' Initializing MS4IND file  ')
-           CALL MDSCRI(WORK,KFREE,LFREE)
+           CALL MDSCRI
            CALL XTIME(1,2,' Initializing MS4IND file  ')
         END IF
 C
@@ -218,7 +215,7 @@ C
 C     Initialize scratch output file for final integrals
 C
         CALL XTIME(1,1,' Initializing MS4IND file  ')
-        CALL MDSCRI(WORK,KFREE,LFREE)
+        CALL MDSCRI
         CALL XTIME(1,2,' Initializing MS4IND file  ')
 C
         CALL XTIME(5,1,' Computing+transform. integrals')
@@ -992,8 +989,7 @@ C
              IF (MYTID.EQ.MPARID .OR. MDCSCAT) THEN
                 CALL SYMFINT(IPRINT,IREPIJ,
      &                       INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
-     &                       IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS),
-     &                       WORK,KFREE,LFREE)
+     &                       IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS))
              END IF
           ELSE
              IF (MYTID .EQ. MPARID .OR. MDCSCAT) THEN
@@ -1010,8 +1006,7 @@ C
                CALL MDSCRR(IREPIJ,IJ,LHMAT,WORK(KHMAT))
                CALL SYMFINT(IPRINT,IREPIJ,
      &                      INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
-     &                      IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT),
-     &                      WORK,KFREE,LFREE)
+     &                      IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT))
             END DO
          END IF
 #if defined (VAR_MPI)
@@ -1144,7 +1139,7 @@ C
 C
 C     Initialize output file for final integrals
 C
-      CALL MDSCRI(WORK,KFREE,LFREE)
+      CALL MDSCRI
 C
 C     Wait for tasks until we receive the end message
 C

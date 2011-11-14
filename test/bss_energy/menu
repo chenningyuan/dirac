@@ -1,0 +1,6 @@
+regular 
+HF.bss.cc.inp Z80H.lsym.dir.mol --mw=80   
+
+quick   
+HF.bss_sfb.cc_cisd.inp      Z80H.lsym.dir.mol  
+HF.dk2_sfb.pnuc.cc_cisd.inp Z80H.lsym.dir.mol  

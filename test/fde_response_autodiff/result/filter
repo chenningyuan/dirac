@@ -4,6 +4,5 @@ Nlines 8:* Dipole moment:
 $ERROR 1.E-7
 Nlines 1:   Test: imported frozen density integrates to
 
-
 $ERROR 1.E-7
-Nlines 1:@   average
+Nlines 12:<<A( 1),B( 1)>> - linear response function (real)

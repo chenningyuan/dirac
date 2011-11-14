@@ -13,8 +13,8 @@ LDA calculations with Jengine+density fitting in non-relativistic two-component 
  1
 *TWOINT
 .AOFOCK
-#*READIN
-#.UNCONTRACTED
+*READIN
+.CONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

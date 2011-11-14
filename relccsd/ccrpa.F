@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : ccrpa.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RPAA(MAXIT,NAOPER,NAMEA,NAMEB,APHASE,BPHASE,BDONE,
@@ -73,6 +70,8 @@ C
       real*8 sdot,ddot
       complex*16 cdotc,zdotc
       CHARACTER*17 TEXT
+
+      CERPA=DCMPLX(0.0D0,0.0D0)
 C
 C---------------Executable code--------------------------------------
 C

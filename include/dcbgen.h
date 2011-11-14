@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbgen.h
 !
 !*** General information in DIRAC ***
@@ -21,7 +19,8 @@
 !      TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
 !  TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
 !  TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode 
-!  X2C_mod    = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
+!  X2Cmod_x2c = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
+!  (now stored in the module x2cmod_cfg)
 !
 !  SKIP2E - Skip all two electron steps.
 !
@@ -40,24 +39,23 @@
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
      &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO, DOPIN, DOPIN_I3,    & 
-     &        DOPUT,                                                    &
+     &        DOPUT,DORKBIMP,                                           &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
-     &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,       &
-     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     & 
-     &        X2C_mod
+     &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET,                &
+     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
-     &                DOFCK3, DOPIN, DOPIN_I3,                          & 
+     &                DOFCK3, DOPIN, DOPIN_I3,DORKBIMP,                 & 
      &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
-     &                TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,        &
+     &                TWOCOMPBSS, DOLINK, DOFMM, NOSET,                 &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
-     &                DOQJACO, X2C_mod
+     &                DOQJACO
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND

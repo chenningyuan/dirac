@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -75,6 +75,7 @@ C    ===========================================================================
 C    ... it's using the picture change transformation matrix obtained from the
 C    transformation of the Dirac bare nucleus or of the Fock-Dirac matrix
 C    (when USEDF=.true.)
+!     print *,'TWOCOMPBSS and I2COFK ==> ',TWOCOMPBSS , I2COFK
       IF (DO4C2C.AND..NOT.START2C) THEN
 
        IF (IPRHAM.GE.0) THEN
@@ -137,19 +138,6 @@ C ==============================================================================
 
 C    ... close the BSSMAT file ...
       CLOSE(LUBSS,STATUS='KEEP')
-
-!     x2c     = .true.
-!     x2c_mod = .true.
-!     IOTC = .false.
-!     BSS = .false.
-!     NOPRTR = .false.
-!     IBSS = 2999
-!     TWOCOMPBSS = .false.
-!     TWOCOMP = .false.
-
-!     call x2c_driver(work(kfree),lfree,.false.,1,.true.)
-!
-!     call quit( '*** stop after x2c_driver run ***' )
 
 C ============================================================
 C  Finally set up number of positronic shells equal to zero
@@ -241,6 +229,7 @@ C     HAM2CL is the label of the two-comp. hamiltonian matrix to read
 C     ==================================================================
 C
 
+!     print *,'entered GETH2CAO, reading type  ==> ',I2COFK
 C     Select the label according to the I2COFK parameter
       IF      (I2COFK.EQ.1) THEN       
 C.... h2c from h_D(1)_4C ... DEFAULT ...    
@@ -268,6 +257,7 @@ C.... it's H1AO_DK or H1AO_DK2 in LL basis (ie pure two-component modus)
         CALL QUIT(
      &  'ONEFCK: Wrong value of the entering I2COFK!')
       ENDIF  
+!     print *,'entered GETH2CAO, reading label ==> ',HAM2CL
 
       IF (IPRINT.GE.0) THEN
        WRITE(LUPRI,'(/,2X,A,I1,A,A)')
@@ -377,7 +367,7 @@ C ============================================================
 !     defining h1 matrix control variable (in the X2C module) - 
 !     set here for consistency to the maximum value (the true value 
 !     needs to be checked though)
-      is_defining_h1mat = 3
+      is_defining_h1mat = 4
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
      &            LINAD,is_defining_h1mat,WORK(KFREE),LFREE)
 C.....set variables needed in DFDIAG (N2TMT etc.)
@@ -539,7 +529,6 @@ C   ... release the rest of allocated memmory ...
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck set_tmt */
       SUBROUTINE SET_TMT(IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -565,16 +554,16 @@ C .. NZT is in dcbbas.h, and after MODHAM for RKB is equal to NZ !
       DO IFRP = 1,NFSYM
         NISHMF(IFRP) = NISH(IFRP)
         NOCCMF(IFRP) = NOCC(IFRP)
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
+        I2TMT(IFRP)  = N2TMT
+        N2TMT        = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
         I2TMOT(IFRP) = N2TMOTQ
-        N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
-        N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
-        IORB(IFRP)  = NORBT
+        N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+        N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
+        IORB(IFRP)   = NORBT
 C       ...  Count total number of orbitals  ...
-        NORBT    = NORBT  + NORB(IFRP)
-        I2ORBT(IFRP)= N2ORBT*NZ
-        N2ORBT   = N2ORBT + NORB(IFRP)*NORB(IFRP)
+        NORBT        = NORBT  + NORB(IFRP)
+        I2ORBT(IFRP) = N2ORBT*NZ
+        N2ORBT       = N2ORBT + NORB(IFRP)*NORB(IFRP)
       ENDDO
 
       IF (IPRINT.GE.5) THEN
@@ -590,7 +579,6 @@ C       ...  Count total number of orbitals  ...
        write(lupri,'(4X,A,I3)') 'N2TMT=',N2TMT
       ENDIF
 
-      RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
@@ -690,49 +678,6 @@ C      ... save the 'SL' resorted transformation matrix
         ENDIF
       ENDIF
 
-C    ... one-step approach and NOT the linear symmetry 
-      IF (.NOT.FPB.AND.LINAD) THEN
-        IVMAT = 1
-        IBUF = 1
-        IMAT = 1
-        DO I = 1, NFSYM
-        IF(NORB(I).GT.0) THEN
-C     ... construct original AO->RKB_MO basis:
-C         VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
-          CALL QGEMM(NFBAS(I,0),NORB(I),NORB(I),D1,
-     &      'N','N',IPQTOQ(1,0),TMAT(IMAT),
-     &      NFBAS(I,0),NORB(I),NZ,
-     &      'H','N',IPQTOQ(1,0),
-     &      TBUF(IBUF),NORB(I),NORB(I),1,
-     &      D0,IPQTOQ(1,0),VMAT(IVMAT),
-     &      NFBAS(I,0),NORB(I),NZ)
-
-          IF (IPRINT.GE.5) THEN
-            CALL HEADER(
-     & 'HANDLE_RKB: NONLINSYM RKB transformation matrix 4c AO->MO ',-1)
-            WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM                          
-            CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
-          ENDIF
-
-         IBUF  = IBUF  + NORB(I)*NORB(I)
-         IMAT  = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
-         IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
-
-       ENDIF
-       ENDDO
-
-C    save
-       CALL W2BSSMAT(4,.TRUE.,'TMAT4C_1','HANDLE_RKB',
-     &               VMAT,N2TMT,LUBSS,IPRINT)
-       IF (IPRINT.GE.2) THEN
-        write(lupri,*)
-     & 'HANDLE_RKB: TMAT4C_1 (VMAT) was written into the BSSMAT !'
-       ENDIF
-
-      ENDIF
-
 C       ... dummy vars
       CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','HANDLE_RKB',
      &               VMAT,N2TMT,LUBSS,IPRINT)
@@ -743,7 +688,6 @@ C       ... dummy vars
       ENDIF
 
       CALL QEXIT('HANDLE_RKB')
-      RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
@@ -1323,6 +1267,7 @@ C     ... initialize NORB_SUB(IB,IFRP,0),ID_SUB_BL(IB,IFRP)
 C     ... run over fermion symmetries ...
       DO I = 1, NFSYM
        CALL INIBOS(IBEIG(1+IORB(I)),I,.TRUE.,IPRINT)
+!      print *,'IBEIG(1+IORB(I)), I',IBEIG(1+IORB(I)),I
       ENDDO
 
 C    ... write the boson irreps (Trond's approach) into the BSSMAT file !
@@ -2989,6 +2934,8 @@ C      ... entering transf. marix in TMAT
       ENDIF
 
 C ... now if special case - DFFOCK2 from outside
+!       currently this cannot be activated any keyword (unless you know
+!       where to "enter" the 6...) - stefan - april 2011
         IF (CONT2C.AND.I2CHAM.EQ.6) THEN
 C      ... get transf. matrix into TMAT
           IF (FPB) THEN
@@ -3132,12 +3079,13 @@ C       ... update the offsets
       ENDIF
       ENDDO
 
-      ENDIF
+      ENDIF ! end of branching point for the three different defining h1
 
 C=====================================================================
 C     ... do extract (ee) elements from TBUF into VMAT 
 C         and eliminate SF terms to get pure SO1 matrix !
 C=====================================================================
+!     print *, 'bss: SAVESO1 ==> ',SAVESO1
       IF (SAVESO1) THEN
   
        IOFT = 1
@@ -3643,7 +3591,6 @@ C         ... do transform it to the "k" basis into TBUF !
       CALL QEXIT('DF2ONB')
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_bd */      
       SUBROUTINE GET_HINF_BD(TBUF,TMAT,VMAT,IBEIG,
@@ -4112,7 +4059,7 @@ C  -- make b matrix (store in VMAT); B := - Y--.Y+-^+
      &      D0,IPQTOQ(1,0),VMAT(IBUFE),NREF,NREF,NZ)
        ENDIF
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (1): A matrix for getting R in ON basis, TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -4394,7 +4341,7 @@ C ...  make VMAT -> TBUF = (1 R)  !
        NREF2 = 2*NESH(I)
        N2EQ = NREF*NREF*NZ
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (3): R matrix read from BSSMAT, VMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -4435,7 +4382,7 @@ C      ... add 1 and O
        NREF2 = 2*NESH(I)
        N2EQ = NREF*NREF*NZ
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &'GET_HINF_R (4): (1 + R) matrix, TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -4451,7 +4398,7 @@ C      and multiply it to form X Omega+ = (1  R)t * Omega+:
      &          D0,IPQTOQ(1,0),VMAT(IBUF2E),NREF2,NREF,NZ)
 
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (4): Final U1= (1 R)t*Omega+ picture change '//
      &   'transformation matrix in ON RKB/"k" basis, VMAT',-1)
@@ -4644,7 +4591,7 @@ C ... read the Dirac Hamiltonian in the ON RKB/"k" basis into  TMAT
        NREF2 = 2*NESH(I)
        N2EQ = NREF*NREF*NZ
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (5): Final U1= (1 R)t*Omega+ picture change '//
      &   'transformation matrix in ON RKB/"k" basis, VMAT',-1)
@@ -5096,7 +5043,7 @@ C        ...
       ITMAT = 1
       DO I=1,NFSYM
       IF (NORB(I).GT.0) THEN
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
      & 'ON RKB/"k" H4c -> H2c, U1_ONBAS ',-1)
@@ -5122,7 +5069,7 @@ C ...   construct picture change transf. matrix,  VMAT*TBUF = TMAT
      &        D0,IPQTOQ(1,0),
      &        TMAT(ITMAT),NFBAS(I,0),NESH(I),NZ)
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
      & 'H4c SA-AO "xhi" -> H2c ON RKB/"k", TMAT',-1)
@@ -5170,7 +5117,7 @@ C ======================================================
       DO I=1,NFSYM
       IF (NORB(I).GT.0) THEN
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GETPCTMAT: Final transf.matrix H2c "xhi_L" - H2c(ee) ON  '//
      &   ' (TM2CAOFP), VMAT',-1)
@@ -5198,7 +5145,7 @@ C  ...  construct picture change transf matrix, TBUF*VMAT+ = TMAT
      &          D0,IPQTOQ(1,0),
      &          TMAT(ITMAT),NORB(I),NFBAS(I,1),NZ)
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
          CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
      & 'H4c ON -> H2c SA-AO "xhi", TMAT',-1)
@@ -5242,7 +5189,7 @@ C   ... reread T4CAO2CK back into TMAT
       DO I=1,NFSYM
       IF (NORB(I).GT.0) THEN
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
 
           CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
@@ -5270,7 +5217,7 @@ C  ...  construct full picture change transfprmatin matrix, TMAT*VMAT+ = TBUF
      &          D0,IPQTOQ(1,0),
      &          TBUF(IBUF),NFBAS(I,0),NFBAS(I,1),NZ)
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      & 'GETPCTMAT: Final picture change transf.matrix '//
      & '  H4c SA-AO "xhi" -> H2c SA-AO "xhi"',-1)
@@ -5674,7 +5621,6 @@ C ... then continue with electronic states
 
       ENDIF
       ENDDO
-      write(lupri,*)
 
 C ****************************************************************************
 C **
@@ -9527,13 +9473,13 @@ C
 C Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -9874,6 +9820,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Input reading for AMFI/RELSCF module.
 C
+C   Input data are under the *AMFI keyword within the **HAMILTONIAN section.
+C
 C   Called from HAMINP.
 C
 C   Written by Miro ILIAS, Prievidza, 2008
@@ -10018,20 +9966,20 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(4X,A)')
+      WRITE(LUPRI,'(3X,A)')
      & 'Set-up for AMFI/RELSCF calculations'
       CALL PRSYMB(LUPRI,'=',75,0)
 
       IF (.NOT.NEWDEF) THEN
         WRITE(LUPRI,'(2x,a)')
-     &  '...no reading under *AMFI, thus default settings'
+     &  '...no reading under "*AMFI  ", thus default settings'
       ENDIF
 
-      WRITE(LUPRI,'(1X,A,I5)') '  *AMFI code print level: ',IPR_AMFI
-      WRITE(LUPRI,'(1X,A,I5)') '*RELSCF code print level: ',IPR_RELSCF
 C
-      WRITE(LUPRI,'(1X,A,I5)')
-     &  '* RELSCF maximum number of iterations:',MXXTRP_INP
+      WRITE(LUPRI,'(A,I5)')
+     &  ' * AMFI   code print level:',IPR_AMFI,
+     &  ' * RELSCF code print level:',IPR_RELSCF,
+     &  ' * RELSCF maximum number of iterations:',MXXTRP_INP
 
       IF (IMFCH.NE.0) THEN
         WRITE(LUPRI,'(1X,A,I4)')

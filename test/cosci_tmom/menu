@@ -1,0 +1,5 @@
+quick   
+cosci.Li2.inp Li2.mol --mw=120 
+
+regular
+cosci.H3.inp  H3.mol  --mw=120  

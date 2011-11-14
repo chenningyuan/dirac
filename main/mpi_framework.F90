@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : mpi_framework.F90
 !
 !      /* Deck MPIXINIT */
@@ -317,15 +315,17 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
   INTEGER :: IERR, IJ, LHOST, ILEN
   PARAMETER (ILEN=72)
   CHARACTER (LEN=ILEN) HOST
+  integer (kind=8) :: ivariable
 !
   IERR  = 0
   LHOST = 0
+
 ! ordered start-up info print
   IF( ITASK .eq. 0 )THEN
     CALL MPI_GET_PROCESSOR_NAME(HOST,LHOST,IERR)
     IF( MYTID .eq. MPARID ) THEN
-       print '(a,a,a,i0,a,i0,a)', 'DIRAC master    (',HOST(1:LHOST), &
-             ') allocating ',IVARIABLE,' words (',IVARIABLE/2**17,   &
+       print '(a,a,a,i20,a,i14,a)', 'DIRAC master    (',HOST(1:LHOST), &
+             ') starts by allocating ',IVARIABLE,' words (',IVARIABLE/2**17,   &
              ' MB) of memory'
     ENDIF
     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -334,8 +334,8 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
     DO IJ = 1, (NUMNOD    )
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
        IF( MYTID .eq. IJ )  THEN
-          print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid, &
-          '(',HOST(1:LHOST),') allocating ',IVARIABLE,' words (', &
+          print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
+          '(',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' words (', &
           IVARIABLE/2**17,' MB) of memory'
        ENDIF
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -354,9 +354,17 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
   ELSE IF( ITASK .eq. 2 )THEN
     CALL MPI_GET_PROCESSOR_NAME(HOST,LHOST,IERR)
     IF( MYTID .eq. MPARID ) THEN
-!       print '(a,a,a,i0,a,i0,a)', 'DIRAC master    (',HOST(1:LHOST), &
-!             ') will attempt to use at most ',IVARIABLE,' words (',IVARIABLE/2**17,&
-!             ' MB) of memory in dynamic allocations'
+       if (ivariable.gt.0) then
+           print '(a,a,a,i20,a,i14,a)', 'DIRAC master    (',HOST(1:LHOST), &
+              ') to allocate at most  ',IVARIABLE,' words (',IVARIABLE/2**17,&
+              ' MB) of memory'
+       else
+           print '(a,a,a)', 'DIRAC master    (',HOST(1:LHOST), &
+              ') has no limitations in place for the amount of dynamically allocated memory'
+       endif
+       print '(a)',' '
+       print '(a)','Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam'
+       print '(a)',' '
     ENDIF
     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
@@ -364,9 +372,14 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
     DO IJ = 1, (NUMNOD    )
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
        IF( MYTID .eq. IJ )  THEN
-!          print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid, &
-!          '(',HOST(1:LHOST),') will attempt to use at most ',IVARIABLE,' words (', &
-!          IVARIABLE/2**17,' MB) of memory in dynamic allocations'
+           if (ivariable.gt.0) then
+              print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
+              '(',HOST(1:LHOST),') to allocate at most  ',IVARIABLE,' words (', &
+              IVARIABLE/2**17,' MB) of memory'
+           else
+              print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
+              '(',HOST(1:LHOST),') has no limitations in place for the amount of dynamically allocated memory'
+           endif
        ENDIF
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !

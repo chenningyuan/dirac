@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,7 +25,7 @@ Program TEST_SEC_QUANT
 subroutine TEST_SEC_QUANT
 #endif
 
-#if !defined (VAR_IFC)
+#if !defined (VAR_IFORT)
  use Operators_string
  use  Evaluate_strings
 
@@ -189,7 +189,7 @@ subroutine TEST_SEC_QUANT
 ! call process_strings(HL)
 
 #else
- write(6,*) "Deactivated for ifort compiler"
+ write(6,*) "Deactivated for ifort compiler version lower than 10.1.015 "
 #endif
 
 #if defined STANDALONE_SECQUANT

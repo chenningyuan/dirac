@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,15 +25,17 @@ module visual
   use visual_cfg
   use codata
   use ao_eval
-  use basis_info
+  use interface_ao
   use matrix_defop
   use matrix_genop, only: copy_matrix_sym
   use dirac_interface
 #ifdef MOD_UNRELEASED
   use visual_london
+  use xc_london_c1
 #endif
   use visual_integrate
   use visual_in_point
+
 
   implicit none
 
@@ -64,402 +66,329 @@ contains
     subroutine run_visual()
 
 !   ----------------------------------------------------------------------------
-    type(matrix)         :: D_mo, D(max_nr_xvectors)
-    type(matrix)         :: D_con_ao, D_con_mo, D_con(max_nr_xvectors)
+    type(matrix)         :: D_mo, D(max_para)
+    type(matrix)         :: D_con_mo, D_con_mo_ai, D_con, D_0, D_test
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
     real(8), allocatable :: eigenvalues(:)
     real(8), allocatable :: occupation(:)
     real(8), allocatable :: ao(:)
     real(8), allocatable :: buffer(:)
+    real(8), allocatable :: cmo_from_file(:)
+    real(8), allocatable :: occ_from_file(:)
 
     real(8)              :: energy, time_start, second
     integer              :: max_ao_g_order, max_ao_m_order
-    integer              :: ioff, imat, iq, iz, m, nr_dmat, ivector
-    integer              :: nr_dmat_con
+    integer              :: ioff, imat, iq, iz, m, ivector
+    integer, parameter   :: file_unit = 137
 
-    logical              :: debug_me
+    logical              :: debug_me = .false.
+    logical              :: krmcscf_found
+    logical              :: natorb_found
+    logical, external    :: fndlab
 
-    integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e
-    type(matrix) :: D_mo_dagger, D_1a, D_1b, D_2
+    integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
+    type(matrix) :: D_mo_dagger, TP, TM, T
 !   ----------------------------------------------------------------------------
 
     max_ao_g_order = 0
+    do imat = 1, visual_cfg_nr_dmat
+       if (                                             &
+           (visual_cfg_property(imat) == iq_elf)   .or. &
+           (visual_cfg_property(imat) == iq_divs)  .or. &
+           (visual_cfg_property(imat) == iq_rots)  .or. &
+           (visual_cfg_property(imat) == iq_divj)  .or. &
+           (visual_cfg_property(imat) == iq_rotj)       &
+          ) then
+          max_ao_g_order = 1
+       end if
+       if (levyle) then
+!         here we obtain the paramagnetic part of the current density
+!         via the nr paramagnetic current density expression
+!         for this we need the cartesian gradient
+          if (                                             &
+              (visual_cfg_property(imat) == iq_j)     .or. &
+              (visual_cfg_property(imat) == iq_ndipx) .or. &
+              (visual_cfg_property(imat) == iq_ndipy) .or. &
+              (visual_cfg_property(imat) == iq_ndipz) .or. &
+              (visual_cfg_property(imat) == iq_bdipx) .or. &
+              (visual_cfg_property(imat) == iq_bdipy) .or. &
+              (visual_cfg_property(imat) == iq_bdipz)      &
+             ) then
+             max_ao_g_order = 1
+          end if
+       end if
+    end do
+
     max_ao_m_order = 0
+    if (visual_cfg_london) then
+       max_ao_m_order = 1
+    end if
 
     write(LUPRI,'(/,2x,a)') '*** Visualisation module ***'
 
-    do ivector = 1, visual_cfg_nr_xvectors
+!   get coefficients
 
-      if (visual_cfg_iq_xvector(ivector) == iq_divm     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_rotm     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_divj     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_rotj     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_jpara    ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_divjpara ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_rotjpara ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_elf      ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_k        ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_h        ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_gradient ) max_ao_g_order = 1
+    allocate(cmo_from_file(n2bbasxq))
+    cmo_from_file = 0.0d0
+    allocate(occ_from_file(norbt))
+    occ_from_file = 0.0d0
 
-      if (visual_cfg_iq_xvector(ivector) == iq_laplacian) then
-!         debug this:
-!         call getsos(gao,gao1,gao2,(/0.0d0/),ncnt,px,py,pz, &
-!    &                buf,ntbas(0),2,.false.,0)
-          call quit('debug laplacian in visual/visual.f90')
-      end if
+    inquire(file='KRMCSCF', exist=krmcscf_found)
 
-    end do
+    if (krmcscf_found) then
+!      read from KRMCSCF
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) max_ao_m_order = 1
-#endif
+       call opnfil(file_unit, 'KRMCSCF', 'OLD', 'visual.F90')
+       rewind(file_unit)
 
-!   find occupation
-!   ===============
+       natorb_found = .FALSE.
+       natorb_found = fndlab('MCCINATO', file_unit)
+       rewind(file_unit)
+       jrdmo = -1
 
-    call alloc(eigenvalues, norbt)
-    eigenvalues = 0.0d0
+       IF (natorb_found) THEN
+          call rreadmo(cmo_from_file, jrdmo, 4, file_unit)
+          call reakrmc(file_unit, 'MCNATOCC', occ_from_file, norbt)
+          if (jrdmo == 0) then
+             print *, 'orbitals read from label mccinato on file krmcscf'
+          end if
+       else
+          call rreadmo(cmo_from_file, jrdmo, 1, file_unit)
+          if (jrdmo == 0) then
+             print *, 'orbitals read from label neworb on file krmcscf'
+          end if
+       end if
 
-    call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
-    call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
+       close(file_unit)
+    else
+!      read from DFCOEF       
 
-    close(file_unit, status = 'keep')
-    write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
+       call read_mo_coef(cmo_from_file)
 
-    call fndocc(eigenvalues)
-    call dealloc(eigenvalues)
+!      find occupation
+      
+       call alloc(eigenvalues, norbt)
+       eigenvalues = 0.0d0
+      
+       call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
+       call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
+      
+       close(file_unit, status = 'keep')
+       write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
 
+!fixme verify whether this is really needed      
+!      when i introduced it i needed it so that certain arrays were properly set
+!      when restarting from DFCOEF
+       call fndocc(eigenvalues, .true.)
+       call dealloc(eigenvalues)
+    end if
 
 !   get orbital string
-!   ==================
-
     call alloc(occupation, norbt)
     call setup_orbital_string(occupation)
 
+!warning: when reading from KRMCSCF many assumptions below are either incorrect
+!         or become a hack (occupation 2, only inactive and secondary)
+!         it's ok if you plot a single orbital but not ok for many things
+!         need to add careful checks
 
-!   get coefficients
-!   ================
-
-    call get_c(C,   i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
-    call get_c(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
-    call get_c(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
+    call get_c(C,   cmo_from_file, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+    call get_c(Cig, cmo_from_file, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
+    call get_c(Csg, cmo_from_file, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
+    if (debug_me) then
+       call print_mat(C,   label='debug C')
+       call print_mat(Cig, label='debug Cig')
+       call print_mat(Csg, label='debug Csg')
+    end if
 
     if (nfsym == 2) then
-      call get_c(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
-      call get_c(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+       call get_c(Ciu, cmo_from_file, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
+       call get_c(Csu, cmo_from_file, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+       if (debug_me) then
+          call print_mat(Ciu, label='debug Ciu')
+          call print_mat(Csu, label='debug Csu')
+       end if
     end if
-
-!   gosia debug
-!    debug_me = .true.
-    debug_me = .false.
-    if (debug_me) then
-      write(lupri, *) 'nz, nfsym, nbsym = ', nz, nfsym, nbsym
-      call print_mat(C, label='C ')
-      call print_mat(Cig, label='Cig ')
-      call print_mat(Csg, label='Csg ')
-      if (nfsym == 2) then
-        call print_mat(Ciu, label='Ciu ')
-        call print_mat(Csu, label='Csu ')
-      end if
-    end if
-
-!   get unperturbed density matrix
-!   ==============================
+    deallocate(cmo_from_file)
+    deallocate(occ_from_file)
 
     call init_mat(D_mo, norbt, norbt)
-    D_mo%elms = 0.0d0
 
-    do m = 1, norbt
-      D_mo%elms((m - 1)*norbt + m) = occupation(m)
+#ifdef MOD_UNRELEASED
+    if (visual_cfg_london) then
+
+       D_mo%elms = 0.0d0
+       do m = 1, norbt
+          D_mo%elms((m - 1)*norbt + m) = occupation(m)
+       end do
+       D(imat) = C*(D_mo*dag(C))
+
+       D_0 = C*(D_mo*dag(C))
+       D_0 = 2.0d0*D_0
+
+
+!      get T^B matrix in MO basis
+
+       call init_mat(D_con_mo, norbt, norbt)
+       D_con_mo%elms = 0.0d0
+
+       if (visual_cfg_london_none) then
+
+          call init_mat(D_con_mo_ai, norbt, norbt)
+          D_con_mo_ai%elms = 0.0d0
+
+          call get_d_con_mo(D_con_mo, &
+                            D_con_mo_ai = D_con_mo_ai)
+
+          call copy_matrix_sym(D_con_mo_ai, D_con_mo)
+
+       else
+
+          call get_d_con_mo(D_con_mo)
+
+       end if
+
+       if (.not. levyle) then
+!         radovan: magic factor for levyle
+!                  need to find the reason for it
+          D_con_mo = 0.5d0*D_con_mo
+          if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
+       end if       
+
+
+!      build 'modified' (by T^B) density matrices:
+
+       call init_mat(D_con, norbt, norbt)
+       D_con%elms = 0.0d0
+       call copy_matrix_sym(D_con, D_con_mo)
+
+       if (nfsym == 2) then
+          call get_mdm_con(D_con,                     &
+                           D_con_mo,                  &
+                           C, Cig, Csg,               &
+                           Ciu = Ciu,                 &
+                           Csu = Csu)
+       else
+          call get_mdm_con(D_con,                     &
+                           D_con_mo,                  &
+                           C, Cig, Csg)
+       end if
+
+    end if
+#endif
+
+    do imat = 1, visual_cfg_nr_dmat
+
+       if (visual_cfg_dmat_file(imat) == 'DFCOEF') then
+!         get unperturbed density matrix
+      
+          D_mo%elms = 0.0d0
+          do m = 1, norbt
+             D_mo%elms((m - 1)*norbt + m) = occupation(m)
+          end do
+
+          D_mo%ih_sym = 1
+          D_mo%tr_sym = 1
+          D_mo%irep   = 0
+
+          D(imat) = C*(D_mo*dag(C))
+          if (debug_me) then
+             call print_mat(D_mo,    label = 'debug MO D matrix')
+             call print_mat(D(imat), label = 'debug AO D matrix')
+          end if
+
+       else
+!         get perturbed density matrix
+
+          call setup_fo_dmat_ao(imat, occupation, D_mo)
+
+          if (visual_cfg_london .and. visual_cfg_london_none) then
+             TP = D_mo - dag(D_con_mo_ai)
+             TM = D_mo - D_con_mo_ai
+          else
+             TP = 1.0d0*D_mo
+             TM = 1.0d0*D_mo
+          end if
+
+          if (nfsym == 2) then
+             if (jbtof(D_mo%irep, 1) == 2) then
+!               ungerade perturbation
+                D(imat) = (Cig*(TP*dag(Csu))) &
+                        + (Ciu*(TP*dag(Csg))) &
+                        - (Csg*(TM*dag(Ciu))) &
+                        - (Csu*(TM*dag(Cig)))
+             else
+!               gerade perturbation
+                D(imat) = (Cig*(TP*dag(Csg))) &
+                        + (Ciu*(TP*dag(Csu))) &
+                        - (Csg*(TM*dag(Cig))) &
+                        - (Csu*(TM*dag(Ciu)))
+             end if
+          else
+             D(imat) = (Cig*(TP*dag(Csg))) &
+                     - (Csg*(TM*dag(Cig)))
+          end if
+          call copy_matrix_sym(D(imat), D_mo)
+
+       end if
     end do
 
-    D(1) = C*(D_mo*dag(C))
-
-
-!   get perturbed matrices
-!   ======================
-
-    nr_dmat = 1
-
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-
-      nr_dmat_con = 0
-      call init_mat(D_con_ao, ntbas(0), ntbas(0))
-
-      debug_me = .false.
-
-    end if
-#endif
-
-
-    do ivector = 1, visual_cfg_nr_xvectors
-
-#ifdef MOD_UNRELEASED
-      if (visual_cfg_london) call visual_london_init(ivector)
-#endif
-
-      if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
-        nr_dmat = nr_dmat + 1
-        vector_to_matrix(ivector) = nr_dmat
-
-        call setup_fo_dmat_ao(ivector, occupation, D_mo)
-
-        if (nfsym == 2) then
-          if (jbtof(D_mo%irep, 1) == 2) then
-!           ungerade perturbation
-            D(nr_dmat) = (Cig*(D_mo*dag(Csu))) &
-                       + (Ciu*(D_mo*dag(Csg))) &
-                       - (Csg*(D_mo*dag(Ciu))) &
-                       - (Csu*(D_mo*dag(Cig)))
-          else
-!           gerade perturbation
-            D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                       + (Ciu*(D_mo*dag(Csu))) &
-                       - (Csg*(D_mo*dag(Cig))) &
-                       - (Csu*(D_mo*dag(Ciu)))
-          end if
-        else
-          D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                     - (Csg*(D_mo*dag(Cig)))
-        end if
-
-        call copy_matrix_sym(D(nr_dmat), D_mo)
-
-      else
-        vector_to_matrix(ivector) = 1
-#ifdef MOD_UNRELEASED
-        if (visual_cfg_london) then
-          call quit('visual: ZORDER and LONDON cannot go together')
-        end if
-#endif
-      end if
-
-
-#ifdef MOD_UNRELEASED
-!     if london - reorthonormalization contribution
-!     =============================================
-!     london - only for j^B and properties expressed in terms of j^B
-!     so we will need only matrices for iz = 2, 3, 4 (nz=4) as
-!     iz = 2 -> \alpha_z
-!     iz = 3 -> \alpha_y
-!     iz = 4 -> \alpha_x
-
-!     (*) gosia: todo later we can make the scheme
-!     D(1) -> unperturbed density matrix
-!     D(2:nr_dmat) -> perturbed density matrices
-!     D(nr_dmat+1:nr_dmat_con+nr_dmat+1) -> modified density matrices (by connection matrices)
-!     etc..
-!     and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
-
-      if (visual_cfg_london) then
-      
-        nr_dmat_con = nr_dmat_con + 1
-        vector_to_matrix_con(ivector) = nr_dmat_con
-
-        D_con_ao%elms = 0.0d0
-
-!       read connection matrices in AO basis from AOPROPER file
-!       -------------------------------------------------------
-        call setup_fo_conmat_ao(D_con_ao, ivector)
-
-        if (debug_me) then
-!         can be compared with matrices from PRPMAO when running response
-          call print_mat(D_con_ao, label = 'run_visual: debug D_con_ao in SA-AO basis')
-        end if
-
-
-!       transform connection matrices to MO basis:
-!       ------------------------------------------
-        D_con_mo = dag(C)*(D_con_ao*C)
-
-        call copy_matrix_sym(D_con_mo, D_con_ao)
-
-        if (debug_me) then
-!         can be compared with matrices from PRPMAT when running response
-          call print_mat(D_con_mo, label = 'run_visual: debug D_con_mo in MO basis')
-        end if
-
-
-!       create modified density matrices
-!       --------------------------------
-!       *) gosia todo: include ep in options, now it is hardcoded to .true.
-!          ep = .true.  - 'p'-summation over e+p shells
-!               .false. - only over e-shells
-
-!
-!        write(*, *) 'gosia: nz, nfsym, jbtof(D_con_mo%irep, 1) = ', &
-!                            nz, nfsym, jbtof(D_con_mo%irep, 1)
-
-!       symmetric connection
-        if (visual_cfg_connection(ivector) == 2) then
-
-!         D_con_mo(iz=1) is antisymmetric
-!         D_con_mo(iz=2,3,4) is symmetric, so:
-
-          if (nfsym == 2) then
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (C*(D_con_mo*dag(Ciu))) &
-                               + (Cig*(D_con_mo*dag(C))) &
-                               + (Ciu*(D_con_mo*dag(C)))
-          else
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (Cig*(D_con_mo*dag(C)))
-          end if
-
-          call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
-
-          if (debug_me) then
-!           can be compared with matrices from GETMDM when running response
-            call print_mat(D_con(nr_dmat_con),   &
-                 label='run_visual: debug D_con (symmetric con)')
-          end if
-
-
-!       natural connection
-        else if (visual_cfg_connection(ivector) == 1) then
-
-!         D_con_mo is a general matrix
-!         so we do dag(D_con_mo), but dag(A) does only transposition
-!         so the sign is changed by hand -> that is why we have "-"
-          if (nfsym == 2) then
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (C*(D_con_mo*dag(Ciu))) &
-                               - (Cig*(dag(D_con_mo)*dag(C))) &
-                               - (Ciu*(dag(D_con_mo)*dag(C)))
-
-            !D_con(nr_dmat_con) = (Cig*(D_con_mo*dag(Cig))) &
-            !                   + (Ciu*(D_con_mo*dag(Ciu))) &
-            !                   - (Cig*(dag(D_con_mo)*dag(Cig))) &
-            !                   - (Ciu*(dag(D_con_mo)*dag(Ciu)))
-
-          else
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               - (Cig*(dag(D_con_mo)*dag(C)))
-          end if
-
-            call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
-          if (debug_me) then
-!           can be compared with matrices from GETMDM when running response
-            call print_mat(D_con(nr_dmat_con),  &
-                 label='run_visual: debug D_con (natural con)')
-          end if
-
-
-!       <none> connection
-        else if (visual_cfg_connection(ivector) == 0) then
-
-!         'ij' block: overlap
-!         ===================
-!         if <none> connection, we take symmetric connection integrals to D_con_ao
-!         and they equal to -0.5d0*S^B, so:
-          D_2 = 2.0d0*D_con_mo
-
-!         create modified density matrix
-!         ------------------------------
-          !D_con(nr_dmat_con) = Cig*(D_2*dag(Cig))
-          if (nfsym == 2) then
-            D_con(nr_dmat_con) = Cig*(D_2*dag(Cig)) &
-                               + Ciu*(D_2*dag(Ciu))
-          else
-            D_con(nr_dmat_con) = Cig*(D_2*dag(Cig))
-          end if
-
-!         'ai' block: D_con_mo - D_mo
-!         ===========================
-!         iz = 1     -> D_mo     symmetric, D_con_mo antisymmetric
-!         iz = 2,3,4 -> D_mo antisymmetric, D_con_mo     symmetric
-!                       dag(D_mo) = -D_mo,  dag(D_con_mo) = D_con_mo
-!         and only iz = 2,3,4 are important here, so:
-
-!         later on D matrices are multipled by 2.0d0, so:
-          D_1a = D_con_mo - 2.0d0*D_mo
-!         D_1b = dag(D_1a)
-          D_1b = D_con_mo + 2.0d0*D_mo
-!
-!         create modified density matrix
-!         ------------------------------
-          D(nr_dmat)%elms = 0.0d0
-          if (nfsym == 2) then
-            D(nr_dmat) = 0.5d0*(Cig*(D_1b*dag(Csg))) &
-                       + 0.5d0*(Csg*(D_1a*dag(Cig))) &
-                       + 0.5d0*(Ciu*(D_1b*dag(Csu))) &
-                       + 0.5d0*(Csu*(D_1a*dag(Ciu)))
-          else
-            D(nr_dmat) = 0.5d0*(Cig*(D_1b*dag(Csg))) &
-                       + 0.5d0*(Csg*(D_1a*dag(Cig)))
-          end if
-
-
-!         "uninitialize"
-!         --------------
-          D_1a = 0
-          D_1b = 0
-          D_2  = 0
-
-        else
-          call quit('run_visual: visual_cfg_connection(ivector) != {0,1,2}')
-        end if
-      
-      end if
-#endif /* ifdef MOD_UNRELEASED */
-
-    end do   ! do ivector = 1, visual_cfg_nr_xvectors
-
-
-
 !   insert half phases
-!   ==================
-
-    if (visual_cfg_london) then
-!     gosia: it is because i also 'reuse' D(1)... 
-      do imat = 1, nr_dmat
-        if (nz < 4) then
-          do iz = 1, nz
+    if (nz < 4) then
+       do iz = 1, nz
+         ioff = ntbas(0)*ntbas(0)*(iz - 1)
+         if (visual_cfg_london) then
+            iq   = ipqtoq(iz, D_0%irep)
+            call q2bphase('D', iq, 1, D_0%elms(1 + ioff))
+            iq   = ipqtoq(iz, D_con%irep)
+            call q2bphase('D', iq, 1, D_con%elms(1 + ioff))
+         end if
+         do imat = 1, visual_cfg_nr_dmat
             iq   = ipqtoq(iz, D(imat)%irep)
-            ioff = ntbas(0)*ntbas(0)*(iz - 1)
             call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
-          end do
-        end if
-      end do
-    else
-      do imat = 2, nr_dmat
-        if (nz < 4) then
-          do iz = 1, nz
-            iq   = ipqtoq(iz, D(imat)%irep)
-            ioff = ntbas(0)*ntbas(0)*(iz - 1)
-            call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
-          end do
-        end if
-      end do
+         end do
+       end do
     end if
 
+    do imat = 1, visual_cfg_nr_dmat
 #ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        if (nz < 4) then
-          do iz = 1, nz
-            iq   = ipqtoq(iz, D_con(imat)%irep)
-            ioff = ntbas(0)*ntbas(0)*(iz - 1)
-            call q2bphase('D', iq, 1, D_con(imat)%elms(1 + ioff))
-          end do
-        end if
-      end do
-    end if
+       if (visual_cfg_london) then
+          if (visual_cfg_london_skip_kappa) then
+!            zero out kappa contribution
+!            this is useful to isolate direct and/or reortho contributions
+             D(imat) = tiny(0.0d0)*D(imat)
+          end if
+
+          if (.not. visual_cfg_london_skip_ro) then
+!            dirty trick add D_con on top of D
+!            on trunk we will have to check that this only
+!            happes to the current, mag field, and so on
+             D(imat) = D(imat) + D_con
+          end if
+
+       end if
 #endif
 
+!      scale density matrix
+       D(imat) = 2.0d0*D(imat)
 
-!   scale density matrices
-!   ======================
-
-    do imat = 1, nr_dmat
-!gosia: here valgrind gives a warning about uninitialised value
-!now D is a "temporary matrix" (function new_tmp in matrix_defop.f90)
-!actually a pointer to (initialized) matrix D_mo
-!to be checked...  
-      D(imat) = 2.0d0*D(imat)
+!      collect matrices for identical densities to save time
+       if (visual_cfg_property(imat) /= iq_elf) then
+!         elf has nonlinear dependence
+          j = visual_cfg_property_to_matrix(visual_cfg_property(imat))
+          if (j == 0) then
+             visual_cfg_property_to_matrix(visual_cfg_property(imat)) = imat
+          else
+             D(j) = D(j) + D(imat)
+             if (visual_cfg_london) then
+                T   = 1.0d0*D_0
+                D_0 = D_0 + T
+                T   = 0
+             end if
+             visual_cfg_skip(imat) = .true.
+          end if
+       end if
     end do
 
 
@@ -467,8 +396,6 @@ contains
 !   =========================
 
     call dealloc(occupation)
-
-    D_mo = 0
 
     C    = 0
     Cig  = 0
@@ -479,24 +406,24 @@ contains
       Csu = 0
     end if
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-      D_con_ao = 0
-      D_con_mo = 0
-    end if
-#endif
-
 
 !   initialize ao module
 !   ====================
 
-    call basis_info_read(.true., .false.)
     call ao_eval_init(max_ao_g_order, &
                       max_ao_m_order, &
                       .false.)
 
-    call alloc(ao,     total_ao_vector_length)
-    call alloc(buffer, total_ao_vector_length)
+    call alloc(ao,     nr_ao_slices*nr_ao_cartesian)
+    call alloc(buffer, nr_ao_slices*nr_ao_cartesian)
+
+#ifdef MOD_UNRELEASED
+    if (visual_cfg_london) then
+       D_con_mo = 0
+       D_con    = 0
+       if (visual_cfg_london_none) D_con_mo_ai = 0
+    end if
+#endif
 
 
 !   plot and integrate
@@ -504,22 +431,20 @@ contains
 
     time_start = second()
 
-    call visual_driver(nr_dmat,     &
-                       D,           &
-                       nr_dmat_con, &
-                       D_con,       &
-                       ao,          &
+    call visual_driver(visual_cfg_nr_dmat, &
+                       D,                  &
+                       D_0,                &
+                       ao,                 &
                        buffer)
 
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
     time_start = second()
-    if (visual_cfg_integrate .or. visual_cfg_2d_integration) then
-       call visual_integration(nr_dmat,     &
-                               D,           &
-                               nr_dmat_con, &
-                               D_con,       &
-                               ao,          &
+    if (visual_cfg_2d_integration .or. visual_cfg_3d_integration) then
+       call visual_integration(visual_cfg_nr_dmat, &
+                               D,                  &
+                               D_0,                &
+                               ao,                 &
                                buffer)
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
@@ -529,323 +454,358 @@ contains
 
 
 !   deallocate density matrices
-!   ===========================
 
-    do imat = 1, nr_dmat
-      D(imat) = 0
+    do imat = 1, visual_cfg_nr_dmat
+       D(imat) = 0
     end do
-
 #ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        D_con(imat) = 0
-      end do
+       D_con = 0
     end if
 #endif
-
-    call basis_info_delete()
 
     end subroutine
 
 
 
 
-      subroutine visual_driver(nr_dmat, D, nr_dmat_con, D_con, ao, buffer)
+   subroutine visual_driver(nr_dmat, &
+                            D,       &
+                            D_0,     &
+                            ao,      &
+                            buffer)
 
-      integer, intent(in) :: nr_dmat
-      type(matrix)        :: D(nr_dmat)
-      real(8), intent(in) :: ao(*)
-      real(8), intent(in) :: buffer(*)
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: nr_dmat
+      type(matrix)         :: D(nr_dmat)
+      type(matrix)         :: D_0
+      real(8), intent(in)  :: ao(*)
+      real(8), intent(in)  :: buffer(*)
+!     --------------------------------------------------------------------------
+      real(8), allocatable :: q(:, :)
+      real(8), allocatable :: atom_xyz(:, :)
+      real(8)              :: step_3d(3, 0:3)
+      integer              :: i, j, k, l, m, istep
+      integer              :: icube, jcube, kcube
+      integer              :: ix, iy
+      real(8)              :: vx(3), vx_norm
+      real(8)              :: vy(3), vy_norm
+      real(8)              :: vz(3), vz_norm
+      real(8)              :: r(3), v(3), s
+      integer              :: lunit_2d_scalar
+      integer              :: lunit_2d_vector
+      integer              :: lunit_2d_flow
+      integer              :: lunit_3d_cube
+      integer              :: lunit_3d_scalar
+      integer              :: lunit_3d_vector
+      integer              :: lunit_line_scalar
+      integer              :: lunit_line_vector
+!     --------------------------------------------------------------------------
 
-      integer, intent(in)      :: nr_dmat_con
-      type(matrix)           :: D_con(nr_dmat_con)
-
-      real(8) ::          QUANTITY(0:3,visual_cfg_NCUBE(3))
-      real(8) ::          STEP_3D(3,0:3)
-      real(8) ::          ATOM_XYZ(4,NUCDEP)
-
-
-      character(2) :: grid_orientation(1:3) = (/'xy', 'xz', 'yz'/)
-      real(8) :: r(3), v(3), px, py, pz
-      integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
-      integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
-      integer :: lunit_3d, lunit_line, lunit_2d
-      integer :: ix, iy
-      real(8), allocatable :: p(:, :)
-
-#ifdef MOD_UNRELEASED
-      if (visual_cfg_london) then
-         if (nr_dmat_con == 0) then
-            call quit("nr_dmat_con = 0")
-         end if
+      i = 1
+      if (visual_cfg_ncube(3) > 0) then
+         i = visual_cfg_ncube(3)
       end if
-#endif
+      allocate(q(0:3, i))
 
-!     open files
+      allocate(atom_xyz(4, nucdep))
 
-      lunit_3d    = 14
-      lunit_line  = 15
-      lunit_2d = 16
+      lunit_2d_scalar   = 14
+      lunit_2d_vector   = 15
+      lunit_2d_flow     = 16
+      lunit_3d_cube     = 17
+      lunit_3d_scalar   = 18
+      lunit_3d_vector   = 19
+      lunit_line_scalar = 20
+      lunit_line_vector = 21
 
       if (visual_cfg_2d) then
-         open(lunit_2d,              &
-              file   = 'plot.2d',    &
-              status = 'new',        &
-              access = 'sequential', &
+         open(lunit_2d_scalar,           &
+              file   = 'plot.2d.scalar', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
+         open(lunit_2d_vector,           &
+              file   = 'plot.2d.vector', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
+         open(lunit_2d_flow,             &
+              file   = 'plot.2d.flow',   &
+              status = 'new',            &
+              access = 'sequential',     &
               form   = 'formatted')
       end if
 
-
-
-
-
-
       if (visual_cfg_3d) then
-        open(lunit_3d, &
-     &       file   = 'PLOT_3D', &
-     &       status = 'new', &
-     &       access = 'sequential', &
-     &       form   = 'formatted')
+         open(lunit_3d_cube,           &
+              file   = 'plot.3d.cube', &
+              status = 'new',          &
+              access = 'sequential',   &
+              form   = 'formatted')
+         open(lunit_3d_vector,           &
+              file   = 'plot.3d.vector', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
+         open(lunit_3d_scalar,           &
+              file   = 'plot.3d.scalar', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
       end if
 
       if (visual_cfg_line) then
-        open(lunit_line, &
-     &       file   = 'PLOT_LINE', &
-     &       status = 'new', &
-     &       access = 'sequential', &
-     &       form   = 'formatted')
+         open(lunit_line_scalar,           &
+              file   = 'plot.line.scalar', &
+              status = 'new',              &
+              access = 'sequential',       &
+              form   = 'formatted')
+         open(lunit_line_vector,           &
+              file   = 'plot.line.vector', &
+              status = 'new',              &
+              access = 'sequential',       &
+              form   = 'formatted')
       end if
 
       if (visual_cfg_list) then
 
-        CALL AROUND('Requested density at point(s)')
+         call around('Requested density at point(s)')
 
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A8,2A14,A18,A21,2A18)') 'r_x', &
-     &                                        'r_y', &
-     &                                        'r_z', &
-     &                                        'scalar', &
-     &                                        'x-component', &
-     &                                        'y-component', &
-     &                                        'z-component'
-        WRITE(LUPRI,'(A)')
+         write(lupri, *)
+         write(lupri, '(a8, 2a14, a18, a21, 2a18)') &
+            'r_x',                                  &
+            'r_y',                                  &
+            'r_z',                                  &
+            'scalar',                               &
+            'x-component',                          &
+            'y-component',                          &
+            'z-component'
+         write(lupri, *)
 
-        DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
+         do i = 1, visual_cfg_nr_points_in_list
+            call get_quantity_in_point(visual_cfg_nr_dmat,        &
+                                       D,                         &
+                                       D_0,                       &
+                                       visual_cfg_xyz_list(i, 1), &
+                                       visual_cfg_xyz_list(i, 2), &
+                                       visual_cfg_xyz_list(i, 3), &
+                                       ao,                        &
+                                       buffer,                    &
+                                       q)
 
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
-                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
-                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
-                                                    ao,          &
-                                                    buffer,      &
-                                                    quantity)
+            write(lupri, '(3e14.6, 4e18.10)') &
+               visual_cfg_xyz_list(i, 1),     &
+               visual_cfg_xyz_list(i, 2),     &
+               visual_cfg_xyz_list(i, 3),     &
+               q(0:3, 1)
+         end do
 
+         write(lupri, *)
+         call prsymb(lupri, '-', 100, 0)
+         write(lupri, *)
+         write(lupri, *)
 
-          WRITE(LUPRI,'(3E14.6,4E18.10)')  &
-     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
-     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
-     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
-     &                                    QUANTITY(0,1), &
-     &                                    QUANTITY(1,1), &
-     &                                    QUANTITY(2,1), &
-     &                                    QUANTITY(3,1)
-
-        ENDDO
-
-        WRITE(LUPRI,'(A)')
-        CALL PRSYMB(LUPRI,'-',100,0)
-
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A)')
-
-      ENDIF
+      end if
 
       if (visual_cfg_line) then
 
-        v = visual_cfg_line_to - visual_cfg_line_from
-        v = v/visual_cfg_line_nr_steps
+         v = visual_cfg_line_to - visual_cfg_line_from
+         v = v/visual_cfg_line_nr_steps
 
-        do istep = 0, visual_cfg_line_nr_steps
+         do istep = 0, visual_cfg_line_nr_steps
 
-          r = visual_cfg_line_from + istep*v
+            r = visual_cfg_line_from + istep*v
+            call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                       D,                  &
+                                       D_0,                &
+                                       r(1),               &
+                                       r(2),               &
+                                       r(3),               &
+                                       ao,                 &
+                                       buffer,             &
+                                       q)
 
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-     &                               r(1), r(2), r(3), &
-                                                    ao,          &
-                                                    buffer,      &
-                                                    quantity)
-
-          write(lunit_line, '(7e18.10)') r(1),  &
-     &                                   r(2), &
-     &                                   r(3), &
-     &                                   quantity(0, 1), &
-     &                                   quantity(1, 1), &
-     &                                   quantity(2, 1), &
-     &                                   quantity(3, 1)
-
-        end do
+            write(lunit_line_scalar, '(4e18.10)') &
+               r(1),                              &
+               r(2),                              &
+               r(3),                              &
+               q(0, 1)
+            write(lunit_line_vector, '(6e18.10)') &
+               r(1),                              &
+               r(2),                              &
+               r(3),                              &
+               q(1:3, 1)
+        
+         end do
       end if
 
       if (visual_cfg_2d) then
 
-         allocate(p(3, (visual_cfg_2d_nr_top + 1)*(visual_cfg_2d_nr_right + 1)))
+         vx = (visual_cfg_2d_p_right - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
+         vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
 
-         call generate_plane(visual_cfg_2d_p_origin, &
-                             visual_cfg_2d_p_top,    &
-                             visual_cfg_2d_p_right,  &
-                             visual_cfg_2d_nr_top,   &
-                             visual_cfg_2d_nr_right, &
-                             p)
+         vz(1) = vx(2)*vy(3) - vx(3)*vy(2)
+         vz(2) = vx(3)*vy(1) - vx(1)*vy(3)
+         vz(3) = vx(1)*vy(2) - vx(2)*vy(1)
+
+         vx_norm = dsqrt(vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))
+         vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
+         vz_norm = dsqrt(vz(1)*vz(1) + vz(2)*vz(2) + vz(3)*vz(3))
 
          i = 0
          do ix = 0, visual_cfg_2d_nr_right
             do iy = 0, visual_cfg_2d_nr_top
                i = i + 1
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-                                             p(1, i), &
-                                             p(2, i), &
-                                             p(3, i), &
-                                                    ao,          &
-                                                    buffer,      &
-                                                    quantity)
-               write(lunit_2d, '(7e18.10)') p(1:3, i),      &
-                                               quantity(0, 1), &
-                                               quantity(1, 1), &
-                                               quantity(2, 1), &
-                                               quantity(3, 1)
+               r = visual_cfg_2d_p_origin + ix*vx + iy*vy
+               call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                          D,                  &
+                                          D_0,                &
+                                          r(1),               &
+                                          r(2),               &
+                                          r(3),               &
+                                          ao,                 &
+                                          buffer,             &
+                                          q)
+
+               s      = q(0,   1)
+               v(1:3) = q(1:3, 1)
+
+               write(lunit_2d_scalar, '(3e18.10)')               &
+                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,   &
+                  s
+
+               write(lunit_2d_vector, '(4e18.10)')                &
+                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
+                  (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
+                  (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
+
+               write(lunit_2d_flow, '(3e18.10)')                  &
+                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
+                  (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
+
             end do
          end do
-
-         deallocate(p)
-
       end if
-
 
       if (visual_cfg_3d) then
 
-!       calculate cube parameters
+!        step_3d(*, 0)  coordinates of initial point
+!        step_3d(*, 1)  step vector for the "x"-direction
+!        step_3d(*, 2)  step vector for the "y"-direction
+!        step_3d(*, 3)  step vector for the "z"-direction
 
-!       NCUBE(0)      number of atoms
-!       NCUBE(1)      number of points in the "x"-direction
-!       NCUBE(2)      number of points in the "y"-direction
-!       NCUBE(3)      number of points in the "z"-direction
+!        atom_xyz(1, i) x-coordinate of atom i
+!        atom_xyz(2, i) y-coordinate of atom i
+!        atom_xyz(3, i) z-coordinate of atom i
+!        atom_xyz(4, i) charge of atom i
 
-!       STEP_3D(*,0)  coordinates of initial point
-!       STEP_3D(*,1)  step vector for the "x"-direction
-!       STEP_3D(*,2)  step vector for the "y"-direction
-!       STEP_3D(*,3)  step vector for the "z"-direction
+         step_3d = 0.0d0
 
-!       ATOM_XYZ(1,I) x-coordinate of atom I
-!       ATOM_XYZ(2,I) y-coordinate of atom I
-!       ATOM_XYZ(3,I) z-coordinate of atom I
-!       ATOM_XYZ(4,I) charge of atom I
+         do i = 1, 3
+            step_3d(i, 0) = cord(i, 1)
+            step_3d(i, i) = cord(i, 1)
+         enddo
 
-        visual_cfg_NCUBE(0) = NUCDEP
-        CALL DZERO(STEP_3D,12)
-        DO I = 1,3
-          STEP_3D(I,0) = CORD(I,1)
-          STEP_3D(I,I) = CORD(I,1)
-        ENDDO
+         i = 0
+         do j = 1, nucind
+            k = istbnu(j)
+            do l = 0, maxopr
+               if (iand(l, k) == 0) then
+                  i = i + 1
+                  do m = 1, 3
+                     atom_xyz(m, i) = pt(iand(isymax(m, 1), l))*cord(m, j)
 
-        I = 0
-        DO J = 1,NUCIND !loop over all centers
-          K = ISTBNU(J)
-          DO L = 0,MAXOPR
-            IF(iand(L,K) .EQ. 0) THEN
-              I = I + 1
-              DO M = 1,3
-                ATOM_XYZ(M,I) = PT(iand(ISYMAX(M,1),L))*CORD(M,J)
+                     step_3d(m, 0) = min(step_3d(m, 0), atom_xyz(m, i))
+                     step_3d(m, m) = max(step_3d(m, m), atom_xyz(m, i))
+                  end do
+                  atom_xyz(4, i) = charge(j)
+               end if
+            end do
+         end do
 
-                STEP_3D(M,0) = MIN(STEP_3D(M,0),ATOM_XYZ(M,I))
-                STEP_3D(M,M) = MAX(STEP_3D(M,M),ATOM_XYZ(M,I))
-              ENDDO
-              ATOM_XYZ(4,I) = CHARGE(J)
-            ENDIF
-          ENDDO
-        ENDDO
+!        add some space, calculate step sizes and convert step vectors to angstrom
 
-!       add some space, calculate step sizes and convert step vectors to angstrom
+         do i = 1, 3
+            step_3d(i, 0) =  step_3d(i, 0) -  visual_cfg_add_3d
+            step_3d(i, i) = (step_3d(i, i) + (visual_cfg_add_3d*2.0d0))*xtang
+            step_3d(i, i) = (step_3d(i, i) -  step_3d(i, 0))/(visual_cfg_ncube(i) - 1)
+         end do
 
-        DO I = 1,3
-          STEP_3D(I,0) = STEP_3D(I,0) - visual_cfg_ADD_3D
-          STEP_3D(I,I) = (STEP_3D(I,I) + (visual_cfg_ADD_3D*2.0d0))*XTANG
-      STEP_3D(I,I) = (STEP_3D(I,I) - STEP_3D(I,0)) &
-     &        /(visual_cfg_NCUBE(I) - 1)
-        ENDDO
+!        write header
 
-!       write header
+         write(lunit_3d_cube, '(a)') 'cube file'
+         write(lunit_3d_cube, '(a)') 'generated by DIRAC'
 
-        WRITE(LUNIT_3D,'(A)') 'some'
-        WRITE(LUNIT_3D,'(A)') 'text'
-        DO I = 0,3
-          WRITE(LUNIT_3D,'(I5,4F12.6)') visual_cfg_NCUBE(I),  &
-     &               (STEP_3D(J,I),J=1,3)
-        ENDDO
-        DO I = 1,NUCDEP
-          WRITE(LUNIT_3D,'(I5,4F12.6)') &
-     &         NINT(ATOM_XYZ(4,I)), ATOM_XYZ(4,I), (ATOM_XYZ(J,I),J=1,3)
-        ENDDO
+         write(lunit_3d_cube,'(i5, 4f12.6)') &
+            nucdep,                          &
+           (step_3d(j, 0), j = 1, 3)
+         do i = 1, 3
+           write(lunit_3d_cube,'(i5, 4f12.6)') &
+              visual_cfg_ncube(i),             &
+             (step_3d(j, i), j = 1, 3)
+         end do
 
-!       grid walk
+         do i = 1, nucdep
+           write(lunit_3d_cube, '(i5, 4f12.6)') &
+                nint(atom_xyz(4, i)),           &
+                atom_xyz(4, i),                 &
+               (atom_xyz(j, i), j = 1, 3)
+         end do
 
-        DO ICUBE = 1,visual_cfg_NCUBE(1)
-          DO JCUBE = 1,visual_cfg_NCUBE(2)
-            DO KCUBE = 1,visual_cfg_NCUBE(3)
+         do icube = 1, visual_cfg_ncube(1)
+            do jcube = 1, visual_cfg_ncube(2)
+               do kcube = 1, visual_cfg_ncube(3)
 
-              PX = STEP_3D(1,0) + (ICUBE-1)*STEP_3D(1,1) &
-     &                          + (JCUBE-1)*STEP_3D(1,2) &
-     &                          + (KCUBE-1)*STEP_3D(1,3)
-              PY = STEP_3D(2,0) + (ICUBE-1)*STEP_3D(2,1) &
-     &                          + (JCUBE-1)*STEP_3D(2,2) &
-     &                          + (KCUBE-1)*STEP_3D(2,3)
-              PZ = STEP_3D(3,0) + (ICUBE-1)*STEP_3D(3,1) &
-     &                          + (JCUBE-1)*STEP_3D(3,2) &
-     &                          + (KCUBE-1)*STEP_3D(3,3)
+                  r(1) = step_3d(1, 0) + (icube-1)*step_3d(1, 1) &
+                                       + (jcube-1)*step_3d(1, 2) &
+                                       + (kcube-1)*step_3d(1, 3)
+                  r(2) = step_3d(2, 0) + (icube-1)*step_3d(2, 1) &
+                                       + (jcube-1)*step_3d(2, 2) &
+                                       + (kcube-1)*step_3d(2, 3)
+                  r(3) = step_3d(3, 0) + (icube-1)*step_3d(3, 1) &
+                                       + (jcube-1)*step_3d(3, 2) &
+                                       + (kcube-1)*step_3d(3, 3)
 
-!             write even grid so that it can be fed into XC integrator
-!             for subsequent experiments
-!             zero weight is so that it does not mess up results
-!             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
+                  call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                             D,                  &
+                                             D_0,                &
+                                             r(1),               &
+                                             r(2),               &
+                                             r(3),               &
+                                             ao,                 &
+                                             buffer,             &
+                                             q(0, kcube))
 
+                  write(lunit_3d_vector, '(6e13.5)') &
+	             r(1:3),                         &
+	             q(1:3, kcube)
+                  write(lunit_3d_scalar, '(4e13.5)') &
+	             r(1:3),                         &
+	             q(0, kcube)
+               end do
+               write(lunit_3d_cube, '(6e13.5)')  &
+                  (q(0, m), m = 1, visual_cfg_ncube(3))
+            end do
+         end do
+      end if
 
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-     &                                       PX,PY,PZ, &
-                                                    ao,          &
-                                                    buffer,      &
-     &                                     QUANTITY(0,KCUBE))
+      if (visual_cfg_2d)   close(lunit_2d_scalar,   status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_vector,   status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_flow,     status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_cube,     status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_scalar,   status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_vector,   status = 'keep')
+      if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
+      if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
 
+      deallocate(q)
+      deallocate(atom_xyz)
 
-            ENDDO
-
-!           write to file
-
-            !write(*, *) 'xyzq', px, py, pz, 
-            WRITE(LUNIT_3D,'(6E13.5)')  &
-     &         (QUANTITY(0,M),M=1, visual_cfg_NCUBE(3))
-          ENDDO
-        ENDDO
-      ENDIF !3D
-
-
-!     close files
-
-      if (visual_cfg_3d)    close(lunit_3d,    status = 'keep')
-      if (visual_cfg_line)  close(lunit_line,  status = 'keep')
-      if (visual_cfg_2d) close(lunit_2d, status = 'keep')
-
-      end subroutine
+   end subroutine
 
 
       subroutine setup_orbital_string(occupation)
@@ -877,13 +837,20 @@ contains
      &                ifsym, &
      &                nvec)
 
+          write(*, *) '--------------------------------------------------------------'
+          write(*, *) 'visual.F90: selected orbitals (in solution vector)'
+          write(*, *) 'in fermion symmetry: ', ifsym
+          write(*, *) 'electronic index, (absolute index): '
           do i = 1, nvec
             ishift = kvec(i)
             if (ishift < 0) ishift = ishift + 1
             occupation(ioff + ishift) = 1.0d0
+            write(*, *) ishift, '(', ioff + ishift, ')'
           end do
+          write(*, *) '--------------------------------------------------------------'
 
           call dealloc(kvec)
+
 
         else
 
@@ -928,18 +895,18 @@ contains
 !gosia, i'll remove it later
       integer :: i, j
       character(10) :: pattern
-      character(16) :: text   
+      character(16) :: text
 
-      INQUIRE(FILE = visual_cfg_xvector_file(IXVECTOR),EXIST = FILE_EXISTS)
+      INQUIRE(FILE = visual_cfg_dmat_file(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A,A6,A)') 'solution vector file ', &
-     &    visual_cfg_XVECTOR_FILE(IXVECTOR),' not found'
+     &    visual_cfg_dmat_file(IXVECTOR),' not found'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
       LUNIT_XVECTOR = 17
       OPEN(LUNIT_XVECTOR, &
-     &     FILE = visual_cfg_xvector_file(IXVECTOR), &
+     &     FILE = visual_cfg_dmat_file(IXVECTOR), &
      &     STATUS = 'OLD', &
      &     ACCESS = 'SEQUENTIAL', &
      &     FORM = 'UNFORMATTED')
@@ -964,23 +931,12 @@ contains
 
 !     errors
 
-      IF(visual_cfg_NR_xVECTORS .EQ. 0) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'NR_VECTORS .EQ. 0'
-        CALL QUIT('ERROR in VISUAL')
-      ENDIF
-
-      IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS'
-        CALL QUIT('ERROR in VISUAL')
-      ENDIF
-
-      IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .LT. 1) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .LT. 1'
-        CALL QUIT('ERROR in VISUAL')
-      ENDIF
+      if ((visual_cfg_dmat_file_record(ixvector) > nr_vectors) &
+          .or. (visual_cfg_dmat_file_record(ixvector) < 1)) then
+         write(lupri,'(a)') 'error in visual:'
+         write(lupri,'(a)') 'you try to read an invalid record number from file '//visual_cfg_dmat_file(ixvector)
+         call quit('error in visual')
+      end if
 
 !     move to the right record
 
@@ -989,7 +945,7 @@ contains
  3    CONTINUE
       READ(LUNIT_XVECTOR)
       IVECTOR = IVECTOR + 1
-      IF(IVECTOR .EQ. visual_cfg_IWHICH_XVECTOR(IXVECTOR)) THEN
+      IF(IVECTOR .EQ. visual_cfg_dmat_file_record(IXVECTOR)) THEN
         BACKSPACE(LUNIT_XVECTOR)
         GOTO 4
       ELSE
@@ -1102,37 +1058,5 @@ contains
     end do
 
   end subroutine
-
-   subroutine generate_plane(p_origin, &
-                             p_top,    &
-                             p_right,  &
-                             nr_top,   &
-                             nr_right, &
-                             p)
-
-!     --------------------------------------------------------------------------
-      real(8), intent(in)  :: p_origin(3)
-      real(8), intent(in)  :: p_top(3)
-      real(8), intent(in)  :: p_right(3)
-      integer, intent(in)  :: nr_top
-      integer, intent(in)  :: nr_right
-      real(8), intent(out) :: p(3, (nr_top + 1)*(nr_right + 1))
-!     --------------------------------------------------------------------------
-      integer              :: i, ix, iy
-      real(8)              :: vx(3), vy(3)
-!     --------------------------------------------------------------------------
-
-      vx = (p_right - p_origin)/nr_top
-      vy = (p_top   - p_origin)/nr_right
-
-      i = 0
-      do ix = 0, nr_right
-         do iy = 0, nr_top
-            i = i + 1
-            p(1:3, i) = p_origin + ix*vx + iy*vy
-         end do
-      end do
-
-   end subroutine
 
 end module

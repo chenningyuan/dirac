@@ -12,8 +12,6 @@
 1
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
-*TWOINT
-#.SOFOCK
 **HAMILTONIAN
 .BSS
 2999
@@ -23,22 +21,14 @@
 .PRINT
 1
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
-.DHF
-#.MP2
-*DHFCAL ! DHF specifications...
+.SCF
+*SCF
 .CLOSED SHELL
 4 0 
 .INTFLG ! Specify what 2-el.integrals to include
 1 1 0
 .EVCCNV ! Energy convergence...
 1.0E-10  1.0D-7
-#.CNVINT
-#1.0D-4 1.0D-15
-###########################################################
-#
-# Set up properties
-#
-############################################################
 **PROPERTIES ! Calculating of properties...
 .PRINT
 1
@@ -48,14 +38,6 @@
 .INTFLG
 1 1 0
 .LONDON
-#.NOORTH
-#.NOONEI
-#.NOTWO
-#.SYMCON
-#.NOEPRN
-#.NOLOND
-#.GAUGEO
-#0.0  0.0  0.0         
 *LINEAR RESPONSE
 .SKIPEP
 .MAXITR
@@ -70,4 +52,3 @@
 .PRINT
 1 
 *END OF
-

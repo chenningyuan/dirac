@@ -15,7 +15,7 @@ Water molecule. Restricted kinetic balance. Spin-spin couplings
 .INTFLG
  1 1 0
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
 **PROPERTIES
 .SPIN-SPIN

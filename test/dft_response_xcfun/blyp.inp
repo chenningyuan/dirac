@@ -7,7 +7,7 @@
  BLYP
 !lda vwn=-1.0 becke=1.0 lyp
 !just to test the functional read-in, complicated way to say "blyp"
-*DFT
+**GRID
 .DEBUG          !very coarse grid
 .ZIPGRID
 **INTEGRALS
@@ -16,8 +16,8 @@
 *READIN
 .UNCONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .ITRINT
  0 0
 .EVCCNV

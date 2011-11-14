@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,44 +19,32 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : krmcinp.F
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck krmcinp */
+!***********************************************************************
+
       SUBROUTINE KRMCINP(WORD,RESET,WORK,LWORK)
-C***********************************************************************
-C
-C     Input section for KRMSCF-module
-C
-C     Written by J. Thyssen - Oct 26 1998
-C     Last revision:
-C         Max. no. of active orbitals only for GASCIP
-C                T. Fleig   - May 24, 2002
-C
-C***********************************************************************
+!***********************************************************************
+!
+!     Input section for KRMSCF-module
+!
+!     Written by J. Thyssen - Oct 26 1998
+!     modified by Hans Joergen Aa. Jensen, Timo Fleig and Stefan Knecht
+!
+!***********************************************************************
+      use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
-C
-C#include "mxcent.h"
-C#include "maxorb.h"
-C#include "symmet.h"
-C
+!
       PARAMETER (NTABLE = 35)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
-C
+!
       LOGICAL SET, NEWDEF, LBIT, RESET
       CHARACTER*4 REPNA(64)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER CTEMP*72, LINE*80, TEXT*20, REPA(8)*4
       DIMENSION WORK(LWORK)
-      DIMENSION MULTB_TMP(64,64)
-C
-      INTEGER IKWSET(NTABLE)
-C
+!
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
@@ -67,19 +55,31 @@ C
 #include "pgroup.h"
 #include "krciprop.h"
 C
+      character (len= 4)              :: symmetry_str
+      character (len= 4)              :: tmp_symmetry_str
+      character (len= 4), allocatable :: mcscf_ciroots_symstr(:)
+      character (len= 1)              :: last_char
+      character (len= 2)              :: ferm_lab
+      logical                         :: gerade_mcscf_wf
+      integer                         :: tmp_mij_val
+      integer                         :: fermion_sym
+      integer                         :: ascii_lchar
+      integer                         :: double_group
+      integer, allocatable            :: multb_tmp(:,:)
+      integer, parameter              :: max_nkrmc_max_sym = 128
+
       SAVE SET
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
      &            '.NEO AL','.STATE ','.DELETE','.MAX BA','.MAKE C',
      &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
-     &            '.NO CI ','.THRPCI','.NR SYM','.MIN MK','.MAX MK',
+     &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
-     &            '.CI PRO','.INACTI','.CASSCF','.CI SYM','.SYMMET',
-     &            '.RELSYM','.MEMFAC','.NOCKJZ','.xxxxxx','.xxxxxx'/
+     &            '.CI PRO','.INACTI','.CASSCF','.xxxxxx','.SYMMET',
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
 C
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
 #include "memint.h"
       IF (SET) THEN
@@ -92,24 +92,23 @@ C
          SET = .TRUE.
       END IF
 C
-      CALL IZERO(IKWSET,NTABLE)
-C
 C     Initialize /CBLKRMC/
 C     ===================
 C
       DO I = 1,NMCFLAG
-         MCFLAG(I) = .FALSE.
+         MCFLAG(I)  = .FALSE.
       END DO
-      KRMC_SKIPEE = .FALSE.
-      KRMC_SKIPEP = .FALSE.
+      KRMC_SKIPEE   = .FALSE.
+      KRMC_SKIPEP   = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
       if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
      &  KRMC_SKIPEP = .TRUE.
-      KRMC_NOCI   = .FALSE.
-      KRMC_UCIBOS = .FALSE.
-      KRMC_MKCNST = .FALSE.
-      KRMC_CHCKJZ = .FALSE.
+      KRMC_NOCI     = .FALSE.
+      KRMC_UCIBOS   = .FALSE.
+      KRMC_MKCNST   = .FALSE.
+      KRMC_CHCKJZ   = .FALSE.
       IF(LINEAR) KRMC_CHCKJZ = .TRUE.
+      KRMC_no1pdens = .FALSE.
 C
 C     Initialize /CBIKRMC/
 C     ===================
@@ -117,30 +116,30 @@ C
       IPRKRMC   = IPRGEN
       MKRMC_MXMICRO   = 50
       MKRMC_MXMACRO   = 25
-      MKRMC_MAXBCK    = 5
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
-      IKRMC_INTBUF    = 0
-      IKRMC_INTFLG    = 0
-      IKRMC_ITRINT(1) = 0
-      IKRMC_ITRINT(2) = 0
-      IKRMC_ISTATE    = 1
-      IKRMC_SYMMETRY  = 1
-      IKRMC_MEMFAC    = 9
-      NKRMCGAS        = 0
-      NKRMC_MK2REF    = 0
-      NKRMC_MK2DEL    = 0
-      NKRMC_MINMK2    = 0
-      NKRMC_MAXMK2    = 0
+      MKRMC_MAXBCK    =  5
+      ILLINT          = IBTAND(INTGEN,1)
+      ISLINT          = IBTAND(INTGEN/2,1)
+      ISSINT          = IBTAND(INTGEN/4,1)
+      IKRMC_INTBUF    =  0
+      IKRMC_INTFLG    =  0
+      IKRMC_ITRINT(1) =  0
+      IKRMC_ITRINT(2) =  0
+      IKRMC_ISTATE    =  1
+      IKRMC_SYMMETRY  =  1
+      IKRMC_MEMFAC    =  9
+      NKRMCGAS        =  0
+      NKRMC_MK2REF    = -1
+      NKRMC_MK2DEL    = -1
+      NKRMC_MINMK2    = -1
+      NKRMC_MAXMK2    = -1
 C
 C     Initialize /CBRKRMC/
 C     ===================
 C
       DKRMC_CNVINT(1) = DUMMY
       DKRMC_CNVINT(2) = DUMMY
-      DKRMC_THRGRD = 0.5D-5
-      DKRMC_THRPCI = 1.0D-3
+      DKRMC_THRGRD    = 0.5D-5
+      DKRMC_THRPCI    = 1.0D-3
 C
 C     Initialize /DCOKRMC/
 C     ===================
@@ -171,32 +170,46 @@ C     ========================
 C
       NEWDEF = (WORD .EQ. '*KRMCSC')
       ICHANG = 0
-      IF (NEWDEF) THEN
-         WORD1 = WORD
-  100    CONTINUE
-            READ (LUCMD, '(A7)') WORD
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35), I
-                  END IF
-  200          CONTINUE
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GO TO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in *KRMCSCF.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in *KRMCSCF.')
-    1          CONTINUE
+      IF(NEWDEF)THEN
+
+!       initialize symmetry information irreps required for input
+!       processing. note, we assume
+!       the # double group irreps here to be 128. FIXME: make it general
+!       in
+!       Dirac for higher linear symmetry double groups. "global Dirac
+!       post-HF symmetry module".
+        if(linear)then
+          double_group = 11
+          if(nfsym .eq. 1) double_group = 10
+          call symmetry_setup_init(double_group,max_nkrmc_max_sym)
+          allocate(mcscf_ciroots_symstr(4*max_nkrmc_max_sym))
+        end if
+
+        WORD1 = WORD
+  100   CONTINUE
+           READ (LUCMD, '(A7)') WORD
+           PROMPT = WORD(1:1)
+           IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+              GO TO 100
+           ELSE IF (PROMPT .EQ. '.') THEN
+              ICHANG = ICHANG + 1
+              DO 200 I = 1, NTABLE
+                 IF (TABLE(I) .EQ. WORD) THEN
+                    GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                    11,12,13,14,15,16,17,18,19,20,
+     &                    21,22,23,24,25,26,27,28,29,30,
+     &                    31,32,33,34,35), I
+                 END IF
+  200         CONTINUE
+              IF (WORD .EQ. '.OPTION') THEN
+                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                GO TO 100
+              END IF
+              WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *           '" not recognized in *KRMCSCF.'
+              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+              CALL QUIT('Illegal keyword in *KRMCSCF.')
+    1         CONTINUE
 C&&& THRESHOLD : convergence threshold
                   READ(LUCMD,*) DKRMC_THRGRD
                GO TO 100
@@ -271,24 +284,15 @@ C&&& THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRMC_THRPCI
                GO TO 100
    18          CONTINUE
-C&&& NR SYMMETRY: use non-relativistic boson spatial spinor symmetry for CI expansion
-               IF (IKWSET(18) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &                 'You can only specify symmetry once')
-               END IF
-               READ(LUCMD,*) IKRMC_SYMMETRY
-               KRMC_UCIBOS = .TRUE.
-               IKWSET(18) = 2
+C&&& xxx
                GO TO 100
    19          CONTINUE
 C&&& MIN MK2: minimum value of 2 * MK
                READ(LUCMD,*) NKRMC_MINMK2
-               IKWSET(19) = 1
                GO TO 100
    20          CONTINUE
 C&&& MAX MK2: maximum value of 2 * MK
                READ(LUCMD,*) NKRMC_MAXMK2
-               IKWSET(20) = 1
                GO TO 100
    21          CONTINUE
 C&&& GASSH: GAS setup
@@ -320,12 +324,10 @@ C&&& GASSPC: GAS space constraints
    23          CONTINUE
 C&&& MK2REFERENCE: 2 * M_K reference
                   READ(LUCMD,*) NKRMC_MK2REF
-                  IKWSET(23) = 1
                GO TO 100
    24          CONTINUE
 C&&& MK2DELTA: 2 * DELTA M_K
                   READ(LUCMD,*) NKRMC_MK2DEL
-                  IKWSET(24) = 1
                GO TO 100
  25            CONTINUE
 C&&& FREEZE ORBITALS:
@@ -359,28 +361,80 @@ C&&&  CASSCF -- this defines a CAS space
                NKRMCGSP(1,NKRMCGAS) = NKRMCAELEC
                NKRMCGSP(2,NKRMCGAS) = NKRMCAELEC 
                GO TO 100
+!     xxx
  29            CONTINUE
-C&&&  CI SYMMETRY -- alias for SYMMETRY
-C              GO TO 100
+               GO TO 100
  30            CONTINUE
-C&&&  SYMMETRY: symmetry of the wave function
-               IF (IKWSET(18) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &                 'You can only specify symmetry once')
-               END IF
-               READ(LUCMD,*) IKRMC_SYMMETRY
-               IKWSET(18) = 1
+C&&& .SYMMETRY: symmetry of the wave function
+                  if(.not.linear) then
+                    READ(LUCMD,*) IKRMC_SYMMETRY
+                  else
+!                   read mij value and # roots in linear symmetry input format
+                    read(lucmd,*) symmetry_str
+
+!                   manipulate mij-value input string for further processing
+!                   print *,'symmetry_str is ==> ',symmetry_str
+                    tmp_symmetry_str = trim(symmetry_str)
+                    length_of_string = len_trim(tmp_symmetry_str)
+!                   print *,'length of symmetry_str is ==> ',
+!    &                       length_of_string
+                    last_char = tmp_symmetry_str(length_of_string:
+     &                                           length_of_string)
+!                   print *,'last char of symmetry_str is ==> ',
+!    &                       last_char
+
+!                   determine symmetry irrep of the wave function
+!                   ---------------------------------------------
+
+!                   a. check for inversion symmetry
+                    ascii_lchar = iachar(last_char)
+                    if(nfsym .gt. 1)then
+                      if(ascii_lchar .eq. iachar('g'))then
+                        gerade_mcscf_wf = .true.
+                      else if(ascii_lchar .eq. iachar('u'))then
+                        gerade_mcscf_wf = .false.
+                      else 
+                        write(lupri,'(/a,/a)') 
+     & '  *** input error: Dinfh contains the inversion operation'//
+     & ' as group element.',
+     & '  please specify either g or u in addition to the mj value. ***'
+                        call quit('  *** input error: Dinfh contains
+     & the inversion operation as group element. ***')
+                      end if
+                    else
+                      gerade_mcscf_wf  = .true.
+                      length_of_string = length_of_string + 1
+                      if(ascii_lchar .eq. iachar('g') 
+     &                   .or. ascii_lchar .eq. iachar('u'))then
+                        call quit(' *** input error: Cinfv does not
+     & have inversion as group element. ***')
+                      end if
+                    end if
+
+!                   b. get mij value in integer format
+                    read(tmp_symmetry_str(1:length_of_string-1), 
+     &              fmt='(i6)') tmp_mij_val
+                    fermion_sym = 1
+                    if(.not.gerade_mcscf_wf) fermion_sym = 2
+!                   print *,'fermion_sym, tmp_mij_val are ==> ',
+!    &                       fermion_sym, tmp_mij_val
+!                   call quit('==> bla bla ***')
+
+!                   retrieve active dbg irrep (routine is inside the module symmetry_setup_krci)
+                    call convert_mj_ferm_2_dbg_irrep_linsym_krci(
+     &                   mj2rep,max_nkrmc_max_sym,tmp_mij_val,
+     &                   fermion_sym,is_current_dbg_irrep)
+
+!                   c. store symmetry of wave function == the active irrep
+                    ikrmc_symmetry                             = 
+     &              is_current_dbg_irrep
+                    mcscf_ciroots_symstr(is_current_dbg_irrep) =
+     &              tmp_symmetry_str(1:length_of_string)
+                  end if
                GO TO 100
  31            CONTINUE
-C&&&  RELSYM: use relativistic double group symmetry of the wave function
-C              including spin in symmetry
-               IF (IKWSET(18) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &                 'You can only specify symmetry once')
-               END IF
-               READ(LUCMD,*) IKRMC_SYMMETRY
-               KRMC_UCIBOS = .FALSE.
-               IKWSET(18) = 2
+C&&& .NO1pDENS
+               KRMC_no1pdens = .true.
                GO TO 100
  32            CONTINUE
 C&&& .MEMFAC: multiplier for subtracted scratch memory in
@@ -475,7 +529,7 @@ C
 C     Use boson symmetry for CI expansion for the spin-free and
 C     the Levy-Leblond Hamiltonian, if KRMC_UCIBOS not set in input.
 C
-      IF (IKWSET(18).LE.1 .AND. (SPINFR)) THEN
+      IF(SPINFR)THEN
          KRMC_UCIBOS = .TRUE.
       END IF
 C
@@ -547,12 +601,12 @@ C
 C
 C     MK constraints in the CI expansion.
 C
-      IF (IKWSET(19) .EQ. 1 .AND. IKWSET(20) .EQ. 1) THEN
+      IF(NKRMC_MINMK2 .ge. 0 .AND. NKRMC_MAXMK2.ge. 0)THEN
 C
 C        MINMK2/MAXMK2 explicitly set
 C
       ELSE
-         IF (IKWSET(23) .EQ. 1 .AND. IKWSET(24) .EQ. 1) THEN
+         IF(NKRMC_MK2REF .ge. 0 .AND. NKRMC_MK2DEL .ge. 0)THEN
 C
 C           MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
 C
@@ -594,36 +648,53 @@ C
      &     ' * Allowed interval of approximate 2 * MS :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       ELSE
-         IF (SPINFR) THEN
-            CALL GMULTSF(NREP,REPNA,MULTB_TMP)
-         ELSE
-            CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
-         ENDIF
-         IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
-            IRRP = NREP + IKRMC_SYMMETRY
-            WRITE(LUPRI,'(2A)')
-     &        ' * Symmetry (boson) of wave function: ',
-     &        REPNA(IRRP)
-C             store on common block in krciprop.h
-              XREPEIG(IKRMC_SYMMETRY) = REPNA(IRRP)
-         ELSE
-            WRITE(LUPRI,'(2A)')
-     &        ' * Symmetry (fermion) of wave function: ',
-     &        REPNA(IKRMC_SYMMETRY)
-C             store on common block in krciprop.h
-              XREPEIG(IKRMC_SYMMETRY) = REPNA(IKRMC_SYMMETRY)
-         END IF
+         if(linear)then
+!          store on common block in krciprop.h
+           xrepeig(ikrmc_symmetry) =
+     &     mcscf_ciroots_symstr(ikrmc_symmetry)
+           if(mod(nkrmcaelec, 2) .eq. 0)then
+             ferm_lab = '  '
+           else
+             ferm_lab = '/2'
+           end if
+           WRITE(LUPRI,'(a,i3,a,a4,a2)')
+     &        '    ** ', 1,' eigenstate'//
+     &        ' for MJ-value (doubled): ',
+     &          adjustr(xrepeig(ikrmc_symmetry)),ferm_lab
+         else
+           allocate(multb_tmp(64,64))
+           IF (SPINFR) THEN
+              CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+           ELSE
+              CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+           ENDIF
+           deallocate(multb_tmp)
+           IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
+              IRRP = NREP + IKRMC_SYMMETRY
+              WRITE(LUPRI,'(2A)')
+     &          ' * Symmetry (boson) of wave function: ',
+     &          REPNA(IRRP)
+C               store on common block in krciprop.h
+                XREPEIG(IKRMC_SYMMETRY) = REPNA(IRRP)
+           ELSE
+              WRITE(LUPRI,'(2A)')
+     &          ' * Symmetry (fermion) of wave function: ',
+     &          REPNA(IKRMC_SYMMETRY)
+C               store on common block in krciprop.h
+                XREPEIG(IKRMC_SYMMETRY) = REPNA(IKRMC_SYMMETRY)
+           END IF
+         end if
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     ' * Allowed interval of 2 * MK :',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       END IF
 C
-      IF (KRMC_CIPROGRAM.EQ.'LUCIAREL') THEN
-         WRITE(LUPRI,'(A,I4)')
-     &' * Using symmetry nomenclature for LUCIAREL. '
-         WRITE(LUPRI,'(A,I4)')
-     &'      Boson and Fermion irreps of complex (sub)groups  '
-      ELSE
+      IF (KRMC_CIPROGRAM.EQ.'GASCIP  ') THEN
+         if(linear)then
+           call quit('*** error in KRMCINP: MCSCF calculations in'//
+     &               ' linear symmetry are permitted only with the CI'//
+     &               ' program LUCIAREL.***')
+         end if
          IF (IKRMC_SYMMETRY .GT. NREP) THEN
             WRITE(LUPRI,'(/A//A,2I3)')
      &         ' INPUT ERROR, requested .SYMMETRY is non-existent!',
@@ -710,10 +781,16 @@ C
          WRITE(LUPRI,'(A,I1,2A)')
      &        ('   - symmetry ',I,' : ',KRMC_DELSTR(I),I=1,NFSYM)
       END IF
+      IF( KRMC_no1pdens ) WRITE (LUPRI, '(A)' )
+     &     ' * DO NOT save the 1-particle density matrix obtained'//
+     &     ' from the converged MCSCF wave function'
       IF( IKRMC_MEMFAC .ne. 9 ) WRITE (LUPRI, '(A,I3)' )
      &     ' * Multiplier for memory guess: ',IKRMC_MEMFAC
 C
- 9999 CONTINUE
+ 9999 if(linear) then
+        if(allocated(mcscf_ciroots_symstr))
+     &    deallocate(mcscf_ciroots_symstr)
+      end if
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -749,7 +826,6 @@ C
      &            '.THQKVA'/
       DATA SET/.FALSE./
 C
-#include "sdpre.h"
 #include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -903,6 +979,7 @@ C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input.
 C
 C***********************************************************************
+      use os_utils
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -923,7 +1000,6 @@ C
      &            '.WRTFCK','-------','-------','-------','.GENFOC'/
       DATA SET/.FALSE./
 C
-#include "sdpre.h"
 #include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -940,16 +1016,12 @@ C     --------------
 C
       MAXCIT      =    4
       MXCIV       =    0
-      IOPTST      = 1531
+      IOPTST      = 1563
       KTRLVL      =    3
       IKRMCCNO    =  - 3
       IANACI      =    0
       IRESTRK     =    0
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
-      IDOPARIO    =    1
-#else
-      IDOPARIO    =    0
-#endif
+      IDOPARIO    = get_environment_integer('GLBSCR',IDOPARIO)
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
       NATONL      = .FALSE.
@@ -961,6 +1033,11 @@ C
       CRDFO_MAT   = .FALSE.
       CWRTFO_MAT  = .FALSE.
       COMPFAC     = 0.01D00
+
+      if(IDOPARIO .ne. 0 .or. IDOPARIO.ne. 1)then
+!       fall back to default: 0
+        IDOPARIO = 0
+      end if
 C
 C
 C     Process input for *OPTIMIZE
@@ -1068,18 +1145,14 @@ C&&& .KTRLVL: default integral transformation level.
                GO TO 100
    17          CONTINUE
 C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
                   IDOPARIO_SAVE = IDOPARIO
-#endif
                   READ(LUCMD,*) IDOPARIO
                   IDOPARIO = ABS(IDOPARIO)
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
                   IF( IDOPARIO .ne. IDOPARIO_SAVE )THEN
 C                   we do not want to broadcast integrals if not
 C                   necessary! - SK- 20-03-2008
                     IDOPARIO = IDOPARIO_SAVE
                   END IF
-#endif
 #if !defined (VAR_MPI)
                   IF( IDOPARIO .ne. 0 ) THEN
                     WRITE(LUPRI,'(//3A,I6)')

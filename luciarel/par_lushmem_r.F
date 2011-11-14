@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,18 +19,11 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : par_lushmem_r.F
 C
 C
 #if defined (VAR_MPI2)
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE CALC_WIN_OFFSET(IT_TTPL,IT_TTOL,NDIM,IMULT)
 C
 C     Written by  S. Knecht         - November 28 2007
@@ -52,7 +45,7 @@ C
 #include "krmc_shmem.h"
 #include "parluci.h"
       DIMENSION IT_TTPL(*) 
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*), nelm_cc
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_PROC, ISLEN_ACT_BLK
       IOFF_PROC     = 0
       ISLEN_ACT_BLK = 0
@@ -85,11 +78,7 @@ csk     &                         IBLK, IOFF_PROC, ISLEN_ACT_BLK
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_MEM_T( MY_T_INFO )
 C
 C     Written by  S. Knecht         - November 17 2007
@@ -126,12 +115,7 @@ C
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_MEM_T_D( MY_T_INFO )
 C
 C     Written by  S. Knecht         - February 11 2008
@@ -169,12 +153,7 @@ C
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_MEM_T_SCR_CC( MY_T_INFO )
 C
 C     Written by  S. Knecht         - November 28 2007
@@ -213,12 +192,7 @@ C
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_MEM_XINT_SCR( MY_XINT_INFO )
 C
 C     Written by  S. Knecht         - December 03 2007
@@ -258,12 +232,7 @@ C
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_T_WIN( T_BUFF, MY_T_COMM, MY_LEN_T )
 C
 C     Written by  S. Knecht         - November 17 2007
@@ -296,12 +265,7 @@ csk     &                            MY_LEN_T, ISIZE_dp, MY_T_COMM
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_CVEC_WIN( C_VEC, MY_C_COMM, MY_LEN_C_VEC )
 C
 C     Written by  S. Knecht         - February 25 2008
@@ -335,12 +299,7 @@ csk  &                               MY_LEN_C_VEC,ISIZE_dp,MY_C_COMM
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REL_MEM_T_WIN( T_BUFF )
 C
 C     Written by  S. Knecht         - November 19 2007
@@ -371,12 +330,7 @@ C
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REL_MEM_C_WIN( C_VEC , C_VEC_2)
 C
 C     Written by  S. Knecht         - February 25 2008
@@ -408,12 +362,7 @@ C
 C
       END
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REL_MEM_T_SCR( T_SCR_CC )
 C
 C     Written by  S. Knecht         - November 28 2007
@@ -439,11 +388,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REL_MEM_XINT_SCR( XINT_SCR )
 C
 C     Written by  S. Knecht         - November 28 2007
@@ -468,14 +413,9 @@ C
       CALL MPIXMEM_FREE( XINT_SCR )
 C
       END
-***********************************************************************
 #else
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PAR_LUSHMEM_REL
 *     dummy routine for normal compilation
       END

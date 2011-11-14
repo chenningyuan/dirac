@@ -6,7 +6,7 @@
 .DFTAUTO
  pbe0
 !pbex=0.75 hfx=0.25 pbec
-*DFT
+**GRID
 .DEBUG          !very coarse grid
 .ZIPGRID
 **INTEGRALS
@@ -15,8 +15,8 @@
 *READIN
 .UNCONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .ITRINT
  0 0
 .EVCCNV

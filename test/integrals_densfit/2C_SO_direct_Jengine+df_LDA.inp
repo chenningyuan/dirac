@@ -1,0 +1,20 @@
+**DIRAC
+.TITLE
+LDA calculations with Jengine+density fitting in non-relativistic two-component mode
+.WAVE F
+**HAMILTONIAN
+.DFT
+ LDA
+.IOTC
+**INTEGRALS
+.DENSFIT
+.JENGINE
+.NUCMOD
+ 1
+*TWOINT
+.AOFOCK
+*READIN
+.UNCONTRACTED
+**WAVE FUNCTIONS
+.SCF
+*END OF

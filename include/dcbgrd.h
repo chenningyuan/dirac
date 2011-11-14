@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbgrd.h
 !
 ! Depencies: mxcent.h
@@ -38,11 +36,24 @@
       COMMON /CBLGRD/ RELGRD, DOTRCK, DODERM, GRD_NOSMLV, GRD_NOSMLS,   &
      &                DONGRD
 
-      REAL*8 GRADKN(MXCOOR, 0:2), GRADNU(MXCOOR, 0:2),                  &
-     &       GRADRO(MXCOOR, 0:2), GRADER(MXCOOR, 0:3), GRADLV(MXCOOR),  &
-     &       GRADEE(MXCOOR), GRADNN(MXCOOR), SCRGRD
-      COMMON /CBRGRD/ GRADKN, GRADNU, GRADRO, GRADER, GRADLV, GRADEE,   &
-     &                GRADNN, SCRGRD
+      real*8          gradkn(mxcoor, 0:2),                              &
+     &                gradnu(mxcoor, 0:2),                              &
+     &                gradro(mxcoor, 0:2),                              &
+     &                grader(mxcoor, 0:3),                              &
+     &                gradlv(mxcoor),                                   &
+     &                gradee(mxcoor),                                   &
+     &                gradxc(mxcoor),                                   &
+     &                gradnn(mxcoor),                                   &
+     &                scrgrd
+      common /cbrgrd/ gradkn,                                           &
+     &                gradnu,                                           &
+     &                gradro,                                           &
+     &                grader,                                           &
+     &                gradlv,                                           &
+     &                gradee,                                           &
+     &                gradxc,                                           &
+     &                gradnn,                                           &
+     &                scrgrd
 
       REAL*8 DMXWLT, DMXCPT
       COMMON /CBDGRT/ DMXWLT, DMXCPT

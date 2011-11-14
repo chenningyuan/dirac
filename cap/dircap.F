@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -871,7 +871,8 @@ C        ... i,j points to position of exponents !!!
 
             IF (CAPOVLP) THEN
 CMI         ... get overlap integrals
-             CALL PEM(R_m,R_n,K_m,K_n,PEINT)
+             CALL PEM(R_m,R_n,K_m,K_n,PEINTr)
+             PEINT=DCMPLX(PEINTr,0.0d0)
             ELSE
 CMI         ... get CAP integrals    (nonrel+Vdc, relativ, Vdc)
              CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT,
@@ -1180,11 +1181,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          k_KN=K_n(k)     
          K_LN=k_n(L)
 
-         CALL SMAT(R_KM,R_KN,K_KM,K_KN,0.d0,OVRLPI)
+         CALL SMAT(R_KM,R_KN,K_KM,K_KN,OVRLPI)
 
-         CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPJ)
+         CALL SMAT(R_LM,R_LN,K_LM,K_LN,OVRLPJ)
 
-         CALL SMAT(R_CM,R_CN,K_CM,K_CN,0.d0,OVRLPK)
+         CALL SMAT(R_CM,R_CN,K_CM,K_CN,OVRLPK)
 
          PEINT=PEINT+(OVRLPI*OVRLPJ*OVRLPK)
 

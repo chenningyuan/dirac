@@ -3280,6 +3280,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #endif
 
       dimension a(6),ind(4,6)
+!miro: try eliminate non-ascii characters from routine name by declaration
+      character(*) tit
 
       if (iopt(1).ge.5) then
         call header('Output from "prt"',-1)
@@ -3546,8 +3548,7 @@ c             write (6,*) ' '
 !
 !  print time using system specific routine
 !
-!  tit - while call it's entering string, therefore here must be taken as
-!  character
+!  tit - "title" of the routine, entering as the string among parameters list
 !
 !  n - hm, like additional specifikation number  (?)
 !  
@@ -3569,11 +3570,13 @@ c             write (6,*) ' '
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
 
-!mi: I had to deactivate it otherwise I got crash in printout
-!     character(*) tit ! to cut off trash characters
+!mi: warning - sometimes I could have to deactivate it otherwise getting crash in printout
+      character(*) tit ! to cut off trash characters
+
       real*4 cputime
       CHARACTER*8  TIMEX,DATEX*10
       character*12 temp
+
       ! generalized function
 !      real*4 cputime
 
@@ -3601,6 +3604,7 @@ c             write (6,*) ' '
 
 !     temp=tit
 !     call clean_string(temp)
+      !call clean_string(tit)
 
 !      write(LUPRI,*) 'prtime....'
 !      write(LUPRI,*) 'len(tit)=',len(tit)
@@ -3634,17 +3638,22 @@ c             write (6,*) ' '
 #include "implicit.h"
 #include "priunit.h"
       character(*) temp
-      !write(LUPRI,'(a,i4)') 'string length:',sizeof(tit)
-!      write(LUPRI,'(a,i4)') 'string length:',len_trim(tit)
-      !write(LUPRI,'(a,i4)') 'string length:',len(tit)
+
+      !write(LUPRI,*) 'string length:',sizeof(temp)
+!      write(LUPRI,'(a,i4)') 'string length:',len_trim(temo)
+      !write(LUPRI,'(a,i4)') 'string length:',len(temp)
+      !write(LUPRI,*) 'string length:',len(temp)
 
       do i=1,len(temp)
         ia=iachar(temp(i:i))
-        write(LUPRI,*) i,"ascii=",ia,' char=',char(ia)
+        ! could get problem with printout !
+        !write(LUPRI,*) i,"ascii=",ia,' char=',char(ia)
+
+        !write(LUPRI,*) i,"ascii=",ia
 
        if (.not.( (ia.ge.48.and.ia.le.57).or.
      &            (ia.ge.65.and.ia.le.90).or.
-     &            (ia.ge.97.and.ia.le.122)  )) then 
+     &            (ia.ge.97.and.ia.le.122).or.(ia.eq.32)  )) then 
 
           !tit(i:i)=char(32,kind=1) ! place 'space'
           !tit(i:i)=" " ! place 'space'
@@ -3654,11 +3663,14 @@ c             write (6,*) ' '
           !write(tit(i:i),'(a1)') char(32)
           !write(tit(i:i),'(a)') s
           !tit=trim(tit)
+           !temp(i:i)=char(32,kind=1)
+           temp(i:i)='\0' ! NULL terminating character
+           !write(LUPRI,*) 'added null terminating character !'
 
-           temp(i:i)=char(32,kind=1)
        endif
        !write(LUPRI,'(a1,4x,i4)') tit(i:i),iachar(tit(i:i))
       enddo
+      !write(LUPRI,*) 'tit=',temp
 
       end subroutine clean_string
 
@@ -3694,14 +3706,15 @@ c *************************************************
       use print_level
 #if defined HSFS_DYN_ALLOC
       use dat_mod
+#include "implicit.h"
+#include "priunit.h"
 #else
+#include "implicit.h"
+#include "priunit.h"
 !     implicit real*8 (a-h,o-z)
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
-#include "implicit.h"
-#include "priunit.h"
 
       character typ(2,5),cc(200)
       character*8 title(10)
@@ -3722,8 +3735,6 @@ c *************************************************
       dirac_input = .true.
 
       if (.not.dirac_input) then
-
-
 !!! first reading of the input file - open it !!!
 !!!! anyway, input file presence must be checked !!!
       inquire(file='input',exist=is_input_file,opened=is_open)
@@ -3733,9 +3744,7 @@ c *************************************************
       else
          write(LUPRI,*) 'input file present, is_open=',is_open
       endif
-
       rewind(LUCMD)
-
       endif
 
 !     read (5,'(10a8)')     title

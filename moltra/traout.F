@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : traout.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTI */
@@ -131,7 +128,8 @@ C     This solves the 2Gb problem on Linux.
          ELSEIF (N2EFIL.LT.100) THEN
             WRITE (NEXTFIL,'(A3,I2)') 'MDC',N2EFIL
          ELSE
-            STOP "100 integral files is enough !"
+            CALL QUIT('*** ERROR in MDINTN: exceeding 100 integral'//
+     &                ' files! ***')
          ENDIF
          FNODE = LFNAM(NEXTFIL)
          WRITE (LUMLF2) 0,N2EFIL,0
@@ -261,10 +259,13 @@ C
          CALL QUIT ('Class not defined in MDINTB')
       ENDIF
 C
+C     LV   Deactivated this filesplitting option, should be obsolete now. 
+C     If the lines below are still commented out in 2013, please delete altogether !
+C
 C     We may exceed the maximum file length. Check it in the following
 C     routine !
 C
-      CALL MDINTN (NZKL)
+C     CALL MDINTN (NZKL)
 
 C     ... write the integral batch to the file 
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
@@ -357,23 +358,25 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SYMFINT */
       SUBROUTINE SYMFINT(IPRINT,IREPIJ,IREPIJB,IREPKLB,IJ,IKR,JKR,
-     &           NSTR3,NSTR4,NKL,FMAT,WORK,KFREE,LFREE)
+     &           NSTR3,NSTR4,NKL,FMAT)
 C
 C     Symmetrize the final integrals and write them to file
 C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dcbham.h"
 #include "dgroup.h"
-      DIMENSION WORK(*)
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NKL,NZ,NZ,*)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
       INTEGER RCW
+      Real(8), Allocatable :: FTMAT(:,:),RKL(:,:)
+      Integer, Allocatable :: INDK(:),INDL(:)
 C
 C     Set parameter to indicate whether the integrals are complex or real.
 C
@@ -383,10 +386,10 @@ C
          RCW = 2
       ENDIF
 C
-      CALL MEMGET('REAL',KFTMAT,NKL*RCW,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDK,NKL,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRKL,RCW*NKL,WORK,KFREE,LFREE)
+      call alloc(FTMAT,NKL,RCW)
+      call alloc(  RKL,NKL,RCW)
+      call alloc(INDK ,NKL)
+      call alloc(INDL, NKL)
 C
       IF (SPINFR) THEN
 C
@@ -396,7 +399,7 @@ C     symmetry and can be fed into non-relativistic codes.
 C     Only one class of integrals (all-unbarred) suffices for
 C     this purpose.
 C
-      CALL DZERO(WORK(KFTMAT),RCW*NKL)
+      CALL DZERO(FTMAT,RCW*NKL)
       IREPABR = 0
       DO IREPAB = 0, NBSYM-1
          IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -426,7 +429,7 @@ C
             FACTR = 1.D0
             CALL DAXPY (NKL,FACTR,
      &                  FMAT(1,1,1,IREPABR),1,
-     &                  WORK(KFTMAT),1)
+     &                  FTMAT,1)
  100        CONTINUE
          ENDIF
       ENDDO
@@ -435,16 +438,14 @@ C     Only one class remains in the spinfree case
 C
       ICLASS = 1
       CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &            WORK(KFTMAT),NKL,
-     &            WORK(KINDK),WORK(KINDL),
-     &            WORK(KRKL))
+     &            FTMAT,NKL,INDK,INDL,RKL)
 C
       ELSE ! not spinfree
 C
 C     Real and complex classes
 C
       DO ICLASS = 1, 4
-         CALL DZERO(WORK(KFTMAT),RCW*NKL)
+         CALL DZERO(FTMAT,RCW*NKL)
          IREPABR = 0
          DO IREPAB = 0, NBSYM-1
             IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -458,7 +459,7 @@ C
                         FACTR = IFAC
                         CALL DAXPY (NKL,FACTR,
      &                              FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                              WORK(KFTMAT),1)
+     &                              FTMAT(:,1),1)
                      ENDIF
                      IF (NZ.GT.1) THEN
                         IFAC=INTCL(ICLASS+4,IQ1,IQ2)
@@ -466,7 +467,7 @@ C
                            FACTR = IFAC
                            CALL DAXPY (NKL,FACTR,
      &                                 FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                                 WORK(KFTMAT+NKL),1)
+     &                                 FTMAT(:,2),1)
                         ENDIF
                      ENDIF
                   ENDDO
@@ -477,19 +478,17 @@ C
 C        Take out integrals that should be zero due to the linear symmetry (can be non-zero due to noise)
 C
          IF (LINEAR)
-     &   CALL LINZERO (ICLASS,IREPIJB,IREPKLB,NKL,WORK(KFTMAT))
+     &   CALL LINZERO (ICLASS,IREPIJB,IREPKLB,NKL,FTMAT)
 
          CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &               WORK(KFTMAT),NKL,
-     &                         WORK(KINDK),WORK(KINDL),
-     &                         WORK(KRKL))
+     &               FTMAT,NKL,INDK,INDL,RKL)
       ENDDO
 C
 C     Quaternion classes
 C
       IF (NZ.EQ.4) THEN
          DO ICLASS = 9, 12
-            CALL DZERO(WORK(KFTMAT),RCW*NKL)
+            CALL DZERO(FTMAT,RCW*NKL)
             IREPABR = 0
             DO IREPAB = 0, NBSYM-1
                IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -503,29 +502,30 @@ C
                             FACTR = IFAC
                             CALL DAXPY (NKL,FACTR,
      &                                  FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                                  WORK(KFTMAT),1)
+     &                                  FTMAT(:,1),1)
                         ENDIF
                         IFAC=INTCL(ICLASS+4,IQ1,IQ2)
                         IF (IFAC.NE.0) THEN
                            FACTR = IFAC
                            CALL DAXPY (NKL,FACTR,
      &                                 FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                                 WORK(KFTMAT+NKL),1)
+     &                                 FTMAT(:,2),1)
                         ENDIF
                      ENDDO
                   ENDDO
                ENDIF
             ENDDO
             CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &                  WORK(KFTMAT),NKL,
-     &                  WORK(KINDK),WORK(KINDL),
-     &                  WORK(KRKL))
+     &                  FTMAT,NKL,INDK,INDL,RKL)
          ENDDO
       ENDIF
 C
       ENDIF ! spinfree
 C
-      CALL MEMREL('SYMFINT',WORK,1,KFTMAT,KFREE,LFREE)
+      call dealloc(FTMAT)
+      call dealloc(RKL)
+      call dealloc(INDK)
+      call dealloc(INDL)
 C
       RETURN
       END
@@ -578,29 +578,30 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRI */
-      SUBROUTINE MDSCRI(WORK,KFREE,LFREE)
+      SUBROUTINE MDSCRI
 C
 C     Initialize MDINT scratch files
 C     Written by Luuk Visscher, May 1997
 C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
-      DIMENSION WORK(*)
       LOGICAL   FEXIST
       CHARACTER*10 FNODE,LFNAM,FNAM*5
+      Real(8), Allocatable :: FTMAT(:)
 C
-      NQQCLASS = NZ * NZ * NBSYM / NFSYM
-C
-      KFRSAV = KFREE
-      NKL = NFPCK34(1)
-      IF (NFSYM.EQ.2) NKL = MAX(NKL,NFPCK34(2))
-      LFMAT = NQQCLASS*NKL
-      CALL MEMGET('REAL',KFTMAT,LFMAT,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KFTMAT),LFMAT)
+C     Calculate size of integral batches that will be written
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM        ! Number of quaternion units active for each electron
+      NKL = NFPCK34(1)                          ! Dimension of MO matrix (gg+uu)
+      IF (NFSYM.EQ.2) NKL = MAX(NKL,NFPCK34(2)) ! Dimension of MO matrix (ug+gu)
+      LFMAT = NQQCLASS*NKL                      ! Total maximum dimension of bacth
+
+      call alloc(FTMAT,LFMAT)
+      CALL DZERO(FTMAT,LFMAT)
 C
 C     Open direct access scratch file for 4-indexed transformed integrals
 C
@@ -610,6 +611,7 @@ C
          IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
+
 C        Open and delete first if old file, for some systems
 C        leaving out this leads to errors in MCSCF where the record
 C        length changes as the calculation continues
@@ -620,15 +622,16 @@ C        length changes as the calculation continues
      &            ACCESS='DIRECT',RECL=JRECL)
             CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
          END IF
+
+C        Now open the new file and initialize the records with zeroes
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
-         CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,WORK(KFTMAT))
+         CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,FTMAT)
       ENDDO
 C
-      CALL MEMREL('MDSCRI',WORK,1,KFRSAV,KFREE,LFREE)
-      RETURN
+      call dealloc(FTMAT)
       END
-C/* Deck MDSCRI1 */
+
       SUBROUTINE MDSCRI1(LU,NIJ,LFMAT,FMAT)
 C
 C     HJAaJ Aug 2001
@@ -741,11 +744,11 @@ C    Written by Luuk Visscher, April 1997
 C    Last modification, Februari 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
-#include "dcbqal.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)

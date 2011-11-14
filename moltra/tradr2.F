@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : tradr2.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR2T */
@@ -1320,7 +1317,8 @@ C     Write directly into the array GMAT
 C
             CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KGMAT),NSIZG)
-            KLGBUF = 1
+            KLGBUF  = KFREE
+            KALGREC = KFREE
          ENDIF
 C
 C     Calculate current distribution
@@ -1337,7 +1335,7 @@ C
 C     De-allocate buffers and allocate GMAT if necessary.
 C
          IF (NPASS.GT.1) THEN
-            CALL MEMREL('TRDRV3.1',WORK,1,KALGBUF,KFREE,LFREE)
+            CALL MEMREL('SHLTRA.1',WORK,1,KALGBUF,KFREE,LFREE)
             CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KGMAT),NSIZG)
          ENDIF
@@ -1351,7 +1349,7 @@ C
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),WORK(KGMAT),NSIZG,WORK(KHMAT)) 
          CALL TIMEC('MS4IN1',TIMSTR,TIMEND) 
          TIM1(2) = TIM1(2) + TIMEND - TIMSTR
-         CALL MEMREL('TRDRV3.2',WORK,1,KGMAT,KFREE,LFREE)
+         CALL MEMREL('SHLTRA.2',WORK,1,KGMAT,KFREE,LFREE)
          IF (NPASS.GT.1) CALL DELGBUF(LGFIL)
 C
 C     3/4 transformation
@@ -2043,15 +2041,11 @@ C
 C        Get the scalar integrals that are processed in this pass
 C        The integral are already in GMAT when NPASS = 1
 C
-         IF (NPASS.GT.1) THEN
+          IF (NPASS.GT.1) THEN
              CALL DZERO(GMAT,NSIZG)
              IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1E',WORK,KFRSAV,KRBUF,KFREE,LFREE)
-         ENDIF
+             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
+          ENDIF
 C
 C        Calculate the size of the H-matrix for this pass
 C
@@ -2958,6 +2952,8 @@ C
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)
+      ELSE
+        KDRIJ = KFREE
       ENDIF
 C
 C     Allocate memory for accumulation of 3/4 transformed integrals

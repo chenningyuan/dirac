@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : pamxlr.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXLR */
@@ -208,13 +205,11 @@ c.......direct contribution
 
         if (.not.notwol) then
           call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
-!          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
         end if
 
 c.......reorthonormalization contribution
-        if ((.not. noonei) .or. (.not. noorth)) then
+        if (.not. noonei) then
           call london_reort_hb(cmo, ibeig, work(kfree), lfree)
-!old code         call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
         end if
 
         call dealloc(cmo)
@@ -1900,7 +1895,7 @@ C
 
 #ifdef MOD_UNRELEASED
       if (dirac_cfg_overlap_diagnostic) then
-         call lambda_matrix_from_disc()
+         call o_matrix_from_disc()
       end if
 #endif
 
@@ -2309,9 +2304,16 @@ C       Give major orbital rotations in excitations
      &                        lambda_denominator,
      &                        iorbcl(2, i1),            
      &                        iorbcl(2, i2),        
+     &                        iorbcl(3, i1),
+     &                        iorbcl(3, i2),
      &                        buf2(jj))
            enddo
-           write(*, *) 'lambda = ', lambda_numerator/lambda_denominator
+           write(lupri, '(a)') '   PBHT MO Overlap Diagnostic'
+           write(lupri, '(a)') '     ref.: M. J. G. Peach, '//
+     &        'P. Benfield, T. Helgaker, and D. J. Tozer'
+           write(lupri, '(a44)') 'J. Chem. Phys. 128, 044118 (2008)'
+           write(lupri, '(a, f8.5)') '     lambda = ', 
+     &        lambda_numerator/lambda_denominator
         end if
 #endif
       ENDIF

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her1sym.F
 C
 C
 C  /* Deck onesop */
@@ -111,6 +108,7 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
+      use quaternion_algebra
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -147,7 +145,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dcbqal.h"
 #include "dcbgrd.h"
 #else
 #include "energy.h"
@@ -185,10 +182,8 @@ C
          CORBZ  = SIGNBZ*CORBZ0
          IF (IPRINT .GE. 05) WRITE (LUPRI, 1010) ISYMOP
          IF (IPRINT .GE. 10) THEN
-            WRITE (LUPRI,'(A,1I8)') ' INTCLASS', INTCLASS
-            WRITE (LUPRI,'(A,1F12.6)') ' CORBX    ', CORBX
-            WRITE (LUPRI,'(A,1F12.6)') ' CORBY    ', CORBY
-            WRITE (LUPRI,'(A,1F12.6)') ' CORBZ    ', CORBZ
+            WRITE (LUPRI,'(A,I8)')    ' INTCLASS', INTCLASS
+            WRITE (LUPRI,'(A,3F15.6)') ' CORBX/Y/Z ', CORBX,CORBY,CORBZ
          END IF
 C
 C *****
@@ -322,28 +317,26 @@ C
             MAXCMP = 0
             DO 200 IORBA = IDENA + 1, IDENA + KHKTA
                DO 250 IORBB = IDENB + 1, IDENB + KHKTB
-                  FAC = D1
+                  MAXCMP = MAXCMP + 1
 #ifdef PRG_DIRAC
 Cjth              Due to the way FOCMAT and DENMAT are constructed in Dirac don't 
 C                 do this...
-Cjth - sib                  IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = DP5
-#else 
-                  IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = DP5
-#endif
-                  MAXCMP = MAXCMP + 1
-#ifdef PRG_DIRAC
+C                 FAC = D1
+Cjth - sib        IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = DP5
                   IF (INTCLASS .EQ. 1) THEN
                      DO IZ = 2, 4
                         IDXAB = IQFULL(IORBA,IORBB,IZ)
-                        DSHELL(MAXCMP,IZ) = FAC*DENMAT(IDXAB)
+                        DSHELL(MAXCMP,IZ) = DENMAT(IDXAB)
                      END DO
                   ELSE
                      IDXAB = IQFULL(IORBA,IORBB,1)
                      IDXAB = IOLDQFULL(IORBA,IORBB,1)
-                     FSHELL(MAXCMP) = FAC*FOCMAT(IDXAB)
-                     DSHELL(MAXCMP,1) = FAC*DENMAT(IDXAB)
+                     FSHELL(MAXCMP)   = FOCMAT(IDXAB)
+                     DSHELL(MAXCMP,1) = DENMAT(IDXAB)
                   END IF
 #else 
+                  FAC = D1
+                  IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = DP5
                   IORBAB = ITRI(IORBA,IORBB)
                   DSHELL(MAXCMP) = FAC*DENMAT(IORBAB)
                   FSHELL(MAXCMP) = FAC*FOCMAT(IORBAB)
@@ -352,6 +345,22 @@ Cjth - sib                  IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = D
   200       CONTINUE
 C
 #ifdef PRG_DIRAC
+            IF (IPRINT .GT. 15) THEN
+               CALL HEADER('Input density matrix',-1)
+               CALL PRQMAT(DENMAT,NTBAS(0),NTBAS(0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+               CALL HEADER('Collected density matrix DSHELL',-1)
+               IF (INTCLASS .EQ. 1) THEN
+                  IZ_END = 4
+               ELSE
+                  IZ_END = 1
+               END IF
+               DO IZ = 1,IZ_END
+                  WRITE(LUPRI,'(A,I3/)') ' *** IZ =',IZ
+                  WRITE(LUPRI,'(10F12.6)') DSHELL(1:MAXCMP,IZ)
+               END DO
+            END IF
+C
 C           SL,LS : derivatives of the momentum
 C           LL,SS : reorthonormalization and nuclear attraction
 C           SS    : \beta-matrix derivatives
@@ -396,9 +405,9 @@ C
 C
 C                 Derivatives of the \beta-matrix
 C 
-                  IF ( INTCLASS .EQ. 2 ) CALL AVEBET(STDER1,ISYMOP,
-     &                                               MAXCMP,SECDER,
-     &                                               DSHELL)
+                  IF ( INTCLASS .EQ. 2 ) THEN
+                     CALL AVEBET(STDER1,ISYMOP,MAXCMP,SECDER,DSHELL)
+                  END IF
                END IF
             END IF
             IF (IPRINT .GT. 20) THEN
@@ -412,12 +421,18 @@ C
                   KCSTRA = 1
                   KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
                   KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
-                  CALL HEADER('Nuclear attraction integral gradient',-1)
+                  CALL HEADER(
+     &            'Nuclear attraction integral gradient - LL',-1)
                   CALL PRIGRD(GRADNU(1,1),WORK(KCSTRA),WORK(KSCTRA))
+                  CALL HEADER(
+     &            'Nuclear attraction integral gradient - SS',-1)
                   CALL PRIGRD(GRADNU(1,2),WORK(KCSTRA),WORK(KSCTRA))
                   IF (.NOT. ONECEN ) THEN
-                     CALL HEADER('Reorthonormalization gradient',-1)
+                     CALL HEADER(
+     &               'Reorthonormalization gradient - LL',-1)
                      CALL PRIGRD(GRADRO(1,1),WORK(KCSTRA),WORK(KSCTRA))
+                     CALL HEADER(
+     &               'Reorthonormalization gradient - SS',-1)
                      CALL PRIGRD(GRADRO(1,2),WORK(KCSTRA),WORK(KSCTRA))
                      CALL HEADER('Beta matrix integral gradient',-1)
                      CALL PRIGRD(GRADKN(1,2),WORK(KCSTRA),WORK(KSCTRA))
@@ -500,6 +515,16 @@ C        **************************************************
 C        ***** Write differentiated integrals on file *****
 C        **************************************************
 C
+         IF (IPRINT .GT. 5) THEN
+            NADER = 28*NATOMC
+            IF (ONECEN) NADER = 10*NATOMC
+            CALL HEADER('First derivative overlap matrix',-1)
+            CALL OUTPUT(STDER1(1,1,1),1,KHKTAB,1,3,KCKTAB,3,1,LUPRI)
+            CALL HEADER('First derivative kinetic energy matrix',-1)
+            CALL OUTPUT(STDER1(1,1,2),1,KHKTAB,1,3,KCKTAB,3,1,LUPRI)
+            CALL HEADER('ADER',-1)
+            CALL OUTPUT(ADER,1,KHKTAB,1,NADER,KCKTAB,NADER,1,LUPRI)
+         END IF
          IF (PROPTY .AND. (SECDER .OR. DIFDIP)) THEN
             CALL WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)
@@ -543,16 +568,6 @@ C  /* Deck wd1sy1 */
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
-      IF (IPRINT .GT. 5) THEN
-         NADER = 28*NATOMC
-         IF (ONECEN) NADER = 10*NATOMC
-         CALL HEADER('First derivative overlap matrix',-1)
-         CALL OUTPUT(STDER1(1,1,1),1,KHKTAB,1,3,KCKTAB,3,1,LUPRI)
-         CALL HEADER('First derivative kinetic energy matrix',-1)
-         CALL OUTPUT(STDER1(1,1,2),1,KHKTAB,1,3,KCKTAB,3,1,LUPRI)
-         CALL HEADER('ADER',-1)
-         CALL OUTPUT(ADER,1,KHKTAB,1,NADER,KCKTAB,NADER,1,LUPRI)
-      END IF
 C
 C     Write differentiated integrals on file
 C
@@ -931,8 +946,9 @@ C
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
-         WRITE (LUPRI, '(A, I5)') ' KB ', KB
-         WRITE (LUPRI, '(A,2I5)') ' NHKTA/B ', NHKTA, NHKTB
+         WRITE (LUPRI, '(A, I5,A,L1)') ' KB ',KB,', FULMAT = ',FULMAT
+         WRITE (LUPRI, '(A,2I5,A,F20.10)')
+     &   ' NHKTA/B ',NHKTA, NHKTB,',  HKAB = ',HKAB
       END IF
 C
 C     Loop over all irreps in molecule
@@ -970,6 +986,8 @@ C
                IF (FULMAT) THEN
                   IND  = INDOFF + (INDM*(INDM - 3))/2 + INDA + INDB
                   SO(IND) = SO(IND) + RINT
+                  IF (IPRINT.GT.10) WRITE(LUPRI,*)
+     &               'INDA/B,IND,RINT ',INDA,INDB,IND,RINT,SO(IND)
                ELSE
                   IF (ABS(RINT) .GT. THRESH) THEN
                      IND  = (INDM*(INDM - 3))/2 + INDA + INDB
@@ -1016,17 +1034,22 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (LUTEMP = 48)
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
+      PARAMETER (LUTEMP = 48)
 #include "csym1.h"
 #include "symmet.h"
 #include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1N',-1)
-         WRITE (LUPRI, '(A,2I5)') ' IREPO, KB ', IREPO, KB
-         WRITE (LUPRI, '(A,2I5)') ' NHKTA/B ', NHKTA, NHKTB
+         WRITE (LUPRI, '(A,2I5,A,L1)') ' IREPO, KB ', IREPO, KB,
+     &      ', FULMAT = ',FULMAT
+         WRITE (LUPRI, '(A,2I5,A,F20.10)')
+     &   ' NHKTA/B ',NHKTA, NHKTB,',  HKAB = ',HKAB
+         WRITE(lupri,*) 'MULA/B, KHKTA/B',MULA,MULB,KHKTA,KHKTB
+         WRITE(lupri,*) 'LDIAG,ANTI,THRESH,IMAT0,IPRINT',
+     &                   LDIAG,ANTI,THRESH,IMAT0,IPRINT
       END IF
 C
 C     Loop over irreps for first basis function - those for second
@@ -1071,6 +1094,8 @@ C
                      IND  = INDOFF + NAOS(IREPA+1)*(INDB-1) + INDA
                   ENDIF
                   SO(IND) = SO(IND) + RINT
+                  IF (IPRINT.GT.10) WRITE(LUPRI,*)
+     &               'INDA/B,IND,RINT ',INDA,INDB,IND,RINT,SO(IND)
                ELSE
                   IF (ABS(RINT) .GT. THRESH) THEN
                      IF (IREPA .GE. IREPB) THEN

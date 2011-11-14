@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4456,7 +4456,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
 C
-#include "sdpre.h"
 C
 C     Hermitian integrals
 C     -------------------
@@ -4470,9 +4469,9 @@ C
             HY = D0
             HZ = D0
             IF (IT .GT. 0) THEN
-               HX = HX + SDPRE(IT)*HMULT(1,IO-1,IT-1)
-               HY = HY + SDPRE(IT)*HMULT(2,IO-1,IT-1)
-               HZ = HZ + SDPRE(IT)*HMULT(3,IO-1,IT-1)
+               HX = HX + dble(IT)*HMULT(1,IO-1,IT-1)
+               HY = HY + dble(IT)*HMULT(2,IO-1,IT-1)
+               HZ = HZ + dble(IT)*HMULT(3,IO-1,IT-1)
             END IF
             IF (IT .LE. IO-1) THEN
                HX = HX + (CORPX - ORIGIN(1))*HMULT(1,IO-1,IT)
@@ -5535,7 +5534,6 @@ C
 #include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "sdpre.h"
       EXPPIH = EXPPI/D2
       DO 100 IA = 0, JMAXA
          DO 200 IB = 0, JMAXB
@@ -5554,9 +5552,9 @@ C
                   FZ = FZ + EXPPIH*ODC(IA,IB,I - 1,0,0,3)
                END IF
                IF (I .LT. IA + IB) THEN
-                  FX = FX + SDPRE(I + 1)*ODC(IA,IB,I + 1,0,0,1)
-                  FY = FY + SDPRE(I + 1)*ODC(IA,IB,I + 1,0,0,2)
-                  FZ = FZ + SDPRE(I + 1)*ODC(IA,IB,I + 1,0,0,3)
+                  FX = FX + dble(I + 1)*ODC(IA,IB,I + 1,0,0,1)
+                  FY = FY + dble(I + 1)*ODC(IA,IB,I + 1,0,0,2)
+                  FZ = FZ + dble(I + 1)*ODC(IA,IB,I + 1,0,0,3)
                END IF
                ODC(IA,IB,I,1,0,1) = FX
                ODC(IA,IB,I,1,0,2) = FY
@@ -5593,7 +5591,6 @@ C
      &          SHLINT(KCKTAB,*)
 #include "onecom.h"
 #include "lmns.h"
-#include "sdpre.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5894,7 +5891,6 @@ C
 #include "lmns.h"
 #include "orgcom.h"
 C
-#include "sdpre.h"
 C
       INT = 0
       ADX = CORAX - ORIGIN(1)
@@ -6008,7 +6004,6 @@ C
 #include "lmns.h"
 #include "orgcom.h"
 C
-#include "sdpre.h"
 C
       INT = 0
       ADX = CORAX - ORIGIN(1)

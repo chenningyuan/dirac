@@ -1,0 +1,22 @@
+dc.inp  h2o_c1.mol
+dc.inp  ne_auto.mol
+dc.inp  ne_c1.mol
+dc.inp  ne_c2.mol
+dc.inp  ne_c2h.mol
+dc.inp  ne_c2v.mol
+dc.inp  ne_ci.mol
+dc.inp  ne_cs.mol
+dc.inp  ne_d2.mol
+dc.inp  ne_d2h.mol
+
+nr.inp  h2o_auto.mol
+nr.inp  h2o_c1.mol
+nr.inp  ne_auto.mol
+nr.inp  ne_c1.mol
+nr.inp  ne_c2.mol
+nr.inp  ne_c2h.mol
+nr.inp  ne_c2v.mol
+nr.inp  ne_ci.mol
+nr.inp  ne_cs.mol
+nr.inp  ne_d2.mol
+nr.inp  ne_d2h.mol

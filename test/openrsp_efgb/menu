@@ -1,0 +1,7 @@
+nr_hf.inp                  h2o2.mol
+nr_hf.inp                  fh.mol
+nr_hf_shifted.inp          fh.mol
+dc_hf_skipep.inp           fh.mol
+dc_hf_skipep_cval=3000.inp fh.mol
+dc_hf.inp                  fh.mol
+dc_hf_shifted.inp          fh.mol

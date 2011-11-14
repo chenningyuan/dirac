@@ -34,7 +34,7 @@
 *  ---------
 *
 *  80 - 99 :  Files in use in different context
-*             (e.g. standalone, INS, MOLCAS etc.)
+*
 *  ---------
 *
 *==================================================
@@ -45,28 +45,17 @@
 * =========================
 *. Input file
       LUIN = 5
-*. Special unit for input file from MOLCAS conversion routine
-*    Timo Fleig and Lasse Sorensen
-      LUCMOL = 91
 *. Output file
       LUOUT = 6
 * =================
 * Input information
 * =================
-* Input file containing MO-AO transformation matrix
-      LUMOIN = 80
 *. Input file for CI-vectors
 *. restart from file 21 is assumed
 *. INTEGRAL FILE FROM SORTING
       LUSC81 = 81
 *. INDICES FILE FROM SORTING
       LUSC82 = 82
-*. Input , property one-electron integral files
-      LUPRP  = 83
-*. Sirius interface file
-      LUSIR1 = 84
-*. File containing additional states for transition densities
-      LUEXC = 85
 * =================
 * Internal files
 * =================
@@ -99,52 +88,15 @@
       Open(Unit=LUSC2,File='LUSC2',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC3,File='LUSC3',Status='UNKNOWN',Form='UNFORMATTED')
 *. Scratch space for subspace handling
-      LUSC34 = 73
-      LUSC35 = 74
-      LUSC36 = 75
-      LUSC37 = 76
-      LUSC38 = 77
-      LUSC39 = 78
-      LUSC40 = 79
-      Open(Unit=LUSC34,File='LUSC34',Status='UNKNOWN',
-     &     Form='UNFORMATTED')
-      Open(Unit=LUSC35,File='LUSC35',Status='UNKNOWN',
-     &     Form='UNFORMATTED')
-      Open(Unit=LUSC36,File='LUSC36',Status='UNKNOWN',
-     &     Form='UNFORMATTED')
-      Open(Unit=LUSC37,File='LUSC37',Status='UNKNOWN',
-     &     Form='UNFORMATTED')
-      Open(Unit=LUSC38,File='LUSC38',Status='UNKNOWN',
-     &     Form='UNFORMATTED')
-      Open(Unit=LUSC39,File='LUSC39',Status='UNKNOWN',
-     &     Form='UNFORMATTED')
-      Open(Unit=LUSC40,File='LUSC40',Status='UNKNOWN',
+      LUSC41 = 79
+      Open(Unit=LUSC41,File='LUSC41',Status='UNKNOWN',
      &     Form='UNFORMATTED')
 *.
-      LUSC51 = 51
-      LUSC52 = 52
-      LUSC53 = 53
-*. Used for CHAR_TO_INTEGER_MOLUC.
-      LUSC54 = 54
-
 * =================
 * Output files
 * =================
-*. output file for CI-vectors
-*. Not in use
-      LUCIVO = 86
-*. Natural orbitals in terms of input orbitals
-*.
-      LUMOUT = 87
-*     Open(Unit=LUMOUT,File='CIAORB',Status='UNKNOWN',Form='FORMATTED')
-*. Dumping 1- and 2- electron integrals in formatted form
-* ( LU90 just defined here, it is not exported )
-      LU90  = 88
-*. Dumping symmmetry info, MO-AO expansion matrix and property integrals
 *. CC amplitudes in formatted form
       LU_CCAMP = 90
-*. Result of CI=> CC conversion
-      LU_CC_FROM_CI = 93
 *. Excitation operators, all symmetries
       LU_CCEXC_OP = 94
       RETURN

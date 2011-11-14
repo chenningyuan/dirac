@@ -13,17 +13,19 @@ LDA
 ! if ommited, the default filename is EMBPOT. regardless
 ! of the name, this file has to be transferred to the
 ! scratch directory first
-*DFT
-.4CGRID !here only to reproduce the reference outputs
 *FDE
 .EMBPOT
 vemb.grid
+**GRID
+.4CGRID !here only to reproduce the reference outputs
 **INTEGRALS
 .NUCMOD
  1
+*READIN
+.CONTRACTED
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .PRINT
  1
 **PROPERTIES

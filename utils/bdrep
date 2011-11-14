@@ -1,0 +1,227 @@
+#!/bin/sh
+#
+# This script was originally written by Olivier Visser
+# Scientific Computing & Modelling NV (SCM) 
+# Modified and ported to DIRAC by Lucas Visscher, January 2002.
+#
+
+
+SCRIPT=/tmp/$$.pl
+cat <<\eor >$SCRIPT
+
+
+$small = 1e-3;
+
+#------------
+sub GetReal {
+#------------
+#
+#---------------------------------------------------------
+# parse line to get next real:
+# $prereal: all text up to the real
+# $real: the real
+# $postreal: rest of the line
+#
+# if no real is found, both $real and $postreal are empty,
+# and $prereal contains the complete line
+#---------------------------------------------------------
+
+    local ($line) = @_;
+    local ($i, $astr);
+
+    # -----------------
+    # initialize result
+    # -----------------
+
+    $prereal = "";
+    $real = "";
+    $postreal = $line;
+
+    # ------------------------
+    # find first decimal point
+    # ------------------------
+
+    $linelength = length ($line);
+    for ($i=0; $i<$linelength-1; $i++) {
+        $astr = substr ($line, $i, 2);
+        if ($astr =~ /\.\d/) {last;}
+        }
+
+    if ($astr =~ /\.\d/) {
+
+        # ---------------------------
+        # find last decimal backwards
+        # ---------------------------
+    
+        $match = $i;
+        for ($j=$i-1; $j>=0; $j--) {
+            $astr = substr ($line, $j, 1);
+            if ($astr =~ /\d/) {
+                $match = $j;
+                }
+            else {
+                last;
+                }
+            }
+        
+        # ----------------
+        # try to find sign
+        # ----------------
+
+        if ($match>0) {
+            $astr = substr ($line, $match-1, 1);
+            if ($astr =~ /[\+\-]/) {$match = $match-1;}
+            }
+        }
+
+        # ------------------------------------------
+        # extend match until no longer a real number
+        # ------------------------------------------
+
+        $maxlen = length ($line) - $match;
+        for ($j=$maxlen; $j>=1; $j--) {
+            $astr = substr ($line, $match, $j);
+            if ($astr =~ /^[\-\+]?\d*\.\d*[edED]?[\-\+]?\d*$/) {last;}
+            }
+        $real = substr ($line, $match, $j);
+        $real =~ s/[dD]/e/;
+        $prereal = substr ($line, 0, $match-1);
+        $maxlen = length ($line) - $match - $j;
+        $postreal = substr ($line, $match+$j, $maxlen);
+
+    }
+
+# ---------------------------------------
+# determine names of the files to compare
+# ---------------------------------------
+
+$s1 = $ARGV[0];
+$s2 = $ARGV[1];
+$title = $ARGV[2];
+
+# --------------
+# open the files
+# --------------
+
+open (FILE1, "<$s1") || die "Error opening $s1\n";
+open (FILE2, "<$s2") || die "Error opening $s2\n";
+
+
+$lastline1 = "File 1 is empty";
+$lastline2 = "File 2 is empty";
+
+# ----------------------------
+# read all numbers from file 2
+# ----------------------------
+
+$count1 = 0;
+foreach $line (<FILE2>) {
+    chop ($line);
+    $lastline2 = $line;
+    do GetReal ($line);
+    while ($real ne "" && $real ne ".") {
+        $line = $postreal;
+        $R2[$count1] = $real;
+        $count1++;
+        do GetReal ($line);
+        }
+      }
+close (FILE2);
+open (FILE2, "<$s2") || die "Error opening $s2\n";
+
+# ------------------------------
+# scan, compare and print file 1
+# ------------------------------
+
+$count = 0;
+$linenumber = 0;
+$signcheck = 1;
+foreach $line1 (<FILE1>) {
+  $line2 = <FILE2>;
+    chop ($line1);
+    $lastline1 = $line1;
+    $line = $line1;
+    chop ($line2);
+    $linenumber++;
+    $haserror = 0;
+
+    if ($line =~ /^\$ERROR (.*)$/) {
+        $small = $1;
+    }
+    if ($line =~ /^\$IGNORESIGN/) {
+        $signcheck = 0;
+    }
+    if ($line =~ /^\$SIGNCHECK/) {
+        $signcheck = 1;
+    }
+    do GetReal ($line);
+    while ($real ne "" && $real ne ".") {
+        $line = $postreal;
+        $r1 = $real;
+        $r2 = $R2[$count];
+
+        # -------------------------------
+        # determine difference in numbers
+        # -------------------------------
+
+        $diff = $real - $R2[$count];
+        $posreal = $real;
+        if ($real < 0) {$posreal = -$real;}
+        if ($diff < 0) {$diff = -$diff;}
+        if ($posreal > 1.0) {$diff = $diff / $posreal;}
+
+#radovan: posreal is zero if the number is zero
+#         so the following line will result in "no error"
+#         for results that are zero:
+#       if ($posreal < 1.0) {$diff = $diff * $posreal;}
+#
+#         instead do:
+        if ($posreal < 1.0) {
+
+#gosia: $diff is a small number also when $posreal is very small, so
+# instead of:
+#
+#            if ($posreal > 0.0) {$diff = $diff * $posreal;}
+#do:
+#
+           if ($posreal > $small) {$diff = $diff * $posreal;}
+           }
+
+        if ($diff > $small) {
+            if ($signcheck == 0) {
+                $diff = $real + $R2[$count];
+                $posreal = $real;
+                if ($real < 0) {$posreal = -$real;}
+                if ($diff < 0) {$diff = -$diff;}
+                if ($posreal > 1.0) {$diff = $diff / $posreal;}
+                if ($posreal < 1.0) {$diff = $diff * $posreal;}
+                }
+             if ($diff > $small) {
+                $haserror = 1;
+                }
+            }
+
+        $count++;
+        do GetReal ($line);
+        }
+
+    if ($haserror == 1) {
+        print "ERROR $small in $title line $linenumber, compare $s1 with $s2:\n";
+        print "      $line1\n";
+        print "      $line2\n\n";
+        }
+    }
+
+close (FILE1);
+close (FILE2);
+
+if ($count1 != $count) {
+    print "ERROR in $title: file too short, last lines ($s1 vs $s2):\n";
+    print "      $lastline1\n";
+    print "      $lastline2\n";
+    }
+
+
+eor
+perl -X -s $SCRIPT $@
+rm $SCRIPT

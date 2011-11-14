@@ -372,7 +372,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 C
-C     VERSION INCLUDING IDK ARRAY
+Cvec  VERSION INCLUDING IDK ARRAY
 C
 #include "amfi_if.h"
 c     logical relscf_verbose
@@ -1823,7 +1823,7 @@ C
       TABCD=ZAB/ZCD
       NABNY=NAB-NY-1
       NCDNY=NCD+NY
-C$    VNAB=FACTO(NABNY)/ZAB**(0.5D0*(NABNY+1))
+Cvec  VNAB=FACTO(NABNY)/ZAB**(0.5D0*(NABNY+1))
       IPOW=(NABNY+1)/2
       JPOW=NABNY+1-2*IPOW
       RES=1.D0
@@ -2891,7 +2891,7 @@ CMI   MXXTRP=80
 
       DGATH=1.D-4
       SCFAT=1.D-3
-      EXPMN=1.1D-3
+      EXPMN=1.1D-4
       DMNXP=1.1D-3
       RMNED=1.1D-8
       RMXED=0.99D-1
@@ -3184,7 +3184,7 @@ C --- verify number of basis functions wrt shell occupation
       I=I-1
       IF ((SCFAT.LT.1.D-4).OR.(SCFAT.GT.0.1)) GO TO 370
       I=I-1
-      IF ((EXPMN.LT.1.D-3).OR.(EXPMN.GT.1.)) GO TO 370
+      IF ((EXPMN.LT.1.D-4).OR.(EXPMN.GT.1.)) GO TO 370
       I=I-1
       IF ((DMNXP.LT.1.D-3).OR.(DMNXP.GT.1.)) GO TO 370
       I=I-1
@@ -3752,7 +3752,7 @@ C      PLACE EIGENVALUES IN EIVU
      *    CSAV1,CSAV2,GMIN,W,THRE,EPS,EPSI,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C$    VERSION INCLUDING IDK ARRAY
+Cvec  VERSION INCLUDING IDK ARRAY
 C
 C     THIS SUBROUTINE  DIAGONALIZES THE HARTREE-FOCK MATRIX  FC AND FO
 C         SYMMETRY BY SYMMETRY,NBAS(N) IS SMALLER OR EQUAL TO 15
@@ -3812,7 +3812,13 @@ C     NEW (EIGRS) DIAGONALIZATION ROUTINE
 C
         CALL JACVAO (DT,NBAS1,EPSI,V,THRSH)
 
-C$    INTRODUCE NEW VECTOR LOOP (INTERMEDIATE STORAGE OF TERM)
+Cvec  INTRODUCE NEW VECTOR LOOP (INTERMEDIATE STORAGE OF TERM)
+        eigval_min = 1.0d0
+        DO I=1,NBAS1
+          eigval_min = min(eigval_min,EPSI(I))
+        END DO
+        if(eigval_min.le.0.0d0) call quit(' *** linear dependency 
+     &     detected you may want check your basis set input!***')
         DO I=1,NBAS1
           DT(I)=1.D0/DSQRT(EPSI(I))
         END DO
@@ -3916,19 +3922,19 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
            DO I=1,ILOOP
               IND=1
  29           CONTINUE
-              MIN=1
+              iMIN=1
               DO J=2,NBAS1
-                 IF (EPSI(MIN).GT.EPSI(J)) MIN=J
+                 IF (EPSI(iMIN).GT.EPSI(J)) iMIN=J
               END DO
               IF (ITOS.EQ.1) GO TO 28
               IF (IND.EQ.NSTEP2) GO TO 28
-              EPSI(MIN)=0.1D+39
+              EPSI(iMIN)=0.1D+39
               IND=IND+1
               GO TO 29
- 28           EPS(NSTEP1)=EPSI(MIN)
-              EPSI(MIN)=0.1D+39
+ 28           EPS(NSTEP1)=EPSI(iMIN)
+              EPSI(iMIN)=0.1D+39
               DO J=1,NBAS1
-                 JJ=NBAS1*(MIN-1)+J
+                 JJ=NBAS1*(iMIN-1)+J
                  C(J,NSTEP1)=DT(JJ)
               END DO
               NSTEP1=NSTEP1+1
@@ -3993,7 +3999,7 @@ C     CRAY CHANGES ARE MARKED BY c
 C     RELATIVISTIC VERSION
 C     VERSION 1.2 - 14.2.87 - EIGRS
 C     IBM+ VERSION - 24.10.86 - BERND HESS
-C     VECTORIZATION CHANGES MARKED BY C$
+C     VECTORIZATION CHANGES MARKED BY Cvec
 C     THIS VERSION WORKS FOR F FUNCTIONS
 C>@V  VERSION
 C     FOLLOWING SUBROUTINES HAVE BEEN OPTIMIZED:

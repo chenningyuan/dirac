@@ -9,12 +9,12 @@
 .LVCORR
 .DFT
  LDA
-*DFT
+**GRID
 .ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .CLOSED SHELL
  14
 .MAXITR

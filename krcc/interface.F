@@ -11,6 +11,7 @@
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"
+#include "lucinp.inc"
 *
       INTEGER NKRCCISH(2),NKRCCASH(2),NKRCCSSH(2)
       INTEGER NKRCCFRO(2),NKRCCGSP(2,MXPNGAS),NKRCCGSH(2,MXPNGAS)
@@ -34,6 +35,7 @@
       NKRCC_MK2DEL = MK2DEL
       NKRCC_MINMK2 = MK2REF - MK2DEL
       NKRCC_MAXMK2 = MK2REF + MK2DEL
+!radovan: NACTEL not set
       NKRCCAELEC   = NACTEL
       MAXCIT_KRCC  = MAXIT
 *

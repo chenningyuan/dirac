@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,12 +21,7 @@
 
 #if defined (VAR_MPI2)
 ***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MICDV4_ENLMD_REL_PAR(T_CC,T_BUFF,VEC1,VEC2,
      &                  RNRM,EIG,FINEIG,MAXIT,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
@@ -95,8 +90,8 @@
 *      WORK   : MAXVEC*(MAXVEC+1)/2                               
 *      SCRRED : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
 *
-       DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(100)
+       DIMENSION FINEIG(NROOT)
+       LOGICAL CONVER,RTCNV(NROOT)
        REAL*8 INPRDD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
        CHARACTER WPART22*12, FILELAB*8
@@ -728,7 +723,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
         DO I = 1, NROOT
            FINEIG(I) = EIG(ITER,I)+EIGSHF
         END DO
-        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
       END IF
 *
@@ -747,16 +742,12 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE CMICDV_PAR(VEC1,VEC2,RNRM,EIG,FINEIG,
      &                      MAXIT,NVAR,NROOT,MAXVEC,NINVEC,T_CC,T_BUFF,
      &                      APROJI,APROJR,AVEC,WORK,IPRT,
      &                      NPRDIM,IPNTR,LBLK,EIGSHF,
-     &                      IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE,
+     &                      IHAM12,SIGDEN_ROUTE,
      &                      CONVLIM,IBLOCKL,NPARBLOCK,NBLOCKS,
      &                      LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
@@ -1000,7 +991,7 @@ C
 *
       IPRT = 00
 *
-      IF( IPRT .GE.10.OR.IPREDZN.NE.0 ) THEN
+      IF( IPRT .GE.10) THEN
         WRITE(LUWRT,*) ' Initial projected matrix, real part'
         CALL PRSYMMN(APROJR,NINVEC,LUWRT)
         WRITE(LUWRT,*) ' Initial projected matrix, imag part'
@@ -1021,7 +1012,7 @@ CSK
       CALL CEIGEN_NEW(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,AMATC,CWORK,
      &                RWORK,EVL,IWORK)
 C
-      IF(IPRT .GE. 3.OR.IPREDZN.NE.0 ) THEN
+      IF(IPRT .GE. 3) THEN
         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
         WRITE(LUWRT,'(F22.13)')
      &  ( EIG(IROOT,1)+EIGSHF,IROOT=1,NROOT)
@@ -1029,7 +1020,7 @@ C
       IPRT = 0
       NVEC = NINVEC
 *
-      IF ( MAXIT .eq. 1 .or. IPREDZN .eq. 1 ) GOTO  901
+      IF ( MAXIT .eq. 1) GOTO  901
 *
 *     ======================
 *     Loop over iterations
@@ -1312,8 +1303,7 @@ C      perhaps reset or assemble converged eigenvectors    =
 C                                                          =
 C===========================================================
 C
-      IF( NVEC + NROOT .gt. MAXVEC .or. CONVER .or. MAXIT .eq. ITER
-     &   .or. IPREDZN .eq. 1 )THEN
+      IF( NVEC + NROOT .gt. MAXVEC .or. CONVER .or. MAXIT .eq. ITER)THEN
 *
 *       check timing
         timer3 = 0.0D0
@@ -1411,25 +1401,18 @@ C     finish timing part3
       WALLTSTEP = SECTID(timer3)
       WRITE(LUWRT,9600) WALLTSTEP
       END IF
-*     ^ NVEC + NROOT > MAXVEC or CONVER == .TRUE. or ITER == MAXIT or 
-*   &   IPREDZN == 1
+*     ^ NVEC + NROOT > MAXVEC or CONVER == .TRUE. or ITER == MAXIT
 *
 *     timing of this iteration
       WALLITR2 = MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
       WRITE(LUWRT,9300) WALLTID
 *
-      IF( ITER .LE. MAXIT .AND. .NOT. CONVER.AND.IPREDZN.EQ.0) THEN
-        GOTO 1000
-      ELSE IF(IPREDZN.EQ.1) THEN
-        WRITE(LUWRT,*) ' PREDIA vectors written to file LUCVECT'
-        RETURN
-      END IF
+      IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
 *
 * ( End of loop over iterations )
 *
-      IF(IPREDZN.EQ.0) THEN
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 0 )
@@ -1441,7 +1424,6 @@ C!?      ITER = ITER - 1
          IF (IPRT .GE. 0 )
      &   WRITE(LUWRT,1180) ITER
  1180    FORMAT(/'  Convergence was obtained in ',I3,' iterations')
-      END IF
       END IF
 *
       if (IPRT.gt.0) then
@@ -1502,7 +1484,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
         DO I = 1, NROOT
            FINEIG(I) = EIG(I,ITER)+EIGSHF
         END DO
-        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
       END IF
 C

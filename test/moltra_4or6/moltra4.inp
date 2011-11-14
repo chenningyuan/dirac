@@ -9,9 +9,9 @@ Generic closed shell molecule. Restricted kinetic balance.
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
-*DHFCAL
+*SCF
 .EVCCNV
 1.0E-6
 **MOLTRA

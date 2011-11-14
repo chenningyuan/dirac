@@ -1,0 +1,9 @@
+blyp_cartesian.inp CH4_cartesian.mol
+blyp_cartesian.inp FH_cartesian.mol
+blyp_cartesian.inp H2O_cartesian.mol
+blyp_cartesian.inp SF6_cartesian.mol
+
+blyp_spherical.inp CH4_spherical.mol
+blyp_spherical.inp FH_spherical.mol
+blyp_spherical.inp H2O_spherical.mol
+blyp_spherical.inp SF6_spherical.mol

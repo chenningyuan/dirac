@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -284,6 +284,7 @@ C
 || defined (SYS_SX) || defined (SYS_DARWIN)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
+      CALL FLSHFO(0)
 #endif
       CALL FLSHFO(LUPRI)
 
@@ -308,20 +309,14 @@ C 3 = pretty print traceback to stdout...
 
 CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
 #if defined (NO_SF_QUIT)
-      WRITE (LUPRI,*)
-     & 'Intentionally quitting without a Segmentation Fault'
       CALL FLSHFO(LUPRI)
       STOP 1000
 #else
 CMI ... might be input defined restriction for some reasons
       IF (.NOT.NOSFCRASH) THEN
-        WRITE (LUPRI,*)
-     & 'Intentionally causing a crash with a Segmentation Fault'
         CALL FLSHFO(LUPRI)
         CALL CRASH()
       ELSE
-        WRITE (LUPRI,*)
-     & 'Intentionally quitting without a Segmentation Fault'
         CALL FLSHFO(LUPRI)
         STOP 1001
       ENDIF
@@ -354,75 +349,7 @@ C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
 #include "priunit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (INT_STAR8)
-C
-C     CRAY has 8 byte integers.
-C
-      LRECL  = 8*NELEM
-C
-      IF (STATUS .EQ. 'NEW') THEN
-         INQUIRE(FILE=NAME,EXIST=FEXIST)
-         IF (FEXIST) THEN
-            OPEN(UNIT=LUDX,STATUS='OLD',FILE=NAME)
-            CLOSE(UNIT=LUDX,STATUS='DELETE')
-         END IF
-         GO TO 300
-      END IF
-C
-      IF (STATUS .NE. 'OLD' .AND. STATUS .NE. 'UNKNOWN') GO TO 9000
-C
-C     OPEN OLD FILE
-C
-         OPEN(LUDX,FILE=NAME,STATUS='OLD',FORM='UNFORMATTED',ERR=300,
-     *        ACCESS='DIRECT',RECL=LRECL)
-         OLDDX = .TRUE.
-      GO TO 600
-C
-  300 CONTINUE
-      IF (STATUS .EQ. 'OLD') GO TO 9100
-C
-C     OPEN NEW FILE
-C
-         OPEN(LUDX,FILE=NAME,STATUS='NEW',FORM='UNFORMATTED',
-     *        ACCESS='DIRECT',ERR=301,IOSTAT=IOS,RECL=LRECL)
-         OLDDX = .FALSE.
-C
-C     ERROR HANDLING (JAA 1997-06-06)
-C
- 301     IF (IOS .GT. 0) THEN
-            WRITE(102,*) '*** ERROR (OPENDX) NEW FILE OPEN FAILED'
-            WRITE(102,*) '    FILE=',NAME,', UNIT=',LUDX,
-     $           ', IOSTAT=',IOS
-            IF (IOS .LT. 1000) THEN
-               WRITE(102,'(A,I3.3,A)') '    (try explain sys-',IOS,')'
-            ELSE IF (IOS .LT. 6000) THEN
-               WRITE(102,'(A,I4,A)') '    (try explain lib-',IOS,')'
-            ENDIF
-CMI         CALL FLUSH(102,IOS)
-            CALL FLUSH(102)
-CSK            CALL TRBK()
-#if defined(SYS_T3D)
-            CALL STOP_ALL()
-#else
-            CALL QUIT('OPENDX: new file open failed')
-#endif
-         ENDIF
-  600 CONTINUE
-#endif
-#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN) 
-CSK|| defined (SYS_LINUX)
-C
-C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
-C     Assume same for HP-UX  -- 21-Aug-1991 hjaaj
-C     Assume same for DEC    -- 21-May-1992 hjaaj
-C     Assume same for IRIX   --  3-Feb-1994 hjaaj; except recl in *4 words
-C     Assume same for PARAGON-- 13-Oct-1994 hjaaj
-C
-#if defined (SYS_IRIX) || defined (SYS_NEC)
-      LRECL  = NELEM
-#else
       LRECL  = 4*NELEM
-#endif
 C
       IF (STATUS .EQ. 'NEW') THEN
 C        some systems abort if we try to open as NEW a file,
@@ -453,17 +380,6 @@ C
      *        ACCESS='DIRECT',RECL=LRECL)
          OLDDX = .FALSE.
   600  CONTINUE
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_CONVEX)\
-&& !defined (SYS_AIX) && !defined (SYS_HPUX)\
-&& !defined (SYS_DEC) && !defined (SYS_IRIX)\
-&& !defined (SYS_NEC) && !defined (SYS_T3D)\
-&& !defined (SYS_LINUX) && !defined (SYS_SUN)\
-&& !defined (SYS_HAL) && !defined (SYS_T90)\
-&& !defined(SYS_DARWIN)
- >>>>> insert appropriate OPEN statements in OPENDX.
-#endif
-      RETURN
 C
 C error branches
 C
@@ -484,7 +400,7 @@ C
       CALL QTRACE(LUPRI)
       CALL QUIT('ERROR (OPENDX) FILE NOT FOUND')
 C
-C end of OPENDX
+      RETURN
 C
       END
 C  /* Deck finddx */
@@ -771,7 +687,7 @@ C
       CHARACTER*80  FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
       INTEGER       FILELN, STATLN, ACCELN, FORMLN
-      LOGICAL OLDDX, FEXST, FIRST
+      LOGICAL OLDDX, FEXST, FIRST, access_is_direct
       COMMON /UNITAR/ IUNTAB(1:99)
       DATA FIRST /.TRUE./
       SAVE FIRST
@@ -819,9 +735,15 @@ C
 C
 C     We've got a file number now, get rid of the direct access case
 C
-!radovan: if we don't check for statln, valgrind issues *many* errors
-!         anyway it can't be 'DIRECT' if it's not at least six characters long
-      IF ((STATLN .GT. 5) .and. (ACCESF(1:6) .EQ. 'DIRECT')) THEN
+
+      access_is_direct = .false.
+      if (acceln > 5) then
+         if (accesf(1:6) == 'DIRECT') then
+            access_is_direct = .true.
+         end if
+      end if
+
+      IF (access_is_direct) THEN
          IF (FILELN .EQ. 0) THEN
             FILELN = 13
             FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//

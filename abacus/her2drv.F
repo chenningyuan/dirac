@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her2drv.F
 C
 C
 C  /* Deck twoint */
@@ -1357,6 +1354,9 @@ C
       NODCCD = NODSYM(MAXOPR,MULC,MULD)
       KCKMAX = MAX(KCKTA,KCKTB,KCKTC,KCKTD)
 C
+!radovan: these memgets are easily called 25 million times
+!         if somebody modifies the code
+!         please allocate buffers further upstream
       CALL MEMGET('REAL',KPSO  ,NPMAT               ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPSA  ,NPMATA              ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNPCOA,2*NSETA*(NODCAB + 1),WORK,KFREE,LFREE)
@@ -1607,6 +1607,9 @@ C
          MWSOIN = MAX(MWSOIN,NSOINT)
          LWTOT  = LWTOT + KFREE - 1
          MWTOT  = MAX(MWTOT,LWTOT)
+ 
+         CALL MEMCHK('TWOOD1 axsdgd',WORK,1) ! mi check
+
          CALL SYMLOP(WORK(KSOINT),FMAT,DMAT,NDMAT,GMAT,PSO,PSA,
      &               WORK(KFREE),LFREE,WORK(KCOFAB),WORK(KCOFCD),COORAB,
      &               COORCD,EXPAB,EXPCD,FACAB,FACCD,CONTA,CONTB,CONTC,
@@ -1623,6 +1626,9 @@ C
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               INDX,INDXAB,GENCNT)
          LWTOT = LWTOT - KFREE + 1
+         !miro: crashing with paralell OpenMPI+ifort, 
+         ! if this MEMCHK deactivated, crash occurs in next MEMREL
+         CALL MEMCHK('TWOOD1 point AB',WORK,1) ! mi check
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
  999  CONTINUE
@@ -1707,6 +1713,8 @@ C
       CALL QENTER('SYMLOP')
 #include "memint.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
+
+      !CALL MEMCHK('SYMLOP abxjdo ',WORK,1) ! mi check
 C
       IF (.NOT.(EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. NSOINT.EQ.0
      &                                      .AND. LAST) GOTO 400
@@ -2273,6 +2281,9 @@ C     ***** Process SO integrals *****
 C     ********************************
 C
   400 CONTINUE
+
+      !CALL MEMCHK('SYMLOP sxskxy',WORK,1) ! mi check
+
       IF (.NOT. (EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. (INTS.OR.LAST)) THEN
 C
 C        A) Undifferentiated integrals
@@ -2305,6 +2316,8 @@ C        C) London orbitals
 C        ==================
 C
          ELSE IF (LONDON) THEN
+
+            CALL MEMCHK('SYMLOP london ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL MG2OUT(SOINT,FIRST,LAST,THRESH,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IPRINT)
@@ -2335,6 +2348,9 @@ C
       ELSE IF (EXPECT) THEN
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
       END IF
+
+      !CALL MEMCHK('SYMLOP point axdsf',WORK,1) ! mi check
+
       CALL QEXIT('SYMLOP')
       RETURN
 C
@@ -3811,7 +3827,6 @@ C  /* Deck twoper */
       PARAMETER (DMEGA = 1.0D6)
 #include "twosta.h"
 #include "nuclei.h"
-#include "sdpre.h"
       ITRI(I) = I*(I + 1)/2
 C
       CALL HEADER('Performance of TWOINT',1)
@@ -3826,9 +3841,9 @@ C
      &   'Number of contracted integrals (counting zeros):',N2CART,
      &   'Number of primitive integrals (counting zeros) :',N2PRIM
       IF (N2WRIT .GT. 0) THEN
-         PRFNON = DMEGA*T2INT/SDPRE(N2WRIT)
-         PRFCAR = DMEGA*T2INT/SDPRE(N2CART)
-         PRFPRM = DMEGA*T2INT/SDPRE(N2PRIM)
+         PRFNON = DMEGA*T2INT/dble(N2WRIT)
+         PRFCAR = DMEGA*T2INT/dble(N2CART)
+         PRFPRM = DMEGA*T2INT/dble(N2PRIM)
          WRITE (LUPRI,'(3(/,2X,A,F7.1,A))')
      &      'Average time for non-zero (written) integrals:',
      &       PRFNON,' microseconds',
@@ -3837,8 +3852,8 @@ C
      &      'Average time for primitive integrals         :',
      &       PRFPRM,' microseconds'
       ELSE
-         PRFCAR = DMEGA*T2INT/SDPRE(N2CART)
-         PRFPRM = DMEGA*T2INT/SDPRE(N2PRIM)
+         PRFCAR = DMEGA*T2INT/dble(N2CART)
+         PRFPRM = DMEGA*T2INT/dble(N2PRIM)
          WRITE (LUPRI,'(2(/,2X,A,F7.1,A))')
      &      'Average time for zero/non-zero integrals     :',
      &       PRFCAR,' microseconds',
@@ -3858,7 +3873,6 @@ C  /* Deck delsta */
 #include "twocom.h"
 #include "twosta.h"
       SAVE TMEINT, INTWRT, TIMOLD
-#include "sdpre.h"
 C
       IF (.NOT.TKTIME) RETURN
       IF (ITYPE .EQ. -1) THEN
@@ -3890,9 +3904,9 @@ C
                END IF
   200       CONTINUE
             IF (NINTI .GT. 0) THEN
-               PERINT = DMEGA*TIMEI/SDPRE(NINTI)
+               PERINT = DMEGA*TIMEI/dble(NINTI)
                WRITE (LUPRI,2000) ' j =',I,
-     &             NINTI, ' (',D100*SDPRE(NINTI)/SDPRE(NINTOT),'%)',
+     &             NINTI, ' (',D100*dble(NINTI)/dble(NINTOT),'%)',
      &             TIMEI, ' (',D100*TIMEI/TOTTIM,'%)',PERINT
                DO 300 IA = 0, MXQN - 1
                DO 300 IB = 0, MIN(I - IA,MXQN - 1)
@@ -3902,7 +3916,7 @@ C
                      NINTX = INTWRT(IA+1,IB+1,IC+1,ID+1)
                      IF (NINTX .GT. 0) THEN
                         TIME  = TMEINT(IA+1,IB+1,IC+1,ID+1)
-                        PERINT = DMEGA*TIME/SDPRE(NINTX)
+                        PERINT = DMEGA*TIME/dble(NINTX)
                         WRITE (LUPRI,1000)'(',SPDCAR(IA),SPDCAR(IB),
      &                                    '|',SPDCAR(IC),SPDCAR(ID),')',
      &                                        NINTX, TIME, PERINT
@@ -3923,7 +3937,6 @@ C  /* Deck redsta */
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.0D0, D100 = 100.0D0)
       SAVE NODC, REDPR, REDCN
-#include "sdpre.h"
 C
       IF (ITYPE .EQ. -1) THEN
          NODC  = 0
@@ -3931,14 +3944,14 @@ C
          REDCN = D0
       ELSE IF (ITYPE .EQ. 0) THEN
          NODC  = NODC + 1
-         REDPR = REDPR + SDPRE(NREDPR)/SDPRE(NTOTPR)
-         REDCN = REDCN + SDPRE(NREDCN)/SDPRE(NTOTCN)
+         REDPR = REDPR + dble(NREDPR)/dble(NTOTPR)
+         REDCN = REDCN + dble(NREDCN)/dble(NTOTCN)
       ELSE
          WRITE (LUPRI,'(2(/1X,A,F5.2,A))')
      &      ' Average reduction of primitive ODC vectors:   ',
-     &      D100*(D1 - REDPR/SDPRE(NODC)),' %',
+     &      D100*(D1 - REDPR/dble(NODC)),' %',
      &      ' Average reduction of contracted ODC vectors:  ',
-     &      D100*(D1 - REDCN/SDPRE(NODC)),' %'
+     &      D100*(D1 - REDCN/dble(NODC)),' %'
       END IF
       RETURN
       END

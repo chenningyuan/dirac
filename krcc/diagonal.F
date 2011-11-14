@@ -10,27 +10,24 @@
 *              Oct 2002 ( to see if this improves converegence for Open shell)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
       DIMENSION T(*)
 #include "mxpdim.inc"
-C#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
 #include "cintfo.inc"
 #include "orbinp.inc"
 *Added by Lasse
+#include "strinp.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
 #include "crun.inc"
-#include "ipoist8.inc"
 *
       DIMENSION VEC1(*),VEC2(*)
 *
       DIMENSION WORK(*)
 *
       IDUM = 0
-C     CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'GCC_FD')
-C      CALL MEMGET('INTE',,,WORK,KFREE,LFREE)
-C      CALL MEMGET('REAL',,,WORK,KFREE,LFREE)
 
       CALL MEMGET('REAL',KFDIA_AL,NTOOB,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFDIA_BE,NTOOB,WORK,KFREE,LFREE)
@@ -66,13 +63,10 @@ C
       LBLK = -1
 C      CALL COPVCDC(LUC,LUSC1,VEC1,1,LBLK)
 C      CALL WRTVCDC(VEC1,LUC,1,LBLK)
-Cori      CALL DENSI2_REL(1,WORK(KRHO1),WORK(KRHO2),VEC1,VEC2,
-Cori     &                LUSC1,LUC,EXPS2,0,WORK(KRHO1))
 C      CALL SIGDEN_CTRL(WORK(KVEC1),WORK(KVEC2),LUC,LUHC,WORK(KT_CC),2)
 C      CALL SIGDEN_CTRL(VEC1,VEC2,LUC,LUSC1,WORK(KT_CC),2)
       CALL REWINO(LUC)
       CALL REWINO(LUHC)
-CTEMP      CALL SIGDEN_CTRL(VEC1,VEC2,LUC,LUSC1,WORK(KRHO1),2)
 C      stop 'after sigden ctrl call'
 * NOTE : THIS MAY BE USED LATER, LASSE 011205
 *CTF:
@@ -83,28 +77,13 @@ C      stop 'after sigden ctrl call'
 *CTF
 *
 *. And Fock matrix
-C       do i=1,2
-C        do j=1,NGAS
-C         print*,'NGSSH,i,j',NGSSH(i,j),i,j
-C        end do
-C       end do
 *****
 * Notice harwirering of I_RES_OR_UNRES . Lasse
 *****
-C      DO I=1,N1ELINT+N2ELINT
-C       print*,'T,I',T(I),I
-C      END DO
       I_RES_OR_UNRES = 2
       IF(I_RES_OR_UNRES.EQ.1) THEN
 *. Standard spinrestricted Fock matrices
-C       CALL COPVEC(WORK(KINT1O),WORK(KFI),NINT1)
-C       CALL FIFAM_REL(WORK(KFI))
-C       CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
-C       ECORE_H = 0.0D0
 *. Extract diagonal of fock-matrix
-C       CALL GT1DIS(WORK(KFDIA_AL),IREOTS,WORK(KPINT1),
-C    &            WORK(KFI),ISMFTO,IBSO,NACOB)
-C       CALL COPVEC(WORK(KFDIA_AL),WORK(KFDIA_BE),NACOB)
       ELSE
 C NOTE ONLY DIAGONAL IS USED!!!
 C THEREFORE ONLY THAT WILL BE GENERATED
@@ -113,47 +92,19 @@ C THEREFORE ONLY THAT WILL BE GENERATED
           CALL FI_HS_DIA_KRCC(T,ECC,
      &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &               NGAS,NGSSH,IHPVGAS_AB,
-     &               NTOOBS,NTOOB,IREOTS,IREOTS2,IDOH2,
-     &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),
-     &               WORK,KFREE,LFREE)
+     &               NTOOBS,NTOOB,IDOH2,
+     &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),NELEC)
 *
           IF(IRECOM.NE.1) THEN
             print*,'img dia'
             CALL FI_HS_DIA_KRCC(T(N1ELINT+N2ELINT+1),ECCCOM,
      &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &               NGAS,NGSSH,IHPVGAS_AB,
-     &               NTOOBS,NTOOB,IREOTS,IREOTS2,IDOH2,
-     &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),
-     &               WORK,KFREE,LFREE)
+     &               NTOOBS,NTOOB,IDOH2,
+     &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),NELEC)
           END IF
-        ELSE
-*. Spin unrestricted Fock matrices
-C        CALL FI_HS_REL(WORK(KINT1O),WORK(KFI_AL),WORK(KFI_BE),ECORE_X,1)
-C      Note from Lasse to self. Check if FI_AL + more is correct
-C         CALL FI_HS_REL(T,ECC,IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
-C    &               NGAS,NGSSH,IHPVGAS_AB,
-C    &               NTOOBS,NTOOB,IREOTS,IREOTS2,IDOH2,
-C    &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-C    &               NTOOB,WORK(KFI_AL),WORK(KFI_BE))
-C and now the imaginary part
-C          CALL FI_HS_REL(T(N1ELINT+N2ELINT+1),ECCCOM,IBSO,NSMOB,
-C         CALL FI_HS_REL(T,ECCCOM,IBSO,NSMOB,
-C    &               ITPFSO,ITPFSO2,IPHGAS,
-C    &               NGAS,NGSSH,IHPVGAS_AB,
-C    &               NTOOBS,NTOOB,IREOTS,IREOTS2,IDOH2,
-C    &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-C    &               NTOOB,WORK(KFI_AL_IM),WORK(KFI_BE_IM))
-*. Extract diagonal of fock-matrix
-COri        CALL GT1DIS(WORK(KFDIA_AL),IREOTS,WORK(KPINT1),
-COri     &            WORK(KFI_AL),ISMFTO,IBSO,NACOB)
-COri        CALL GT1DIS(WORK(KFDIA_BE),IREOTS,WORK(KPINT1),
-COri     &            WORK(KFI_BE),ISMFTO,IBSO,NACOB)
-* Replaced with
-C         print*,'before FOCK_DIA'
-C         CALL FOCK_DIA(WORK(KFI_AL),WORK(KFDIA_AL),NACOB)
-C         CALL FOCK_DIA(WORK(KFI_BE),WORK(KFDIA_BE),NACOB)
         END IF
 * end replacement. Lasse
       END IF
@@ -171,7 +122,6 @@ C      print*,'before GENCC_F_DIAG_REL'
 C      do i=1,100
 C        print*,'me'
 C      end do
-      stop 'enough'
       IF(IRECOM.EQ.1) THEN
       CALL GENCC_F_DIAG_KRCC(ITSS_TP,NTSS_TP,CCDIA,ISM,N_CC_AMP,IRECOM,
      &     WORK(KFDIA_AL),WORK(KFDIA_BE),
@@ -191,29 +141,19 @@ C      end do
      &     WORK(KLSTR5),WORK(KLSTR6),WORK(KLSTR7),WORK(KLSTR8),
      &     WORK,KFREE,LFREE)
       END IF
-C      CALL GENCC_F_DIAG_REL(ITSS_TP,NTSS_TP,CCDIA(NTSS_TP+1),ISM,
-C     &     WORK(KFDIA_AL),WORK(KFDIA_BE),
-C     &     WORK(KFI_AL_IM),WORK(KFI_BE_IM),
-C     &     WORK(KLSTR1_OCC),WORK(KLSTR2_OCC),
-C     &     WORK(KLSTR3_OCC),WORK(KLSTR4_OCC),
-C     &     WORK(KLSTR1),WORK(KLSTR2),WORK(KLSTR3),WORK(KLSTR4),
-C     &     WORK(KLSTR5),WORK(KLSTR6),WORK(KLSTR7),WORK(KLSTR8))
 *
 C?    WRITE(6,*) ' Enforced stop in GENCC_F_DIAG_M '
 C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
-C      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'GCC_FD')
       CALL MEMREL('F_DIAG',WORK,KFDIA_AL,KFDIA_AL,KFREE,LFREE)
 *
       RETURN
       END
 *
-C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
       SUBROUTINE FI_HS_DIA_KRCC(T,ECC,IOBSM,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &                   NGAS,NGSSH,IHPVGAS_AB,
-     &                   LOBSM,NORBT,IREOTS,IREOTS2,IDOH2,
-     &                   ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &                   NTOOB,FI_AL,FI_BE,
-     &                   WORK,KFREE,LFREE)
+     &                   LOBSM,NORBT,IDOH2,
+     &                   ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &                   NTOOB,FI_AL,FI_BE,NELEC)
 *
 * Obtain core energy and alpha and beta part of inactive Fock-matrix
 * / effective 1- electron operator for high spin openshell
@@ -245,28 +185,24 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 *
 * Changed to a structure similar to that in fih_rel
 *
+* Made the final changes so we could get rid og the arrays with
+* diagonal integrals stored in them.
+*
+* Lasse, 2011
 *
 #include "implicit.inc"
 *. General input
-C#include "wrkspc.inc"
 #include "mxpdim.inc"
-#include "ipoist8.inc"
 #include "ctcc.inc"
-#include "glbbas.inc"
 #include "gasstr.inc"
-C#include "cgas.inc"
-C#include "orbinp.inc"
-C#include "lucinp.inc"
 *
-      DIMENSION WORK(*)
 *. Standard 1+2 electron integrals
       DIMENSION T(*)
 *. Output
       DIMENSION FI_AL(*), FI_BE(*)
 *. Input
-      CHARACTER*6 ENVIRO
-      INTEGER IOBSM(*),LOBSM(*),IREOTS(*),IREOTS2(*)
-      INTEGER NGSSH(MXPIRR,NGAS)
+      INTEGER IOBSM(*),LOBSM(*)
+      INTEGER NGSSH(MXPIRR,NGAS), NELEC(*)
       INTEGER ITPFSO(*), ITPFSO2(*), IPHGAS(*), IKPERM(4)
       INTEGER NGSOB(MXPOBS,*), NGSOB2(MXPOBS,*)
       INTEGER NGSOBT(*), NGSOBT2(*), IHPVGAS_AB(MXPNGAS,2)
@@ -274,9 +210,9 @@ C#include "lucinp.inc"
 * Is matrix symmetrically packed or ???
       ISYMPACK = 1
       ZERO = 0.0D0
-C      print*,'N1DIAINT',N1DIAINT
-      CALL SETVEC(FI_AL,ZERO,N1DIAINT/2)
-      CALL SETVEC(FI_BE,ZERO,N1DIAINT/2)
+      HALF = 0.5D0
+      CALL SETVEC(FI_AL,ZERO,NORBT)
+      CALL SETVEC(FI_BE,ZERO,NORBT)
 *
       NTEST = 00
       print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
@@ -292,440 +228,198 @@ C      print*,'N1DIAINT',N1DIAINT
       IJSM = 1
       IIOFF = 0
       NINT12 = N1ELINT + N2ELINT
+C IINT is dimension of FI, ISIDE is square root of IINT
+      IINT = 0
+      ISIDE = 0
+      DO IGAS = 1,NGAS
+        DO ISMOB = 1,NSMOB
+          DO JGAS = 1,NGAS
+            DO JSMOB = 1,NSMOB
+              IINT = IINT + NGSSH(ISMOB,IGAS) * NGSSH(JSMOB,JGAS)
+            END DO
+          END DO
+          IF(NGSSH(ISMOB,IGAS).NE.0) THEN
+            ISIDE = ISIDE + NGSSH(ISMOB,IGAS)
+          END IF
+        END DO
+      END DO
+*
       DO I=1,NORBT
         FI_AL(I) = 0.0D0
         FI_BE(I) = 0.0D0
       END DO
 *
 * GAS-SYMM ordering (GAS is outer loop!)
-      IMARK = 1
       do IGAS=1,NGAS,1
         do ISMOB=1,NSMOB/2,1
+          ISTART = 0
 * Determine index range for this symmetry/GAS block:
-          NORBSM = 0
-          do IGASS=1,IGAS-1,1
-            do ISM=1,NSMOB/2,1
-              NORBSM = NORBSM + NGSSH(ISM,IGASS)
-            end do
-          end do
-          do JSM=1,ISMOB-1,1
-            NORBSM = NORBSM + NGSSH(JSM,IGAS)
-          end do
-          ISTART = NORBSM + 1
-          IEND = NORBSM + NGSSH(ISMOB,IGAS)
+          ININT = NGSSH(ISMOB,IGAS) * NGSSH(ISMOB,IGAS)
+          DO IGASS =1,IGAS-1,1
+            DO ISM=1,NSMOB/2,1
+              ISTART = ISTART + NGSSH(ISM,IGASS)
+            END DO
+          END DO
+          ISTART = ISTART + 1
+          IEND = ISTART + NGSSH(ISMOB,IGAS) - 1
           if (NTEST.ge.50) then
-            write(6,'(2X,A,5I4)') 'IGAS,ISMOB,NORBSM,ISTART,IEND',
-     &                             IGAS,ISMOB,NORBSM,ISTART,IEND
-            write(6,*) 'N1ELINT,NGSSH(ISMOB,IGAS)',
-     &                  N1ELINT,NGSSH(ISMOB,IGAS)
+            write(6,*) 'IGAS,ISMOB,ISTART,IEND',
+     &                  IGAS,ISMOB,ISTART,IEND
+            write(6,*) 'ININT,NGSSH(ISMOB,IGAS)',
+     &                  ININT,NGSSH(ISMOB,IGAS)
           end if
-C          print*,'IPHGAS(ITPFSO(ISTART)',IPHGAS(ITPFSO(ISTART))
-C
-          FACTOR_AL = 0.0D0
-          FACTOR_BE = 0.0D0
           ICOUNT = ITPFSO(ISTART)
-CTEMP          IF(IPHGAS(ITPFSO(ISTART)).EQ.2) then
+          IUB = 1
+          IF(ININT.GE.1) THEN
             IUB = 1
-C            Print*,'IMARK',IMARK
-            call geth1dia_sigden_KRCC(IUB,FI_AL(IMARK),T,
-     &                           WORK(KMDIASV),WORK(KPOSDIA),
-     &                           N1DIAINT,NDIAINT,NGSSH(ISMOB,IGAS),
-     &                           ISTART,IEND,IREOTS,NTEST)
-C          print*,'FI_AL(IMARK),IMARK',FI_AL(IMARK),IMARK
-C         IF(IPHGAS(ITPFSO(I)).EQ.2) ECC = ECC + 2*FI(II)
-C            call copvec(WORK(KLH1),H1DIA_U(IOFFSD),NGSSH(ISMOB,IGAS))
-C           print*,'NGSSH,ICOUNT',NGSSH(ISMOB,IGAS),ICOUNT
-           IF(IHPVGAS_AB(ICOUNT,1).EQ.1) THEN
-             FACTOR_AL = 1.0D0
-             DO II=1,NGSSH(ISMOB,IGAS)
-C               IF(IHPVGAS_AB(II,1).EQ.1) FACTOR_AL = 1.0D0
-               ECC = ECC + FACTOR_AL * FI_AL(II)
-C               FACTOR_AL = 0.0D0
-C             print*,'ECC,IHPVGAS_AB(II,1)',ECC,IHPVGAS_AB(II,1)
-             END DO
-           END IF
+            CALL ONE_ELEC_DIA(IUB,FI_AL(ICOUNT),T,ISTART,IEND,ISIDE)
             IUB = 2
-            call geth1dia_sigden_KRCC(IUB,FI_BE(IMARK),T,
-     &                           WORK(KMDIASV),WORK(KPOSDIA),
-     &                           N1DIAINT,NDIAINT,NGSSH(ISMOB,IGAS),
-     &                           ISTART,IEND,IREOTS2,NTEST)
-C            call copvec(WORK(KLH1),H1DIA_B(IOFFSD),NGSSH(ISMOB,IGAS))
-           IF(IHPVGAS_AB(ICOUNT,2).EQ.1) THEN
-             FACTOR_BE = 1.0D0
-             DO II=1,NGSSH(ISMOB,IGAS)
-C               IF(IHPVGAS_AB(II,2).EQ.1) FACTOR_BE = 1.0D0
-               ECC = ECC + FACTOR_BE * FI_BE(II)
-C               FACTOR_BE = 0.0D0
-             END DO
-           END IF
-CTEMP          end if
-C          IOFFSD = IOFFSD + NGSSH(ISMOB,IGAS)
-            IMARK = IMARK + NGSSH(ISMOB,IGAS)
-        end do
+            CALL ONE_ELEC_DIA(IUB,FI_BE(ICOUNT),T,ISTART,IEND,ISIDE)
+          END IF
+        END DO
       end do
-C      print*,'ECC',ECC
+      NTEST = 100
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Printing Diagonal 1e-integrals: alpha'
+        DO I = 1, ISIDE
+          WRITE(6,*) FI_AL(I),I
+        END DO
+        WRITE(6,*) ' Printing Diagonal 1e-integrals: beta'
+        DO I = 1, ISIDE
+          WRITE(6,*) FI_BE(I),I
+        END DO
+      END IF
 *
-* Testing
-*. Number of 1-e integrals
-C  NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,NSM,IPACK)
-C        print*,'N1ELINT,NALLINT,N2ELINT',N1ELINT,NALLINT,N2ELINT
-C        CALL COPVEC(WORK(KLH1),FI_AL,N1DIAINT)
-C        CALL COPVEC(WORK(KLH1+N1DIAINT),FI_BE,N1DIAINT)
-C        stop
-C        CALL COPVEC(T(N1ELINT+N2ELINT+1),FI_AL_IM,N1ELINT/2)
-C        CALL COPVEC(T(N1ELINT+N2ELINT+N1ELINT/2+1),FI_BE_IM,N1ELINT/2)
 *
+* 2-electron case. Now fetching all integrals in one loop.
+* Fetching is done similar to GET_OPINT4_REL.
 *
-* 2-electron
-*
-* Coulomb case
-        IKFAC = 1
-        IKPERM(1) = 1
-        IKPERM(2) = 2
-        IKPERM(3) = 3
-        IKPERM(4) = 4
-        if (ENVIRO(1:6).eq.'DIRAC '.and.ISPINFREE.eq.0) then
-* Storage mode for integrals contains "-" sign for beta/barred indices.
-          IKFAC = -1
-* Use Kramers symmetry on second index pair.
-          IKPERM(1) = 1
-          IKPERM(2) = 2
-          IKPERM(3) = 4
-          IKPERM(4) = 3
-        end if
-C        print*,'ISPINFREE,ENVIRO,IKPERM(4)',ISPINFREE,ENVIRO,IKPERM(4)
-        IGSOFF = 0
-        JGSOFF = 0
-        ISMOFF = 0
-        JSMOFF = 0
-C        IJ = 1 + N1DIAINT/2
-        IJ = 1
-        do IGS = 1,NGAS,1
-C          print*,'NGASOCC,IGS',NGASOCC(IGS),IGS
-          IF(NGASOCC(IGS).eq.1) THEN
-          if (IGS.gt.1) IGSOFF = IGSOFF + NGSOBT(IGS-1)
-          do JGS = 1,NGAS,1
-C          print*,'NGASOCC(JGS),JGS',NGASOCC(JGS),JGS
-          IF(NGASOCC(JGS).eq.1) THEN
-            if (JGS.gt.1) JGSOFF = JGSOFF + NGSOBT(JGS-1)
-            do ISM = NSMOB/2+1, NSMOB
-              if (ISM.gt.NSMOB/2+1) ISMOFF = ISMOFF + NGSOB(ISM-1,IGS)
-              do JSM = NSMOB/2+1, NSMOB
-                if (JSM.gt.NSMOB/2+1) JSMOFF = JSMOFF + NGSOB(JSM-1,JGS)
-                NI = NGSOB(ISM,IGS)
-                NJ = NGSOB(JSM,JGS)
-                IOFF = IGSOFF + ISMOFF
-                JOFF = JGSOFF + JSMOFF
-                if (NTEST.ge.10) then
-                  write(6,*) 'IGS,JGS,ISM,JSM ',IGS,JGS,ISM,JSM
-                  write(6,*) ' Index range :',1+IOFF,'...',NI+IOFF
-                  write(6,*) ' Index range :',1+JOFF,'...',NJ+JOFF
-                end if
-C                IF(IGS.EQ.2.and.JGS.eq.2) then
-C                  print*,'IHPVGAS_AB(ITPFSO(IOFF+1),1)',
-C     &                    IHPVGAS_AB(ITPFSO(IOFF+1),1)
-C                  print*,'IHPVGAS_AB(ITPFSO(IOFF+1),2)',
-C     &                    IHPVGAS_AB(ITPFSO(IOFF+1),2)
-C                end if
-                IF(IHPVGAS_AB(ITPFSO(IOFF+1),1).EQ.1) THEN
-C     &             IHPVGAS_AB(ITPFSO(JOFF+1),1).EQ.1) THEN
-                do I = 1+IOFF,NI+IOFF,1
-                  do J = 1+JOFF,NJ+JOFF,1
-C                    print*,'I,J,NINT12,N1INACINT,NINACINT,NTEST',
-C     &                      I,J,NINT12,N1INACINT,NINACINT,NTEST
-*. Factor for Coulomb and exchange
-C              FACTOR_C = 0.0D0
-C              FACTOR_E = 0.0D0
-C              IF(IHPVGAS_AB(IGAS,1).EQ.1.AND.IHPVGAS_AB(JGAS,1).EQ.1)
-C     &        THEN
-C               FACTOR_C = 0.5D0
-C              END IF
-C              IF(IHPVGAS_AB(IGAS,2).EQ.1.AND.IHPVGAS_AB(JGAS,2).EQ.1)
-C     &        THEN
-C               FACTOR_C = FACTOR_C + 0.5D0
-C              END IF
-C              IF(IHPVGAS_AB(IGAS,1).EQ.1.AND.IHPVGAS_AB(JGAS,2).EQ.1)
-C     &        THEN
-C               FACTOR_C = FACTOR_C + 1.0D0
-C              END IF
-C              IF(FACTOR_C.NE.0.0D0)
-C     &        ECC = ECC + FACTOR_C*GTIJKL(IP,IP,JP,JP)
-                    FACTOR_C = 0.0D0
-                    FACTOR_CE = 0.0D0
-                    IF(IHPVGAS_AB(ITPFSO(I),1).EQ.1.AND.
-     &                 IHPVGAS_AB(ITPFSO(J),1).EQ.1) THEN
-                      FACTOR_CE = 0.5D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),2).EQ.1.AND.
-     &                 IHPVGAS_AB(ITPFSO(J),2).EQ.1) THEN
-                      FACTOR_CE = FACTOR_CE + 0.5D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),1).EQ.1.AND.
-     &                 IHPVGAS_AB(ITPFSO(J),2).EQ.1) THEN
-                      FACTOR_CE = FACTOR_CE + 1.0D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),1).EQ.1) THEN
-                      FACTOR_C = 1.0D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),2).EQ.1) THEN
-                      FACTOR_C = FACTOR_C + 1.0D0
-                    END IF
-                    call geth2dia_sigden_KRCC(ECOU,T,
-C     &                                   WORK(KT_CC),
-     &                                   I,J,
-     &                                   'COUL',WORK(KLIBSOBEX),NINT12,
-     &                                   I2DIATP,IKFAC,IKPERM,
-     &                                   IREOTS,IREOTS,
-     &                                   WORK(KMDIASV),WORK(KPOSDIA),
-     &                                   N1DIAINT,NDIAINT,NTEST)
-                    ECC = ECC + FACTOR_CE*ECOU
-C                    print*,'FACTOR_C,ECOU',FACTOR_CE,ECOU
-                    IJ = J
-C                    print*,'IJ',IJ
-                    FI_AL(IJ) =
-     &              FI_AL(IJ) + FACTOR_C*ECOU
-                    FI_BE(IJ) =
-     &              FI_BE(IJ) + FACTOR_C*ECOU
-C      print*,'ECC,ECOU,FACTOR_C,FACTOR_C2,FACTOR_C3',
-C     &        ECC,ECOU,FACTOR_C,FACTOR_C2,FACTOR_C3
-                  end do
-C                    IF(ECOU.NE.0.0D0) THEN
-C                    IJ = IJ + 1
-C                    END IF
-C                    PRINT*,'IJ',IJ
-                    ECOU = 0.0D0
-                end do
-                END IF
-C                END IF
-C                END IF
-              end do
-              JSMOFF = 0
-            end do
-            ISMOFF = 0
-            END IF
-          end do
-          JGSOFF = 0
-          ELSE IF(NGASOCC(IGS).eq.0.and.IGS.eq.1) THEN
-            DO I=1,NTOOB
-              DO J=1,NTOOB
-                REPLACED = ZERO
-              END DO
-            END DO
-          END IF
-        end do
-C       print*,'ECC',ECC
-*
-* Exchange
-*
-        IKFAC = 1
-        IKPERM(1) = 1
-        IKPERM(2) = 2
-        IKPERM(3) = 3
-        IKPERM(4) = 4
-        if (ENVIRO(1:6).eq.'DIRAC '.and.ISPINFREE.eq.0) then
-          IKFAC = -1
-* Use Kramers symmetry on second index pair.
-          IKPERM(1) = 1
-          IKPERM(2) = 2
-          IKPERM(3) = 4
-          IKPERM(4) = 3
-        end if
+        ICOUNT = 1
         IGSOFF = 0
         JGSOFF = 0
         ISMOFF = 0
         JSMOFF = 0
         IJ = 1
         do IGS = 1,NGAS,1
+          print*,'NGASOCC,IGS',NGASOCC(IGS),IGS
           IF(NGASOCC(IGS).eq.1) THEN
-          if (IGS.gt.1) IGSOFF = IGSOFF + NGSOBT(IGS-1)
-          do JGS = 1,NGAS,1
-            IF(NGASOCC(JGS).eq.1) THEN
-            if (JGS.gt.1) JGSOFF = JGSOFF + NGSOBT(JGS-1)
-            do ISM = NSMOB/2+1, NSMOB
-              if (ISM.gt.NSMOB/2+1) ISMOFF = ISMOFF + NGSOB(ISM-1,IGS)
-              do JSM = NSMOB/2+1, NSMOB
-                if (JSM.gt.NSMOB/2+1) JSMOFF = JSMOFF + NGSOB(JSM-1,JGS)
-                NI = NGSOB(ISM,IGS)
-                NJ = NGSOB(JSM,JGS)
-                IOFF = IGSOFF + ISMOFF
-                JOFF = JGSOFF + JSMOFF
-                if (NTEST.ge.10) then
-                  write(6,*) 'IGS,JGS,ISM,JSM ',IGS,JGS,ISM,JSM
-                  write(6,*) ' Index range :',1+IOFF,'...',NI+IOFF
-                  write(6,*) ' Index range :',1+JOFF,'...',NJ+JOFF
-                end if
-                IF(IHPVGAS_AB(ITPFSO(IOFF+1),1).EQ.1) THEN
-C     &             IHPVGAS_AB(ITPFSO(JOFF+1),1).EQ.1) THEN
-                do I = 1+IOFF,NI+IOFF,1
-                  do J = 1+JOFF,NJ+JOFF,1
-                    FACTOR_E_AL = 0.0D0
-                    FACTOR_E_BE = 0.0D0
-                    FACTOR_E = 0.0D0
-                    IF(IHPVGAS_AB(ITPFSO(I),1).EQ.1.AND.
-     &                 IHPVGAS_AB(ITPFSO(J),1).EQ.1) THEN
-                      FACTOR_E = -0.5D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),2).EQ.1.AND.
-     &                 IHPVGAS_AB(ITPFSO(J),2).EQ.1) THEN
-                      FACTOR_E = FACTOR_E - 0.5D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),1).EQ.1) THEN
-                      FACTOR_E_AL = -1.0D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),2).EQ.1) THEN
-                      FACTOR_E_BE = -1.0D0
-                    END IF
-                    call geth2dia_sigden_KRCC(EEXC,T,
-C     &                                   WORK(KT_CC),
-     &                                   I,J,
-     &                                   'EXC1',WORK(KLIBSOBEX),NINT12,
-     &                                   I2DIATP,IKFAC,IKPERM,
-     &                                   IREOTS,IREOTS,
-     &                                   WORK(KMDIASV),WORK(KPOSDIA),
-     &                                   N1DIAINT,NDIAINT,NTEST)
-C                    print*,'FACTOR_E',FACTOR_E
-                    ECC = ECC + FACTOR_E*EEXC
-                    IJ = J
-C                    print*,'IJ',IJ
-                    FI_AL(IJ) = FI_AL(IJ) + FACTOR_E_AL*EEXC
-                    FI_BE(IJ) = FI_BE(IJ) + FACTOR_E_BE*EEXC
-                    EEXC = 0.0D0
-                  end do
-C                    IF(EEXC.NE.0.0D0) THEN
-C                    IJ = IJ + 1
-C                    END IF
-C                    PRINT*,'IJ',IJ
-C                    EEXC = 0.0D0
-                end do
-                END IF
-C                END IF
-              end do
-              JSMOFF = 0
-            end do
-            ISMOFF = 0
-            END IF
-          end do
-          JGSOFF = 0
-          ELSE IF(NGASOCC(IGS).eq.0.and.IGS.eq.1) THEN
-            DO I=1,NTOOB
-              DO J=1,NTOOB
-                REPLACED = ZERO
-              END DO
-            END DO
-          END IF
-        end do
-C       print*,'ECC',ECC
-*
-* Exchange 2
-*
-          IKFAC = 1
-          IKPERM(1) = 1
-          IKPERM(2) = 2
-          IKPERM(3) = 3
-          IKPERM(4) = 4
-          if (ENVIRO(1:6).eq.'DIRAC '.and.ISPINFREE.eq.0) then
-            IKFAC = -1
-            IKPERM(1) = 1
-            IKPERM(2) = 2
-            IKPERM(3) = 3
-            IKPERM(4) = 4
-          end if
-          IGSOFF = 0
-          JGSOFF = 0
-          ISMOFF = 0
-          JSMOFF = 0
-          IJ = 1
-          do IGS = 1,NGAS,1
-            IF(NGASOCC(IGS).eq.1) THEN
             if (IGS.gt.1) IGSOFF = IGSOFF + NGSOBT(IGS-1)
-            do JGS = 1,NGAS,1
+            do JGS = IGS,NGAS,1
+          print*,'NGASOCC(JGS),JGS',NGASOCC(JGS),JGS
               IF(NGASOCC(JGS).eq.1) THEN
-              if (JGS.gt.1) JGSOFF = JGSOFF + NGSOBT2(JGS-1)
-              do ISM = NSMOB/2+1, NSMOB
-                if (ISM.gt.NSMOB/2+1) ISMOFF = ISMOFF + NGSOB(ISM-1,IGS)
-                do JSM = NSMOB/2+1, NSMOB
-                  if (JSM.gt.NSMOB/2+1)
-     &                       JSMOFF = JSMOFF + NGSOB2(JSM-1,JGS)
-                  NI = NGSOB(ISM,IGS)
-                  NJ = NGSOB2(JSM,JGS)
-                  IOFF = IGSOFF + ISMOFF
-                  JOFF = JGSOFF + JSMOFF
-                  if (NTEST.ge.10) then
-                    write(6,*) 'IGS,JGS,ISM,JSM ',IGS,JGS,ISM,JSM
-                    write(6,*) ' Index range :',1+IOFF,'...',NI+IOFF
-                    write(6,*) ' Index range :',1+JOFF,'...',NJ+JOFF
-                  end if
+                if (JGS.gt.1) JGSOFF = JGSOFF + NGSOBT(JGS-1)
+                do ISM = NSMOB/2+1, NSMOB
+               if (ISM.gt.NSMOB/2+1) ISMOFF = ISMOFF + NGSOB(ISM-1,IGS)
+                  do JSM = NSMOB/2+1, NSMOB
+                if (JSM.gt.NSMOB/2+1) JSMOFF = JSMOFF + NGSOB(JSM-1,JGS)
+                NI = NGSOB(ISM,IGS)
+                NJ = NGSOB(JSM,JGS)
+                IOFF = IGSOFF + ISMOFF
+                JOFF = JGSOFF + JSMOFF
+                if (NTEST.ge.10) then
+                  write(6,*) 'IGS,JGS,ISM,JSM ',IGS,JGS,ISM,JSM
+                  write(6,*) ' Index range :',1+IOFF,'...',NI+IOFF
+                  write(6,*) ' Index range :',1+JOFF,'...',NJ+JOFF
+                end if
+C
                 IF(IHPVGAS_AB(ITPFSO(IOFF+1),1).EQ.1) THEN
-C     &             IHPVGAS_AB(ITPFSO(JOFF+1),1).EQ.1) THEN
-                  do I = 1+IOFF,NI+IOFF,1
-                    do J = 1+JOFF,NJ+JOFF,1
-                    FACTOR_E_AL = 0.0D0
-                    FACTOR_E_BE = 0.0D0
-                    FACTOR_E = 0.0D0
-                    IF(IHPVGAS_AB(ITPFSO(I),1).EQ.1.AND.
-     &                 IHPVGAS_AB(ITPFSO(J),1).EQ.1) THEN
-                      FACTOR_E = -0.5D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),2).EQ.1.AND.
-     &                 IHPVGAS_AB(ITPFSO(J),2).EQ.1) THEN
-                      FACTOR_E = FACTOR_E - 0.5D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),1).EQ.1) THEN
-                      FACTOR_E_AL = -1.0D0
-                    END IF
-                    IF(IHPVGAS_AB(ITPFSO(I),2).EQ.1) THEN
-                      FACTOR_E_BE = -1.0D0
-                    END IF
-                      call geth2dia_sigden_KRCC(EEXC2,T,
-C     &                                   WORK(KT_CC),
-     &                                   I,J,
-     &                                   'EXC2',WORK(KLIBSOBEX),NINT12,
-     &                                   I2DIATP,IKFAC,IKPERM,
-     &                                   IREOTS,IREOTS2,
-     &                                   WORK(KMDIASV),WORK(KPOSDIA),
-     &                                   N1DIAINT,NDIAINT,NTEST)
-C                    print*,'EEXC2,FACTOR_E',EEXC2,FACTOR_E
-                    ECC = ECC + FACTOR_E*EEXC2
-                    IJ = J
-C                    print*,'IJ',IJ
-                    FI_AL(IJ) = FI_AL(IJ) + FACTOR_E_AL*EEXC2
-                    FI_BE(IJ) = FI_BE(IJ) + FACTOR_E_BE*EEXC2
-                    EEXC2 = 0.0D0
-                    end do
-C                  IJ = IJ + 1
-C                  PRINT*,'IJ',IJ
-C                    IF(EEXC2.NE.0.0D0) THEN
-C                    IJ = IJ + 1
-C                    END IF
-C                    PRINT*,'IJ',IJ
-C                    EEXC2 = 0.0D0
+C
+                do I = 1+IOFF,NI+IOFF,1
+                  do J = 1+JOFF,NJ+JOFF,1
+C
+C Assuming a bottom up occupation of electrons
+C IUB loop to only count occpied contributions for IAB
+C                   DO IUB = 1,2,1
+C                     DO IAB = 1,NELEC(IUB)
+C                     print*,'I,J,IAB,IPOS',I,J,IAB,IPOS
+C
+C Here a call to get int with nalpha = 0 will fetch first term in sum
+C and nalpha = 2 second part ( which is the one with the special exchange 2 integrals)
+C
+                      NOP = 4
+                      XOUT = 0.0D0
+                      XOUT2 = 0.0D0
+                      XOUT3 = 0.0D0
+                      XOUT4 = 0.0D0
+                      II = I
+                      JJ = J
+C                     IABA = IAB
+C                     IABB = IAB
+C
+C Check if integral for nalpha = 0 or 4 is present and fetch it.
+C
+                      DO II=1,100
+                        print*,'Lasse is not sure if this is right'
+                        print*,'please debug completely'
+                      END DO
+                      IF(IHPVGAS_AB(ITPFSO(JOFF+1),1).EQ.1) THEN
+                      INOINT = 0
+                      NALPHA = 4
+                      IF(I.EQ.J) THEN
+                        INOINT = 1
+                      END IF
+                      IF(NOP.EQ.4.AND.INOINT.EQ.0) THEN
+                      CALL GET_INT2(XOUT,T,II,II,JJ,JJ,NALPHA)
+                      END IF
+                      END IF
+C
+C Fetch second term with nalpha = 2
+C
+C                     print*,'XOUT',XOUT
+                      INOINT = 0
+                      NALPHA = 2
+                      II = I
+                      JJ = J
+                      IABA = IAB
+                      IABB = IAB
+                      CALL GET_INT2(XOUT2,T,II,II,JJ,JJ,NALPHA)
+                      IF(II.NE.JJ) THEN
+                        CALL GET_INT2(XOUT3,T,JJ,JJ,II,II,NALPHA)
+                        CALL GET_INT2(XOUT4,T,II,JJ,JJ,II,NALPHA)
+                        XOUT2 = XOUT2 + XOUT3 - XOUT4
+                      END IF
+C
+C Add the integrals to inactive fock matrix
+C
+                      FI_AL(J) = (XOUT + XOUT2) + FI_AL(J)
+                      FI_BE(J) = (XOUT + XOUT2) + FI_BE(J)
+C                     END DO
+C                   END DO
                   end do
-C                  IJ = IJ + 1
-C                  PRINT*,'IJ',IJ
-                END IF
-C                END IF
                 end do
-                JSMOFF = 0
+                END IF
+          ININT = NGSSH(ISMOB,IGAS) * NGSSH(JSMOB,JGAS)
               end do
-              ISMOFF = 0
-              END IF
+              JSMOFF = 0
             end do
-            JGSOFF = 0
-            ELSE IF(NGASOCC(IGS).eq.0.and.IGS.eq.1) THEN
-              DO I=1,NTOOB
-                DO J=1,NTOOB
-                  REPLACED = ZERO
-                END DO
-              END DO
-            ELSE IF(NGASOCC(IGS).eq.0.and.IGS.ne.1.and.NGASOCC(1).ne.0)
-     &        THEN
-              WRITE(6,*) 'WARNING FROM GET_DIA_2E'
-              WRITE(6,*) 'CHECK YOUR 2-ELECTRON INTEGRALS'
-              WRITE(6,*) 'FOR CI DIAGONAL'
-              WRITE(6,*) 'LASSE 25-11-04'
+            ISMOFF = 0
             END IF
-          end do
-C       print*,'ECC',ECC
+            end do
+C           ^ JGAS
+          JGSOFF = 0
+          ELSE IF(NGASOCC(IGS).eq.0.and.IGS.eq.1) THEN
+            DO I=1,NTOOB
+              DO J=1,NTOOB
+                REPLACED = ZERO
+              END DO
+            END DO
+          END IF
+C         ^ NGASOCC
+        end do
+C       ^ IGAS
+       NTEST = 100
+       IF(NTEST.GE.100) THEN
+         WRITE(6,*) ' Printing diagonal 2e-case : alpha '
+         DO I = 1, ISIDE
+           WRITE(6,*) FI_AL(I), I
+         END DO
+         WRITE(6,*) ' Printing diagonal 2e-case : beta '
+         DO I = 1, ISIDE
+           WRITE(6,*) FI_BE(I), I
+         END DO
+       END IF
+*
+*
 *
       IF(NTEST.GT.111110.AND.IDOH2.NE.0) THEN
        WRITE(6,*) ' FI_alpha in Symmetry blocked form '
@@ -771,12 +465,12 @@ C          print*,'ARR(I)',ARR(I),I
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
 #include "csm.inc"
 #include "orbinp.inc"
-#include "cc_exc.inc"
 #include "symm.inc"
 *. Specific input
       INTEGER ITSS_TP(4*NGAS,NTSS_TP)
@@ -813,8 +507,8 @@ C      END DO
        NEL_CB = IELSUM(ITSS_TP(1+1*NGAS,ITSS),NGAS)
        NEL_AA = IELSUM(ITSS_TP(1+2*NGAS,ITSS),NGAS)
        NEL_AB = IELSUM(ITSS_TP(1+3*NGAS,ITSS),NGAS)
-C       print*,'NEL_CA,NEL_CB,NEL_AA,NEL_AB',
-C     &         NEL_CA,NEL_CB,NEL_AA,NEL_AB
+       print*,'NEL_CA,NEL_CB,NEL_AA,NEL_AB',
+     &         NEL_CA,NEL_CB,NEL_AA,NEL_AB
 *
 * find these in gnside_rel (LUCIAREL) in sigden_r.F
 *
@@ -823,7 +517,7 @@ C     &         NEL_CA,NEL_CB,NEL_AA,NEL_AB
      &                  ITSS_TP(1+1*NGAS,ITSS),
      &                  ITSS_TP(1+2*NGAS,ITSS),
      &                  ITSS_TP(1+3*NGAS,ITSS),NGAS,IDIAG)
-       IF(MSCOMB_CC.EQ.0.OR.IDIAG.EQ.0) THEN
+       IF(IDIAG.EQ.0) THEN
          IRESTRICT = 0
        ELSE
          IRESTRICT = 1
@@ -884,6 +578,8 @@ C    &                              NORBT,IDOREO,IZ,IREO)
         CALL SUM_FDIA_FOR_STR(E_AB_IM,FDIA_BE_IM,NSTR_AB,NEL_AB,IOCC_AB)
         END IF
 *. Loop over T elements as matrix T(I_CA, I_CB, IAA, I_AB)
+C            print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+C    &               NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
              DO I_AB = 1, NSTR_AB
               IF(IRESTRICT_LOOP.EQ.1) THEN
                 I_AA_MIN = I_AB
@@ -901,8 +597,8 @@ C    &                              NORBT,IDOREO,IZ,IREO)
                  IT = IT + 1
                  CCDIA(IT) =
      &           E_CA(I_CA) + E_CB(I_CB) - E_AA(I_AA) - E_AB(I_AB)
-C                 print*,'E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)'
-C                 print*, E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)
+C                print*,'E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)'
+C                print*, E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)
                  IF(IRECOM.NE.1) THEN
                  CCDIA(IT+N_CC_AMP) =
      &           E_CA_IM(I_CA)+E_CB_IM(I_CB)-E_AA_IM(I_AA)-E_AB_IM(I_AB)
@@ -949,160 +645,74 @@ C?               WRITE(6,*) ' IT and Diag(IT)', IT,CCDIA(IT)
 *
 * Get diagonal one-electron integrals in SIGDEN formalism.
 *
-      subroutine geth1dia_sigden_KRCC(IUB,XOUT,XINT,
-     &                           MDIASV,IPOSDIA,N1E,N1DIAINT,NUMINT,
-     &                           ISTART,IEND,IREOTS,IPRNT)
+C
+      SUBROUTINE ONE_ELEC_DIA(IUB,XOUT,XINT,ISTART,IEND,ISIDE)
+C
+C New routine to fetch one electron integrals from KT_CC
+C This will fetch a block of a type and sort it to a matrix form.
+C IUB not actively used but can be if there is no Kramers symmetry
+C of our one particle functions.
+C                                                         Lasse
+C
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
 *
-      dimension IREOTS(*),MDIASV(4,*),IPOSDIA(*)
-      dimension XINT(N1E),XOUT(*)
+      DIMENSION XINT(*),XOUT(ISIDE**2)
+      INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
 *
       NTESTL = 00
       NTEST = max(NTESTL,IPRNT)
 *
-      IZERO = 0
-      ZERO = 0.D0
-      ICT = 1
-C      do II=1,10
-C        print*,'IPOSDIA(II),XINT(IPOSDIA(II))',
-C     &  IPOSDIA(II),XINT(IPOSDIA(II))
-C      end do
-      do ISEA=ISTART,IEND,1
+      IPOS = 0
+      IORBCOUNT = 0
+      ILENGHT = 0
+      IPOS = 0
 *
-* Rename to SYMM-TYPE ordering on external list:
-        ISEA_REO = IREOTS(ISEA)
-C       do INT=1,N1E,1
-        do INT=1,N1DIAINT,1
-C         if (INDEX(IUB,INT).eq.ISEA_REO.and.INDEX(IUB+2,INT).eq.
-C    &        ISEA_REO.and.INDEX(IUB+1,INT).eq.IZERO) then
-          if (MDIASV(IUB,INT).eq.ISEA_REO.and.MDIASV(IUB+2,INT).eq.
-     &        ISEA_REO.and.MDIASV(IUB+1,INT).eq.IZERO) then
-            if (NTEST.ge.100) then
-C             write(6,'(A,I5,A,I5,A,1F18.12)')
-C    &                'Writing integral no. ',INT,'to ',ICT,
-C    &                '  Integral ',XINT(INT)
-              write(6,'(A,I5,A,I5,A,1F18.12)')
-     &                'Writing integral no. ',IPOSDIA(INT),'to ',ICT,
-     &                '  Integral ',XINT(IPOSDIA(INT))
-C            print*,'XINT(IPOSDIA(INT)',XINT(IPOSDIA(INT))
-            end if
-C           XOUT(ICT) = XINT(INT)
-            XOUT(ICT) = XINT(IPOSDIA(INT))
-            ICT = ICT + 1
-            goto 10
-          end if
-        end do
-        write(6,*) 'No integral found in geth1dia_sigden.'
-        write(6,*) 'Index pair ',ISEA_REO,ISEA_REO
-        stop 'Quitting.'
-  10    continue
-      end do
-      if ((ICT-1).ne.NUMINT) then
-        write(6,*) 'Number of processed integrals: ',ICT-1
-        write(6,*) 'Number of diagonal elements  : ',NUMINT
-        write(6,*) 'Problem in geth1dia_sigden.'
-        stop 'Quitting.'
-      end if
+C Map first indix to orbital subspace
+      DO IGAS = 1,NGAS
+        IORBCOUNT = IORBCOUNT + NGSOBT(IGAS)
+        IF(IEND.EQ.IORBCOUNT) THEN
+          I_INDX_TO_GAS(1) = IGAS
+          I_INDX_TO_GAS(2) = IGAS
+        END IF
+        ILENGHT = ILENGHT + IGAS
+        ISUBLENGHT(IGAS+1) =  ILENGHT
+        IORB(IGAS+1) = IORBCOUNT
+      END DO
 *
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-* Get diagonal two-electron integrals in SIGDEN formalism.
-*   Timo Fleig, August 2001
-* Modified to account for integrals over true spinors, i.e.
-* explicit reference to unbarred (+) and barred (-) indices (IKFAC).
-* Revised routine.
-*   Timo Fleig, February 2002
+C Calculate relative TYPE
+      ITYPE = I_INDX_TO_GAS(2) + NGAS*(I_INDX_TO_GAS(1) - 1)
+C Absolute type
+      IF(IUB.EQ.1) THEN
+        ITYPE = ITYPE
+      ELSE
+        ITYPE = ITYPE + IRELTYPE(2) - 1 
+      END IF
+C Calculate INTEGRAL offset for absolute type TYPE
+      IOFF = IOFFINTTYPE(ITYPE)
+      ILL = IEND - ISTART + 1
+C
+      DO ISEA=1,ILL
+C
+C Calculate position of integral in array
+C
+        IPOS = IPOS + 1 
+        IFETCH = IOFF + ISEA + (ISEA-1)*ILL -1 
+C
+C Calculate absolute offset off integral with help from relative
+C
+        XOUT(IPOS) = XINT(IFETCH)
+      END DO
 *
-      subroutine geth2dia_sigden_KRCC(XOUT,XINT,ISEA,JSEA,TYPE,
-     &                           IOFF2,N12,I2DIATP,IKFAC,IKPERM,
-     &                           IREOTS,IREOTS2,
-     &                           MDIASV,IPOSDIA,N1DIAINT,NDIAINT,IPRNT)
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) 'DUMPING ONE ELECTRON INTEGRALS FETCHED'
+        DO I = 1,ILL
+          WRITE(6,*) XOUT(I)
+        END DO
+      END IF
 *
-#include "implicit.inc"
-#include "ipoist8.inc"
-*
-      character*4 TYPE
-*
-      dimension IAC(2),JAC(2),IOFF2(*),IKPERM(4),
-     &          IREOTS(*),IREOTS2(*),MDIASV(4,*),IPOSDIA(*)
-      dimension XINT(N12)
-*
-      NTESTL = 00
-      NTEST = max(NTESTL,IPRNT)
-*
-      IERROR = 1
-      N2B = IOFF2(I2DIATP)
-C     do INT = N2B,N12,1
-      do INT = N1DIAINT+1,NDIAINT,1
-        if (TYPE.eq.'COUL') then
-C         I = INDEX(IKPERM(1),INT)
-C         J = INDEX(IKPERM(2),INT)
-C         K = INDEX(IKPERM(3),INT) * IKFAC
-C         L = INDEX(IKPERM(4),INT) * IKFAC
-          I = MDIASV(IKPERM(1),INT)
-          J = MDIASV(IKPERM(2),INT)
-          K = MDIASV(IKPERM(3),INT) * IKFAC
-          L = MDIASV(IKPERM(4),INT) * IKFAC
-        else if (TYPE.eq.'EXC1') then
-C         I = INDEX(IKPERM(1),INT)
-C         J = INDEX(IKPERM(4),INT) * IKFAC
-C         K = INDEX(IKPERM(2),INT)
-C         L = INDEX(IKPERM(3),INT) * IKFAC
-          I = MDIASV(IKPERM(1),INT)
-          J = MDIASV(IKPERM(4),INT) * IKFAC
-          K = MDIASV(IKPERM(2),INT)
-          L = MDIASV(IKPERM(3),INT) * IKFAC
-        else if (TYPE.eq.'EXC2') then
-C         I = INDEX(IKPERM(1),INT)
-C         J = INDEX(IKPERM(4),INT)
-C         K = INDEX(IKPERM(2),INT) * IKFAC
-C         L = INDEX(IKPERM(3),INT) * IKFAC
-          I = MDIASV(IKPERM(1),INT)
-          J = MDIASV(IKPERM(4),INT)
-          K = MDIASV(IKPERM(2),INT) * IKFAC
-          L = MDIASV(IKPERM(3),INT) * IKFAC
-        end if
-*
-* Rename: External ST ordering, internal TS ordering:
-        if (I.eq.IREOTS(ISEA).and.
-     &      J.eq.IREOTS(ISEA).and.
-     &      K.eq.IREOTS2(JSEA).and.
-     &      L.eq.IREOTS2(JSEA)) then
-          if (NTEST.ge.100) then
-C           write(6,'(A,X,A,I5,3X,4I3,1F18.10)')
-C    &            'Diagonal int type ',TYPE,
-C    &             INT,(INDEX(II,INT),II=1,4),XINT(INT)
-C            print*,'I,J,K,L',I,J,K,L
-            write(6,'(A,X,A,I5,3X,4I3,1F18.10)')
-     &            'Diagonal int type ',TYPE,
-     &             IPOSDIA(INT),(MDIASV(II,IPOSDIA(INT)),II=1,4),
-     &             XINT(IPOSDIA(INT))
-            write(6,*)
-          end if
-C         XOUT = XINT(INT)
-          XOUT = XINT(IPOSDIA(INT))
-          IERROR = 0
-* and exit.
-          goto 10
-        end if
-      end do
-      if (IERROR.eq.1) then
-        write(6,*) 'No integral found in geth2dia_sigden.'
-C       write(6,*) 'N2B,N12 = ',N2B,N12
-        write(6,*) 'Type of integral = ',TYPE
-        write(6,*) 'Index pair ',IREOTS(ISEA),IREOTS2(JSEA)
-        write(6,*) 'Indices ',I,J,K,L
-        stop 'Quitting.'
-      end if
-*
-  10  continue
-      return
-      end
-*
+      RETURN
+      END

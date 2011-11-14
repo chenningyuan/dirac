@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : inpt.inc
 C
 C MPI information for RELCCSD
 C

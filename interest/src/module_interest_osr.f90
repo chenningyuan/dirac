@@ -11,12 +11,14 @@ module module_interest_osr
 
   public  interest_osr_initialize
   public  interest_osr_class_overlap
+  public  interest_osr_class_dipole
   public  interest_osr_class_nuclear
 
   integer, public, parameter :: lmx1 = 6 
   integer, public, parameter :: lmx2 = 2*lmx1+1 
   integer, public, parameter :: lmx4 = 4*lmx1+1 
   integer, public, parameter :: ncc(lmx1) = (/1,3,6,10,15,21/)
+  integer, public, parameter :: nsc(lmx1) = (/1,3,5, 7, 9,11/)
   integer, public, parameter :: ncc2 = (lmx2*(lmx2+1)*(lmx2+2))/6 
   real(8), public, parameter :: pi   = 4.0d0*datan(1.0d0)
 
@@ -95,6 +97,81 @@ contains
           ln =ly
           li1=li1+1
           fint(li1)=cosr*sint(1,ll)*sint(2,lm)*sint(3,ln)
+        enddo
+      enddo
+    enddo
+  end subroutine 
+
+! ---------------------------------------------------------------------------------------
+! CLASS_DIPOLE
+!
+!note: na vstupe musi byt pre RKB bazu: (la-1), (lab+2)
+!note: li1 (on output) - dlzka intermediates
+!note: na vystupe, 1-elektronove integraly: [la...lab|x/y/z|0]
+! ---------------------------------------------------------------------------------------
+  subroutine interest_osr_class_dipole(li1,fintx,finty,fintz,cosr,la,lab,pexp,&
+                                       rxpa,rypa,rzpa,rxpc,rypc,rzpc)
+    !-- output --!
+    integer, intent(out) :: li1
+    real(8), intent(out) :: fintx(*)
+    real(8), intent(out) :: finty(*)
+    real(8), intent(out) :: fintz(*)
+
+    !-- input --!
+    integer, intent(in) :: la,lab
+    real(8), intent(in) :: cosr,pexp
+    real(8), intent(in) :: rxpa,rypa,rzpa
+    real(8), intent(in) :: rxpc,rypc,rzpc
+
+    !-- local --!
+    integer :: n,l,ll,lm,ln,lx,ly
+    real(8) :: sint(3,lmx2)
+    real(8) :: dipi(3,lmx2)
+    real(8) :: o2psi,o2pdi,pexp2
+    real(8) :: sxone,syone,szone
+    real(8) :: sxtwo,sytwo,sztwo
+
+
+    o2pdi = 0.0d0
+    sxtwo = 0.0d0
+    sytwo = 0.0d0
+    sztwo = 0.0d0
+    sint(1,1) =      dsqrt(pi/pexp)
+    sint(2,1) =      sint(1,1)
+    sint(3,1) =      sint(2,1)
+    dipi(1,1) = rxpc*sint(1,1)
+    dipi(2,1) = rypc*sint(2,1)
+    dipi(3,1) = rzpc*sint(3,1)
+    pexp2 = 2.0d0*pexp
+    do n=2,lab,1
+      o2psi = o2pdi
+      o2pdi = dfloat(n-1)/pexp2
+      sxone = sxtwo
+      syone = sytwo
+      szone = sztwo
+      sxtwo = sint(1,n-1)
+      sytwo = sint(2,n-1)
+      sztwo = sint(3,n-1)
+      sint(1,n) = rxpa*sxtwo     + o2psi*sxone
+      sint(2,n) = rypa*sytwo     + o2psi*syone
+      sint(3,n) = rzpa*sztwo     + o2psi*szone
+      dipi(1,n) = rxpc*sint(1,n) + o2pdi*sxtwo
+      dipi(2,n) = rypc*sint(2,n) + o2pdi*sytwo
+      dipi(3,n) = rzpc*sint(3,n) + o2pdi*sztwo
+    enddo
+  
+    li1=0
+    n=max(1,la)
+    do l=n,lab,1
+      do lx=1,l
+        ll=l-lx+1
+        do ly=1,lx,1
+          lm =lx-ly+1
+          ln =ly
+          li1=li1+1
+          fintx(li1)=cosr*dipi(1,ll)*sint(2,lm)*sint(3,ln)
+          finty(li1)=cosr*sint(1,ll)*dipi(2,lm)*sint(3,ln)
+          fintz(li1)=cosr*sint(1,ll)*sint(2,lm)*dipi(3,ln)
         enddo
       enddo
     enddo

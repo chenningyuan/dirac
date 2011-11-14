@@ -1,6 +1,3 @@
-!radovan: i have adjusted the thresholds here
-!         to get a \delta in H-F with aug-cc-pVDZ
-!         converged in 6 digits
 **DIRAC
 .WAVE FUNCTION
 .PROPERTIES
@@ -8,30 +5,18 @@
 .LEVY-LEBLOND
 .DFTAUTO
  BLYP
-*DFT
-.ZIPGRID
-.SMALLDENSITY
- 1.0D-12
-.RADINT
- 1.0D-15
-.ANGINT
- 59
+**GRID
+.DEBUG
 **INTEGRALS
-*TWOINT
-.SCREEN
- 1.0D-18
-#*READIN
-#.UNCONTRACT
+*READIN
+.CONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
-.EVCCNV
- 1.0D-10 1.0D-6
+.SCF
 **PROPERTIES
 *OPENRSP
 .DELTA
 .FREQ_PROCESS
  0.0885585
 .THRESHOLD
- 1.0D-7 1.0D-5
+ 1.0D-2 1.0D-2
 *END OF

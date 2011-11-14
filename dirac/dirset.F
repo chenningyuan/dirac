@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -36,6 +34,7 @@ C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
       use visual_cfg
+      use x2cmod_cfg
 #ifdef MOD_CAP
       USE Memory
 #endif
@@ -70,7 +69,7 @@ C
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
-      IF (TWOCOMPBSS .or. x2c_mod) THEN
+      IF (TWOCOMPBSS .or. x2c) THEN
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
@@ -84,6 +83,10 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
+!     youngc:  RECP integral     
+#ifdef MOD_ECP
+      IF (ECPCALC) CALL RECP
+#endif
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
 !     gosia: don't restart and don't generate integrals if visual_cfg_london
@@ -349,11 +352,11 @@ C
      &        'Max',MXBBAS
         WRITE(LUPRI,'(/3X,2(A,I6,2X))') 'NNBBAST = ',NNBBAST,
      &        'NNBBASX ',NNBBASX
-C        WRITE(LUPRI,'(/A)') '* I2BBASX:'
-C        WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),2X,I8))')
-C     &     ((((REP(I),REP(J),COMP(IC),COMP(JC),
-C     &        I2BBASX(I,J,IC,JC),IC = 1,2),JC = 1,2)
-C     &        ,I=0,NBSYM-1),J=0,NBSYM-1)
+         WRITE(LUPRI,'(/A)') '* I2BBASX:'
+         WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),2X,I8))')
+     &     ((((REP(I),REP(J),COMP(IC),COMP(JC),
+     &        I2BBASX(I,J,IC,JC),IC = 1,2),JC = 1,2)
+     &        ,I=0,NBSYM-1),J=0,NBSYM-1)
       ENDIF
 C
 C     *****************************************
@@ -501,7 +504,7 @@ C
         N2ISHT      = N2ISHT + N2ISH(IFRP)
 C
         N2ASH(IFRP) = NASH(IFRP)*NASH(IFRP)
-        NASHT       = NASHT  + NASH(IFRP) 
+        NASHT       = NASHT  + NASH(IFRP)
         I2ASHT(IFRP)= N2ASHT*NZ
         N2ASHT      = N2ASHT + N2ASH(IFRP)
 C
@@ -514,10 +517,10 @@ C
         N2SSH(IFRP) = NSSH(IFRP)*NSSH(IFRP)
         NSSHT       = NSSHT  + NSSH(IFRP)
         N2SSHT      = N2SSHT + N2SSH(IFRP)
-        N2ESH(IFRP) = NESH(IFRP)*N2ESH(IFRP)
+        N2ESH(IFRP) = NESH(IFRP)*NESH(IFRP)
         NESHT       = NESHT  + NESH(IFRP)
         N2ESHT      = N2ESHT + N2ESH(IFRP)
-        N2PSH(IFRP) = NPSH(IFRP)*N2PSH(IFRP)
+        N2PSH(IFRP) = NPSH(IFRP)*NPSH(IFRP)
         NPSHT       = NPSHT  + NPSH(IFRP)
         N2PSHT      = N2PSHT + N2PSH(IFRP)
         ICMO(IFRP)  = NCMOT
@@ -560,7 +563,7 @@ C
       N2ISHX  = NISHT*NISHT
       N2ASHX  = NASHT*NASHT
       N2ASHXQ = N2ASHX * NZ
-      NNASHX = NASHT * (NASHT+1) / 2
+      NNASHX  = NASHT * (NASHT+1) / 2
       N2OCCX  = NOCCT*NOCCT
       N2SSHX  = NSSHT*NSSHT
       N2ESHX  = NESHT*NESHT
@@ -703,7 +706,6 @@ C***********************************************************************
       LOGICAL XPOL,IPOL
       DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
       SAVE SCCHRG,BFIT
-#include "sdpre.h"
 C
       DATA (SCCHRG(I),I = 1,103)
      +/ 0.000013D0, 0.0001D0, 0.0002D0, 0.0004D0, 0.0007D0, 
@@ -740,8 +742,8 @@ C
       DO I = 1,N
         IQ   = NINT(Q(I))
         XPOL = IQ.GT.103
-c       IPOL = (ABS(Q(I)-SDPRE(IQ)).GT.DTOL).AND.(.NOT.XPOL)
-        IPOL = ABS(Q(I)-SDPRE(IQ)).GT.DTOL .OR. IQ.GT.150
+c       IPOL = (ABS(Q(I)-dble(IQ)).GT.DTOL).AND.(.NOT.XPOL)
+        IPOL = ABS(Q(I)-dble(IQ)).GT.DTOL .OR. IQ.GT.150
 c       IF(XPOL.OR.IPOL) THEN
         IF(IPOL) THEN
 C       ... non-integer nuclear charge, assume this is a point charge
@@ -879,7 +881,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
-	  LOGICAL TABSCQ
+      LOGICAL TABSCQ
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -932,7 +934,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck lvcorr_r1 */
+C/* Deck lvcorr_1 */
       SUBROUTINE LVCORR_1(SCQ,IPRINT)
 C***********************************************************************
 C
@@ -953,11 +955,12 @@ C
 #include "dcbham.h"
       DIMENSION SCQ(*)
 C
+      IPRINT_local = IPRINT - 3
       IF (ONECAP .AND. INTV1C .EQ. 2) THEN
          DO I = 1,NUCIND
             SCQ(I) = SCQ(I) + CHARGE(I)
          END DO
-         CORRLV = GETPOT(SCQ,IPRINT) - POTNUC
+         CORRLV = GETPOT(SCQ,IPRINT_local) - POTNUC
          IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
      &     ' * ONECAP model 1 classical repulsion from small component',
      &     CORRLV
@@ -965,7 +968,7 @@ C
 C
 C        Calculate repulsion energy for small component atomic charges
 C
-         CORRLV = GETPOT(SCQ,IPRINT)
+         CORRLV = GETPOT(SCQ,IPRINT_local)
 C
 C        Print section
 C
@@ -1179,7 +1182,7 @@ C
 C     Calculate the large component charge density on each atom
 C
       DO I = 1, NTBAS(1)
-	 QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
+         QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
       ENDDO
 C
       RETURN
@@ -1386,7 +1389,7 @@ C/* Deck lsqma1 */
       SUBROUTINE LSQMA1(ICLAB)
 C***********************************************************************
 C
-C     ... Make list of type (L or S) that maps each basis function
+C     Make list of type (L or S) that maps each basis function
 C     to a nuclei.
 C
 C     Written by Jesper K. Pedersen sep. 2001

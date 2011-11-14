@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : consts.h
 !
 !     Collection of frequently used constants.

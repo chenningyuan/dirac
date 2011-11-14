@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -51,19 +51,19 @@ C
      &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
      &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
      &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ',
-     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG',
+     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG', !20
      &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', 
      &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ',
      &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG',
      &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES',
-     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
+     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD', !40
      &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES',
      &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD',
      &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
-     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
+     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL', !60
      &            '.LINDH ', '.NO SKI', '.GRD IN', '.GRD SC',
-     &            '.NOAUX ', '.BFGSR1', '.NUMGRA', '.XXXXXX'/
+     &            '.NOAUX ', '.BFGSR1', '.NUMGRA', '.IPRGRD'/
 C
       DATA FIRST /.TRUE./
 C
@@ -188,6 +188,7 @@ C
 C
 #if defined (PRG_DIRAC)
       CALL INIGRD()
+      IPRGRD = -1
       DOTRCK = .TRUE.
 #endif
 C
@@ -487,7 +488,9 @@ C&&&& : BFGSR1: Use 1st order method with BFGS/rank one combination update
 C&&&& :  NUMGRA: Use numerical gradient
             DONGRD = .TRUE.
             GOTO 100
- 68         CONTINUE
+C&&&& :  IPRGRD: print level for DIRAC mol.grad. evaluation
+ 68         CONTINUE ! DIRAC option
+            READ (LUCMD,*) IPRGRD
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -500,6 +503,8 @@ C&&&& :  NUMGRA: Use numerical gradient
       END IF
  300  CONTINUE
 C
+      IF (IPRGRD.LT.0) IPRGRD = IPRINT
+
       IF ((.NOT. OPTIMI) .AND. (ICHANG .GT. 0)) THEN
          WRITE(LUPRI,'(//A/)')
      &          ' Minimization not requested, *OPTIMI input ignored.'
@@ -524,8 +529,7 @@ C
          WRITE(LUPRI,'(A)') ' Determination of redundant internal '
      &        // 'will be performed.'
          IF (.NOT. VISUAL) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,'(A)') ' *** NOTE! ***'
+            WRITE(LUPRI,'(/A)') ' *** NOTE! ***'
             WRITE(LUPRI,'(A)') ' No minimization will be done, ' //
      &           'other keywords will be ignored!!!!!'
             WRITE(LUPRI,*)
@@ -1240,6 +1244,8 @@ C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
      &        ' * No screening in the calculation of'//
      &        ' two-electron gradient integrals.'
       END IF
+      WRITE(LUPRI,'(A,I5)')
+     &   ' * Print level in molecular gradient evaluation :',IPRGRD
 #endif
       RETURN
       END
@@ -1661,6 +1667,8 @@ C
      &           WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
      &           WORK(KTEMP2),WORK(KTEMP3))
          ELSE
+!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!                                 in the actual subroutine... - FIXME
             CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &           WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
          END IF
@@ -1904,6 +1912,8 @@ C
      &              WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
      &              WORK(KTEMP2),WORK(KTEMP3))
             ELSE
+!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!                                 in the actual subroutine... - FIXME
                CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &              WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
             END IF
@@ -2097,12 +2107,16 @@ C
       IJ = 1
       DO 10 J = 1, NUCIND
          DO 20 I = 1, 3
-            CORDNW(I,J) = CORD(I,J) + CSTEP(IJ)
-            IF ( ILL_NUMBER(CORDNW(I,J)) ) THEN
-               WRITE(LUPRI,*) 'I,J,CORD(I,J),CSTEP(IJ):',
-     &          I,J,CORD(I,J),CSTEP(IJ)
-               CALL QUIT('ill number detected !')
+!miro: report ill number, but do not change value
+            IF ( ILL_NUMBER(CSTEP(IJ)) ) THEN
+               WRITE(LUPRI,*) 'ill number: I,J,CSTEP(IJ):',
+     &         I,J,CSTEP(IJ)
             ENDIF
+            IF ( ILL_NUMBER(CORD(I,J)) ) THEN
+               WRITE(LUPRI,*) 'ill number: I,J,CORD(I,J):',
+     &         I,J,CORD(I,J)
+            ENDIF
+            CORDNW(I,J) = CORD(I,J) + CSTEP(IJ)
             IJ = IJ + 1
  20      CONTINUE
  10   CONTINUE
@@ -2151,6 +2165,11 @@ C
       WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
      &   ' Norm of step                   : ', STPNRM, 
      & ' (the threshold is:',THRSTP,')'
+!MI: fuse - end optimization if step is too close to zero
+      IF (DABS(STPNRM).LE.1.0D-9) THEN
+        WRITE(LUPRI,*)'Norm of step too small-ending optimization here'
+        GECONV=.TRUE.
+      ENDIF
       WRITE(LUPRI,'(A,D12.6)')
      &   ' Updated trust radius           : ', TRSTRA
       IF (IPRINT .GE. 3) THEN
@@ -2270,6 +2289,7 @@ C     (by running HERMIT and SIRIUS).
 C
       use dirac_cfg
       use dft_cfg
+      use num_grid_gen
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2299,11 +2319,6 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
-
-      if (dirac_cfg_dft_calculation) then
-!       get a new grid at new geometry
-        call reset_grid()
-      end if
 
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
@@ -2366,6 +2381,11 @@ ckr#endif
          ENERGY = EMCSCF
       END IF
 #else /* PRG_DIRAC */
+
+      if (dirac_cfg_dft_calculation) then
+!        get a new grid at new geometry
+         call reset_num_grid()
+      end if
 C
 C     Geometry optimization for Dirac
 C
@@ -2588,6 +2608,9 @@ C
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
+
+      print *,'yc-INIHES',iprint
+      iprint = 12
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2914,6 +2937,8 @@ C
       LOGICAL RESET, REJLST
 C
       CALL QENTER('UPDHES')
+      print *,'yc-UPDHES',iprint
+      iprint = 12
 C
 C     If redundant internal coordinates are used, we have to transform
 C     the calculated Cartesian gradient
@@ -6355,7 +6380,7 @@ C
 
 C  /* Deck dobrk */
       SUBROUTINE DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,EVEC,
-     &                                        CSTEP,TMPMAT,NONT)
+     &                                        CSTEP,TMPMAT)
 C
 C     This procedure does the actual breaking of symmetry.
 C
@@ -6375,7 +6400,7 @@ C
 #include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
-      DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
+      DIMENSION GEINFO(0:ITRMAX,6)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR)
       DIMENSION TMPMAT(NCRTOT*NCRTOT)
 #include "ibtfun.h"

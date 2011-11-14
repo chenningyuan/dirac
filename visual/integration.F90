@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,6 +26,8 @@ module visual_integrate
    use memory_allocator
    use visual_cfg
    use visual_in_point
+   use interface_grid
+   use file_units
 #ifdef MOD_UNRELEASED
    use visual_london
 #endif
@@ -38,7 +40,7 @@ module visual_integrate
 
 contains
 
-      subroutine visual_integration(nr_dmat, D, nr_dmat_con, D_con, ao, buffer)
+      subroutine visual_integration(nr_dmat, D, D_0, ao, buffer)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -49,8 +51,7 @@ contains
       real(8), intent(in) :: ao(*)
       real(8), intent(in) :: buffer(*)
 
-      integer, intent(in) :: nr_dmat_con
-      type(matrix)        :: D_con(nr_dmat_con)
+      type(matrix)        :: D_0
 
       dimension QUANTITY_INTEGRAL(0:3), &
                 QUANTITY_INTEGRAL_LAST(0:3)
@@ -62,19 +63,21 @@ contains
       character(2) :: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
 
       CALL DZERO(QUANTITY_INTEGRAL,4)
-      if (visual_cfg_3d) then
+      if (visual_cfg_3d_integration) then
 
         CALL AROUND('3D numerical integration')
 
-        LUNIT = 44
-
         call dftgrd(D(1)%elms, 1)
 
-
-        REWIND LUNIT
+        open(interface_file_unit,       &
+             file   = 'numerical_grid', &
+             status = 'unknown',        &
+             form   = 'formatted',      &
+             access = 'sequential')
+        rewind(interface_file_unit)
 
  1      CONTINUE
-        READ(LUNIT) NR_POINTS
+        READ(interface_file_unit, *) NR_POINTS
 
         IF(NR_POINTS .LE. 0) GOTO 2
 
@@ -83,18 +86,16 @@ contains
         call alloc(z, nr_points)
         call alloc(w, nr_points)
 
-        call reaqua(x, y, z, w, lunit, nr_points)
+        call num_grid_read(x, y, z, w, interface_file_unit, nr_points)
 
-
-          CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-                                  nr_dmat_con, D_con, &
-                                  AO, &
-                                  x, y, z, &
-                                  buffer, &
-                                  QUANTITY_INTEGRAL, &
-                                  w, &
-                                  NR_POINTS)
-
+        call integrate_quantity(nr_dmat, d,        &
+                                d_0,               &
+                                ao,                &
+                                x, y, z,           &
+                                buffer,            &
+                                quantity_integral, &
+                                w,                 &
+                                nr_points)
 
         call dealloc(x)
         call dealloc(y)
@@ -104,8 +105,7 @@ contains
         GOTO 1
  2      CONTINUE
 
-
-        CLOSE(LUNIT,STATUS = 'DELETE')
+        close(interface_file_unit, status = 'keep')
 
         WRITE(LUPRI,'(A)')
         WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &
@@ -158,19 +158,19 @@ contains
                               lunit)
 
          rewind lunit
-         read(lunit) nr_points
+         read(lunit, *) nr_points
 
          call alloc(x, nr_points)
          call alloc(y, nr_points)
          call alloc(z, nr_points)
          call alloc(w, nr_points)
 
-         call reaqua(x, y, z, w, lunit, nr_points)
+         call num_grid_read(x, y, z, w, lunit, nr_points)
 
          quantity_integral = 0.0d0
 
          CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-                                 nr_dmat_con, D_con, &
+                                 D_0, &
                                  AO, &
                                  x, y, z, &
                                  buffer, &
@@ -201,7 +201,7 @@ contains
    end subroutine
 
       SUBROUTINE INTEGRATE_QUANTITY(nr_dmat, D, &
-                                    nr_dmat_con, D_con, &
+                                    D_0, &
                                     AO, &
                                     PX,PY,PZ, &
                                     buffer, &
@@ -215,9 +215,9 @@ contains
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      integer, intent(in) :: nr_dmat, nr_dmat_con
+      integer, intent(in) :: nr_dmat
       type(matrix)        :: D(nr_dmat)
-      type(matrix)        :: D_con(nr_dmat_con)
+      type(matrix)        :: D_0
       dimension AO(*), &
      &          PX(*), &
      &          PY(*), &
@@ -230,15 +230,14 @@ contains
 
       DO IPOINT = 1,NR_POINTS
 
-           call get_quantity_in_point(nr_dmat,     &
-                                      D,           &
-                                      nr_dmat_con, &
-                                      D_con,       &
-                                      px(ipoint),  &
-                                      py(ipoint),  &
-                                      pz(ipoint),  &
-                                      ao,          &
-                                      buffer,      &
+           call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                      D,                  &
+                                      D_0,                &
+                                      px(ipoint),         &
+                                      py(ipoint),         &
+                                      pz(ipoint),         &
+                                      ao,                 &
+                                      buffer,             &
                                       quantity)
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
@@ -418,7 +417,7 @@ contains
          file   = file_name,    &
          status = 'unknown',    &
          access = 'sequential', &
-         form = 'unformatted')
+         form = 'formatted')
       rewind u
 
       vx = p_right - p_origin
@@ -455,7 +454,7 @@ contains
          end do
       end do
 
-      call wrtqua(rx, ry, rz, rw, u, ipoint)
+      call num_grid_write(rx, ry, rz, rw, u, ipoint)
 
       call dealloc(x)
       call dealloc(w)

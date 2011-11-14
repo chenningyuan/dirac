@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3300,7 +3300,6 @@ c    &  Line=_MOLCAS_VERSION_
 c       If ( i.eq.16 )
 c    &  Line='module created at : '//
 c    &       _BUILD_DATE_
-c       Call Center(Line)
 c       Write(*,Fmt) '*'//Line//'*'
       End Do
 *----------------------------------------------------------------------*
@@ -3308,13 +3307,11 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
       Write(*,*)
       Line=BlLine
-      Call Datimx(Line(41:41))
       Line(1:31)='Job run on:                 at '
       Line(13:22)=Line(41:50)
       Line(23:27)=Line(60:64)
       Line(32:39)=Line(52:59)
       Line(40:lLine)=BlLine(40:lLine)
-      Call Center(Line)
       Write(*,Fmt) ' '//Line//' '
       Write(*,*)
 *----------------------------------------------------------------------*
@@ -3505,7 +3502,6 @@ c    &  Line=_MOLCAS_VERSION_
 c       If ( i.eq.16 )
 c    &  Line='module created at : '//
 c    &       _BUILD_DATE_
-c       Call Center(Line)
 c       Write(*,Fmt) '*'//Line//'*'
       End Do
 *----------------------------------------------------------------------*
@@ -3513,13 +3509,11 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
       Write(*,*)
       Line=BlLine
-      Call Datimx(Line(41:41))
       Line(1:31)='Job run on:                 at '
       Line(13:22)=Line(41:50)
       Line(23:27)=Line(60:64)
       Line(32:39)=Line(52:59)
       Line(40:lLine)=BlLine(40:lLine)
-      Call Center(Line)
       Write(*,Fmt) ' '//Line//' '
       Write(*,*)
 *----------------------------------------------------------------------*
@@ -4342,7 +4336,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
          write(*,'(A5)') 'TITLE'
          NTITMN = NTIT
          do I=1,NTITMN,1
-            call leftad(TITLE(I))
             write(*,'(1X,A70)') TITLE(I)
          end do
 *
@@ -4477,7 +4470,7 @@ CTF      write(*,'(1X,A6)') MACHINE
          WRITE (NLUCIAIN_MPI,'(A7,A1,I3)') LUCIAIN_MPIN,'.',MYPROC
          LUCIAIN_MPIL=11
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
       ENDIF
 #else
       NLUCIAIN_MPI=LUCIAIN_MPIN
@@ -4492,7 +4485,6 @@ CTF      write(*,'(1X,A6)') MACHINE
          write(LUINP,'(A5)') 'TITLE'
          NTITMN = NTIT
          do I=1,NTITMN,1
-            call leftad(TITLE(I))
             write(LUINP,'(1X,A70)') TITLE(I)
          end do
 *
@@ -5736,7 +5728,6 @@ CC        IVFLEV = 1               ! could be made more flexible
           call char_to_integer_moluc(ITEM(ISYM),NSHPGS(3,ISYM))
         end do
 *
-        call leftad(CARD3(5))
         call upcase(CARD3(5))
         if (CARD3(5).eq.'REST') then
           NGAS = 4
@@ -6586,7 +6577,6 @@ CSK      call lmemchk
       call rdnlst(5,'LUCITA')
 10    read(*,'(A72)',End=991) LINE
 *  Put input line to very left
-      call leftad(LINE)
       COMMAND = LINE(1:4)
 *  Convert possible lower case characters to upper case
       call upcase(COMMAND)
@@ -6634,7 +6624,6 @@ CSK      call lmemchk
  200  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 200
-      call leftad(LINE)
       SCR6 = LINE(1:6)
       read(SCR6,'(A6)',Err=992) WAFFCT
       call upcase(WAFFCT)
@@ -6645,7 +6634,6 @@ CSK      call lmemchk
  300  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 300
-      call leftad(LINE)
       SCR6 = LINE(1:6)
       read(SCR6,'(A6)',Err=992) TYPE
       call upcase(TYPE)
@@ -6686,7 +6674,6 @@ CSK      call lmemchk
  800  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 800
-      call leftad(LINE)
       SCR3 = LINE(1:3)
       read(SCR3,'(A3)',Err=992) PRILUC
       call upcase(PRILUC)
@@ -6705,7 +6692,6 @@ CSK      call lmemchk
 1000  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 800
-      call leftad(LINE)
       SCR3 = LINE(1:3)
       read(SCR3,'(A3)',Err=992) CALSIZ
       call upcase(CALSIZ)
@@ -6719,7 +6705,6 @@ CSK      call lmemchk
 1100  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 1100
-      call leftad(LINE)
       read(LINE,'(A72)',Err=992) CARD3(2)
       goto 10
 *
@@ -6731,7 +6716,6 @@ CSK      call lmemchk
       read(LINE,*,Err=992) NGAS
       do IGAS=1,NGAS,1
         read(*,'(A72)',End=991) LINE
-        call leftad(LINE)
         call upcase(LINE)
         read(LINE,'(A72)',Err=992) CARD(IGAS)
       end do
@@ -6761,7 +6745,6 @@ CSK      call lmemchk
 1400  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 1400
-      call leftad(LINE)
       read(LINE,'(A72)',Err=992) CARD3(1)
       goto 10
 *
@@ -6771,7 +6754,6 @@ CSK      call lmemchk
 1500  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 1500
-      call leftad(LINE)
       read(LINE,'(A72)',Err=992) CARD3(3)
       read(*,'(A72)',End=991) LINE
       read(LINE,*,Err=992) MXHOL1
@@ -6782,7 +6764,6 @@ CSK      call lmemchk
 1600  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 1600
-      call leftad(LINE)
       read(LINE,'(A72)',Err=992) CARD3(4)
       goto 10
 *
@@ -6792,7 +6773,6 @@ CSK      call lmemchk
 1700  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 1700
-      call leftad(LINE)
       read(LINE,'(A72)',Err=992) CARD3(5)
       read(*,'(A72)',End=991) LINE
       read(LINE,*,Err=992) MXELR3
@@ -6811,7 +6791,6 @@ CSK      call lmemchk
 1900  continue
       read(*,'(A72)',End=991) LINE
       if ( LINE(1:1).eq.'*' ) goto 1900
-      call leftad(LINE)
       read(LINE,'(A6)',Err=992) MOLUCENV
       goto 10
 *
@@ -7130,7 +7109,6 @@ c     call XFLUSH(6)
      &        '*',(' ',I=1,56),'Title:',(' ',I=1,56),'*'
 c     call XFLUSH(6)
       do I=1,NTIT
-         call center(Title(I))
          write(*,'(6X,24A1,A72,24A1)')
      &        '*',(' ',J=1,23),Title(I),(' ',J=1,23),'*'
 c     call XFLUSH(6)

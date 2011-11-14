@@ -1,0 +1,18 @@
+!
+! This test calculates the HF energy of
+! employing valence-only Hamitonian
+! for relativistic effective-core-potentials.
+!
+**DIRAC
+.TITLE
+HI molecule with RECP
+.WAVE F
+**HAMILTONIAN 
+.ECP
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.CLOSED SHELL
+8
+*END OF DIRAC
+

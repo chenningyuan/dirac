@@ -1,0 +1,9 @@
+zerofield.inp           HF.p-ccpvdz.mol --mw=140 --aw=160 --outcmo
+scf.ccsd.1.inp          HF.p-ccpvdz.mol --mw=140 --aw=160 --incmo
+scf.ccsd.m1.inp         HF.p-ccpvdz.mol --mw=140 --aw=160 --incmo
+
+bss+mfsso.zerofield.inp HF.p-ccpvdz.mol --outcmo
+bss.zerofield.inp       HF.p-ccpvdz.mol --incmo  --outcmo
+
+bss.scf.ccsd.1.inp      HF.p-ccpvdz.mol --mw=140 --aw=160 --incmo
+bss.scf.ccsd.m1.inp     HF.p-ccpvdz.mol --mw=140 --aw=160 --incmo

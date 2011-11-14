@@ -1,13 +1,8 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : memory_r.inc
 C
 C memory information for LUCIAREL
 C
-csk#if defined (IA64) || defined (INT_STAR8)
       INTEGER*8 KBASE,KFREES,KFREEL,IBASE,NWORD,JBASE,JBASEN,IMARK
-csk#endif
       CHARACTER*6 TASK,IDENT,IIDENT,MARKC,MARK_ACT
       PARAMETER(NPAD = 1 )
       PARAMETER(MAXLVL = 4096 )

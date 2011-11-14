@@ -80,7 +80,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       open(12,file=filenm,form='UNFORMATTED')
 
       call header(
-     & 'Standalone spin-adapted CCSD program,'//
+     & 'Standalone spin-adapted CCSD/CCSDT program,'//
      &' precious heritage of the TAU group',-1)
 
       csdstim = cputime(real(0.))
@@ -111,11 +111,7 @@ c     iopt(10) .ne.0 - do not save pppp.
 
       call prtime("rdin",0,0)
 
-      call check_modules 
-
       call ordv_csd ! sorting integrals
-
-      call check_modules 
 
       iter=0
 
@@ -183,7 +179,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       call calt1
       call calt2
 
-      call check_modules 
+      !call check_modules 
 
       if (iopt(17).ne.0) then
         call calt3

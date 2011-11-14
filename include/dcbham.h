@@ -1,7 +1,5 @@
 #if !defined(__CVERSION__)
 
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbham.h
 !
 !*****************************************************************************
@@ -32,8 +30,8 @@
 !
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
-!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**) in correlated calcs.
-!     MOLMF3     - Use molecular mean field approximation (^4 DCG*)    in correlated calcs.
+!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**)       in correlated calcs.
+!     MOLMF3     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 !     SMLV1C     - Neglect two-center blocks of VSS
@@ -51,9 +49,9 @@
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
 !     X2C        - flag for generating matrix elements of
-!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2Cmod_x2c == .true. (module x2cmod_cfg))
 !     X2C_aba    - flag for generating matrix elements of
-!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2Cmod_x2c == .true. (module x2cmod_cfg))
 !                  in the molecular fragment/atom-by-atom approach
 !     IMFCH      - charge of the system to be spliited among mean-field summations of AMFI centers
 !     NOPRTR     - do not perform the preliminary transformation to the ON basis in the 2c mode
@@ -131,7 +129,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, MOLMF3, X2C, X2C_aba
+     &        TRMO4C2C, MOLMF3, X2C, X2C_aba, ecpcalc
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -143,6 +141,7 @@
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, MOLMF3, X2C, X2C_aba,     &
+     &                ecpcalc,                                          &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

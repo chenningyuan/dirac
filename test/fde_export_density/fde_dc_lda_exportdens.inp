@@ -13,9 +13,6 @@ LDA
 ! if ommited, the default filename is EMBPOT. regardless
 ! of the name, this file has to be transferred to the
 ! scratch directory first
-*DFT
-.IMPORT
-GRIDOUT
 *FDE
 .EMBPOT
 vemb.grid
@@ -23,12 +20,20 @@ vemb.grid
 GRIDOUT
 .LEVEL
 DHF
+**GRID
+! note that at the moment .IMPORT and .GRIDOUT cannot have the same name
+! (on gfortran) this is because the DFT grid unit remains open which confuses
+! embedding trying to use the same file with another unit
+.IMPORT
+numerical_grid
 **INTEGRALS
 .NUCMOD
  1
+*READIN
+.CONTRACTED
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .PRINT
  1
 **PROPERTIES

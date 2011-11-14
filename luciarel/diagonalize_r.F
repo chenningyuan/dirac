@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,10 +25,10 @@
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE CIEIG5_REL(MV7_REL,INICI,EROOTS,VEC1,
+      SUBROUTINE CIEIG5_REL(INICI,EROOTS,VEC1,
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
-     &           NDIM,NBLK,NROOTS,MAXVEC,MXCIIT,MXROOT,LUINCI,
-     &           IPRT,PEIGVC,NPRDET,IPNTR,NP1,NP2,NQ,
+     &           NDIM,NBLK,NROOTS,MAXVEC,MXCIIT,MXROOTS,LUINCI,
+     &           IPRT,NPRDET,IPNTR,NP1,NP2,NQ,
      &           SCR1,ISCR1,SCR2,T_CC,T_BUFF,
      &           EIGSHF,ICISTR,LBLK,IDIAG,THRES_E,
      &           NBATCH,LBATCHB,LBATCHE,
@@ -49,11 +49,12 @@
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
+#include "mxpdim.inc"
 #include "wrkspc.inc"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION INIDET(100)
       DIMENSION IPNTR(*), ISCR1(*)
-      DIMENSION PEIGVC(*), SCR1(*), SCR2(*)
+      DIMENSION SCR1(*), SCR2(*)
       DIMENSION IBLOCKL(*), NPARBLOCK(*) 
       DIMENSION IPROCLIST(*),IGROUPLIST(*)
 #include "infpar.h"
@@ -168,23 +169,6 @@ c           ISCR1(1) = 16
             end if
             IBASE = IBASE + NDEG
   100     CONTINUE
-        ELSE
-* =====================================
-*. Initial approximations are in PEIGVC
-* =====================================
-CTF  Currently never used !!!
-          CALL REWINE(LU1,-1)
-          DO 1984 IROOTS = 1, NROOTS
-                 IAM_REAL = 1
-C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
-            CALL WRSVCD_REL(LU1,LBLK,VEC1,IPNTR,
-     &           PEIGVC((IROOT-1)*NPRDET+1),NPRDET,NDIM,LUDIA,
-     &           NUM_BLOCKS,IBLOCKL,NPARBLOCK,IAM_REAL,IROOTS 
-#if defined (VAR_MPI2)
-     &           ,LU1LIST
-#endif
-     &           )
- 1984     CONTINUE
         END IF
       END IF
 *
@@ -349,7 +333,7 @@ C
      &                  T_CC,T_BUFF,WORK(KAPROJI),WORK(KAPROJ),
      &                  WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,IPNTR,
-     &                  LBLK,EIGSHF,0,0,IHAM12,SIGDEN_ROUTE,
+     &                  LBLK,EIGSHF,IHAM12,SIGDEN_ROUTE,
      &                  THRES_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LUCLIST,NBATCH,
@@ -361,13 +345,13 @@ C
 *
 #else
 *
-        CALL CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,WORK(KRNRM),WORK(KEIG),
+        CALL CMICDV(VEC1,VEC2,LU1,LU2,WORK(KRNRM),WORK(KEIG),
      &              SCR2(1),MXCIIT,
      &              NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOTS,MAXVEC,NROOTS,
      &              T_CC,T_BUFF,
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &              0,0,IHAM12,SIGDEN_ROUTE,THRES_E,WORK(KAMATC),
+     &              IHAM12,SIGDEN_ROUTE,THRES_E,WORK(KAMATC),
      &              WORK(KCWORK),WORK(KRWORK),WORK(KEIGVL),WORK(KIWORK))
 *
 #endif
@@ -685,235 +669,15 @@ CTF     end do
         CALL WRTMAT(EIGVEC,2*NDIM,NDIM,2*NDIM,2*NDIM)
       END IF
 *
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE CLASS_TRUNC_REL(NCLS,ICLS_L,CLS_CT,CLS_ET,CLS_C,CLS_E,
-     &                       E_CONV,ICLS_A,N_TRN_CLS,E_TRUNC,W_TRUNC)
-*
-* Decide which classes of parameters that can be eliminated
-*
-* Jeppe Olsen, Jan 97
-*              March '97 updated
-*
-*. Note in current version all energy contributions are
-*. positive.
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
-*. Input
-      DIMENSION ICLS_L(NCLS)
-      DIMENSION CLS_CT(NCLS),CLS_ET(NCLS),CLS_C(NCLS),CLS_E(NCLS)
-*. Output
-      INTEGER ICLS_A(NCLS)
-*. Giving  the truncated classes
-*  Additional output is
-*              N_TRN_CLS : Number of truncated classes
-*              E_TRUNC   : Estimated error of eliminating these classes
-*                          (compared to expansion with only largest
-*                           coefficients included).
-*                          E_TRUNC is thus the error that should be
-*                          added to the estmated error arising from
-*                          eliminating small terms
-*
-      WRITE(6,*)
-      WRITE(6,*) ' Welcome to TRUNC_CLASS '
-      WRITE(6,*) ' ======================='
-CM    WRITE(6,*)
-CM    WRITE(6,*) ' Information about classes '
-CM    WRITE(6,*) ' =========================='
-CM    WRITE(6,*)
-CM    WRITE(6,*)
-CM   & ' Class    Dimension      E          E(Trunc)      C',
-CM   & '         C(Trunc)'
-CM    WRITE(6,*)
-CM   & ' =============================================================',
-CM   & '========='
-CM     DO JCLS = 1, NCLS
-CM       IF(ABS(CLS_ET(JCLS)).GT.0.0D0.OR.ABS(CLS_CT(JCLS)).GT.0.0D0)
-CM   &   THEN
-CM         WRITE(6,'(3X,I4,1X,I10,3X,4(E12.6,1X))')
-CM   &     JCLS,ICLS_L(JCLS),CLS_ET(JCLS),CLS_E(JCLS),
-CM   &     CLS_CT(JCLS),CLS_C(JCLS)
-CM       END IF
-CM     END DO
-*
-       WRITE(6,*)
-     & ' Required threshold for convergence of energy',E_CONV
-*
-*. First find total energy correction and
-*. largest class contribution
-*
-      E_TOT = 0.0D0
-      E_CLS_MAX= 0.0D0
-      DO JCLS = 1, NCLS
-       E_TOT = E_TOT + CLS_ET(JCLS)
-       E_CLS_MAX = MAX( E_CLS_MAX,CLS_ET(JCLS))
-      END DO
-      WRITE(6,*) ' E_CLS_MAX = ', E_CLS_MAX
-*
-*. The truncation is done in two steps, first an overall
-*  threshold for deleting classes is constructed,
-*  and all classes with energy contributions less than this
-*  threshold are excluded.
-*. Then one takes a pass through remaining classes and
-*  eliminates untill the quota is filled
-*
-*. Loop over thesholds, increase by a given amount (1.5) in each it
-*. Until total energy threshold is passed
-*
-* Another strategy : start with E_CLS_MAX and decrease from there
-      ILOOP = 0
-      STEP = 1.2
- 1000 CONTINUE
-        ILOOP = ILOOP+1
-        IF(ILOOP.EQ.1) THEN
-C         E_THRES = E_CONV/NCLS
-          E_THRES =  E_CLS_MAX
-        ELSE
-C         E_THRES = E_THRES*STEP
-          E_THRES = E_THRES/STEP
-        END IF
-        E_ELI = 0.0D0
-        N_ELI = 0
-        DO JCLS = 1, NCLS
-          IF(ABS(CLS_ET(JCLS)).LE.E_THRES) THEN
-            E_ELI = E_ELI + CLS_ET(JCLS)
-            N_ELI = N_ELI + 1
-          END IF
-        END DO
-        IF(ILOOP.EQ.10000) THEN
-          WRITE(6,*) ' Loop count exceeded 10000'
-          WRITE(6,*) ' I am afraid I am in an infinite loop'
-          WRITE(6,*) ' So I will stop '
-          Call Abend2( 'CLASS_TRUNC: Iloop.eq.10000' )
-        END If
-      IF(E_ELI.GT. E_CONV) GOTO 1000
-*. We stepped out when the energy of the eliminated classes
-*  became to large, go back to previous threshold
-COLD  E_THRES = E_THRES/STEP
-      WRITE(6,*)
-     & ' Overall Threshold for eliminating classes',E_THRES
-*
-      N_PAS_CLS = 0
-      L_PAS_CLS = 0
-      N_TRN_CLS = 0
-      L_TRN_CLS = 0
-      N_ACT_CLS = 0
-      L_ACT_CLS = 0
-*
-      E_TRUNC = 0.0D0
-      E_TRUNCT = 0.0D0
-      W_TRUNCT= 0.0D0
-      W_TRUNC = 0.0D0
-*
-*. Eliminate classes with energy contribution less than E_THRES
-*
-      IONE = 1
-      CALL ISETVC(ICLS_A,IONE,NCLS)
-      DO JCLS = 1, NCLS
-        IF(CLS_CT(JCLS).NE.0.0D0.AND.CLS_ET(JCLS).LE. E_THRES) THEN
-          N_TRN_CLS = N_TRN_CLS + 1
-          L_TRN_CLS = L_TRN_CLS + ICLS_L(JCLS)
-          E_TRUNC  = E_TRUNC  + CLS_E (JCLS)
-          E_TRUNCT = E_TRUNCT + CLS_ET(JCLS)
-          W_TRUNC  = W_TRUNC + CLS_C (JCLS)
-          W_TRUNCT = W_TRUNCT+ CLS_CT(JCLS)
-          ICLS_A(JCLS) = 0
-        END IF
-      END DO
-      WRITE(6,*)
-     &  ' Number of classes with contributions less than E_THRES',
-     &   N_TRN_CLS
-      WRITE(6,*) ' Energy contributions from these classes ',
-     &   E_TRUNCT
-* Eliminate remaining classes until thres hold is obtained
-      DO JCLS = 1, NCLS
-        IF(CLS_CT(JCLS).EQ.0.0D0) THEN
-*. Passive class, no contribution before truncation
-          N_PAS_CLS = N_PAS_CLS + 1
-          L_PAS_CLS = L_PAS_CLS + ICLS_L(JCLS)
-          ICLS_A(JCLS) = 0
-        ELSE IF(ICLS_A(JCLS).EQ.1
-     &  .AND.ABS(E_TRUNCT+CLS_ET(JCLS)).LT.E_CONV) THEN
-          N_TRN_CLS = N_TRN_CLS + 1
-          L_TRN_CLS = L_TRN_CLS + ICLS_L(JCLS)
-          E_TRUNC  = E_TRUNC  + CLS_E (JCLS)
-          E_TRUNCT = E_TRUNCT + CLS_ET(JCLS)
-          W_TRUNC  = W_TRUNC + CLS_C (JCLS)
-          W_TRUNCT = W_TRUNCT+ CLS_CT(JCLS)
-          ICLS_A(JCLS) = 0
-        ELSE IF(ICLS_A(JCLS).EQ.1) THEN
-*. Class is active
-          N_ACT_CLS = N_ACT_CLS + 1
-          L_ACT_CLS = L_ACT_CLS + ICLS_L(JCLS)
-           ICLS_A(JCLS) = 1
-        END IF
-      END DO
-*. Correct for missing minus in first order correction
-      E_TRUNC  = -E_TRUNC
-      E_TRUNCT = -E_TRUNCT
-*
-C?    WRITE(6,*) ' ICLS_A giving active classes '
-C?    WRITE(6,*) ' ============================='
-C?    WRITE(6,*)
-C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
-      WRITE(6,*)
-      WRITE(6,*) ' Estimated complete energy contribution of ',
-     &            '  eliminated classes ', E_TRUNCT
-      WRITE(6,*) ' Estimated truncated energy contribution of ',
-     &            '  eliminated classes ', E_TRUNC
-      WRITE(6,*) ' Truncation error in eliminated classes was ',
-     &              E_TRUNC-E_TRUNCT
-      WRITE(6,*) ' Estimated truncated weight contribution of ',
-     &            '  eliminated classes ', W_TRUNC
-      WRITE(6,*) ' Estimated energy contribution without trunc',
-     &             -E_TOT
-      WRITE(6,*) ' Energy contribution of of active classes ',
-     &             -E_TOT-E_TRUNCT
 
-      WRITE(6,*)
-      WRITE(6,*) '  Class      Number     Dimension  '
-      WRITE(6,*) ' ================================= '
-      WRITE(6,'(A,5X,I5,5X,I10)') ' Passive  ', N_PAS_CLS,L_PAS_CLS
-      WRITE(6,'(A,5X,I5,5X,I10)') ' Truncated', N_TRN_CLS,L_TRN_CLS
-      WRITE(6,'(A,5X,I5,5X,I10)') ' Active   ', N_ACT_CLS,L_ACT_CLS
-*
-      WRITE(6,*)
-      WRITE(6,*) ' Information about classes '
-      WRITE(6,*) ' =========================='
-      WRITE(6,*)
-      WRITE(6,*)
-     & ' Class    Dimension      E          E(Trunc)      C',
-     & '         C(Trunc)   Active'
-      WRITE(6,*)
-     & ' =============================================================',
-     & '================'
-       DO JCLS = 1, NCLS
-         IF(ABS(CLS_ET(JCLS)).GT.0.0D0.OR.ABS(CLS_CT(JCLS)).GT.0.0D0)
-     &   THEN
-           WRITE(6,'(3X,I4,1X,I10,3X,4(E12.6,1X),1X,I2)')
-     &     JCLS,ICLS_L(JCLS),CLS_ET(JCLS),CLS_E(JCLS),
-     &     CLS_CT(JCLS),CLS_C(JCLS),ICLS_A(JCLS)
-         END IF
-       END DO
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE CMICDV(mv7_rel,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
+      SUBROUTINE CMICDV(VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
      &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  T_CC,T_BUFF,
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &                  IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE,
+     &                  IHAM12,SIGDEN_ROUTE,
      &                  CONVLIM,AMATC,CWORK,RWORK,EVL,IWORK)
 *
 * Multi root Davidson routine for complex Hermitian
@@ -940,7 +704,6 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 *                    nondiagonal preconditioning
 *                    (NPRDIM = 0 indicates no such subspace )
 *   For NPRDIM .gt. 0:
-*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
 *                    Holds preconditioner matrices
 *                    PHP,PHQ,QHQ in this order !!
 *          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
@@ -967,7 +730,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, FILELAB*8
-      LOGICAL CONVER,RTCNV(100),EXSTOP
+      LOGICAL CONVER,RTCNV(NROOT),EXSTOP
 *
 #include "krmcluci_inf.h"
 *
@@ -996,7 +759,6 @@ C
 *      WORK   : 2*MAXVEC*(2*MAXVEC+1)/2
 *
       DIMENSION FINEIG(*)
-      EXTERNAL mv7_rel
 *
       call qenter('CMICDV')
 *
@@ -1079,15 +841,7 @@ C
 *--------------------------------------------------------------
 * Generalization to SIGDEN routine block implemented.
 *--------------------------------------------------------------
-           if (SIGDEN_ROUTE.eq.'TRADIT') then
-             call mv7_rel(VEC1,VEC2,LU3,LU4,INONREL)
-           else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-             call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
-           else
-             write(LUWRT,*) 'Route for sigma and densities not allowed.'
-             write(LUWRT,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
-             call abend ('Quitting.')
-           end if
+           call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
 *
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
            CALL REWINE(LU4,LBLK)
@@ -1112,7 +866,7 @@ C                 INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
            END DO
          END IF
 *
-         IF( IPRT .GE.10.OR.IPREDZN.NE.0 ) THEN
+         IF( IPRT .GE.10) THEN
            WRITE(LUWRT,*) ' Initial projected matrix, real part'
            CALL PRSYM(APROJR,NINVEC)
            WRITE(LUWRT,*) ' Initial projected matrix, imag part'
@@ -1134,7 +888,7 @@ CSK
      &                RWORK,EVL,IWORK)
 C
 C
-         IF(IPRT .GE. 3.OR.IPREDZN.NE.0 ) THEN
+         IF(IPRT .GE. 3) THEN
            WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
            WRITE(LUWRT,'(F22.13)')
      &     ( EIG(IROOT,1)+EIGSHF,IROOT=1,NROOT)
@@ -1142,7 +896,7 @@ C
          NVEC = NINVEC
        END IF
 *
-       IF (MAXIT.EQ.1.OR.IPREDZN.EQ.1) GOTO  901
+       IF (MAXIT.EQ.1) GOTO  901
 *
 * ======================
 *. Loop over iterations
@@ -1226,8 +980,8 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
             RTCNV(IROOT) = .FALSE.
             CONVER = .FALSE.
          END IF
-         WRITE(LUWRT,'(A19,I5,1P,E15.6,0P,F20.12,L10)')
-     &     ' Iter RNORM EIGAPR RTCNV', ITER,RNORM,EIGAPR+EIGSHF,RTCNV
+         WRITE(LUWRT,'(A19,5X,I5,3X,1E18.13,3X,1F19.10)')
+     &     ' Iter RNORM EIGAPR ', ITER,RNORM,EIGAPR+EIGSHF
 * I suppose this is only a check for the necessity of defining
 * a new search direction. Using intermediate ITERIM instead ...
 CTF      ITER = ITER + 1
@@ -1341,14 +1095,10 @@ CTF
         END IF
 *
 * Generalization to SIGDEN routine block implemented.
-        if (SIGDEN_ROUTE.eq.'TRADIT') then
-          call mv7_rel(VEC1,VEC2,LU3,LU4,INONREL)
-        else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
-        end if
+        call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
 *
         IF(IPRT.GE.10000) THEN
-          WRITE(LUWRT,*) ' Output vector from mv7_rel '
+          WRITE(LUWRT,*) ' Output vector from sigden_ctrl '
           CALL WRTVCDC(VEC1,LU4,1,IRC,LBLK)
         END IF
         CALL REWINE(LU4,LBLK)
@@ -1404,8 +1154,7 @@ CJO     call towave(nroot,eig(1,iter))
 **  reset or assemble eigenvectors
 * =============================================
 *
-      IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER.
-     &   OR.IPREDZN.EQ.1)THEN
+      IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
 *. Reset C vectors
         CALL REWINE( LU5,LBLK)
         DO IROOT = 1, NROOT
@@ -1534,17 +1283,11 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
       WALLTID = SECTID(WALLITR2-WALLITR1)
       WRITE(LUWRT,9300) CPUTID,WALLTID
 *
-      IF( ITER .LE. MAXIT .AND. .NOT. CONVER.AND.IPREDZN.EQ.0) THEN
-        GOTO 1000
-      ELSE IF(IPREDZN.EQ.1) THEN
-        WRITE(LUWRT,*) ' PREDIA vectors written to file LUCVECT'
-        RETURN
-      END IF
+      IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
 
 * ( End of loop over iterations )
 *
-      IF(IPREDZN.EQ.0) THEN
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 0 )
@@ -1556,7 +1299,6 @@ C!?      ITER = ITER - 1
          IF (IPRT .GE. 0 )
      &   WRITE(LUWRT,1180) ITER
  1180    FORMAT(/'  Convergence was obtained in ',I3,' iterations')
-      END IF
       END IF
 *
       if (IPRT.gt.0) then
@@ -1625,7 +1367,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
         DO I = 1, NROOT
            FINEIG(I) = EIG(I,ITER)+EIGSHF
         END DO
-        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
       END IF
 C
@@ -1642,218 +1384,8 @@ C
  1120 FORMAT(/3X,I3,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
       END
-#if defined CODE_NOT_WORKING
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-*
-      SUBROUTINE COMHAM(VEC1,VEC2,NVAR,T_CC,SIGDEN_ROUTE)
-*
-* Construct and diagonalize complete Hamiltonian
-*
-*
-* LUDIA needed for giving form of vectors
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
-*
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "cprnt.inc"
-#include "clunit.inc"
-#include "files_r.inc"
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-#include "parluci.h"
 
-*
-      character*6 SIGDEN_ROUTE
-*
-      common/CECORER/ECORE
-*
-      PARAMETER(MXDIM = 700)
-      DIMENSION VEC1(*), VEC2(*)
-!      miro: very huge allocation (make diag output)
-      DIMENSION SCR1((2*MXDIM)**2),SCR2((2*MXDIM)**2)
-*
-      NTEST = 000
-*
-      write(LUWRT,*) '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-      write(LUWRT,*) 'MXDIM in COMHAM set to ',MXDIM
-      write(LUWRT,*) '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-*
-      LUIN = LUSC92
-      LUOUT = LUSC93
-*     node-dependend file names ...
-      Open(Unit=LUIN,File=NLUSC92_MPI(1:LUSC929_MPIL),
-     &     Status='UNKNOWN', Form='UNFORMATTED')
-      Open(Unit=LUOUT,File=NLUSC93_MPI(1:LUSC929_MPIL),
-     &     Status='UNKNOWN', Form='UNFORMATTED')
-*
-      LBLK = -1
-*
-      LENH = NVAR**2
-      call memmar(KHR,LENH,'ADDS  ',2,'HREAL  ')
-      call memmar(KHI,LENH,'ADDS  ',2,'HIMAG  ')
-*
-*. Loop over elements in real part
-      DO I = 1, NVAR
-        WRITE(LUWRT,*) ' COMHAM : I = ', I
-        CALL FLSHFO(LUWRT)
-* Real part
-        CALL REWINE(LUDIA,LBLK)
-        CALL REWINE(LUIN,LBLK)
-        ONE = 1.0D0
-*       !ATTENTION! THE CALL TO THIS SUBROUTINE HAS BEEN CHANGED!
-*       THE FOLLOWING CALLS NEED TO BE ADAPTED
-        WRITE(LUWRT,*) 'I might produce shit! Please look into the code'
-        CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,1,NVAR,LUDIA,
-     &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY
-#if defined (VAR_MPI2)
-     &                  ,IDUMMY
-#endif
-     &                  )
-* Imaginary part
-        CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,0,NVAR,LUDIA,
-     &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY
-#if defined (VAR_MPI2)
-     &                  ,IDUMMY
-#endif
-     &                  )
-* Do the sigma
-        CALL REWINE(LUOUT,LBLK)
-        if (SIGDEN_ROUTE.eq.'TRADIT') then
-          call mv7_rel(VEC1,VEC2,LUIN,LUOUT,0)
-        else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-          call sigden_ctrl(VEC1,VEC2,LUIN,LUOUT,T_CC,T_BUFF,1
-#if defined (VAR_MPI2)
-     &                   ,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
-     &                    IDUMMY,IDUMMY,IDUMMY
-#endif
-     &                   )
-        else
-          write(LUWRT,*) 'Route for sigma and densities not allowed.'
-          write(LUWRT,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
-          call abend2 ('Quitting.')
-        end if
-*.
-        CALL REWINE(LUOUT,LBLK)
-        CALL MERGE_VEC(LUOUT,WORK(KHR+(I-1)*NVAR))
-        CALL MERGE_VEC(LUOUT,WORK(KHI+(I-1)*NVAR))
-C            MERGE_VEC(LU,VEC)
-C       WRITE(6,*) I,' th Sigma vector read in in COMHAM '
-C       CALL WRTMAT(WORK(KHR+(I-1)*NVAR),1,NVAR,1,NVAR)
-      END DO
-*
-      if (NTEST.ge.50) then
-         WRITE(LUWRT,*) ' Real and Imaginary parts of Hamiltonian '
-         CALL WRTMATMN(WORK(KHR),NVAR,NVAR,NVAR,NVAR,LUWRT)
-         WRITE(LUWRT,*)
-         WRITE(LUWRT,*)
-         WRITE(LUWRT,*)
-         CALL WRTMATMN(WORK(KHI),NVAR,NVAR,NVAR,NVAR,LUWRT)
-      end if
-*
-*. Check imag part > Antihermitian
-      XMXDIFF = 1.0D-11
-      DO I = 1, NVAR
-        DO J = 1, I
-          IF(ABS(WORK(KHI+(I-1)*NVAR+J-1)+WORK(KHI+(J-1)*NVAR+I-1)).
-     &           GT.XMXDIFF) THEN
-            Write(LUWRT,*)
-            WRITE(LUWRT,*)
-     &      ' Imag matrix not antihermitean, I,J, H(I,J),H(J,I), DIFF'
-            WRITE(LUWRT,*) I,J,WORK(KHI+(I-1)*NVAR+J-1),
-     &                     WORK(KHI+(J-1)*NVAR+I-1),
-     &                     WORK(KHI+(I-1)*NVAR+J-1)
-     &                     +WORK(KHI+(J-1)*NVAR+I-1)
-          END IF
-        END DO
-      END DO
-*. Check real part : Hermitian ?
-      XMXDIFF = 1.0D-11
-      DO I = 1, NVAR
-        DO J = 1, I
-          IF(ABS(WORK(KHR+(I-1)*NVAR+J-1)-WORK(KHR+(J-1)*NVAR+I-1))
-     &                .GT.XMXDIFF) THEN
-            Write(LUWRT,*)
-            WRITE(LUWRT,*)
-     &      ' Real matrix not hermitean, I,J, H(I,J),H(J,I), DIFF'
-            WRITE(LUWRT,*) I,J,WORK(KHR+(I-1)*NVAR+J-1),
-     &                     WORK(KHR+(J-1)*NVAR+I-1),
-     &                     WORK(KHR+(I-1)*NVAR+J-1)
-     &                     -WORK(KHR+(J-1)*NVAR+I-1)
-          END IF
-        END DO
-      END DO
-*
-*. Diagonalize
-*
-*. But first reform to lower half form
-      SIGNTP = 1.0
-      CALL TRIPAK(WORK(KHR),SCR1,1,NVAR,NVAR,SIGNTP)
-      CALL DCOPY(NVAR*(NVAR+1)/2,SCR1,1,WORK(KHR),1)
-*. Read in two-electron terms from unit 30
-*. Kept for historical (sentimental) reasons
-C     IDIR2E = 1
-C     IF(IDIR2E.EQ.1) THEN
-C       LU30 =
-C       REWIND (LU30)
-C       DO IDIM = 1, NVAR
-C         READ(LU30,*) (SCR1(IDIM*(IDIM-1)/2+JCOL),JCOL=1,IDIM)
-C       END DO
-C       WRITE(6,*) ' 2 el  terms read in '
-C       CALL PRSYM(SCR1,NVAR)
-*. And add
-C       call VECSUM(HR,HR,SCR1,1.0D0,1.0D0,NVAR*(NVAR+1)/2)
-C       write(6,*) ' Updated HR '
-C       CALL PRSYM(HR,NVAR)
-C     END IF
-C          TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGNTP)
-      CALL TRIPAK(WORK(KHI),SCR1,1,NVAR,NVAR,SIGNTP)
-      CALL DCOPY(NVAR*(NVAR+1)/2,SCR1,1,WORK(KHI),1)
-*
-      write(LUWRT,*) 'NVAR : ',NVAR
-      NVAR_SAVE = NVAR
-      CALL CEIGEN(WORK(KHR),WORK(KHI),NVAR,VEC1,SCR1,SCR2)
-C          CEIGEN(HR,HI,NDIM,EIGVAL,EIGVEC,SCR)
-      write(LUWRT,*) 'NVAR_SAVE : ',NVAR_SAVE
-*
-*  Add nuclear repulsion energy
-      DO I = 1, NVAR_SAVE
-         VEC1(I) = VEC1(I) + ECORE
-      END DO
-*
-      WRITE(LUWRT,*) ' Lowest Eigenvalue ', VEC1(1)
-      WRITE(LUWRT,*) ' All eigenvalues '
-      DO I = 1, NVAR_SAVE
-         WRITE(LUWRT,'(1X,I4,2X,1F18.10)') I,VEC1(I)
-      END DO
-*
-*  Print MXANAVEC eigenvectors
-      if (IPRWFC.ge.1) then
-        do IANA=1,MXANAVEC,1
-          write(LUWRT,*)
-          write(LUWRT,'(A,1X,I4)') ' Eigenvector number ... ',IANA
-        end do
-      end if
-*
-      close(unit=LUIN,status='DELETE')
-      close(unit=LUOUT,status='DELETE')
-*
-      RETURN
-      END
-#endif
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-*
       SUBROUTINE MICDV6_REL(
      &                  T_CC,T_BUFF,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,
      &                  MAXIT,
@@ -1884,9 +1416,6 @@ C          CEIGEN(HR,HI,NDIM,EIGVAL,EIGVEC,SCR)
 *                    nondiagonal preconditioning
 *                    (NPRDIM = 0 indicates no such subspace )
 *   For NPRDIM .gt. 0:
-*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
-*                    Holds preconditioner matrices
-*                    PHP,PHQ,QHQ in this order !!
 *          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
 *          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
 *          NP1,NP2,NQ : Dimension of the three subspaces
@@ -1920,7 +1449,7 @@ CTF
 *      with largest overlap with the previous space
 *
        DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(10)
+       LOGICAL CONVER,RTCNV(NROOT)
        REAL*8 INPRDD, INPROD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 *. Notice XJEP is also used for ROOTHOMING, should be allocated
@@ -2803,9 +2332,6 @@ C      END IF
 *                    nondiagonal preconditioning
 *                    (NPRDIM = 0 indicates no such subspace )
 *   For NPRDIM .gt. 0:
-*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
-*                    Holds preconditioner matrices
-*                    PHP,PHQ,QHQ in this order !!
 *          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
 *          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
 *          NP1,NP2,NQ : Dimension of the three subspaces
@@ -2837,7 +2363,7 @@ C      END IF
 *      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
 *
        DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(100)
+       LOGICAL CONVER,RTCNV(NROOT)
        REAL*8 INPRDD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12,FILELAB*8
 *
@@ -2846,14 +2372,6 @@ C      END IF
        WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
        WRITE(LUWRT,*) '               Entering MICDV4 (rel)    '
        WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
-*
-       IPICO = 0
-       IF(IPICO.NE.0) THEN
-C?       WRITE(6,*) ' Perturbative solver '
-         MAXVEC = MIN(MAXVEC,2)
-       ELSE IF(IPICO.EQ.0) THEN
-C?       WRITE(6,*) ' Variational  solver '
-       END IF
 *
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
@@ -2868,6 +2386,9 @@ C?       WRITE(6,*) ' Variational  solver '
          STOP 20
        END IF
 *
+!      IPRT = 5000 ! debug
+!      IPRT = 0000
+
        KAPROJ = 1
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
        TEST = 1.0D-8
@@ -3135,22 +2656,6 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       write(LUWRT,*) 'Dimension of projected matrix:',NVEC
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
-      IF(IPICO.NE.0) THEN
-        E0VAR = WORK(KAPROJ)
-        C0VAR = AVEC(1)
-        C1VAR = AVEC(2)
-        C1NRM = SQRT(C0VAR**2+C1VAR**2)
-*. overwrite with pert solution
-        AVEC(1) = 1.0D0/SQRT(1.0D0+C1NRM**2)
-        AVEC(2) = -C1NRM/SQRT(1.0D0+C1NRM**2)
-        E0PERT = AVEC(1)**2*APROJ(1)
-     &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
-     &         + AVEC(2)**2*APROJ(3)
-        WORK(KAPROJ) = E0PERT
-        WRITE(LUWRT,*) ' Var and Pert solution, energy and coefficients'
-        WRITE(LUWRT,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
-        WRITE(LUWRT,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
-      END IF
       DO 160 IROOT = 1, NROOT
         EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
  160  CONTINUE
@@ -3314,7 +2819,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
         DO I = 1, NROOT
            FINEIG(I) = EIG(ITER,I)+EIGSHF
         END DO
-        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
       END IF
 C

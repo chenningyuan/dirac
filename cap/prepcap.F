@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,7 +20,7 @@
 !dirac_copyright_end
 
 C  /* Deck capinp */
-      SUBROUTINE CAPINP(WORD,RESET,WORK,LWORK)
+      SUBROUTINE CAPINP(WORD,RESET)
 C*****************************************************************************
 C
 C  Input section for CAP-module
@@ -42,7 +42,6 @@ C*****************************************************************************
 C
       LOGICAL SET, NEWDEF,RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DIMENSION WORK(LWORK)
 C
       SAVE SET
       DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.OVLCAP',
@@ -959,8 +958,7 @@ C .... for the relativistic case add Vdc operator (if wished)
      &         NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
       ENDIF
 
-C      ... add CAPI1 into CAPI
-C      CALL DCOPY(NORBT*NORBT*NZ,CAPI1,1,CAPI,1)
+C      ... add CAPI1 to CAPI
        CALL DAXPY(NORBT*NORBT*NZ,1.0D0,CAPI1,1,CAPI,1)
 
        IF (IPRCAP.GE.5) THEN
@@ -1047,7 +1045,7 @@ C /* Deck addcapmom */
       SUBROUTINE ADDCAPMOM(NSTRT,CAPMOM,FMOM,MULTIM)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Purpose: add MOLFDIR like CAPMOM to the FMOM
+C  Purpose: add MOLFDIR like operator CAPMOM to the FMOM
 C
 C  On input: CAPMOM - to be added to FMOM
 C            MULTIM - flag to decide the multiplication by the imag.unit
@@ -1093,6 +1091,8 @@ C         i.(a+ib) = -b + i.a
           CAPMOM(I,J,1) = - TEMP
         ENDDO
         ENDDO
+        WRITE(LUPRI,'(2X,A)')
+     &  'ADDCAPMOM: CAP_MO with imaginary unit to get CAP_IM.'
         IF (IPRCAP.GE.5) THEN
          WRITE(LUPRI,'(/3X,A)')
      &   'ADDCAPMOM:  *** Modified i.CAPMOM - mult.by "i"-unit ***'
@@ -1101,7 +1101,7 @@ C         i.(a+ib) = -b + i.a
         ENDIF
       ELSE
        WRITE(LUPRI,'(2X,A)')
-     & 'ADDCAPMOM: Warning - no multiplication with imaginary unit !'
+     & 'ADDCAPMOM: No multiplication of CAP_MO with imaginary unit.'
       ENDIF
 
 C      ...Add CAPMOM into FMOM
@@ -1131,14 +1131,14 @@ C /* Deck capmfdadapt */
       SUBROUTINE CAPMFDADAPT(CAP,NSTRT,NSTR,FMO,FMOM,WORK,LWORK) 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C Do the adaptation of the Fock matrix for CAP-FSCCSD calculations. Add CAP real
+C Adapt of the Fock matrix for CAP-FSCCSD calculations. Add both CAP real
 C and imaginary contributions.
 C
 C Input: CAP - logical
 C
 C Output: FMOM with CAP (re,im) parts added
 C
-C Called from MRCON1/traone.F
+C ===  Called from MRCON1/traone.F   ===
 C
 C Written by Miro ILIAS, May 2007, Tel Aviv
 C
@@ -1208,9 +1208,9 @@ C       ... control printout
             NZX=NZ
            ENDIF
            WRITE(LUPRI,'(/3X,A,I2/)')
-     &     'CAPMFDADAPT: *** Core Fock matrix with all CAP(re,im) '//
-     &     'added (MOLFDIR format) ***'
-           CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
+     &  'CAPMFDADAPT: *** Core Fock matrix with complete CAP(re,im) '//
+     &  'added (MOLFDIR format) ***'
+         CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZX,2),
      &               IPQTOQ(1,0),LUPRI)
        ENDIF
       ENDIF
@@ -1278,7 +1278,6 @@ C
 C        Write integrals to file
 C
       INQUIRE(FILE='AOPROPER',EXIST=ISFILE)
-
       IF (.NOT.ISFILE) THEN
         WRITE(LUPRI,*) 'SAVECAP: AOPROPER NOT PRESENT !'
         CALL QUIT('SAVECAP: AOPROPER file is NOT PRESENT !')
@@ -1338,11 +1337,11 @@ C     ... label for AOPROPER ...
 
       RTNLBL(2)(5:8) = COMB
 
-C     ... write integrals of each individual label
+C     ... write integrals according to each individual label
       CALL WRTPRO(CAPINTS,NNBBASX,LABEL,RTNLBL,IPRCAP)
 
 C     ... control printout ...
-      IF (IPRCAP.GE.2) THEN
+      IF (IPRCAP.GE.0) THEN
         WRITE(LUPRI,'(2X,A,A8,A,A8,A,A)')
      &  'SAVECAP: CAP integrals written to the AOPROPER'//
      &  ' file under the label: ',
@@ -1471,14 +1470,13 @@ C   read integrals from the PEMAT file under the LBL label into the CAP array
 C
 C   do the symmetry adaptation into the CAPSA array
 C   
-C   make triangular matrix of it and SAVE it to the AOPROPER file   
+C   make triangular matrix of it and SAVE integrals on the AOPROPER file   
 C   
 C  On iput:
 C =============   LBL
 C                 CAP, CAPSA, CAPSAT
 C                 ICAPBFO
 C                 IOBF1_2  
-C   
 C   
 C   Called from prepcap.F/CAPADAPT
 C
@@ -1666,7 +1664,7 @@ C       IREPD = 3
 
       CALL DZERO(CAPSA,N2BBASX)
 
-C   ... only full matrixes must be passed into the subroutine 
+C   ... only full matrixes must be passed to the subroutine
       CALL MTAOSO(CAP,CAPSA,NBASIS,IREPD,IPRCAP)
 
       IF (IPRCAP.GE.4) THEN

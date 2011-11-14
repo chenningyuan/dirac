@@ -1,10 +1,8 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
-# script for selecting modules, packaging, exporting, and releasing of DIRAC
-# Radovan Bast <radovan.bast@uit.no> Tromso 2010
-#
+# script for selecting DIRAC modules
 # based on: old pamadm written by Trond Saue, Thomas Enevoldsen, Joern Thyssen, and others
-#           and prepare_release.sh written by Ulf Ekstr\"om
+#           and prepare_release.sh written by Ulf Ekstrom
 #
 # examples: print available options
 #           ./pamadm -h
@@ -18,10 +16,7 @@
 #           select some modules
 #           ./pamadm --foo --bar
 #
-#           select modules for release and export
-#           ./pamadm --release --export=DIRAC10
-#
-#           select modules for release without exporting them
+#           select modules for release
 #           ./pamadm --release
 
 from optparse import OptionParser
@@ -32,37 +27,7 @@ import shutil
 import distutils.util
 import string
 import datetime
-
-#
-# classes
-# =======
-
-class dirac_test:
-     def __init__(self, directory):
-         self.directory     = directory
-     def print_directory(self):
-         print self.directory
-
-class short_test(dirac_test):
-      """
-      short test
-      """
-      def type(self):
-          return 'short'
-
-class medium_test(dirac_test):
-      """
-      medium test
-      """
-      def type(self):
-          return 'medium'
-
-class long_test(dirac_test):
-      """
-      long test
-      """
-      def type(self):
-          return 'long'
+import glob
 
 class dirac_module:
      def __init__(self, flag, message):
@@ -99,50 +64,38 @@ def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
 
 def provide_star_basisfile_names():
-#########################################################
-#
-# Restore basis set files with "*" in name
-#
-#########################################################
-  # : ls basis_dalton/*star
-  basfile={   \
-     '3-21++G-star':'3-21++G*',\
-     '3-21G-star':'3-21G*',\
-     '6-311+G-star':'6-311+G*',\
-     '6-311G-star':'6-311G*', \
-     '6-311++G-star-star':'6-311++G**',\
-     '6-311G-star-star':'6-311G**',\
-     '6-31++G-star':'6-31++G*', \
-     '6-31+G-star':'6-31+G*',\
-     '6-31G-star':'6-31G*',\
-     '6-31++G-star-star':'6-31++G**',\
-     '6-31G-star-star':'6-31G**' \
-     }
-  basdir="basis_dalton"+"/" # basis set directory
-  for basfilename in basfile:
-    src=basdir+basfilename
-    dest=basdir+basfile[basfilename]
-    #print basfilename,basfile[basfilename]
-    #print src,dest
-    shutil.copy(src,dest)
- # print '...generated basis set files with "*" in names'
+    '''
+    Restore basis set files with "*" in name
+    (this is to be done on non-Windows machines)
+    '''
+    # : ls basis_dalton/*star
+    basfile={   \
+       '3-21++G-star':'3-21++G*',\
+       '3-21G-star':'3-21G*',\
+       '6-311+G-star':'6-311+G*',\
+       '6-311G-star':'6-311G*', \
+       '6-311++G-star-star':'6-311++G**',\
+       '6-311G-star-star':'6-311G**',\
+       '6-31++G-star':'6-31++G*', \
+       '6-31+G-star':'6-31+G*',\
+       '6-31G-star':'6-31G*',\
+       '6-31++G-star-star':'6-31++G**',\
+       '6-31G-star-star':'6-31G**' \
+       }
+    basdir="basis_dalton"+"/" # basis set directory
+    for basfilename in basfile:
+        src=basdir+basfilename
+        dest=basdir+basfile[basfilename]
+        shutil.copy(src,dest)
 
-###########################
-### main function start ###
-###########################
+# import external functions, assuming you are always in trunk/ directory
+sys.path.append(os.getcwd() + '/utils')
 
-### import external functions, assuming you are always in trunk/ directory !
-sys.path.append(os.getcwd()+'/utils')
-from common import make_old_file, is_windows
-from common import svn_info, create_link, copy_parent
-
-svn_object = svn_info() # object of the class
-
-# list of vital directories and files - these are always exported/released
-# ========================================================================
-
+# list of vital directories and files
+# these are always packaged
 
 vital_directories = []
+
 vital_directories.append('dirac')
 vital_directories.append('prp')
 vital_directories.append('abacus')
@@ -154,10 +107,10 @@ vital_directories.append('moltra')
 vital_directories.append('dirrci')
 vital_directories.append('lucita')
 vital_directories.append('utils')
-vital_directories.append('dft')
-vital_directories.append('build')
+vital_directories.append('cfun')
+vital_directories.append('grid')
+vital_directories.append('xcint/src')
 vital_directories.append('include')
-vital_directories.append('modules')
 vital_directories.append('basis')
 vital_directories.append('basis_dalton')
 vital_directories.append('visual')
@@ -168,143 +121,103 @@ vital_directories.append('amfi')
 vital_directories.append('krmc')
 vital_directories.append('luciarel')
 vital_directories.append('embedding')
+vital_directories.append('x2c')
+vital_directories.append('cmake')
 
-vital_files = []
-vital_files.append('configure')
-vital_files.append('testlast')
-vital_files.append('pam.in')
-vital_files.append('Makefile')
-vital_files.append('README')
-vital_files.append('config.guess')
-vital_files.append('config.status')
-vital_files.append('config.sub')
-vital_files.append('pamq.py.in')
-vital_files.append('test/MPI2_test.F')
-vital_files.append('test/README')
-vital_files.append('test/bdrep')
-vital_files.append('test/crep')
-vital_files.append('test/drep')
-vital_files.append('test/hdrep')
-vital_files.append('test/run.sh.in')
-vital_files.append('test/runtest')
+# these tests are always packaged
 
+list_of_tests = []
+list_of_tests.append('acmoin')
+list_of_tests.append('basis_automatic_augmentation')
+list_of_tests.append('basis_contraction')
+list_of_tests.append('basis_input')
+list_of_tests.append('bss_energy')
+list_of_tests.append('cc_energy_and_mp2_dipole')
+list_of_tests.append('cc_linear')
+list_of_tests.append('cisd_energy')
+list_of_tests.append('cosci_energy')
+list_of_tests.append('cosci_energy_spinfree')
+list_of_tests.append('cosci_methods')
+list_of_tests.append('cosci_tmom')
+list_of_tests.append('density_at_nuclei')
+list_of_tests.append('dft_geo_opt')
+list_of_tests.append('dft_ac')
+list_of_tests.append('dft_alda')
+list_of_tests.append('dft_ao_eval')
+list_of_tests.append('dft_betasigma')
+list_of_tests.append('dft_response')
+list_of_tests.append('dft_response_symmetry')
+list_of_tests.append('dft_pp86')
+list_of_tests.append('edm')
+list_of_tests.append('efg')
+list_of_tests.append('free-particle_projection')
+list_of_tests.append('frozen_orbitals')
+list_of_tests.append('fscc')
+list_of_tests.append('gaunt')
+list_of_tests.append('geo_opt')
+list_of_tests.append('geo_opt_saddle')
+list_of_tests.append('krci_energy')
+list_of_tests.append('krci_properties_omega_tdm')
+list_of_tests.append('krci_properties_perm_dipmom')
+list_of_tests.append('lucita_large')
+list_of_tests.append('lucita_short')
+list_of_tests.append('mcscf_energy')
+list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
+list_of_tests.append('mp2_energy')
+list_of_tests.append('mp2_properties')
+list_of_tests.append('operator_trs_flip')
+list_of_tests.append('projection_analysis')
+list_of_tests.append('pvc_scf')
+list_of_tests.append('reladc')
+list_of_tests.append('response_C6')
+list_of_tests.append('response_hf_polarizability')
+list_of_tests.append('response_lao_shield')
+list_of_tests.append('response_rkbimp_shield')
+list_of_tests.append('response_nmr_levy-leblond')
+list_of_tests.append('response_nmr_spin-spin')
+list_of_tests.append('response_pv_nmr')
+list_of_tests.append('response_qr')
+list_of_tests.append('stex')
+list_of_tests.append('symmetry_recognition')
+list_of_tests.append('symmetry_scf_energy')
+list_of_tests.append('visual_div_rot')
+list_of_tests.append('visual_elf')
+list_of_tests.append('visual_gamma5')
+list_of_tests.append('visual_general')
+list_of_tests.append('visual_virtual_density')
+list_of_tests.append('xyz_input')
+list_of_tests.append('zora')
 
-# list of vital tests - these are always exported/released
-# ========================================================
-
-vital_tests = []
-# short tests
-vital_tests.append(short_test('cc_energy_and_mp2_dipole'))
-vital_tests.append(short_test('geo_opt'))
-vital_tests.append(short_test('response_nmr_levy-leblond'))
-vital_tests.append(short_test('cisd_energy'))
-vital_tests.append(short_test('cosci_energy'))
-vital_tests.append(short_test('cosci_energy_spinfree'))
-vital_tests.append(short_test('cosci_methods'))
-vital_tests.append(short_test('mp2_energy'))
-vital_tests.append(short_test('basis_contraction'))
-vital_tests.append(short_test('basis_input'))
-vital_tests.append(short_test('response_hf_polarizability'))
-vital_tests.append(short_test('lucita_short'))
-vital_tests.append(short_test('cc_linear'))
-vital_tests.append(short_test('symmetry_recognition'))
-vital_tests.append(short_test('bss_energy'))
-vital_tests.append(short_test('gaunt'))
-vital_tests.append(short_test('dft_ac'))
-vital_tests.append(short_test('dft_ao_eval'))
-vital_tests.append(short_test('dft_betasigma'))
-vital_tests.append(short_test('dft_response'))
-vital_tests.append(short_test('dft_response_symmetry'))
-vital_tests.append(short_test('xyz_input'))
-vital_tests.append(short_test('basis_automatic_augmentation'))
-vital_tests.append(short_test('free-particle_projection'))
-vital_tests.append(short_test('krci_properties_perm_dipmom'))
-vital_tests.append(short_test('krci_properties_omega_tdm'))
-vital_tests.append(short_test('krci_energy'))
-vital_tests.append(short_test('mcscf_energy'))
-vital_tests.append(short_test('response_lao_shield'))
-vital_tests.append(short_test('visual_elf'))
-vital_tests.append(short_test('visual_gamma5'))
-vital_tests.append(short_test('visual_virtual_density'))
-# medium tests
-vital_tests.append(medium_test('dft_alda'))
-vital_tests.append(medium_test('response_nmr_spin-spin'))
-vital_tests.append(medium_test('efg'))
-vital_tests.append(medium_test('zora'))
-vital_tests.append(medium_test('symmetry_scf_energy'))
-vital_tests.append(medium_test('fscc'))
-vital_tests.append(medium_test('projection_analysis'))
-vital_tests.append(medium_test('frozen_orbitals'))
-vital_tests.append(medium_test('density_at_nuclei'))
-vital_tests.append(medium_test('mp2_properties'))
-vital_tests.append(medium_test('response_qr'))
-vital_tests.append(medium_test('stex'))
-vital_tests.append(medium_test('visual_general'))
-vital_tests.append(medium_test('visual_div_rot'))
-vital_tests.append(medium_test('reladc'))
-# long tests
-vital_tests.append(long_test('response_pv_nmr'))
-vital_tests.append(long_test('lucita_large'))
-
-
-# list of directories and files that are never compiled as part of DIRAC main executable
-# ======================================================================================
-
-directories_never_compiled = []
-directories_never_compiled.append('utils')
-directories_never_compiled.append('xcfun/src')
-directories_never_compiled.append('xcfun/test')
+# list of directories and files
+# that are never compiled as part of DIRAC main executable
 
 files_never_compiled = []
+files_never_compiled.append('argosecp/argos_input.F')
 files_never_compiled.append('utils/cube2pov.c')
-files_never_compiled.append('test/MPI2_test.F')
 files_never_compiled.append('relccsd/ccdriv_nomemget.F')
 files_never_compiled.append('relccsd/ccints_nomemget.F')
 files_never_compiled.append('eri/eri2par.F')
 files_never_compiled.append('openrsp/openrsp_visual.F90')
 files_never_compiled.append('densfit/denfit_noddy.F')
 files_never_compiled.append('lucita/unused.F')
-files_never_compiled.append('dft/vrg.F')
 files_never_compiled.append('eri/eriprg.F')
-files_never_compiled.append('dft/fun-tester.c')
+files_never_compiled.append('cfun/fun-tester.c')
 files_never_compiled.append('relccsd/ccmain.F')
 files_never_compiled.append('relccsd/quit.F')
-files_never_compiled.append('build/gen_fortran_interface_h.c')
+files_never_compiled.append('utils/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
-files_never_compiled.append('xcfun/fortran/example.f90')
+files_never_compiled.append('xcint/xcfun/fortran/example.F90')
 files_never_compiled.append('fmm/mm_standalone_drv.f90')
 files_never_compiled.append('fmm/mm_standalone_aux.F')
-
-do_not_release = []
-do_not_release.append('utils/add_copyright.py')
-do_not_release.append('utils/update_copyright.py')
-do_not_release.append('utils/gints')
-do_not_release.append('utils/reformat_includes.py')
-do_not_release.append('utils/rsp')
-do_not_release.append('utils/test')
-do_not_release.append('utils/fortran')
-do_not_release.append('utils/prepare_dyall_basis.sh')
-do_not_release.append('utils/prepare_dyall_dblock_basis.sh')
-do_not_release.append('utils/prepare_dyall_fblock_basis.sh')
-do_not_release.append('utils/prepare_dyall_pblock_basis.sh')
-do_not_release.append('utils/prepare_dyall_sblock_basis.sh')
-do_not_release.append('utils/configure.py')
-do_not_release.append('utils/cppp.py')
-do_not_release.append('relccsd/ccdriv_nomemget.F')
-do_not_release.append('relccsd/ccints_nomemget.F')
-do_not_release.append('relccsd/ccsort_lowmem.F')
-do_not_release.append('gp/memory_tracker.F90')
-do_not_release.append('embedding/emb1int.F')
-do_not_release.append('embedding/embd.F90')
-do_not_release.append('embedding/emb_froz_orb.F90')
-do_not_release.append('embedding/emb_set.F90')
-do_not_release.append('dft/fun-srpbec.c')
-do_not_release.append('dft/fun-srvwn5.c')
-do_not_release.append('dft/fun-hjsx.c')
-
+files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
+files_never_compiled.append('interest/selftest/main_interest_selftest.f90')
+files_never_compiled.append('xcint/src/test_driver.F90')
+files_never_compiled.append('xcint/src/fake_input.F90')
+files_never_compiled.append('cmake/test-MPI-2-compatibility.F90')
+files_never_compiled.append('cmake/test-MPI-compiler-compatibility.F90')
+files_never_compiled.append('cmake/test-MPI-itype-compatibility.F90')
 
 # definition of modules
-# =====================
 
 dirac_modules = {}
 
@@ -312,6 +225,7 @@ this_module = 'eri'
 dirac_modules[this_module] = dirac_module('eri', 'ERI integral routines')
 dirac_modules[this_module].add_cppflag('MOD_ERI')
 dirac_modules[this_module].add_directory('eri')
+dirac_modules[this_module].add_test('integrals_eri')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'densfit'
@@ -319,12 +233,8 @@ dirac_modules[this_module] = dirac_module('densfit', 'density fitting module')
 dirac_modules[this_module].add_cppflag('MOD_DNF')
 dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_directory('densfit')
-dirac_modules[this_module].take_out_of_release()
-
-this_module = 'largemolecules'
-dirac_modules[this_module] = dirac_module('largemolecules', 'Increases common blocks to handle more atoms and basis sets')
-dirac_modules[this_module].add_cppflag('LARGE_MOLECULES')
-dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].add_test('integrals_densfit')
+dirac_modules[this_module].add_test('integrals_jengine')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'fmm'
@@ -333,7 +243,7 @@ dirac_modules[this_module].add_cppflag('MOD_FMM')
 dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_dependency('densfit')
 dirac_modules[this_module].add_directory('fmm')
-dirac_modules[this_module].take_out_of_adm() 
+dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'esr'
@@ -346,14 +256,13 @@ this_module = 'xml'
 dirac_modules[this_module] = dirac_module('xml', 'XML input/output module')
 dirac_modules[this_module].add_cppflag('MOD_XML')
 dirac_modules[this_module].add_directory('gp/xml')
-dirac_modules[this_module].add_test(short_test('fde_export_density')) # XCFun
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'interest'
 dirac_modules[this_module] = dirac_module('interest', 'Interest module')
 dirac_modules[this_module].add_cppflag('MOD_INTEREST')
 dirac_modules[this_module].add_directory('interest')
-dirac_modules[this_module].take_out_of_adm() 
+dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'krcc'
@@ -366,26 +275,28 @@ this_module = 'openrsp'
 dirac_modules[this_module] = dirac_module('openrsp', 'OpenRSP')
 dirac_modules[this_module].add_cppflag('MOD_OPENRSP')
 dirac_modules[this_module].add_directory('openrsp')
-dirac_modules[this_module].add_test(medium_test('openrsp_cars'))
-dirac_modules[this_module].add_test(medium_test('openrsp_cme'))
-#dirac_modules[this_module].add_test(medium_test('openrsp_delta')) #XCFun dependent 
-dirac_modules[this_module].add_test(medium_test('openrsp_electric'))
-dirac_modules[this_module].add_test(medium_test('openrsp_jones'))
-dirac_modules[this_module].add_test(medium_test('openrsp_molecular_gradient'))
-dirac_modules[this_module].add_test(medium_test('openrsp_roa'))
+dirac_modules[this_module].add_test('openrsp_cars')
+dirac_modules[this_module].add_test('openrsp_cme')
+dirac_modules[this_module].add_test('openrsp_delta')
+dirac_modules[this_module].add_test('openrsp_efgb')
+dirac_modules[this_module].add_test('openrsp_efgb_dft')
+dirac_modules[this_module].add_test('openrsp_electric')
+dirac_modules[this_module].add_test('openrsp_jones')
+dirac_modules[this_module].add_test('openrsp_magnetizability')
+dirac_modules[this_module].add_test('openrsp_molecular_gradient')
+dirac_modules[this_module].add_test('openrsp_pv')
+dirac_modules[this_module].add_test('openrsp_quadrupole')
+dirac_modules[this_module].add_test('openrsp_roa')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'xcfun'
 dirac_modules[this_module] = dirac_module('xcfun', 'XCFun module')
 dirac_modules[this_module].add_cppflag('MOD_XCFUN')
-dirac_modules[this_module].add_directory('xcfun')
-dirac_modules[this_module].add_test(short_test('dft_response_xcfun'))
-dirac_modules[this_module].add_test(short_test('dft_alda_xcfun'))
-dirac_modules[this_module].add_test(short_test('dft_minnesota'))
-dirac_modules[this_module].add_test(short_test('dft_erf_xcfun'))
-dirac_modules[this_module].add_test(short_test('fde_static-vemb_dipole'))
-dirac_modules[this_module].take_out_of_adm()
-dirac_modules[this_module].take_out_of_release()
+dirac_modules[this_module].add_directory('xcint/xcfun')
+dirac_modules[this_module].add_test('dft_alda_xcfun')
+dirac_modules[this_module].add_test('dft_erf_xcfun')
+dirac_modules[this_module].add_test('dft_response_xcfun')
+dirac_modules[this_module].add_test('fde_static-vemb_dipole')
 
 this_module = 'oof'
 dirac_modules[this_module] = dirac_module('oof', 'Object oriented modularity of Fortran 90/95')
@@ -398,12 +309,15 @@ dirac_modules[this_module] = dirac_module('cap', 'CAP module (together with obje
 dirac_modules[this_module].add_cppflag('MOD_CAP')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('cap')
+#dirac_modules[this_module].add_test('cap')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hscc'
 dirac_modules[this_module] = dirac_module('hscc', 'interface for the (external) HSMRCC code together with its objects')
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_dependency('oof')
+# include dynamic version, not static !
+dirac_modules[this_module].add_dependency('hsfsdyn')
 dirac_modules[this_module].add_directory('hsmrcc')
 dirac_modules[this_module].add_directory('hsmrcc/second_quant')
 dirac_modules[this_module].add_directory('hsmrcc/interface')
@@ -418,14 +332,16 @@ dirac_modules[this_module].add_cppflag('MOD_HSFS')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].add_directory('hsmrcc/high_sect_fscc_external')
+dirac_modules[this_module].add_test('fscc_high_sect')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
+# hsfs and hsfsdyn are mutually exclusive
 this_module = 'hsfsdyn'
 dirac_modules[this_module] = dirac_module('hsfsdyn', 'Higher sectors FSCC codes- dynamic allocation version.')
 dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
+dirac_modules[this_module].add_directory('hsmrcc/high_sect_fscc_external')
 dirac_modules[this_module].add_dependency('oof')
-dirac_modules[this_module].add_dependency('hsfs')
 dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
@@ -433,15 +349,16 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'magnetiz'
 dirac_modules[this_module] = dirac_module('magnetiz', 'Calculation of magnetizabilities')
 dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
-dirac_modules[this_module].add_test(short_test('response_lao_magnetiz'))
+dirac_modules[this_module].add_test('response_lao_magnetiz')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'ecp'
 dirac_modules[this_module] = dirac_module('ecp', 'ARGOS ECP module')
 dirac_modules[this_module].add_cppflag('MOD_ECP')
 dirac_modules[this_module].add_directory('argosecp')
-dirac_modules[this_module].take_out_of_release()
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].add_test('ecp')
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'srdft'
 dirac_modules[this_module] = dirac_module('srdft', 'srDFT module')
@@ -457,30 +374,23 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
-dirac_modules[this_module].add_test(medium_test('fde_response_autodiff'))
-dirac_modules[this_module].add_file('dft/overlap_diagnostic.F90')
-dirac_modules[this_module].add_file('dft/vrg.F')
-dirac_modules[this_module].add_file('dft/xc_geometric.F90')
-dirac_modules[this_module].add_file('dft/xc_london_c1.F90')
+dirac_modules[this_module].add_test('visual_lao_symmetry')
+dirac_modules[this_module].add_test('visual_lao_current')
+dirac_modules[this_module].add_test('visual_lao_shielding')
+dirac_modules[this_module].add_test('dft_london_mag_prop')
+dirac_modules[this_module].add_test('operator_trs_flip')
+dirac_modules[this_module].add_test('blockd_twocomp')
+dirac_modules[this_module].add_test('dft_overlap_diagnostic')
+dirac_modules[this_module].add_test('dft_minnesota')
+dirac_modules[this_module].add_test('fde_response_autodiff')
+dirac_modules[this_module].add_test('fde_export_density')
+dirac_modules[this_module].add_test('london_properties_symmetry')
+dirac_modules[this_module].add_test('response_qr_nonrel')
 dirac_modules[this_module].take_out_of_release()
-
-this_module = 'log'
-dirac_modules[this_module] = dirac_module('log', 'Will log interesting matrices in matlab format (very verbose!)')
-dirac_modules[this_module].add_cppflag('MOD_LOG')
-dirac_modules[this_module].take_out_of_adm()
-dirac_modules[this_module].take_out_of_release()
-
 
 # define input options
-# ====================
 
 parser = OptionParser()
-
-parser.add_option('-e','--export',
-                  dest='exportfile', 
-                  action='store',
-                  help='Export or release DIRAC to EXPORTFILE',
-                  metavar="STRING")
 
 for module in dirac_modules:
     parser.add_option('--' + module,
@@ -507,16 +417,13 @@ parser.add_option('--release',
                   action='store_true',
                   dest='release',
                   default=False,
-                  help="Include selected modules for the DIRAC2010 release")
-
+                  help="Include selected modules for the release")
 
 # complain if user still uses ./pamadm ... make
 if sys.argv[-1] == 'make':
    sys.exit('please do not use ./pamadm ... "make"; "make" is not needed')
 
-
 # parse input
-# ===========
 
 (options, args) = parser.parse_args()
 
@@ -534,9 +441,7 @@ if options.release:
        if dirac_modules[module].part_of_release:
           dirac_modules[module].include()
 
-
 # check dependencies among modules
-# ================================
 
 for module in dirac_modules:
     if dirac_modules[module].is_included:
@@ -551,15 +456,12 @@ for module in dirac_modules:
                  sys.exit(error_message)
 
 # report on screen
-# ================
 
-# blank line
 print
 
-#  there are no flags
-if len(sys.argv) == 1:
+#  there are no modules
+if (len(sys.argv) == 1):
    print 'only core functionality selected'
-   print '(run ./pamadm -h to see all available options)'
 else:
    print 'Active modules:'
 
@@ -567,147 +469,90 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
        print '       ' + dirac_modules[module].message
 print
-if dirac_modules['xcfun'].is_included:
-   print "* "
-   print "* XCFun module active"
-   print "* First compile xcfun (cd xcfun; make -f Makefile.gcc)"
-   print "* Then please use (in Makefile.config)"
-   print "* LIBS=-Lxcfun/lib -lxcfun"
-   print "* "
-   print
-
-
-# prepare dontbuild
-# =================
-
-f = open('build/dontbuild', 'w')
-
-for module in dirac_modules:
-    if not dirac_modules[module].is_included:
-       for directory in dirac_modules[module].directories:
-           s = '%s/.*' % directory
-           f.write(s + '\n')
-       for file in dirac_modules[module].files:
-           s = '%s' % file
-           f.write(s + '\n')
-for directory in directories_never_compiled:
-    s = '%s/.*' % directory
-    f.write(s + '\n')
-for file in files_never_compiled:
-    s = '%s' % file
-    f.write(s + '\n')
-
-f.write('.*/CMakeFiles/.*\n')
-
-f.close()
-
-
-# Force make to collect dependencies
-# ==================================
-
-make_old_file('build/Makefile.dep')
-make_old_file('build/Makefile.obj')
-
-# cheat to avoid error message
-# ============================
-
-make_old_file('gp/compinfo.h')
-make_old_file('include/fortran_interface.h')
-
-
-# prepare Makefile.extobj and Makefile.moddef
-# ===========================================
-
-make_old_file('build/Makefile.extobj')
-
-f = open('build/Makefile.moddef', 'w')
-
-f.write('# file generated by the minions (pamadm) of DIRAC - DO NOT EDIT!\n')
-f.write('#  On    '+str(datetime.datetime.now())+' \n')
-f.write('#\n')
-
-flags = 'MODS='
-for module in dirac_modules:
-    if dirac_modules[module].is_included:
-       s = '# %s' % dirac_modules[module].message
-       for cppflag in dirac_modules[module].cppflags:
-           s += ' -D%s' % cppflag
-           flags += '-D%s ' % cppflag
-       f.write(s + '\n')
-f.write(flags + '\n')
-
-# determine subversion url and revision
-is_subversion_working_copy = os.path.exists('.svn')
-if is_subversion_working_copy:
-   svn_revision = svn_object.get_svn_revision()
-   f.write("DIRAC_SVN_REVISION=%s\n" % svn_revision)
-   if options.exportfile != None:
-#     do not export svn url
-      f.write("DIRAC_SVN_URL='URL not exported in release'\n")
-   else:
-      svn_url = svn_object.get_svn_url()
-      f.write("DIRAC_SVN_URL=%s" % svn_url)
-
-else:
-   f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
-   f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
-
-f.close()
-
-# ==============================================================================
-#  Link  "build/Makefile.dirs" as "Makefile" over active source code directories
-# ==============================================================================
-
-# get position of absolute dirac directory
-dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
-source_dir=dirac_dir+"/build/Makefile.dirs"
-
-# pick up directory names
-for directory in vital_directories:
-   directory_path = dirac_dir+"/"+directory
-   create_link(source_dir,directory_path,"Makefile")
-
-for module in dirac_modules:
-#  xcfun has its own Makefile, do not overwrite it with a link
-   if dirac_modules[module].directories and dirac_modules[module].is_included and (module != 'xcfun'):
-      for directory in dirac_modules[module].directories:
-        create_link(source_dir,dirac_dir+"/"+directory,"Makefile")
-
 
 # prepare files for cmake
-# =======================
 
-ignore_directory_l = []
-ignore_file_l      = []
-
+directories_with_sources = []
+for directory in vital_directories:
+    if directory != 'utils':
+        directories_with_sources.append(directory)
 for module in dirac_modules:
-    if not dirac_modules[module].is_included:
+    if dirac_modules[module].is_included:
         for directory in dirac_modules[module].directories:
-            ignore_directory_l.append(directory)
-        for file in dirac_modules[module].files:
-            ignore_file_l.append(file)
-for directory in directories_never_compiled:
-    ignore_directory_l.append(directory)
-for file in files_never_compiled:
-    ignore_file_l.append(file)
+            directories_with_sources.append(directory)
+# ugly fix to get xcfun, will make it nicer later:
+if dirac_modules['xcfun'].is_included:
+    directories_with_sources.append('xcint/xcfun/fortran')
 
-s = ''
-for root, directory_l, file_l in os.walk('./'):
-    skip_directory = False
-    for directory in ignore_directory_l:
-        if directory in root:
-            skip_directory = True
-    if not skip_directory:
-       for f in file_l:
-           if f[-2:] == '.F' or f[-2:] == '.c' or f[-4:] == '.F90' or f[-4:] == '.f90':
-               g = (root + '/' + f)[2:]
-               if not g in ignore_file_l:
-                   if 'CMakeFiles' not in g:
-                       s += '%s\n' % g
+directories_with_sources = set(directories_with_sources)
+
+list_of_c_sources             = []
+list_of_free_fortran_sources  = []
+list_of_fixed_fortran_sources = []
+list_of_include_files         = []
+for directory in directories_with_sources:
+    for source in glob.glob('%s/*.F' % directory):
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        list_of_fixed_fortran_sources.append(source)
+    for source in glob.glob('%s/*.F90' % directory):
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        list_of_free_fortran_sources.append(source)
+    for source in glob.glob('%s/*.f90' % directory):
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        list_of_free_fortran_sources.append(source)
+    for source in glob.glob('%s/*.c' % directory):
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        list_of_c_sources.append(source)
+    for source in glob.glob('%s/*.h' % directory):
+        # this is only important for "make release" it does not have to work on windows
+        list_of_include_files.append(source)
+    for source in glob.glob('%s/*.inc' % directory):
+        # this is only important for "make release" it does not have to work on windows
+        list_of_include_files.append(source)
+
+# add compilation_info.F90 and git_revision_info.F90 unless
+# pamadm found them already
+if not 'gp/git_revision_info.F90' in list_of_free_fortran_sources:
+    list_of_free_fortran_sources.append('gp/git_revision_info.F90')
+if not 'gp/compilation_info.F90' in list_of_free_fortran_sources:
+    list_of_free_fortran_sources.append('gp/compilation_info.F90')
+
+list_of_c_sources = set(list_of_c_sources)
+list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))
+list_of_free_fortran_sources = set(list_of_free_fortran_sources)
+list_of_free_fortran_sources = list_of_free_fortran_sources.difference(set(files_never_compiled))
+# have to remove main.F90 as the main entry, is not part of dirac library
+list_of_free_fortran_sources = list_of_free_fortran_sources.difference('main/main.F90')
+list_of_fixed_fortran_sources = set(list_of_fixed_fortran_sources)
+list_of_fixed_fortran_sources = list_of_fixed_fortran_sources.difference(set(files_never_compiled))
+
+s_c = ''
+for f in list_of_c_sources:
+    s_c += '    %s\n' % f
+s_free_fortran = ''
+for f in list_of_free_fortran_sources:
+    s_free_fortran += '    %s\n' % f
+s_fixed_fortran = ''
+for f in list_of_fixed_fortran_sources:
+    s_fixed_fortran += '    %s\n' % f
+s_include_files = ''
+for f in list_of_include_files:
+    s_include_files += '    %s\n' % f
+
+s  = '# file generated by the minions of DIRAC - DO NOT EDIT!\n'
+s += '\nset(C_SOURCES\n%s    )' % s_c
+s += '\nset(FREE_FORTRAN_SOURCES\n%s    )' % s_free_fortran
+s += '\nset(FIXED_FORTRAN_SOURCES\n%s    )' % s_fixed_fortran
 
 f = open('cmake/Sources.cmake', 'w')
-f.write('# file generated by the minions (pamadm) of DIRAC - DO NOT EDIT!\n')
-f.write('set(DIRAC_SOURCES %s)' % s)
+f.write(s)
+f.close()
+
+s  = '# file generated by the minions of DIRAC - this is not important for compilation, only for the "make release" target\n'
+s += '\nset(INCLUDE_FILES\n%s    )' % s_include_files
+
+f = open('cmake/IncludeFiles.cmake', 'w')
+f.write(s)
 f.close()
 
 s = ''
@@ -717,157 +562,45 @@ for module in dirac_modules:
             s += '-D%s ' % cppflag
 
 f = open('cmake/Definitions.cmake', 'w')
-f.write('# file generated by the minions (pamadm) of DIRAC - DO NOT EDIT!\n')
+f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
 f.write('add_definitions(%s)' % s)
 f.close()
 
-
 # package tests
-# =============
 
-f = open('test/runtest', 'w')
-
-s = '''
-################################################
-# file is automatically generated by pamadm #
-################################################
-'''
-f.write(s)
-
-for type in ['short', 'medium', 'long']:
-    s = ''
-    for test in vital_tests:
-        if test.type() == type:
-           s += ' %s' % test.directory
-    for module in dirac_modules:
-        if dirac_modules[module].is_included:
-           for test in dirac_modules[module].tests:
-               if test.type() == type:
-                  s += ' %s' % test.directory
-    f.write('%s_tests="%s"\n' % (type, s))
-
-s = '''
-long_test="   $short_tests $medium_tests $long_tests"
-medium_test=" $short_tests $medium_tests"
-short_test="  $short_tests"
-'''
-f.write(s)
+for module in dirac_modules:
+    if dirac_modules[module].is_included:
+        for test in dirac_modules[module].tests:
+            list_of_tests.append(test)
+f = open('test/list_of_tests', 'w')
+for test in list_of_tests:
+    f.write(test + '\n')
 f.close()
 
-# further pythonization:  os.system("cat...") replaced by python io-commands
-runtest_file = open("test/runtest","a")
-runtest_file_in=open("test/runtest.in","r")
-runtest_file.write(runtest_file_in.read())
-runtest_file.close()
-runtest_file_in.close()
-# read,write and execute by the owner (Windows accepted solution)
-os.chmod("test/runtest", stat.S_IRWXU) 
+# package tests for cmake's "make test"; include flags 
 
-## generate *-provided basis set files ##
-if ( not is_windows() ): provide_star_basisfile_names()
+f = open('cmake/Tests.cmake', 'w')
+f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
+for test in list_of_tests:
+    f.write('add_test(%s ${CMAKE_SOURCE_DIR}/runtest --showdiff --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} ${RUNTEST_FLAG_BINARY} --tests=%s)\n' % (test, test))
+f.close()
 
+# generate *-provided basis set files
 
-# export dirac to tar.gz file
-# ===========================
+if sys.platform != "win32": provide_star_basisfile_names()
 
-if options.exportfile != None:
-   scratch_dir = options.exportfile
-
-   print 'Exporting DIRAC:'
-#  create scratch dir for copying files for export, if exists, remove it first
-   if os.path.isdir(scratch_dir):
-     print '...removed old "',scratch_dir,'" directory'
-     shutil.rmtree(scratch_dir)
-   else:
-     #print 'creating RELEASE directory inside'
-     os.mkdir(scratch_dir)
-
-#  copy all vital directories and files to scratch dir
-   print '...exporting files into newly created "',scratch_dir,'"directory...'
-   for directory in vital_directories:
-       shutil.copytree(directory, scratch_dir + '/' + directory)
-   for file in vital_files:
-#      need to copy with parent, don't know how to do it in python
-       copy_parent(file, scratch_dir)
-
-#  preventively remove all module directories in scratch dir (example is prp/esr which is copied along with prp and maybe not wanted)
-   for module in dirac_modules:
-       for directory in dirac_modules[module].directories:
-           shutil.rmtree(scratch_dir + '/' + directory, True)
-
-#  copy active module directories to scratch dir
-   for module in dirac_modules:
-       if dirac_modules[module].is_included:
-          for directory in dirac_modules[module].directories:
-              shutil.copytree(directory, scratch_dir + '/' + directory)
-
-#  remove all code that is not supposed to be shipped
-   delete_flags = ''
-   for module in dirac_modules:
-       if not dirac_modules[module].is_included:
-          for cppflag in dirac_modules[module].cppflags:
-              delete_flags += '-U%s ' % cppflag
-#  another exception: sometimes modules have overlapping MODs
-#  now remove some -UMODs again from delete_flags
-   for module in dirac_modules:
-       if dirac_modules[module].is_included:
-          for cppflag in dirac_modules[module].cppflags:
-              delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
-   if delete_flags != '':
-      find_command = "find %s -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'" % scratch_dir
-#     remove -ULARGE_MOLECULES from delete_flags
-      delete_flags = string.replace(delete_flags, '-ULARGE_MOLECULES', '')
-      command = "./utils/cppp.py %s `%s`" % (delete_flags, find_command)
-      os.system(command)
-
-#  remove unreleased files
-   for module in dirac_modules:
-       if not dirac_modules[module].is_included:
-          for file in dirac_modules[module].files:
-              os.system("rm -f %s/%s" % (scratch_dir, file))
-
-#  remove reference files that can be fetched from the dirac website
-   shutil.rmtree(scratch_dir + '/basis/reference_unedited')
-
-#  copy tests to scratch dir
-   for test in vital_tests:
-       d = 'test/' + test.directory
-       shutil.copytree(d, scratch_dir + '/' + d)
-   for module in dirac_modules:
-       if dirac_modules[module].is_included:
-          for test in dirac_modules[module].tests:
-              d = 'test/' + test.directory
-              if (os.path.isdir(d)) :
-                 shutil.copytree(d, scratch_dir + '/' + d)
-
-#  run the vacuum cleaner: remove all junk files in exported DIRAC
-   os.system("rm -f  `find %s -name '*.o'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.r'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.i'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.opt'`" % scratch_dir)
-   os.system("rm -f  `find %s -name '*.s'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.p'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.fc'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*~'`"    % scratch_dir)
-   os.system("rm -rf `find %s -name '.svn'`"  % scratch_dir)
-
-#  remove files that are not supposed to be shipped
-   for x in do_not_release:
-       os.system("rm -rf %s/%s"  % (scratch_dir, x))
-
-#  remove copyright tags
-   for suffix in ['*.F90', '*.f90', '*.F', '*.c']:
-       command = "for file in `find %s -name '%s'`; do grep -v copyright_start $file | grep -v copyright_end > deleteme; mv -f deleteme $file; done" % (scratch_dir, suffix)
-       os.system(command)
-
-   exportfile_svn_tgz = options.exportfile+"_svn_"+str(svn_object.get_svn_revision())
-#  create tar.gz
-   command = 'tar -czf %s.tar.gz %s' % (exportfile_svn_tgz, scratch_dir)
-   print '...creating export file, command: "',command,'"'
-   os.system(command)
-   print '...done, release directory "',scratch_dir,'" kept for checking.'
-
-#  do not remove scratch dir, is worth for checking the bitten-buildup
-#   shutil.rmtree(scratch_dir)
-
-### end of the main function
+# get delete flags (used by make release)
+delete_flags = ''
+for module in dirac_modules:
+    if not dirac_modules[module].is_included:
+       for cppflag in dirac_modules[module].cppflags:
+           delete_flags += '-U%s ' % cppflag
+# another exception: sometimes modules have overlapping MODs
+# now remove some -UMODs again from delete_flags
+for module in dirac_modules:
+    if dirac_modules[module].is_included:
+       for cppflag in dirac_modules[module].cppflags:
+           delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
+f = open('maintenance/delete_flags', 'w')
+f.write(delete_flags)
+f.close()

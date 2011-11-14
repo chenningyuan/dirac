@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : pamset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setxop */
@@ -541,7 +538,11 @@ C
 C***********************************************************************
        use dirac_cfg
        use dft_cfg
-       use xc_driver
+       use xcint_main
+       use fde_mod
+       use fde_integrate
+       use num_grid_gen
+       use num_grid_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -557,7 +558,8 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
-CTOBS: Note the use of dhfcal ! Should be generalized !!!
+      type(fde_import) :: itmp
+CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
 
@@ -604,7 +606,7 @@ C
         INTFLG = INTDEF
 Chjaaj MAERKE 01-Feb-2001: this is the best we can do now; 
 C      this assumes the user uses the same input for restart
-C      with *DHFCAL specified as in the .DHF calculation such that
+C      with *SCF specified as in the .DHF calculation such that
 C      any user-specified change of INTFLG (e.g. no SSSS) is used.
 C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
@@ -662,9 +664,19 @@ C          Hermitian operator
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
-           
-           call xc_mpi_wake_up_coworkers()
-           call xc_integrator(xc_mat_dim               = ntbas(0),
+
+           if (dirac_cfg_overlap_diagnostic) then    
+              call reset_num_grid()
+              call stash_zipgrid(num_grid_cfg_zipgrid)       
+           end if
+           call generate_num_grid(fao)
+           if (dirac_cfg_overlap_diagnostic) then    
+              call unstash_zipgrid(num_grid_cfg_zipgrid)       
+           end if
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
+           call integrate_xc(xc_mat_dim               = ntbas(0),
      &                        xc_nz                    = nz,
      &                        xc_dmat_0                = fao,
      &                        xc_nr_dmat               = 0,
@@ -673,14 +685,31 @@ C          Hermitian operator
      &                        xc_do_potential          = .true.,
      &                        xc_do_overlap_diagnostic = 
      &                           dirac_cfg_overlap_diagnostic)
-           call xc_mpi_release_coworkers()
         end if
 
+#ifdef MOD_UNRELEASED
+!!!!!!
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
 
+           if (.not.dirac_cfg_dft_calculation) then
+              call genden(fao, cmo, 1, iprint)
+           endif
 
+!          call fde_set_nz(nz)
+!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
 
+          call integrate_fde(fde_mat_dim            = ntbas(0),
+     &                       fde_nz                 = nz,
+     &                       fde_dmat_0             = fao, 
+     &                       fde_nr_dmat            = 0,
+     &                       fde_nr_fmat            = 1,
+     &                       fde_fmat               = fmo,
+     &                       fde_do_potential       = .true.)
 
-
+        endif
+!!!!!
+#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
@@ -798,7 +827,8 @@ C
           CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
      &                 NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
      &                 IFRP,NVEC)
-          CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
+          CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,
+     &                NPSH(IFRP),NESH(IFRP),
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
@@ -1084,7 +1114,8 @@ C
           CALL NUMLST(INDSTR(ITYP,IFRP),IND,
      &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
      &                IFRP,NVEC)
-          CALL ORBCNT(IND,NVEC,IFRP,NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
+          CALL ORBCNT(IND,NVEC,NPSH(IFRP),NESH(IFRP),
+     &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
 C
@@ -1406,6 +1437,8 @@ C
       ENDIF
 C
 C
+      nvec_inactive = 0
+      nvec_active   = 0
 C
 C      Definition of orbital classes
 C      -----------------------------
@@ -1429,6 +1462,7 @@ C
         NVEC = 0
         CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
+        nvec_inactive = nvec_inactive + nvec
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Inactive orbitals  : No electrons'
@@ -1443,6 +1477,7 @@ C
         NVEC = 0
         CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
+        nvec_active = nvec_active + nvec
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Active orbitals    : No electrons'
@@ -1465,9 +1500,15 @@ C
      &       '- Secondary orbitals : ', INDSTR(3,I)
         ENDIF
       ENDDO
-C
+
+      if ((nvec_inactive + nvec_active) == 0) then 
+         print *, 'error: nvec_inactive + nvec_active is zero'
+         print *, 'please specify the orbital occupation explicitly'
+         call quit('please specify occupation explicitly')
+      end if
+
       CALL QEXIT('OSTRING')
-      RETURN
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrspar */

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her2out.F
 C
 C
 C  /* Deck un2out */
@@ -260,7 +257,6 @@ C  /* Deck un2wrt */
 #include "nuclei.h"
       SAVE NBUF
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       IF (ITYPE .EQ. -1) THEN
          REWIND LUINTA
@@ -342,7 +338,7 @@ C
             KBYTES = (KBYTES + 999)/1000
             NALL   = (NBASIS*(NBASIS + 1))/2
             NALL   = (NALL*(NALL + 1))/2
-            PERCNT = SDPRE(100*N2WRIT) / SDPRE(NALL)
+            PERCNT = dble(100*N2WRIT) / dble(NALL)
             WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A,/1X,A,I10//)')
      &         'Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'%)',
@@ -1425,7 +1421,6 @@ C
 #include "symmet.h"
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1622,7 +1617,7 @@ C
      &                  NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
   400    CONTINUE
          NALL = NDIST*(NBASIS + 1)*(NBASIS**2)/2
-         PERCNT = SDPRE(100*NWRIT) / SDPRE(NALL)
+         PERCNT = dble(100*NWRIT) / dble(NALL)
          WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
      &         'Number of two-electron integrals written:',NWRIT,
      &         ' (',PERCNT,'%)'

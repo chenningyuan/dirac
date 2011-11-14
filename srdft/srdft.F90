@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -53,7 +53,8 @@ module srdft
 ! ---------------------------------------------------------------------------------------
 !
   use memory_allocator
-  use xc_driver 
+  use xcint_main 
+  use num_grid_gen
 ! x2c modules
 ! use x2c_fio, only:      &
 !     x2c_read (name of the subroutine)
@@ -181,7 +182,8 @@ contains
 
 
 !      compute the srXC potential 
-       call xc_integrator(xc_mat_dim          = nao,  &
+       call generate_num_grid(dvao)
+       call integrate_xc(xc_mat_dim          = nao,  &
                               xc_nz           = nz,   &
                               xc_dmat_0       = dvao, &! contains the TOTAL density matrix
                               xc_nr_dmat      = 0,    &

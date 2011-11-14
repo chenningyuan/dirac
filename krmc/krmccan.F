@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,12 +19,10 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetno */
-      SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,
+      SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,save_1pdens,
      &                  IPRINT,WORK,KFREE,LFREE)
       use memory_allocator
 C***********************************************************************
@@ -64,7 +62,7 @@ C
       DIMENSION CMO(*)
       DIMENSION WORK(*)
 C
-      LOGICAL NATORB, MOISNO, EX, FILEOPEN
+      LOGICAL NATORB, MOISNO, EX, FILEOPEN, save_1pdens
 #if defined MCSCF_DEBUG
       real*8,  allocatable :: onedens(:,:,:)
       real*8,  allocatable :: cref_x(:)
@@ -96,6 +94,7 @@ C
         rewind(luni)
         call reakrmc(luni,'CREF    ',cref_x,nzconfq)
         iread_from_mc_file = 1
+        close(luni)
       else if( .not. ex )then
 	  call dcopy(nzconfq,cref,1,cref_x,1)
       end if
@@ -112,6 +111,18 @@ C
 #else
       CALL RMAKDV(WORK(KDV),CREF,WORK,KFREE,LFREE)
 #endif
+!
+!     save 1-particle density matrix on file
+!     TODO: expand to full NORBT x NORBT x NZ matrix
+!
+      if(save_1pdens)then
+        lunii = 98
+        CALL OPNFIL(lunii,'MCDENS','UNKNOWN','STORE_')
+        CALL NEWLAB('MC  DENS',lunii,LUPRI)
+        CALL WRITT(lunii,NASHT*NASHT*NZ,WORK(KDV))
+        CLOSE(Unit=lunii,Status='KEEP')
+        goto 100
+      end if
 C
 C     Calculate max off-diagonal elements of density matrix
 C
@@ -155,60 +166,10 @@ C
       end do
       call dealloc(onedens)
 #endif
-!
 C
 C     Diagonalize density matrix
 C     --------------------------
-C
       IF (.NOT. MOISNO) THEN
-#if defined MCSCF_DEBUG
-!
-!        S. Knecht - commented out (and not working yet) because I have
-!        implemented a general mj-blocking in the conversion of the 
-!        one-electron density matrix from MOLFDIR to quaternion format.
-!        It seems simpler to me... and the result ought to be the same.
-!
-!        in linear symmetry we block-diagonalize the 
-!        one-electron density matrix in terms of mj-blocks
-!        if( linear )then
-!!         some scratch space 
-!          call alloc(onedens,nasht,nasht,nz)
-!          call alloc(mjvec,norbt)
-!          onedens = 0
-!          mjvec   = 0
-!          luni = -1
-!          inquire(file='KRMCSCF',exist=ex,opened=fileopen,number=luni)
-!          if(ex.and.fileopen)then
-!            call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
-!          else if( ex.and.(.not. fileopen))then
-!            luni = 99
-!            call opnfil(luni,'KRMCSCF','OLD    ','rgetno')
-!            call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
-!            close(luni,status='keep')
-!          else if(.not. ex)then
-!            call quit('*** error in rgetno: no mj-vector available
-!    &                  or block-diagonalization. ***')
-!          end if 
-!          call dcopy(n2ashxq,work(kdv),1,onedens,1)
-!          call dzero(uno,n2ashxq)
-!          call dzero(work(keig),nasht)
-!          do ifsym = 1, nfsym
-!            mj_max = 0
-!            do i = 1, nash(ifsym)
-!             mj_max = max(mj_max,iabs(mjvec(iash(ifsym)+i)))
-!            end do
-!            do imj_val = 1, mj_max
-!              call onedens_diag_block(iprint,imj_val,
-!    &              onedens(1+iash(ifsym),1+iash(ifsym),1),
-!    &              work(keig+iash(ifsym)),
-!    &              uno(1+iash(ifsym),1+iash(ifsym),1),
-!    &              mjvec(1+iash(ifsym)),nash(ifsym),work(kfree),lfree)
-!            end do
-!          end do
-!          call dealloc(onedens)
-!          call dealloc(mjvec)
-!        end if
-#endif
          IF (NZ .EQ. 1) THEN
             IJOB = 1
             IORDER = 0
@@ -413,7 +374,7 @@ C       copy back MO coefficients
         CALL DZERO(CMO,NCMOTQ)
         CALL DCOPY(NCMOTQ,WORK(KCMO),1,CMO,1)
       ENDIF
-      CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
+ 100  CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RGETNO')
@@ -467,6 +428,7 @@ C
 C
       CALL QENTER('KRMCCNO')
       KFRSAV = KFREE
+      
 C
       IF (KEYCNO .EQ. 'ONLYNO' .OR. KEYCNO .EQ. 'NATORB') THEN
          IF (.NOT. RTRACI) THEN
@@ -483,10 +445,10 @@ C
       ELSE IF (KEYCNO .EQ. 'ONLYFD' .OR. KEYCNO .EQ. 'ONLYFC' .OR.
      &         KEYCNO .EQ. 'ONLYCO' .OR. KEYCNO .EQ. 'CANORB') THEN
          IF (.NOT. RTRACI) THEN
-            IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,3A)')
-     &           '(KRMCCNO) Transformation of ',
-     &           'positronic/inactive/virtual ',
-     &           'orbitals to Fock type orbitals.'
+            IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,A/,A/,A/)')
+     &           '(KRMCCNO) MCSCF iteration - transformation of  ',
+     &           '          positronic/inactive/virtual orbitals ',
+     &           '          to Fock type orbitals.'
             TRTOFD = .TRUE.
             TRTOCO = .FALSE.
             TRTONO = .FALSE.
@@ -501,9 +463,9 @@ C
       ELSE
          IF (.NOT. RTRACI) THEN
             IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,3A)')
-     &           '(KRMCCNO) Transformation of ',
-     &           'positronic/inactive/virtual ',
-     &           'orbitals to Fock type orbitals.'
+     &           '(KRMCCNO) Transformation of           ',
+     &           '          positronic/inactive/virtual ',
+     &           '          orbitals to Fock type orbitals.'
             TRTOFD = .TRUE.
             TRTOCO = .FALSE.
             TRTONO = .FALSE.
@@ -556,7 +518,6 @@ C
       KFC = KFD
       CALL RFCKMAT(WORK(KDV),CMO,EIX,EAX,WORK(KFC),WORK(KFV),
      &     WORK(KFREE),LFREE)
-C     CALL RFCKMAT(DV,CMO,EMCMY,EMCACT,FC,FV,WORK,LWORK)
 C
 C     Calculate FD
 C
@@ -586,9 +547,12 @@ C     couplings and active-active block.
 C
 CSK   DONE! July 2008
 C
+!     ipropt_save = ipropt
+!     ipropt      = 10
+
       IF (IPROPT .GE. 5) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,*) 'RKRMCCNO: FOCK matrix for symmetry',I
+            WRITE(LUPRI,*) 'RKRMCCNO: FOCK matrix for fsym = ',I
             CALL PRQMAT(WORK(KFD+I2ORBX(I,I)),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          ENDDO
@@ -615,6 +579,9 @@ C
 C     3. Diagonalize Fock matrix 
 C     --------------------------
 C
+
+!     extract sub-blocks of the Fock matrix in terms of j_z values / boson
+!     irreps for linear symmetry / spinfree calculations
       if(spinfr_krmc)then 
         max_loop = nbsym
       else if(opt_chckjz)then
@@ -623,16 +590,6 @@ C
         max_loop = 1
       end if
 
-      do indx_loop = 1, max_loop
-
-        if(spinfr_krmc)then
-          is_symm = indx_loop - 1
-        else if(opt_chckjz)then
-!         get mj-value
-          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-        else
-          is_symm = 0
-        end if
 C
 C     3.1 p-p block
 C     -------------
@@ -647,22 +604,57 @@ C        ... initialize
          CALL DZERO(WORK(KFDP),   N2PSHX*NZ)
          CALL DZERO(WORK(KEIGVCP),N2PSHX*NZ)
          CALL DZERO(WORK(KEIGP),  NPSHT)
-C
-C        extract p-p part of WORK(KFD)
-C
-         CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,NPSHT,
-     &                    IDXP2G,work(kibeig),is_symm,NZ)
-C
-C        diagonalize
-C
-         CALL DIAGC('P',WORK(KFDP),WORK(KEIGP),WORK(KEIGVCP),
-     &              NPSHT,WORK(KFREE),LFREE)
-C
-C        insert new p-p matrix block into complete transformation matrix
-C
-         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
-     &                    NPSHT,NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
-C
+!
+!        extract p-p part of WORK(KFD)
+
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,
+     &                      NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*) 'RKRMCCNO: positronic FOCK matrix (extracted)'
+           CALL PRQMAT(WORK(KFDP),NPSHT,NPSHT,
+     &                 NPSHT,NPSHT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+!
+!        diagonalize
+         CALL DIAG_piv2fock('P',WORK(KFDP),WORK(KEIGP),WORK(KEIGVCP),
+     &                      IDXP2G,work(kibeig),WORK(KFREE),LFREE)
+
+!        insert new p-p matrix block into transformation matrix
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
+     &                      NPSHT,NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*)
+     &     'RKRMCCNO: transformation matrix (p-p)'
+           CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
+     &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+
          CALL MEMREL('RKRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
       END IF
 C
@@ -679,55 +671,124 @@ C        ... initialize
          CALL DZERO(WORK(KFDI),   N2ISHX*NZ)
          CALL DZERO(WORK(KEIGVCI),N2ISHX*NZ)
          CALL DZERO(WORK(KEIGI),  NISHT)
-C
-C        extract i-i part of WORK(KFD)
-C
-         CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDI),NISHT,NISHT,
-     &                    IDXI2G,work(kibeig),is_symm,NZ)
-C
-C        diagonalize
-C
-         CALL DIAGC('I',WORK(KFDI),WORK(KEIGI),WORK(KEIGVCI),
-     &              NISHT,WORK(KFREE),LFREE)
-C
-C        insert new i-i matrix block into complete transformation matrix
-C
-         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCI),
-     &                    NISHT,NISHT,IDXI2G,work(kibeig),is_symm,NZ)
-C
+!
+!        extract i-i part of WORK(KFD)
+
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDI),NISHT,
+     &                      NISHT,IDXI2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*) 'RKRMCCNO: inactive FOCK matrix (extracted)'
+           CALL PRQMAT(WORK(KFDI),NISHT,NISHT,
+     &                 NISHT,NISHT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+!
+!        diagonalize
+         CALL DIAG_piv2fock('I',WORK(KFDI),WORK(KEIGI),WORK(KEIGVCI),
+     &                      IDXI2G,work(kibeig),WORK(KFREE),LFREE)
+
+!        insert new i-i matrix block into transformation matrix
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCI),
+     &                      NISHT,NISHT,IDXI2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*)
+     &     'RKRMCCNO: transformation matrix (p-p + i-i)'
+           CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
+     &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+ 
          CALL MEMREL('RKRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
       END IF
-C
-C     3.3 'active' secondary orbitals: v-v block
-C     -------------
-C
+!
+!     3.3 'active' secondary orbitals: v-v block
+!     -------------
+!
       IF ( NVSHT .gt. 0 ) THEN
-C
-C        ... allocate for v-v block diagonalization of Fock-matrix
+!
+!        ... allocate for v-v block diagonalization of Fock-matrix
          CALL MEMGET('REAL',KFDVI,   N2VSHXQ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KEIGVCVI,N2VSHXQ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KEIGVI,  NVSHT  ,WORK,KFREE,LFREE)
-C        ... initialize
+!        ... initialize
          CALL DZERO(WORK(KFDVI),   N2VSHXQ)
          CALL DZERO(WORK(KEIGVCVI),N2VSHXQ)
          CALL DZERO(WORK(KEIGVI),  NVSHT  )
-C
-C        extract s-s part of WORK(KFD)
-C
-         CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDVI),NVSHT,
-     &                    NVSHT,IDXV2G,work(kibeig),is_symm,NZ)
-C
-C        diagonalize
-C
-         CALL DIAGC('V',WORK(KFDVI),WORK(KEIGVI),WORK(KEIGVCVI),
-     &              NVSHT,WORK(KFREE),LFREE)
-C
-C
-C        insert new s-s matrix block into transformation matrix
-C
-         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCVI),
-     &                    NVSHT,NVSHT,IDXV2G,work(kibeig),is_symm,NZ)
-C
+!
+!        extract v-v part of WORK(KFD)
+
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDVI),NVSHT,
+     &                      NVSHT,IDXV2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*) 'RKRMCCNO: virtual FOCK matrix (extracted)'
+           CALL PRQMAT(WORK(KFDVI),NVSHT,NVSHT,
+     &                 NVSHT,NVSHT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+!
+!        diagonalize
+         CALL DIAG_piv2fock('V',WORK(KFDVI),WORK(KEIGVI),WORK(KEIGVCVI),
+     &                      IDXV2G,work(kibeig),WORK(KFREE),LFREE)
+!
+!        insert new v-v matrix block into transformation matrix
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCVI),
+     &                      NVSHT,NVSHT,IDXV2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*) 
+     &     'RKRMCCNO: transformation matrix (p-p + i-i + v-v)'
+           CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
+     &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+!
          CALL MEMREL('RKRMCCNO.after v-v',WORK,1,KFDVI,KFREE,LFREE)
       END IF
 C
@@ -744,8 +805,14 @@ C
 C
 C        insert d-d matrix block into complete transformation matrix
 C
-         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCDL),
-     &                    NDSHT,NDSHT,IDXD2G,work(kibeig),is_symm,NZ)
+         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCDL),
+     &               NDSHT,NDSHT,IDXD2G,NZ)
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*) 
+     &     'RKRMCCNO: transformation matrix (p-p + i-i + v-v + d-d)'
+           CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
+     &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
 C
          CALL MEMREL('RKRMCCNO.after d-d',WORK,1,KEIGVCDL,KFREE,LFREE)
       END IF
@@ -763,13 +830,17 @@ C
 C
 C        insert a-a matrix block into complete transformation matrix
 C
-         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCA),
-     &                    NASHT,NASHT,IDXU2G,work(kibeig),is_symm,NZ)
+         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCA),
+     &               NASHT,NASHT,IDXU2G,NZ)
 C
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*) 
+     &  'RKRMCCNO: transformation matrix (p-p + i-i + v-v + d-d + a-a)'
+           CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
+     &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
          CALL MEMREL('RKRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
       END IF
-
-      end do ! do indx_loop = 1, max_loop
 C
       CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
 C
@@ -794,12 +865,11 @@ C
            WRITE(LUPRI,'(A,I3)')
      &     ' RKRMCCNO: transformation matrix for symmetry',I
            CALL PRQMAT(WORK(KEIGVC+I2ORBX(I,I)),NORBI,NORBI,
-     &          NORBI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
+     &          NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
 C
 C        Transform all orbitals
 C
-!        CALL QGEMM(NBASI,NORBI,NORBI,D0,
          CALL QGEMM(NBASI,NORBI,NORBI,D1,
      &        'N','N',IPQTOQ(1,0),
      &        WORK(KCMO+ICMOQ(I)),NBASI,NORBI,NZ,
@@ -931,6 +1001,7 @@ C     CALL RTRACI(CREF,WORK(KEIGVC))
 C
  2000 CONTINUE
       CALL QEXIT('KRMCCNO')
+!     ipropt = ipropt_save
 C
       RETURN
       END
@@ -1120,6 +1191,7 @@ C
 C
 #include "memint.h"
 C
+!     IPROPT = 50
       MZ = MIN(2,NZ)
 C
       CALL QENTER('KRCIPRPMO')
@@ -1204,10 +1276,10 @@ C    &                           FILELAB
      &                   nasht,nz,ipqtoq(1,isym-1),lupri )
            end if
          end if
+         WRITE(LUPRI,'(A,3I5)')
+     &   ' - KRCIPRPMO: Boson, Fermion, and Time reversal symmetry :',
+     &   ISYM,IOPSY,ITRSYM
 #endif
-C        WRITE(LUPRI,'(A,3I5)')
-C    &   ' - KRCIPRPMO: Boson, Fermion, and Time reversal symmetry :',
-C    &   ISYM,IOPSY,ITRSYM
          CALL QFC2MFC(WORK(KRPRPMOAC),WORK(KRPRPMOACM),ISYM,
      &                ITRSYM,IPROPT)
 C             QFC2MFC(DQFC,DMFC,ISYM,ITIM,IPRINT)
@@ -1224,6 +1296,7 @@ C
       end if
 #endif
 C
+!     IPROPT = 00
       CLOSE(LU1INT,STATUS = 'KEEP')
       CALL QEXIT('KRCIPRPMO')
       RETURN

@@ -5,6 +5,8 @@ module vib_prop
    use matrix_defop
    use rsp_equations
    use prop_contribs
+   use openrsp_cfg
+   use dirac_interface
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -19,6 +21,7 @@ module vib_prop
    public cars_pol_shyp_polgra
    public vib_ana_polari
    public print_shypol
+   public pnc_gradient
    public vibhyp_hyp_dipgra_polgra
    public vibshyp_shyp_dipg_polg_hypg
 
@@ -407,7 +410,6 @@ contains
          if (all(polq(:,:,1+nq*(ij-1):nq*ij)==0).and. &
              all(polq(:,:,1+nq*(ik-1):nq*ik)==0).and. &
              all(polq(:,:,1+nq*(jk-1):nq*jk)==0)) cycle
-#ifdef PRG_DIRAC
 #ifdef VAR_PGF90
 !radovan pgf complains here
 !PGF90-S-0152-All dimension specifiers must be ':'
@@ -417,7 +419,6 @@ contains
                  -(/dipq(:,1+nq*(i-1):nq*i),dipq(:,1+nq*(j-1):nq*j),dipq(:,1+nq*(k-1):nq*k)/), &
                  -(/polq(:,:,1+nq*(ij-1):nq*ij),polq(:,:,1+nq*(ik-1):nq*ik), &
                    polq(:,:,1+nq*(jk-1):nq*jk)/),o)
-#endif
 #endif
          exit !only one
       end do
@@ -1087,6 +1088,103 @@ contains
       Eff=-Eff; Efff=-Efff; Egf=-Egf; Egff=-Egff
    end subroutine
 
+   subroutine pnc_gradient(mol, S, D, F, nr_atoms)
+
+      type(prop_molcfg), intent(in)  :: mol
+      type(matrix),      intent(in)  :: S
+      type(matrix),      intent(in)  :: D
+      type(matrix),      intent(in)  :: F
+      integer,           intent(in)  :: nr_atoms
+
+      integer, parameter             :: nc = 1
+      type(matrix)                   :: Dp(nc), DFDp(nc), Fp(nc)
+
+      complex(8), allocatable        :: epnc(:)
+      complex(8), allocatable        :: epnc_gradient(:,:)
+      integer                        :: i, iatom, ix, iy, iz
+      integer                        :: icharge, imass, nproton, nneutron
+      real(8), external              :: disotp
+      real(8)                        :: qw
+
+      real(8), parameter             :: sthetaw2 = 0.2319d0
+      real(8)                        :: dfac
+      real(8), parameter             :: hartree2hz = 6.579683920721d15
+
+#include "mxcent.h"
+#include "nuclei.h"
+      dfac = 2.22255d-14/(2.0d0*sqrt(2.0d0))
+
+      allocate(epnc(nc))
+      allocate(epnc_gradient(nr_atoms*3, nc))
+
+      epnc          = 0
+      epnc_gradient = 0
+
+      call prop_oneave(mol, S, (/'PNC'/), (/D/), (/nc/), epnc)
+      call pert_dens(mol, S, (/'PNC'/), (/nc/), (/D/), (/F/), Dp(:), Fp(:))
+      call prop_oneave(mol, S, (/'GEO', 'PNC'/), (/D/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
+      call prop_twoave(mol, (/'GEO'/), (/D, Dp(:)/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
+      do i = 1, nc
+         DFDp(i) = Dp(i)*F*D + D*Fp(i)*D + D*F*Dp(i)
+      end do
+      call prop_oneave(mol, S, (/'GEO'/), (/Dp(:)/), (/nr_atoms*3, nc/), epnc_gradient(:, :), DFD = (/DFDp/))
+
+      Dp   = 0
+      Fp   = 0
+      DFDp = 0
+
+      icharge  = nint(charge(openrsp_cfg_pnc_center))
+      imass    = nint(disotp(icharge, 1, 'MASS'))
+      nproton  = icharge
+      nneutron = imass - icharge
+      qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
+
+      print *, 'center', openrsp_cfg_pnc_center
+      print *, 'E_pnc (bare integrals in a.u.)', real(epnc)
+      print *, 'E_pnc (in hartree)', real(epnc)*qw*dfac
+      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*hartree2hz
+
+      call header('E_pnc gradient (bare integrals in a.u.)', -1)
+      do iatom = 1, nr_atoms
+         ix = 3*(iatom - 1) + 1
+         iy = 3*(iatom - 1) + 2
+         iz = 3*(iatom - 1) + 3
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom),    &
+                                   real(epnc_gradient(ix, 1)), &
+                                   real(epnc_gradient(iy, 1)), &
+                                   real(epnc_gradient(iz, 1))
+      end do
+
+      epnc_gradient = epnc_gradient*qw*dfac
+      call header('E_pnc gradient (in hartree)', -1)
+      do iatom = 1, nr_atoms
+         ix = 3*(iatom - 1) + 1
+         iy = 3*(iatom - 1) + 2
+         iz = 3*(iatom - 1) + 3
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom),    &
+                                   real(epnc_gradient(ix, 1)), &
+                                   real(epnc_gradient(iy, 1)), &
+                                   real(epnc_gradient(iz, 1))
+      end do
+
+      epnc_gradient = epnc_gradient*hartree2hz
+      call header('E_pnc gradient (in Hz)', -1)
+      do iatom = 1, nr_atoms
+         ix = 3*(iatom - 1) + 1
+         iy = 3*(iatom - 1) + 2
+         iz = 3*(iatom - 1) + 3
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom),    &
+                                   real(epnc_gradient(ix, 1)), &
+                                   real(epnc_gradient(iy, 1)), &
+                                   real(epnc_gradient(iz, 1))
+      end do
+
+      call prsymb(unit_output, '-', 46, 0)
+
+      deallocate(epnc)
+      deallocate(epnc_gradient)
+
+   end subroutine
 
 
    subroutine vibshyp_shyp_dipg_polg_hypg(mol, S, D, F, ng, freq, &
@@ -1382,6 +1480,11 @@ contains
          else if (freq(nj)==freq(nk) .or. (freq(ni)==0 .and. freq(nj)==-freq(nk))) then
             ! j-k symmetry, 20 eqns
             do k=1,3
+#ifdef VAR_PGF90
+!radovan pgf complains here
+!PGF90-S-0152-All dimension specifiers must be ':'
+         call quit('fix vib_prop.f90 for pgf')
+#else
                call pert_dens(mol, S, (/'EL','EL','EL'/), (/3,k,1/),        &
                               (/D,Df(:,ni),Df(:k,nj),Df(k,nk),              &
                                 Dff(:,:k,nij),Dff(:,k,nik),Dff(:k,k,njk)/), &
@@ -1389,6 +1492,7 @@ contains
                                 Fff(:,:k,nij),Fff(:,k,nik),Fff(:k,k,njk)/), &
                               Dfff(:,:k,k), Ffff(:,:k,k),                   &
                               freq=(/freq(ni),freq(nj),freq(nk)/), comp=(/1,1,k/))
+#endif
                do j=1,k-1
                   do i=1,3
                      if (freq(nj)==freq(nk)) Dfff(i,k,j) = Dfff(i,j,k)

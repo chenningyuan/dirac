@@ -1,35 +1,24 @@
 !dalton_copyright_start
-!      Copyright (c) 2005 by the authors of Dalton (see below).
+!      Copyright (c) 2011 by the authors of Dalton (see below).
 !      All Rights Reserved.
-!
+!   
 !      The source code in this file is part of
-!      "Dalton, a molecular electronic structure program, Release 2.0
-!      (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
-!      O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-!      E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-!      K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
-!      H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
-!      W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
-!      P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-!      T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue,
-!      S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
-!      P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+!      "Dalton, a molecular electronic structure program,
+!       Release DALTON2011 (2011), see http://daltonprogram.org"
+!   
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
 !      written licence.
-!
+!   
 !      In particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the licence holder.
 !      This means also that persons (e.g. post-docs) leaving the research
 !      group of the licence holder may not take any part of Dalton,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own licence.
-!
-!      For questions concerning this copyright write to:
-!         dalton-admin@kjemi.uio.no
-!
-!      For information on how to get a licence see:
-!         http://www.kjemi.uio.no/software/dalton/dalton.html
+!   
+!      For further information, including how to get a licence, see:
+!         http://daltonprogram.org
 !dalton_copyright_end
 
 #if defined (VAR_SINGLE)
@@ -171,7 +160,6 @@ C
      &          W(NUABCD), IODDHR(NTUV), INDHER(0:JTOP,0:JTOP,0:JTOP), 
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD)
 #include "hertop.h"
-#include "sdpre.h"
 C
       IPQX = IPQ0X + 1
       IPQY = IPQ0Y + 1
@@ -214,7 +202,7 @@ C
             Q(I,2) = A(I)*R(I,2) + PQX(I)*R(I,1)
          END DO
          DO T = 2, JMAX
-            TMIN1 = SDPRE(T - 1)
+            TMIN1 = dble(T - 1)
             TUV   = INDHER(T  ,0,0)
             M1T   = INDHER(T-1,0,0)
             M2T   = INDHER(T-2,0,0) 
@@ -225,7 +213,7 @@ C
          END DO
       ELSE
          DO T = 2, JMAX, 2
-            TMIN1 = SDPRE(T - 1)
+            TMIN1 = dble(T - 1)
             TUV   = INDHER(T  ,0,0)
             M2T   = INDHER(T-2,0,0)
             DO I = 1, NUABCD
@@ -246,7 +234,7 @@ C
             END DO
          END DO
          DO U = 2, JMAX
-            UMIN1  = SDPRE(U - 1)
+            UMIN1  = dble(U - 1)
             DO T = 0, JMAX - U, IPQX
                TUV = INDHER(T,U  ,0)
                M1U = INDHER(T,U-1,0)
@@ -259,7 +247,7 @@ C
          END DO
       ELSE
          DO U = 2, JMAX, 2
-            UMIN1  = SDPRE(U - 1)
+            UMIN1  = dble(U - 1)
             DO T = 0, JMAX - U, IPQX
                TUV = INDHER(T,U  ,0)
                M2U = INDHER(T,U-2,0)
@@ -285,7 +273,7 @@ C
             END DO
          END DO
          DO V = 2, JMAX
-            VMIN1  = SDPRE(V - 1)
+            VMIN1  = dble(V - 1)
             IUMAX  = JMAX - V
             DO U = 0, IUMAX, IPQY
                DO T = 0, IUMAX - U, IPQX
@@ -301,7 +289,7 @@ C
          END DO
       ELSE
          DO V = 2, JMAX, 2
-            VMIN1  = SDPRE(V - 1)
+            VMIN1  = dble(V - 1)
             IUMAX  = JMAX - V
             DO U = 0, IUMAX, IPQY
                DO T = 0, IUMAX - U, IPQX
@@ -368,7 +356,6 @@ C
       DIMENSION C0(NUCAB,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
       DIMENSION C1(NUCAB,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
 #include "ibtfun.h"
-#include "sdpre.h"
       DO 100 K = 1, NUCAB
          AOVERP(K) =   SIGN * TEXPA(K) * HEXPPI(K)
          BOVERP(K) = - SIGN * TEXPB(K) * HEXPPI(K)
@@ -403,7 +390,7 @@ C
   400       CONTINUE
             IF (I .GE. 3) THEN
                DO 510 T = 1, I - 2
-               TPLUS1 = SIGN*SDPRE(T + 1)
+               TPLUS1 = SIGN*dble(T + 1)
                DO 520 K = 1, NUCAB
                   C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
      &                        +  DIFPA(K)*C1(K,T  ,I-1,0)
@@ -434,7 +421,7 @@ C
   800          CONTINUE
                IF (IJ .GE. 3) THEN
                   DO 910 T = 1, IJ - 2
-                     TPLUS1 = SIGN*SDPRE(T + 1)
+                     TPLUS1 = SIGN*dble(T + 1)
                      DO 920 K = 1, NUCAB
                      C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
      &                           +  DIFPB(K)*C1(K,T  ,I,J-1)
@@ -486,7 +473,7 @@ C
   402       CONTINUE
             IF (I .GE. 3) THEN
                DO 511 T = 1 + IBTAND(I,1), I - 2, 2
-               TPLUS1 = SIGN*SDPRE(T + 1)
+               TPLUS1 = SIGN*dble(T + 1)
                DO 521 K = 1, NUCAB
                   C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
      &                        + BOVERP(K)*C0(K,T  ,I-1,0)
@@ -515,7 +502,7 @@ C
   802          CONTINUE
                IF (IJ .GE. 3) THEN
                   DO 911 T = 1 + IBTAND(IJ,1), IJ - 2, 2
-                     TPLUS1 = SIGN*SDPRE(T + 1)
+                     TPLUS1 = SIGN*dble(T + 1)
                      DO 921 K = 1, NUCAB
                      C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
      &                           + AOVERP(K)*C0(K,T  ,I,J-1)
@@ -1245,7 +1232,6 @@ C     (University of Oslo, 29 October 2001).
      &          ARGE(NPPX), ARGF(NPPX)
 #include "hertop.h"
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -1289,7 +1275,7 @@ C
 C        O(T,0,0) and M(T,0,0) for T > 0
 C
          DO T = IPQX, JVAL, IPQX
-            TMIN1 = SDPRE(T - 1)
+            TMIN1 = dble(T - 1)
             TUV   = INDHER(T  ,0,0)
             M1T   = INDHER(T-1,0,0)
             M2T   = INDHER(T-2,0,0)
@@ -1306,7 +1292,7 @@ C        O(T,U,0) and M(T,U,0) for U > 0 and all T
 C
          DO U = IPQY, JVAL,     IPQY
          DO T = 0,    JVAL - U, IPQX
-            UMIN1 = SDPRE(U - 1)
+            UMIN1 = dble(U - 1)
             TUV   = INDHER(T,U  ,0)
             M1U   = INDHER(T,U-1,0)
             M2U   = INDHER(T,U-2,0)
@@ -1325,7 +1311,7 @@ C
          DO V = IPQZ, JVAL,         IPQZ
          DO U = 0,    JVAL - V,     IPQY
          DO T = 0,    JVAL - U - V, IPQX
-            VMIN1 = SDPRE(V - 1)
+            VMIN1 = dble(V - 1)
             TUV   = INDHER(T,U,V  )
             M1V   = INDHER(T,U,V-1)
             M2V   = INDHER(T,U,V-2)
@@ -1413,7 +1399,6 @@ C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
 #include "hertop.h"
 #include "ericom.h"
 #include "r12int.h"
-#include "sdpre.h"
 #include "ibtfun.h"
 C
       CALL DZERO(CURF,NPPX*NTUV)
@@ -1441,9 +1426,9 @@ C
          M2U = INDHER(T,U-2,0)
          M1V = INDHER(T,U,V-1)
          M2V = INDHER(T,U,V-2)
-         TMIN1 = SDPRE(T - 1)
-         UMIN1 = SDPRE(U - 1)
-         VMIN1 = SDPRE(V - 1)
+         TMIN1 = dble(T - 1)
+         UMIN1 = dble(U - 1)
+         VMIN1 = dble(V - 1)
 C
 C        (0,0,0)
 C

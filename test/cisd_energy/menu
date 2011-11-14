@@ -1,0 +1,14 @@
+quick   
+cisd.inp                     F.mol 
+F.bss+mfsso.cisd.inp         F.mol 
+F.bss_sfEso1+mfsso.cisd.inp  F.mol 
+
+regular 
+F.bss.cisd.inp               F.mol 
+F.bss_rkb.cisd.inp           F.mol  
+F.dkh2_sfEso1+mfsso.cisd.inp F.mol  
+F.bss_rkb+mfsso.cisd.inp     F.mol  
+F.bss_sfEso1.cisd.inp        F.mol  
+F.bss_sfBso1.cisd.inp        F.mol  
+F.dkh2_sfBso1.cisd.inp       F.mol  
+F.dkh2_sfEso1.cisd.inp       F.mol  

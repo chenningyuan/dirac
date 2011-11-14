@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : herdrv.F
 C
 C
 #ifdef UNDEF
@@ -1038,7 +1035,7 @@ C
 #endif /* ifndef PRG_DIRAC */
 #ifdef MOD_ERI
       CALL ER2INP(WORD)
-      CALL FCK3INP(WORD)
+      IF (DOFCK3) CALL FCK3INP(WORD)
 #endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,

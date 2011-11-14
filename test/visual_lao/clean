@@ -1,2 +1,0 @@
-rm -f *.tgz *.user_test* PAMXVC* AOPROPER* DFCOEF* *.3d* PLOT* basis_info*
-rm -f property_info* reortest* FCKLON*

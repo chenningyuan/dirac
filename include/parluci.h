@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : parluci.h
 !
 !                     PARALLEL INFORMATION
@@ -94,5 +92,5 @@ C
      &        CKRCIONLY, LOWSRT_IJKL
 !     character block
       CHARACTER*9 NIIJKL_ROD
-	CHARACTER*1 SYMFLABEL
+	CHARACTER*3 SYMFLABEL
       COMMON/LUCI_CHAR/ NIIJKL_ROD, SYMFLABEL

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -483,9 +483,6 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
       INTEGER I
-#if !defined (INT_STAR8)
-      INTEGER ISTAT
-#endif
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR

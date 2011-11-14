@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,619 +19,337 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-
 module visual_london
 
+#ifdef MOD_UNRELEASED
   use memory_allocator
   use visual_cfg
-  use ao_eval
-  use density_eval
-  use basis_info
   use matrix_defop
-  use dirac_interface
-
 
   implicit none
 
-  public visual_london_init
-  public setup_fo_conmat_ao
-  public get_jblao
-
-  save
+  public get_d_con_mo
+  public get_mdm_con
 
   private
-
 #include "priunit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
-#include "maxorb.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
 #include "dgroup.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
-#include "shells.h"
-#include "orgcom.h"
+#include "dcbbas.h"
 
-#include "dcbprl.h"
-
-
-! information about property integrals read from AOPROPER file:
-
-  character(16) ::   property_name
-  integer       ::   property_type
-  integer       ::   number_of_components
-
-  real(8)       ::   property_factor(3)
-  integer       ::   property_label(3)
-  character(4)  ::   property_do_int(3)
-  integer       ::   property_lrep(3)
-  integer       ::   property_ltyp(3)
-  integer       ::   property_jm4(3)
-  integer       ::   property_jm4pos(3)
-  integer       ::   property_iqmult(3)
-  integer       ::   property_iqtopq(3)
-
-  integer       ::   property_ihqmat(4)
-  integer       ::   number_nz
-
+  integer :: nr_xyz_comp
+  integer :: which_icomp
+  logical :: sum_ep_rn
 
 contains
 
-  subroutine visual_london_init(ivector)
-!   --------------------------------------------------------------------
-    integer, intent(in) :: ivector
+  subroutine get_d_con_mo(D_con_mo, D_con_mo_ai)
+!   ----------------------------------------------------------------------------
+    type(matrix)            :: D_con_mo
+    type(matrix), optional  :: D_con_mo_ai
 
-    integer :: key_l
-    logical :: file_exists
-!   --------------------------------------------------------------------
+    real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
+    integer                 :: file_unit, icomp
+    logical                 :: debug_me
 
-!   london can be done only if iq_j, iq_nucdip, iq_mdip
-!   ---------------------------------------------------
-    if ((visual_cfg_iq_xvector(ivector) .ne. iq_j)       .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_nucdipx) .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_nucdipy) .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_nucdipz) .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_mdipx)   .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_mdipy)   .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_mdipz)) then
+!   gosia, note for me:
+!   if natural connection - T^B matrix was built from 'd|S>/dB' integrals
+!   if symmetric connection - T^B matrix was built from 'dS/dB' integrals
+!   ----------------------------------------------------------------------------
 
-      call quit('visual_london_init: london option only for iq_j, iq_nucdip and iq_mdip')
+!   read T^B matrix in MO basis to D_con_mo
+!   ---------------------------------------
 
-    end if
+    file_unit = 71
 
+    open(file_unit,                 &
+         file   = 'TBMO',           &
+         status = 'old',            &
+         form   = 'unformatted',    &
+         access = 'sequential',     &
+         position = 'rewind',       &
+         action = 'read')
 
-!   file_with_connection_matrices  - AOPROPER
-!   -----------------------------------------
-    if (visual_cfg_conmat_file(ivector) .ne. 'AOPROPER') then
-      call quit('error in visual: property file has to be AOPROPER')
-    end if
+1   continue
 
-    inquire(file = visual_cfg_conmat_file(ivector), exist = file_exists)
+    read(file_unit) nr_xyz_comp
+    read(file_unit) which_icomp
+    read(file_unit) D_con_mo%irep
+    read(file_unit) sum_ep_rn
+    read(file_unit) D_con_mo%elms
 
-    if (.not. file_exists) then
-      call quit('error in visual: no property file found')
-    end if
-
-!   which_component   - x/y/z
-!   -------------------------
-    if (visual_cfg_lao_chcomp(ivector) == 'X') then
-      visual_cfg_lao_icomp(ivector) = 1
-    else if (visual_cfg_lao_chcomp(ivector) == 'Y') then
-      visual_cfg_lao_icomp(ivector) = 2
-    else if (visual_cfg_lao_chcomp(ivector) == 'Z') then
-      visual_cfg_lao_icomp(ivector) = 3
-    else
-      call quit('error in visual_london: icomp != X,Y,Z')
-    end if
-
-!   which_connection  - symmetric/natural/none
-!   ------------------------------------------
-    key_l = len_trim(visual_cfg_connection_key(ivector))
-    if (visual_cfg_connection_key(ivector)(1:key_l) == 'symmetric') then
-      visual_cfg_connection(ivector) = 2
-      write(lupri, *) 'visual_london: symmetric connection used'
-    else if (visual_cfg_connection_key(ivector)(1:key_l) == 'natural') then
-      visual_cfg_connection(ivector) = 1
-      write(lupri, *) 'visual_london: natural connection used'
-    else if (visual_cfg_connection_key(ivector)(1:key_l) == 'none') then
-      visual_cfg_connection(ivector) = 0
-      write(lupri, *) 'visual_london: <none> connection used'
-    else
-      write(lupri, *) 'no connection is set, the default is <natural>'
-    end if
-
-
-!   additional options
-!   ------------------
-    if (btest(visual_cfg_lao_contributions(ivector), 0)) &
-      write(lupri, *) 'visual_london: direct contribution included'
-    if (btest(visual_cfg_lao_contributions(ivector), 1)) then
-      if (visual_cfg_connection(ivector) == 0) then
-        write(lupri, *) 'visual_london: (response-reorth)_ai included'
-      else
-        write(lupri, *) 'visual_london: response contribution included'
-      end if
-    end if
-    if (btest(visual_cfg_lao_contributions(ivector), 2)) then
-      if (visual_cfg_connection(ivector) == 0) then
-        write(lupri, *) 'visual_london: overlap_ij included'
-      else
-        write(lupri, *) 'visual_london: reorthonorm. contrib. included'
-      end if
-    end if
-
-
-  end subroutine visual_london_init
-
-  subroutine setup_fo_conmat_ao(D_con_ao, ivector)
-!   --------------------------------------------------------------------
-    type(matrix)         :: D_con_ao
-    integer, intent(in)  :: ivector
-
-    integer    :: icomp, file_unit, idimens, print_level, idoint(4)
-    integer    :: im4, iz, ibrp, p_typ
-    character  :: p_name*8, p_int*4, rtnlbl(2)*8
-    logical    :: debug_me, file_exists, ldoint(4)
-    real(8)    :: pfac, factor
-    real(8), allocatable  :: buffer(:)
-
-    integer :: p_index
-    logical :: doint(4), first(4)
-    integer :: i
-    integer :: iq, iqp, ioff, ioff2
-
-!   -------------------------------------------------------------------
-
-    debug_me = .false.
-    print_level = 0
-
-!   connection matrices info
-!   ========================
-
-    if (visual_cfg_connection(ivector) == 2) then
-
-      write(lupri, *) 'symmetric connection is used in visual_london'
-      p_name  = 'dS/dB'//visual_cfg_lao_chcomp(ivector)
-      pfac    = -0.5d0
-      p_int   = '+00+'
-      idimens = nnbbasx
-
-    else if (visual_cfg_connection(ivector) == 1) then
-
-      write(lupri, *) 'natural connection is used in visual_london'
-      p_name  = 'd|S>/dB'//visual_cfg_lao_chcomp(ivector)
-      pfac    = -1.0d0
-      p_int   = '+00+'
-      idimens = n2bbasx
-
-    else  if (visual_cfg_connection(ivector) == 0) then
-!     gosia: if <none> connection then anyway read 'dS/dB' integrals
-
-      write(lupri, *) '<none> connection is used in visual_london, dS/dB integrals read'
-      p_name  = 'dS/dB'//visual_cfg_lao_chcomp(ivector)
-      pfac    = -0.5d0
-      p_int   = '+00+'
-      idimens = nnbbasx
-
-    end if
-
-    if(levyle .or. (zora .and. .not. zora4)) then
-      p_int(4:4) = '0'
-    end if
-
-    do i = 1, 4
-      if (p_int(i:i) == '0') then
-        doint(i) = .false.
-      else
-        doint(i) = .true.
-      end if
-    end do
-
-!   get info about symmetries from file (for selected p_name)
-!   =========================================================
-    call D_con_symmetry_info(ivector, p_name(1:len_trim(p_name)))
-
-
-!   read property integrals into buffer
-!   ===================================
-    file_unit = lu1int
-
-    open(file_unit,            &
-         file = visual_cfg_conmat_file(ivector), &
-         status = 'OLD',       &
-         form = 'UNFORMATTED', &
-         access = 'SEQUENTIAL')
-
-    call alloc(buffer, idimens)
-
-!!   i do this to avoid 1 dcopy:
-!    if (visual_cfg_connection(ivector) == 1) then
-!      call prprea(file_unit,   &
-!                  p_name(1:len_trim(p_name)), &
-!                  rtnlbl,      &
-!                  p_int,       &
-!                  D_con_ao%elms,      &
-!                  idimens,     &
-!                  print_level)
-!    else
-      call prprea(file_unit,   &
-                  p_name(1:len_trim(p_name)), &
-                  rtnlbl,      &
-                  p_int,       &
-                  buffer,      &
-                  idimens,     &
-                  print_level)
-!    end if
-
-    close(file_unit, status='keep')
-
-    if (debug_me) then
-!     debug after reading integrals (to compare with PRPMAO for example)
-      write(lupri, *) 'setup_fo_conmat_ao: buffer after calling prprea'
-      write(lupri, *) 'p_name, pfac, p_int, idimens = ', &
-                       p_name, pfac, p_int, idimens
-      if (visual_cfg_connection(ivector) == 1 .or.       &
-          visual_cfg_connection(ivector) == 0) then
-!       natural connection - square matrix:
-        call output(buffer, 1, ntbas(0), 1, ntbas(0), &
-                    ntbas(0), ntbas(0), 1, lupri)
-      else
-!       symmetric connection - lower triangle:
-        call outpak(buffer, ntbas(0), 1, lupri)
-      end if
-    end if
-
-
-!   scale integrals by pfac
-!   =======================
-    factor = pfac
-    call dscal(idimens, factor, buffer, 1)
-
-
-!   insert phases
-!   =============
-    if (nz .lt. 4) then
-      if (visual_cfg_connection(ivector) == 1) then
-        call qmphase('S', property_jm4pos, property_lrep, buffer, doint)
-      else
-        call qmphase('L', property_jm4pos, property_lrep, buffer, doint)
-      end if
-    end if
-
-
-    if (debug_me) then
-      write(lupri, *) 'phase-transformed integrals'
-      if (visual_cfg_connection(ivector) == 1) then
-        call output(buffer, 1, ntbas(0), 1, ntbas(0), ntbas(0), ntbas(0), 1,lupri)
-      else
-        call outpak(buffer, ntbas(0), 1, lupri)
-      end if
-    end if
-
-
-!   gosia i'll fix it later
-    do i = 1, 4 
-      first(i) = .false.
-    end do
-
-    do i = 1, nz
-      first(i) = .true.
-    end do
-
-
-    if ((visual_cfg_connection(ivector) == 2) .or. &
-        (visual_cfg_connection(ivector) == 0)) then
-
-      ioff = ntbas(0)*ntbas(0)*(property_iqtopq(1) - 1) + 1
-      if (first(property_iqtopq(1))) then
-        call dcopy(idimens, buffer, 1, D_con_ao%elms(ioff), 1)
-        first(property_iqtopq(1)) = .false.
-      end if
-
-
-      do i = 1, nz
-        ioff2 = ntbas(0)*ntbas(0)*(i - 1) + 1
-        if (.not. first(i)) then
-          call dzero(buffer, idimens)
-          call dcopy(idimens, D_con_ao%elms(i), 1, buffer, 1)
-          if (property_ihqmat(i) == 2) then
-            call daptge(ntbas(0), buffer, D_con_ao%elms(ioff2))
-          else if (property_ihqmat(i) == 1) then
-            call dsptsi(ntbas(0), buffer, D_con_ao%elms(ioff2))
+    if (nr_xyz_comp > 1) then
+!      for example after calculating full shielding tensor in preceding response 
+!      there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
+!      read here the requested one:
+       if (visual_cfg_london_component == 'Y') then
+          if (which_icomp == 2) then
+             go to 2
+          else
+             go to 1
           end if
-          call butobs_no_work(D_con_ao%elms(ioff2), 1)
-        else
-          call dzero(D_con_ao%elms(ioff2), n2bbasx)
-        end if
-      end do 
+       else if (visual_cfg_london_component == 'Z') then
+          if (which_icomp == 3) then
+             go to 2
+          else
+             go to 1
+          end if
+       end if
+    end if
+
+2   continue 
+
+    close(file_unit, status = 'keep')
+
+    write(lupri, *) 'visual: connection matrix (T^B in MO basis) read from TBMO file'
+    write(lupri, *) 'nr_xyz_comp = ', nr_xyz_comp
+    write(lupri, *) 'component = ', which_icomp
+    write(lupri, *) 'irep = ', D_con_mo%irep
+    write(lupri, *) 'sum over e+p shells = ', sum_ep_rn
+
+    debug_me = .false.
+    if (debug_me) then
+       call print_mat(D_con_mo, label = 'D_con_mo read from TBMO')
+    end if
+
+    if (visual_cfg_use_orbital_string) then
+       call select_orbitals_reortho(D_con_mo%elms)
+    end if
+
+    if (visual_cfg_london_none) then
+
+!      here discern occ-occ and occ-virt blocks of T^B
+!      write occ-occ  to D_con_mo
+!      and   occ-virt to D_con_mo_ai
+       call alloc(D_ji, norbt, norbt, nz)
+       call partition_connection_matrix(D_con_mo%elms, D_con_mo_ai%elms, D_ji, sum_ep_rn)
+       D_con_mo%elms = 0.0d0
+       call dcopy(norbt*norbt*nz, D_ji, 1, D_con_mo%elms, 1)
+       call dealloc(D_ji)
+
+    end if
+
+  end subroutine
+
+  subroutine select_orbitals_reortho(A)
+!    ---------------------------------------------------------------------------
+     real(8), intent(inout)  :: A(norbt, norbt, nz)
+     real(8), allocatable    :: B(:, :, :)
+
+     integer, allocatable :: kvec(:)
+     integer :: list(norbt, 2), ifrp, i, k, iz, nr(2), ir(2, 2), nvec
+!    ---------------------------------------------------------------------------
+
+
+!    read numbers from the string
+!    into integer list kvec(nvec):
+     do ifrp = 1, nfsym
+
+!fixme skipep
+        !if(xlr_skipep) then
+        !   nr(ifrp)   = nesh(ifrp)
+        !   ir(1,ifrp) = 1
+        !   ir(2,ifrp) = nesh(ifrp)
+        !else
+           nr(ifrp)   =  norb(ifrp)
+           ir(1,ifrp) = -npsh(ifrp)
+           ir(2,ifrp) =  nesh(ifrp)
+        !endif
+
+        call alloc(kvec, norb(ifrp))
+        kvec = 0
+        nvec = 1
+        call numlst(visual_cfg_orbital_string(ifrp), kvec, nr(ifrp), ir(1,ifrp), ir(2,ifrp), ifrp, nvec)
+
+!       we need absolute indices:
+        write(*, *) '--------------------------------------------------------------'
+        write(*, *) 'visual_london.F90: selected orbitals (in reorthonormalization)'
+        write(*, *) 'in fermion symmetry: ', ifrp
+        write(*, *) 'electronic index, (absolute index)'
+        list = 0
+        do i = 1, nvec
+           list(i, ifrp) = kvec(i) + npsh(ifrp)
+           write(*, *) kvec(i), '(', list(i, ifrp), ')'
+        end do
+        write(*, *) '--------------------------------------------------------------'
+        call dealloc(kvec)
+
+     end do
+
+!    save those elements of A which are on the list and zero-out the rest
+     call alloc(B, norbt, norbt, nz)
+     call dzero(B, norbt*norbt*nz)
+
+     do iz = 1, nz
+        do ifrp = 1, nfsym
+           do k = 1, nvec
+              do i = 1, norbt
+                 B(i, list(k, ifrp), iz) = A(i, list(k, ifrp), iz)
+                 if (i .ne. list(k, ifrp)) then
+                    B(list(k, ifrp), i, iz) = A(list(k, ifrp), i, iz)
+                 end if
+              end do
+           end do
+        end do
+     end do
+
+     call dzero(A, norbt*norbt*nz)
+     call dcopy(norbt*norbt*nz, B, 1, A, 1)
+
+     call dealloc(B)
+
+  end subroutine
+
+
+
+  subroutine partition_connection_matrix(T, T_ai, T_ji, sum_ep_rn)
+!    ---------------------------------------------------------------------------
+     real(8), intent(inout) :: T(norbt, norbt, nz)
+     real(8), intent(inout) :: T_ai(norbt, norbt, nz)
+     real(8), intent(inout) :: T_ji(norbt, norbt, nz)
+     logical, intent(in)    :: sum_ep_rn
+
+     integer :: ip(2), ap(2), ie(2), ae(2)
+     integer :: ifrp, iz, i, j
+!    ---------------------------------------------------------------------------
+
+     call dcopy(norbt*norbt*nz, T, 1, T_ji, 1)
+     call dcopy(norbt*norbt*nz, T, 1, T_ai, 1)
+
+     do ifrp = 1, nfsym
+        ip(ifrp) = iorb(ifrp) + 1
+        ap(ifrp) = ip(ifrp) + nish(ifrp)
+        ie(ifrp) = ip(ifrp) + npsh(ifrp)
+        ae(ifrp) = ie(ifrp) + nish(ifrp)
+
+        write(*, *) 'ifrp, ip = ', ifrp, ip(ifrp)
+        write(*, *) 'ifrp, ap = ', ifrp, ap(ifrp)
+        write(*, *) 'ifrp, ie = ', ifrp, ie(ifrp)
+        write(*, *) 'ifrp, ae = ', ifrp, ae(ifrp)
+        write(*, *) 'ifrp, nish = ', ifrp, nish(ifrp)
+        write(*, *) 'ifrp, npsh = ', ifrp, npsh(ifrp)
+        write(*, *) 'ifrp, norb = ', ifrp, norb(ifrp)
+     end do
+
+! todo:
+!    if .not. sum_ep_rn - reorthonormalization only over electronic shells
+!    (so i can zero-out blocks corresponding to positronic shells)
+
+!    'ai' blocks (zero-out 'ij' blocks)
+     do iz = 1, nz
+        do ifrp = 1, nfsym
+
+!          zero-out 'ij' blocks
+           do j = ie(ifrp), ae(ifrp) - 1
+              do i = ie(ifrp), ae(ifrp) - 1
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+           end do
+
+!          zero-out 'aa' blocks
+           do j = ip(ifrp), ie(ifrp) - 1
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+           end do
+           do j = ae(ifrp), norb(ifrp)
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+           end do
+     
+        end do
+     end do
+
+!    'ij' blocks
+     do iz = 1, nz
+        do ifrp = 1, nfsym
+
+           do j = ip(ifrp), norb(ifrp)
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+           end do
+           do j = ie(ifrp), ae(ifrp) - 1
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+           end do
+     
+        end do
+     end do
+
+  end subroutine
+
+
+  subroutine get_mdm_con(D_con,       &
+                         D_con_mo,    &
+                         C,           &
+                         Cig, Csg,    &
+                         Ciu, Csu)
+
+!   ----------------------------------------------------------------------------
+    type(matrix)            :: D_con, D_con_mo
+    type(matrix)            :: C, Cig, Csg
+    type(matrix), optional  :: Ciu, Csu
+
+!   ----------------------------------------------------------------------------
+
+    if (visual_cfg_london_none) then
+
+!      here build density matrix modified by first-order overlap
+!      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
+
+       D_con = D_con_mo - dag(D_con_mo)
+!      check that it gives the same regardless of connection used
+!      due to: T^B + (T^B)^+ = -S^B
+!      call print_mat(D_con, label = '-S^B')
+
+       if (nfsym == 2) then
+          if (jbtof(D_con_mo%irep, 1) == 2) then
+!            ungerade perturbation
+             D_con = Cig*(D_con*dag(Ciu)) &
+                   + Ciu*(D_con*dag(Cig))
+          else
+!            gerade perturbation
+             D_con = Cig*(D_con*dag(Cig)) &
+                   + Ciu*(D_con*dag(Ciu))
+          end if
+       else
+          D_con = Cig*(D_con*dag(Cig))
+       end if
 
     else
+!      symmetric or natural connection used in preceding response run
+!      "-" is because dag() does only transposition and T^B is antihermitian 
 
-      ioff = ntbas(0)*ntbas(0)*(property_iqtopq(1) - 1) + 1
-      call dcopy(idimens, buffer, 1, D_con_ao%elms(ioff), 1)
-      call butobs_no_work(D_con_ao%elms, nz)
+       if (nfsym == 2) then
+          D_con = C*(D_con_mo*dag(Cig)) &
+                + C*(D_con_mo*dag(Ciu))
+          D_con = D_con - dag(D_con)
+       else
+
+          D_con = C*(D_con_mo*dag(Cig))
+          D_con = D_con - dag(D_con)
+
+       end if
+
 
     end if
 
+  end subroutine
 
-
-    call dealloc(buffer)
-
-
-!   assign symmetries 
-!   =================
-    D_con_ao%ih_sym = visual_cfg_irep_conmat(ivector) + 1
-    D_con_ao%tr_sym = visual_cfg_itim_conmat(ivector)
-    D_con_ao%irep   = visual_cfg_irep_conmat(ivector)
-
-
-    if (debug_me) then
-!     should be the same as connection matrix in SA-AO basis
-!     which can be printed from e.g. PRPMAO when running response
-      call print_mat(D_con_ao, label = 'setup_fo_conmat_ao: debug D_con_ao in SA-AO basis')
-    end if
-
-
-  end subroutine setup_fo_conmat_ao
-
-
-  subroutine D_con_symmetry_info(ivector, p_name)
-!   --------------------------------------------------------------------
-    integer, intent(in)       :: ivector
-    character(*), intent(in)  :: p_name
-
-    integer       :: isym, itim, indxpr, i
-    character(8)  :: line
-    logical :: in_file
-    logical :: debug_me
-!   --------------------------------------------------------------------
-
-    debug_me = .true.
-
-    if (debug_me) then
-      write(lupri, *) 'read symmetry info for connection matrices'
-      write(lupri, *) 'entering ivector, p_name, len_trim(p_name) = ', &
-                                ivector, p_name, len_trim(p_name)
-    end if
-
-
-    open(11, file='property_info',form='formatted',access='sequential')
-    rewind(11)
-    in_file = .true.
-
-    do while (in_file)
-
-      read(11, *, end = 99) line
-      write(*, *) 'line(1:len_trim(p_name)', line(1:len_trim(p_name))
-
-      !if (p_name == line(1:len_trim(p_name))) then
-      if (line(1:2) == p_name(1:2)) then
-
-        property_name = p_name(1:len_trim(p_name))
-        read(11, *, end = 99) property_type
-        read(11, *, end = 99) isym
-        read(11, *, end = 99) itim
-
-!
-        read(11, *, end = 99) number_nz
-        do i = 1, number_nz
-          read(11, *, end = 99) property_ihqmat(i)
-        end do
-!
-        read(11, *, end = 99) number_of_components
-        do i = 1, number_of_components
-          read(11, *, end = 99) property_factor(i)
-          read(11, *, end = 99) property_label(i)
-          read(11, *, end = 99) property_do_int(i)
-          read(11, *, end = 99) property_lrep(i)
-          read(11, *, end = 99) property_ltyp(i)
-          read(11, *, end = 99) property_jm4(i)
-          read(11, *, end = 99) property_jm4pos(i)
-          read(11, *, end = 99) property_iqmult(i)
-          read(11, *, end = 99) property_iqtopq(i)
-        end do
-
-        visual_cfg_irep_conmat(ivector) = isym - 1
-        visual_cfg_itim_conmat(ivector) = itim    
-
-      end if
-
-    end do
-
- 99 in_file = .false.
-
-    close(11)
-
-    debug_me = .false.
-    if (debug_me) then
-
-      write(lupri, *) 'gosia output from read_property_info'
-
-      write(lupri, *) 'property_name        = ', property_name
-      write(lupri, *) 'property_type        = ', property_type
-      write(lupri, *) 'visual_cfg_irep_conmat(ivector) = ', visual_cfg_irep_conmat(ivector)
-      write(lupri, *) 'isym                 = ', isym
-      write(lupri, *) 'visual_cfg_itim_conmat(ivector) = ', visual_cfg_itim_conmat(ivector)
-      write(lupri, *) 'itim                 = ', itim
-
-      write(lupri, *) 'number_nz            =', number_nz
-      do i = 1, number_nz
-        write(lupri, *) 'i, property_ihqmat(i) = ', i, property_ihqmat(i)
-      end do
-!
-
-      write(lupri, *) 'number_of_components = ', number_of_components
-
-      do i = 1, number_of_components
-       write(lupri, *) '                i   = ', i 
-       write(lupri, *) 'property_factor(i)  = ', property_factor(i)
-       write(lupri, *) 'property_label(i)   = ', property_label(i)
-       write(lupri, *) 'property_do_int(i)  = ', property_do_int(i)
-       write(lupri, *) 'property_lrep(i)    = ', property_lrep(i)
-       write(lupri, *) 'property_ltyp(i)    = ', property_ltyp(i)
-       write(lupri, *) 'property_jm4(i)     = ', property_jm4(i)
-       write(lupri, *) 'property_jm4pos(i)  = ', property_jm4pos(i)
-       write(lupri, *) 'property_iqmult(i)  = ', property_iqmult(i)
-       write(lupri, *) 'property_iqtopq(i)  = ', property_iqtopq(i)
-      end do
-
-    end if
-
-
-  end subroutine D_con_symmetry_info
-
-
-
-
-  subroutine get_jblao(ixvector,            &
-                       nr_dmat, D,          &
-                       nr_dmat_con, D_con,  &
-                       ao, buffer,          &
-                       px, py, pz,          &
-                       jblao)
-!   --------------------------------------------------------------------
-    type(matrix)             :: D(nr_dmat), D_con(nr_dmat_con)
-    real(8), intent(in)      :: ao(*), buffer(*)
-    integer, intent(in)      :: ixvector, nr_dmat, nr_dmat_con
-    real(8), intent(in)      :: px, py, pz
-    real(8), intent(out)     :: jblao(3)
-
-    integer :: imat, imat_con
-    logical :: nodirect, noreorth, norespon, debug_me
-
-    integer :: i, j, ixyz
-    real(8) :: rx, ry, rz, rsq, f
-
-    real(8) :: vector_a(3)
-!   --------------------------------------------------------------------
-
-    jblao = 0.0d0
-
-    debug_me = .false.
-
-    imat     = vector_to_matrix(ixvector)
-    imat_con = vector_to_matrix_con(ixvector)
-
-!   'direct' contribution
-    if (btest(visual_cfg_lao_contributions(ixvector), 0)) then
-
-      vector_a = 0.0d0
-
-      call get_jblao_direct(ixvector, &
-                            1, &
-                            D(1)%elms, &
-                            ntbas(0), &
-                            ao(ao_start(0,0):ao_end(0,0)), &
-                            ao(ao_start(0,1):ao_end(0,1)), &
-                            (/px, py, pz/), &
-                            vector_a)
-
-      f = -1.0d0
-      call daxpy(3, f, vector_a, 1, jblao, 1)
-
-    end if
-
-!   'response' contribution
-    if (btest(visual_cfg_lao_contributions(ixvector), 1)) then
-
-      vector_a = 0.0d0
-
-           call get_j(vector_a,                             &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                       &
-                      D(imat)%elms,                       &
-                      buffer,                            &
-                      ao)
-
-
-      f = -1.0d0
-      call daxpy(3, f, vector_a, 1, jblao, 1)
-
-    end if
-
-!   'reorthonormalization' contribution
-    if (btest(visual_cfg_lao_contributions(ixvector), 2)) then
-
-      vector_a = 0.0d0
-
-      call get_j(vector_a,                          &
-                 visual_cfg_irep_conmat(ixvector), &
-                 D_con(imat_con)%nrow,                       &
-                 D_con(imat_con)%elms,                       &
-                 buffer, &
-                 ao(ao_start(0, 0):ao_end(0, 0)))
-
-      f = -1.0d0
-      call daxpy(3, f, vector_a, 1, jblao, 1)
-
-    end if
-
-
-  end subroutine get_jblao
-
-
-
-  subroutine get_jblao_direct(ivector, isym, D_0, mat_dim, ao, ao_b1, r_co, vector)
-!   ----------------------------------------------------------------------------
-    integer, intent(in)    :: ivector
-    integer, intent(in)    :: isym
-    integer, intent(in)    :: mat_dim
-    real(8), intent(in)    :: D_0(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_b1(mat_dim, *)
-    real(8), intent(in)    :: r_co(3)
-    real(8), intent(out)   :: vector(3)
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
-    integer                :: a, b, c, ixyz, iz, ioff
-    real(8)                :: f(3)
-    real(8)                :: vector_a(3)
-!   ----------------------------------------------------------------------------
-
-    vector_a = 0.0d0
-
-    a = visual_cfg_lao_icomp(ivector)
-
-    if (a == 1) then
-      b = 2; c = 3
-    else if (a == 2) then
-      b = 3; c = 1
-    else if (a == 3) then
-      b = 1; c = 2
-    end if
-    
-    do ixyz = 1, 3
-      do iblock = 1, lssl_nr_density_blocks(ixyz, isym - 1)
-
-        nr1 = lssl_nr_ao(1, iblock, ixyz, isym - 1)
-        st1 = lssl_st_ao(1, iblock, ixyz, isym - 1)
-        nr2 = lssl_nr_ao(2, iblock, ixyz, isym - 1)
-        st2 = lssl_st_ao(2, iblock, ixyz, isym - 1)
-
-        do ii = st1, st1 + nr1 - 1
-          do jj = st2, st2 + nr2 - 1
-
-            f(ixyz) = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                    - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
-            vector_a(ixyz) = vector_a(ixyz) + f(ixyz)*D_0(ii, jj, iq(ixyz))
-
-          end do
-        end do
-
-      end do
-      vector(ixyz) = 0.5d0*cval*vector_a(ixyz)
-    end do
-
-  end subroutine get_jblao_direct
-
-
-
+#endif /* #ifdef MOD_UNRELEASED */
 end module

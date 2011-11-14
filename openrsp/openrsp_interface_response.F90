@@ -170,6 +170,8 @@ contains
     integer                     :: nr_freq
 
     logical                     :: debug_me = .false.
+
+    real(8),      allocatable   :: cmo_from_file(:)
 !   ----------------------------------------------------------------------------
 
 !   fixme: nssh not always properly set, change to nesh minus nish
@@ -266,7 +268,10 @@ contains
 
     else
 
-       call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+       allocate(cmo_from_file(n2bbasxq))
+       call read_mo_coef(cmo_from_file)
+       call get_C(C, cmo_from_file, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+       deallocate(cmo_from_file)
        RHS_mo = dag(C)*(RHS*C)
        C = 0
 
@@ -564,13 +569,15 @@ contains
 !   get coefficients
 !   ================
 
-    call get_C(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
-    call get_C(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
-
+    allocate(cmo_from_file(n2bbasxq))
+    call read_mo_coef(cmo_from_file)
+    call get_C(Cig, cmo_from_file, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
+    call get_C(Csg, cmo_from_file, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
     if (nfsym == 2) then
-      call get_C(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
-      call get_C(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+      call get_C(Ciu, cmo_from_file, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
+      call get_C(Csu, cmo_from_file, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
     end if
+    deallocate(cmo_from_file)
 
 
 !   construct perturbed AO density matrix

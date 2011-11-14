@@ -42,7 +42,7 @@ C
 C
 C---------------Local variables memory requirements------------------
 C
-      LOGICAL ALLOC
+      LOGICAL ALLOC,ERRFLG
       INTEGER KFRSAV,LFRSAV
       INTEGER ICOLLEN(MXREP),INTBUF
 c file names for the Lanczos
@@ -128,7 +128,7 @@ C
       CALL MEMOPT('REAL',BORIJK,NDIM,CC,KFREE,LFREE,ALLOC)
 C
       NDIM = IO(NREP+1)*2
-      CALL MEMOPT('REAL',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('INTE',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC)
 C
       M = IO(NREP+1)
       NDIM = (M*M*M*IV(NREP+1) + NOOTMAX)*RCW
@@ -163,21 +163,22 @@ C |
       WRITE(IW,*)
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '***                  STARTING THE'
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***      RELATIVISTIC DOUBLE IONIZATION ADC(2x)'
       WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '***                     MODULE'
-      WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*)
+      IF(DOFULL) THEN
+        WRITE(IW,*) 'Full diagonalizer additionally requested.'
+        WRITE(IW,*) 'Remark: Only works up to a Matrix dimension'
+        WRITE(IW,*) '     ****  of 5000    ****'
+        WRITE(IW,*) 'and is for debugging purposes only.'
+      ELSE
+        WRITE(IW,*) 'Only Lanzcos diagonalizer will be called.'
+      ENDIF
 C |
 C |
 C |
@@ -190,19 +191,11 @@ C  __________________  BUILD 2H-2H BLOCK  ___________________________
 C |
 C |
 C |
-C   all symmetries are treated at once !
-C   This is advisable because a) the matrix is small
-C   and b) the efficiency is high.
+C   all symmetries in the 2H/2H block are treated simultaneously.
 C
       CALL BUILD_2H2H (CC(BGIJKL), CC(BVVOO1), CC(BVVOO2), 
      &                 CC(BOOOO1), CC(BOOOO2), CC(BAOCOC), 
      &                 EPS, CC(ERSMIK), CC(E_IJKL))
-c     WRITE(IW,*)
-c     WRITE(IW,*) ' ****************************'
-c     WRITE(IW,*) ' *** 2h/2h block finished ***'
-c     WRITE(IW,*) ' ****************************'
-c     WRITE(IW,*)
-
       CALL MEMCHK('after BUILD_2H2H',CC,KFRSAV)
 C
 C   the 2h/2h block is now available at CC(BGIJKL) and has
@@ -217,20 +210,19 @@ C |
 C |   THIS IS TO BE DONE OVER INDIVIDUAL SYMMETRIES.
 C |   THE CORRESPONDING ADC-MATRIX BLOCKS ARE STORED PER SYMMETRY.
 C |   THE Blocks are of the 2h+3h1p/2h structure. During the
-C |   index array setup in 3H1P the corresponding diagonal epsilon
-C |   array is also calculated.
+C |   index array setup in 3H1P the satellite diagonal epsilon
+C |   array is also calculated and stored in an intermediate file.
 C |
 
-
 c*****************************************************************
-c**** master symmetry loop for the coupling/satellite blocks *****
-c**** for test purposes do full diagonalization in core    *******
-c**** the 3h1p/2h matrices are written out in this routine *******
-c**** For each symmetry the length of the satellite block  *******
-c**** is determined and stored in ICOLLEN (needed for the  *******
-c**** SAT block routine                                    *******
-c**** Important: Symmetries where no final states occur    *******
-c**** are skipped throughout!                              *******
+c**** master symmetry loop for the coupling/satellite blocks  ****
+c**** the 3h1p/2h matrices are written out in this routine    ****
+c**** For each symmetry the length of the satellite block     ****
+c**** is determined and stored in ICOLLEN (needed for the     ****
+c**** SAT block routine. The cc of the coupling block         ****
+c**** is implemented. We therefore need to cc the result.     ****
+c**** Important: Symmetries where no final states occur       ****
+c**** are skipped throughout!                                 ****
 c*****************************************************************
 
       IF(CARITH) THEN
@@ -261,13 +253,8 @@ c*****************************************************************
 
 c
 c  release *ALL* allocations done during computation so far
-c  to ADC control file.  This part goes away later on !!
 c
       CALL MEMCHK('after BUILD_3H1P_2H',CC,KFRSAV)
-c
-c  now *ALL* memory allocated so far is released again.
-c  the relevant numbers are already on disk by BUILD_3H1P_2H
-c
       CALL MEMREL('Total release',CC,1,KFRSAV,KFREE,LFREE)
 C |
 C |
@@ -276,7 +263,7 @@ C |________________E_N_D______S_E_C_T_I_O_N__________________________
 C
 C  __________________  BUILD 3H1P-3H1P (SAT) BLOCK  _________________
 C |
-C |   This is also done over individual symmetries. The packed 3h1p/2h
+C |   This is done over individual symmetries. The packed 3h1p/2h
 C |   matrices are already on disk. For each symmetry
 C |   the required memory is determined and freed again after
 C |   termination.
@@ -344,6 +331,8 @@ c
         CALL MEMOPT('INTE',BUFIOJ,NDIM,CC,KFREE,LFREE,ALLOC)
         NDIM = INTBUF*RCW
         CALL MEMOPT('REAL',BUFBUF,NDIM,CC,KFREE,LFREE,ALLOC)
+        NDIM = IO(NREP+1)*2
+        CALL MEMOPT('INTE',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC)
 
         IF(CARITH) THEN
           CALL BUILD_SAT_C(CC(BFOOOO),CC(BFVOVO),CC(BSPTRO),IO(NREP+1),
@@ -356,49 +345,88 @@ c
      &                     CC(BLKUPO),CC(BLKUPV),DESREP,
      &                     CC(BUFIOI),CC(BUFIOJ),CC(BUFBUF),INTBUF)
         ENDIF
-        CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
-        CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
-
-        write(iw,*) 'memchk after build_sat'
-
-C  call generalized configuration generation routine
-C  suitable for single and double ionization!
+C
+C  call 2h/3h1p configuration creator, file handle is available
+C  afterwards
 C
         LADC = NOOT(DESREP) + LENSATBL
-        CALL WHOLECNF(ITAPADC,NAME3,IRECL,DESREP,EPS,IONIZLEVEL)
+        CALL WCONDAT_D(ITAPADC,NAME3,IRECL,DESREP,LADC,
+     &                 IO(NREP+1),CC(BIROOO))
+        WRITE(IW,*) 'Record length as determined by WCONDAT:',IRECL
+c
+c  release all memory needed for satellite construction.
+c
+        CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
+        CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
 C
 C  write general matrix control file and perform Lanczos diagonalization
 C  for each symmetry immediately.
 C
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
 
-        WRITE(ITAPADC,'(I1)')  IONIZLEVEL      !IONIZLEVEL
-        WRITE(ITAPADC,'(I2)')  DESREP          !KREP
-        WRITE(ITAPADC,'(I1)')  RCW             !RCW
+        WRITE(ITAPADC,'(I1)')  IONIZLEVEL        !IONIZLEVEL
+        WRITE(ITAPADC,'(I2)')  DESREP            !KREP
+        WRITE(ITAPADC,'(I1)')  RCW               !RCW
         N=2
-        WRITE(ITAPADC,'(I1)')  N               !IOLDNEW
-        WRITE(ITAPADC,'(I12)') LADC            !LADC
-        WRITE(ITAPADC,'(A6)')  NAME2           !FILEADC
-        WRITE(ITAPADC,'(A6)')  '      '        !FILEDIA
-        WRITE(ITAPADC,'(A6)')  NAME3           !FILECNF
-        WRITE(ITAPADC,'(A5)')  NMSPECF         !Name of SPEC
-        WRITE(ITAPADC,'(I9)')  IRECL           !IRECL of config
-        WRITE(ITAPADC,'(I9)')  DIPITER         !NITER
-        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)    !1h space size
-        WRITE(ITAPADC,'(I9)')  NBUFS           !NBUFS
-        N=0
-        WRITE(ITAPADC,'(I9)')  N               !NEIGENV
-        WRITE(ITAPADC,'(F10.1)') DIPPRNT       !EVLLIM
+        WRITE(ITAPADC,'(I1)')  N                 !IOLDNEW
+        WRITE(ITAPADC,'(I12)') LADC              !LADC
+        WRITE(ITAPADC,'(A6)')  NAME2             !FILEADC
+        WRITE(ITAPADC,'(A6)')  '      '          !FILEDIA
+        WRITE(ITAPADC,'(A6)')  NAME3             !FILECNF
+        WRITE(ITAPADC,'(A5)')  NMSPECF           !Name of SPEC
+        WRITE(ITAPADC,'(I9)')  IRECL             !IRECL of config
+        WRITE(ITAPADC,'(I9)')  DIPITER           !NITER
+        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)      !2h space size
+        WRITE(ITAPADC,'(I9)')  NBUFS             !NBUFS
+        WRITE(ITAPADC,'(I9)')  DIPEIGV(DESREP)   !NEIGENV
+        WRITE(ITAPADC,'(F10.1)') DIPPRNT         !EVLLIM
 
         CLOSE(ITAPADC)
 c
-c  call diagonalizer.
+c  call full diagonalizer for new matrix format if requested.
+c
+        IF(DOFULL) THEN
+          IF(CARITH) THEN
+            CALL FULLDIAC2(ITAPADC, NAME2, INTBUF, NBUFS, LADC, DESREP)
+          ELSE
+            CALL FULLDIAR2(ITAPADC, NAME2, INTBUF, NBUFS, LADC, DESREP)
+          ENDIF
+        ENDIF
+c
+c  call Lanczos diagonalizer.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
         CALL DIAGEXE(CC,KFRSAV2,LFREE,ITAPADC,IW)
         CLOSE(ITAPADC,STATUS='DELETE')
-
+c
+c  we do Mulliken-type ADC population analysis after diagonalization
+c  since in this part of the program we have access to all the symmetry
+c  information we need. Since we need only the 2h part we can make use
+c  of the TMATVEC matrix, the eigenvectors of the Lanczos matrix.
+c  ATT in this F90 routine an include symm.inc does not work!
+c  therefore we have to transfer the relevant arrays to TWOHPOP
+c  especially MULTB(64,64,2), NOOT(*) and NO(*)
+c
+        IF(DOADCPOP) THEN
+          IF(CARITH) THEN
+            CALL TWOHPOP_C(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
+          ELSE
+            CALL TWOHPOP_R(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
+          ENDIF
+        ENDIF
  300  CONTINUE
+
+c
+c   perform a final DNM matrix check before we transfer back control
+c
+      IF(DOADCPOP) THEN
+        call DNMMATCHK(IW,ITAPADC,ERRFLG)
+        IF(ERRFLG) then
+          call quit('dnm matrix check failed!')
+        ELSE
+          write(iw,*) '--------  DNM matrix check passed.  -------'
+        ENDIF
+      ENDIF
 
 C |
 C |
@@ -451,8 +479,6 @@ C
 C---------------Executable code--------------------------------------
       CALL PST('Building 2h/2h block+')
       KFRSAV=1
-c     CALL MEMCHK('MEMCHK entering  BUILD_2H2H',CC,KFRSAV)
-c     write(iw,*) 'memchk 1 passed...'
 c
 c  -------------------------------
 c  Start calculating  TERM 5A    |
@@ -503,9 +529,6 @@ c
          CALL EWARRMULR(EIJKL,OOOO2,NUM)
       ENDIF
 c
-c     CALL MEMCHK('MEMCHK entering  BUILD_2H2H',CC,KFRSAV)
-c     write(iw,*) 'memchk 3 passed...'
-c
 c  -------------------------------
 c  Start calculating  AIK block  |
 c  RESULT in AIK(*)              |
@@ -551,7 +574,7 @@ c
 c
 c Term 1-4 and Term 6, done by AWEAVER
 c Term 6 is the mere diagonal element and contains only spinor energies
-c Rmember: the antisymmetry with respect to the A_ik contributions is
+c Remember: the antisymmetry with respect to the A_ik contributions is
 c accounted for in AWEAVER!
 c
       IF(CARITH) THEN
@@ -583,16 +606,6 @@ C
       REAL*8 VOOO1(*),VOOO2(*),COL(*),GIJKL(*),EPS(*)
       INTEGER DESREP,LEN_RKLM
 c
-c  variables and arrays for packed matrix strorage handling
-c  the outside program is initializing these data and keeping
-c  track. Mention: the 3h1p/3h1p block will also be appended in
-c  packed form !
-c
-c     INTEGER IBUFPOS,IBUFNUM,IBUFLEN
-c     PARAMETER (IBUFLEN=65536)
-c     INTEGER IBUFROW(IBUFLEN),IBUFCOL(IBUFLEN)
-c     REAL*8  IBUFDAT(IBUFLEN)
-c
 c  MAXOCCSP is the total number of occupied spinors over all ireps.
 C
 C---------------Common Blocks--------------------------------------
@@ -617,11 +630,6 @@ c  the packed matrix for the coupling block just consists of a
 c  sequential packed file which will be reorganized in the routine
 c  for the satellite block and transformed to its final form.
 c
-c     WRITE(IW,*)
-c     WRITE(IW,*) 'Entering construction of coupling block'
-c     WRITE(IW,*) 'In symmetry ',DESREP
-c     WRITE(IW,*)
-c
 c_______  INITIALIZE ARRAYS FOR THE COUPL. BLOCK ____________________
 c                                                                    |
 c                                                                    |
@@ -630,7 +638,7 @@ c  all occupied spinors are counted contiguously through the
 c  irreps. Assign the corresponding irep to this spinor number.
 c  in the code the spinors are accessed through this unique number.
 c  this unique number can be interpreted as *absolute* spinor number
-c  in contrast to the *relative* spinor number.
+c  in contrast to the *relative* spinor number per irep.
 c
       IX=1
       Do KRP=1,NREP
@@ -644,9 +652,8 @@ c
 c  set up triple index array for totally antisymmetric storage of 
 c  the Gamma_rklm,ij
 c  The gamma array is totally antisymmetric in klm!
-c  This means that I>J>K must be maintained throughout!
-c  no I=J, J=K or I=K combination must occur because the corresponding
-c  Gamma entry would vanish !
+c  This means that I>J>K must be maintained throughout and
+c  no I=J, J=K or I=K combination must occur 
 c
       IX=1
       DO K=1,MAXOCCSP
@@ -739,13 +746,6 @@ c
       CALL SRT6 (NREP,MULTB,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
      &           VOOO1,VOOO2)
 c
-c debug: fill integrals with regular numbers
-c     do i=1,lovoot(nrep+1)
-c       vooo2(i) = dble(i)
-c     enddo
-c debug end
-c
-C
 C *****************************************************
 C ************  MASTER SYMMETRY LOOP OVER THE 2H SYMS *
 C *****************************************************
@@ -801,7 +801,6 @@ c|
              DO L = LMIN, NO(LREP)
                RREP=MULTB(JXREP,LMREP+NREP,2)
 
-c       write(iw,'(A,4I3)') 'In LM LOOP:',LREP,MREP,L,M
 c
 c  from here all the rlm Ireps and rlm indices are known
 c  we can assign a destination offset.
@@ -871,8 +870,6 @@ c|
              IF (LREP.EQ.MREP) LMIN = M + 1
              DO L = LMIN, NO(LREP)
                RREP=MULTB(IXREP,LMREP+NREP,2)
-
-c       write(iw,'(A,4I3)') 'In LM LOOP 2:',LREP,MREP,L,M
 c
 c  from here all the rlm Ireps and rlm indices are known
 c  we can assign a destination offset
@@ -926,11 +923,9 @@ c|
 c|______________________________________________________________
 c
 c  from here one column of the coupling block matrix is finished
-c  and ranges from 1 to LEN_RKLM+NOOT(DESDREP). 
+c  and ranges from 1 to LEN_RKLM
 c  Next the corresponding 2h column
 c  will be placed in front of it and then written to disk.
-c  We will form one column because then the diagonalizer needs
-c  less information.
 c_______________________________________________________________
 c   FORM COMPLETE COLUMN AND WRITE TO DISK IN PACKED FORM.     |
 c  The packed matrix storage implies column counting starting  |
@@ -992,16 +987,6 @@ C
       REAL*8 ECOL(*),EPS(*)
       INTEGER DESREP,LEN_RKLM
 c
-c  variables and arrays for packed matrix strorage handling
-c  the outside program is initializing these data and keeping
-c  track. Mention: the 3h1p/3h1p block will also be appended in
-c  packed form !
-c
-c     INTEGER IBUFPOS,IBUFNUM,IBUFLEN
-c     PARAMETER (IBUFLEN=65536)
-c     INTEGER IBUFROW(IBUFLEN),IBUFCOL(IBUFLEN)
-c     REAL*8  IBUFDAT(IBUFLEN)
-c
 c  MAXOCCSP is the total number of occupied spinors over all ireps.
 C
 C---------------Common Blocks--------------------------------------
@@ -1027,11 +1012,6 @@ c  the packed matrix for the coupling block just consists of a
 c  sequential packed file which will be reorganized in the routine
 c  for the satellite block and transformed to its final form.
 c
-c     WRITE(IW,*)
-c     WRITE(IW,*) 'Entering construction of coupling block'
-c     WRITE(IW,*) 'In symmetry ',DESREP
-c     WRITE(IW,*)
-c
 c_______  INITIALIZE ARRAYS FOR THE COUPL. BLOCK ____________________
 c                                                                    |
 c                                                                    |
@@ -1055,8 +1035,7 @@ c  set up triple index array for totally antisymmetric storage of
 c  the Gamma_rklm,ij
 c  The gamma array is totally antisymmetric in klm!
 c  This means that I>J>K must be maintained throughout!
-c  no I=J, J=K or I=K combination must occur because the corresponding
-c  Gamma entry would vanish !
+c  no I=J, J=K or I=K combination must occur 
 c
       IX=1
       DO K=1,MAXOCCSP
@@ -1130,9 +1109,6 @@ c                                                                    |
         WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
       ENDIF
 
-c     WRITE(IW,*) '2P-ADC block data (packed) in       ',FNAME4
-c     WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME3
-
       OPEN(ITAPADC+3,FILE=FNAME3,FORM='UNFORMATTED',STATUS='UNKNOWN')
       OPEN(ITAPADC+4,FILE=FNAME4,FORM='UNFORMATTED',STATUS='UNKNOWN')
 c
@@ -1148,13 +1124,6 @@ c
       CALL GETVOOO(VOOO1)
       CALL SRT6 (NREP,MULTB,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
      &           VOOO1,VOOO2)
-c
-c debug: fill integrals with regular numbers
-c     do i=1,lovoot(nrep+1)
-c       vooo2(i) = dble(i)
-c     enddo
-c debug end
-c
 C
 C *****************************************************
 C ************  MASTER SYMMETRY LOOP OVER THE 2H SYMS *
@@ -1281,8 +1250,6 @@ c|
              IF (LREP.EQ.MREP) LMIN = M + 1
              DO L = LMIN, NO(LREP)
                RREP=MULTB(IXREP,LMREP+NREP,2)
-
-c       write(iw,'(A,4I3)') 'In LM LOOP 2:',LREP,MREP,L,M
 c
 c  from here all the rlm Ireps and rlm indices are known
 c  we can assign a destination offset
@@ -1336,11 +1303,17 @@ c|
 c|______________________________________________________________
 c
 c  from here one column of the coupling block matrix is finished
-c  and ranges from 1 to LEN_RKLM+NOOT(DESDREP). 
+c  and ranges from 1 to LEN_RKLM. Since the c.c. was created according
+c  to the formulation of the equations we have
+c  to complex conjugate the corresponding vector in the coupling block.
+c  the remaining 2h/2h part must not be touched !
+
+          DO JXX = 1,LEN_RKLM
+            COL(JXX) = DCONJG(COL(JXX))
+          ENDDO
+
 c  Next the corresponding 2h column
 c  will be placed in front of it and then written to disk.
-c  We will form one column because then the diagonalizer needs
-c  less information.
 c_______________________________________________________________
 c   FORM COMPLETE COLUMN AND WRITE TO DISK IN PACKED FORM.     |
 c  The packed matrix storage implies column counting starting  |
@@ -1426,8 +1399,6 @@ C
       CHARACTER*44 FIELD
 
       REAL*8 SPARS,XNZEL,XTOTEL
-
-      INTEGER LONGRC   ! contains packed row/column indices.
 c
 c  meaning of the file names:
 c  ADC2PC:  control file with the dimensions and file infos
@@ -1494,11 +1465,9 @@ c
       IF(DESREP.GT.9) THEN
         WRITE(FNAME2,'(A6,A1,I2)') NAME2,'.',DESREP
         WRITE(FNAME3,'(A6,A1,I2)') NAME3,'.',DESREP
-c       WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
       ELSE
         WRITE(FNAME2,'(A6,A2,I1)') NAME2,'.0',DESREP
         WRITE(FNAME3,'(A6,A2,I1)') NAME3,'.0',DESREP
-c       WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
       ENDIF
 
       WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME2
@@ -1548,21 +1517,13 @@ c
       NTOTELE = NTOTELE + 1
       IB=IB+1
 c
-c   !!!
-c
       BUF(IB)=G
-c     IOI(IB)=SATROW
-c     IOJ(IB)=SATCOL
-      LONGRC=SATROW
-      LONGRC=IOR(ISHFT(LONGRC,32),SATCOL)
-      IOI(IB) = LONGRC
+      IOI(IB)=SATROW
+      IOJ(IB)=SATCOL
       IF(IB.EQ.INTBUF) THEN
-c       WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
-c    &               (IOI(IXX),IXX=1,INTBUF),
-c    &               (IOJ(IXX),IXX=1,INTBUF),
-c    &               INTBUF,JDUMMY
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               INTBUF,JDUMMY
         IB = 0
         NBUFS = NBUFS + 1
@@ -1580,11 +1541,7 @@ c
 c  read in diagonal satellite eigenvalues (SATEV)
 c
       READ(ITAP2) (SATEV(IZ),IZ=1,IRCDLEN)
-c     WRITE(IW,*) " ## real energies ##"
-c     WRITE(IW,*) (SATEV(IZ),IZ=1,IRCDLEN)
       CLOSE(ITAP2,STATUS='DELETE')
-c     write(iw,*) 'SAT diagonal energies read in'
-
 c
 c  loop through the columns and check each entry
 c  The index conventions are as in the accomp. material
@@ -1709,19 +1666,14 @@ c
             NTOTELE = NTOTELE + 1
             IB=IB+1
 c
-c   !!!
-c
             BUF(IB)=G
-c           IOI(IB)=SATROW + SATOFF
-c           IOJ(IB)=SATCOL + SATOFF
+            IOI(IB)=SATROW + SATOFF
+            IOJ(IB)=SATCOL + SATOFF
           
-            LONGRC=SATROW + SATOFF
-            LONGRC=IOR(ISHFT(LONGRC,32),SATCOL+SATOFF)
-            IOI(IB) = LONGRC
-
             IF(IB.EQ.INTBUF) THEN
               WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &                     (IOI(IXX),IXX=1,INTBUF),
+     &                     (IOJ(IXX),IXX=1,INTBUF),
      &                     INTBUF,JDUMMY
               IB = 0
               NBUFS = NBUFS + 1
@@ -1732,13 +1684,14 @@ c           IOJ(IB)=SATCOL + SATOFF
  400    CONTINUE
  401  CONTINUE
 c
-c  write out remaining elements of the file buffer
+c  write out *remaining* elements of the file buffer
 c  and count all nonzero elements in the ADC matrix.
 c
       IF(IB.GT.0) THEN
         NBUFS = NBUFS + 1
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               IB,JDUMMY
       ENDIF
       CLOSE(ITAP4)
@@ -1803,8 +1756,6 @@ C
       CHARACTER*44 FIELD
 
       REAL*8 SPARS,XNZEL,XTOTEL
-
-      INTEGER LONGRC   ! contains packed row/column indices.
 c
 c  meaning of the file names:
 c  ADC2PE:  contains the 3h1p/3h1p diagonal energies
@@ -1852,9 +1803,14 @@ c
       IF( (IXTOT-1) .NE. IRCDLEN) stop 'internal error in BUILD_SAT!'
 c
 c  read in OOOO and VOVO integrals and cc the OOOO integrals
+c  according to the equations on paper the VOVOs must not be
+c  changed.
 c
       CALL GETOOOO(OOOO(1))
       CALL GETVOVO(VOVO(1))
+      DO K=1,IOOOOTT(NREP+1)
+        OOOO(K)=DCONJG(OOOO(K))
+      ENDDO
 c
 c  insert the neutral element for addition
 c
@@ -1870,11 +1826,9 @@ c
       IF(DESREP.GT.9) THEN
         WRITE(FNAME2,'(A6,A1,I2)') NAME2,'.',DESREP
         WRITE(FNAME3,'(A6,A1,I2)') NAME3,'.',DESREP
-c       WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
       ELSE
         WRITE(FNAME2,'(A6,A2,I1)') NAME2,'.0',DESREP
         WRITE(FNAME3,'(A6,A2,I1)') NAME3,'.0',DESREP
-c       WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
       ENDIF
 
       WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME2
@@ -1928,18 +1882,12 @@ c
 c   !!!
 c
       BUF(IB)=G
-c     IOI(IB)=SATROW
-c     IOJ(IB)=SATCOL
-      LONGRC=SATROW
-      LONGRC=IOR(ISHFT(LONGRC,32),SATCOL)
-      IOI(IB) = LONGRC
+      IOI(IB)=SATROW
+      IOJ(IB)=SATCOL
       IF(IB.EQ.INTBUF) THEN
-c       WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
-c    &               (IOI(IXX),IXX=1,INTBUF),
-c    &               (IOJ(IXX),IXX=1,INTBUF),
-c    &               INTBUF,JDUMMY
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               INTBUF,JDUMMY
         IB = 0
         NBUFS = NBUFS + 1
@@ -1957,11 +1905,7 @@ c
 c  read in diagonal satellite eigenvalues (SATEV)
 c
       READ(ITAP2) (SATEV(IZ),IZ=1,IRCDLEN)
-c     WRITE(IW,*) " ## complex energies ##"
-c     WRITE(IW,*) (SATEV(IZ),IZ=1,IRCDLEN)
       CLOSE(ITAP2,STATUS='DELETE')
-c     write(iw,*) 'SAT diagonal energies read in'
-
 c
 c  loop through the columns and check each entry
 c  The index conventions are as in the accomp. material
@@ -2070,9 +2014,14 @@ c
             ENDIF
           ENDIF
 c
+c according to the formulation on paper the c.c. satellite
+c block entry is created here. We therefore have to c.c. the 
+c entry.
+c
+          G=DCONJG(G)
+c
 c check if diagonal entry has to be added
 c
-
           IF(SATROW.EQ.SATCOL) THEN
             G = G + DCMPLX(SATEV(SATROW),0.0D0)
           ENDIF
@@ -2090,16 +2039,13 @@ c
 c   !!!
 c
             BUF(IB)=G
-c           IOI(IB)=SATROW + SATOFF
-c           IOJ(IB)=SATCOL + SATOFF
+            IOI(IB)=SATROW + SATOFF
+            IOJ(IB)=SATCOL + SATOFF
           
-            LONGRC=SATROW + SATOFF
-            LONGRC=IOR(ISHFT(LONGRC,32),SATCOL+SATOFF)
-            IOI(IB) = LONGRC
-
             IF(IB.EQ.INTBUF) THEN
               WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &                     (IOI(IXX),IXX=1,INTBUF),
+     &                     (IOJ(IXX),IXX=1,INTBUF),
      &                     INTBUF,JDUMMY
               IB = 0
               NBUFS = NBUFS + 1
@@ -2110,13 +2056,14 @@ c           IOJ(IB)=SATCOL + SATOFF
  400    CONTINUE
  401  CONTINUE
 c
-c  write out remaining elements of the file buffer
+c  write out *remaining* elements of the file buffer
 c  and count all nonzero elements in the ADC matrix.
 c
       IF(IB.GT.0) THEN
         NBUFS = NBUFS + 1
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               IB,JDUMMY
       ENDIF
       CLOSE(ITAP4)
@@ -2199,7 +2146,6 @@ C
                IF (ARP.EQ.BRP) AMIN = B + 1
                DO A = AMIN, NO(ARP)
                   AA = AOFF + A
-c      write(*,*) fac1,fac2,fac3,eps(aa)
                   FAC = FAC3 + EPS(AA)
                   ABIJ = ABIJ + 1
 
@@ -2328,10 +2274,6 @@ C
 C---------------Executable code--------------------------------------
 C
 
-c     do i=1,100
-c       write(*,*) a(i)
-c     enddo
-
       IJKL = 0
       DO KLRP = 1, NREP
       DO 10 LRP = 1, NREP
@@ -2356,7 +2298,8 @@ c we collect the A_ik terms and add them properly with *CORRECT SIGNS*
 c IMPORTANT FOR DEBUGGING: From Abelian group theory one can derive
 c that if e.g. JRP.eq.LRP then IRP must also be KRP!
 c
-c  debugging: in the test version this check is included !
+c  debugging: this check is included and does not eat up a lot of time
+c  because the 2h/2h block is small.
 c
                   IF(JRP.eq.LRP) THEN   !positive sign
                     IF(J.eq.L) THEN
@@ -2397,7 +2340,6 @@ c
 C  treat the diagonal element
 c
              IF(IRP.eq.KRP.and.JRP.eq.LRP.and.i.eq.k.and.j.eq.l) THEN
-c            write(*,*) 'weaver Diagonal:',IRP,JRP,KRP,LRP,I,J,K,L
                 IOFF = IO(IRP) + I
                 JOFF = IO(JRP) + J
                 ESUM = EPS(IOFF) + EPS(JOFF)
@@ -2443,9 +2385,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-c     do i=1,100
-c       write(*,*) a(i)
-c     enddo
 
       IJKL = 0
       DO KLRP = 1, NREP
@@ -2471,7 +2410,6 @@ c we collect the A_ik terms and add them properly with *CORRECT SIGNS*
 c IMPORTANT FOR DEBUGGING: From Abelian group theory one can derive
 c that if e.g. JRP.eq.LRP then IRP must also be KRP!
 c
-c  debugging: in the test version this check is included !
 c
                   IF(JRP.eq.LRP) THEN   !positive sign
                     IF(J.eq.L) THEN
@@ -2512,7 +2450,6 @@ c
 c this is the check for the diagonal element
 c
              IF(IRP.eq.KRP.and.JRP.eq.LRP.and.i.eq.k.and.j.eq.l) THEN
-c            write(*,*) 'weaver Diagonal:',IRP,JRP,KRP,LRP,I,J,K,L
                 IOFF = IO(IRP) + I
                 JOFF = IO(JRP) + J
                 ESUM = EPS(IOFF) + EPS(JOFF)
@@ -2557,8 +2494,8 @@ C
 C
 C---------------Description--------------------------------------------
 C
-C     Multiplies the real array RA elementwise with the complex array RE
-C     and stores the result in RE
+C     Multiplies the complex vector RE with the real vector RA
+c     and stores the result in RE
 C
 C---------------Calling parameters ------------------------------------
 C

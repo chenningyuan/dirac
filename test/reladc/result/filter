@@ -1,1 +1,4 @@
-Nlines 3:eigenvalue (eV)
+$ERROR 1.E-7
+
+Nlines 10:First 60 RAW Lanczos EVAL
+

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,10 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-#if !defined (VAR_IFC)
 
 Module Operators_string
+! deactivated for ifort 10.1.015, higher versions working...
+#if !defined (VAR_IFORT)
 !
 ! ... string of operators ... 
 ! ... kronecker deltas, creation/anihilation operators, indexed terms
@@ -2219,6 +2220,5 @@ endif
 call QExit('equal_elements')
 end function equal_elements
 
-End Module Operators_string
-
 #endif
+End Module Operators_string

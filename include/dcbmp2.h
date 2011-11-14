@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : ./include/dcbmp2.F
 !
 !  DCBMP2:  Parameters for MP2 calculation

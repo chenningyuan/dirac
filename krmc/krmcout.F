@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : krmcout.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
@@ -222,10 +219,10 @@ C
 C
 C        Write out KR-MCSCF energy
 C
-         if(dabs(lvcorr_mc).gt.0.0d0)then
+         if(E_lvcorr_mc.ne.0.0d0)then
            WRITE(LUPRI,9200) IOPT_ISTATE,IOPT_SYMMETRY,
-     &          EMCSCF,POTNUC,lvcorr_mc,
-     &          EMCSCF-POTNUC-lvcorr_mc
+     &          EMCSCF,POTNUC,E_lvcorr_mc,
+     &          EMCSCF-POTNUC-E_lvcorr_mc
          else 
            WRITE(LUPRI,9201) IOPT_ISTATE,IOPT_SYMMETRY,
      &          EMCSCF,POTNUC,EMCSCF-POTNUC
@@ -235,9 +232,9 @@ C
 C
 C        Write out KR-SCF energy
 C
-         if(dabs(lvcorr_mc).gt.0.0d0)then
-           WRITE(LUPRI,9210) EMCSCF,POTNUC,lvcorr_mc,
-     &           EMCSCF-POTNUC-lvcorr_mc
+         if(E_lvcorr_mc.ne.0.0d0)then
+           WRITE(LUPRI,9210) EMCSCF,POTNUC,E_lvcorr_mc,
+     &           EMCSCF-POTNUC-E_lvcorr_mc
          else 
            WRITE(LUPRI,9211) EMCSCF,POTNUC,EMCSCF-POTNUC
          end if
@@ -294,7 +291,7 @@ C
          IPRGNO = MAX(IPROPT,2)
          IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
            CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
-     &                 .FALSE.,MOISNO,IPRGNO,WORK,KFREE,LFREE)
+     &                 .FALSE.,MOISNO,.false.,IPRGNO,WORK,KFREE,LFREE)
          END IF
 C
 C        Write natural orbitals back to KRMCSCF

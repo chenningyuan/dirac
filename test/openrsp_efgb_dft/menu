@@ -1,0 +1,3 @@
+lda.inp          mol.mol
+blyp.inp         mol.mol
+blyp_shifted.inp mol.mol

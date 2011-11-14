@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -55,11 +55,17 @@ module FDE_ImportPotentials
 !                                 a numerical operator on the grid 
 !
 !
+!   ----------------------------------------------------------------------------
          subroutine FDE_SaveAOPROPER_StaticEmbPot(comb,iprint)
+!   ----------------------------------------------------------------------------
  
             use memory_allocator
             use numoper_integrals
-            use fde_mod
+!           use fde_mod
+            use fde_types
+            use fde_cfg
+            use fde_data
+            use fde_io
 
 #include "implicit.h"
 #include "priunit.h"
@@ -70,18 +76,26 @@ module FDE_ImportPotentials
 #include "mxcent.h"
 #include "nuclei.h"
 
-            integer :: fde_gridfile_unit, iprint, i, irrep_vemb
+            integer :: file_unit, iprint, i, irrep_vemb
             real(kind=8), allocatable :: a_oneint(:)
+            character(len=60) :: file_name
+            type(fde_files)   :: ftmp
+
+            call fde_get_files_info(ftmp)
+      
+            file_unit = ftmp%embpot%unit
+            file_name = ftmp%embpot%name
+            call fde_open_file(file_name,file_unit)
+
  
             label = 'FDEVEMB '
             irrep_vemb = 0  ! embedding potential is totally symmetric
 
             read(comb,'(4L1)',err=1000) (doint(i),i=1,4)
 
-            call FDE_ImportStaticPotential_FileOpen(fde_gridfile_unit)
-
             call alloc(a_oneint,nnbbasx)  
-            call NumOper_OneElOpMatrix(a_oneint,fde_gridfile_unit,doint,irrep_vemb)
+            a_oneint = 0.0d0
+            call NumOper_OneElOpMatrix(a_oneint,file_unit,doint,irrep_vemb)
 
             IF(IPRINT.GE.4) THEN
               write (string,*) 'Integrals over (numerical) operator: '//label
@@ -100,7 +114,7 @@ module FDE_ImportPotentials
 !
             call WRTPRO(a_oneint,NNBBASX,LABEL,RTNLBL,IPRINT)
 !
-            call FDE_ImportStaticPotential_FileClose()
+            call fde_close_file(file_unit)
             call dealloc (a_oneint)
 
             return

@@ -8,18 +8,22 @@
 .DFT
  PBE0
 *DFT
+.BLOCKED
 .ALDA
 .GRAC
 LB94
 0.5 40.0 0.79248 1.0D-2
+**GRID
 .ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **INTEGRALS
 .NUCMOD
  1
+*READIN
+.CONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .EVCCNV
  1.0E-5         !we use poor convergence threshold for the test
 **PROPERTIES

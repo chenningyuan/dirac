@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her2el1.F
 C
 C
 C  /* Deck c1driv */
@@ -257,7 +254,9 @@ C
      &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
      &          COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          ETUV(NU1234), HCPRIM(NU1234,NTUV34),
-     &          HCCONT(NCCPP,NTUV34,KHKT12),
+!radovan: went out of bounds with spherical AOs, changed to:
+     &          HCCONT(NCCPP,NTUV34,KCKT12),
+!    &          HCCONT(NCCPP,NTUV34,KHKT12),
      &          HCINT(NCCPP,NTUV34,KHKT12),
      &          HCSINT(*), SCR1(*), SCR2(*), CONT1(*), CONT2(*),
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2),

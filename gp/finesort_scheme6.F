@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -196,11 +196,12 @@ c
        LMFIL   = I_MD_UNIT+1
        imdrec  = irec_md_lastwritten(iactive_buffer)
 
-       call alloc(records_in_use,3,max_records_per_buffer)
+       call alloc(records_in_use,3,max_records_per_buffer,              &
+     &            id='records_in_use')
        call izero(records_in_use,3*max_records_per_buffer)
 
-       call alloc(metadata,3,imdsz)
-c
+       call alloc(metadata,3,imdsz, id='metadata')
+c 
 c the tradeoff of the "suck all data into memory" sorting strategy
 c is that while it avoids a larger number of reading operations, as
 c the complete 1HT dataset is read only once, it may be that
@@ -209,25 +210,25 @@ c too large - they should be of size:
 c
 c  size = total size of the dataset / (number of buffers)
 c
-       call alloc(a,isiz1)
+       call alloc(a,isiz1, id="a")
        call izero(a,isiz1)
 
-       call alloc(b,2,isiz1)
+       call alloc(b,2,isiz1, id="b")
        call izero(b,2*isiz1)
 c
 c for the key-indexed counting sorting algorithm we need 
 c the extra storage below (count, a2, b2 - a2 and b2 can perhaps be
 c made redundant by an in-place exchange..?)
 c
-       call alloc(count,imdsz+1)
+       call alloc(count,imdsz+1, id="count")
        count(1)=1
        forall (i=2:imdsz+1) count(i) = 0
 c      
 c we don't initialize a2, b2 to zero because there will be no accumulation done in them; 
 c rather, they will be assigned the values in a,b
 c
-       call alloc(a2,isiz1)
-       call alloc(b2,2,isiz1)
+       call alloc(a2,isiz1,   id="a2")
+       call alloc(b2,2,isiz1, id="b2")
 c
 c using the "suck all data into memory" sorting strategy: the whole buffer goes 
 c in memory and is subsequently sorted, and broken down into the original record
@@ -280,13 +281,13 @@ c
      &                         irec_md_global_lastwritten,
      &                         irec_md_lastwritten, kl_in_buffer)
 
-            deallocate(count)
-            deallocate(a2)
-            deallocate(b2)
-            deallocate(a)
-            deallocate(b)
-            deallocate(metadata)
-            deallocate(records_in_use)
+            call dealloc(count)
+            call dealloc(a2)
+            call dealloc(b2)
+            call dealloc(a)
+            call dealloc(b)
+            call dealloc(metadata)
+            call dealloc(records_in_use)
 
             return
          endif
@@ -295,13 +296,13 @@ c
 c aspg, strange bug! see comments at the top of this routine...
       iactive_buffer=iactive
       
-      deallocate(count)
-      deallocate(a2)
-      deallocate(b2)
-      deallocate(a)
-      deallocate(b)
-      deallocate(metadata)
-      deallocate(records_in_use)
+      call dealloc(count)
+      call dealloc(a2)
+      call dealloc(b2)
+      call dealloc(a)
+      call dealloc(b)
+      call dealloc(metadata)
+      call dealloc(records_in_use)
 
       end subroutine read_and_resort_in_memory
       
@@ -766,8 +767,8 @@ c need a flush routine? i think not - aspg
           integer,      allocatable :: irec(:), irecn(:)   
 
           
-          call alloc(irec,kl_in_buffer)
-          call alloc(irecn,kl_in_buffer)
+          call alloc(irec, kl_in_buffer, id="irec")
+          call alloc(irecn,kl_in_buffer, id="irecn")
           
           call create_filesort_files(iactive_buffer,kl_in_buffer,irec,irecn)
 
@@ -849,11 +850,11 @@ c when we are done we get rid of these files...
           integer     , allocatable :: sortbuff_int(:,:), igbuf(:,:)      
 
 c we dynamically allocate the storage used here
-          call alloc(rgbuf,ngbfsz)
-          call alloc(igbuf,2,ngbfsz)
-          call alloc(sortbuff_real,kl_in_buffer,ngbfsz)
-          call alloc(sortbuff_int ,kl_in_buffer,2,ngbfsz)
-          call alloc(elements_in_sortbuff,kl_in_buffer)
+          call alloc(rgbuf,ngbfsz, id="rgbuf")
+          call alloc(igbuf,2,ngbfsz, id="igbuf")
+          call alloc(sortbuff_real,kl_in_buffer,ngbfsz,id="sortbuff_real")
+          call alloc(sortbuff_int ,kl_in_buffer,2,ngbfsz,id="sortbuff_int")
+          call alloc(elements_in_sortbuff,kl_in_buffer,id="elements_in_sortbuff")
         
 c initializations
         

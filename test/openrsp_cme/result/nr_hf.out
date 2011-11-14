@@ -1,153 +1,3949 @@
-
- =========================================================================
- Version           : Dirac 8.0 (patchlevel 0) 
+DIRAC pam run in /home/bast/dirac/git_trunk/test/openrsp_cme
+Size of all static allocations: 108.433 MB 
+DIRAC serial starts by allocating 63910761 words (487 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                      VERSION 10.00  10 October 2010                        *
+ *                                                                            *
+ ******************************************************************************
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
+ *                                                                            *
+ *    with new contributions since the DIRAC08 release from:                  *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsø              Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linköping University              Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsø              Norway       *
+ *    Jørn Thyssen             University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
+ *                                                                            *
+ ******************************************************************************
+ Version           : Dirac 10.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.32-24-generic
+ Operating system  : Linux 2.6.35-25-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 00:05:04 Sep 19 2010 (by bast@larry:/home/bast/dirac/intel_mkl)
- FORTRAN compiler  : /opt/intel/Compiler/11.1/072/bin/ia32/ifort -O3 -ip  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MKL -DVAR_MFDS -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
+ Last compilation  : 21:47:13 Feb 22 2011 (by foo@foo:foo)
+ FORTRAN compiler  : foo 
+ C compiler        : foo 
+ External libraries: foo 
+ Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
+ ILP data model    : foo 
+ SVN URL           : foo 
+ SVN Revision      : foo 
 
- =========================================================================
-$ERROR 1.E-7
-$SIGNCHECK
-d/df d/db G-prime-noL   Eooff w: 0.000 0.000-0.072 0.072
-   0.02888907858   0.00000000000   0.00000000000
-   0.00000000000  -0.13372302542   0.00000000000
-   0.00000000000   0.00000000000   0.02058384053
-   0.00000000000   0.08130605201   0.00000000000
-   0.08130605201   0.00000000000   0.00000000000
-   0.00000000000   0.00000000000   0.00000000000
-   0.00000000000   0.00000000000  -0.80191851711
-   0.00000000000   0.00000000000   0.00000000000
-  -0.80191851713   0.00000000000   0.00000000000
-   0.00000000000   0.08130605201   0.00000000000
-   0.08130605201   0.00000000000   0.00000000000
-   0.00000000000   0.00000000000   0.00000000000
-  -0.13372302542   0.00000000000   0.00000000000
-   0.00000000000   0.02888907858   0.00000000000
-   0.00000000000   0.00000000000   0.02058384053
-   0.00000000000   0.00000000000   0.00000000000
-   0.00000000000   0.00000000000  -0.80191851711
-   0.00000000000  -0.80191851713   0.00000000000
-   0.00000000000   0.00000000000  -0.80191851711
-   0.00000000000   0.00000000000   0.00000000000
-  -0.80191851713   0.00000000000   0.00000000000
-   0.00000000000   0.00000000000   0.00000000000
-   0.00000000000   0.00000000000  -0.80191851711
-   0.00000000000  -0.80191851713   0.00000000000
-  14.45588706864   0.00000000000   0.00000000000
-   0.00000000000  14.45588706864   0.00000000000
-   0.00000000000   0.00000000000  -2.54115138442
+ 
+     Date and time (Linux)  : Tue Feb 22 23:20:04 2011
+     Host name              :                                         
 
- =========================================================================
-$ERROR 1.E-7
-$SIGNCHECK
-d/df d/db A-tensor-noL   -Eqoff w: 0.000 0.000-0.072 0.072
+
+ *******************************************************************************
+ ************************** Input read from DIRAC.INP **************************
+ *******************************************************************************
+
+**DIRAC
+.WAVE FUNCTION
+.PROPERTIES
+**HAMILTONIAN
+.LEVY-LEBLOND
+**WAVE FUNCTION
+.DHF
+**PROPERTIES
+*NMR
+.GAUGEO
+ 0.0 0.0 0.0
+*OPENRSP
+.CME
+.THRESH
+ 1.0D-3 1.0D-3
+.FREQ
+ 1
+ 0.072
+*END OF
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in the four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  .   .    .                                                              
+  .   .    .                                                              
+
+  Nuclear Gaussian exponent for atom of charge   9.000 :    5.3546911034D+08
+
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  QM-QM nuclear repulsion energy :    5.294117647059
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    5.294117647059
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  F           1       9      15       5      L  - [6s3p|2s1p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
+  H           1       1       3       1      L  - [3s|1s]                                                        
+                              9       9      S  - [3p|3p]                                                        
+  ----------------------------------------------------------------------
+                             18       6      L  - large components
+                             48      48      S  - small components
+  ----------------------------------------------------------------------
+  total:      2      10      66      54
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements      Contraction                       References                     
+   H - He: (3s)         -> [1s]       W.J. Hehre, R.F. Stewart and J.A. Pople,    
+   Li - Ne: (6s,3p)     -> [2s,1p]    J. Chem. Phys. 2657 (1969).                 
+   Na - Ar: (9s,6p)     -> [3s,2p]    W.J. Hehre, R. Ditchfield, R.F. Stewart,    
+                                      J.A. Pople, J. Chem. Phys.  2769 (1970).    
+   K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. 
+   Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980).      
+   Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
+   Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+  ***********************************************************************         
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   F        x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.7000000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            F           H   
+
+   F       0.000000
+   H       0.899601    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          F                              0.899601
+
+
+  Nuclear repulsion energy :    5.294117647059
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    5
+     1  L F     s        2  L F     px       3  L F     py       4  L F     pz       5  L H     s   
+   * Small components:   13
+     6  S F     s        7  S F     px       8  S F     py       9  S F     pz      10  S F     dxx     11  S F     dxy 
+    12  S F     dxz     13  S F     dyy     14  S F     dyz     15  S F     dzz     16  S H     px      17  S H     py  
+    18  S H     pz  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           54
+  Number of large orbitals in each symmetry:      6
+  Number of small orbitals in each symmetry:     48
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        2 functions:    F  s   
+        1 functions:    F  px  
+        1 functions:    F  py  
+        1 functions:    F  pz  
+        1 functions:    H  s   
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        3 functions:    F  s   
+        6 functions:    F  px  
+        6 functions:    F  py  
+        6 functions:    F  pz  
+        3 functions:    F  dxx 
+        3 functions:    F  dxy 
+        3 functions:    F  dxz 
+        3 functions:    F  dyy 
+        3 functions:    F  dyz 
+        3 functions:    F  dzz 
+        3 functions:    H  px  
+        3 functions:    H  py  
+        3 functions:    H  pz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Levy-Leblond Hamiltonian
+   - Spin-orbit interactions neglected
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - contracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  10
+   Charge of molecule    =   0
+   i.e. no. of electrons =  10
+===========================================================================
+ DHFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with   10 electrons in
+       5 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+ * NB!!! No e-p rotations in 2nd order optimization.
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:  0
+ * Input label:**PROPE
+ * Properties calculated for the following wave functions: 
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * do NOT perform the picture change transformation of the four-component property operators
+===========================================================================
+   NMRINP: Input for London magnetic field gradient(NMR shieldings, magnetizabilities).
+===========================================================================
+   User defined gauge origin used (a.u.):    0.000000    0.000000    0.000000
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+  No SS-nuclear attraction integrals(MOLFLD), adapted PDOINT=+000
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A     * Deleted:          3(Proj:          3, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* All positronic solutions deleted !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):     6
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):     6
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Tue Feb 22 23:20:05 2011
+
+It.   1    -45.89588772490      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Feb 22
+
+########## START ITERATION NO.   2 ##########   Tue Feb 22 23:20:05 2011
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01000005s
+
+########## END ITERATION NO.   2 ##########   Tue Feb 22 23:20:05 2011
+
+It.   2    -98.56291722490      5.27D+01 -7.42D-01  1.34D-01               0.01000005s   LL             Tue Feb 22
+
+########## START ITERATION NO.   3 ##########   Tue Feb 22 23:20:05 2011
+
+    3 *** Differential density matrix. DCOVLP     = 1.0021
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00999999s
+
+########## END ITERATION NO.   3 ##########   Tue Feb 22 23:20:05 2011
+
+It.   3    -98.56825528692      5.34D-03 -4.51D-02  1.15D-02   DIIS   2    0.00999999s   LL             Tue Feb 22
+
+########## START ITERATION NO.   4 ##########   Tue Feb 22 23:20:05 2011
+
+    4 *** Differential density matrix. DCOVLP     = 1.0006
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00999999s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00999999s
+
+########## END ITERATION NO.   4 ##########   Tue Feb 22 23:20:05 2011
+
+It.   4    -98.56831539413      6.01D-05 -4.54D-03  1.13D-03   DIIS   3    0.00999999s   LL             Tue Feb 22
+
+########## START ITERATION NO.   5 ##########   Tue Feb 22 23:20:05 2011
+
+    5 *** Differential density matrix. DCOVLP     = 1.0001
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   5 ##########   Tue Feb 22 23:20:05 2011
+
+It.   5    -98.56831586121      4.67D-07 -1.59D-04  1.35D-04   DIIS   4    0.00000000s   LL             Tue Feb 22
+
+########## START ITERATION NO.   6 ##########   Tue Feb 22 23:20:05 2011
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00999999s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00999999s
+
+########## END ITERATION NO.   6 ##########   Tue Feb 22 23:20:05 2011
+
+It.   6    -98.56831586730      6.09D-09 -1.42D-05  3.01D-07   DIIS   5    0.00999999s   LL             Tue Feb 22
+
+########## START ITERATION NO.   7 ##########   Tue Feb 22 23:20:05 2011
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   7 ##########   Tue Feb 22 23:20:05 2011
+
+It.   7    -98.56831586730      9.95D-14  1.24D-07  1.58D-10   DIIS   5    0.00000000s   LL             Tue Feb 22
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1    -45.89588772490      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Feb 22
+It.   2    -98.56291722490      5.27D+01 -7.42D-01  1.34D-01               0.01000005s   LL             Tue Feb 22
+It.   3    -98.56825528692      5.34D-03 -4.51D-02  1.15D-02   DIIS   2    0.00999999s   LL             Tue Feb 22
+It.   4    -98.56831539413      6.01D-05 -4.54D-03  1.13D-03   DIIS   3    0.00999999s   LL             Tue Feb 22
+It.   5    -98.56831586121      4.67D-07 -1.59D-04  1.35D-04   DIIS   4    0.00000000s   LL             Tue Feb 22
+It.   6    -98.56831586730      6.09D-09 -1.42D-05  3.01D-07   DIIS   5    0.00999999s   LL             Tue Feb 22
+It.   7    -98.56831586730      9.95D-14  1.24D-07  1.58D-10   DIIS   5    0.00000000s   LL             Tue Feb 22
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after    7 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL           :    0.00000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -103.86243351435951
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :       5.29411764705882
+
+   Sum of all contributions to the energy
+   Total energy                             :     -98.56831586730068
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Boson symmetry A  
+  * Closed shell, f = 1.0000
+-25.89850237526013  ( 2)    -1.47691214587525  ( 2)    -0.59027487041819  ( 2)    -0.46477951203812  ( 4)
+  * Virtual eigenvalues, f = 0.0000
+  0.64741763718422  ( 2)
+
+* Occupation of subblocks
+                       E1 :  A                                                                              
+  closed shells (f=1.0000):    5
+ virtual shells (f=0.0000):    1
+tot.num. of pos.erg shells:    6
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.64741764 au (symmetry A  )
+  - E(HOMO) :    -0.46477951 au (symmetry A  )
+  ------------------------------------------
+    gap     :     1.11219715 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+   Trond Saue
+
+   First-order ESR properties
+   Hans Joergen Aa. Jensen and Anette Noerager
+
+   MP2 first order properties:
+   J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+   Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+   Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+   Joern Thyssen
+
+   Additional contributions from:
+   Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+* REAFCK: Fock matrix read from file /scratch/bast.nr_hf.9924/DFFCK1                             
+* Heading :DIRAC: No title specified !!!                     Tue Feb 22 23:20:05 2011
+
+* REAFCK: Fock matrix read from file /scratch/bast.nr_hf.9924/DFFCK2                             
+* Heading :DIRAC: No title specified !!!                     Tue Feb 22 23:20:05 2011
+ electron count from S**D: (9.99999999999999,0.000000000000000E+000)
+dipmom = -Ef
+  0.000000000000  0.000000000000 -0.513602705852
+
+quadru = -Eq
+  0.375106999171  0.000000000000  0.375106999171  0.000000000000  0.000000000000 -0.750213998341
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   2.354283718689902E-002
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /scratch/bast.nr_hf.9924/DFFCK2                             
+* Heading :DIRAC: No title specified !!!                     Tue Feb 22 23:20:05 2011
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /scratch/bast.nr_hf.9924/DFFCK1                             
+* Heading :DIRAC: No title specified !!!                     Tue Feb 22 23:20:05 2011
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  4.61E-16  4.60E-16  3.67E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00999999s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   4.61D-16 |   4.60D-16  3.67D-17
+========================================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   2.354283718689924E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.16E-16  1.16E-16  1.02E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.16D-16 |   1.16D-16  1.02D-17
+========================================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.39972851318590     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00999999s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.69E-01  1.69E-01  3.87E-03
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  7.91E-03  7.50E-03  2.50E-03
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  5.88E-17  5.59E-17  1.85E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00999999s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.69D-01 |   1.69D-01  3.87D-03
+========================================================
+* It.  2   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   7.91D-03 |   7.50D-03  2.50D-03
+========================================================
+* It.  3   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   5.89D-17 |   5.59D-17  1.85D-17
+========================================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ 
+polari = -Eff w:-0.072 0.072
+  0.002061777633  0.000000000000  0.000000000000
+  0.000000000000  0.002061777633  0.000000000000
+  0.000000000000  0.000000000000  3.017325993733
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00999999s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.22144506775029     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  1.99E-01  1.99E-01
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  8.80E-03  8.80E-03
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:05 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  6.60E-16  6.60E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.99D-01 |   1.99D-01
+==============================================
+* It.  2   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   8.80D-03 |   8.80D-03
+==============================================
+* It.  3   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   6.60D-16 |   6.60D-16
+==============================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   6.429906189625121E-016
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.22144506775029     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  1.99E-01  1.99E-01
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  8.80E-03  8.80E-03
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  4.58E-16  4.58E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.99D-01 |   1.99D-01
+==============================================
+* It.  2   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   8.80D-03 |   8.80D-03
+==============================================
+* It.  3   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   4.58D-16 |   4.58D-16
+==============================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00999999s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   1.827117344993823E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  1.08E-15  1.08E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.08D-15 |   1.08D-15
+==============================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   1.827117344993756E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  2.79E-16  2.79E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.79D-16 |   2.79D-16
+==============================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =    2.44289013550058     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  3.97E-01  3.97E-01
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  1.76E-02  1.76E-02
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  1.10E-15  1.10E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   3.97D-01 |   3.97D-01
+==============================================
+* It.  2   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.76D-02 |   1.76D-02
+==============================================
+* It.  3   0.01000011s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.10D-15 |   1.10D-15
+==============================================
+ before response solver: h- norm(RHS) =   0.000000000000000E+000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ 
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ before response solver: h+ norm(RHS) =   5.206905942133697E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  5.27E-03  5.27E-03
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  2.68E-04  2.68E-04
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  2.04E-16  2.04E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   5.27D-03 |   5.27D-03
+==============================================
+* It.  2   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.68D-04 |   2.68D-04
+==============================================
+* It.  3   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.04D-16 |   2.04D-16
+==============================================
+ before response solver: h- norm(RHS) =   1.548339120302640E-018
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ 
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+ before response solver: h+ norm(RHS) =   1.898391150622675E-016
+ before response solver: h- norm(RHS) =   1.456535758081239E-017
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ before response solver: h+ norm(RHS) =   5.206905942133673E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00999999s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  5.27E-03  5.27E-03
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  2.68E-04  2.68E-04
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:06 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00999999s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  4.59E-17  4.59E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   5.27D-03 |   5.27D-03
+==============================================
+* It.  2   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.68D-04 |   2.68D-04
+==============================================
+* It.  3   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   4.59D-17 |   4.59D-17
+==============================================
+ before response solver: h- norm(RHS) =   3.990979022614754E-018
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ 
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =   7.185274930033168E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  8.22E-16  8.22E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   8.22D-16 |   8.22D-16
+==============================================
+ before response solver: h- norm(RHS) =   1.735121302923022E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-03  5.12E-17  5.12E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   5.12D-17 |   5.12D-17
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =   7.185274930033178E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  2.36E-16  2.36E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.36D-16 |   2.36D-16
+==============================================
+ before response solver: h- norm(RHS) =   1.735121302923019E-002
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-03  3.02E-17  3.02E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   3.02D-17 |   3.02D-17
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.75576992641143     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  2.48E-01  2.48E-01
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  1.11E-02  1.11E-02
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.17%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-03  1.47E-15  1.47E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.48D-01 |   2.48D-01
+==============================================
+* It.  2   0.00999999s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.11D-02 |   1.11D-02
+==============================================
+* It.  3   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.47D-15 |   1.47D-15
+==============================================
+ before response solver: h- norm(RHS) =   1.178009331282324E-016
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ 
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.000000000000000E+000
+ before response solver: h- norm(RHS) =    1158.78210667585     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-03  1.18E-14  1.18E-14
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.18D-14 |   1.18D-14
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.000000000000000E+000
+ before response solver: h- norm(RHS) =    1158.78210667585     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-03  1.12E-14  1.12E-14
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.12D-14 |   1.12D-14
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.000000000000000E+000
+ before response solver: h- norm(RHS) =    542.848582926709     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:07 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.14%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.00000000  1.00E-03  2.14E-15  2.14E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.14D-15 |   2.14D-15
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ 
+magneti-noL = Eoo w: 0.000 0.000
+ -8.260758300015  0.000000000000  0.000000000000
+  0.000000000000 -8.260758300015  0.000000000000
+  0.000000000000  0.000000000000 -1.716170282605
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.30417928556909     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.24%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  1.09E-17  1.07E-17  2.04E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.09D-17 |   1.07D-17  2.04D-18
+========================================================
+ before response solver: h- norm(RHS) =    8.86984184335991     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.28%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  9.54E-16  8.91E-16  3.43E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   9.55D-16 |   8.91D-16  3.43D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.30420142128514     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.82E-03  1.82E-03  4.03E-05
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  5.40E-05  5.37E-05  5.12E-06
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  2.20E-18  2.20E-18  4.62E-20
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.82D-03 |   1.82D-03  4.03D-05
+========================================================
+* It.  2   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   5.39D-05 |   5.37D-05  5.12D-06
+========================================================
+* It.  3   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   2.20D-18 |   2.20D-18  4.62D-20
+========================================================
+ before response solver: h- norm(RHS) =    8.87439657006077     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  4.18E-02  4.18E-02  8.82E-04
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.42E-02  1.42E-02  3.54E-04
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  6.09E-17  6.06E-17  6.37E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   4.18D-02 |   4.18D-02  8.82D-04
+========================================================
+* It.  2   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.42D-02 |   1.42D-02  3.54D-04
+========================================================
+* It.  3   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   6.09D-17 |   6.06D-17  6.37D-18
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00999975s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.696106650128944     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  4.09E-18  4.08E-18  2.20E-19
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   4.09D-18 |   4.08D-18  2.20D-19
+========================================================
+ before response solver: h- norm(RHS) =    4.73428307646411     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.80E-16  1.79E-16  1.98E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.80D-16 |   1.79D-16  1.98D-17
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.30420142128512     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.82E-03  1.82E-03  4.03E-05
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  5.40E-05  5.37E-05  5.12E-06
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  7.11E-19  7.06E-19  8.33E-20
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.82D-03 |   1.82D-03  4.03D-05
+========================================================
+* It.  2   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   5.39D-05 |   5.37D-05  5.12D-06
+========================================================
+* It.  3   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   7.11D-19 |   7.06D-19  8.33D-20
+========================================================
+ before response solver: h- norm(RHS) =    8.87439657006072     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  4.18E-02  4.18E-02  8.82E-04
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.01000023s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.42E-02  1.42E-02  3.54E-04
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.15E-16  1.15E-16  1.78E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   4.18D-02 |   4.18D-02  8.82D-04
+========================================================
+* It.  2   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.42D-02 |   1.42D-02  3.54D-04
+========================================================
+* It.  3   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.15D-16 |   1.15D-16  1.78D-18
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+ before response solver: h+ norm(RHS) =    1.30417928556908     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.24%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  8.62E-18  8.57E-18  9.57E-19
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   8.62D-18 |   8.57D-18  9.57D-19
+========================================================
+ before response solver: h- norm(RHS) =    8.86984184335986     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:08 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.28%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  8.21E-16  7.69E-16  2.89E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   8.22D-16 |   7.69D-16  2.89D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00999975s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.696106650128937     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00999975s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  6.87E-18  6.77E-18  1.20E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   6.88D-18 |   6.77D-18  1.20D-18
+========================================================
+ before response solver: h- norm(RHS) =    4.73428307646408     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.75E-16  1.74E-16  2.06E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.75D-16 |   1.74D-16  2.06D-17
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =    25.4758751338808     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.75E-16  1.74E-16  6.57E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.74D-16 |   1.74D-16  6.57D-18
+========================================================
+ before response solver: h- norm(RHS) =    259.960854955892     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.23E-14  1.23E-14  7.15E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999975s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.23D-14 |   1.23D-14  7.15D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =    25.4758751338808     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  3.73E-16  3.72E-16  2.57E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.73D-16 |   3.72D-16  2.57D-17
+========================================================
+ before response solver: h- norm(RHS) =    259.960854955892     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.42E-14  1.42E-14  7.42E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.42D-14 |   1.42D-14  7.42D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =    13.5975724423864     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.24%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  1.20E-17  1.15E-17  3.59E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.20D-17 |   1.15D-17  3.59D-18
+========================================================
+ before response solver: h- norm(RHS) =    138.751824277656     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:09 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.28%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  1.08E-15  1.07E-15  1.39E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01999998s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.08D-15 |   1.07D-15  1.39D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ 
+d/df d/db G-prime-noL = Eooff w: 0.000 0.000-0.072 0.072
+  -0.04469327949   0.00000000000   0.00000000000
+   0.00000000000   0.11368984636   0.00000000000
+   0.00000000000   0.00000000000   0.00268344911
+   0.00000000000  -0.07919156292   0.00000000000
+  -0.07919156292   0.00000000000   0.00000000000
+   0.00000000000   0.00000000000   0.00000000000
+   0.00000000000   0.00000000000   0.05599464271
+   0.00000000000   0.00000000000   0.00000000000
+   0.05599464271   0.00000000000   0.00000000000
+   0.00000000000  -0.07919156292   0.00000000000
+  -0.07919156292   0.00000000000   0.00000000000
+   0.00000000000   0.00000000000   0.00000000000
+   0.11368984636   0.00000000000   0.00000000000
+   0.00000000000  -0.04469327949   0.00000000000
+   0.00000000000   0.00000000000   0.00268344911
+   0.00000000000   0.00000000000   0.00000000000
+   0.00000000000   0.00000000000   0.05599464271
+   0.00000000000   0.05599464271   0.00000000000
+   0.00000000000   0.00000000000   0.05599464271
+   0.00000000000   0.00000000000   0.00000000000
+   0.05599464271   0.00000000000   0.00000000000
+   0.00000000000   0.00000000000   0.00000000000
+   0.00000000000   0.00000000000   0.05599464271
+   0.00000000000   0.05599464271   0.00000000000
+  12.58600671835   0.00000000000   0.00000000000
+   0.00000000000  12.58600671835   0.00000000000
+   0.00000000000   0.00000000000  -0.51986955623
+
+d/df d/db A-tensor-noL = -Eqoff w: 0.000 0.000-0.072 0.072
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.036373754802  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.036373754802  0.000000000000
-  0.421960665418  0.000000000000  0.421960665418  0.000000000000  0.000000000000 -0.843921330851
-  0.000000000000 -0.122271910426  0.000000000000  0.000000000000  0.000000000000  0.000000000000
- -1.626681590989  0.000000000000 -1.871225411841  0.000000000000  0.000000000000  3.497907002860
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.720114657866  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000 -0.036373754802  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.036373754802  0.000000000000
- -0.421960665418  0.000000000000 -0.421960665418  0.000000000000  0.000000000000  0.843921330851
+  0.000000000000  0.000000000000  0.000000000000  0.004349874672  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.004349874672  0.000000000000
+ -0.009265084999  0.000000000000 -0.009265084999  0.000000000000  0.000000000000  0.018530169997
+  0.000000000000  0.031122686187  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+ -0.035000427343  0.000000000000  0.027244945032  0.000000000000  0.000000000000  0.007755482311
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.025038890349  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000 -0.004349874672  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.004349874672  0.000000000000
+  0.009265084999  0.000000000000  0.009265084999  0.000000000000  0.000000000000 -0.018530169997
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  1.871225411841  0.000000000000  1.626681590989  0.000000000000  0.000000000000 -3.497907002860
-  0.000000000000  0.122271910426  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.720114657866  0.000000000000  0.000000000000
-  0.000000000000  0.122271910426  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  1.626681590989  0.000000000000  1.871225411841  0.000000000000  0.000000000000 -3.497907002860
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.720114657866  0.000000000000
- -1.871225411841  0.000000000000 -1.626681590989  0.000000000000  0.000000000000  3.497907002860
-  0.000000000000 -0.122271910426  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000 -0.720114657866  0.000000000000  0.000000000000
+ -0.027244945032  0.000000000000  0.035000427343  0.000000000000  0.000000000000 -0.007755482311
+  0.000000000000 -0.031122686187  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000 -0.025038890349  0.000000000000  0.000000000000
+  0.000000000000 -0.031122686187  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+  0.035000427343  0.000000000000 -0.027244945032  0.000000000000  0.000000000000 -0.007755482311
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.025038890349  0.000000000000
+  0.027244945032  0.000000000000 -0.035000427343  0.000000000000  0.000000000000  0.007755482311
+  0.000000000000  0.031122686187  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000  0.025038890349  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
 
- =========================================================================
-$ERROR 1.E-7
-$SIGNCHECK
-d/df d/db G-prime-Lon   Ebbff w: 0.000 0.000-0.072 0.072
- -0.410531974166  0.000000000000  0.000000000000
-  0.000000000000 -0.453478698005  0.000000000000
-  0.000000000000  0.000000000000  0.020583840533
-  0.000000000000  0.021473361926  0.000000000000
-  0.021473361926  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000 -0.668604447834
-  0.000000000000  0.000000000000  0.000000000000
- -0.668604447960  0.000000000000  0.000000000000
-  0.000000000000  0.021473361926  0.000000000000
-  0.021473361926  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000
- -0.453478698005  0.000000000000  0.000000000000
-  0.000000000000 -0.410531974166  0.000000000000
-  0.000000000000  0.000000000000  0.020583840533
-  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000 -0.668604447834
-  0.000000000000 -0.668604447960  0.000000000000
-  0.000000000000  0.000000000000 -0.668604447834
-  0.000000000000  0.000000000000  0.000000000000
- -0.668604447960  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000 -0.668604447834
-  0.000000000000 -0.668604447960  0.000000000000
-  6.340800183670  0.000000000000  0.000000000000
-  0.000000000000  6.340800183670  0.000000000000
-  0.000000000000  0.000000000000 -2.541151384420
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00999975s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.000000000000000E+000
+ before response solver: h- norm(RHS) =    451.147126310729     
 
- =========================================================================
-$ERROR 1.E-7
-$SIGNCHECK
-d/df d/db A-tensor-Lon   -Eqbff w: 0.000 0.000-0.072 0.072
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:11 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-03  7.05E-15  7.05E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   7.05D-15 |   7.05D-15
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.000000000000000E+000
+ before response solver: h- norm(RHS) =    451.147126310730     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:11 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-03  5.18E-15  5.18E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00000000s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   5.18D-15 |   5.18D-15
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.000000000000000E+000
+ before response solver: h- norm(RHS) =    542.848582926709     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:11 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.14%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.00000000  1.00E-03  2.14E-15  2.14E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.00999975s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.14D-15 |   2.14D-15
+==============================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ 
+magneti-Lon = Ebb w: 0.000 0.000
+ -1.810121119688  0.000000000000  0.000000000000
+  0.000000000000 -1.810121119688  0.000000000000
+  0.000000000000  0.000000000000 -1.716170282605
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+ before response solver: h+ norm(RHS) =    2.44521853126466     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.24%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  2.94E-18  2.88E-18  5.76E-19
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   2.94D-18 |   2.88D-18  5.76D-19
+========================================================
+ before response solver: h- norm(RHS) =    16.6301478231831     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.28%   0.01000023s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  3.72E-16  3.48E-16  1.32E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.72D-16 |   3.48D-16  1.32D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ before response solver: h+ norm(RHS) =    2.44522031106771     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  3.98E-04  3.98E-04  9.44E-06
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.63E-05  1.54E-05  5.50E-06
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  8.84E-19  8.84E-19  1.91E-20
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.98D-04 |   3.98D-04  9.44D-06
+========================================================
+* It.  2   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.64D-05 |   1.54D-05  5.50D-06
+========================================================
+* It.  3   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   8.84D-19 |   8.84D-19  1.91D-20
+========================================================
+ before response solver: h- norm(RHS) =    16.6351054586059     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  3.64E-02  3.63E-02  7.20E-04
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  3.18E-03  3.18E-03  2.06E-04
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.15E-16  1.14E-16  2.10E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999928s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.63D-02 |   3.63D-02  7.20D-04
+========================================================
+* It.  2   0.02000046s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.19D-03 |   3.18D-03  2.06D-04
+========================================================
+* It.  3   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.14D-16 |   1.14D-16  2.10D-18
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.696106650128944     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  4.09E-18  4.08E-18  2.20E-19
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   4.09D-18 |   4.08D-18  2.20D-19
+========================================================
+ before response solver: h- norm(RHS) =    4.73428307646411     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.80E-16  1.79E-16  1.98E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.80D-16 |   1.79D-16  1.98D-17
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.00000000s
+ before response solver: h+ norm(RHS) =    2.44522031106769     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  3.98E-04  3.98E-04  9.44E-06
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.63E-05  1.54E-05  5.50E-06
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  6.04E-19  5.91E-19  1.25E-19
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.98D-04 |   3.98D-04  9.44D-06
+========================================================
+* It.  2   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.64D-05 |   1.54D-05  5.50D-06
+========================================================
+* It.  3   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   6.04D-19 |   5.91D-19  1.25D-19
+========================================================
+ before response solver: h- norm(RHS) =    16.6351054586058     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  3.64E-02  3.63E-02  7.20E-04
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  3.18E-03  3.18E-03  2.06E-04
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.88%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  6.27E-17  6.27E-17  3.42E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  3 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999928s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.63D-02 |   3.63D-02  7.20D-04
+========================================================
+* It.  2   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   3.19D-03 |   3.18D-03  2.06D-04
+========================================================
+* It.  3   0.02000046s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   6.28D-17 |   6.27D-17  3.42D-18
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.11%    0.00%   35.17%   0.01000023s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+ before response solver: h+ norm(RHS) =    2.44521853126463     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.24%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  8.49E-19  7.96E-19  2.94E-19
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   8.49D-19 |   7.96D-19  2.94D-19
+========================================================
+ before response solver: h- norm(RHS) =    16.6301478231830     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.28%   0.00999928s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  2.61E-16  2.47E-16  8.38E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.00999928s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   2.61D-16 |   2.47D-16  8.38D-17
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   29.48%   41.38%   14.88%   34.73%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =   0.696106650128937     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  6.87E-18  6.77E-18  1.20E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   6.88D-18 |   6.77D-18  1.20D-18
+========================================================
+ before response solver: h- norm(RHS) =    4.73428307646408     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  1.75E-16  1.74E-16  2.06E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.75D-16 |   1.74D-16  2.06D-17
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =    47.7648269387347     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  1.13E-16  1.13E-16  4.44E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00999928s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.13D-16 |   1.13D-16  4.44D-18
+========================================================
+ before response solver: h- norm(RHS) =    487.400209952170     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  4.88E-15  4.86E-15  4.28E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   4.88D-15 |   4.86D-15  4.28D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+ before response solver: h+ norm(RHS) =    47.7648269387347     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.07200000  1.00E-03  2.17E-16  2.16E-16  2.26E-17
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   2.17D-16 |   2.16D-16  2.26D-17
+========================================================
+ before response solver: h- norm(RHS) =    487.400209952170     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    9.33%   54.87%    0.00%   30.69%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+     0.07200000  1.00E-03  6.09E-15  6.07E-15  4.60E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.01000023s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   6.09D-15 |   6.07D-15  4.60D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.33%   54.87%    0.00%   30.69%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ before response solver: h+ norm(RHS) =    13.5975724423864     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%   35.24%   0.00999928s
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  1.20E-17  1.15E-17  3.59E-18
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00999928s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.20D-17 |   1.15D-17  3.59D-18
+========================================================
+ before response solver: h- norm(RHS) =    138.751824277656     
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.85D-06
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 23:20:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.85D-06    0.00%   53.11%    0.00%    0.28%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   E+ part 
+*** WARNING! *** Zero norm of solution vector !
+     0.07200000  1.00E-03  1.08E-15  1.07E-15  1.39E-16
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm   E+ norm 
+========================================================
+* It.  1   0.02000046s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            0.072000 :   1.08D-15 |   1.07D-15  1.39D-16
+========================================================
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ 
+d/df d/db G-prime-Lon = Ebbff w: 0.000 0.000-0.072 0.072
+ -0.012827320316  0.000000000000  0.000000000000
+  0.000000000000  0.373001320585  0.000000000000
+  0.000000000000  0.000000000000  0.002683449109
+  0.000000000000 -0.192914320451  0.000000000000
+ -0.192914320451  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.040964978318
+  0.000000000000  0.000000000000  0.000000000000
+  0.040964978322  0.000000000000  0.000000000000
+  0.000000000000 -0.192914320451  0.000000000000
+ -0.192914320451  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000
+  0.373001320585  0.000000000000  0.000000000000
+  0.000000000000 -0.012827320316  0.000000000000
+  0.000000000000  0.000000000000  0.002683449109
+  0.000000000000  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.040964978318
+  0.000000000000  0.040964978322  0.000000000000
+  0.000000000000  0.000000000000  0.040964978318
+  0.000000000000  0.000000000000  0.000000000000
+  0.040964978322  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.040964978318
+  0.000000000000  0.040964978322  0.000000000000
+  7.132992958419  0.000000000000  0.000000000000
+  0.000000000000  7.132992958419  0.000000000000
+  0.000000000000  0.000000000000 -0.519869556228
+
+d/df d/db A-tensor-Lon = -Eqbff w: 0.000 0.000-0.072 0.072
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.053698270422  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.053698270422  0.000000000000
-  0.421960665418  0.000000000000  0.421960665418  0.000000000000  0.000000000000 -0.843921330851
-  0.000000000000 -0.203036302649  0.000000000000  0.000000000000  0.000000000000  0.000000000000
- -1.477502780823  0.000000000000 -1.883575386128  0.000000000000  0.000000000000  3.361078166969
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.720114657866  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000 -0.053698270422  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.053698270422  0.000000000000
- -0.421960665418  0.000000000000 -0.421960665418  0.000000000000  0.000000000000  0.843921330851
+  0.000000000000  0.000000000000  0.000000000000  0.002167090227  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.002167090227  0.000000000000
+ -0.009265084999  0.000000000000 -0.009265084999  0.000000000000  0.000000000000  0.018530169997
+  0.000000000000  0.032397269558  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+ -0.120479781006  0.000000000000 -0.055685241890  0.000000000000  0.000000000000  0.176165022896
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.025038890349  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000 -0.002167090227  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.002167090227  0.000000000000
+  0.009265084999  0.000000000000  0.009265084999  0.000000000000  0.000000000000 -0.018530169997
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  1.883575386128  0.000000000000  1.477502780823  0.000000000000  0.000000000000 -3.361078166969
-  0.000000000000  0.203036302649  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000  0.720114657866  0.000000000000  0.000000000000
-  0.000000000000  0.203036302649  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  1.477502780823  0.000000000000  1.883575386128  0.000000000000  0.000000000000 -3.361078166969
-  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.720114657866  0.000000000000
- -1.883575386128  0.000000000000 -1.477502780823  0.000000000000  0.000000000000  3.361078166969
-  0.000000000000 -0.203036302649  0.000000000000  0.000000000000  0.000000000000  0.000000000000
-  0.000000000000  0.000000000000  0.000000000000 -0.720114657866  0.000000000000  0.000000000000
+  0.055685241890  0.000000000000  0.120479781006  0.000000000000  0.000000000000 -0.176165022896
+  0.000000000000 -0.032397269558  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000 -0.025038890349  0.000000000000  0.000000000000
+  0.000000000000 -0.032397269558  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+  0.120479781006  0.000000000000  0.055685241890  0.000000000000  0.000000000000 -0.176165022896
+  0.000000000000  0.000000000000  0.000000000000  0.000000000000 -0.025038890349  0.000000000000
+ -0.055685241890  0.000000000000 -0.120479781006  0.000000000000  0.000000000000  0.176165022896
+  0.000000000000  0.032397269558  0.000000000000  0.000000000000  0.000000000000  0.000000000000
+  0.000000000000  0.000000000000  0.000000000000  0.025038890349  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
   0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000  0.000000000000
 
- =========================================================================
-$ERROR 1.E-7
-$SIGNCHECK
+
+
+                          Polarizability (au)
+                          -------------------
+
+    For frequency w =  0.072 au =  15802 cm-1 ~  633 nm
+
+ -w  w             Fx                  Fy                  Fz
+
+ Fx      0.002061777633      0.000000000000      0.000000000000
+ Fy      0.000000000000      0.002061777633      0.000000000000
+ Fz      0.000000000000      0.000000000000      3.017325993733
+
+
+
+                No-London static Magnetizability (au)
+                -------------------------------------
+
+                   Bx                  By                  Bz
+
+ Bx     -8.260758300015      0.000000000000      0.000000000000
+ By      0.000000000000     -8.260758300015      0.000000000000
+ Bz      0.000000000000      0.000000000000     -1.716170282605
+
+
+
+                  No-London Hypermagnetizability - Eta (au)
+                  -----------------------------------------
+
+    For frequency w =  0.072 au =  15802 cm-1 ~  633 nm
+
+ w;-w                  Bx                  By                  Bz
+
+ FxFxBx      -0.04469327949       0.00000000000       0.00000000000
+ FxFxBy       0.00000000000       0.11368984636       0.00000000000
+ FxFxBz       0.00000000000       0.00000000000       0.00268344911
+
+ FxFyBx       0.00000000000      -0.07919156292       0.00000000000
+ FxFyBy      -0.07919156292       0.00000000000       0.00000000000
+ FxFyBz       0.00000000000       0.00000000000       0.00000000000
+
+ FxFzBx       0.00000000000       0.00000000000       0.05599464271
+ FxFzBy       0.00000000000       0.00000000000       0.00000000000
+ FxFzBz       0.05599464271       0.00000000000       0.00000000000
+
+ FyFxBx       0.00000000000      -0.07919156292       0.00000000000
+ FyFxBy      -0.07919156292       0.00000000000       0.00000000000
+ FyFxBz       0.00000000000       0.00000000000       0.00000000000
+
+ FyFyBx       0.11368984636       0.00000000000       0.00000000000
+ FyFyBy       0.00000000000      -0.04469327949       0.00000000000
+ FyFyBz       0.00000000000       0.00000000000       0.00268344911
+
+ FyFzBx       0.00000000000       0.00000000000       0.00000000000
+ FyFzBy       0.00000000000       0.00000000000       0.05599464271
+ FyFzBz       0.00000000000       0.05599464271       0.00000000000
+
+ FzFxBx       0.00000000000       0.00000000000       0.05599464271
+ FzFxBy       0.00000000000       0.00000000000       0.00000000000
+ FzFxBz       0.05599464271       0.00000000000       0.00000000000
+
+ FzFyBx       0.00000000000       0.00000000000       0.00000000000
+ FzFyBy       0.00000000000       0.00000000000       0.05599464271
+ FzFyBz       0.00000000000       0.05599464271       0.00000000000
+
+ FzFzBx      12.58600671835       0.00000000000       0.00000000000
+ FzFzBy       0.00000000000      12.58600671835       0.00000000000
+ FzFzBz       0.00000000000       0.00000000000      -0.51986955623
+
+
+
+                No-London Cotton-mouton constant: mC, dn, Ccm
+                ---------------------------------------------
+
+    For freq. 0.0720 au,  3468 MHz,  0.73 nm, 15802 cm-1, with T in kelvin:
+
+     mC  = -0.662202E-20 +  0.312296E-14 / T  (cm3 gauss-2 4pie0 mol-1)
+
+     dn  = -0.108945E-12 +  0.513786E-07 / T  (tesla-2 atm-1)
+
+     Ccm = -0.172155E-16 / T +  0.811888E-11 / T^2  (cm-1 gauss-2)
+
+     (calculated from deta = -1.76177     au, and dalpha*dxi =  13.1558     au)
+
+
+
+                 London static Magnetizability (au)
+                 ----------------------------------
+
+                   Bx                  By                  Bz
+
+ Bx     -1.810121119688      0.000000000000      0.000000000000
+ By      0.000000000000     -1.810121119688      0.000000000000
+ Bz      0.000000000000      0.000000000000     -1.716170282605
+
+
+
+                 London Hypermagnetizability - Eta (au)
+                 --------------------------------------
+
+    For frequency w =  0.072 au =  15802 cm-1 ~  633 nm
+
+ w;-w                  Bx                  By                  Bz
+
+ FxFxBx      -0.01282732032       0.00000000000       0.00000000000
+ FxFxBy       0.00000000000       0.37300132059       0.00000000000
+ FxFxBz       0.00000000000       0.00000000000       0.00268344911
+
+ FxFyBx       0.00000000000      -0.19291432045       0.00000000000
+ FxFyBy      -0.19291432045       0.00000000000       0.00000000000
+ FxFyBz       0.00000000000       0.00000000000       0.00000000000
+
+ FxFzBx       0.00000000000       0.00000000000       0.04096497832
+ FxFzBy       0.00000000000       0.00000000000       0.00000000000
+ FxFzBz       0.04096497832       0.00000000000       0.00000000000
+
+ FyFxBx       0.00000000000      -0.19291432045       0.00000000000
+ FyFxBy      -0.19291432045       0.00000000000       0.00000000000
+ FyFxBz       0.00000000000       0.00000000000       0.00000000000
+
+ FyFyBx       0.37300132059       0.00000000000       0.00000000000
+ FyFyBy       0.00000000000      -0.01282732032       0.00000000000
+ FyFyBz       0.00000000000       0.00000000000       0.00268344911
+
+ FyFzBx       0.00000000000       0.00000000000       0.00000000000
+ FyFzBy       0.00000000000       0.00000000000       0.04096497832
+ FyFzBz       0.00000000000       0.04096497832       0.00000000000
+
+ FzFxBx       0.00000000000       0.00000000000       0.04096497832
+ FzFxBy       0.00000000000       0.00000000000       0.00000000000
+ FzFxBz       0.04096497832       0.00000000000       0.00000000000
+
+ FzFyBx       0.00000000000       0.00000000000       0.00000000000
+ FzFyBy       0.00000000000       0.00000000000       0.04096497832
+ FzFyBz       0.00000000000       0.04096497832       0.00000000000
+
+ FzFzBx       7.13299295842       0.00000000000       0.00000000000
+ FzFzBy       0.00000000000       7.13299295842       0.00000000000
+ FzFzBz       0.00000000000       0.00000000000      -0.51986955623
+
+
+
                 London Cotton-mouton constant: mC, dn, Ccm
                 ------------------------------------------
 
  For freq. 0.0720 au,  3468 MHz,  0.73 nm, 15802 cm-1, with T in kelvin:
 
-     mC    -0.662407E-20 +  0.452951E-16 / T  (cm3 gauss-2 4pie0 mol-1)
+     mC  = -0.420335E-20 +  0.448316E-16 / T  (cm3 gauss-2 4pie0 mol-1)
 
-     dn    -0.108979E-12 +  0.745191E-09 / T  (tesla-2 atm-1)
+     dn  = -0.691532E-13 +  0.737566E-09 / T  (tesla-2 atm-1)
 
-     Ccm   -0.172209E-16 / T +  0.117756E-12 / T^2  (cm-1 gauss-2)
+     Ccm = -0.109276E-16 / T +  0.116551E-12 / T^2  (cm-1 gauss-2)
 
-     (calculated from deta   -1.76231     au, and dalpha*dxi   0.190810     au)
+     (calculated from deta = -1.11829     au, and dalpha*dxi = 0.188858     au)
+
+
+ 
+     Date and time (Linux)  : Tue Feb 22 23:20:20 2011
+     Host name              :                                         
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :         0.30
+  
+  Largest          10  allocations
+  
+      487.60 Mb at subroutine                                            for work array at main                        
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+        0.09 Mb at subroutine                                            for unnamed variable                          
+  
+  Peak memory usage    (Mb) :       488.00
+       reached at subroutine :                                           
+              for variable   : unnamed variable                          
+  
+  Memory possibly left allocated! 
+     dumping list now... 
+  
+  <<< Tracked variables, alloc >>>
+      >>>           57  variables so far
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275046168
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275074784
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275074784
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275074784
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275074784
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275074784
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275074784
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275058152
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    269391600
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275103672
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270905560
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275058152
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275046168
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275046168
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    270521912
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    274306528
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    274399968
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    274369936
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           20
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    275074784
+      >>> Done after          57  el.
+  
+  There were         1701  allocations/          1644  deallocations
+      Current memory usage (in Mb) is   0.000000000000000E+000
+ MEMGET high-water mark:     2.90 MB
+
+*****************************************************
+>>>> Node 0, utime: 14, stime: 0, minflt: 140447, majflt: 0, nvcsw: 0, nivcsw: 3061, maxrss: 518436
+>>>> Total WALL time used in DIRAC: 16s

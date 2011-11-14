@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,20 +19,16 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : hergeo.F
 C
 C
-#ifdef UNDEF
+#ifdef OLD_LOG
 /* Comdeck geoana_log */
 950505-hjaaj:
  RADIUS: bug fix - made function double precision instead of real
          (real values would not always be read correctly by geoan1)
 942508-kr: As P.Taylor pointed out, IPRINT never used, and thus removed from
 CBIANA.
-900207-hjaaj: check for non-existent atoms for .ANGLES and .DIHEDR
-in GEOANA.
+900207-hjaaj: check for non-existent atoms for .ANGLES and .DIHEDR in GEOANA.
 Idea: make angle output as in zmat???
 #endif
 C  /* Deck anainp */
@@ -63,6 +59,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -222,7 +219,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-      PARAMETER (LUIP = 4)
+      PARAMETER (LUPUNCH = 4)
       DIMENSION COORD(3,*),
      *          DIST(MXCENT*(MXCENT+1)/2),
      *          ANGLE(MAXANG), DIHED(MAXANG), ICHARG(NUCDEP)
@@ -279,7 +276,7 @@ C                       ... next IATOMA, only IATOMB .le. IATOMA needed
   110    CONTINUE
   100 CONTINUE
 C
-C     set up distance matrix
+C     Set up distance matrix in Angstrom
 C
       IJ = 0
       DO 400 I = 1,NUCDEP
@@ -381,21 +378,21 @@ C
       END IF
       END IF
 C
-C     Punch bonding information in Gamess output format on unit LUIP=4
+C     Punch bonding information in Gamess output format on unit LUPUNCH
 C
       IF (PUNCH) THEN
          IF(NBONDS.LE.6) THEN
-            WRITE(LUIP,8010) (IPAIRS(1,I),IPAIRS(2,I),I=1,NBONDS)
+            WRITE(LUPUNCH,8010) (IPAIRS(1,I),IPAIRS(2,I),I=1,NBONDS)
          ELSE
-            WRITE(LUIP,8020) (IPAIRS(1,I),IPAIRS(2,I),I=1,6)
-            WRITE(LUIP,8030) (IPAIRS(1,I),IPAIRS(2,I),I=7,NBONDS)
+            WRITE(LUPUNCH,8020) (IPAIRS(1,I),IPAIRS(2,I),I=1,6)
+            WRITE(LUPUNCH,8030) (IPAIRS(1,I),IPAIRS(2,I),I=7,NBONDS)
          END IF
       END IF
 C         
       IF (NANG .GT. 0) THEN
          IF (PRINT) THEN
             CALL HEADER('Angles according to input list:',2)
-            WRITE (LUPRI,'(/A/A)')
+            WRITE (LUPRI,'(A/A)')
      *       '    atom 1     atom 2     atom 3         angle (degrees)',
      *       '    ------     ------     ------         ---------------'
          END IF
@@ -497,7 +494,7 @@ C
 C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C (based on OUTPAK by Nelson H.F. Beebe)
 C
-C Print bond distance matrix
+C Print bond distance matrix (or other matrix over atoms)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -507,7 +504,6 @@ C
       DIMENSION DISMAT(*)
 C
       LAST = MIN(NROW,KCOL)
-      NCOL = 1
       BEGIN = 1
  1050 NCOL = 1
       WRITE (LUPRI,1000) (NAMEX(3*I)(1:4),I = BEGIN,LAST)

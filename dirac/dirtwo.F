@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirtwo.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck twofck */
@@ -40,6 +37,10 @@ C     The reduced density matrices are generated within this routine,
 C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
+      use quaternion_algebra
+#ifdef MOD_SRDFT
+      use srdft_cfg ! for MCSCF-srDFT calculation
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -51,7 +52,6 @@ C
 #include "dcbham.h"
 #include "cbihr2.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "ccom.h"
 #include "dcborb.h"
@@ -156,29 +156,31 @@ C             contributions should be calculated since long-range and
 C             short-range coulomb terms cannot be recombined
 C             straightforwardly due to the active density matrix
 C             contribution !!!
-C       Manu: this part should be modified so that srH contributions to
-C             the inactive Fock operator and the inactive energy can be
-C             computed. We could for example, when DOSRINT=.TRUE., 
-C             calculate coulomb integrals over 1/r12 and then coulomb
-C             integrals over - erf(mu r12)/r12 and add them.      
 C
-CTROND  Gaunt-integrals should be turned off !
+C       Trond:  Gaunt-integrals should be turned off !
+C
         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
         HFXFAC = HFXTMP
       END IF
-CCCCCCCCCC
 C
-C        If this is not an MCSCF-srDFT calculation then ... proceed as
-C        usual ... 
-C         if (.not.dirac_cfg_mcsrdft_calculation) then 
+C        Manu: if no need for long-range coulomb integrals (because they 
+C              can be recombined with the short-range ones or we not need them) 
+C              then proceed as usual (compute full range integrals). If needed 
+C              (for the MCSCF-srDFT for example), they have already been calculated. 
+C              The call to FOCKBUILD is then skipped.  
 C
-CCCCCCCCCC
-      HFXTMP = HFXMU
-      HFXMU = D0
-      CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
-      HFXMU = HFXTMP
+#ifdef MOD_SRDFT
+      if (.not.srdft_cfg_lrcoulomb_int) then
+#endif
+         HFXTMP = HFXMU
+         HFXMU = D0
+         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                 IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+         HFXMU = HFXTMP
+#ifdef MOD_SRDFT
+      end if 
+#endif
 C
 C     ===========================
       IF (ONECAP.AND.SMLV1C) THEN
@@ -3504,6 +3506,7 @@ C     tsaue -    Sep 2 1996 Generalized to NFMAT
 C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3516,13 +3519,11 @@ C
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "cbieri.h"
 #include "blocks.h"
 #include "cbihr2.h"
-      EXTERNAL BDQALGEBRA
 #include "ibtfun.h"
 C
       CALL QENTER('DIRAOF')
@@ -3558,7 +3559,6 @@ C           IGTYP 2 will add also the SL (Gaunt) type integrals
          ENDIF
       ENDIF
 C
-CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
       IF(NBSYM.GT.1) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
@@ -3597,12 +3597,11 @@ C
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
-CTROND
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(A)') 'After DIRAO1'
-            CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NZC1,IQMULT,LUPRI)
-          ENDIF
+        IF(IPRINT.GE.5) THEN
+          WRITE(LUPRI,'(A)') 'After DIRAO1'
+          CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NTBAS(0),NZC1,IQMULT,LUPRI)
+        ENDIF
 C
 C       Transform Fock matrix from AO to QO
 C       ===================================
@@ -3647,6 +3646,7 @@ C
 C     Driver for direct SCF calculations
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
@@ -3671,7 +3671,6 @@ C
 #include "dcbbas.h"
 #include "shells.h"
 #include "blocks.h"
-#include "dcbqal.h"
 #include "densfit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -3684,7 +3683,6 @@ C
      &          IFCTYP(4,NFMAT),IREPDM(4,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
      &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
-      EXTERNAL BDQALGEBRA
 C
       CALL QENTER('DIRAO1')
 #include "memint.h"
@@ -4078,16 +4076,18 @@ C
 C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
+      use quaternion_algebra
+#ifdef MOD_SRDFT
+      use srdft_cfg ! for MCSCF-srDFT calculations
+#endif
 #include "implicit.h"
 #include "priunit.h"    
       PARAMETER (D0 = 0.0D0)
 C
-#include "dcbqal.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C     External variables
-      EXTERNAL BDQALGEBRA
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 C     Local variables
@@ -4102,8 +4102,10 @@ c     DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
 C
       IF (IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
-        WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
-        WRITE(LUPRI,'(A,2F7.4)') '* Mu- factor: ',HFXMU, HFXATT
+        WRITE(LUPRI,'(A,F10.4)') 
+     &      '* Exchange factor: ',HFXFAC,
+     &      '* Mu factor      : ',HFXMU,
+     &      '* Attenuation    : ',HFXATT
         IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(3X,A,I2,A,I2)')
      &   '* Entering parameters:  NFMAT=',NFMAT,' MZ= ',MZ
@@ -4136,12 +4138,22 @@ C         An anti-symmetric matrix gives no Coulomb contributions
 C         No exchange contributions if HFXFAC = 0
           IF (HFXFAC.EQ.D0) IE = 0
 C
-C Manu: the next two lines are fine for HF-srDFT calculations but NOT
-C       for MCSCF-srDFT. For example, when building the long-range active Fock operator, 
-C       we need both coulomb and exchange long-range integrals. 
+C         No Coulomb contributions if ... 
 C
-C         No Coulomb contributions if HFXMU.NE.0
-          IF (HFXMU.NE.D0) IC = 0
+C         ...   HFXMU.NE.0 and if this is NOT an MCSCF-srDFT calculation
+C
+C         Indeed, when building the long-range active Fock operator, 
+C         we need both coulomb and exchange long-range integrals. 
+C
+          if (hfxmu /= 0.0d0) then
+#ifdef MOD_SRDFT
+             if (.not. srdft_cfg_lrcoulomb_int) then
+#endif
+                ic = 0
+#ifdef MOD_SRDFT
+             end if
+#endif
+          end if
           IY   = IC + IE
           IF (MZ.LT.4) THEN
 C           ... we are using .SOFOCK or non-direct (CONSCF)
@@ -4472,19 +4484,18 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 C
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "blocks.h"
       DIMENSION DQO(N2BBASX,NZ,NFMAT),
      &          DMRQO(NSYMBL,NSYMBL,NZ,NFMAT),
      &          ISYMOP(NFMAT),WORK(LWORK)
-      EXTERNAL BDQALGEBRA      
 C
 #include "ibtfun.h"
       CALL QENTER('MKDRQO')

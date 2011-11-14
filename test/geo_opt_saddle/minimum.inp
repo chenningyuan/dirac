@@ -16,8 +16,8 @@ Equilibrium geometry of ethane
 **HAMILTONIAN
 .LEVY-LEBLOND
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .CLOSED SHELL
 18
 .EVCCNV

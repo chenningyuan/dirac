@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -36,7 +36,10 @@ C
 C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
-      use FDE_ImportPotentials
+! checking
+       use fde_types
+       use fde_mod
+!!     use FDE_ImportPotentials
 
 #include "implicit.h"
 #include "priunit.h"
@@ -45,6 +48,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
       LOGICAL TEST
+      type(fde_import) :: itmp
 C
 #include "dcbgen.h"
 #include "dcbprl.h"
@@ -54,6 +58,9 @@ C
 #include "cbiher.h"
 #include "nuclei.h"
       CALL QENTER('ONEGEN')
+
+      !mi: always print nuclear contribution to the dipole moment (costs nothing)
+      CALL DIPNUC(1,.FALSE.)
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -89,10 +96,23 @@ C          ... zero SS integrals
         END IF
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
 C
+C     Effective electronic density on nuclei 
+C
+      ELSEIF (CLSINT(I).EQ.'EFFDEN ') THEN
+        CALL EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
+C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
-         CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
+         IF (NOSMLV) THEN
+C          ... zero SS integrals
+           CALL NOSSNUCATT
+           COMB(4:4) = 'F'
+         END IF
+        call fde_get_import_info(itmp)
+        if (itmp%im_vemb) then
+            CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
+         endif
 C
 C     Contribution from beta-matrix
 C
@@ -147,6 +167,148 @@ C
       CALL QEXIT('ONEGEN')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Generates integrals used for the calculation of the effective electronic
+C density at nuclei.  
+C
+C Called from: ONEGEN
+C 
+C Written by Robert van Meer, Sept. 2010, last edited Mar. 2011 
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbihr1.h"
+#include "cbiher.h"
+#include "dcbham.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dcbprl.h"
+#include "dcbcls.h"
+#include "dcbxpr.h"
+C     GEXPEFFDEN contains nuclear gaussian exponents related to size change
+C     EXPPLC = Exponent placeholder
+      REAL*8 GEXPEFFDEN, EXPPLC, PREFACTOR 
+      CHARACTER RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4, 
+     &          LABINT(15*MXCENT)*8
+      LOGICAl DOINT(4), DOATOM(NUCIND)
+      INTEGER ITYP
+      real*8 prefac2(4)
+      DIMENSION WORK(LWORK), GEXPEFFDEN(4), INTREP(9*MXCENT)
+#include "memint.h"
+      CALL QENTER('EFFECTIVE_DENS_NUC')
+
+C     Memory allocation
+      CALL MEMGET('REAL',KONEIN,4*NNBBASX,WORK,KFREE,LFREE)
+
+      IF (BSS.OR.x2C.OR.ZORA.OR.LEVYLE) THEN
+        WRITE(LUPRI,*) 'EFFECTIVE_DENS_NUC: BSS, x2C, ZORA and LEVY'//
+     &  '-LEBLOND modes not supported'
+        CALL QUIT('EFFECTIVE_DENS_NUC: not supported for current'//
+     &  ' Hamiltonian')
+      END IF
+
+      READ(COMB,'(4L1)',ERR=1000) (DOINT(I),I=1,4)
+      OMITVNUC(1) = 'FFFF'
+      OMITVNUC(2) = 'FFFF'
+C     Fetch and set labels/variables (-99 is used to turn on .SELECT)
+      CALL SETATM(DOATOM,NATOM,-99)
+      CALL EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
+      RTNLBL(2)(1:2) = 'SY'
+      WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      RTNLBL(2)(5:8) = COMB
+      ITYP = 0
+
+C     Get the integrals, exponent is changed for a single nucleus 
+C     and reset to the original value after each calculation  
+      DO K = 1,NUCIND
+        IF (DOATOM(K)) THEN
+C         Generate nuclear exponents for nuclear size displacments and prefactor 
+          CALL EFF_DEN_NUC_EXP(GEXPEFFDEN, K, PREFACTOR)
+          EXPPLC = GNUEXP(K)
+C         Calculate property matrices for nuclear displacements
+          DO L = 1, 4 
+            GNUEXP(K) = GEXPEFFDEN(L)
+C           Calculate the integrals  
+            CALL NUCAT1(WORK(KONEIN+(L-1)*NNBBASX),WORK(KFREE),LFREE,
+     &                  DOINT,OMITVNUC,IPRHAM)
+!                                      iprint is not defined - stefan april 2011
+!    &                  DOINT,OMITVNUC,IPRINT)
+          ENDDO
+          GNUEXP(K) = EXPPLC
+C         Create total property matrix with correct prefactor
+          CALL MEMGET('REAL',KHELP,NNBBASX,WORK,KFREE,LFREE)
+          prefac2(1) = +1.0d0
+          prefac2(2) = -8.0d0
+          prefac2(3) = +8.0d0
+          prefac2(4) = -1.0d0
+          call dscal(NNBBASX,PREFACTOR*prefac2(1),WORK(KONEIN),1)
+          do l = 2, 4
+          call dcopy(NNBBASX,WORK(KONEIN+(L-1)*NNBBASX),1,work(KHELP),1)
+          call daxpy(NNBBASX,PREFACTOR*prefac2(l),work(KHELP),1,
+     &               WORK(KONEIN),1)
+          end do
+!         WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
+!    &    (
+!    &            WORK(KONEIN          :KONEIN+  NNBBASX-1) 
+!    &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
+!    &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
+!    &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
+!    &    )
+          CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KHELP,KFREE,LFREE)
+C         Store matrix in AOproper file 
+          ITYP = ITYP + 1
+          CALL WRTPRO(WORK(KONEIN),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
+        ENDIF
+      ENDDO
+
+C     Memory deallocation
+      CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      CALL QEXIT('EFFECTIVE_DENS_NUC')
+      RETURN
+      
+ 1000 CONTINUE
+C     Not able to read DOINT information from COMB
+      WRITE(LUPRI,'(A,A)') 'EFFECTIVE_DENS_NUC: Not able to read COMB ='
+     & ,COMB
+      CALL QUIT('EFFECTIVE_DENS_NUC: Not able to read COMB')
+      RETURN
+      END 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EFF_DEN_NUC_EXP(GEXPEFFDEN, NUCLEUS, PREFACTOR)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Fills Mossbauer exponent array with exponent values
+C  
+C Called from: MOSSBAUER_ISOMER
+C 
+C Written by Robert van Meer, Sept. 2010 last edited Mar. 2011
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "pi.h"
+      REAL*8 GEXPEFFDEN, RADIUS
+      DIMENSION GEXPEFFDEN(4)
+C     Generate nuclear radius from the gaussian exponent    
+      RADIUS = SQRT(3D0 / (2D0 * GNUEXP(NUCLEUS)) )
+C     Generate new gaussian parameters dR=0.005R
+      GEXPEFFDEN(1) = 3D0 / (2D0 * 0.990D0 * 0.990D0 * RADIUS * RADIUS) 
+      GEXPEFFDEN(2) = 3D0 / (2D0 * 0.995D0 * 0.995D0 * RADIUS * RADIUS)
+      GEXPEFFDEN(3) = 3D0 / (2D0 * 1.005D0 * 1.005D0 * RADIUS * RADIUS)
+      GEXPEFFDEN(4) = 3D0 / (2D0 * 1.010D0 * 1.010D0 * RADIUS * RADIUS)  
+C     Prefactor = 3 / (48*Z*Pi*R*dR) 
+      PREFACTOR = 12.5D0 / (RADIUS * RADIUS * CHARGE(NUCLEUS) * PI)
+      RETURN
+      END 
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NOSSNUCATT
@@ -176,13 +338,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
           CLSCMB(I)(4:4) = '0'
           ILBL = IPRPLBL(1,I)
           PDOINT(ILBL)(4:4) = '0'
+        ELSE IF (CLSINT(I).EQ.'FDEVEMB') THEN
+          CLSCMB(I)(4:4) = '0'
+          ILBL = IPRPLBL(1,I)
+          PDOINT(ILBL)(4:4) = '0'
         ENDIF
       ENDDO
 
       IF (MOLFLD_FOUND) THEN
         WRITE(LUPRI,'(2X,A,A4)')
-     &  'No SS-nuclear attraction integrals'// 
-     &  '(MOLFLD), adapted PDOINT=',PDOINT(ILBL)
+     & 'The SS-block of the potential energy matrix and (if present)'//
+     & ' embedding potential are neglected (Levy-Leblond Hamiltonian)'
       ELSE
         WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
      &   ' found in operator list!'
@@ -433,6 +599,7 @@ C
 #include "cbihr1.h"
 #include "cbisol.h"
 #include "dcbgen.h" 
+#include "dcbham.h"
 C
       CALL QENTER('NUCAT1')
 #include "memint.h"
@@ -466,12 +633,12 @@ C      **    nuc-elec attraction integrals.       **
 C      **                                         **
 C      *********************************************
       IF (ECPCALC) then
-         OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
+         OPEN(59,FORM='UNFORMATTED',FILE='RECP_INT_C')
          CALL MEMGET('REAL',KARPP,NNBBAST,WORK,KFREE,LFREE)
          CALL READT(59,NNBBAST,WORK(KARPP))
          close(59)
          DO I=0,NNBBAST-1
-            WORK(KNUCS+i)=WORK(KNUCS+i)+WORK(KARPP+i)
+            WORK(KNUCS+I)=WORK(KNUCS+I)+WORK(KARPP+I)
          ENDDO
          CALL MEMREL('NUCAT1.ECPCALC',WORK,KWORK,KARPP,KFREE,LFREE)
       ENDIF
@@ -546,6 +713,7 @@ C        various modified atomic integrals of H2c AO
 C   MI/Strasbg,Febr. 2006 H2cAO Hamiltonian reading placed into separate routine
 C
 C*****************************************************************************
+      use x2cmod_cfg
       use x2c_utils, only:
      &    read_1fock_x2c
 #include "implicit.h"
@@ -597,7 +765,7 @@ CMI   ... control output ...
 !MI If BSS is active read one-electron DKn(BSS) AO integrals from the
 !   BSSMAT file (lu=LUBSS) according to the parameter I2COFK
        CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM)
-      else if(x2c)then
+      else if(x2c.and..not.x2c_4c_fock_mtx_defh1)then
         call read_1fock_x2c(fock,n2bbasx,nz,i2cofk)
       else
 C
@@ -681,6 +849,7 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
+      use fde_types
       use fde_mod
 
 #include "implicit.h"
@@ -696,6 +865,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
+      type(fde_import) :: itmp
       LOGICAL FIRST(NZ),TOBE
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
@@ -725,14 +895,16 @@ CMI     ... dcbham.h is needed
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
-C
+
 C     Embedding potential integrals, if FDE is requested
 C     ==================================================
 C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-      IF (dirac_cfg_fde) THEN
+
+      call fde_get_import_info(itmp)
+      if (dirac_cfg_fde .and. itmp%im_vemb) then
          IOP = IPVEMB0
          CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
      &          OP1INT,FIRST,IPRHAM)
@@ -876,13 +1048,13 @@ C     Last revision: May 19 1996 - tsaue
 C     Dec.2005, MI - generalized for square properties (IDIMENS = NNBBASX or N2BBASX)
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
@@ -890,7 +1062,6 @@ C
       LOGICAL FIRST(*), DOINT(4), SQUARE
       DIMENSION PMAT(IDIMENS,*),OP1INT(IDIMENS),IDOINT(4)
 C
-      EXTERNAL BDQALGEBRA
 
 CMI   ... find out type of AO matrix - triangular or square
       IF (IDIMENS.NE.N2BBASX.AND.IDIMENS.NE.NNBBASX) THEN
@@ -1163,13 +1334,13 @@ C     Dec.2005, MI - adapted for square properties (IDIMENS = NNBBASX or N2BBASX
 C
 C*************************************************************************
 ****
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
@@ -1177,7 +1348,6 @@ C
       LOGICAL FIRST(*), DOINT(4), SQUARE
       DIMENSION PMAT(IDIMENS,4),OP1INT(IDIMENS),IDOINT(4)
 C
-      EXTERNAL BDQALGEBRA
 
 
 CMI   ... find out type of AO matrix - triangular or square
@@ -1435,6 +1605,7 @@ C     Written by Miro ILIAS/Strasbourg, March 2006
 C
 C*****************************************************************************
       use x2c_fio
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12)
@@ -1447,7 +1618,6 @@ C
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "dcbqal.h"
 #include "dummy.h"
 C
       LOGICAL FIRST(NZ),IS_SQUARE, YESPCTRA, MAKEPCTRA
@@ -1455,7 +1625,6 @@ C
      &          OP1INT(IDIMENS),WORK(LWORK)
       CHARACTER PRPLABEL*8, prplab_x2c*12, NUMSTR*4
 C
-      EXTERNAL BDQALGEBRA
 
       CALL QENTER('PRPMSAO')
 #include "memint.h"
@@ -2380,13 +2549,15 @@ C     Last revision May 21 1996 - tsaue
 C                    2006 - M.Ilias
 C
 C*****************************************************************************
+      use x2cmod_cfg
       use dirx2c
       use x2c_cb_interface, only:
      &    set_wrk_x2c
       use x2c_pct_ao,       only:
      &    pctrafo_all_op_driver
-      use x2c_fio,          only:
-     &    x2c_write
+      use x2c_fio
+      use x2c_pct_mo_coefficients, only: 
+     &    x2c_molecular_mean_field_mos
 !
 #include "implicit.h"
 #include "priunit.h"
@@ -2408,17 +2579,31 @@ C   PAMIOU: LUTMAT
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
-      LOGICAL TWOBUF,GOFAST,TOBE,FNDLAB,FNDLAB12
-      logical is_2c_rel_run
-      integer is_defining_h1mat
       DIMENSION WORK(LWORK)
+      logical, intent(in) :: GOFAST
+!     local scratch
+      logical             :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
+      logical             :: is_2c_rel_run
+      integer             :: is_defining_h1mat
+      integer             :: ndim_lowmat
+      integer             :: lulmat = 99
+
       CALL QENTER('GMOTRA')
+
       IF(GOFAST.AND.(.NOT.(BSS.or.x2c))) GOTO 10
 #include "memint.h"
       KFRSAV = KFREE
 C
 !     set file unit number for X2CMAT
       lux2c = 40
+
+!     set local 2c-relativistic run flag
+      is_2c_rel_run = .false.
+      is_2c_rel_run = bss.or.x2c
+
+!     logical flag for keeping track of whether case 3 in gmotra has
+!     been entered
+      gmotra_case3 = .false.
 
 C     By default we do not partition the space. This may be
 C     modified if we have linear symmetry or approximate the
@@ -2431,32 +2616,48 @@ C     =================================
 C
       IF (ONECAP.AND.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1)) 
      &    CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
+
+!     we use N2BBASXQ instead of N2BBASX for BSS...to be checked
+      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Get Lowdin canonical orthonormalization matrix
 C     ==============================================
-C
-!     SK- 2010-07-30: this step has been moved inside the x2c module if(x2c == .true.)
-      if(.not.x2c)then
-C aspg, timing
-        CALL TIMER('START ',TIMSTR,TIMEND)
-C.....  we use N2BBASXQ instead of N2BBASX for BSS...to be checked
-        CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
-        CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
-C aspg, timing
-      else
-!       IOTC = .false.
-!       BSS = .false.
-!       NOPRTR = .false.
-!       IBSS = 2999
-!       TWOCOMPBSS = .false.
-!       TWOCOMP = .true.
+ 
+      inquire(exist=tobe,file='LOWDMAT')
+!     delete existing LOWDIN matrix file when performing a geometry
+!     optimization - it could be the one from a previous geometry.
+!     stefan - june 2011
+      if(tobe.and.optimi)then
+        call opnfil(lulmat,'LOWDMAT','OLD','gmodel')
+        close(lulmat,status='delete')
+        tobe = .false.
       end if
 
-!     set up local 2c-relativistic run flag
-      is_2c_rel_run = .false.
-      is_2c_rel_run = bss.or.x2c
-C
+      call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
+      rewind lulmat
+
+      if(tobe)then
+        call readi(lulmat,1,ndim_lowmat)
+        call readt(lulmat,ndim_lowmat,work(kvmat))
+      else
+        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
+        CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
+
+!       save LOWDIN matrix on file
+        ndim_lowmat = 0
+        do i = 1, nfsym
+          ndim_lowmat = ndim_lowmat + nforb(i,0)*nfbas(i,0)
+        end do
+        call writi(lulmat,1,ndim_lowmat)
+        call writt(lulmat,ndim_lowmat,work(kvmat))
+      end if
+
+      close(lulmat,status='keep')
+
+!     release memory when we invoke the x2c module
+      if(x2c) call memrel('x2cfre',work,kwork,kwork,kfree,lfree)
+
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
 C     =========================================================
 C
@@ -2542,7 +2743,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &           position='rewind')
 
 !           find Hamiltonian on file property integral... and step back
-            if(.not.x2c_aba)then
+            if(.not.x2cmod_fragment_x2c)then
               i2cofk =  0
 !             check for hamiltonian integrals on file X2CMAT and set i2cofk
               if(fndlab12('h12cAOA   00',lux2c))then
@@ -2564,7 +2765,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &'*** error in gmotra: no h1 data on file X2CMAT ***')
               end if
             else
-!             nothing to do here for now: x2c_aba is always false.
+!             nothing to do here for now: x2cmod_fragment_x2c is always false.
             end if
  
 !           find first property integral... and step back
@@ -2590,6 +2791,11 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 lfree,
      &                                 dosphe,
      &                                 .false.,
+     &                                 onesys, 
+     &                                 -1,
+     &                                 -1,
+     &                                 'undef ',
+     &                                 'undef ',
      &                                 iprham)
 
           close(lux2c,status='keep')
@@ -2601,15 +2807,12 @@ C         2) do picture change transformation of integrals on AOPROPER
         ELSE
 
           if(bss)then
-
 !           bss module (if asked for it can also perform an X2C transformation)
             CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
           else if(x2c)then
-
 !           optimized x2c module
-            call x2c_driver(work(kfree),lfree,x2c_aba,1,.true.)
-
-!           call quit( '*** stop after x2c_driver run ***' )
+            call x2c_driver(work(kfree),lfree,x2cmod_fragment_x2c,
+     &                      1,.true.)
           end if
 
         ENDIF
@@ -2619,9 +2822,32 @@ C         2) do picture change transformation of integrals on AOPROPER
 !       
 !       case2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !       ------------------------------------------------------------------------------
-        if(.not.(twocompbss.or.x2c))then
-!         WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
-          KTMAT = KVMAT
+        if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
+
+          if(x2cmod_mmf)then
+            CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+            call dzero(work(KTMAT),N2BBASXQ)
+            open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &           access='sequential',action='readwrite',
+     &           position='rewind')
+            ndim_lowdinmat   = 0
+            do i = 1, nfsym
+              ndim_lowdinmat = ndim_lowdinmat + nfbas(i,0)*nesh(i)
+            end do
+
+            if(linear)then
+              gmotra_case3 = .true.
+            else
+              call x2c_read('2cLWAOg   10',work(KTMAT),
+     &                      ndim_lowdinmat,lux2c)
+            end if
+            
+            close(lux2c,status='keep')
+            sub_bl = .false.
+          else
+!           WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
+            KTMAT = KVMAT
+          end if
         else
 C
           if(.not.x2c)
@@ -2640,11 +2866,20 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
           CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
-C aspg, timing
           CALL TIMER('START ',TIMSTR,TIMEND)
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
           CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
-C aspg, timing
+
+!         save new 2c-LOWDIN matrix on file
+          call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
+          rewind lulmat
+          ndim_lowmat = 0
+          do i = 1, nfsym
+            ndim_lowmat = ndim_lowmat + nforb(i,0)*nfbas(i,0)
+          end do
+          call writi(lulmat,1,ndim_lowmat)
+          call writt(lulmat,ndim_lowmat,work(kvmat))
+          close(lulmat,status='keep')
 
 !         reset orbital dimensions
           NZT = 1
@@ -2674,11 +2909,18 @@ C     -------------------------------------------------------------------
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
 !       defining h1 matrix control variable (in the X2C module) -
-!       set here for consistency to the maximum value (the true value
-!       needs to be checked though)
-        is_defining_h1mat = 3
+!       set here for consistency to the maximum value
+        is_defining_h1mat = 4
+
+!        in: LOWDIN matrix                   --> KVMAT
+
+!       out: AO2MO                           --> KTMAT
+!       out: AO2MO SL resorted               --> KVMAT
+!       out: MO2MO linear symmetry adapted   --> KTBUF (if linear == .true.; nothing otherwise)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &             .FALSE.,.FALSE.,is_defining_h1mat,WORK(KFREE),LFREE)
+     &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),linear,
+     &              is_defining_h1mat,WORK(KFREE),LFREE)
+
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
         IF (IPRHAM.GE.5) THEN
@@ -2686,6 +2928,8 @@ C     -------------------------------------------------------------------
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
+
+        gmotra_case3 = .true.
 
       ENDIF
 C
@@ -2700,29 +2944,68 @@ C
         NPSHMF(IFRP) = NPSH(IFRP)
         NISHMF(IFRP) = NISH(IFRP)
         NOCCMF(IFRP) = NOCC(IFRP)
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+        I2TMT(IFRP)  = N2TMT
+        N2TMT        = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
         I2TMOT(IFRP) = N2TMOTQ
         N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
-        N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
+        N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
       ENDDO
 C
 C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
 C
       IF (.NOT.SUB_BL) CALL INISUB
-      IF (SPINFR) THEN
+      IF (SPINFR.or.(x2c.and.x2cmod_mmf)) THEN
          SUB_BL = .TRUE.
       ENDIF
-      IF (LINEAR) THEN
+
+      if(linear.and..not.gmotra_case3)then
 C.......SUB_BL will be set true if linear symmetry works
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
-        CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KFREE),LFREE)
-      ENDIF
+!       in:  KTMAT + KTBUF
+!       out: KTMAT
+        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
+
+!        in: AO2MO                         --> KTBUF
+
+!       out: AO2MO linear symmetry adapted --> KTMAT
+!       out: AO2MO                         --> KTBUF
+!       out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
+        CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
+     &              WORK(KFREE),LFREE)
+
+        CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
+      else if(linear)then
+        if(x2c.and.x2cmod_mmf)then
+          open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &         access='sequential',action='readwrite',
+     &         position='rewind')
+          call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
+          close(lux2c,status='keep')
+        else
+          open(99,file='AOMOlin',status='old',form='unformatted',
+     &         access='sequential',action='readwrite',
+     &         position='rewind')
+!         skip rec # 1
+          read(99)
+          call readt(99,N2TMT,work(KTMAT))
+!         file is needed in the 4c-2c transformation after the 4c-SCF
+!         in order to ensure numerical stability (avoiding double
+!         diagonalization, etc.)
+          if(x2cmod_mmf)then
+            close(99,status='keep')
+          else
+            close(99,status='delete')
+          end if
+        end if
+      end if
 C
 C     Construct right index transformed overlap matrix Saomo = Sao T
 C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
 C
+!      in: AO2MO (linear symmetry adapted if linsym = T)--> KTMAT
+!     out: right index transformed overlap matrix Saomo --> KTBUF
       CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
      &              IPRHAM,WORK(KFREE),LFREE)
 C
@@ -2741,9 +3024,42 @@ C
         CALL SETDC2(0)
       ENDIF
 C
-C     Output
+C     Write transformation matrices
 C
+      CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
+      CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
+!     right index transformed overlap matrix Saomo
+      CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
+!     orbital dimensions, etc --> "runtime" data
+      CALL ORBDAT
+
+      CLOSE(LUTMAT,STATUS='KEEP')
+!
+      if(x2c.and.x2cmod_mmf)then
+
+!       perform the final step for the molecular mean-field procedure within the X2C-module
+!       ------------------------------------------------------------------------------------
+
+!       purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
+!                and renew the coefficient file DFCOEF
+!                a potential issue could be frozen orbitals - test me!
+        call memget('REAL',kcmomat,ncmotq,work,kfree,lfree)
+        call memget('REAL',kscratch,norbt,work,kfree,lfree)
+        call dzero(work(ktbuf),   n2bbasxq)
+        call dzero(work(kcmomat), ncmotq)
+        call dzero(work(kscratch),norbt)
+        call x2c_molecular_mean_field_mos(work(ktmat),work(ktbuf),
+     &                                    work(kcmomat),work(kscratch),
+     &                                    i2tmt,i2tmot,icmoq,ntmo,
+     &                                    nfbas,nesh,nz,nzt,nfsym,
+     &                                    nesht,ipqtoq,iprham)
+      end if ! x2cmod_mmf .equiv. .true.
+
+!     final output
+!     ------------
       CALL TITLER('Orbital dimensions','*',125)
+
       IF ( NFSYM .EQ. 1 ) THEN
          WRITE(LUPRI,'(A,I5)')
      &        'No. of positive energy orbitals (NESH): ',NESH(1)
@@ -2777,21 +3093,13 @@ C
      &        (NORB(I),I=1,NFSYM),J
       END IF
 C
-C     Write transformation matrices
-C
-      CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
-      CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-      CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
-      CALL ORBDAT
-      CLOSE(LUTMAT,STATUS='KEEP')
-C
 C     Memory deallocation
-C
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
  10   CONTINUE
+
       CALL QEXIT('GMOTRA')
+
       RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
@@ -2825,7 +3133,7 @@ C
 C     On output:
 C   ==============
 C
-C  TMAT - total 4c AO -> MO transformation matrix (may be also linear-symmetry adapted!)
+C  TMAT - total 4c AO -> MO transformation matrix
 C
 C  VMAT - if SLGROUP=.true., then it contains the standard (ALWAYS non-linear symmetry) transformation
 C         matrix with SL-resorted columns
@@ -2845,7 +3153,6 @@ C*****************************************************************************
 C
 C Used from COMMON blocks
 C  CBIPAM:
-C  DHFCAL:
 C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
@@ -2868,7 +3175,7 @@ CMI  ... check of keywords..
       IF (SLGROUP.AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE)) 
      &  CALL QUIT('MODHAM: SLGROUP does not correspond with'//
      &  ' VEXTPJ/FREEPJ/LEVYLE flags!')
-      
+!
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
 C
@@ -2956,23 +3263,47 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
 !       is_defining_h1mat is the control variable for the defining h1
 !       matrix wrt which the decoupling is performed in the X2C module.
 !       see the following lsymad procedure for more comments - SK Aug 2010
-        if(is_defining_h1mat .gt. 0)then
+!       print *,'is_defining_h1mat is...',is_defining_h1mat
+        open(99,file='AOMOSLR',status='replace',form='unformatted',
+     &       access='sequential',action='readwrite',
+     &       position='rewind')
+        if(is_defining_h1mat.gt.3.or.
+     &    (is_defining_h1mat.eq.2.and.LSYMAD))then
+!       if(is_defining_h1mat.gt.3)then
           CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
-CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
+!         in:  AO2MO transformation matrix             --> TMAT
+!         out: AO2MO transformation matrix             --> TMAT
+!              AO2MO transformation matrix SL resorted --> WORK(KBUF)
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
+          call writt(99,ISIZE, WORK(KBUF))
+!         print *,'SLSORT branch 1...'
         else
-!         return the SL resorted matrix in vmat
-          call dzero(vmat,n2bbasxq)
-          CALL SLSORT(TMAT,vmat,IPRHAM,WORK(KFREE),LFREE)
+          call dzero(VMAT,n2bbasxq)
+!         in:  AO2MO transformation matrix             --> TMAT
+!         out: AO2MO transformation matrix             --> TMAT
+!              AO2MO transformation matrix SL resorted --> VMAT
+          CALL SLSORT(TMAT,VMAT,IPRHAM,WORK(KFREE),LFREE)
+          call writt(99,ISIZE, vmat)
+!         print *,'SLSORT branch 2...'
         end if
+        close(99,status='keep')
       ENDIF
 
-CMI   ... adaptation for the linear symmetry 
-!     lsymad is only relevant if the defining h1 matrix for the X2C/BSS
-!     module is NOT the bare-nucleus h1 matrix - SK Aug 2010
+!     adapt the MO part of the AO2MO transformation matrix wrt linear symmetry by 
+!     using the eigenvectors of <j_z> in MO basis as transformation matrix
+!     ---------------------------------------------------------------------------
+      open(99,file='AOMOlin',status='replace',form='unformatted',
+     &     access='sequential',action='readwrite',
+     &     position='rewind')
+!     remember: in linear symmetry NZ ==> 1
+      ISIZE  = NFBAS(1,0)*NORB(1)*NZ
+      ISIZE2 = NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2)then
+        ISIZE  = ISIZE  + NFBAS(2,0) * NORB(2)*NZ
+        ISIZE2 = ISIZE2 + NORB(2)    * NORB(2)*NZ
+      END IF
+
       IF(LSYMAD)THEN
-        ISIZE = NFBAS(1,0)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
         CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
         CALL DCOPY(ISIZE,TMAT,1,VMAT,1)
         CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
@@ -2994,8 +3325,27 @@ CMI   ... adaptation for the linear symmetry
 
         CALL DZERO(TMAT,N2BBASXQ)
         CALL DZERO(TBUF,N2BBASXQ)
-        CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
-C ...   always return non-linear symmetry adapted transformation matrix :
+        IF (.NOT.SUB_BL) CALL INISUB
+        IF (SPINFR) THEN
+          SUB_BL = .TRUE.
+        ENDIF
+
+!       in:  VMAT
+
+!       out: AO2MO linear symmetry adapted --> TMAT
+!       out: AO2MO                         --> VMAT
+!       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
+        CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+
+!       save matrices on file to be re-used in the x2c-module
+!       MO2MO lin
+        call writt(99,ISIZE2,TBUF)
+!       AO2MO lin
+        call writt(99,ISIZE, TMAT)
+!       AO2MO
+        call writt(99,ISIZE, WORK(KBUF1))
+
+!       by default: return the unmodified AO2MO transformation matrix
         CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
 
         IF(IPRHAM.GE.5) THEN
@@ -3009,7 +3359,7 @@ C ...   always return non-linear symmetry adapted transformation matrix :
               WRITE(LUPRI,'(A,I1,A,I1)')
      &        '* Fermion ircop no.',I,'/',NFSYM
               CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
               WRITE(LUPRI,'(/5X,A/)')
      &    'MODHAM: 4c ON  RKB "theta" -> LSYM "theta" transformation'//
      &        '  matrix (TBUF).'
@@ -3017,15 +3367,20 @@ C ...   always return non-linear symmetry adapted transformation matrix :
      &        '* Fermion ircop no.',I,'/',NFSYM
               CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
      &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-              IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-              IBUF = IBUF + NORB(I)*NORB(I)*NZ
+              IMAT = IMAT + NFBAS(I,0)*NORB(I)*1
+              IBUF = IBUF + NORB(I)*NORB(I)*1
             ENDIF
           ENDDO
         ENDIF
         CALL MEMREL('SLGROU1',WORK,KBUF1,KBUF1,KFREE,LFREE)
-      ENDIF
+      else
+!       AO2MO transformation matrix
+        call writt(99,ISIZE, TMAT)
+      endif
+      close(99,status='keep')
 
-      IF(SLGROUP.and.(is_defining_h1mat .gt. 0))THEN
+      IF(SLGROUP.and.(is_defining_h1mat.gt.3.or.
+     &    (is_defining_h1mat.eq.2.and.LSYMAD)))THEN
 C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
         CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
         IF(IPRHAM.GE.5) THEN
@@ -3045,7 +3400,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
         ENDIF
         CALL MEMREL('SLGROU2',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
-
+ 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('MODHAM')
       RETURN
@@ -3291,6 +3646,7 @@ C
           DO JSYM = 1,NBRP
             ISYM           = JFSYM(JSYM,IP)
             IREP           = ISYM - 1
+!fixme irep can be < 0 in NONREL runs
             IF(NBBAS(IREP,IC).GT.0) THEN
               ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
               IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
@@ -3614,7 +3970,6 @@ C
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),WORK(*)
       DATA COMP/'L','S'/
-#include "sdpre.h"
 #include "ibtfun.h"
 C
 C**************************************************
@@ -3802,7 +4157,7 @@ CMI .. mover before diagonalization which can destroy SMAT
         CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_text('% Entering LOWGEN')
       call matexport_double2('S',SMAT,LDM,NS,NS)
 #endif
@@ -3877,7 +4232,7 @@ C
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_double2('V',VMAT,LDM,NS,NV)
       call matexport_text('% Leaving LOWGEN')
 #endif
@@ -4146,15 +4501,15 @@ c      ... Get charges and exponents for the electrons in this group
          ENDDO
 c
          IF(IPRINT .GE. 1) THEN
-            IF (NSLOOP .GT. 1) THEN
-               WRITE(LUPRI,'(14X,A,I2,A,I2)')
-     &         '-- Subshell n =',N,', l =',L
-            ELSE IF (N .LE. 1) THEN
+            IF (N .LE. 1) THEN
                WRITE(LUPRI,'(14X,A,I2,A)')
      &         '-- Subshell n =',N,', l = 0'
-            ELSE
+            ELSE IF (L .EQ. 1) THEN
                WRITE(LUPRI,'(14X,A,I2,A)')
      &         '-- Subshell n =',N,', l = 0,1'
+            ELSE
+               WRITE(LUPRI,'(14X,A,I2,A,I2)')
+     &         '-- Subshell n =',N,', l =',L
             END IF
             DO I = 1,NUCIND
                IF (WORK(KCHRG-1+I) .NE. D0)
@@ -4186,9 +4541,9 @@ c
 c
          END IF ! if (ztest .ne. d0)
 c  ... end loop within shells
-         ENDDO
+         ENDDO ! DO L = 1,NSLOOP
 c  ... end loop over shells
-      ENDDO
+      ENDDO ! DO N = 0,NSHELL
       IF (IPRINT .GE. 1) WRITE(LUPRI,'(14X,A/)')
      &      '-----------------------------------------'
 C
@@ -4248,7 +4603,7 @@ C*****************************************************************************
      &          D6 = 6.0D0, D8 = 8.0D0, D10=10.0D0, D14=14.0D0,
      &          D18=18.0D0)
       LOGICAL MAXSHELL
-      DIMENSION STO1G(7), SHELE(NNUC,7)
+      DIMENSION STO1G(7), XN_EFF(7), SHELE(NNUC,7)
       SAVE STO1G
 C     STO1G(n) is the exponent of the 1s-Gaussian that
 C     best fits the ns Slater-type atomic orbitals of exponent 1.
@@ -4256,8 +4611,11 @@ C     (Robert F. Stewart, JCP 52(1),431 (Jan 1970))
 C     This article provides exponent up to the n=5 shell. The exponents
 C     for the last two shells have been generated from a fit :
 C     (y = 0.28196 x^-1.5532)
-      DATA STO1G /0.2709,0.1012,0.05297,0.03265,0.02217,0.01744,
-     &            0.01373/
+      DATA STO1G /0.2709D0, 0.1012D0, 0.05297D0,0.03265D0,0.02217D0,
+     &            0.01744D0,0.01373D0/
+      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.0D0, 4.2D0, 4.4D0/
+C     ... Slater's n_eff according to wikipedia for n=1:6,
+C         I extrapolated to n=7 /hjaaj Sep 2011
 C
 C     Table of s,p,d,f orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
@@ -4329,23 +4687,22 @@ c
          WRITE(LUPRI,'(1X,2(A/))') 'FATAL : The bare nucleus '//
      &   'correction is only implemented for elemtents 1-118',
      &   '         You can disable BNCORR with the .NOBNCR keyword '//
-     &   'in *DHFCAL'
+     &   'in *SCF'
          CALL QUIT('BNCORR : Unsupported element!')
       ENDIF
+
+      ZEFF = D0
+      GNU  = D0
+
       IF (MAXSHELL) THEN
 c    ... just find maximum number of shells we need to run over 
 c        and return number in L-variable (used in BNCORR)
          NST = NOCC((NINT(Z)-1)*4 + 1)
          L = NST/2
          IF(MOD(NST,2).NE.0) L = L + 1
-!radovan:  now we jump to 10 with zeff undefined!
-!          i set it to zero not knowing what will happen
-!          but better zero than undefined
-           zeff = 0.0d0
          GOTO 10
       ENDIF
 C
-      ZEFF = D0
 c     ... If this is a ghost-atom (f.ex for Counter-Poise 
 c         correction) we return (charge is zero in BNCORR)
       IF (Z .EQ. D0) GOTO 10
@@ -4384,7 +4741,7 @@ c
       NS = NST - (N-1)*2
 c
       IF (NS .LE. 0) THEN
-         NS = D0
+         NS = 0
       ELSEIF (NS.GE.2) THEN
          NS = 2
       ENDIF
@@ -4439,24 +4796,26 @@ c        [nsnp]
          DO I = 1,N-2
             EMN = EMN + SHELE(INUC,I)
          ENDDO
-         SEXP = (Z - ((ZEFF-1.0)*0.35 + SHELE(INUC,N-1)*0.85 + EMN))/N
+         SEXP = (Z - ((ZEFF-1.0)*0.35D0 + SHELE(INUC,N-1)*0.85D0 + EMN))
+         SEXP = SEXP / XN_EFF(N)
       ELSE
 c        [nd],[nf]
          EMN = D0
          DO I = 1,N-1
             EMN = EMN + SHELE(INUC,I)
          ENDDO
-         SEXP = (Z - ((ZEFF-1.0)*0.35 + EMN))/N
+         SEXP = (Z - ((ZEFF-1.0D0)*0.35D0 + EMN)) / XN_EFF(N)
       ENDIF
 c
-20    CONTINUE
+   20 CONTINUE
 c     ... Convert STO to GTO using 1 Gaussian (STO1G)
       GNU = D2*SEXP*SEXP*STO1G(N)
+!     write (lupri,*) 'BNCOR1: N,L,STO1G(N),SEXP,GNU',
+!    &                         N,L,STO1G(N),SEXP,GNU
 C     ... Make sure we dont get more delocalized than the first 
 C         1s electron.
-C      GNU = MAX(GNU,0.50D0)
-10    CONTINUE
-      IF (ZEFF .EQ. D0) GNU  = D0
+C     GNU = MAX(GNU,0.50D0)
+   10 CONTINUE
       CALL QEXIT ('BNCOR1')
       RETURN
       END
@@ -4678,6 +5037,8 @@ C
      &          IBVEC(NVECS),IBREF(NVREF)
       DIMENSION P(4)
 C
+CTROND
+      WRITE(6,*) 'TEST, IPRINT = ', IPRINT
       IF(IPRINT.GE.7) THEN
          CALL HEADER('PRJORT: MO transformation matrix on input',-1)
          CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)
@@ -4697,7 +5058,7 @@ C     ===================================
 C
       JTOP = IREF+NREF-1
       DO JREF = IREF,JTOP
-        IF(IPRINT.GE.2) THEN
+        IF(IPRINT.GE.3) THEN
           CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
      &           'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
      &           'N',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1)
@@ -5161,12 +5522,12 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 C
@@ -5257,10 +5618,10 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
       DIMENSION FOCK(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)
@@ -5363,10 +5724,10 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 17, 2001
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
       DIMENSION DENS(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)
@@ -5441,7 +5802,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck glinsm */
-      SUBROUTINE GLINSM(TMAT,VMAT,WORK,LWORK)
+      SUBROUTINE GLINSM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
 C*****************************************************************************
 C
 C     This routine makes an additional transformation from the
@@ -5464,13 +5825,10 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION WORK(LWORK),TMAT(*),VMAT(*)
+      DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GLINSM')
 
 #include <memint.h>
-      KFRSAV = KFREE
-      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -5492,17 +5850,15 @@ C
          RETURN
       ENDIF
 C
-      CALL LINSYM(TMAT,VMAT,WORK(KTBUF),WORK(KEIG),WORK(KFREE),LFREE)
+      CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
       SUB_BL = .TRUE.
 
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A/)')
-     &'GLINSM: TMAT and Saomo were adapted for the linear symmatry.'
+     &'GLINSM: TMAT and Saomo were adapted for the linear symmetry.'
       ENDIF
       CALL FLSHFO(LUPRI)
 
-C     ... release all allocated memmory in this routine (from the position KFRSAV)
-      CALL MEMREL('GLINSM',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GLINSM')
       RETURN
 C
@@ -5537,7 +5893,6 @@ C*****************************************************************************
 C
 C Used from COMMON blocks
 C  CBIPAM:
-C  DHFCAL:
 C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
@@ -5556,6 +5911,8 @@ C
 
 #include <memint.h>
 C
+!     iprham_save = iprham
+!     iprham      = 15
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
@@ -5581,7 +5938,8 @@ C
      &            TMAT(IOFT),NORB(I),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
-     &            WORK,LWORK,IPRGEN)
+     &            WORK,LWORK,IPRHAM)
+!    &            IPRHAM)
 
         IF (IPRHAM.GE.15) THEN
 
@@ -5621,6 +5979,15 @@ C
 
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
       WRITE (LUPRI,1000)
+
+!     stefan - june 2011: save LL block of <j_z>-eigenvectors (temporary) on file
+!                         this block is needed to transform the 2c-LOWDIN matrix 
+!                         in the x2c-mmf approach (thus ensuring numerical stability by not re-doing this step).
+      if(do4c2c)then
+        open(13,file='JzMOLLb',status='replace',form='unformatted',
+     &       access='sequential',action='readwrite',
+     &       position='rewind')
+      end if
 C
       IOFT = 1
       DO 20 I = 1,NFSYM
@@ -5759,7 +6126,7 @@ C
      &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
              CALL QUIT ("increase max_sub_bl")
            ENDIF
-!        miro: for spin-free avoid MJABS index out-of-bounds
+!        miro: for spin-free ensure the MJABS index not to be out-of-bounds
            IF (MJABS.GT.0) THEN
              ID_SUB_BL(MJABS,I)  = MJ
              NORB_SUB(MJABS,I,1) = NORB_SUB(MJABS,I,1) + 1
@@ -5852,11 +6219,22 @@ C
      &               WORK(KVLL),NL,NL,1,
      &               TBUF(IOFT),NT,NT,1)
 
+        if(do4c2c)then ! x2c-mmf approach
+          call writt(13,NL**2,WORK(KVLL))
+        end if
+
         IF (IPRHAM.GE.15) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1) 
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
+     &   IPQTOQ(1,0),LUPRI)
+         CALL FLSHFO(LUPRI)
+
+         CALL HEADER('LINSYM: MO vectors in buffer space,LL',-1) 
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &   IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
@@ -5884,6 +6262,10 @@ C
         IOFT = IOFT + NORB(I)*NORB(I)
 C
    20 CONTINUE
+
+      if(do4c2c)then ! x2c-mmf approach
+        close(13,status='keep')
+      end if
 C
 C     Generate transformation matrix in non-orthogonal basis
 C     ======================================================
@@ -5931,6 +6313,7 @@ C
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
+!     iprham = iprham_save
       RETURN
  1000 FORMAT 
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
@@ -5942,8 +6325,9 @@ C  /* Deck amjmat */
 C*****************************************************************************
 C
 C     Generate one-electron matrix of Jz
+C     IPRINT = IPRHAM
 C
-C     Called from LINSYM
+C     Called from LINSYM 
 C
 C     Written by Luuk Visscher, oct 1999
 C
@@ -6014,7 +6398,7 @@ C
      &         FILE='AOPROPER')
 #endif
 C
-C     Get integrals of component of angular momentum that we want to
+C     Get integrals of component of the z-angular momentum that we want to
 C     quantize on.
 C
       FIRST = .TRUE.
@@ -6023,8 +6407,8 @@ C
      &         OP1INT,FIRST,IPRHAM)
       CALL DSPTSI(NTBAS(0),FTRI,FOCK)
 C     
-C     Get the spin-z operator
-C     =======================
+C     Get integrals of the spin-z (sigma_z) operator
+C     ===============================================
 C     
       FIRST = .TRUE.
       IOP =  IPSPNMOM
@@ -6790,3 +7174,4 @@ C
 C
       RETURN
       END
+! -- end of dirone.F --

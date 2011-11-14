@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2010 by the authors of DIRAC.
+ *     Copyright (c) 2011 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -21,9 +21,11 @@
  */
 /* dirac_copyright_end */
 
-#include <stdio.h>
+// File: gendet.c
+#include <stdio.h>      // printf, ?
+#include <string.h>     // strcat
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DARWIN)
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DARWIN) || defined (SYS_WINDOWS)
 
 #define cgendet     cgendet_
 
@@ -35,6 +37,14 @@
 #endif
 
 #if defined (INT_STAR8)
+#include <stdint.h>
+typedef int64_t integer;
+typedef unsigned long long int unsigned_integer;
+#else
+typedef int integer;
+typedef unsigned int unsigned_integer;
+#endif
+
 /*
  * cgendet generates all n-bits integers with m bits set under
  * the symmetry constraints, occupation constraints, and M_k constraints
@@ -46,118 +56,171 @@
  */
 
 extern void
-getnbitscalls ( long *fReset, long long int *nCN, long long int *nFN );
+getnbitscalls ( integer *fReset, long long int *nCN, long long int *nFN );
 
 extern void
-ibtabini ( long an[] );
+ibtabini ( unsigned_integer an[] );
 
 extern void
-quit ( char sz[], long nLen );
+quit ( char sz[], integer nLen );
 
 extern void
-fnbits ( long *n , long *i, long anBitTable[] );
+fnbits ( integer *n , unsigned long long int *i, unsigned_integer anBitTable[] );
 
-extern long
-cnbits ( long i, long anBitTable[] );
+extern integer
+cnbits ( unsigned long long int i, unsigned_integer anBitTable[] );
 
-extern long
-cgasok( long prefix, long nGAS, long anGASMask[], long anGASSpc[] );
+extern integer
+cgasok( unsigned long long int prefix, integer nGAS, unsigned long long int anGASMask[], integer anGASSpc[] );
+
+extern const char
+*lli_to_b_format ( unsigned long long int x , integer bits) ;
 
 extern void
-cgendet1( long anStr[], long nElec, long mElec,
-	  long *j, long prefix, long pos,
-	  long nGAS,
-	  long anGASMask[],
-	  long anGASSpc[],
-	  long nMaxStr );
+cgendet1( unsigned long long int anStr[], integer nOrb, integer mElec,
+	  integer *j, unsigned long long int prefix, integer pos,
+	  integer nGAS, integer nGASTot[], unsigned long long int anGASMask[], integer anGASSpc[],
+	  integer nMaxStr );
 
-long anBitTable[ 256 ];
+unsigned_integer anBitTable[ 256 ];
+integer nElec, nOrb;
 long long int nCNBitsCalls = 0;
 long long int nFNBitsCalls = 0;
 
 
 extern void
-cgendet ( long *pnElec, long *pnAsht,
-	  long *pnStr, long anStr[],
-	  long *pnGAS,
-	  long anGASMask[],
-	  long anGASSpc[],
-	  long *pnMaxStr ) {
+cgendet ( integer *pnElec, integer *pnAsht,
+	  integer *pnStr, unsigned long long int anStr[],
+	  integer *pnGAS, integer nGASTot[],
+          unsigned long long int anGASMask[], integer anGASSpc[],
+	  integer *pnMaxStr ) {
 
-  long i;
+  /*
+   *
+   *  INTEGER*4 IEL, NASHT, NSTR, NGAS, NGSP(1:2), MAXSTR
+   *  INTEGER*8 ISTR(1:MAXSTR), MSKGAS(1:NGAS)
+   *  CALL CGENDET(IEL,NASHT,NSTR,JSTR,
+   * &             NGAS,NGASTOT,MSKGAS,NGSPC,MAXSTR)
+   *
+   */
+
+  const unsigned long long int i8_zero = 0;
 
   /* 
    * Initialize bit table
    */
 
   ibtabini( anBitTable );
+  nElec = *pnElec;
+  nOrb  = *pnAsht;
     
   *pnStr = 0;
 
-  cgendet1 ( anStr, *pnAsht, *pnElec, pnStr, 0, 0,
-	     *pnGAS, anGASMask, anGASSpc, *pnMaxStr);
+     // printf ("\nHi from cgendet. IEL, NASHT, NGAS %i %i %i\n\n",nElec,nOrb,*pnGAS);
 
-  /* printf ("   cgendet: number of strings %i\n", *pnStr); */
+  cgendet1 ( anStr,  nOrb,     nElec,     pnStr,    i8_zero,    0,
+	       *pnGAS, nGASTot, anGASMask, anGASSpc, *pnMaxStr );
+
+     // printf ("   cgendet: number of strings %i\n", *pnStr);
+     // fflush(stdout);
 
   /*
+  integer i;
   for (i = 0; i < *pnStr; i++ )
-    printf ("string %i: %i\n", i, anStr[i]);
+    printf ("string %i: %lli\n", i, anStr[i]);
   */
 
 }
 
 
 extern void
-cgendet1( long anStr[], long n, long m,
-	  long *j, long prefix, long pos,
-	  long nGAS,
-	  long anGASMask[],
-	  long anGASSpc[],
-	  long nMaxStr ) {
+cgendet1( unsigned long long int anStr[], integer n, integer m,
+	  integer *j, unsigned long long int prefix, integer pos,
+	  integer nGAS, integer nGASTot[],
+          unsigned long long int anGASMask[], integer anGASSpc[],
+	  integer nMaxStr ) {
+/*
+ * anStr  : vector of strings
+ * n      : number of orbitals
+ * m      : number of electrons
+ * j      : number of strings
+ * prefix : 0 on entry from cgendet; changes during recursive calls
+ * pos    : 0 on entry from cgendet; increases during recursive calls
+ * nGAS   : number of GAS spaces
+ * nGASTot[i-1] : total number of orbitals in GAS spaces 1:i
+ * anGASMask : mask for GAS spaces
+ * anGASSpc  : min and max electrons each GAS space
+ * nMaxStr : max number of strings
+ */
  
-   long pre;
+   integer k1, k2, k3;
+   unsigned long long int pre;
+   const unsigned long long int i8_one = 1;
 
-   if ( !m ) {
+//   printf ("entry cgendet1. n_o m_e j_str prefix pos %i %i %i %llu %i\n",n,m,*j,prefix,pos);
+
+   if ( !m ) {  // m == 0
      if ( cgasok( prefix, nGAS, anGASMask, anGASSpc ) ) {
        if ( *j < nMaxStr ) {
-	 anStr [ *j ] = prefix;
-	 (*j)++;
+	   anStr [ *j ] = prefix;
+//            printf("GAS OK, bit string: %64s \n", lli_to_b_format(prefix,pos));
+	   (*j)++;
        }
        else {
 	 printf ("*** ERROR in CGENDET1 *** "
 		 "Too many strings: %i! "
 		 "Allocate more memory!\n", *j );
-	 quit( "*** ERROR in CGENDET1 ***", 26 );
+	 quit( "*** ERROR in CGENDET1 ***", 25 );
        }
+     }
+     else {
+         printf("GAS :(, bit string: %64s \n", lli_to_b_format(prefix,pos));
      }
    }
    else {
+      
+     for (k1 = 0; k1 < nGAS; k1++ ) {
+       k2 = nGASTot[k1];
+       if ( pos == k2 ) {
+          if ( !cgasok( prefix, k1+1, anGASMask, anGASSpc ) ) {
+//             printf("pos %i; NOT OK bit string: %64s \n", pos, lli_to_b_format(prefix,pos));
+             return;
+          }
+       }
+     }
 
-      /* "1" + (n-1) bit number with (m-1) bits */
+     /* "1" + (n-1) bit number with (m-1) bits */
 
-      pre = (1<<pos) | prefix;
-      cgendet1( anStr, n - 1, m - 1, j, pre, pos+1,
-		nGAS, anGASMask, anGASSpc, nMaxStr );
+     pre = (i8_one<<pos) | prefix;
+//     printf("+1 next bit string: %64s \n", lli_to_b_format(pre,pos+1));
+     cgendet1( anStr, n - 1, m - 1, j, pre, pos+1,
+		   nGAS, nGASTot, anGASMask, anGASSpc, nMaxStr );
 
-      /* "0" + (n-1) bit number with m bits */
+     /* "0" + (n-1) bit number with m bits */
 
-      if ( n > m )
-         cgendet1( anStr, n - 1, m, j, prefix, pos+1,
-		nGAS, anGASMask, anGASSpc, nMaxStr );
-
+     if ( n > m ) {
+//       printf("+0 next bit string: %64s \n", lli_to_b_format(prefix,pos+1));
+       cgendet1( anStr, n - 1, m, j, prefix, pos+1,
+		nGAS, nGASTot, anGASMask, anGASSpc, nMaxStr );
+     }
    }
 
 }
 
-
-extern long
-cgasok( long prefix, long nGAS, long anGASMask[], long anGASSpc[] ) {
+extern integer
+cgasok( unsigned long long int prefix, integer nGAS, unsigned long long int anGASMask[], integer anGASSpc[] ) {
 
   long i, j, n;
 
+  // printf("cgasok debug prefix string: %64s \n", lli_to_b_format(prefix,64));
   for (i = 0, j = 0; i < nGAS; i++, j+=2 ) {
-    
+
+    // printf("cgasok debug i, j     : %lli %lli \n",i,j);
+    // printf("cgasok debug anGASMask: %64s \n", lli_to_b_format(anGASMask[ i ],64));
+    // printf("cgasok debug bit and  : %64s \n", lli_to_b_format(prefix & anGASMask[ i ],64));
     n = cnbits ( prefix & anGASMask[ i ], anBitTable );
+    // printf("cgasok debug cnbits   : %lli \n", n);
+    // printf("cgasok debug anGASSpc : %lli %lli\n", anGASSpc[ j ], anGASSpc[ j + 1 ] );
 
     if ( ( n < anGASSpc[ j ] ) || ( n > anGASSpc[ j + 1 ] ) )
       return 0;
@@ -168,8 +231,8 @@ cgasok( long prefix, long nGAS, long anGASMask[], long anGASSpc[] ) {
 
 }
 
-extern long
-cnbits ( long i, long anBitTable[] ) {
+extern integer
+cnbits ( unsigned long long int i, unsigned_integer anBitTable[] ) {
 
   unsigned char *j;
 
@@ -177,13 +240,15 @@ cnbits ( long i, long anBitTable[] ) {
 
   j = (unsigned char *) &i;
 
-  return anBitTable[ *j ] + anBitTable[ *(j + 1) ] +
-    anBitTable [ *(j+2) ] + anBitTable[ *(j + 3) ];
+  return anBitTable[ *j ] + anBitTable[ *(j+1) ] +
+    anBitTable [ *(j+2) ] + anBitTable[ *(j+3) ] +
+    anBitTable [ *(j+4) ] + anBitTable[ *(j+5) ] +
+    anBitTable [ *(j+6) ] + anBitTable[ *(j+7) ];
 
 }
 
 extern void
-fnbits ( long *n, long *i, long anBitTable[] ) {
+fnbits ( integer *n, unsigned long long int *i, unsigned_integer anBitTable[] ) {
 
   unsigned char *j;
 
@@ -191,13 +256,15 @@ fnbits ( long *n, long *i, long anBitTable[] ) {
 
   j = (unsigned char *) i;
 
-  *n = anBitTable[ *j ] + anBitTable[ *(j + 1) ] +
-    anBitTable [ *(j+2) ] + anBitTable[ *(j + 3) ];
+  *n =   anBitTable[ *j ] + anBitTable[ *(j+1) ] +
+    anBitTable [ *(j+2) ] + anBitTable[ *(j+3) ] +
+    anBitTable [ *(j+4) ] + anBitTable[ *(j+5) ] +
+    anBitTable [ *(j+6) ] + anBitTable[ *(j+7) ];
 
 }
 
 extern void
-getnbitscalls ( long *fReset, long long int *nCN, long long int *nFN ) {
+getnbitscalls ( integer *fReset, long long int *nCN, long long int *nFN ) {
 
   *nCN = nCNBitsCalls;
   *nFN = nFNBitsCalls;
@@ -208,178 +275,29 @@ getnbitscalls ( long *fReset, long long int *nCN, long long int *nFN ) {
   }
 
 }
-#else
-/*
- * cgendet generates all n-bits integers with m bits set under
- * the symmetry constraints, occupation constraints, and M_k constraints
- * given by the functions gascip_{symok,gasok,mkok}.
- *
- * The code is written in C as fortran77 does not support recursive
- * functions.
- *
- */
 
-extern void
-getnbitscalls ( int *fReset, long long int *nCN, long long int *nFN );
+const char *lli_to_b_format ( unsigned long long int x , integer bits)
+{
+    // Oct 2010 Hans Jørgen Aa. Jensen
+    // based of code by EviTeach on
+    // http://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format
 
-extern void
-ibtabini ( int an[] );
+    static char b[65];
+    b[0] = '\0';
 
-extern void
-quit ( char sz[], int nLen );
+    if ( (bits > 64) || (bits <= 0) ) {
+       strcat(b, "\n *** ERROR Illegal number of bits! ***\n");
+       return b;
+    }
 
-extern void
-fnbits ( int *n , int *i, int anBitTable[] );
+    unsigned long long int z, zmax;
+    zmax = 1; zmax  <<= bits-1;
 
-extern int
-cnbits ( int i, int anBitTable[] );
+    for (z = zmax; z > 0; z >>= 1)
+    {
+        strcat(b, ((x & z) == z) ? "1" : "0");
+    }
 
-extern int
-cgasok( int prefix, int nGAS, int anGASMask[], int anGASSpc[] );
-
-extern void
-cgendet1( int anStr[], int nElec, int mElec,
-	  int *j, int prefix, int pos,
-	  int nGAS,
-	  int anGASMask[],
-	  int anGASSpc[],
-	  int nMaxStr );
-
-int anBitTable[ 256 ];
-long long int nCNBitsCalls = 0;
-long long int nFNBitsCalls = 0;
-
-
-extern void
-cgendet ( int *pnElec, int *pnAsht,
-	  int *pnStr, int anStr[],
-	  int *pnGAS,
-	  int anGASMask[],
-	  int anGASSpc[],
-	  int *pnMaxStr ) {
-
-  int i;
-
-  /* 
-   * Initialize bit table
-   */
-
-  ibtabini( anBitTable );
-    
-  *pnStr = 0;
-
-  cgendet1 ( anStr, *pnAsht, *pnElec, pnStr, 0, 0,
-	     *pnGAS, anGASMask, anGASSpc, *pnMaxStr);
-
-  /* printf ("   cgendet: number of strings %i\n", *pnStr); */
-
-  /*
-  for (i = 0; i < *pnStr; i++ )
-    printf ("string %i: %i\n", i, anStr[i]);
-  */
-
+    return b;
 }
-
-
-extern void
-cgendet1( int anStr[], int n, int m,
-	  int *j, int prefix, int pos,
-	  int nGAS,
-	  int anGASMask[],
-	  int anGASSpc[],
-	  int nMaxStr ) {
- 
-   int pre;
-
-   if ( !m ) {
-     if ( cgasok( prefix, nGAS, anGASMask, anGASSpc ) ) {
-       if ( *j < nMaxStr ) {
-	 anStr [ *j ] = prefix;
-	 (*j)++;
-       }
-       else {
-	 printf ("*** ERROR in CGENDET1 *** "
-		 "Too many strings: %i! "
-		 "Allocate more memory!\n", *j );
-	 quit( "*** ERROR in CGENDET1 ***", 26 );
-       }
-     }
-   }
-   else {
-
-      /* "1" + (n-1) bit number with (m-1) bits */
-
-      pre = (1<<pos) | prefix;
-      cgendet1( anStr, n - 1, m - 1, j, pre, pos+1,
-		nGAS, anGASMask, anGASSpc, nMaxStr );
-
-      /* "0" + (n-1) bit number with m bits */
-
-      if ( n > m )
-         cgendet1( anStr, n - 1, m, j, prefix, pos+1,
-		nGAS, anGASMask, anGASSpc, nMaxStr );
-
-   }
-
-}
-
-
-extern int
-cgasok( int prefix, int nGAS, int anGASMask[], int anGASSpc[] ) {
-
-  int i, j, n;
-
-  for (i = 0, j = 0; i < nGAS; i++, j+=2 ) {
-    
-    n = cnbits ( prefix & anGASMask[ i ], anBitTable );
-
-    if ( ( n < anGASSpc[ j ] ) || ( n > anGASSpc[ j + 1 ] ) )
-      return 0;
-
-  }
-
-  return 1;
-
-}
-
-extern int
-cnbits ( int i, int anBitTable[] ) {
-
-  unsigned char *j;
-
-  nCNBitsCalls++;
-
-  j = (unsigned char *) &i;
-
-  return anBitTable[ *j ] + anBitTable[ *(j + 1) ] +
-    anBitTable [ *(j+2) ] + anBitTable[ *(j + 3) ];
-
-}
-
-extern void
-fnbits ( int *n, int *i, int anBitTable[] ) {
-
-  unsigned char *j;
-
-  nFNBitsCalls++;
-
-  j = (unsigned char *) i;
-
-  *n = anBitTable[ *j ] + anBitTable[ *(j + 1) ] +
-    anBitTable [ *(j+2) ] + anBitTable[ *(j + 3) ];
-
-}
-
-extern void
-getnbitscalls ( int *fReset, long long int *nCN, long long int *nFN ) {
-
-  *nCN = nCNBitsCalls;
-  *nFN = nFNBitsCalls;
-
-  if ( *fReset ) {
-    nCNBitsCalls = 0;
-    nFNBitsCalls = 0;
-  }
-
-}
-#endif
+// end of gendet.c
