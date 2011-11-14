@@ -23,7 +23,7 @@ git pull
 ./pamadm -a 
 
 # configure step,
-./setup --fc=gfortran -D BUILDNAME="pd_uniza.linux.gfortran_gcc_ownmath.i32lp64.opt-STATIC" -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00" -D VERBOSE_OUTPUT=ON --build=$BUILD  --static --internal-math
+./setup --fc=gfortran --cc=gcc -D BUILDNAME="pd_uniza.linux.gfortran_gcc_ownmath.i32lp64.opt-STATIC" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:40:00" -D VERBOSE_OUTPUT=ON --build=$BUILD  --static --internal-math
 
 ####./setup --fc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpif90 --cc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpicc --cpp=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00" -D VERBOSE_OUTPUT=ON --build=$BUILD 
 #
