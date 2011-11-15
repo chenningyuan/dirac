@@ -307,14 +307,3 @@ C       END IF
 *
       RETURN
       END
-*
-      SUBROUTINE GET_INTERMEDIATE(XOUT,XINT)
-*
-* Routine to fetch intermediates on an array
-*
-#include "implicit.inc"
-*
-      DIMENSION XINT(*)
-*
-      RETURN
-      END

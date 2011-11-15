@@ -174,20 +174,6 @@ C Lasse think this is where ICOUNT should be
      &         LCCFBLK,IRESOP(1,IHCTP),
      &         WORK,KFREE,LFREE)
           END IF
-C         stop 'after first'
-C     SUBROUTINE HCT1234_REL(IHCAAB,IHINDEX,NTOP,
-C    &                   IFHM,INTEGRALS,IT1,
-C    &                   IT1SM,IHSM,T1,
-C    &                   HT1234,LHT1234,IRESOP,
-C    &                   WORK,KFREE,LFREE)
-
-c         CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,
-c    &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-c    &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-c    &         IONE,IONE,IONE,IONE,IHSM,
-c    &         ONE,ONE,ONE,ONE,
-c    &         CC_VEC_FNC(IBSPOBEX(IHCTP)),
-c    &         FACTORH,LCCFBLK)
         END IF
 *
 * One commutator
@@ -243,7 +229,6 @@ C               ICOUNT = 0
 * way the fetching of these will become very simple in GET_OPINT4_REL.
 * At the moment making the mapping here. Could probably be moved out to
 * speed up things.
-C          IF(NRANK.GE.3) stop 'in the name of love'
            IDIMEXDX = 0
            CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
      &                            IHTP(1,IHOP),
@@ -262,7 +247,6 @@ C          IF(NRANK.GE.3) stop 'in the name of love'
               IGIT = 0
               IF(IGIT.EQ.1) THEN
               CALL HCT1234_REL(IHTP(1,IHOP),IMINDEX,1,NRANK,
-!    &             IFHM,INTEGRALS,
      &             IFHM,WORK(KMTOEXDX),
      &             ISPOBEX_TP(1,IT1),
      &             ITSM,IHSM,
@@ -272,7 +256,7 @@ C          IF(NRANK.GE.3) stop 'in the name of love'
      &             WORK,KFREE,LFREE)
               END IF
               CALL MEMCHK_KRCC(WORK)
-C             CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
+              CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
                   END IF
                 END DO
               END IF
@@ -872,6 +856,7 @@ C
       CALL MEMCHK_KRCC(WORK)
       ZERO = 0.0D0
       ONE = 1.0D0
+      IOFFM = 1
 *
       NTEST = 100 
       IF(NTEST.GE.100 )THEN
@@ -1136,7 +1121,7 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
      &           IO1DX,ID1_BATLEN,INM_CAAB_D1(1,1),ISM_CAAB_D1(1,1),
      &           ISTR_D1,IBO1DX,
      &           IOEX,IEX_BATLEN,INM_CAAB_EX(1,1),ISM_CAAB_EX(1,1),
-     &           ISTR_EX,IBOEX,IEXD1234_INDX,IFHM,NRANK,INTEGRALS,
+     &           ISTR_EX,IBOEX,IEXD1234_INDX,IFHM,NRANK,INTEGRALS,IOFFM,
      &           WORK,KFREE,LFREE)
 *
             END DO
@@ -3263,7 +3248,7 @@ C     END IF
       SUBROUTINE GET_OPINT4_REL(OPSCR,
      &IOD1X,LD1,INM_CAAB_D1,ISM_CAAB_D1,ISTR_D1,IBO1DX,
      &IOEX ,LEX,INM_CAAB_EX,ISM_CAAB_EX,ISTR_EX,IBOEX,
-     &IEXD1234_INDX,IFHM,NRANK,INTEGRALS,
+     &IEXD1234_INDX,IFHM,NRANK,INTEGRALS,IOFFM,
      &WORK,KFREE,LFREE)
 *
 * Fetch batch of operator integrals ordered as O(D1,EX) 
@@ -3273,6 +3258,10 @@ C     END IF
 * Jeppe Olsen, May of 2000
 *
 * Severely reduced and adapted to more than two particle operators
+*
+* Since the Cluster amplitudes that should be fetched here is allready
+* on the O(D1,EX) form these just neeed to be copied.
+* Notice: At the moment there should be no batching of EX!!
 *
 * Lasse 2011
 *
@@ -3370,6 +3359,8 @@ C
 ************************************************************
       INT = 0
       print*,'LEX,LD1',LEX,LD1
+* Integrals or intermediates?
+      IF(IFHM.EQ.1) THEN !Fetch integrals
       DO JEX = 1, LEX
       WRITE(6,*) ' EX string : '
 *. Should be looked at for general operator. Is okay since the strings
@@ -3414,8 +3405,6 @@ C
           NTEST = 0
 *
           INT = INT + 1
-* Integrals or intermediates?
-          IF(IFHM.EQ.1) THEN
 * Fetch integrals
             INOINT = 0
             IF(NOP.EQ.2.AND.(NALPHA.EQ.2.OR.NBETA.EQ.2)) THEN
@@ -3443,13 +3432,6 @@ C
               END IF
               OPSCR(INT) = XOUT
             END IF
-          ELSE IF(IFHM.EQ.2) THEN
-            print*,' should now fetch intermediates '
-            XOUT = 0.0D0 !for now
-            CALL GET_INTERMEDIATE(XOUT,INTEGRALS,IJKL_ORIG,NOP,IJOKE)
-          ELSE
-            STOP ' Lasse has forgot to set IFHM '
-          END IF
           NTEST = 100
           IF(NTEST.GE.100) THEN 
             WRITE(6,*) ' INT, OPSCR(INT) = ', INT, OPSCR(INT)
@@ -3459,6 +3441,11 @@ C
 *.    ^ End of switch between different integral types
         END DO
       END DO
+      ELSE IF(IFHM.EQ.2) THEN ! A simple copy and paste with offset
+        CALL COPVEC(INTEGRALS(IOFFM),OPSCR,LEX*LD1)
+        IOFFM = IOFFM + LEX*LD1
+      END IF
+
 *
       NTEST = 100
       IF(NTEST.GE.100) THEN 

@@ -663,7 +663,7 @@ C
       DIMENSION XINT(*),XOUT(ISIDE**2)
       INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
 *
-      NTESTL = 00
+      NTESTL = 100
       NTEST = max(NTESTL,IPRNT)
 *
       IPOS = 0
@@ -704,6 +704,7 @@ C
 C
 C Calculate absolute offset off integral with help from relative
 C
+        print*,'IPOS,IFETCH',IPOS,IFETCH
         XOUT(IPOS) = XINT(IFETCH)
       END DO
 *

@@ -2231,7 +2231,7 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 * Check for minimum size of resolution matrices:
       if (MXSB.gt.LCSBLK) then
         write(6,*) ' Exceeds space for resolution matrices: ',LCSBLK
-        write(6,*) ' Increase LCSBLK (in krmcluci) to at least ',MXSB
+        write(6,*) ' Increase LCSBLK (in krcc_inp) to at least ',MXSB
         call quit ('Stop in LCISPC_REL.')
       end if
 *
@@ -4385,7 +4385,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 0005
+      NTEST = 0003
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM
@@ -4492,6 +4492,7 @@ C     END IF
       END IF
 *
       IF(NTEST.GE.3) THEN
+        WRITE(6,*) ' Number of blocks ',NTSOSO_TP
         WRITE(6,*) ' Number of T-coefficients ', LENGTH
         WRITE(6,*) ' Largest symmetry block of T ', MX_TBLK
         WRITE(6,*) ' Largest block of T ', MX_TBLK_AS
@@ -7277,7 +7278,6 @@ C        IREFSPC = IREFSPCS
             IMK2 = NCA(IGAS) - NCB(IGAS) - NAA(IGAS) + NAB(IGAS) + IMK2
           END DO
           IMK2 = IMK2/2
-          print*,'IMK2,IRECOM',IMK2,IRECOM
           IF(IRECOM.EQ.1) THEN
             CALL EVENODD(ITEST,ABS(IMK2))
             IF(ITEST.EQ.1) I_AM_OKAY = 0
