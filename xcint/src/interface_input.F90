@@ -160,10 +160,12 @@ contains
          dft_cfg_pointwise = .true.
       end if
 
+#ifdef PRG_DIRAC
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.OVLDIA')) then
          dirac_cfg_overlap_diagnostic = .true.
       end if
+#endif
 
       call check_whether_kw_found(word, kw_section)
 
