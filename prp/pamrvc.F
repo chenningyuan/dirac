@@ -1984,6 +1984,7 @@ C
      &                BPMVC(1,II),1,NBPVC,0,
      &                BCMVC(1,I) ,1,NBCVC,0,
      &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),1,0,
+     &                IBTYP,WORK,KFREE,LFREE)
           IF(DAMPFREQ.NE.D0) THEN
             CALL XRSTVC(BEMVC(1,II+1),1,NBEVC,0,
      &                  BPMVC(1,II+1),1,NBPVC,0,
@@ -2196,7 +2197,7 @@ C
      &          IBTYP(2,NREDM),IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
      &          BEBUF(*),BPBUF(*),BCBUF(*),IVECS(MFREQ,NVPAR),
      &          RNORM(NVPAR,MFREQ*NDAMP),XNORM(MFREQ*NDAMP,NVPAR),
-     &          WORK(*)
+     &          RCNV(*),WORK(*)
 C
       IF(IPRXRS.GE.3) CALL HEADER('Output from XRSNE1',-1)
 C
@@ -3328,7 +3329,7 @@ C
 #include "dgroup.h"
 C
       LOGICAL USEXVC,TEST
-      DIMENSION BVEC(NVAR,NZ,*),HDIAG(*),SDIAG(*),
+      DIMENSION BVEC(NVAR,NZ,*),HDIAG(*),SDIAG(*),EVECR(*),
      &          EVALR(MFREQ),IBTYP(2,*),IBVEC(*),IVECS(*),
      &          BBUF(NVAR,NZ,*),PREC(NVAR,2,*),WORK(*)
 C
