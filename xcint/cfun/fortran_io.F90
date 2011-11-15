@@ -23,8 +23,6 @@
 
       implicit none
 
-#include "priunit.h"
-
 #ifdef INT_STAR8
       integer(8) :: slength
 #else
@@ -32,6 +30,6 @@
 #endif /* ifdef INT_STAR8 */
       character  :: str(slength)
 
-      write(lupri, *) str
+      write(6, *) str
 
       end subroutine

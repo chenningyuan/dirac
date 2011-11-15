@@ -75,10 +75,8 @@ contains
          dft_cfg_asymptote_is_lbalpha    = .true.
          dft_cfg_alda_hs                 = .true.
          dft_cfg_alda_ha                 = .true.
-#ifdef PRG_DIRAC
          call setaldahs(.true.) !activate alda for the h+ part
          call setaldaha(.true.) !activate alda for the h- part
-#endif
       end if
 
       if (kw_matches(word, '.NOSDFT')) then
@@ -93,7 +91,6 @@ contains
          sigma_prefactor = -1.0d0
       end if
 
-#ifdef PRG_DIRAC
       if (kw_matches(word, '.ALDA  ')) then
          dft_cfg_alda_hs = .true.
          dft_cfg_alda_ha = .true.
@@ -143,7 +140,6 @@ contains
       if (kw_matches(word, '.GAUTSC')) then
          call set_lscale_dft_gaunt()
       end if
-#endif
 
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.BLOCKE')) then
