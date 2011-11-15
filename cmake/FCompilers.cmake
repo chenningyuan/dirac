@@ -73,13 +73,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             )
     endif()
 
- #   individual compilation due to problems with parallel calcul. of twoel.London integrals
-    if((ENABLE_MPI) AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-        message("-- main/main.F90: ifort (in OpenMPI wrapper) - lowered optimization level by last flag overriding, -O0")
-        message("--   ... fix of magnetizabilities MEMCHK error in the slave process of abacus/her2drv.F" )
-        set_source_files_properties(
-            main/main.F90
-            PROPERTIES COMPILE_FLAGS "-O0") 
+    # individual compilation due to problems with parallel calcul. of twoel.London integrals
+    if(ENABLE_MPI)
+        if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+            message("-- main/main.F90: ifort (in OpenMPI wrapper) - lowered optimization level by last flag overriding, -O0")
+            message("--   ... fix of magnetizabilities MEMCHK error in the slave process of abacus/her2drv.F" )
+            set_source_files_properties(
+                main/main.F90
+                PROPERTIES COMPILE_FLAGS "-O0")
+        endif()
     endif()
 
 endif()
