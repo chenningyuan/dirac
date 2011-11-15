@@ -40,7 +40,7 @@ C    &           IHOP,IHM)
 *-----------------------------------------
 * NHTP : Number of H-type operators
 * IHTP : The H operators
-* IHINDEX : Index ordering array (may be redundant now!) 
+* IHINDEX : Index ordering array to C_a,C_b,A_a,A_b 
 * IHSM : Symmetry of H
 *-----------------------------------------
 * NOP : Number of operators looped over
@@ -85,9 +85,13 @@ C     INTEGER IBSOX_FOR_OX(*),NSOX_FOR_OX(*),ISOX_FOR_OX(*)
       INTEGER IOPRES(NCONT),IOPT(NCONT)
       INTEGER ITOP(4*NGAS,NTOP),IRESOP(4*NGAS,NRESOP)
       INTEGER IFHM !switch for fetching integrals(1) or intermediates(2)
+*. Temp scratch
+      INTEGER IMINDEX(40) !Should be put on common block. Like IHINDEX
 *. Output CC vector function
       DIMENSION CC_VEC_FNC(*)
 *
+      print*,'NRESOP',NRESOP
+      CALL WRT_SPOX_TP_CC_KRCC(IRESOP,NRESOP)
       NTEST = 1000
       IF(NTEST.GE.1000) THEN
         WRITE(6,*) ' Information from EMTHET_COM '
@@ -96,13 +100,15 @@ C     INTEGER IBSOX_FOR_OX(*),NSOX_FOR_OX(*),ISOX_FOR_OX(*)
         CALL WRTMAT(T,1,N_CC_AMP,1,N_CC_AMP)
         print*,'N_CC_AMP',N_CC_AMP
       END IF
-*
       DO I =1,NSPOBEX
         print*,'LSPOBEX_TO,I',LSPOBEX_TO(I),I
       END DO
 C     IUNIOP = NSPOBEX+1
 C     IBUNIOP = IBSPOBEX(IUNIOP)
-
+*. Set index ordering array for intermediate
+      DO I=1,40
+        IMINDEX(I) = I
+      END DO
 *
       IDUM = -1
       XDUM = -1.0D0
@@ -123,6 +129,8 @@ C Lasse think this is where ICOUNT should be
         IF(IHM.EQ.1) THEN
 * For the Hamiltonian operators
           IHOP = IOP(IH)
+*. Analyse operator for particle rank
+          CALL ANALYZE_OP(IHTP(1,IHOP),NGAS,NRANK,MK,MUB)
           IF(NTEST.GE.100) THEN
             WRITE(6,*) ' Info for Hamiltonian op number ',IHOP
             WRITE(6,*) ' Absolute address for op ', IHOP
@@ -131,6 +139,8 @@ C Lasse think this is where ICOUNT should be
         ELSE IF(IHM.EQ.2) THEN
 * For the intermediate operators
           IHOP = IH
+*. Analyse operator for particle rank
+          CALL ANALYZE_OP(IHTP(1,IHOP),NGAS,NRANK,MK,MUB)
           IF(NTEST.GE.100) THEN
             WRITE(6,*) ' Info for Intermediate op number ',IHOP
             WRITE(6,*) ' Absolute address for op ', IHOP
@@ -152,8 +162,10 @@ C Lasse think this is where ICOUNT should be
           IHCTP = IOPRES(IH)
           print*,'IHCTP',IHCTP
           LCCFBLK = LSPOBEX_TO(IHCTP)
+          print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
+          print*,'NSPOBEX_TO',NSPOBEX_TO
           IF(IHCTP.GE.1) THEN
-          CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,
+          CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,NRANK,
      &         IFHM,INTEGRALS,
      &         ISPOBEX_TP(1,IT1),
      &         ITSM,IHSM,
@@ -162,7 +174,7 @@ C Lasse think this is where ICOUNT should be
      &         LCCFBLK,IRESOP(1,IHCTP),
      &         WORK,KFREE,LFREE)
           END IF
-          stop 'after first'
+C         stop 'after first'
 C     SUBROUTINE HCT1234_REL(IHCAAB,IHINDEX,NTOP,
 C    &                   IFHM,INTEGRALS,IT1,
 C    &                   IT1SM,IHSM,T1,
@@ -212,8 +224,10 @@ C               ICOUNT = 0
              print*,'KFREE,LFREE',KFREE,LFREE
              print*,'IH,IHOP,ICOUNT',IH,IHOP,ICOUNT
              print*,'IBSPOBEX(IHCTP)',IBSPOBEX(IHCTP)
+             print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
 * Should perhaps pass down only the part of the integrals needed?
-              CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),1,
+                  IF(IFHM.EQ.1) THEN
+              CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),1,NRANK,
      &             IFHM,INTEGRALS,
      &             ISPOBEX_TP(1,IT1),
      &             ITSM,IHSM,
@@ -222,6 +236,44 @@ C               ICOUNT = 0
      &             LCCFBLK,IRESOP(1,IHCTP),
      &             WORK,KFREE,LFREE)
               CALL MEMCHK_KRCC(WORK)
+                  ELSE
+* Will now make an injective mapping of the cluster amplitudes to be
+* fetched to the EX,DX format where there is no restrictions on indices
+* belonging to the same GAS as long as they are in different EX,DX. This
+* way the fetching of these will become very simple in GET_OPINT4_REL.
+* At the moment making the mapping here. Could probably be moved out to
+* speed up things.
+C          IF(NRANK.GE.3) stop 'in the name of love'
+           IDIMEXDX = 0
+           CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
+     &                            IHTP(1,IHOP),
+     &                            ITOP(1,IOPT(ICOUNT)),
+     &                            IRESOP(1,IOPRES(ICOUNT)),
+     &                            INTEGRALS,
+     &                            WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KMTOEXDX,IDIMEXDX,WORK,KFREE,LFREE)
+           CALL M_TO_EX_DX_FORMAT(1,IDIMEXDX,WORK(KMTOEXDX),NRANK,IHSM,
+     &                            IHTP(1,IHOP),
+     &                            ITOP(1,IOPT(ICOUNT)),
+     &                            IRESOP(1,IOPRES(ICOUNT)),
+     &                            INTEGRALS,
+     &                            WORK,KFREE,LFREE)
+* Will now pass down WORK(KMTOEXDX) instead of integrals due to resort
+              IGIT = 0
+              IF(IGIT.EQ.1) THEN
+              CALL HCT1234_REL(IHTP(1,IHOP),IMINDEX,1,NRANK,
+!    &             IFHM,INTEGRALS,
+     &             IFHM,WORK(KMTOEXDX),
+     &             ISPOBEX_TP(1,IT1),
+     &             ITSM,IHSM,
+     &             T(IT1_B),
+     &             CC_VEC_FNC(IBSPOBEX_TO(IHCTP)),
+     &             LCCFBLK,IRESOP(1,IHCTP),
+     &             WORK,KFREE,LFREE)
+              END IF
+              CALL MEMCHK_KRCC(WORK)
+C             CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
+                  END IF
                 END DO
               END IF
             END DO
@@ -246,7 +298,7 @@ C               ICOUNT = 0
       RETURN
       END
 *
-      SUBROUTINE HCT1234_REL(IHCAAB,IHINDEX,NTOP,
+      SUBROUTINE HCT1234_REL(IHCAAB,IHINDEX,NTOP,NRANK,
      &                   IFHM,INTEGRALS,IT1,
      &                   IT1SM,IHSM,T1,
      &                   HT1234,LHT1234,IRESOP,
@@ -268,7 +320,7 @@ C               ICOUNT = 0
 *=========
 *
 *.. H-operator in CAAB form
-      INTEGER IHCAAB(4*NGAS),IHINDEX(4)
+      INTEGER IHCAAB(4*NGAS),IHINDEX(2*NRANK)
 *.. T-operators : type and coefficients
       INTEGER IT1(4*NGAS)
       DIMENSION HT1234(*),T1(*),INTEGRALS(*)
@@ -279,10 +331,10 @@ C               ICOUNT = 0
 *. Local scratch
 **. Assuming that H contains atmost 2 particle operator 
 C     PARAMETER(MXPCONN = 4*4*4*4)
-      INTEGER ICONN(4)
-      INTEGER IHEXP(3,4)
-      INTEGER ID1(4*MXPNGAS), IEX(4*MXPNGAS)
-      INTEGER IORD(4),IEXD1234(4)
+      INTEGER ICONN(2*NRANK)
+      INTEGER IHEXP(3,2*NRANK)
+      INTEGER ID1(4*NGAS), IEX(4*NGAS)
+      INTEGER IORD(4),IEXD1234(2*NRANK)
 *
       NTEST = 1000
       IF(NTEST.GE.100) THEN 
@@ -299,6 +351,7 @@ C     PARAMETER(MXPCONN = 4*4*4*4)
         END IF
         WRITE(6,*) ' Operators contracted to '
         CALL WRT_SPOX_TP_CC_KRCC(IRESOP,1)
+        print*,'LHT1234',LHT1234
         IF (NTEST.GE.1000) THEN
           WRITE(6,*) ' HCT1234 : Input block of CC vector function '
           CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
@@ -309,12 +362,12 @@ C     PARAMETER(MXPCONN = 4*4*4*4)
 C This is already found on the outside so we know which contraction is
 C supposed be performed so no need to find it! 
 C Will now refine ICONN so we can contract to an intermediate with one T
-      CALL CONTR_POS_REL_1T(IHCAAB,IRESOP,NGAS,ICONN)
+      CALL CONTR_POS_REL_1T(IHCAAB,IT1,IRESOP,NGAS,ICONN,NRANK)
 C No loop needed since it is one well defined contraction comming down.
 C     DO JCONN = 1, NCONN
 *. Obtain contraction order, and the individual deexcitation operators
 * Will keep the sign here! At least for now.
-      CALL HTYPE_TO_ED_KRCC(IHCAAB,IHINDEX,NHOP,ICONN,NTOP,
+      CALL HTYPE_TO_ED_KRCC(IHCAAB,IHINDEX,NHOP,ICONN,NTOP,NRANK,
      &                   ID1,IEX,IEXD1234,IORD,ISIGN_DE)
 *
 * There are 24 different ways of making the contractions so, I must
@@ -330,7 +383,7 @@ C     DO JCONN = 1, NCONN
      &                   T1,
      &                   HT1234,
      &                   IT1SM,
-     &                   IHSM,IEXD1234,ISIGN_DE,IFHM,INTEGRALS,
+     &                   IHSM,IEXD1234,ISIGN_DE,IFHM,INTEGRALS,NRANK,
      &                   WORK,KFREE,LFREE)
 *
       print*,'LHT1234',LHT1234
@@ -343,41 +396,55 @@ C     DO JCONN = 1, NCONN
       RETURN
       END 
 *
-      SUBROUTINE CONTR_POS_REL_1T(IHCAAB,IRESOP,NGAS,ICONN)
+      SUBROUTINE CONTR_POS_REL_1T(IHCAAB,TOP,IRESOP,NGAS,ICONN,NRANK)
 *
 * Simpler version of CONTR_POS_REL with only one T operator but can be
 * contracted to an intermediate
 *
 * Lasse 2011
 *
-      INTEGER IHCAAB(4*NGAS),IRESOP(4*NGAS)
-* Notice smaller dimension than outside since only one T 
-      INTEGER ICONN(4)
+      INTEGER IHCAAB(4*NGAS),TOP(4*NGAS),IRESOP(4*NGAS)
+      INTEGER ICONN(2*NRANK)
 *
-      NTEST = 100
+      NTEST = 00
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Hamiltonian operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IHCAAB,1)
+        WRITE(6,*) ' Cluster operator '
+        CALL WRT_SPOX_TP_CC_KRCC(TOP,1)
+        WRITE(6,*) ' Resultant operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IRESOP,1)
+      END IF
+      print*,'NRANK',NRANK
 * First assume none will be contracted
-      CALL ISETVC(ICONN,0,4)
+      CALL ISETVC(ICONN,0,2*NRANK)
 * Now to find those that will by comparing IHCAAB and IRESOP
       ICOUNT = 0
 *
       DO I=1,4*NGAS
 * Find a non-zero element in H
         IF(IHCAAB(I).GT.0) THEN
+* Will ensure that either the index can be contracted or found in the
+* resultant operator
+          IF(TOP(I).EQ.0) THEN
 * Will this also be in the resultant operator?
-          IF(IRESOP(I).GT.0) THEN
-            IF(IRESOP(I).GT.IHCAAB(I)) THEN
-              STOP 'Lasse has messed it up in CONTR_POS_REL_1T'
-            END IF
+            IF(IRESOP(I).GT.0) THEN
+              IF(IRESOP(I).GT.IHCAAB(I)) THEN
+                STOP 'Lasse has messed it up in CONTR_POS_REL_1T'
+              END IF
 * Now find out the indices to be contracted
-            ICONT = IHCAAB(I) - IRESOP(I)
-            DO J=1,ICONT
-              ICONN(ICOUNT+J) = 1 
-            END DO
-          ELSE
+              ICONT = IHCAAB(I) - IRESOP(I)
+              DO J=1,ICONT
+                ICONN(ICOUNT+J) = 1 
+              END DO
+            ELSE
 * All indeces to be contracted
-            DO J=1,IHCAAB(I)
-              ICONN(J+ICOUNT) = 1
-            END DO
+              DO J=1,IHCAAB(I)
+                ICONN(J+ICOUNT) = 1
+              END DO
+            END IF
+C           ICOUNT = ICOUNT + IHCAAB(I)
           END IF
           ICOUNT = ICOUNT + IHCAAB(I)
         END IF
@@ -385,7 +452,7 @@ C     DO JCONN = 1, NCONN
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Indices to be contracted from ICONN'
-        DO I =1,4
+        DO I =1,2*NRANK
           WRITE(6,*) ICONN(I)
         END DO
       END IF
@@ -393,7 +460,8 @@ C     DO JCONN = 1, NCONN
       RETURN
       END
 *
-      SUBROUTINE REFORM_HTYP_REL(IHCAAB,IHOP,NOP,IWAY,NGAS,IDOREO,IREO)
+      SUBROUTINE REFORM_HTYP_REL(IHCAAB,IHOP,NOP,IWAY,NGAS,
+     &                           IDOREO,IREO,NRANK)
 *
 * Reform different forms of Hamiltonian operator 
 *
@@ -410,9 +478,9 @@ C     DO JCONN = 1, NCONN
 *. Input
       INTEGER IREO(*)
 *. Input and otput
-      INTEGER IHCAAB(NGAS,4), IHOP(4,3)
+      INTEGER IHCAAB(NGAS,4), IHOP(2*NRANK,3)
 *. Local scratch
-      INTEGER JHOP(4,3)
+      INTEGER JHOP(2*NRANK,3)
 *
       IF(IWAY.EQ.1) THEN
 * HCAAB => HOP
@@ -458,7 +526,7 @@ C     DO JCONN = 1, NCONN
        END DO
       END IF
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Reform of Htype '
         IF(IWAY.EQ.1) THEN
@@ -481,8 +549,8 @@ C            WRT_CNTR(ICONT,NCONT,LDIM)
       RETURN
       END
 *
-      SUBROUTINE HTYPE_TO_ED_KRCC(IHTYPE,IHINDEX,NHOP,ICONT,
-     &           NTOP,ID1,IEX,IEXD1234,IORD,ISIGN_DE)
+      SUBROUTINE HTYPE_TO_ED_KRCC(IHTYPE,IHINDEX,NHOP,ICONT,NTOP,NRANK,
+     &           ID1,IEX,IEXD1234,IORD,ISIGN_DE)
 *    
 *. A Hamilton operator (IHTYPE) is given as a set of C/A operators  
 *. (in CA CB AA AB order), and a ordering array IHINDEX.
@@ -505,32 +573,30 @@ C            WRT_CNTR(ICONT,NCONT,LDIM)
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. Input
-      INTEGER IHTYPE(NGAS,4), IHINDEX(4),ICONT(4)
+      INTEGER IHTYPE(NGAS,4), IHINDEX(2*NRANK),ICONT(2*NRANK)
 *. Output 
       INTEGER ID1(NGAS,4)
-      INTEGER IEX(NGAS,4),IEXD1234(4)
+      INTEGER IEX(NGAS,4),IEXD1234(2*NRANK)
       INTEGER IORD(4)
 * IORD(IOP) : New operator IOP is old operator IORD(IOP) ( new => old)
 *. Local scratch 
-      INTEGER IHOP(4,3)
-      INTEGER IDOP(4,3,4),IEXOP(4,3), LD(4) 
-      INTEGER IEX_INDEX(4),ID_INDEX(4,4)
+      INTEGER IHOP(2*NRANK,3)
+      INTEGER IDOP(2*NRANK,3,4),IEXOP(2*NRANK,3), LD(4) 
+      INTEGER IEX_INDEX(2*NRANK),ID_INDEX(4,4)
 *
       IZERO = 0
 *
 *. Reform IHTYPE from CAAB form to a string of NHOP operators
 *. Keep CAAB ordering ..
-      CALL REFORM_HTYP_REL(IHTYPE,IHOP,NHOP,1,NGAS,0,IHINDEX)
+      CALL REFORM_HTYP_REL(IHTYPE,IHOP,NHOP,1,NGAS,0,IHINDEX,NRANK)
 *. Obtain the deexcitations/excitations D1,D2,D3,D4,EX (they will now
 *. be in CAAB order)
       DO I = 1, 4
         LD(I) = 0
       END DO
       NEX = 0
-      print*,'NHOP,NTOP',NHOP,NTOP
       DO IOP = 1, NHOP
         INDEX = ICONT(IOP)
-        print*,'INDEX',INDEX
 *.      ^ Index tells to which T-operator an operator is connected, 0=>disc.
         IF(INDEX.EQ.0) THEN
 *. Excitation part
@@ -556,7 +622,7 @@ C         ID_INDEX(I,INDEX) = IHINDEX(IOP)
 *. Obtain the execution order
        CALL CONTR_ORD4_REL(NTOP,IDOP(1,1,1),IDOP(1,1,2),
      &                 IDOP(1,1,3),IDOP(1,1,4),
-     &                 LD(1),LD(2),LD(3),LD(4),IORD)
+     &                 LD(1),LD(2),LD(3),LD(4),IORD,NRANK)
 *. I want IORD to contain 4 well-defined terms, also 
 *. when there are less than 4 operators so
        IF(NTOP.LT.4) IORD(4) = 4
@@ -568,18 +634,16 @@ C         ID_INDEX(I,INDEX) = IHINDEX(IOP)
 *. Set up IEXD1234 : Index in operator EXD1D2D3D4 to original order
       DO JEX = 1, NEX
         IEXD1234(JEX) = IEX_INDEX(JEX)
-C        print*,'IEX_INDEX(JEX)',IEX_INDEX(JEX)
       END DO
       LEN = NEX
 *. Loop over deexcitations in NEW order
       DO JDOP = 1, NTOP
         JDOP_OLD = IORD(JDOP)
-C?      WRITE(6,*) 'JDOP, JDOP_OLD', JDOP, JDOP_OLD
-C?      WRITE(6,*) ' LD(JDOP_OLD) ',  LD(JDOP_OLD)
+C       WRITE(6,*) 'JDOP, JDOP_OLD', JDOP, JDOP_OLD
+C       WRITE(6,*) ' LD(JDOP_OLD) ',  LD(JDOP_OLD)
         DO JOP = 1, LD(JDOP_OLD)
           LEN = LEN + 1
           IEXD1234(LEN) = ID_INDEX(JOP,JDOP_OLD)
-C          print*,'ID_INDEX(JOP,JDOP_OLD)',ID_INDEX(JOP,JDOP_OLD)
         END DO
       END DO
 *. IEXD1234 refers to indeces in IHOP, modify so they 
@@ -587,20 +651,18 @@ C          print*,'ID_INDEX(JOP,JDOP_OLD)',ID_INDEX(JOP,JDOP_OLD)
       DO JOP = 1, NHOP
 *. Set up the deexcitations numbered according to execution order 
         IEXD1234(JOP) = IHINDEX(IEXD1234(JOP))
-C        print*,'IHINDEX(IEXD1234(JOP))',IHINDEX(IEXD1234(JOP))
-C        print*,'IHINDEX',IHINDEX(JOP)
       END DO
 *. Excitation in CAAB form
       IDUM = 0
-      CALL REFORM_HTYP_REL(IEX,IEXOP,NEX,2,NGAS,0,IDUM)
+      CALL REFORM_HTYP_REL(IEX,IEXOP,NEX,2,NGAS,0,IDUM,NRANK)
 *. First operator to be contracted
       CALL REFORM_HTYP_REL(ID1,IDOP(1,1,IORD(1)),LD(IORD(1)),2,
-     &                     NGAS,0,IDUM)
+     &                     NGAS,0,IDUM,NRANK)
 *. Sign for bringing H operator from CAAB order to EXD1234 order
 C IPERM_PARITY(IPERM,NELMNT)
       ISIGN_DE = IPERM_PARITY(IEXD1234,NHOP)
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ============================='
@@ -610,7 +672,7 @@ C IPERM_PARITY(IPERM,NELMNT)
         WRITE(6,*) ' Original Hamiltonian op. '
         CALL WRT_SPOX_TP_CC_KRCC(IHTYPE,1)
         WRITE(6,*) ' Contraction of ops. (ICONT) '
-        CALL IWRTMA(ICONT,1,4,1,4)
+        CALL IWRTMA(ICONT,1,2*NRANK,1,2*NRANK)
         WRITE(6,*) ' Suggested order of contraction : '
         CALL IWRTMA(IORD,1,NTOP,1,NTOP)
         WRITE(6,*) ' IEX,D1,D2,D3,D4 : '
@@ -629,7 +691,7 @@ C IPERM_PARITY(IPERM,NELMNT)
      &                    T1,
      &                    OT1234,
      &                    IT1SM,
-     &                    IOPSM,IOPINDX,ISIGN,IFHM,INTEGRALS,
+     &                    IOPSM,IOPINDX,ISIGN,IFHM,INTEGRALS,NRANK,
      &                    WORK,KFREE,LFREE)
 *
 * Master routine for contracting operator with upto 4 operators
@@ -641,6 +703,7 @@ C IPERM_PARITY(IPERM,NELMNT)
 * Lasse 2011
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "cc_scr2.inc"
@@ -660,17 +723,16 @@ C
      &    WORK(KIX2_AA),WORK(KSX2_AA),WORK(KIX2_AB),WORK(KSX2_AB),
      &    WORK(KLOCK1),
      &    WORK(KLOCL1),
-     &    WORK(KLSTOCC1),
-     &    WORK(KLSTOCC5),WORK(KLSTOCC6),WORK(KLSTOCC7),
+     &    WORK(KLSTOCC1),WORK(KLSTOCC2),WORK(KLSTOCC3),WORK(KLSTOCC4),
      &    WORK(KLTSCR1),WORK(KLTSCR2),
      &    WORK(KLOPSCR),
      &    WORK(KLSMD1),
      &    WORK(KLSMEX),WORK(KLSMK1),WORK(KLSML1),
      &    WORK(KLNMD1),
      &    WORK(KLNMEX),WORK(KLNMK1),WORK(KLNML1),
-     &    IOPINDX,
+     &    IOPINDX,NRANK,
      &    WORK(KLZ),WORK(KLZSCR),WORK(KLSTREO),
-     &    ISIGN,IFHM,INTEGRALS,N_TDL_MAX,
+     &    ISIGN,IFHM,INTEGRALS,
      &    WORK,KFREE,LFREE)
 *
       RETURN
@@ -697,9 +759,9 @@ C
      &           ISM_CAAB_EX,ISM_CAAB_K,ISM_CAAB_L,
      &           INM_CAAB_D1,
      &           INM_CAAB_EX,INM_CAAB_K,INM_CAAB_L,
-     &           IEXD1234_INDX,
+     &           IEXD1234_INDX,NRANK,
      &           IZ,IZSCR,ISTREO,
-     &           ISIGNG,IFHM,INTEGRALS,N_TDL_MAX,
+     &           ISIGNG,IFHM,INTEGRALS,
      &           WORK,KFREE,LFREE)
 *
 * Contract indeces of Operator O with indeces of 
@@ -728,14 +790,14 @@ C
       DIMENSION T1(*),INTEGRALS(*)
       DIMENSION WORK(*)
 *. Map of index EXD1234 operator to original index of Hamiltonian
-      INTEGER IEX1234_INDX(4)
+      INTEGER IEXD1234_INDX(2*NRANK)
 *. Output
       DIMENSION OT1234(*)
 *
 *. Local scratch
 *
 *. Occupation of conjugated operators
-      INTEGER IO1DX_DAG(4*MXPNGAS)
+      INTEGER IO1DX_DAG(4*NGAS)
 *
 *. Occupation of gasspaces for various strings 
 *. Number of strings per sym of the various string supergroups
@@ -772,9 +834,6 @@ C
 *. For intermediates with both strings batched
 *. Changed from squared to cubed by Lasse
       DIMENSION TSCR1(*),TSCR2(*)
-*. For an intermediate with only one string batched. Now allocated
-*. inside since problems with dimensioning. Lasse
-C      DIMENSION TSCR4(N_TDL_MAX), TSCR5(N_TDL_MAX),TSCR6(N_TDL_MAX)
 *. For a batch of coefficients for Operator
 *. Operator accessed as OP(EX,D2,D1) so
       DIMENSION OPSCR(*)
@@ -786,29 +845,25 @@ C      DIMENSION TSCR4(N_TDL_MAX), TSCR5(N_TDL_MAX),TSCR6(N_TDL_MAX)
       INTEGER ISM_CAAB_L(4,*), INM_CAAB_L(4,*)
 *
       INTEGER IZ(*), IZSCR(*), ISTREO(*)
-*. Collecting info on largest T(D,L) Block
-      COMMON/CNTDL_MAX/NTDL_MAX_ACT,ID2_MAX_ACT(MXPNGAS*4),
-     &      IL1_MAX_ACT(MXPNGAS*4),IEX_MAX_ACT(MXPNGAS*4),
-     &      IT1_MAX_ACT(MXPNGAS*4),IT2_MAX_ACT(MXPNGAS*4)
 *
 * The story goes as
 *
-* Part 1 : O, T1 => OT1(d2,d3,d4,l1) in TSCR4
+* Part 1 : O, T1 => OT1(l1) in TSCR4
 *
 *    Loop over symmetry of D1
 *    Loop over batches  of D1
 *
 *    Loop over batches of Ex
-*      Fetch O as O(d1,d2,d3,d4,ex)
+*      Fetch O as O(d1,ex)
 *      Loop over batches of K1
 *        T1(I) => T1(d1,k1)
-*        OT1(d2,d3,d4,ex,k1) = sum(d1) O(d1,d2,d3,d4,ex)T1(d1,k1)
-*        OT1(d2,d3,d4,ex,k1) => OT1(d2,d3,d4,l1)
+*        OT1(ex,k1) = sum(d1) O(d1,ex)T1(d1,k1)
+*        OT1(ex,k1) => OT1(l1)
 *      End of loop over batches of K1
 *    End of loop over bathces of Ex
 *    End of loop over batches of d1
 *    End of loop over symmetry of D1
-* ( We now have OT1(l1,d4,d3,d2), all l1 !, d2,d3,d4 in batch)    
+* ( We now have OT1(l1), all l1 in batch)    
 *
 *
 * - That's all she wrote
@@ -831,8 +886,6 @@ C      DIMENSION TSCR4(N_TDL_MAX), TSCR5(N_TDL_MAX),TSCR6(N_TDL_MAX)
         CALL WRT_SPOX_TP_CC_KRCC(IT1,1)
 *
       END IF
-      IF(NTEST.GE.100) 
-     &WRITE(6,*) ' N_TDL_MAX in OPCT1T2 ', N_TDL_MAX
       SIGNG = DFLOAT(ISIGNG)
 *. Symmetry of final type  
       IF(NTEST.GE.100) WRITE(6,*) ' IT1SM : ',IT1SM
@@ -991,12 +1044,12 @@ C     L1SM = IDBGMULT(IOPT1SM,IADJSYM(ID234SM))
 * Thinks this should be new start Lasse
 *
 * ==============================================================
-* Part 1 O1(d1,d2,d3,d4,ex) T1(i) => OT1(d2,d3,d4,l1) in TSCR4
+* Part 1 O1(d1,ex) T1(i) => OT1(l1) in TSCR4
 * ==============================================================
 *
-* Part 1 : Obtain in TSCR4 OT1(d4,d3,d2,l1) for all l1 of correct sym
+* Part 1 : Obtain in TSCR4 OT1(l1) for all l1 of correct sym
 *
-* Length of OT1(d4,d3,d2,l1)
+* Length of OT1(l1)
       LEN_OT1 = NL1_TOT!*ID2_BATLEN*ID3_BATLEN*ID4_BATLEN
 *
 C     ZERO = 0.0D0
@@ -1076,20 +1129,20 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
               IEXSM_NEW = 0
 *. Length of EXD2D3D4
               LEN_EXD234 = IEX_BATLEN
-*. Obtain integrals OP(D1,D2,D3,D4,EX)
+*. Obtain integrals OP(D1,EX)
               IOFF = 1 + (IEX_START-1)*ID1_BATLEN
 *
               CALL GET_OPINT4_REL(OPSCR(IOFF),
      &           IO1DX,ID1_BATLEN,INM_CAAB_D1(1,1),ISM_CAAB_D1(1,1),
      &           ISTR_D1,IBO1DX,
      &           IOEX,IEX_BATLEN,INM_CAAB_EX(1,1),ISM_CAAB_EX(1,1),
-     &           ISTR_EX,IBOEX,IEXD1234_INDX,IFHM,INTEGRALS,
+     &           ISTR_EX,IBOEX,IEXD1234_INDX,IFHM,NRANK,INTEGRALS,
      &           WORK,KFREE,LFREE)
 *
             END DO
 *           ^ End of loop over batches of excitation operators OEX
-*. We now have OP(d1,d2,d3,d4,ex) for all ex 
-*. OP(d1,d2,d3,d4,ex)*T1(I) => OPT(d2,d3,d4,l1) in TSCR4
+*. We now have OP(d1,ex) for all ex 
+*. OP(d1,ex)*T1(I) => OPT(l1) in TSCR4
 *
             SIGNX = SP_D1K1*SIGN_D1K1
             SIGN_LK = SIGN_EXK1
@@ -1098,7 +1151,7 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
      &                                    SIGNX, SIGNG, SIGN_LK
             NDUM = 1 !ID2_BATLEN*ID3_BATLEN*ID4_BATLEN !This or 0 Lasse
             IF(NTEST.GE.100) 
-     &      WRITE(6,*) ' OP(d1,d2,d3,d4,ex)*T1(I) => OPT(d2,d3,d4,l1)'
+     &      WRITE(6,*) ' OP(d1,ex)*T1(I) => OPT(l1)'
 *
             CALL OT_T_REL(OPSCR,T1,OT1234,NDUM,
      &           K1SM,IEXSM,ID1SM,
@@ -1143,7 +1196,7 @@ C
       END
 *
       SUBROUTINE CONTR_ORD4_REL(NDOP,ID1,ID2,ID3,ID4,
-     &           LD1,LD2,LD3,LD4,IORD) 
+     &           LD1,LD2,LD3,LD4,IORD,NRANK) 
 *
 * NDOP contraction operators ID1, ID2, ... are given. 
 * Find which order these contraction operators should be 
@@ -1159,17 +1212,18 @@ C
 *
 #include "implicit.inc"
 *. Input : Contraction operators 
-      DIMENSION ID1(4,3),ID2(4,3),ID3(4,3),ID4(4,3)
+      DIMENSION ID1(2*NRANK,3),ID2(2*NRANK,3)
+      DIMENSION ID3(2*NRANK,3),ID4(2*NRANK,3)
 *. Output 
       INTEGER IORD(4)
 *. Local scratch
       INTEGER LEN_AR(4),INO(4), ISCR(4)
 *
 *. Length of different contractions
-                    CALL DIM_CNTR_REL(ID1,LD1,4,LEN_AR(1))
-      IF(NDOP.GE.2) CALL DIM_CNTR_REL(ID2,LD2,4,LEN_AR(2))
-      IF(NDOP.GE.3) CALL DIM_CNTR_REL(ID3,LD3,4,LEN_AR(3))
-      IF(NDOP.GE.4) CALL DIM_CNTR_REL(ID4,LD4,4,LEN_AR(4))
+                    CALL DIM_CNTR_REL(ID1,LD1,2*NRANK,LEN_AR(1))
+      IF(NDOP.GE.2) CALL DIM_CNTR_REL(ID2,LD2,2*NRANK,LEN_AR(2))
+      IF(NDOP.GE.3) CALL DIM_CNTR_REL(ID3,LD3,2*NRANK,LEN_AR(3))
+      IF(NDOP.GE.4) CALL DIM_CNTR_REL(ID4,LD4,2*NRANK,LEN_AR(4))
 *. Multiply with -1 so numerically largest numbers 
 *. will come first in sort
       DO I = 1, NDOP
@@ -1189,10 +1243,10 @@ C     IORD(4) = 4
       IF(NTEST.GE.100) THEN
        WRITE(6,*) ' Contraction operators  : '
 C  WRT_CNTR(ICONT,NCONT,LDIM)
-       CALL WRT_CNTR3(ID1,LD1,4)
-       IF(NDOP.GE.2) CALL WRT_CNTR3(ID2,LD2,4)
-       IF(NDOP.GE.3) CALL WRT_CNTR3(ID3,LD3,4)
-       IF(NDOP.GE.4) CALL WRT_CNTR3(ID4,LD4,4)
+       CALL WRT_CNTR3(ID1,LD1,2*NRANK)
+       IF(NDOP.GE.2) CALL WRT_CNTR3(ID2,LD2,2*NRANK)
+       IF(NDOP.GE.3) CALL WRT_CNTR3(ID3,LD3,2*NRANK)
+       IF(NDOP.GE.4) CALL WRT_CNTR3(ID4,LD4,2*NRANK)
        WRITE(6,*) ' Order of contraction for operators '
        CALL IWRTMA(IORD,1,NDOP,1,NDOP)
       END IF
@@ -1439,6 +1493,7 @@ C?        WRITE(6,*) ' SIGNLK before call to TI_TO_TOKBN(2) ', SIGNLK
       DO I = 1, NELMNT
         IFOUND = 0
         DO IELMNT = 1, NELMNT
+C         print*,'IPERM(IELMNT),IELMNT,I',IPERM(IELMNT),IELMNT,I
           IF(IPERM(IELMNT).EQ.I) IFOUND = 1
         END DO
         IF(IFOUND.EQ.0) I_AM_OKAY = 0
@@ -1446,7 +1501,7 @@ C?        WRITE(6,*) ' SIGNLK before call to TI_TO_TOKBN(2) ', SIGNLK
 *
       IF(I_AM_OKAY.EQ.0) THEN
         WRITE(6,*) ' Illegal input to IPERM_PARITY'
-        CALL IWRTMA(IPERM,1,NPERM,1,NPERM)
+        CALL IWRTMA(IPERM,1,NELMNT,1,NELMNT)
         STOP       ' Illegal input to IPERM_PARITY'
       END IF
 *
@@ -1557,7 +1612,7 @@ C?      CALL IWRTMA(ISCR,1,NELMNT,1,NELMNT)
       END IF
 *     ^ End of ICE switch 
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) 'NEW_CAAB_OC : ICE, ILR = ', ICE,ILR
         WRITE(6,*) ' IOCC_L,IOCC_OP,IOCC_R : '
@@ -1715,6 +1770,7 @@ C        ISM_A = IDBGMULT(ISM_C,ITSYM)
 * Jeppe Olsen, Oct 2000     
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "multd2h.inc"
 #include "csm.inc"
@@ -1952,7 +2008,7 @@ C     INTEGER IBSTR_CAAB(NSMST,4)
       DO ISTSM = 1, NSMST
         CALL OCC_TO_GRP_CC_KRCC(ICAAB(1,1),IGRP_AR,1)
         NEL = IELSUM(ICAAB(1,1),NGAS) 
-        WRITE(6,*) ' NEL(CA) = ', NEL
+C       WRITE(6,*) ' NEL(CA) = ', NEL
         IUB = 1 
         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AR,NGAS,ISTSM,NEL,NSTR_CA,
      &      ISTR_CAAB((IBSTR_CA-1)*NEL+1,1), NOCOB,0,IDUM,IDUM,
@@ -1962,7 +2018,7 @@ COLD    IBSTR_CAAB(ISTSM,1) = IBSTR_CA
 *. CB strings
         CALL OCC_TO_GRP_CC_KRCC(ICAAB(1,2),IGRP_AR,1)
         NEL = IELSUM(ICAAB(1,2),NGAS) 
-        WRITE(6,*) ' NEL(CB) = ', NEL
+C       WRITE(6,*) ' NEL(CB) = ', NEL
         IUB = 2 
         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AR,NGAS,ISTSM,NEL,NSTR_CB,
      &       ISTR_CAAB((IBSTR_CB-1)*NEL+1,2), NOCOB,0,IDUM,IDUM,
@@ -1972,7 +2028,7 @@ COLD    IBSTR_CAAB(ISTSM,2) = IBSTR_CB
 *. AA strings
         CALL OCC_TO_GRP_CC_KRCC(ICAAB(1,3),IGRP_AR,1)
         NEL = IELSUM(ICAAB(1,3),NGAS) 
-        WRITE(6,*) ' NEL(AA) = ', NEL
+C       WRITE(6,*) ' NEL(AA) = ', NEL
         IUB = 1
         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AR,NGAS,ISTSM,NEL,NSTR_AA,
      &       ISTR_CAAB((IBSTR_AA-1)*NEL+1,3), NOCOB,0,IDUM,IDUM,
@@ -1982,7 +2038,7 @@ COLD    IBSTR_CAAB(ISTSM,3) = IBSTR_AA
 *. AB strings
         CALL OCC_TO_GRP_CC_KRCC(ICAAB(1,4),IGRP_AR,1)
         NEL = IELSUM(ICAAB(1,4),NGAS) 
-        WRITE(6,*) ' NEL(AB) = ', NEL
+C       WRITE(6,*) ' NEL(AB) = ', NEL
         IUB = 2
         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AR,NGAS,ISTSM,NEL,NSTR_AB,
      &       ISTR_CAAB((IBSTR_AB-1)*NEL+1,4), NOCOB,0,IDUM,IDUM,
@@ -2204,7 +2260,6 @@ C          print*,'ISM(JGRP)',ISM(JGRP)
 #include "multd2h.inc"
 #include "csm.inc"
 #include "orbinp.inc"
-#include "cc_exc.inc"
 #include "symm.inc"
 *. Specific input
       INTEGER NS_CAAB(8,4)             
@@ -2476,7 +2531,7 @@ C     DIMENSION TI(LDUM,*)
      &             NINNER6,NINNER7,NINNER8,NINNER9,NINNER10
 *
 
-      NTEST = 100
+      NTEST = 00
       MX_TI_COL = 0
       I_CAAB_TI_MX = 0
 *.
@@ -2933,6 +2988,7 @@ C      print*,'TI,TOPK',TI(1),TOPK(1)
 * a rainy day at HNIE, July 2002
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -3098,7 +3154,6 @@ C     INTEGER LS12_STR(8), IBS12_STR(8)
 * Change of phase of annihilations strings, Oct2000
 *
 #include "implicit.inc"
-#include "newccp.inc"
 *. Input
       INTEGER ICR(NCR),IAN(NAN)
       INTEGER ISTR_IN(NEL_IN)
@@ -3187,10 +3242,10 @@ C?   &    IANNI,IEL,ISTR_OUT(IEL),IAN(NAN-IANNI+1)
  1001 CONTINUE
 *. A bit on the sign : In LUCIA the order of the annihilation is actually 
 * descending !, find permutation sign
-      IF(I_USE_NEWCCP.EQ.0.AND.NAN.GT.1) THEN
-        NPERM = NAN*(NAN-1)/2
-        ISIGN = ISIGN*(-1)**NPERM
-      END IF
+C     IF(I_USE_NEWCCP.EQ.0.AND.NAN.GT.1) THEN
+C       NPERM = NAN*(NAN-1)/2
+C       ISIGN = ISIGN*(-1)**NPERM
+C     END IF
 *
       IF(NTEST.GE.100) THEN 
         IF(IZERO_STR.EQ.0) THEN
@@ -3208,14 +3263,18 @@ C?   &    IANNI,IEL,ISTR_OUT(IEL),IAN(NAN-IANNI+1)
       SUBROUTINE GET_OPINT4_REL(OPSCR,
      &IOD1X,LD1,INM_CAAB_D1,ISM_CAAB_D1,ISTR_D1,IBO1DX,
      &IOEX ,LEX,INM_CAAB_EX,ISM_CAAB_EX,ISTR_EX,IBOEX,
-     &IEXD1234_INDX,IFHM,INTEGRALS,
+     &IEXD1234_INDX,IFHM,NRANK,INTEGRALS,
      &WORK,KFREE,LFREE)
 *
-* Fetch batch of operator integrals ordered as O(D1,D2,D3,D4,EX) 
+* Fetch batch of operator integrals ordered as O(D1,EX) 
 *
 * Connected with standard integral input
 *
 * Jeppe Olsen, May of 2000
+*
+* Severely reduced and adapted to more than two particle operators
+*
+* Lasse 2011
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -3230,7 +3289,7 @@ C
 *.. Occupation of gas spaces         
       INTEGER IOD1X(NGAS,4),IOEX(NGAS,4)
 *. Index in EXD1D2D3D4 to original index in H
-      INTEGER IEXD1234_INDX(4)
+      INTEGER IEXD1234_INDX(2*NRANK)
 *.. The sym and number of the included strings 
       INTEGER ISM_CAAB_EX(4,*),INM_CAAB_EX(4,*)
       INTEGER ISM_CAAB_D1(4,*),INM_CAAB_D1(4,*)
@@ -3245,8 +3304,8 @@ C
 *
 C     INTEGER IOCC(4),ICREA(4),IANNI(4)
       character*4 TYPE
-      INTEGER JEXSTR(4),JD1STR(4)
-      INTEGER IJKL_EDD(4), IJKL_ORIG(4)
+      INTEGER JEXSTR(2*NRANK),JD1STR(2*NRANK)
+      INTEGER IJKL_EDD(2*NRANK), IJKL_ORIG(2*NRANK)
       INTEGER NOP_D1_CAAB(4),NOP_EX_CAAB(4)
 C
       INTEGER IKPERM(4),IKFAC
@@ -3312,7 +3371,7 @@ C
       INT = 0
       print*,'LEX,LD1',LEX,LD1
       DO JEX = 1, LEX
-C?    WRITE(6,*) ' EX string : '
+      WRITE(6,*) ' EX string : '
 *. Should be looked at for general operator. Is okay since the strings
 *. come from the outside
         CALL GET_CCSTR_FROM_LIST 
@@ -3322,7 +3381,7 @@ C?    WRITE(6,*) ' EX string : '
      &       IBOEX(1,4) )
         DO JD1 = 1, LD1
 *. Occupation of J1 string in JD1STR
-C?    WRITE(6,*) ' D1 string : '
+      WRITE(6,*) ' D1 string : '
           CALL GET_CCSTR_FROM_LIST 
      &         (JD1STR,INM_CAAB_D1(1,JD1),ISM_CAAB_D1(1,JD1),
      &         NOP_D1_CAAB,ISTR_D1(1,1),ISTR_D1(1,2),ISTR_D1(1,3),
@@ -3346,11 +3405,13 @@ C?    WRITE(6,*) ' D1 string : '
             IJKL_ORIG(IEXD1234_INDX(IOP)) = IJKL_EDD(IOP)
           END DO
 *
+          NTEST = 100
           IF(NTEST.GE.100) THEN
             WRITE(6,*) ' IJKL_EDD and IJKL_ORIG '
             CALL IWRTMA(IJKL_EDD,1,NOP,1,NOP)
             CALL IWRTMA(IJKL_ORIG,1,NOP,1,NOP)    
           END IF
+          NTEST = 0
 *
           INT = INT + 1
 * Integrals or intermediates?
@@ -3385,7 +3446,7 @@ C?    WRITE(6,*) ' D1 string : '
           ELSE IF(IFHM.EQ.2) THEN
             print*,' should now fetch intermediates '
             XOUT = 0.0D0 !for now
-            CALL GET_INTERMEDIATE(XOUT,INTEGRALS,IJKL_EDD,NOP,IJOKE)
+            CALL GET_INTERMEDIATE(XOUT,INTEGRALS,IJKL_ORIG,NOP,IJOKE)
           ELSE
             STOP ' Lasse has forgot to set IFHM '
           END IF
@@ -3581,7 +3642,7 @@ C?    WRITE(6,*) ' D1 string : '
 *
 C?    IF(NOP.GT.0) WRITE(6,*) ' GET_STR... LIST(1,1) = ', LIST(1,1)
 C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' String number and sym = ', INUM,ISYM
         WRITE(6,*) ' Corresponding string : '
@@ -3624,9 +3685,237 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
 *
       RETURN
       END
+
+      SUBROUTINE I_ADD_INTEGRALS_TO_AMPLITUDES(NHTPM,IHTPM,
+     &                                         NSPOBEX_TP,ISPOBEX_TP,
+     &                                         NHTP,IHTP,
+     &                                         INTEGRALS,ONEE,
+     &                                         T,
+     &                                         MX_ST_TSOSO_BLK_MX,
+     &                                         WORK,KFREE,LFREE)
 *
+* Subroutine to add intermediates/amplitudes and integrals so only the intermediate
+* CAAB types will need to be contracted with the cluster operators.
 *
+* Routine still needs to be debugged!!!! (I think....well at least check
+* the signs)
 *
+* Lasse 2011 
 *
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "orbinp.inc"
+#include "symm.inc"
 *
+      DIMENSION WORK(*)
+*. Specific input
+      INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
+      INTEGER IHTPM(NHTPM),IHTP(4*NGAS,NHTP)
+      DIMENSION INTEGRALS(*),ONEE(*),T(*)
+*. Local scratch ! not so pretty
+      INTEGER IOCC_CA(MX_ST_TSOSO_BLK_MX),IOCC_CB(MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AA(MX_ST_TSOSO_BLK_MX),IOCC_AB(MX_ST_TSOSO_BLK_MX)
+*. Local scratch
+      INTEGER IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS)
+      INTEGER IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
+      INTEGER IJKL_ORIG(4)
 *
+C     print*,'NSPOBEX_TP,NHTPM,NHTP,NGAS,MX_ST_TSOSO_BLK_MX,MXPNGAS',
+C    &        NSPOBEX_TP,NHTPM,NHTP,NGAS,MX_ST_TSOSO_BLK_MX,MXPNGAS
+C     DO I=1,125
+C       T(I) = 0.8D0/I
+C     END DO
+      NTEST = 00
+*
+* ===========================================================
+      ISM = 1
+* ===========================================================
+*
+      IF(NTEST.GE.10) THEN
+        WRITE(6,*)
+        WRITE(6,*) ' Operators are written as : '
+        WRITE(6,*)
+        WRITE(6,*)   ' Creation of alpha '
+        WRITE(6,*)   ' Creation of beta '
+        WRITE(6,*)   ' Annihilation of alpha '
+        WRITE(6,*)   ' Annihilation of beta '
+        WRITE(6,*)
+      END IF
+*
+      IT = 0
+      DO ITSS = 1, NSPOBEX_TP
+       CALL WRT_SPOX_TP_CC_KRCC(ISPOBEX_TP(1,ITSS),1)
+C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
+*. First check if it would be possible to add a Hamiltonian type to a
+*  cluster type (Hamiltonian is only a two particle operator)
+       CALL ANALYZE_OP(ISPOBEX_TP(1,ITSS),NGAS,N,MK,MUB)
+       IF(N.GE.3) EXIT ! Three particle operator
+       IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Particle rank = ',N
+        WRITE(6,*) ' Kramers flip = ',MK
+        WRITE(6,*) ' MUB = ',MUB
+       END IF
+*. Transform from occupations to groups
+       CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+0*NGAS,ITSS),IGRP_CA,1)
+       CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+1*NGAS,ITSS),IGRP_CB,1)
+       CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+2*NGAS,ITSS),IGRP_AA,1)
+       CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+3*NGAS,ITSS),IGRP_AB,1)
+*
+       NEL_CA = IELSUM(ISPOBEX_TP(1+0*NGAS,ITSS),NGAS)
+       NEL_CB = IELSUM(ISPOBEX_TP(1+1*NGAS,ITSS),NGAS)
+       NEL_AA = IELSUM(ISPOBEX_TP(1+2*NGAS,ITSS),NGAS)
+       NEL_AB = IELSUM(ISPOBEX_TP(1+3*NGAS,ITSS),NGAS)
+*. Number of operators with alpha spin
+       NALPHA = NEL_CA + NEL_AA
+*
+       DO ISM_C = 1, NSMST
+        ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
+        ISM_A = IADJSYM(ISM_A)
+        DO ISM_CA = 1, NSMST
+         ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
+         DO ISM_AAA = 1, NSMST
+          ISM_AA = IADJSYM(ISM_AAA)
+          ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
+C         print*,'ISM_A,ISM_CB,ISM_AB',ISM_A,ISM_CB,ISM_AB
+C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
+          ISM_ALPHA = (ISM_AA-1)*NSMST + ISM_CA
+          ISM_BETA  = (ISM_AB-1)*NSMST + ISM_CB
+*. obtain strings
+          IUB = 1
+C        print*,'ISM_CA,NEL_CA,NTOOB',ISM_CA,NEL_CA,NTOOB
+          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
+     &         ISM_CA,NEL_CA,NSTR_CA,
+     &         IOCC_CA, NTOOB,0,IDUM,IDUM,
+     &         WORK,KFREE,LFREE)
+C         print*,'ISM_CB,NEL_CB',ISM_CB,NEL_CB
+          IUB = 2
+          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CB,NGAS,
+     &         ISM_CB,NEL_CB,NSTR_CB,
+     &         IOCC_CB, NTOOB,0,IDUM,IDUM,
+     &         WORK,KFREE,LFREE)
+C         print*,'ISM_AA,NEL_AA',ISM_AA,NEL_AA
+          IUB = 1
+          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AA,NGAS,
+     &         ISM_AA,NEL_AA,NSTR_AA,
+     &         IOCC_AA, NTOOB,0,IDUM,IDUM,
+     &         WORK,KFREE,LFREE)
+C         print*,'ISM_AB,NEL_AB',ISM_AB,NEL_AB
+          IUB = 2
+          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AB,NGAS,
+     &         ISM_AB,NEL_AB,NSTR_AB,
+     &         IOCC_AB, NTOOB,0,IDUM,IDUM,
+     &         WORK,KFREE,LFREE)
+*. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
+          IF(NTEST.GE.100) THEN
+           WRITE(6,*) ' The number of strings '
+           WRITE(6,*) 'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+     &                 NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
+           CALL MEMCHK_KRCC(WORK)
+          END IF
+          ISTRTOT = NSTR_AB * NSTR_AA * NSTR_CB * NSTR_CA
+          IF(ISTRTOT.EQ.0) CYCLE
+          DO I_AB = 1, NSTR_AB
+             I_AA_MIN = 1
+           DO I_AA = I_AA_MIN, NSTR_AA
+            DO I_CB = 1, NSTR_CB
+               I_CA_MIN = 1
+             DO I_CA = I_CA_MIN, NSTR_CA
+              IT = IT + 1
+              IF(NTEST.GE.100) THEN
+               WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
+*
+               WRITE(6,'(A)')
+               WRITE(6,'(A)')
+     &         '                 =================== '
+               WRITE(6,*)
+
+               WRITE(6,'(A,2I8,2X,E14.8)')
+     &         '  Type, number, size of amplitude : ',
+     &         ITSS, IT, T(IT)
+               WRITE(6,*) ' Creator alpha '
+               WRITE(6,'(4X,10I4)')
+     &         (IOCC_CA(IEL+(I_CA-1)*NEL_CA),IEL = 1, NEL_CA)
+               WRITE(6,*) ' Creator beta '
+               WRITE(6,'(4X,10I4)')
+     &         (IOCC_CB(IEL+(I_CB-1)*NEL_CB),IEL = 1, NEL_CB)
+               WRITE(6,*) ' Annihilator alpha '
+               WRITE(6,'(4X,10I4)')
+     &         (IOCC_AA(IEL+(I_AA-1)*NEL_AA),IEL = 1, NEL_AA)
+               WRITE(6,*) ' Annihilator beta '
+               WRITE(6,'(4X,10I4)')
+     &         (IOCC_AB(IEL+(I_AB-1)*NEL_AB),IEL = 1, NEL_AB)
+              END IF
+              IF(N.EQ.2) THEN
+* Now fetch the matching integral and add it to the intermediate!
+* Not sure about the sign of this!!!!!
+               INOINT = 0
+               IF(NALPHA.EQ.4) THEN
+                IJKL_ORIG(1) = IOCC_CA(1)
+                IJKL_ORIG(2) = IOCC_CA(2)
+                IJKL_ORIG(3) = IOCC_AA(1)
+                IJKL_ORIG(4) = IOCC_AA(2)
+               ELSE IF(NALPHA.EQ.0) THEN
+                IJKL_ORIG(1) = IOCC_CB(1)
+                IJKL_ORIG(2) = IOCC_CB(2)
+                IJKL_ORIG(3) = IOCC_AB(1)
+                IJKL_ORIG(4) = IOCC_AB(2)
+               ELSE IF(NALPHA.EQ.2) THEN
+                IJKL_ORIG(1) = IOCC_CA(1)
+                IJKL_ORIG(2) = IOCC_CB(1)
+                IJKL_ORIG(3) = IOCC_AA(1)
+                IJKL_ORIG(4) = IOCC_AB(1)
+               ELSE
+                WRITE(6,*) ' Another error by Lasse!!! '
+                STOP ' Remind Lasse to be a more careful programmer'
+               END IF
+               IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
+                IF(IJKL_ORIG(1).EQ.IJKL_ORIG(2).OR.
+     &             IJKL_ORIG(3).EQ.IJKL_ORIG(4)) THEN
+                  INOINT = 1
+                END IF
+               END IF
+               IF(INOINT.EQ.0) THEN
+                CALL GET_INT2(XOUT,INTEGRALS,
+     &                        IJKL_ORIG(1),IJKL_ORIG(4),
+     &                        IJKL_ORIG(2),IJKL_ORIG(3),
+     &                        NALPHA)
+               ELSE
+                XOUT = 0.0D0
+               END IF
+              ELSE IF(N.EQ.1) THEN
+* Only fetching NAPLHA EQ 2 and assuming NALPHA EQ 0 is the same
+               IOFF = NTOOB*(I_C - 1) + I_A !- 1 not pointing to work!
+               print*,'IOFF',IOFF
+               XOUT = ONEE(IOFF)
+              ELSE
+               WRITE(6,*) ' You should not be here! '
+               STOP ' Cannot add integrals and intermediates '
+              END IF
+              IF(NTEST.GE.100) THEN
+               WRITE(6,*) ' Adding amplitude ',T(IT),
+     &                    ' to integral ',XOUT
+              END IF
+* Now add integral and amplitude
+               T(IT) = T(IT) + XOUT
+             END DO
+*            ^ End of loop over alpha creation strings
+            END DO
+*           ^ End of loop over beta creation strings
+           END DO
+*          ^ End of loop over alpha annihilation
+          END DO
+*         ^ End of loop over beta annihilation
+  777    CONTINUE
+         END DO
+        END DO
+       END DO
+*      ^ End of loop over symmetry blocks
+      END DO
+*     ^ End of loop over over types of excitations
+*
+      RETURN
+      END

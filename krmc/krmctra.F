@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1014,7 +1014,8 @@ C
       CALL RTKTIME(.TRUE.,3)
 C
       IF ( OPT_CIPROGRAM .EQ. 'GASCIP' .OR.
-     &     OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+     &     OPT_CIPROGRAM .EQ. 'LUCIAREL' .OR.
+     &     OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
 C
 C        Two electron integrals
 C        ----------------------

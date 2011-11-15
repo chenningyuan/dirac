@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1479,7 +1479,6 @@ C
 C        ALPHA and GAMMA5:
 C
     2    PCOMB = '0++0'
-Chj      PCOMB = 'FTTF'
          GO TO 100
 C
 C        "BETA" and "BETA SIGMA":

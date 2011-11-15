@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -91,7 +91,9 @@ C     set "I/O node master" + "shared memory node master"
 
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
+!     write(lupri,*) 'bla - go in here???? '
 #if defined VAR_IFORT && !defined INT_STAR8
+!     write(lupri,*) 'bla - go in here, yes!!!! '
       if(myproc .eq. master)then
         luxxx = lupri
       else
@@ -306,6 +308,7 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
 #endif
 #include "parluci.h"
       integer global_scratch_disk
+!     integer(8) :: kbla_blubb
 C
 C*******************************************
       CALL QENTER('KRMC_LUCI2')
@@ -330,7 +333,12 @@ C
       KADD = MXPWRD
 C     initialize memory
       call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+!     write(luwrt,*) 'K_OFFSET ==> ',K_OFFSET
 C
+!     IDUM = 0
+!     CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
+!     call memmar(kbla_blubb,4,'ADDS  ',1,'BLABLU')
+!     call izero(work(kbla_blubb),4)
 C     ... no memchecks as default
       IMEMCK = 0
       NTEST = 0
@@ -369,6 +377,7 @@ C
       CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
 C
       CALL MEMMAR(KPROCLIST,  NMPROC,'ADDS  ',1,'IHOSTL')
+!     call RMEMCHK_opt('bla bla check 1     ')
       CALL MEMMAR(KGROUPLIST, NMPROC,'ADDS  ',1,'IHOST2')
       CALL MEMMAR(KPROCLENGTH,NMPROC,'ADDS  ',1,'INAMEL')
       CALL MEMMAR(KPROCLIST2, NMPROC,'ADDS  ',1,'IHOST3')
@@ -993,12 +1002,9 @@ C         Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
 CSK       WRITE(LUPRI,'(//A/)') 'CMO input '
 CSK       CALL WRTMATMN(CMO,1,NCMOTQ,1,NCMOTQ,LUPRI)
-          CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+          CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
@@ -1038,7 +1044,7 @@ CSK     IPROPT = 0
 C
 C       WORK(KFCACM) now contains all 1-e integrals
 C
-        CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+        CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C       read two-electron integrals in luciarel/transform_r.F 
 C       (subroutine itrctl)
@@ -1178,12 +1184,9 @@ C
 C
 C         Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
-          CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+          CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
@@ -1215,7 +1218,7 @@ C
 C
 C       WORK(KFCACM) now contains all 1-e integrals
 C
-        CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+        CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C       read two-electron integrals in luciarel/transform_r.F 
 C       (subroutine itrctl)
@@ -1356,12 +1359,9 @@ C
 C
 C       Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
-        CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+        CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
       END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
       IF (IPROPT.GE.1) THEN
         WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
@@ -1395,7 +1395,7 @@ C
         END IF
       END IF
 C
-      CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+      CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)

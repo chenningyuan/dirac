@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -41,7 +41,8 @@ module interface_functional_read
    public set_hf_exchange_factor
  
    real(8), public :: hf_exchange_factor
- 
+   logical, public :: pure_hf_run
+   logical, save   :: already_checked = .true.
    private
 
 contains
@@ -117,7 +118,7 @@ contains
       integer                    :: u
 !     --------------------------------------------------------------------------
       
-      write(*, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
+      write(*, '(a)') '* Using the automatic differentiation xc functional:'
       write(*, '(a)') '   (weight: functional)'
 
       hfx_out  = 0.0d0
@@ -207,6 +208,7 @@ contains
       
         w = get_weight(word_array(i), 'pbe')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbe'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
@@ -265,11 +267,13 @@ contains
       
         w = get_weight(word_array(i), 'pbex')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbex'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
         end if
       
         w = get_weight(word_array(i), 'pbec')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbec'
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
       
@@ -330,20 +334,26 @@ contains
  
       write(*, '(a)')
 
+      if (set_hf_exchange_factor) then
+         hf_exchange_factor = hfx_out
+      end if
+
 !     check that not all weights are zero
-!     this happens when no functional is recognized
-!     in this case quit the program
       h = 0.0d0
       do i = 1, size(f%w)
          h = h + dabs(f%w(i)) 
       end do
+      if (.not.already_checked) pure_hf_run = .false.
       if (h < tiny(0.0d0)) then
-         print *, 'XCFun functional not recognized from input'
-         stop
-      end if
-
-      if (set_hf_exchange_factor) then
-         hf_exchange_factor = hfx_out
+         if (hf_exchange_factor == 1.0d0) then
+             pure_hf_run = .true.
+             already_checked = .true.
+         else
+!            no functional is recognized
+!            in this case quit the program
+             print *, 'XCFun functional not recognized from input'
+             stop
+         end if
       end if
    
    end subroutine
@@ -419,7 +429,7 @@ contains
 !   thresholds
 
     write(*, '(a)')          ' * DFT thresholds:'
-    write(*, '(a, e12.5)')   '   - small density threshold = ', dft_cfg_small_density_threshold
+    write(*, '(a, e12.5)')   '   - small density threshold = ', dft_cfg_tinydens
 
 !   asymptotic correction
 

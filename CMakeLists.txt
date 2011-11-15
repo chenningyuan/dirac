@@ -8,12 +8,15 @@ set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
-
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     )
+
+include(CheckFortranSourceCompiles)
+
+# for windows need substitute (type)
+set(cat_program cat)
 
 # set build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -51,54 +54,34 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-include(Definitions)
+option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
+option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
+option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
+option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
+option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
+option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
+option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
+option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
+option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
+option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
+option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
+option(ENABLE_UTILITIES       "Enable utitilites"                                         OFF)
+option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
+option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
+option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
-option(ENABLE_INTERNAL_MATH  "Enable internal math library"       OFF)
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"             OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"         OFF)
-option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard" ON)
-option(ENABLE_OMP            "Enable OpenMP parallelization"      OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"       OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int module"              OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"               ON)
-option(ENABLE_PROFILING      "Enable profiling"                   OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"               OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"    OFF)
-option(ENABLE_UTILITIES      "Enable utitilites"                  OFF)
-
-# set cdash buildname
-set(BUILDNAME
-    "BUILDNAME-not-set"
-    CACHE STRING
-    "Name of build on the dashboard"
-    )
-
-# set ctest's own timeout
-#miro: this is not properly working as no stdout/err is displayed on CDashboard!
-set(DART_TESTING_TIMEOUT
-    "1200"
-    CACHE STRING
-    "Set default timeout in seconds for every single test"
-    )
-
-#
-# set additional runtest flags - number of CPU and runtest timeout
-#
-# Miro: for CTest you can not have more than one $-variable in the add_test $-parameter !
-#
-if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
-    set(RUNTEST_FLAG_NR_PROC "--mpi=${RUNTEST_NR_PROC}")
-    message("-- runtest extra flag active, RUNTEST_FLAG_NR_PROC=\"${RUNTEST_FLAG_NR_PROC}\" ")
-endif()
-if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
-    set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
-    message("-- runtest extra flag active, RUNTEST_FLAG_TIMEOUT=\"${RUNTEST_FLAG_TIMEOUT}\" ")
+if(ENABLE_STATIC_LINKING)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+    if (ENABLE_MPI OR ENABLE_OMP)
+        message(FATAL_ERROR "Static linking only works in sequential mode")
+    endif()
 endif()
 
-include(Tests)
-include(CTest)
-enable_testing()
+option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
+option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
+mark_as_advanced(FORCE_DIRAC_BLAS)
+mark_as_advanced(FORCE_DIRAC_LAPACK)
 
 # set work memory
 set(WORK_MEM_WORDS
@@ -108,16 +91,22 @@ set(WORK_MEM_WORDS
     )
 add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
+
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
+
+include(Testing)
+include(Definitions)
 include(Archs)
 include(FCompilers)
 include(CCompilers)
+include(Parallel)
 
 set(LIBS)
-
-option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
-option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
-mark_as_advanced(FORCE_DIRAC_BLAS)
-mark_as_advanced(FORCE_DIRAC_LAPACK)
 
 include(Math)
 if(NOT BLAS_FOUND OR FORCE_DIRAC_BLAS)
@@ -133,37 +122,6 @@ endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
-endif()
-
-if(ENABLE_MPI)
-    find_package(MPI)
-    if(MPI_FOUND)
-        add_definitions(-DVAR_MPI)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
-        include_directories(${MPI_INCLUDE_PATH})
-
-        if(ENABLE_MPI2_DETECTION)
-            # test whether MPI-2 is available
-            include(MPI-2-test)
-            if(MPI_2_SUPPORT_OK)
-                add_definitions(-DVAR_MPI2)
-                message("-- MPI-2 support found, define -DVAR_MPI2")
-            else()
-                message("-- no MPI-2 support found, will try with MPI-1")
-            endif()
-        else()
-            message("-- MPI-2 support disabled, will try with MPI-1")
-        endif()
-    endif()
-endif()
-
-if(ENABLE_OMP)
-    find_package(OpenMP)
-    if(OpenMP_FOUND)
-        add_definitions(-DVAR_OMP)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_COMPILE_FLAGS}")
-        include_directories(${OpenMP_INCLUDE_PATH})
-    endif()
 endif()
 
 if(ENABLE_CUDA)
@@ -237,8 +195,6 @@ set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
-    gp/compilation_info.F90
-    gp/git_revision_info.F90
     )
 
 add_library(
@@ -247,6 +203,17 @@ add_library(
     ${GENERATED_FILES} 
     )
 
+# get size of static allocations in dirac.x
+add_custom_target(
+    info
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    )
+
+# get size of static allocations in dirac.x and print sorted list of object 
+add_custom_target(
+    info_ext
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
+)
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
@@ -277,6 +244,9 @@ foreach(
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
         SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
+    endif()
     target_link_libraries(
         ${EXECUTABLE}
         dirac
@@ -284,25 +254,13 @@ foreach(
         )
 endforeach()
 
-include(Install)
-include(Release)
-
-if(VERBOSE_OUTPUT)
-    include(Report)
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
 endif()
 
+include(Install)
+include(Release)
+include(Report)
 include(Documentation)
-
-# get size of static allocations
-add_custom_target(
-    info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
-    )
-
-# custom commands on created dirac.x executable
-add_custom_command(
-    TARGET Nightly Experimental dirac.x 
-    if(VERBOSE_OUTPUT)
-        POST_BUILD COMMAND ../utils/diagn.py
-    endif()
-)

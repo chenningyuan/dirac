@@ -5,7 +5,7 @@
 *                                                                  *
 ********************************************************************
 *
-      SUBROUTINE FI_KRCC(T,FIMAT,ECC,IDOH2,ENVIRO,ISPINFREE)
+      SUBROUTINE FI_KRCC(T,FIMAT,ECC,IDOH2,ISPINFREE)
 *
 *. Construct inactive fockmatrix + core-core interaction energy.
 *. I.e. add contributions from all orbitals
@@ -28,12 +28,9 @@
       DIMENSION T(*),FIMAT(*)
 *
 #include "mxpdim.inc"
-C#include "wrkspc.inc"
 #include "orbinp.inc"
-#include "glbbas.inc"
 #include "lucinp.inc"
 #include "cgas.inc"
-#include "oper.inc"
 #include "strinp.inc"
 *
 *
@@ -42,13 +39,13 @@ C#include "wrkspc.inc"
         CALL FIH_KRCC(T,FIMAT,ECC,IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &               NGAS,NGSSH,IHPVGAS_AB,
      &               NTOOBS,NTOOB,IDOH2,
-     &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
      &               NTOOB,NELEC)
       ELSE
 Commented out by lasse 2010
 C       CALL FIHA_KRCC(T,FIMAT,ECC,IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
 C    &                NTOOBS,NTOOB,IDOH2,
-C    &                ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+C    &                ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
 C    &                NTOOB)
       END IF
 *
@@ -59,7 +56,7 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
       SUBROUTINE FIH_KRCC(T,FI,ECC,IOBSM,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &                   NGAS,NGSSH,IHPVGAS_AB,
      &                   LOBSM,NORBT,IDOH2,
-     &                   ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &                   ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
      &                   NTOOB,NELEC)
 *
 * Obtain core energy and alpha and beta part of inactive Fock-matrix
@@ -121,22 +118,14 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 *
 #include "implicit.inc"
 *. General input
-C#include "wrkspc.inc"
 #include "mxpdim.inc"
-#include "ipoist8.inc"
 #include "ctcc.inc"
-C#include "glbbas.inc"
 #include "gasstr.inc"
-C#include "strinp.inc"
-C#include "cgas.inc"
-C#include "orbinp.inc"
-C#include "lucinp.inc"
 *. Standard 1+2 electron integrals
       DIMENSION T(*)
 *. Output
       DIMENSION FI(*)
 *. Input
-      CHARACTER*6 ENVIRO
       INTEGER IOBSM(*),LOBSM(*)
       INTEGER NGSSH(MXPIRR,NGAS), NELEC(*)
       INTEGER ITPFSO(*), ITPFSO2(*), IPHGAS(*)
@@ -244,7 +233,6 @@ C              print*,'NGSSH,JSM,JGASS',NGSSH(JSM,JGASS),JSM,JGASS
         JGSOFF = 0
         ISMOFF = 0
         JSMOFF = 0
-C        IJ = 1 + N1DIAINT/2
         IJ = 1
         do IGS = 1,NGAS,1
 C          print*,'NGASOCC,IGS',NGASOCC(IGS),IGS
@@ -330,6 +318,7 @@ C
 C Add the integrals to inactive fock matrix
 C
                       FI(IPOS) = HALF * (XOUT + XOUT2) + FI(IPOS)
+C                     print*,'XOUT,XOUT2,IPOS',XOUT,XOUT2,IPOS
                       END DO
                     END DO
                   end do
@@ -353,7 +342,7 @@ C           ^ JGAS
 C         ^ NGASOCC
         end do
 C       ^ IGAS
-       NTEST = 00
+       NTEST = 100
        IF(NTEST.GE.100) THEN
        WRITE(6,*) ' Printing entire inactive Fock-matrix '
          DO I = 1, ISIDE
@@ -380,7 +369,6 @@ C                                                         Lasse
 C
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"

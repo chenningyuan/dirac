@@ -1271,18 +1271,7 @@ z         8.61184090 Debye        -6.77337478 Debye         1.83846612 Debye
        *******************************************************************
 
  Name of the outputfile:GRIDOUT
- Reading DFCOEF
-
-* REACMO: Coefficients read from file DFCOEF - Total energy: -75.1023615961488815
-* Heading :electric properties for frozen density embedding  Thu Nov 11 23:01:53 2010
- lugridout id is:           2
- Reading grid.
- Grid read from file.
- Number of gridpoints:       80896
- Calculating the density and its derivatives.
-  Integrated density adds up to    9.99919648248549  electrons. 
- In case this is not roughly equivalent to  the number of electrons 
- in the (active) system it is likely something is going wrong...
+  Exported (active) density integrates to    9.99919648248549  electrons. 
  Calculating the coulomb potential and its derivatives.
  Writing data to xml_file:
  GRIDOUT                                                     

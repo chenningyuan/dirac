@@ -9,7 +9,6 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/external/character_processing.F90
     ${PROJECT_SOURCE_DIR}/src/external/keyword.F90
     ${PROJECT_SOURCE_DIR}/src/external/quaternion_algebra.F90
-    ${PROJECT_SOURCE_DIR}/src/external/dirac_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/extra.F90
     ${PROJECT_SOURCE_DIR}/src/interface_ao.F90
     ${PROJECT_SOURCE_DIR}/src/interface_functional_read.F90
@@ -20,9 +19,41 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/xc_ac.F90
     ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90
     ${PROJECT_SOURCE_DIR}/src/xc_derv.F90
-    ${PROJECT_SOURCE_DIR}/src/xc_driver.F90
+    ${PROJECT_SOURCE_DIR}/src/xcint_main.F90
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_geometric.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_autogen.F90
+    ${PROJECT_SOURCE_DIR}/cfun/emb-functional.c
+    ${PROJECT_SOURCE_DIR}/cfun/fortran_io.F90
+    ${PROJECT_SOURCE_DIR}/cfun/fun-becke.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-cam.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-gga.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-gllb_hole.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-hjsx.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-kin_pw91k.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-kin_tf.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-kin_vw.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-kt.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-lb94.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-lbalpha.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-lyp.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-optx.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-p86c.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-pbec.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-pbex.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-pw86x.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-pw91c.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-pw91x.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-pz81.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-revpbex.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-rpbex.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-slater.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-srpbec.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-srvwn5.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-tester.c
+    ${PROJECT_SOURCE_DIR}/cfun/fun-vwn.c
+    ${PROJECT_SOURCE_DIR}/cfun/functionals.c
+    ${PROJECT_SOURCE_DIR}/cfun/general.c
     )

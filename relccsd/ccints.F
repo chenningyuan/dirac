@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -185,7 +185,6 @@ C
       CALL XCOPY (NV3,A0,0,VVVOOA,1)
       CALL XCOPY (NV4,A0,0,VVOVOA,1)
 C
-      call memchk ('after initialization',cc,1)
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) THEN
@@ -278,7 +277,6 @@ C
       CALL WAIO_SAVE(ITAPT+4)
       IMSTAT(1) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
-      call memchk ('after first sort',cc,1)
       WRITE(IW,*)
       WRITE(IW,*) 'Sorting of first 4 classes done.'
       CALL FLSHFO (IW)
@@ -545,13 +543,11 @@ C
       CALL WAIO_SAVE(ITAPT+6)
       IMSTAT(2) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
-      call memchk ('after second sort',cc,1)
 C
   600 WRITE (IW,1006)
 C
       CALL GETFM (INDEX,NSP,EPS,BUF1,BUF2,
      &            VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
-      call memchk ('after fock build',cc,1)
 C
 C     This is a restart point : save the files and update status.
 C
@@ -581,7 +577,6 @@ C     when we run with the MOLMF(3) hamiltonian
           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RDINTS')
           CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,
      &                        ORIG_TOTSCF,1)
-          CLOSE(LUCOEF,STATUS='KEEP')
         ENDIF
 #if defined VAR_MPI
         CALL MPI_BCAST(ORIG_TOTSCF,1,MPI_REAL8,MASTER,
@@ -596,14 +591,14 @@ C     when we run with the MOLMF(3) hamiltonian
       ETOT = ESCF
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
-     &/' File time :',T20,A8,/' # of integrals',I16)
+     &/' File time :',T20,A8,/' # of integrals',I20)
  1003 FORMAT (//' Nuclear repulsion + core energy :',T40,F25.15
      &/' Zero order electronic energy :',T40,F25.15 
      &/' First order electronic energy :',T40,F25.15 
      &/' Electronic energy :',T40,F25.15 
      &/' SCF energy :',T40,F25.15) 
  1004 FORMAT (/' Expanding and sorting integrals to unique types :'/
-     & (' Type ',A4,' :',I10,' integrals'))
+     & (' Type ',A4,' :',I16,' integrals'))
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
  1006 FORMAT (/' Finished sorting of integrals')
  1010 FORMAT (/' Skipping integral sorting step 1')

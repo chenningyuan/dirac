@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -110,8 +110,6 @@ module visual_cfg
    logical,      public :: visual_cfg_london_skip_kappa    = .false.
    logical,      public :: visual_cfg_london_skip_direct   = .false.
    logical,      public :: visual_cfg_london_skip_ro       = .false.
-   logical,      public :: visual_cfg_london_natural       = .true.
-   logical,      public :: visual_cfg_london_symmetric     = .false.
    logical,      public :: visual_cfg_london_none          = .false.
    character(1), public :: visual_cfg_london_component
 

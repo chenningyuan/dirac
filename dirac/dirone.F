@@ -1,5 +1,5 @@
-!========================dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -36,8 +36,10 @@ C
 C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
-      use fde_mod
-      use FDE_ImportPotentials
+! checking
+       use fde_types
+       use fde_mod
+!!     use FDE_ImportPotentials
 
 #include "implicit.h"
 #include "priunit.h"
@@ -46,6 +48,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
       LOGICAL TEST
+      type(fde_import) :: itmp
 C
 #include "dcbgen.h"
 #include "dcbprl.h"
@@ -101,7 +104,13 @@ C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
-         if (import_vemb) then
+         IF (NOSMLV) THEN
+C          ... zero SS integrals
+           CALL NOSSNUCATT
+           COMB(4:4) = 'F'
+         END IF
+        call fde_get_import_info(itmp)
+        if (itmp%im_vemb) then
             CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
          endif
 C
@@ -329,13 +338,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
           CLSCMB(I)(4:4) = '0'
           ILBL = IPRPLBL(1,I)
           PDOINT(ILBL)(4:4) = '0'
+        ELSE IF (CLSINT(I).EQ.'FDEVEMB') THEN
+          CLSCMB(I)(4:4) = '0'
+          ILBL = IPRPLBL(1,I)
+          PDOINT(ILBL)(4:4) = '0'
         ENDIF
       ENDDO
 
       IF (MOLFLD_FOUND) THEN
         WRITE(LUPRI,'(2X,A,A4)')
-     &  'No SS-nuclear attraction integrals'// 
-     &  '(MOLFLD), adapted PDOINT=',PDOINT(ILBL)
+     & 'The SS-block of the potential energy matrix and (if present)'//
+     & ' embedding potential are neglected (Levy-Leblond Hamiltonian)'
       ELSE
         WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
      &   ' found in operator list!'
@@ -836,6 +849,7 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
+      use fde_types
       use fde_mod
 
 #include "implicit.h"
@@ -851,6 +865,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
+      type(fde_import) :: itmp
       LOGICAL FIRST(NZ),TOBE
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
@@ -880,14 +895,16 @@ CMI     ... dcbham.h is needed
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
-C
+
 C     Embedding potential integrals, if FDE is requested
 C     ==================================================
 C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-      IF (dirac_cfg_fde.and.import_vemb) THEN
+
+      call fde_get_import_info(itmp)
+      if (dirac_cfg_fde .and. itmp%im_vemb) then
          IOP = IPVEMB0
          CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
      &          OP1INT,FIRST,IPRHAM)
@@ -4140,7 +4157,7 @@ CMI .. mover before diagonalization which can destroy SMAT
         CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_text('% Entering LOWGEN')
       call matexport_double2('S',SMAT,LDM,NS,NS)
 #endif
@@ -4215,7 +4232,7 @@ C
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_double2('V',VMAT,LDM,NS,NV)
       call matexport_text('% Leaving LOWGEN')
 #endif
@@ -4484,15 +4501,15 @@ c      ... Get charges and exponents for the electrons in this group
          ENDDO
 c
          IF(IPRINT .GE. 1) THEN
-            IF (NSLOOP .GT. 1) THEN
-               WRITE(LUPRI,'(14X,A,I2,A,I2)')
-     &         '-- Subshell n =',N,', l =',L
-            ELSE IF (N .LE. 1) THEN
+            IF (N .LE. 1) THEN
                WRITE(LUPRI,'(14X,A,I2,A)')
      &         '-- Subshell n =',N,', l = 0'
-            ELSE
+            ELSE IF (L .EQ. 1) THEN
                WRITE(LUPRI,'(14X,A,I2,A)')
      &         '-- Subshell n =',N,', l = 0,1'
+            ELSE
+               WRITE(LUPRI,'(14X,A,I2,A,I2)')
+     &         '-- Subshell n =',N,', l =',L
             END IF
             DO I = 1,NUCIND
                IF (WORK(KCHRG-1+I) .NE. D0)
@@ -4524,9 +4541,9 @@ c
 c
          END IF ! if (ztest .ne. d0)
 c  ... end loop within shells
-         ENDDO
+         ENDDO ! DO L = 1,NSLOOP
 c  ... end loop over shells
-      ENDDO
+      ENDDO ! DO N = 0,NSHELL
       IF (IPRINT .GE. 1) WRITE(LUPRI,'(14X,A/)')
      &      '-----------------------------------------'
 C
@@ -4586,7 +4603,7 @@ C*****************************************************************************
      &          D6 = 6.0D0, D8 = 8.0D0, D10=10.0D0, D14=14.0D0,
      &          D18=18.0D0)
       LOGICAL MAXSHELL
-      DIMENSION STO1G(7), SHELE(NNUC,7)
+      DIMENSION STO1G(7), XN_EFF(7), SHELE(NNUC,7)
       SAVE STO1G
 C     STO1G(n) is the exponent of the 1s-Gaussian that
 C     best fits the ns Slater-type atomic orbitals of exponent 1.
@@ -4594,8 +4611,11 @@ C     (Robert F. Stewart, JCP 52(1),431 (Jan 1970))
 C     This article provides exponent up to the n=5 shell. The exponents
 C     for the last two shells have been generated from a fit :
 C     (y = 0.28196 x^-1.5532)
-      DATA STO1G /0.2709,0.1012,0.05297,0.03265,0.02217,0.01744,
-     &            0.01373/
+      DATA STO1G /0.2709D0, 0.1012D0, 0.05297D0,0.03265D0,0.02217D0,
+     &            0.01744D0,0.01373D0/
+      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.0D0, 4.2D0, 4.4D0/
+C     ... Slater's n_eff according to wikipedia for n=1:6,
+C         I extrapolated to n=7 /hjaaj Sep 2011
 C
 C     Table of s,p,d,f orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
@@ -4670,20 +4690,19 @@ c
      &   'in *SCF'
          CALL QUIT('BNCORR : Unsupported element!')
       ENDIF
+
+      ZEFF = D0
+      GNU  = D0
+
       IF (MAXSHELL) THEN
 c    ... just find maximum number of shells we need to run over 
 c        and return number in L-variable (used in BNCORR)
          NST = NOCC((NINT(Z)-1)*4 + 1)
          L = NST/2
          IF(MOD(NST,2).NE.0) L = L + 1
-!radovan:  now we jump to 10 with zeff undefined!
-!          i set it to zero not knowing what will happen
-!          but better zero than undefined
-           zeff = 0.0d0
          GOTO 10
       ENDIF
 C
-      ZEFF = D0
 c     ... If this is a ghost-atom (f.ex for Counter-Poise 
 c         correction) we return (charge is zero in BNCORR)
       IF (Z .EQ. D0) GOTO 10
@@ -4722,7 +4741,7 @@ c
       NS = NST - (N-1)*2
 c
       IF (NS .LE. 0) THEN
-         NS = D0
+         NS = 0
       ELSEIF (NS.GE.2) THEN
          NS = 2
       ENDIF
@@ -4777,24 +4796,26 @@ c        [nsnp]
          DO I = 1,N-2
             EMN = EMN + SHELE(INUC,I)
          ENDDO
-         SEXP = (Z - ((ZEFF-1.0)*0.35 + SHELE(INUC,N-1)*0.85 + EMN))/N
+         SEXP = (Z - ((ZEFF-1.0)*0.35D0 + SHELE(INUC,N-1)*0.85D0 + EMN))
+         SEXP = SEXP / XN_EFF(N)
       ELSE
 c        [nd],[nf]
          EMN = D0
          DO I = 1,N-1
             EMN = EMN + SHELE(INUC,I)
          ENDDO
-         SEXP = (Z - ((ZEFF-1.0)*0.35 + EMN))/N
+         SEXP = (Z - ((ZEFF-1.0D0)*0.35D0 + EMN)) / XN_EFF(N)
       ENDIF
 c
-20    CONTINUE
+   20 CONTINUE
 c     ... Convert STO to GTO using 1 Gaussian (STO1G)
       GNU = D2*SEXP*SEXP*STO1G(N)
+!     write (lupri,*) 'BNCOR1: N,L,STO1G(N),SEXP,GNU',
+!    &                         N,L,STO1G(N),SEXP,GNU
 C     ... Make sure we dont get more delocalized than the first 
 C         1s electron.
-C      GNU = MAX(GNU,0.50D0)
-10    CONTINUE
-      IF (ZEFF .EQ. D0) GNU  = D0
+C     GNU = MAX(GNU,0.50D0)
+   10 CONTINUE
       CALL QEXIT ('BNCOR1')
       RETURN
       END
@@ -5016,6 +5037,8 @@ C
      &          IBVEC(NVECS),IBREF(NVREF)
       DIMENSION P(4)
 C
+CTROND
+      WRITE(6,*) 'TEST, IPRINT = ', IPRINT
       IF(IPRINT.GE.7) THEN
          CALL HEADER('PRJORT: MO transformation matrix on input',-1)
          CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)
@@ -5035,7 +5058,7 @@ C     ===================================
 C
       JTOP = IREF+NREF-1
       DO JREF = IREF,JTOP
-        IF(IPRINT.GE.2) THEN
+        IF(IPRINT.GE.3) THEN
           CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
      &           'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
      &           'N',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1)
@@ -7151,3 +7174,4 @@ C
 C
       RETURN
       END
+! -- end of dirone.F --

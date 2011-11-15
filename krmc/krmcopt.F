@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : krmcopt.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
@@ -48,9 +49,10 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
+!dcbgen.h needed for DOLVC for LVCORR
 #include "dcbham.h"
-!needed for LVCORR
 #include "frame.h"
+!frame.h needed for CORRLV for LVCORR
 C
       LOGICAL EX
       INTEGER RENAME
@@ -87,7 +89,7 @@ C
 C        Delete DFFCK2 if existing, because we will change CMO here ...
 C
          LUBUF = 1
-         INQUIRE(FILE='DFFCK2',EXIST=EX)   
+         INQUIRE(FILE='DFFCK2',EXIST=EX)
          IF(EX) THEN
             CALL OPNFIL(LUBUF,'DFFCK2','OLD','PSIOPT')
             WRITE(LUPRI,'(/A)') '* PSIOPT-QCDHF: '//
@@ -110,18 +112,18 @@ C
       IF (THQKVA .LE. D0) THQKVA = 8.0D00
 C     ... default quadratic conv. factor for MCSCF
 
-!     set logical flag on common block in dcbopt.h for spinfree MCSCF    
+!     set logical flag on common block in dcbopt.h for spinfree MCSCF
 #ifdef MOD_MCSCF_spinfree
 !     if(spinfr.or.levyle)then
       if(spinfr)then
         spinfr_krmc = .true.
       else if(levyle)then
-!       fixme: already the initial CI using Levy-Leblond yields 
+!       fixme: already the initial CI using Levy-Leblond yields
 !              wrong results compared to Dalton. S. Knecht - Aug 2010
         write(lupri,*) ' *** error in KRMCSCF: MCSCF with
      &            Levy-Leblond Hamiltonian is not working.***'
-        call quit('*** error in KRMCSCF: MCSCF with 
-     &            Levy-Leblond Hamiltonian is not working.***')
+        call quit('*** error in KRMCSCF: MCSCF with '//
+     &            'Levy-Leblond Hamiltonian is not working.***')
       else
         spinfr_krmc = .false.
       end if
@@ -172,7 +174,9 @@ C
         call lvcorr(work(klvc),work(kfree),lfree,ipropt)
         call memrel('lvcorr',work,1,kfree_save,kfree,lfree)
 !       set lvcorr value (otherwise it was initialized to 0.0d0)
-        lvcorr_mc = corrlv
+        E_lvcorr_mc = corrlv
+      else
+        E_lvcorr_mc = 0.0D0
       end if
 C
 C     ***************************************************
@@ -180,8 +184,8 @@ C     *** Memory allocation *****************************
 C     ***************************************************
 C
 C
-C hjaaj + sk 04-jul-07: new memory allocation scheme when calling 
-C                       KR-MCSCF with .CIONLY .or. 
+C hjaaj + sk 04-jul-07: new memory allocation scheme when calling
+C                       KR-MCSCF with .CIONLY .or.
 C                                     MOPT_MXMACRO .lt. 0
 C
       CALL MEMGET('REAL',KCMO  ,NCMOTQ        ,WORK,KFREE,LFREE)
@@ -523,7 +527,7 @@ C
                else if(opt_chckjz)then
                  call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
                end if
-              
+
             END IF
 C
 C           *** Now do the transformation
@@ -562,16 +566,16 @@ C
          CALL RGRDINF(GCI,GOEE,GOEP)
 C
 C
-         EMCSCF = POTNUC + EMY + EACTIV + LVCORR_MC
+         EMCSCF = POTNUC + EMY + EACTIV + E_LVCORR_MC
 C
-         if(dabs(lvcorr_mc).gt.0.0d0)then
-           WRITE(LUPRI,9005) POTNUC,LVCORR_MC,EMY,EACTIV,EMCSCF
+         if(dabs(E_lvcorr_mc).gt.0.0d0)then
+           WRITE(LUPRI,9005) POTNUC,E_LVCORR_MC,EMY,EACTIV,EMCSCF
  9005      FORMAT(/' Nuclear repulsion            : ',F25.15,/,
      &             ' LVCORR correction            : ',F25.15,/,
      &             ' Inactive energy              : ',F25.15,/,
      &             ' Active energy                : ',F25.15,/,
      &             ' Total KR-MCSCF energy        : ',F25.15)
-         else 
+         else
            WRITE(LUPRI,9006) POTNUC,EMY,EACTIV,EMCSCF
  9006      FORMAT(/' Nuclear repulsion            : ',F25.15,/,
      &             ' Inactive energy              : ',F25.15,/,
@@ -593,7 +597,7 @@ C
               CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &                    .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
             END IF
@@ -752,6 +756,18 @@ C     ***************************************************
 C     *** We have converged *****************************
 C     ***************************************************
 C
+C     calculate 1-particle density to be exported on file - default
+      if(.not.no1pdens_save)then
+        WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
+     &  ' matrix calculated for the converged MCSCF wave function'//
+     &  ' to file.'
+        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+        CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &             .false.,.false.,.true.,IPRNO,WORK,KFREE,LFREE)
+        CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
+      end if
+C
 C
  3000 CONTINUE
       CALL GETTIM(CPUTOT2,WALLTOT2)
@@ -797,7 +813,7 @@ C        FV      - the active Fock matrix
 C        FQ      - the Q Fock matrix
 C
 C
-C     Note: 
+C     Note:
 C        default: COMPROT == .FALSE.
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
@@ -1002,10 +1018,10 @@ C     *** Write matrices to file - part 2 ***
 C     ***************************************
 C
 !     --------------------  start of new part 1 ------------------
-!      SK - Jan 2010: matrices are saved on file above 
-!      because we might need them in the mj-blocking of the 
+!      SK - Jan 2010: matrices are saved on file above
+!      because we might need them in the mj-blocking of the
 !      orbital rotations.
-!                    
+!
 !C     DV & PV
 !C     -------
 !C
@@ -1127,7 +1143,7 @@ C
          IF ( OPT_CIPROGRAM .EQ. 'GASCIP' ) THEN
 C        Density matrices generated by KRMC GASCIP
 C           (this routine always calculates DVMOLF)
-            CALL GASCIP_RMAKDM(NZCONF,.true.,CALCPV,WORK(KZCONF),
+            CALL GASCIP_RMAKDM(.true.,CALCPV,NZCONF,WORK(KZCONF),
      &           CREF,CREF,WORK(KDVMOLF),WORK(KPVMOLF),IPROPT)
 C
          ELSE IF (OPT_CIPROGRAM.eq.'LUCIAREL') then
@@ -1172,7 +1188,7 @@ C
 C
 C        Check trace of DV
 C
-C        be a bit more slack (?) when running NO occ. numbers 
+C        be a bit more slack (?) when running NO occ. numbers
 C        with LUCIAREL
 C
       IF( OPT_CIPROGRAM.eq. 'LUCIAREL' .and. NATOLCR ) THEN
@@ -1425,7 +1441,7 @@ C
 C
 C     Manu: if MCSCF-srDFT then lr coulomb+exchange integrals
 C           will be calculated (this will be specified in twofck
-C           with dirac_cfg_srint=.FALSE.)  
+C           with dirac_cfg_srint=.FALSE.)
 C
       CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &            WORK(KFAO),WORK(KDAO),
@@ -1435,11 +1451,11 @@ CCCCCCCCCCCCCCCCC
 C     Manu: some old comments based on DALTON implementation ...
 C     idea: call twofck twice:
 C                             - coulomb{^lr} + exchange^{lr}
-C                             - coulomb^{sr} 
+C                             - coulomb^{sr}
 C     EJKVSR = tr(DAO * J^{sr} * DVAO) see DALTON for more info)
 C     now call xcfun... with the (inactive+active)DAO to obtain V_{xc}^{sr}
-C     and E_{xc}^{sr} 
-C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) - 1/2 tr(V_{xc}^{sr} * DCAO) 
+C     and E_{xc}^{sr}
+C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) - 1/2 tr(V_{xc}^{sr} * DCAO)
 CCCCCCCCCCCCCCCCC
 C
 C     ***************************************************
@@ -1463,13 +1479,13 @@ C
 C        Add 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
-C                1/2 *  tr(DC * G * DC) where G = J -K ! Note that FCAO does not contain h1 yet ... 
+C                1/2 *  tr(DC * G * DC) where G = J -K ! Note that FCAO does not contain h1 yet ...
          EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
          EMCMY = EMCMY1E + EMCMY2E
 C
 C        Note that for MCSCF-srDFT, EMCMY is the purely long-range
 C        inactive energy (the srHxc potential has NOT been added to the
-C        inactive Fock operator FCAO yet).  
+C        inactive Fock operator FCAO yet).
 C
 C
          IF (IPROPT .GE. 4) THEN
@@ -1494,18 +1510,18 @@ C
       END IF
 
 #ifdef DEBUG_SRDFT
-C 
+C
 C     If MCSCF-srDFT calculation: add the srH
 C     potential Jsr . D  to the inactive Fock operator
 C     FCAO, where D = DC + DV is the total density matrix.
 C     Note that, in addition, the srH correction
-C     1/2 tr (D * Jsr * D) - tr (DV * Jsr * D)   
+C     1/2 tr (D * Jsr * D) - tr (DV * Jsr * D)
 C     is added to the inactive energy. The second term relates
 C     to the active energy contribution tr(FC*DV) which will be
 C     calculated later on with the MCSCF-srDFT inactive Fock operator
 C     that contains Jsr * D.
 C
-C     call addsrh ... 
+C     call addsrh ...
 C
 C
 C     If MCSCF-srDFT calculation: add the srxc
@@ -1525,8 +1541,8 @@ C     that contains V^{sr}_xc[D].
      &                work(kdcao),
      &                work(kdvao),
      &                emcmy) ! inactive energy
-      end if 
-#endif 
+      end if
+#endif
 C
 
 
@@ -1606,7 +1622,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetfc */
-      SUBROUTINE RGETFC(TOFILE,CMO,FC,ECORE,WORK,LWORK)
+      SUBROUTINE rGETFC(TOFILE,CMO,FC,ECORE,WORK,LWORK)
 C***********************************************************************
 C
 C     Construct inactive Fock matrices
@@ -1645,7 +1661,7 @@ C
 C
 #include "memint.h"
 C
-      CALL QENTER('RGETFC')
+      CALL QENTER('rGETFC')
 C
 C
 C     ***************************************************
@@ -1662,15 +1678,11 @@ C
          CALL MEMGET('REAL',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
 C
          NFMAT = 1
-C
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+
+         call SetTaskDistribFlags((/.TRUE., .TRUE., .TRUE., .TRUE. /))
          call SetIntTaskArrayDimension(NPOS,PARCAL)
-         if (NPOS.GT.0) THEN
-            CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-         else
-            KPOS = KFREE
-         endif
-C
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+
 C        ***************************************************
 C        *** Get one-electron density matrices *************
 C        ***************************************************
@@ -1698,7 +1710,8 @@ C
 C        Calculate 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
-         EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
+         EMCMY2E =            DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
+!same as EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
          IF (IPROPT .GE. 4)
      &        WRITE(LUPRI,9000) 2,EMCMY2E
          ECORE = ECORE + EMCMY2E
@@ -1713,12 +1726,14 @@ C
          ECORE = D0
       END IF
 C
-      ECORE = ECORE + POTNUC
-      ECORE_LR = 0.0D0
+C     add the LVCORR energy correction to the ECORE energy
+C     (will be zero if DOLVC .false.) /Sep 2011 hjaaj
+      ECORE    = ECORE + POTNUC + E_LVCORR_MC
       ECORE_LR = ECORE
       IF (IPROPT .GE. 4) THEN
           WRITE(LUPRI,9001) POTNUC
-          WRITE(LUPRI,9002) ECORE
+          IF (E_LVCORR_MC .ne. 0.0D0) WRITE(LUPRI,9002) E_LVCORR_MC
+          WRITE(LUPRI,9004) ECORE
       END IF
 C
       IF ( IPROPT .GE. 10 ) THEN
@@ -1728,7 +1743,8 @@ C
       END IF
  9000 FORMAT(/' (rGETFC)',I2,'-electron core energy: ',F25.15)
  9001 FORMAT(/' (rGETFC) Nuclear repulsion     : ',F25.15)
- 9002 FORMAT(/' (rGETFC) Total core energy     : ',F25.15)
+ 9002 FORMAT(/' (rGETFC) LVCORR correction     : ',F25.15)
+ 9004 FORMAT(/' (rGETFC) Total core energy     : ',F25.15)
  9006 FORMAT(/'  rGETFC: ',A,' fock matrix')
 C
 C     ***************************************************
@@ -1759,11 +1775,11 @@ C     Write to file KRMC FOCK
 C
       IF (TOFILE) CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
 C
-      CALL MEMREL('RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('rGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('RGETFC')
+      CALL QEXIT('rGETFC')
       RETURN
- 9011 FORMAT(/' RGETFC: ',A,' fock matrix, irrep ',I1)
+ 9011 FORMAT(/' rGETFC: ',A,' fock matrix, irrep ',I1)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirh1 */
@@ -1864,9 +1880,6 @@ C
 #include "dcbbos.h"
 #include "dcbnrt.h"
 #include "dcbidx.h"
-C.s/sya,2006.02.07 - SK - 30-11-2009
-#include "dcbgos2.h"
-C.q
 C
       DIMENSION WORK(*), ILIST(MXCORB)
       LOGICAL   GASWF
@@ -1893,7 +1906,7 @@ C        For the current version of LUCIAREL we need the
 C        approximate boson symmetries for labelling of
 C        orbitals. Call ROPTST to retrieve the orbitals.
 C
-C        FIXME: the control parameter should be consistent
+C        TODO FIXME: the control parameter should be consistent
 C        with IOPTST.
 C
          CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
@@ -1970,12 +1983,12 @@ C
      &        -NPSH(I),NESH(I),I,NVEC)
          NDSH(I) = 0
 C
-C        changed to OPT_DELSTR which is more natural and also 
+C        changed to OPT_DELSTR which is more natural and also
 C        in accordance with SIRIUS-DALTON code - SK Aug 2008
 C
-C        we still want to freeze but doubly occupied core 
+C        we still want to freeze but doubly occupied core
 C        orbitals...
-C        FIXME: IMPLEMENT ME - SK Aug 2008
+C        TODO FIXME: IMPLEMENT ME - SK Aug 2008
 C
 csk      CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
 csk  &        -NPSH(I),NESH(I),I,NVEC)
@@ -2013,7 +2026,7 @@ C        G2V - general to secondary
       IORBDX = 0
       IVSHII = 0
       DO IFSYM = 1, NFSYM
-         DO I = 1, NPSH(IFSYM) 
+         DO I = 1, NPSH(IFSYM)
             IORBIX = IORBIX + 1
             IDXG2D(IORBIX) = -1
             IDXD2G(IORBIX) = -1
@@ -2081,15 +2094,15 @@ C    &     NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,
 C    &     WORK,KFREE,LFREE,IPRINT)
 C
 C
-C     MCSCF calculation in linear symmetry: remove potentially 
-C     symmetry-breaking orbital rotations - this will hopefully (!) 
-C     solve the problem in MCSCF calculations (observed for U2) 
+C     MCSCF calculation in linear symmetry: remove potentially
+C     symmetry-breaking orbital rotations - this will hopefully (!)
+C     solve the problem in MCSCF calculations (observed for U2)
 C     with active spaces that contain orbitals of different mj-values.
 C     Note that linear symmetry is not implemented (yet) for KR-CI
 C     and we run instead in C2h*. SK+HJAaJ/Jan 2010
 C
 C     similar arguments apply for spinfree MCSCF: remove rotations
-C     between orbitals of different boson symmetry. 
+C     between orbitals of different boson symmetry.
 C
       IF((OPT_CHCKJZ.AND.LINEAR).or. spinfr_krmc)THEN
 C
@@ -2197,7 +2210,7 @@ C     ----------------------------------
 C
       CALL LABKRMC(LUKRMC,'DCBORB  ')
       WRITE(LUKRMC)
-     &     NFSYM,
+     &     NFSYM,NGAS_DC,
      &     (NISH(I),I=1,NFSYM),
      &     (NASH(I),I=1,NFSYM),
      &     ((NGSH(I,J),I=1,NFSYM),J=1,NGAS_DC),
@@ -2215,8 +2228,8 @@ C     ------------------
 C
 C     Check that content on KRMCOLD = KRMCSCF.
 C
-C     FIXME: write me!
-C     FIXME: also write INTFLG
+C     TODO FIXME: write me!
+C     TODO FIXME: also write INTFLG
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RSET_KRMC')
@@ -2261,8 +2274,8 @@ C
 
       CALL QENTER('RSETCI')
       CALL GETTIM(CPU1,WLL1)
- 
- 
+
+
       if(linear.or.spinfr_krmc)then
 
 !       may be oversized if not all orbitals are active
@@ -2275,13 +2288,13 @@ C
           IF ( FNDLAB('MJVEC   ',LUKRM5) )THEN
             CALL IREAKRMC(LUKRM5,'MJVEC   ',orb_sym_vec,NORBT)
             if(IPROPT .ge. 2)then
-              WRITE(LUPRI,'(/A)') 
+              WRITE(LUPRI,'(/A)')
      &   ' (RSETCI) *** orbital mj-vector read from KRMCOLD ***'
             end if
          ELSE IF(FNDLAB('IBEIG   ',LUKRM5))THEN
             CALL IREAKRMC(LUKRM5,'IBEIG   ',orb_sym_vec,NORBT)
             if(IPROPT .ge. 2)then
-              WRITE(LUPRI,'(/A)') 
+              WRITE(LUPRI,'(/A)')
      &        ' (RSETCI) *** orbital boson irreps read'//
      &        ' from KRMCOLD ***'
             end if
@@ -2293,8 +2306,8 @@ C         read orbital symmetry values from DFCOEF
      &                        TOTERG,8)
           CLOSE(LUCOEF,STATUS='KEEP')
           if(IPROPT .ge. 2)then
-            WRITE(LUPRI,'(/A)') 
-     &      ' (RSETCI) *** orbital symmetry information read'// 
+            WRITE(LUPRI,'(/A)')
+     &      ' (RSETCI) *** orbital symmetry information read'//
      &      ' from DFCOEF ***'
           end if
         END IF
@@ -2311,7 +2324,7 @@ C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
         else
           orbital_info_label = 'IBEIG   '
         end if
- 
+
 !       save symmetry information
         call iwrtkrmc(lukrmc,orbital_info_label,orb_sym_vec,norbt)
 
@@ -2339,7 +2352,7 @@ C
 Chj   IF ( NASHT .GT. 1 ) THEN
 C
 C        A non-trivial number of CI rotations.
-C        hjaaj July 2002: also include NASHT .eq. 1 
+C        hjaaj July 2002: also include NASHT .eq. 1
 C                         (giving 1-2 determinants)
 C         for debug
 C
@@ -2352,23 +2365,25 @@ C           HJAaJ TODO: reconsider KALLOC ....
 C               .... size KIASTR ca. sqrt size KIDET ???
 C               .... problem if IRAT .eq. 1 -- more than LFREE used
 C                    (for IRAT .eq. 2 only ca. half of LFREE is used !)
-            KALLOC = MIN(1 000 000,LFREE/4)
-Chj         ... this GASCIP version is not suitable for very big CI spaces
-            CALL MEMGET('INTE',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIASTR,KALLOC  ,WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIBSTR,KALLOC  ,WORK,KFREE,LFREE)
+            KALLOC = MIN(10 000 000, (LFREE-10 000)/4 )
+                         !max 10,000,000 determinants in this version
+            CALL MEMGET('INT8',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
+            CALL MEMGET('INT8',KIASTR,  KALLOC,WORK,KFREE,LFREE)
+            CALL MEMGET('INT8',KIBSTR,  KALLOC,WORK,KFREE,LFREE)
+
             CALL GASCIP_GENDET(NZCONF,WORK(KIDET),WORK(KIASTR),
      &                        WORK(KIBSTR),KALLOC,OPT_UCIBOS,
      &                        IOPT_SYMMETRY,IPROPT)
             CALL MEMREL('RSETCI.GASCIP',WORK,1,KFRSAV,KFREE,LFREE)
 C
-C           note: the above release should make sure that KZCONF .eq. KIDET,
+C           Note: the above memory release should make sure that KZCONF .eq. KIDET,
 C           where determinant information is already saved inside GASCIP_GENDET,
 C           KZCONF is saved in dcbopt.h and is used in other GASCIP routines
 C           to obtain determinant information.
+C           (LZCONF = 2 * NCONF because "INTEGER*8 IDET(NZCONF,2)")
 C
-            LZCONF = 2*NZCONF
-            CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
+            LZCONF = 2 * NZCONF
+            CALL MEMGET('INT8',KZCONF,LZCONF,WORK,KFREE,LFREE)
             IF (KZCONF .NE. KIDET) CALL QUIT(
      &         'KZCONF .ne. KIDET -- indicates programming error!')
 C
@@ -2441,7 +2456,7 @@ C***********************************************************************
       use memory_allocator
 C***********************************************************************
 C
-C     driver routine for a reset orbital rotation parameters wrt 
+C     driver routine for a reset orbital rotation parameters wrt
 C
 C     - mj-values     --> linear spin-orbit calculation
 C     - ml-values     --> linear spinfree   calculation
@@ -2452,11 +2467,11 @@ C        NZXOPE  - total number of e-e orbital rotations
 C        NZHOPE  - total number of e-e orbital rotations (including
 C        redundant rotations)
 C        NZXOPP  - total number of e-p orbital rotations
-C       
+C
 C        JXOPE   - e-e orbital rotation vector
 C        JXOPP   - e-p orbital rotation vector
 C
-C        
+C
 C        strategies:
 C        IREDJOB == 9:  delete orbital rotation parameters in the setup.
 C        IREDJOB == 10: "purify" kappa matrix in each MACRo iteration.
@@ -2506,7 +2521,7 @@ C       get orbital symmetry values - either from a previous MCSCF or HF run
         IF(FNDLAB(orbital_info_label,LUKRMC))THEN
           CALL IREAKRMC(LUKRMC,orbital_info_label,orb_sym_vec,NORBT)
         ELSE
-          WRITE(LUPRI,'(/A)') 
+          WRITE(LUPRI,'(/A)')
      &    ' (RESETXOP_sym) - error: *** orbital symmetry information'//
      &    ' not found on file KRMCSCF. ***'
           call quit('*** error in RESETXOP_sym: orbital symmetry'//
@@ -2519,7 +2534,7 @@ C       debug print
           CALL IWRTMAMN(orb_sym_vec,1,NORBT,1,NORBT,LUPRI)
         END IF
 C
-        IF( IREDJOB .eq. 10 )THEN 
+        IF( IREDJOB .eq. 10 )THEN
 C
 C         reduce orbital parameters wrt mj-blocking
           CALL DELPAR(orb_sym_vec,JXOPE,NZXOPE,NZHOPE,JXOPP,NZXOPP,
@@ -2547,7 +2562,7 @@ C
 C         use modified kappa matrix
           CALL DZERO(UKAPPA,N2ORBXQ)
           CALL DCOPY(N2ORBXQ,ukappa2,1,UKAPPA,1)
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &    ' *** attention: using modified kappa... ***'
 C
           call dealloc(ukappa2)
@@ -2573,7 +2588,7 @@ C        FCAC    - Inactive Fock matrix with active-active indices
 C
 C     Written by J. Thyssen - Oct 29 1998
 C     Last revision :
-C                S. Knecht  - Aug 2008 
+C                S. Knecht  - Aug 2008
 C                simplified to use of MATGAT.
 C
 C***********************************************************************
@@ -2839,7 +2854,7 @@ csk   IPROPT      = 10
          CALL HEADER('Output from rREADMO:',-1)
          DO I = 1,NFSYM
             CALL HEADER('Coefficients for irrep '//CHAR(I+48),-1)
-            WRITE(LUPRI,*) ' printing offset ICMOQ(I)+1',ICMOQ(I)+1 
+            WRITE(LUPRI,*) ' printing offset ICMOQ(I)+1',ICMOQ(I)+1
             WRITE(LUPRI,*) ' NFBAS(I,0), NORB(I)',NFBAS(I,0),NORB(I)
             CALL PRQMAT(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -2866,8 +2881,8 @@ C
 C     Written by J. Thyssen - Nov 17 1998
 C
 C     Last revision :
-C                S. Knecht  - Jul 07 2008  start plain CI calculation 
-C                             from MCSCF/MP2 natural orbitals 
+C                S. Knecht  - Jul 07 2008  start plain CI calculation
+C                             from MCSCF/MP2 natural orbitals
 C                             (RCI_MCORB = .TRUE.)
 C                S. Knecht  - Aug 10 2010  read boson symmetry array
 C                             IBEIG (if spinfr_krmc == .true.)
@@ -2946,7 +2961,7 @@ C     For KRCI, LUKRM5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
 C         from an old MCSCF calculation, if either is available.
 C     (Aug 08, SK+HJAaJ)
 C
-      
+
       IF ( LUKRM5 .GT. 0 ) THEN
          INQUIRE( UNIT=LUKRM5, NAME=KRM5_NAME )
          LKRM5_NAME = 0
@@ -2962,9 +2977,34 @@ C     *******************************
 C
       IF (IROST .EQ. 0) GOTO 1100
 C
-C     (1.1) Read MP2 natural orbitals from label NEWNATOB on KRM5_NAME
+C     (1.1) Read MCSCF natural orbitals from label MCCINATO on KRM5_NAME
 C
       IF (LBIT(IROST,1)) THEN
+         IF ( LUKRM5 .GT. 0 ) THEN
+            JRDMO = -1
+            CALL RREADMO(CMO,JRDMO,4,LUKRM5)
+            IF (JRDMO .EQ. 0) THEN
+               IF (IPRINT .GE. 0) THEN
+                  WRITE(LUPRI,'(/2A)')
+     &                 ' (ROPTST)  Start orbitals read from' //
+     &                 ' label MCCINATO on file ',
+     &                   KRM5_NAME(1:LKRM5_NAME)
+               END IF
+C
+               IF( MOPT_MXMACRO .EQ. - 1 ) THEN
+                 WRITE(LUPRI,'(/A)')
+     &                ' (ROPTST)  Starting CI calculation' //
+     &                ' from MC/CI natural orbitals! '
+                 RCI_MCORB = .TRUE.
+               ENDIF
+               GO TO 1000
+            END IF
+         END IF
+      END IF
+C
+C     (1.2) Read MP2 natural orbitals from label NEWNATOB on KRM5_NAME
+C
+      IF (LBIT(IROST,2)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,3,LUKRM5)
@@ -2981,15 +3021,15 @@ C
      &                ' (ROPTST)  Starting CI calculation' //
      &                ' from MC orbitals! '
                  RCI_MCORB = .TRUE.
-               ENDIF 
+               ENDIF
                GO TO 1000
             END IF
          END IF
       END IF
 C
-C     (1.2) Read from label NEWORB on KRM5_NAME
+C     (1.3) Read from label NEWORB on KRM5_NAME
 C
-      IF (LBIT(IROST,2)) THEN
+      IF (LBIT(IROST,3)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,1,LUKRM5)
@@ -3035,9 +3075,9 @@ C
          END IF
       END IF
 C
-C     (1.3) Read from label OLDORB on KRM5_NAME
+C     (1.4) Read from label OLDORB on KRM5_NAME
 C
-      IF (LBIT(IROST,3)) THEN
+      IF (LBIT(IROST,4)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,2,LUKRM5)
@@ -3052,10 +3092,10 @@ C
          END IF
       END IF
 C
-C     (1.4) From previous DHF calculation.
+C     (1.5) From previous DHF calculation.
 C           Read orbitals from DFCOEF
 C
-      IF (LBIT(IROST,4)) THEN
+      IF (LBIT(IROST,5)) THEN
          INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
          IF ( EX ) THEN
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
@@ -3072,10 +3112,10 @@ C
          END IF
       END IF
 C
-C     (1.5) From a usual DHF start guess, i.e. bare nucleus guess.
-C           FIXME: to be implemented
+C     (1.6) From a usual DHF start guess, i.e. bare nucleus guess.
+C           TODO FIXME: to be implemented
 C
-      IF (LBIT(IROST,5)) THEN
+      IF (LBIT(IROST,6)) THEN
          CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
          IF (IPRINT .GE. 0) THEN
             WRITE(LUPRI,'(/A)')
@@ -3120,8 +3160,8 @@ C
          END DO
       END IF
 !
-!     intermediate step: 
-!     save additional required information (integer arrays) to file KRMCSCF 
+!     intermediate step:
+!     save additional required information (integer arrays) to file KRMCSCF
 
 !     1. store mj-values (MCSCF run in linear symmetry)
 !     -------------------------------------------------
@@ -3173,7 +3213,7 @@ C         write back on file - if not present
           END IF
 
           CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
-          WRITE(LUPRI,'(/A)') 
+          WRITE(LUPRI,'(/A)')
      &    '  Vector containing mj-values saved as MJVEC on KRMCSCF'
         END IF
 
@@ -3217,8 +3257,8 @@ C         write back on file - if not present
      &        CALL IWRTKRMC(LUNI,'IBEIG   ',ibeig,NORBT)
             CLOSE(LUNI,STATUS='KEEP')
           END IF
- 
-          WRITE(LUPRI,'(/A)') 
+
+          WRITE(LUPRI,'(/A)')
      &    '  Vector containing the boson irreps saved as IBEIG'//
      &    ' on KRMCSCF'
         END IF
@@ -3226,9 +3266,9 @@ C         write back on file - if not present
 !
 !     final step in orbital part: write coefficients back to file as label NEWORB
 !     ---------------------------------------------------------------------------
-      IF(LBIT(IWRT,1)) THEN 
+      IF(LBIT(IWRT,1)) THEN
         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
-         WRITE(LUPRI,'(/A)') 
+         WRITE(LUPRI,'(/A)')
      &   '  Orbitals saved as NEWORB on KRMCSCF'
       END IF
 C
@@ -3285,10 +3325,10 @@ C
      &                      ' (ROPTST)  Restarting KRMC with' //
      &                      ' LUCIAREL CI module'
                       CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
-                    ELSE IF (MOPT_MXMACRO.EQ.0) THEN                    
-                      WRITE(LUPRI,*) 
+                    ELSE IF (MOPT_MXMACRO.EQ.0) THEN
+                      WRITE(LUPRI,*)
      &                '  Starting CI calculation from MC orbitals or '
-                      WRITE(LUPRI,*) 
+                      WRITE(LUPRI,*)
      &                '  Restarting CI calculation from vector. '
                       IOPT_INTFLG = IOPT_INTDEF
                       JTRLVL = 0
@@ -3411,7 +3451,7 @@ C
 C        (2.4) 1/Hdiag
 C
          IF (LBIT(IRCIST,4)) THEN
-            CALL QUIT('*** ERROR in ROPTST *** 1/Hdiag CI start guess 
+            CALL QUIT('*** ERROR in ROPTST *** 1/Hdiag CI start guess
      & is not implemented')
          END IF
 C
@@ -3432,9 +3472,9 @@ C
             WRITE(LUPRI,'(/A)') ' (ROPTST)  CI start vector:'
             CALL OUTPUT(CREF,1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
          END IF
-         IF (LBIT(IWRT,2)) THEN 
+         IF (LBIT(IWRT,2)) THEN
            CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
-           WRITE(LUPRI,'(/A)') 
+           WRITE(LUPRI,'(/A)')
      &     '  CI vector saved as CREF on KRMCSCF'
          END IF
 C
@@ -3509,21 +3549,29 @@ C
 C
 C           MAXCIT Davidson CI iterations.
 C
-            CALL GASCIP_RCISTD(NZCONF,WORK(KZCONF),CMO,CREF,ECI,
-     &                         lvcorr_mc,NCIROOT,IOPT_ISTATE,
-     &                         MAXCIT,THRPCI,OPT_CIPROGRAM,
+            CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
+            CALL DZERO(WORK(KECI),NCIROOT)
+            RTHRCI = OPT_THRGRD
+            CALL GASCIP_RCISTD(NCIROOT,RTHRCI,MAXCIT,
+     &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
+     &                         IOPT_ISTATE,
+     &                         OPT_CIPROGRAM,
      &                         IPROPT,WORK(KFREE),LFREE)
 C
+            ECI = WORK(KECI)
          ELSE
 C
 C           Full CI.
 C
-            CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,lvcorr_mc,
+            CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
+            CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
      &                           NZCONF,IOPT_ISTATE,THRPCI,
      &                           OPT_CIPROGRAM,IPROPT,
      &                           WORK,KFREE,LFREE)
 C
          END IF
+         CALL MEMREL('RCIST.after GASCIP start vec',WORK,
+     &               1,KECI,KFREE,LFREE)
          IF (IANACI.EQ.1) THEN
            CALL GASCIP_ANACI(CREF,NZCONF,WORK(KZCONF),THRPCI,
      &                       WORK(KFREE),LFREE)
@@ -3541,8 +3589,8 @@ C
 C
              IF( NATOLCR ) THEN
                GOTO 500
-		 ELSE IF( IANACI .eq. 1 ) THEN
-		   GOTO 500
+             ELSE IF( IANACI .eq. 1 ) THEN
+               GOTO 500
              ELSE
                GOTO 1000
              ENDIF
@@ -3573,7 +3621,7 @@ C     General allocation for NO generation
 C
       IDENSLR_STATE = 0
       IPRNO = 3*IPROPT
-      IF( (OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR) .OR. 
+      IF( (OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR) .OR.
      &     OPT_CIPROGRAM .EQ. 'GASCIP' ) THEN
         CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
@@ -3581,7 +3629,7 @@ C
 C
       IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR ) THEN
 C
-         WRITE(LUPRI,'(//A/A/A)') 
+         WRITE(LUPRI,'(//A/A/A)')
      &'  *************************************************************',
      &'  ************* Natural orbital occupation numbers ************',
      &'  *************************************************************'
@@ -3598,12 +3646,12 @@ C
 C         NOTE: IF MOPT_MXMACRO < 0: CREF is not allocated!
 C               requires appropriate treatment in LUCI_DENS ...
 C
-C         SK - Feb 2009: introduced TRA_NATO for transformation to 
-C                        natural CI/MCSCF orbitals. They can be useful 
+C         SK - Feb 2009: introduced TRA_NATO for transformation to
+C                        natural CI/MCSCF orbitals. They can be useful
 C                        for further analysis, e.g., visualization.
 C
           CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &                TRA_NATO,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
          END DO
 C
@@ -3615,7 +3663,7 @@ C
       ELSE IF( OPT_CIPROGRAM .EQ. 'GASCIP' )THEN
 C
          CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &               .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &               .FALSE.,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
       END IF
 C
 1000  CONTINUE
@@ -3762,7 +3810,7 @@ C
          NZCONF1 = 0
          NZCONFQ1 = 0
 C
-c        FIXME: this requires many changes:
+c        TODO FIXME: this requires many changes:
 C        - in GTNORB
 C        - in KRMCSAV
 C        - possibly other places...
@@ -3937,7 +3985,7 @@ C
       DIMENSION IOPTTB(-1:2)
       CHARACTER CIPROGRAM*8
 C
-      CALL SETRSP      
+      CALL SETRSP
 C
 C     Characters...
 C
@@ -4368,7 +4416,7 @@ C
 #include "memint.h"
 C
       REWIND(LUKRM3)
-      IF( CRDFO_MAT) THEN 
+      IF( CRDFO_MAT) THEN
         CALL MOLLAB('FCMO    ',LUKRM3,LUPRI)
       ELSE
         CALL MOLLAB('FC      ',LUKRM3,LUPRI)
@@ -4617,7 +4665,7 @@ C
 C           Hessian has incorrect structure, and it's not worth
 C           the effort to converge better than 50% (we think!)
 C
-C           (FIXME: put DP5 = 50% in common block/input)
+C           (TODO FIXME: put DP5 = 50% in common block/input)
 C
             THRQN = DP5 * D2 * GNORM(5)
          ELSE
@@ -4685,7 +4733,7 @@ C
          CALL DSCAL(NZCONFQ, DN, CREF, 1)
          CNRM = .TRUE.
       END IF
-      IF ( IPROPT .GE. 20 .AND. CNRM) THEN
+      IF ( IPRINT .GE. 20 .AND. CNRM) THEN
          WRITE(LUPRI,'(/A)') ' (RCINORM) Renormalized CI vector'
          CALL RPRCI(CREF,NZCONF,MZ,OPT_CIPROGRAM, THRZER,LUPRI)
       END IF
@@ -5382,7 +5430,7 @@ C
 C     This routine is inspired by REDPAR (../prp/pamset.F).
 C     Note that the new vectors are returned along with their new sizes.
 C
-C     purpose: delete parameters for which the corresponding orbital 
+C     purpose: delete parameters for which the corresponding orbital
 C     --------------------------------------------------------------
 C
 C     - mj-values     --> linear spin-orbit calculation
@@ -5405,7 +5453,7 @@ C
       integer orb_type_vec(NORBT)
 C
       IF( IPRINT .ge. 1 )THEN
-        WRITE(LUPRI,'(/A)')' (DELPAR): vector of orbital types:'// 
+        WRITE(LUPRI,'(/A)')' (DELPAR): vector of orbital types:'//
      &              ' mj-/ml-/boson-irrep values'
         CALL IWRTMAMN(orb_type_vec,1,NORBT,1,NORBT,LUPRI)
       END IF
@@ -5421,7 +5469,7 @@ C
              JXOPE(2,II) = JXOPE(2,I)
            ENDIF
          ENDDO
-         WRITE(LUPRI,'(/A)') 
+         WRITE(LUPRI,'(/A)')
      & ' (DELPAR) ** statistics of deleted orbital rotations: **'
          WRITE(LUPRI,9000)
          IF(II.LT.NXOPE) THEN
@@ -5452,7 +5500,7 @@ C
             JXOPP(2,II) = JXOPP(2,I)
           ENDIF
         ENDDO
-        WRITE(LUPRI,'(/A)') 
+        WRITE(LUPRI,'(/A)')
      & ' (DELPAR) ** statistics of deleted orbital rotations: **'
         WRITE(LUPRI,9000)
         IF(II.LT.NXOPP) THEN
@@ -5771,7 +5819,7 @@ C
       CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),LFPV)
 C
 C     Trial vector
-C     (FIXME: avoid divi by zero)
+C     (TODO FIXME: avoid divi by zero)
 C
       J = 0
       DO IZ = 1, NZ

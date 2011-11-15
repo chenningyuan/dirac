@@ -1,4 +1,5 @@
-!      Copyright (c) 2010 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -161,10 +162,16 @@ contains
         call numlst(visual_cfg_orbital_string(ifrp), kvec, nr(ifrp), ir(1,ifrp), ir(2,ifrp), ifrp, nvec)
 
 !       we need absolute indices:
+        write(*, *) '--------------------------------------------------------------'
+        write(*, *) 'visual_london.F90: selected orbitals (in reorthonormalization)'
+        write(*, *) 'in fermion symmetry: ', ifrp
+        write(*, *) 'electronic index, (absolute index)'
         list = 0
         do i = 1, nvec
            list(i, ifrp) = kvec(i) + npsh(ifrp)
+           write(*, *) kvec(i), '(', list(i, ifrp), ')'
         end do
+        write(*, *) '--------------------------------------------------------------'
         call dealloc(kvec)
 
      end do
@@ -300,23 +307,7 @@ contains
 
 !   ----------------------------------------------------------------------------
 
-    if (visual_cfg_london_symmetric .or. &
-        visual_cfg_london_natural) then
-
-!      "-" is because dag() does only transposition and T^B is antihermitian 
-
-       if (nfsym == 2) then
-          D_con = C*(D_con_mo*dag(Cig)) &
-                + C*(D_con_mo*dag(Ciu))
-          D_con = D_con - dag(D_con)
-       else
-
-          D_con = C*(D_con_mo*dag(Cig))
-          D_con = D_con - dag(D_con)
-
-       end if
-
-    else if (visual_cfg_london_none) then
+    if (visual_cfg_london_none) then
 
 !      here build density matrix modified by first-order overlap
 !      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
@@ -339,6 +330,22 @@ contains
        else
           D_con = Cig*(D_con*dag(Cig))
        end if
+
+    else
+!      symmetric or natural connection used in preceding response run
+!      "-" is because dag() does only transposition and T^B is antihermitian 
+
+       if (nfsym == 2) then
+          D_con = C*(D_con_mo*dag(Cig)) &
+                + C*(D_con_mo*dag(Ciu))
+          D_con = D_con - dag(D_con)
+       else
+
+          D_con = C*(D_con_mo*dag(Cig))
+          D_con = D_con - dag(D_con)
+
+       end if
+
 
     end if
 

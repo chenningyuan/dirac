@@ -3,18 +3,22 @@
 Installation
 ============
 
+DIRAC is configured using CMake, typically via the setup script,
+and subsequently compiled using make or gmake.
+Alternatively we provide pre-compiled packages.
+
 
 Dependencies
 ------------
 
-configuration/compilation step requires:
+The configuration/compilation step requires:
 CMake  >= 2.6.0
 
-configuration/compilation step using setup script requires:
+The configuration/compilation step using setup script requires:
 CMake  >= 2.6.0
 python >= 2.4.0
 
-pam and runtest require:
+The run script pam and the testing script runtest require:
 python >= 2.4.0
 
 
@@ -25,16 +29,17 @@ It is your machine and you have Ubuntu or Debian::
 
   $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
 
-If this is another system, ask Google.
+Similar mechanisms exist for other distributions or 
+operating systems. Please consult Google.
 
-If it is a cluster, please ask the admin to install/upgrade CMake.
+If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
 1. Download the latest tarball from http://www.cmake.org/cmake/resources/software.html
 2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
 
-Now you can enjoy your cmake instead of the old one::
+Now you can enjoy your CMake instead of the old one::
 
   $ ./setup [other flags] --cmake=~/cmake-2.8.5-Linux-i386/bin/cmake
 
@@ -62,18 +67,69 @@ You can see the CMake command using::
 and use it directly to call CMake without setup.
 
 
+Most typical examples
+---------------------
+
+In order to get familiar with the new configuration setup, let us demonstrate
+some of the most typical configuration scenarios.
+
+Configure for parallel compilation using MPI (make sure to properly export MPI
+paths)::
+
+  $ ./setup --fc=mpif90 --cc=mpicc
+
+Configure for parallel compilation using MPI and 64-bit integers::
+
+  $ ./setup --fc=mpif90 --cc=mpicc --int64
+
+Configure for sequential compilation using ifort/icc::
+
+  $ ./setup --fc=ifort --cc=icc
+
+Configure for sequential compilation using gfortran/gcc::
+
+  $ ./setup --fc=gfortran --cc=gcc
+
+You get the idea. The configuration is pretty good at detecting math libraries
+automatically, provided you export proper paths, see "Linking to external math
+libraries".
+
+
+Out of source compilation
+-------------------------
+
+By default CMake builds out of source.  This means that all object files and
+the final binary are generated outside of the source root.  Typically the build
+directory is called "build", but you can modify this default behavior using the
+--build flag.  The out of source compilation is in contrast to previous DIRAC
+releases.  This strategy offers several advantages. One obvious advantage is
+that you can now build several binaries with the same source::
+
+  $ cd /sourcepath
+  $ ./setup --fc=gfortran --cc=gcc --build=/gfortran-buildpath
+  $ cd /gfortran-buildpath
+  $ make
+  $ cd /sourcepath
+  $ ./setup --fc=ifort --cc=icc --build=/ifort-buildpath
+  $ cd /ifort-buildpath
+  $ make
+
+
 Basic installation without the setup script
 -------------------------------------------
 
-Quick start::
+If you are familiar with CMake you don't have to use the setup script.
+The setup script does nothing else than calling CMake with appropriate
+environment variables and flags, it is a convenient front-end.
+
+Minimal example::
 
   $ mkdir build
   $ cd build
   $ cmake ..
   $ make
 
-The setup script does nothing else than calling CMake with appropriate
-environment variables and flags. The two following strategies are completely
+The two following strategies are completely
 equivalent:
 
 Using CMake directly::
@@ -85,12 +141,17 @@ Using CMake directly::
 
 Using setup::
 
-  $ ./setup --fc=mpif90 --cc=mpicc --mpi
+  $ ./setup --fc=mpif90 --cc=mpicc (--mpi)
   $ cd build
   $ make
 
 If the compiler contains "mpi", then you can omit the flag --mpi, setup will set
 it in this case automatically.
+
+Please note that the defaults for performance optimization are different for
+setup and direct CMake: by default setup configures for optimization, whereas
+direct CMake commands configure code without optimization. Both defaults can be
+changed.
 
 There is nothing special about the directory "build".
 You can do this instead::
@@ -162,7 +223,59 @@ You can run the test suite with::
   $ make test
 
 It is HIGHLY recommended to run the test set after you have compiled
-DIRAC.
+DIRAC to make sure that your binary correctly reproduces reference results.
+
+
+Make install
+------------
+
+Make install is very useful to make DIRAC available to other users on the same
+machine::
+
+  $ ./setup [--flags] --install=/path
+  $ cd build
+  $ make
+  $ make install
+
+
+Where should $PATH point to? Source directory or build directory?
+-----------------------------------------------------------------
+
+We recommend to let $PATH point to the install directory::
+
+  $ ./setup [--flags] --install=/install/path
+  $ cd build
+  $ make
+  $ make install
+
+This way everything (binary, scripts, basis sets) will be at the right place
+under /install/path and $PATH should contain /install/path.
+
+
+Building utilities
+------------------
+
+First configure DIRAC using setup or directly using CMake. Then::
+
+  $ cd /buildpath
+  $ ccmake /sourcepath
+
+Inside ccmake activate ENABLE_UTILITIES to ON, then compile::
+
+  $ make
+
+Voila! You can do these steps also after you have compiled the DIRAC binary.
+
+
+How can I compile DIRAC for large molecules?
+--------------------------------------------
+
+Set ENABLE_LARGE_MOLECULES to ON via ccmake::
+
+  $ cd build
+  $ ccmake ..
+
+Then (re)build the binary
 
 
 Compiling in verbose mode
@@ -180,45 +293,26 @@ Yes, it works. Try::
 
   $ make -j4
 
-
-Out of source compilation
--------------------------
-
-By default CMake builds out of source.
-You can build several binaries with the same source::
-
-  $ cd /sourcepath
-  $ ./setup --fc=gfortran --cc=gcc --build=/gfortran-buildpath
-  $ cd /gfortran-buildpath
-  $ make
-  $ cd /sourcepath
-  $ ./setup --fc=ifort --cc=icc --build=/ifort-buildpath
-  $ cd /ifort-buildpath
-  $ make
+We have successfully compiled DIRAC on 64 cores. With the new configuration
+based on CMake, compilation race condition errors do not appear.
 
 
-Make install
-------------
+How can I change optimization flags?
+------------------------------------
 
-Make install is very useful to make DIRAC available to other users on the same
-machine::
+If you want to turn optimization off (debug mode), there are several ways to do that.
 
-  $ ./setup [--flags] --install=/path
+Either use setup::
+
+  $ ./setup --debug [other flags]
   $ cd build
   $ make
-  $ make install
 
+Or use Cmake directly (default here is debug mode)::
 
-Building utilities
-------------------
-
-First configure DIRAC using setup or directly using CMake. Then::
-
-  $ cd /buildpath
-  $ ccmake /sourcepath
-
-Inside ccmake activate ENABLE_UTILITIES to ON, then compile::
-
+  $ mkdir build
+  $ cd build
+  $ [FC=ifort CC=icc] cmake ..
   $ make
 
-Voila. You can do these steps also after you have compiled the DIRAC binary.
+If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or cmake/CCompilers.cmake.

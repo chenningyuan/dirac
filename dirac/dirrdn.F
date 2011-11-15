@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -306,6 +306,7 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "dcb_rkbimp.h"
 #include "logging.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
@@ -314,7 +315,7 @@ C
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.PCMOI3','.FAMILY',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.XXXXXX',
+     &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP
@@ -327,6 +328,7 @@ C
       LOWJACO = .FALSE.
       LOGMEMGET = .FALSE.
       DOQJACO  = .FALSE.
+      RKBIMP_PRJTHR = 1.0D-5
 C
 C     Look for 2c. Hamiltonians
 C
@@ -472,6 +474,8 @@ C&&&& RKBIMP: import RKB coefficients
             DORKBIMP=.TRUE.
             GO TO 100
   120    CONTINUE
+C&&&& PRJTHR
+            READ(5,*) RKBIMP_PRJTHR
             GO TO 100
   121    CONTINUE
             GO TO 100
@@ -518,14 +522,14 @@ C
 
       IF (TWOCOMP) THEN
         WRITE(LUPRI,'(A)')
-     &  ' * running in two-component mode'
+     &  ' * Running in two-component mode'
         INTGEN = 1
         ISLDIR = 0
         ISSDIR = 0
         IGTDIR = 0
       ELSE
         WRITE(LUPRI,'(A)')
-     &  ' * running in four-component mode'
+     &  ' * Running in four-component mode'
       ENDIF
 
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
@@ -591,6 +595,8 @@ C
         WRITE(LUPRI,'(1X,A,A)')
      &    '* Read RKB coefficients ',
      &    'and extended with complementary UKB space'
+        WRITE(LUPRI,'(3X,A,E9.2)')
+     &    ' Projection threshold: ',RKBIMP_PRJTHR
       ENDIF
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
@@ -1360,7 +1366,7 @@ C&&&& OWNBASis: Use local basis for projection
                PROOWN = .TRUE.
                GO TO 100
    23          CONTINUE
-C&&&& BNCRON : Deactivate screening for use with bare nucleus start guess
+C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
                   BNCRON = .FALSE.
                GO TO 100
    24          CONTINUE
@@ -1788,7 +1794,7 @@ C
 C     tsaue -
 C     Temporary fix: load HF occupation numbers into dcborb.h
 C
-      CALL TDHFORB
+      CALL TDHFORB('NO SETDC2')
 C
 C     Print section
 C     =============
@@ -1828,9 +1834,6 @@ C
       IF (NELECT_DHF+NAELEC_DHF.EQ.0.AND.(.NOT.VACPOL)) THEN
         WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
-
-C! Print embedding information for the freeze & thaw scheme (not used currently)
-C     IF (dirac_cfg_fde .or. dirac_cfg_fde_response) CALL report_embedding ()
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
@@ -2311,6 +2314,9 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
       DIMENSION WORK(LWORK)
+      COMMON/lucita_wrk_space_test/workspace_lucita(1)
+      INTEGER*8 K_OFFSET, K8BASE_LUCITA
+      integer   KBASE_LUCITA
 C
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -2318,7 +2324,6 @@ C
 #include "dcbham.h"
 #include "dcbreo.h"
 #include "dcbrot.h"
-#include "dcbgos2.h"
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
@@ -2360,14 +2365,6 @@ C     ===================
 C
       LMOORD    = .FALSE.
       LMOORF    = .FALSE.
-C
-C.s/sya,2007.02.08
-C
-C     Initialize /DCIGOS2/ in dcbgos2.h
-C     ===================
-C
-      KDOGASCIP= .FALSE.
-C.q
 C
 C     Read menu file
 C     ==============
@@ -2432,6 +2429,25 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
             GO TO 100
 C&&&& LUCITA: Perform spinfree CI calculation
   103    CONTINUE
+!           stefan - nov 2011: check for integer compatibility for lucita on x86_64 systems
+            call compoff(work,workspace_lucita,k_offset)
+            kbase_lucita = k_offset
+            ! HJAaJ Aug 2008:
+            ! MEMMAN in LUCITA is using default integer type
+            ! while K_OFFSET is always INTEGER*8.
+            ! Therefore we use implicit conversion to KBASE_LUCITA.
+            ! Now we test if KBASE_LUCITA is OK:
+            k8base_lucita = kbase_lucita
+            if(k8base_lucita .ne. k_offset)then
+              WRITE (lupri,'(/A/A,2I20//A)')
+     &        'FATAL ERROR in psiinp: memory offset'//
+     &        ' (dynamic memory - static memory) is too big for i*4',
+     &        'K_OFFSET and KBASE_LUCITA:',K_OFFSET, KBASE_LUCITA,
+     &        '(See code in dirac/dirrdn.F)'
+            CALL QUIT(
+     &      'FATAL ERROR for LUCITA runs: memory offset'//
+     &      ' (dynamic memory - static memory) is too big for i*4')
+            end if
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
             NJOBS = NJOBS + 1
@@ -4390,7 +4406,7 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-      USE FDE_MOD, ONLY: FDEINI, FDEINP, FDE_setupFDEgrid, update_vemb
+      USE FDE_MOD, ONLY: FDEINI, FDEINP
       use dft_cfg
       use xc_derv
       use interface_functional_read
@@ -4462,9 +4478,9 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
-     &            '.FDERSP','.HFXATT','.xB    ','.xC    ',
+     &            '.xxxxxx','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.xxxxxx','.xxxxxx'/
+     &            '.ECP   ','.X2Cmmf','.DOSSSS','.xxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4484,6 +4500,7 @@ C     Initialize /CBIHAM/
 C     ===================
 C
       IPRHAM  = 0
+      DOLVC   = .TRUE.
       QED     = .FALSE.
       MOLMF   = .FALSE.
       MOLMF3  = .FALSE.
@@ -4496,7 +4513,6 @@ C
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
-      DOLVC   = .FALSE.
       LVNEW   = .FALSE.
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
@@ -4650,7 +4666,7 @@ C&&&& GAUNT: Gaunt operator
             GAUNT = .TRUE.
             GO TO 100
   105     CONTINUE
-C&&&& LVCORR: Model interatomic SS-integral contribution by classical
+C&&&& LVCORR: Modeling of interatomic SS-integral contribution by classical
 C             repulsion of small component atomic charges
             DOLVC = .TRUE.
             GO TO 100
@@ -4686,6 +4702,7 @@ C&&& NOSMLV: Turn off small nuclear attraction integrals
   112      CONTINUE
 C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              LEVYLE = .TRUE.
+             DOLVC  = .FALSE.
 C            Levy-Leblond implies also spinfree, specify that
              SPINFR = .TRUE.
              NOSMLV = .TRUE.
@@ -4707,6 +4724,7 @@ C&&& ZORA   : Use ZORA approximation
              ZORA   = .TRUE.
              ZORA4  = (IZORA4.NE.0)
              ZORASC = (IZORAS.NE.0)
+             DOLVC  = .FALSE.
              SSMTRC = D0
              ICHANG = ICHANG + 1
              GO TO 100
@@ -4716,6 +4734,7 @@ C    jkp    : This keyword enables Luuk's one-center
 C             projection scheme
              SMLV1C = .TRUE.
              ONECAP = .TRUE.
+             DOLVC  = .FALSE.
              INTV1C = 1
              ICTLV1C(2) = 1
              ICHANG = ICHANG + 1
@@ -4785,6 +4804,7 @@ C             if no model specified, goto 199, choose onecap 2
             BACKSPACE LUCMD
   198       CONTINUE
             ONECAP  = .TRUE.
+            DOLVC   = .FALSE.
             IF(INTV1C.EQ.2) DOLVC = .TRUE.
 C
 C   ... Whether to evaluate integrals in a direct or concentional
@@ -4841,6 +4861,7 @@ C       transformed relativistic Hamiltonian
              BSS        = .TRUE.
              TWOCOMPBSS = .TRUE.
              TWOCOMP    = .TRUE.
+             DOLVC   = .FALSE.
 C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
              IF (IOS.NE.0) THEN
@@ -4924,6 +4945,7 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
             IBSS       = 2999
             TWOCOMPBSS = .TRUE.
             TWOCOMP    = .TRUE.
+            DOLVC      = .FALSE.
 C           Check that we have not defined operators yet,
 C           as they need to be modified within BSS transformations
             IF (I_FINFIELD.GT.0) THEN
@@ -4937,6 +4959,7 @@ C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
              NOPRTR     = .true.
              x2c        = .true.
              x2cmod_x2c = .true.
+             DOLVC      = .FALSE.
 C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
              IF (I_FINFIELD.GT.0) THEN
@@ -4980,13 +5003,16 @@ C&&& IOTC4: do IOTC in 4c-mode
              BSS = .TRUE.
              NOPRTR = .TRUE.
              IBSS = 2999
+             DOLVC      = .FALSE.
              GO TO 100
   144     CONTINUE
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
+             DOLVC   = .FALSE.
              GO TO 100
   145     CONTINUE
              BSS = .TRUE.
+             DOLVC = .FALSE.
 C        ... read 3-digit number
              READ(LUCMD,*) IBSS
 C
@@ -5010,6 +5036,7 @@ C&&& DKH2: complex flag for second order Douglas-Kroll-Hess with AMFI SSO
              IBSS = 2022
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
   148     CONTINUE
 C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other 
@@ -5019,6 +5046,7 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              IBSS = 2011
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
   149     CONTINUE
 C&&& .NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
@@ -5042,6 +5070,7 @@ CMI  with other flags...
              IBSS = 2999
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
 
 !         .X2C4 is alias for .IOTC4
@@ -5081,12 +5110,6 @@ CMI&& activate 4c-2c MO transformation
           TRMO4C2C=.TRUE.
           GOTO 100
   157     CONTINUE
-#ifdef MOD_UNRELEASED
-C activates fde response
-          dirac_cfg_fde_response =.TRUE.
-#else
-          write (*,*) 'Keyword inactive in this release'
-#endif
           GOTO 100
 ! .HFXATT
   158     CONTINUE
@@ -5114,13 +5137,18 @@ C activates fde response
           x2cmod_mmf            = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
+          MOLMF3                = .TRUE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
             CALL QUIT(
      &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
+          GO TO 100
   163     CONTINUE
+C&&&& DOSSSS: Including SS-integral contribution explicitly
+            DOLVC = .FALSE.
+            GO TO 100
   164     CONTINUE
           GO TO 100
 
@@ -5136,8 +5164,8 @@ C         as they need to be picture-changed transformed after the 2c-transforma
 
 
 
-      if (dirac_cfg_fde .or. dirac_cfg_fde_response) then
-         call fdeini()
+      if (dirac_cfg_fde) then
+         call fdeini(lupri,'DIRAC.OUT')
       end if 
       
 
@@ -5249,7 +5277,8 @@ C     =====================================================
           CALL QUIT(
      &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
         ENDIF
-        IF (SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP) THEN
+        IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
+     &      .not.x2cmod_mmf)THEN
           CALL QUIT(
      &    'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP 
      &    & BSS/X2C !')
@@ -5473,9 +5502,9 @@ C         .... two-step method of Barysz
         ENDIF
 
         IF (TWOCOMP) THEN
-          WRITE(LUPRI,'(A)') ' * running in two-component mode'
+          WRITE(LUPRI,'(A)') ' * Running in two-component mode'
         ELSE
-          WRITE(LUPRI,'(A)') ' * running in four-component mode'
+          WRITE(LUPRI,'(A)') ' * Running in four-component mode'
         ENDIF
 
 C       ... take care of AMFI contribution
@@ -6109,11 +6138,6 @@ CMI  ... reading input routine for AMFI+RELSCF
         GO TO 200
 C
     1 CONTINUE
-
-#ifdef MOD_UNRELEASED
-      if ((dirac_cfg_fde.and.update_vemb).or.dirac_cfg_fde_response)        &
-     &   call FDE_setupFDEgrid()
-#endif
 
 !       work can be easily removed by changing internal memget to alloc
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
@@ -6829,8 +6853,8 @@ C
          END DO
       ELSE
          DTEMP = D0
-         DO IFRP = 1,NFSYM
-            DO IOPEN = 1,NOPEN
+         DO IOPEN = 1,NOPEN
+            DO IFRP = 1,NFSYM
                DTEMP          = DTEMP +
      &                          NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
             END DO
@@ -6858,7 +6882,7 @@ C
             IF (NFSYM .EQ. 1) THEN
                WRITE(LUPRI,1011)
      &            IOPEN,
-     &            DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN)),
+     &            DF(IOPEN)*D2*NACSH(1,IOPEN),
      &            NACSH(1,IOPEN),DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
             ELSE
                WRITE(LUPRI,1012)
@@ -6869,12 +6893,14 @@ C
             END IF
          END DO
          WRITE(LUPRI,1020)
+         DTEMP      = NELECT_DHF+DTEMP
+         NELECT_TOT = NINT(DTEMP)
          IF (NFSYM .EQ. 1) THEN
             WRITE(LUPRI,1031)
-     &         NELECT_DHF+DTEMP,NISH_DHF(1)+NASH_DHF(1)
+     &         DTEMP,NISH_DHF(1)+NASH_DHF(1)
          ELSE
             WRITE(LUPRI,1032)
-     &         NELECT_DHF+DTEMP,NISH_DHF(1)+NASH_DHF(1),
+     &         DTEMP,NISH_DHF(1)+NASH_DHF(1),
      &         NISH_DHF(2)+NASH_DHF(2)
          END IF
          WRITE(LUPRI,'(/,3X,A,/)')
@@ -6882,13 +6908,13 @@ C
      &      'coupling coefficients.'
       END IF
       RETURN
- 1001 FORMAT(3X,'Closed shell',9X,I4,10X,I4,6X,'N/A ',3(3X,F6.4))
- 1002 FORMAT(3X,'Closed shell',9X,I4,10X,I4,5X,I4,1X,3(3X,F6.4))
- 1011 FORMAT(3X,'Open shell no.',I2,6X,F6.2,7X,I4,6X,'N/A ',3(3X,F6.4))
- 1012 FORMAT(3X,'Open shell no.',I2,6X,F6.2,7X,I4,5X,I4,1X,3(3X,F6.4))
+ 1001 FORMAT(3X,'Closed shell',I13,I14,6X,'N/A ',3(3X,F6.4))
+ 1002 FORMAT(3X,'Closed shell',I13,I14,I9,1X,3(3X,F6.4))
+ 1011 FORMAT(3X,'Open shell no.',I2,F12.2,I11,6X,'N/A ',3(3X,F6.4))
+ 1012 FORMAT(3X,'Open shell no.',I2,F12.2,I11,I9,1X,3(3X,F6.4))
  1020 FORMAT(3X,76('-'))
- 1031 FORMAT(3X,'Total',17X,F6.2,7X,I4)
- 1032 FORMAT(3X,'Total',17X,F6.2,7X,I4,5X,I4)
+ 1031 FORMAT(3X,'Total',F23.2,I11)
+ 1032 FORMAT(3X,'Total',F23.2,I11,I9)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rho1in */
@@ -7309,9 +7335,9 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.PRJLOC','.THRESH','.MAXITR',
-     S            '.VECPRJ','.VECREF','.OWNBAS','.HESSUN',
-     S            '.HESTHR','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
+     &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
+     &            '.THDIAG','.THGRAD','.CHECK ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -7325,17 +7351,20 @@ C
       END IF
 #include "memint.h"
 C
-C
 C     Initialize /CBILOC/
 C     ===================
 C
       PRJLOC = .FALSE.
-      THRLOC = 1.0D-6
       ITRLOC = 100
       IPRLOC = IPRGEN
-      HESLOC = .FALSE.
-      AUTO   = .TRUE.
-      HESTHR = 1.0D-1
+      HESLOC = 'FULL'
+      LGFULL = .FALSE.
+      LGDIAG = .FALSE.
+      LGGRAD = .FALSE.
+      LGCHCK = .FALSE.
+      THFULL = 1.0D-13
+      THDIAG = 1.0D-13
+      THGRAD = 1.0D-07
 C
 C     Process input from CBILOC
 C     =========================
@@ -7353,7 +7382,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
  200                        CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -7361,7 +7390,7 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in ANWINP.'
+     &            '" not recognized in ANWINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in POPINP.')
  1                       CONTINUE
@@ -7373,8 +7402,8 @@ C   Do localisation from projection analysis
                   PRJLOC = .TRUE.
                GO TO 100
  3                       CONTINUE
-C   Threshold
-                  READ(LUCMD,*) THRLOC
+C   Model of the Hessian
+                  READ(LUCMD,'(A4)') HESLOC
                GO TO 100
  4                       CONTINUE
 C   Maximum number of iterations
@@ -7404,18 +7433,31 @@ C   OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis s
                OWNBAS = .TRUE.
                GO TO 100
  8                       CONTINUE
-C   HESSIAN is the identity matrix
-               HESLOC = .TRUE.
+C   Set convergence criterion in scheme using full hessian
+C       - change of the functional between iterations
+               LGFULL = .TRUE.
+               READ(LUCMD,*) THFULL
+               GO TO 100
  9                       CONTINUE
-C
-               AUTO = .FALSE.
-               READ(LUCMD,*) HESTHR
+C   Set convergence criterion in scheme using diagonal aproximation of the hessian 
+C       - change of the functional between iterations
+               LGDIAG = .TRUE.
+               READ(LUCMD,*) THDIAG
+               GO TO 100
+ 10                      CONTINUE
+C   Set convergence criterion - norm of the gradient
+               LGGRAD = .TRUE.
+               READ(LUCMD,*) THGRAD
+               GO TO 100
+ 11                      CONTINUE
+C   After last iteration using diagonal approximation calculate one step using full hessian
+               LGCHCK = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in ANWINP.'
+     &            '" not recognized in ANWINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in ANWINP.')
             END IF
@@ -7426,70 +7468,185 @@ C     Print section
 C     =============
 C
       IF(.NOT. DOLOC) GOTO 999
+C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)')
-     S 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
+     & 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
       CALL PRSYMB(LUPRI,'=',75,0)
-      IF(PRJLOC) THEN
-         WRITE(LUPRI,'(1X,A)')
-     S      '* Molecular orbital localization from projection analysis'
+C     -----------------------------------------------------------------
+C     Localization method
+C
+      IF(PRJLOC)THEN
+        WRITE(LUPRI,'(1X,A)')
+     &    '* Molecular orbital localization from projection analysis'
       ELSE
-         WRITE(LUPRI,'(1X,A)')
-     S      '* Molecular orbital localization from Mulliken analysis'
+        WRITE(LUPRI,'(1X,A)')
+     &    '* Molecular orbital localization from Mulliken analysis'
       ENDIF
-      WRITE(LUPRI,'(1X,A,D9.2)')
-     S     '* Threshold for convergence of the localization process :',
-     S     THRLOC
-      WRITE(LUPRI,'(1X,A)')
-     S     '  (based on the inverse mean delocalization)'
-      WRITE(LUPRI,'(1X,A,I6)')
-     S     '* Maximum number of iterations :',ITRLOC
-      IF(PRJLOC) THEN
-         IF(OWNBAS) THEN
-            WRITE(LUPRI,'(1X,A)')
-     S   '* Fragments are calculated in their individual bases !',
-     S   '    The indexing of fragment spinor sets is assumed ',
-     S   '    to follow list of symmetry independent nuclei.'
-            DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
-     S              ' --> ',NAMDEP(J)
-              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
-              DO I = 1,NFSYM
-                 NVEC = 0
-                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
-                 IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)')
-     S                   '- No orbitals in fermion ircop ',FREP(I)
-                 ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)')
-     S           '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
-                 ENDIF
-              ENDDO
-           ENDDO
-        ELSE
-           DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
-              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
-              DO I = 1,NFSYM
-                 NVEC = 0
-                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
-                 IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)')
-     S                   '- No orbitals in fermion ircop ',FREP(I)
-                 ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)')
-     S          '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
-                 ENDIF
-              ENDDO
-           ENDDO
+C     -----------------------------------------------------------------
+C     Convergence criterion for different schemes
+C
+      IF(LGCHCK.AND.(HESLOC /= 'COMB'))THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &   ' WARNING: STOP --> you requested check of the diagonal',
+     &   ' convergence (.CHECK)'
+        WRITE(LUPRI,'(1X,A,A)') ' WARNING: Use this keyword only with'
+        WRITE(LUPRI,'(1X,A,A)') ' WARNING: .HESLOC'
+        WRITE(LUPRI,'(1X,A,A)') ' WARNING: COMBINATION'
+        STOP
+      ENDIF
+C     Diagonal approximation
+      IF(HESLOC == 'DIAG')THEN
+       WRITE(LUPRI,'(1X,A)')
+     &  '* The diagonal approximation of the hessian will be used'
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Convergence criteria of the localization process :'
+       IF( .NOT.LGDIAG .AND. .NOT.LGGRAD)THEN
+        WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                         ' (= there are no positive eigenvalues)'
+       ELSE
+        IF(LGDIAG)THEN
+         WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(5X,A,D9.2)')
+     &    'and the change of the functional is below threshold: ',THDIAG
+         WRITE(LUPRI,'(5X,A)')
+     &    '(functional = inverse mean delocalization)'
         ENDIF
+        IF(LGGRAD)THEN
+         WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(5X,A,D9.2)')
+     &    'and the norm of the gradient is below threshold: ',THGRAD
+        ENDIF
+       ENDIF
+      ENDIF
+C     Full hessian
+      IF(HESLOC == 'FULL')THEN
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Full hessian will be used'
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Convergence criteria of the localization process :'
+       WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                        ' (= there are no positive eigenvalues)'
+       IF(LGFULL)THEN
+        WRITE(LUPRI,'(3X,A,D9.2)')
+     &   '- If the change of the functional is below threshold: ',THFULL
+        WRITE(LUPRI,'(1X,A)')
+     &   '    (functional = inverse mean delocalization)'
+       ENDIF
+       IF(LGGRAD)THEN
+        WRITE(LUPRI,'(1X,A,D9.2)')
+     &   '  - If the norm of the gradient is below threshold: ',THGRAD
+       ENDIF
+      ENDIF
+C     Combination of the diagonal approximation and the full hessian
+      IF(HESLOC == 'COMB')THEN
+       WRITE(LUPRI,'(1X,A)')
+     &  '* First the diagonal approximation of the hessian will be used'
+       WRITE(LUPRI,'(1X,A)')
+     &  '  and after reaching some convergence criterion we will'
+       WRITE(LUPRI,'(1X,A)')
+     &  '  switch on the construction of the full hessian'
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Convergence criteria of the localization process :'
+C
+       WRITE(LUPRI,'(1X,A)')
+     &  '  * First part - diagonal approximation of the hessian'
+       IF( .NOT.LGDIAG .AND. .NOT.LGGRAD)THEN
+        WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                         ' (= there are no positive eigenvalues)'
+       ELSE
+        IF(LGDIAG)THEN
+         WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(7X,A,D9.2)')
+     &    'and the change of the functional is below threshold: ',THDIAG
+         WRITE(LUPRI,'(7X,A)')
+     &    '(functional = inverse mean delocalization)'
+        ENDIF
+        IF(LGGRAD)THEN
+         WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(7X,A,D9.2)')
+     &    'and the norm of the gradient is below threshold: ',THGRAD
+        ENDIF
+       ENDIF
+C
+       WRITE(LUPRI,'(1X,A)')
+     &  '  * Second part - full hessian'
+       IF(LGCHCK)THEN
+        WRITE(LUPRI,'(3X,A)')
+     &   '  - Only one step will be performed'
+       ELSE
+        WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                         ' (= there are no positive eigenvalues)'
+        IF(LGFULL)THEN
+         WRITE(LUPRI,'(5X,A,D9.2)')
+     &   '- If the change of the functional is below threshold: ',THFULL
+         WRITE(LUPRI,'(3X,A)')
+     &   '    (functional = inverse mean delocalization)'
+        ENDIF
+       ENDIF
+      ENDIF
+C     -----------------------------------------------------------------
+C     Other keywords
+C
+      WRITE(LUPRI,'(1X,A,I6)') '* Maximum number of iterations :',ITRLOC
+      WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRLOC
+      IF(LGCHCK)THEN
+        WRITE(LUPRI,'(1X,A,A)') 
+     &   '* After the diagonal approximation will converge',
+     &   ' calculate one step using full hessian'
+      ENDIF
+C     -----------------------------------------------------------------
+C     Fragments of spinors used in the projection analysis
+C
+      IF(PRJLOC)THEN
+       IF(OWNBAS)THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Fragments are calculated in their individual bases !',
+     &   '    The indexing of fragment spinor sets is assumed ',
+     &   '    to follow list of symmetry independent nuclei.'
+        DO J = 1,NREFS
+         WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
+     &         ' --> ',NAMDEP(J)
+         WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+         DO I = 1,NFSYM
+          NVEC = 0
+          CALL NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     &         -NFBAS(I,2),NFBAS(I,1),I,NVEC)
+          IF(NVEC.EQ.0) THEN
+           WRITE(LUPRI,'(4X,A,A3)')
+     &      '- No orbitals in fermion ircop ',FREP(I)
+          ELSE
+           WRITE(LUPRI,'(4X,A,A3,A,A72)')
+     &      '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+          ENDIF
+         ENDDO
+        ENDDO
+       ELSE
+        DO J = 1,NREFS
+         WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
+         WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+         DO I = 1,NFSYM
+          NVEC = 0
+          CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     &         -NFBAS(I,2),NFBAS(I,1),I,NVEC)
+          IF(NVEC.EQ.0) THEN
+           WRITE(LUPRI,'(4X,A,A3)')
+     &      '- No orbitals in fermion ircop ',FREP(I)
+          ELSE
+           WRITE(LUPRI,'(4X,A,A3,A,A72)')
+     &      '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+          ENDIF
+         ENDDO
+        ENDDO
+       ENDIF
       ENDIF
       WRITE(LUPRI,'(1X,A)')
-     S     '* Localised MO are written in file DFCOEF !!!'
-      WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRLOC
- 999   CONTINUE
+     &     '* Localised MO are written in file DFCOEF !!!'
+ 999  CONTINUE
       RETURN
 C
       END

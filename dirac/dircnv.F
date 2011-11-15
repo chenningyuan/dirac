@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : dircnv.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfcnv */
@@ -52,8 +53,10 @@ C
       LOGICAL OLDFMO, DAMPON
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),TINV(*),WORK(LWORK), FAO(*)
-      SAVE EVCOLD
-      DATA EVCOLD/1.0D20/
+      PARAMETER (N_OLD = 6)
+      DIMENSION ERGOLD(N_OLD), EVCOLD(N_OLD)
+      SAVE      ERGOLD, EVCOLD
+      DATA      ERGOLD/N_OLD*1.0D20/, EVCOLD/N_OLD*1.0D20/
 C
 C     Calculate error vector for this iteration
 C     =========================================
@@ -84,8 +87,9 @@ C
 C
         CALL FCKCMP(FMO,FBUF,WORK,LWORK)
       ELSE
-        EVCOLD = 1.0D20
-C       ... reinitialize EVCOLD /hjaaj
+        ERGOLD(1:N_OLD) = 1.0D20
+        EVCOLD(1:N_OLD) = 1.0D20
+C       ... reinitialize ERGOLD and EVCOLD /hjaaj
       ENDIF
 
 C     ...and write current MO Fock matrix to file
@@ -105,8 +109,32 @@ C     Check convergence
 C     =================
 C
       ERGVAL = ERGBUF - DHFERG
-      EVCDIF = EVCVAL - EVCOLD
-      EVCOLD = EVCVAL
+!
+!     Data for anti-oscillation test:
+!     both gradient and energy must be lower compared to the
+!     minimum gradient and energy until N_OLD iterations ago.
+!
+      ERGDIF = DHFERG - ERGOLD(N_OLD)
+      EVCDIF = EVCVAL - EVCOLD(N_OLD)
+      ERGDIF = ERGDIF + 1.D-10*DHFERG
+!     ... avoid erroneous predicted energy increase (ERGVAL negative)
+!         because of round-off errors /hjaaj
+      ERGOLD(N_OLD) = MIN(ERGOLD(N_OLD), ERGOLD(N_OLD-1))
+      EVCOLD(N_OLD) = MIN(EVCOLD(N_OLD), EVCOLD(N_OLD-1))
+      DO I = N_OLD-1,2,-1
+         ERGOLD(I) = ERGOLD(I-1)
+         EVCOLD(I) = EVCOLD(I-1)
+      END DO
+      ERGOLD(1) = DHFERG
+      EVCOLD(1) = EVCVAL
+      IF (iprscf .GE. 2) THEN
+         WRITE(LUPRI,'(/A)') 'DHFCNV: anti-oscillation test data dump'
+         WRITE(LUPRI,'(A,1P,10D10.2)')
+     &      '- ERGDIF, ERGOLD(:) ',ERGDIF, ERGOLD(1:N_OLD)
+         WRITE(LUPRI,'(A,1P,10D10.2)')
+     &      '- EVCDIF, EVCOLD(:) ',EVCDIF, EVCOLD(1:N_OLD)
+      END IF
+!
       IF    (ERGCNV .AND. OLDFMO) THEN
         CONVRG = ERGVAL
       ELSEIF(FCKCNV .AND. OLDFMO) THEN
@@ -186,17 +214,14 @@ C
 C     DIIS --- Direct Inversion of Iterative Subspace
 C     ===============================================
 C
-      ERGVAL1 = ERGVAL - 1.D-10*DHFERG
-C     ... avoid erroneous predicted energy increase (ERGVAL negative)
-C         because of round-off errors /hjaaj
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL1 .GT. D0) THEN
+        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL .GT. D0) THEN
 C          ... often wild oscillations in the beginning,
 C              which may settle down reasonably.
-           WRITE(LUPRI,'(/A)')
+           WRITE(LUPRI,'(/A/A)')
      &        ' DIIS aborted because of the last two iterations',
-     &        ' the lowest energy has the largest gradient and',
+     &        ' the lowest energy has the largest gradient and'//
      &        ' DIIS minimizes gradient !!!'
            CLOSE(LUDIIS,STATUS='DELETE')
            ITDIIS = 0

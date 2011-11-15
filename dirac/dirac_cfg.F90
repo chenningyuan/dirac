@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -49,8 +49,6 @@ module dirac_cfg
 !                    embedding module
   logical, public :: dirac_cfg_fde                = .false.
   logical, public :: dirac_cfg_fde_response       = .false.
-!                    overlap diagnostic
-  logical, public :: dirac_cfg_overlap_diagnostic = .false.
 
   private
 

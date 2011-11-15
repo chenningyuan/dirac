@@ -1,5 +1,5 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -9,15 +9,15 @@
 !
 !      In particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the
-!      research
+!      This means also that persons (e.g. post-docs) leaving the research
 !      group of the license holder may not take any part of Dirac,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own license.
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
 !
 ! Contains a module for common matrix and vector operations/procedures.
 !
@@ -70,7 +70,7 @@ contains
        d1         =  1.0D0
        ierr_qdiag =  0
  
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_text('% entering lowgen90')
       call matexport_double2('S',smat,ldm,ndim_s,ndim_s)
 #endif
@@ -95,7 +95,7 @@ contains
       end do
  10   continue
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_double2('V',vmat,ldm,ns,nv)
       call matexport_text('% leaving lowgen90')
 #endif

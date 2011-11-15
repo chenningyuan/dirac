@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -265,6 +265,8 @@ C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
       LOGICAL   ONLYXY, DOH2AC, DOFQ
 C
+!     IPRINT_local = max(IPROPT,31)
+      IPRINT_local = IPROPT
       IF (DOH2AC) THEN
 C
          if(.not.spinfr_krmc)then
@@ -291,34 +293,34 @@ C
 C
 C        Print section
 C
-         IF(IPROPT .GE. 30 .AND. DOH2AC) THEN
+         IF(IPRINT_local .GE. 30 .AND. DOH2AC) THEN
 #if defined MCSCF_DEBUG_SPINFREE
-!          WRITE(LUPRI,'(1X,A)') '(X2GU) input HX(*,*,*,*): '
-!          DO I3 = 1, 3
-!             DO IZ = 1, NZ
-!                WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
-!    &                'Matrix no. (',IZ,',',I3,'): '
-!                CALL OUTPUT(HX(1,1,IZ,I3),1,norbt,1,norbt,
-!    &                norbt,norbt,1,LUPRI)
-!             END DO
-!          END DO
+           WRITE(LUPRI,'(1X,A)') '(X2GU) input HX(*,*,*,*): '
+           DO I3 = 1, 3
+              DO IZ = 1, NZ
+                 WRITE(LUPRI,'(A,I3,A,I3,A)')
+     &                ' HX (NZ,3) matrix no. (',IZ,',',I3,'): '
+                 CALL OUTPUT(HX(1,1,IZ,I3),1,norbt,1,norbt,
+     &                norbt,norbt,-1,LUPRI)
+              END DO
+           END DO
 #endif
            WRITE(LUPRI,'(1X,A,I3,A)') '(X2GU) output H2AC(*,*,',IUU,'):'
            DO I3 = 1, 3
               DO IZ = 1, NZ
-                 WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
-     &                'Matrix no. (',IZ,',',I3,'): '
+                 WRITE(LUPRI,'(A,I3,A,I3,A)')
+     &                ' H2AC (NZ,3) matrix no. (',IZ,',',I3,'): '
                  CALL OUTPUT(H2AC(1,1,IUU,IZ,I3),1,NASHT,1,NASHT,
-     &                       NASHT,NASHT,1,LUPRI)
+     &                       NASHT,NASHT,-1,LUPRI)
               END DO
            END DO
          END IF
       END IF
 
 !     get rid of noise
-      CALL DZERO(H2XY, n2orbx * nz * nz * nbsym / nfsym)
+      CALL DZERO(H2XY, NORBT*NASHT * NZ * 3)
       IF (.NOT. ONLYXY) 
-     &CALL DZERO(H2YX, n2orbx * nz * nz * nbsym / nfsym)
+     &CALL DZERO(H2YX, NORBT*NASHT * NZ * 3)
 C
 C     Collect (gu) and (ug) elements.
 C

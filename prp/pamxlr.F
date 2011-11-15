@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -203,7 +203,7 @@ c.......direct contribution
         end if
 
 c.......reorthonormalization contribution
-        if ((.not. noonei) .or. (.not. noorth)) then
+        if (.not. noonei) then
           call london_reort_hb(cmo, ibeig, work(kfree), lfree)
         end if
 
@@ -1734,7 +1734,7 @@ C***********************************************************************
 #ifdef MOD_UNRELEASED
       use overlap_diagnostic
 #endif
-      use dirac_cfg
+      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1755,7 +1755,7 @@ C
       CALL HEADER('Analysis of response solution vectors',-1)
 
 #ifdef MOD_UNRELEASED
-      if (dirac_cfg_overlap_diagnostic) then
+      if (dft_cfg_overlap_diagnostic) then
          call o_matrix_from_disc()
       end if
 #endif
@@ -1971,7 +1971,7 @@ C***********************************************************************
 #ifdef MOD_UNRELEASED
       use overlap_diagnostic
 #endif
-      use dirac_cfg
+      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2154,7 +2154,7 @@ C       Give major orbital rotations in excitations
           ENDDO
         ENDIF
 #ifdef MOD_UNRELEASED
-        if (dirac_cfg_overlap_diagnostic) then
+        if (dft_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
            do j = nbdim, 1, -1

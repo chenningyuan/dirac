@@ -14,6 +14,12 @@ lib: lib/libxcfun.a
 lib/libxcfun.a: $(BASE_OBJ) $(FUN_OBJ) include/xcfun_autogen.h fortran/xcfun_autogen.F90
 	ar -r $@ $(BASE_OBJ) $(FUN_OBJ)
 
+include/xcfun_autogen.h:
+	./generate_interfaces.py
+
+include/xcfun_autogen.F90:
+	./generate_interfaces.py
+
 src/parameters.o: src/parameters.cpp src/parameters.h src/functionals/list_of_parameters.h
 
 src/fortran.o: src/fortran.c include/xcfun_autogen.h

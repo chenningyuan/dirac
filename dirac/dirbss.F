@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -9966,20 +9966,20 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(4X,A)')
+      WRITE(LUPRI,'(3X,A)')
      & 'Set-up for AMFI/RELSCF calculations'
       CALL PRSYMB(LUPRI,'=',75,0)
 
       IF (.NOT.NEWDEF) THEN
         WRITE(LUPRI,'(2x,a)')
-     &  '...no reading under *AMFI, thus default settings'
+     &  '...no reading under "*AMFI  ", thus default settings'
       ENDIF
 
-      WRITE(LUPRI,'(1X,A,I5)') '  *AMFI code print level: ',IPR_AMFI
-      WRITE(LUPRI,'(1X,A,I5)') '*RELSCF code print level: ',IPR_RELSCF
 C
-      WRITE(LUPRI,'(1X,A,I5)')
-     &  '* RELSCF maximum number of iterations:',MXXTRP_INP
+      WRITE(LUPRI,'(A,I5)')
+     &  ' * AMFI   code print level:',IPR_AMFI,
+     &  ' * RELSCF code print level:',IPR_RELSCF,
+     &  ' * RELSCF maximum number of iterations:',MXXTRP_INP
 
       IF (IMFCH.NE.0) THEN
         WRITE(LUPRI,'(1X,A,I4)')

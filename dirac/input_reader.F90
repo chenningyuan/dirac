@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -448,21 +448,7 @@ contains
          read(unit_in, *) visual_cfg_london_component
       end if
 
-      if (kw_matches(word, '.NATURA')) then
-         visual_cfg_london_natural   = .true.
-         visual_cfg_london_symmetric = .false.
-         visual_cfg_london_none      = .false.
-      end if
-
-      if (kw_matches(word, '.SYMMET')) then
-         visual_cfg_london_natural   = .false.
-         visual_cfg_london_symmetric = .true.
-         visual_cfg_london_none      = .false.
-      end if
-
       if (kw_matches(word, '.NONE  ')) then
-         visual_cfg_london_natural   = .false.
-         visual_cfg_london_symmetric = .false.
          visual_cfg_london_none      = .true.
       end if
 
@@ -661,6 +647,12 @@ contains
          need_1el_f = .true.
          need_1el_q = .true.
          need_1el_o = .true.
+         need_1el_g = .true.
+      end if
+
+      if (kw_matches(word, '.PNC   ')) then
+         openrsp_cfg_pnc = .true.
+         call kw_read(word, openrsp_cfg_pnc_center)
          need_1el_g = .true.
       end if
 

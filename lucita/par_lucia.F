@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1058,10 +1058,10 @@ csk  &                LUWRT)
 C
         IDEBUGPRNT = 0
 C
-        CALL WTVEC_BATCH_DRV4SP(LUOUT,VEC2,LBATCH(ISBATCH),
-     &                          IBATCH(1,I1BATCH(ISBATCH)),
-     &                          IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
-     &                          LUOUTLIST,NUM_ACTIVE_BATCH,IDEBUGPRNT)
+        CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
 C
 C
 C       keep track of correct offset

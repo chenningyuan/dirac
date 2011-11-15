@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -259,10 +259,13 @@ C
          CALL QUIT ('Class not defined in MDINTB')
       ENDIF
 C
+C     LV   Deactivated this filesplitting option, should be obsolete now. 
+C     If the lines below are still commented out in 2013, please delete altogether !
+C
 C     We may exceed the maximum file length. Check it in the following
 C     routine !
 C
-      CALL MDINTN (NZKL)
+C     CALL MDINTN (NZKL)
 
 C     ... write the integral batch to the file 
       WRITE (LUMLF2) IKR1,JKR1,NZKL,

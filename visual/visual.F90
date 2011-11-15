@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -837,13 +837,20 @@ contains
      &                ifsym, &
      &                nvec)
 
+          write(*, *) '--------------------------------------------------------------'
+          write(*, *) 'visual.F90: selected orbitals (in solution vector)'
+          write(*, *) 'in fermion symmetry: ', ifsym
+          write(*, *) 'electronic index, (absolute index): '
           do i = 1, nvec
             ishift = kvec(i)
             if (ishift < 0) ishift = ishift + 1
             occupation(ioff + ishift) = 1.0d0
+            write(*, *) ishift, '(', ioff + ishift, ')'
           end do
+          write(*, *) '--------------------------------------------------------------'
 
           call dealloc(kvec)
+
 
         else
 

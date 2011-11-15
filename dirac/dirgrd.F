@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -183,7 +183,7 @@ C     J. Thyssen, 2000/8/27
 C
 C*****************************************************************************
       use quaternion_algebra
-      use xc_driver
+      use xcint_main
       use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
@@ -296,31 +296,34 @@ c        ... Calculate and add correction.
 !       not correct for gga
 !        in one go integrate xc potential
 !        and xc contribution to molecular gradient
-!        call xc_integrator(xc_mat_dim           = ntbas(0),
-!    &                      xc_nz                = nz,
-!    &                      xc_dmat_0            = dmat,
-!    &                      xc_nr_dmat           = 0, 
-!    &                      xc_nr_fmat           = 1,
-!    &                      xc_fmat              = work(kh1ao),
-!    &                      xc_do_potential      = .true.,
-!    &                      xc_nr_atoms          = nucdep, 
-!    &                      xc_property_gradient = gradxc,
-!    &                      xc_do_geo_0          = .true.)
-         call xc_integrator(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = dmat,
-     &                      xc_nr_dmat           = 0, 
-     &                      xc_nr_fmat           = 1,
-     &                      xc_fmat              = work(kh1ao),
-     &                      xc_do_potential      = .true.)
-         call xc_integrator(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = dmat,
-     &                      xc_nr_dmat           = 0, 
-     &                      xc_nr_fmat           = 0,
-     &                      xc_nr_atoms          = nucdep, 
-     &                      xc_property_gradient = gradxc,
-     &                      xc_do_geo_0          = .true.)
+!        call integrate_xc(xc_mat_dim           = ntbas(0),
+!    &                     xc_nz                = nz,
+!    &                     xc_dmat_0            = dmat,
+!    &                     xc_nr_dmat           = 0, 
+!    &                     xc_nr_fmat           = 1,
+!    &                     xc_fmat              = work(kh1ao),
+!    &                     xc_do_potential      = .true.,
+!    &                     xc_nr_atoms          = nucdep, 
+!    &                     xc_property_gradient = gradxc,
+!    &                     xc_do_geo_0          = .true.)
+         call integrate_xc(xc_mat_dim           = ntbas(0),
+     &                     xc_nz                = nz,
+     &                     xc_dmat_0            = dmat,
+     &                     xc_nr_dmat           = 0, 
+     &                     xc_nr_fmat           = 1,
+     &                     xc_fmat              = work(kh1ao),
+     &                     xc_do_potential      = .true.)
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(4)
+#endif
+         call integrate_xc(xc_mat_dim           = ntbas(0),
+     &                     xc_nz                = nz,
+     &                     xc_dmat_0            = dmat,
+     &                     xc_nr_dmat           = 0, 
+     &                     xc_nr_fmat           = 0,
+     &                     xc_nr_atoms          = nucdep, 
+     &                     xc_property_gradient = gradxc,
+     &                     xc_do_geo_0          = .true.)
          deallocate(dmat)
 
       end if

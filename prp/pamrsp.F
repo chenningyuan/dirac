@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1255,6 +1255,15 @@ C
      &     BVBUF(NBDIM),IVECS(NBNEW),BVNRM(NBNEW)
       CHARACTER BTYP(-1:2)*1,XTYP(-1:1)*3
       DATA BTYP/'C',' ','E','P'/,XTYP/'(-)','   ','(+)'/
+!     real(8), parameter :: thr_vec = 1.0d-03
+      real(8), parameter :: thr_vec = 0.0d+00
+      integer            :: iround_screening, izero, i_removed
+
+      IROUND_screening = 0
+  5   CONTINUE
+      IROUND_screening = IROUND_screening + 1
+      I_ZERO           = 0
+      I_REMOVED        = 0
 C     
 C     
 C     Take norm of new trial vectors
@@ -1408,21 +1417,48 @@ C           (before Gram-Schmidt)
             ENDIF
           ENDIF
         ENDIF
+        IF (THR_VEC .GT. 0.0D0 .AND. IROUND_screening .EQ. 1)THEN
+          DO I = 1, NBDIM
+            IF(ABS(BVECS(i,IBN)) .LT. THR_VEC)THEN
+              IF(BVECS(i,IBN) .EQ. 0.0d0) THEN
+                I_ZERO = I_ZERO + 1
+              ELSE
+                BVECS(i,IBN) = 0.0d0
+                I_REMOVED    = I_REMOVED + 1
+              END IF
+            END IF
+          END DO
+        END IF
  200  CONTINUE
 C     
 C     Check whether a new round of orthonormalization is
 C     necessary
 C     ==================================================
 C     
-      IF(IROUND.GT.0) THEN
-         IROUND = 0
-         IF (ITURN.EQ.1) THEN
-            WRITE(LUPRI,'(A)') 
-     &           '* XRSORT: Second round of orthonormalization !'
-            GO TO 10
-         ENDIF
-         CALL QUIT(
-     &        'XRSORT error: IROUND .gt. 0 and ITURN .gt. 1')
+      IF(THR_VEC .GT. 0.0D0 .AND. IROUND_screening .EQ. 1) THEN
+         IF(I_REMOVED .GT. 0) THEN
+!#ifdef LUCI_DEBUG
+            WRITE (lupri,'(/A,I12,A,A,1P,D10.2,I14)')
+     &       'info: Removed',I_REMOVED,
+     &       ' elements in new trial vector',
+     &       '; threshold & zeroes',THR_VEC, I_ZERO
+!#endif
+            ITURN     = 0
+            I_REMOVED = 0
+            I_ZERO    = 0
+            GO TO 5
+         END IF
+      ELSE
+        IF(IROUND.GT.0) THEN
+           IROUND = 0
+           IF (ITURN.EQ.1) THEN
+              WRITE(LUPRI,'(A)') 
+     &             '* XRSORT: Second round of orthonormalization !'
+              GO TO 10
+           ENDIF
+           CALL QUIT(
+     &          'XRSORT error: IROUND .gt. 0 and ITURN .gt. 1')
+        END IF
       END IF
 C     
       RETURN

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -538,8 +538,9 @@ C
 C***********************************************************************
        use dirac_cfg
        use dft_cfg
-       use xc_driver
+       use xcint_main
        use fde_mod
+       use fde_integrate
        use num_grid_gen
        use num_grid_cfg
 #include "implicit.h"
@@ -557,6 +558,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
+      type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
@@ -663,18 +665,18 @@ C          Hermitian operator
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
 
-           if (dirac_cfg_overlap_diagnostic) then    
+           if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
            call generate_num_grid(fao)
-           if (dirac_cfg_overlap_diagnostic) then    
+           if (dft_cfg_overlap_diagnostic) then    
               call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
-           call xc_integrator(xc_mat_dim               = ntbas(0),
+           call integrate_xc(xc_mat_dim               = ntbas(0),
      &                        xc_nz                    = nz,
      &                        xc_dmat_0                = fao,
      &                        xc_nr_dmat               = 0,
@@ -682,18 +684,32 @@ C          Hermitian operator
      &                        xc_fmat                  = fmo,
      &                        xc_do_potential          = .true.,
      &                        xc_do_overlap_diagnostic = 
-     &                           dirac_cfg_overlap_diagnostic,
-     &                        xc_do_fde_update_vemb =
-     &                                (dirac_cfg_fde .and. update_vemb),
-     &                        xc_do_fde_response    = 
-     &                                           dirac_cfg_fde_response)
+     &                           dft_cfg_overlap_diagnostic)
         end if
 
+#ifdef MOD_UNRELEASED
+!!!!!!
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
 
+           if (.not.dirac_cfg_dft_calculation) then
+              call genden(fao, cmo, 1, iprint)
+           endif
 
+!          call fde_set_nz(nz)
+!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
 
+          call integrate_fde(fde_mat_dim            = ntbas(0),
+     &                       fde_nz                 = nz,
+     &                       fde_dmat_0             = fao, 
+     &                       fde_nr_dmat            = 0,
+     &                       fde_nr_fmat            = 1,
+     &                       fde_fmat               = fmo,
+     &                       fde_do_potential       = .true.)
 
-
+        endif
+!!!!!
+#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2290,7 +2290,7 @@ C
 C*****************************************************************************
       use dirac_cfg
       use dft_cfg
-      use xc_driver
+      use xcint_main
       use num_grid_gen
 
 
@@ -2302,6 +2302,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 C
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
@@ -2311,6 +2312,10 @@ C
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 
+
+      if (twocomp .and. .not. (bss .or. x2c)) then
+         call quit('stop because of a problem in QR with .NONREL')
+      end if
 
 C
       CALL QENTER('E3DRV')
@@ -2383,7 +2388,7 @@ C
 !        radovan:
 !        this is necessary iff
 !        (hybrid functional .and. gradient dependence .and. nonzero frequency)
-!        otherwise the symmetrization inside xc_integrator messes up the KS matrix
+!        otherwise the symmetrization inside integrate_xc messes up the KS matrix
 !        we could check here whether we have this situation and not allocate
 !        otherwise but now we just play it safe and simply allocate it
          call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
@@ -2393,7 +2398,7 @@ C
 #ifdef VAR_MPI
          if (parcal) call dirac_parctl(4)
 #endif
-         call xc_integrator(xc_mat_dim           = ntbas(0),
+         call integrate_xc(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,
      &                      xc_dmat_0            = work(kdmat),
      &                      xc_nr_dmat           = 3,
@@ -2617,9 +2622,9 @@ C
 C     D_{ab} = C_{ai} W1_{iu} C+_{bu} - C_{au} W1_{ui} C+_{bi}
 C
       CALL QDEN1(1,D1,ISYM1,ITIM1,IFER1,W1,DEN,WORK(KTMPAO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN1(2,DM1,ISYM1,ITIM1,IFER1,W1,DEN,WORK(KTMPAO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
 C
 C     Print
 C
@@ -2655,7 +2660,7 @@ C*****************************************************************************
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 C
-      PARAMETER ( D0 = 0.0D0, DM1 = -1.0D0 )
+      PARAMETER ( D0 = 0.0D0, DM1 = -1.0D0, D1 = 1.0D0)
 C
       CHARACTER T*1
       DIMENSION DEN(N2BBASX,NZ),DTMP(N2BBASX,NZ),W1(NORBT,NORBT,NZ)
@@ -2778,19 +2783,19 @@ C
       CALL QDEN2(1,D1,ISYM1,ITIM1,IFER1,W1,DEN,
      &     ISYM2,ITIM2,IFER2,W2,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN2(3,D1,ISYM2,ITIM2,IFER2,W2,DEN,
      &     ISYM1,ITIM1,IFER1,W1,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN2(2,DM1,ISYM2,ITIM2,IFER2,W2,DEN,
      &     ISYM1,ITIM1,IFER1,W1,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN2(2,DM1,ISYM1,ITIM1,IFER1,W1,DEN,
      &     ISYM2,ITIM2,IFER2,W2,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
 C
 C     Print
 C

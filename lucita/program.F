@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1067,19 +1067,6 @@ C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK,WORK,K_OFFSET)
       KBASE_LUCITA = K_OFFSET
-      ! HJAaJ Aug 2008:
-      ! MEMMAN in LUCITA is using default integer type
-      ! while K_OFFSET is always INTEGER*8.
-      ! Therefore we use implicit conversion to KBASE_LUCITA.
-      ! Now we test if KBASE_LUCITA is OK:
-      K8BASE_LUCITA = KBASE_LUCITA
-      IF (K8BASE_LUCITA .NE. K_OFFSET) THEN
-         WRITE (LUOUT,'(/A/A,2I20//A)')
-     &   'FATAL ERROR in LUCITA: offset is too big for i*4',
-     &   'K_OFFSET and KBASE_LUCITA:',K_OFFSET, KBASE_LUCITA,
-     &   '(See code in lucita/program.F)'
-         CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
-      END IF
 C
       MXPWRD = LWRK
       KADD = MXPWRD
