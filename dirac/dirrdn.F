@@ -5116,13 +5116,13 @@ CMI&& activate 4c-2c MO transformation
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
           MOLMF3                = .TRUE.
-          DOLVC                 = .FALSE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
             CALL QUIT(
      &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
+          GO TO 100
   163     CONTINUE
 C&&&& DOSSSS: Including SS-integral contribution explicitly
             DOLVC = .FALSE.
@@ -5255,7 +5255,8 @@ C     =====================================================
           CALL QUIT(
      &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
         ENDIF
-        IF (SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP) THEN
+        IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
+     &      .not.x2cmod_mmf)THEN
           CALL QUIT(
      &    'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP 
      &    & BSS/X2C !')
