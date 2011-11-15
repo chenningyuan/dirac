@@ -1634,7 +1634,8 @@ C
       INUM = INUM + 1
 C
       LVCON = DOLVC.AND.
-     &        ( (INTFLG.EQ.3) .OR. (ONECAP.AND.INTV1C.EQ.2) )
+     &        ( (INTFLG.EQ.3 .or. INTFLG.EQ.11) .OR. 
+     &          (ONECAP.AND.INTV1C.EQ.2) )
       CALL DZERO(E,8*(MXOPEN+1))
       ERGBUF  = DHFERG
       E1PART  = D0

@@ -1,0 +1,21 @@
+#
+# gLite script
+#
+#
+
+Executable = "launch.sh";
+
+# files witj  full paths
+InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/input_templates/grid_computing/launch.sh","/home/ilias/qch_work/software/dirac_git/trunk/input_templates/grid_computing/MOLECULE.MOL","/home/ilias/qch_work/software/dirac_git/trunk/input_templates/grid_computing/DIRAC.INP"};
+
+# stdout,stderr output & other working files
+StdOutput = "std.out";
+StdError = "std.err";
+OutputSandbox = {"std.out", "std.err", "DFCOEF"};
+
+# other conditions
+#Requirements =
+# other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
+# other.GlueCEUniqueID == "ce3.ui.savba.sk:8443/cream-pbs-voce"
+#;
+#
