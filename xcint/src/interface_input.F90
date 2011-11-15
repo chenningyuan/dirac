@@ -2,7 +2,6 @@ module interface_input
 
    use keyword
    use character_processing
-   use dirac_cfg
 
    implicit none
 
@@ -15,7 +14,6 @@ contains
    subroutine read_input_dft(word, kw_section)
 
       use dft_cfg
-      use dirac_cfg
       use sigma_prefactor_setting
 
 !     ---------------------------------------------------------------------------
@@ -26,10 +24,6 @@ contains
       character(4)                     :: first_4
       integer                          :: i, n
 !     ---------------------------------------------------------------------------
-
-#ifdef PRG_DIRAC
-      if (.not. dirac_cfg_dft_calculation) return
-#endif
 
       call reset_available_kw_list()
 
@@ -160,12 +154,10 @@ contains
          dft_cfg_pointwise = .true.
       end if
 
-#ifdef PRG_DIRAC
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.OVLDIA')) then
-         dirac_cfg_overlap_diagnostic = .true.
+         dft_cfg_overlap_diagnostic = .true.
       end if
-#endif
 
       call check_whether_kw_found(word, kw_section)
 
