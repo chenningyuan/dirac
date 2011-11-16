@@ -24,30 +24,15 @@ We recommend that you build libxcint.a separately (see installation
 instructions) and link your application against it.
 
 
-Setting the XC functional (with XCFun)
---------------------------------------
+Setting the XC functional
+-------------------------
 
 The following minimal code will set the LDA XC functional::
 
-  use xc_derv
-  use interface_functional_read
-
   character(80) :: line
-  real(8)       :: hfx_out, mu_out, beta_out
 
-  line = 'lda       '// &
-         '          '// &
-         '          '// &
-         '          '// &
-         '          '// &
-         '          '// &
-         '          '// &
-         '          '
-  call parse_functional(line, xc_fun, hfx_out, mu_out, beta_out, .true.)
-  fun_is_automatic = .true.
-
-The subroutine parse_functional sets xc_fun and returns hfx_out, mu_out,
-beta_out that you can use in your parent code.
+  line = 'lda'
+  call xcint_parse_functional(line)
 
 
 Numerical grid
@@ -67,13 +52,46 @@ Basis set and molecular orbital information
 -------------------------------------------
 
 XCint needs a number of basis set (AO) and molecular orbital (MO) information
-(both required).  For the SAOP asymptotic correction XCint additionaly needs MO
-coefficients (optional).  This information is read from free-format formatted
-files called "interface_ao", "interface_mo", and "interface_mo_coef".  Your
-code needs to generate these files.  Have a look in test/lda_energy for
-examples.
+(both required). This information is read from free-format formatted files
+called "interface_ao" and "interface_mo". Your code needs to generate these
+files.
 
-interface_ao:
+Minimal example (H2O in STO-3G basis):
+
+interface_ao::
+
+  *** geometry
+      nr_centers
+           3
+      charges_and_coordinates
+           8.000         0.000         0.000        -0.224
+           1.000         1.452         0.000         0.899
+           1.000        -1.452         0.000         0.899
+  *** basis
+      is_spherical
+           F
+      algebra
+           1
+      use_only_large
+           T
+      nr_primitive_exp
+          15
+      # cent   L/S shell     l          prim          coef
+           1     L     1     0    0.1307E+03    0.4251E+01
+           1     L     1     0    0.2380E+02    0.4112E+01
+           1     L     1     0    0.6443E+01    0.1281E+01
+           1     L     2     0    0.5033E+01   -0.2394E+00
+           1     L     2     0    0.1169E+01    0.3202E+00
+           1     L     2     0    0.3803E+00    0.2416E+00
+           1     L     3     1    0.5033E+01    0.1675E+01
+           1     L     3     1    0.1169E+01    0.1053E+01
+           1     L     3     1    0.3803E+00    0.1669E+00
+           2     L     4     0    0.3425E+01    0.2769E+00
+           2     L     4     0    0.6239E+00    0.2678E+00
+           2     L     4     0    0.1688E+00    0.8347E-01
+           3     L     5     0    0.3425E+01    0.2769E+00
+           3     L     5     0    0.6239E+00    0.2678E+00
+           3     L     5     0    0.1688E+00    0.8347E-01
 
 - all coordinates in bohr
 - is_spherical "F" means cartesian GTO, "T" means spherical GTO
@@ -81,18 +99,10 @@ interface_ao:
 - coefficients (coef) contain normalization
 - algebra: use 1 (means real; 1, 2, 4 is for DIRAC)
 
-interface_mo:
-typically you only need to set
+interface_mo::
 
-- nr_electrons_inactive (number of closed-shell electrons)
-- nr_mo_gerade_positive_inactive (nr of occupied orbitals)
-- nr_mo_gerade_positive_secondary (nr of virtual orbitals)
-- mo_eigenvalues (for asymptotic correction)
-
-interface_mo_coef:
-
-- first line contains number of matrix elements (nr_ao*nr_mo*nr_quaternion_units)
-  nr_quaternion_units is typically 1
+    nr_electrons_inactive_total
+        10
 
 
 Integration, finally
@@ -104,7 +114,8 @@ This is a minimal example to integrate the XC potential matrix::
                            dmat,  &
                            fmat)
 
-dmat is the unperturbed AO density matrix with (at least) the dimensions
-dmat(nr_ao*nr_ao) allocated and calculated by your code. Also fmat is allocated
-by your code with (at least) the dimensions fmat(nr_ao*nr_ao). Note that XCint
-will integrate on top of fmat and therefore not zero fmat.
+The array dmat is the unperturbed AO density matrix with (at least) the
+dimensions dmat(nr_ao*nr_ao) allocated and calculated by your code. Also the
+array fmat is allocated by your code with (at least) the dimensions
+fmat(nr_ao*nr_ao). Note that XCint will integrate on top of fmat and therefore
+not zero fmat.

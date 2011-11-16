@@ -2,8 +2,6 @@
 Main page
 =========
 
-Write me ...
-
 .. toctree::
    :maxdepth: 2
 
