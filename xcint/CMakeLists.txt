@@ -28,7 +28,6 @@ include(CCompilers)
 
 set(LIBS)
 
-add_definitions(-DMOD_XCFUN)
 add_subdirectory(xcfun)
 set(LIBS
     ${LIBS}
