@@ -29,9 +29,9 @@
 *
       subroutine test_lucita_wrk_space_offset(work)
 !        purpose: check for integer compatibility for lucita on x86_64 systems
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
-!     real(8)              :: workspace_lucita
+      real(8)              :: workspace_lucita
       COMMON/lucita_wrk_space_test/workspace_lucita(1)
       integer(8)           :: K_OFFSET, K8BASE_LUCITA
       integer              :: KBASE_LUCITA
