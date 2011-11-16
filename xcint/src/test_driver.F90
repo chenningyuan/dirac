@@ -2,9 +2,6 @@ program main
 
    use interface_ao
    use interface_file_io
-   use xcint_main
-   use xc_derv
-   use fake_input
 
    implicit none
 
@@ -13,10 +10,12 @@ program main
    real(8), allocatable :: fmat_reference(:, :)
    integer, parameter   :: unit_grid = 44
 
-   call read_input()
-   call interface_ao_read(.false.)
+   character(80) :: line
 
-   fun_is_automatic = .true.
+   line = 'lda'
+   call xcint_parse_functional(line)
+
+   call interface_ao_read(.false.)
 
    allocate(dmat(nr_ao, nr_ao))
    dmat = 0.0d0

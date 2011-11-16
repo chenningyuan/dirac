@@ -1,6 +1,7 @@
 subroutine xcint_potential_rks(mat_dim, &
                                dmat_0,  &
                                fmat)
+
   use xcint_main
 
   implicit none
@@ -53,3 +54,18 @@ function xcint_get_nr_electrons_integrated()
   real(8) :: xcint_get_nr_electrons_integrated
   xcint_get_nr_electrons_integrated = get_nr_electrons_integrated()
 end function
+
+subroutine xcint_parse_functional(line)
+
+  use xc_derv
+  use interface_functional_read
+
+  implicit none
+
+  character(80), intent(in) :: line
+  real(8)                   :: hfx_out, mu_out, beta_out
+
+  call parse_functional(line, xc_fun, hfx_out, mu_out, beta_out, .true.)
+  fun_is_automatic = .true.
+
+end subroutine
