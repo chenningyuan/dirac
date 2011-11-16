@@ -126,7 +126,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "symmet.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "../cfun/functionals.h"
+#include "../xcint/cfun/functionals.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -487,7 +487,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "../cfun/functionals.h"
+#include "../xcint/cfun/functionals.h"
       
       DIMENSION SMAT(*)
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),

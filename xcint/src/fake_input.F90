@@ -2,7 +2,6 @@ module fake_input
 
    use keyword
    use character_processing
-   use dirac_cfg
    use interface_input
    use interface_functional_read
    use xc_derv
