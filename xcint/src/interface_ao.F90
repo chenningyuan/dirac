@@ -134,25 +134,25 @@ contains
       basis_is_spherical         = .false.
       use_only_large             = .false.
 
-      if (allocated(cartesian_deg                 )) deallocate(cartesian_deg                 )
-      if (allocated(cartesian_off                 )) deallocate(cartesian_off                 )
-      if (allocated(i_so_ao                       )) deallocate(i_so_ao                       )
-      if (allocated(l_quantum_nr                  )) deallocate(l_quantum_nr                  )
-      if (allocated(nr_nonzero_contraction_coefs  )) deallocate(nr_nonzero_contraction_coefs  )
-      if (allocated(shell_center                  )) deallocate(shell_center                  )
-      if (allocated(shell_stabilizing_irep        )) deallocate(shell_stabilizing_irep        )
-      if (allocated(spherical_deg                 )) deallocate(spherical_deg                 )
-      if (allocated(spherical_off                 )) deallocate(spherical_off                 )
-      if (allocated(center_deg    )) deallocate(center_deg    )
-      if (allocated(center_stabilizing_irep    )) deallocate(center_stabilizing_irep    )
-      if (allocated(ao_center                     )) deallocate(ao_center                     )
-      if (allocated(ao_center_xyz                 )) deallocate(ao_center_xyz                 )
-      if (allocated(ao_distance                   )) deallocate(ao_distance                   )
-      if (allocated(contraction_coef              )) deallocate(contraction_coef              )
-      if (allocated(f_so_ao                       )) deallocate(f_so_ao                       )
-      if (allocated(primitive_exp                 )) deallocate(primitive_exp                 )
-      if (allocated(center_charge )) deallocate(center_charge )
-      if (allocated(center_xyz    )) deallocate(center_xyz    )
+      if (allocated(cartesian_deg                )) deallocate(cartesian_deg                )
+      if (allocated(cartesian_off                )) deallocate(cartesian_off                )
+      if (allocated(i_so_ao                      )) deallocate(i_so_ao                      )
+      if (allocated(l_quantum_nr                 )) deallocate(l_quantum_nr                 )
+      if (allocated(nr_nonzero_contraction_coefs )) deallocate(nr_nonzero_contraction_coefs )
+      if (allocated(shell_center                 )) deallocate(shell_center                 )
+      if (allocated(shell_stabilizing_irep       )) deallocate(shell_stabilizing_irep       )
+      if (allocated(spherical_deg                )) deallocate(spherical_deg                )
+      if (allocated(spherical_off                )) deallocate(spherical_off                )
+      if (allocated(center_deg                   )) deallocate(center_deg                   )
+      if (allocated(center_stabilizing_irep      )) deallocate(center_stabilizing_irep      )
+      if (allocated(ao_center                    )) deallocate(ao_center                    )
+      if (allocated(ao_center_xyz                )) deallocate(ao_center_xyz                )
+      if (allocated(ao_distance                  )) deallocate(ao_distance                  )
+      if (allocated(contraction_coef             )) deallocate(contraction_coef             )
+      if (allocated(f_so_ao                      )) deallocate(f_so_ao                      )
+      if (allocated(primitive_exp                )) deallocate(primitive_exp                )
+      if (allocated(center_charge                )) deallocate(center_charge                )
+      if (allocated(center_xyz                   )) deallocate(center_xyz                   )
 
    end subroutine
 
@@ -217,25 +217,24 @@ contains
       integer :: size2_center_xyz
 !     --------------------------------------------------------------------------
 
+      symmetry_info_found = .false.
+
       call interface_ao_clear()
 
       if (xc_mpi_is_master()) then
-         symmetry_info_found = .false.
-
          inquire(file = interface_file_name_ao, exist = interface_file_exists)
          if (.not. interface_file_exists) then
             print *, 'interface_ao file not found'
             stop
          end if
-         open(interface_file_unit,            &
-              file   = interface_file_name_ao,   &
-              status = 'unknown',   &
-              form   = 'formatted', &
+         open(interface_file_unit,             &
+              file   = interface_file_name_ao, &
+              status = 'unknown',              &
+              form   = 'formatted',            &
               access = 'sequential')
          rewind(interface_file_unit)
 
          do while (.true.)
-
             read(interface_file_unit, '(a120)', end=1) line
 
             if (word_contains(line, '*** geometry')) then
