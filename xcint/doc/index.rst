@@ -9,13 +9,5 @@ Write me ...
 
    copying.rst
    install.rst
+   interfaces.rst
    developing_xcint.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
