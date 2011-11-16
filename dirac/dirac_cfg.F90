@@ -49,8 +49,6 @@ module dirac_cfg
 !                    embedding module
   logical, public :: dirac_cfg_fde                = .false.
   logical, public :: dirac_cfg_fde_response       = .false.
-!                    overlap diagnostic
-  logical, public :: dirac_cfg_overlap_diagnostic = .false.
 
   private
 

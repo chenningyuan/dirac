@@ -2993,19 +2993,7 @@ C ... print the total matrix and CHECK if it is anti-symmetric !
 
 C ... check the symmetry of the total property
 C      gradient matrix, PRPMO for LAO-PDBS
-
-      DSX=D0
-      DO IZ=1,NZ
-       DO I=1,NORBT-1
-       DO J=I+1,NORBT
-C   ... accumulate sum of differences
-        DSX = DSX +
-     & (DABS(PRPMO(I,J,IZ))-DABS(PRPMO(J,I,IZ)) )
-       ENDDO
-       ENDDO
-       ENDDO
-       DSX = DSX/DFLOAT( ((NORBT*NORBT-NORBT)/2)*NZ)
-
+       DSX=SYMCHECK(PRPMO,NORBT,NORBT,NORBT,NZ)
        IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
      &'*** GETDHB: The average symmetry of the final dH/dB',
@@ -3018,12 +3006,9 @@ C   ... accumulate sum of differences
      &'*** GETDHB: The average symmetry of the final dH/dB',
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
-
         WRITE(LUPRI,'(A)')
-     &'GETDHB:: The total propery gradient'
+     &'WARNING from GETDHB: The total propery gradient'
      &//'matrix dH/dB for LAO-PDBS is not (fully?) symmetric !'
-CMI     CALL QUIT(
-CMI  &'GETDHB: The total MO matrix in not symmetric!')
       ENDIF
 
       CALL MEMREL('GETDHB',WORK,1,KFRSAV,KFREE,LFREE)

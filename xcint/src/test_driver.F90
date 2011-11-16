@@ -2,9 +2,6 @@ program main
 
    use interface_ao
    use interface_file_io
-   use xcint_main
-   use xc_derv
-   use fake_input
 
    implicit none
 
@@ -13,10 +10,12 @@ program main
    real(8), allocatable :: fmat_reference(:, :)
    integer, parameter   :: unit_grid = 44
 
-   call read_input()
-   call interface_ao_read(.false.)
+   character(80) :: line
 
-   fun_is_automatic = .true.
+   line = 'lda'
+   call xcint_parse_functional(line)
+
+   call interface_ao_read(.false.)
 
    allocate(dmat(nr_ao, nr_ao))
    dmat = 0.0d0
@@ -25,6 +24,7 @@ program main
    fmat = 0.0d0
 
    call matrix_from_file('xc_dmat0', nr_ao, dmat)
+   dmat = 2.0d0*dmat
 
    open(unit_grid,                 &
         file   = 'numerical_grid', &
@@ -33,15 +33,9 @@ program main
         access = 'sequential')
    rewind(unit_grid)
 
-   call integrate_xc(                                        &
-                      xc_mat_dim      = nr_ao,                &
-                      xc_nz           = nr_quaternion_blocks, &
-                      xc_dmat_0       = dmat,                 &
-                      xc_nr_dmat      = 0,                    &
-                      xc_nr_fmat      = 1,                    &
-                      xc_fmat         = fmat,                 &
-                      xc_do_potential = .true.                &
-                     )
+   call xcint_potential_rks(nr_ao, &
+                            dmat,  &
+                            fmat)
 
    deallocate(dmat)
 

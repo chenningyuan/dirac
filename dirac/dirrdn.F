@@ -5064,7 +5064,6 @@ C    (see MRCON1 of the MOLTRA module)
 
 !         .DFTAUTO (dft with automatic differentiation)
   154     continue
-#ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
           call parse_functional(line, xc_fun,
      &                          hfx_out, mu_out, beta_out, .true.)
@@ -5075,9 +5074,6 @@ C    (see MRCON1 of the MOLTRA module)
           call set_xc_fun_xalda(xc_fun_xalda)
           fun_is_automatic = .true.
           dirac_cfg_dft_calculation = .true.
-#else
-          call quit('XCFun not available in this version')
-#endif /* ifdef MOD_XCFUN */
           go to 100
 
   155     CONTINUE
@@ -5586,18 +5582,14 @@ CMI    ... quantum dots
 
       if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_XCFUN
         if (.not. fun_is_automatic) then
-#endif
 !         this will report chosen functional
 !         if nothing is chosen it will report lda
 !         and if .dftauto functional is chosen
 !         it would report lda
 !         so let's not call it in this case
           call dftreport()
-#ifdef MOD_XCFUN
         end if
-#endif
 
 #ifdef MOD_ERI
 C aspg, 20070909

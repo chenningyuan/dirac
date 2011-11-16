@@ -42,19 +42,19 @@ contains
 
       nr_electrons_inactive             = 0
       nr_electrons_active               = 0
-      nr_electrons                = 0
+      nr_electrons                      = 0
       nr_mo                             = 0
       nr_mo_gerade                      = 0
       nr_mo_gerade_negative_secondary   = 0
       nr_mo_gerade_positive_inactive    = 0
-      nr_mo_gerade_positive_active    = 0
+      nr_mo_gerade_positive_active      = 0
       nr_mo_gerade_positive_secondary   = 0
       nr_mo_ungerade                    = 0
       nr_mo_ungerade_negative_secondary = 0
       nr_mo_ungerade_positive_inactive  = 0
-      nr_mo_ungerade_positive_active  = 0
+      nr_mo_ungerade_positive_active    = 0
       nr_mo_ungerade_positive_secondary = 0
-      nr_open_shells                        = 0
+      nr_open_shells                    = 0
       mo_eigenvalues_available          = .false.
       mo_coef_available                 = .false.
 
@@ -83,40 +83,67 @@ contains
          end if
          open(interface_file_unit,             &
               file   = interface_file_name_mo, &
-              status = 'unknown',    &
-              form   = 'formatted',  &
+              status = 'unknown',              &
+              form   = 'formatted',            &
               access = 'sequential')
          rewind(interface_file_unit)
 
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_electrons_inactive
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_electrons_active
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_gerade_negative_secondary
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_gerade_positive_inactive
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_gerade_positive_active
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_gerade_positive_secondary
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_ungerade_negative_secondary
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_ungerade_positive_inactive
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_ungerade_positive_active
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_mo_ungerade_positive_secondary
-         read(interface_file_unit, *)
-         read(interface_file_unit, *) nr_open_shells
-         if (nr_open_shells > 0) then
-            allocate(df_open(nr_open_shells))
-            df_open = 0.0d0
-            do i = 1, nr_open_shells
-               read(interface_file_unit, *) idummy, df_open(i)
-            end do
-         end if
+         do while (.true.)
+            read(interface_file_unit, '(a120)', end=1) line
+
+            if (word_contains(line, 'nr_electrons_inactive_total')) then
+               read(interface_file_unit, *) nr_electrons_inactive
+            end if
+
+            if (word_contains(line, 'nr_electrons_active_total')) then
+               read(interface_file_unit, *) nr_electrons_active
+            end if
+
+            if (word_contains(line, 'nr_mo_gerade_negative_secondary')) then
+               read(interface_file_unit, *) nr_mo_gerade_negative_secondary
+            end if
+
+            if (word_contains(line, 'nr_mo_gerade_positive_inactive')) then
+               read(interface_file_unit, *) nr_mo_gerade_positive_inactive
+            end if
+
+            if (word_contains(line, 'nr_mo_gerade_positive_active')) then
+               read(interface_file_unit, *) nr_mo_gerade_positive_active
+            end if
+
+            if (word_contains(line, 'nr_mo_gerade_positive_secondary')) then
+               read(interface_file_unit, *) nr_mo_gerade_positive_secondary
+            end if
+
+            if (word_contains(line, 'nr_mo_ungerade_negative_secondary')) then
+               read(interface_file_unit, *) nr_mo_ungerade_negative_secondary
+            end if
+
+            if (word_contains(line, 'nr_mo_ungerade_positive_inactive')) then
+               read(interface_file_unit, *) nr_mo_ungerade_positive_inactive
+            end if
+
+            if (word_contains(line, 'nr_mo_ungerade_positive_active')) then
+               read(interface_file_unit, *) nr_mo_ungerade_positive_active
+            end if
+
+            if (word_contains(line, 'nr_mo_ungerade_positive_secondary')) then
+               read(interface_file_unit, *) nr_mo_ungerade_positive_secondary
+            end if
+
+            if (word_contains(line, 'nr_open_shells')) then
+               read(interface_file_unit, *) nr_open_shells
+               if (nr_open_shells > 0) then
+                  allocate(df_open(nr_open_shells))
+                  df_open = 0.0d0
+                  do i = 1, nr_open_shells
+                     read(interface_file_unit, *) idummy, df_open(i)
+                  end do
+               end if
+            end if
+
+         end do
+1        continue
 
          nr_electrons = nr_electrons_inactive + nr_electrons_active
          nr_mo_gerade = nr_mo_gerade_negative_secondary &
@@ -132,7 +159,7 @@ contains
          rewind(interface_file_unit)
          do while (.true.)
 
-            read(interface_file_unit, '(a120)', end=1) line
+            read(interface_file_unit, '(a120)', end=2) line
 
             if (word_contains(line, 'mo_eigenvalues')) then
                allocate(mo_eigenvalues(nr_mo))
@@ -143,7 +170,7 @@ contains
             end if
 
          end do
-1        continue
+2        continue
          close(interface_file_unit, status = 'keep')
 
          inquire(file = interface_file_name_mo_coef, exist = interface_file_exists)
