@@ -31,7 +31,6 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/cfun/fun-cam.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-gga.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-gllb_hole.c
-    ${PROJECT_SOURCE_DIR}/cfun/fun-hjsx.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-kin_pw91k.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-kin_tf.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-kin_vw.c
@@ -50,8 +49,6 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/cfun/fun-revpbex.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-rpbex.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-slater.c
-    ${PROJECT_SOURCE_DIR}/cfun/fun-srpbec.c
-    ${PROJECT_SOURCE_DIR}/cfun/fun-srvwn5.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-tester.c
     ${PROJECT_SOURCE_DIR}/cfun/fun-vwn.c
     ${PROJECT_SOURCE_DIR}/cfun/functionals.c

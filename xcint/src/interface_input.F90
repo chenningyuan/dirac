@@ -137,9 +137,11 @@ contains
          call setaldaha(.true.) !activate alda for the h- part
       end if
 
+#ifdef PRG_DIRAC
       if (kw_matches(word, '.GAUTSC')) then
          call set_lscale_dft_gaunt()
       end if
+#endif
 
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.BLOCKE')) then
