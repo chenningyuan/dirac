@@ -589,13 +589,9 @@ C
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                       xc_nz           = nz,
-     &                       xc_dmat_0       = dmat,
-     &                       xc_nr_dmat      = 0,
-     &                       xc_nr_fmat      = 1,
-     &                       xc_fmat         = fock,
-     &                       xc_do_potential = .true.)
+           call integrate_xc_potential_real(ntbas(0),
+     &                                      dmat,
+     &                                      fock)
            tdxc = second() - tdxc
         end if
 
@@ -1405,13 +1401,9 @@ C
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                       xc_nz           = nz,
-     &                       xc_dmat_0       = dmat,
-     &                       xc_nr_dmat      = 0,
-     &                       xc_nr_fmat      = 1,
-     &                       xc_fmat         = fock,
-     &                       xc_do_potential = .true.)
+           call integrate_xc_potential_real(ntbas(0),
+     &                                      dmat,
+     &                                      fock)
            tdxc = second() - tdxc
         end if
 
