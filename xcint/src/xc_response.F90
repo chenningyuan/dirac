@@ -1,6 +1,6 @@
 module xc_response
 
-#if defined MOD_XCFUN && MOD_OPENRSP
+#if defined MOD_OPENRSP
   use xc_derv
   use density_eval
   use openrsp_cfg
@@ -787,6 +787,6 @@ contains
     end if
 
   end subroutine
-#endif /* ifdef MOD_XCFUN */
+#endif
 
 end module

@@ -23,9 +23,7 @@ module xc_derv
 
    use xc_max_block_length
    use xc_mpi
-#ifdef MOD_XCFUN
    use xcfun
-#endif
  
    implicit none
  
@@ -33,17 +31,11 @@ module xc_derv
    public fun_is_lda
    public fun_is_gga
    public fun_is_tau_mgga
-#ifdef MOD_XCFUN
    public xcfun_set_functional
-#endif
 
    public functional
    type functional
-#ifdef MOD_XCFUN
       real(8)              :: w(XC_NR_PARAMS)
-#else                      
-      real(8)              :: w(1)
-#endif                     
       integer              :: id
       logical              :: xcfun_id_is_set
       real(8), allocatable :: input(:, :)
@@ -105,9 +97,7 @@ contains
 
       fun_is_lda = .false.
       if (fun_is_automatic) then
-#ifdef MOD_XCFUN
          fun_is_lda = (xc_get_type(f%id) == 0)
-#endif
       else
 #ifdef PRG_DIRAC
          fun_is_lda = (.not. dftisgga())
@@ -121,9 +111,7 @@ contains
 
       fun_is_gga = .false.
       if (fun_is_automatic) then
-#ifdef MOD_XCFUN
          fun_is_gga = (xc_get_type(f%id) == 1)
-#endif
       else
 #ifdef PRG_DIRAC
          fun_is_gga = dftisgga()
@@ -137,15 +125,12 @@ contains
 
       fun_is_tau_mgga = .false.
       if (fun_is_automatic) then
-#ifdef MOD_XCFUN
          fun_is_tau_mgga = (xc_get_type(f%id) == 2)
-#endif
       else
          fun_is_tau_mgga = .false.
       end if
    end function
 
-#ifdef MOD_XCFUN
    subroutine xcfun_set_functional(f,              &
                                    response_order, &
                                    parallel_xc)
@@ -204,7 +189,6 @@ contains
       end if
 
    end subroutine
-#endif /* ifdef MOD_XCFUN */
 
   subroutine get_functional_derv(f,            &
                                  f_alda,       &
@@ -265,7 +249,6 @@ contains
     t1   = 0.0d0
     t2   = 0.0d0
 
-#ifdef MOD_XCFUN
     if (fun_is_automatic) then
 
       f%input = 0.0d0
@@ -418,7 +401,6 @@ contains
       end do
 
     else
-#endif /* ifdef MOD_XCFUN */
 
 #ifdef PRG_DIRAC
       select case (order)
@@ -467,9 +449,7 @@ contains
          end do
       end if
 
-#ifdef MOD_XCFUN
     end if
-#endif
 
 !   multiply by weight
     do l = 0, n
