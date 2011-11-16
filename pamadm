@@ -192,6 +192,7 @@ list_of_tests.append('zora')
 list_of_tests.append('dft_alda_xcfun')
 list_of_tests.append('dft_erf_xcfun')
 list_of_tests.append('dft_response_xcfun')
+list_of_tests.append('dft_cam')
 list_of_tests.append('fde_static-vemb_dipole')
 
 # list of directories and files
