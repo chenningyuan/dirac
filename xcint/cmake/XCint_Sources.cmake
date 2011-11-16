@@ -23,6 +23,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
     ${PROJECT_SOURCE_DIR}/src/xc_geometric.F90
+    ${PROJECT_SOURCE_DIR}/src/interface_fortran.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_autogen.F90
     ${PROJECT_SOURCE_DIR}/cfun/emb-functional.c

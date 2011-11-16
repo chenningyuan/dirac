@@ -33,15 +33,18 @@ program main
         access = 'sequential')
    rewind(unit_grid)
 
-   call integrate_xc(                                        &
-                      xc_mat_dim      = nr_ao,                &
-                      xc_nz           = nr_quaternion_blocks, &
-                      xc_dmat_0       = dmat,                 &
-                      xc_nr_dmat      = 0,                    &
-                      xc_nr_fmat      = 1,                    &
-                      xc_fmat         = fmat,                 &
-                      xc_do_potential = .true.                &
-                     )
+   call xcint_potential_rks(nr_ao, &
+                            dmat,  &
+                            fmat)
+!  call integrate_xc(                                        &
+!                     xc_mat_dim      = nr_ao,                &
+!                     xc_nz           = nr_quaternion_blocks, &
+!                     xc_dmat_0       = dmat,                 &
+!                     xc_nr_dmat      = 0,                    &
+!                     xc_nr_fmat      = 1,                    &
+!                     xc_fmat         = fmat,                 &
+!                     xc_do_potential = .true.                &
+!                    )
 
    deallocate(dmat)
 
