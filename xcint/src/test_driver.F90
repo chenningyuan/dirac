@@ -25,6 +25,7 @@ program main
    fmat = 0.0d0
 
    call matrix_from_file('xc_dmat0', nr_ao, dmat)
+   dmat = 2.0d0*dmat
 
    open(unit_grid,                 &
         file   = 'numerical_grid', &
@@ -36,15 +37,6 @@ program main
    call xcint_potential_rks(nr_ao, &
                             dmat,  &
                             fmat)
-!  call integrate_xc(                                        &
-!                     xc_mat_dim      = nr_ao,                &
-!                     xc_nz           = nr_quaternion_blocks, &
-!                     xc_dmat_0       = dmat,                 &
-!                     xc_nr_dmat      = 0,                    &
-!                     xc_nr_fmat      = 1,                    &
-!                     xc_fmat         = fmat,                 &
-!                     xc_do_potential = .true.                &
-!                    )
 
    deallocate(dmat)
 
