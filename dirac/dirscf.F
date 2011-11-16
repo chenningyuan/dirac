@@ -372,9 +372,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xcint_main
       use interface_mo_specific
-      use dft_cfg
       use fde_types
       use fde_mod
       use num_grid_gen
@@ -589,9 +587,9 @@ C
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call integrate_xc_potential_real(ntbas(0),
-     &                                      dmat,
-     &                                      fock)
+           call xcint_potential_rks(ntbas(0),
+     &                              dmat,
+     &                              fock)
            tdxc = second() - tdxc
         end if
 
@@ -1199,8 +1197,6 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use dft_cfg
-      use xcint_main
       use fde_types
       use fde_mod
       use num_grid_gen
@@ -1401,9 +1397,9 @@ C
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call integrate_xc_potential_real(ntbas(0),
-     &                                      dmat,
-     &                                      fock)
+           call xcint_potential_rks(ntbas(0),
+     &                              dmat,
+     &                              fock)
            tdxc = second() - tdxc
         end if
 
@@ -1588,7 +1584,6 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xcint_main
       use fde_mod
 
 #include "implicit.h"
@@ -1678,7 +1673,7 @@ C
 
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
-        e(1, 2, 0) = e(1, 2, 0) - get_xc_mat_energy()
+        e(1, 2, 0) = e(1, 2, 0) - xcint_get_xc_mat_energy()
       end if
 
       DO IZ = 1,NZ
@@ -1706,7 +1701,7 @@ C
       ELERGY = E1PART + E2PART
 
       if (dirac_cfg_dft_calculation) then
-        elergy = elergy + get_xc_energy()
+        elergy = elergy + xcint_get_xc_energy()
       end if
 
 !     if (dirac_cfg_fde) then
