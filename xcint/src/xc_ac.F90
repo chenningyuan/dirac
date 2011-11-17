@@ -48,7 +48,7 @@ contains
 !     --------------------------------------------------------------------------
 
 #ifdef PRG_DIRAC
-#include "../../cfun/functionals.h"
+#include "../cfun/functionals.h"
 #else
       print *, 'adapt standalone AC to xcfun'
       stop
