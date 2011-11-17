@@ -68,6 +68,7 @@ contains
          end if
       end if
 
+#ifdef PRG_DIRAC
       if (kw_matches(word, '.SAOP! ')) then
 !        "original" SAOP as in JCP 112, 1344 (2000).
          dft_cfg_saop                    = .true.
@@ -78,6 +79,7 @@ contains
          call setaldahs(.true.) !activate alda for the h+ part
          call setaldaha(.true.) !activate alda for the h- part
       end if
+#endif
 
       if (kw_matches(word, '.NOSDFT')) then
          dft_cfg_no_sdft = .true.
@@ -91,6 +93,7 @@ contains
          sigma_prefactor = -1.0d0
       end if
 
+#ifdef PRG_DIRAC
       if (kw_matches(word, '.ALDA  ')) then
          dft_cfg_alda_hs = .true.
          dft_cfg_alda_ha = .true.
@@ -140,6 +143,7 @@ contains
       if (kw_matches(word, '.GAUTSC')) then
          call set_lscale_dft_gaunt()
       end if
+#endif
 
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.BLOCKE')) then
