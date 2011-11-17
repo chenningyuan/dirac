@@ -1049,6 +1049,10 @@ CMI     ... Control printout ...
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
+C
+C     sebastian+stefan: subtract level shift from orbital energies
+      !IF(DOLEV) CALL UNDOLEVSHI(EIG)
+C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
 C
@@ -4593,6 +4597,7 @@ C
         write(lupri,*) 'LEVSHI: DFCOEF IS_HERE=',IS_HERE
         write(lupri,*) 'LEVSHI: DFCOEF IS_OPEN=',IS_OPEN
       ENDIF
+C     write(lupri,*) ' blabla enter dolevel...',dlshif
 
       REWIND LUCMOS
       CALL READT(LUCMOS,N2TMOTQ,CMO)
@@ -4608,15 +4613,74 @@ C
           ISTART = ISTART + NACSHMF(I,IOPEN)
         ENDDO
         NVEC = NESH(I) - NOCCMF(I)
+C       write(lupri,*) ' do... blabla nvec is ',nvec
+C       write(lupri,*) ' do... istart is ',istart
+C       write(lupri,*) ' do... i, nesh(i), noccmf(i) ',
+C    &                         i, nesh(i), noccmf(i)
+C       write(lupri,*) ' do... i2tmot(i) is ',i2tmot(i)
         IF(DLSHIF.NE.D0) THEN
+C       write(lupri,*) ' do... before FMO(16) is',FMO(16)
           CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              DLSHIF,D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              ISTART,NVEC,NTMO(I))
+C       write(lupri,*) ' do... after FMO(16) is',FMO(16)
         ENDIF
       ENDDO
 C
       CALL QEXIT('LEVSHI')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE UNDOLEVSHI(EIG)
+C***********************************************************************
+C
+C     undo Level shift
+C
+C     Written by S. Hoefener and S. Knecht   Nov 15 2011
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D1 = 1.0D0,D0=0.0D0)
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION EIG(*)
+
+      CALL QENTER('UNDOLEVSHI')
+C
+      write(lupri,*) ' blabla enter undolevel...'
+      write(lupri,*) ' nopen is ',nopen
+      ISTART = 0
+      DO I = 1,NFSYM
+        ISTART = NPSH(I)+NISHMF(I)+1
+        write(lupri,*) ' inactive offset is ',istart
+        DO IOPEN = 1,NOPEN
+          IF(OLEV(IOPEN).NE.D0) THEN
+            DO J = 1, NACSHMF(I,IOPEN)
+              EIG(ISTART+J-1) = EIG(ISTART+J-1) - OLEV(IOPEN)
+            END DO
+          ENDIF
+          ISTART = ISTART + NACSHMF(I,IOPEN)
+        END DO
+        NVEC = NESH(I) - NOCCMF(I)
+        write(lupri,*) ' blabla nvec is ',nvec
+        write(lupri,*) ' istart is ',istart
+        write(lupri,*) ' undo... i, nesh(i), noccmf(i) ',
+     &                           i, nesh(i), noccmf(i)
+        IF(DLSHIF.NE.D0) THEN
+          DO J = 1, NVEC
+            EIG(ISTART+J-1) = EIG(ISTART+J-1) - DLSHIF
+            write(lupri,*) 'orb, old new epsilon ==> ',ISTART+J-1,
+     &                      EIG(ISTART+J-1)+DLSHIF,
+     &                      EIG(ISTART+J-1)
+          END DO
+        ENDIF
+      END DO
+C
+      CALL QEXIT('UNDOLEVSHI')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
