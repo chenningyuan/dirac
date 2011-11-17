@@ -2314,9 +2314,6 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
       DIMENSION WORK(LWORK)
-      COMMON/lucita_wrk_space_test/workspace_lucita(1)
-      INTEGER*8 K_OFFSET, K8BASE_LUCITA
-      integer   KBASE_LUCITA
 C
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -2430,24 +2427,7 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
 C&&&& LUCITA: Perform spinfree CI calculation
   103    CONTINUE
 !           stefan - nov 2011: check for integer compatibility for lucita on x86_64 systems
-            call compoff(work,workspace_lucita,k_offset)
-            kbase_lucita = k_offset
-            ! HJAaJ Aug 2008:
-            ! MEMMAN in LUCITA is using default integer type
-            ! while K_OFFSET is always INTEGER*8.
-            ! Therefore we use implicit conversion to KBASE_LUCITA.
-            ! Now we test if KBASE_LUCITA is OK:
-            k8base_lucita = kbase_lucita
-            if(k8base_lucita .ne. k_offset)then
-              WRITE (lupri,'(/A/A,2I20//A)')
-     &        'FATAL ERROR in psiinp: memory offset'//
-     &        ' (dynamic memory - static memory) is too big for i*4',
-     &        'K_OFFSET and KBASE_LUCITA:',K_OFFSET, KBASE_LUCITA,
-     &        '(See code in dirac/dirrdn.F)'
-            CALL QUIT(
-     &      'FATAL ERROR for LUCITA runs: memory offset'//
-     &      ' (dynamic memory - static memory) is too big for i*4')
-            end if
+            call test_lucita_wrk_space_offset(work)
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
             NJOBS = NJOBS + 1
@@ -5084,7 +5064,6 @@ C    (see MRCON1 of the MOLTRA module)
 
 !         .DFTAUTO (dft with automatic differentiation)
   154     continue
-#ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
           call parse_functional(line, xc_fun,
      &                          hfx_out, mu_out, beta_out, .true.)
@@ -5095,9 +5074,6 @@ C    (see MRCON1 of the MOLTRA module)
           call set_xc_fun_xalda(xc_fun_xalda)
           fun_is_automatic = .true.
           dirac_cfg_dft_calculation = .true.
-#else
-          call quit('XCFun not available in this version')
-#endif /* ifdef MOD_XCFUN */
           go to 100
 
   155     CONTINUE
@@ -5606,18 +5582,14 @@ CMI    ... quantum dots
 
       if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_XCFUN
         if (.not. fun_is_automatic) then
-#endif
 !         this will report chosen functional
 !         if nothing is chosen it will report lda
 !         and if .dftauto functional is chosen
 !         it would report lda
 !         so let's not call it in this case
           call dftreport()
-#ifdef MOD_XCFUN
         end if
-#endif
 
 #ifdef MOD_ERI
 C aspg, 20070909

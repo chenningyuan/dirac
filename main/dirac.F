@@ -991,7 +991,6 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 
-      use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1113,14 +1112,9 @@ C        Start coupled cluster calculation.
 C
          CALL CCNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 4) THEN
-C
 C        Enter the DFT module
-C
-         call integrate_xc(xc_mat_dim = 1,
-     &                     xc_nz      = 1,
-     &                     xc_dmat_0  = (/0.0d0/),
-     &                     xc_nr_dmat = 0,
-     &                     xc_nr_fmat = 0)
+         call xcint_launch_slave_process()
+
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -1165,7 +1159,6 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
 
-         use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1233,14 +1226,9 @@ C        Start coupled cluster calculation.
 C
          CALL CCNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 4) THEN
-C
 C        Enter the DFT module
-C
-         call integrate_xc(xc_mat_dim = 1,
-     &                     xc_nz      = 1,
-     &                     xc_dmat_0  = (/0.0d0/),
-     &                     xc_nr_dmat = 0,
-     &                     xc_nr_fmat = 0)
+         call xcint_launch_slave_process()
+
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C

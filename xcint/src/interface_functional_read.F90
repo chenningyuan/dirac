@@ -23,19 +23,15 @@ module interface_functional_read
 
    use dft_cfg
    use xc_derv
-#ifdef MOD_XCFUN
    use xcfun
-#endif
 
    implicit none
 
-#ifdef MOD_XCFUN
    public parse_functional
    public set_xc_fun_alda
    public set_xc_fun_xalda
    public set_kin_fun_alda
    public set_kin_fun_xalda
-#endif
    public consistency_after_dft_input
    public report_after_dft_input
    public set_hf_exchange_factor
@@ -82,7 +78,6 @@ contains
 
   end function
 
-#ifdef MOD_XCFUN
    subroutine parse_functional(line,     &
                                f,        &
                                hfx_out,  &
@@ -401,8 +396,6 @@ contains
 
       call set_kin_fun_alda(f)
    end subroutine
-
-#endif /* ifdef MOD_XCFUN */
 
   subroutine consistency_after_dft_input()
 

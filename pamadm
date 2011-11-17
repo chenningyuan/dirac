@@ -123,6 +123,8 @@ vital_directories.append('luciarel')
 vital_directories.append('embedding')
 vital_directories.append('x2c')
 vital_directories.append('cmake')
+vital_directories.append('xcint/xcfun')
+vital_directories.append('xcint/xcfun/fortran')
 
 # these tests are always packaged
 
@@ -187,6 +189,11 @@ list_of_tests.append('visual_general')
 list_of_tests.append('visual_virtual_density')
 list_of_tests.append('xyz_input')
 list_of_tests.append('zora')
+list_of_tests.append('dft_alda_xcfun')
+list_of_tests.append('dft_erf_xcfun')
+list_of_tests.append('dft_response_xcfun')
+list_of_tests.append('dft_cam')
+list_of_tests.append('fde_static-vemb_dipole')
 
 # list of directories and files
 # that are never compiled as part of DIRAC main executable
@@ -288,15 +295,6 @@ dirac_modules[this_module].add_test('openrsp_pv')
 dirac_modules[this_module].add_test('openrsp_quadrupole')
 dirac_modules[this_module].add_test('openrsp_roa')
 dirac_modules[this_module].take_out_of_release()
-
-this_module = 'xcfun'
-dirac_modules[this_module] = dirac_module('xcfun', 'XCFun module')
-dirac_modules[this_module].add_cppflag('MOD_XCFUN')
-dirac_modules[this_module].add_directory('xcint/xcfun')
-dirac_modules[this_module].add_test('dft_alda_xcfun')
-dirac_modules[this_module].add_test('dft_erf_xcfun')
-dirac_modules[this_module].add_test('dft_response_xcfun')
-dirac_modules[this_module].add_test('fde_static-vemb_dipole')
 
 this_module = 'oof'
 dirac_modules[this_module] = dirac_module('oof', 'Object oriented modularity of Fortran 90/95')
@@ -480,9 +478,6 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
         for directory in dirac_modules[module].directories:
             directories_with_sources.append(directory)
-# ugly fix to get xcfun, will make it nicer later:
-if dirac_modules['xcfun'].is_included:
-    directories_with_sources.append('xcint/xcfun/fortran')
 
 directories_with_sources = set(directories_with_sources)
 
