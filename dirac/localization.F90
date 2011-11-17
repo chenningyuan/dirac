@@ -137,10 +137,10 @@ contains
   ! Internal variables
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
-  logical      :: tobe, full, rejected, Iminmax, diagconv, trdef, flat
+  logical      :: tobe, full, rejected, Iminmax, diagconv, trdef, flat, nstep
 
-  integer :: ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
-  integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez
+  integer :: i, ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
+  integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez, nref, ndim
 
   real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
   real*8  :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
@@ -188,6 +188,7 @@ contains
   tradius = 10.0d0
   trdef   = .true.
   flat    = .false.
+  nstep   = .true.
 
   if(loc%iprloc.ge.4)then
     write(lupri,*) 'lupri =',lupri
@@ -251,7 +252,6 @@ contains
   if(loc%iprloc.ge.6)then
     write(lupri,'(/a)') '* orbloc: Molecular coefficients:'
     call prqmat(cmo,nfbas(0),norb,nfbas(0),norb,4,ipqtoq(1,0),lupri)
-
     write(lupri,'(/a)') '* orbloc: Overlap matrix' 
     call prqmat(smat,nfbas(0),nfbas(0),nfbas(0),nfbas(0),1,ipqtoq(1,0),lupri)
   endif
@@ -269,19 +269,20 @@ contains
   call orblo4(indnao,nfnuc,nucdep)
 
   timstr = second()
-  if(loc%prjloc) then
-    ! PRJLOC = TRUE localization with projection analysis
+  if(loc%prjloc)then ! localization with projection analysis
     call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
-  else
-    ! PRJLOC = FALSE localization with Mulliken analysis
+  else               ! localization with Mulliken analysis
     call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
   endif
+
+  !------------------------------------------------------------------------------!
+  !                           Main iteration procedure                           !
+  !------------------------------------------------------------------------------!
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
     '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
-  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
+  write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
 
-  ! SCF cycle
   dinvmq = d0
   itr    = 0
   ist    = 0
@@ -295,33 +296,37 @@ contains
       call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmax,full)
       shift = d0
     else
-      call get_mu(eval,tgrad,tradius,shift,tpred)
+      call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
     endif
-    call get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,full,shift,dnrmk)
+    call get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,nstep,full,tradius,shift,dnrmk)
     call exp_func(pkappa,tgrad,eval,nish,dinvmq)
+
     if( (rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
 
+    ! get new MO coefficients
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
     if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
     call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
-    if(loc%prjloc) then
-      ! PRJLOC = TRUE localization with projection analysis
+
+    ! get functional value in the new point (new MO)
+    if(loc%prjloc)then ! localization with projection analysis
       call gtovlx(smat,var%ssmtrc)
       call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
-    else
-      ! PRJLOC = FALSE localization with Mulliken analysis
+    else               ! localization with Mulliken analysis
       call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
     endif
 
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,full,itr,nep)
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nep,&
+                 pkappa,tgrad,eval,nref)
 
+    ! check convergence criteria
     if( .not.rejected .or. (full.and.loc%lgchck) )then
       itr = itr + 1
       call gtinfo(daytid)
@@ -341,7 +346,6 @@ contains
       write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
         '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
-      ! Exit conditions
       if(loc%hesloc == 'DIAG')then
         if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) exit
         if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmax ) exit
@@ -367,8 +371,6 @@ contains
       endif
 
       if(itr > loc%itrloc)exit
-      ! Exit conditions
-
     endif
 
     if(ist > 2*loc%itrloc)exit
@@ -670,6 +672,7 @@ contains
       ENDDO
       DINVM = DINV/DFLOAT(NI)
       WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
+!MIN  DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -908,6 +911,7 @@ contains
       ENDDO
       DINVM = DINV/DFLOAT(NI)
       WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
+!MIN  DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -922,7 +926,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,full,shift,dnrmk)
+  subroutine get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,nstep,full,tradius,shift,dnrmk)
   !******************************************************************************!
   !                                                                              !
   !           Construction of the XKAPPA matrix using full hessian               !
@@ -951,8 +955,9 @@ contains
   implicit none
 
   ! External variables
-  logical, intent(in ) :: full
-  real*8,  intent(in ) :: shift
+  logical, intent(in   ) :: full
+  logical, intent(inout) :: nstep
+  real*8,  intent(in ) :: shift, tradius
   real*8,  intent(out) :: dnrmk
 
   real*8, intent(in ), dimension(:,:)   :: hmat
@@ -964,7 +969,7 @@ contains
 
   ! Internal variables
   integer :: i, j, ij, iz, ni, ndimh, ni12, nred, lupri
-  real*8  :: dnrm2
+  real*8  :: dnrm2, dtmp
 
   real*8, allocatable, dimension(:) :: xtmp
 
@@ -983,9 +988,23 @@ contains
   call alloc(xtmp  ,ndimh,id='xtmp   in get_kappa')
 
   ! calculate tilde{X}
-  do i=1,nred
-    pkappa(i) = - tgrad(i) / (eval(i) - shift)
-  enddo
+  if(nstep)then
+    do i=1,nred
+      pkappa(i) = - tgrad(i) / (eval(i) - shift)
+    enddo
+  else
+    dtmp = d0
+    do i=nred,1,-1
+      if(eval(i) < d0) exit
+      dtmp = dtmp + eval(i)*eval(i)
+    enddo
+    dtmp = dsqrt(dtmp)
+    pkappa(:) = d0
+    do i=nred,1,-1
+      if(eval(i) < d0) exit
+      pkappa(i) = tradius * eval(i) / dtmp
+    enddo
+  endif
 
   ! calculate X
   xtmp(:) = d0
@@ -1495,6 +1514,18 @@ contains
     do i=1,ndimh
       totdiag = totdiag + dabs( hmat(i,1) )
     enddo
+
+    if(loc%iprloc.ge.3)then
+      write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_uu'
+      write(lupri,'(8d12.4)') (hmat(i,1),i=1,ni12-ni)
+      write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_bb'
+      write(lupri,'(8d12.4)') (hmat(i,1),i=ni12-ni+1,2*ni12-ni)
+      write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R - B^R)_uu'
+      write(lupri,'(8d12.4)') (hmat(i,1),i=2*ni12-ni+1,3*ni12-ni)
+      write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R - B^R)_bb'
+      write(lupri,'(8d12.4)') (hmat(i,1),i=3*ni12-ni+1,4*ni12-ni)
+    endif
+
 
   else ! label 111
 
@@ -2117,14 +2148,14 @@ contains
   enddo
 
   if(loc%iprloc.ge.2)then
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
-    write(lupri,'(9d12.4)') (gradient(i),i=1,ni12-ni)
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
-    write(lupri,'(9d12.4)') (gradient(i),i=1+2*ni12-ni,3*ni12-ni)
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
-    write(lupri,'(9d12.4)') (gradient(i),i=1+ni12-ni,2*ni12-ni)
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
-    write(lupri,'(9d12.4)') (gradient(i),i=1+3*ni12-ni,4*ni12-ni)
+    write(lupri,'(/a,2f10.5)') 'Print gradient^R_u'
+    write(lupri,'(8d12.4)') (gradient(i),i=1,ni12-ni)
+    write(lupri,'(/a,2f10.5)') 'Print gradient^R_b}'
+    write(lupri,'(8d12.4)') (gradient(i),i=1+ni12-ni,2*ni12-ni)
+    write(lupri,'(/a,2f10.5)') 'Print gradient^I_u'
+    write(lupri,'(8d12.4)') (gradient(i),i=1+2*ni12-ni,3*ni12-ni)
+    write(lupri,'(/a,2f10.5)') 'Print gradient^I_b'
+    write(lupri,'(8d12.4)') (gradient(i),i=1+3*ni12-ni,4*ni12-ni)
   endif
 
   ! Norm of the gradient
@@ -2158,6 +2189,7 @@ contains
     dinvmq = dinvmq + d2*pkappa(i)*tgrad(i) + pkappa(i)*eval(i)*pkappa(i)
   enddo
   dinvmq = dinvmq / dfloat(ni)
+!MIN  dinvmq = - dinvmq    ! we are looking for the minimum
 
   end subroutine exp_func
 
@@ -2300,12 +2332,19 @@ contains
     write(lupri,'(8d12.4)') (etmp(i),i=1,ndimh)
   endif
 
+  if(loc%iprloc.ge.4)then
+    write(lupri,'(/a,3i4)')' Reduced eigenvalues of the hessian:'
+    write(lupri,'(8d12.4)') (eval(i),i=1,nred)
+    write(lupri,'(/a,3i4)')' Transformed gradient:'
+    write(lupri,'(8d12.4)') (tgrad(i),i=1,nred)
+  endif
+
   end subroutine hdiag
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_mu(eval,tgrad,tradius,shift,tpred)
+  subroutine get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
   !******************************************************************************!
   !                                                                              !
   !                   Calculate level-shift parameter mu                         !
@@ -2316,8 +2355,10 @@ contains
   implicit none
 
   ! External variables
-  real*8, intent(in ) :: tradius
-  real*8, intent(out) :: shift, tpred
+  logical, intent(in ) :: nstep
+  integer, intent(in ) :: nref
+  real*8,  intent(in ) :: tradius
+  real*8,  intent(out) :: shift, tpred
 
   real*8, intent(in), pointer :: eval(:), tgrad(:)
 
@@ -2328,6 +2369,12 @@ contains
   !------------------------------------------------------------------------------!
   lupri = var%lupri
 
+  ! If we are not performing Newton step quit.
+  if(.not.nstep)then
+    tpred = tradius
+    return
+  endif
+
   ! Get some dimensions
   ndim = size(eval,1)
 
@@ -2335,8 +2382,8 @@ contains
   imax  = 10000
   cutoff= trsh_mu * tradius
   step  = 0.1d0
-  xmax  = eval(ndim) + step
-  xmin  = eval(ndim)
+  xmax  = eval(nref) + step
+  xmin  = eval(nref)
   tcurr = f(xmax)
 
   ! find upper boundary if necessary
@@ -2392,7 +2439,9 @@ contains
 
     f = d0
     do ii=1,ndim
-      f = f + tgrad(ii) * tgrad(ii) / ((eval(ii) - x) * (eval(ii) - x))
+      if(dabs(tgrad(ii)) > thresh)then
+        f = f + tgrad(ii) * tgrad(ii) / ((eval(ii) - x) * (eval(ii) - x))
+      endif
     enddo
     f = dsqrt(f)
 
@@ -2403,7 +2452,8 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,full,itr,nep)
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nep,&
+                     pkappa,tgrad,eval,nref)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2412,29 +2462,69 @@ contains
   implicit none
 
   ! External variables
-  integer, intent(in   ) :: itr, nep
+  integer, intent(in ) :: itr, nep
+  integer, intent(out) :: nref
   real*8,  intent(in   ) :: dnrmk, diffg, diffq
   real*8,  intent(inout) :: tradius
   logical, intent(in   ) :: full
-  logical, intent(inout) :: rejected, trdef, flat
+  logical, intent(inout) :: rejected, trdef, flat, nstep
+
+  real*8,  intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
 
   ! Internal variables
   character*6 :: cond
-  integer :: lupri
+  integer :: i, lupri, nred
+
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
-  real*8 :: R, tradius_old
+  real*8 :: R, tradold, dmax, xstep
 
   !------------------------------------------------------------------------------!
-  lupri  = var%lupri
-  R = diffg / diffq
-  tradius_old = tradius
-  cond = '??????'
+  ! prepare constants
+  lupri   = var%lupri
+  nred    = size(eval,1)
+  tradold = tradius
+  cond    = '??????'
+  R       = diffg / diffq
 
+  ! Are we in the maximum?
+  xstep = d0
+  do i=1,nred
+    if(dabs(pkappa(i)) > xstep) xstep = dabs(pkappa(i))
+  enddo
+  dmax = d0
+  do i=nred,1,-1
+    if(eval(i) < d0) exit
+    dmax = dmax + dabs(d2*eval(i)*xstep)
+  enddo
+  dmax = dmax / dfloat(nep)
+
+  ! Are we perforiming Newton step?
+  nref = 0
+  do i=nred,1,-1
+    if(dabs(tgrad(i)) > thresh)then
+      nref = i
+      exit
+    endif
+  enddo
+  if(nref == 0)then
+    write(lupri,'(a)')" WARNING: The gradient is zero. Why I'm here???"
+    write(lupri,'(a)')" WARNING:    ==>  STOP "
+    stop
+  endif
+  if((eval(nref) < d0).and.(nep/=0)) nstep = .false.
+  if(.not.nstep.and.rejected) nstep = .true.
+  if(dmax < thresh) nstep = .true.
+
+  ! Trus-radius update
   if(rejected)then
-    cond = 'r     '
-    if(R < d0 ) cond = 'r  R<0'
-    if(R < d1q) cond = 'r  R<1'
-    if(R > d3q) cond = 'r  R>3'
+    if(diffq < d0)then
+      cond = 'r  q<0'
+    else
+      cond = 'r     '
+      if(R < d0 ) cond = 'r  R<0'
+      if(R < d1q) cond = 'r  R<1'
+      if(R > d3q) cond = 'r  R>3'
+    endif
   else
     if(dnrmk > tradius)then
       if(diffq > d0)then
@@ -2462,66 +2552,72 @@ contains
       endif
     endif
   endif
-  if( (dabs(diffg)<thresh).and.(dabs(diffq)<thresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
-    cond(3:3) = '!'
-  endif
 
   if(rejected)then
     if(diffq < d0)then
-      write(lupri,'(a)')' STOP: The value of the quadratic approximation of the functional '
-      write(lupri,'(a)')'       decreased although the level-shifted Newton step was used '
-      stop
+      tradius  = d1q* tradius
+    else
+      rejected = .false.
+      if(R < d0 ) rejected = .true.
+      if(R < d1q) tradius  = d1q* tradius
+      if(R > d3q) tradius  = d2 * tradius
     endif
-    rejected = .false.
-    if(R < d0 ) rejected = .true.
-    if(R < d1q) tradius  = d1q* tradius
-    if(R > d3q) tradius  = d2 * tradius
   else
     if(dnrmk > tradius)then
-      if(diffq > d0)then
-        tradius = dnrmk
-        if(R < d0 ) rejected = .true.
-        if(R < d1q) tradius  = d1q*tradius
-        if(R > d5q) tradius  = d2*tradius
-      else 
-        tradius = dnrmk
-        if(R > d0 ) rejected = .true.
-        if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
-        if((R > d3q).and.(R < d5q))   tradius = d2*tradius
+      if(full)then
+        if(diffq > d0)then
+          tradius = dnrmk
+          if(R < d0 ) rejected = .true.
+          if(R < d1q) tradius  = d1q*tradius
+          if(R > d5q) tradius  = d2*tradius
+        else 
+          tradius = dnrmk
+          if(R > d0 ) rejected = .true.
+          if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
+          if((R > d3q).and.(R < d5q))   tradius = d2*tradius
+        endif
+      else
+        rejected = .true.
       endif
     else
       if(diffq > d0)then
-        tradius = tradius_old
+        tradius = tradold
         if(trdef) tradius = dnrmk
         if(R < d0 ) rejected = .true.
         if(R < d1q) tradius  = d1q * dnrmk
-        if(R > d5q) tradius  = max(d2*dnrmk,tradius_old)
+        if(R > d5q) tradius  = max(d2*dnrmk,tradold)
       else 
-        tradius = tradius_old
+        tradius = tradold
         if(trdef) tradius = dnrmk
         if(R > d0 ) rejected = .true.
         if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
-        if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradius_old)
+        if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradold)
       endif
     endif
   endif
 
-  if( (dabs(diffg)<thresh).and.(dabs(diffq)<thresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
+  if(.not.nstep) cond(3:3) = '!'
+  if(.not.nstep) rejected = .true.
+
+  ! Are we in the flat area?
+  if((dabs(diffg)<thresh) .and. (dabs(diffq)<thresh) .and. (dmax > thresh))then
     rejected = .true.
-    tradius  = tradius_old
+    tradius  = tradold
     if(flat) tradius = 10.0d0*tradius
     flat     = .true.
+    if(cond(3:3) == '!') cond(3:3) = '|'
+    if(cond(3:3) /= '!') cond(3:3) = '.'
   else
     flat     = .false.
   endif
 
   if(full.and.(nep==0)) rejected = .false.
-  if(tradius /= tradius_old) trdef = .false.
+  if(tradius /= tradold) trdef = .false.
 
-  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
+  write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(lupri,'(a,2x,i4,3d11.2,f11.5,a,l,a,2x,a,4d11.2)') &
-    '*T',itr,tradius_old,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
+    '*T',itr,tradold,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
 
   end subroutine updateT
 
