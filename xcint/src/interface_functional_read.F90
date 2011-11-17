@@ -90,14 +90,8 @@ contains
 !              otherwise it is set to 1.0
 !     
 !              equivalent functionals:
-!              lda
-!              slater vwn
-!              slater=1.0 vwn=1.0
-!     
-!              equivalent functionals:
 !              b3lyp
-!              slater=0.8 becke=0.72 hfx=0.2 vwn=0.19 lyp=0.81
-!              lda slater=-0.2 hfx=0.2 becke=0.72 vwn=-0.81 lyp=0.81
+!              slaterx=0.8 bcorrx=0.72 hfx=0.2 vwnc=0.19 lypc=0.81
       
 !     --------------------------------------------------------------------------
       character(80)              :: line
@@ -308,19 +302,24 @@ contains
            beta_out = beta_out + w
         end if
 
-        w = get_weight(word_array(i), 'slater')
+        w = get_weight(word_array(i), 'slaterx')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_SLATERX) = f%w(XC_SLATERX) + w
         end if
 
-        w = get_weight(word_array(i), 'vwn')
+        w = get_weight(word_array(i), 'vwnc')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_VWN5C) = f%w(XC_VWN5C) + w
         end if
 
-        w = get_weight(word_array(i), 'becke')
+        w = get_weight(word_array(i), 'beckex')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_BECKEX) = f%w(XC_BECKEX) + w
+        end if
+
+        w = get_weight(word_array(i), 'bcorrx')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_BECKECORRX) = f%w(XC_BECKECORRX) + w
         end if
       
       end do
