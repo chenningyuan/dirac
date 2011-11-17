@@ -53,8 +53,10 @@
 
 #include "general.h"
 #include "functionals.h"
+#ifdef PRG_DIRAC
 #include "inforb.h"
 #include "dcbham.h"
+#endif
 
 #ifdef VAR_MPI
 #include <mpi.h>
@@ -79,6 +81,7 @@ static char* DftConfString = NULL;
 static char* EmbXcConfString = NULL;
 static char* EmbKinConfString = NULL;
 
+#ifdef PRG_DIRAC
 extern void dftsetcam_(real *w, real *b);
 
 static void
@@ -95,6 +98,7 @@ dft_get_hf_weight(void)
 
 static void
 dft_set_cam_param(real w, real be) { dftsetcam_(&w, &be);}
+#endif
 
 static int
 dft_func_input (const char* line, int* inperr, int len, char** ConfString,
@@ -104,9 +108,11 @@ int
 FSYM(dftinput)(const char* line, int * inperr, int len)
 {
     fun_printf        = fort_print;
+#ifdef PRG_DIRAC
     fun_set_hf_weight = dft_set_hf_weight;
     fun_get_hf_weight = dft_get_hf_weight;
     fun_set_cam_param = dft_set_cam_param;
+#endif
     return dft_func_input (line, inperr, len, &DftConfString,
                            available_functionals, &selected_func); 
 }
@@ -607,7 +613,9 @@ dalton_quit(const char* format, ...)
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
     len = strlen(line);
+#ifdef PRG_DIRAC
     quit_(line, len);
+#endif
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */

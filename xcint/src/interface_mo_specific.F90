@@ -110,9 +110,9 @@ contains
          nr_open_shells = 0
       end if
 
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_inactive
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_active'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_active_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_active
       write(interface_file_unit, '(4x, a)') 'nr_mo_gerade_negative_secondary'
       write(interface_file_unit, '(4x, i6)') nr_mo_gerade_negative_secondary
@@ -225,9 +225,9 @@ contains
 
       nr_open_shells = 0
 
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_inactive
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_active'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_active_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_active
       write(interface_file_unit, '(4x, a)') 'nr_mo_gerade_negative_secondary'
       write(interface_file_unit, '(4x, i6)') nr_mo_gerade_negative_secondary
