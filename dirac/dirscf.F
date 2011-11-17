@@ -5158,9 +5158,9 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
            CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
      &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
          ENDIF
-         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
-         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
-     &              4,IPQTOQ(1,0),LUPRI)
+CTROND         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
+CTROND         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
+CTROND     &              4,IPQTOQ(1,0),LUPRI)
           FAC = D1
           CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO
