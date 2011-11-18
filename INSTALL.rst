@@ -12,10 +12,10 @@ Dependencies
 ------------
 
 The configuration/compilation step requires:
-CMake  >= 2.6.0
+CMake  >= 2.6.3
 
 The configuration/compilation step using setup script requires:
-CMake  >= 2.6.0
+CMake  >= 2.6.3
 python >= 2.4.0
 
 The run script pam and the testing script runtest require:
