@@ -296,6 +296,7 @@ dirac_modules[this_module].add_test('openrsp_molecular_gradient')
 dirac_modules[this_module].add_test('openrsp_pv')
 dirac_modules[this_module].add_test('openrsp_quadrupole')
 dirac_modules[this_module].add_test('openrsp_roa')
+dirac_modules[this_module].add_test('pnc_gradient')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'oof'
