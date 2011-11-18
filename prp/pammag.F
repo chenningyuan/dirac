@@ -521,7 +521,6 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 C ... do the reorthonormalization ...
              CALL TTRA(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
      &                   CONMAT,WORK(KTHMAT),IPRINT)
-
              IF (IPRINT.GE.5) THEN
               WRITE(LUPRI,'(4A/)')
      &         'GETCON: Transformed term {}', PRPNAM(INDXPR),';',
@@ -658,113 +657,97 @@ C ... do matrix multiplications - run over fermion irreps
 C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
 
       DO I1 = 1, NFSYM
+        IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
 
-         I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-         I3 = MOD(I1+IOPSYH,2) + 1  ! I1,I3 ... H
-
-C        Write(lupri,'(2x,a,4i3)') 'I1,I2,I3,I4:',I1,I2,I3,I4
-C        Write(lupri,'(2x,a,3i3)')
-C    & 'IREPT,IREPH,IREPTH:',IREPT,IREPH,IREPTH
-
-         IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
-
-C        ... do TH(I2,I3) := dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NORB(I2), NORB(I3), NORB(I1), DSGN,
+C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
+          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
+          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+1, IORB(I2)+1, 1),
+     &               NORBT, NORBT, NZ,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1, IORB(I3)+1, 1), 
+     &               NORBT, NORBT, NZ, 
+!                    ---------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ)
+          IF(IPRINT.GE.5) THEN
+            WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
+     &    'TTRA: 1.part transformed H.T over e-p :',
+     &     IREPTH+1,'/',NBSYM,DSGN
+            CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
+     &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
+          ENDIF
+C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
+          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
 !                    -----------------------------------
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
      &               NORBT,NORBT,NZ,
 !                    -----------------------------------
      &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ, 
 !                    -----------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I2)+1, IORB(I3)+1, 1),
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ)
+        ELSE  ! Transformation in the e-e space only
 
+C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
+          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
+          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
+          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
           IF(IPRINT.GE.5) THEN
             WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
-     &    'TTRA: 1.part transformed T^{+}.H over e-p :',
+     &    'TTRA: 1.part transformed H.T over e:',
      &     IREPTH+1,'/',NBSYM,DSGN
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
-
-C  ...  do TH(I3,I2) := TH(I3,I2) + H(I3,I1).T(I1,I2)
-          CALL QGEMM(NORB(I3), NORB(I2), NORB(I1), D1,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I3)+1, IORB(I1)+1, 1),
-     &               NORBT, NORBT, NZ,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I1)+1, IORB(I2)+1, 1), 
-     &               NORBT, NORBT, NZ, 
-!                    ---------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I3)+1, IORB(I2)+1, 1),
-     &               NORBT,NORBT,NZ)
-
-         IF(IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(/2X,A,I1,A,I1)')
-     &'TTRA: TOTAL transformed {T,H} over e-p MO matrix of symm ',
-     & IREPTH+1,'/',NBSYM
-          CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
-     &           NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
-         ENDIF
-
-         ELSE  ! Transformation in the e-e space only
-
-C        ... do TH(I2,I1) = dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NESH(I2), NESH(I3), NESH(I1), DSGN,
+C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
+          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
 !                    ---------------------------------------------- --
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
      &               NORBT, NORBT, NZ,
 !                    -------------------------------------------------
      &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
-     &    'TTRA: 1.part transformed T^{+}.H over e:',
-     &     IREPTH+1,'/',NBSYM,DSGN
-            CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
-     &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
-          ENDIF
-
-C        ...  do TH(I3,I2) = TH(I3,I2) + H(I3,I1)*T(I1,I2)
-          CALL QGEMM(NESH(I3),NESH(I2),NESH(I1),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I3)+NPSH(I3)+1,IORB(I1)+NPSH(I1)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               HMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT, NORBT, NZ,
 !                    -------------------------------------------------
      &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I3)+NPSH(I3)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT,NORBT,NZ)
-
-         IF(IPRINT.GE.5) THEN
+        ENDIF
+      ENDDO
+      IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1)')
      &'TTRA: TOTAL transformed {T,H} MO matrix over e of symm ',
      & IREPTH+1,'/',NBSYM
           CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &           NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
-         ENDIF
-
-        ENDIF
-
-      ENDDO
+      ENDIF
 
       CALL QEXIT('TTRA')
       RETURN

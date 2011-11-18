@@ -110,12 +110,9 @@ Integration, finally
 
 This is a minimal example to integrate the XC potential matrix::
 
-  call xcint_potential_rks(nr_ao, &
-                           dmat,  &
-                           fmat)
+  call xcint_potential_rks(nr_ao, dmat, fmat)
 
 The array dmat is the unperturbed AO density matrix with (at least) the
-dimensions dmat(nr_ao*nr_ao) allocated and calculated by your code. Also the
-array fmat is allocated by your code with (at least) the dimensions
-fmat(nr_ao*nr_ao). Note that XCint will integrate on top of fmat and therefore
-not zero fmat.
+dimensions (nr_ao*nr_ao) allocated and calculated by your code. Also the array
+fmat is allocated by your code with (at least) the dimensions (nr_ao*nr_ao).
+Note that XCint will integrate on top of fmat and therefore not zero fmat.

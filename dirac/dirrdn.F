@@ -1561,8 +1561,6 @@ C&&& ATOMST: Atomic start
                TRIFCK=.FALSE.
                DO IATOM = 1,NONTYP
                  READ(LUCMD,*) ATOMFIL(IATOM),NVECATOM(IATOM)
-CTROND
-                 WRITE(6,*) 'TEST..',ATOMFIL(IATOM),NVECATOM(IATOM)
                  DO ISHELL = 1,NVECATOM(IATOM)
                    READ(LUCMD,'(A72)') VECATOM(ISHELL,IATOM)
                    READ(LUCMD,*) OCCATOM(ISHELL,IATOM)
