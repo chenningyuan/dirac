@@ -72,6 +72,17 @@ make dirac.x
 make info_ext
 make Experimental 
 
+#
+# run static dirac
+#
+BUILD_STATIC=build_ompi_ifort_icc_ilp64_static
+cd $DIRAC
+./setup --fc=ifort --cc=icc --cpp=icpc  --debug --int64 --internal-math -D BUILDNAME="linux.fe6_Odense.ifort_icc_ilp64_STATIC" -D ENABLE_STATIC_LINKING=ON -D VERBOSE_OUTPUT=ON -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --build=$BUILD_STATIC
+cd $DIRAC/$BUILD_STATIC
+make dirac.x
+make info_ext
+make Experimental 
+
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
 exit 0

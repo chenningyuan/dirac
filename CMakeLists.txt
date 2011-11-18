@@ -6,7 +6,7 @@ add_definitions(-DPRG_DIRAC)
 # set version
 set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 1)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -71,8 +71,11 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
 if(ENABLE_STATIC_LINKING)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+    if (ENABLE_MPI OR ENABLE_OMP)
+        message(FATAL_ERROR "Static linking only works in sequential mode")
+    endif()
 endif()
 
 option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
@@ -170,10 +173,15 @@ endif()
 
 include(CompilationInfo)
 
-# copy pam to build dir
+# copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
     ${CMAKE_BINARY_DIR}/pam
+    COPYONLY
+    )
+configure_file(
+    ${CMAKE_SOURCE_DIR}/pam
+    ${CMAKE_BINARY_DIR}/pam-dirac
     COPYONLY
     )
 

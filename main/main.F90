@@ -125,7 +125,7 @@ program dirprg
     endif
 #endif
     print '(a)',' '
-    print '(a)','Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam'
+    print '(a)','Note: maximum allocatable memory for serial run can be set by pam --aw'
     print '(a)',' '
 #ifdef VAR_MPI
   endif
