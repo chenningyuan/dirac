@@ -173,10 +173,15 @@ endif()
 
 include(CompilationInfo)
 
-# copy pam to build dir
+# copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
     ${CMAKE_BINARY_DIR}/pam
+    COPYONLY
+    )
+configure_file(
+    ${CMAKE_SOURCE_DIR}/pam
+    ${CMAKE_BINARY_DIR}/pam-dirac
     COPYONLY
     )
 
