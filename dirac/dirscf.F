@@ -1045,7 +1045,7 @@ CMI     ... Control printout ...
 C
 C
 C     sebastian+stefan: subtract level shift from orbital energies
-      !IF(DOLEV) CALL UNDOLEVSHI(EIG)
+      IF(DOLEV) CALL UNDOLEVSHI(EIG)
 C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
@@ -1780,7 +1780,7 @@ CMI      ... print out matrixes ...
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
 CTROND
-      WRITE(6,*) 'TEST :',dhferg, besterg
+!     WRITE(6,*) 'TEST :',dhferg, besterg
       if (dhferg.lt.besterg) then
          write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
          call system('cp DFCOEF DFCOEF.BEST')
@@ -4586,7 +4586,6 @@ C
         write(lupri,*) 'LEVSHI: DFCOEF IS_HERE=',IS_HERE
         write(lupri,*) 'LEVSHI: DFCOEF IS_OPEN=',IS_OPEN
       ENDIF
-C     write(lupri,*) ' blabla enter dolevel...',dlshif
 
       REWIND LUCMOS
       CALL READT(LUCMOS,N2TMOTQ,CMO)
@@ -4602,18 +4601,11 @@ C     write(lupri,*) ' blabla enter dolevel...',dlshif
           ISTART = ISTART + NACSHMF(I,IOPEN)
         ENDDO
         NVEC = NESH(I) - NOCCMF(I)
-C       write(lupri,*) ' do... blabla nvec is ',nvec
-C       write(lupri,*) ' do... istart is ',istart
-C       write(lupri,*) ' do... i, nesh(i), noccmf(i) ',
-C    &                         i, nesh(i), noccmf(i)
-C       write(lupri,*) ' do... i2tmot(i) is ',i2tmot(i)
         IF(DLSHIF.NE.D0) THEN
-C       write(lupri,*) ' do... before FMO(16) is',FMO(16)
           CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              DLSHIF,D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              ISTART,NVEC,NTMO(I))
-C       write(lupri,*) ' do... after FMO(16) is',FMO(16)
         ENDIF
       ENDDO
 C
@@ -4637,15 +4629,16 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION EIG(*)
+!#def LEVELSHIFT_DEBUG
 
       CALL QENTER('UNDOLEVSHI')
 C
-      write(lupri,*) ' blabla enter undolevel...'
-      write(lupri,*) ' nopen is ',nopen
       ISTART = 0
       DO I = 1,NFSYM
-        ISTART = NPSH(I)+NISHMF(I)+1
+        ISTART = IORB(I) + NPSH(I)+NISHMF(I)+1
+#ifdef LEVELSHIFT_DEBUG
         write(lupri,*) ' inactive offset is ',istart
+#endif
         DO IOPEN = 1,NOPEN
           IF(OLEV(IOPEN).NE.D0) THEN
             DO J = 1, NACSHMF(I,IOPEN)
@@ -4655,16 +4648,21 @@ C
           ISTART = ISTART + NACSHMF(I,IOPEN)
         END DO
         NVEC = NESH(I) - NOCCMF(I)
+#ifdef LEVELSHIFT_DEBUG
         write(lupri,*) ' blabla nvec is ',nvec
         write(lupri,*) ' istart is ',istart
         write(lupri,*) ' undo... i, nesh(i), noccmf(i) ',
      &                           i, nesh(i), noccmf(i)
+#endif
         IF(DLSHIF.NE.D0) THEN
           DO J = 1, NVEC
             EIG(ISTART+J-1) = EIG(ISTART+J-1) - DLSHIF
+#ifdef LEVELSHIFT_DEBUG
             write(lupri,*) 'orb, old new epsilon ==> ',ISTART+J-1,
      &                      EIG(ISTART+J-1)+DLSHIF,
      &                      EIG(ISTART+J-1)
+#undef LEVELSHIFT_DEBUG
+#endif
           END DO
         ENDIF
       END DO

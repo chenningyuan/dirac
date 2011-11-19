@@ -6,7 +6,7 @@ add_definitions(-DPRG_DIRAC)
 # set version
 set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 1)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -173,10 +173,15 @@ endif()
 
 include(CompilationInfo)
 
-# copy pam to build dir
+# copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
     ${CMAKE_BINARY_DIR}/pam
+    COPYONLY
+    )
+configure_file(
+    ${CMAKE_SOURCE_DIR}/pam
+    ${CMAKE_BINARY_DIR}/pam-dirac
     COPYONLY
     )
 
