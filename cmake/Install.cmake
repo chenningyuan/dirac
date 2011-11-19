@@ -1,16 +1,10 @@
-install(
-    DIRECTORY
-    DESTINATION
-    dirac
-    )
-
 foreach(
     EXECUTABLE
     ${LIST_OF_EXECUTABLES}
     )
     install(
         TARGETS ${EXECUTABLE}
-        DESTINATION dirac
+        DESTINATION share/dirac
         PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ             GROUP_EXECUTE
@@ -19,10 +13,8 @@ foreach(
 endforeach()
 
 install(
-    FILES
-    ${PROJECT_SOURCE_DIR}/pam
-    DESTINATION
-    dirac
+    FILES ${PROJECT_BINARY_DIR}/pam-dirac
+    DESTINATION bin
     PERMISSIONS
     OWNER_READ OWNER_WRITE OWNER_EXECUTE
     GROUP_READ             GROUP_EXECUTE
@@ -30,10 +22,8 @@ install(
     )
 
 install(
-    FILES
-    ${PROJECT_SOURCE_DIR}/utils/wrapper.py
-    DESTINATION
-    dirac
+    FILES ${PROJECT_SOURCE_DIR}/utils/wrapper.py
+    DESTINATION share/dirac
     PERMISSIONS
     OWNER_READ OWNER_WRITE
     GROUP_READ
@@ -41,10 +31,7 @@ install(
     )
 
 install(
-    DIRECTORY
-    ${PROJECT_SOURCE_DIR}/basis
-    ${PROJECT_SOURCE_DIR}/basis_dalton
-    DESTINATION
-    dirac
+    DIRECTORY ${PROJECT_SOURCE_DIR}/basis ${PROJECT_SOURCE_DIR}/basis_dalton
+    DESTINATION share/dirac
     PATTERN .git EXCLUDE
     )
