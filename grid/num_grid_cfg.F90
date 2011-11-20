@@ -21,8 +21,6 @@
 
 module num_grid_cfg
 
-   use xc_mpi
-
    implicit none
 
    public report_num_grid
