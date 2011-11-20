@@ -15,9 +15,6 @@ module fde_integrate
 
    use dft_cfg
    use xc_derv
-   use xc_ac
-   use extra
-   use file_units
    use interface_grid
    use ao_eval
    use density_eval
