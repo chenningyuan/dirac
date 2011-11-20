@@ -23,6 +23,8 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
     ${PROJECT_SOURCE_DIR}/src/xc_geometric.F90
     ${PROJECT_SOURCE_DIR}/src/interface_fortran.F90
+    ${PROJECT_SOURCE_DIR}/src/overlap_diagnostic.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_london_c1.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_autogen.F90
     )
