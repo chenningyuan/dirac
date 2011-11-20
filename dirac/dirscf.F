@@ -1043,6 +1043,10 @@ CMI     ... Control printout ...
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
+C
+C     sebastian+stefan: subtract level shift from orbital energies
+      IF(DOLEV) CALL UNDOLEVSHI(EIG)
+C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
 C
@@ -1775,6 +1779,8 @@ CMI      ... print out matrixes ...
       ENDIF
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
+CTROND
+!     WRITE(6,*) 'TEST :',dhferg, besterg
       if (dhferg.lt.besterg) then
          write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
          call system('cp DFCOEF DFCOEF.BEST')
@@ -4607,6 +4613,64 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE UNDOLEVSHI(EIG)
+C***********************************************************************
+C
+C     undo Level shift
+C
+C     Written by S. Hoefener and S. Knecht   Nov 15 2011
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D1 = 1.0D0,D0=0.0D0)
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION EIG(*)
+!#def LEVELSHIFT_DEBUG
+
+      CALL QENTER('UNDOLEVSHI')
+C
+      ISTART = 0
+      DO I = 1,NFSYM
+        ISTART = IORB(I) + NPSH(I)+NISHMF(I)+1
+#ifdef LEVELSHIFT_DEBUG
+        write(lupri,*) ' inactive offset is ',istart
+#endif
+        DO IOPEN = 1,NOPEN
+          IF(OLEV(IOPEN).NE.D0) THEN
+            DO J = 1, NACSHMF(I,IOPEN)
+              EIG(ISTART+J-1) = EIG(ISTART+J-1) - OLEV(IOPEN)
+            END DO
+          ENDIF
+          ISTART = ISTART + NACSHMF(I,IOPEN)
+        END DO
+        NVEC = NESH(I) - NOCCMF(I)
+#ifdef LEVELSHIFT_DEBUG
+        write(lupri,*) ' blabla nvec is ',nvec
+        write(lupri,*) ' istart is ',istart
+        write(lupri,*) ' undo... i, nesh(i), noccmf(i) ',
+     &                           i, nesh(i), noccmf(i)
+#endif
+        IF(DLSHIF.NE.D0) THEN
+          DO J = 1, NVEC
+            EIG(ISTART+J-1) = EIG(ISTART+J-1) - DLSHIF
+#ifdef LEVELSHIFT_DEBUG
+            write(lupri,*) 'orb, old new epsilon ==> ',ISTART+J-1,
+     &                      EIG(ISTART+J-1)+DLSHIF,
+     &                      EIG(ISTART+J-1)
+#undef LEVELSHIFT_DEBUG
+#endif
+          END DO
+        ENDIF
+      END DO
+C
+      CALL QEXIT('UNDOLEVSHI')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck precmos */
       SUBROUTINE PRECMOS(COFT,COFU,TMAT,DOSEL,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -5156,9 +5220,9 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
            CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
      &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
          ENDIF
-         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
-         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
-     &              4,IPQTOQ(1,0),LUPRI)
+CTROND         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
+CTROND         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
+CTROND     &              4,IPQTOQ(1,0),LUPRI)
           FAC = D1
           CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO

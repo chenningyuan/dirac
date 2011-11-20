@@ -1,0 +1,3357 @@
+DIRAC pam run in /home/stefan/progs/dirac/dirac_repository/test/fscc
+DIRAC serial starts by allocating 110000000 words (839 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by pam --aw
+ 
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *                                                                            *
+ *    with contributions from:                                                *
+ *                                                                            *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
+ *                                                                            *
+ ******************************************************************************
+
+
+Compilation info
+----------------
+
+ System                   | Linux-3.0.0-12-generic
+ Processor                | x86_64
+ Internal math            | ON
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ XCFun                    | ON
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -O3 -funroll-all-loops
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+ C flags                  |   -g -O2 -Wno-unused
+ static libraries linking | OFF
+ Configuration time       | 2011-11-18 10:10:26.363825
+ Last commit revision     | 5f7e0cfc165b57f2cbc3e2b9ca7fd0359c5e8a1f
+ Last commit author       | Radovan Bast 
+ Last commit time         | Thu Nov 17 23:24:50 2011 +0100
+
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Fri Nov 18 11:06:11 2011
+     Host name              : not found                               
+
+
+Contents of the input file
+--------------------------
+
+!                                                                                                   
+**DIRAC                                                                                             
+.TITLE                                                                                              
+Magnesium atom. Fockspace test calculations.                                                        
+.WAVE F                                                                                             
+.4INDEX                                                                                             
+**HAMILTONIAN                                                                                       
+.DOSSSS                                                                                             
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+.RELCCSD                                                                                            
+*SCF                                                                                                
+.EVCCNV                                                                                             
+1.0E-10                                                                                             
+.CNVINT                                                                                             
+0.01 0.0001                                                                                         
+.CLOSED SHELL                                                                                       
+4 6                                                                                                 
+.LSHIFT                                                                                             
+0.10                                                                                                
+**MOLTRA                                                                                            
+.ACTIVE                                                                                             
+energy -1000.0 1000.0 1.0                                                                           
+energy -1000.0 1000.0 1.0                                                                           
+*END OF                                                                                             
+                                                                                                    
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F  &END                                
+ &CCFSPC MAXIT=50, NACTH=0,0,3,3, NACTP=2,2,3,3, FSSECT=1,1,1,1,1,1      &END                       
+ &CCSORT USEOE=T, NORECMP=T  &END                                                                   
+                                                                                                    
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+Magnesium                                                                                           
+Basis from E. Eliav, Huzinaga book or something like that                                           
+C   1    3  X  Y  Z                                                                                 
+       12.    1                                                                                     
+Mg     .0000000000        0.0000000000        0.0000000000                                          
+LARGE    3   1   1   1                                                                              
+    6    0    3                                                                                     
+111.22700000                                                                                        
+19.39270000                                                                                         
+2.03032000                                                                                          
+.67345900                                                                                           
+.05681520                                                                                           
+.02434120                                                                                           
+    3    0    3                                                                                     
+10.04051000                                                                                         
+2.26735000                                                                                          
+.57451700                                                                                           
+    1    0    3                                                                                     
+.90000000                                                                                           
+FINISH                                                                                              
+                                                                                                    
+
+
+    **************************************************************************
+    ************** Magnesium atom. Fockspace test calculations. **************
+    **************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Transformation to Molecular Spinor basis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Magnesium                                                               
+  Basis from E. Eliav, Huzinaga book or something like that               
+
+  Nuclear Gaussian exponent for atom of charge  12.000 :    4.7254270882D+08
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1
+    B3u  k
+    B2u  j
+    B1g  i
+    B1u  i
+    B2g  j
+    B3g  k
+    Au   1
+
+  QM-QM nuclear repulsion energy :      0.000000000000
+
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Mg          1      12      21      21      L  - [6s3p1d|6s3p1d]                                                
+                             52      52      S  - [3s7p3d1f|3s7p3d1f]                                            
+  ----------------------------------------------------------------------
+                             21      21      L  - large components
+                             52      52      S  - small components
+  ----------------------------------------------------------------------
+  total:      1      12      73      73
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+  Basis set typed explicitly in input file                                        
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  3
+
+
+   1   Mg       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    1
+
+Mg     0.0000000000   0.0000000000   0.0000000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   0  1  1  0  1  0  0  0
+
+
+  Symmetry 2
+
+   1   Mg    x    1
+
+
+  Symmetry 3
+
+   2   Mg    y    2
+
+
+  Symmetry 5
+
+   3   Mg    z    3
+  Nuclear repulsion energy :    0.000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L Mg  1 s        2  L Mg  1 px       3  L Mg  1 py       4  L Mg  1 pz       5  L Mg  1 dxx      6  L Mg  1 dxy 
+     7  L Mg  1 dxz      8  L Mg  1 dyy      9  L Mg  1 dyz     10  L Mg  1 dzz 
+   * Small components:   20
+    11  S Mg  1 s       12  S Mg  1 px      13  S Mg  1 py      14  S Mg  1 pz      15  S Mg  1 dxx     16  S Mg  1 dxy 
+    17  S Mg  1 dxz     18  S Mg  1 dyy     19  S Mg  1 dyz     20  S Mg  1 dzz     21  S Mg  1 fxxx    22  S Mg  1 fxxy
+    23  S Mg  1 fxxz    24  S Mg  1 fxyy    25  S Mg  1 fxyz    26  S Mg  1 fxzz    27  S Mg  1 fyyy    28  S Mg  1 fyyz
+    29  S Mg  1 fyzz    30  S Mg  1 fzzz
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L Ag Mg s        2  L Ag Mg dxx      3  L Ag Mg dyy      4  L Ag Mg dzz      5  L B3uMg px       6  L B2uMg py  
+     7  L B1gMg dxy      8  L B1uMg pz       9  L B2gMg dxz     10  L B3gMg dyz 
+   * Small components:   20
+    11  S Ag Mg s       12  S Ag Mg dxx     13  S Ag Mg dyy     14  S Ag Mg dzz     15  S B3uMg px      16  S B3uMg fxxx
+    17  S B3uMg fxyy    18  S B3uMg fxzz    19  S B2uMg py      20  S B2uMg fxxy    21  S B2uMg fyyy    22  S B2uMg fyzz
+    23  S B1gMg dxy     24  S B1uMg pz      25  S B1uMg fxxz    26  S B1uMg fyyz    27  S B1uMg fzzz    28  S B2gMg dxz 
+    29  S B3gMg dyz     30  S Au Mg fxyz
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           21    13    13     4    13     4     4     1
+  Number of large orbitals in each symmetry:      9     3     3     1     3     1     1     0
+  Number of small orbitals in each symmetry:     12    10    10     3    10     3     3     1
+
+* Large component functions
+
+  Symmetry  Ag ( 1)
+
+        6 functions:    Mg s   
+        1 functions:    Mg dxx 
+        1 functions:    Mg dyy 
+        1 functions:    Mg dzz 
+
+  Symmetry  B3u( 2)
+
+        3 functions:    Mg px  
+
+  Symmetry  B2u( 3)
+
+        3 functions:    Mg py  
+
+  Symmetry  B1g( 4)
+
+        1 functions:    Mg dxy 
+
+  Symmetry  B1u( 5)
+
+        3 functions:    Mg pz  
+
+  Symmetry  B2g( 6)
+
+        1 functions:    Mg dxz 
+
+  Symmetry  B3g( 7)
+
+        1 functions:    Mg dyz 
+
+* Small component functions
+
+  Symmetry  Ag ( 1)
+
+        3 functions:    Mg s   
+        3 functions:    Mg dxx 
+        3 functions:    Mg dyy 
+        3 functions:    Mg dzz 
+
+  Symmetry  B3u( 2)
+
+        7 functions:    Mg px  
+        1 functions:    Mg fxxx
+        1 functions:    Mg fxyy
+        1 functions:    Mg fxzz
+
+  Symmetry  B2u( 3)
+
+        7 functions:    Mg py  
+        1 functions:    Mg fxxy
+        1 functions:    Mg fyyy
+        1 functions:    Mg fyzz
+
+  Symmetry  B1g( 4)
+
+        3 functions:    Mg dxy 
+
+  Symmetry  B1u( 5)
+
+        7 functions:    Mg pz  
+        1 functions:    Mg fxxz
+        1 functions:    Mg fyyz
+        1 functions:    Mg fzzz
+
+  Symmetry  B2g( 6)
+
+        3 functions:    Mg dxz 
+
+  Symmetry  B3g( 7)
+
+        3 functions:    Mg dyz 
+
+  Symmetry  Au ( 8)
+
+        1 functions:    Mg fxyz
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     1
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+ * Run RELCCSD code
+===========================================================================
+ SCFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+ * Closed shell SCF calculation with   10 electrons in
+       2 orbitals in Fermion irrep 1
+       3 orbitals in Fermion irrep 2
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-10
+   Allowed convergence:1.000D-10
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Level shift for virtuals activated :    0.100
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals below SCF convergence  1.0D-02
+   SS-integrals below SCF convergence  1.0D-04
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+  EHMIN:  1000.00000 EHMAX:   100.00000
+  EPMIN:    -1.00000 EPMAX: -1000.00000
+
+
+
+===========================================================================
+ TRAINP: Set-up for index transformation
+===========================================================================
+
+ * General print level   :   0
+ * Electronic orbitals only.
+ * Total active space.
+    Fermion ircop:E1g
+     No explicit orbitals specified 
+    Fermion ircop:E1u
+     No explicit orbitals specified 
+
+ * Set-up for 2-index transformation
+ * Active spaces:
+    Fermion ircop:E1g
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+    Fermion ircop:E1u
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+
+ * Set-up for 4-index transformation
+ * Following scheme      :   6
+ - write half-transformed integrals (ij|rs) to disk
+ - sorting of intermediate 1HT integrals is disabled
+ * Screening threshold :1.00E-14
+ * MO integral threshold :1.00E-14
+ * Gaunt Integrals not transformed.
+ * 4-index transformed integrals written to file.
+ * Active spaces:
+    Fermion ircop:E1g
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+     No explicit orbitals specified for index  3
+     No explicit orbitals specified for index  4
+    Fermion ircop:E1u
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+     No explicit orbitals specified for index  3
+     No explicit orbitals specified for index  4
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                     All components zero by symmetry
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          1(Proj:          1, Lindep:          0)
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B3u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   B2u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   B1u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   Ag    * Deleted:          3(Proj:          3, Lindep:          0)
+   S   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    11       9      20
+No. of positronic orbitals (NPSH):    11       9      20
+Total no. of orbitals      (NORB):    22      18      40
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Fri Nov 18 11:06:12 2011
+
+It.    1    -102.5478331292      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Fri Nov 18
+
+########## START ITERATION NO.   2 ##########   Fri Nov 18 11:06:12 2011
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00000000s
+ TEST :  -192.40457426462476       1.00000000000000002E+100
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01600000s
+
+########## END ITERATION NO.   2 ##########   Fri Nov 18 11:06:12 2011
+
+It.    2    -192.4045742646      8.99D+01 -2.48D+01  2.57D+00               0.01600000s   LL             Fri Nov 18
+
+########## START ITERATION NO.   3 ##########   Fri Nov 18 11:06:12 2011
+
+    3 *** Differential density matrix. DCOVLP     = 1.0256
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00000000s
+ TEST :  -192.51217114390909       -192.40457426462476     
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00800100s
+
+########## END ITERATION NO.   3 ##########   Fri Nov 18 11:06:12 2011
+
+It.    3    -192.5121711439      1.08D-01  7.50D-02  1.20D-01   DIIS   2    0.00800100s   LL             Fri Nov 18
+
+########## START ITERATION NO.   4 ##########   Fri Nov 18 11:06:12 2011
+
+    4 *** Differential density matrix. DCOVLP     = 1.0026
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00000000s
+ TEST :  -192.51277328145380       -192.51217114390909     
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00800000s
+
+########## END ITERATION NO.   4 ##########   Fri Nov 18 11:06:12 2011
+
+It.    4    -192.5127732815      6.02D-04 -4.00D-03  8.36D-03   DIIS   3    0.00800000s   LL             Fri Nov 18
+
+########## START ITERATION NO.   5 ##########   Fri Nov 18 11:06:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00000000s
+SOfock:SL  1.00D-12    4.65%    1.86%    2.86%   29.96%   0.00400100s
+ TEST :  -192.42002741765580       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200100s
+
+########## END ITERATION NO.   5 ##########   Fri Nov 18 11:06:12 2011
+
+It.    5    -192.4200274177     -9.27D-02  3.03D+01  1.96D+00               0.01200100s   LL SL          Fri Nov 18
+
+########## START ITERATION NO.   6 ##########   Fri Nov 18 11:06:12 2011
+
+    6 *** Differential density matrix. DCOVLP     = 0.9994
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00400000s
+SOfock:SL  1.00D-12    4.65%    2.15%    2.86%   29.69%   0.00400100s
+ TEST :  -192.42007098866969       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200100s
+
+########## END ITERATION NO.   6 ##########   Fri Nov 18 11:06:12 2011
+
+It.    6    -192.4200709887      4.36D-05 -2.16D-02  9.00D-03   DIIS   2    0.01200100s   LL SL          Fri Nov 18
+
+########## START ITERATION NO.   7 ##########   Fri Nov 18 11:06:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00000000s
+SOfock:SL  1.00D-12    5.79%    0.69%    2.86%   29.91%   0.00400000s
+SOfock:SS  1.00D-12    4.16%    0.34%    2.09%   27.80%   0.00800099s
+ TEST :  -192.42004382656228       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.02000099s
+
+########## END ITERATION NO.   7 ##########   Fri Nov 18 11:06:12 2011
+
+It.    7    -192.4200438266     -2.72D-05  2.39D-02  2.72D-03               0.02000099s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.   8 ##########   Fri Nov 18 11:06:12 2011
+
+    8 *** Differential density matrix. DCOVLP     = 0.9999
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00000000s
+SOfock:SL  1.00D-12    4.65%    3.23%    2.86%   29.29%   0.00400101s
+SOfock:SS  1.00D-12    4.16%   15.73%    1.78%   24.74%   0.00800000s
+ TEST :  -192.42004408652861       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.02000199s
+
+########## END ITERATION NO.   8 ##########   Fri Nov 18 11:06:12 2011
+
+It.    8    -192.4200440865      2.60D-07 -1.21D-03  5.98D-04   DIIS   2    0.02000199s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.   9 ##########   Fri Nov 18 11:06:12 2011
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.65%    3.76%   29.13%   0.00399999s
+SOfock:SL  1.00D-12    4.65%    4.35%    2.80%   28.83%   0.00000000s
+SOfock:SS  1.00D-12    4.16%   24.70%    1.55%   22.69%   0.01200101s
+ TEST :  -192.42004410447618       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.02400100s
+
+########## END ITERATION NO.   9 ##########   Fri Nov 18 11:06:12 2011
+
+It.    9    -192.4200441045      1.79D-08  2.53D-04  2.70D-05   DIIS   3    0.02400100s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  10 ##########   Fri Nov 18 11:06:12 2011
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.72%    3.76%   29.13%   0.00000000s
+SOfock:SL  1.00D-12    4.65%   11.65%    2.53%   25.87%   0.00399999s
+SOfock:SS  1.00D-12    4.16%   57.80%    0.94%   14.85%   0.00800100s
+ TEST :  -192.42004410453191       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.02000101s
+
+########## END ITERATION NO.  10 ##########   Fri Nov 18 11:06:12 2011
+
+It.   10    -192.4200441045      5.57D-11 -7.10D-06  4.64D-06   DIIS   4    0.02000101s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  11 ##########   Fri Nov 18 11:06:12 2011
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    1.98%    3.77%   29.07%   0.00000000s
+SOfock:SL  1.00D-12    4.65%   18.46%    2.17%   24.03%   0.00400101s
+SOfock:SS  1.00D-12    4.16%   70.55%    0.56%   11.45%   0.00799999s
+ TEST :  -192.42004410453555       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.02000199s
+
+########## END ITERATION NO.  11 ##########   Fri Nov 18 11:06:12 2011
+
+It.   11    -192.4200441045      3.64D-12 -4.76D-07  3.40D-07   DIIS   5    0.02000199s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  12 ##########   Fri Nov 18 11:06:12 2011
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    3.17%    3.64%   28.63%   0.00000000s
+SOfock:SL  1.00D-12    4.65%   38.97%    3.08%   20.45%   0.00400001s
+SOfock:SS  1.00D-12    5.12%   89.07%    0.09%    6.25%   0.00800000s
+ TEST :  -192.42004410453654       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.02000101s
+
+########## END ITERATION NO.  12 ##########   Fri Nov 18 11:06:12 2011
+
+It.   12    -192.4200441045      9.95D-13  9.34D-08  1.80D-08   DIIS   6    0.02000101s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  13 ##########   Fri Nov 18 11:06:12 2011
+
+   13 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%    8.53%    3.25%   27.61%   0.00399999s
+SOfock:SL  1.00D-12   12.59%   53.87%    2.11%   20.28%   0.00000000s
+SOfock:SS  1.00D-12   68.22%   31.41%    3.77%   15.52%   0.00800100s
+ TEST :  -192.42004410453671       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.02000199s
+
+########## END ITERATION NO.  13 ##########   Fri Nov 18 11:06:12 2011
+
+It.   13    -192.4200441045      1.71D-13  2.08D-09  1.15D-09   DAMP0.25    0.02000199s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  14 ##########   Fri Nov 18 11:06:12 2011
+
+   14 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%   53.00%    1.85%   19.90%   0.00000000s
+SOfock:SL  1.00D-12   64.93%   18.44%    0.00%   22.94%   0.00000000s
+SOfock:SS  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00400001s
+ TEST :  -192.42004410454251       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200098s
+
+########## END ITERATION NO.  14 ##########   Fri Nov 18 11:06:12 2011
+
+It.   14    -192.4200441045      5.80D-12 -1.60D-10  1.06D-09   DAMP0.25    0.01200098s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  15 ##########   Fri Nov 18 11:06:12 2011
+
+   15 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%   40.29%    2.21%   22.27%   0.00000000s
+SOfock:SL  1.00D-12   55.84%   23.68%    0.03%   26.26%   0.00400001s
+SOfock:SS  1.00D-12   99.95%    0.05%    0.00%    0.00%   0.00399998s
+ TEST :  -192.42004410454041       -192.51277328145380     
+
+ DIIS aborted because of the last two iterations
+ the lowest energy has the largest gradient and DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01600003s
+
+########## END ITERATION NO.  15 ##########   Fri Nov 18 11:06:12 2011
+
+It.   15    -192.4200441045     -2.10D-12 -1.02D-10  2.54D-10   DAMP0.25    0.01600003s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  16 ##########   Fri Nov 18 11:06:12 2011
+
+   16 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%   62.96%    1.92%   18.20%   0.00000000s
+SOfock:SL  1.00D-12   64.93%   21.52%    0.00%   27.52%   0.00400099s
+SOfock:SS  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00400001s
+ TEST :  -192.42004410454109       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01600099s
+
+########## END ITERATION NO.  16 ##########   Fri Nov 18 11:06:12 2011
+
+It.   16    -192.4200441045      6.82D-13  2.91D-11  1.21D-10   DAMP0.25    0.01600099s   LL SL SS       Fri Nov 18
+
+########## START ITERATION NO.  17 ##########   Fri Nov 18 11:06:12 2011
+
+   17 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.98%   72.66%    1.43%   15.09%   0.00000000s
+SOfock:SL  1.00D-12   64.93%   24.95%    0.00%   26.32%   0.00000000s
+SOfock:SS  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00000000s
+ TEST :  -192.42004410454172       -192.51277328145380     
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200101s
+
+########## END ITERATION NO.  17 ##########   Fri Nov 18 11:06:12 2011
+
+It.   17    -192.4200441045      6.25D-13  2.18D-11  6.26D-11   DAMP0.25    0.01200101s   LL SL SS       Fri Nov 18
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-10
+  Allowed convergence:1.000D-10
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -102.5478331292      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Fri Nov 18
+It.    2    -192.4045742646      8.99D+01 -2.48D+01  2.57D+00               0.01600000s   LL             Fri Nov 18
+It.    3    -192.5121711439      1.08D-01  7.50D-02  1.20D-01   DIIS   2    0.00800100s   LL             Fri Nov 18
+It.    4    -192.5127732815      6.02D-04 -4.00D-03  8.36D-03   DIIS   3    0.00800000s   LL             Fri Nov 18
+It.    5    -192.4200274177     -9.27D-02  3.03D+01  1.96D+00               0.01200100s   LL SL          Fri Nov 18
+It.    6    -192.4200709887      4.36D-05 -2.16D-02  9.00D-03   DIIS   2    0.01200100s   LL SL          Fri Nov 18
+It.    7    -192.4200438266     -2.72D-05  2.39D-02  2.72D-03               0.02000099s   LL SL SS       Fri Nov 18
+It.    8    -192.4200440865      2.60D-07 -1.21D-03  5.98D-04   DIIS   2    0.02000199s   LL SL SS       Fri Nov 18
+It.    9    -192.4200441045      1.79D-08  2.53D-04  2.70D-05   DIIS   3    0.02400100s   LL SL SS       Fri Nov 18
+It.   10    -192.4200441045      5.57D-11 -7.10D-06  4.64D-06   DIIS   4    0.02000101s   LL SL SS       Fri Nov 18
+It.   11    -192.4200441045      3.64D-12 -4.76D-07  3.40D-07   DIIS   5    0.02000199s   LL SL SS       Fri Nov 18
+It.   12    -192.4200441045      9.95D-13  9.34D-08  1.80D-08   DIIS   6    0.02000101s   LL SL SS       Fri Nov 18
+It.   13    -192.4200441045      1.71D-13  2.08D-09  1.15D-09   DAMP0.25    0.02000199s   LL SL SS       Fri Nov 18
+It.   14    -192.4200441045      5.80D-12 -1.60D-10  1.06D-09   DAMP0.25    0.01200098s   LL SL SS       Fri Nov 18
+It.   15    -192.4200441045     -2.10D-12 -1.02D-10  2.54D-10   DAMP0.25    0.01600003s   LL SL SS       Fri Nov 18
+It.   16    -192.4200441045      6.82D-13  2.91D-11  1.21D-10   DAMP0.25    0.01600099s   LL SL SS       Fri Nov 18
+It.   17    -192.4200441045      6.25D-13  2.18D-11  6.26D-11   DAMP0.25    0.01200101s   LL SL SS       Fri Nov 18
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   17 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL           :    0.00000000s
+      LL SL        :    0.00000000s
+      LL SL SS     :    0.00000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -192.42004410454172
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :       0.00000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -192.42004410454172
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1g
+  * Closed shell, f = 1.0000
+-47.81284187736853  ( 2)    -4.41927762474889  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+ -0.51930432224435  ( 2)    -0.22144738340920  ( 2)     1.16144044348727  ( 6)     1.16148346752588  ( 4)     1.39683722718488  ( 2)
+ 80.44041257433007  ( 2)
+
+* Fermion symmetry E1u
+  * Closed shell, f = 1.0000
+ -2.98737731021440  ( 2)    -2.97978142780949  ( 4)
+  * Virtual eigenvalues, f = 0.0000
+  0.63043605820616  ( 2)     0.63355721797390  ( 4)    11.36310694831769  ( 2)    11.38641767017261  ( 4)
+* HOMO - LUMO gap:
+
+    E(LUMO) :    -0.51930432 au (symmetry E1g)
+  - E(HOMO) :    -2.97978143 au (symmetry E1u)
+  ------------------------------------------
+    gap     :     2.46047711 au
+
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+     ************************************************************************
+     **************** Transformation of 2-electron integrals ****************
+     ************************************************************************
+
+
+ Transformation started at : Fri Nov 18 11:06:12 2011
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -192.420044104541091
+* Heading :Magnesium atom. Fockspace test calculations.      Fri Nov 18 11:06:12 2011
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :    -1000.00 < Eps. <      1000.00 with a mininum gap of     1.0000 au.
+
+* Orbital ranges for 4-index transformation:
+
+
+ * Fermion ircop E1g
+
+      Index 1   11 orbitals
+          1    2    3    4    5    6    7    8    9   10   11
+
+      Index 2   11 orbitals
+          1    2    3    4    5    6    7    8    9   10   11
+
+      Index 3   11 orbitals
+          1    2    3    4    5    6    7    8    9   10   11
+
+      Index 4   11 orbitals
+          1    2    3    4    5    6    7    8    9   10   11
+
+
+ * Fermion ircop E1u
+
+      Index 1    9 orbitals
+          1    2    3    4    5    6    7    8    9
+
+      Index 2    9 orbitals
+          1    2    3    4    5    6    7    8    9
+
+      Index 3    9 orbitals
+          1    2    3    4    5    6    7    8    9
+
+      Index 4    9 orbitals
+          1    2    3    4    5    6    7    8    9
+
+* Core orbital ranges for 2-index transformation:
+
+
+ * Fermion ircop E1g
+
+      No orbitals for index 1
+
+
+ * Fermion ircop E1u
+
+      No orbitals for index 1
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+       ********************************************************************
+       **************** Transformation of core Fock matrix ****************
+       ********************************************************************
+
+
+ Transformation started at : Fri Nov 18 11:06:12 2011
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -192.420044104541091
+* Heading :Magnesium atom. Fockspace test calculations.      Fri Nov 18 11:06:12 2011
+
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :Magnesium atom. Fockspace test calculations.      Fri Nov 18 11:06:12 2011
+ TEST :   0.0000000000000000       -192.51277328145380     
+
+
+ Core energy (includes nuclear repulsion) :              0.0000000000
+ - Electronic part :                                     0.0000000000
+   - One-electron terms :                                0.0000000000
+   - Two-electron terms :                                0.0000000000
+
+
+ MOLFDIR file MRCONEE is written
+ - Integral class 1 : (LL|??)
+   - Beginning task   1 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   3 after      0. seconds and      0. CPU-seconds
+ - Integral class 2 : (SS|??)
+   - Beginning task   4 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   5 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   6 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   7 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   8 of   8 after      0. seconds and      0. CPU-seconds
+
+ Node    0 finished first half transformation          286436 HT integrals written ( 88.96%,      0.00 GB)
+  
+ <<< Starting 2HT on node            0
+  
+  
+ >>> Finished 2HT on node            0
+ >>> Time used in 2HT_all is   6.08 seconds
+  
+ - Binary  file MDCINT was written.
+* Screening statistics:
+   (LL|LL)ints :   0.00%
+   (SS|LL)ints :   0.00%
+   (SS|SS)ints :   0.00%
+   Total       :   0.00%
+
+------ Timing report (in CPU seconds) of module  integral transformation      
+
+ Time in  First halftransformati       0.892 seconds
+ Time in  Second halftransformat       6.076 seconds
+
+
+ Total wall time used in PAMTRA :   00:00:07
+ Total CPU  time used in PAMTRA (master only) :   00:00:07
+
+
+
+ Transformation ended at : Fri Nov 18 11:06:19 2011
+
+---< Process     1 of     1----<
+
+
+
+ Relativistic Coupled Cluster program RELCCSD
+
+ Written by :
+ Lucas Visscher
+
+ NASA Ames Research Center    (1994)
+ Rijks Universiteit Groningen (1995)
+ Odense Universitet           (1996-1997)
+ VU University Amsterdam (1998-present)
+
+
+ This module is documented in
+  - Initial implementation : L. Visscher, T.J. Lee and K.G. Dyall, J. Chem. Phys. 105 (1996) 8769.
+  - Fock Space (FSCC):       L. Visscher, E. Eliav and U. Kaldor, J. Chem. Phys. 115 (2002) 9720.
+  - Intermediate Hamiltonian E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, J. Chem. Phys. 122 (2005) 224113.
+  - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
+
+
+ Today is :   18 Nov 11 
+ The time is :  11:06:19
+
+ Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
+
+  EHMIN:  1000.00000 EHMAX:   100.00000
+  EPMIN:    -1.00000 EPMAX: -1000.00000
+
+ Total memory available has not been determined
+
+ Configuration in highest pointgroup
+
+                                          Eg   Eg   Eu   Eu
+ Spinor class : occupied                   2    2    3    3
+ Spinor class : virtual                    9    9    6    6
+
+
+ Configuration in abelian subgroup
+
+                                         1Eg  2Eg  1Eu  2Eu
+ Spinor class : occupied                   2    2    3    3
+ Spinor class : virtual                    9    9    6    6
+
+
+ Number of electrons :                    10
+ Number of virtual spinors :              30
+ Complex arithmetic mode :                 F
+ Do integral sorting     :                 F
+ Do energy calculation   :                 F
+ Do gradient calculation :                 F
+ Do response calculation :                 F
+ Debug information       :                 F
+ Timing information      :                 F
+ Print level          :                    1
+ Memory limit (MWord) not set in Dirac but by the OS
+ Interface used       :                DIRAC6    
+
+
+ Memory for reading and sorting integrals :          215545 8-byte words
+ Memory for reading and sorting integrals :         1862193 8-byte words
+ debug, kind buf3 :           8
+ Core used for Fock space CCSD energies :                 0 8-byte words
+ Memory used for active modules :                         0 8-byte words
+
+
+ Fock space CCSD Energy calculations
+ Module written by Ephraim Eliav & Luuk Visscher, July 1999
+
+
+ List of inactive and active spinors (Fock space)
+
+ Configuration in highest pointgroup
+
+                                          Eg   Eg   Eu   Eu
+ Spinor class : inactive occupied          2    2    0    0
+ Spinor class : active occupied            0    0    3    3
+ Spinor class : active virtual             2    2    3    3
+ Spinor class : inactive virtual           7    7    3    3
+
+
+ Configuration in abelian subgroup
+
+                                         1Eg  2Eg  1Eu  2Eu
+ Spinor class : inactive occupied          2    2    0    0
+ Spinor class : active occupied            0    0    3    3
+ Spinor class : active virtual             2    2    3    3
+ Spinor class : inactive virtual           7    7    3    3
+
+ Expanding and sorting integrals to unique types :
+ Type OOOO :            9076 integrals
+ Type VOOO :           34200 integrals
+ Type VVOO :           30024 integrals
+ Type VOVO :          129600 integrals
+ Type VOVV :          113400 integrals
+ Type VVVV :           99468 integrals
+
+ Sorting of first 4 classes done.
+
+ Need      1 passes to sort VOVV integrals
+ VOVV sorting done.
+
+ Need      1 passes to sort VVVV integrals
+ VVVV sorting done.
+
+ Reading Coulomb integrals :
+ File date :      18Nov11  
+ File time :       11:06:13
+ # of integrals              282416
+
+ Finished sorting of integrals
+
+
+ Checking the orbital energies, the program computes the diagonal elements of the
+ reconstructed Fock matrix. Differences with the reference orbital energies
+ are given if above a treshold or if iprnt > 1
+
+ Spinor   Abelian Rep.         Energy   Recalc. Energy
+  Oi   1    1   1Eg      -47.8128418774  -47.8128418774
+  Oi   2    2   1Eg       -4.4192776247   -4.4192776247
+  Va   3    3   1Eg       -0.5193043222   -0.5193043222
+  Va   4    4   1Eg       -0.2214473834   -0.2214473834
+  Oi   1    5   2Eg      -47.8128418774  -47.8128418774
+  Oi   2    6   2Eg       -4.4192776247   -4.4192776247
+  Va   3    7   2Eg       -0.5193043222   -0.5193043222
+  Va   4    8   2Eg       -0.2214473834   -0.2214473834
+  Oa   1    9   1Eu       -2.9873773102   -2.9873773102
+  Oa   2   10   1Eu       -2.9797814278   -2.9797814278
+  Oa   3   11   1Eu       -2.9797814278   -2.9797814278
+  Va   4   12   1Eu        0.6304360582    0.6304360582
+  Va   5   13   1Eu        0.6335572180    0.6335572180
+  Va   6   14   1Eu        0.6335572180    0.6335572180
+  Oa   1   15   2Eu       -2.9873773102   -2.9873773102
+  Oa   2   16   2Eu       -2.9797814278   -2.9797814278
+  Oa   3   17   2Eu       -2.9797814278   -2.9797814278
+  Va   4   18   2Eu        0.6304360582    0.6304360582
+  Va   5   19   2Eu        0.6335572180    0.6335572180
+  Va   6   20   2Eu        0.6335572180    0.6335572180
+
+ The original energies (left column) are used in perturbation expressions.
+
+ Use the perturbative values (MP2, CCSD[T]/(T)/-T) with care, especially
+ in  open shell calculations because the orbitals need not always be
+ semi-canonical as was assumed in the derivation of the expressions.
+ The missing terms may be important !
+
+ ***********************************************************
+ * Info from RDINTS: No recomputation of SCF energy.       *
+ * Value is taken from the file DFCOEF instead.            *
+ ***********************************************************
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -192.420044104541091
+* Heading :Magnesium atom. Fockspace test calculations.      Fri Nov 18 11:06:12 2011
+
+
+ SCF energy :                               -192.420044104541091
+ debug, kind buf3 :           8
+
+
+ Fock space CCSD options :
+ Maximum number of iterations :           50
+ Maximum size of DIIS space :              8
+ Convergence criterium :             0.1E-11
+
+
+ Solving equations for sector 00
+
+  ...maximum number of iterations for this sector: 50
+
+
+   NIT          ENERGY                    RMS       T1-DIAGN
+    0       -0.129256486031437   1.000000000000000   0.00000
+    1       -0.129813376167470   1.161414257450239   0.00458
+    2       -0.130985656608008   0.001912769373393   0.00485
+    3       -0.131116041665275   0.000488911099430   0.00500
+    4       -0.131135657181869   0.000045168753245   0.00499
+    5       -0.131135455160041   0.000005666456715   0.00499
+    6       -0.131135453937017   0.000000174681477   0.00499
+    7       -0.131135458280661   0.000000033434525   0.00499
+    8       -0.131135458524385   0.000000002632158   0.00499
+    9       -0.131135458441438   0.000000000307047   0.00499
+   10       -0.131135458438732   0.000000000038890   0.00499
+   11       -0.131135458439332   0.000000000010247   0.00499
+   12       -0.131135458439391   0.000000000000807   0.00499
+
+
+  CCSD results
+
+ SCF energy :                               -192.420044104541091
+ CCSD correlation energy :                    -0.131135458439391
+ Total CCSD energy :                        -192.551179562980479
+ T1 diagnostic :                               0.004990476709948
+ Convergence :                                 0.000000000000807
+ Number or iterations used :                                  12
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  : Eigenvalue, Energy
+ other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
+
+
+ Solving equations for sector 01
+
+  ...maximum number of iterations for this sector: 50
+
+
+   NIT          ENERGY                    RMS       T1-DIAGN
+    0       -0.131135458439391   1.000000000000000   0.00499
+    1       -0.131135458439407   0.083160226864503   0.00499
+    2       -0.131135458439411   0.016426648350113   0.00499
+    3       -0.131135458439412   0.003673687102768   0.00499
+    4       -0.131135458439412   0.000833808224493   0.00499
+    5       -0.131135458439412   0.000041978058401   0.00499
+    6       -0.131135458439412   0.000017042854679   0.00499
+    7       -0.131135458439412   0.000002634036756   0.00499
+    8       -0.131135458439412   0.000000443431387   0.00499
+    9       -0.131135458439412   0.000000008055360   0.00499
+   10       -0.131135458439412   0.000000002267434   0.00499
+   11       -0.131135458439412   0.000000000585570   0.00499
+   12       -0.131135458439412   0.000000000087709   0.00499
+   13       -0.131135458439412   0.000000000041298   0.00499
+   14       -0.131135458439412   0.000000000001851   0.00499
+   15       -0.131135458439412   0.000000000000271   0.00499
+
+
+  CCSD results
+
+ T1 diagnostic :                               0.004990476709959
+ Convergence :                                 0.000000000000271
+ Number or iterations used :                                  15
+
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
+
+
+ Energy eigenvalues in atomic units
+
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
+
+    1   0.000000000000     -0.523450586267     -193.074630149248 (   2 * )
+    2   0.301135476537     -0.222315109730     -192.773494672711 (   2 * )
+    3   1.126195361498      0.602744775231     -191.948434787750 (   2 * )
+    4   1.129317156347      0.605866570080     -191.945312992900 (   4 * )
+
+
+ Total average:      -192.3374371191
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)   1Eg 2Eg 1Eu 2Eu
+    1        0.000000000          0.000000   1   1   0   0
+    2        8.194312919      66091.597678   1   1   0   0
+    3       30.645333808     247171.311715   0   0   1   1
+    4       30.730282164     247856.466488   0   0   2   2
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  : Eigenvalue, Energy
+ other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
+
+ Irrep  1Eg State     1     -0.52345059   -193.07463015
+       -0.99998   |  1Eg #   1 (  -0.519) |                         
+        0.00610   |  1Eg #   2 (  -0.221) |                         
+
+ Irrep  1Eg State     2     -0.22231511   -192.77349467
+       -0.00656   |  1Eg #   1 (  -0.519) |                         
+       -0.99998   |  1Eg #   2 (  -0.221) |                         
+
+ Irrep  2Eg State     1     -0.52345059   -193.07463015
+       -0.99998   |  2Eg #   1 (  -0.519) |                         
+        0.00610   |  2Eg #   2 (  -0.221) |                         
+
+ Irrep  2Eg State     2     -0.22231511   -192.77349467
+       -0.00656   |  2Eg #   1 (  -0.519) |                         
+       -0.99998   |  2Eg #   2 (  -0.221) |                         
+
+ Irrep  1Eu State     1      0.60274478   -191.94843479
+       -1.00000   |  1Eu #   1 (   0.630) |                         
+
+ Irrep  1Eu State     2      0.60586657   -191.94531299
+       -1.00000   |  1Eu #   2 (   0.634) |                         
+        0.00216   |  1Eu #   3 (   0.634) |                         
+
+ Irrep  1Eu State     3      0.60586657   -191.94531299
+       -0.00216   |  1Eu #   2 (   0.634) |                         
+       -1.00000   |  1Eu #   3 (   0.634) |                         
+
+ Irrep  2Eu State     1      0.60274478   -191.94843479
+       -1.00000   |  2Eu #   1 (   0.630) |                         
+
+ Irrep  2Eu State     2      0.60586657   -191.94531299
+        1.00000   |  2Eu #   2 (   0.634) |                         
+       -0.00216   |  2Eu #   3 (   0.634) |                         
+
+ Irrep  2Eu State     3      0.60586657   -191.94531299
+        0.00215   |  2Eu #   2 (   0.634) |                         
+        1.00000   |  2Eu #   3 (   0.634) |                         
+
+
+ Solving equations for sector 10
+
+  ...maximum number of iterations for this sector: 50
+
+
+   NIT          ENERGY                    RMS       T1-DIAGN
+    0       -0.131135458439412   1.000000000000000   0.00499
+    1       -0.131135458439412   0.494942903310064   0.00499
+    2       -0.131135458439412   0.013900652615938   0.00499
+    3       -0.131135458439412   0.002823220803340   0.00499
+    4       -0.131135458439412   0.001008162927360   0.00499
+    5       -0.131135458439412   0.000116075746958   0.00499
+    6       -0.131135458439412   0.000006442688480   0.00499
+    7       -0.131135458439412   0.000000102930258   0.00499
+    8       -0.131135458439412   0.000000028544956   0.00499
+    9       -0.131135458439412   0.000000002404120   0.00499
+   10       -0.131135458439412   0.000000000190867   0.00499
+   11       -0.131135458439412   0.000000000022985   0.00499
+   12       -0.131135458439412   0.000000000005852   0.00499
+   13       -0.131135458439412   0.000000000000648   0.00499
+
+
+  CCSD results
+
+ T1 diagnostic :                               0.004990476709959
+ Convergence :                                 0.000000000000648
+ Number or iterations used :                                  13
+
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
+
+
+ Energy eigenvalues in atomic units
+
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
+
+    1   0.000000000005      2.893502061030     -189.657677501950 (   4 * )
+    2   0.007059085165      2.900561146190     -189.650618416791 (   2 * )
+
+
+ Total average:      -189.6553244736
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)   1Eg 2Eg 1Eu 2Eu
+    1        0.000000000          0.000001   0   0   2   2
+    2        0.192087473       1549.290114   0   0   1   1
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  : Eigenvalue, Energy
+ other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
+
+ Irrep  1Eu State     1      2.89350206   -189.65767750
+       -0.00571   |  1Eu #   2 (  -2.980) |                         
+       -0.99998   |  1Eu #   3 (  -2.980) |                         
+
+ Irrep  1Eu State     2      2.89350206   -189.65767750
+       -0.99998   |  1Eu #   2 (  -2.980) |                         
+        0.00577   |  1Eu #   3 (  -2.980) |                         
+
+ Irrep  1Eu State     3      2.90056115   -189.65061842
+       -1.00000   |  1Eu #   1 (  -2.987) |                         
+
+ Irrep  2Eu State     1      2.89350206   -189.65767750
+       -0.00571   |  2Eu #   2 (  -2.980) |                         
+       -0.99998   |  2Eu #   3 (  -2.980) |                         
+
+ Irrep  2Eu State     2      2.89350206   -189.65767750
+       -0.99998   |  2Eu #   2 (  -2.980) |                         
+        0.00577   |  2Eu #   3 (  -2.980) |                         
+
+ Irrep  2Eu State     3      2.90056115   -189.65061842
+       -1.00000   |  2Eu #   1 (  -2.987) |                         
+
+
+ Solving equations for sector 11
+
+  ...maximum number of iterations for this sector: 50
+
+
+   NIT          ENERGY                    RMS       T1-DIAGN
+    0       -0.131135458439412   1.000000000000000   0.00499
+    1       -0.131135458439412   0.490405425954408   0.00499
+    2       -0.131135458439412   0.703252857087522   0.00499
+    3       -0.131135458439412   0.226006543082353   0.00499
+    4       -0.131135458439412   0.073064036995435   0.00499
+    5       -0.131135458439412   0.016170489595649   0.00499
+    6       -0.131135458439412   0.004964860992103   0.00499
+    7       -0.131135458439412   0.005959251076477   0.00499
+    8       -0.131135458439412   0.000841654224130   0.00499
+    9       -0.131135458439412   0.000293086912677   0.00499
+   10       -0.131135458439412   0.000228365098420   0.00499
+   11       -0.131135458439412   0.000049168039317   0.00499
+   12       -0.131135458439412   0.000003300874343   0.00499
+   13       -0.131135458439412   0.000007489728600   0.00499
+   14       -0.131135458439412   0.000001988905579   0.00499
+   15       -0.131135458439412   0.000000739888630   0.00499
+   16       -0.131135458439412   0.000000264629631   0.00499
+   17       -0.131135458439412   0.000000418986771   0.00499
+   18       -0.131135458439412   0.000000008189983   0.00499
+   19       -0.131135458439412   0.000000059601923   0.00499
+   20       -0.131135458439412   0.000000008226993   0.00499
+   21       -0.131135458439412   0.000000007549582   0.00499
+   22       -0.131135458439412   0.000000003766067   0.00499
+   23       -0.131135458439412   0.000000001120246   0.00499
+   24       -0.131135458439412   0.000000000652240   0.00499
+   25       -0.131135458439412   0.000000000195378   0.00499
+   26       -0.131135458439412   0.000000000068221   0.00499
+   27       -0.131135458439412   0.000000000118712   0.00499
+   28       -0.131135458439412   0.000000000016051   0.00499
+   29       -0.131135458439412   0.000000000005312   0.00499
+   30       -0.131135458439412   0.000000000008340   0.00499
+   31       -0.131135458439412   0.000000000000925   0.00499
+
+
+  CCSD results
+
+ T1 diagnostic :                               0.004990476709959
+ Convergence :                                 0.000000000000925
+ Number or iterations used :                                  31
+
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
+
+
+ Energy eigenvalues in atomic units
+
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
+
+    0   0.000000000000      0.000000000000     -192.551179562981 (   1 * )
+    1   1.987325031980      1.987325031980     -190.563854531001 (   5 * )
+    2   1.991311696946      1.991311696946     -190.559867866034 (   3 * )
+    3   1.994334492847      1.994334492847     -190.556845070134 (   1 * )
+    4   2.007896487826      2.007896487826     -190.543283075154 (   3 * )
+    5   2.508809497405      2.508809497405     -190.042370065576 (   5 * )
+    6   2.510464381566      2.510464381566     -190.040715181414 (   3 * )
+    7   2.515859120135      2.515859120135     -190.035320442845 (   1 * )
+    8   2.517136277167      2.517136277167     -190.034043285813 (   3 * )
+    9   2.637802443778      2.637802443778     -189.913377119203 (   3 * )
+   10   2.758846151631      2.758846151631     -189.792333411350 (   7 * )
+   11   2.760508685503      2.760508685503     -189.790670877477 (   5 * )
+   12   2.762146057823      2.762146057823     -189.789033505157 (   3 * )
+   13   2.819827896075      2.819827896075     -189.731351666906 (   3 * )
+   14   2.820586862088      2.820586862088     -189.730592700892 (   5 * )
+   15   2.822780135412      2.822780135412     -189.728399427568 (   5 * )
+   16   2.823639268490      2.823639268490     -189.727540294490 (   1 * )
+   17   2.824662425507      2.824662425507     -189.726517137474 (   3 * )
+   18   3.300851831205      3.300851831205     -189.250327731775 (   1 * )
+
+
+ Total average:      -190.0157631394
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    ag  bg  au  bu
+    0        0.000000000          0.000000   1   0   0   0
+    1       54.077863461     436167.428628   0   0   3   2
+    2       54.186346130     437042.400452   0   0   1   2
+    3       54.268600588     437705.827468   0   0   1   0
+    4       54.637641234     440682.341315   0   0   1   2
+    5       68.268177206     550620.039396   0   0   3   2
+    6       68.313208894     550983.244487   0   0   1   2
+    7       68.460007194     552167.252746   0   0   1   0
+    8       68.494760403     552447.556314   0   0   1   2
+    9       71.778253731     578930.718739   1   2   0   0
+   10       75.072020478     605496.741889   3   4   0   0
+   11       75.117260325     605861.625898   3   2   0   0
+   12       75.161815491     606220.987584   1   2   0   0
+   13       76.731418109     618880.687766   1   2   0   0
+   14       76.752070624     619047.261552   3   2   0   0
+   15       76.811752625     619528.629406   3   2   0   0
+   16       76.835130825     619717.187321   1   0   0   0
+   17       76.862972343     619941.744330   1   2   0   0
+   18       89.820744850     724453.238566   1   0   0   0
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  : Eigenvalue, Energy
+ other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
+
+ Irrep   ag State     1      2.63780244   -189.91337712
+       -0.13398     1Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.39305     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.00707     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.37244     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.13577     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.03912     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.03337     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.01959     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.40907     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.13398     2Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.39305     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.00707     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.37244     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.13577     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.03912     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.03337     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+       -0.01959     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.40907     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     2      2.75884615   -189.79233341
+       -0.07037     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.41004     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.57013     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.04316     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.05885     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.57126     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.40892     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.05468     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     3      2.75884615   -189.79233341
+        0.67539     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.20204     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.05498     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.06251     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.20150     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.67486     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.00770     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     4      2.75884615   -189.79233341
+       -0.66733     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.06470     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.22468     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.66733     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.06471     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.22468     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     5      2.76050869   -189.79067088
+       -0.01385     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.73325     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.01466     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.16993     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.00294     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.19944     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.05652     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.62457     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     6      2.76050869   -189.79067088
+        0.00446     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.27897     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.05442     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.60207     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.01328     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.70683     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.02081     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.23767     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     7      2.76050869   -189.79067088
+        0.53730     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.01101     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.45761     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.04222     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.53730     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.01109     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.45761     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.04215     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     8      2.76214606   -189.78903351
+        0.60091     1Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.23708     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.00427     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.20170     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.06398     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.01844     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.01807     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.00923     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.19276     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.60091     2Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.23708     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.00427     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.20170     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.06398     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.01844     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.01807     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.00923     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.19276     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State     9      2.81982790   -189.73135167
+       -0.29743     1Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.46518     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.00837     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.09624     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.13506     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.03892     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.00862     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.01949     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.40694     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.29743     2Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.46518     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.00837     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.09624     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.13506     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.03892     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.00862     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.01949     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.40694     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    10      2.82058686   -189.73059270
+       -0.00341     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.13386     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.00680     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.02951     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.63757     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.06267     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.25407     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.05693     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.00196     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.05345     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.01526     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.05693     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.25407     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.15708     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.63757     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.02951     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    11      2.82058686   -189.73059270
+       -0.00203     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.10938     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.00980     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.03100     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.52158     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.11027     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.44798     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.03831     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.00163     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.09391     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.01158     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.03831     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.44798     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.12842     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.52158     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.03100     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    12      2.82058686   -189.73059270
+       -0.10191     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.00295     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.11958     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.48513     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.04690     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.01194     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.04730     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.48516     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.10191     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.00287     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.11957     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.48516     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.04730     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.01204     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.04690     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.48513     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    13      2.82278014   -189.72839943
+       -0.12933     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.43153     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.18623     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.01852     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.11003     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.48683     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.10889     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.01844     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.12925     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.42689     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.18671     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.01844     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.10889     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.49222     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+       -0.11003     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.01852     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    14      2.82278014   -189.72839943
+        0.00330     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.41226     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.06268     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.00617     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.10155     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.55926     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.11918     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.00961     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.01938     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.48118     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.03050     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.00961     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.11918     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.48082     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+       -0.10155     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.00617     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    15      2.82278014   -189.72839943
+        0.42828     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.13237     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.48818     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.10933     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.01927     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.18997     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.01926     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.10933     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.42828     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.13236     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.48818     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.10933     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.01926     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.18998     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+       -0.01927     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.10933     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    16      2.82363927   -189.72754029
+       -0.57584     1Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.28944     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.02069     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.02069     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.28944     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.57584     2Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+       -0.28944     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.02069     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.02069     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.28944     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    17      2.82466243   -189.72651714
+        0.18044     1Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.26915     1Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.00484     1Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.55453     1Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.09137     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.02633     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.04968     1Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.01318     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.27531     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.18044     2Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.26915     2Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.00484     2Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.55453     2Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.09137     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.02633     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.04968     2Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+       -0.01318     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.27531     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   ag State    18      3.30085183   -189.25032773
+        0.41021     1Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.40623     1Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.02904     1Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.02904     1Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.40623     1Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.41021     2Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+       -0.40623     2Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.02904     2Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.02904     2Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.40623     2Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     1      2.63780244   -189.91337712
+        0.01799     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.03500     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.47874     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.06568     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.33280     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.45185     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.33542     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.03585     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.18862     1Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+       -0.27750     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.04072     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.26605     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.38073     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.03858     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.01981     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.06609     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.00403     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     2      2.63780244   -189.91337712
+       -0.18947     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+        0.27793     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.00500     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.26336     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.38588     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.00694     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.02359     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.03457     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.00866     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.48139     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.04087     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.03595     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.33364     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.45615     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+       -0.33364     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.03595     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     3      2.75884615   -189.79233341
+       -0.00356     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.06305     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.01358     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.68846     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.00373     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.06573     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.01405     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.71925     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     4      2.75884615   -189.79233341
+        0.06914     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.01512     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.75634     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.00115     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.05919     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.01298     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.64751     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     5      2.75884615   -189.79233341
+        0.58267     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.30218     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.26309     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.03582     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.57594     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.30644     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.26786     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.03635     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     6      2.75884615   -189.79233341
+       -0.51482     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.32223     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.36172     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.03753     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.50830     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.32567     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.36471     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.03786     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     7      2.76050869   -189.79067088
+       -0.49786     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.24259     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.43943     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.17656     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.44067     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.27699     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.39275     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.20939     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     8      2.76050869   -189.79067088
+        0.44246     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.28665     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.35991     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.27147     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.47790     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.26703     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.39133     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.25690     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State     9      2.76214606   -189.78903351
+        0.65358     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+        0.13227     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.18326     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.12383     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.12902     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.10300     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.14806     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.11301     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.01105     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.54315     1Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.11117     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.22139     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.10818     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.10319     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.12301     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.18182     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.13133     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.01322     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    10      2.76214606   -189.78903351
+        0.54076     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+        0.10265     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.22591     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.07368     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.12878     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.11920     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.19869     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.11092     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.01288     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.65556     1Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+       -0.12600     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.18709     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.09594     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.15105     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.09752     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.16705     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.08748     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.01055     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    11      2.81982790   -189.73135167
+       -0.31151     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+        0.23671     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.38723     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.04330     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.30832     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.21792     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.08372     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.19756     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.02358     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.28265     1Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+       -0.21344     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.42591     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.03791     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.28444     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.24116     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.09138     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.22269     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.02607     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    12      2.81982790   -189.73135167
+       -0.28426     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+        0.22985     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.41594     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.05377     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.23306     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.24931     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.08276     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.26788     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.02678     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.31003     1Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.24938     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.38067     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.05729     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+       -0.25877     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.22940     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.07516     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.24965     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.02463     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    13      2.82058686   -189.73059270
+        0.08745     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.05041     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.10705     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.03544     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.49570     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.05192     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.49570     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.03544     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.09091     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.04833     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.11094     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.03406     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.47647     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.04918     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.47647     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.03406     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    14      2.82058686   -189.73059270
+        0.08790     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.05226     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.09895     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.03454     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.48324     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.06883     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.48324     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.03454     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.08682     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.05285     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.09764     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.03496     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.48911     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.06944     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.48911     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.03496     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    15      2.82278014   -189.72839943
+       -0.37958     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.22446     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.46115     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.00817     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.11424     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.23000     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.11424     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.00817     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.40437     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.20954     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.48880     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.00766     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.10710     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.21055     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.10710     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.00766     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    16      2.82278014   -189.72839943
+       -0.40362     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.21971     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.45216     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.00750     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.10494     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.28973     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+        0.10494     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.00750     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+       -0.36361     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.24185     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.40368     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.00831     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.11623     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.31221     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.11623     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.00831     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    17      2.82466243   -189.72651714
+        0.18097     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+        0.13915     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.22997     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.32098     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+        0.16712     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.16162     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.45390     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.17481     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.01736     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.17990     1Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.13838     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.23136     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.31960     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.16593     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.16254     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.45688     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+       -0.17565     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+        0.01746     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   bg State    18      2.82466243   -189.72651714
+       -0.17703     2Eu #   1 (  -2.987) ->  1Eu #   1 (   0.630)   
+       -0.12776     2Eu #   2 (  -2.980) ->  1Eu #   1 (   0.630)   
+        0.23979     2Eu #   3 (  -2.980) ->  1Eu #   1 (   0.630)   
+       -0.22820     2Eu #   1 (  -2.987) ->  1Eu #   2 (   0.634)   
+       -0.19760     2Eu #   2 (  -2.980) ->  1Eu #   2 (   0.634)   
+       -0.15848     2Eu #   3 (  -2.980) ->  1Eu #   2 (   0.634)   
+        0.51351     2Eu #   1 (  -2.987) ->  1Eu #   3 (   0.634)   
+       -0.14558     2Eu #   2 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.01714     2Eu #   3 (  -2.980) ->  1Eu #   3 (   0.634)   
+        0.18378     1Eu #   1 (  -2.987) ->  2Eu #   1 (   0.630)   
+        0.13295     1Eu #   2 (  -2.980) ->  2Eu #   1 (   0.630)   
+       -0.23115     1Eu #   3 (  -2.980) ->  2Eu #   1 (   0.630)   
+        0.24019     1Eu #   1 (  -2.987) ->  2Eu #   2 (   0.634)   
+        0.20383     1Eu #   2 (  -2.980) ->  2Eu #   2 (   0.634)   
+        0.15241     1Eu #   3 (  -2.980) ->  2Eu #   2 (   0.634)   
+       -0.49646     1Eu #   1 (  -2.987) ->  2Eu #   3 (   0.634)   
+        0.13902     1Eu #   2 (  -2.980) ->  2Eu #   3 (   0.634)   
+       -0.01649     1Eu #   3 (  -2.980) ->  2Eu #   3 (   0.634)   
+
+ Irrep   au State     1      1.98732503   -190.56385453
+       -0.00452     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.67885     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.09060     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.00530     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.72223     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.09639     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     2      1.98732503   -190.56385453
+       -0.01237     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.66630     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.00165     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.08892     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.01282     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.73364     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.00171     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.09791     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     3      1.98732503   -190.56385453
+       -0.70088     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.00493     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.09354     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.70088     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.00492     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.09354     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     4      1.99131170   -190.55986787
+        0.47809     1Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.51252     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.00922     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.06510     1Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+       -0.06658     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.00120     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.47809     2Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.51252     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.00922     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.06510     2Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+        0.06658     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.00120     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     5      1.99433449   -190.55684507
+        0.70089     1Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+       -0.09358     1Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.70089     2Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.09358     2Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     6      2.00789649   -190.54328308
+        0.51363     1Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+       -0.47877     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.00861     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.06227     1Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.05488     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.51363     2Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+        0.47877     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.00861     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.06227     2Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+       -0.05488     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     7      2.50880950   -190.04237007
+       -0.05927     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.47323     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.10922     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.00639     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.87210     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     8      2.50880950   -190.04237007
+        0.00159     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.09012     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.01267     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.71961     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.00157     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.08553     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.01256     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.68294     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State     9      2.50880950   -190.04237007
+       -0.08787     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.70162     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.00294     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.08787     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.70162     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.00290     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State    10      2.51046438   -190.04071518
+        0.02204     1Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.08116     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.00146     1Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.14868     1Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.68605     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.01234     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.02204     2Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.08116     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.00146     2Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.14868     2Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+       -0.68605     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.01234     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State    11      2.51585912   -190.03532044
+        0.08789     1Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.70162     1Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.08789     2Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+        0.70162     2Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   au State    12      2.51713628   -190.03404329
+       -0.08229     1Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.01354     1Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.68618     1Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.14896     1Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.00268     1Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.08229     2Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.01354     2Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.68618     2Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+       -0.14896     2Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.00268     2Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     1      1.98732503   -190.56385453
+       -0.60332     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.35979     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.08052     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.04802     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.59784     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.36282     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.07979     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.04842     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     2      1.98732503   -190.56385453
+       -0.61056     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.34105     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.08148     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.04552     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.61582     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.33788     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.08219     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.04509     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     3      1.99131170   -190.55986787
+       -0.47709     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.26373     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.44017     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.06497     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+       -0.03426     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.05718     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.47908     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+        0.26476     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.43831     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.06524     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+       -0.03440     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.05694     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     4      1.99131170   -190.55986787
+        0.47607     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+       -0.24716     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.45031     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.06483     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.03211     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.05850     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.48009     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+        0.24938     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.44662     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.06537     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+       -0.03240     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.05802     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     5      2.00789649   -190.54328308
+        0.51424     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.23222     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.41845     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.06234     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+       -0.02662     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.04796     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.51301     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.23163     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.41943     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.06219     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+        0.02655     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.04807     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     6      2.00789649   -190.54328308
+       -0.51313     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+       -0.24662     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.41073     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.06221     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.02827     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.04708     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.51412     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.24707     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.40992     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.06233     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+        0.02832     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.04698     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     7      2.50880950   -190.04237007
+        0.07535     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.04526     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.60170     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.36142     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.07523     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.04533     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.60073     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+       -0.36196     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     8      2.50880950   -190.04237007
+       -0.07680     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.04260     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.61322     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.34020     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.07695     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.04251     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.61446     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.33945     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State     9      2.51046438   -190.04071518
+       -0.02222     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.03966     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.07044     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.14991     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.33526     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.59540     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.02185     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.03897     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.07160     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.14744     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+       -0.32938     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.60518     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State    10      2.51046438   -190.04071518
+       -0.02196     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.04171     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.06980     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.14818     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.35260     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.58997     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.02211     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+        0.04198     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.06932     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.14918     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+        0.35482     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.58596     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State    11      2.51713628   -190.03404329
+        0.08213     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.00655     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+       -0.01187     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.68491     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.07202     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.13058     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+       -0.08244     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+       -0.00657     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.01183     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+       -0.68746     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+       -0.07230     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.13011     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+ Irrep   bu State    12      2.51713628   -190.03404329
+        0.08241     2Eu #   1 (  -2.987) ->  1Eg #   1 (  -0.519)   
+        0.00699     2Eu #   2 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.01159     2Eu #   3 (  -2.980) ->  1Eg #   1 (  -0.519)   
+        0.68717     2Eu #   1 (  -2.987) ->  1Eg #   2 (  -0.221)   
+        0.07690     2Eu #   2 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.12748     2Eu #   3 (  -2.980) ->  1Eg #   2 (  -0.221)   
+        0.08217     1Eu #   1 (  -2.987) ->  2Eg #   1 (  -0.519)   
+        0.00697     1Eu #   2 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.01162     1Eu #   3 (  -2.980) ->  2Eg #   1 (  -0.519)   
+        0.68520     1Eu #   1 (  -2.987) ->  2Eg #   2 (  -0.221)   
+        0.07670     1Eu #   2 (  -2.980) ->  2Eg #   2 (  -0.221)   
+        0.12785     1Eu #   3 (  -2.980) ->  2Eg #   2 (  -0.221)   
+
+
+ Solving equations for sector 02
+
+  ...maximum number of iterations for this sector: 50
+
+
+   NIT          ENERGY                    RMS       T1-DIAGN
+    0       -0.131135458439412   1.000000000000000   0.00499
+    1       -0.131135458439412   1.137442920116090   0.00499
+    2       -0.131135458439412   5.972498183046004   0.00499
+    3       -0.131135458439412   2.791780700135232   0.00499
+    4       -0.131135458439412   0.117742760280555   0.00499
+    5       -0.131135458439412   0.102627686153850   0.00499
+    6       -0.131135458439412   0.038880234332510   0.00499
+    7       -0.131135458439412   0.039838614251592   0.00499
+    8       -0.131135458439412   0.001563239490792   0.00499
+    9       -0.131135458439412   0.000771967134880   0.00499
+   10       -0.131135458439412   0.000383219164724   0.00499
+   11       -0.131135458439412   0.000057673680985   0.00499
+   12       -0.131135458439412   0.000004579767418   0.00499
+   13       -0.131135458439412   0.000003125357621   0.00499
+   14       -0.131135458439412   0.000001206172084   0.00499
+   15       -0.131135458439412   0.000000938373917   0.00499
+   16       -0.131135458439412   0.000000589472987   0.00499
+   17       -0.131135458439412   0.000000022949460   0.00499
+   18       -0.131135458439412   0.000000029443479   0.00499
+   19       -0.131135458439412   0.000000013367150   0.00499
+   20       -0.131135458439412   0.000000004388392   0.00499
+   21       -0.131135458439412   0.000000003394246   0.00499
+   22       -0.131135458439412   0.000000000634210   0.00499
+   23       -0.131135458439412   0.000000000656680   0.00499
+   24       -0.131135458439412   0.000000000161489   0.00499
+   25       -0.131135458439412   0.000000000153694   0.00499
+   26       -0.131135458439412   0.000000000117198   0.00499
+   27       -0.131135458439412   0.000000000018993   0.00499
+   28       -0.131135458439412   0.000000000004942   0.00499
+   29       -0.131135458439412   0.000000000008319   0.00499
+   30       -0.131135458439412   0.000000000004762   0.00499
+   31       -0.131135458439412   0.000000000001250   0.00499
+   32       -0.131135458439412   0.000000000000255   0.00499
+
+
+  CCSD results
+
+ T1 diagnostic :                               0.004990476709959
+ Convergence :                                 0.000000000000255
+ Number or iterations used :                                  32
+
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
+
+
+ Energy eigenvalues in atomic units
+
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
+
+    1   0.000000000000     -0.775844955493     -193.327024518473 (   1 * )
+    2   0.173074899317     -0.602770056176     -193.153949619156 (   3 * )
+    3   0.189397537509     -0.586447417984     -193.137626980964 (   1 * )
+    4   0.455195887202     -0.320649068291     -192.871828631271 (   1 * )
+    5   1.165423265546      0.389578310053     -192.161601252927 (   1 * )
+    6   1.166401991580      0.390557036088     -192.160622526893 (   3 * )
+    7   1.168558927991      0.392713972498     -192.158465590482 (   5 * )
+    8   1.198434591637      0.422589636144     -192.128589926836 (   3 * )
+    9   1.318083858187      0.542238902694     -192.008940660287 (   1 * )
+   10   1.319028199711      0.543183244218     -192.007996318763 (   3 * )
+   11   1.321212486994      0.545367531501     -192.005812031479 (   5 * )
+   12   1.340440122528      0.564595167035     -191.986584395946 (   3 * )
+   13   2.533499695411      1.757654739918     -190.793524823063 (   1 * )
+   14   2.534651631985      1.758806676492     -190.792372886488 (   3 * )
+   15   2.536799431412      1.760954475919     -190.790225087062 (   5 * )
+   16   2.601366359053      1.825521403560     -190.725658159421 (   5 * )
+   17   2.686023201621      1.910178246128     -190.641001316852 (   1 * )
+
+
+ Total average:      -191.7785044344
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    ag  bg  au  bu
+    1        0.000000000          0.000000   1   0   0   0
+    2        4.709607449      37985.549712   1   2   0   0
+    3        5.153769015      41567.954710   1   0   0   0
+    4       12.386509826      99903.949504   1   0   0   0
+    5       31.712779346     255780.841492   0   0   1   0
+    6       31.739411836     255995.647027   0   0   1   2
+    7       31.798105059     256469.039851   0   0   3   2
+    8       32.611063198     263025.990114   0   0   1   2
+    9       35.866885268     289285.968772   0   0   1   0
+   10       35.892582108     289493.227780   0   0   1   2
+   11       35.952019586     289972.623426   0   0   3   2
+   12       36.475230150     294192.601646   0   0   1   2
+   13       68.940031651     556038.911500   1   0   0   0
+   14       68.971377439     556291.732355   1   2   0   0
+   15       69.029822033     556763.119842   3   2   0   0
+   16       70.786777458     570933.922479   3   2   0   0
+   17       73.090407262     589513.951787   1   0   0   0
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  : Eigenvalue, Energy
+ other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
+
+ Irrep   ag State     1     -0.77584496   -193.32702452
+       -0.98858   |  2Eg #   1 (  -0.519),  1Eg #   1 (  -0.519) |  
+       -0.10556   |  2Eg #   2 (  -0.221),  1Eg #   1 (  -0.519) |  
+       -0.10556   |  2Eg #   1 (  -0.519),  1Eg #   2 (  -0.221) |  
+        0.01352   |  2Eg #   2 (  -0.221),  1Eg #   2 (  -0.221) |  
+        0.00884   |  2Eu #   1 (   0.630),  1Eu #   1 (   0.630) |  
+        0.00881   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+        0.00881   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State     2     -0.60277006   -193.15394962
+       -0.70711   |  2Eg #   2 (  -0.221),  1Eg #   1 (  -0.519) |  
+        0.70711   |  2Eg #   1 (  -0.519),  1Eg #   2 (  -0.221) |  
+
+ Irrep   ag State     3     -0.58644742   -193.13762698
+       -0.14665   |  2Eg #   1 (  -0.519),  1Eg #   1 (  -0.519) |  
+        0.69940   |  2Eg #   2 (  -0.221),  1Eg #   1 (  -0.519) |  
+        0.69940   |  2Eg #   1 (  -0.519),  1Eg #   2 (  -0.221) |  
+        0.00302   |  2Eg #   2 (  -0.221),  1Eg #   2 (  -0.221) |  
+        0.00739   |  2Eu #   1 (   0.630),  1Eu #   1 (   0.630) |  
+        0.00737   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+        0.00737   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State     4     -0.32064907   -192.87182863
+        0.01351   |  2Eg #   1 (  -0.519),  1Eg #   1 (  -0.519) |  
+        0.99990   |  2Eg #   2 (  -0.221),  1Eg #   2 (  -0.221) |  
+       -0.00207   |  2Eu #   1 (   0.630),  1Eu #   1 (   0.630) |  
+       -0.00207   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.00207   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State     5      1.75765474   -190.79352482
+       -0.82744   |  2Eu #   1 (   0.630),  1Eu #   1 (   0.630) |  
+        0.39708   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+        0.39708   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State     6      1.75880668   -190.79237289
+       -0.70429   |  2Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+        0.06310   |  2Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+        0.70429   |  2Eu #   1 (   0.630),  1Eu #   2 (   0.634) |  
+       -0.06310   |  2Eu #   1 (   0.630),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State     7      1.76095448   -190.79022509
+       -0.41807   |  2Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+        0.05602   |  2Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.41807   |  2Eu #   1 (   0.630),  1Eu #   2 (   0.634) |  
+        0.56236   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.07631   |  2Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+        0.05600   |  2Eu #   1 (   0.630),  1Eu #   3 (   0.634) |  
+       -0.07632   |  2Eu #   2 (   0.634),  1Eu #   3 (   0.634) |  
+       -0.56236   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State     8      1.76095448   -190.79022509
+        0.03698   |  2Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+        0.41508   |  2Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.03830   |  2Eu #   1 (   0.630),  1Eu #   2 (   0.634) |  
+        0.56074   |  2Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.42511   |  2Eu #   1 (   0.630),  1Eu #   3 (   0.634) |  
+       -0.57422   |  2Eu #   2 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State     9      1.76095448   -190.79022509
+       -0.05620   |  2Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.42060   |  2Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.05574   |  2Eu #   1 (   0.630),  1Eu #   2 (   0.634) |  
+       -0.07637   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.56576   |  2Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.41554   |  2Eu #   1 (   0.630),  1Eu #   3 (   0.634) |  
+       -0.55893   |  2Eu #   2 (   0.634),  1Eu #   3 (   0.634) |  
+        0.07637   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State    10      1.82552140   -190.72565816
+        0.13531   |  2Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+        0.55072   |  2Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+        0.13536   |  2Eu #   1 (   0.630),  1Eu #   2 (   0.634) |  
+       -0.01148   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.42165   |  2Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+        0.55126   |  2Eu #   1 (   0.630),  1Eu #   3 (   0.634) |  
+       -0.42206   |  2Eu #   2 (   0.634),  1Eu #   3 (   0.634) |  
+        0.01148   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State    11      1.82552140   -190.72565816
+       -0.05008   |  2Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.56296   |  2Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+        0.05118   |  2Eu #   1 (   0.630),  1Eu #   2 (   0.634) |  
+        0.42036   |  2Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+        0.56725   |  2Eu #   1 (   0.630),  1Eu #   3 (   0.634) |  
+       -0.42366   |  2Eu #   2 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State    12      1.82552140   -190.72565816
+       -0.55098   |  2Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+        0.13537   |  2Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.55098   |  2Eu #   1 (   0.630),  1Eu #   2 (   0.634) |  
+       -0.42186   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+        0.01145   |  2Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+        0.13536   |  2Eu #   1 (   0.630),  1Eu #   3 (   0.634) |  
+        0.01146   |  2Eu #   2 (   0.634),  1Eu #   3 (   0.634) |  
+        0.42186   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   ag State    13      1.91017825   -190.64100132
+       -0.01737   |  2Eg #   1 (  -0.519),  1Eg #   1 (  -0.519) |  
+        0.00842   |  2Eg #   2 (  -0.221),  1Eg #   1 (  -0.519) |  
+        0.00842   |  2Eg #   1 (  -0.519),  1Eg #   2 (  -0.221) |  
+       -0.00384   |  2Eg #   2 (  -0.221),  1Eg #   2 (  -0.221) |  
+       -0.56035   |  2Eu #   1 (   0.630),  1Eu #   1 (   0.630) |  
+       -0.58547   |  2Eu #   2 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.58547   |  2Eu #   3 (   0.634),  1Eu #   3 (   0.634) |  
+
+ Irrep   bg State     1     -0.60277006   -193.15394962
+        1.00000   |  1Eg #   2 (  -0.221),  1Eg #   1 (  -0.519) |  
+
+ Irrep   bg State     2     -0.60277006   -193.15394962
+        1.00000   |  2Eg #   2 (  -0.221),  2Eg #   1 (  -0.519) |  
+
+ Irrep   bg State     3      1.75880668   -190.79237289
+       -0.40760   |  1Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.57662   |  1Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+        0.40597   |  2Eu #   2 (   0.634),  2Eu #   1 (   0.630) |  
+        0.58013   |  2Eu #   3 (   0.634),  2Eu #   1 (   0.630) |  
+
+ Irrep   bg State     4      1.75880668   -190.79237289
+       -0.29623   |  1Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+        0.64328   |  1Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.29877   |  2Eu #   2 (   0.634),  2Eu #   1 (   0.630) |  
+        0.63967   |  2Eu #   3 (   0.634),  2Eu #   1 (   0.630) |  
+
+ Irrep   bg State     5      1.76095448   -190.79022509
+       -0.34551   |  1Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+        0.24243   |  1Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.56679   |  1Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+        0.34453   |  2Eu #   2 (   0.634),  2Eu #   1 (   0.630) |  
+       -0.24289   |  2Eu #   3 (   0.634),  2Eu #   1 (   0.630) |  
+        0.56824   |  2Eu #   3 (   0.634),  2Eu #   2 (   0.634) |  
+
+ Irrep   bg State     6      1.76095448   -190.79022509
+       -0.38248   |  1Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.17759   |  1Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+        0.56781   |  1Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.38284   |  2Eu #   2 (   0.634),  2Eu #   1 (   0.630) |  
+       -0.17734   |  2Eu #   3 (   0.634),  2Eu #   1 (   0.630) |  
+        0.56723   |  2Eu #   3 (   0.634),  2Eu #   2 (   0.634) |  
+
+ Irrep   bg State     7      1.82552140   -190.72565816
+       -0.51491   |  1Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.23856   |  1Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.42182   |  1Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.51450   |  2Eu #   2 (   0.634),  2Eu #   1 (   0.630) |  
+       -0.23885   |  2Eu #   3 (   0.634),  2Eu #   1 (   0.630) |  
+       -0.42220   |  2Eu #   3 (   0.634),  2Eu #   2 (   0.634) |  
+
+ Irrep   bg State     8      1.82552140   -190.72565816
+        0.46378   |  1Eu #   2 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.32654   |  1Eu #   3 (   0.634),  1Eu #   1 (   0.630) |  
+       -0.42225   |  1Eu #   3 (   0.634),  1Eu #   2 (   0.634) |  
+       -0.46438   |  2Eu #   2 (   0.634),  2Eu #   1 (   0.630) |  
+        0.32626   |  2Eu #   3 (   0.634),  2Eu #   1 (   0.630) |  
+        0.42177   |  2Eu #   3 (   0.634),  2Eu #   2 (   0.634) |  
+
+ Irrep   au State     1      0.38957831   -192.16160125
+        0.68959   |  2Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.15642   |  2Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+       -0.68959   |  1Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.15642   |  1Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     2      0.39055704   -192.16062253
+       -0.57978   |  2Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.37173   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.03330   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.13422   |  2Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.08060   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.00722   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.57978   |  1Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+        0.37173   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.03330   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.13422   |  1Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.08060   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.00722   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     3      0.39271397   -192.15846559
+       -0.68957   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.00341   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.15646   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.68957   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.00344   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.15646   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     4      0.39271397   -192.15846559
+       -0.06153   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.68734   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.01396   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.15595   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.06154   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.68632   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.01396   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.15572   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     5      0.39271397   -192.15846559
+       -0.00325   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.68992   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.15654   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.00332   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.68922   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.15638   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     6      0.42258964   -192.12858993
+        0.35042   |  2Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.54825   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.04912   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.15260   |  2Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.22478   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.02014   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.35042   |  1Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+        0.54825   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.04912   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.15260   |  1Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.22478   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.02014   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     7      0.54223890   -192.00894066
+       -0.15478   |  2Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.68996   |  2Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.15478   |  1Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.68996   |  1Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     8      0.54318324   -192.00799632
+        0.13728   |  2Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+       -0.07289   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.00653   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.58737   |  2Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.36021   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.03227   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.13728   |  1Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.07289   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.00653   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.58737   |  1Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.36021   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.03227   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State     9      0.54536753   -192.00581203
+       -0.15481   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.00189   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.68990   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.00843   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.15481   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.00190   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.68990   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.00846   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State    10      0.54536753   -192.00581203
+        0.01381   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.15387   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.06154   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.68572   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.01382   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.15453   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.06160   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.68867   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State    11      0.54536753   -192.00581203
+        0.00182   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.15434   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.00809   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.68780   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.00190   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.15528   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.00846   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.69199   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   au State    12      0.56459517   -191.98658440
+        0.14490   |  2Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.22404   |  2Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.02007   |  2Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.33870   |  2Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+       -0.55785   |  2Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.04998   |  2Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.14490   |  1Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+        0.22404   |  1Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.02007   |  1Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.33870   |  1Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+       -0.55785   |  1Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.04998   |  1Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     1      0.39055704   -192.16062253
+        0.57967   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.15699   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.33864   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.13420   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.03404   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.07342   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.57988   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+        0.15706   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.33853   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.13425   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.03405   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.07340   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     2      0.39055704   -192.16062253
+        0.57990   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.21474   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.30520   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.13425   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.04656   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.06618   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.57965   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.21467   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.30535   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.13419   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+       -0.04655   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.06621   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     3      0.39271397   -192.15846559
+        0.62557   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.29013   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.14194   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.06583   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.62558   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.29012   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.14194   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.06583   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     4      0.39271397   -192.15846559
+        0.56415   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.39665   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.12800   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.09000   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.56393   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.39676   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.12796   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.09002   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     5      0.42258964   -192.12858993
+       -0.35029   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.31658   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.45041   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.15255   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.12980   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.18467   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.35054   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.31674   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.45006   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.15265   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+       -0.12987   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.18453   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     6      0.42258964   -192.12858993
+        0.35047   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+       -0.23163   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.49929   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.15262   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+       -0.09497   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.20471   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.35037   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.23154   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.49942   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.15258   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+       -0.09493   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.20476   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     7      0.54318324   -192.00799632
+       -0.13725   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+       -0.03078   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.06641   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.58721   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.15210   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.32817   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.13732   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.03080   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.06637   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.58753   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.15221   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.32800   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     8      0.54318324   -192.00799632
+        0.13734   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.04211   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.05983   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.58762   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+       -0.20811   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.29568   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.13723   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.04209   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.05989   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.58713   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.20799   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.29595   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State     9      0.54536753   -192.00581203
+       -0.14048   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.06512   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.62603   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.29020   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.14042   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.06515   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.62580   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.29036   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State    10      0.54536753   -192.00581203
+       -0.12658   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.08909   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.56410   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.39703   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.12669   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.08904   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.56459   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.39680   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State    11      0.56459517   -191.98658440
+       -0.14493   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+        0.12942   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.18394   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.33876   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+       -0.32225   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.45802   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.14487   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.12938   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.18403   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.33863   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.32216   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+        0.45822   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+ Irrep   bu State    12      0.56459517   -191.98658440
+        0.14490   |  1Eu #   1 (   0.630),  1Eg #   1 (  -0.519) |  
+       -0.09464   |  1Eu #   2 (   0.634),  1Eg #   1 (  -0.519) |  
+        0.20406   |  1Eu #   3 (   0.634),  1Eg #   1 (  -0.519) |  
+       -0.33870   |  1Eu #   1 (   0.630),  1Eg #   2 (  -0.221) |  
+        0.23564   |  1Eu #   2 (   0.634),  1Eg #   2 (  -0.221) |  
+       -0.50810   |  1Eu #   3 (   0.634),  1Eg #   2 (  -0.221) |  
+        0.14490   |  2Eu #   1 (   0.630),  2Eg #   1 (  -0.519) |  
+       -0.09463   |  2Eu #   2 (   0.634),  2Eg #   1 (  -0.519) |  
+        0.20406   |  2Eu #   3 (   0.634),  2Eg #   1 (  -0.519) |  
+       -0.33870   |  2Eu #   1 (   0.630),  2Eg #   2 (  -0.221) |  
+        0.23564   |  2Eu #   2 (   0.634),  2Eg #   2 (  -0.221) |  
+       -0.50810   |  2Eu #   3 (   0.634),  2Eg #   2 (  -0.221) |  
+
+
+ Solving equations for sector 20
+
+  ...maximum number of iterations for this sector: 50
+
+
+   NIT          ENERGY                    RMS       T1-DIAGN
+    0       -0.131135458439412   1.000000000000000   0.00499
+    1       -0.131135458439412   0.769918987035096   0.00499
+    2       -0.131135458439412   0.008917713841250   0.00499
+    3       -0.131135458439412   0.000573290547459   0.00499
+    4       -0.131135458439412   0.000001812097455   0.00499
+    5       -0.131135458439412   0.000000110251006   0.00499
+    6       -0.131135458439412   0.000000005183019   0.00499
+    7       -0.131135458439412   0.000000000079793   0.00499
+    8       -0.131135458439412   0.000000000063128   0.00499
+    9       -0.131135458439412   0.000000000063758   0.00499
+   10       -0.131135458439412   0.000000000000015   0.00499
+
+
+  CCSD results
+
+ T1 diagnostic :                               0.004990476709959
+ Convergence :                                 0.000000000000015
+ Number or iterations used :                                  10
+
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
+
+
+ Energy eigenvalues in atomic units
+
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
+
+    1   0.000000000001      6.832098002989     -185.719081559992 (   5 * )
+    2   0.005320601156      6.837418604144     -185.713760958837 (   3 * )
+    3   0.007789908668      6.839887911655     -185.711291651325 (   1 * )
+    4   0.178251725608      7.010349728596     -185.540829834385 (   5 * )
+    5   0.360714733366      7.192812736353     -185.358366826627 (   1 * )
+
+
+ Total average:      -185.6340332218
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    ag  bg  au  bu
+    1        0.000000000          0.000000   3   2   0   0
+    2        0.144780918       1167.736977   1   2   0   0
+    3        0.211974192       1709.687333   1   0   0   0
+    4        4.850476054      39121.731753   3   2   0   0
+    5        9.815546921      79167.733103   1   0   0   0
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  : Eigenvalue, Energy
+ other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
+
+ Irrep   ag State     1      6.83209800   -185.71908156
+        0.39515   |  2Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.02816   |  2Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.39515   |  2Eu #   1 (  -2.987),  1Eu #   2 (  -2.980) |  
+        0.58114   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.07309   |  2Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.02816   |  2Eu #   1 (  -2.987),  1Eu #   3 (  -2.980) |  
+       -0.07309   |  2Eu #   2 (  -2.980),  1Eu #   3 (  -2.980) |  
+       -0.58114   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     2      6.83209800   -185.71908156
+        0.00125   |  2Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.46791   |  2Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.01271   |  2Eu #   1 (  -2.987),  1Eu #   2 (  -2.980) |  
+       -0.01484   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.69126   |  2Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.30786   |  2Eu #   1 (  -2.987),  1Eu #   3 (  -2.980) |  
+        0.45589   |  2Eu #   2 (  -2.980),  1Eu #   3 (  -2.980) |  
+        0.01484   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     3      6.83209800   -185.71908156
+        0.02811   |  2Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.38667   |  2Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.02780   |  2Eu #   1 (  -2.987),  1Eu #   2 (  -2.980) |  
+        0.07278   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.56861   |  2Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.40348   |  2Eu #   1 (  -2.987),  1Eu #   3 (  -2.980) |  
+        0.59347   |  2Eu #   2 (  -2.980),  1Eu #   3 (  -2.980) |  
+       -0.07278   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     4      6.83741860   -185.71376096
+        0.70699   |  2Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.01272   |  2Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.70699   |  2Eu #   1 (  -2.987),  1Eu #   2 (  -2.980) |  
+        0.01272   |  2Eu #   1 (  -2.987),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     5      6.83988791   -185.71129165
+        0.80425   |  2Eu #   1 (  -2.987),  1Eu #   1 (  -2.987) |  
+       -0.42023   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.42023   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     6      7.01034973   -185.54082983
+       -0.01165   |  2Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.51346   |  2Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.00920   |  2Eu #   1 (  -2.987),  1Eu #   2 (  -2.980) |  
+        0.02826   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.34619   |  2Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.64994   |  2Eu #   1 (  -2.987),  1Eu #   3 (  -2.980) |  
+        0.43848   |  2Eu #   2 (  -2.980),  1Eu #   3 (  -2.980) |  
+       -0.02826   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     7      7.01034973   -185.54082983
+       -0.01336   |  2Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.36698   |  2Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.00661   |  2Eu #   1 (  -2.987),  1Eu #   2 (  -2.980) |  
+        0.00913   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.24849   |  2Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.74256   |  2Eu #   1 (  -2.987),  1Eu #   3 (  -2.980) |  
+        0.50180   |  2Eu #   2 (  -2.980),  1Eu #   3 (  -2.980) |  
+       -0.00913   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     8      7.01034973   -185.54082983
+       -0.58569   |  2Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.01051   |  2Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.58569   |  2Eu #   1 (  -2.987),  1Eu #   2 (  -2.980) |  
+        0.39503   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.02846   |  2Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.01051   |  2Eu #   1 (  -2.987),  1Eu #   3 (  -2.980) |  
+       -0.02846   |  2Eu #   2 (  -2.980),  1Eu #   3 (  -2.980) |  
+       -0.39503   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   ag State     9      7.19281274   -185.35836683
+       -0.59424   |  2Eu #   1 (  -2.987),  1Eu #   1 (  -2.987) |  
+       -0.56872   |  2Eu #   2 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.56872   |  2Eu #   3 (  -2.980),  1Eu #   3 (  -2.980) |  
+
+ Irrep   bg State     1      6.83209800   -185.71908156
+        0.34468   |  1Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.19302   |  1Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.58899   |  1Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.34849   |  2Eu #   2 (  -2.980),  2Eu #   1 (  -2.987) |  
+        0.19072   |  2Eu #   3 (  -2.980),  2Eu #   1 (  -2.987) |  
+        0.58242   |  2Eu #   3 (  -2.980),  2Eu #   2 (  -2.980) |  
+
+ Irrep   bg State     2      6.83209800   -185.71908156
+       -0.33924   |  1Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.20434   |  1Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.58610   |  1Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.33969   |  2Eu #   2 (  -2.980),  2Eu #   1 (  -2.987) |  
+       -0.20409   |  2Eu #   3 (  -2.980),  2Eu #   1 (  -2.987) |  
+       -0.58533   |  2Eu #   3 (  -2.980),  2Eu #   2 (  -2.980) |  
+
+ Irrep   bg State     3      6.83741860   -185.71376096
+       -0.33855   |  1Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.62510   |  1Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.34637   |  2Eu #   2 (  -2.980),  2Eu #   1 (  -2.987) |  
+        0.61210   |  2Eu #   3 (  -2.980),  2Eu #   1 (  -2.987) |  
+
+ Irrep   bg State     4      6.83741860   -185.71376096
+        0.36706   |  1Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.60128   |  1Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.36195   |  2Eu #   2 (  -2.980),  2Eu #   1 (  -2.987) |  
+       -0.61051   |  2Eu #   3 (  -2.980),  2Eu #   1 (  -2.987) |  
+
+ Irrep   bg State     5      7.01034973   -185.54082983
+       -0.50124   |  1Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.30237   |  1Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.39660   |  1Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+        0.50267   |  2Eu #   2 (  -2.980),  2Eu #   1 (  -2.987) |  
+       -0.30157   |  2Eu #   3 (  -2.980),  2Eu #   1 (  -2.987) |  
+        0.39550   |  2Eu #   3 (  -2.980),  2Eu #   2 (  -2.980) |  
+
+ Irrep   bg State     6      7.01034973   -185.54082983
+       -0.51284   |  1Eu #   2 (  -2.980),  1Eu #   1 (  -2.987) |  
+       -0.28351   |  1Eu #   3 (  -2.980),  1Eu #   1 (  -2.987) |  
+        0.39577   |  1Eu #   3 (  -2.980),  1Eu #   2 (  -2.980) |  
+       -0.51214   |  2Eu #   2 (  -2.980),  2Eu #   1 (  -2.987) |  
+       -0.28393   |  2Eu #   3 (  -2.980),  2Eu #   1 (  -2.987) |  
+        0.39633   |  2Eu #   3 (  -2.980),  2Eu #   2 (  -2.980) |  
+
+
+--------------------------------------------------------------------------------
+
+
+ Today is :   18 Nov 11 
+ The time is :  11:06:25
+
+ Status of the calculations
+ Integral sort # 1 :                   Completed, restartable        
+ Integral sort # 2 :                   Completed, restartable        
+ Fock matrix build :                   Completed, restartable        
+ MP2 energy calculation :              Never asked for               
+ CCSD energy calculation :             Never asked for               
+ CCSD(T) energy calculation :          Never asked for               
+
+ Overview of calculated energies
+@ SCF energy :                                 0.000000000000000
+@ MP2 correlation energy :                     0.000000000000000
+@ CCSD correlation energy :                    0.000000000000000
+@ 4th order triples correction :               0.000000000000000
+@ 5th order triples (T) correction :           0.000000000000000
+@ 5th order triples -T  correction :           0.000000000000000
+@ Total MP2 energy :                           0.000000000000000
+@ Total CCSD energy :                          0.000000000000000
+@ Total CCSD+T  energy :                       0.000000000000000
+@ Total CCSD(T) energy :                       0.000000000000000
+@ Total CCSD-T  energy :                       0.000000000000000
+
+
+--------------------------------------------------------------------------------
+
+------ Timing report (in CPU seconds) of module  RELCCSD                      
+
+ Time in - T1 equations                0.500 seconds
+ Time in --- T1EQNS HOV*T2(A,C,I       0.008 seconds
+ Time in --- T1EQNS VOOO*TAU           0.068 seconds
+ Time in --- T1EQNS VOVV contrib       0.104 seconds
+ Time in --- T1EQNS VOVO * T(C,K       0.080 seconds
+ Time in - T2 equations                2.884 seconds
+ Time in -- GOINTM                     0.016 seconds
+ Time in -- GVINTM                     0.056 seconds
+ Time in -- AINTM                      0.240 seconds
+ Time in -- HINTM                      0.784 seconds
+ Time in --- HINTM: VOVV*T             0.176 seconds
+ Time in --- HINTM: VVOO contrib       0.268 seconds
+ Time in -- T2 EQNS                    1.264 seconds
+ Time in --- T2EQNS: TAU*AINTM c       0.020 seconds
+ Time in --- T2EQNS: VOVV*T1           0.052 seconds
+ Time in --- T2EQNS: HINTM*T2          0.888 seconds
+ Time in -- BINTM                      0.520 seconds
+ Time in - DIIS extrapolation          0.192 seconds
+
+
+ Timing of main modules :         Wallclock (s)       CPU on master (s)
+ Before CC driver :                  7.00                     7.39
+ Initialization :                    0.00                     0.20
+ Integral sorting :                  0.00                     0.00
+ Energy calculation :                0.00                     0.00
+ First order properties :            0.00                     0.00
+ Second order properties :           0.00                     0.00
+ Fock space energies :               0.00                     6.00
+ Untimed parts :                     6.00                     0.00
+ Total time in CC driver :             6.                     6.21
+
+ Statistics for the word-addressable I/O
+ Number of write calls                                7709.
+ Number of read calls                                 7709.
+ Megabytes written                                   82.678
+ Megabytes read                                    1615.753
+ Seconds spent in reads                               1.000
+ Seconds spent in writes                              1.000
+ average I/O speed for write (Mb/s)                  82.678
+ average I/O speed for read  (Mb/s)                1615.753
+
+
+ CPU time (seconds) used in RELCCSD:                     6.2084
+ CPU time (seconds) used before RELCCSD:                 7.3885
+ CPU time (seconds) used in total sofar:                13.5968
+
+  --- Normal end of RELCCSD Run ---
+
+
+################################################################################
+
+ 
+     Date and time (Linux)  : Fri Nov 18 11:06:25 2011
+     Host name              : not found                               
+>>>> Node 0, utime: 12, stime: 0, minflt: 104301, majflt: 0, nvcsw: 3, nivcsw: 1154, maxrss: 19984
+>>>> Total WALL time used in DIRAC: 14s
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :         0.50
+  
+  Largest          10  allocations
+  
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
+       10.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for ibuf                                      
+       10.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for ibuf                                      
+        1.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+        1.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
+        1.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+        1.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
+        0.99 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf3                                      
+        0.99 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf2                                      
+        0.99 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf1                                      
+  
+  Peak memory usage    (Mb) :       853.00
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : vta                                       
+  
+ MEMGET high-water mark:     3.40 MB
+
+*****************************************************
