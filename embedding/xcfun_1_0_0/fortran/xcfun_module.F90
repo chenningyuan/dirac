@@ -125,8 +125,8 @@ contains
 
 
   function xcfun_version()
-    double precision xcfun_version, xcfuve
-    xcfun_version = xcfuve()
+    double precision xcfun_version, xcfuve_1_0_0
+    xcfun_version = xcfuve_1_0_0()
   end function xcfun_version
 
   subroutine xcfun_splash(text)
@@ -134,38 +134,38 @@ contains
     integer :: ibuf(len(text)+1)
     integer le
     le = len(text)
-    call xcspla(ibuf,le)
+    call xcspla_1_0_0(ibuf,le)
     call ints2str(ibuf,text)
   end subroutine xcfun_splash
 
   ! Create a new, "empty" functional and return its id
   function xc_new_functional()
-    integer xc_new_functional, xcnewf
-    xc_new_functional = xcnewf()
+    integer xc_new_functional, xcnewf_1_0_0
+    xc_new_functional = xcnewf_1_0_0()
   end function xc_new_functional
 
   subroutine xc_free_functional(funid)
     integer funid
-    call xcfree(funid)
+    call xcfree_1_0_0(funid)
   end subroutine xc_free_functional
 
   subroutine xc_set_param(funid, param, val)
     integer, intent(in) :: funid, param
     double precision, intent(in) :: val
-    call xcsets(funid,param,val)
+    call xcsets_1_0_0(funid,param,val)
   end subroutine xc_set_param
 
   function xc_get_param(funid, param)
     integer, intent(in) :: funid, param
-    double precision xcgets, xc_get_param
-    xc_get_param = xcgets(funid,param)
+    double precision xcgets_1_0_0, xc_get_param
+    xc_get_param = xcgets_1_0_0(funid,param)
   end function xc_get_param
 
   function xc_is_functional(param)
     logical :: xc_is_functional
     integer, intent(in) :: param
-    integer xcisfu,res
-    res = xcisfu(param)
+    integer xcisfu_1_0_0,res
+    res = xcisfu_1_0_0(param)
     if (res.eq.0) then
        xc_is_functional = .false.
     else
@@ -179,7 +179,7 @@ contains
     integer :: idescr(len(description)+1)
     integer :: le
     le = len(description)+1
-    call xcssho(idescr,le,param)
+    call xcssho_1_0_0(idescr,le,param)
     call ints2str(idescr,description)
   end subroutine
 
@@ -189,26 +189,26 @@ contains
     integer :: idescr(len(description)+1)
     integer :: le
     le = len(description)+1
-    call xcslon(idescr,le,param)
+    call xcslon_1_0_0(idescr,le,param)
     call ints2str(idescr,description)
   end subroutine
 
   subroutine xc_set_mode(funid, mode)
     integer, intent(in) :: funid, mode
-    call xcsmod(funid,mode)
+    call xcsmod_1_0_0(funid,mode)
   end subroutine xc_set_mode
 
   function xc_get_type(funid)
     integer, intent(in) :: funid
-    integer xc_get_type, xcgett
-    xc_get_type = xcgett(funid)
+    integer xc_get_type, xcgett_1_0_0
+    xc_get_type = xcgett_1_0_0(funid)
   end function xc_get_type
 
   subroutine xc_eval(funid, order, npoints, densities, results)
     integer, intent(in) :: funid, order, npoints
     double precision, intent(in) :: densities(:,:)
     double precision, intent(out) :: results(:,:)
-    call xceval(funid,order,npoints,densities(1,1),densities(1,2),&
+    call xceval_1_0_0(funid,order,npoints,densities(1,1),densities(1,2),&
          results(1,1),results(1,2))
   end subroutine xc_eval
 
@@ -216,25 +216,25 @@ contains
     integer, intent(in) :: funid    
     double precision, intent(in) :: density(:)
     double precision, intent(out) :: energy, potentials(:)
-    call xcpotential(funid,density,energy,potentials)
+    call xcpotential_1_0_0(funid,density,energy,potentials)
   end subroutine xc_potential
 
   function xc_index(funid, exponents)
     integer, intent(in) :: exponents(*)
-    integer funid,xc_index, xcdind
-    xc_index = xcdind(funid,exponents) + 1
+    integer funid,xc_index, xcdind_1_0_0
+    xc_index = xcdind_1_0_0(funid,exponents) + 1
   end function xc_index
 
   function xc_input_length(funid)
     integer, intent(in) :: funid
-    integer xc_input_length, xcinle
-    xc_input_length = xcinle(funid)
+    integer xc_input_length, xcinle_1_0_0
+    xc_input_length = xcinle_1_0_0(funid)
   end function xc_input_length
 
   function xc_output_length(funid, order)
     integer, intent(in) :: funid, order
-    integer xc_output_length, xcoule
-    xc_output_length = xcoule(funid,order)
+    integer xc_output_length, xcoule_1_0_0
+    xc_output_length = xcoule_1_0_0(funid,order)
   end function xc_output_length
 
   subroutine xc_param_name(setting_nr, name)
@@ -243,7 +243,7 @@ contains
     integer :: ibuf(len(name)+1)
     integer :: le
     le = len(name)+1
-    call xcsnam(ibuf,le,setting_nr)
+    call xcsnam_1_0_0(ibuf,le,setting_nr)
     call ints2str(ibuf,name)
   end subroutine xc_param_name
 end module
