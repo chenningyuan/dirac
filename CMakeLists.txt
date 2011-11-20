@@ -152,7 +152,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/xcint/xcfun/fortran
-    ${PROJECT_BINARY_DIR}/embedding/xcfun_1_0_0/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -167,11 +166,6 @@ add_subdirectory(xcint/xcfun)
 set(LIBS
     ${LIBS}
     xcfun
-    )
-add_subdirectory(embedding/xcfun_1_0_0)
-set(LIBS
-    ${LIBS}
-    xcfun_1_0_0
     )
 
 include(CompilationInfo)

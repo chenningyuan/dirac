@@ -125,8 +125,6 @@ vital_directories.append('x2c')
 vital_directories.append('cmake')
 vital_directories.append('xcint/xcfun')
 vital_directories.append('xcint/xcfun/fortran')
-vital_directories.append('embedding/xcfun_1_0_0')
-vital_directories.append('embedding/xcfun_1_0_0/fortran')
 
 # these tests are always packaged
 
@@ -219,7 +217,6 @@ files_never_compiled.append('relccsd/quit.F')
 files_never_compiled.append('utils/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
 files_never_compiled.append('xcint/xcfun/fortran/example.F90')
-files_never_compiled.append('embedding/xcfun_1_0_0/fortran/example.F90')
 files_never_compiled.append('fmm/mm_standalone_drv.f90')
 files_never_compiled.append('fmm/mm_standalone_aux.F')
 files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
