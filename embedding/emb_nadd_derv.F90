@@ -186,10 +186,9 @@ module fde_nadd_derv
          subroutine fde_initialize_nadd_functionals
 !   ----------------------------------------------------------------------------
             integer :: i, order = 5
-            logical :: parallel_fde, fun_is_automatic
+            logical :: parallel_fde
 
             parallel_fde = .false.
-            fun_is_automatic = .true. 
             
         if (.not.functionals_initialized) then
             functionals_initialized = .true.
