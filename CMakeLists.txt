@@ -151,7 +151,7 @@ add_executable(
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/xcint/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -162,7 +162,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-add_subdirectory(xcint/xcfun)
+add_subdirectory(xcfun)
 set(LIBS
     ${LIBS}
     xcfun
