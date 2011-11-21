@@ -5,11 +5,8 @@ module fde_nadd_derv
 
 #ifdef MOD_UNRELEASED
 
-      use xcfun
-      use interface_functional_read
-      use xc_derv
       use xc_max_block_length
-
+      use emb_xcfun_interface
 
       public fde_initialize_nadd_functionals
       public fde_print_nadd_functionals
@@ -192,7 +189,6 @@ module fde_nadd_derv
             logical :: parallel_fde
 
             parallel_fde = .false.
-            fun_is_automatic = .true. 
             
         if (.not.functionals_initialized) then
             functionals_initialized = .true.
