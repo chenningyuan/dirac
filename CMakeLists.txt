@@ -6,7 +6,7 @@ add_definitions(-DPRG_DIRAC)
 # set version
 set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 1)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -60,7 +60,6 @@ option(ENABLE_MPI             "Enable MPI parallelization"                      
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
@@ -71,17 +70,10 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
 if(ENABLE_STATIC_LINKING)
-##ifort: command line remark #10010: option '-pthread' is deprecated and will be removed in a future release. See '-help deprecated'
-#miro: I haven't checked whether -pthread is needed in static linking for others compilers, like GNU...needs check
-    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-#miro - temporarily we have to block non-internal math and parallel ...
-    if(NOT ENABLE_INTERNAL_MATH)
-        message(FATAL_ERROR "For static linking you need internal math library !")
-    endif()
     if (ENABLE_MPI OR ENABLE_OMP)
-        message(FATAL_ERROR "Static linking works in serial mode, no MPI/OMPI!")
+        message(FATAL_ERROR "Static linking only works in sequential mode")
     endif()
 endif()
 
@@ -170,20 +162,23 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-if(ENABLE_XCFUN)
-    add_subdirectory(xcint/xcfun)
-    set(LIBS
-        ${LIBS}
-        xcfun
-        )
-endif()
+add_subdirectory(xcint/xcfun)
+set(LIBS
+    ${LIBS}
+    xcfun
+    )
 
 include(CompilationInfo)
 
-# copy pam to build dir
+# copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
     ${CMAKE_BINARY_DIR}/pam
+    COPYONLY
+    )
+configure_file(
+    ${CMAKE_SOURCE_DIR}/pam
+    ${CMAKE_BINARY_DIR}/pam-dirac
     COPYONLY
     )
 

@@ -12,10 +12,10 @@ Dependencies
 ------------
 
 The configuration/compilation step requires:
-CMake  >= 2.6.0
+CMake  >= 2.6.3
 
 The configuration/compilation step using setup script requires:
-CMake  >= 2.6.0
+CMake  >= 2.6.3
 python >= 2.4.0
 
 The run script pam and the testing script runtest require:
@@ -141,12 +141,9 @@ Using CMake directly::
 
 Using setup::
 
-  $ ./setup --fc=mpif90 --cc=mpicc (--mpi)
+  $ ./setup --fc=mpif90 --cc=mpicc
   $ cd build
   $ make
-
-If the compiler contains "mpi", then you can omit the flag --mpi, setup will set
-it in this case automatically.
 
 Please note that the defaults for performance optimization are different for
 setup and direct CMake: by default setup configures for optimization, whereas

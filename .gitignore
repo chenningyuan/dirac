@@ -22,3 +22,5 @@ test/LOGS
 test/list_of_tests
 diracrc
 .diracrc
+*/Makefile
+*/*/Makefile
