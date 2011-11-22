@@ -1,0 +1,10 @@
+noref H.inp H.mol --get=DFACMO
+sh mv DFACMO ac.H
+sh ln -s ac.H DFHXXX
+
+noref O.inp O.mol --get=DFACMO
+sh mv DFACMO ac.O
+sh ln -s ac.O DFOXXX
+
+H2O.inp H2O.mol --copy="DFHXXX DFOXXX"
+sh rm ac.O ac.C DFHXXX DFOXXX
