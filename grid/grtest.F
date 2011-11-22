@@ -126,7 +126,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "symmet.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "../xcint/cfun/functionals.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -494,8 +493,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            WEIGHT(NPOINT),
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &            GAB1(NBAST,3), 
-     &            NCNT(NBAST), BUF(NBAST,4),
-     &            VX(DERVS1)
+     &            NCNT(NBAST), BUF(NBAST,4)
       DIMENSION RHG(3)
       nder = 0
       if (need_ao_order(1, 0)) nder = 1
