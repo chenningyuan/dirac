@@ -142,7 +142,7 @@ contains
   integer :: i, ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
   integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez, nref, ndim
 
-  real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
+  real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa, gcurr
   real*8  :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
 
   integer, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
@@ -284,6 +284,7 @@ contains
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
 
   dinvmq = d0
+  dinvmo = dinvmg
   itr    = 0
   ist    = 0
   do
@@ -323,8 +324,9 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
+    call get_gradient(pmat,grad,gcurr)
     call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nem,&
-                 pkappa,tgrad,eval,nref)
+                 pkappa,tgrad,eval,nref,gcurr)
 
     ! check convergence criteria
     if( .not.rejected .or. (full.and.loc%lgchck) )then
@@ -2460,7 +2462,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
   subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nem,&
-                     pkappa,tgrad,eval,nref)
+                     pkappa,tgrad,eval,nref,gcurr)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2471,7 +2473,7 @@ contains
   ! External variables
   integer, intent(in ) :: itr, nem
   integer, intent(out) :: nref
-  real*8,  intent(in   ) :: dnrmk, diffg, diffq
+  real*8,  intent(in   ) :: dnrmk, diffg, diffq, gcurr
   real*8,  intent(inout) :: tradius
   logical, intent(in   ) :: full
   logical, intent(inout) :: rejected, trdef, flat, nstep
@@ -2480,10 +2482,11 @@ contains
 
   ! Internal variables
   character*6 :: cond
+  logical :: nstepold
   integer :: i, lupri, nred
 
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
-  real*8 :: R, tradold, dmax, xstep
+  real*8 :: R, tradold, dmaxa, dmaxn, xstep
 
   !------------------------------------------------------------------------------!
   ! prepare constants
@@ -2492,18 +2495,131 @@ contains
   tradold = tradius
   cond    = '??????'
   R       = diffg / diffq
+  nstepold = .true.
+  if(.not.nstep) nstepold = .false.
+
+  ! Trus-radius update
+  if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
+    cond = '0     '
+    if(rejected)then
+      if(diffq > d0)then
+        cond = '0r q>0'
+        tradius  = tradius / 10.0d0
+      else
+        cond = '0r    '
+        rejected = .false.
+      endif
+    endif
+  else
+    if(rejected)then
+      if(diffq > d0)then
+        cond = 'r  q>0'
+      else
+        cond = 'r     '
+        if(R < d0 ) cond = 'r  R<0'
+        if(R < d1q) cond = 'r  R<1'
+        if(R > d3q) cond = 'r  R>3'
+      endif
+    else
+      if(dnrmk > tradius)then
+        if(diffq < d0)then
+          cond = 'Tq    '
+          if(R < d0 ) cond = 'Tq R<0'
+          if(R < d1q) cond = 'Tq R<1'
+          if(R > d5q) cond = 'Tq R>5'
+        else
+          cond = 'TQ    '
+          if(R > d0 ) cond = 'TQ R>0'
+          if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
+          if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
+        endif
+      else
+        if(diffq < d0)then
+          cond = 'tq     '
+          if(R < d0 ) cond = 'tq R<0'
+          if(R < d1q) cond = 'tq R<1'
+          if(R > d5q) cond = 'tq R>5'
+        else 
+          cond = 'tQ    '
+          if(R > d0 ) cond = 'tQ R>0'
+          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
+          if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
+        endif
+      endif
+    endif
+  endif
+
+  if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
+    if(rejected)then
+      if(diffq > d0)then
+        tradius  = tradius / 10.0d0
+      else
+        rejected = .false.
+      endif
+    endif
+  else
+    if(rejected)then
+      if(diffq > d0)then
+        tradius  = tradius / 10.0d0
+      else
+        rejected = .false.
+        if(R < d0 ) rejected = .true.
+        if(R < d1q) tradius  = d1q* tradius
+        if(R > d3q) tradius  = d2 * tradius
+      endif
+    else
+      if(dnrmk > tradius)then
+        if(full)then
+          if(diffq < d0)then
+            tradius = dnrmk
+            if(R < d0 ) rejected = .true.
+            if(R < d1q) tradius  = d1q*tradius
+            if(R > d5q) tradius  = d2*tradius
+          else 
+            tradius = dnrmk
+            if(R > d0 ) rejected = .true.
+            if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
+            if((R > d3q).and.(R < d5q))   tradius = d2*tradius
+          endif
+        else
+          rejected = .true.
+        endif
+      else
+        if(diffq < d0)then
+          tradius = tradold
+          if(trdef) tradius = dnrmk
+          if(R < d0 ) rejected = .true.
+          if(R < d1q) tradius  = d1q * dnrmk
+          if(R > d5q) tradius  = max(d2*dnrmk,tradold)
+        else 
+          tradius = tradold
+          if(trdef) tradius = dnrmk
+          if(R > d0 ) rejected = .true.
+          if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
+          if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradold)
+        endif
+      endif
+    endif
+  endif
 
   ! Are we in the minimum?
   xstep = d0
   do i=1,nred
     if(dabs(pkappa(i)) > xstep) xstep = dabs(pkappa(i))
   enddo
-  dmax = d0
+  dmaxn = d0
   do i=1,nred
     if(eval(i) > d0) exit
-    dmax = dmax + dabs(d2*eval(i)*xstep)
+    dmaxn = dmaxn + dabs(d2*eval(i)*xstep)
   enddo
-  dmax = dmax / dfloat(nem)
+  if(nem == 0)then
+    dmaxn = d1
+  else
+    dmaxn = dmaxn / dfloat(nem)
+  endif
+
+  dmaxa = gcurr*dnrmk
+  write(6,*) 'aaa',itr,dmaxa,dmaxn
 
   ! Are we perforiming Newton step?
   nref = 0
@@ -2514,108 +2630,43 @@ contains
     endif
   enddo
   if(nref == 0)then
-    write(lupri,'(a)')" WARNING: The gradient is zero. Why I'm here???"
-    write(lupri,'(a)')" WARNING:    ==>  STOP "
-    stop
-  endif
-  if((eval(nref) > d0).and.(nem/=0)) nstep = .false.
-  if(.not.nstep.and.rejected) nstep = .true.
-  if(dmax < thresh) nstep = .true.
-
-  ! Trus-radius update
-  if(rejected)then
-    if(diffq > d0)then
-      cond = 'r  q>0'
+    if(nem == 0)then
+      write(lupri,'(a)')" WARNING: We are in minimum. Why I'm here??? "
+      write(lupri,'(a)')" WARNING:    ==>  STOP "
+      stop
     else
-      cond = 'r     '
-      if(R < d0 ) cond = 'r  R<0'
-      if(R < d1q) cond = 'r  R<1'
-      if(R > d3q) cond = 'r  R>3'
+      nstep = .false.
     endif
   else
-    if(dnrmk > tradius)then
-      if(diffq < d0)then
-        cond = 'Tq    '
-        if(R < d0 ) cond = 'Tq R<0'
-        if(R < d1q) cond = 'Tq R<1'
-        if(R > d5q) cond = 'Tq R>5'
-      else
-        cond = 'TQ    '
-        if(R > d0 ) cond = 'TQ R>0'
-        if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
-        if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
-      endif
-    else
-      if(diffq < d0)then
-        cond = 'tq     '
-        if(R < d0 ) cond = 'tq R<0'
-        if(R < d1q) cond = 'tq R<1'
-        if(R > d5q) cond = 'tq R>5'
-      else 
-        cond = 'tQ    '
-        if(R > d0 ) cond = 'tQ R>0'
-        if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
-        if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
-      endif
-    endif
+    if((eval(nref) > d0).and.(nem/=0)) nstep = .false.
+    if(.not.nstep.and. .not.nstepold) nstep = .true.
+    if( dmaxa<10.0d0*thresh .or. dmaxn<10.0d0*thresh ) nstep = .true.
   endif
 
-  if(rejected)then
-    if(diffq > d0)then
-      tradius  = d1q* tradius
-    else
-      rejected = .false.
-      if(R < d0 ) rejected = .true.
-      if(R < d1q) tradius  = d1q* tradius
-      if(R > d3q) tradius  = d2 * tradius
-    endif
-  else
-    if(dnrmk > tradius)then
-      if(full)then
-        if(diffq < d0)then
-          tradius = dnrmk
-          if(R < d0 ) rejected = .true.
-          if(R < d1q) tradius  = d1q*tradius
-          if(R > d5q) tradius  = d2*tradius
-        else 
-          tradius = dnrmk
-          if(R > d0 ) rejected = .true.
-          if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
-          if((R > d3q).and.(R < d5q))   tradius = d2*tradius
-        endif
-      else
-        rejected = .true.
-      endif
-    else
-      if(diffq < d0)then
-        tradius = tradold
-        if(trdef) tradius = dnrmk
-        if(R < d0 ) rejected = .true.
-        if(R < d1q) tradius  = d1q * dnrmk
-        if(R > d5q) tradius  = max(d2*dnrmk,tradold)
-      else 
-        tradius = tradold
-        if(trdef) tradius = dnrmk
-        if(R > d0 ) rejected = .true.
-        if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
-        if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradold)
-      endif
-    endif
+  if(.not.nstep)then
+    tradius = tradold
+    cond(3:3) = '!'
+    rejected = .true.
   endif
-
-  if(.not.nstep) cond(3:3) = '!'
-  if(.not.nstep) rejected = .true.
 
   ! Are we in the flat area?
-  if((dabs(diffg)<thresh) .and. (dabs(diffq)<thresh) .and. (dmax > thresh))then
+  if( dabs(diffg)<thresh .and. dabs(diffq)<thresh .and. &
+      ( dmaxa>10.0d0*thresh .and. dmaxn>10.0d0*thresh ) )then
     rejected = .true.
-    tradius  = tradold
     if(flat) tradius = 10.0d0*tradius
     flat     = .true.
     if(cond(3:3) == '!') cond(3:3) = '|'
     if(cond(3:3) /= '!') cond(3:3) = '.'
   else
     flat     = .false.
+  endif
+
+  ! saddle point
+  if(dmaxa<thresh .and. nem/=0)then
+    rejected  = .true.
+    cond(3:3) = 's'
+    if(cond(3:3) == '!') cond(3:3) = '1'
+    if(cond(3:3) == '.') cond(3:3) = '2'
   endif
 
   if(full.and.(nem==0)) rejected = .false.
