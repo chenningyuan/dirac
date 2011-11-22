@@ -137,7 +137,7 @@ contains
   ! Internal variables
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
-  logical      :: tobe, full, rejected, Iminmax, diagconv, trdef, flat, nstep
+  logical      :: tobe, full, rejected, Iminmin, diagconv, trdef, flat, nstep
 
   integer :: i, ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
   integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez, nref, ndim
@@ -182,7 +182,7 @@ contains
   if(loc%hesloc == 'FULL') full = .true.
 
   rejected = .false.
-  Iminmax  = .false.
+  Iminmin  = .false.
   chstart = 'START ITERATION NO.    '
 
   tradius = 10.0d0
@@ -293,7 +293,7 @@ contains
     if(.not.rejected)then
       call get_hessian(pmat,hmat,full,totdiag,totnond)
       call get_gradient(pmat,grad,dnrmg)
-      call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmax,full)
+      call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
       shift = d0
     else
       call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
@@ -323,7 +323,7 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nep,&
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nem,&
                  pkappa,tgrad,eval,nref)
 
     ! check convergence criteria
@@ -335,8 +335,8 @@ contains
       call titler(chstart,'=',122)
       write(lupri,'(/6x,a,a24)')'--- ',daytid
 
-      if((diffg < d0).and.(diffg > thresh)) &
-        write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
+      if((diffg > d0).and.(diffg > thresh)) &
+        write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old > 0; itr =',itr
       diffa = dabs(dinvmg - dinvmo)
       if(full) hessian = 'FULL'
       dinvmo = dinvmg
@@ -347,13 +347,13 @@ contains
         '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
       if(loc%hesloc == 'DIAG')then
-        if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) exit
-        if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmax ) exit
-        if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmax ) exit
+        if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmin ) exit
+        if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
+        if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmin ) exit
       endif
 
       if(loc%hesloc == 'FULL')then
-        if(Iminmax) exit
+        if(Iminmin) exit
         if( loc%lggrad .and. (dnrmg < loc%thgrad) ) exit
         if( loc%lgfull .and. (diffa < loc%thfull) ) exit
       endif
@@ -361,12 +361,12 @@ contains
       if(loc%hesloc == 'COMB')then
         if(full)then
           if(loc%lgchck) exit
-          if(Iminmax) exit
+          if(Iminmin) exit
           if( loc%lgfull .and. (diffa < loc%thfull) ) exit
         else
-          if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) full = .true.
-          if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmax ) full = .true.
-          if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmax ) full = .true.
+          if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmin ) full = .true.
+          if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) full = .true.
+          if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmin ) full = .true.
         endif
       endif
 
@@ -378,7 +378,7 @@ contains
   enddo
 
   write(lupri,'(//11x,a)')      '************************************************************'
-  if(Iminmax)then
+  if(Iminmin)then
     write(lupri,'(11x,a,i4,a,i4,a)') &
          '**** MAXIMUM reached after',itr,' iterations and',ist,' steps ****'
   elseif( full .and. ((diffa < loc%thfull).and.(dnrmg < loc%thgrad)) )then
@@ -672,7 +672,7 @@ contains
       ENDDO
       DINVM = DINV/DFLOAT(NI)
       WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-!MIN  DINVM = - DINVM  ! we are looking for the minimum
+      DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -911,7 +911,7 @@ contains
       ENDDO
       DINVM = DINV/DFLOAT(NI)
       WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-!MIN  DINVM = - DINVM  ! we are looking for the minimum
+      DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -985,7 +985,7 @@ contains
   ! allocate arrays
   if(associated(pkappa)) call deallocp(pkappa,id='pkappa in get_kappa')
   call allocp(pkappa,nred ,id='pkappa in get_kappa')
-  call alloc(xtmp  ,ndimh,id='xtmp   in get_kappa')
+  call alloc(xtmp   ,ndimh,id='xtmp   in get_kappa')
 
   ! calculate tilde{X}
   if(nstep)then
@@ -994,15 +994,17 @@ contains
     enddo
   else
     dtmp = d0
-    do i=nred,1,-1
-      if(eval(i) < d0) exit
+    do i=1,nred
+      if(eval(i) > d0) exit
       dtmp = dtmp + eval(i)*eval(i)
     enddo
-    dtmp = dsqrt(dtmp)
+    dtmp = dsqrt(dtmp)  ! norm of the negative eigenvalues
+    ! make step in the direction of negative eigenvalues
+    ! eigenvalues are weighted with their relative size 
     pkappa(:) = d0
-    do i=nred,1,-1
-      if(eval(i) < d0) exit
-      pkappa(i) = tradius * eval(i) / dtmp
+    do i=1,nred
+      if(eval(i) > d0) exit
+      pkappa(i) = tradius * dabs(eval(i)) / dtmp
     enddo
   endif
 
@@ -1513,6 +1515,7 @@ contains
 
     do i=1,ndimh
       totdiag = totdiag + dabs( hmat(i,1) )
+      hmat(i,1) = - hmat(i,1)  ! we are looking for the minimum
     enddo
 
     if(loc%iprloc.ge.3)then
@@ -2003,6 +2006,21 @@ contains
     enddo
 
     !----------------------------------------------------------------------------!
+    !            Calculate diagonal dominance and deallocate arrays              !
+    !----------------------------------------------------------------------------!
+    do j=1,ndimh
+      do i=1,j
+        if(i==j)then
+          totdiag = totdiag + dabs( hmat(i,j) )
+        else
+          totnond = totnond + dabs( hmat(i,j) )
+        endif
+        hmat(i,j) = - hmat(i,j)   ! we are looking for the minimum
+      enddo
+    enddo
+    totnond = d2*totnond
+
+    !----------------------------------------------------------------------------!
     !                              PRINT section                                 !
     !----------------------------------------------------------------------------!
     if(loc%iprloc.ge.3)then
@@ -2056,20 +2074,6 @@ contains
         write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12-ni+1,3*ni12-ni)
       enddo
     endif
-
-    !----------------------------------------------------------------------------!
-    !            Calculate diagonal dominance and deallocate arrays              !
-    !----------------------------------------------------------------------------!
-    do j=1,ndimh
-      do i=1,j
-        if(i==j)then
-          totdiag = totdiag + dabs( hmat(i,j) )
-        else
-          totnond = totnond + dabs( hmat(i,j) )
-        endif
-      enddo
-    enddo
-    totnond = d2*totnond
 
     ! deallocate arrays
     call dealloc(ijd,id='ijd in get_hessian')
@@ -2147,6 +2151,10 @@ contains
     enddo
   enddo
 
+  do i=1,ndimg
+    gradient(i) = - gradient(i)  ! we are looking for the minimum
+  enddo
+
   if(loc%iprloc.ge.2)then
     write(lupri,'(/a,2f10.5)') 'Print gradient^R_u'
     write(lupri,'(8d12.4)') (gradient(i),i=1,ni12-ni)
@@ -2189,14 +2197,13 @@ contains
     dinvmq = dinvmq + d2*pkappa(i)*tgrad(i) + pkappa(i)*eval(i)*pkappa(i)
   enddo
   dinvmq = dinvmq / dfloat(ni)
-!MIN  dinvmq = - dinvmq    ! we are looking for the minimum
 
   end subroutine exp_func
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmax,full)
+  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
@@ -2206,7 +2213,7 @@ contains
 
   ! External variables
   logical, intent(in ) :: full
-  logical, intent(out) :: Iminmax
+  logical, intent(out) :: Iminmin
   integer, intent(out) :: nep, nem, nez
   real*8,  intent(in ), dimension(:)   :: gradient
   real*8,  intent(out), dimension(:)   :: etmp
@@ -2324,8 +2331,8 @@ contains
       nez = nez + 1
     endif
   enddo
-  if(nep == 0)Iminmax = .true.  ! we reached the maximum of the function
-  if(nep /= 0)Iminmax = .false.
+  if(nem == 0)Iminmin = .true.  ! we have reached the minimum of the function
+  if(nem /= 0)Iminmin = .false.
 
   if(loc%iprloc.ge.1)then
     write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
@@ -2382,24 +2389,24 @@ contains
   imax  = 10000
   cutoff= trsh_mu * tradius
   step  = 0.1d0
-  xmax  = eval(nref) + step
-  xmin  = eval(nref)
-  tcurr = f(xmax)
+  xmax  = eval(nref)
+  xmin  = eval(nref) - step
+  tcurr = f(xmin)
 
-  ! find upper boundary if necessary
+  ! find lower boundary if necessary
   i = 0
   if(tcurr > tradius)then
     do
       i = i + 1
       if(i > imax)then
         write(lupri,'(a)')' WARNING: Maximum number of iteration reached in get_mu(1)!!!'
-        write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmax) =',tcurr,' tradius =',tradius
+        write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmin) =',tcurr,' tradius =',tradius
         exit
       endif
       step = xmax - xmin
-      xmin = xmax
-      xmax = xmax + d2*step
-      tcurr = f(xmax)
+      xmax = xmin
+      xmin = xmin - d2*step
+      tcurr = f(xmin)
       if(tcurr < tradius)exit
     enddo
   endif 
@@ -2419,8 +2426,8 @@ contains
   xcurr = (xmax+xmin)/d2
   tcurr = f(xcurr)
 
-  if(tcurr > tradius) xmin = xcurr
-  if(tcurr < tradius) xmax = xcurr
+  if(tcurr > tradius) xmax = xcurr
+  if(tcurr < tradius) xmin = xcurr
 
   enddo
 
@@ -2452,7 +2459,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nep,&
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nem,&
                      pkappa,tgrad,eval,nref)
   !******************************************************************************!
   !                                                                              !
@@ -2462,7 +2469,7 @@ contains
   implicit none
 
   ! External variables
-  integer, intent(in ) :: itr, nep
+  integer, intent(in ) :: itr, nem
   integer, intent(out) :: nref
   real*8,  intent(in   ) :: dnrmk, diffg, diffq
   real*8,  intent(inout) :: tradius
@@ -2486,21 +2493,21 @@ contains
   cond    = '??????'
   R       = diffg / diffq
 
-  ! Are we in the maximum?
+  ! Are we in the minimum?
   xstep = d0
   do i=1,nred
     if(dabs(pkappa(i)) > xstep) xstep = dabs(pkappa(i))
   enddo
   dmax = d0
-  do i=nred,1,-1
-    if(eval(i) < d0) exit
+  do i=1,nred
+    if(eval(i) > d0) exit
     dmax = dmax + dabs(d2*eval(i)*xstep)
   enddo
-  dmax = dmax / dfloat(nep)
+  dmax = dmax / dfloat(nem)
 
   ! Are we perforiming Newton step?
   nref = 0
-  do i=nred,1,-1
+  do i=1,nred
     if(dabs(tgrad(i)) > thresh)then
       nref = i
       exit
@@ -2511,14 +2518,14 @@ contains
     write(lupri,'(a)')" WARNING:    ==>  STOP "
     stop
   endif
-  if((eval(nref) < d0).and.(nep/=0)) nstep = .false.
+  if((eval(nref) > d0).and.(nem/=0)) nstep = .false.
   if(.not.nstep.and.rejected) nstep = .true.
   if(dmax < thresh) nstep = .true.
 
   ! Trus-radius update
   if(rejected)then
-    if(diffq < d0)then
-      cond = 'r  q<0'
+    if(diffq > d0)then
+      cond = 'r  q>0'
     else
       cond = 'r     '
       if(R < d0 ) cond = 'r  R<0'
@@ -2527,34 +2534,34 @@ contains
     endif
   else
     if(dnrmk > tradius)then
-      if(diffq > d0)then
-        cond = 'TQ    '
-        if(R < d0 ) cond = 'TQ R<0'
-        if(R < d1q) cond = 'TQ R<1'
-        if(R > d5q) cond = 'TQ R>5'
-      else
+      if(diffq < d0)then
         cond = 'Tq    '
-        if(R > d0 ) cond = 'Tq R>0'
-        if((R < d1q).or.(R > d1+d3q)) cond = 'Tq R>7'
-        if((R > d3q).and.(R < d5q))   cond = 'Tq R<5'
+        if(R < d0 ) cond = 'Tq R<0'
+        if(R < d1q) cond = 'Tq R<1'
+        if(R > d5q) cond = 'Tq R>5'
+      else
+        cond = 'TQ    '
+        if(R > d0 ) cond = 'TQ R>0'
+        if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
+        if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
       endif
     else
-      if(diffq > d0)then
-        cond = 'tQ     '
-        if(R < d0 ) cond = 'tQ R<0'
-        if(R < d1q) cond = 'tQ R<1'
-        if(R > d5q) cond = 'tQ R>5'
+      if(diffq < d0)then
+        cond = 'tq     '
+        if(R < d0 ) cond = 'tq R<0'
+        if(R < d1q) cond = 'tq R<1'
+        if(R > d5q) cond = 'tq R>5'
       else 
-        cond = 'tq    '
-        if(R > d0 ) cond = 'tq R>0'
-        if((R < d1q).or.(R > d1+d3q)) cond = 'tq R>7'
-        if((R > d3q).and.(R < d5q))   cond = 'tq R<5'
+        cond = 'tQ    '
+        if(R > d0 ) cond = 'tQ R>0'
+        if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
+        if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
       endif
     endif
   endif
 
   if(rejected)then
-    if(diffq < d0)then
+    if(diffq > d0)then
       tradius  = d1q* tradius
     else
       rejected = .false.
@@ -2565,7 +2572,7 @@ contains
   else
     if(dnrmk > tradius)then
       if(full)then
-        if(diffq > d0)then
+        if(diffq < d0)then
           tradius = dnrmk
           if(R < d0 ) rejected = .true.
           if(R < d1q) tradius  = d1q*tradius
@@ -2580,7 +2587,7 @@ contains
         rejected = .true.
       endif
     else
-      if(diffq > d0)then
+      if(diffq < d0)then
         tradius = tradold
         if(trdef) tradius = dnrmk
         if(R < d0 ) rejected = .true.
@@ -2611,7 +2618,7 @@ contains
     flat     = .false.
   endif
 
-  if(full.and.(nep==0)) rejected = .false.
+  if(full.and.(nem==0)) rejected = .false.
   if(tradius /= tradold) trdef = .false.
 
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
