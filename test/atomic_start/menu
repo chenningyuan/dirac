@@ -7,4 +7,4 @@ sh mv DFACMO ac.O
 sh ln -s ac.O DFOXXX
 
 H2O.inp H2O.mol --copy="DFHXXX DFOXXX"
-sh rm ac.O ac.C DFHXXX DFOXXX
+sh rm ac.O ac.O DFHXXX DFOXXX
