@@ -8597,6 +8597,8 @@ c     logical dirbss_verbose
 #include "memint.h"
 
 c     dirbss_verbose = .false.
+!     iprint_save = iprint
+!     iprint      = 3
 
       IF (IPRINT.GE.3) THEN
       CALL HEADER('*** Output from AMFIIN ***',-1)
@@ -8769,9 +8771,34 @@ C          write(lupri,*) 'IX set to:',IX
           INDXLM(IX+8)=INDX
           IPNUC (IX+8)=INUCPOS
 
-          IX = IX + 9
-        ELSE
-          CALL QUIT('AMFI ONLY UP TO g FUNCTIONS!')
+          IX            = IX + 9
+
+        else if(l.eq.6.or.l.eq.7.or.l.eq.8)then
+
+          select case(l)
+            case(6) ! h
+             is_degeneracy = 11
+             ilast_IPTYPAO = 25
+            case(7) ! i
+             is_degeneracy = 13
+             ilast_IPTYPAO = 35
+            case(8) ! j
+             is_degeneracy = 15
+             ilast_IPTYPAO = 47
+          end select
+          do jjj = 1, is_degeneracy
+            ilast_IPTYPAO     = ilast_IPTYPAO + 1
+            IPTYPAO(IX+jjj-1) = ilast_IPTYPAO
+            INDXLM (IX+jjj-1) = INDX
+            IPNUC  (IX+jjj-1) = INUCPOS
+          end do
+          IX = IX + is_degeneracy
+          write(lupri,*) 'warning: old amfi routines in use:'//
+     &    ' zero AMFI contributions from h, i, j, ... shells '
+        else
+          write(lupri,*) 'error: old amfi routines in use:'//
+     &    ' no AMFI contributions from k, l, ... shells implemented. '
+          CALL QUIT('AMFI interface ONLY UP TO i FUNCTIONS!')
         ENDIF
       ENDDO
       ENDDO
@@ -9298,6 +9325,7 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
 
         CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
       ENDIF
+!     iprint = iprint_save
 
       CALL QEXIT('AMFIIN')
       RETURN
