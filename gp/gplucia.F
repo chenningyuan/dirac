@@ -47,6 +47,7 @@
       ! Now we test if KBASE_LUCITA is OK:
       k8base_lucita = kbase_lucita
       if(k8base_lucita .ne. k_offset)then
+        print *, 'controlled stop: only int64'
         WRITE (lupri,'(/A/A,2I20//A)')
      &  'FATAL ERROR in test_lucita_wrk_space_offset: memory offset'//
      &  ' (dynamic memory - static memory) is too big for i*4',
