@@ -345,13 +345,15 @@ contains
       rewind(x2c_file_scr)
       if(fndlab12('h14csAO   11',x2c_file_scr))then
 
-        call izero(h1_saao_bas,naosh_ls*naosh_ls*nz)
+        call dzero(h1_saao_bas,naosh_ls*naosh_ls*nz)
         ioff_ao_ao_sh1 = 1
         do i = 1, nfsym
+
 !         read the 4c-fock operator in SA-AO basis from file (label == h1_4cAO)
           nbas1_f = naosh_all(i)
           write(flabel,'(a7,i4,i1)') 'h14csAO',j,i
-          call x2c_read(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
+
+          if(nbas1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f**2 * nz
         end do
 
@@ -428,7 +430,7 @@ contains
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
           write(flabel,'(a7,i4,i1)') '4cAOMOo',j,i
-          call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1),nbas1_f * norb1_f * nz,x2c_file_scr)
+          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1),nbas1_f*norb1_f*nz,x2c_file_scr)
           ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
         end do
         call mksaomo(scrmat2,h1_saao_bas,.false.,print_lvl,wrk,lwrk)
@@ -486,7 +488,7 @@ contains
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
           write(flabel,'(a7,i4,i1)') '4cAOMOr',j,i
-          call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f * norb1_f * nz,x2c_file_scr)
+          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f * norb1_f * nz,x2c_file_scr)
           ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
         end do
 

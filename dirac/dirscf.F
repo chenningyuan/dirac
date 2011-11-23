@@ -1779,8 +1779,6 @@ CMI      ... print out matrixes ...
       ENDIF
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
-CTROND
-!     WRITE(6,*) 'TEST :',dhferg, besterg
       if (dhferg.lt.besterg) then
          write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
          call system('cp DFCOEF DFCOEF.BEST')
@@ -5217,9 +5215,9 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
      &                NZ,IPQTOQ(1,0),LUPRI)
-           CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
-     &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
          ENDIF
+         CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
+     &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
 CTROND         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
 CTROND         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
 CTROND     &              4,IPQTOQ(1,0),LUPRI)

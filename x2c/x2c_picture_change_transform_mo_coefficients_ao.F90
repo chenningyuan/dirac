@@ -779,26 +779,30 @@ contains
        offset_2 = 1
        do i = 1, nfsym
 
-!        a. eigenvalues
-         write(flabel,'(a7,i4,i1)') 'eig-val',1,i
-         call x2c_read(flabel,eigen_values(offset_1),nesh_dim(i),fh)
+         if(nesh_dim(i) > 0)then
 
-!        b. boson irreps / <j_z>-blocking information
-         rewind fh
-         write(flabel,'(a7,i4,i1)') 'bos-irr',1,i
-         if(fndlab12(flabel,fh))then
-           call readi(fh,nesh_dim(i),boson_irreps_jz_eigenvalues(offset_1))
-         end if
+!          a. eigenvalues
+           write(flabel,'(a7,i4,i1)') 'eig-val',1,i
+           call x2c_read(flabel,eigen_values(offset_1),nesh_dim(i),fh)
 
-!        c. 2c-MO coefficients in MO reference basis
-         write(flabel,'(a7,i4,i1)') 'cmo-2cM',1,i
-         call x2c_read(flabel,xmat(offset_2),nesh_dim(i)*nesh_dim(i)*nz,fh)
+!          b. boson irreps / <j_z>-blocking information
+           rewind fh
+           write(flabel,'(a7,i4,i1)') 'bos-irr',1,i
+           if(fndlab12(flabel,fh))then
+             call readi(fh,nesh_dim(i),boson_irreps_jz_eigenvalues(offset_1))
+           end if
 
-!        debug print
-         if(print_lvl > 2)then
-           write(info_text,'(a27,i1)') 'x2c - 2c-cmo-onMO r- fsym =',i
-           call print_x2cmat(xmat(offset_2),nesh_dim(i),nesh_dim(i),nz,ipq_off_in,info_text,6)
-         end if
+!          c. 2c-MO coefficients in MO reference basis
+           write(flabel,'(a7,i4,i1)') 'cmo-2cM',1,i
+           call x2c_read(flabel,xmat(offset_2),nesh_dim(i)*nesh_dim(i)*nz,fh)
+
+!          debug print
+           if(print_lvl > 2)then
+             write(info_text,'(a27,i1)') 'x2c - 2c-cmo-onMO r- fsym =',i
+             call print_x2cmat(xmat(offset_2),nesh_dim(i),nesh_dim(i),nz,ipq_off_in,info_text,6)
+           end if
+
+         end if ! nesh_dim(i) > 0
 
 !        keep track of proper offsets
          offset_1            = offset_1 + nesh_dim(i)
