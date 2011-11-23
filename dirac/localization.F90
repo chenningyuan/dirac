@@ -137,7 +137,7 @@ contains
   ! Internal variables
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
-  logical      :: tobe, full, rejected, Iminmin, diagconv, trdef, flat, nstep
+  logical      :: tobe, full, rejected, Iminmin, trdef, flat, nstep, restore
 
   integer :: i, ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
   integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez, nref, ndim
@@ -189,6 +189,7 @@ contains
   trdef   = .true.
   flat    = .false.
   nstep   = .true.
+  restore = .false.
 
   if(loc%iprloc.ge.4)then
     write(lupri,*) 'lupri =',lupri
@@ -291,7 +292,9 @@ contains
 
     ist = ist + 1
     ! get new kappa
-    if(.not.rejected)then
+    if(restore)then
+      shift = d0
+    elseif(.not.rejected)then
       call get_hessian(pmat,hmat,full,totdiag,totnond)
       call get_gradient(pmat,grad,dnrmg)
       call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
@@ -302,15 +305,15 @@ contains
     call get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,nstep,full,tradius,shift,dnrmk)
     call exp_func(pkappa,tgrad,eval,nish,dinvmq)
 
-    if( (rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
+    if( (rejected.and..not.restore) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
 
     ! get new MO coefficients
-    if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
-    if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
+    if(rejected) scoef(:) = storec(:)  ! restore MO coeff.; the step was rejected or restored
+    if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff.
     call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
 
     ! get functional value in the new point (new MO)
@@ -325,7 +328,7 @@ contains
     diffg = dinvmg - dinvmo
     diffq = dinvmq
     call get_gradient(pmat,grad,gcurr)
-    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nem,&
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
                  pkappa,tgrad,eval,nref,gcurr)
 
     ! check convergence criteria
@@ -2461,7 +2464,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,full,itr,nem,&
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
                      pkappa,tgrad,eval,nref,gcurr)
   !******************************************************************************!
   !                                                                              !
@@ -2476,17 +2479,18 @@ contains
   real*8,  intent(in   ) :: dnrmk, diffg, diffq, gcurr
   real*8,  intent(inout) :: tradius
   logical, intent(in   ) :: full
-  logical, intent(inout) :: rejected, trdef, flat, nstep
+  logical, intent(inout) :: rejected, trdef, flat, nstep, restore
 
   real*8,  intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
 
   ! Internal variables
   character*6 :: cond
-  logical :: nstepold
   integer :: i, lupri, nred
+  integer, save :: nrun  = 0
 
+  real*8            :: R, tradold, dmaxa, dmaxn, xstep
+  real*8, save      :: diffg1, diffg2
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
-  real*8 :: R, tradold, dmaxa, dmaxn, xstep
 
   !------------------------------------------------------------------------------!
   ! prepare constants
@@ -2495,8 +2499,8 @@ contains
   tradold = tradius
   cond    = '??????'
   R       = diffg / diffq
-  nstepold = .true.
-  if(.not.nstep) nstepold = .false.
+
+  if(restore) rejected = .false.
 
   ! Trus-radius update
   if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
@@ -2639,14 +2643,56 @@ contains
     endif
   else
     if((eval(nref) > d0).and.(nem/=0)) nstep = .false.
-    if(.not.nstep.and. .not.nstepold) nstep = .true.
     if( dmaxa<10.0d0*thresh .or. dmaxn<10.0d0*thresh ) nstep = .true.
   endif
 
-  if(.not.nstep)then
-    tradius = tradold
+  if( .not.nstep )then
     cond(3:3) = '!'
-    rejected = .true.
+    if(restore)then
+      rejected = .false.
+      nstep    = .true.
+      restore  = .false.
+      cond(3:3) = ' '
+    elseif(nrun == 0)then
+      diffg1   = diffg
+      tradius  = tradold
+      rejected = .true.
+      nstep    = .false.
+      nrun     = 1
+    elseif(nrun == 1)then
+      diffg2   = diffg
+      tradius  = tradold
+      rejected = .true.
+      nstep    = .true.
+      nrun     = 2
+    elseif(nrun == 2)then
+      if( diffg<d0 .or. diffg1<d0 .or. diffg2<d0 )then
+        if( diffg<diffg1 .and. diffg<diffg2 )then
+          rejected = .false.
+          nstep    = .true.
+          nrun     = 0
+        elseif( diffg1<diffg .and. diffg1<diffg2 )then
+          tradius  = tradold
+          rejected = .true.
+          nstep    = .true.
+          restore  = .true.
+          nrun     = 0
+        elseif( diffg2<diffg .and. diffg2<diffg1 )then
+          tradius  = tradold
+          rejected = .true.
+          nstep    = .false.
+          nrun     = 3
+        endif
+      else
+        write(lupri,'(a)')" WARNING: Both regular Newton step and side step were rejected! "
+        write(lupri,'(a)')" WARNING:    ==>  STOP "
+        stop
+      endif
+    elseif(nrun == 3)then
+      rejected = .false.
+      nstep    = .true.
+      nrun     = 0
+    endif
   endif
 
   ! Are we in the flat area?
@@ -2665,8 +2711,8 @@ contains
   if(dmaxa<thresh .and. nem/=0)then
     rejected  = .true.
     cond(3:3) = 's'
-    if(cond(3:3) == '!') cond(3:3) = '1'
-    if(cond(3:3) == '.') cond(3:3) = '2'
+    if(cond(3:3) == '!') cond(3:3) = 'p'
+    if(cond(3:3) == '.') cond(3:3) = 'd'
   endif
 
   if(full.and.(nem==0)) rejected = .false.
