@@ -39,6 +39,7 @@ C aspg, 2006-06-19
 C for the time being put a dummy call to the parallel routines 
 C
       SUBROUTINE MPI3INI(DMAT, NDMT, GABAB, GABAL, DGABAL, WORK, LWORK)
+         print *, 'controlled stop: only sequential'
          CALL QUIT('Parallel Implementation of FCK3 not available yet.')
       RETURN
       END
