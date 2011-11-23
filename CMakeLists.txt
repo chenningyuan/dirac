@@ -182,12 +182,6 @@ configure_file(
     COPYONLY
     )
 
-# configure machine info for runtest
-configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/runtest_setup.in
-    ${CMAKE_BINARY_DIR}/runtest_setup
-    )
-
 set(GENERATED_FILES
     ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
     )

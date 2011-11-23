@@ -146,13 +146,6 @@ group.add_option('--showdiff',
                  dest='showdiff',
                  default=False,
                  help="show differences in numbers [default: %default]")
-group.add_option('--setup',
-                 type='string',
-                 action='store',
-                 dest='setup',
-                 default=None,
-                 help='setup file (optional)',
-                 metavar='/path/to/runtest_setup')
 parser.add_option_group(group)
 
 # process input
@@ -200,34 +193,12 @@ if options.timeout:
     # extract the total time in seconds
     timeout = extract_time(options.timeout)
 
-if options.setup:
-   if not os.path.isfile(options.setup):
-       print('ERROR: cannot open %s' % options.setup)
-       sys.exit(1)
-
-def verify_quit_only_sequential():
-    if options.setup:
-       if os.path.isfile(options.setup):
-           f = open(options.setup, 'r')
-           s = f.readlines()
-           for line in s:
-               if 'mpi' in line:
-                   if (line.split()[-1] == 'ON' or line.split()[-1] == '1'):
-                       return True
-           f.close()
-    return False
-
-def verify_quit_only_int64():
-    if options.setup:
-       if os.path.isfile(options.setup):
-           f = open(options.setup, 'r')
-           s = f.readlines()
-           for line in s:
-               if 'int64' in line:
-                   if (line.split()[-1] == 'OFF' or line.split()[-1] == '0'):
-                       return True
-           f.close()
-    return False
+def int32_run(s):
+    for line in s:
+        if '64-bit integers' in line:
+            if (line.split()[-1] == 'ON' or line.split()[-1] == '1'):
+                return False
+    return True
 
 # write the html header
 
@@ -341,16 +312,16 @@ class run:
              return 'NORMAL'
          else:
              exit = 'CRASH'
-             if verify_quit_only_sequential():
-                 f = open(self.get_output_name(), 'r')
-                 if 'controlled stop: only sequential' in f.read():
-                     exit = 'SKIP'
-                 f.close()
-             if verify_quit_only_int64():
-                 f = open(self.get_output_name(), 'r')
-                 if 'controlled stop: only int64' in f.read():
-                     exit = 'SKIP'
-                 f.close()
+             f = open(self.get_output_name(), 'r')
+             s = f.readlines()
+             for line in s:
+                 if 'controlled stop: only sequential' in line:
+                    if options.mpi > 1:
+                        exit = 'SKIP'
+                 if 'controlled stop: only int64' in line:
+                    if int32_run(s):
+                        exit = 'SKIP'
+             f.close()
              return exit
      def print_result(self, progress, result_text, elapsed):
          """
