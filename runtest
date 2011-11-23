@@ -341,6 +341,16 @@ class run:
              return 'NORMAL'
          else:
              exit = 'CRASH'
+             if verify_quit_only_sequential():
+                 f = open(self.get_output_name(), 'r')
+                 if 'controlled stop: only sequential' in f.read():
+                     exit = 'SKIP'
+                 f.close()
+             if verify_quit_only_int64():
+                 f = open(self.get_output_name(), 'r')
+                 if 'controlled stop: only int64' in f.read():
+                     exit = 'SKIP'
+                 f.close()
              return exit
      def print_result(self, progress, result_text, elapsed):
          """
@@ -455,6 +465,7 @@ def main(*args):
     nr_of_tests_done = 0
     nr_ok            = 0
     nr_crashed       = 0
+    nr_skip          = 0
     nr_failed        = 0
     nr_without_ref   = 0
     nr_marked_noref  = 0
@@ -517,6 +528,8 @@ def main(*args):
                 result_text = exit
                 if exit == 'CRASH':
                     nr_crashed += 1
+                if exit == 'SKIP':
+                    nr_skip += 1
 
             elapsed = (time.time() - start)
             global_elapsed += elapsed
@@ -548,6 +561,8 @@ def main(*args):
          print('         %5i failed'            % nr_failed)
     if nr_crashed > 0:
          print('         %5i crashed'           % nr_crashed)
+    if nr_skip > 0:
+         print('         %5i skip (controlled exit)' % nr_skip)
     if nr_without_ref > 0:
          print('         %5i without reference' % nr_without_ref)
     if nr_bad_filter > 0:
