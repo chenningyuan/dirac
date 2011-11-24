@@ -136,13 +136,13 @@ contains
 
   ! Internal variables
   character*12 :: sectid, cputid, walltid
-  character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
+  character    :: daytid*24, hessian*4, chstart*23
   logical      :: tobe, full, rejected, Iminmin, trdef, flat, nstep, restore
 
   integer :: i, ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
   integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez, nref, ndim
 
-  real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa, gcurr
+  real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
   real*8  :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
 
   integer, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
@@ -180,6 +180,8 @@ contains
   ! Set defaults
   full = .false.
   if(loc%hesloc == 'FULL') full = .true.
+  hessian = 'DIAG'
+  if(full) hessian = 'FULL'
 
   rejected = .false.
   Iminmin  = .false.
@@ -275,6 +277,7 @@ contains
   else               ! localization with Mulliken analysis
     call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
   endif
+  dinvmo = dinvmg
 
   !------------------------------------------------------------------------------!
   !                           Main iteration procedure                           !
@@ -284,24 +287,26 @@ contains
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
 
+  ! zero step
+  call get_hessian(pmat,hmat,full,totdiag,totnond)
+  call get_gradient(pmat,grad,dnrmg)
+  call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
+
+  shift  = d0
+  dnrmk  = d0
   dinvmq = d0
-  dinvmo = dinvmg
+  dinvmg = d0
   itr    = 0
   ist    = 0
+  write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
+    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+
   do
 
     ist = ist + 1
     ! get new kappa
-    if(restore)then
-      shift = d0
-    elseif(.not.rejected)then
-      call get_hessian(pmat,hmat,full,totdiag,totnond)
-      call get_gradient(pmat,grad,dnrmg)
-      call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
-      shift = d0
-    elseif(rejected)then
-      call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
-    endif
+    shift = d0
+    if(rejected) call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
     call get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,nstep,full,tradius,shift,dnrmk)
     call exp_func(pkappa,tgrad,eval,nish,dinvmq)
 
@@ -332,12 +337,18 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call get_gradient(pmat,grad,gcurr)
     call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
-                 pkappa,tgrad,eval,nref,gcurr)
+                 pkappa,tgrad,eval,nref,dnrmg)
 
-    ! check convergence criteria
+    ! Move to the new point if the step was not rejected or old step is going to be restored
     if( (.not.rejected.and..not.restore) .or. (full.and.loc%lgchck) )then
+      !---------------------------------------------!
+      ! Calculate hessian and gradient in new point !
+      !---------------------------------------------!
+      call get_hessian(pmat,hmat,full,totdiag,totnond)
+      call get_gradient(pmat,grad,dnrmg)
+      call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
+
       itr = itr + 1
       call gtinfo(daytid)
 
@@ -348,6 +359,7 @@ contains
       if((diffg > d0).and.(diffg > thresh)) &
         write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old > 0; itr =',itr
       diffa = dabs(dinvmg - dinvmo)
+      hessian = 'DIAG'
       if(full) hessian = 'FULL'
       dinvmo = dinvmg
 
@@ -356,6 +368,9 @@ contains
       write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
         '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
+      !----------------------------!
+      ! check convergence criteria !
+      !----------------------------!
       if(loc%hesloc == 'DIAG')then
         if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmin ) exit
         if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
@@ -377,6 +392,13 @@ contains
           if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmin ) full = .true.
           if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) full = .true.
           if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmin ) full = .true.
+          if(full)then
+            call get_hessian(pmat,hmat,full,totdiag,totnond)
+            call get_gradient(pmat,grad,dnrmg)
+            call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
+            write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
+              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+          endif
         endif
       endif
 
@@ -2470,7 +2492,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
   subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
-                     pkappa,tgrad,eval,nref,gcurr)
+                     pkappa,tgrad,eval,nref,dnrmg)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2481,7 +2503,7 @@ contains
   ! External variables
   integer, intent(in ) :: itr, nem
   integer, intent(out) :: nref
-  real*8,  intent(in   ) :: dnrmk, diffg, diffq, gcurr
+  real*8,  intent(in   ) :: dnrmk, diffg, diffq, dnrmg
   real*8,  intent(inout) :: tradius
   logical, intent(in   ) :: full
   logical, intent(inout) :: rejected, trdef, flat, nstep, restore
@@ -2600,7 +2622,7 @@ contains
   else
     dmaxn = dmaxn / dfloat(nem)
   endif
-  dmaxa = gcurr*dnrmk
+  dmaxa = dnrmg*dnrmk
   if(loc%iprloc.ge.2)then
     write(lupri,'(a,i4,2d14.6)') ' itr,dmaxa,dmaxn: ',itr,dmaxa,dmaxn
   endif
@@ -2638,7 +2660,6 @@ contains
       rejected = .false.
       nstep    = .true.
       restore  = .false.
-      cond(3:3) = ' '
     elseif(nrun == 0)then    ! try side step
       diffg1   = diffg
       tradius  = tradold
@@ -2684,13 +2705,13 @@ contains
   !------------------------------------------------------------------------------!
   !                       Check if we are in the flat area                       !
   !------------------------------------------------------------------------------!
-  if( dabs(diffg)<thresh .and. dabs(diffq)<thresh .and. &
+  if( dabs(diffg)<thresh .and. dabs(diffq)<thresh .and. nem/=0 .and. &
       ( dmaxa>10.0d0*thresh .and. dmaxn>10.0d0*thresh ) )then
     rejected = .true.
     if(flat) tradius = 10.0d0*tradius
     flat     = .true.
+    if(cond(3:3) == ' ') cond(3:3) = '.'
     if(cond(3:3) == '!') cond(3:3) = '|'
-    if(cond(3:3) /= '!') cond(3:3) = '.'
   else
     flat     = .false.
   endif
@@ -2700,7 +2721,7 @@ contains
   !------------------------------------------------------------------------------!
   if(dmaxa<thresh .and. nem/=0)then
     rejected  = .true.
-    cond(3:3) = 's'
+    if(cond(3:3) == ' ') cond(3:3) = 's'
     if(cond(3:3) == '!') cond(3:3) = 'p'
     if(cond(3:3) == '.') cond(3:3) = 'd'
     if(cond(3:3) == '|') cond(3:3) = 'f'
