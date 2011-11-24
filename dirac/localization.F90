@@ -299,21 +299,26 @@ contains
       call get_gradient(pmat,grad,dnrmg)
       call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
       shift = d0
-    else
+    elseif(rejected)then
       call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
     endif
     call get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,nstep,full,tradius,shift,dnrmk)
     call exp_func(pkappa,tgrad,eval,nish,dinvmq)
 
-    if( (rejected.and..not.restore) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
+    if( (rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
 
     ! get new MO coefficients
-    if(rejected) scoef(:) = storec(:)  ! restore MO coeff.; the step was rejected or restored
-    if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff.
+    if(restore)then
+      scoef(:) = storec(:)  ! restore MO coefficients
+    elseif(rejected)then
+      scoef(:) = storec(:)  ! restore MO coefficients; the step was rejected
+    elseif(.not.rejected)then
+      storec(:) = scoef(:)  ! store MO coefficients
+    endif
     call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
 
     ! get functional value in the new point (new MO)
@@ -332,7 +337,7 @@ contains
                  pkappa,tgrad,eval,nref,gcurr)
 
     ! check convergence criteria
-    if( .not.rejected .or. (full.and.loc%lgchck) )then
+    if( (.not.rejected.and..not.restore) .or. (full.and.loc%lgchck) )then
       itr = itr + 1
       call gtinfo(daytid)
 
@@ -2488,21 +2493,21 @@ contains
   integer :: i, lupri, nred
   integer, save :: nrun  = 0
 
-  real*8            :: R, tradold, dmaxa, dmaxn, xstep
+  real*8            :: R, tradold, dmaxa, dmaxn
   real*8, save      :: diffg1, diffg2
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
 
   !------------------------------------------------------------------------------!
-  ! prepare constants
+  !                              Initialization                                  !
+  !------------------------------------------------------------------------------!
   lupri   = var%lupri
   nred    = size(eval,1)
   tradold = tradius
-  cond    = '??????'
   R       = diffg / diffq
 
-  if(restore) rejected = .false.
-
-  ! Trus-radius update
+  !------------------------------------------------------------------------------!
+  !                            Trus-radius update                                !
+  !------------------------------------------------------------------------------!
   if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
     cond = '0     '
     if(rejected)then
@@ -2518,54 +2523,12 @@ contains
     if(rejected)then
       if(diffq > d0)then
         cond = 'r  q>0'
+        tradius  = tradius / 10.0d0
       else
         cond = 'r     '
         if(R < d0 ) cond = 'r  R<0'
         if(R < d1q) cond = 'r  R<1'
         if(R > d3q) cond = 'r  R>3'
-      endif
-    else
-      if(dnrmk > tradius)then
-        if(diffq < d0)then
-          cond = 'Tq    '
-          if(R < d0 ) cond = 'Tq R<0'
-          if(R < d1q) cond = 'Tq R<1'
-          if(R > d5q) cond = 'Tq R>5'
-        else
-          cond = 'TQ    '
-          if(R > d0 ) cond = 'TQ R>0'
-          if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
-          if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
-        endif
-      else
-        if(diffq < d0)then
-          cond = 'tq     '
-          if(R < d0 ) cond = 'tq R<0'
-          if(R < d1q) cond = 'tq R<1'
-          if(R > d5q) cond = 'tq R>5'
-        else 
-          cond = 'tQ    '
-          if(R > d0 ) cond = 'tQ R>0'
-          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
-          if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
-        endif
-      endif
-    endif
-  endif
-
-  if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
-    if(rejected)then
-      if(diffq > d0)then
-        tradius  = tradius / 10.0d0
-      else
-        rejected = .false.
-      endif
-    endif
-  else
-    if(rejected)then
-      if(diffq > d0)then
-        tradius  = tradius / 10.0d0
-      else
         rejected = .false.
         if(R < d0 ) rejected = .true.
         if(R < d1q) tradius  = d1q* tradius
@@ -2575,27 +2538,44 @@ contains
       if(dnrmk > tradius)then
         if(full)then
           if(diffq < d0)then
+            cond = 'Tq    '
+            if(R < d0 ) cond = 'Tq R<0'
+            if(R < d1q) cond = 'Tq R<1'
+            if(R > d5q) cond = 'Tq R>5'
             tradius = dnrmk
             if(R < d0 ) rejected = .true.
             if(R < d1q) tradius  = d1q*tradius
             if(R > d5q) tradius  = d2*tradius
           else 
+            cond = 'TQ    '
+            if(R > d0 ) cond = 'TQ R>0'
+            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
+            if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
             tradius = dnrmk
             if(R > d0 ) rejected = .true.
             if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
             if((R > d3q).and.(R < d5q))   tradius = d2*tradius
           endif
         else
+          cond = 'T  dia'
           rejected = .true.
         endif
       else
         if(diffq < d0)then
+          cond = 'tq     '
+          if(R < d0 ) cond = 'tq R<0'
+          if(R < d1q) cond = 'tq R<1'
+          if(R > d5q) cond = 'tq R>5'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R < d0 ) rejected = .true.
           if(R < d1q) tradius  = d1q * dnrmk
           if(R > d5q) tradius  = max(d2*dnrmk,tradold)
         else 
+          cond = 'tQ    '
+          if(R > d0 ) cond = 'tQ R>0'
+          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
+          if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R > d0 ) rejected = .true.
@@ -2606,26 +2586,32 @@ contains
     endif
   endif
 
-  ! Are we in the minimum?
-  xstep = d0
-  do i=1,nred
-    if(dabs(pkappa(i)) > xstep) xstep = dabs(pkappa(i))
-  enddo
+  !------------------------------------------------------------------------------!
+  !                       Are we close to the minimum?                           !
+  !            If both dmaxa, dmaxn are small we are near minimum.               !
+  !------------------------------------------------------------------------------!
   dmaxn = d0
   do i=1,nred
     if(eval(i) > d0) exit
-    dmaxn = dmaxn + dabs(d2*eval(i)*xstep)
+    dmaxn = dmaxn + dabs(d2*eval(i)*dnrmk)
   enddo
   if(nem == 0)then
     dmaxn = d1
   else
     dmaxn = dmaxn / dfloat(nem)
   endif
-
   dmaxa = gcurr*dnrmk
-  write(6,*) 'aaa',itr,dmaxa,dmaxn
+  if(loc%iprloc.ge.2)then
+    write(lupri,'(a,i4,2d14.6)') ' itr,dmaxa,dmaxn: ',itr,dmaxa,dmaxn
+  endif
 
-  ! Are we perforiming Newton step?
+  !------------------------------------------------------------------------------!
+  !         If all gradients in the direction of negative eigenvalues            !
+  !              are below threshold, choose the best step from                  !
+  ! Newton step,                                        -->  rejected = false    !
+  ! step on the Trust-region                            -->  rejected = true     !
+  ! and step in the direction of positive eigenvalues.  -->  nstep    = false    !
+  !------------------------------------------------------------------------------!
   nref = 0
   do i=1,nred
     if(dabs(tgrad(i)) > thresh)then
@@ -2648,36 +2634,36 @@ contains
 
   if( .not.nstep )then
     cond(3:3) = '!'
-    if(restore)then
+    if(restore)then          ! Newton step was restored
       rejected = .false.
       nstep    = .true.
       restore  = .false.
       cond(3:3) = ' '
-    elseif(nrun == 0)then
+    elseif(nrun == 0)then    ! try side step
       diffg1   = diffg
       tradius  = tradold
       rejected = .true.
       nstep    = .false.
       nrun     = 1
-    elseif(nrun == 1)then
+    elseif(nrun == 1)then    ! try step on the Trust-region
       diffg2   = diffg
       tradius  = tradold
       rejected = .true.
       nstep    = .true.
       nrun     = 2
-    elseif(nrun == 2)then
+    elseif(nrun == 2)then    ! choose the best step
       if( diffg<d0 .or. diffg1<d0 .or. diffg2<d0 )then
-        if( diffg<diffg1 .and. diffg<diffg2 )then
+        if( diffg<diffg1 .and. diffg<diffg2 )then       ! step on the Trust-region
           rejected = .false.
           nstep    = .true.
           nrun     = 0
-        elseif( diffg1<diffg .and. diffg1<diffg2 )then
+        elseif( diffg1<diffg .and. diffg1<diffg2 )then  ! Newton step
           tradius  = tradold
-          rejected = .true.
+          rejected = .false.
           nstep    = .true.
           restore  = .true.
           nrun     = 0
-        elseif( diffg2<diffg .and. diffg2<diffg1 )then
+        elseif( diffg2<diffg .and. diffg2<diffg1 )then  ! side step
           tradius  = tradold
           rejected = .true.
           nstep    = .false.
@@ -2695,7 +2681,9 @@ contains
     endif
   endif
 
-  ! Are we in the flat area?
+  !------------------------------------------------------------------------------!
+  !                       Check if we are in the flat area                       !
+  !------------------------------------------------------------------------------!
   if( dabs(diffg)<thresh .and. dabs(diffq)<thresh .and. &
       ( dmaxa>10.0d0*thresh .and. dmaxn>10.0d0*thresh ) )then
     rejected = .true.
@@ -2707,12 +2695,15 @@ contains
     flat     = .false.
   endif
 
-  ! saddle point
+  !------------------------------------------------------------------------------!
+  !                Check if we are in the saddle point or maximum                !
+  !------------------------------------------------------------------------------!
   if(dmaxa<thresh .and. nem/=0)then
     rejected  = .true.
     cond(3:3) = 's'
     if(cond(3:3) == '!') cond(3:3) = 'p'
     if(cond(3:3) == '.') cond(3:3) = 'd'
+    if(cond(3:3) == '|') cond(3:3) = 'f'
   endif
 
   if(full.and.(nem==0)) rejected = .false.
