@@ -678,11 +678,11 @@
 #include "sphtrm.h"
 #include "huckel.h"
 #include "cbirea.h"
- 
-#include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
-      INTEGER soef, blk, I,J,K,L,BLKCNT,RECPIN1,NHKTA0,irowmax0
+! be careful with the variables in 'ibtfun.h' 
+#include "ibtfun.h"
+      INTEGER soef, blk, I0,J0,K0,L0,BLKCNT,RECPIN1,NHKTA0,irowmax0
 !
 !     Run over Nuclear Centres
 !
@@ -691,20 +691,20 @@
 
       NHKTA0   = 0
       irowmax0 = 0
-      DO I = 1, NUCIND
-         DO J = 1, KMAX
-            NHKTA0 = MAX(NHKTA0,NHKT(J))
-            irowmax0 = MAX (irowmax0, (nucdeg(I)*KHKT(J)) )
+      DO I0 = 1, NUCIND
+         DO J0 = 1, KMAX
+            NHKTA0 = MAX(NHKTA0,NHKT(J0))
+            irowmax0 = MAX (irowmax0, (nucdeg(I0)*KHKT(J0)) )
          ENDDO
       ENDDO
 
 !     print *,'alloc,CTRANARG',NUCIND,NHKTA0,irowmax0,irowmax0
       ALLOCATE(CTRANARG(NUCIND,NHKTA0,irowmax0,irowmax0))
-      DO I = 1, NUCIND
-         DO J = 1, NHKTA0
-            DO K = 1, irowmax0
-               DO L = 1, irowmax0
-                  CTRANARG(I,J,K,L) = 0.0d0
+      DO I0 = 1, NUCIND
+         DO J0 = 1, NHKTA0
+            DO K0 = 1, irowmax0
+               DO L0 = 1, irowmax0
+                  CTRANARG(I0,J0,K0,L0) = 0.0d0
                ENDDO 
             ENDDO 
          ENDDO 
@@ -778,22 +778,22 @@
 !     --------------------------------------
       
       WRITE(RECPIN1,'(A)') '%AOTOSO'
-      DO I = 1, NUCIND
-         DO J = 1, MAXANG(I)
-            WRITE (RECPIN1,'(20i3)') irowmax(I,J),
-     &      (ireparg(I,J,K),K=1,irowmax(I,J))
+      DO I0 = 1, NUCIND
+         DO J0 = 1, MAXANG(I0)
+            WRITE (RECPIN1,'(20i3)') irowmax(I0,J0),
+     &      (ireparg(I0,J0,K0),K0=1,irowmax(I0,J0))
          ENDDO
       ENDDO
 
       BLKCNT = 0
-      DO I = 1, NUCIND
-         DO J = 1, MAXANG(I)
+      DO I0 = 1, NUCIND
+         DO J0 = 1, MAXANG(I0)
             BLKCNT = BLKCNT + 1
             WRITE(RECPIN1,'(20i3)')
-     &           irowmax(I,J),irowmax(I,J),BLKCNT
-            DO K = 1, irowmax(I,J)
+     &           irowmax(I0,J0),irowmax(I0,J0),BLKCNT
+            DO K0 = 1, irowmax(I0,J0)
                WRITE(RECPIN1,'(20i3)')
-     &         (nint(CTRANARG(I,J,K,L)),L=1,irowmax(I,J))
+     &         (nint(CTRANARG(I0,J0,K0,L0)),L0=1,irowmax(I0,J0))
             ENDDO
          ENDDO   
       ENDDO   

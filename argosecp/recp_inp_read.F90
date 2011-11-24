@@ -302,7 +302,6 @@ SUBROUTINE RECP_INP2_READGEO(RECPIN1,ns,ng,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
   CHARACTER*3 NUCNAME0
 
   CALL RECP_INP_READMENU(RECPIN1,'%GEOMETRY')
-
   DO I = 1, nst
      nso(i) = 0
   ENDDO
@@ -313,6 +312,7 @@ SUBROUTINE RECP_INP2_READGEO(RECPIN1,ns,ng,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
 
   J2   = 0
   nbft = 0 ! total number of symmetry orbital basis functions
+  lmn1u= 0
 
   DO I = 1, ns
 !    Read nuclear information
