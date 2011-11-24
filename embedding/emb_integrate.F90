@@ -297,7 +297,7 @@ endif
      
       call ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
-                        .true.)
+                        .false.)
 
 !        initial expectation value of the two-electron matrix
          if (do_potential) then
@@ -313,10 +313,6 @@ endif
 #endif
 
          call insert_half_phases()
-
-
-      call interface_mo_read()
-
 
 #ifdef DEBUG_XC
       write(*, *) 'debug: XC potential matrix zeroed out prior to integration'
