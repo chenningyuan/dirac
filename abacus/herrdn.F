@@ -4380,10 +4380,10 @@ C
 #include "sphtrm.h"
 #include "huckel.h"
 #include "cbirea.h"
-C
-#include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
+C
+#include "ibtfun.h"
 C*****************************************************************************
 C Determine ISYMAO:
 C       ISYMAO is a bitstring indicating how atomic orbitals centered in

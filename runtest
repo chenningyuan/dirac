@@ -193,6 +193,13 @@ if options.timeout:
     # extract the total time in seconds
     timeout = extract_time(options.timeout)
 
+def int32_run(s):
+    for line in s:
+        if '64-bit integers' in line:
+            if (line.split()[-1] == 'ON' or line.split()[-1] == '1'):
+                return False
+    return True
+
 # write the html header
 
 os.chdir(root_directory)
@@ -266,7 +273,7 @@ class run:
          return '%s_%s.out' % (inp_file_strip, mol_file_strip)
      def get_test_name(self):
          return string.split(self.test, '/')[-1]
-     def run_and_normal_exit(self):
+     def run_and_controlled_exit(self):
          pgid = None # process group id of the "dirac" process
          def child_signaller(signum, frame):
              '''Pass on signals to pam to its children'''
@@ -302,9 +309,20 @@ class run:
          pam_output_file.write(pam_output) 
          # check whether DIRAC terminated normally
          if 'exit           : normal' in pam_output:
-             return True
+             return 'NORMAL'
          else:
-             return False
+             exit = 'CRASH'
+             f = open(self.get_output_name(), 'r')
+             s = f.readlines()
+             for line in s:
+                 if 'controlled stop: only sequential' in line:
+                    if options.mpi > 1:
+                        exit = 'SKIP'
+                 if 'controlled stop: only int64' in line:
+                    if int32_run(s):
+                        exit = 'SKIP'
+             f.close()
+             return exit
      def print_result(self, progress, result_text, elapsed):
          """
           print result of the test
@@ -398,8 +416,7 @@ def main(*args):
                                     l.append(run(test, line, current_section[0]))
             f.close()
         else:
-            print('%s has no menu file' % test)
-            sys.exit(1)
+            print('WARNING: %s has no menu file' % test)
 
     # get number of actual runs
 
@@ -419,6 +436,7 @@ def main(*args):
     nr_of_tests_done = 0
     nr_ok            = 0
     nr_crashed       = 0
+    nr_skip          = 0
     nr_failed        = 0
     nr_without_ref   = 0
     nr_marked_noref  = 0
@@ -444,11 +462,13 @@ def main(*args):
         else:
             nr_of_tests_done += 1
             start = time.time()
-            if task.run_and_normal_exit():
-                if os.path.isfile('result/%s' % task.get_output_name()):
+            exit = task.run_and_controlled_exit()
+            if exit == 'NORMAL':
+                output_file = os.path.join('result', task.get_output_name())
+                if os.path.isfile(output_file):
                     # overwrite reference files
                     if options.overwrite:
-                        os.system('cp %s result/%s' % (task.get_output_name(), task.get_output_name()))
+                        os.system('cp %s %s' % (task.get_output_name(), output_file))
                 
                     # create directory where outputs are compared
                     if not os.path.isdir('compare'):
@@ -476,8 +496,11 @@ def main(*args):
                         result_text = 'NO REF'
                         nr_without_ref += 1
             else:
-                result_text = 'CRASH'
-                nr_crashed += 1
+                result_text = exit
+                if exit == 'CRASH':
+                    nr_crashed += 1
+                if exit == 'SKIP':
+                    nr_skip += 1
 
             elapsed = (time.time() - start)
             global_elapsed += elapsed
@@ -509,6 +532,8 @@ def main(*args):
          print('         %5i failed'            % nr_failed)
     if nr_crashed > 0:
          print('         %5i crashed'           % nr_crashed)
+    if nr_skip > 0:
+         print('         %5i skip (controlled exit)' % nr_skip)
     if nr_without_ref > 0:
          print('         %5i without reference' % nr_without_ref)
     if nr_bad_filter > 0:

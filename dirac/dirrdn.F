@@ -1561,8 +1561,6 @@ C&&& ATOMST: Atomic start
                TRIFCK=.FALSE.
                DO IATOM = 1,NONTYP
                  READ(LUCMD,*) ATOMFIL(IATOM),NVECATOM(IATOM)
-CTROND
-                 WRITE(6,*) 'TEST..',ATOMFIL(IATOM),NVECATOM(IATOM)
                  DO ISHELL = 1,NVECATOM(IATOM)
                    READ(LUCMD,'(A72)') VECATOM(ISHELL,IATOM)
                    READ(LUCMD,*) OCCATOM(ISHELL,IATOM)
@@ -2426,6 +2424,8 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
             GO TO 100
 C&&&& LUCITA: Perform spinfree CI calculation
   103    CONTINUE
+!           stefan - nov 2011: check for integer compatibility for lucita on x86_64 systems
+            call test_lucita_wrk_space_offset(work)
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
             NJOBS = NJOBS + 1
@@ -2855,6 +2855,7 @@ C
             write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
             write (*,*) ' '
            
+            print *, 'controlled stop: only sequential'
             call quit ('RELADC not parallelized')
          endif
          OPEN(LUCMD,FILE = 'DIRAC.INP')
@@ -4458,7 +4459,7 @@ C
 !                   57        58        59        60
      &            '.xxxxxx','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.xxxxxx','.xxxxxx'/
+     &            '.ECP   ','.X2Cmmf','.DOSSSS','.xxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4478,6 +4479,7 @@ C     Initialize /CBIHAM/
 C     ===================
 C
       IPRHAM  = 0
+      DOLVC   = .TRUE.
       QED     = .FALSE.
       MOLMF   = .FALSE.
       MOLMF3  = .FALSE.
@@ -4490,7 +4492,6 @@ C
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
-      DOLVC   = .FALSE.
       LVNEW   = .FALSE.
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
@@ -4644,7 +4645,7 @@ C&&&& GAUNT: Gaunt operator
             GAUNT = .TRUE.
             GO TO 100
   105     CONTINUE
-C&&&& LVCORR: Model interatomic SS-integral contribution by classical
+C&&&& LVCORR: Modeling of interatomic SS-integral contribution by classical
 C             repulsion of small component atomic charges
             DOLVC = .TRUE.
             GO TO 100
@@ -4680,6 +4681,7 @@ C&&& NOSMLV: Turn off small nuclear attraction integrals
   112      CONTINUE
 C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              LEVYLE = .TRUE.
+             DOLVC  = .FALSE.
 C            Levy-Leblond implies also spinfree, specify that
              SPINFR = .TRUE.
              NOSMLV = .TRUE.
@@ -4701,6 +4703,7 @@ C&&& ZORA   : Use ZORA approximation
              ZORA   = .TRUE.
              ZORA4  = (IZORA4.NE.0)
              ZORASC = (IZORAS.NE.0)
+             DOLVC  = .FALSE.
              SSMTRC = D0
              ICHANG = ICHANG + 1
              GO TO 100
@@ -4710,6 +4713,7 @@ C    jkp    : This keyword enables Luuk's one-center
 C             projection scheme
              SMLV1C = .TRUE.
              ONECAP = .TRUE.
+             DOLVC  = .FALSE.
              INTV1C = 1
              ICTLV1C(2) = 1
              ICHANG = ICHANG + 1
@@ -4779,6 +4783,7 @@ C             if no model specified, goto 199, choose onecap 2
             BACKSPACE LUCMD
   198       CONTINUE
             ONECAP  = .TRUE.
+            DOLVC   = .FALSE.
             IF(INTV1C.EQ.2) DOLVC = .TRUE.
 C
 C   ... Whether to evaluate integrals in a direct or concentional
@@ -4835,6 +4840,7 @@ C       transformed relativistic Hamiltonian
              BSS        = .TRUE.
              TWOCOMPBSS = .TRUE.
              TWOCOMP    = .TRUE.
+             DOLVC   = .FALSE.
 C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
              IF (IOS.NE.0) THEN
@@ -4918,6 +4924,7 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
             IBSS       = 2999
             TWOCOMPBSS = .TRUE.
             TWOCOMP    = .TRUE.
+            DOLVC      = .FALSE.
 C           Check that we have not defined operators yet,
 C           as they need to be modified within BSS transformations
             IF (I_FINFIELD.GT.0) THEN
@@ -4931,6 +4938,7 @@ C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
              NOPRTR     = .true.
              x2c        = .true.
              x2cmod_x2c = .true.
+             DOLVC      = .FALSE.
 C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
              IF (I_FINFIELD.GT.0) THEN
@@ -4974,13 +4982,16 @@ C&&& IOTC4: do IOTC in 4c-mode
              BSS = .TRUE.
              NOPRTR = .TRUE.
              IBSS = 2999
+             DOLVC      = .FALSE.
              GO TO 100
   144     CONTINUE
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
+             DOLVC   = .FALSE.
              GO TO 100
   145     CONTINUE
              BSS = .TRUE.
+             DOLVC = .FALSE.
 C        ... read 3-digit number
              READ(LUCMD,*) IBSS
 C
@@ -5004,6 +5015,7 @@ C&&& DKH2: complex flag for second order Douglas-Kroll-Hess with AMFI SSO
              IBSS = 2022
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
   148     CONTINUE
 C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other 
@@ -5013,6 +5025,7 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              IBSS = 2011
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
   149     CONTINUE
 C&&& .NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
@@ -5036,6 +5049,7 @@ CMI  with other flags...
              IBSS = 2999
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
 
 !         .X2C4 is alias for .IOTC4
@@ -5049,7 +5063,6 @@ C    (see MRCON1 of the MOLTRA module)
 
 !         .DFTAUTO (dft with automatic differentiation)
   154     continue
-#ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
           call parse_functional(line, xc_fun,
      &                          hfx_out, mu_out, beta_out, .true.)
@@ -5060,9 +5073,6 @@ C    (see MRCON1 of the MOLTRA module)
           call set_xc_fun_xalda(xc_fun_xalda)
           fun_is_automatic = .true.
           dirac_cfg_dft_calculation = .true.
-#else
-          call quit('XCFun not available in this version')
-#endif /* ifdef MOD_XCFUN */
           go to 100
 
   155     CONTINUE
@@ -5102,13 +5112,18 @@ CMI&& activate 4c-2c MO transformation
           x2cmod_mmf            = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
+          MOLMF3                = .TRUE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
             CALL QUIT(
      &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
+          GO TO 100
   163     CONTINUE
+C&&&& DOSSSS: Including SS-integral contribution explicitly
+            DOLVC = .FALSE.
+            GO TO 100
   164     CONTINUE
           GO TO 100
 
@@ -5237,7 +5252,8 @@ C     =====================================================
           CALL QUIT(
      &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
         ENDIF
-        IF (SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP) THEN
+        IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
+     &      .not.x2cmod_mmf)THEN
           CALL QUIT(
      &    'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP 
      &    & BSS/X2C !')
@@ -5565,18 +5581,14 @@ CMI    ... quantum dots
 
       if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_XCFUN
         if (.not. fun_is_automatic) then
-#endif
 !         this will report chosen functional
 !         if nothing is chosen it will report lda
 !         and if .dftauto functional is chosen
 !         it would report lda
 !         so let's not call it in this case
           call dftreport()
-#ifdef MOD_XCFUN
         end if
-#endif
 
 #ifdef MOD_ERI
 C aspg, 20070909

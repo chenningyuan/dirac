@@ -3,7 +3,7 @@ include(InstallRequiredSystemLibraries)
 set(CPACK_SOURCE_GENERATOR "TGZ")
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DIRAC")
-set(CPACK_PACKAGE_VENDOR "T. Saue, L. Visscher, H. J. Aa. Jensen, and contributors")
+set(CPACK_PACKAGE_VENDOR "R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher, and contributors")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL.rst")
 set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
@@ -20,14 +20,7 @@ SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
     )
 
 include(CPack)
-
-file(GLOB_RECURSE H_FILES   RELATIVE ${CMAKE_SOURCE_DIR} "*.h")
-file(GLOB_RECURSE INC_FILES RELATIVE ${CMAKE_SOURCE_DIR} "*.inc")
-
-set(INCLUDE_FILES
-    ${H_FILES}
-    ${INC_FILES}
-    )
+include(IncludeFiles)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release
@@ -54,6 +47,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/COPYING                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/CTestConfig.cmake            ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/INSTALL.rst                  ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM

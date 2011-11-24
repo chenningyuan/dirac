@@ -599,7 +599,7 @@ contains
          ilowdmat = 1
          do i = 1, nfsym
 
-           call readt(8,nesh_dim(i)**2,scr_mat1(ilowdmat))
+           if(nesh_dim(i) > 0) call readt(8,nesh_dim(i)**2,scr_mat1(ilowdmat))
 
 !          debug print
            if(print_lvl > 2)then

@@ -28,7 +28,6 @@ module overlap_diagnostic
 
 !  implemented 2011/01/11 by Radovan Bast <radovan.bast@uit.no>
 
-   use memory_allocator
    use interface_ao
    use interface_mo
    use xc_mpi
@@ -155,8 +154,8 @@ contains
       end if
 #endif
 
-      call alloc(o_matrix, nr_mo, nr_mo)
-      call alloc(buffer, max_block_length, nr_mo, nr_quaternion_blocks)
+      allocate(o_matrix(nr_mo, nr_mo))
+      allocate(buffer(max_block_length, nr_mo, nr_quaternion_blocks))
 
       o_matrix = 0.0d0
 
@@ -188,8 +187,8 @@ contains
       g_ao_end       = 0
       u_ao_end       = 0
 
-      if (allocated(o_matrix)) call dealloc(o_matrix)
-      if (allocated(buffer))   call dealloc(buffer)
+      if (allocated(o_matrix)) deallocate(o_matrix)
+      if (allocated(buffer))   deallocate(buffer)
 
    end subroutine
 
@@ -214,7 +213,7 @@ contains
 
       close(file_unit, status = 'keep')
 
-      if (allocated(o_matrix)) call dealloc(o_matrix)
+      if (allocated(o_matrix)) deallocate(o_matrix)
 
    end subroutine
 
@@ -240,7 +239,7 @@ contains
 !        return
       end if
 
-      call alloc(o_matrix, nr_mo_gerade + nr_mo_ungerade, nr_mo_gerade + nr_mo_ungerade)
+      allocate(o_matrix(nr_mo_gerade + nr_mo_ungerade, nr_mo_gerade + nr_mo_ungerade))
       read(file_unit) o_matrix
 
       close(file_unit, status = 'keep')

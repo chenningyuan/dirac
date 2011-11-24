@@ -156,7 +156,6 @@ contains
 
     call alloc(fmo, n2bbasxq)
     fmo = 0.0d0
-
 !   get unperturbed Fock matrix in MO basis:
     lwork = len_f77_work
     kfree = 1
@@ -246,7 +245,7 @@ contains
 
 ! get final result to buf
 
-      call dzero(buf, n2orbxq)
+!      call dzero(buf, n2orbxq)
 
 !     it is = 1, because unperturbed Fock matrix is symmetric (its real part)
 !     it is set in getfck
@@ -263,7 +262,6 @@ contains
                 fmo,             &
                 buf,             &
                 iprprp)
-
       debug_me = .false.
       if (debug_me) then
         write(*, *) 'buf in get_ftb after ttra, icomp = ', icomp

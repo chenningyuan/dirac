@@ -6384,3 +6384,27 @@ C***********************************************************************
       ENDDO
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION SYMCHECK(A,LR,LC,N,NZ)
+C***********************************************************************
+C
+C     Check symmetry aboyut the diagonal of a matrix; 
+C     uses absolute values  in order to work for both 
+C     symmetric and anti-symmetric matrices
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION A(LR,LC,NZ)
+      SYMCHECK = 0.0D0
+      DO IZ = 1,NZ
+        DO J = 1,N-1
+          DO I = J+1,N
+            SYMCHECK = SYMCHECK +
+     &        (DABS(A(I,J,IZ))-DABS(A(J,I,IZ)))
+          ENDDO
+        ENDDO
+      ENDDO
+      SYMCHECK=SYMCHECK/DFLOAT(NZ*N*(N-1)/2)
+      RETURN
+      END

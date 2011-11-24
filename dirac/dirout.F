@@ -52,7 +52,7 @@ C
 C     Summary of calculation
 C     ======================
 C
-      LVCON = DOLVC.AND.(INTFLG.EQ.3)
+      LVCON = DOLVC.AND.(INTFLG.EQ.3 .or. INTFLG.EQ.11)
       IF(.NOT.ONESYS) THEN
         CALL HEADER('SCF - CYCLE',-1)
         IF(ERGCNV) THEN
@@ -180,8 +180,8 @@ C
 C
  1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
      &       'Conv.acc',4X,'CPU',10X,'Integrals',3X,'Time stamp')
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
- 1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1020 FORMAT(4X,    I4,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C     ... 1020 is used for reading, thus no '1P' factor !
 C
       END

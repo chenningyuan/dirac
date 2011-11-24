@@ -435,6 +435,8 @@ contains
                           D(imat)%elms,            &
                           ao,                      &
                           (/px, py, pz/))
+#else
+               call quit('ndip dia not part of this released version')
 #endif
 
                if (visual_cfg_property(imat) == iq_ndipxdia) i = 1

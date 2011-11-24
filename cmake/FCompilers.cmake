@@ -1,7 +1,7 @@
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
                                    # -fcray-pointer is for VAR_MPI2
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
@@ -74,12 +74,14 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
 
     # individual compilation due to problems with parallel calcul. of twoel.London integrals
-    if((ENABLE_MPI) AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-        message("-- abacus/her2drv.F: lowered Intel Fortran optimization level for parallel, OpenMPI compilation")
-        set_source_files_properties(
-            abacus/her2drv.F
-            PROPERTIES COMPILE_FLAGS "-O0 -no-ip" 
-    )
+    if(ENABLE_MPI)
+        if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+            message("-- main/main.F90: ifort (in OpenMPI wrapper) - lowered optimization level by last flag overriding, -O0")
+            message("--   ... fix of magnetizabilities MEMCHK error in the slave process of abacus/her2drv.F" )
+            set_source_files_properties(
+                main/main.F90
+                PROPERTIES COMPILE_FLAGS "-O0")
+        endif()
     endif()
 
 endif()
