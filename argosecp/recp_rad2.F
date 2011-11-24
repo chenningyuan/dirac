@@ -64,9 +64,8 @@ c       # nu.eq.(integer), where nu=l+1-npi/2, so it is used here only
 c       # for the npi=2 case.  It can't be used at all for npi=(odd) and
 c       # only for partial sets for npi=0
         nu=l
-            call qbess( alpha,    
-     &      l,          lambu,      lmahi,      lmbhi,      ltot1,
-     &      nu,         prd,        rka,        rkb )
+            call qbess( alpha,l,lambu,lmahi,lmbhi,ltot1,
+     &                  nu,prd,rka,rkb,ljt,lit )
       elseif(arc2.ge.a50) then
 c       # rka>0 and rkb>0; use pts and wts method
 c       # estimate radial integrals and compare to threshold
@@ -150,14 +149,14 @@ c               # lama recursion
 
 !-------------------------------------------------
 
-      subroutine qbess( alpha,  
-     &      l,          lambu,      lmahi,      lmbhi,      ltot1,
-     &      nu,         prd,        rka,        rkb )
+      subroutine qbess( alpha,l,lambu,lmahi,lmbhi,ltot1,
+     &                  nu,prd,rka,rkb,ljt,lit )
 !  compute type 2 radial integrals, scaled by exp(-arc2)/sqrt(pi),
 !  using the bessel function formula for
 !  lama=max(l,nu) to lmahi, lamb=max(l,nu) to lmbhi, n=lama+lamb-l-l
       USE RECP_IPT
       implicit real*8 (a-h,o-z)
+      integer  ljt,lit
       parameter (a0=0.0d0, a1=1.0d0, a2=2.0d0, a4=4.0d0)
 
 !     nu=l+1-npi/2
@@ -175,13 +174,23 @@ c               # lama recursion
         IPT_P23_BPREF(lambp)=fctb*IPT_P23_BPREF(lambp-1)
    24 continue
       IPT_P23_APWR(1)=a1
-      IPT_P23_APWR(2)=fct
+!     FIXME : 1
+      if (ljt.eq.1) then
+         IPT_P23_ATERM1(1)=fct
+      else
+         IPT_P23_APWR(2)=fct
+      endif
       do 28 lambp=3,lmbphi
         IPT_P23_APWR(lambp)=fct*IPT_P23_APWR(lambp-1)
    28 continue
       fct=rkb*fctb
       IPT_P23_BPWR(1)=a1
-      IPT_P23_BPWR(2)=fct
+!     FIXME : 2
+      if (lit.eq.1) then
+         IPT_P23_BTERM1(1)=fct
+      else
+         IPT_P23_BPWR(2)=fct
+      endif
       do 32 lamap=3,lmaphi
         IPT_P23_BPWR(lamap)=fct*IPT_P23_BPWR(lamap-1)
    32 continue
