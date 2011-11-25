@@ -68,8 +68,7 @@ def backup(file):
 
 usage = '''
   typically ./%prog --all [--mpi=4]
-         or ./%prog --tests="some_test another_test"
-         or ./%prog --tests=visual*'''
+         or ./%prog --tests="some_test another_test"'''
 
 # initialize parser
 
@@ -175,19 +174,8 @@ if options.all or (options.quick and not options.individual):
         sys.exit()
 
 if options.individual:
-    s = options.individual.split()
-    l = ''
-    for w in s:
-        l += root_directory + '/test/' + w + ' '
-#   this complicated code is to allow --tests="foo* *bar* *oof"
-    command = 'find %s -type d -maxdepth 0' % l
-    p = subprocess.Popen(command,
-                         shell=True,
-                         stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE)
-    for test in p.communicate()[0].split('\n'):
-        if test != '':
-            list_of_tests_to_run.append(test)
+    for w in options.individual.split():
+        list_of_tests_to_run.append(os.path.join(root_directory, 'test', w))
 
 if options.timeout:
     # extract the total time in seconds
