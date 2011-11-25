@@ -1,7 +1,7 @@
 INTGRL
 Projection CH4 pour différentes bases :
 DunningDZ
-C   2    0      
+C   2
         6.    1
 C     0.00000000          0.00000000          0.00000000
 LARGE BASIS DZ(Dunning)
@@ -9,6 +9,6 @@ LARGE BASIS DZ(Dunning)
 H1     1.18486272          1.18486272          1.18486272
 H2    -1.18486272         -1.18486272          1.18486272
 H3     1.18486272         -1.18486272         -1.18486272
-H4    -1.18486272          1.18486272         -1.18486272 
+H4    -1.18486272          1.18486272         -1.18486272
 LARGE BASIS DZ(Dunning)
 FINISH

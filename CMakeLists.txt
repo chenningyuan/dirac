@@ -60,7 +60,6 @@ option(ENABLE_MPI             "Enable MPI parallelization"                      
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
@@ -152,7 +151,7 @@ add_executable(
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/xcint/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -163,13 +162,11 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-if(ENABLE_XCFUN)
-    add_subdirectory(xcint/xcfun)
-    set(LIBS
-        ${LIBS}
-        xcfun
-        )
-endif()
+add_subdirectory(xcfun)
+set(LIBS
+    ${LIBS}
+    xcfun
+    )
 
 include(CompilationInfo)
 

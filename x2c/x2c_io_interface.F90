@@ -99,6 +99,7 @@ contains
          end if
        else
          print '(2x,a)', ' *** warning in x2c_read: attempt to read data array which is supposed to be zero. ***'
+!        call quit('bla bla')
        end if
        
   end subroutine x2c_read
