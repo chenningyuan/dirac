@@ -1,20 +1,12 @@
 **DIRAC
 .TITLE
-Projection CH4 pour diff. bases
+Pipek-Mezey localization based on atomic charges from projection analysis
 .ANALYZE
-**HAMILTONIAN
-.LVCORR
-**INTEGRALS
-*TWOINT
-.SCREEN
- 1.0D-11
 **WAVE FUNCTIONS
 .SCF
 *SCF
 .CLOSED SHELL
  10
-.EVCCNV
- 1.0D-7
 **ANALYZE
 .MULPOP
 .LOCALIZE

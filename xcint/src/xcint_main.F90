@@ -207,7 +207,7 @@ contains
       integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
-      integer, parameter :: max_mat_number = 10
+      integer, parameter :: max_mat_number = 20
       integer, target    :: default_pg_sym(max_mat_number)
       integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
@@ -215,6 +215,11 @@ contains
 
       integer, parameter :: max_response_order_mo = 5
       integer            :: i, j, iz, imat
+
+      if (xc_nr_dmat > max_mat_number) then
+         print *, 'programing error: xc_nr_dmat > max_mat_number'
+         stop 1
+      end if
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
@@ -1273,26 +1278,26 @@ contains
 
 #ifdef MOD_OPENRSP
           if (response_order_ao > 0) then
-            call xc_response_contribution(response_order_ao,                 &
-                                          mat_dim,   &
-                                          nz,        &
-                                          fmat,      &
-                                          nr_dmat, &
-                                          dmat,    &
-                                          dmat_pg_sym,      &
-                                          dmat_ih_sym,      &
-                                          fmat_pg_sym,      &
-                                          use_gga,                           &
-                                          ao, &
-                                          n_0(1),                            &
-                                          gn_0_pointwise,                               &
-                                          rx(ipoint),                      &
-                                          ry(ipoint),                      &
-                                          rz(ipoint),                      &
-                                          w(1),                              &
-                                          buffer, &
-                                          derv_length,  &
-                                          derv)
+             call xc_response_contribution(response_order_ao, &
+                                           mat_dim,           &
+                                           nz,                &
+                                           fmat,              &
+                                           nr_dmat,           &
+                                           dmat,              &
+                                           dmat_pg_sym,       &
+                                           dmat_ih_sym,       &
+                                           fmat_pg_sym,       &
+                                           use_gga,           &
+                                           ao,                &
+                                           n_0(1),            &
+                                           gn_0_pointwise,    &
+                                           rx(ipoint),        &
+                                           ry(ipoint),        &
+                                           rz(ipoint),        &
+                                           w(1),              &
+                                           buffer,            &
+                                           derv_length,       &
+                                           derv)
           end if
 #endif
 
