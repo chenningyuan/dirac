@@ -2855,6 +2855,7 @@ C
             write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
             write (*,*) ' '
            
+            print *, 'controlled stop: only sequential'
             call quit ('RELADC not parallelized')
          endif
          OPEN(LUCMD,FILE = 'DIRAC.INP')

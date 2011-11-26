@@ -64,7 +64,7 @@
      & l, ngenp1, isf, isfr, is, icu, ig, if, ilmnp1, lai,
      & itl, itu, jcts, it, jct, jt, ixyz, i2, i3,
      & js, ngp1, iso, n1max, n2max, iau, ia, leig, lmn, 
-     & lmnvmx 
+     & lmnvmx,lmnvmx2,lmnvmx3 
       integer ixyzir(3), lblso(16),CX_TEMP
       real*8 c_sum, t, eval
       character*1 ibl, ipc, isk, lblsh(21)
@@ -117,14 +117,16 @@
 
 !     ----------------------------------------------------------------
 
+!     FIXME : lmnvmx value
       lmnvmx = (lmn1u*(lmn1u + 1)*(lmn1u + 2))/6
+      lmnvmx2=  84
+      lmnvmx3=  max(lmnvmx*3,84)
       ipt(2) = ipt(1) 
-!     check lmnvmx value
-      ALLOCATE(IPT_LMNV(3,lmnvmx*3))
+      ALLOCATE(IPT_LMNV(3,lmnvmx3))
 
       DO I = 1, 3
-!        DO J = 1, lmnvmx*3
-         DO J = 1, 84
+         DO J = 1, lmnvmx3
+!        DO J = 1, 84
             IPT_LMNV(I,J) = 0
          ENDDO
       ENDDO

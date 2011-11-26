@@ -27,6 +27,29 @@ do this instead to run just this one test::
   $ ../../runtest
 
 
+How to run tests using CTest
+----------------------------
+
+Go to the build directory::
+
+  $ cd build
+
+Now run all tests::
+
+  $ make test
+
+You can also run individual tests (example: dft_ac)::
+
+  $ ctest -R dft_ac
+
+The "-R" means regular expression! So you can run all tests
+that start with "dft" using::
+
+  $ ctest -R dft
+
+By the way behind the curtains CTest uses runtest.
+
+
 Some tests are broken, what now?
 --------------------------------
 
