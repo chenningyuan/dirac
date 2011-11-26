@@ -16,9 +16,10 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 
 rem enable keyring....
-rem C:\Users\milias\pageant_link.lnk C:\Users\milias\Documents\milias_private_key.ppk
+C:\Users\milias\pageant_link.lnk C:\Users\milias\Documents\milias_private_key.ppk
 
-rem git pull
+rem download fresh Dirac - MUST HAVE full path of git
+C:\Git\bin\git pull
 
 python pamadm -a 
 
@@ -29,17 +30,20 @@ mkdir %BUILD%
 cd %BUILD%
 
 rem own cmake configure step
-cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME="Win7.Urpin_BB.MinGW.gfortran.gcc.ownmath.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%
+cmake -G "MinGW Makefiles" -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME="Win7.Urpin_BB.MinGW.ownmath.debug.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%  -Wno-dev
 
 rem make clean
 rem make dirac.x
-rem mingw32-make Experimental
+mingw32-make Experimental
 rem mingw32-make  clean
 rem mingw32-make dirac_interfaces
 
 rem for now do only the compilation and submit info about it
-mingw32-make -j 2
+rem mingw32-make -j 2
 rem mingw32-make ExperimentalSubmit
 
 rem return back
 rem cd %DIRAC%\maintenance\cdash
+
+rem return to the top of the DIRAC directory
+cd %DIRAC%
