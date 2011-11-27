@@ -14,7 +14,7 @@ Moelcular oxygen. Ground and excited states (X, a, b).
 .CLOSED SHELL
  6 8
 .EVCCNV
-1.E-10
+1.E-10 1.E-9
 *END OF
 
  &RELCCSD NELEC=2,2,3,3, DOFSPC=T, DOENER=F &END

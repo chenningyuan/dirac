@@ -277,8 +277,8 @@ class run:
 
          os.chdir(self.test)
          # run pam
-         command = '%s/pam --inp=%s --mol=%s %s' \
-             % (root_directory, self.inp, self.mol, self.pam_flags)
+	 pam_command=os.path.join(root_directory,"pam")
+         command = 'python '+pam_command+' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.pam_flags)
          if sys.platform != 'win32':
              p = subprocess.Popen(command,
                                   shell=True,
@@ -327,19 +327,23 @@ class run:
 
      def apply_filter(self):
          # apply the filter on output; TODO: replace crep, bdrep
-         os.system('../../utils/crep %s        result/filter > compare/%s.own' \
+	 #could use also 'C:\Git\bin\sh.exe'
+	 sh_cmd=os.path.join("C:\MinGW","msys","1.0","bin","sh.exe")
+         if not os.path.isfile(sh_cmd):
+             sh_cmd="sh"
+         os.system(sh_cmd+' ../../utils/crep %s        result/filter > compare/%s.own' \
                    % (self.get_output_name(), self.get_output_name()))
          # apply the filter on reference output
-         os.system('../../utils/crep result/%s result/filter > compare/%s.ref' \
+         os.system(sh_cmd+' ../../utils/crep result/%s result/filter > compare/%s.ref' \
                    % (self.get_output_name(), self.get_output_name()))
          # compare filtered result with reference
-         os.system('../../utils/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
+         os.system(sh_cmd+' ../../utils/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
                    % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
          # generate individual html
-         os.system('../../utils/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
+         os.system(sh_cmd+' ../../utils/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
                    % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
          # generate the one big html
-         os.system('../../utils/hdrep compare/%s.own compare/%s.ref >> ../LOGS/runtest.htm' \
+         os.system(sh_cmd+' ../../utils/hdrep compare/%s.own compare/%s.ref >> ../LOGS/runtest.htm' \
                    % (self.get_output_name(), self.get_output_name()))
      def is_shell_command(self):
          return False
@@ -433,13 +437,19 @@ def main(*args):
 
     testname_0=None
     for task in l:
-
-        testname_1=string.split(task.test, '/')[-1]
+        
+	#print "task.text=",task.test
+        #testname_1=string.split(task.test, '/')[-1]
+	(head,tail)=os.path.split(task.test)
+	testname_1=tail
         open_new_log_file=(testname_0 != testname_1)
 
         if open_new_log_file : 
             global pam_output_file
-            log_file=root_directory+'/test/LOGS/runtest_'+testname_1+'.log'
+	    #print "testname_1=",testname_1
+	    runtestlogfile='runtest_'+testname_1+'.log'
+            log_file=os.path.join(root_directory,"test","LOGS",runtestlogfile)
+	    #print "test log file",log_file
             backup(log_file)
             pam_output_file = open(log_file,'w', 0)
             pam_output_file.write(" runtest pam outputs \n\n ")

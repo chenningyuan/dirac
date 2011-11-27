@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
+#miro: to suppress Windows warning about policy...
+cmake_policy(SET CMP0010 OLD)
+
 project(DIRAC Fortran C)
 add_definitions(-DPRG_DIRAC)
+
 
 # set version
 set(VERSION_MAJOR 11)
