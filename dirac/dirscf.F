@@ -5195,7 +5195,9 @@ C.......add test fro NSYM
         CALL READT(LUATOM,NACMOQ,WORK(KCMO))
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
-        NDIM=MAX(NAORB,NBAS)
+!       NDIM=MAX(NAORB,NBAS)+1
+!       radovan i think the above should rather be:
+        NDIM=MAX(NAORB,NBAS)+1
         CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
         FAC = D0
         DO ISHELL = 1,NVECATOM(IATOM)
