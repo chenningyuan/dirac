@@ -326,11 +326,12 @@ class run:
               inp_file_strip, mol_file_strip, elapsed_str))
 
      def apply_filter(self):
-         # apply the filter on output; TODO: replace crep, bdrep
-	 #could use also 'C:\Git\bin\sh.exe'
-	 sh_cmd=os.path.join("C:\MinGW","msys","1.0","bin","sh.exe")
-         if not os.path.isfile(sh_cmd):
-             sh_cmd="sh"
+         if sys.platform == 'win32':
+             sh_cmd = os.path.join("C:\MinGW","msys","1.0","bin","sh.exe")
+             if not os.path.isfile(sh_cmd):
+                 sh_cmd = "sh"
+         else:
+             sh_cmd = "sh"
          os.system(sh_cmd+' ../../utils/crep %s        result/filter > compare/%s.own' \
                    % (self.get_output_name(), self.get_output_name()))
          # apply the filter on reference output
