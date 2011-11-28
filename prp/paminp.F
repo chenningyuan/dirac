@@ -45,6 +45,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, WRDSRC*7
@@ -549,6 +550,13 @@ C .... check the change of the gauge origin ....
      &     '* Gauge origin   :', (GAGORG(I),I=1,3),
      &     '* Dipole origin  :', (DIPORG(I),I=1,3)
       ENDIF
+
+!     consistency checks
+      if (twocomp .and. .not. (bss .or. x2c)) then
+         if (doxlr .or. doxqr) then
+            call quit('ERROR: response with .NONREL not possible')
+         end if
+      end if
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')

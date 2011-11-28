@@ -6,7 +6,7 @@ add_definitions(-DPRG_DIRAC)
 # set version
 set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 1)
+set(VERSION_PATCH 2)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
