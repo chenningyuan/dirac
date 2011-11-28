@@ -16,10 +16,10 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 
 rem enable keyring....
-C:\Users\milias\pageant_link.lnk C:\Users\milias\Documents\milias_private_key.ppk
+rem C:\Users\milias\pageant_link.lnk C:\Users\milias\Documents\milias_private_key.ppk
 
 rem download fresh Dirac - MUST HAVE full path of git
-C:\Git\bin\git pull
+rem C:\Git\bin\git pull
 
 python pamadm -a 
 
@@ -29,8 +29,8 @@ rmdir /S /Q %BUILD%
 mkdir %BUILD%
 cd %BUILD%
 
-rem own cmake configure step
-cmake -G "MinGW Makefiles" -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME="Win7.Urpin_BB.MinGW.ownmath.debug.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%  -Wno-dev
+rem own cmake configure step - MinGW must be in path !
+cmake -Wno-dev -G "MinGW Makefiles"  "FC=gfortran" -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Release -DBUILDNAME="Win7.Urpin_BB.MinGW.ownmath.debug.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%  
 
 rem make clean
 rem make dirac.x
