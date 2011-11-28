@@ -10,10 +10,20 @@
 # digits that differ
 #
 
+#miro: adapting for Windows with MinGW
+cat_cmd="C:\MinGW\msys\1.0\bin\cat.exe"
+if [ ! -e  $cat_cmd ];
+then
+   cat_cmd=cat
+fi
+rm_cmd="C:\MinGW\msys\1.0\bin\rm.exe"
+if [ ! -e $rm_cmd ];
+then
+   rm_cmd=rm
+fi
+
 SCRIPT=/tmp/$$.pl
-cat <<\eor >$SCRIPT
-
-
+$cat_cmd <<\eor >$SCRIPT
 
 $small = 1e-3;
 $verysmall = 1e-12;
@@ -302,4 +312,4 @@ print "<HR>";
 
 eor
 perl -X -s $SCRIPT $@
-rm $SCRIPT
+$rm_cmd $SCRIPT

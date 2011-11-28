@@ -415,8 +415,7 @@ C
          CALL SOLVE_CG (NFS_HE(IRP,ICURFSS),
      &                  HEFF(IFS_HE2(IRP,ICURFSS)*RCW+1),
      &                  EIGENVECTORS(IFS_HE2(IRP,ICURFSS)*RCW+1),
-CMI  &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)+1))
-     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+1))
+     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+RCW))
 100   CONTINUE
 
       RETURN
@@ -550,7 +549,6 @@ C
       CALL INDEXX (NDT,EVR,INDX)
 C
 C.....Store the eigenvalues 
-CMI/July07 both real and imaginary
       DO I = 1, NDT
        EV(1,I) = EVR(INDX(I))
        IF (CARITH) EV(2,I) = EVI(INDX(I))
@@ -615,12 +613,6 @@ C
 C     Analyse the eigenvectors of the effective Hamiltonian and
 C     compute oscilator strengths.
 C
-CMI/July07 EIGENVALUES contains imaginary parts in the case of carith=T
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 EPS(*),EIGENVALUES(0:*),EIGENVECTORS(*)
-      INTEGER ICURFSS
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -631,6 +623,11 @@ C
 #include "ccpar.inc"
 #include "files.inc"
 C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER ICURFSS
+      REAL*8 EPS(*),EIGENVALUES(RCW,0:*),EIGENVECTORS(*)
+
 C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
       INTEGER :: IERR, ISIZE
@@ -638,7 +635,6 @@ C---------------Local variables -----------------------------------
       REAL*8 E_OFF
 C---------------Executable code--------------------------------------
 
-!miro: fixed nastry "+1" index leak bug showing up only with sensitive compilers
       ISIZE = IFS_HE(NREP+1,ICURFSS)+1
       ALLOCATE (INDX_ALL(ISIZE),STAT=IERR)
       IF (IERR.NE.0) THEN
@@ -660,17 +656,17 @@ C
 C        Odd electron case : fermion irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:ISIZE),ISIZE,
+     &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ELSE IF (ICURFSS.EQ.4) THEN
 C        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
 C        This makes the routine print excitation energies
-         EIGENVALUES(0) = 0.D0
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) + 1
+         EIGENVALUES(1:RCW,0) = 0.D0
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(0:ISIZE),ISIZE,
+     &                EIGENVALUES(1:RCW,0:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
 C        One should not forget this line : the real dimension of the first irrep should be retained !
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
@@ -678,13 +674,13 @@ C        One should not forget this line : the real dimension of the first irrep
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:ISIZE),ISIZE,
+     &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ENDIF
 
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
-     &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
+     &                  E_OFF,EIGENVALUES(1,1),EIGENVECTORS) 
       DEALLOCATE (INDX_ALL,STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL deallocation !')
@@ -2256,7 +2252,7 @@ C
       CHARACTER*50 LABEL(NDIMH)
 C---------------Executable code--------------------------------------
  
-C     Initialize and gets label for the excited state coefficiens
+C     Initialize and get label for the excited state coefficiens
       IF (IPR.LE.0) THEN
          TRES = 0.1
       ELSEIF (IPR.LE.2) THEN
