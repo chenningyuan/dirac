@@ -8,7 +8,7 @@ rem the directory where your DIRAC sits
 echo "Hello, building up DIRAC on Windows 7 server Urpin, KCH FPV UMB"
 
 set DIRAC=C:\Users\milias\Documents\Work\QCH\dirac_git\trunk
-set BUILD=%DIRAC%\build_gnu_i8_debug
+set BUILD=%DIRAC%\build_gnu_i8
 
 echo %BUILD%
 
@@ -16,10 +16,10 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 
 rem enable keyring....
-rem C:\Users\milias\pageant_link.lnk C:\Users\milias\Documents\milias_private_key.ppk
+"C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\Documents\milias_private_key.ppk
 
 rem download fresh Dirac - MUST HAVE full path of git
-rem C:\Git\bin\git pull
+C:\Git\bin\git.exe pull
 
 python pamadm -a 
 
@@ -30,7 +30,7 @@ mkdir %BUILD%
 cd %BUILD%
 
 rem own cmake configure step - MinGW must be in path !
-cmake -Wno-dev -G "MinGW Makefiles"  "FC=gfortran" -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Release -DBUILDNAME="Win7.Urpin_BB.MinGW.ownmath.debug.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%  
+cmake -Wno-dev -G "MinGW Makefiles" "FC=gfortran" -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Release -DBUILDNAME="Win7.Urpin_BB.MinGW.ownmath.debug.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%  
 
 rem make clean
 rem make dirac.x
