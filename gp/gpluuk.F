@@ -461,7 +461,6 @@ C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION N_EV(*),INDX(*)
-C     DIMENSION EV(*)
       DIMENSION EV(IRCW,*)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*)
@@ -489,7 +488,6 @@ C
 C     Sort them from low to high
 C
       DODBG = .FALSE.
-C     DODBG = .TRUE.
 
       IF (DODBG) THEN
       write(LUPRI,*) 'before sorting'
