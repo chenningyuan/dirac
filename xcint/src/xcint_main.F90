@@ -1042,7 +1042,7 @@ contains
 
 #ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(tau,     &
+            call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
                          dmat_0,  &
@@ -1895,7 +1895,7 @@ contains
 
 #ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(t_b,     &
+            call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
@@ -1989,7 +1989,7 @@ contains
         end if
 #ifdef MOD_UNRELEASED
         if (fun_is_tau_mgga(xc_fun)) then
-           call get_tau_imag(ts_b,     &
+           call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &
