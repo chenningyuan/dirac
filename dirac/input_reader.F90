@@ -344,6 +344,30 @@ contains
          call read_input_visual_helper(iq_j)
       end if
 
+      if (kw_matches(word, '.KIN   ')) then
+         call read_input_visual_helper(iq_kin)
+      end if
+
+      if (kw_matches(word, '.KINLS ')) then
+         call read_input_visual_helper(iq_kin_ls)
+      end if
+
+      if (kw_matches(word, '.KINSL ')) then
+         call read_input_visual_helper(iq_kin_sl)
+      end if
+
+      if (kw_matches(word, '.KINTAU')) then
+         call read_input_visual_helper(iq_kin_tau)
+      end if
+
+      if (kw_matches(word, '.KINLAP')) then
+         call read_input_visual_helper(iq_kin_lap)
+      end if
+
+      if (kw_matches(word, '.KINNR ')) then
+         call read_input_visual_helper(iq_kin_nr)
+      end if
+
       if (kw_matches(word, '.DIVJ  ')) then
          call read_input_visual_helper(iq_divj)
       end if
