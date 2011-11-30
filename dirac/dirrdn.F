@@ -7334,7 +7334,7 @@ C
       LGGRAD = .FALSE.
       LGCHCK = .FALSE.
       THFULL = 1.0D-13
-      THDIAG = 1.0D-13
+      THDIAG = 1.0D-05
       THGRAD = 1.0D-07
 C
 C     Process input from CBILOC
