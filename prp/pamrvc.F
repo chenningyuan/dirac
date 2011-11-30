@@ -2189,6 +2189,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -3266,8 +3267,8 @@ C
 C     Configuration type trial vectors
 C
       IF(NZCONF.GT.0) THEN
-        KPREC=FREE
-        KCDIAS=KFREE
+        KPREC  = KFREE
+        KCDIAS = KFREE
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),WORK(KCDIAS),EVALR,EVECR,
      &              IBTYP,IBCVC,IVECS(1,IPCP),
      &              MFREQ,JBCNDX,IBOFF,NCPREV,NZCONF,
