@@ -27,6 +27,38 @@
 *   collected by Timo Fleig, Jul 12 - Sep, 2002          *
 *========================================================*
 *
+      subroutine test_lucita_wrk_space_offset(work)
+!        purpose: check for integer compatibility for lucita on x86_64 systems
+      implicit none
+#include "priunit.h"
+      real(8)              :: workspace_lucita
+      COMMON/lucita_wrk_space_test/workspace_lucita(1)
+      integer(8)           :: K_OFFSET, K8BASE_LUCITA
+      integer              :: KBASE_LUCITA
+      real(8), intent(in)  :: work(*)
+      
+!     
+      call compoff(work,workspace_lucita,k_offset)
+      kbase_lucita = k_offset
+      ! HJAaJ Aug 2008:
+      ! MEMMAN in LUCITA is using default integer type
+      ! while K_OFFSET is always INTEGER*8.
+      ! Therefore we use implicit conversion to KBASE_LUCITA.
+      ! Now we test if KBASE_LUCITA is OK:
+      k8base_lucita = kbase_lucita
+      if(k8base_lucita .ne. k_offset)then
+        print *, 'controlled stop: only int64'
+        WRITE (lupri,'(/A/A,2I20//A)')
+     &  'FATAL ERROR in test_lucita_wrk_space_offset: memory offset'//
+     &  ' (dynamic memory - static memory) is too big for i*4',
+     &  'K_OFFSET and KBASE_LUCITA:',K_OFFSET, KBASE_LUCITA,
+     &  '(See code in gp/gplucia.F)'
+        CALL QUIT(
+     &  'FATAL ERROR for LUCITA runs: memory offset'//
+     &  ' (dynamic memory - static memory) is too big for i*4')
+      end if
+
+      end subroutine test_lucita_wrk_space_offset
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *

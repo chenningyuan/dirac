@@ -1561,8 +1561,6 @@ C&&& ATOMST: Atomic start
                TRIFCK=.FALSE.
                DO IATOM = 1,NONTYP
                  READ(LUCMD,*) ATOMFIL(IATOM),NVECATOM(IATOM)
-CTROND
-                 WRITE(6,*) 'TEST..',ATOMFIL(IATOM),NVECATOM(IATOM)
                  DO ISHELL = 1,NVECATOM(IATOM)
                    READ(LUCMD,'(A72)') VECATOM(ISHELL,IATOM)
                    READ(LUCMD,*) OCCATOM(ISHELL,IATOM)
@@ -2426,6 +2424,8 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
             GO TO 100
 C&&&& LUCITA: Perform spinfree CI calculation
   103    CONTINUE
+!           stefan - nov 2011: check for integer compatibility for lucita on x86_64 systems
+            call test_lucita_wrk_space_offset(work)
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
             NJOBS = NJOBS + 1
@@ -2855,6 +2855,7 @@ C
             write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
             write (*,*) ' '
            
+            print *, 'controlled stop: only sequential'
             call quit ('RELADC not parallelized')
          endif
          OPEN(LUCMD,FILE = 'DIRAC.INP')
@@ -5062,7 +5063,6 @@ C    (see MRCON1 of the MOLTRA module)
 
 !         .DFTAUTO (dft with automatic differentiation)
   154     continue
-#ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
           call parse_functional(line, xc_fun,
      &                          hfx_out, mu_out, beta_out, .true.)
@@ -5073,9 +5073,6 @@ C    (see MRCON1 of the MOLTRA module)
           call set_xc_fun_xalda(xc_fun_xalda)
           fun_is_automatic = .true.
           dirac_cfg_dft_calculation = .true.
-#else
-          call quit('XCFun not available in this version')
-#endif /* ifdef MOD_XCFUN */
           go to 100
 
   155     CONTINUE
@@ -5116,13 +5113,13 @@ CMI&& activate 4c-2c MO transformation
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
           MOLMF3                = .TRUE.
-          DOLVC                 = .FALSE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
             CALL QUIT(
      &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
+          GO TO 100
   163     CONTINUE
 C&&&& DOSSSS: Including SS-integral contribution explicitly
             DOLVC = .FALSE.
@@ -5255,7 +5252,8 @@ C     =====================================================
           CALL QUIT(
      &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
         ENDIF
-        IF (SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP) THEN
+        IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
+     &      .not.x2cmod_mmf)THEN
           CALL QUIT(
      &    'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP 
      &    & BSS/X2C !')
@@ -5583,18 +5581,14 @@ CMI    ... quantum dots
 
       if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_XCFUN
         if (.not. fun_is_automatic) then
-#endif
 !         this will report chosen functional
 !         if nothing is chosen it will report lda
 !         and if .dftauto functional is chosen
 !         it would report lda
 !         so let's not call it in this case
           call dftreport()
-#ifdef MOD_XCFUN
         end if
-#endif
 
 #ifdef MOD_ERI
 C aspg, 20070909

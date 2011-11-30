@@ -23,9 +23,7 @@ module xcint_main
    use xc_response
 #endif
    use xc_mpi
-#ifdef MOD_XCFUN
    use xcfun
-#endif
 
    implicit none
 
@@ -209,7 +207,7 @@ contains
       integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
-      integer, parameter :: max_mat_number = 10
+      integer, parameter :: max_mat_number = 20
       integer, target    :: default_pg_sym(max_mat_number)
       integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
@@ -217,6 +215,11 @@ contains
 
       integer, parameter :: max_response_order_mo = 5
       integer            :: i, j, iz, imat
+
+      if (xc_nr_dmat > max_mat_number) then
+         print *, 'programing error: xc_nr_dmat > max_mat_number'
+         stop 1
+      end if
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
@@ -434,7 +437,6 @@ contains
       end if
 
 !     set and sync functional
-#ifdef MOD_XCFUN
       if (fun_is_automatic) then
 !        call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
 !        call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
@@ -444,15 +446,12 @@ contains
          call xcfun_set_functional(xc_fun_alda,  max_response_order_mo, parallel_xc)
          call xcfun_set_functional(xc_fun_xalda, max_response_order_mo, parallel_xc)
       else
-#endif
 #ifdef VAR_MPI
       if (parallel_xc) then
          call dftsyncfunc(xc_mpi_is_master())
       end if
 #endif
-#ifdef MOD_XCFUN
       end if
-#endif
 
 #ifndef MOD_UNRELEASED
       if (fun_is_tau_mgga(xc_fun)) then
@@ -911,7 +910,6 @@ contains
        end if
     end if
 
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
     if (response_order_ao > 0) then
       derv_length = xc_output_length(xc_fun%id, response_order_ao)
@@ -919,14 +917,11 @@ contains
       allocate(derv_nadd(derv_length, max_block_length))
     else
 #endif
-#endif
       derv_length = nr_nonzero_derv
       allocate(derv(max_block_length, 0:derv_length))
       allocate(derv_nadd(max_block_length, 0:derv_length))
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
     end if
-#endif
 #endif
 
 !       better safe than sorry
@@ -1047,7 +1042,7 @@ contains
 
 #ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(tau,     &
+            call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
                          dmat_0,  &
@@ -1061,12 +1056,10 @@ contains
         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
         
         time_derv_start = second()
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
 !       if we run openrsp with xcfun we evaluate derivatives
 !       somewhere else
         if (response_order_ao == 0) then
-#endif
 #endif
           call get_functional_derv(xc_fun,                    &
                                    xc_fun_alda,               &
@@ -1083,10 +1076,8 @@ contains
                                    xalda=dft_cfg_xalda,       &
                                    tau=(/tau/))
 
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
         end if
-#endif
 #endif
         time_derv = time_derv + second() - time_derv_start
 
@@ -1285,31 +1276,29 @@ contains
         endif
 
 
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
           if (response_order_ao > 0) then
-            call xc_response_contribution(response_order_ao,                 &
-                                          mat_dim,   &
-                                          nz,        &
-                                          fmat,      &
-                                          nr_dmat, &
-                                          dmat,    &
-                                          dmat_pg_sym,      &
-                                          dmat_ih_sym,      &
-                                          fmat_pg_sym,      &
-                                          use_gga,                           &
-                                          ao, &
-                                          n_0(1),                            &
-                                          gn_0_pointwise,                               &
-                                          rx(ipoint),                      &
-                                          ry(ipoint),                      &
-                                          rz(ipoint),                      &
-                                          w(1),                              &
-                                          buffer, &
-                                          derv_length,  &
-                                          derv)
+             call xc_response_contribution(response_order_ao, &
+                                           mat_dim,           &
+                                           nz,                &
+                                           fmat,              &
+                                           nr_dmat,           &
+                                           dmat,              &
+                                           dmat_pg_sym,       &
+                                           dmat_ih_sym,       &
+                                           fmat_pg_sym,       &
+                                           use_gga,           &
+                                           ao,                &
+                                           n_0(1),            &
+                                           gn_0_pointwise,    &
+                                           rx(ipoint),        &
+                                           ry(ipoint),        &
+                                           rz(ipoint),        &
+                                           w(1),              &
+                                           buffer,            &
+                                           derv_length,       &
+                                           derv)
           end if
-#endif
 #endif
 
           if (do_geo_0) then
@@ -1906,7 +1895,7 @@ contains
 
 #ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(t_b,     &
+            call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
@@ -2000,7 +1989,7 @@ contains
         end if
 #ifdef MOD_UNRELEASED
         if (fun_is_tau_mgga(xc_fun)) then
-           call get_tau_imag(ts_b,     &
+           call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &

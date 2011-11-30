@@ -126,7 +126,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "symmet.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "../cfun/functionals.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -487,15 +486,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "../cfun/functionals.h"
+#include "../xcint/cfun/functionals.h"
       
       DIMENSION SMAT(*)
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &            GAB1(NBAST,3), 
-     &            NCNT(NBAST), BUF(NBAST,4),
-     &            VX(DERVS1)
+     &            NCNT(NBAST), BUF(NBAST,4)
       DIMENSION RHG(3)
       nder = 0
       if (need_ao_order(1, 0)) nder = 1

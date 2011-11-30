@@ -2313,10 +2313,6 @@ C
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 
 
-      if (twocomp .and. .not. (bss .or. x2c)) then
-         call quit('stop because of a problem in QR with .NONREL')
-      end if
-
 C
       CALL QENTER('E3DRV')
 C

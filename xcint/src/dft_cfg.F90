@@ -41,6 +41,7 @@ module dft_cfg
    logical, public :: dft_cfg_asymptote_is_lbalpha    = .false.
    logical, public :: dft_cfg_blocked                 = .false.
    logical, public :: dft_cfg_pointwise               = .false.
+   logical, public :: dft_cfg_overlap_diagnostic      = .false.
 
    real(8), public :: dft_cfg_tinydens                = 1.0d-14
    real(8), public :: dft_cfg_screening               = 1.0d-18
@@ -70,6 +71,7 @@ contains
       call xc_mpi_bcast(dft_cfg_asymptote_is_lbalpha    )
       call xc_mpi_bcast(dft_cfg_blocked                 )
       call xc_mpi_bcast(dft_cfg_pointwise               )
+      call xc_mpi_bcast(dft_cfg_overlap_diagnostic      )
       call xc_mpi_bcast(dft_cfg_tinydens                )
       call xc_mpi_bcast(dft_cfg_screening               )
       call xc_mpi_bcast(dft_cfg_ac_ip                   )

@@ -17,6 +17,7 @@
 **HAMILTONIAN
 .GAUNT
 .X2Cmmf
+.DOSSSS
 #################################
 **WAVE FUNCTION
 .SCF
