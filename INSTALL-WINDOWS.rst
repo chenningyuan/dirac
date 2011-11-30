@@ -2,8 +2,13 @@
 Installing DIRAC under Windows 7
 ================================
 
-Thanks the CMake system it is possible to install the DIRAC software
+Dirac is working mostly under the Linux/Unix operating systems. 
+Regarding the Windows system, Dirac is able to run under the CygWin enviroment 
+which has all necessary Linux substitutes.
+
+Thanks the CMake buildup system it is possible to install the DIRAC software
 in the Windows operating system. We have tested the Windows 7 version.
+
 
 Dependencies
 ------------
@@ -27,8 +32,9 @@ Git (developpers)
 Make sure that you have a pair o SSH keys (private, public). If not, you can generate them
 with Git accompanying generator.
 
-We recommend to use PuTTy package tools (plink.exe,paeant.exe) for handling SSH keys to enable
-connections with the DIRAC repository.
+One can use PuTTy package tools (plink.exe,pageant.exe) for handling SSH keys to enable
+connections with the DIRAC repository. Similarly WinSCP (in PuTTy subdirectory) 
+is carrying pageant.exe and puttygen.exe.
 
 Usage
 -----
@@ -39,6 +45,8 @@ For example:
  C:\Users\milias\Documents\Work\Dirac_git\trunk>python pamadm -a
  C:\Users\milias\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
 
- C:\Users\milias\Documents\Work\Dirac_git\trunk>python runtest --tests=cosci_energy --versbose
+ C:\Users\milias\Documents\Work\Dirac_git\trunk>python runtest --tests=cosci_energy --verbose
 
-
+TODO
+-----
+- Investigate mpi libraries
