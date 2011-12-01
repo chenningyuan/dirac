@@ -270,6 +270,11 @@ contains
   call indaoc(indao,indaos,indnao)
   call orblo4(indnao,nfnuc,nucdep)
 
+  !------------------------------------------------------------------------------!
+  !                           Main iteration procedure                           !
+  !------------------------------------------------------------------------------!
+  call titler(' REFERENCE POINT ','=',122)
+
   timstr = second()
   if(loc%prjloc)then ! localization with projection analysis
     call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
@@ -278,9 +283,6 @@ contains
   endif
   dinvmo = dinvmg
 
-  !------------------------------------------------------------------------------!
-  !                           Main iteration procedure                           !
-  !------------------------------------------------------------------------------!
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
@@ -293,16 +295,24 @@ contains
 
   shift  = d0
   dnrmk  = d0
-  dinvmq = d0
-  dinvmg = d0
+  dinvmq = d0; diffq = d0
+  dinvmg = d0; diffg = d0
   itr    = 0
   ist    = 0
   write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
     '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
   do
-
     ist = ist + 1
+
+    ! start i-th iteration
+    if( (.not.rejected.and..not.restore) .or. (full.and.loc%lgchck) )then
+      write(chstart(20:23),'(i4)') itr+1
+      call titler(chstart,'=',122)
+      call gtinfo(daytid)
+      write(lupri,'(/6x,a,a24)')'--- ',daytid
+    endif
+
     ! get new kappa
     shift = d0
     if(rejected) call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
@@ -349,11 +359,6 @@ contains
       call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
 
       itr = itr + 1
-      call gtinfo(daytid)
-
-      write(chstart(20:23),'(i4)') itr
-      call titler(chstart,'=',122)
-      write(lupri,'(/6x,a,a24)')'--- ',daytid
 
       if((diffg > d0).and.(diffg > thresh)) &
         write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old > 0; itr =',itr
@@ -2565,7 +2570,7 @@ contains
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(lupri,'(a,2x,i4,3d11.2,f11.5,a,l,a,2x,a,4d11.2)') &
-    '*T',itr,tradold,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
+    '*T',itr+1,tradold,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
 
   end subroutine updateT
 
