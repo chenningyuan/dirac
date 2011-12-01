@@ -6625,7 +6625,7 @@ C
       IZ = IDMAX(3,PVAL,1)
       IX = IDMIN(3,PVAL,1)
       DO 320 I = 1, 3
-         IF (I .NE. IZ .AND. I .NE. IX) IY = I
+        IF (I .NE. IZ .AND. I .NE. IX) IY = I
  320  CONTINUE
 C
       SPAN  = PVAL(IZ) - PVAL(IX)
@@ -8480,7 +8480,7 @@ C
      &      '** A operators for blao, component **', chcomp
       CALL PRSYMB(LUPRI,'-',75,0)
       DO J = 1, 4
-        CALL WRIXPR(0,IPLONDON(J,icomp))
+        CALL WRIXPR(0,IPLONDON(J,ICOMP))
       ENDDO
 !
 !     B operators

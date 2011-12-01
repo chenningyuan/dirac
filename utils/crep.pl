@@ -1,12 +1,10 @@
-#!/bin/sh
+#! /usr/bin/env perl
 #
 # This script was originally written by Olivier Visser
 # Scientific Computing & Modelling NV (SCM)
 # Modified and ported to DIRAC by Lucas Visscher, January 2002.
 #
 
-SCRIPT=/tmp/$$.pl
-cat <<\eor >$SCRIPT
 
 # radovan: i have commented this
 #          i think it is unneccesary
@@ -278,8 +276,3 @@ foreach $line (<SUBS>) {
     }
 close (SUBS);
 
-
-
-eor
-perl -X -s $SCRIPT $@
-rm $SCRIPT

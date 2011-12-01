@@ -894,7 +894,7 @@ C  /* Deck prporb */
       SUBROUTINE PRPORB(QVEC,JXOP,NXOP,QMAT,NDIM,DV,NZ,IH,IPRINT)
 C***********************************************************************
 C
-C     Construct 1-eletron property gradient
+C     Construct 1-electron property gradient
 C
 C     Input:
 C        JXOP    - list of orbital rotations
@@ -928,6 +928,8 @@ C
          DS = D1
       ELSE IF (IH .EQ. 2) THEN
          DS = DM1
+      ELSE
+         CALL QUIT('PRPORB: Unknown IH')
       END IF
 C
       DO IG = 1,NXOP

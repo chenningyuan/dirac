@@ -93,14 +93,28 @@ contains
 
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
-       if (                                             &
-           (visual_cfg_property(imat) == iq_elf)   .or. &
-           (visual_cfg_property(imat) == iq_divs)  .or. &
-           (visual_cfg_property(imat) == iq_rots)  .or. &
-           (visual_cfg_property(imat) == iq_divj)  .or. &
-           (visual_cfg_property(imat) == iq_rotj)       &
+       if (                                               &
+           (visual_cfg_property(imat) == iq_elf)     .or. &
+           (visual_cfg_property(imat) == iq_kin)     .or. &
+           (visual_cfg_property(imat) == iq_kin_ls)  .or. &
+           (visual_cfg_property(imat) == iq_kin_sl)  .or. &
+           (visual_cfg_property(imat) == iq_kin_tau) .or. &
+           (visual_cfg_property(imat) == iq_divs)    .or. &
+           (visual_cfg_property(imat) == iq_rots)    .or. &
+           (visual_cfg_property(imat) == iq_divj)    .or. &
+           (visual_cfg_property(imat) == iq_rotj)         &
           ) then
-          max_ao_g_order = 1
+          if (max_ao_g_order < 1) then
+             max_ao_g_order = 1
+          end if
+       end if
+       if (                                               &
+           (visual_cfg_property(imat) == iq_kin_lap) .or. &
+           (visual_cfg_property(imat) == iq_kin_nr)       &
+          ) then
+          if (max_ao_g_order < 2) then
+             max_ao_g_order = 2
+          end if
        end if
        if (levyle) then
 !         here we obtain the paramagnetic part of the current density
@@ -115,7 +129,9 @@ contains
               (visual_cfg_property(imat) == iq_bdipy) .or. &
               (visual_cfg_property(imat) == iq_bdipz)      &
              ) then
-             max_ao_g_order = 1
+             if (max_ao_g_order < 1) then
+                max_ao_g_order = 1
+             end if
           end if
        end if
     end do

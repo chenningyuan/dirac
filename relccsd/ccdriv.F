@@ -3390,7 +3390,9 @@ C
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
 C       Print the Fock space eigenvalues, compute transition moments
-        CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS)
+        CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
+     &                    NSP,IREPSPI)
+
 C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
 C       Dealloc_meate space for the effective Hamiltonian

@@ -9,6 +9,7 @@ subroutine xcint_potential_rks(mat_dim, &
   integer, intent(in) :: mat_dim
   real(8), intent(in) :: dmat_0(*)
   real(8), intent(in) :: fmat(*)
+! fmat should be inout
 
   call integrate_xc(xc_mat_dim      = mat_dim, &
                     xc_nz           = 1,       &
