@@ -1,24 +1,10 @@
-#!/bin/sh
+#! /usr/bin/env perl
+
 #
 # This script was originally written by Olivier Visser
 # Scientific Computing & Modelling NV (SCM) 
 # Modified and ported to DIRAC by Lucas Visscher, January 2002.
 #
-
-cat_cmd="C:\MinGW\msys\1.0\bin\cat.exe"
-if [ ! -e  $cat_cmd ];
-then
-   cat_cmd=cat
-fi
-rm_cmd="C:\MinGW\msys\1.0\bin\rm.exe"
-if [ ! -e $rm_cmd ];
-then
-   rm_cmd=rm
-fi
-
-SCRIPT=/tmp/$$.pl
-$cat_cmd <<\eor >$SCRIPT
-
 
 $small = 1e-3;
 
@@ -231,7 +217,3 @@ if ($count1 != $count) {
     print "      $lastline2\n";
     }
 
-
-eor
-perl -X -s $SCRIPT $@
-$rm_cmd $SCRIPT

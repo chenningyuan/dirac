@@ -274,7 +274,6 @@ C
 C        
 C        Find non-redundant active-active rotations.
 C        
-c        CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,100,NOROT)
          CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
 C        
       END IF
@@ -330,7 +329,8 @@ C     =============
 C     
       IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETXEE',-1)        
-        WRITE(LUPRI,'(A,I10)') '# of e-e rotations (non-redundant): ',NXOPE
+        WRITE(LUPRI,'(A,I10)') 
+     &       '# of e-e rotations (non-redundant): ',NXOPE
         IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
         ENDIF
