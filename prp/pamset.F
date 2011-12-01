@@ -329,7 +329,6 @@ C     =============
 C     
       IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETXEE',-1)        
-FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         WRITE(LUPRI,'(A,I10)') 
      &       '# of e-e rotations (non-redundant): ',NXOPE
         IF (IPRINT.GE.3) THEN
