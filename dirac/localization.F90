@@ -2461,6 +2461,8 @@ contains
   !------------------------------------------------------------------------------!
   !         If all gradients in the direction of negative eigenvalues            !
   !              are below threshold, choose the best step from                  !
+  !         (the purpose of this condition is to replace ineffective             !
+  !                   rejection of Newton step - get_mu )                        !
   ! Newton step,                                        -->  rejected = false    !
   ! step on the Trust-region                            -->  rejected = true     !
   ! and step in the direction of positive eigenvalues.  -->  nstep    = false    !
@@ -2558,7 +2560,6 @@ contains
     if(cond(3:3) == '|') cond(3:3) = 'f'
   endif
 
-  if(full.and.(nem==0)) rejected = .false.
   if(tradius /= tradold) trdef = .false.
 
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
