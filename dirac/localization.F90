@@ -912,6 +912,17 @@ contains
          ENDDO
       ENDDO
 
+! Multiply pmat with 1/2 just to avoid confusion in the code below                                
+      DO IZ=1,4                                                                                   
+        DO I=1,NI                                                                                 
+          DO J=1,NI                                                                               
+            DO K=1,NUCDEP                                                                         
+              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2                                                
+            ENDDO                                                                                 
+          ENDDO                                                                                   
+        ENDDO                                                                                     
+      ENDDO
+
       IF(LOC%IPRLOC.GE.2)THEN                                                                     
         DO IZ=1,4                                                                                 
           WRITE(LUPRI,*)                                                                          
@@ -942,7 +953,7 @@ contains
     DO I = 1,NI
       QLOC2 = D0
       DO J = 1,NUCDEP
-         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/D4
+         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
       ENDDO
       DLOC = D1/QLOC2
       DINV = DINV + QLOC2
