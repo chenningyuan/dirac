@@ -523,7 +523,6 @@ contains
       ENDDO
       ENDDO
 
-      CALL QENTER('ORBLP1')
       NB     = NBL + NBS
 !     DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
@@ -681,7 +680,7 @@ contains
 
       IF(LOC%IPRLOC.GE.5)THEN
         DO I = 1,NUCDEP
-          WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
+          WRITE(LUPRI,'(/A,I3)') '* ORBLP1: Matrice P  Atom ', I
           WRITE(LUPRI,'(A)') '  ============================'
           CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
         ENDDO
@@ -689,39 +688,36 @@ contains
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-      DINV = D0
-      DO I = 1,NI
-        QLOC2 = D0
-        DO J = 1,NUCDEP
-          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
-        ENDDO
-        DLOC = D1/QLOC2
-        DINV = DINV + QLOC2
-        WRITE(LUPRI,'(11X,A,I3,A,2F7.4)') &
-        ' Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
+    WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
+    WRITE(LUPRI,'(20X,A)')  '  ===================================  '
+    DINV = D0
+    DO I = 1,NI
+      QLOC2 = D0
+      DO J = 1,NUCDEP
+         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
       ENDDO
-      DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-      DINVM = - DINVM  ! we are looking for the minimum
+      DLOC = D1/QLOC2
+      DINV = DINV + QLOC2
+      WRITE(LUPRI,'(11X,A,I4,A,F7.4)')' Orbital',I,' Pipek-Mezey localization measure d = ',DLOC
+    ENDDO
+    DINVM = DINV/DFLOAT(NI)
+    WRITE(LUPRI,'(/11X,A,F21.15)')' Inverse mean delocalization = ',DINVM
+    DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-      DO I=1,NREFS
-        CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
-      ENDDO
-      DEALLOCATE( KVEC )
-      CALL DEALLOC(RCOEF,ID='RCOEF IN ORBLP1')
-      CALL DEALLOC(BV,ID='BV IN ORBLP1')
-      CALL DEALLOC(GVEC,ID='GVEC IN ORBLP1')
-      CALL DEALLOC(AMAT,ID='AMAT IN ORBLP1')
-      CALL DEALLOC(JREF,ID='JREF IN ORBLP1')
-      CALL DEALLOC(IPIV,ID='IPIV IN ORBLP1')
-      CALL DEALLOC(WMAT,ID='WMAT IN ORBLP1')
-
-      CALL QEXIT('ORBLP1')
+    DO I=1,NREFS
+      CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
+    ENDDO
+    DEALLOCATE( KVEC )
+    CALL DEALLOC(RCOEF,ID='RCOEF IN ORBLP1')
+    CALL DEALLOC(BV,ID='BV IN ORBLP1')
+    CALL DEALLOC(GVEC,ID='GVEC IN ORBLP1')
+    CALL DEALLOC(AMAT,ID='AMAT IN ORBLP1')
+    CALL DEALLOC(JREF,ID='JREF IN ORBLP1')
+    CALL DEALLOC(IPIV,ID='IPIV IN ORBLP1')
+    CALL DEALLOC(WMAT,ID='WMAT IN ORBLP1')
 
   END SUBROUTINE ORBLP1
 
@@ -849,15 +845,13 @@ contains
       REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
-      INTEGER :: I, J, IZ, NB, IOFFL, IOFFS, LUPRI
+      INTEGER :: I, J, K, IZ, NB, IOFFL, IOFFS, LUPRI
       INTEGER :: IPQTOQ(4,0:7)
       REAL*8  :: DINV, QLOC2, DLOC
 
       REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO1')
-
       NB = NBL + NBS
 
       LUPRI       = VAR%LUPRI
@@ -917,7 +911,21 @@ contains
             CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
          ENDDO
       ENDDO
-!
+
+      IF(LOC%IPRLOC.GE.2)THEN                                                                     
+        DO IZ=1,4                                                                                 
+          WRITE(LUPRI,*)                                                                          
+          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ                                    
+          DO I=1, NUCDEP                                                                          
+            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I                                                  
+            DO J=1,NI                                                                             
+              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)                               
+            ENDDO                                                                                 
+            WRITE(LUPRI,*)                                                                        
+          ENDDO                                                                                   
+        ENDDO                                                                                     
+      ENDIF
+
       IF(LOC%IPRLOC.GE.5)THEN
          DO I = 1,NUCDEP
             WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
@@ -928,30 +936,27 @@ contains
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-      DINV = D0
-      DO I = 1,NI
-         QLOC2 = D0
-         DO J = 1,NUCDEP
-            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/D4
-         ENDDO
-         DLOC = D1/QLOC2
-         DINV = DINV + QLOC2
-         WRITE(LUPRI,'(11X,A,I3,A,F7.4)') &
-         ' Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
+    WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
+    WRITE(LUPRI,'(20X,A)')  '  ===================================  '
+    DINV = D0
+    DO I = 1,NI
+      QLOC2 = D0
+      DO J = 1,NUCDEP
+         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/D4
       ENDDO
-      DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-      DINVM = - DINVM  ! we are looking for the minimum
+      DLOC = D1/QLOC2
+      DINV = DINV + QLOC2
+      WRITE(LUPRI,'(11X,A,I4,A,F7.4)')' Orbital',I,' Pipek-Mezey localization measure d = ',DLOC
+    ENDDO
+    DINVM = DINV/DFLOAT(NI)
+    WRITE(LUPRI,'(/11X,A,F21.15)')' Inverse mean delocalization = ',DINVM
+    DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-      CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
-      CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
-
-      CALL QEXIT('ORBLO1')
+    CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
+    CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
 
   END SUBROUTINE ORBLO1
 
@@ -1121,7 +1126,6 @@ contains
 
   !------------------------------------------------------------------------------!
       IFRP = 1
-      CALL QENTER('ORBLO4')
       DO I = 1,NUCDEP-1
          NFNUC(I)=INDNAO(1,I+1)-INDNAO(1,I)
       ENDDO
@@ -1130,7 +1134,6 @@ contains
          NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
       ENDDO
       NFNUC(2*NUCDEP)=VAR%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
-      CALL QEXIT('ORBLO4')
 
   END SUBROUTINE ORBLO4
 
@@ -1160,8 +1163,6 @@ contains
       REAL*8,  ALLOCATABLE :: CMO(:,:,:), EIG(:)
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO5')
-
       ! allocate arrays
       CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
       CALL ALLOC(EIG  ,VAR%NORBT  ,ID='EIG   IN ORBLO5')
@@ -1194,8 +1195,6 @@ contains
       CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
       CALL DEALLOC(EIG  ,ID='EIG   IN ORBLO5')
       CALL DEALLOC(IBEIG,ID='IBEIG IN ORBLO5')
-
-      CALL QEXIT('ORBLO5')
 
   END SUBROUTINE ORBLO5
 
@@ -1241,8 +1240,6 @@ contains
       REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ROTCMO_MOD')
-
       LUPRI  = VAR%LUPRI
 
       CALL GETTIM(CPU1,WALL1)
@@ -1429,8 +1426,6 @@ contains
       CALL DEALLOC(RCOS,ID='RCOS IN ROTCMO_MOD')
       CALL DEALLOC(RV  ,ID='KV   IN ROTCMO_MOD')
       CALL DEALLOC(RTMP,ID='RTMP IN ROTCMO_MOD')
-
-      CALL QEXIT('ROTCMO_MOD')
 
   END SUBROUTINE ROTCMO_MOD
 
