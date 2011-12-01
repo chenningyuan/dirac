@@ -15,7 +15,9 @@ Pipek-Mezey localization based on atomic charges from projection analysis
 .HESLOC
 COMBINATION
 .THDIAG
-1.0D-06
+1.0D-05
+.THGRAD
+1.0D-09
 .OWNBAS
 .VECREF
 5

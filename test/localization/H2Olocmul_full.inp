@@ -11,4 +11,6 @@ Pipek-Mezey localization
 .MULPOP
 .LOCALIZE
 *LOCALIZE
+.THGRAD
+1.0D-09
 *END OF 
