@@ -306,7 +306,7 @@ contains
     ist = ist + 1
 
     ! start i-th iteration
-    if( (.not.rejected.and..not.restore) .or. (full.and.loc%lgchck) )then
+    if( .not.rejected .and. .not.restore )then
       write(chstart(20:23),'(i4)') itr+1
       call titler(chstart,'=',122)
       call gtinfo(daytid)
@@ -350,7 +350,7 @@ contains
                  pkappa,tgrad,eval,nref,dnrmg)
 
     ! Move to the new point if the step was not rejected or old step is going to be restored
-    if( (.not.rejected.and..not.restore) .or. (full.and.loc%lgchck) )then
+    if( .not.rejected .and. .not.restore )then
       !---------------------------------------------!
       ! Calculate hessian and gradient in new point !
       !---------------------------------------------!
@@ -389,7 +389,6 @@ contains
 
       if(loc%hesloc == 'COMB')then
         if(full)then
-          if(loc%lgchck) exit
           if( .not.loc%lggrad .and. .not.loc%lgfull      .and. Iminmin ) exit
           if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
           if(      loc%lgfull .and. (diffa < loc%thfull) .and. Iminmin ) exit
@@ -403,6 +402,7 @@ contains
             hessian = 'FULL'
             write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
               '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+            if(loc%lgchck) exit
           endif
         endif
       endif
