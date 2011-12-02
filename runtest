@@ -326,26 +326,15 @@ class run:
               inp_file_strip, mol_file_strip, elapsed_str))
 
      def apply_filter(self):
-         if sys.platform == 'win32':
-             sh_cmd = os.path.join("C:\MinGW","msys","1.0","bin","sh.exe")
-             if not os.path.isfile(sh_cmd):
-                 sh_cmd = "sh"
-         else:
-             sh_cmd = "sh"
-         os.system(sh_cmd+' ../../utils/crep %s        result/filter > compare/%s.own' \
+         os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
                    % (self.get_output_name(), self.get_output_name()))
          # apply the filter on reference output
-         os.system(sh_cmd+' ../../utils/crep result/%s result/filter > compare/%s.ref' \
+         os.system('perl -X ../../utils/crep.pl result/%s result/filter > compare/%s.ref' \
                    % (self.get_output_name(), self.get_output_name()))
          # compare filtered result with reference
-         os.system(sh_cmd+' ../../utils/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
+         os.system('perl -X ../../utils/bdrep.pl compare/%s.own compare/%s.ref > compare/%s.txt' \
                    % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
-         # generate individual html
-         os.system(sh_cmd+' ../../utils/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
-                   % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
-         # generate the one big html
-         os.system(sh_cmd+' ../../utils/hdrep compare/%s.own compare/%s.ref >> ../LOGS/runtest.htm' \
-                   % (self.get_output_name(), self.get_output_name()))
+
      def is_shell_command(self):
          return False
      def is_run(self):

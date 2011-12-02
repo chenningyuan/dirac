@@ -3347,6 +3347,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 #include "clunit.inc"
       Character*8   Fmt
       Character*70  Line,BlLine,StLine
+      lpaper = 72
 *----------------------------------------------------------------------*
 *     Start and define the paper width                                 *
 *----------------------------------------------------------------------*
