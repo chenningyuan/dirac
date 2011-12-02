@@ -1,3 +1,5 @@
+if(NOT DEFINED HAVE_C_FLAGS)
+
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS         "-g")
     set(CMAKE_C_FLAGS_DEBUG   "-O0")
@@ -26,4 +28,7 @@ if(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS         " ")
     set(CMAKE_C_FLAGS_DEBUG   " ")
     set(CMAKE_C_FLAGS_RELEASE " ")
+endif()
+
+SaveCompilerFlags(C)
 endif()

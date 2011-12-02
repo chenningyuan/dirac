@@ -1,3 +1,5 @@
+if(NOT DEFINED HAVE_Fortran_FLAGS)
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
                                    # -fcray-pointer is for VAR_MPI2
@@ -125,4 +127,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         PROPERTIES COMPILE_FLAGS
         "-qfixed"
         )
+endif()
+
+SaveCompilerFlags(Fortran)
 endif()
