@@ -30,5 +30,5 @@ if(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
 
-SaveCompilerFlags(C)
+save_compiler_flags(C)
 endif()

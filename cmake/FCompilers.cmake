@@ -129,5 +129,5 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         )
 endif()
 
-SaveCompilerFlags(Fortran)
+save_compiler_flags(Fortran)
 endif()
