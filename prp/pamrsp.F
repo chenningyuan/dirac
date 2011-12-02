@@ -426,9 +426,6 @@ C            have subtracted 100000 arbitrarily for all other small matrices
 C            /Sep 2005 hjaaj
          MAXSIM = MIN(MAXSIM1,MAXSIM2)
          MAXSIM = MAX(1,MAXSIM)
-CTROND
-C         WRITE(6,*) 'MXLOAD:...',NTSIM,NVPAR,NFREQ,NFREQ*NVPAR,NZCONFQ,
-C     &           NZXOPEQ,NZOPPQ,MXBVEC,NZVARQ,N2BBASXQ,LFREE
 C        ... always attempt at least one vector
       END IF
 C

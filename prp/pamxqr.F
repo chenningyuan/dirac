@@ -3194,7 +3194,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxpr.h"
 C
-      PARAMETER ( D0 = 0.0D0, THD = 1.0D-9 )
+      PARAMETER ( D0 = 0.0D0, D2=2.0D0, THD = 1.0D-9 )
 C
       LOGICAL ZERO
       DIMENSION GPC(NZCQ),GPE(NZEQ),GPP(NZPQ)
@@ -3205,15 +3205,18 @@ C
 C
       ZERO = .FALSE.
 C     
-      GPNRM = DNRM2(NZCQ,GPC,1)+DNRM2(NZEQ,GPE,1)+DNRM2(NZPQ,GPP,1)
-      IF (GPNRM.LT.THD) THEN
+      GPCNRM = DNRM2(NZCQ,GPC,1)
+      GPENRM = DNRM2(NZEQ,GPE,1)
+      GPPNRM = DNRM2(NZPQ,GPP,1)
+      GPTNRM = SQRT(GPCNRM**2+GPENRM**2+GPPNRM**2)
+      IF (GPTNRM.LT.THD) THEN
 C
          ZERO = .TRUE.
 C
          WRITE(LUPRI,'(2(/A),A16,2(/A,D7.1),//2A)') 
      &        ' *** WARNING ****',
      &        ' Skipping property     : ',PRPNAM(INDPRP),
-     &        ' since norm of gradient: ',GPNRM,
+     &        ' since norm of gradient: ',GPTNRM,
      &        ' is below threshold    : ',THD,
      &        ' The program will continue assuming response vector',
      &        ' equal to zero vector.'
