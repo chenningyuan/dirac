@@ -2569,8 +2569,9 @@ contains
 
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
-  write(lupri,'(a,2x,i4,3d11.2,f11.5,a,l,a,2x,a,4d11.2)') &
-    '*T',itr+1,tradold,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
+  write(lupri,'(a,2x,i4,3d11.2,f11.5,3x,l1,3x,a,4d11.2)') &
+    '*T',itr+1,tradold,tradius,dnrmk,R,rejected,cond,diffg,diffq
+
 
   end subroutine updateT
 
