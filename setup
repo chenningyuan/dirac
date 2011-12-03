@@ -8,7 +8,7 @@ import os
 import sys
 import string
 import subprocess
-from optparse import OptionParser, OptionGroup
+from argparse import ArgumentParser
 
 if sys.version < '2.4':
     print('requires python version >= 2.4')
@@ -17,127 +17,110 @@ if sys.version < '2.4':
 root_directory = os.path.realpath(__file__)[:-5]
 default_path = root_directory + 'build/'
 
-# define example usage
-
-usage = '''
-  Typically: ./%prog --fc=gfortran --cc=gcc
-  or:        ./%prog --fc=mpif90   --cc=mpicc'''
-
 # initialize parser
 
-parser = OptionParser(usage)
+parser = ArgumentParser(description='Setup build configurations.')
 
 # define options
 
-group = OptionGroup(parser, 'Basic options')
-group.add_option('--auto',
+group = parser.add_argument_group('Basic options')
+group.add_argument('--auto',
                  action='store_true',
                  dest='auto',
                  default=False,
-                 help='try to configure --fc, --cc, --cpp, and --math automatically [default: %default]')
-group.add_option('--fc',
-                 type='string',
+                 help='try to configure --fc, --cc, --cpp, and --math automatically [default: %(default)s]')
+group.add_argument('--fc',
                  action='store',
                  dest='fc',
                  default=None,
-                 help='set the Fortran compiler [default: pick automatically or based on FC=...]',
-                 metavar='STRING')
-group.add_option('--cc',
-                 type='string',
+                 help='set the Fortran compiler [default: pick automatically or based on FC=...]')
+group.add_argument('--cc',
                  action='store',
                  dest='cc',
                  default=None,
                  help='set the C compiler [default: pick automatically or based on CC=...]',
                  metavar='STRING')
-group.add_option('--cpp',
-                 type='string',
+group.add_argument('--cpp',
                  action='store',
                  dest='cpp',
                  default=None,
                  help='set the C++ compiler [default: pick automatically or based on CXX=...]',
                  metavar='STRING')
-group.add_option('--math-dir',
-                 type='string',
+group.add_argument('--math-dir',
                  action='store',
                  dest='mathdir',
                  default=None,
                  help='directory containing math libraries [default: pick automatically based on MATH_ROOT (see INSTALL.rst)]',
                  metavar='PATH')
-group.add_option('--internal-math',
+group.add_argument('--internal-math',
                  action='store_true',
                  dest='nomath',
                  default=False,
-                 help='force the use of internal math library [default: %default]')
-group.add_option('--int64',
+                 help='force the use of internal math library [default: %(default)s]')
+group.add_argument('--int64',
                  action='store_true',
                  dest='int64',
                  default=False,
-                 help='build for 64bit integers [default: %default]')
-group.add_option('--show',
+                 help='build for 64bit integers [default: %(default)s]')
+group.add_argument('--show',
                  action='store_true',
                  dest='show',
                  default=False,
-                 help='show cmake command and exit [default: %default]')
-parser.add_option_group(group)
+                 help='show cmake command and exit [default: %(default)s]')
 
-group = OptionGroup(parser, 'Change default paths')
-group.add_option('--build',
-                 type='string',
+group = parser.add_argument_group('Change default paths')
+group.add_argument('--build',
                  action='store',
                  dest='build',
                  default=default_path,
-                 help='set the build path (you can build several binaries with the same source) [default: %default]',
+                 help='set the build path (you can build several binaries with the same source) [default: %(default)s]',
                  metavar='PATH')
-group.add_option('--install',
-                 type='string',
+group.add_argument('--install',
                  action='store',
                  dest='install',
                  default=None,
-                 help='set the install path for make install [default: %default]',
+                 help='set the install path for make install [default: %(default)s]',
                  metavar='PATH')
-group.add_option('--cmake',
-                 type='string',
+group.add_argument('--cmake',
                  action='store',
                  dest='alternative_cmake',
                  default=None,
                  help='give full path to alternative cmake binary (use this if default cmake is too old)',
                  metavar='PATH')
-parser.add_option_group(group)
 
-group = OptionGroup(parser, 'Advanced options')
-group.add_option('--math',
-                 type='string',
+group = parser.add_argument_group('Advanced options')
+group.add_argument('--math',
                  action='store',
                  dest='math',
                  default=None,
                  help='explicit linker specification for math library',
                  metavar='STRING')
-group.add_option('--debug',
+group.add_argument('--debug',
                  action='store_true',
                  dest='debug',
                  default=False,
-                 help='build in debug mode (no optimization) [default: %default]')
-group.add_option('--check',
+                 help='build in debug mode (no optimization) [default: %(default)s]')
+group.add_argument('--check',
                  action='store_true',
                  dest='check',
                  default=False,
-                 help='enable bounds checking [default: %default]')
-group.add_option('--coverage',
+                 help='enable bounds checking [default: %(default)s]')
+group.add_argument('--coverage',
                  action='store_true',
                  dest='coverage',
                  default=False,
-                 help='enable code coverage [default: %default]')
-group.add_option('--nochecks',
+                 help='enable code coverage [default: %(default)s]')
+group.add_argument('--nochecks',
                  action='store_true',
                  dest='nochecks',
                  default=False,
-                 help='disable compatibility checks [default: %default]')
-group.add_option('--static',
+                 help='disable compatibility checks [default: %(default)s]')
+group.add_argument('--static',
                  action='store_true',
                  dest='static',
                  default=False,
-                 help='link statically [default: %default]')
-group.add_option('-D',
+                 help='link statically [default: %(default)s]')
+group.add_argument('-D',
                  action="append",
                  dest='cmake',
                  default=[],
@@ -145,11 +128,10 @@ group.add_option('-D',
                        you can also forward CPP defintions all the way to the program \
                        (example: -D CPP="-DDEBUG")',
                  metavar='STRING')
-parser.add_option_group(group)
 
 # process input
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 
 def check_cmake_exists():
     p = subprocess.Popen('cmake --version',
@@ -171,33 +153,33 @@ def gen_cmake_command():
 
     command = ''
     
-    if not options.auto:
-        if options.fc:
-            command += ' FC=%s' % options.fc
-        if options.cc:
-            command += ' CC=%s' % options.cc
-        if options.cpp:
-            command += ' CXX=%s' % options.cpp
+    if not args.auto:
+        if args.fc:
+            command += ' FC=%s' % args.fc
+        if args.cc:
+            command += ' CC=%s' % args.cc
+        if args.cpp:
+            command += ' CXX=%s' % args.cpp
    
-    if options.alternative_cmake: 
-        command += ' %s' % options.alternative_cmake
+    if args.alternative_cmake: 
+        command += ' %s' % args.alternative_cmake
     else:
         command += ' cmake'
     
-    if options.nomath:
+    if args.nomath:
         command += ' -DENABLE_INTERNAL_MATH=ON'
-    elif options.math:
-            command += ' -DUSERDEFINED_MATH="%s"' % options.math
-    elif options.mathdir:
-            if not os.path.exists(options.mathdir):
+    elif args.math:
+            command += ' -DUSERDEFINED_MATH="%s"' % args.math
+    elif args.mathdir:
+            if not os.path.exists(args.mathdir):
                     print("Specified MATH directory does not exist!")
                     sys.exit(1)
-            command += ' -DMATH_ROOT="%s"' % options.mathdir
+            command += ' -DMATH_ROOT="%s"' % args.mathdir
 
-    if (options.fc and options.cc):
+    if (args.fc and args.cc):
         # it is possible to call compilers with long paths
-        fc_first_two = os.path.basename(options.fc)[:2].lower()
-        cc_first_two = os.path.basename(options.cc)[:2].lower()
+        fc_first_two = os.path.basename(args.fc)[:2].lower()
+        cc_first_two = os.path.basename(args.cc)[:2].lower()
         fc_starts_with_mp = (fc_first_two == 'mp')
         cc_starts_with_mp = (cc_first_two == 'mp')
         # if both fc and cc start with 'mp' turn on mpi
@@ -205,36 +187,36 @@ def gen_cmake_command():
             command += ' -DENABLE_MPI=ON'
         else:
             if (fc_starts_with_mp or cc_starts_with_mp):
-                print("ERROR: you specified --fc=%s and --cc=%s" % (options.fc, options.cc))
+                print("ERROR: you specified --fc=%s and --cc=%s" % (args.fc, args.cc))
                 print("       this is inconsistent (both should be MPI compilers if you want MPI)")
                 sys.exit(1)
     
-    if options.int64:
+    if args.int64:
         command += ' -DENABLE_64BIT_INTEGERS=ON'
-    if options.check:
+    if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
-    if options.coverage:
+    if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
-    if options.nochecks:
+    if args.nochecks:
         command += ' -DENABLE_SANITY_CHECKS=OFF'
-    if options.static:
+    if args.static:
         command += ' -DENABLE_STATIC_LINKING=ON'
-    if options.install:
-            command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
+    if args.install:
+            command += ' -DCMAKE_INSTALL_PREFIX=' + args.install
 
-    if options.debug:
+    if args.debug:
         command += ' -DCMAKE_BUILD_TYPE=Debug'
     else:
         command += ' -DCMAKE_BUILD_TYPE=Release'
     
-    if options.cmake:
-        for definition in options.cmake:
+    if args.cmake:
+        for definition in args.cmake:
             command += ' -D%s' % definition
 
     command += ' %s' % root_directory
     
     print('%s\n' % command)
-    if options.show:
+    if args.show:
             sys.exit()
     return command
 
@@ -293,8 +275,8 @@ def main():
                 sys.exit()
 
         check_cmake_exists()
-        build_path = options.build
-        setup_build_path(build_path, options.show)
+        build_path = args.build
+        setup_build_path(build_path, args.show)
         command = gen_cmake_command()
         status = run_cmake(command, build_path)
 
