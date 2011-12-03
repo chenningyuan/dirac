@@ -6129,7 +6129,12 @@ C
 C
       V3 = POLNDER(NORDER,C,XOPT,3)
       V4 = POLNDER(NORDER,C,XOPT,4)
-!radovan: V2 is not set!
+
+!     radovan: v2 is never set, set it to zero and stop code
+!              until this is fixed
+      v2 = 0.0d0
+      stop 'v2 is used but never set'
+
       TEMP = 7.0D0*V3*V3/V2/9.0D0
       T2 = 100.0D0*(TEMP - V4)/V4
       WRITE(ILOGG,'(A,D20.10)')

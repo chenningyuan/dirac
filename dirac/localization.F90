@@ -139,7 +139,7 @@ contains
   character    :: daytid*24, hessian*4, chstart*23
   logical      :: tobe, full, rejected, Iminmin, trdef, flat, nstep, restore
 
-  integer :: i, ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
+  integer :: i, ifrp, ndimh, idum, itr, ist, lupri, nish, norb, nucdep, maxref
   integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez, nref, ndim
 
   real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
@@ -221,14 +221,13 @@ contains
   endif
 
   ! Memory allocation
-  ndimh = 4 * ( nish*nish + nish ) / 2
-  ndimhr= ndimh - nish
+  ndimh = 4 * ( nish*nish - nish ) / 2
   call alloc(scoef ,nish*nfbas(0)*4,   id='scoef  in orbloc')
   call alloc(storec,nish*nfbas(0)*4,   id='storec in orbloc')
   call alloc(smat  ,var%n2bbasx,       id='smat   in orbloc')
   call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
-  call alloc(grad  ,ndimhr,            id='grad   in orbloc')
-  call alloc(etmp  ,ndimhr,            id='etmp   in orbloc')
+  call alloc(grad  ,ndimh,             id='grad   in orbloc')
+  call alloc(etmp  ,ndimh,             id='etmp   in orbloc')
   call alloc(xkappa,nish,nish,4,       id='xkappa in orbloc')
   call alloc(pmat  ,nish,nish,4,nucdep,id='pmat   in orbloc')
 
@@ -271,6 +270,11 @@ contains
   call indaoc(indao,indaos,indnao)
   call orblo4(indnao,nfnuc,nucdep)
 
+  !------------------------------------------------------------------------------!
+  !                           Main iteration procedure                           !
+  !------------------------------------------------------------------------------!
+  call titler(' REFERENCE POINT ','=',122)
+
   timstr = second()
   if(loc%prjloc)then ! localization with projection analysis
     call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
@@ -279,13 +283,10 @@ contains
   endif
   dinvmo = dinvmg
 
-  !------------------------------------------------------------------------------!
-  !                           Main iteration procedure                           !
-  !------------------------------------------------------------------------------!
-  write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
-    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
+  write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
+    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
 
   ! zero step
   call get_hessian(pmat,hmat,full,totdiag,totnond)
@@ -294,16 +295,24 @@ contains
 
   shift  = d0
   dnrmk  = d0
-  dinvmq = d0
-  dinvmg = d0
+  dinvmq = d0; diffq = d0
+  dinvmg = d0; diffg = d0
   itr    = 0
   ist    = 0
   write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
     '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
   do
-
     ist = ist + 1
+
+    ! start i-th iteration
+    if( .not.rejected .and. .not.restore )then
+      write(chstart(20:23),'(i4)') itr+1
+      call titler(chstart,'=',122)
+      call gtinfo(daytid)
+      write(lupri,'(/6x,a,a24)')'--- ',daytid
+    endif
+
     ! get new kappa
     shift = d0
     if(rejected) call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
@@ -341,7 +350,7 @@ contains
                  pkappa,tgrad,eval,nref,dnrmg)
 
     ! Move to the new point if the step was not rejected or old step is going to be restored
-    if( (.not.rejected.and..not.restore) .or. (full.and.loc%lgchck) )then
+    if( .not.rejected .and. .not.restore )then
       !---------------------------------------------!
       ! Calculate hessian and gradient in new point !
       !---------------------------------------------!
@@ -350,11 +359,6 @@ contains
       call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
 
       itr = itr + 1
-      call gtinfo(daytid)
-
-      write(chstart(20:23),'(i4)') itr
-      call titler(chstart,'=',122)
-      write(lupri,'(/6x,a,a24)')'--- ',daytid
 
       if((diffg > d0).and.(diffg > thresh)) &
         write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old > 0; itr =',itr
@@ -372,32 +376,33 @@ contains
       ! check convergence criteria !
       !----------------------------!
       if(loc%hesloc == 'DIAG')then
-        if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmin ) exit
+        if( .not.loc%lggrad .and.   .not.loc%lgdiag    .and. Iminmin ) exit
         if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
         if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmin ) exit
       endif
 
       if(loc%hesloc == 'FULL')then
-        if(Iminmin) exit
-        if( loc%lggrad .and. (dnrmg < loc%thgrad) ) exit
-        if( loc%lgfull .and. (diffa < loc%thfull) ) exit
+        if( .not.loc%lggrad .and. .not.loc%lgfull      .and. Iminmin ) exit
+        if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
+        if(      loc%lgfull .and. (diffa < loc%thfull) .and. Iminmin ) exit
       endif
 
       if(loc%hesloc == 'COMB')then
         if(full)then
-          if(loc%lgchck) exit
-          if(Iminmin) exit
-          if( loc%lgfull .and. (diffa < loc%thfull) ) exit
+          if( .not.loc%lggrad .and. .not.loc%lgfull      .and. Iminmin ) exit
+          if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
+          if(      loc%lgfull .and. (diffa < loc%thfull) .and. Iminmin ) exit
         else
-          if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmin ) full = .true.
-          if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) full = .true.
-          if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmin ) full = .true.
+          if( .not.loc%lgdiag                            .and. Iminmin ) full = .true.
+          if(      loc%lgdiag .and. (dnrmg < loc%thdiag) .and. Iminmin ) full = .true.
           if(full)then
             call get_hessian(pmat,hmat,full,totdiag,totnond)
             call get_gradient(pmat,grad,dnrmg)
             call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
+            hessian = 'FULL'
             write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
               '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+            if(loc%lgchck) exit
           endif
         endif
       endif
@@ -523,7 +528,6 @@ contains
       ENDDO
       ENDDO
 
-      CALL QENTER('ORBLP1')
       NB     = NBL + NBS
 !     DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
@@ -681,7 +685,7 @@ contains
 
       IF(LOC%IPRLOC.GE.5)THEN
         DO I = 1,NUCDEP
-          WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
+          WRITE(LUPRI,'(/A,I3)') '* ORBLP1: Matrice P  Atom ', I
           WRITE(LUPRI,'(A)') '  ============================'
           CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
         ENDDO
@@ -689,39 +693,36 @@ contains
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-      DINV = D0
-      DO I = 1,NI
-        QLOC2 = D0
-        DO J = 1,NUCDEP
-          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
-        ENDDO
-        DLOC = D1/QLOC2
-        DINV = DINV + QLOC2
-        WRITE(LUPRI,'(11X,A,I3,A,2F7.4)') &
-        ' Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
+    WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
+    WRITE(LUPRI,'(20X,A)')  '  ===================================  '
+    DINV = D0
+    DO I = 1,NI
+      QLOC2 = D0
+      DO J = 1,NUCDEP
+         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
       ENDDO
-      DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-      DINVM = - DINVM  ! we are looking for the minimum
+      DLOC = D1/QLOC2
+      DINV = DINV + QLOC2
+      WRITE(LUPRI,'(11X,A,I4,A,F7.4)')' Orbital',I,' Pipek-Mezey localization measure d = ',DLOC
+    ENDDO
+    DINVM = DINV/DFLOAT(NI)
+    WRITE(LUPRI,'(/11X,A,F21.15)')' Inverse mean delocalization = ',DINVM
+    DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-      DO I=1,NREFS
-        CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
-      ENDDO
-      DEALLOCATE( KVEC )
-      CALL DEALLOC(RCOEF,ID='RCOEF IN ORBLP1')
-      CALL DEALLOC(BV,ID='BV IN ORBLP1')
-      CALL DEALLOC(GVEC,ID='GVEC IN ORBLP1')
-      CALL DEALLOC(AMAT,ID='AMAT IN ORBLP1')
-      CALL DEALLOC(JREF,ID='JREF IN ORBLP1')
-      CALL DEALLOC(IPIV,ID='IPIV IN ORBLP1')
-      CALL DEALLOC(WMAT,ID='WMAT IN ORBLP1')
-
-      CALL QEXIT('ORBLP1')
+    DO I=1,NREFS
+      CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
+    ENDDO
+    DEALLOCATE( KVEC )
+    CALL DEALLOC(RCOEF,ID='RCOEF IN ORBLP1')
+    CALL DEALLOC(BV,ID='BV IN ORBLP1')
+    CALL DEALLOC(GVEC,ID='GVEC IN ORBLP1')
+    CALL DEALLOC(AMAT,ID='AMAT IN ORBLP1')
+    CALL DEALLOC(JREF,ID='JREF IN ORBLP1')
+    CALL DEALLOC(IPIV,ID='IPIV IN ORBLP1')
+    CALL DEALLOC(WMAT,ID='WMAT IN ORBLP1')
 
   END SUBROUTINE ORBLP1
 
@@ -849,15 +850,13 @@ contains
       REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
-      INTEGER :: I, J, IZ, NB, IOFFL, IOFFS, LUPRI
+      INTEGER :: I, J, K, IZ, NB, IOFFL, IOFFS, LUPRI
       INTEGER :: IPQTOQ(4,0:7)
       REAL*8  :: DINV, QLOC2, DLOC
 
       REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO1')
-
       NB = NBL + NBS
 
       LUPRI       = VAR%LUPRI
@@ -917,7 +916,32 @@ contains
             CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
          ENDDO
       ENDDO
-!
+
+! Multiply pmat with 1/2 just to avoid confusion in the code below                                
+      DO IZ=1,4                                                                                   
+        DO I=1,NI                                                                                 
+          DO J=1,NI                                                                               
+            DO K=1,NUCDEP                                                                         
+              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2                                                
+            ENDDO                                                                                 
+          ENDDO                                                                                   
+        ENDDO                                                                                     
+      ENDDO
+
+      IF(LOC%IPRLOC.GE.2)THEN                                                                     
+        DO IZ=1,4                                                                                 
+          WRITE(LUPRI,*)                                                                          
+          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ                                    
+          DO I=1, NUCDEP                                                                          
+            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I                                                  
+            DO J=1,NI                                                                             
+              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)                               
+            ENDDO                                                                                 
+            WRITE(LUPRI,*)                                                                        
+          ENDDO                                                                                   
+        ENDDO                                                                                     
+      ENDIF
+
       IF(LOC%IPRLOC.GE.5)THEN
          DO I = 1,NUCDEP
             WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
@@ -928,30 +952,27 @@ contains
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-      DINV = D0
-      DO I = 1,NI
-         QLOC2 = D0
-         DO J = 1,NUCDEP
-            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/D4
-         ENDDO
-         DLOC = D1/QLOC2
-         DINV = DINV + QLOC2
-         WRITE(LUPRI,'(11X,A,I3,A,F7.4)') &
-         ' Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
+    WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
+    WRITE(LUPRI,'(20X,A)')  '  ===================================  '
+    DINV = D0
+    DO I = 1,NI
+      QLOC2 = D0
+      DO J = 1,NUCDEP
+         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
       ENDDO
-      DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-      DINVM = - DINVM  ! we are looking for the minimum
+      DLOC = D1/QLOC2
+      DINV = DINV + QLOC2
+      WRITE(LUPRI,'(11X,A,I4,A,F7.4)')' Orbital',I,' Pipek-Mezey localization measure d = ',DLOC
+    ENDDO
+    DINVM = DINV/DFLOAT(NI)
+    WRITE(LUPRI,'(/11X,A,F21.15)')' Inverse mean delocalization = ',DINVM
+    DINVM = - DINVM  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-      CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
-      CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
-
-      CALL QEXIT('ORBLO1')
+    CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
+    CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
 
   END SUBROUTINE ORBLO1
 
@@ -1000,7 +1021,7 @@ contains
   real*8,  intent(out), pointer :: pkappa(:)
 
   ! Internal variables
-  integer :: i, j, ij, iz, ni, ndimh, ni12, nred, lupri
+  integer :: i, j, ij1, ij2, ij3, ij4, iz, ni, ndimh, ni12, nred, lupri
   real*8  :: dnrm2, dtmp
 
   real*8, allocatable, dimension(:) :: xtmp
@@ -1011,7 +1032,7 @@ contains
   ! Get some dimensions
   ni    = size(xkappa,1)
   ndimh = size(hmat,1)
-  ni12  = (ndimh+ni) / 4
+  ni12  = ndimh / 4
   nred  = size(eval,1)
 
   ! allocate arrays
@@ -1060,26 +1081,23 @@ contains
 
   ! Unpack X to kappa matrix
   xkappa(:,:,:) = d0
-  ij = 0
+  ij1 = 0
   do j = 1,ni
     do i = j+1,ni
-      ij = ij + 1
-      xkappa(j,i,1) =   xtmp(ij)
+      ij1 = ij1 + 1                                                                             
+      ij2 = ij1 + ni12
+      ij3 = ij2 + ni12                                                                          
+      ij4 = ij3 + ni12
+      xkappa(j,i,1) =   xtmp(ij1)
       xkappa(i,j,1) = - xkappa(j,i,1)
-    enddo
-  enddo
 
-  ij = ni12-ni
-  do j = 1,ni
-    do i = j,ni
-      ij = ij + 1
-      xkappa(j,i,2) =   xtmp(ni12+ij)
+      xkappa(j,i,2) =   xtmp(ij3)
       xkappa(i,j,2) =   xkappa(j,i,2)
 
-      xkappa(j,i,3) = - xtmp(ij)
+      xkappa(j,i,3) = - xtmp(ij2)
       xkappa(i,j,3) =   xkappa(j,i,3)
 
-      xkappa(j,i,4) =   xtmp(2*ni12+ij)
+      xkappa(j,i,4) =   xtmp(ij4)
       xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
@@ -1124,7 +1142,6 @@ contains
 
   !------------------------------------------------------------------------------!
       IFRP = 1
-      CALL QENTER('ORBLO4')
       DO I = 1,NUCDEP-1
          NFNUC(I)=INDNAO(1,I+1)-INDNAO(1,I)
       ENDDO
@@ -1133,7 +1150,6 @@ contains
          NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
       ENDDO
       NFNUC(2*NUCDEP)=VAR%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
-      CALL QEXIT('ORBLO4')
 
   END SUBROUTINE ORBLO4
 
@@ -1163,8 +1179,6 @@ contains
       REAL*8,  ALLOCATABLE :: CMO(:,:,:), EIG(:)
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO5')
-
       ! allocate arrays
       CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
       CALL ALLOC(EIG  ,VAR%NORBT  ,ID='EIG   IN ORBLO5')
@@ -1197,8 +1211,6 @@ contains
       CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
       CALL DEALLOC(EIG  ,ID='EIG   IN ORBLO5')
       CALL DEALLOC(IBEIG,ID='IBEIG IN ORBLO5')
-
-      CALL QEXIT('ORBLO5')
 
   END SUBROUTINE ORBLO5
 
@@ -1244,8 +1256,6 @@ contains
       REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ROTCMO_MOD')
-
       LUPRI  = VAR%LUPRI
 
       CALL GETTIM(CPU1,WALL1)
@@ -1433,8 +1443,6 @@ contains
       CALL DEALLOC(RV  ,ID='KV   IN ROTCMO_MOD')
       CALL DEALLOC(RTMP,ID='RTMP IN ROTCMO_MOD')
 
-      CALL QEXIT('ROTCMO_MOD')
-
   END SUBROUTINE ROTCMO_MOD
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1460,11 +1468,11 @@ contains
   real*8,  intent(out), pointer :: hmat(:,:)
 
   ! Internal variables
-  integer :: i, j, k, l, m, n, ij, kl, kk
+  integer :: i, j, k, l, m, n, ij, kl
   integer :: nucdep, ni, ndimh, ni12, lupri
   real*8  :: pij1, pij2, pkml, p2kml, p2lmk, buf, buf1, buf2
 
-  integer, allocatable :: ijd(:,:), ijn(:,:), iju(:), ijl(:), kkd(:)
+  integer, allocatable :: ijn(:,:), iju(:), ijl(:)
 
   real*8,  allocatable, dimension(:,:,:) :: p1, p2, p3, p4
   real*8,  allocatable, dimension(:,:)   :: pd
@@ -1475,8 +1483,8 @@ contains
   ! Get some dimensions
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
-  ni12   = ( ni*ni + ni ) / 2
-  ndimh  = 4*ni12 - ni
+  ni12   = ( ni*ni - ni ) / 2
+  ndimh  = 4*ni12
 
   !------------------------------------------------------------------------------!
   ! Calculate real representation of hessian and get the diagonal dominance info !
@@ -1505,9 +1513,8 @@ contains
 
     ! bared-bared A^R + B^R contribution
     do m = 1,nucdep
-      ij = ni12 - ni
+      ij = ni12
       do j=1,ni
-        ij = ij + 1
         do i=j+1,ni
           ij = ij + 1
           pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
@@ -1519,9 +1526,8 @@ contains
 
     ! unbared-unbared A^R - B^R contribution
     do m = 1,nucdep
-      ij = 2*ni12 - ni
+      ij = 2*ni12
       do j=1,ni
-        ij = ij + 1
         do i=j+1,ni
           ij = ij + 1
           pij2 = pmat(i,j,2,m)
@@ -1533,9 +1539,8 @@ contains
 
     ! bared-bared A^R + B^R contribution
     do m = 1,nucdep
-      ij = 3*ni12 - ni
+      ij = 3*ni12
       do j=1,ni
-        ij = ij + 1
         do i=j+1,ni
           ij = ij + 1
           pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
@@ -1552,13 +1557,13 @@ contains
 
     if(loc%iprloc.ge.3)then
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_uu'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=1,ni12-ni)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=1,ni12)
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_bb'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=ni12-ni+1,2*ni12-ni)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=ni12+1,2*ni12)
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R - B^R)_uu'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=2*ni12-ni+1,3*ni12-ni)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=2*ni12+1,3*ni12)
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R - B^R)_bb'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=3*ni12-ni+1,4*ni12-ni)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=3*ni12+1,4*ni12)
     endif
 
 
@@ -1568,11 +1573,9 @@ contains
     call allocp(hmat,ndimh,ndimh,id='hmat in get_hessian')
     hmat(:,:) = d0
 
-    call alloc(ijd,ni,ni,      id='ijd in get_hessian')
     call alloc(ijn,ni,ni,      id='ijn in get_hessian')
     call alloc(iju,ni,         id='iju in get_hessian')
     call alloc(ijl,ni,         id='ijl in get_hessian')
-    call alloc(kkd,ni,         id='kkd in get_hessian')
     call alloc(pd,ni,nucdep,   id='pd  in get_hessian')
     call alloc(p1,ni,ni,nucdep,id='p1  in get_hessian')
     call alloc(p2,ni,ni,nucdep,id='p2  in get_hessian')
@@ -1592,17 +1595,10 @@ contains
       enddo
     enddo
 
-    kl = 1
-    do k=1,ni
-      kkd(k) = kl
-      kl = kl + ni - (k-1)
-    enddo
-
     ijn(:,:) = 0
     kl = 0
     do l=1,ni
-      do k=l,ni
-        if(k==l) cycle
+      do k=l+1,ni
         kl = kl + 1
         ijn(k,l) = kl
         ijn(l,k) = ijn(k,l)
@@ -1611,21 +1607,10 @@ contains
       ijl(l) = l + 1
     enddo
 
-    ijd(:,:) = 0
-    kl = 0
-    do l=1,ni
-      do k=l,ni
-        kl = kl + 1
-        if(k==l) cycle
-        ijd(k,l) = kl
-        ijd(l,k) = ijd(k,l)
-      enddo
-    enddo
-
     !----------------------------------------------------------------------------!
     !                       Construction of the HESSIAN                          !
     !----------------------------------------------------------------------------!
-    !                         kl = < 1 , ni12 - ni >                             !
+    !                            kl = < 1 , ni12 >                               !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
       kl = 0
@@ -1659,38 +1644,11 @@ contains
     enddo
 
     !----------------------------------------------------------------------------!
-    !                  kl = < ni12 - ni + 1 , 2*ni12 - ni >                      !
+    !                       kl = < ni12 + 1 , 2*ni12 >                           !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
-      kl = ni12 - ni
-      kk = ni12 - ni + 1
+      kl = ni12
       do l=1,ni
-        kl = kl + 1
-
-        ! for the diagonal part: k --> l
-        ! (A^R + B^R)_ub = Real{ d^2 G / dK*_ij dK_kk } + Real{ d^2 G / dK*_ij dK*_kk }
-        !                = Real{ (41) }                 + Real{ (45) }
-        do j=1,iju(l)   ! i==l
-         hmat(ijn(j,l),kk) = hmat(ijn(j,l),kk) + p3(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijn(i,l),kk) = hmat(ijn(i,l),kk) + p3(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        ! (A^R + B^R)_bb = Real{ d^2 G / dK*_ij dK_kk } + Real{ d^2 G / dK*_ij dK*_kk }
-        !                = Real{ (43) }                 + Real{ (47) }
-        n = ni12 - ni
-        do j=1,iju(l)   ! i==l
-         hmat(ijd(j,l)+n,kk) = hmat(ijd(j,l)+n,kk) + p1(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijd(i,l)+n,kk) = hmat(ijd(i,l)+n,kk) - p1(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        kk = kk + ni - (l-1)  ! diagonal
-
         do k=l+1,ni
           kl = kl + 1
           buf1 = d2*p3(k,l,m)
@@ -1720,80 +1678,37 @@ contains
 
           ! (A^R + B^R)_bb = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (35) }                 + Real{ (39) }
-          n = ni12 - ni
+          n = ni12
           do j=1,iju(k)   ! i==k
-           hmat(ijd(j,k)+n,kl) = hmat(ijd(j,k)+n,kl) &
+           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
                                - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
           do i=ijl(l),ni  ! j==l
-           hmat(ijd(i,l)+n,kl) = hmat(ijd(i,l)+n,kl) &
+           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
                                + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
           do j=1,iju(l)   ! i==l
-           hmat(ijd(j,l)+n,kl) = hmat(ijd(j,l)+n,kl) &
+           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
                                + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
           enddo
 
           do i=ijl(k),ni  ! j==k
-           hmat(ijd(i,k)+n,kl) = hmat(ijd(i,k)+n,kl) &
+           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
                                - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
           enddo
-
-          ! (A^R + B^R)_bb = Real{ d^2 G / dK*_kk dK_ij } + Real{ d^2 G / dK*_kk dK*_ij }
-          !                = Real{ (43) }                 + Real{ (47) }
-          hmat(kkd(k)+n,kl) = hmat(kkd(k)+n,kl) + p1(k,l,m) * pkml  ! i==k
-          hmat(kkd(l)+n,kl) = hmat(kkd(l)+n,kl) - p1(k,l,m) * pkml  ! j==k
 
         enddo
       enddo
     enddo
 
     !----------------------------------------------------------------------------!
-    !                  kl = < 2*ni12 - ni + 1 , 3*ni12 - ni >                    !
+    !                       kl = < 2*ni12 + 1 , 3*ni12 >                         !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
-      kl = 2*ni12 - ni
-      kk = 2*ni12 - ni + 1
+      kl = 2*ni12
       do l=1,ni
-        kl = kl + 1
-
-        ! for the diagonal part: k --> l
-        ! (B^I - A^I)_uu =   Imag{ d^2 G / dK*_ij dK*_kk } - Imag{ d^2 G / dK*_ij dK_kk }
-        !                =   - Imag{ (44) }                - Imag{ (40) }
-        do j=1,iju(l)  ! i==l
-         hmat(ijn(j,l),kk) = hmat(ijn(j,l),kk) - p2(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni ! j==l
-         hmat(ijn(i,l),kk) = hmat(ijn(i,l),kk) - p2(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        ! (B^I - A^I)_bu =   Imag{ d^2 G / dK*_ij dK*_kk } - Imag{ d^2 G / dK*_ij dK_kk }
-        !                =   - Imag{ (46) }                - Imag{ (42) }
-        n = ni12 - ni
-        do j=1,iju(l)   ! i==l
-         hmat(ijd(j,l)+n,kk) = hmat(ijd(j,l)+n,kk) - p4(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijd(i,l)+n,kk) = hmat(ijd(i,l)+n,kk) + p4(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        ! (A^R - B^R)_uu = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK*_ij dK*_kk }
-        !                = Real{ (40) }                 - Real{ (44) }
-        n = 2*ni12 - ni
-        do j=1,iju(l)   ! i==l
-         hmat(ijd(j,l)+n,kk) = hmat(ijd(j,l)+n,kk) + p1(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijd(i,l)+n,kk) = hmat(ijd(i,l)+n,kk) - p1(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        kk = kk + ni - (l-1)  ! diagonal
-
         do k=l+1,ni
           kl = kl + 1
           buf  = d4*p2(k,l,m)
@@ -1821,111 +1736,52 @@ contains
 
           ! (B^I - A^I)_bu = Imag{ d^2 G / dK*_ij dK*_kl } - Imag{ d^2 G / dK*_ij dK_kl }
           !                = - Imag{ (38) }                - Imag{ (34) }
-          n = ni12 - ni
+          n = ni12
           do j=1,iju(k)   ! i==k
-           hmat(ijd(j,k)+n,kl) = hmat(ijd(j,k)+n,kl) + buf*p3(j,k,m) - (p2kml-pd(j,m))*p4(j,l,m)
+           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) + buf*p3(j,k,m) - (p2kml-pd(j,m))*p4(j,l,m)
           enddo
 
           do i=ijl(l),ni  ! j==l
-           hmat(ijd(i,l)+n,kl) = hmat(ijd(i,l)+n,kl) - buf*p3(i,l,m) - (p2lmk-pd(i,m))*p4(i,k,m)
+           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) - buf*p3(i,l,m) - (p2lmk-pd(i,m))*p4(i,k,m)
           enddo
 
           do j=1,iju(l)   ! i==l
-           hmat(ijd(j,l)+n,kl) = hmat(ijd(j,l)+n,kl) - buf*p3(j,l,m) - (p2lmk-pd(j,m))*p4(j,k,m)
+           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) - buf*p3(j,l,m) - (p2lmk-pd(j,m))*p4(j,k,m)
           enddo
 
           do i=ijl(k),ni  ! j==k
-           hmat(ijd(i,k)+n,kl) = hmat(ijd(i,k)+n,kl) + buf*p3(i,k,m) - (p2kml-pd(i,m))*p4(i,l,m)
+           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) + buf*p3(i,k,m) - (p2kml-pd(i,m))*p4(i,l,m)
           enddo
-
-          ! (B^I - A^I)_bu =   Imag{ d^2 G / dK*_kk dK*_ij } - Imag{ d^2 G / dK*_kk dK_ij }
-          !                =   - Imag{ (45) }                + Imag{ (41) }
-          hmat(kkd(k)+n,kl) = hmat(kkd(k)+n,kl) - p4(k,l,m) * pkml  ! i==k
-          hmat(kkd(l)+n,kl) = hmat(kkd(l)+n,kl) - p4(k,l,m) * pkml  ! j==k
 
           ! (A^R - B^R)_uu = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (32) }                 - Real{ (36) }
-          n = 2*ni12 - ni
+          n = 2*ni12
           do j=1,iju(k)   ! i==k
-           hmat(ijd(j,k)+n,kl) = hmat(ijd(j,k)+n,kl) - buf*p2(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
+           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) - buf*p2(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
           do i=ijl(l),ni  ! j==l
-           hmat(ijd(i,l)+n,kl) = hmat(ijd(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
+           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
           do j=1,iju(l)   ! i==l
-           hmat(ijd(j,l)+n,kl) = hmat(ijd(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
+           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
           enddo
 
           do i=ijl(k),ni  ! j==k
-           hmat(ijd(i,k)+n,kl) = hmat(ijd(i,k)+n,kl) - buf*p2(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
+           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) - buf*p2(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
           enddo
-
-          ! (A^R - B^R)_uu = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK*_kk dK*_ij }
-          !                = Real{ (40) }                 - Real{ (44) }
-          hmat(kkd(k)+n,kl) = hmat(kkd(k)+n,kl) + p1(k,l,m) * pkml  ! i==k
-          hmat(kkd(l)+n,kl) = hmat(kkd(l)+n,kl) - p1(k,l,m) * pkml  ! j==k
 
         enddo
       enddo
     enddo
 
     !----------------------------------------------------------------------------!
-    !               kl = < 3*ni12 - ni + 1 , 4*ni12 - ni >                       !
+    !                    kl = < 3*ni12 + 1 , 4*ni12 >                            !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
-      kl = 3*ni12 - ni
-      kk = 3*ni12 - ni + 1
+      kl = 3*ni12
       do l=1,ni
-        kl = kl + 1
-
-        ! for the diagonal part: k --> l
-        ! (B^I - A^I)_ub =   Imag{ d^2 G / dK*_ij dK*_kk } - Imag{ d^2 G / dK*_ij dK_kk }
-        !                =   - Imag{ (45) }                - Imag{ (41) }
-        do j=1,iju(l)   ! i==l
-         hmat(ijn(j,l),kk) = hmat(ijn(j,l),kk) - p4(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijn(i,l),kk) = hmat(ijn(i,l),kk) - p4(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        ! (B^I - A^I)_bb =   Imag{ d^2 G / dK*_ij dK*_kk } - Imag{ d^2 G / dK*_ij dK_kk }
-        !                =   - Imag{ (47) }                - Imag{ (43) }
-        n = ni12 - ni
-        do j=1,iju(l)   ! i==l
-         hmat(ijd(j,l)+n,kk) = hmat(ijd(j,l)+n,kk) + p2(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijd(i,l)+n,kk) = hmat(ijd(i,l)+n,kk) - p2(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        ! (A^R - B^R)_ub = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK*_ij dK*_kk }
-        !                = Real{ (41) }                 - Real{ (45) }
-        n = 2*ni12 - ni
-        do j=1,iju(l)   ! i==l
-         hmat(ijd(j,l)+n,kk) = hmat(ijd(j,l)+n,kk) + p3(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijd(i,l)+n,kk) = hmat(ijd(i,l)+n,kk) - p3(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        ! (A^R - B^R)_bb = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK*_ij dK*_kk }
-        !                = Real{ (43) }                 - Real{ (47) }
-        n = 3*ni12 - ni
-        do j=1,iju(l)   ! i==l
-         hmat(ijd(j,l)+n,kk) = hmat(ijd(j,l)+n,kk) + p1(j,l,m) * ( pd(l,m) - pd(j,m) )
-        enddo
-
-        do i=ijl(l),ni  ! j==l
-         hmat(ijd(i,l)+n,kk) = hmat(ijd(i,l)+n,kk) - p1(i,l,m) * ( pd(i,m) - pd(l,m) )
-        enddo
-
-        kk = kk + ni - (l-1)  ! diagonal
-
         do k=l+1,ni
           kl = kl + 1
           buf1 = d2*p3(k,l,m)
@@ -1955,83 +1811,68 @@ contains
 
           ! (B^I - A^I)_bb = Imag{ d^2 G / dK*_ij dK*_kl } - Imag{ d^2 G / dK*_ij dK_kl }
           !                = - Imag{ (39) }                - Imag{ (35) }
-          n = ni12 - ni
+          n = ni12
           do j=1,iju(k)   ! i==k
-           hmat(ijd(j,k)+n,kl) = hmat(ijd(j,k)+n,kl) &
+           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
                                - buf1*p4(j,k,m) + buf2*p3(j,k,m) + (p2kml-pd(j,m))*p2(j,l,m)
           enddo
 
           do i=ijl(l),ni  ! j==l
-           hmat(ijd(i,l)+n,kl) = hmat(ijd(i,l)+n,kl) &
+           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
                                + buf1*p4(i,l,m) - buf2*p3(i,l,m) + (p2lmk-pd(i,m))*p2(i,k,m)
           enddo
 
           do j=1,iju(l)   ! i==l
-           hmat(ijd(j,l)+n,kl) = hmat(ijd(j,l)+n,kl) &
+           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
                                + buf1*p4(j,l,m) - buf2*p3(j,l,m) + (p2lmk-pd(j,m))*p2(j,k,m)
           enddo
 
           do i=ijl(k),ni  ! j==k
-           hmat(ijd(i,k)+n,kl) = hmat(ijd(i,k)+n,kl) &
+           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
                                - buf1*p4(i,k,m) + buf2*p3(i,k,m) + (p2kml-pd(i,m))*p2(i,l,m)
           enddo
 
-          ! (B^I - A^I)_bb =   Imag{ d^2 G / dK*_kk dK*_ij } - Imag{ d^2 G / dK*_kk dK_ij }
-          !                =   - Imag{ (47) }                + Imag{ (43) }
-          hmat(kkd(k)+n,kl) = hmat(kkd(k)+n,kl) + p2(k,l,m) * pkml  ! i==k
-          hmat(kkd(l)+n,kl) = hmat(kkd(l)+n,kl) + p2(k,l,m) * pkml  ! j==k
-
           ! (A^R - B^R)_ub = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (33) }                 - Real{ (37) }
-          n = 2*ni12 - ni
+          n = 2*ni12
           do j=1,iju(k)   ! i==k
-           hmat(ijd(j,k)+n,kl) = hmat(ijd(j,k)+n,kl) - buf*p2(j,k,m) + (p2kml-pd(j,m))*p3(j,l,m)
+           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) - buf*p2(j,k,m) + (p2kml-pd(j,m))*p3(j,l,m)
           enddo
 
           do i=ijl(l),ni  ! j==l
-           hmat(ijd(i,l)+n,kl) = hmat(ijd(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p3(i,k,m)
+           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p3(i,k,m)
           enddo
 
           do j=1,iju(l)   ! i==l
-           hmat(ijd(j,l)+n,kl) = hmat(ijd(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
+           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
           enddo
 
           do i=ijl(k),ni  ! j==k
-           hmat(ijd(i,k)+n,kl) = hmat(ijd(i,k)+n,kl) - buf*p2(i,k,m) + (p2kml-pd(i,m))*p3(i,l,m)
+           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) - buf*p2(i,k,m) + (p2kml-pd(i,m))*p3(i,l,m)
           enddo
-
-          ! (A^R - B^R)_ub = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK*_kk dK*_ij }
-          !                = Real{ (42) }                 - Real{ (46) }
-          hmat(kkd(k)+n,kl) = hmat(kkd(k)+n,kl) + p3(k,l,m) * pkml  ! i==k
-          hmat(kkd(l)+n,kl) = hmat(kkd(l)+n,kl) + p3(k,l,m) * pkml  ! j==k
 
           ! (A^R - B^R)_bb = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (35) }                 - Real{ (39) }
-          n = 3*ni12 - ni
+          n = 3*ni12
           do j=1,iju(k)   ! i==k
-           hmat(ijd(j,k)+n,kl) = hmat(ijd(j,k)+n,kl) &
+           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
                                - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
           do i=ijl(l),ni  ! j==l
-           hmat(ijd(i,l)+n,kl) = hmat(ijd(i,l)+n,kl) &
+           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
                                + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
           do j=1,iju(l)   ! i==l
-           hmat(ijd(j,l)+n,kl) = hmat(ijd(j,l)+n,kl) &
+           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
                                + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
           enddo
 
           do i=ijl(k),ni  ! j==k
-           hmat(ijd(i,k)+n,kl) = hmat(ijd(i,k)+n,kl) &
+           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
                                - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
           enddo
-
-          ! (A^R - B^R)_bb = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK*_kk dK*_ij }
-          !                = Real{ (43) }                 - Real{ (47) }
-          hmat(kkd(k)+n,kl) = hmat(kkd(k)+n,kl) + p1(k,l,m) * pkml  ! i==k
-          hmat(kkd(l)+n,kl) = hmat(kkd(l)+n,kl) - p1(k,l,m) * pkml  ! j==k
 
         enddo
       enddo
@@ -2057,62 +1898,60 @@ contains
     !----------------------------------------------------------------------------!
     if(loc%iprloc.ge.3)then
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
-      do i=1,ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=1,ni12-ni)
+      do i=1,ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=1,ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_uu'
-      do i=1,ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12-ni+1,3*ni12-ni)
+      do i=1,ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12+1,3*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_uu'
-      do i=2*ni12-ni+1,3*ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12-ni+1,3*ni12-ni)
+      do i=2*ni12+1,3*ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12+1,3*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_ub'
-      do i=1,ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=ni12-ni+1,2*ni12-ni)
+      do i=1,ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=ni12+1,2*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_ub'
-      do i=1,ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12-ni+1,4*ni12-ni)
+      do i=1,ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_ub'
-      do i=2*ni12-ni+1,3*ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12-ni+1,4*ni12-ni)
+      do i=2*ni12+1,3*ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bb'
-      do i=ni12-ni+1,2*ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=ni12-ni+1,2*ni12-ni)
+      do i=ni12+1,2*ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=ni12+1,2*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bb'
-      do i=ni12-ni+1,2*ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12-ni+1,4*ni12-ni)
+      do i=ni12+1,2*ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bb'
-      do i=3*ni12-ni+1,4*ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12-ni+1,4*ni12-ni)
+      do i=3*ni12+1,4*ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bu'
-      do i=ni12-ni+1,2*ni12-ni
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12-ni+1,3*ni12-ni)
+      do i=ni12+1,2*ni12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12+1,3*ni12)
       enddo
     endif
 
     ! deallocate arrays
-    call dealloc(ijd,id='ijd in get_hessian')
     call dealloc(ijn,id='ijn in get_hessian')
     call dealloc(iju,id='iju in get_hessian')
     call dealloc(ijl,id='ijl in get_hessian')
-    call dealloc(kkd,id='kkd in get_hessian')
     call dealloc(pd, id='pd  in get_hessian')
     call dealloc(p1, id='p1  in get_hessian')
     call dealloc(p2, id='p2  in get_hessian')
@@ -2145,7 +1984,7 @@ contains
   real*8, intent(out), dimension(:)       ::  gradient
 
   ! Internal variables
-  integer :: i, j, k, ij, ij1, ij2, ij3, ij4
+  integer :: i, j, k, ij1, ij2, ij3, ij4
   integer :: nucdep, ni, ndimg, ni12, lupri
 
   real*8  :: dtmp, dnrm2
@@ -2158,20 +1997,17 @@ contains
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
   ndimg  = size(gradient,1)
-  ni12   = (ndimg+ni) / 4
+  ni12   = ndimg / 4
 
   !------------------------------------------------------------------------------!
   !               Calculate real representation of the gradient                  !
   !------------------------------------------------------------------------------!
-  ! Do not calculate redundant parameters (diagonal real parameters of unbared kappa)
   do k = 1,nucdep
-    ij = 0; ij1 = 0
+    ij1 = 0
     do j=1,ni
-      ij  = ij  + 1
       do i=j+1,ni
-        ij  = ij  + 1
         ij1 = ij1 + 1
-        ij2 = ij  + ni12-ni
+        ij2 = ij1 + ni12
         ij3 = ij2 + ni12
         ij4 = ij3 + ni12
         dtmp = d2*(pmat(j,j,1,k) - pmat(i,i,1,k))
@@ -2189,13 +2025,13 @@ contains
 
   if(loc%iprloc.ge.2)then
     write(lupri,'(/a,2f10.5)') 'Print gradient^R_u'
-    write(lupri,'(8d12.4)') (gradient(i),i=1,ni12-ni)
+    write(lupri,'(8d12.4)') (gradient(i),i=1,ni12)
     write(lupri,'(/a,2f10.5)') 'Print gradient^R_b}'
-    write(lupri,'(8d12.4)') (gradient(i),i=1+ni12-ni,2*ni12-ni)
+    write(lupri,'(8d12.4)') (gradient(i),i=1+ni12,2*ni12)
     write(lupri,'(/a,2f10.5)') 'Print gradient^I_u'
-    write(lupri,'(8d12.4)') (gradient(i),i=1+2*ni12-ni,3*ni12-ni)
+    write(lupri,'(8d12.4)') (gradient(i),i=1+2*ni12,3*ni12)
     write(lupri,'(/a,2f10.5)') 'Print gradient^I_b'
-    write(lupri,'(8d12.4)') (gradient(i),i=1+3*ni12-ni,4*ni12-ni)
+    write(lupri,'(8d12.4)') (gradient(i),i=1+3*ni12,4*ni12)
   endif
 
   ! Norm of the gradient
@@ -2285,8 +2121,8 @@ contains
 
   else
   
-  if(associated(iorig)) call deallocp(iorig,id='iorig in hdiag')
-  call allocp(iorig,ndimh,id='tgrad in hdiag')
+    if(associated(iorig)) call deallocp(iorig,id='iorig in hdiag')
+    call allocp(iorig,ndimh,id='tgrad in hdiag')
 
     ! get eigenvalues (etmp)
     ! We use diagonal approximation so it will just sort the diagonal of the hessian
@@ -2630,6 +2466,8 @@ contains
   !------------------------------------------------------------------------------!
   !         If all gradients in the direction of negative eigenvalues            !
   !              are below threshold, choose the best step from                  !
+  !         (the purpose of this condition is to replace ineffective             !
+  !                   rejection of Newton step - get_mu )                        !
   ! Newton step,                                        -->  rejected = false    !
   ! step on the Trust-region                            -->  rejected = true     !
   ! and step in the direction of positive eigenvalues.  -->  nstep    = false    !
@@ -2727,13 +2565,13 @@ contains
     if(cond(3:3) == '|') cond(3:3) = 'f'
   endif
 
-  if(full.and.(nem==0)) rejected = .false.
   if(tradius /= tradold) trdef = .false.
 
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
-  write(lupri,'(a,2x,i4,3d11.2,f11.5,a,l,a,2x,a,4d11.2)') &
-    '*T',itr,tradold,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
+  write(lupri,'(a,2x,i4,3d11.2,f11.5,3x,l1,3x,a,4d11.2)') &
+    '*T',itr+1,tradold,tradius,dnrmk,R,rejected,cond,diffg,diffq
+
 
   end subroutine updateT
 

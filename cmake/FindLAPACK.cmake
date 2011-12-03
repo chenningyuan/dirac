@@ -42,6 +42,15 @@ if (EXISTS $ENV{LAPACK_ROOT})
 	endif()
 endif()
 
+# BLAS and LAPACK often go together
+if (NOT DEFINED LAPACK_ROOT})
+	if (DEFINED BLAS_ROOT})
+		set(LAPACK_ROOT ${BLAS_ROOT})
+	elseif (EXISTS $ENV{BLAS_ROOT})
+		set(LAPACK_ROOT $ENV{BLAS_ROOT})
+	endif()
+endif()
+
 # Default names for the headers
 if (MATH_LANG STREQUAL "C")
 	set(lapack_h clapack.h)
@@ -101,7 +110,6 @@ endmacro()
 
 macro(find_atlas)
 	set(lapack_libs lapack_atlas lapack)
-
 	set(path_suffixes include/atlas include)
 	find_math_header(lapack)
 	set(path_suffixes lib lib/atlas)

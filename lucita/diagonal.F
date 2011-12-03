@@ -1077,10 +1077,12 @@ C     REAL * 8  INPROD
       ELSE
          XADD = 0.0D0
       END IF
-      IDIA_OFFSET = 0
 *     proper offset
 !stefan: MY_DIA_OFF is set on a common block in parluci.h.
+#ifdef VAR_MPI
+      IDIA_OFFSET = 0
       IDIA_OFFSET = IDIA_OFFSET + MY_DIA_OFF
+#endif
 *
       IF( NTEST .GE. 20 ) THEN
         WRITE(LUWRT,*) ' Diagonal one electron integrals'

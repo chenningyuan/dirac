@@ -11,6 +11,8 @@ Pipek-Mezey localization based on atomic charges from projection analysis
 .MULPOP
 .LOCALIZE
 *LOCALIZE
+.THGRAD
+1.0D-09
 .PRJLOC
 .OWNBAS
 .VECREF
