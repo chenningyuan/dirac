@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# vim:ft=python
-#
+
 # primitive frontend to cmake
 # (c) Jonas Juselius <jonas.juselius@uit.no> and Radovan Bast <radovan.bast@uit.no>
 # licensed under the GNU Lesser General Public License
@@ -8,43 +7,45 @@
 import os
 import sys
 import string
-import re
 import subprocess
 from argparse import ArgumentParser
 
 if sys.version < '2.4':
-	print('requires python version >= 2.4')
-	sys.exit(1)
+    print('requires python version >= 2.4')
+    sys.exit(1)
 
 root_directory = os.path.realpath(__file__)[:-5]
 default_path = root_directory + 'build/'
 
 # initialize parser
 
-parser = ArgumentParser(description="Setup build configurations.")
+parser = ArgumentParser(description='Setup build configurations.')
 
 # define options
 
 group = parser.add_argument_group('Basic options')
 group.add_argument('--auto',
-		action='store_true',
-		default=False,
-		help='try to configure --fc, --cc, --cxx  automatically [default: %(default)s]')
+                 action='store_true',
+                 dest='auto',
+                 default=False,
+                 help='try to configure --fc, --cc, --cpp, and --math automatically [default: %(default)s]')
 group.add_argument('--fc',
-		action='store',
-		default=None,
-		help='set the Fortran compiler [default: pick automatically or based on FC=...]',
-		metavar='STRING')
+                 action='store',
+                 dest='fc',
+                 default=None,
+                 help='set the Fortran compiler [default: pick automatically or based on FC=...]')
 group.add_argument('--cc',
-		action='store',
-		default=None,
-		help='set the C compiler [default: pick automatically or based on CC=...]',
-		metavar='STRING')
-group.add_argument('--cxx',
-		action='store',
-		default=None,
-		help='set the C++ compiler [default: pick automatically or based on CXX=...]',
-		metavar='STRING')
+                 action='store',
+                 dest='cc',
+                 default=None,
+                 help='set the C compiler [default: pick automatically or based on CC=...]',
+                 metavar='STRING')
+group.add_argument('--cpp',
+                 action='store',
+                 dest='cpp',
+                 default=None,
+                 help='set the C++ compiler [default: pick automatically or based on CXX=...]',
+                 metavar='STRING')
 group.add_argument('--math-dir',
                  action='store',
                  dest='mathdir',
@@ -62,28 +63,30 @@ group.add_argument('--int64',
                  default=False,
                  help='build for 64bit integers [default: %(default)s]')
 group.add_argument('--show',
-		action='store_true',
-		default=False,
-		help='show cmake command and exit [default: %(default)s]')
+                 action='store_true',
+                 dest='show',
+                 default=False,
+                 help='show cmake command and exit [default: %(default)s]')
 
 group = parser.add_argument_group('Change default paths')
 group.add_argument('--build',
-		action='store',
-		default=default_path,
-		help='set the build path (you can build several binaries with the same source) [default: %(default)s]',
-		metavar='PATH')
-group.add_argument('--prefix',
-		action='store',
-		dest='prefix',
-		default=None,
-		help='set the install path for make install [default: %(default)s]',
-		metavar='PATH')
+                 action='store',
+                 dest='build',
+                 default=default_path,
+                 help='set the build path (you can build several binaries with the same source) [default: %(default)s]',
+                 metavar='PATH')
+group.add_argument('--install',
+                 action='store',
+                 dest='install',
+                 default=None,
+                 help='set the install path for make install [default: %(default)s]',
+                 metavar='PATH')
 group.add_argument('--cmake',
-		action='store',
-		dest='alternative_cmake',
-		default=None,
-		help='give full path to alternative cmake binary (use this if default cmake is too old)',
-		metavar='PATH')
+                 action='store',
+                 dest='alternative_cmake',
+                 default=None,
+                 help='give full path to alternative cmake binary (use this if default cmake is too old)',
+                 metavar='PATH')
 
 group = parser.add_argument_group('Advanced options')
 group.add_argument('--math',
@@ -98,56 +101,55 @@ group.add_argument('--debug',
                  default=False,
                  help='build in debug mode (no optimization) [default: %(default)s]')
 group.add_argument('--check',
-		action='store_true',
-		default=False,
-		help='enable bounds checking [default: %(default)s]')
+                 action='store_true',
+                 dest='check',
+                 default=False,
+                 help='enable bounds checking [default: %(default)s]')
 group.add_argument('--coverage',
-		action='store_true',
-		default=False,
-		help='enable code coverage [default: %(default)s]')
+                 action='store_true',
+                 dest='coverage',
+                 default=False,
+                 help='enable code coverage [default: %(default)s]')
 group.add_argument('--nochecks',
-		action='store_true',
-		default=False,
-		help='disable compatibility checks [default: %(default)s]')
+                 action='store_true',
+                 dest='nochecks',
+                 default=False,
+                 help='disable compatibility checks [default: %(default)s]')
 group.add_argument('--static',
                  action='store_true',
+                 dest='static',
                  default=False,
                  help='link statically [default: %(default)s]')
 group.add_argument('-D',
-		action="append",
-		dest='cmake',
-		default=[],
-		help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1); \
-				you can also forward CPP defintions all the way to the program \
-				(example: -D CPP="-DDEBUG")',
-				metavar='STRING')
-group.add_argument('--host',
-		action='store',
-		default=None,
-		help="use predefined defaults for 'host'",
-		metavar='STRING')
+                 action="append",
+                 dest='cmake',
+                 default=[],
+                 help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1); \
+                       you can also forward CPP defintions all the way to the program \
+                       (example: -D CPP="-DDEBUG")',
+                 metavar='STRING')
 
 # process input
 
 args = parser.parse_args()
 
 def check_cmake_exists():
-	p = subprocess.Popen('cmake --version',
-			shell=True,
-			stdin=subprocess.PIPE,
-			stdout=subprocess.PIPE)
-	if not ('cmake version' in p.communicate()[0]):
-		print('   This code is built using CMake')
-		print('')
-		print('   CMake is not found')
-		print('   get CMake at http://www.cmake.org/')
-		print('   on many clusters CMake is installed')
-		print('   but you have to load it first:')
-		print('   $ module load cmake')
-		sys.exit()
+    p = subprocess.Popen('cmake --version',
+                         shell=True,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
+    if not ('cmake version' in p.communicate()[0]):
+        print('   This code is built using CMake')
+        print('')
+        print('   CMake is not found')
+        print('   get CMake at http://www.cmake.org/')
+        print('   on many clusters CMake is installed')
+        print('   but you have to load it first:')
+        print('   $ module load cmake')
+        sys.exit()
 
 def gen_cmake_command():
-	# create cmake command from flags
+    # create cmake command from flags
 
     command = ''
     
@@ -156,8 +158,8 @@ def gen_cmake_command():
             command += ' FC=%s' % args.fc
         if args.cc:
             command += ' CC=%s' % args.cc
-        if args.cxx:
-            command += ' CXX=%s' % args.cxx
+        if args.cpp:
+            command += ' CXX=%s' % args.cpp
    
     if args.alternative_cmake: 
         command += ' %s' % args.alternative_cmake
@@ -199,8 +201,8 @@ def gen_cmake_command():
         command += ' -DENABLE_SANITY_CHECKS=OFF'
     if args.static:
         command += ' -DENABLE_STATIC_LINKING=ON'
-    if args.prefix:
-            command += ' -DCMAKE_INSTALL_PREFIX=' + args.prefix
+    if args.install:
+            command += ' -DCMAKE_INSTALL_PREFIX=' + args.install
 
     if args.debug:
         command += ' -DCMAKE_BUILD_TYPE=Debug'
@@ -219,96 +221,69 @@ def gen_cmake_command():
     return command
 
 def print_build_help(build_path):
-	print('   configure step is done')
-	print('   now you need to compile the sources')
-	print('')
-	print('   to compile with configured parameters (recommended):')
-	print('   $ cd ' + build_path)
-	print('   $ make')
-	print('')
-	print('   to modify configured parameters and then compile:')
-	print('   $ cd ' + build_path)
-	print('   $ ccmake ' + root_directory)
-	print('   $ make')
+    print('   configure step is done')
+    print('   now you need to compile the sources')
+    print('')
+    print('   to compile with configured parameters (recommended):')
+    print('   $ cd ' + build_path)
+    print('   $ make')
+    print('')
+    print('   to modify configured parameters and then compile:')
+    print('   $ cd ' + build_path)
+    print('   $ ccmake ' + root_directory)
+    print('   $ make')
 
 def gen_reconfigure_script(command, build_path):
-	file_name = os.path.join(build_path, 'reconfigure')
-	f = open(file_name, 'w')
-	f.write('#!/bin/sh \n')
-	f.write('%s' % command)
-	f.close()
-	os.system('chmod 700 %s' % file_name)
+    file_name = os.path.join(build_path, 'reconfigure')
+    f = open(file_name, 'w')
+    f.write('#!/bin/sh \n')
+    f.write('%s' % command)
+    f.close()
+    os.system('chmod 700 %s' % file_name)
 
 def save_setup_command(argv, build_path):
-	file_name = os.path.join(build_path, 'setup_command')
-	f = open(file_name, 'w')
-	f.write(" ".join(sys.argv[:]))
-	f.close()
+    file_name = os.path.join(build_path, 'setup_command')
+    f = open(file_name, 'w')
+    f.write(" ".join(sys.argv[:]))
+    f.close()
 
 def setup_build_path(build_path, only_show_command):
-	if args.show:
-		return
-	if os.path.isdir(build_path):
-		if not only_show_command:
-			print('aborting setup - build directory %s exists already' % build_path)
-			print('please first remove it and then rerun setup')
-			sys.exit()
-	else:
-		os.makedirs(build_path, 0755)
+    if os.path.isdir(build_path):
+        if not only_show_command:
+            print('aborting setup - build directory %s exists already' % build_path)
+            print('please first remove it and then rerun setup')
+            sys.exit()
+    else:
+        os.makedirs(build_path, 0755)
 
 def run_cmake(command, build_path):
-	topdir = os.getcwd()
-	os.chdir(build_path)
-	p = subprocess.Popen(command,
-			shell=True,
-			stdin=subprocess.PIPE,
-			stdout=subprocess.PIPE)
-	s = p.communicate()[0]
-	print(s)
-	os.chdir(topdir)
-	return s
+        topdir = os.getcwd()
+        os.chdir(build_path)
+        p = subprocess.Popen(command,
+                                                 shell=True,
+                                                 stdin=subprocess.PIPE,
+                                                 stdout=subprocess.PIPE)
+        s = p.communicate()[0]
+        print(s)
+        os.chdir(topdir)
+        return s
 
 def main():
-	if len(sys.argv) == 1:
-		# user has given no arguments: print help and exit
-		print(parser.format_help().strip())
-		sys.exit()
+        if len(sys.argv) == 1:
+                # user has given no arguments: print help and exit
+                print(parser.format_help().strip())
+                sys.exit()
 
-	check_cmake_exists()
-	build_path = args.build
-	setup_build_path(build_path, args.show)
-	if args.host:
-		configure_host(args.host)
-	command = gen_cmake_command()
-	status = run_cmake(command, build_path)
+        check_cmake_exists()
+        build_path = args.build
+        setup_build_path(build_path, args.show)
+        command = gen_cmake_command()
+        status = run_cmake(command, build_path)
 
-	if not 'Configuring incomplete' in status:
-		gen_reconfigure_script(command, build_path)
-		save_setup_command(sys.argv, build_path)
-		print_build_help(build_path)
-
-# host/system specific configurations
-def configure_host(host):
-	enforce = False
-	if re.match('myhost', host):
-		configure_myhost()
-	elif enforce:
-		print("Unknown host/system: {0}".format(host))
-		sys.exit(1)
-
-
-def configure_myhost():
-	if not args.cc:
-		args.cc = 'icc'
-	if not args.cxx:
-		args.cxx = 'icpc'
-	if not args.fc:
-		args.fc = 'ifort'
-	if args.mpi:
-		args.fc = 'mpif90'
-		args.cc = 'mpicc'
-		args.cxx = 'mpicxx'
+        if not 'Configuring incomplete' in status:
+                gen_reconfigure_script(command, build_path)
+                save_setup_command(sys.argv, build_path)
+                print_build_help(build_path)
 
 if __name__ == '__main__':
-	main()
-
+        main()

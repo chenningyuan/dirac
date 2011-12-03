@@ -229,7 +229,7 @@ Make install
 Make install is very useful to make DIRAC available to other users on the same
 machine::
 
-  $ ./setup [--flags] --prefix=/path
+  $ ./setup [--flags] --install=/path
   $ cd build
   $ make
   $ make install
@@ -240,7 +240,7 @@ Where should $PATH point to? Source directory or build directory?
 
 We recommend to let $PATH point to the install directory::
 
-  $ ./setup [--flags] --prefix=/install/path
+  $ ./setup [--flags] --install=/install/path
   $ cd build
   $ make
   $ make install
