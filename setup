@@ -45,6 +45,14 @@ group.add_argument('--cxx',
 		default=None,
 		help='set the C++ compiler [default: pick automatically or based on CXX=...]',
 		metavar='STRING')
+group.add_argument('--mpi',
+		action='store_true',
+		default=False,
+		help='build using MPI parallelization [default: %(default)s]')
+group.add_argument('--openmp',
+		action='store_true',
+		default=False,
+		help='enable OpenMP [default: %(default)s]')
 group.add_argument('--math-dir',
                  action='store',
                  dest='mathdir',
@@ -86,17 +94,15 @@ group.add_argument('--cmake',
 		metavar='PATH')
 
 group = parser.add_argument_group('Advanced options')
+group.add_argument('--debug',
+		action='store_true',
+		default=False,
+		help='build in debug mode (no optimization) [default: %(default)s]')
 group.add_argument('--math',
                  action='store',
-                 dest='math',
                  default=None,
                  help='explicit linker specification for math library',
                  metavar='STRING')
-group.add_argument('--debug',
-                 action='store_true',
-                 dest='debug',
-                 default=False,
-                 help='build in debug mode (no optimization) [default: %(default)s]')
 group.add_argument('--check',
 		action='store_true',
 		default=False,
@@ -149,21 +155,21 @@ def check_cmake_exists():
 def gen_cmake_command():
 	# create cmake command from flags
 
-    command = ''
-    
-    if not args.auto:
-        if args.fc:
-            command += ' FC=%s' % args.fc
-        if args.cc:
-            command += ' CC=%s' % args.cc
-        if args.cxx:
-            command += ' CXX=%s' % args.cxx
-   
-    if args.alternative_cmake: 
-        command += ' %s' % args.alternative_cmake
-    else:
-        command += ' cmake'
-    
+	command = ''
+
+	if not args.auto:
+		if args.fc:
+			command += ' FC=%s' % args.fc
+		if args.cc:
+			command += ' CC=%s' % args.cc
+		if args.cxx:
+			command += ' CXX=%s' % args.cxx
+
+	if args.alternative_cmake: 
+		command += ' %s' % args.alternative_cmake
+	else:
+		command += ' cmake'
+
     if args.nomath:
         command += ' -DENABLE_INTERNAL_MATH=ON'
     elif args.math:
@@ -191,32 +197,38 @@ def gen_cmake_command():
     
     if args.int64:
         command += ' -DENABLE_64BIT_INTEGERS=ON'
+
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
+
     if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
+
     if args.nochecks:
         command += ' -DENABLE_SANITY_CHECKS=OFF'
+
     if args.static:
         command += ' -DENABLE_STATIC_LINKING=ON'
-    if args.prefix:
-            command += ' -DCMAKE_INSTALL_PREFIX=' + args.prefix
 
-    if args.debug:
-        command += ' -DCMAKE_BUILD_TYPE=Debug'
-    else:
-        command += ' -DCMAKE_BUILD_TYPE=Release'
-    
-    if args.cmake:
-        for definition in args.cmake:
-            command += ' -D%s' % definition
+	if args.prefix:
+		command += ' -DCMAKE_INSTALL_PREFIX=' + args.prefix
 
-    command += ' %s' % root_directory
-    
-    print('%s\n' % command)
-    if args.show:
-            sys.exit()
-    return command
+	if args.debug:
+		command += ' -DCMAKE_BUILD_TYPE=Debug'
+	else:
+		command += ' -DCMAKE_BUILD_TYPE=Release'
+
+
+	if args.cmake:
+		for definition in args.cmake:
+			command += ' -D%s' % definition
+
+	command += ' %s' % root_directory
+
+	print('%s\n' % command)
+	if args.show:
+		sys.exit()
+	return command
 
 def print_build_help(build_path):
 	print('   configure step is done')
