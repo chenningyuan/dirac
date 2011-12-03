@@ -30,7 +30,10 @@ git pull origin master
 /bin/rm -rf $BUILD
 
 # configure step
-./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90  --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --math="-L/opt/intel/mkl/10.0.3.020/lib/em64t -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
+#./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90  --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --math="-L/opt/intel/mkl/10.0.3.020/lib/em64t -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
+
+export MATH_ROOT=/opt/intel/mkl/10.0.3.020
+./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90  --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
 
 cd $DIRAC/$BUILD
 make Experimental
