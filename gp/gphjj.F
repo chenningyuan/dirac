@@ -1020,9 +1020,8 @@ C
       character*100 msg
       CALL GETDAT(LDATE,LTIME)
 
-#if !defined VAR_G95 && !defined VAR_IFORT
-!miro: g95 does not know the "iomsg" parameter ....
-!the same for ifort 10.1
+#if !defined VAR_IFORT
+!miro: ifort 10.1 does not know the "iomsg" parameter ....
       WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
      &              LSTARS,LDATE,LTIME,LABEL
 #else
@@ -1039,7 +1038,7 @@ C
      &      '         IOSTAT value',IOSVAL
          WRITE(LUERR,*) 'LSTARS=',LSTARS
          WRITE(LUERR,*) 'LDATE=',LDATE,' LTIME=',LTIME
-#if !defined VAR_G95  && !defined VAR_IFORT
+#if !defined VAR_IFORT
          WRITE (LUERR,'(A,A)') 'message:',msg
 #endif
          CALL QTRACE(LUERR)
