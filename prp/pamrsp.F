@@ -2584,6 +2584,7 @@ C
       PARAMETER ( DP75 = 0.75D00 )
       PARAMETER ( DRTEST = 1.0D-5 )
 C
+      DIMENSION INERT(3)
 C
       CALL QENTER('XRSSOL')
 C
@@ -2623,7 +2624,7 @@ C
          DO IFREQ = 1,NFREQ
            AFREQ = EVALR(IFREQ)
            CALL XRSLINRED(NZRED,NREDM,REDE,REDS,AFREQ,REDGP,
-     &          EVECR(1,IFREQ),IBTYP,NPRED,IPRXRS,
+     &          EVECR(1,IFREQ),IBTYP,INERT,NPRED,IPRXRS,
      &          WORK,KFREE,LFREE)
          ENDDO
 C
@@ -2669,7 +2670,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSLinred */
-      SUBROUTINE XRSLINRED(N,LDA,AE,AS,W,G,X,IBTYP,
+      SUBROUTINE XRSLINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,
      &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -2693,7 +2694,7 @@ C
 C
 C     Check for instabilies in reduced Hessian
 C
-      CALL XRSSTAB(AE,LDA,N,NPVEC,IPRINT,WORK,KFREE,LFREE)
+      CALL XRSSTAB(AE,LDA,N,NPVEC,IPRINT,INERT,WORK,KFREE,LFREE)
 C
 C     Memory allocation
 C
@@ -2705,7 +2706,7 @@ C
       ELSE
         CALL MEMGET('REAL',KA2,N2A,WORK,KFREE,LFREE)
         CALL XRSLINRE1(N,LDA,N2A,AE,AS,WORK(KA2),W,G,X,IBTYP,
-     &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
+     &                  NPVEC,IPRINT,INERT,WORK,KFREE,LFREE)
       ENDIF
       CALL MEMREL('XRSLINRED',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -2759,7 +2760,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSLinre1 */
       SUBROUTINE XRSLINRE1(N,LDA,N2A,AE,AS,A2,W,G,X,IBTYP,
-     &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
+     &                  NPVEC,IPRINT,INERT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Solve the reduced linear *real or imaginary* reponse equation
@@ -2948,7 +2949,7 @@ C
 C
       IREP = JSYMOP - 1
       DO I = 1,NBSIM
-        WRITE(6,'(A,I4)') '* Vector nr. ',I
+        WRITE(LUPRI,'(A,I4)') '* Vector nr. ',I
         CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,NZ,
      &              IPQTOQ(1,IREP),IUNIT)
       ENDDO
@@ -2975,7 +2976,7 @@ C
       IREP = JSYMOP - 1
       ICOUNT = 1
       DO I = NBSTA,NBSIM,NBSTP
-        WRITE(6,'(A,I4)') '* Vector nr. ',ICOUNT
+        WRITE(LUPRI,'(A,I4)') '* Vector nr. ',ICOUNT
         CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,NZ,
      &              IPQTOQ(1,IREP),IUNIT)
         ICOUNT = ICOUNT + 1
@@ -4375,7 +4376,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrsstab */
-      SUBROUTINE XRSSTAB(A,LDA,N,NEPROT,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE XRSSTAB(A,LDA,N,NEPROT,IPRINT,INERT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Check for instability by looking for negative eigenvalues of
@@ -4400,7 +4401,6 @@ C
       CALL DAMATR(N,A,LDA,WORK(KAN))
       CALL DSPFA (WORK(KAN),N,WORK(KPVT),INFO)
       CALL DSPDI(WORK(KAN),N,WORK(KPVT),DET,INERT,WORK(KFREE),100)
-C      WRITE(6,*) 'TEST:',(INERT(I),I=1,3),NEPROT,IPRINT
       IPAR = INERT(2) - NEPROT
       IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
         WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
