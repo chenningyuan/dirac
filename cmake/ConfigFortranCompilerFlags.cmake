@@ -1,3 +1,5 @@
+if(NOT DEFINED HAVE_Fortran_FLAGS)
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
                                    # -fcray-pointer is for VAR_MPI2
@@ -26,24 +28,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
-    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -g -DVAR_G95")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
-    if(ENABLE_64BIT_INTEGERS)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -i8"
-            )
-    endif()
-    if(ENABLE_BOUNDS_CHECK)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -Wall -fbounds-check"
-            )
-    endif()
-    if(ENABLE_CODE_COVERAGE)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS}"
-            )
-    endif()
+    message(FATAL_ERROR "g95 is not supported")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
@@ -125,4 +110,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         PROPERTIES COMPILE_FLAGS
         "-qfixed"
         )
+endif()
+
+save_compiler_flags(Fortran)
 endif()

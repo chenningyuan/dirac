@@ -3205,10 +3205,8 @@ C
 C
       ZERO = .FALSE.
 C     
-      GPCNRM = DNRM2(NZCQ,GPC,1)
-      GPENRM = DNRM2(NZEQ,GPE,1)
-      GPPNRM = DNRM2(NZPQ,GPP,1)
-      GPTNRM = SQRT(GPCNRM**2+GPENRM**2+GPPNRM**2)
+      GPTNRM = SQRT(D2*(DNRM2(NZCQ,GPC,1)+DNRM2(NZEQ,GPE,1)+
+     &                  DNRM2(NZPQ,GPP,1)))
       IF (GPTNRM.LT.THD) THEN
 C
          ZERO = .TRUE.

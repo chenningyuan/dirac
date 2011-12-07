@@ -1922,26 +1922,14 @@ C     LUB* - files of b-vectors
 C     LUS* - files of sigma-vectors
 C
       IF(NZCONF.GT.0) THEN
-!       OPEN(LUBCI,FILE='PAMBCI',FORM='UNFORMATTED',
-!    +      ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
-!       OPEN(LUSCI,FILE='PAMSCI',FORM='UNFORMATTED',
-!    +      ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
         call open_dx(lubci,'PAMBCI',nzconfq,'UNKNOWN',old_dx)
         call open_dx(lusci,'PAMSCI',nzconfq,'UNKNOWN',old_dx)
       ENDIF
       IF(NZXOPE.GT.0) THEN
-!       OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
-!    +      ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
-!       OPEN(LUSOE,FILE='PAMSOE',FORM='UNFORMATTED',
-!    +      ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
         call open_dx(luboe,'PAMBOE',NZXOPEQ,'UNKNOWN',old_dx)
         call open_dx(lusoe,'PAMSOE',NZXOPEQ,'UNKNOWN',old_dx)
       ENDIF
       IF(NZXOPP.GT.0) THEN
-!       OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
-!    +      ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
-!       OPEN(LUSOP,FILE='PAMSOP',FORM='UNFORMATTED',
-!    +      ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
         call open_dx(lubop,'PAMBOP',NZXOPPQ,'UNKNOWN',old_dx)
         call open_dx(lusop,'PAMSOP',NZXOPPQ,'UNKNOWN',old_dx)
       ENDIF
