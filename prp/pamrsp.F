@@ -1969,6 +1969,9 @@ C         GPTNRM = (D2*DNRM2(NZCONFQ,GPCI,1))**2
 C     &          + (D2*DNRM2(NZXOPEQ,GPOE,1))**2
 C     &          + (D2*DNRM2(NZXOPPQ,GPOP,1))**2
 C         GPTNRM = SQRT(GPTNRM)
+         GPTNRM = DNRM2(NZCONFQ,GPCI,1)**2 + DNRM2(NZXOPEQ,GPOE,1)**2 + 
+     &     DNRM2(NZXOPPQ,GPOP,1)**2
+         GPTNRM = SQRT(GPTNRM)
          IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &     'Norm of gradient in XRSINI:',GPTNRM
       ELSE
