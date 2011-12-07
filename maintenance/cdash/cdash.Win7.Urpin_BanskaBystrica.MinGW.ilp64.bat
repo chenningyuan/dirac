@@ -31,7 +31,7 @@ mkdir %BUILD%
 cd %BUILD%
 
 rem own cmake configure step - MinGW must be in path !
-cmake -Wno-dev -G "MinGW Makefiles" "FC=gfortran" -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Release -DBUILDNAME="Win7.Urpin_BB.MinGW.ownmath.debug.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%  
+cmake -Wno-dev -G "MinGW Makefiles" "FC=gfortran" -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Release -DBUILDNAME="Win7.Urpin_BB.MinGW.ownmath.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%  
 
 mingw32-make Experimental
 
