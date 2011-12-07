@@ -22,7 +22,7 @@ git pull
 #./pamadm -a --minus --openrsp
 ./pamadm -a 
 # configure step
-./setup  --fc=gfortran  -D BUILDNAME="linux.gfortran.gcc.usr64_libs.i32lp64" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
+./setup  --fc=gfortran  -D BUILDNAME="linux.gfortran.gcc.usr64_libs.i32lp64_STATIC" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD --static
 cd $DIRAC/$BUILD
 cmake ..
 make dirac.x
