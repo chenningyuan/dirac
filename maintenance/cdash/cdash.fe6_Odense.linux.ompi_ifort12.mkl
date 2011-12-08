@@ -40,26 +40,17 @@ which icc
 DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
 #
 BUILD=build_ompi_ifort_icc_mkl_ilp64
-BUILD_VG=build_ompi_ifort_icc_mkl_ilp64_valgrind
 #
 OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin
-OMPI_VG=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64_valgrind/bin
+
+export MATH_ROOT=/people/disk2/magnus/intel/mkl
 
 cd $DIRAC
 /bin/rm -rf $BUILD
 
-#/bin/rm -rf $BUILD_VG
-
 ./pamadm -a 
 
-#export MATH_ROOT=/opt/intel/mkl
-export MATH_ROOT=/people/disk2/magnus/intel/mkl/
-
-#./setup --fc=$OMPI_VG/mpif90 --cc=$OMPI_VG/mpicc --cpp=$OMPI_VG/mpiCC --mpi -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64_valgrind" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD_VG
-#cd $DIRAC/$BUILD_VG
-#make dirac.x
-#make info_ext
-##make Experimental 
+export MATH_ROOT=/people/disk2/magnus/intel/mkl
 
 #
 # reset back to the launching directory and rerun setup command with new parameters
@@ -77,7 +68,8 @@ make Experimental
 #
 BUILD_STATIC=build_ompi_ifort_icc_ilp64_static
 cd $DIRAC
-./setup --fc=ifort --cc=icc --cpp=icpc  --debug --int64 --internal-math -D BUILDNAME="linux.fe6_Odense.ifort_icc_ilp64_STATIC" -D ENABLE_STATIC_LINKING=ON -D VERBOSE_OUTPUT=ON -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --build=$BUILD_STATIC
+/bin/rm -rf $BUILD_STATIC
+./setup --fc=ifort --cc=icc --cpp=icpc  --int64 --static -D BUILDNAME="linux.fe6_Odense.ifort_icc_ilp64_STATIC" -D VERBOSE_OUTPUT=ON -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --build=$BUILD_STATIC
 cd $DIRAC/$BUILD_STATIC
 make dirac.x
 make info_ext
