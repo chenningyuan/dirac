@@ -697,7 +697,7 @@ C          Hermitian operator
 ! to the fmat
 !
 !       if (dirac_cfg_fde_response .and. itmp%im_frozen) then
-        if (itmp%im_frozen) then
+        if (itmp%im_frozen.and.itmp%im_update_vemb) then
 
            if (.not.dirac_cfg_dft_calculation) then
               call genden(fao, cmo, 1, iprint)
