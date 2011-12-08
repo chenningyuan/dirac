@@ -274,7 +274,6 @@ C
 C        
 C        Find non-redundant active-active rotations.
 C        
-c        CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,100,NOROT)
          CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
 C        
       END IF
@@ -330,7 +329,8 @@ C     =============
 C     
       IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETXEE',-1)        
-        WRITE(LUPRI,'(A,I10)') '# of e-e rotations (non-redundant): ',NXOPE
+        WRITE(LUPRI,'(A,I10)') 
+     &       '# of e-e rotations (non-redundant): ',NXOPE
         IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
         ENDIF
@@ -665,12 +665,12 @@ C          Hermitian operator
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
 
-           if (dirac_cfg_overlap_diagnostic) then    
+           if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
            call generate_num_grid(fao)
-           if (dirac_cfg_overlap_diagnostic) then    
+           if (dft_cfg_overlap_diagnostic) then    
               call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
 #ifdef VAR_MPI
@@ -684,7 +684,7 @@ C          Hermitian operator
      &                        xc_fmat                  = fmo,
      &                        xc_do_potential          = .true.,
      &                        xc_do_overlap_diagnostic = 
-     &                           dirac_cfg_overlap_diagnostic)
+     &                           dft_cfg_overlap_diagnostic)
         end if
 
 #ifdef MOD_UNRELEASED

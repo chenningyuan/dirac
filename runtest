@@ -68,8 +68,7 @@ def backup(file):
 
 usage = '''
   typically ./%prog --all [--mpi=4]
-         or ./%prog --tests="some_test another_test"
-         or ./%prog --tests=visual*'''
+         or ./%prog --tests="some_test another_test"'''
 
 # initialize parser
 
@@ -175,23 +174,19 @@ if options.all or (options.quick and not options.individual):
         sys.exit()
 
 if options.individual:
-    s = options.individual.split()
-    l = ''
-    for w in s:
-        l += root_directory + '/test/' + w + ' '
-#   this complicated code is to allow --tests="foo* *bar* *oof"
-    command = 'find %s -type d -maxdepth 0' % l
-    p = subprocess.Popen(command,
-                         shell=True,
-                         stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE)
-    for test in p.communicate()[0].split('\n'):
-        if test != '':
-            list_of_tests_to_run.append(test)
+    for w in options.individual.split():
+        list_of_tests_to_run.append(os.path.join(root_directory, 'test', w))
 
 if options.timeout:
     # extract the total time in seconds
     timeout = extract_time(options.timeout)
+
+def int32_run(s):
+    for line in s:
+        if '64-bit integers' in line:
+            if (line.split()[-1] == 'ON' or line.split()[-1] == '1'):
+                return False
+    return True
 
 # write the html header
 
@@ -266,7 +261,7 @@ class run:
          return '%s_%s.out' % (inp_file_strip, mol_file_strip)
      def get_test_name(self):
          return string.split(self.test, '/')[-1]
-     def run_and_normal_exit(self):
+     def run_and_controlled_exit(self):
          pgid = None # process group id of the "dirac" process
          def child_signaller(signum, frame):
              '''Pass on signals to pam to its children'''
@@ -282,8 +277,8 @@ class run:
 
          os.chdir(self.test)
          # run pam
-         command = '%s/pam --inp=%s --mol=%s %s' \
-             % (root_directory, self.inp, self.mol, self.pam_flags)
+	 pam_command=os.path.join(root_directory,"pam")
+         command = 'python '+pam_command+' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.pam_flags)
          if sys.platform != 'win32':
              p = subprocess.Popen(command,
                                   shell=True,
@@ -302,9 +297,20 @@ class run:
          pam_output_file.write(pam_output) 
          # check whether DIRAC terminated normally
          if 'exit           : normal' in pam_output:
-             return True
+             return 'NORMAL'
          else:
-             return False
+             exit = 'CRASH'
+             f = open(self.get_output_name(), 'r')
+             s = f.readlines()
+             for line in s:
+                 if 'controlled stop: only sequential' in line:
+                    if options.mpi > 1:
+                        exit = 'SKIP'
+                 if 'controlled stop: only int64' in line:
+                    if int32_run(s):
+                        exit = 'SKIP'
+             f.close()
+             return exit
      def print_result(self, progress, result_text, elapsed):
          """
           print result of the test
@@ -320,21 +326,15 @@ class run:
               inp_file_strip, mol_file_strip, elapsed_str))
 
      def apply_filter(self):
-         # apply the filter on output; TODO: replace crep, bdrep
-         os.system('../../utils/crep %s        result/filter > compare/%s.own' \
+         os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
                    % (self.get_output_name(), self.get_output_name()))
          # apply the filter on reference output
-         os.system('../../utils/crep result/%s result/filter > compare/%s.ref' \
+         os.system('perl -X ../../utils/crep.pl result/%s result/filter > compare/%s.ref' \
                    % (self.get_output_name(), self.get_output_name()))
          # compare filtered result with reference
-         os.system('../../utils/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
+         os.system('perl -X ../../utils/bdrep.pl compare/%s.own compare/%s.ref > compare/%s.txt' \
                    % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
-         # generate individual html
-         os.system('../../utils/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
-                   % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
-         # generate the one big html
-         os.system('../../utils/hdrep compare/%s.own compare/%s.ref >> ../LOGS/runtest.htm' \
-                   % (self.get_output_name(), self.get_output_name()))
+
      def is_shell_command(self):
          return False
      def is_run(self):
@@ -418,6 +418,7 @@ def main(*args):
     nr_of_tests_done = 0
     nr_ok            = 0
     nr_crashed       = 0
+    nr_skip          = 0
     nr_failed        = 0
     nr_without_ref   = 0
     nr_marked_noref  = 0
@@ -426,13 +427,19 @@ def main(*args):
 
     testname_0=None
     for task in l:
-
-        testname_1=string.split(task.test, '/')[-1]
+        
+	#print "task.text=",task.test
+        #testname_1=string.split(task.test, '/')[-1]
+	(head,tail)=os.path.split(task.test)
+	testname_1=tail
         open_new_log_file=(testname_0 != testname_1)
 
         if open_new_log_file : 
             global pam_output_file
-            log_file=root_directory+'/test/LOGS/runtest_'+testname_1+'.log'
+	    #print "testname_1=",testname_1
+	    runtestlogfile='runtest_'+testname_1+'.log'
+            log_file=os.path.join(root_directory,"test","LOGS",runtestlogfile)
+	    #print "test log file",log_file
             backup(log_file)
             pam_output_file = open(log_file,'w', 0)
             pam_output_file.write(" runtest pam outputs \n\n ")
@@ -443,11 +450,13 @@ def main(*args):
         else:
             nr_of_tests_done += 1
             start = time.time()
-            if task.run_and_normal_exit():
-                if os.path.isfile('result/%s' % task.get_output_name()):
+            exit = task.run_and_controlled_exit()
+            if exit == 'NORMAL':
+                output_file = os.path.join('result', task.get_output_name())
+                if os.path.isfile(output_file):
                     # overwrite reference files
                     if options.overwrite:
-                        os.system('cp %s result/%s' % (task.get_output_name(), task.get_output_name()))
+                        os.system('cp %s %s' % (task.get_output_name(), output_file))
                 
                     # create directory where outputs are compared
                     if not os.path.isdir('compare'):
@@ -475,8 +484,11 @@ def main(*args):
                         result_text = 'NO REF'
                         nr_without_ref += 1
             else:
-                result_text = 'CRASH'
-                nr_crashed += 1
+                result_text = exit
+                if exit == 'CRASH':
+                    nr_crashed += 1
+                if exit == 'SKIP':
+                    nr_skip += 1
 
             elapsed = (time.time() - start)
             global_elapsed += elapsed
@@ -508,6 +520,8 @@ def main(*args):
          print('         %5i failed'            % nr_failed)
     if nr_crashed > 0:
          print('         %5i crashed'           % nr_crashed)
+    if nr_skip > 0:
+         print('         %5i skip (controlled exit)' % nr_skip)
     if nr_without_ref > 0:
          print('         %5i without reference' % nr_without_ref)
     if nr_bad_filter > 0:

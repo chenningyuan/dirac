@@ -6129,7 +6129,12 @@ C
 C
       V3 = POLNDER(NORDER,C,XOPT,3)
       V4 = POLNDER(NORDER,C,XOPT,4)
-!radovan: V2 is not set!
+
+!     radovan: v2 is never set, set it to zero and stop code
+!              until this is fixed
+      v2 = 0.0d0
+      stop 'v2 is used but never set'
+
       TEMP = 7.0D0*V3*V3/V2/9.0D0
       T2 = 100.0D0*(TEMP - V4)/V4
       WRITE(ILOGG,'(A,D20.10)')
@@ -6382,5 +6387,29 @@ C***********************************************************************
         JLIST(J) = I
       ENDIF
       ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION SYMCHECK(A,LR,LC,N,NZ)
+C***********************************************************************
+C
+C     Check symmetry aboyut the diagonal of a matrix; 
+C     uses absolute values  in order to work for both 
+C     symmetric and anti-symmetric matrices
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION A(LR,LC,NZ)
+      SYMCHECK = 0.0D0
+      DO IZ = 1,NZ
+        DO J = 1,N-1
+          DO I = J+1,N
+            SYMCHECK = SYMCHECK +
+     &        (DABS(A(I,J,IZ))-DABS(A(J,I,IZ)))
+          ENDDO
+        ENDDO
+      ENDDO
+      SYMCHECK=SYMCHECK/DFLOAT(NZ*N*(N-1)/2)
       RETURN
       END

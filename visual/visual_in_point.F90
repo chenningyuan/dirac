@@ -120,7 +120,7 @@ contains
             
 !           elf: electron localization function
             if (visual_cfg_property(imat) == iq_elf) then
-               call get_tau(tau,          &
+               call get_kin_tau(tau,          &
                             D(imat)%irep, &
                             D(imat)%nrow, &
                             D(imat)%elms, &
@@ -173,6 +173,76 @@ contains
                           ao)
                result(0) = result(0) + density*esp*0.5d0
 
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin) then
+               call get_kin(density,      &
+                            cval,         &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            buffer,       &
+                            ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_ls) then
+               call get_kin_ls(density,      &
+                               cval,         &
+                               D(imat)%irep, &
+                               D(imat)%nrow, &
+                               D(imat)%elms, &
+                               buffer,       &
+                               ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_sl) then
+               call get_kin_sl(density,      &
+                               cval,         &
+                               D(imat)%irep, &
+                               D(imat)%nrow, &
+                               D(imat)%elms, &
+                               buffer,       &
+                               ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_tau) then
+               call get_kin_tau(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_lap) then
+               call get_kin_lap(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_nr) then
+               call get_kin_tau(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + 0.5d0*density
+               call get_kin_lap(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + 0.5d0*density
             end if
 
 !           current density: -ec \psi^\dag \alpha \psi
@@ -368,10 +438,6 @@ contains
                 (visual_cfg_property(imat) == iq_ndipy) .or. &
                 (visual_cfg_property(imat) == iq_ndipz)) then
 
-               if (nr_boson_ireps > 1) then
-                  call quit('visualization of nuclear magnetic dipole only works with C1 symmetry')
-               end if
-
                if (levyle) then
                   call get_gn(density,      &
                               v,            &
@@ -431,9 +497,6 @@ contains
                 (visual_cfg_property(imat) == iq_ndipydia) .or. &
                 (visual_cfg_property(imat) == iq_ndipzdia)) then
 
-               if (nr_boson_ireps > 1) then
-                  call quit('visualization of nuclear magnetic dipole only works with C1 symmetry')
-               end if
 #ifdef MOD_UNRELEASED
                call j_dia(matrix_33,               &
                           visual_cfg_london,       &
@@ -473,7 +536,7 @@ contains
       f = visual_cfg_scale
       if (visual_cfg_radial) then
          distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-         f = f*(distance_to_origin**2.0d0)
+         f = f*(distance_to_origin**2.0d0)*4.0d0*3.14159265358979323846d0
       end if
       result = f*result
 

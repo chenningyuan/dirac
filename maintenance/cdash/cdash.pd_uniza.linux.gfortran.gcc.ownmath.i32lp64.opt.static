@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#
+# 20 00 * * 1,2,3,4,5,6,7  DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/dirac-git-repo; $DIRAC/maintenance/cdash/cdash.pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64.opt  > $DIRAC/maintenance/cdash_buildup_log
+#
+
+# for crontab&queue system you have to set up enviroment !
+export PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin:$PATH
+export PATH=/home/ilias/bin/python_install/Python-2.7.1:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/lib:$LD_LIBRARY_PATH
+
+echo -e "Welcome to the DIRAC CDash buildup - \c";date
+
+# the directory where your DIRAC sits
+DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/dirac-git-repo
+#BUILD=build_openmpi_gfor_gcc_ILP64
+BUILD=build_static
+
+# go to the local DIRAC directory
+cd $DIRAC
+/bin/rm -rf $BUILD
+git pull 
+./pamadm -a 
+
+# configure step,
+./setup --fc=gfortran --cc=gcc -D BUILDNAME="pd_uniza.linux.gfortran_gcc_ownmath.i32lp64.opt-STATIC" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:40:00" -D VERBOSE_OUTPUT=ON --build=$BUILD  --static --internal-math
+
+####./setup --fc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpif90 --cc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpicc --cpp=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00" -D VERBOSE_OUTPUT=ON --build=$BUILD 
+#
+cd $DIRAC/$BUILD
+make Experimental
+make info_ext
+
+##
+## Do the regular Nightly build
+##
+#TMP_DIR=/tmp/dirac_build
+#mkdir -p $TMP_DIR
+#svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
+#cd $TMP_DIR
+#./pamadm -a
+#./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00"
+#cd $TMP_DIR/build
+#make Nightly
+#rm -rf $TMP_DIR
+
+exit 0

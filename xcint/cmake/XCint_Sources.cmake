@@ -1,7 +1,6 @@
 set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/file_units.F90
-    ${PROJECT_SOURCE_DIR}/src/fake_input.F90
     ${PROJECT_SOURCE_DIR}/src/sigma_prefactor_setting.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_sub.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
@@ -9,7 +8,6 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/external/character_processing.F90
     ${PROJECT_SOURCE_DIR}/src/external/keyword.F90
     ${PROJECT_SOURCE_DIR}/src/external/quaternion_algebra.F90
-    ${PROJECT_SOURCE_DIR}/src/external/dirac_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/extra.F90
     ${PROJECT_SOURCE_DIR}/src/interface_ao.F90
     ${PROJECT_SOURCE_DIR}/src/interface_functional_read.F90
@@ -23,6 +21,10 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/xcint_main.F90
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_geometric.F90
+    ${PROJECT_SOURCE_DIR}/src/interface_fortran.F90
+    ${PROJECT_SOURCE_DIR}/src/overlap_diagnostic.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_london_c1.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_autogen.F90
     )

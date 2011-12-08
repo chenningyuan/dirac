@@ -846,7 +846,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         # check the executable
         if  os.path.isfile(self.dirac_exe) is False:
             err_message=\
-            "The dirac.x executable either does not exist (in default build directory) or its location is wrongly or not specified. Check also the corresponding diracrc file."
+            "The dirac.x executable either does not exist (in default build directory) or its location is wrongly or not specified. Check also the corresponding diracrc file. Wanted executable:"+self.dirac_exe
             print_std_out_err(err_message)
 
         if options.dest_timeout:
@@ -889,11 +889,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.debug = True
 
         if options.dest_debugger:
-            if os.path.isfile(str(options.dest_debugger)):
-                self.debugger = options.dest_debugger
+            debugger_full_path=str(find_executable(options.dest_debugger))
+            if os.path.isfile(debugger_full_path):
+                self.debugger = debugger_full_path
             else:
-                print 'FYI: Debugger wrongly assigned. No debugging ;|'
-                self.debug = False
+                print 'debugger selected as pam flag: ',options.dest_debugger
+                print 'But no full path assigned: ',debugger_full_path
+                print_std_out_err('Debugger wrongly assigned.')
 
         if options.dest_vg:
             self.vg_debug = True

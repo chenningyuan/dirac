@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
+#miro: to suppress Windows warning about policy...
+cmake_policy(SET CMP0010 OLD)
+
 project(DIRAC Fortran C)
 add_definitions(-DPRG_DIRAC)
+
 
 # set version
 set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 2)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -18,22 +22,7 @@ include(CheckFortranSourceCompiles)
 # for windows need substitute (type)
 set(cat_program cat)
 
-# set build type
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE
-        Debug
-        CACHE STRING
-        "Choose the type of build, options are: None Debug Release."
-        FORCE
-        )
-endif()
-string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
-if(    NOT cmake_build_type_tolower STREQUAL "debug"
-		AND NOT cmake_build_type_tolower STREQUAL "release"
-		AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo")
-	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
-	Allowed values are Debug, Release, RelWithDebInfo (case-insensitive).")
-endif()
+include(ConfigSafeGuards)
 
 # do not rebuild if rules (compiler flags) change
 # this has advantages and disadvantages
@@ -60,7 +49,6 @@ option(ENABLE_MPI             "Enable MPI parallelization"                      
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
@@ -71,8 +59,11 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
 if(ENABLE_STATIC_LINKING)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+    if (ENABLE_MPI OR ENABLE_OMP)
+        message(FATAL_ERROR "Static linking only works in sequential mode")
+    endif()
 endif()
 
 option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
@@ -99,8 +90,9 @@ endif()
 include(Testing)
 include(Definitions)
 include(Archs)
-include(FCompilers)
-include(CCompilers)
+include(SaveCompilerFlags)
+include(ConfigFortranCompilerFlags)
+include(ConfigCCompilerFlags)
 include(Parallel)
 
 set(LIBS)
@@ -149,7 +141,7 @@ add_executable(
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/xcint/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -160,20 +152,23 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-if(ENABLE_XCFUN)
-    add_subdirectory(xcint/xcfun)
-    set(LIBS
-        ${LIBS}
-        xcfun
-        )
-endif()
+add_subdirectory(xcfun)
+set(LIBS
+    ${LIBS}
+    xcfun
+    )
 
 include(CompilationInfo)
 
-# copy pam to build dir
+# copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
     ${CMAKE_BINARY_DIR}/pam
+    COPYONLY
+    )
+configure_file(
+    ${CMAKE_SOURCE_DIR}/pam
+    ${CMAKE_BINARY_DIR}/pam-dirac
     COPYONLY
     )
 

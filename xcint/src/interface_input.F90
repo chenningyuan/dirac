@@ -2,7 +2,6 @@ module interface_input
 
    use keyword
    use character_processing
-   use dirac_cfg
 
    implicit none
 
@@ -15,7 +14,6 @@ contains
    subroutine read_input_dft(word, kw_section)
 
       use dft_cfg
-      use dirac_cfg
       use sigma_prefactor_setting
 
 !     ---------------------------------------------------------------------------
@@ -26,10 +24,6 @@ contains
       character(4)                     :: first_4
       integer                          :: i, n
 !     ---------------------------------------------------------------------------
-
-#ifdef PRG_DIRAC
-      if (.not. dirac_cfg_dft_calculation) return
-#endif
 
       call reset_available_kw_list()
 
@@ -74,6 +68,7 @@ contains
          end if
       end if
 
+#ifdef PRG_DIRAC
       if (kw_matches(word, '.SAOP! ')) then
 !        "original" SAOP as in JCP 112, 1344 (2000).
          dft_cfg_saop                    = .true.
@@ -81,11 +76,10 @@ contains
          dft_cfg_asymptote_is_lbalpha    = .true.
          dft_cfg_alda_hs                 = .true.
          dft_cfg_alda_ha                 = .true.
-#ifdef PRG_DIRAC
          call setaldahs(.true.) !activate alda for the h+ part
          call setaldaha(.true.) !activate alda for the h- part
-#endif
       end if
+#endif
 
       if (kw_matches(word, '.NOSDFT')) then
          dft_cfg_no_sdft = .true.
@@ -162,7 +156,7 @@ contains
 
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.OVLDIA')) then
-         dirac_cfg_overlap_diagnostic = .true.
+         dft_cfg_overlap_diagnostic = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

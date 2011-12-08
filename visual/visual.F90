@@ -93,14 +93,28 @@ contains
 
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
-       if (                                             &
-           (visual_cfg_property(imat) == iq_elf)   .or. &
-           (visual_cfg_property(imat) == iq_divs)  .or. &
-           (visual_cfg_property(imat) == iq_rots)  .or. &
-           (visual_cfg_property(imat) == iq_divj)  .or. &
-           (visual_cfg_property(imat) == iq_rotj)       &
+       if (                                               &
+           (visual_cfg_property(imat) == iq_elf)     .or. &
+           (visual_cfg_property(imat) == iq_kin)     .or. &
+           (visual_cfg_property(imat) == iq_kin_ls)  .or. &
+           (visual_cfg_property(imat) == iq_kin_sl)  .or. &
+           (visual_cfg_property(imat) == iq_kin_tau) .or. &
+           (visual_cfg_property(imat) == iq_divs)    .or. &
+           (visual_cfg_property(imat) == iq_rots)    .or. &
+           (visual_cfg_property(imat) == iq_divj)    .or. &
+           (visual_cfg_property(imat) == iq_rotj)         &
           ) then
-          max_ao_g_order = 1
+          if (max_ao_g_order < 1) then
+             max_ao_g_order = 1
+          end if
+       end if
+       if (                                               &
+           (visual_cfg_property(imat) == iq_kin_lap) .or. &
+           (visual_cfg_property(imat) == iq_kin_nr)       &
+          ) then
+          if (max_ao_g_order < 2) then
+             max_ao_g_order = 2
+          end if
        end if
        if (levyle) then
 !         here we obtain the paramagnetic part of the current density
@@ -115,7 +129,9 @@ contains
               (visual_cfg_property(imat) == iq_bdipy) .or. &
               (visual_cfg_property(imat) == iq_bdipz)      &
              ) then
-             max_ao_g_order = 1
+             if (max_ao_g_order < 1) then
+                max_ao_g_order = 1
+             end if
           end if
        end if
     end do
@@ -485,7 +501,7 @@ contains
       real(8), allocatable :: q(:, :)
       real(8), allocatable :: atom_xyz(:, :)
       real(8)              :: step_3d(3, 0:3)
-      integer              :: i, j, k, l, m, istep
+      integer              :: i, j, k, l, m, istep, n
       integer              :: icube, jcube, kcube
       integer              :: ix, iy
       real(8)              :: vx(3), vx_norm
@@ -498,8 +514,11 @@ contains
       integer              :: lunit_3d_cube
       integer              :: lunit_3d_scalar
       integer              :: lunit_3d_vector
+      integer              :: lunit_3d_vector_vtk
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
+      real(8), allocatable :: temp(:, :)
+      real(8), allocatable :: temp2(:, :, :, :)
 !     --------------------------------------------------------------------------
 
       i = 1
@@ -510,14 +529,15 @@ contains
 
       allocate(atom_xyz(4, nucdep))
 
-      lunit_2d_scalar   = 14
-      lunit_2d_vector   = 15
-      lunit_2d_flow     = 16
-      lunit_3d_cube     = 17
-      lunit_3d_scalar   = 18
-      lunit_3d_vector   = 19
-      lunit_line_scalar = 20
-      lunit_line_vector = 21
+      lunit_2d_scalar     = 14
+      lunit_2d_vector     = 15
+      lunit_2d_flow       = 16
+      lunit_3d_cube       = 17
+      lunit_3d_scalar     = 18
+      lunit_3d_vector     = 19
+      lunit_3d_vector_vtk = 20
+      lunit_line_scalar   = 21
+      lunit_line_vector   = 22
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar,           &
@@ -547,6 +567,11 @@ contains
               file   = 'plot.3d.vector', &
               status = 'new',            &
               access = 'sequential',     &
+              form   = 'formatted')
+         open(lunit_3d_vector_vtk,           &
+              file   = 'plot.3d.vector.vtk', &
+              status = 'new',                &
+              access = 'sequential',         &
               form   = 'formatted')
          open(lunit_3d_scalar,           &
               file   = 'plot.3d.scalar', &
@@ -756,6 +781,64 @@ contains
                (atom_xyz(j, i), j = 1, 3)
          end do
 
+         write(lunit_3d_vector_vtk, '(a)')      '# vtk DataFile Version 2.0'
+         write(lunit_3d_vector_vtk, '(a)')      'Sample rectilinear grid'
+         write(lunit_3d_vector_vtk, '(a)')      'ASCII'
+         write(lunit_3d_vector_vtk, '(a)')      'DATASET RECTILINEAR_GRID'
+         write(lunit_3d_vector_vtk, '(a, 3i8)') 'DIMENSIONS',        &
+                                                visual_cfg_ncube(1), &
+                                                visual_cfg_ncube(2), &
+                                                visual_cfg_ncube(3)
+
+         n = maxval((/visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3)/))
+         allocate(temp(n, 3))
+
+         do icube = 1, visual_cfg_ncube(1)
+            do jcube = 1, visual_cfg_ncube(2)
+               do kcube = 1, visual_cfg_ncube(3)
+                  r(1) = step_3d(1, 0) + (icube-1)*step_3d(1, 1) &
+                                       + (jcube-1)*step_3d(1, 2) &
+                                       + (kcube-1)*step_3d(1, 3)
+                  r(2) = step_3d(2, 0) + (icube-1)*step_3d(2, 1) &
+                                       + (jcube-1)*step_3d(2, 2) &
+                                       + (kcube-1)*step_3d(2, 3)
+                  r(3) = step_3d(3, 0) + (icube-1)*step_3d(3, 1) &
+                                       + (jcube-1)*step_3d(3, 2) &
+                                       + (kcube-1)*step_3d(3, 3)
+                  temp(icube, 1) = r(1)
+                  temp(jcube, 2) = r(2)
+                  temp(kcube, 3) = r(3)
+               end do
+            end do
+         end do
+
+         j = visual_cfg_ncube(1)
+         write(lunit_3d_vector_vtk, '(a, i8, a)') 'X_COORDINATES', j, ' float'
+         write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 1), m = 1, j)
+         j = visual_cfg_ncube(2)
+         write(lunit_3d_vector_vtk, '(a, i8, a)') 'Y_COORDINATES', j, ' float'
+         write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 2), m = 1, j)
+         j = visual_cfg_ncube(3)
+         write(lunit_3d_vector_vtk, '(a, i8, a)') 'Z_COORDINATES', j, ' float'
+         write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 3), m = 1, j)
+
+         deallocate(temp)
+
+         n = visual_cfg_ncube(1)*visual_cfg_ncube(2)*visual_cfg_ncube(3)
+         write(lunit_3d_vector_vtk, '(a, i8)')    'POINT_DATA', n
+         write(lunit_3d_vector_vtk, '(a)')        'SCALARS scalars float'
+         write(lunit_3d_vector_vtk, '(a)')        'LOOKUP_TABLE default'
+
+         do i = 1, n
+            write(lunit_3d_vector_vtk, '(f13.5)') 0.0d0
+         end do
+
+         write(lunit_3d_vector_vtk, '(a)')
+         write(lunit_3d_vector_vtk, '(a)')
+         write(lunit_3d_vector_vtk, '(a)')       'VECTORS vectors float'
+
+         allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 3))
+
          do icube = 1, visual_cfg_ncube(1)
             do jcube = 1, visual_cfg_ncube(2)
                do kcube = 1, visual_cfg_ncube(3)
@@ -781,26 +864,38 @@ contains
                                              q(0, kcube))
 
                   write(lunit_3d_vector, '(6e13.5)') &
-	             r(1:3),                         &
-	             q(1:3, kcube)
+                     r(1:3),                         &
+                     q(1:3, kcube)
                   write(lunit_3d_scalar, '(4e13.5)') &
-	             r(1:3),                         &
-	             q(0, kcube)
+                     r(1:3),                         &
+                     q(0, kcube)
+                  temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
                end do
                write(lunit_3d_cube, '(6e13.5)')  &
                   (q(0, m), m = 1, visual_cfg_ncube(3))
             end do
          end do
+
+         do kcube = 1, visual_cfg_ncube(3)
+            do jcube = 1, visual_cfg_ncube(2)
+               do icube = 1, visual_cfg_ncube(1)
+                  write(lunit_3d_vector_vtk, '(3e13.5)') &
+                     temp2(icube, jcube, kcube, 1:3)
+               end do
+            end do
+         end do
+         deallocate(temp2)
       end if
 
-      if (visual_cfg_2d)   close(lunit_2d_scalar,   status = 'keep')
-      if (visual_cfg_2d)   close(lunit_2d_vector,   status = 'keep')
-      if (visual_cfg_2d)   close(lunit_2d_flow,     status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_cube,     status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_scalar,   status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_vector,   status = 'keep')
-      if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
-      if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_scalar,     status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_vector,     status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_flow,       status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_cube,       status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_scalar,     status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_vector,     status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_vector_vtk, status = 'keep')
+      if (visual_cfg_line) close(lunit_line_scalar,   status = 'keep')
+      if (visual_cfg_line) close(lunit_line_vector,   status = 'keep')
 
       deallocate(q)
       deallocate(atom_xyz)

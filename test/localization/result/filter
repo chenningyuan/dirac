@@ -1,7 +1,7 @@
-$ERROR 1.E-13
+$ERROR 1.E-10
 
 Nlines 1:Electronic energy
 
-$ERROR 1.E-08
+$ERROR 1.E-09
 
 Nlines 1:**** Inverse mean delocalization
