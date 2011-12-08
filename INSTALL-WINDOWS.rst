@@ -23,8 +23,9 @@ The user has to install on his Windows machine this software:
 The CMake suite can not be used when shell command (sh.exe) in the same %PATH% enviroment variable.
 Therefore please avoid "...\Git\bin" and "...\MinGW\msys\1.0\bin" in your %PATH% is these are 
 creating conflict with CMake. GNU compilers and related tools can be in the system %PATH% 
-( as "...\MinGW\bin" as this gives no conflict with CMake),
+("...\MinGW\bin" this gives no conflict with CMake),
 the same for CMake, Python, Perl.
+See also http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues
 
 Git (developpers)
 -------------------
