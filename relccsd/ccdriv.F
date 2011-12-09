@@ -1950,6 +1950,8 @@ C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
+      KFRSAV=KFREE
+      LFRSAV=LFREE
 C
       call allocator_get_words_inuse(start_mem_use)
 C
