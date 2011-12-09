@@ -216,11 +216,6 @@ contains
       integer, parameter :: max_response_order_mo = 5
       integer            :: i, j, iz, imat
 
-      if (xc_nr_dmat > max_mat_number) then
-         print *, 'programing error: xc_nr_dmat > max_mat_number'
-         stop 1
-      end if
-
 !#define DEBUG_XC
 #ifdef DEBUG_XC
       call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0)
@@ -248,6 +243,13 @@ contains
       if (pure_hf_run) then
          write (*,*) 'this is a pure hf run?!?'
          return
+      end if
+
+      if (xc_mpi_is_master()) then
+         if (xc_nr_dmat > max_mat_number) then
+            print *, 'programing error: xc_nr_dmat > max_mat_number'
+            stop 1
+         end if
       end if
 
 #ifdef VAR_MPI
