@@ -690,7 +690,14 @@ C          Hermitian operator
 #ifdef MOD_UNRELEASED
 !!!!!!
         call fde_get_import_info(itmp)
-        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+!
+! here we should not skip the following call, even if we don't
+! want the fde contributions to response, since it will be
+! necessary to start by adding the contributions from the potential 
+! to the fmat
+!
+!       if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+        if (itmp%im_frozen.and.itmp%im_update_vemb) then
 
            if (.not.dirac_cfg_dft_calculation) then
               call genden(fao, cmo, 1, iprint)

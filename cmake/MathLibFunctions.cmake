@@ -16,98 +16,98 @@
 include(FindPackageHandleStandardArgs)
 
 if (NOT MATH_LANG)
-	set(MATH_LANG C)
+    set(MATH_LANG C)
 elseif(MATH_LANG STREQUAL "C" OR MATH_LANG STREQUAL "CXX")
-	set(MATH_LANG C)
+    set(MATH_LANG C)
 elseif(NOT MATH_LANG STREQUAL "Fortran")
-	message(FATAL_ERROR "Invalid math library linker language: ${MATH_LANG}")
+    message(FATAL_ERROR "Invalid math library linker language: ${MATH_LANG}")
 endif()
 
 macro(find_math_header _service)
-	string(TOUPPER ${_service} _SERVICE)
-	if (${_service}_h)
-		find_path(${_service}_include_dirs
-			NAMES ${${_service}_h}
-			PATHS ${${_SERVICE}_ROOT}
-			PATH_SUFFIXES include ${path_suffixes}
-			NO_DEFAULT_PATH
-			)
-		find_path(${_service}_include_dirs
-			NAMES ${${_service}_h}
-			PATH_SUFFIXES include
-			)
-	endif()
+    string(TOUPPER ${_service} _SERVICE)
+    if (${_service}_h)
+        find_path(${_service}_include_dirs
+            NAMES ${${_service}_h}
+            PATHS ${${_SERVICE}_ROOT}
+            PATH_SUFFIXES include ${path_suffixes}
+            NO_DEFAULT_PATH
+            )
+        find_path(${_service}_include_dirs
+            NAMES ${${_service}_h}
+            PATH_SUFFIXES include
+            )
+    endif()
 endmacro()
 
 macro(find_math_libs _service)
-	string(TOUPPER ${_service} _SERVICE)
-	foreach(${_service}lib ${${_service}_libs})
-		find_library(_lib ${${_service}lib}
-			PATHS ${${_SERVICE}_ROOT}
-			PATH_SUFFIXES ${path_suffixes}
-			NO_DEFAULT_PATH
-			)
-		find_library(_lib ${${_service}lib}
-			PATH_SUFFIXES ${path_suffixes}
-			)
-		if(_lib)
-			set(${_service}_libraries ${${_service}_libraries} ${_lib})
-			unset(_lib CACHE)
-		else()
-			break()
-		endif()
-	endforeach()
-	unset(${_service}lib)
-	unset(_lib CACHE)
+    string(TOUPPER ${_service} _SERVICE)
+    foreach(${_service}lib ${${_service}_libs})
+        find_library(_lib ${${_service}lib}
+            PATHS ${${_SERVICE}_ROOT}
+            PATH_SUFFIXES ${path_suffixes}
+            NO_DEFAULT_PATH
+            )
+        find_library(_lib ${${_service}lib}
+            PATH_SUFFIXES ${path_suffixes}
+            )
+        if(_lib)
+            set(${_service}_libraries ${${_service}_libraries} ${_lib})
+            unset(_lib CACHE)
+        else()
+            break()
+        endif()
+    endforeach()
+    unset(${_service}lib)
+    unset(_lib CACHE)
 endmacro()
 
 macro(cache_math_result _math_type _service)
-	string(TOUPPER ${_service} _SERVICE)
-	string(TOUPPER ${_math_type} _MATH_TYPE)
-	if (${_service}_h)
-		set(${_SERVICE}_H ${${_service}_h})
-	endif()
-	if (${_service}_include_dirs)
-		set(${_SERVICE}_INCLUDE_DIRS ${${_service}_include_dirs})
-	endif()
-	if (${_service}_libraries)
-		set(${_SERVICE}_LIBRARIES ${${_service}_libraries})
-	endif()
-	unset(${_service}_h)
-	unset(${_service}_include_dirs)
-	unset(${_service}_libraries)
+    string(TOUPPER ${_service} _SERVICE)
+    string(TOUPPER ${_math_type} _MATH_TYPE)
+    if (${_service}_h)
+        set(${_SERVICE}_H ${${_service}_h})
+    endif()
+    if (${_service}_include_dirs)
+        set(${_SERVICE}_INCLUDE_DIRS ${${_service}_include_dirs})
+    endif()
+    if (${_service}_libraries)
+        set(${_SERVICE}_LIBRARIES ${${_service}_libraries})
+    endif()
+    unset(${_service}_h)
+    unset(${_service}_include_dirs)
+    unset(${_service}_libraries)
 
     set(${_SERVICE}_FIND_QUIETLY TRUE)
-	if (${_SERVICE}_H)
-		find_package_handle_standard_args(${_SERVICE}
-			"Could NOT find ${_MATH_TYPE} ${_SERVICE}"
-			${_SERVICE}_INCLUDE_DIRS ${_SERVICE}_LIBRARIES ${_SERVICE}_H)
-	else()
-		find_package_handle_standard_args(${_SERVICE}
-			"Could NOT find ${_MATH_TYPE} ${_SERVICE}" ${_SERVICE}_LIBRARIES)
-	endif()
+    if (${_SERVICE}_H)
+        find_package_handle_standard_args(${_SERVICE}
+            "Could NOT find ${_MATH_TYPE} ${_SERVICE}"
+            ${_SERVICE}_INCLUDE_DIRS ${_SERVICE}_LIBRARIES ${_SERVICE}_H)
+    else()
+        find_package_handle_standard_args(${_SERVICE}
+            "Could NOT find ${_MATH_TYPE} ${_SERVICE}" ${_SERVICE}_LIBRARIES)
+    endif()
 
-	if (${_SERVICE}_FOUND)
-		set(DETECTED_MATH_VENDOR ${_MATH_TYPE} CACHE STRING
-			"Detected math vendor."
-			)
-		message("-- ${DETECTED_MATH_VENDOR} ${_SERVICE} found (${${_SERVICE}_LIBRARIES})")
-		add_definitions(-DHAVE_${DETECTED_MATH_VENDOR}_${_SERVICE})
-		set(HAVE_${_SERVICE} ON CACHE INTERNAL
-			"Defined if ${_SERVICE} is available"
-			)
-		set(${_SERVICE}_LIBRARIES ${${_SERVICE}_LIBRARIES} CACHE STRING
-			"${_SERVICE} libraries"
-			)
-		mark_as_advanced(${_SERVICE}_LIBRARIES)
-		if (${_SERVICE}_H)
-			set(${_SERVICE}_H ${${_SERVICE}_H} CACHE STRING
-				"Name of ${_SERVICE} header"
-				)
-			set(${_SERVICE}_INCLUDE_DIRS ${${_SERVICE}_INCLUDE_DIRS}
-				CACHE STRING "${_SERVICE} include directory"
-				)
-			mark_as_advanced(${_SERVICE}_INCLUDE_DIRS ${_SERVICE}_H)
-		endif()
-	endif()
+    if (${_SERVICE}_FOUND)
+        set(DETECTED_MATH_VENDOR ${_MATH_TYPE} CACHE STRING
+            "Detected math vendor."
+            )
+        message("-- ${DETECTED_MATH_VENDOR} ${_SERVICE} found (${${_SERVICE}_LIBRARIES})")
+        add_definitions(-DHAVE_${DETECTED_MATH_VENDOR}_${_SERVICE})
+        set(HAVE_${_SERVICE} ON CACHE INTERNAL 
+            "Defined if ${_SERVICE} is available"
+            )
+        set(${_SERVICE}_LIBRARIES ${${_SERVICE}_LIBRARIES} CACHE STRING 
+            "${_SERVICE} libraries"
+            )
+        mark_as_advanced(${_SERVICE}_LIBRARIES)
+        if (${_SERVICE}_H)
+            set(${_SERVICE}_H ${${_SERVICE}_H} CACHE STRING 
+                "Name of ${_SERVICE} header"
+                )
+            set(${_SERVICE}_INCLUDE_DIRS ${${_SERVICE}_INCLUDE_DIRS}
+                CACHE STRING "${_SERVICE} include directory"
+                )
+            mark_as_advanced(${_SERVICE}_INCLUDE_DIRS ${_SERVICE}_H)
+        endif()
+    endif()
 endmacro()
