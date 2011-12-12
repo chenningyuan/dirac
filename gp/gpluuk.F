@@ -1590,6 +1590,7 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
@@ -1601,8 +1602,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Check whether there are any messages waiting
 C
-   1  CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
-     &                MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+   1  call interface_mpi_iprobe(MPI_ANY_SOURCE,95,NEWMAIL,MPI_COMM_WORLD,
+     &                          istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
@@ -1634,6 +1635,7 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
@@ -1671,7 +1673,8 @@ C        Tell master in case all our messages were received
      &               MPI_COMM_WORLD,IREQ(1),IERR)
       ENDIF
 C     Check for end signal
-      CALL MPI_IPROBE(MPARID,99,MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+      call interface_mpi_iprobe(mparid,99,NEWMAIL,MPI_COMM_WORLD,
+     &                          istat)
       IF (NEWMAIL) THEN
 C        Receive the end signal message and return
          CALL MPI_RECV(IEND,1,my_MPI_INTEGER,MPARID,99,
@@ -1693,8 +1696,8 @@ C
 C     Initially the slaves are still waiting for a new integral task,
 C     tell them that they should do something else
 C
-      CALL MPI_IPROBE (MPI_ANY_SOURCE,20,MPI_COMM_WORLD,NEWMAIL,
-     &                 ISTAT,IERR)
+      call interface_mpi_iprobe(mpi_any_source,20,NEWMAIL,MPI_COMM_WORLD,
+     &                          istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
@@ -1707,8 +1710,8 @@ C        Receive this signal
 C
 C     Check for ready signals from the slaves
 C
-      CALL MPI_IPROBE (MPI_ANY_SOURCE,98,MPI_COMM_WORLD,NEWMAIL,
-     &                 ISTAT,IERR)
+      call interface_mpi_iprobe(mpi_any_source,98,NEWMAIL,MPI_COMM_WORLD,
+     &                          istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)

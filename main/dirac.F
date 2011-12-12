@@ -990,7 +990,7 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C***********************************************************************
-
+      use interface_to_mpi
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1041,8 +1041,7 @@ C
 ! then one can define VAR_SLEEPING SLAVES.
 ! If set, then the slaves test once per second if there
 ! is a new task (because of the CALL SLEEP(1))
-      CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
-     &                NEWTASK,STATUS_MPI,IERR)
+      call interface_mpi_iprobe(MPARID,27,NEWTASK,MPI_COMM_WORLD,ISTAT)
       IF (NEWTASK) THEN
 chj      write (0,*) 'mpi_iprobe true for node',mytid
 chj      write (0,*) 'istatus(source,tag,error):',

@@ -43,6 +43,9 @@ module interface_to_mpi
 
   public interface_mpi_bcast
   public interface_mpi_gather
+  public interface_mpi_comm_rank
+  public interface_mpi_comm_size
+  public interface_mpi_iprobe
 
   interface interface_mpi_bcast
     module procedure interface_mpi_bcast_i0
@@ -65,12 +68,8 @@ module interface_to_mpi
     module procedure interface_mpi_gather_r
   end interface
   
-  interface interface_mpi_comm_rank
-    module procedure interface_mpi_comm_rank_i0
-  end interface
-
-  interface interface_mpi_comm_size
-    module procedure interface_mpi_comm_size_i0
+  interface interface_mpi_iprobe
+    module procedure interface_mpi_iprobe_l0
   end interface
 
   private
@@ -451,6 +450,54 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_iprobe_l0(rank,message_id,x,communicator,status_container)
+
+!-------------------------------------------------------------------------------
+    logical(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE)
+    integer(kind=integer_kind) :: rank
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    logical(kind=4)            :: x_l4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: rank_i4
+    integer(kind=4)            :: i
+!-------------------------------------------------------------------------------
+    communicator_i4 = communicator
+    message_id_i4   = message_id
+    rank_i4         = rank
+
+    call mpi_iprobe(rank_i4, message_id_i4, communicator_i4, x_l4, status_container_i4, ierr_i4)
+
+    do i = 1, MPI_STATUS_SIZE
+      status_container(i) = status_container_i4(i)
+    end do
+    x               = x_l4
+#else
+    call mpi_iprobe(rank   , message_id   , communicator   , x   , status_container   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
+! mpi_send interfaces
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
+! mpi_recv interfaces
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
+! mpi_reduce interfaces
+!-------------------------------------------------------------------------------
+
 !-------------------------------------------------------------------------------
 ! mpi_gather interfaces
 !-------------------------------------------------------------------------------
@@ -519,7 +566,7 @@ contains
 ! interfaces to non-buffer MPI routines
 !-------------------------------------------------------------------------------
 
-  subroutine interface_mpi_comm_rank_i0(communicator,rank)
+  subroutine interface_mpi_comm_rank(communicator,rank)
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind) :: rank
@@ -541,7 +588,7 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
-  subroutine interface_mpi_comm_size_i0(communicator,is_size)
+  subroutine interface_mpi_comm_size(communicator,is_size)
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind) :: is_size
@@ -562,6 +609,8 @@ contains
 
   end subroutine
 !-------------------------------------------------------------------------------
+
+
 #else
   implicit none
   integer :: my_dummy_interface_to_mpi

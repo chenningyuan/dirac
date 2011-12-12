@@ -97,7 +97,6 @@ program dirprg
 
 #ifdef VAR_MPI
   if (parcal) then
-    call mpi_barrier(mpi_comm_world,ierr)
     call allocator_init()
     call allocator_set_max(maxsize)
     call sync_nodes(int(memsize,8),0)

@@ -168,6 +168,7 @@ C     Written by Luuk Visscher, August 1997
 C     Release the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "maxorb.h"
 #if defined (VAR_MPI)
@@ -206,6 +207,7 @@ C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcbham.h"
@@ -334,7 +336,8 @@ C
 C
     1    CONTINUE
          CALL SLEEP(1)
-         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,CCEND,ISTAT,IERR)
+         call interface_mpi_iprobe(MPARID,30,CCEND,MPI_COMM_WORLD,
+     &                             istat)
          IF (.NOT.CCEND) GOTO 1
 C
       CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,

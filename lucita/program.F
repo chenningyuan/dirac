@@ -5645,20 +5645,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IF (.NOT.PARCAL) RETURN
 C
-C     Find the slaves and release them
-
-      NTEST = -1
-#if defined (VAR_MPI2)
-      DO I = 1,NUMNOD
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,ISTAT,IERR)
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                  MPI_COMM_WORLD,IERR)
-      ENDDO
-#endif
-
-C
 C     Let the slaves sleep (if relevant for this operating system)
 C
       CALL DIRAC_PARCTL( 0 )
@@ -5778,19 +5764,5 @@ C
       CLOSE (LUCMD,STATUS='KEEP')
 *
 *
-*     The slave is finished, wait for the master
-
-
-      LUEND = .FALSE.
-      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
-     &              MPI_COMM_WORLD,IREQ,IERR)
-    1    CONTINUE
-         CALL SLEEP(1)
-         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
-         IF (.NOT.LUEND) GOTO 1
-
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
-C
       END
 #endif    /* ifdef VAR_MPI2 */

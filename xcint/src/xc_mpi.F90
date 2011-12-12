@@ -66,7 +66,8 @@ module xc_mpi
 #endif
 
    integer            :: istat(mpi_status_size), ierr
-   integer, parameter :: irank_master = 0
+   integer, parameter :: irank_master        = 0
+   integer, parameter :: global_communicator = mpi_comm_world
 
 contains
 
@@ -74,7 +75,7 @@ contains
    function get_my_rank()
       integer :: get_my_rank
       integer :: irank
-      call interface_mpi_comm_rank(mpi_comm_world, irank)
+      call interface_mpi_comm_rank(global_communicator, irank)
       get_my_rank = irank
    end function
 #endif
@@ -92,7 +93,7 @@ contains
       integer :: xc_mpi_get_nr_proc
       integer :: nr_proc
 #ifdef VAR_MPI
-      call interface_mpi_comm_size(mpi_comm_world, nr_proc, ierr)
+      call interface_mpi_comm_size(global_communicator, nr_proc)
       xc_mpi_get_nr_proc = nr_proc
 #else
       xc_mpi_get_nr_proc = 1
@@ -102,12 +103,12 @@ contains
 #ifdef VAR_MPI
    subroutine xc_mpi_bcast_i0(x)
       integer :: x
-      call mpi_bcast(x, 1, mpi_integer, irank_master, mpi_comm_world, ierr)
+      call mpi_bcast(x, 1, mpi_integer, irank_master, global_communicator, ierr)
    end subroutine
 
    subroutine xc_mpi_bcast_i1(x)
       integer :: x(:)
-      call mpi_bcast(x, size(x), mpi_integer, irank_master, mpi_comm_world, ierr)
+      call mpi_bcast(x, size(x), mpi_integer, irank_master, global_communicator, ierr)
    end subroutine
 
    subroutine xc_mpi_bcast_i2(x)
