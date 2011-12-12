@@ -23,6 +23,7 @@ module xc_mpi
 
 #ifdef VAR_MPI
    use mpi
+   use interface_to_mpi
 #endif
 
    implicit none
@@ -73,7 +74,7 @@ contains
    function get_my_rank()
       integer :: get_my_rank
       integer :: irank
-      call mpi_comm_rank(mpi_comm_world, irank, ierr)
+      call interface_mpi_comm_rank(mpi_comm_world, irank)
       get_my_rank = irank
    end function
 #endif
@@ -91,7 +92,7 @@ contains
       integer :: xc_mpi_get_nr_proc
       integer :: nr_proc
 #ifdef VAR_MPI
-      call mpi_comm_size(mpi_comm_world, nr_proc, ierr)
+      call interface_mpi_comm_size(mpi_comm_world, nr_proc, ierr)
       xc_mpi_get_nr_proc = nr_proc
 #else
       xc_mpi_get_nr_proc = 1
