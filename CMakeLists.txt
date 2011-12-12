@@ -154,8 +154,8 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 
 add_subdirectory(xcfun)
 set(LIBS
-    ${LIBS}
     xcfun
+    ${LIBS}
     )
 
 include(CompilationInfo)
@@ -245,6 +245,12 @@ foreach(
         ${LIBS}
         )
 endforeach()
+
+#miro: fix of static buildup with gfortran+ATLAS
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND DETECTED_MATH_VENDOR MATCHES ATLAS)
+    target_link_libraries(dirac.x -lpthread)
+    message("-- static executable buildup with gfortran+ATLAS - added linking against libpthread")
+endif()
 
 # forward CPP directly to the code
 set(CPP)

@@ -10,6 +10,7 @@
 #  LAPACK_LIBRARIES Libraries to link against to use LAPACK
 #  LAPACK_FOUND Defined if LAPACK is available
 #  HAVE_LAPACK To be used in #ifdefs
+#  HAVE_ATLAS_LAPACK To be used in #ifdefs
 #  LAPACK_H Name of LAPACK header file
 #
 # None of the above will be defined unless LAPACK can be found.
@@ -112,7 +113,7 @@ macro(find_atlas)
     set(lapack_libs lapack_atlas lapack)
     set(path_suffixes include/atlas include)
     find_math_header(lapack)
-    set(path_suffixes lib lib/atlas)
+    set(path_suffixes lib lib/atlas lib/atlas-base)
     find_math_libs(lapack)
     cache_math_result(Atlas lapack)
 endmacro()
