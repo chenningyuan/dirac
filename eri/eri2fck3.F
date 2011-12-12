@@ -1637,6 +1637,7 @@ c
       END
 #if defined (FCK3COLLECT_NO_CONFLICT)
       SUBROUTINE fck3collect(FMAT,NDMAT,tm,WORK,LFREE,IPRINT)
+      use interface_to_mpi
 #include "implicit.h"
 #include "inforb.h"
       DIMENSION FMAT(N2BASX,NDMAT), WORK(*)
@@ -1658,8 +1659,7 @@ c
       iF(iprint.ge.0) THEN
 c     for a good measure, collect times to to provide more info about
 c     load balancing.
-         CALL MPI_GATHER(tm,1,MPI_DOUBLE_PRECISION,
-     &        tms,1,MPI_DOUBLE_PRECISION,MASTER,MPI_COMM_WORLD,IERR)
+         call interface_MPI_GATHER(tm,1,tms,1,MASTER,MPI_COMM_WORLD)
          if(IERR.NE.0) WRITE(LUPRI,*) 'error collecting times:',IERR
          WRITE(LUPRI,"('Node times:',/,20(10F7.2,/))")
      &        (tms(i),i=1,NODTOT+1)

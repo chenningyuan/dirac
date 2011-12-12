@@ -75,6 +75,7 @@
 *  (use of T_BUFF) by Stefan Knecht  
 *
 *
+      use interface_to_mpi
       use symmetry_setup_krci
       use memory_allocator
 #include "implicit.inc"
@@ -230,8 +231,8 @@ CSK     WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
           call izero(icheck_file,ixcomm_sz)
           IEX_GAT = 0 
           IF(EX) IEX_GAT = 1
-          CALL MPI_GATHER(IEX_GAT,1,my_MPI_INTEGER,icheck_file,1,
-     &                    my_MPI_INTEGER,0,IXCOMM,IERR)
+          call interface_MPI_GATHER(iex_gat,1,icheck_file,1,0,
+     &                              ixcomm)
 #ifdef LUCI_DEBUG
           NPTESTVAR = 0
           IF( NPTESTVAR .ge. 20 )THEN

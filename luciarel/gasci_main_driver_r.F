@@ -43,6 +43,7 @@
 *
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -282,8 +283,8 @@ C       zero arrays
 #endif
 C
         IF( SPLIT_IJKL ) THEN
-          CALL MPI_GATHER(MY_T_LEN,1,MPI_INTEGER8,IT_TTOL,1,
-     &                    MPI_INTEGER8,MASTER,MPI_COMM_WORLD,IERR)
+         call interface_MPI_GATHER(MY_T_LEN,1,IT_TTOL,1,MASTER,
+     &                             MPI_COMM_WORLD)
         END IF
 C
         WRITE(LUWRT,'(/2X,A)')

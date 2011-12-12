@@ -7465,6 +7465,7 @@ C**********************************************************************
 *     Stefan Knecht, Dec 08
 *
 C**********************************************************************
+      use interface_to_mpi
       implicit real*8 (A-H,O-Z)
 *
 #include "parluci.h"
@@ -7504,8 +7505,8 @@ C     check for integral file on local disks
       IF( EX ) IDIST_IJKL = -1
       IDIST_IJKL_A(MYPROC+1) = IDIST_IJKL
 #if defined (VAR_MPI)
-      CALL MPI_GATHER(IDIST_IJKL,1,my_MPI_INTEGER,IDIST_IJKL_A,1,
-     &                my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      call interface_MPI_GATHER(idist_ijkl,1,idist_ijkl_a,1,master,
+     &                          mpi_comm_world)
       IF(MYPROC .eq. MASTER) THEN
         IDIST_IJKL_TEMP = IDIST_IJKL_A(MYPROC+1)
         DO I = 1, NMPROC

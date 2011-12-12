@@ -4485,6 +4485,7 @@ C                                 dcbtr3, dcbmp2, comdis and symmet
 C
 C     Written by Luuk Visscher, august 1997.
 C
+      use interface_to_mpi
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4536,31 +4537,39 @@ C     dcborb.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
-      CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(I1_DCBORB,NUMELM,MPARID,
+     &                         MPI_COMM_WORLD)
 C
 C     dcbbas.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-      CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(I1_DCBBAS,NUMELM,MPARID,
+     &                         MPI_COMM_WORLD)
 C
 C     dcbham.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCLHAM,I2_DCLHAM)
-      CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(ONESYS,NUMELM,MPARID,
+     &                         MPI_COMM_WORLD)
 C
 C     dgroup.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-      CALL MPI_BCAST(I1_DGROUP,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(LINEAR,1,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(I1_DGROUP,NUMELM,my_MPI_INTEGER,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(LINEAR,1,MPI_LOGICAL,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(I1_DGROUP,NUMELM,MPARID,MPI_COMM_WORLD)
+      call interface_MPI_BCAST(LINEAR,1,MPARID,MPI_COMM_WORLD)
 C
 C     dcbtra.h
 C     --------
@@ -4568,27 +4577,31 @@ C
 C     integers...
 C
       NUMELM = NDCBTRI
-      CALL MPI_BCAST(IPRTRA,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(IPRTRA,NUMELM,my_MPI_INTEGER,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(IPRTRA,NUMELM,MPARID,MPI_COMM_WORLD)
 C
 C     reals...
 C
       NUMELM = NDCBTRR
-      CALL MPI_BCAST(THROUT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(THROUT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(THROUT,NUMELM,MPARID,MPI_COMM_WORLD)
 C
 C     logicals...
 C
       NUMELM = NDCBTRL
-      CALL MPI_BCAST(TRA_ANTIS,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(TRA_ANTIS,NUMELM,MPI_LOGICAL,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(TRA_ANTIS,NUMELM,MPARID,MPI_COMM_WORLD)
 C
 C     comdis.h
 C     --------
 C
       NUMELM = NCOMDIS
-      CALL MPI_BCAST(NSPCK,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(NSPCK,NUMELM,my_MPI_INTEGER,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(NSPCK,NUMELM,MPARID,MPI_COMM_WORLD)
 C
 C     symmet.h
 C     --------
@@ -4596,14 +4609,16 @@ C
 C     integers...
 C
       NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
-      CALL MPI_BCAST(I1_SYMMTI,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(I1_SYMMTI,NUMELM,my_MPI_INTEGER,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(I1_SYMMTI,NUMELM,MPARID,MPI_COMM_WORLD)
 C
 C     reals...
 C
       NUMELM = NSYMMTR
-      CALL MPI_BCAST(FMULT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+!     CALL MPI_BCAST(FMULT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
+!    &               MPI_COMM_WORLD,IERR)
+      call interface_MPI_BCAST(FMULT,NUMELM,MPARID,MPI_COMM_WORLD)
 C
 C     The rest
 C     --------

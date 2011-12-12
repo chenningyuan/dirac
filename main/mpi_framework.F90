@@ -34,6 +34,7 @@ SUBROUTINE MPIXINIT()
 !**********************************************************************************
 !
 use os_utils
+use integer_model_in_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "mpif.h"
@@ -49,6 +50,14 @@ MYTID      = 0
 NUMNOD     = 0
 NUMPROC    = 0
 MPARID     = 0
+
+!
+! determine integer size in MPI library
+call determine_integer_model_in_mpi
+if(sizeof(ierr) /= integer_kind_in_mpi)then
+  WRITE(LUPRI,'(/A,I2,A,I2)') '  ** ERROR in MPIXINIT ** integer kinds do not match: dirac -->'// & 
+  ' kind =',sizeof(ierr),' MPI library --> kind = ',integer_kind_in_mpi
+end if
 !
 ! initialize MPI_COMM_WORLD
 !
@@ -169,9 +178,10 @@ SUBROUTINE DIST_ENV(ITASK)
 !
 !**********************************************************************************
 !
+use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "mpif.h"
+#include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 INTEGER                 :: LEN_LOCAL, IERR, LDIRWRK,LDIRNOD
@@ -208,8 +218,8 @@ IF( ITASK .eq. 0 )THEN
 !  update slaves
 !
    IF( NUMNOD .gt. 0 )THEN
-      CALL MPI_BCAST(LEN_LOCAL,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(BASDIR_SCR,LEN_LOCAL,MPI_CHARACTER,MPARID,MPI_COMM_WORLD,IERR)
+     call interface_mpi_bcast(len_local,1,mparid,mpi_comm_world)
+     call interface_mpi_bcast(basdir_scr,len_local,mparid,mpi_comm_world)
    END IF
    BASDIR(1:LEN_LOCAL) = BASDIR_SCR(1:LEN_LOCAL)
 !  IF (MYTID .eq. MPARID) WRITE(LUPRI,'(2A)') ' Basis set dir.    : ',BASDIR(1:LEN_LOCAL)
@@ -242,8 +252,8 @@ ELSE IF ( ITASK .eq. 1 ) THEN ! ITASK == 1: DIRWRK
 !  update slaves
 !
    IF( NUMNOD .gt. 0 )THEN
-      CALL MPI_BCAST(LEN_LOCAL,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(CDIRWRK_SCR,LEN_LOCAL,MPI_CHARACTER,MPARID,MPI_COMM_WORLD,IERR)
+     call interface_mpi_bcast(len_local,1,mparid,mpi_comm_world)
+     call interface_mpi_bcast(cdirwrk_scr,len_local,mparid,mpi_comm_world)
    END IF
 ! ulfek: CDIRWRK not used below?
 ! ulfek: comment out   CDIRWRK(1:LEN_LOCAL) = CDIRWRK_SCR(1:LEN_LOCAL)
@@ -278,8 +288,8 @@ ELSE IF ( ITASK .eq. 2 ) THEN ! ITASK == 2: DIRNOD
 !  update slaves
 !
    IF( NUMNOD .gt. 0 )THEN
-      CALL MPI_BCAST(LEN_LOCAL,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(CDIRNOD_SCR,LEN_LOCAL,MPI_CHARACTER,MPARID,MPI_COMM_WORLD,IERR)
+     call interface_mpi_bcast(len_local,1,mparid,mpi_comm_world)
+     call interface_mpi_bcast(cdirnod_scr,len_local,mparid,mpi_comm_world)
    END IF
 !  transfer to common block GNCPAM (dcbgen.h)
    CDIRNOD(1:LEN_LOCAL) = CDIRNOD_SCR(1:LEN_LOCAL)
