@@ -2,6 +2,8 @@ set(MATH_LANG "Fortran")
 
 set(BLAS_FOUND   FALSE)
 set(LAPACK_FOUND FALSE)
+set(ATLAS_BLAS_FOUND FALSE)
+set(ATLAS_LAPACK_FOUND FALSE)
 
 if(NOT ENABLE_INTERNAL_MATH)
 
@@ -48,8 +50,8 @@ if(NOT ENABLE_INTERNAL_MATH)
             find_package(LAPACK)
             if(LAPACK_FOUND)
                 set(LIBS
-                    ${LIBS}
                     ${LAPACK_LIBRARIES}
+                    ${LIBS}
                     )
             endif()
         endif()
@@ -57,5 +59,4 @@ if(NOT ENABLE_INTERNAL_MATH)
             message("-- No external LAPACK library found")
         endif()
     endif()
-
 endif()
