@@ -36,14 +36,15 @@ program dirprg
   use interface_ao
   use interface_mo
 
+#ifdef VAR_MPI
+  use mpi
+#endif
+
   implicit none
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr
   integer(kind=8) :: maxsize = -1

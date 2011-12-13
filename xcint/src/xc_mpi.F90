@@ -52,7 +52,6 @@ module xc_mpi
       module procedure xc_mpi_bcast_r4
       module procedure xc_mpi_bcast_l0
       module procedure xc_mpi_bcast_l1
-      module procedure xc_mpi_bcast_l2
    end interface
 
    interface xc_mpi_reduce
@@ -67,7 +66,6 @@ module xc_mpi
 
    integer            :: istat(mpi_status_size), ierr
    integer, parameter :: irank_master        = 0
-   integer, parameter :: global_communicator = mpi_comm_world
 
 contains
 
@@ -103,120 +101,115 @@ contains
 #ifdef VAR_MPI
    subroutine xc_mpi_bcast_i0(x)
       integer :: x
-      call mpi_bcast(x, 1, mpi_integer, irank_master, global_communicator, ierr)
+      call interface_mpi_bcast(x, 1, irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_i1(x)
       integer :: x(:)
-      call mpi_bcast(x, size(x), mpi_integer, irank_master, global_communicator, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_i2(x)
       integer :: x(:, :)
-      call mpi_bcast(x, size(x), mpi_integer, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_i3(x)
       integer :: x(:, :, :)
-      call mpi_bcast(x, size(x), mpi_integer, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_i4(x)
       integer :: x(:, :, :, :)
-      call mpi_bcast(x, size(x), mpi_integer, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_r0(x)
       real(8) :: x
-      call mpi_bcast(x, 1, mpi_double_precision, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, 1,  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_r1(x)
       real(8) :: x(:)
-      call mpi_bcast(x, size(x), mpi_double_precision, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_r2(x)
       real(8) :: x(:, :)
-      call mpi_bcast(x, size(x), mpi_double_precision, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_r3(x)
       real(8) :: x(:, :, :)
-      call mpi_bcast(x, size(x), mpi_double_precision, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_r4(x)
       real(8) :: x(:, :, :, :)
-      call mpi_bcast(x, size(x), mpi_double_precision, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_l0(x)
       logical :: x
-      call mpi_bcast(x, 1, mpi_logical, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, 1, irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_l1(x)
       logical :: x(:)
-      call mpi_bcast(x, size(x), mpi_logical, irank_master, mpi_comm_world, ierr)
-   end subroutine
-
-   subroutine xc_mpi_bcast_l2(x)
-      logical :: x(:, :)
-      call mpi_bcast(x, size(x), mpi_logical, irank_master, mpi_comm_world, ierr)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_reduce_i0(x)
       integer :: x
       if (xc_mpi_is_master()) then
-         call mpi_reduce(MPI_IN_PLACE, x, 1, mpi_integer, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(MPI_IN_PLACE, x, 1, mpi_integer, mpi_sum, 0, global_communicator, ierr)
       else
-         call mpi_reduce(x, MPI_IN_PLACE, 1, mpi_integer, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(x, MPI_IN_PLACE, 1, mpi_integer, mpi_sum, 0, global_communicator, ierr)
       end if
    end subroutine
 
    subroutine xc_mpi_reduce_i1(x)
       integer :: x(:)
       if (xc_mpi_is_master()) then
-         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_integer, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_integer, mpi_sum, 0, global_communicator, ierr)
       else
-         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_integer, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_integer, mpi_sum, 0, global_communicator, ierr)
       end if
    end subroutine
 
    subroutine xc_mpi_reduce_r0(x)
       real(8) :: x
       if (xc_mpi_is_master()) then
-         call mpi_reduce(MPI_IN_PLACE, x, 1, mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(MPI_IN_PLACE, x, 1, mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       else
-         call mpi_reduce(x, MPI_IN_PLACE, 1, mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(x, MPI_IN_PLACE, 1, mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       end if
    end subroutine
 
    subroutine xc_mpi_reduce_r1(x)
       real(8) :: x(:)
       if (xc_mpi_is_master()) then
-         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       else
-         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       end if
    end subroutine
 
    subroutine xc_mpi_reduce_r2(x)
       real(8) :: x(:, :)
       if (xc_mpi_is_master()) then
-         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       else
-         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       end if
    end subroutine
 
    subroutine xc_mpi_reduce_r4(x)
       real(8) :: x(:, :, :, :)
       if (xc_mpi_is_master()) then
-         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       else
-         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_double_precision, mpi_sum, 0, global_communicator, ierr)
       end if
    end subroutine
 
@@ -243,19 +236,23 @@ contains
       if (xc_mpi_is_master()) then
          allocate(buffer(nr_points_on_this_proc))
          call mpi_scatter(rx, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
          call mpi_scatter(ry, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
          call mpi_scatter(rz, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
          call mpi_scatter(rw, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
          deallocate(buffer)
       else
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, rx, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, ry, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, rz, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, rw, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+         call mpi_scatter((/0.0d0/), 0, mpi_real8, rx, nr_points_on_this_proc, mpi_real8, irank_master, &
+                          global_communicator, ierr)
+         call mpi_scatter((/0.0d0/), 0, mpi_real8, ry, nr_points_on_this_proc, mpi_real8, irank_master, &
+                          global_communicator, ierr)
+         call mpi_scatter((/0.0d0/), 0, mpi_real8, rz, nr_points_on_this_proc, mpi_real8, irank_master, &
+                          global_communicator, ierr)
+         call mpi_scatter((/0.0d0/), 0, mpi_real8, rw, nr_points_on_this_proc, mpi_real8, irank_master, &
+                          global_communicator, ierr)
       end if
 
 !     if there is a rest of points, send them to the last proc
@@ -263,17 +260,21 @@ contains
       if (nr_points_rest > 0) then
          if (xc_mpi_is_master()) then
             i = nr_points_batch - nr_points_rest + 1
-            call mpi_send(rx(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 90, mpi_comm_world, ierr)
-            call mpi_send(ry(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 91, mpi_comm_world, ierr)
-            call mpi_send(rz(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 92, mpi_comm_world, ierr)
-            call mpi_send(rw(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 93, mpi_comm_world, ierr)
+#ifdef DEACTIVATED_FOR_MPI_32bit_implementation_testing
+            call mpi_send(rx(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 90, global_communicator, ierr)
+            call mpi_send(ry(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 91, global_communicator, ierr)
+            call mpi_send(rz(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 92, global_communicator, ierr)
+            call mpi_send(rw(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 93, global_communicator, ierr)
+#endif
          end if
          if (get_my_rank() == (xc_mpi_get_nr_proc()-1)) then
             i = nr_points_on_this_proc + 1
-            call mpi_recv(rx(i), nr_points_rest, mpi_real8, irank_master, 90, mpi_comm_world, istat, ierr)
-            call mpi_recv(ry(i), nr_points_rest, mpi_real8, irank_master, 91, mpi_comm_world, istat, ierr)
-            call mpi_recv(rz(i), nr_points_rest, mpi_real8, irank_master, 92, mpi_comm_world, istat, ierr)
-            call mpi_recv(rw(i), nr_points_rest, mpi_real8, irank_master, 93, mpi_comm_world, istat, ierr)
+#ifdef DEACTIVATED_FOR_MPI_32bit_implementation_testing
+            call mpi_recv(rx(i), nr_points_rest, mpi_real8, irank_master, 90, global_communicator, istat, ierr)
+            call mpi_recv(ry(i), nr_points_rest, mpi_real8, irank_master, 91, global_communicator, istat, ierr)
+            call mpi_recv(rz(i), nr_points_rest, mpi_real8, irank_master, 92, global_communicator, istat, ierr)
+            call mpi_recv(rw(i), nr_points_rest, mpi_real8, irank_master, 93, global_communicator, istat, ierr)
+#endif
             nr_points_on_this_proc = nr_points_on_this_proc + nr_points_rest
          end if
       end if

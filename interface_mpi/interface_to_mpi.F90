@@ -42,10 +42,18 @@ module interface_to_mpi
 
 
   public interface_mpi_bcast
+  public interface_mpi_iprobe
   public interface_mpi_gather
   public interface_mpi_comm_rank
   public interface_mpi_comm_size
-  public interface_mpi_iprobe
+  public interface_mpi_barrier
+  public interface_mpi_get_processor_name
+  public interface_mpi_init
+  public interface_mpi_finalize
+
+! special interface routines for communicating data residing on the work array
+  public interface_mpi_bcast_i1_work
+  public interface_mpi_bcast_r1_work
 
   interface interface_mpi_bcast
     module procedure interface_mpi_bcast_i0
@@ -59,6 +67,7 @@ module interface_to_mpi
     module procedure interface_mpi_bcast_r3
     module procedure interface_mpi_bcast_r4
     module procedure interface_mpi_bcast_cx
+    module procedure interface_mpi_bcast_c1
     module procedure interface_mpi_bcast_l0
     module procedure interface_mpi_bcast_l1
   end interface
@@ -79,6 +88,8 @@ module interface_to_mpi
 #else
   integer, parameter :: integer_kind = 4
 #endif
+
+  integer, parameter, public :: global_communicator = mpi_comm_world
 
   save
 
@@ -382,6 +393,32 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_bcast_c1(x,ndim,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    character*(*)              :: x(:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_bcast(x, ndim_i4, MPI_CHARACTER, root_proc_i4, communicator_i4, ierr_i4)
+#else
+    call mpi_bcast(x, ndim   , MPI_CHARACTER, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
   subroutine interface_mpi_bcast_l0(x,ndim,root_proc,communicator)
 
 !-------------------------------------------------------------------------------
@@ -416,7 +453,7 @@ contains
   subroutine interface_mpi_bcast_l1(x,ndim,root_proc,communicator)
 
 !-------------------------------------------------------------------------------
-    logical                      :: x(:)
+    logical(kind=integer_kind)   :: x(:)
     integer(kind=integer_kind)   :: ndim
     integer(kind=integer_kind)   :: root_proc
     integer(kind=integer_kind)   :: communicator
@@ -445,6 +482,64 @@ contains
     deallocate(x_l4)
 #else
     call mpi_bcast(x, ndim   , my_MPI_LOGICAL, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
+! special bcast routines for communicating data on the work array
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_bcast_i1_work(x,ndim,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    integer                    :: x(ndim)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
+#else
+    write(lupri,*) ' enter i1 special: ndim == ',ndim 
+    call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_bcast_r1_work(x,ndim,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x(ndim)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
+#else
+    write(lupri,*) ' enter r1 special: ndim == ',ndim 
+    call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
   end subroutine
@@ -605,6 +700,77 @@ contains
     is_size         = is_size_i4
 #else
     call mpi_comm_rank(communicator   , is_size      , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_barrier(communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    communicator_i4 = communicator
+    call mpi_barrier(communicator_i4, ierr_i4)
+#else
+    call mpi_barrier(communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_get_processor_name(pname,ndim)
+
+!-------------------------------------------------------------------------------
+    character(len=255)         :: pname ! len = 255 corresponds to MPI_MAX_PROCESSOR_NAME
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    call mpi_get_processor_name(pname, ndim_i4, ierr_i4)
+    ndim = ndim_i4
+#else
+    call mpi_get_processor_name(pname, ndim   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_init()
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    call mpi_init(ierr_i4)
+#else
+    call mpi_init(ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_finalize()
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    call mpi_finalize(ierr_i4)
+#else
+    call mpi_finalize(ierr   )
 #endif
 
   end subroutine

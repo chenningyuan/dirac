@@ -1449,11 +1449,11 @@ C
 #if defined (VAR_MPI)
             IF (INODE.NE.MYTID) THEN
                 CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
-     &           IGBUF(1,1,IBUF),N,INODE)
+     &                                 IGBUF(1,1,IBUF),N,INODE)
             ELSE
 #endif
                 CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
-     &           IGBUF(1,1,IBUF),N)
+     &                                 IGBUF(1,1,IBUF),N)
 #if defined (VAR_MPI)
             ENDIF
 #endif
@@ -1560,7 +1560,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INCLUDE 'mpif.h'
 #include "infpar.h"
       REAL*8 RGBUF(NGBFSZ)
-      INTEGER*4 IGBUF(2,NGBFSZ)
+!     INTEGER*4 IGBUF(2,NGBFSZ) ! should be default int as far as i can see
+      INTEGER   IGBUF(2,NGBFSZ)
 C
 C     Loop until we find a free send buffer IFREE
     1 CONTINUE
@@ -1602,14 +1603,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Check whether there are any messages waiting
 C
-   1  call interface_mpi_iprobe(MPI_ANY_SOURCE,95,NEWMAIL,MPI_COMM_WORLD,
-     &                          istat)
+   1  call interface_mpi_iprobe(MPI_ANY_SOURCE,95,NEWMAIL,
+     &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
 C        Receive the buffer
          CALL MPI_RECV(IHBUF,4*NGBFSZ+4,my_MPI_INTEGER,INODE,95,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+     &                 global_communicator,ISTAT,IERR)
 C        Decode the information and determine where the buffer should go
          N      = IHBUF(1)
          IBUF   = IHBUF(2)
@@ -1673,7 +1674,7 @@ C        Tell master in case all our messages were received
      &               MPI_COMM_WORLD,IREQ(1),IERR)
       ENDIF
 C     Check for end signal
-      call interface_mpi_iprobe(mparid,99,NEWMAIL,MPI_COMM_WORLD,
+      call interface_mpi_iprobe(mparid,99,NEWMAIL,global_communicator,
      &                          istat)
       IF (NEWMAIL) THEN
 C        Receive the end signal message and return
@@ -1696,22 +1697,22 @@ C
 C     Initially the slaves are still waiting for a new integral task,
 C     tell them that they should do something else
 C
-      call interface_mpi_iprobe(mpi_any_source,20,NEWMAIL,MPI_COMM_WORLD,
-     &                          istat)
+      call interface_mpi_iprobe(mpi_any_source,20,NEWMAIL,
+     &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
 C        Receive this signal
          CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,20,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+     &                 global_communicator,ISTAT,IERR)
          CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,INODE,30,
-     &                 MPI_COMM_WORLD,IERR)
+     &                 global_communicator,IERR)
       ENDIF
 C
 C     Check for ready signals from the slaves
 C
-      call interface_mpi_iprobe(mpi_any_source,98,NEWMAIL,MPI_COMM_WORLD,
-     &                          istat)
+      call interface_mpi_iprobe(mpi_any_source,98,NEWMAIL,
+     &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
          INODE = ISTAT(MPI_SOURCE)
