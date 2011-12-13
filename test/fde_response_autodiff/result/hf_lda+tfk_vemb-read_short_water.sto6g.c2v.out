@@ -1,8 +1,8 @@
-DIRAC pam run in /Users/andre/devel/git/fde/test/fde_response_autodiff
+DIRAC pam run in /home/andre/devel/git/master/test/fde_response_autodiff
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
-DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+             out of the allowed           128000000 words (           976 MB)
  
-Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+Note: maximum allocatable memory for serial run can be set by pam --aw
  
  ******************************************************************************
  *                                                                            *
@@ -81,33 +81,45 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
  *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions since the DIRAC08 release from:                  *
+ *    with contributions from:                                                *
  *                                                                            *
- *    Radovan Bast             University of Tromsoe,            Norway       *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
  *    Ulf Ekstroem             University of Oslo                Norway       *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
  *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
  *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
  *    Johan Henriksson         Linkoeping University             Sweden       *
  *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
  *    Stefan Knecht            University of Southern Denmark    Denmark      *
- *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linkoeing University              Sweden       *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe,            Norway       *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
  *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas Thorvaldsen      University of Tromsoe,            Norway       *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
  *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
  *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
@@ -124,50 +136,60 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC10 (2010),                                                 *
- *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
- *    with new contributions from R. Bast, K. G. Dyall, U. Ekstroem, E. Eliav,*
- *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
- *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
- *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
- *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
- *    (see http://dirac.chem.vu.nl).                                          *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
-
-
+ 
+ 
 Compilation info
 ----------------
-
- System                   | Darwin-10.8.0
- Processor                | i386
+ 
+ System                   | Linux-2.6.35-30-server
+ Processor                | x86_64
  Internal math            | OFF
- 64-bit integers          | OFF
+ 64-bit integers          | ON
  MPI                      | OFF
- XCFun                    | ON
- Fortran compiler         | /opt/local/bin/gfortran-mp-4.5
- Fortran compiler version | unknown
- Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -O3 -funroll-all-loops
- C compiler               | /opt/local/bin/gcc-mp-4.5
- C compiler version       | unknown
- C flags                  |   -g -O2 -Wno-unused
- user-defined math        | -framework vecLib
- Configuration time       | 2011-09-20 19:59:44.690342
- Last commit rev          | 1965817f1d9a89da1488ec1f3f5a6665b9fbaa30
- Last commit author       | Andre Severo Pereira Gomes 
- Last commit time         | Tue Sep 20 18:59:40 2011 +0200
+ Fortran compiler         | /home/soft/intel/composerxe-2011.4.191/bin/intel64
+                          | /ifort
+ Fortran compiler version | ifort (IFORT) 12.0.4 20110427
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -i8 
+                          | -O3 -ip
+ C compiler               | /home/soft/intel/composerxe-2011.4.191/bin/intel64
+                          | /icc
+ C compiler version       | icc (ICC) 12.0.4 20110427
+ C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
+                          | 7 -O2
+ user-defined math        | -L/home/soft/intel/composerxe-2011.4.191/mkl/lib/i
+                          | ntel64 -Wl,--start-group -lmkl_intel_ilp64 -lmkl_i
+                          | ntel_thread -lmkl_core -Wl,--end-group -openmp -lp
+                          | thread -lm
+ static libraries linking | OFF
+ Configuration time       | 2011-12-09 09:45:33.570857
+ Last commit revision     | 530fa6bc2796416449503fe2de00a2a54618bcb3
+ Last commit author       | andre 
+ Last commit time         | Fri Dec 9 00:34:34 2011 +0100
 
 
 Execution time and host
 -----------------------
 
  
-
-
+     Date and time (Linux)  : Mon Dec 12 18:16:09 2011
+     Host name              : not found                               
+ 
+ 
 Contents of the input file
 --------------------------
-
+ 
 **DIRAC                                                                                             
 .TITLE                                                                                              
 electric properties for frozen density embedding                                                    
@@ -187,7 +209,6 @@ EMBPOT
  1.0D-2                                                                                             
 **PROPERTIES                                                                                        
 .DIPOLE                                                                                             
-#.POLARIZABILITY                                                                                    
 *LINEAR RESPONSE                                                                                    
 .B FREQ                                                                                             
  2                                                                                                  
@@ -195,12 +216,15 @@ EMBPOT
  0.100                                                                                              
 .OPERATOR                                                                                           
  YDIPLEN                                                                                            
+*EXCITATION                                                                                         
+.EXCITATIONS                                                                                        
+ 1 10                                                                                               
 *END OF                                                                                             
-
-
+ 
+ 
 Contents of the molecule file
 -----------------------------
-
+ 
 INTGRL                                                                                              
 Water                                                                                               
 sto basis, geometry as in Christophs ADF run                                                        
@@ -252,12 +276,6 @@ FINISH
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
- Settings for FCK3 calculation:
- ------------------------------
-
-Dynamical threshold is not (yet) implemented in DIRAC
 
 
     *************************************************************************
@@ -361,10 +379,8 @@ Point group: C2v
     B2   k
     A2   i
 
-  QM-QM nuclear repulsion energy :    8.980370229500
-  QM-pc interaction energy       :    0.000000000000
-  pc-pc interaction energy       :    0.000000000000
-  Total interaction energy       :    8.980370229500
+  QM-QM nuclear repulsion energy :      8.980370229500
+
 
 
   Atoms and basis sets
@@ -387,9 +403,6 @@ Point group: C2v
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-
-  MNF.INP input file (for the AMFI stuff) is ready.
-  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
   References for the basis sets
@@ -429,7 +442,7 @@ Point group: C2v
   -------------------------------------------
 
     3
-
+ 
 O      0.0000000000   0.0000000000  -0.2619247262
 H      0.0000000000   0.7716276844   0.3426163129
 H      0.0000000000  -0.7716276844   0.3426163129
@@ -615,7 +628,7 @@ H      0.0000000000  -0.7716276844   0.3426163129
   
   Frozen Density Embedding (FDE) Calculation setup
   ------------------------------------------------
-
+ 
  * Print level                  :     0
  * Non-additive functional : (KE) kin_tf              
                              (XC) lda                 
@@ -624,10 +637,10 @@ H      0.0000000000  -0.7716276844   0.3426163129
                              (KE) kin_tf              
  
  * FDE Potential read from file : EMBPOT                                                      
-
+ 
    Enviroment effects included via the fixed potential method described in:
    A.S.P. Gomes, C. R. Jacob and L. Visscher, PCCP 10 (2008) 5353-5362.
-
+ 
  * Density (and gradient) from frozen subsystems read from file: FRZDNS                                                      
 ===========================================================================
   
@@ -678,6 +691,25 @@ H      0.0000000000  -0.7716276844   0.3426163129
  * Linear response functions evaluated at the following REAL frequencies:
        0.00000D+00 a.u.
        0.10000D+00 a.u.
+===========================================================================
+ XPPINP: Electronic PP excitation energies and transition moments
+===========================================================================
+ * Print level                 :    0
+ * Maximum number of iterations:   50
+ * Threshold for convergence   : 1.00000D-05
+ * Max. size of reduced matrix :  600
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+ * Trial vectors will be normalized.
+---------------------------------------------------------------------------
+ * No. of excitations evaluated in each boson symmetry:
+           boson symmetry 1 (A1 ) :   10
+           boson symmetry 2 (B1 ) :    0
+           boson symmetry 3 (B2 ) :    0
+           boson symmetry 4 (A2 ) :    0
+
+---------------------------------------------------------------------------
+ ** No transition moment operators **
 ===========================================================================
  Dipole moment
 ===========================================================================
@@ -746,8 +778,8 @@ H      0.0000000000  -0.7716276844   0.3426163129
                     z     -2.66482600     -6.77337478
 
                         1 Debye =   2.54177000 a.u. 
-  No SS-nuclear attraction integrals(MOLFLD), adapted PDOINT=+000
- debug, calling embpot import in dirone
+  The SS-block of the potential energy matrix and (if present) embedding potential are neglected (Levy-Leblond Hamiltonian)
+  The SS-block of the potential energy matrix and (if present) embedding potential are neglected (Levy-Leblond Hamiltonian)
 
 
                        Generating Lowdin canonical matrix:
@@ -775,60 +807,61 @@ H      0.0000000000  -0.7716276844   0.3426163129
 No. of positive energy orbitals (NESH):     7
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):     7
- >>> Time used in PAMSET is   0.69 seconds
+ >>> Time used in PAMSET is   0.81 seconds
 
 
    ****************************************************************************
    ************************* Hartree-Fock calculation *************************
    ****************************************************************************
 
- debug, calling prpmao for embpot
- debug, after calling prpmao for embpot
 
 *** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########                           
+########## START ITERATION NO.   1 ##########   Mon Dec 12 18:16:10 2011
 
-It.   1    -32.38964409001      1.00D+20  0.00D+00  0.00D+00               0.00646806s   Scr. nuclei              
+It.    1    -32.38964409001      1.00D+20  0.00D+00  0.00D+00               0.13999999s   Scr. nuclei    Mon Dec 12
 
-########## START ITERATION NO.   2 ##########                           
+########## START ITERATION NO.   2 ##########   Mon Dec 12 18:16:10 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.02004004s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.13000000s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.18144298s
+>>> Total CPU-time : 0.89999998s
 
-########## END ITERATION NO.   2 ##########                           
+########## END ITERATION NO.   2 ##########   Mon Dec 12 18:16:10 2011
 
-It.   2    -75.61561853124      4.32D+01 -5.09D-01  4.23D-01               0.18144298s   LL                       
+It.    2    -75.61561853124      4.32D+01 -5.09D-01  4.23D-01               0.89999998s   LL             Mon Dec 12
 
-########## START ITERATION NO.   3 ##########                           
+########## START ITERATION NO.   3 ##########   Mon Dec 12 18:16:10 2011
 
     3 *** Differential density matrix. DCOVLP     = 0.9774
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.01982892s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.10999990s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.12946010s
+>>> Total CPU-time : 0.80999994s
 
-########## END ITERATION NO.   3 ##########                           
+########## END ITERATION NO.   3 ##########   Mon Dec 12 18:16:10 2011
 
-It.   3    -75.67514751480      5.95D-02 -2.29D-01  3.91D-02   DIIS   2    0.12946010s   LL                       
+It.    3    -75.67514751480      5.95D-02 -2.29D-01  3.91D-02   DIIS   2    0.80999994s   LL             Mon Dec 12
 
-########## START ITERATION NO.   4 ##########                           
+########## START ITERATION NO.   4 ##########   Mon Dec 12 18:16:10 2011
 
     4 *** Differential density matrix. DCOVLP     = 1.0011
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.01990795s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.09000015s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.12834692s
+>>> Total CPU-time : 0.37000012s
 
-########## END ITERATION NO.   4 ##########                           
+########## END ITERATION NO.   4 ##########   Mon Dec 12 18:16:10 2011
 
-It.   4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.12834692s   LL                       
+It.    4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.37000012s   LL             Mon Dec 12
 
 
                                    SCF - CYCLE
@@ -844,10 +877,10 @@ It.   4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.128
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -32.38964409001      1.00D+20  0.00D+00  0.00D+00               0.00646806s   Scr. nuclei              
-It.   2    -75.61561853124      4.32D+01 -5.09D-01  4.23D-01               0.18144298s   LL                       
-It.   3    -75.67514751480      5.95D-02 -2.29D-01  3.91D-02   DIIS   2    0.12946010s   LL                       
-It.   4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.12834692s   LL                       
+It.    1    -32.38964409001      1.00D+20  0.00D+00  0.00D+00               0.13999999s   Scr. nuclei    Mon Dec 12
+It.    2    -75.61561853124      4.32D+01 -5.09D-01  4.23D-01               0.89999998s   LL             Mon Dec 12
+It.    3    -75.67514751480      5.95D-02 -2.29D-01  3.91D-02   DIIS   2    0.80999994s   LL             Mon Dec 12
+It.    4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.37000012s   LL             Mon Dec 12
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    4 iterations.
 * Average elapsed time per iteration: 
@@ -858,13 +891,13 @@ It.   4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.128
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -84.655999626981028
+   Electronic energy                        :    -84.655999626980901
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      8.980370229500169
 
    Sum of all contributions to the energy
-   Total energy                             :    -75.675629397480861
+   Total energy                             :    -75.675629397480733
 
 
                                    Eigenvalues
@@ -873,7 +906,7 @@ It.   4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.128
 
 * Boson symmetry A1 
   * Closed shell, f = 1.0000
--20.50287936929336  ( 2)    -1.26323464813437  ( 2)    -0.45470357956275  ( 2)
+-20.50287936929340  ( 2)    -1.26323464813436  ( 2)    -0.45470357956273  ( 2)
   * Virtual eigenvalues, f = 0.0000
   0.58127534344472  ( 2)
 
@@ -883,9 +916,9 @@ It.   4    -75.67562939748      4.82D-04  1.83D-02  2.63D-03   DIIS   2    0.128
 
 * Boson symmetry B2 
   * Closed shell, f = 1.0000
- -0.60597488824470  ( 2)
+ -0.60597488824469  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.70616144975809  ( 2)
+  0.70616144975810  ( 2)
 
 * Boson symmetry A2 
   * No eigenvalues.
@@ -970,64 +1003,203 @@ tot.num. of pos.erg shells:    4    1    2    0
     - Secondary orbitals :      6..     7                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -75.6751475148049479
-* Heading :electric properties for frozen density embedding                          
+* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:10 2011
+
+
+
+ >>>  SOLVING PP EXCITATION ENERGIES - Symmetry: A1 
+      for the 10 lowest excitation energies.
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /scratch/andre/dirac/andre/DIRAC_hf_lda+tfk_vemb-read_short_
+* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:10 2011
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /scratch/andre/dirac/andre/DIRAC_hf_lda+tfk_vemb-read_short_
+* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:10 2011
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
+
+########## START MICROITERATION NO.   1 ##########   Mon Dec 12 18:16:10 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.03999996s
+ 
+ FDE integration
+ 
+   number of grid points                          =      4816
+   number of grid points below density threshold  =         0
+   number of electrons from numerical integration =         0.0011285847034828
+   number of electrons from orbital occupations   =         0
+   WARNING: error in the number of electrons      =         0.0011285847034828
+            is larger than 1.0d-3
+            this can happen when starting from coefficients
+            from a different geometry
+            or it can mean that the quadrature grid is inappropriate
+ 
+   time spent in FDE integration                  =   1.47 seconds
+ 
+* Trial vectors in this micro iteration:  E+: 10  E-: 10
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.38462485  1.00E-05  7.85E-17  5.55E-17  5.55E-17
+     0.47981562  1.00E-05  0.00E+00  0.00E+00  0.00E+00
+     0.50590669  1.00E-05  4.63E-15  3.29E-15  3.26E-15
+     0.59345870  1.00E-05  4.46E-15  4.32E-15  1.12E-15
+     0.63071851  1.00E-05  4.73E-15  4.59E-15  1.16E-15
+     1.00851318  1.00E-05  3.69E-15  2.89E-15  2.29E-15
+     1.35863323  1.00E-05  3.68E-15  3.13E-15  1.94E-15
+     1.43445715  1.00E-05  3.42E-15  2.97E-15  1.69E-15
+    20.34196310  1.00E-05  2.37E-14  1.27E-14  2.01E-14
+    20.34864850  1.00E-05  2.08E-14  1.93E-14  7.71E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   2.60999990s  (LL       )     [ 10]     [ 10]
+--------------------------------------------------------
+            0.384625 :   7.85D-17 |   5.55D-17  5.55D-17
+            0.479816 :   0.00D+00 |   0.00D+00  0.00D+00
+            0.505907 :   4.63D-15 |   3.29D-15  3.26D-15
+            0.593459 :   4.46D-15 |   4.32D-15  1.12D-15
+            0.630719 :   4.73D-15 |   4.59D-15  1.16D-15
+            1.008513 :   3.69D-15 |   2.89D-15  2.29D-15
+            1.358633 :   3.68D-15 |   3.13D-15  1.94D-15
+            1.434457 :   3.42D-15 |   2.97D-15  1.69D-15
+           20.341963 :   2.38D-14 |   1.27D-14  2.01D-14
+           20.348648 :   2.08D-14 |   1.93D-14  7.71D-15
+========================================================
+
+
+                    Linear response excitations; final output
+                    -----------------------------------------
+
+================================================================================
+
+ *** Excitations of boson symmetry 1 : A1 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.38462485 a.u.    7.85D-17 (converged)
+ Nonrel. sym.:   TyB1                        10.4662 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.47981562 a.u.    0.00D+00 (converged)
+ Nonrel. sym.:   TzA2                        13.0564 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.50590669 a.u.    4.63D-15 (converged)
+ Nonrel. sym.:   TxB2                        13.7664 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.59345870 a.u.    4.46D-15 (converged)
+ Nonrel. sym.:   S0A1                        16.1488 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.63071851 a.u.    4.73D-15 (converged)
+ Nonrel. sym.:   TxB2                        17.1627 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     1.00851318 a.u.    3.69D-15 (converged)
+ Nonrel. sym.:   S0A1                        27.4430 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.35863323 a.u.    3.68D-15 (converged)
+ Nonrel. sym.:   TxB2                        36.9703 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.43445715 a.u.    3.42D-15 (converged)
+ Nonrel. sym.:   S0A1                        39.0336 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.34196310 a.u.    2.37D-14 (converged)
+ Nonrel. sym.:   S0A1                       553.5330 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.34864850 a.u.    2.08D-14 (converged)
+ Nonrel. sym.:   TxB2                       553.7149 eV
+================================================================================
+
+
+                    Linear response excitations; final output
+                    -----------------------------------------
+
+================================================================================
+
+ *** Excitations of boson symmetry 1 : A1 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.38462485 a.u.    7.85D-17 (converged)
+ Nonrel. sym.:   TyB1                        10.4662 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.47981562 a.u.    0.00D+00 (converged)
+ Nonrel. sym.:   TzA2                        13.0564 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.50590669 a.u.    4.63D-15 (converged)
+ Nonrel. sym.:   TxB2                        13.7664 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.59345870 a.u.    4.46D-15 (converged)
+ Nonrel. sym.:   S0A1                        16.1488 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.63071851 a.u.    4.73D-15 (converged)
+ Nonrel. sym.:   TxB2                        17.1627 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     1.00851318 a.u.    3.69D-15 (converged)
+ Nonrel. sym.:   S0A1                        27.4430 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.35863323 a.u.    3.68D-15 (converged)
+ Nonrel. sym.:   TxB2                        36.9703 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.43445715 a.u.    3.42D-15 (converged)
+ Nonrel. sym.:   S0A1                        39.0336 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.34196310 a.u.    2.37D-14 (converged)
+ Nonrel. sym.:   S0A1                       553.5330 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.34864850 a.u.    2.08D-14 (converged)
+ Nonrel. sym.:   TxB2                       553.7149 eV
+================================================================================
+
+    * Orbital classes:
+    Fermion ircop:E1 
+    - Inactive orbitals  :      1..     5                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :      6..     7                                          
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -75.6751475148049479
+* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:10 2011
 
 
 
  <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
 YDIPLEN          - Symmetry: B2   T+
 
-
-* GETFCK: reading old two-electron Fock matrix
-
-* REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :electric properties for frozen density embedding                          
-
- FDE integration
-
-   number of grid points                          =      4816
-   number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011285847034828
-   number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =         0.0011285847034828
-            is larger than 1.0d-3
-            this can happen when starting from coefficients
-            from a different geometry
-            or it can mean that the quadrature grid is inappropriate
-
-   time spent in FDE integration                  =   0.92 seconds
-
-
-* GETFCK: reading old one-electron Fock matrix
-
-* REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :electric properties for frozen density embedding                          
-E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.65894D-03
+E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.66112D-03
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
 * Screening threshold in LR solver scaled with norm of property vector:  2.1733D+00
   and changed to:  3.2408D-08
 
-########## START MICROITERATION NO.   1 ##########                           
+########## START MICROITERATION NO.   1 ##########   Mon Dec 12 18:16:11 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.01960301s
-
+SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07999992s
+ 
  FDE integration
-
+ 
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         0.0011285847034828
-   number of electrons from orbital occupations   =        10
+   number of electrons from orbital occupations   =         0
    WARNING: error in the number of electrons      =         0.0011285847034828
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
-
-   time spent in FDE integration                  =   0.95 seconds
-
+ 
+   time spent in FDE integration                  =   0.78 seconds
+ 
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
 
 * Norm of residual vectors:
@@ -1035,84 +1207,84 @@ SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.01960301s
      0.00000000  1.00E-05  1.26E-01  1.26E-01  0.00E+00
      0.10000000  1.00E-05  1.28E-01  1.27E-01  1.07E-02
 
-########## START MICROITERATION NO.   2 ##########                           
+########## START MICROITERATION NO.   2 ##########   Mon Dec 12 18:16:11 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.01936197s
-
+SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.09000015s
+ 
  FDE integration
-
+ 
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         0.0011285847034828
-   number of electrons from orbital occupations   =        10
+   number of electrons from orbital occupations   =         0
    WARNING: error in the number of electrons      =         0.0011285847034828
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
-
-   time spent in FDE integration                  =   0.96 seconds
-
+ 
+   time spent in FDE integration                  =   0.25 seconds
+ 
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
      0.00000000  1.00E-05  2.77E-02  2.77E-02  0.00E+00
-     0.10000000  1.00E-05  3.13E-02  3.03E-02  7.85E-03
-E(+)-vector no.  2 removed (linear dependence). Norm :  3.10741D-17
+     0.10000000  1.00E-05  3.14E-02  3.04E-02  7.88E-03
+E(+)-vector no.  2 removed (linear dependence). Norm :  1.12804D-17
 
-########## START MICROITERATION NO.   3 ##########                           
+########## START MICROITERATION NO.   3 ##########   Mon Dec 12 18:16:12 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.01897001s
-
+SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.06999969s
+ 
  FDE integration
-
+ 
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         0.0011285847034828
-   number of electrons from orbital occupations   =        10
+   number of electrons from orbital occupations   =         0
    WARNING: error in the number of electrons      =         0.0011285847034828
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
-
-   time spent in FDE integration                  =   0.95 seconds
-
+ 
+   time spent in FDE integration                  =   1.09 seconds
+ 
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     0.00000000  1.00E-05  3.36E-16  3.36E-16  0.00E+00
-     0.10000000  1.00E-05  1.78E-03  3.33E-16  1.78E-03
+     0.00000000  1.00E-05  3.56E-16  3.56E-16  0.00E+00
+     0.10000000  1.00E-05  1.78E-03  4.58E-16  1.78E-03
 
-########## START MICROITERATION NO.   4 ##########                           
+########## START MICROITERATION NO.   4 ##########   Mon Dec 12 18:16:12 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.01894999s
-
+SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.07999992s
+ 
  FDE integration
-
+ 
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         0.0011285847034828
-   number of electrons from orbital occupations   =        10
+   number of electrons from orbital occupations   =         0
    WARNING: error in the number of electrons      =         0.0011285847034828
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
-
-   time spent in FDE integration                  =   0.94 seconds
-
+ 
+   time spent in FDE integration                  =   0.92 seconds
+ 
 * Trial vectors in this micro iteration:  E+:  0  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     0.00000000  1.00E-05  3.36E-16  3.36E-16  0.00E+00
-     0.10000000  1.00E-05  3.45E-16  3.33E-16  8.96E-17
+     0.00000000  1.00E-05  3.56E-16  3.56E-16  0.00E+00
+     0.10000000  1.00E-05  1.43E-16  1.14E-16  8.60E-17
 
 
                              Final output from XRSCTL
@@ -1123,25 +1295,25 @@ SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.01894999s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.99541998s  (LL       )     [  1]     [  1]
+* It.  1   1.03999996s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.26D-01 |   1.26D-01  0.00D+00
             0.100000 :   1.27D-01 |   1.27D-01  1.07D-02
 ========================================================
-* It.  2   1.01540709s  (LL       )     [  2]     [  1]
+* It.  2   0.45000029s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.000000 :   2.77D-02 |   2.77D-02  0.00D+00
-            0.100000 :   3.13D-02 |   3.03D-02  7.85D-03
+            0.100000 :   3.14D-02 |   3.04D-02  7.88D-03
 ========================================================
-* It.  3   0.99560308s  (LL       )     [  1]     [  1]
+* It.  3   1.23999977s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
-            0.000000 :   3.36D-16 |   3.36D-16  0.00D+00
-            0.100000 :   1.78D-03 |   3.33D-16  1.78D-03
+            0.000000 :   3.56D-16 |   3.56D-16  0.00D+00
+            0.100000 :   1.78D-03 |   4.58D-16  1.78D-03
 ========================================================
-* It.  4   0.97301674s  (LL       )     [  0]     [  1]
+* It.  4   1.02999973s  (LL       )     [  0]     [  1]
 --------------------------------------------------------
-            0.000000 :   3.36D-16 |   3.36D-16  0.00D+00
-            0.100000 :   3.45D-16 |   3.33D-16  8.96D-17
+            0.000000 :   3.56D-16 |   3.56D-16  0.00D+00
+            0.100000 :   1.43D-16 |   1.14D-16  8.60D-17
 ========================================================
 
 
@@ -1154,8 +1326,8 @@ SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.01894999s
    A - YDIPLEN              B2   T+
    B - YDIPLEN              B2   T+
 -----------------------------------------------------------------------------------------------
-   -5.516982236462 a.u. at frequency      0.00000000 a.u.    1.54E-16   (converged)
-   -5.611505770250 a.u. at frequency      0.10000000 a.u.    1.59E-16   (converged)
+   -5.520419811974 a.u. at frequency      0.00000000 a.u.    1.64E-16   (converged)
+   -5.615137484454 a.u. at frequency      0.10000000 a.u.    6.59E-17   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 * Dipole moment:
@@ -1171,33 +1343,35 @@ z         8.53295995 Debye        -6.77337478 Debye         1.75958517 Debye
  1 a.u =   2.54177000 Debye
 
  
->>>> Node 0, utime: 6, stime: 0, minflt: 4041, majflt: 0, nvcsw: 0, nivcsw: 473, maxrss: 13742080
->>>> Total WALL time used in DIRAC: 7s
+     Date and time (Linux)  : Mon Dec 12 18:16:12 2011
+     Host name              : not found                               
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        13.27
+  Mean allocation size (Mb) :         7.57
   
-  Largest          10  allocations
+  Largest                    10  allocations
   
-      488.28 Mb at subroutine MAIN__                                     for work array at main                        
-        0.27 Mb at subroutine fde_io_MOD_read_grid_onecol                for grid_points                               
-        0.27 Mb at subroutine fde_data_MOD_fde_import_static             for fde_grid                                  
-        0.27 Mb at subroutine fde_io_MOD_read_grid_onecol                for grid_points                               
-        0.22 Mb at subroutine fde_io_MOD_read_grid_manycol               for properties_on_grid                        
-        0.20 Mb at subroutine fde_data_MOD_fde_initialize_active_data    for fde_active_gn                             
-        0.20 Mb at subroutine fde_data_MOD_fde_initialize_frozen_data    for fde_frozen_gn                             
-        0.15 Mb at subroutine fde_io_MOD_read_grid_manycol               for grid_points                               
-        0.11 Mb at subroutine butobs_no_work_                            for buf in butobs                             
-        0.11 Mb at subroutine gtovlt_                                    for unnamed variable                          
+      488.28 Mb at subroutine MAIN__+0x579                               for work array at main                        
+        0.41 Mb at subroutine fde_data_mp_fde_import_static_+0x4cd       for fde_active_hn                             
+        0.41 Mb at subroutine fde_data_mp_fde_import_static_+0x97d       for fde_frozen_hn                             
+        0.27 Mb at subroutine numoper_integrals_mp_numoper_oneelop_setma for unnamed variable                          
+        0.27 Mb at subroutine fde_data_mp_fde_import_static_+0x14c       for fde_grid                                  
+        0.27 Mb at subroutine fde_io_mp_read_grid_onecol_+0xd8           for grid_points                               
+        0.22 Mb at subroutine fde_io_mp_read_grid_manycol_+0x120         for properties_on_grid                        
+        0.20 Mb at subroutine fde_data_mp_fde_import_static_+0x658       for fde_active_gn                             
+        0.20 Mb at subroutine fde_data_mp_fde_import_static_+0xb08       for fde_frozen_gn                             
+        0.15 Mb at subroutine fde_io_mp_read_grid_manycol_+0x101         for grid_points                               
   
-  Peak memory usage    (Mb) :       490.00
-       reached at subroutine : numoper_integrals_MOD_numoper_oneelop_setm
+  Peak memory usage    (Mb) :       491.00
+       reached at subroutine : numoper_integrals_mp_numoper_oneelop_setma
               for variable   : unnamed variable                          
   
- MEMGET high-water mark:     2.37 MB
+ MEMGET high-water mark:    11.15 MB
 
 *****************************************************
+>>>> Node 0, utime: 10, stime: 0, minflt: 14449, majflt: 0, nvcsw: 278, nivcsw: 47, maxrss: 36488
+>>>> Total WALL time used in DIRAC: 3s

@@ -207,7 +207,7 @@ contains
       integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
-      integer, parameter :: max_mat_number = 20
+      integer, parameter :: max_mat_number = 50
       integer, target    :: default_pg_sym(max_mat_number)
       integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
