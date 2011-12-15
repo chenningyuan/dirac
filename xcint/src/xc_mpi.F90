@@ -151,12 +151,12 @@ contains
 
    subroutine xc_mpi_bcast_l0(x)
       logical :: x
-      call interface_mpi_bcast(x, 1, irank_master, global_communicator)
+      call interface_mpi_bcast_l0_f77(x, 1, irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_l1(x)
       logical :: x(:)
-      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
+      call interface_mpi_bcast_l1_f77(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_reduce_i0(x)
@@ -260,21 +260,17 @@ contains
       if (nr_points_rest > 0) then
          if (xc_mpi_is_master()) then
             i = nr_points_batch - nr_points_rest + 1
-#ifdef DEACTIVATED_FOR_MPI_32bit_implementation_testing
-            call mpi_send(rx(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 90, global_communicator, ierr)
-            call mpi_send(ry(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 91, global_communicator, ierr)
-            call mpi_send(rz(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 92, global_communicator, ierr)
-            call mpi_send(rw(i), nr_points_rest, mpi_real8, xc_mpi_get_nr_proc()-1, 93, global_communicator, ierr)
-#endif
+            call interface_mpi_send(rx(i), nr_points_rest, xc_mpi_get_nr_proc()-1, 90, global_communicator)
+            call interface_mpi_send(ry(i), nr_points_rest, xc_mpi_get_nr_proc()-1, 91, global_communicator)
+            call interface_mpi_send(rz(i), nr_points_rest, xc_mpi_get_nr_proc()-1, 92, global_communicator)
+            call interface_mpi_send(rw(i), nr_points_rest, xc_mpi_get_nr_proc()-1, 93, global_communicator)
          end if
          if (get_my_rank() == (xc_mpi_get_nr_proc()-1)) then
             i = nr_points_on_this_proc + 1
-#ifdef DEACTIVATED_FOR_MPI_32bit_implementation_testing
-            call mpi_recv(rx(i), nr_points_rest, mpi_real8, irank_master, 90, global_communicator, istat, ierr)
-            call mpi_recv(ry(i), nr_points_rest, mpi_real8, irank_master, 91, global_communicator, istat, ierr)
-            call mpi_recv(rz(i), nr_points_rest, mpi_real8, irank_master, 92, global_communicator, istat, ierr)
-            call mpi_recv(rw(i), nr_points_rest, mpi_real8, irank_master, 93, global_communicator, istat, ierr)
-#endif
+            call interface_mpi_recv(rx(i), nr_points_rest, irank_master, 90, global_communicator)
+            call interface_mpi_recv(ry(i), nr_points_rest, irank_master, 91, global_communicator)
+            call interface_mpi_recv(rz(i), nr_points_rest, irank_master, 92, global_communicator)
+            call interface_mpi_recv(rw(i), nr_points_rest, irank_master, 93, global_communicator)
             nr_points_on_this_proc = nr_points_on_this_proc + nr_points_rest
          end if
       end if

@@ -24,13 +24,12 @@
 module integer_model_in_mpi
 #ifdef VAR_MPI
   use mpi
+  use integer_kind_mpilib
   implicit none
 
   public determine_integer_model_in_mpi
   
   private
-  integer, public :: integer_kind_in_mpi = 4
-
   save
 
 contains
@@ -43,7 +42,6 @@ contains
   end subroutine determine_integer_model_in_mpi
 
 #else
-  implicit none
-  integer, public :: integer_kind_in_mpi = 4
+  integer         :: blabla_integer_model_in_mpi
 #endif
 end module integer_model_in_mpi

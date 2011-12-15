@@ -34,6 +34,7 @@ SUBROUTINE MPIXINIT()
 !**********************************************************************************
 !
 use os_utils
+use integer_kind_mpilib
 use integer_model_in_mpi
 use interface_to_mpi
 implicit none

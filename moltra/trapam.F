@@ -4490,7 +4490,6 @@ C
       PARAMETER(D0=0.0D0)
 C
 #include "infpar.h"
-      INCLUDE 'mpif.h'
 C
 #include "priunit.h"
 #include "maxorb.h"
@@ -4540,7 +4539,7 @@ C
 !     CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(I1_DCBORB,NUMELM,MPARID,
-     &                         MPI_COMM_WORLD)
+     &                         global_communicator)
 C
 C     dcbbas.h
 C     --------
@@ -4549,7 +4548,7 @@ C
 !     CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(I1_DCBBAS,NUMELM,MPARID,
-     &                         MPI_COMM_WORLD)
+     &                         global_communicator)
 C
 C     dcbham.h
 C     --------
@@ -4557,8 +4556,8 @@ C
       NUMELM = ICOMMSIZE(I1_DCLHAM,I2_DCLHAM)
 !     CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(ONESYS,NUMELM,MPARID,
-     &                         MPI_COMM_WORLD)
+      call interface_mpi_bcast_l0_f77(QED,NUMELM,MPARID,
+     &                                global_communicator)
 C
 C     dgroup.h
 C     --------
@@ -4568,8 +4567,10 @@ C
 !    &               MPI_COMM_WORLD,IERR)
 !     CALL MPI_BCAST(LINEAR,1,MPI_LOGICAL,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(I1_DGROUP,NUMELM,MPARID,MPI_COMM_WORLD)
-      call interface_MPI_BCAST(LINEAR,1,MPARID,MPI_COMM_WORLD)
+      call interface_MPI_BCAST(I1_DGROUP,NUMELM,MPARID,
+     &                         global_communicator)
+      call interface_mpi_bcast_l0_f77(LINEAR,1,MPARID,
+     &                                global_communicator)
 C
 C     dcbtra.h
 C     --------
@@ -4579,21 +4580,22 @@ C
       NUMELM = NDCBTRI
 !     CALL MPI_BCAST(IPRTRA,NUMELM,my_MPI_INTEGER,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(IPRTRA,NUMELM,MPARID,MPI_COMM_WORLD)
+      call interface_MPI_BCAST(IPRTRA,NUMELM,MPARID,global_communicator)
 C
 C     reals...
 C
       NUMELM = NDCBTRR
 !     CALL MPI_BCAST(THROUT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(THROUT,NUMELM,MPARID,MPI_COMM_WORLD)
+      call interface_MPI_BCAST(THROUT,NUMELM,MPARID,global_communicator)
 C
 C     logicals...
 C
       NUMELM = NDCBTRL
 !     CALL MPI_BCAST(TRA_ANTIS,NUMELM,MPI_LOGICAL,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(TRA_ANTIS,NUMELM,MPARID,MPI_COMM_WORLD)
+      call interface_mpi_bcast_l0_f77(TRA_ANTIS,NUMELM,MPARID,
+     &                                global_communicator)
 C
 C     comdis.h
 C     --------
@@ -4601,7 +4603,7 @@ C
       NUMELM = NCOMDIS
 !     CALL MPI_BCAST(NSPCK,NUMELM,my_MPI_INTEGER,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(NSPCK,NUMELM,MPARID,MPI_COMM_WORLD)
+      call interface_MPI_BCAST(NSPCK,NUMELM,MPARID,global_communicator)
 C
 C     symmet.h
 C     --------
@@ -4611,65 +4613,65 @@ C
       NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
 !     CALL MPI_BCAST(I1_SYMMTI,NUMELM,my_MPI_INTEGER,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(I1_SYMMTI,NUMELM,MPARID,MPI_COMM_WORLD)
+      call interface_MPI_BCAST(I1_SYMMTI,NUMELM,MPARID,
+     &                         global_communicator)
 C
 C     reals...
 C
       NUMELM = NSYMMTR
 !     CALL MPI_BCAST(FMULT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
 !    &               MPI_COMM_WORLD,IERR)
-      call interface_MPI_BCAST(FMULT,NUMELM,MPARID,MPI_COMM_WORLD)
+      call interface_MPI_BCAST(FMULT,NUMELM,MPARID,global_communicator)
 C
 C     The rest
 C     --------
 C
       NUMELM = 1
-      CALL MPI_BCAST(TESTLS,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0_f77(TESTLS,NUMELM,MPARID,
+     &                                      global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(TESTSL,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0_f77(TESTSL,NUMELM,MPARID,
+     &                                      global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(MP2ORG,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0_f77(MP2ORG,NUMELM,MPARID,
+     &                                      global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(GTHSHL,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0_f77(GTHSHL,NUMELM,MPARID,
+     &                                      global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(CMMNFO,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0_f77(CMMNFO,NUMELM,MPARID,
+     &                                      global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(TPRI34,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(TPRI34,NUMELM,MPARID,
+     &               global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(TPRI44,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(TPRI44,NUMELM,MPARID,
+     &               global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(INTFLG,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(INTFLG,NUMELM,MPARID,
+     &               global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(ANTIS,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0_f77(ANTIS,NUMELM,MPARID,
+     &               global_communicator)
       NUMELM = 1
-      CALL MPI_BCAST(LMP2,NUMELM,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0_f77(LMP2,NUMELM,MPARID,
+     &               global_communicator)
       NUMELM = 24
-      CALL MPI_BCAST(NSTR,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NSTR,NUMELM,MPARID,
+     &               global_communicator)
       NUMELM = 16
-      CALL MPI_BCAST(NDMOQR,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NDMOQR,NUMELM,MPARID,
+     &               global_communicator)
       NUMELM = 8
-      CALL MPI_BCAST(ICMOQR,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(ICMOQR,NUMELM,MPARID,
+     &               global_communicator)
 C
 C
 C
 C     HERMIT memory estimates
 C     -----------------------
 C
-      CALL MPI_BCAST(MXHERMEM,4,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(MXHERMEM,4,MPARID,global_communicator)
 C
 C
       IF (MYTID.EQ.MPARID) THEN
@@ -4679,8 +4681,8 @@ C     ****** MASTER send ******
 C     *************************
 C
 C       Symmetry packing information
-        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,my_MPI_INTEGER,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
+        CALL interface_mpi_bcast_i1_work_f77(WORK(KINDX),NTBAS(0)*3,
+     &                                       MPARID,global_communicator)
 C       Coefficients; use sameness relations to compress
         DO I = 1,4
           NSAME = .TRUE.
@@ -4695,8 +4697,8 @@ C       Coefficients; use sameness relations to compress
             DO J = 1, NFSYM
               NSIZE = NSIZE + NDMOQR(1,J,I)*NDMOQR(2,J,I)*NZ
             ENDDO
-            CALL MPI_BCAST(WORK(KQ(1,I)),NSIZE,MPI_DOUBLE_PRECISION,
-     &                 MPARID,MPI_COMM_WORLD,IERR)
+            CALL interface_mpi_bcast_r1_work_f77(WORK(KQ(1,I)),NSIZE,
+     &                 MPARID,global_communicator)
           ENDIF
         ENDDO
 C       Send orbital energies
@@ -4705,24 +4707,24 @@ C       Send orbital energies
           DO J = 1,NFSYM
             NSIZE = NSIZE + NSTR(J,0,I)
           ENDDO
-          CALL MPI_BCAST(WORK(KE(1,I)),NSIZE,MPI_DOUBLE_PRECISION,
-     &                   MPARID,MPI_COMM_WORLD,IERR)
+          CALL interface_mpi_bcast_r1_work_f77(WORK(KE(1,I)),NSIZE,
+     &                   MPARID,global_communicator)
         ENDDO
 C       Send orbital (single group) info
         DO I = 1,4
           DO J = 1,NFSYM
-            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),my_MPI_INTEGER,
-     &                     MPARID,MPI_COMM_WORLD,IERR)
+            CALL interface_mpi_bcast_i1_work_f77(WORK(KIBE(J,I)),
+     &                     NSTR(J,0,I),MPARID,global_communicator)
           ENDDO
         ENDDO
 C       If screening send GAB-matrix and screening matrix
         IF(SCRTRA.GT.D0) THEN
           N2GAB   = NSYMBL*NSYMBL
           NDRIJ   = N2GAB*NFSYM*2
-          CALL MPI_BCAST(GABRAO,N2GAB,MPI_DOUBLE_PRECISION,
-     &                   MPARID,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(DRIJ,NDRIJ,MPI_DOUBLE_PRECISION,
-     &                   MPARID,MPI_COMM_WORLD,IERR)
+          CALL interface_mpi_bcast_r1_work_f77(GABRAO,N2GAB,
+     &                   MPARID,global_communicator)
+          CALL interface_mpi_bcast_r1_work_f77(DRIJ,NDRIJ,
+     &                   MPARID,global_communicator)
         ENDIF
       ELSE
 C
@@ -4732,8 +4734,8 @@ C     **************************
 C
 C       Symmetry packing information
         CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+        CALL interface_mpi_bcast_i1_work_f77(WORK(KINDX),NTBAS(0)*3,
+     &                                       MPARID,global_communicator)
 C       Coefficients; use sameness relations to compress
         DO I = 1,4
           NSAME = .TRUE.
@@ -4750,8 +4752,8 @@ C       Coefficients; use sameness relations to compress
             ENDDO
             CALL MEMGET('REAL',KQ(1,I),NSIZE,WORK,KFREE,LFREE)
             KQ(2,I) = KQ(1,I) + NDMOQR(1,1,I)*NDMOQR(2,1,I)*NZ
-            CALL MPI_BCAST(WORK(KQ(1,I)),NSIZE,
-     &              MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+            CALL interface_mpi_bcast_r1_work_f77(WORK(KQ(1,I)),NSIZE,
+     &              MPARID,global_communicator)
           ELSE
             KQ(1,I) = KQ(1,JSAME)
             KQ(2,I) = KQ(2,JSAME)
@@ -4765,25 +4767,26 @@ C       Receive orbital energies
           ENDDO
           CALL MEMGET('REAL',KE(1,I),NSIZE,WORK,KFREE,LFREE)
           KE(2,I) = KE(1,I) + NSTR(1,0,I)
-          CALL MPI_BCAST(WORK(KE(1,I)),NSIZE,MPI_DOUBLE_PRECISION,
-     &                   MPARID,MPI_COMM_WORLD,IERR)
+          CALL interface_mpi_bcast_r1_work_f77(WORK(KE(1,I)),NSIZE,
+     &                   MPARID,global_communicator)
         ENDDO
 C       Receive orbital (single group) info
         DO I = 1,4
           DO J = 1,NFSYM
             CALL MEMGET('REAL',KIBE(J,I),NSTR(J,0,I),WORK,KFREE,LFREE)
-            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),my_MPI_INTEGER,
-     &                     MPARID,MPI_COMM_WORLD,IERR)
+            CALL interface_mpi_bcast_i1_work_f77(WORK(KIBE(J,I)),
+     &                                       NSTR(J,0,I),
+     &                                       MPARID,global_communicator)
           ENDDO
         ENDDO
 C       If screening receive GAB-matrix and screening matrix
         IF(SCRTRA.GT.D0) THEN
           N2GAB   = NSYMBL*NSYMBL
           NDRIJ   = N2GAB*NFSYM*2
-          CALL MPI_BCAST(GABRAO,N2GAB,MPI_DOUBLE_PRECISION,
-     &                   MPARID,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(DRIJ,NDRIJ,MPI_DOUBLE_PRECISION,
-     &                   MPARID,MPI_COMM_WORLD,IERR)
+          CALL interface_mpi_bcast_r1_work_f77(GABRAO,N2GAB,MPARID,
+     &                                     global_communicator)
+          CALL interface_mpi_bcast_r1_work_f77(DRIJ,NDRIJ,MPARID,
+     &                                     global_communicator)
         ENDIF
       ENDIF
 C
@@ -4797,11 +4800,11 @@ C     Written by Luuk Visscher, August 1997
 C     Extensions by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "infpar.h"
-      INCLUDE 'mpif.h'
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -4867,7 +4870,7 @@ C
 C     We check whether all the work is done and return to the
 C     main slave menu.
 C
-      CALL MPI_BCAST(NTEST,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NTEST,1,MPARID,global_communicator)
       IF (NTEST.NE.-1) CALL QUIT('TRANOD: Received wrong NTEST message')
 C
 #if defined (VAR_PFS)

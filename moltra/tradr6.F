@@ -61,6 +61,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -68,8 +69,8 @@ C***********************************************************************
 #include "aovec.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
+#include "mpif.h"
+      DIMENSION IBUFMPI(5)
 #endif
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -199,8 +200,8 @@ CSK   ... safe implementation
       ILEN_STAT = 8
       CALL DZERO(XINTSTAT,ILEN_STAT)
       CALL DCOPY(ILEN_STAT,DINTSKP,1,XINTSTAT,1)
-      CALL MPI_REDUCE(XINTSTAT,DINTSKP,ILEN_STAT,MPI_REAL8,
-     &                MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+      call mpi_reduce(XINTSTAT,DINTSKP,ILEN_STAT,MPI_REAL8,
+     &                MPI_SUM,MPARID,global_communicator,ierr)
 #endif
       IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
 C
