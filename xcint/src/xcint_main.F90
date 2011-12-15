@@ -140,6 +140,10 @@ module xcint_main
    logical :: do_london_lr
    logical :: do_overlap_diagnostic
 
+   integer, allocatable, target :: default_fmat_pg_sym(:)
+   integer, allocatable, target :: default_dmat_pg_sym(:)
+   integer, allocatable, target :: default_dmat_ih_sym(:)
+
 contains
 
    subroutine integrate_xc(xc_mat_dim,               &
@@ -207,9 +211,6 @@ contains
       integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
-      integer, parameter :: max_mat_number = 50
-      integer, target    :: default_pg_sym(max_mat_number)
-      integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
 
@@ -243,13 +244,6 @@ contains
       if (pure_hf_run) then
          write (*,*) 'this is a pure hf run?!?'
          return
-      end if
-
-      if (xc_mpi_is_master()) then
-         if (xc_nr_dmat > max_mat_number) then
-            print *, 'programing error: xc_nr_dmat > max_mat_number'
-            stop 1
-         end if
       end if
 
 #ifdef VAR_MPI
@@ -379,8 +373,16 @@ contains
          end if
       end if
 
-      default_pg_sym = 1
-      default_ih_sym = 0
+      if (nr_fmat > 0) then
+         allocate(default_fmat_pg_sym(nr_fmat))
+         default_fmat_pg_sym = 1
+      end if
+      if (nr_dmat > 0) then
+         allocate(default_dmat_pg_sym(nr_dmat))
+         allocate(default_dmat_ih_sym(nr_dmat))
+         default_dmat_pg_sym = 1
+         default_dmat_ih_sym = 0
+      end if
 
       nullify(fmat_pg_sym)
       nullify(dmat_pg_sym)
@@ -401,17 +403,17 @@ contains
          if (present(xc_fmat_pg_sym)) then
             fmat_pg_sym => xc_fmat_pg_sym
          else
-            fmat_pg_sym => default_pg_sym(1:nr_fmat)
+            fmat_pg_sym => default_fmat_pg_sym(1:nr_fmat)
          end if
          if (present(xc_dmat_pg_sym)) then
             dmat_pg_sym => xc_dmat_pg_sym
          else
-            dmat_pg_sym => default_pg_sym(1:nr_dmat)
+            dmat_pg_sym => default_dmat_pg_sym(1:nr_dmat)
          end if
          if (present(xc_dmat_ih_sym)) then
             dmat_ih_sym => xc_dmat_ih_sym
          else
-            dmat_ih_sym => default_ih_sym(1:nr_dmat)
+            dmat_ih_sym => default_dmat_ih_sym(1:nr_dmat)
          end if
       end if
 
@@ -755,6 +757,16 @@ contains
          if (allocated(property_gradient_container)) then
             deallocate(property_gradient_container)
          end if
+      end if
+
+      if (allocated(default_fmat_pg_sym)) then
+         deallocate(default_fmat_pg_sym)
+      end if
+      if (allocated(default_dmat_pg_sym)) then
+         deallocate(default_dmat_pg_sym)
+      end if
+      if (allocated(default_dmat_ih_sym)) then
+         deallocate(default_dmat_ih_sym)
       end if
 
    end subroutine

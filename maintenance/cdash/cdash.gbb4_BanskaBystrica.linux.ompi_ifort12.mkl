@@ -32,7 +32,7 @@ echo "running dirac cdash buildup at "$timestamp
 
 DIRAC=/home/chemia/ucitelia/milias/work/qch/software/dirac_git/trunk
 #
-BUILD=build_ompi_ifort_gcc_mkl_ILP64_cdash
+#BUILD=build_ompi_ifort_gcc_mkl_ILP64_cdash
 BUILD_VG=build_ompi_ifort_gcc_mkl_ILP64_valgrind_cdash
 #
 OMPI=/home/chemia/ucitelia/milias/bin/open_mpi_ifort_ILP64/bin
@@ -61,10 +61,27 @@ cd $DIRAC
 ###  MKL ILP64 libraries  ###
 export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
 
-# setup, no --debug
-#./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD
-./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00"  --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD
+BUILD=build_ompi_ifort_gcc_mkl_ILP64_cdash
+./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00"  --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD  -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x
 cd $DIRAC/$BUILD
+cmake ..
+make dirac.x
+make info_ext
+make Experimental
+
+### static version buildup - MKL library, ILP64
+BUILD_STATIC==build_ifort_gcc_mkl_ILP64_static
+./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  --static  --build=$DIRAC/$BUILD_STATIC  -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x
+cd $DIRAC/$BUILD_STATIC
+cmake ..
+make dirac.x
+make info_ext
+make Experimental
+
+### static version buildup - MKL library, I32LP64
+BUILD_STATIC==build_ifort_gcc_mkl_I32LP64_static
+./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_mkl_i32lp64_STATIC" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  --static  --build=$DIRAC/$BUILD_STATIC  -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x
+cd $DIRAC/$BUILD_STATIC
 cmake ..
 make dirac.x
 make info_ext
