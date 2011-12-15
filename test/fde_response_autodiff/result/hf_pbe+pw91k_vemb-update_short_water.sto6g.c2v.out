@@ -173,17 +173,17 @@ Compilation info
                           | ntel_thread -lmkl_core -Wl,--end-group -openmp -lp
                           | thread -lm
  static libraries linking | OFF
- Configuration time       | 2011-12-09 09:45:33.570857
- Last commit revision     | 530fa6bc2796416449503fe2de00a2a54618bcb3
+ Configuration time       | 2011-12-13 10:52:56.509118
+ Last commit revision     | 13de86c602bd3860d85006d7246f829d28c355d2
  Last commit author       | andre 
- Last commit time         | Fri Dec 9 00:34:34 2011 +0100
+ Last commit time         | Mon Dec 12 18:25:21 2011 +0100
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Mon Dec 12 18:16:12 2011
+     Date and time (Linux)  : Thu Dec 15 16:41:32 2011
      Host name              : not found                               
  
  
@@ -221,6 +221,12 @@ pbex=1.0 pbec=1.0
 *EXCITATIONS                                                                                        
 .EXCITATIONS                                                                                        
  1 10                                                                                               
+.EXCITATIONS                                                                                        
+ 2 10                                                                                               
+.EXCITATIONS                                                                                        
+ 3 10                                                                                               
+.EXCITATIONS                                                                                        
+ 4 10                                                                                               
 .ANALYZE                                                                                            
 *END OF                                                                                             
  
@@ -709,9 +715,9 @@ H      0.0000000000  -0.7716276844   0.3426163129
 ---------------------------------------------------------------------------
  * No. of excitations evaluated in each boson symmetry:
            boson symmetry 1 (A1 ) :   10
-           boson symmetry 2 (B1 ) :    0
-           boson symmetry 3 (B2 ) :    0
-           boson symmetry 4 (A2 ) :    0
+           boson symmetry 2 (B1 ) :   10
+           boson symmetry 3 (B2 ) :   10
+           boson symmetry 4 (A2 ) :   10
 
 ---------------------------------------------------------------------------
  ** No transition moment operators **
@@ -812,7 +818,7 @@ H      0.0000000000  -0.7716276844   0.3426163129
 No. of positive energy orbitals (NESH):     7
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):     7
- >>> Time used in PAMSET is   0.54 seconds
+ >>> Time used in PAMSET is   0.58 seconds
 
 
    ****************************************************************************
@@ -824,16 +830,16 @@ Total no. of orbitals           (NORB):     7
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Mon Dec 12 18:16:13 2011
+########## START ITERATION NO.   1 ##########   Thu Dec 15 16:41:33 2011
 
-It.    1    -32.39275871615      1.00D+20  0.00D+00  0.00D+00               0.05999994s   Scr. nuclei    Mon Dec 12
+It.    1    -32.39275871615      1.00D+20  0.00D+00  0.00D+00               0.19000000s   Scr. nuclei    Thu Dec 15
 
-########## START ITERATION NO.   2 ##########   Mon Dec 12 18:16:13 2011
+########## START ITERATION NO.   2 ##########   Thu Dec 15 16:41:33 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.07000005s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.06999993s
  
  FDE integration
  
@@ -841,21 +847,21 @@ SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.07000005s
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         0.0007130098295610
  
-   time spent in FDE integration                  =   0.53 seconds
+   time spent in FDE integration                  =   0.61 seconds
  
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 1.58999991s
+>>> Total CPU-time : 1.44999993s
 
-########## END ITERATION NO.   2 ##########   Mon Dec 12 18:16:13 2011
+########## END ITERATION NO.   2 ##########   Thu Dec 15 16:41:33 2011
 
-It.    2    -75.62165749468      4.32D+01 -5.11D-01  4.17D-01               1.58999991s   LL             Mon Dec 12
+It.    2    -75.62165749468      4.32D+01 -5.11D-01  4.17D-01               1.44999993s   LL             Thu Dec 15
 
-########## START ITERATION NO.   3 ##########   Mon Dec 12 18:16:13 2011
+########## START ITERATION NO.   3 ##########   Thu Dec 15 16:41:33 2011
 
     3 *** Differential density matrix. DCOVLP     = 0.9780
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.11000013s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.08000016s
  
  FDE integration
  
@@ -869,21 +875,21 @@ SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.11000013s
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   0.47 seconds
+   time spent in FDE integration                  =   0.69 seconds
  
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.06000018s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.00000000s
 
-########## END ITERATION NO.   3 ##########   Mon Dec 12 18:16:13 2011
+########## END ITERATION NO.   3 ##########   Thu Dec 15 16:41:33 2011
 
-It.    3    -75.67969824017      5.80D-02 -2.26D-01  3.87D-02   DIIS   2    1.06000018s   LL             Mon Dec 12
+It.    3    -75.67969824017      5.80D-02 -2.26D-01  3.87D-02   DIIS   2    1.00000000s   LL             Thu Dec 15
 
-########## START ITERATION NO.   4 ##########   Mon Dec 12 18:16:14 2011
+########## START ITERATION NO.   4 ##########   Thu Dec 15 16:41:33 2011
 
     4 *** Differential density matrix. DCOVLP     = 1.0010
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.08999991s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.07000017s
  
  FDE integration
  
@@ -897,15 +903,15 @@ SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.08999991s
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   0.38 seconds
+   time spent in FDE integration                  =   0.83 seconds
  
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.97000003s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.37000012s
 
-########## END ITERATION NO.   4 ##########   Mon Dec 12 18:16:14 2011
+########## END ITERATION NO.   4 ##########   Thu Dec 15 16:41:33 2011
 
-It.    4    -75.68016303958      4.65D-04  1.82D-02  2.66D-03   DIIS   2    0.97000003s   LL             Mon Dec 12
+It.    4    -75.68016303958      4.65D-04  1.82D-02  2.66D-03   DIIS   2    1.37000012s   LL             Thu Dec 15
 
 
                                    SCF - CYCLE
@@ -921,10 +927,10 @@ It.    4    -75.68016303958      4.65D-04  1.82D-02  2.66D-03   DIIS   2    0.97
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -32.39275871615      1.00D+20  0.00D+00  0.00D+00               0.05999994s   Scr. nuclei    Mon Dec 12
-It.    2    -75.62165749468      4.32D+01 -5.11D-01  4.17D-01               1.58999991s   LL             Mon Dec 12
-It.    3    -75.67969824017      5.80D-02 -2.26D-01  3.87D-02   DIIS   2    1.06000018s   LL             Mon Dec 12
-It.    4    -75.68016303958      4.65D-04  1.82D-02  2.66D-03   DIIS   2    0.97000003s   LL             Mon Dec 12
+It.    1    -32.39275871615      1.00D+20  0.00D+00  0.00D+00               0.19000000s   Scr. nuclei    Thu Dec 15
+It.    2    -75.62165749468      4.32D+01 -5.11D-01  4.17D-01               1.44999993s   LL             Thu Dec 15
+It.    3    -75.67969824017      5.80D-02 -2.26D-01  3.87D-02   DIIS   2    1.00000000s   LL             Thu Dec 15
+It.    4    -75.68016303958      4.65D-04  1.82D-02  2.66D-03   DIIS   2    1.37000012s   LL             Thu Dec 15
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    4 iterations.
 * Average elapsed time per iteration: 
@@ -1047,7 +1053,7 @@ tot.num. of pos.erg shells:    4    1    2    0
     - Secondary orbitals :      6..     7                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -75.6796982401655640
-* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:14 2011
+* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:33 2011
 
 
 
@@ -1057,7 +1063,7 @@ tot.num. of pos.erg shells:    4    1    2    0
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file /scratch/andre/dirac/andre/DIRAC_hf_pbe+pw91k_vemb-update_sh
-* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:14 2011
+* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:33 2011
  
  FDE integration
  
@@ -1071,21 +1077,23 @@ tot.num. of pos.erg shells:    4    1    2    0
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   0.60 seconds
+   time spent in FDE integration                  =   0.37 seconds
  
+ FDE Fock matrix contributions (re)calculated
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file /scratch/andre/dirac/andre/DIRAC_hf_pbe+pw91k_vemb-update_sh
-* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:13 2011
+* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:33 2011
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
 
-########## START MICROITERATION NO.   1 ##########   Mon Dec 12 18:16:14 2011
+########## START MICROITERATION NO.   1 ##########   Thu Dec 15 16:41:34 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
+SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.07999992s
+ Triplet contributions to FDE kernel included
  
  FDE integration
  
@@ -1099,22 +1107,23 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   1.85 seconds
+   time spent in FDE integration                  =   1.30 seconds
  
+ FDE response contributions included
 * Trial vectors in this micro iteration:  E+: 10  E-: 10
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     0.38156185  1.00E-05  5.55E-17  0.00E+00  5.55E-17
-     0.47676329  1.00E-05  5.55E-17  0.00E+00  5.55E-17
-     0.50285862  1.00E-05  2.28E-15  1.74E-15  1.47E-15
+     0.38156185  1.00E-05  1.76E-16  1.67E-16  5.55E-17
+     0.47676329  1.00E-05  1.11E-16  0.00E+00  1.11E-16
+     0.50287144  1.00E-05  7.30E-15  6.15E-15  3.93E-15
      0.59099967  1.00E-05  5.27E-15  4.47E-15  2.78E-15
-     0.62819463  1.00E-05  2.33E-15  1.76E-15  1.52E-15
+     0.62819642  1.00E-05  4.35E-15  1.41E-15  4.12E-15
      1.00605650  1.00E-05  3.18E-15  2.66E-15  1.74E-15
-     1.35532010  1.00E-05  8.52E-16  2.73E-16  8.07E-16
+     1.35532066  1.00E-05  2.15E-15  1.46E-15  1.58E-15
      1.43130220  1.00E-05  5.04E-15  4.27E-15  2.67E-15
     20.34042088  1.00E-05  2.74E-14  5.29E-15  2.69E-14
-    20.34701999  1.00E-05  2.62E-14  2.16E-14  1.48E-14
+    20.34701999  1.00E-05  9.92E-15  7.22E-15  6.80E-15
 
 
                              Final output from XRSCTL
@@ -1125,18 +1134,18 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   2.75999975s  (LL       )     [ 10]     [ 10]
+* It.  1   2.11999989s  (LL       )     [ 10]     [ 10]
 --------------------------------------------------------
-            0.381562 :   5.55D-17 |   0.00D+00  5.55D-17
-            0.476763 :   5.55D-17 |   0.00D+00  5.55D-17
-            0.502859 :   2.28D-15 |   1.74D-15  1.47D-15
+            0.381562 :   1.76D-16 |   1.67D-16  5.55D-17
+            0.476763 :   1.11D-16 |   0.00D+00  1.11D-16
+            0.502871 :   7.30D-15 |   6.15D-15  3.93D-15
             0.591000 :   5.26D-15 |   4.47D-15  2.78D-15
-            0.628195 :   2.33D-15 |   1.76D-15  1.52D-15
+            0.628196 :   4.35D-15 |   1.41D-15  4.12D-15
             1.006057 :   3.18D-15 |   2.66D-15  1.74D-15
-            1.355320 :   8.52D-16 |   2.73D-16  8.07D-16
+            1.355321 :   2.15D-15 |   1.46D-15  1.58D-15
             1.431302 :   5.04D-15 |   4.27D-15  2.67D-15
            20.340421 :   2.74D-14 |   5.29D-15  2.69D-14
-           20.347020 :   2.62D-14 |   2.16D-14  1.48D-14
+           20.347020 :   9.92D-15 |   7.22D-15  6.80D-15
 ========================================================
 
 
@@ -1148,26 +1157,26 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
  *** Excitations of boson symmetry 1 : A1 
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.38156185 a.u.    5.55D-17 (converged)
+ Excitation no.   1 excitation energy     0.38156185 a.u.    1.76D-16 (converged)
  Nonrel. sym.:   TyB1                        10.3828 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.47676329 a.u.    5.55D-17 (converged)
+ Excitation no.   2 excitation energy     0.47676329 a.u.    1.11D-16 (converged)
  Nonrel. sym.:   TzA2                        12.9734 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.50285862 a.u.    2.28D-15 (converged)
- Nonrel. sym.:   TxB2                        13.6835 eV
+ Excitation no.   3 excitation energy     0.50287144 a.u.    7.30D-15 (converged)
+ Nonrel. sym.:   TxB2                        13.6838 eV
 --------------------------------------------------------------------------------
  Excitation no.   4 excitation energy     0.59099967 a.u.    5.27D-15 (converged)
  Nonrel. sym.:   S0A1                        16.0819 eV
 --------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     0.62819463 a.u.    2.33D-15 (converged)
- Nonrel. sym.:   TxB2                        17.0940 eV
+ Excitation no.   5 excitation energy     0.62819642 a.u.    4.35D-15 (converged)
+ Nonrel. sym.:   TxB2                        17.0941 eV
 --------------------------------------------------------------------------------
  Excitation no.   6 excitation energy     1.00605650 a.u.    3.18D-15 (converged)
  Nonrel. sym.:   S0A1                        27.3762 eV
 --------------------------------------------------------------------------------
- Excitation no.   7 excitation energy     1.35532010 a.u.    8.52D-16 (converged)
- Nonrel. sym.:   TxB2                        36.8801 eV
+ Excitation no.   7 excitation energy     1.35532066 a.u.    2.15D-15 (converged)
+ Nonrel. sym.:   TxB2                        36.8802 eV
 --------------------------------------------------------------------------------
  Excitation no.   8 excitation energy     1.43130220 a.u.    5.04D-15 (converged)
  Nonrel. sym.:   S0A1                        38.9477 eV
@@ -1175,8 +1184,326 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
  Excitation no.   9 excitation energy    20.34042088 a.u.    2.74D-14 (converged)
  Nonrel. sym.:   S0A1                       553.4910 eV
 --------------------------------------------------------------------------------
- Excitation no.  10 excitation energy    20.34701999 a.u.    2.62D-14 (converged)
+ Excitation no.  10 excitation energy    20.34701999 a.u.    9.92D-15 (converged)
  Nonrel. sym.:   TxB2                       553.6706 eV
+================================================================================
+
+
+
+ >>>  SOLVING PP EXCITATION ENERGIES - Symmetry: B1 
+      for the 10 lowest excitation energies.
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
+
+########## START MICROITERATION NO.   1 ##########   Thu Dec 15 16:41:35 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.49D-08    0.00%    0.00%    0.72%   12.79%   0.07999992s
+ 
+ FDE integration
+ 
+   number of grid points                          =      4816
+   number of grid points below density threshold  =         0
+   number of electrons from numerical integration =         0.0011355394856995
+   number of electrons from orbital occupations   =         0
+   WARNING: error in the number of electrons      =         0.0011355394856995
+            is larger than 1.0d-3
+            this can happen when starting from coefficients
+            from a different geometry
+            or it can mean that the quadrature grid is inappropriate
+ 
+   time spent in FDE integration                  =   0.63 seconds
+ 
+ FDE response contributions included
+* Trial vectors in this micro iteration:  E+: 10  E-: 10
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.44219770  1.00E-05  4.31E-15  1.53E-15  4.03E-15
+     0.45758823  1.00E-05  7.85E-17  5.55E-17  5.55E-17
+     0.47676329  1.00E-05  7.85E-17  5.55E-17  5.55E-17
+     0.50287144  1.00E-05  6.50E-15  4.93E-15  4.23E-15
+     0.62819642  1.00E-05  3.99E-15  2.86E-15  2.78E-15
+     0.68669276  1.00E-05  3.26E-15  1.59E-15  2.85E-15
+     1.24374217  1.00E-05  4.99E-15  1.75E-15  4.67E-15
+     1.35532066  1.00E-05  2.56E-15  1.50E-15  2.07E-15
+    20.27350141  1.00E-05  2.29E-14  1.65E-14  1.59E-14
+    20.34701999  1.00E-05  5.13E-14  3.69E-14  3.57E-14
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   1.53999996s  (LL       )     [ 10]     [ 10]
+--------------------------------------------------------
+            0.442198 :   4.31D-15 |   1.53D-15  4.03D-15
+            0.457588 :   7.85D-17 |   5.55D-17  5.55D-17
+            0.476763 :   7.85D-17 |   5.55D-17  5.55D-17
+            0.502871 :   6.50D-15 |   4.93D-15  4.23D-15
+            0.628196 :   3.99D-15 |   2.86D-15  2.78D-15
+            0.686693 :   3.26D-15 |   1.59D-15  2.85D-15
+            1.243742 :   4.99D-15 |   1.75D-15  4.67D-15
+            1.355321 :   2.56D-15 |   1.50D-15  2.07D-15
+           20.273501 :   2.29D-14 |   1.65D-14  1.59D-14
+           20.347020 :   5.13D-14 |   3.69D-14  3.57D-14
+========================================================
+
+
+                    Linear response excitations; final output
+                    -----------------------------------------
+
+================================================================================
+
+ *** Excitations of boson symmetry 2 : B1 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.44219770 a.u.    4.31D-15 (converged)
+ Nonrel. sym.:   TyA1                        12.0328 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.45758823 a.u.    7.85D-17 (converged)
+ Nonrel. sym.:   S0B1                        12.4516 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.47676329 a.u.    7.85D-17 (converged)
+ Nonrel. sym.:   TxA2                        12.9734 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.50287144 a.u.    6.50D-15 (converged)
+ Nonrel. sym.:   TzB2                        13.6838 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.62819642 a.u.    3.99D-15 (converged)
+ Nonrel. sym.:   TzB2                        17.0941 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     0.68669276 a.u.    3.26D-15 (converged)
+ Nonrel. sym.:   TyA1                        18.6859 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.24374217 a.u.    4.99D-15 (converged)
+ Nonrel. sym.:   TyA1                        33.8439 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.35532066 a.u.    2.56D-15 (converged)
+ Nonrel. sym.:   TzB2                        36.8802 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.27350141 a.u.    2.29D-14 (converged)
+ Nonrel. sym.:   TyA1                       551.6700 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.34701999 a.u.    5.13D-14 (converged)
+ Nonrel. sym.:   TzB2                       553.6706 eV
+================================================================================
+
+
+
+ >>>  SOLVING PP EXCITATION ENERGIES - Symmetry: B2 
+      for the 10 lowest excitation energies.
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
+
+########## START MICROITERATION NO.   1 ##########   Thu Dec 15 16:41:35 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.49D-08    0.00%    0.00%    3.55%   12.79%   0.07999992s
+ 
+ FDE integration
+ 
+   number of grid points                          =      4816
+   number of grid points below density threshold  =         0
+   number of electrons from numerical integration =         0.0011355394856995
+   number of electrons from orbital occupations   =         0
+   WARNING: error in the number of electrons      =         0.0011355394856995
+            is larger than 1.0d-3
+            this can happen when starting from coefficients
+            from a different geometry
+            or it can mean that the quadrature grid is inappropriate
+ 
+   time spent in FDE integration                  =   1.16 seconds
+ 
+ FDE response contributions included
+* Trial vectors in this micro iteration:  E+: 10  E-: 10
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.38156185  1.00E-05  1.76E-16  1.67E-16  5.55E-17
+     0.44219770  1.00E-05  7.18E-15  4.53E-15  5.56E-15
+     0.47676329  1.00E-05  1.11E-16  0.00E+00  1.11E-16
+     0.67147675  1.00E-05  4.68E-15  2.82E-15  3.74E-15
+     0.68669276  1.00E-05  3.84E-15  2.78E-15  2.65E-15
+     0.77309901  1.00E-05  1.32E-15  1.08E-15  7.60E-16
+     1.24374217  1.00E-05  6.27E-15  2.67E-15  5.67E-15
+     1.47139760  1.00E-05  2.84E-15  1.93E-15  2.08E-15
+    20.27350141  1.00E-05  1.07E-14  6.95E-15  8.18E-15
+    20.39038745  1.00E-05  2.18E-14  1.65E-14  1.42E-14
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   1.97000027s  (LL       )     [ 10]     [ 10]
+--------------------------------------------------------
+            0.381562 :   1.76D-16 |   1.67D-16  5.55D-17
+            0.442198 :   7.17D-15 |   4.53D-15  5.56D-15
+            0.476763 :   1.11D-16 |   0.00D+00  1.11D-16
+            0.671477 :   4.68D-15 |   2.82D-15  3.74D-15
+            0.686693 :   3.84D-15 |   2.78D-15  2.65D-15
+            0.773099 :   1.32D-15 |   1.08D-15  7.60D-16
+            1.243742 :   6.27D-15 |   2.67D-15  5.67D-15
+            1.471398 :   2.84D-15 |   1.93D-15  2.08D-15
+           20.273501 :   1.07D-14 |   6.95D-15  8.18D-15
+           20.390387 :   2.18D-14 |   1.65D-14  1.42D-14
+========================================================
+
+
+                    Linear response excitations; final output
+                    -----------------------------------------
+
+================================================================================
+
+ *** Excitations of boson symmetry 3 : B2 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.38156185 a.u.    1.76D-16 (converged)
+ Nonrel. sym.:   TzB1                        10.3828 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.44219770 a.u.    7.18D-15 (converged)
+ Nonrel. sym.:   TxA1                        12.0328 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.47676329 a.u.    1.11D-16 (converged)
+ Nonrel. sym.:   TyA2                        12.9734 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.67147675 a.u.    4.68D-15 (converged)
+ Nonrel. sym.:   S0B2                        18.2718 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.68669276 a.u.    3.84D-15 (converged)
+ Nonrel. sym.:   TxA1                        18.6859 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     0.77309901 a.u.    1.32D-15 (converged)
+ Nonrel. sym.:   S0B2                        21.0371 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.24374217 a.u.    6.27D-15 (converged)
+ Nonrel. sym.:   TxA1                        33.8439 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.47139760 a.u.    2.84D-15 (converged)
+ Nonrel. sym.:   S0B2                        40.0388 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.27350141 a.u.    1.07D-14 (converged)
+ Nonrel. sym.:   TxA1                       551.6700 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.39038745 a.u.    2.18D-14 (converged)
+ Nonrel. sym.:   S0B2                       554.8507 eV
+================================================================================
+
+
+
+ >>>  SOLVING PP EXCITATION ENERGIES - Symmetry: A2 
+      for the 10 lowest excitation energies.
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
+
+########## START MICROITERATION NO.   1 ##########   Thu Dec 15 16:41:36 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.49D-08    0.00%    0.00%    0.29%   12.79%   0.07999992s
+ 
+ FDE integration
+ 
+   number of grid points                          =      4816
+   number of grid points below density threshold  =         0
+   number of electrons from numerical integration =         0.0011355394856995
+   number of electrons from orbital occupations   =         0
+   WARNING: error in the number of electrons      =         0.0011355394856995
+            is larger than 1.0d-3
+            this can happen when starting from coefficients
+            from a different geometry
+            or it can mean that the quadrature grid is inappropriate
+ 
+   time spent in FDE integration                  =   1.51 seconds
+ 
+ FDE response contributions included
+* Trial vectors in this micro iteration:  E+: 10  E-: 10
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     0.38156185  1.00E-05  1.76E-16  1.67E-16  5.55E-17
+     0.44219770  1.00E-05  4.31E-15  1.53E-15  4.03E-15
+     0.50287144  1.00E-05  6.50E-15  4.93E-15  4.23E-15
+     0.52551690  1.00E-05  5.55E-17  0.00E+00  5.55E-17
+     0.62819642  1.00E-05  3.99E-15  2.86E-15  2.78E-15
+     0.68669276  1.00E-05  3.26E-15  1.59E-15  2.85E-15
+     1.24374217  1.00E-05  4.99E-15  1.75E-15  4.67E-15
+     1.35532066  1.00E-05  2.56E-15  1.50E-15  2.07E-15
+    20.27350141  1.00E-05  2.29E-14  1.65E-14  1.59E-14
+    20.34701999  1.00E-05  5.13E-14  3.69E-14  3.57E-14
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   2.44000053s  (LL       )     [ 10]     [ 10]
+--------------------------------------------------------
+            0.381562 :   1.76D-16 |   1.67D-16  5.55D-17
+            0.442198 :   4.31D-15 |   1.53D-15  4.03D-15
+            0.502871 :   6.50D-15 |   4.93D-15  4.23D-15
+            0.525517 :   5.55D-17 |   0.00D+00  5.55D-17
+            0.628196 :   3.99D-15 |   2.86D-15  2.78D-15
+            0.686693 :   3.26D-15 |   1.59D-15  2.85D-15
+            1.243742 :   4.99D-15 |   1.75D-15  4.67D-15
+            1.355321 :   2.56D-15 |   1.50D-15  2.07D-15
+           20.273501 :   2.29D-14 |   1.65D-14  1.59D-14
+           20.347020 :   5.13D-14 |   3.69D-14  3.57D-14
+========================================================
+
+
+                    Linear response excitations; final output
+                    -----------------------------------------
+
+================================================================================
+
+ *** Excitations of boson symmetry 4 : A2 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.38156185 a.u.    1.76D-16 (converged)
+ Nonrel. sym.:   TxB1                        10.3828 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.44219770 a.u.    4.31D-15 (converged)
+ Nonrel. sym.:   TzA1                        12.0328 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.50287144 a.u.    6.50D-15 (converged)
+ Nonrel. sym.:   TyB2                        13.6838 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.52551690 a.u.    5.55D-17 (converged)
+ Nonrel. sym.:   S0A2                        14.3000 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.62819642 a.u.    3.99D-15 (converged)
+ Nonrel. sym.:   TyB2                        17.0941 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     0.68669276 a.u.    3.26D-15 (converged)
+ Nonrel. sym.:   TzA1                        18.6859 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.24374217 a.u.    4.99D-15 (converged)
+ Nonrel. sym.:   TzA1                        33.8439 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.35532066 a.u.    2.56D-15 (converged)
+ Nonrel. sym.:   TyB2                        36.8802 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.27350141 a.u.    2.29D-14 (converged)
+ Nonrel. sym.:   TzA1                       551.6700 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.34701999 a.u.    5.13D-14 (converged)
+ Nonrel. sym.:   TyB2                       553.6706 eV
 ================================================================================
 
 
@@ -1188,26 +1515,26 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
  *** Excitations of boson symmetry 1 : A1 
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.38156185 a.u.    5.55D-17 (converged)
+ Excitation no.   1 excitation energy     0.38156185 a.u.    1.76D-16 (converged)
  Nonrel. sym.:   TyB1                        10.3828 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.47676329 a.u.    5.55D-17 (converged)
+ Excitation no.   2 excitation energy     0.47676329 a.u.    1.11D-16 (converged)
  Nonrel. sym.:   TzA2                        12.9734 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.50285862 a.u.    2.28D-15 (converged)
- Nonrel. sym.:   TxB2                        13.6835 eV
+ Excitation no.   3 excitation energy     0.50287144 a.u.    7.30D-15 (converged)
+ Nonrel. sym.:   TxB2                        13.6838 eV
 --------------------------------------------------------------------------------
  Excitation no.   4 excitation energy     0.59099967 a.u.    5.27D-15 (converged)
  Nonrel. sym.:   S0A1                        16.0819 eV
 --------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     0.62819463 a.u.    2.33D-15 (converged)
- Nonrel. sym.:   TxB2                        17.0940 eV
+ Excitation no.   5 excitation energy     0.62819642 a.u.    4.35D-15 (converged)
+ Nonrel. sym.:   TxB2                        17.0941 eV
 --------------------------------------------------------------------------------
  Excitation no.   6 excitation energy     1.00605650 a.u.    3.18D-15 (converged)
  Nonrel. sym.:   S0A1                        27.3762 eV
 --------------------------------------------------------------------------------
- Excitation no.   7 excitation energy     1.35532010 a.u.    8.52D-16 (converged)
- Nonrel. sym.:   TxB2                        36.8801 eV
+ Excitation no.   7 excitation energy     1.35532066 a.u.    2.15D-15 (converged)
+ Nonrel. sym.:   TxB2                        36.8802 eV
 --------------------------------------------------------------------------------
  Excitation no.   8 excitation energy     1.43130220 a.u.    5.04D-15 (converged)
  Nonrel. sym.:   S0A1                        38.9477 eV
@@ -1215,8 +1542,110 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
  Excitation no.   9 excitation energy    20.34042088 a.u.    2.74D-14 (converged)
  Nonrel. sym.:   S0A1                       553.4910 eV
 --------------------------------------------------------------------------------
- Excitation no.  10 excitation energy    20.34701999 a.u.    2.62D-14 (converged)
+ Excitation no.  10 excitation energy    20.34701999 a.u.    9.92D-15 (converged)
  Nonrel. sym.:   TxB2                       553.6706 eV
+================================================================================
+
+ *** Excitations of boson symmetry 2 : B1 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.44219770 a.u.    4.31D-15 (converged)
+ Nonrel. sym.:   TyA1                        12.0328 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.45758823 a.u.    7.85D-17 (converged)
+ Nonrel. sym.:   S0B1                        12.4516 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.47676329 a.u.    7.85D-17 (converged)
+ Nonrel. sym.:   TxA2                        12.9734 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.50287144 a.u.    6.50D-15 (converged)
+ Nonrel. sym.:   TzB2                        13.6838 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.62819642 a.u.    3.99D-15 (converged)
+ Nonrel. sym.:   TzB2                        17.0941 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     0.68669276 a.u.    3.26D-15 (converged)
+ Nonrel. sym.:   TyA1                        18.6859 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.24374217 a.u.    4.99D-15 (converged)
+ Nonrel. sym.:   TyA1                        33.8439 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.35532066 a.u.    2.56D-15 (converged)
+ Nonrel. sym.:   TzB2                        36.8802 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.27350141 a.u.    2.29D-14 (converged)
+ Nonrel. sym.:   TyA1                       551.6700 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.34701999 a.u.    5.13D-14 (converged)
+ Nonrel. sym.:   TzB2                       553.6706 eV
+================================================================================
+
+ *** Excitations of boson symmetry 3 : B2 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.38156185 a.u.    1.76D-16 (converged)
+ Nonrel. sym.:   TzB1                        10.3828 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.44219770 a.u.    7.18D-15 (converged)
+ Nonrel. sym.:   TxA1                        12.0328 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.47676329 a.u.    1.11D-16 (converged)
+ Nonrel. sym.:   TyA2                        12.9734 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.67147675 a.u.    4.68D-15 (converged)
+ Nonrel. sym.:   S0B2                        18.2718 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.68669276 a.u.    3.84D-15 (converged)
+ Nonrel. sym.:   TxA1                        18.6859 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     0.77309901 a.u.    1.32D-15 (converged)
+ Nonrel. sym.:   S0B2                        21.0371 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.24374217 a.u.    6.27D-15 (converged)
+ Nonrel. sym.:   TxA1                        33.8439 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.47139760 a.u.    2.84D-15 (converged)
+ Nonrel. sym.:   S0B2                        40.0388 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.27350141 a.u.    1.07D-14 (converged)
+ Nonrel. sym.:   TxA1                       551.6700 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.39038745 a.u.    2.18D-14 (converged)
+ Nonrel. sym.:   S0B2                       554.8507 eV
+================================================================================
+
+ *** Excitations of boson symmetry 4 : A2 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     0.38156185 a.u.    1.76D-16 (converged)
+ Nonrel. sym.:   TxB1                        10.3828 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     0.44219770 a.u.    4.31D-15 (converged)
+ Nonrel. sym.:   TzA1                        12.0328 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     0.50287144 a.u.    6.50D-15 (converged)
+ Nonrel. sym.:   TyB2                        13.6838 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     0.52551690 a.u.    5.55D-17 (converged)
+ Nonrel. sym.:   S0A2                        14.3000 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     0.62819642 a.u.    3.99D-15 (converged)
+ Nonrel. sym.:   TyB2                        17.0941 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     0.68669276 a.u.    3.26D-15 (converged)
+ Nonrel. sym.:   TzA1                        18.6859 eV
+--------------------------------------------------------------------------------
+ Excitation no.   7 excitation energy     1.24374217 a.u.    4.99D-15 (converged)
+ Nonrel. sym.:   TzA1                        33.8439 eV
+--------------------------------------------------------------------------------
+ Excitation no.   8 excitation energy     1.35532066 a.u.    2.56D-15 (converged)
+ Nonrel. sym.:   TyB2                        36.8802 eV
+--------------------------------------------------------------------------------
+ Excitation no.   9 excitation energy    20.27350141 a.u.    2.29D-14 (converged)
+ Nonrel. sym.:   TzA1                       551.6700 eV
+--------------------------------------------------------------------------------
+ Excitation no.  10 excitation energy    20.34701999 a.u.    5.13D-14 (converged)
+ Nonrel. sym.:   TyB2                       553.6706 eV
 ================================================================================
 
 
@@ -1230,7 +1659,7 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..     7                                          
 ** E solution vectors : PP EXCITATIONA1  Irrep: A1  Trev:   1 Length:         10
- Freq.:   0.381562 Norm:   0.70797425E+00 Residual norm:   0.56E-16
+ Freq.:   0.381562 Norm:   0.70797425E+00 Residual norm:   0.18E-15
    Dominant inactive orbitals:
      5(E1 )100.00%
    Dominant virtual orbitals:
@@ -1238,7 +1667,7 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
    Excitation amplitudes larger than threshold   0.22E+00
 
         5(i:E1 ) --->      6(v:E1 )  0.70797425E+00
- Freq.:   0.476763 Norm:   0.70733712E+00 Residual norm:   0.56E-16
+ Freq.:   0.476763 Norm:   0.70733712E+00 Residual norm:   0.11E-15
    Dominant inactive orbitals:
      5(E1 )100.00%
    Dominant virtual orbitals:
@@ -1246,17 +1675,17 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
    Excitation amplitudes larger than threshold   0.22E+00
 
         5(i:E1 ) --->      7(v:E1 )  0.70733712E+00
- Freq.:   0.502859 Norm:   0.71524346E+00 Residual norm:   0.23E-14
+ Freq.:   0.502871 Norm:   0.71524187E+00 Residual norm:   0.73E-14
    Dominant inactive orbitals:
-     4(E1 ) 65.97%
+     4(E1 ) 65.98%
      3(E1 ) 33.64%
    Dominant virtual orbitals:
      7(E1 ) 66.36%
      6(E1 ) 33.64%
    Excitation amplitudes larger than threshold   0.23E+00
 
-        4(i:E1 ) --->      7(v:E1 )  0.58095086E+00
-        3(i:E1 ) --->      6(v:E1 )  0.41484379E+00
+        4(i:E1 ) --->      7(v:E1 )  0.58096548E+00
+        3(i:E1 ) --->      6(v:E1 )  0.41482120E+00
  Freq.:   0.591000 Norm:   0.70811889E+00 Residual norm:   0.53E-14
    Dominant inactive orbitals:
      4(E1 ) 94.42%
@@ -1267,18 +1696,18 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
    Excitation amplitudes larger than threshold   0.22E+00
 
         4(i:E1 ) --->      6(v:E1 )  0.68807777E+00
- Freq.:   0.628195 Norm:   0.70798055E+00 Residual norm:   0.23E-14
+ Freq.:   0.628196 Norm:   0.70798057E+00 Residual norm:   0.43E-14
    Dominant inactive orbitals:
      3(E1 ) 64.95%
-     4(E1 ) 33.49%
+     4(E1 ) 33.48%
      2(E1 )  1.57%
    Dominant virtual orbitals:
      6(E1 ) 64.95%
      7(E1 ) 35.05%
    Excitation amplitudes larger than threshold   0.22E+00
 
-        3(i:E1 ) --->      6(v:E1 )  0.57056075E+00
-        4(i:E1 ) --->      7(v:E1 )  0.40968421E+00
+        3(i:E1 ) --->      6(v:E1 )  0.57057638E+00
+        4(i:E1 ) --->      7(v:E1 )  0.40966236E+00
  Freq.:   1.006057 Norm:   0.71148932E+00 Residual norm:   0.32E-14
    Dominant inactive orbitals:
      3(E1 ) 93.32%
@@ -1290,7 +1719,7 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
    Excitation amplitudes larger than threshold   0.22E+00
 
         3(i:E1 ) --->      7(v:E1 )  0.68730889E+00
- Freq.:   1.355320 Norm:   0.70774673E+00 Residual norm:   0.85E-15
+ Freq.:   1.355321 Norm:   0.70774671E+00 Residual norm:   0.22E-14
    Dominant inactive orbitals:
      2(E1 ) 98.12%
      3(E1 )  1.82%
@@ -1299,7 +1728,7 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
      6(E1 )  1.82%
    Excitation amplitudes larger than threshold   0.22E+00
 
-        2(i:E1 ) --->      7(v:E1 )  0.70106527E+00
+        2(i:E1 ) --->      7(v:E1 )  0.70106549E+00
  Freq.:   1.431302 Norm:   0.70921530E+00 Residual norm:   0.50E-14
    Dominant inactive orbitals:
      2(E1 ) 98.05%
@@ -1318,7 +1747,298 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
    Excitation amplitudes larger than threshold   0.22E+00
 
         1(i:E1 ) --->      6(v:E1 )  0.70710596E+00
- Freq.:  20.347020 Norm:   0.70710731E+00 Residual norm:   0.26E-13
+ Freq.:  20.347020 Norm:   0.70710731E+00 Residual norm:   0.99E-14
+   Dominant inactive orbitals:
+     1(E1 )100.00%
+   Dominant virtual orbitals:
+     7(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        1(i:E1 ) --->      7(v:E1 )  0.70710714E+00
+** E solution vectors : PP EXCITATIONB1  Irrep: B1  Trev:   1 Length:         10
+ Freq.:   0.442198 Norm:   0.71555761E+00 Residual norm:   0.43E-14
+   Dominant inactive orbitals:
+     4(E1 ) 88.83%
+     3(E1 )  9.58%
+     2(E1 )  1.59%
+   Dominant virtual orbitals:
+     6(E1 ) 90.42%
+     7(E1 )  9.58%
+   Excitation amplitudes larger than threshold   0.23E+00
+
+        4(i:E1 ) --->      6(v:E1 )  0.67441268E+00
+ Freq.:   0.457588 Norm:   0.70771050E+00 Residual norm:   0.79E-16
+   Dominant inactive orbitals:
+     5(E1 )100.00%
+   Dominant virtual orbitals:
+     6(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        5(i:E1 ) --->      6(v:E1 )  0.70771050E+00
+ Freq.:   0.476763 Norm:   0.70733712E+00 Residual norm:   0.79E-16
+   Dominant inactive orbitals:
+     5(E1 )100.00%
+   Dominant virtual orbitals:
+     7(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        5(i:E1 ) --->      7(v:E1 )  0.70733712E+00
+ Freq.:   0.502871 Norm:   0.71524187E+00 Residual norm:   0.65E-14
+   Dominant inactive orbitals:
+     4(E1 ) 65.98%
+     3(E1 ) 33.64%
+   Dominant virtual orbitals:
+     7(E1 ) 66.36%
+     6(E1 ) 33.64%
+   Excitation amplitudes larger than threshold   0.23E+00
+
+        4(i:E1 ) --->      7(v:E1 )  0.58096548E+00
+        3(i:E1 ) --->      6(v:E1 )  0.41482120E+00
+ Freq.:   0.628196 Norm:   0.70798057E+00 Residual norm:   0.40E-14
+   Dominant inactive orbitals:
+     3(E1 ) 64.95%
+     4(E1 ) 33.48%
+     2(E1 )  1.57%
+   Dominant virtual orbitals:
+     6(E1 ) 64.95%
+     7(E1 ) 35.05%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        3(i:E1 ) --->      6(v:E1 )  0.57057638E+00
+        4(i:E1 ) --->      7(v:E1 )  0.40966236E+00
+ Freq.:   0.686693 Norm:   0.71113337E+00 Residual norm:   0.33E-14
+   Dominant inactive orbitals:
+     3(E1 ) 87.99%
+     4(E1 )  9.82%
+     2(E1 )  2.20%
+   Dominant virtual orbitals:
+     7(E1 ) 87.99%
+     6(E1 ) 12.01%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        3(i:E1 ) --->      7(v:E1 )  0.66704721E+00
+ Freq.:   1.243742 Norm:   0.70789574E+00 Residual norm:   0.50E-14
+   Dominant inactive orbitals:
+     2(E1 ) 96.46%
+     3(E1 )  3.08%
+   Dominant virtual orbitals:
+     6(E1 ) 96.92%
+     7(E1 )  3.08%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        2(i:E1 ) --->      6(v:E1 )  0.69525667E+00
+ Freq.:   1.355321 Norm:   0.70774671E+00 Residual norm:   0.26E-14
+   Dominant inactive orbitals:
+     2(E1 ) 98.12%
+     3(E1 )  1.82%
+   Dominant virtual orbitals:
+     7(E1 ) 98.18%
+     6(E1 )  1.82%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        2(i:E1 ) --->      7(v:E1 )  0.70106549E+00
+ Freq.:  20.273501 Norm:   0.70710707E+00 Residual norm:   0.23E-13
+   Dominant inactive orbitals:
+     1(E1 )100.00%
+   Dominant virtual orbitals:
+     6(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        1(i:E1 ) --->      6(v:E1 )  0.70710654E+00
+ Freq.:  20.347020 Norm:   0.70710731E+00 Residual norm:   0.51E-13
+   Dominant inactive orbitals:
+     1(E1 )100.00%
+   Dominant virtual orbitals:
+     7(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        1(i:E1 ) --->      7(v:E1 )  0.70710714E+00
+** E solution vectors : PP EXCITATIONB2  Irrep: B2  Trev:   1 Length:         10
+ Freq.:   0.381562 Norm:   0.70797425E+00 Residual norm:   0.18E-15
+   Dominant inactive orbitals:
+     5(E1 )100.00%
+   Dominant virtual orbitals:
+     6(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        5(i:E1 ) --->      6(v:E1 )  0.70797425E+00
+ Freq.:   0.442198 Norm:   0.71555761E+00 Residual norm:   0.72E-14
+   Dominant inactive orbitals:
+     4(E1 ) 88.83%
+     3(E1 )  9.58%
+     2(E1 )  1.59%
+   Dominant virtual orbitals:
+     6(E1 ) 90.42%
+     7(E1 )  9.58%
+   Excitation amplitudes larger than threshold   0.23E+00
+
+        4(i:E1 ) --->      6(v:E1 )  0.67441268E+00
+ Freq.:   0.476763 Norm:   0.70733712E+00 Residual norm:   0.11E-15
+   Dominant inactive orbitals:
+     5(E1 )100.00%
+   Dominant virtual orbitals:
+     7(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        5(i:E1 ) --->      7(v:E1 )  0.70733712E+00
+ Freq.:   0.671477 Norm:   0.70786408E+00 Residual norm:   0.47E-14
+   Dominant inactive orbitals:
+     4(E1 ) 80.04%
+     3(E1 ) 19.96%
+   Dominant virtual orbitals:
+     7(E1 ) 80.04%
+     6(E1 ) 19.96%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        4(i:E1 ) --->      7(v:E1 )  0.63329951E+00
+        3(i:E1 ) --->      6(v:E1 )  0.31621694E+00
+ Freq.:   0.686693 Norm:   0.71113337E+00 Residual norm:   0.38E-14
+   Dominant inactive orbitals:
+     3(E1 ) 87.99%
+     4(E1 )  9.82%
+     2(E1 )  2.20%
+   Dominant virtual orbitals:
+     7(E1 ) 87.99%
+     6(E1 ) 12.01%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        3(i:E1 ) --->      7(v:E1 )  0.66704721E+00
+ Freq.:   0.773099 Norm:   0.70801387E+00 Residual norm:   0.13E-14
+   Dominant inactive orbitals:
+     3(E1 ) 79.87%
+     4(E1 ) 19.93%
+   Dominant virtual orbitals:
+     6(E1 ) 79.87%
+     7(E1 ) 20.13%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        3(i:E1 ) --->      6(v:E1 )  0.63273442E+00
+        4(i:E1 ) --->      7(v:E1 )  0.31604990E+00
+ Freq.:   1.243742 Norm:   0.70789574E+00 Residual norm:   0.63E-14
+   Dominant inactive orbitals:
+     2(E1 ) 96.46%
+     3(E1 )  3.08%
+   Dominant virtual orbitals:
+     6(E1 ) 96.92%
+     7(E1 )  3.08%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        2(i:E1 ) --->      6(v:E1 )  0.69525667E+00
+ Freq.:   1.471398 Norm:   0.70729924E+00 Residual norm:   0.28E-14
+   Dominant inactive orbitals:
+     2(E1 ) 99.78%
+   Dominant virtual orbitals:
+     7(E1 ) 99.85%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        2(i:E1 ) --->      7(v:E1 )  0.70653781E+00
+ Freq.:  20.273501 Norm:   0.70710707E+00 Residual norm:   0.11E-13
+   Dominant inactive orbitals:
+     1(E1 )100.00%
+   Dominant virtual orbitals:
+     6(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        1(i:E1 ) --->      6(v:E1 )  0.70710654E+00
+ Freq.:  20.390387 Norm:   0.70710744E+00 Residual norm:   0.22E-13
+   Dominant inactive orbitals:
+     1(E1 )100.00%
+   Dominant virtual orbitals:
+     7(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        1(i:E1 ) --->      7(v:E1 )  0.70710457E+00
+** E solution vectors : PP EXCITATIONA2  Irrep: A2  Trev:   1 Length:         10
+ Freq.:   0.381562 Norm:   0.70797425E+00 Residual norm:   0.18E-15
+   Dominant inactive orbitals:
+     5(E1 )100.00%
+   Dominant virtual orbitals:
+     6(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        5(i:E1 ) --->      6(v:E1 )  0.70797425E+00
+ Freq.:   0.442198 Norm:   0.71555761E+00 Residual norm:   0.43E-14
+   Dominant inactive orbitals:
+     4(E1 ) 88.83%
+     3(E1 )  9.58%
+     2(E1 )  1.59%
+   Dominant virtual orbitals:
+     6(E1 ) 90.42%
+     7(E1 )  9.58%
+   Excitation amplitudes larger than threshold   0.23E+00
+
+        4(i:E1 ) --->      6(v:E1 )  0.67441268E+00
+ Freq.:   0.502871 Norm:   0.71524187E+00 Residual norm:   0.65E-14
+   Dominant inactive orbitals:
+     4(E1 ) 65.98%
+     3(E1 ) 33.64%
+   Dominant virtual orbitals:
+     7(E1 ) 66.36%
+     6(E1 ) 33.64%
+   Excitation amplitudes larger than threshold   0.23E+00
+
+        4(i:E1 ) --->      7(v:E1 )  0.58096548E+00
+        3(i:E1 ) --->      6(v:E1 )  0.41482120E+00
+ Freq.:   0.525517 Norm:   0.70729639E+00 Residual norm:   0.56E-16
+   Dominant inactive orbitals:
+     5(E1 )100.00%
+   Dominant virtual orbitals:
+     7(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        5(i:E1 ) --->      7(v:E1 )  0.70729639E+00
+ Freq.:   0.628196 Norm:   0.70798057E+00 Residual norm:   0.40E-14
+   Dominant inactive orbitals:
+     3(E1 ) 64.95%
+     4(E1 ) 33.48%
+     2(E1 )  1.57%
+   Dominant virtual orbitals:
+     6(E1 ) 64.95%
+     7(E1 ) 35.05%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        3(i:E1 ) --->      6(v:E1 )  0.57057638E+00
+        4(i:E1 ) --->      7(v:E1 )  0.40966236E+00
+ Freq.:   0.686693 Norm:   0.71113337E+00 Residual norm:   0.33E-14
+   Dominant inactive orbitals:
+     3(E1 ) 87.99%
+     4(E1 )  9.82%
+     2(E1 )  2.20%
+   Dominant virtual orbitals:
+     7(E1 ) 87.99%
+     6(E1 ) 12.01%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        3(i:E1 ) --->      7(v:E1 )  0.66704721E+00
+ Freq.:   1.243742 Norm:   0.70789574E+00 Residual norm:   0.50E-14
+   Dominant inactive orbitals:
+     2(E1 ) 96.46%
+     3(E1 )  3.08%
+   Dominant virtual orbitals:
+     6(E1 ) 96.92%
+     7(E1 )  3.08%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        2(i:E1 ) --->      6(v:E1 )  0.69525667E+00
+ Freq.:   1.355321 Norm:   0.70774671E+00 Residual norm:   0.26E-14
+   Dominant inactive orbitals:
+     2(E1 ) 98.12%
+     3(E1 )  1.82%
+   Dominant virtual orbitals:
+     7(E1 ) 98.18%
+     6(E1 )  1.82%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        2(i:E1 ) --->      7(v:E1 )  0.70106549E+00
+ Freq.:  20.273501 Norm:   0.70710707E+00 Residual norm:   0.23E-13
+   Dominant inactive orbitals:
+     1(E1 )100.00%
+   Dominant virtual orbitals:
+     6(E1 )100.00%
+   Excitation amplitudes larger than threshold   0.22E+00
+
+        1(i:E1 ) --->      6(v:E1 )  0.70710654E+00
+ Freq.:  20.347020 Norm:   0.70710731E+00 Residual norm:   0.51E-13
    Dominant inactive orbitals:
      1(E1 )100.00%
    Dominant virtual orbitals:
@@ -1334,7 +2054,7 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%   12.79%   0.09000015s
     - Secondary orbitals :      6..     7                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -75.6796982401655640
-* Heading :electric properties for frozen density embedding  Mon Dec 12 18:16:14 2011
+* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:33 2011
 
 
 
@@ -1348,10 +2068,10 @@ E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.65635D
 * Screening threshold in LR solver scaled with norm of property vector:  2.1760D+00
   and changed to:  3.2449D-08
 
-########## START MICROITERATION NO.   1 ##########   Mon Dec 12 18:16:15 2011
+########## START MICROITERATION NO.   1 ##########   Thu Dec 15 16:41:37 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.05000019s
+SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.06999969s
  
  FDE integration
  
@@ -1365,8 +2085,9 @@ SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.05000019s
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   1.07 seconds
+   time spent in FDE integration                  =   1.57 seconds
  
+ FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
 
 * Norm of residual vectors:
@@ -1374,10 +2095,10 @@ SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.05000019s
      0.00000000  1.00E-05  1.27E-01  1.27E-01  0.00E+00
      0.10000000  1.00E-05  1.29E-01  1.28E-01  1.08E-02
 
-########## START MICROITERATION NO.   2 ##########   Mon Dec 12 18:16:16 2011
+########## START MICROITERATION NO.   2 ##########   Thu Dec 15 16:41:37 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07999992s
+SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.06000137s
  
  FDE integration
  
@@ -1391,8 +2112,9 @@ SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07999992s
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   0.57 seconds
+   time spent in FDE integration                  =   1.37 seconds
  
+ FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
 * Norm of residual vectors:
@@ -1401,10 +2123,10 @@ SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07999992s
      0.10000000  1.00E-05  3.17E-02  3.07E-02  7.96E-03
 E(+)-vector no.  2 removed (linear dependence). Norm :  1.46976D-17
 
-########## START MICROITERATION NO.   3 ##########   Mon Dec 12 18:16:16 2011
+########## START MICROITERATION NO.   3 ##########   Thu Dec 15 16:41:38 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07999992s
+SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07000160s
  
  FDE integration
  
@@ -1418,8 +2140,9 @@ SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07999992s
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   0.91 seconds
+   time spent in FDE integration                  =   1.22 seconds
  
+ FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
 
 * Norm of residual vectors:
@@ -1427,10 +2150,10 @@ SOfock:LL  3.24D-08    2.78%    0.00%    0.00%    0.00%   0.07999992s
      0.00000000  1.00E-05  2.50E-16  2.50E-16  0.00E+00
      0.10000000  1.00E-05  1.80E-03  2.52E-16  1.80E-03
 
-########## START MICROITERATION NO.   4 ##########   Mon Dec 12 18:16:17 2011
+########## START MICROITERATION NO.   4 ##########   Thu Dec 15 16:41:38 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.05999947s
+SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.06000137s
  
  FDE integration
  
@@ -1444,8 +2167,9 @@ SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.05999947s
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in FDE integration                  =   1.01 seconds
+   time spent in FDE integration                  =   1.21 seconds
  
+ FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  0  E-:  1
 
 * Norm of residual vectors:
@@ -1462,22 +2186,22 @@ SOfock:LL  3.24D-08    3.09%    0.00%    0.00%    0.00%   0.05999947s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   1.25000000s  (LL       )     [  1]     [  1]
+* It.  1   1.70000076s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.27D-01 |   1.27D-01  0.00D+00
             0.100000 :   1.28D-01 |   1.28D-01  1.08D-02
 ========================================================
-* It.  2   0.76000023s  (LL       )     [  2]     [  1]
+* It.  2   1.53999901s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.000000 :   2.80D-02 |   2.80D-02  0.00D+00
             0.100000 :   3.17D-02 |   3.07D-02  7.96D-03
 ========================================================
-* It.  3   1.06999969s  (LL       )     [  1]     [  1]
+* It.  3   1.37000084s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   2.50D-16 |   2.50D-16  0.00D+00
             0.100000 :   1.80D-03 |   2.52D-16  1.80D-03
 ========================================================
-* It.  4   1.09000015s  (LL       )     [  0]     [  1]
+* It.  4   1.30999947s  (LL       )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   2.50D-16 |   2.50D-16  0.00D+00
             0.100000 :   3.38D-16 |   3.36D-16  3.44D-17
@@ -1510,7 +2234,7 @@ z         8.51418713 Debye        -6.77337478 Debye         1.74081234 Debye
  1 a.u =   2.54177000 Debye
 
  
-     Date and time (Linux)  : Mon Dec 12 18:16:17 2011
+     Date and time (Linux)  : Thu Dec 15 16:41:39 2011
      Host name              : not found                               
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1518,7 +2242,7 @@ z         8.51418713 Debye        -6.77337478 Debye         1.74081234 Debye
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         7.42
+  Mean allocation size (Mb) :         3.63
   
   Largest                    10  allocations
   
@@ -1540,5 +2264,5 @@ z         8.51418713 Debye        -6.77337478 Debye         1.74081234 Debye
  MEMGET high-water mark:    11.15 MB
 
 *****************************************************
->>>> Node 0, utime: 13, stime: 0, minflt: 16331, majflt: 0, nvcsw: 301, nivcsw: 57, maxrss: 34736
->>>> Total WALL time used in DIRAC: 5s
+>>>> Node 0, utime: 22, stime: 0, minflt: 12886, majflt: 0, nvcsw: 419, nivcsw: 218, maxrss: 35240
+>>>> Total WALL time used in DIRAC: 7s
