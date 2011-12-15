@@ -3654,6 +3654,9 @@ C
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
+          write (*,*) 'FDE response contributions included'
+        else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
+          write (*,*) 'FDE response contributions not included'
         endif
 #endif
 C
