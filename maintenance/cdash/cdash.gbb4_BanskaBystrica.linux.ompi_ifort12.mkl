@@ -71,21 +71,21 @@ make Experimental
 
 ### static version buildup - MKL library, ILP64
 BUILD_STATIC==build_ifort_gcc_mkl_ILP64_static
-./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  --static  --build=$DIRAC/$BUILD_STATIC  -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x
-cd $DIRAC/$BUILD_STATIC
-cmake ..
-make dirac.x
-make info_ext
-make Experimental
+#./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  --static  --build=$DIRAC/$BUILD_STATIC  -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x
+#cd $DIRAC/$BUILD_STATIC
+#cmake ..
+#make dirac.x
+#make info_ext
+#make Experimental
 
 ### static version buildup - MKL library, I32LP64
-BUILD_STATIC==build_ifort_gcc_mkl_I32LP64_static
-./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_mkl_i32lp64_STATIC" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  --static  --build=$DIRAC/$BUILD_STATIC  -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x
-cd $DIRAC/$BUILD_STATIC
-cmake ..
-make dirac.x
-make info_ext
-make Experimental
+#BUILD_STATIC==build_ifort_gcc_mkl_I32LP64_static
+#./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_mkl_i32lp64_STATIC" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  --static  --build=$DIRAC/$BUILD_STATIC  -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x
+#cd $DIRAC/$BUILD_STATIC
+#cmake ..
+#make dirac.x
+#make info_ext
+#make Experimental
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp

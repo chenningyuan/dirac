@@ -35,7 +35,7 @@
 *QUADRATIC
 .SKIPEP
 .THRESH
- 1.0D-4         !we use poor convergence threshold for the test
+ 1.0D-3         !we use poor convergence threshold for the test
 .B FREQ
  1
  0.06
