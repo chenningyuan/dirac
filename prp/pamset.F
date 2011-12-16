@@ -274,7 +274,6 @@ C
 C        
 C        Find non-redundant active-active rotations.
 C        
-c        CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,100,NOROT)
          CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
 C        
       END IF
@@ -330,7 +329,8 @@ C     =============
 C     
       IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETXEE',-1)        
-        WRITE(LUPRI,'(A,I10)') '# of e-e rotations (non-redundant): ',NXOPE
+        WRITE(LUPRI,'(A,I10)') 
+     &       '# of e-e rotations (non-redundant): ',NXOPE
         IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
         ENDIF
@@ -690,7 +690,14 @@ C          Hermitian operator
 #ifdef MOD_UNRELEASED
 !!!!!!
         call fde_get_import_info(itmp)
-        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+!
+! here we should not skip the following call, even if we don't
+! want the fde contributions to response, since it will be
+! necessary to start by adding the contributions from the potential 
+! to the fmat
+!
+!       if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+        if (itmp%im_frozen.and.itmp%im_update_vemb) then
 
            if (.not.dirac_cfg_dft_calculation) then
               call genden(fao, cmo, 1, iprint)
@@ -707,6 +714,9 @@ C          Hermitian operator
      &                       fde_fmat               = fmo,
      &                       fde_do_potential       = .true.)
 
+         write (*,*) 'FDE Fock matrix contributions (re)calculated'
+        else if (itmp%im_vemb) then
+         write (*,*) 'FDE Fock matrix contributions (in AOPROPER) added'
         endif
 !!!!!
 #endif

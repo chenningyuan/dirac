@@ -230,7 +230,15 @@ c*****************************************************************
       ELSE
         CALL PST('Building real 2h/3h1p coupling block+')
       ENDIF
-
+CTROND: preparing for pointer back to SCF orbital indices
+CTROND      J=0
+CTROND      DO IREP = 1,NREP
+CTROND        DO I = 1,NO(IREP)
+CTROND          J=J+1
+CTROND          II=IREPSPI(I,IREP,1)
+CTROND          WRITE(6,*) "TEST..IREPSPI ",IREP,II,REPNA(IREP),EPS(J)
+CTROND        ENDDO
+CTROND      ENDDO
       DO 200 DESREP = 1,NREP
         ICOLLEN(DESREP) = 0
         IF(NOOT(DESREP).GT.0) THEN

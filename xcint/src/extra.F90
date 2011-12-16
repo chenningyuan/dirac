@@ -108,7 +108,7 @@ contains
       real(8) :: toterg
       integer, allocatable :: ki(:)
       integer :: iopt
-      integer :: ifrp, ierr, jc, i, j, jo, nc
+      integer :: ifrp, jc, i, j, jo, nc
       integer :: nsym, no, ne, np, ioff, ni
       integer :: nr_ao_in_fermion_corep(2), icmoq(2)
 !
@@ -130,9 +130,6 @@ contains
      &   ' - Total energy: ',TOTERG
         WRITE(*,'(2A)') '* Heading :',TEXT
       ENDIF
-!
-      IF (IERR.GT.0) CALL my_QUIT(                                         &
-     &'REACMO: old DFCOEF file is not consistent with this calculation')
 !
       IF(IOPT.LT.2) RETURN
 !
@@ -642,8 +639,6 @@ contains
       end if
 
       allocate(work(nbuf))
-!     allocate( work(nbuf), stat=ierr )
-!     if (ierr.ne.0) call quit('QTRANS90: error in allocation !')
       work = 0
       call QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,                    &
      &                  FAO,LRAO,LCAO,NZAO,IQAO,                        &
@@ -652,9 +647,6 @@ contains
      &                  TM2,LR2,LC2,NZTM2,IQTM2,                        &
      &                  work,nbuf,IPRINT)
       deallocate(work)
-!MI    ... necessary to eliminate gfortran memory bug...
-!     deallocate(work,  stat=ierr)
-!     if (ierr.ne.0) call quit('QTRANS90: error in dallocation !')
 
       end subroutine
       SUBROUTINE QGEMM(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA,            &

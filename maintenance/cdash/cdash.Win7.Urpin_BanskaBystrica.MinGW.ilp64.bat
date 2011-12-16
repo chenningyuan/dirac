@@ -1,4 +1,4 @@
-rem @ECHO OFF
+@ECHO OFF
 
 cls
 
@@ -20,7 +20,7 @@ rem enable keyring....
 rem "C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\Documents\milias_private_key.ppk
 
 rem download fresh Dirac - MUST HAVE full path of git
-C:\Git\bin\git.exe pull
+C:\Git\bin\git.exe pull --rebase
 
 python pamadm -a 
 
