@@ -16,7 +16,7 @@ OMPI=/home/milias/bin/openmpi_ilp64/bin
 # go to the local DIRAC directory
 cd $DIRAC
 /bin/rm -rf $BUILD
-git pull origin master
+git pull --rebase
 ./pamadm -a 
 # configure step
 ./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 

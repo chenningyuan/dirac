@@ -22,7 +22,7 @@ BUILD_STATIC=build_gfortran_gcc_ilp64_static
 # go to the local DIRAC directory
 cd $DIRAC
 #git pull origin master
-git pull 
+git pull --rebase
 ./pamadm -a 
 /bin/rm -rf $BUILD
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
@@ -38,7 +38,7 @@ make Experimental
 # go to the local DIRAC directory
 cd $DIRAC
 #git pull origin master
-git pull 
+git pull --rebase
 ./pamadm -a 
 /bin/rm -rf $BUILD_STATIC
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
