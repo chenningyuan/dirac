@@ -1360,6 +1360,19 @@ contains
       rejected = .true.
       nstep    = .false.
       nrun     = 1
+    elseif( nrun == 1 .and. nref == 0 )then
+      if( diffg1<diffg )then  ! Newton step                           
+        tradius  = tradold                                                                    
+        rejected = .false.                                                                    
+        nstep    = .true.                                                                     
+        restore  = .true.                                                                     
+        nrun     = 0                                                                          
+      else                    ! side step                             
+        tradius  = tradold                                                                    
+        rejected = .true.                                                                     
+        nstep    = .false.                                                                    
+        nrun     = 3                                                                          
+      endif
     elseif(nrun == 1)then    ! try step on the Trust-region
       diffg2   = diffg
       tradius  = tradold
@@ -1400,12 +1413,11 @@ contains
   !                       Check if we are in the flat area                       !
   !------------------------------------------------------------------------------!
   if( dabs(diffg)<thresh .and. dabs(diffq)<thresh .and. nem/=0 .and. &
-      ( dmaxa>10.0d0*thresh .and. dmaxn>10.0d0*thresh ) )then
+      ( dmaxa>10.0d0*thresh .and. dmaxn>10.0d0*thresh ) .and. cond(3:3) /= '!' )then
     rejected = .true.
     if(flat) tradius = 10.0d0*tradius
     flat     = .true.
-    if(cond(3:3) == ' ') cond(3:3) = '.'
-    if(cond(3:3) == '!') cond(3:3) = '|'
+    cond(3:3) = '.'
   else
     flat     = .false.
   endif
@@ -1413,12 +1425,10 @@ contains
   !------------------------------------------------------------------------------!
   !                Check if we are in the saddle point or maximum                !
   !------------------------------------------------------------------------------!
-  if(dmaxa<thresh .and. nem/=0)then
+  if(dmaxa<thresh .and. nem/=0 .and. cond(3:3) /= '!')then
     rejected  = .true.
     if(cond(3:3) == ' ') cond(3:3) = 's'
-    if(cond(3:3) == '!') cond(3:3) = 'p'
     if(cond(3:3) == '.') cond(3:3) = 'd'
-    if(cond(3:3) == '|') cond(3:3) = 'f'
   endif
 
   if(tradius /= tradold) trdef = .false.
