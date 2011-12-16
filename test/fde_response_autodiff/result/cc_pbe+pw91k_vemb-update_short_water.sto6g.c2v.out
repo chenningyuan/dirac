@@ -1,4 +1,4 @@
-DIRAC pam run in /home/andre/devel/git/master/test/fde_response_autodiff
+DIRAC pam run in /home/saue/Dirac/test/fde_response_autodiff
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
              out of the allowed            90000000 words (           686 MB)
  
@@ -148,48 +148,44 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
- 
- 
+
+
 Compilation info
 ----------------
- 
- System                   | Linux-2.6.35-30-server
+
+ System                   | Linux-3.0.0-13-generic
  Processor                | x86_64
  Internal math            | OFF
- 64-bit integers          | ON
+ 64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /home/soft/intel/composerxe-2011.4.191/bin/intel64
-                          | /ifort
- Fortran compiler version | ifort (IFORT) 12.0.4 20110427
- Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -i8 
-                          | -O3 -ip
- C compiler               | /home/soft/intel/composerxe-2011.4.191/bin/intel64
-                          | /icc
- C compiler version       | icc (ICC) 12.0.4 20110427
- C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
-                          | 7 -O2
- user-defined math        | -L/home/soft/intel/composerxe-2011.4.191/mkl/lib/i
-                          | ntel64 -Wl,--start-group -lmkl_intel_ilp64 -lmkl_i
-                          | ntel_thread -lmkl_core -Wl,--end-group -openmp -lp
-                          | thread -lm
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -O3 -funroll-all-loops
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+ C flags                  | -g -O2 -Wno-unused
+ BLAS                     | /usr/lib/libatlas.so;/usr/lib/libf77blas.so;/usr/l
+                          | ib/libblas.so
+ LAPACK                   | /usr/lib/liblapack_atlas.so;/usr/lib/liblapack.so
  static libraries linking | OFF
- Configuration time       | 2011-12-13 10:52:56.509118
- Last commit revision     | 13de86c602bd3860d85006d7246f829d28c355d2
- Last commit author       | andre 
- Last commit time         | Mon Dec 12 18:25:21 2011 +0100
+ Configuration time       | 2011-12-16 15:04:30.844699
+ Last commit revision     | a70abb1d75fc95a9e9390b2f8b2c9916ca94358f
+ Last commit author       | Trond Saue 
+ Last commit time         | Fri Dec 16 14:50:29 2011 +0100
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Dec 15 16:41:39 2011
+     Date and time (Linux)  : Fri Dec 16 17:19:03 2011
      Host name              : not found                               
- 
- 
+
+
 Contents of the input file
 --------------------------
- 
+
 **DIRAC                                                                                             
 .TITLE                                                                                              
 electric properties for frozen density embedding                                                    
@@ -224,11 +220,11 @@ all
  &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=T, MAXIT=10  &END                                               
  &CCFOPR DOMP2G=T &END                                                                              
                                                                                                     
- 
- 
+
+
 Contents of the molecule file
 -----------------------------
- 
+
 INTGRL                                                                                              
 Water                                                                                               
 sto basis, geometry as in Christophs ADF run                                                        
@@ -446,7 +442,7 @@ Point group: C2v
   -------------------------------------------
 
     3
- 
+
 O      0.0000000000   0.0000000000  -0.2619247262
 H      0.0000000000   0.7716276844   0.3426163129
 H      0.0000000000  -0.7716276844   0.3426163129
@@ -633,7 +629,7 @@ H      0.0000000000  -0.7716276844   0.3426163129
   
   Frozen Density Embedding (FDE) Calculation setup
   ------------------------------------------------
- 
+
  * Print level                  :     0
  * Non-additive functional : (KE) kin_pw91            
                              (XC) pbex=1.0 pbec=1.0   
@@ -643,8 +639,8 @@ H      0.0000000000  -0.7716276844   0.3426163129
  
  * FDE Potential generated from frozen, active densities
  
-   Frozen density integrates to    12.8865203037529       electrons
-   Grid points processed                   4816
+   Frozen density integrates to    12.886520303752860       electrons
+   Grid points processed         4816
  * Density (and gradient) from frozen subsystems read from file: FRZDNS                                                      
 ===========================================================================
   
@@ -781,7 +777,6 @@ H      0.0000000000  -0.7716276844   0.3426163129
    S   B1    * Deleted:          0(Proj:          0, Lindep:          0)
    S   B2    * Deleted:          0(Proj:          0, Lindep:          0)
    S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
- >>> Time used in Lwdn_a is   0.12 seconds
 
 
                                 Output from MODHAM
@@ -797,7 +792,6 @@ H      0.0000000000  -0.7716276844   0.3426163129
 No. of positive energy orbitals (NESH):     7
 No. of negative energy orbitals (NPSH):     7
 Total no. of orbitals           (NORB):    14
- >>> Time used in PAMSET is   0.67 seconds
 
 
    ****************************************************************************
@@ -809,94 +803,94 @@ Total no. of orbitals           (NORB):    14
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu Dec 15 16:41:39 2011
+########## START ITERATION NO.   1 ##########   Fri Dec 16 17:19:03 2011
 
-It.    1    -32.44494999123      1.00D+20  0.00D+00  0.00D+00               0.11000001s   Scr. nuclei    Thu Dec 15
+It.    1    -32.44494999126      1.00D+20  0.00D+00  0.00D+00               0.00800100s   Scr. nuclei    Fri Dec 16
 
-########## START ITERATION NO.   2 ##########   Thu Dec 15 16:41:39 2011
+########## START ITERATION NO.   2 ##########   Fri Dec 16 17:19:03 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.06000006s
-SOfock:SL  1.00D-12    0.00%    1.43%    0.00%    0.00%   0.47000003s
-SOfock:SS  1.00D-12    0.00%   17.03%    0.00%    0.00%   2.40999997s
- 
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00400099s
+SOfock:SL  1.00D-12    0.00%    1.43%    0.00%    0.00%   0.05600300s
+SOfock:SS  1.00D-12    0.00%   17.03%    0.00%    0.00%   0.37602302s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0007120207781576
- 
-   time spent in FDE integration                  =   0.75 seconds
- 
+   number of electrons from numerical integration =         0.0007120207781654
+
+   time spent in FDE integration                  =   0.38 seconds
+
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 4.40000010s
+>>> Total CPU-time : 0.86005303s
 
-########## END ITERATION NO.   2 ##########   Thu Dec 15 16:41:39 2011
+########## END ITERATION NO.   2 ##########   Fri Dec 16 17:19:03 2011
 
-It.    2    -75.67277045323      4.32D+01  4.61D+00  4.20D-01               4.40000010s   LL SL SS       Thu Dec 15
+It.    2    -75.67277045323      4.32D+01  4.61D+00  4.20D-01               0.86005303s   LL SL SS       Fri Dec 16
 
-########## START ITERATION NO.   3 ##########   Thu Dec 15 16:41:40 2011
+########## START ITERATION NO.   3 ##########   Fri Dec 16 17:19:04 2011
 
     3 *** Differential density matrix. DCOVLP     = 0.9779
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.07999992s
-SOfock:SL  1.00D-12    0.00%    1.78%    0.00%    0.00%   0.51000023s
-SOfock:SS  1.00D-12    0.00%   24.04%    0.00%    0.00%   2.67999935s
- 
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800097s
+SOfock:SL  1.00D-12    0.00%    1.78%    0.00%    0.00%   0.05600303s
+SOfock:SS  1.00D-12    0.00%   24.04%    0.00%    0.00%   0.36402297s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011755497933647
+   number of electrons from numerical integration =         0.0011755497933669
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011755497933647
+   WARNING: error in the number of electrons      =         0.0011755497933669
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   0.57 seconds
- 
+
+   time spent in FDE integration                  =   0.36 seconds
+
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 4.29999971s
+>>> Total CPU-time : 0.81605095s
 
-########## END ITERATION NO.   3 ##########   Thu Dec 15 16:41:40 2011
+########## END ITERATION NO.   3 ##########   Fri Dec 16 17:19:04 2011
 
-It.    3    -75.73113613267      5.84D-02 -3.22D-01  3.89D-02   DIIS   2    4.29999971s   LL SL SS       Thu Dec 15
+It.    3    -75.73113613267      5.84D-02 -3.22D-01  3.89D-02   DIIS   2    0.81605095s   LL SL SS       Fri Dec 16
 
-########## START ITERATION NO.   4 ##########   Thu Dec 15 16:41:41 2011
+########## START ITERATION NO.   4 ##########   Fri Dec 16 17:19:05 2011
 
     4 *** Differential density matrix. DCOVLP     = 1.0010
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.07999992s
-SOfock:SL  1.00D-12    0.00%    2.55%    0.00%    0.00%   0.47000027s
-SOfock:SS  1.00D-12    0.00%   36.84%    0.00%    0.00%   2.40999985s
- 
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800002s
+SOfock:SL  1.00D-12    0.00%    2.55%    0.00%    0.00%   0.05600393s
+SOfock:SS  1.00D-12    0.00%   36.84%    0.00%    0.00%   0.35602212s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   0.72 seconds
- 
+
+   time spent in FDE integration                  =   0.36 seconds
+
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 4.07000065s
+>>> Total CPU-time : 0.80805016s
 
-########## END ITERATION NO.   4 ##########   Thu Dec 15 16:41:41 2011
+########## END ITERATION NO.   4 ##########   Fri Dec 16 17:19:05 2011
 
-It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07000065s   LL SL SS       Thu Dec 15
+It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    0.80805016s   LL SL SS       Fri Dec 16
 
 
                                    SCF - CYCLE
@@ -912,10 +906,10 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -32.44494999123      1.00D+20  0.00D+00  0.00D+00               0.11000001s   Scr. nuclei    Thu Dec 15
-It.    2    -75.67277045323      4.32D+01  4.61D+00  4.20D-01               4.40000010s   LL SL SS       Thu Dec 15
-It.    3    -75.73113613267      5.84D-02 -3.22D-01  3.89D-02   DIIS   2    4.29999971s   LL SL SS       Thu Dec 15
-It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07000065s   LL SL SS       Thu Dec 15
+It.    1    -32.44494999126      1.00D+20  0.00D+00  0.00D+00               0.00800100s   Scr. nuclei    Fri Dec 16
+It.    2    -75.67277045323      4.32D+01  4.61D+00  4.20D-01               0.86005303s   LL SL SS       Fri Dec 16
+It.    3    -75.73113613267      5.84D-02 -3.22D-01  3.89D-02   DIIS   2    0.81605095s   LL SL SS       Fri Dec 16
+It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    0.80805016s   LL SL SS       Fri Dec 16
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    4 iterations.
 * Average elapsed time per iteration: 
@@ -926,13 +920,13 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -84.711975113570446
+   Electronic energy                        :    -84.711975113570219
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      8.980370229500169
 
    Sum of all contributions to the energy
-   Total energy                             :    -75.731604884070279
+   Total energy                             :    -75.731604884070052
 
 
                                    Eigenvalues
@@ -941,9 +935,9 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--20.52815850640634  ( 2)    -1.26707501247446  ( 2)    -0.60799986053696  ( 2)    -0.45720796999377  ( 2)    -0.39628957109566  ( 2)
+-20.52815850640643  ( 2)    -1.26707501247435  ( 2)    -0.60799986054367  ( 2)    -0.45720796999998  ( 2)    -0.39628957109014  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.57585068578922  ( 2)     0.70130980107309  ( 2)
+  0.57585068578538  ( 2)     0.70130980107158  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.57585069 au (symmetry E1 )
@@ -969,10 +963,10 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
      ************************************************************************
 
 
- Transformation started at : Thu Dec 15 16:41:42 2011
+ Transformation started at : Fri Dec 16 17:19:06 2011
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326675581
-* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:41 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326673733
+* Heading :electric properties for frozen density embedding  Fri Dec 16 17:19:05 2011
 
 * Orbital ranges for 4-index transformation:
 
@@ -1015,13 +1009,13 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
        ********************************************************************
 
 
- Transformation started at : Thu Dec 15 16:41:42 2011
+ Transformation started at : Fri Dec 16 17:19:06 2011
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326675581
-* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:41 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326673733
+* Heading :electric properties for frozen density embedding  Fri Dec 16 17:19:05 2011
 
-* REAFCK: Fock matrix read from file /scratch/andre/dirac/andre/DIRAC_cc_pbe+pw91k_vemb-update_sh
-* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:39 2011
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :electric properties for frozen density embedding  Fri Dec 16 17:19:03 2011
 
 
  Core energy (includes nuclear repulsion) :              8.9803702295
@@ -1038,16 +1032,16 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
  - Integral class 2 : (SS|??)
    - Beginning task   4 of   7 after      0. seconds and      0. CPU-seconds
    - Beginning task   5 of   7 after      0. seconds and      0. CPU-seconds
-   - Beginning task   6 of   7 after      0. seconds and      2. CPU-seconds
-   - Beginning task   7 of   7 after      0. seconds and      4. CPU-seconds
+   - Beginning task   6 of   7 after      0. seconds and      0. CPU-seconds
+   - Beginning task   7 of   7 after      0. seconds and      1. CPU-seconds
 
- Node    0 finished first half transformation          281158 HT integrals written ( 87.16%,      0.01 GB)
+ Node    0 finished first half transformation          281158 HT integrals written ( 87.16%,      0.00 GB)
   
- <<< Starting 2HT on node                      0
+ <<< Starting 2HT on node            0
   
   
- >>> Finished 2HT on node                      0
- >>> Time used in 2HT_all is   0.29 seconds
+ >>> Finished 2HT on node            0
+ >>> Time used in 2HT_all is   0.74 seconds
   
  - Binary  file MDCINT was written.
 * Screening statistics:
@@ -1058,16 +1052,16 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformati       7.600 seconds
- Time in  Second halftransformat       0.290 seconds
+ Time in  First halftransformati       1.380 seconds
+ Time in  Second halftransformat       0.740 seconds
 
 
- Total wall time used in PAMTRA :   00:00:01
- Total CPU  time used in PAMTRA (master only) :   00:00:08
+ Total wall time used in PAMTRA :   00:00:02
+ Total CPU  time used in PAMTRA (master only) :   00:00:02
 
 
 
- Transformation ended at : Thu Dec 15 16:41:43 2011
+ Transformation ended at : Fri Dec 16 17:19:08 2011
 
 ---< Process     1 of     1----<
 
@@ -1091,8 +1085,8 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
   - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
 
 
- Today is :   15 Dec 11 
- The time is :  16:41:43
+ Today is :   16 Dec 11 
+ The time is :  17:19:08
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 
@@ -1129,7 +1123,7 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
  Interface used       :                DIRAC6    
 
 
- Memory for reading and sorting integrals :           36146 8-byte words
+ Memory for reading and sorting integrals :           24567 8-byte words
  Core used for calculating amplitudes :               17547 8-byte words
  Core used for in core evaluation of triples :         2254 8-byte words
  Core used for Gradient Calculation :              23284064 8-byte words
@@ -1142,7 +1136,7 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
  Type VOVO :             800 integrals
  Type VOVV :             120 integrals
  Type VVVV :              20 integrals
- 
+
  Sorting of first 4 classes done.
 
  Need      1 passes to sort VOVV integrals
@@ -1152,8 +1146,8 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
  VVVV sorting done.
 
  Reading Coulomb integrals :
- File date :      15Dec11  
- File time :       16:41:43
+ File date :      16Dec11  
+ File time :       17:19:07
  # of integrals                8330
 
  Finished sorting of integrals
@@ -1188,10 +1182,10 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
 
 
  Nuclear repulsion + core energy :             8.980370229500169
- Zero order electronic energy :              -46.515878887624403
- First order electronic energy :             -38.196446021656477
- Electronic energy :                         -84.712324909280881
- SCF energy :                                -75.731954679780713
+ Zero order electronic energy :              -46.515878887634628
+ First order electronic energy :             -38.196446021646146
+ Electronic energy :                         -84.712324909280767
+ SCF energy :                                -75.731954679780600
 
 
  Energy calculations
@@ -1202,10 +1196,10 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
 
   MP2 results
 
- SCF energy :                                -75.731954679780713
- MP2 correlation energy :                     -0.037917666231308
- Total MP2 energy :                          -75.769872346012022
- T1 diagnostic :                               0.000491469619193
+ SCF energy :                                -75.731954679780600
+ MP2 correlation energy :                     -0.037917666231296
+ Total MP2 energy :                          -75.769872346011894
+ T1 diagnostic :                               0.000491469618414
 
 
  CCSD options :
@@ -1215,36 +1209,36 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
 
 
    NIT          ENERGY                    RMS       T1-DIAGN
-    0       -0.037917641915668   1.000000000000000   0.00049
-    1       -0.048005799711235   0.038450662738122   0.00320
-    2       -0.052879064659340   0.008431600791224   0.00563
-    3       -0.053052021038066   0.001551157880448   0.00625
-    4       -0.053069517993601   0.000539913266454   0.00645
-    5       -0.053059953997865   0.000053223390584   0.00647
-    6       -0.053060957630597   0.000009198688707   0.00647
-    7       -0.053060688189766   0.000002023264445   0.00647
-    8       -0.053060736104892   0.000000394238941   0.00647
-    9       -0.053060728397962   0.000000039595743   0.00647
-   10       -0.053060728044386   0.000000022083800   0.00647
+    0       -0.037917641915655   1.000000000000000   0.00049
+    1       -0.048005799711207   0.038450662730198   0.00320
+    2       -0.052879064659324   0.008431600794666   0.00563
+    3       -0.053052021038050   0.001551157879902   0.00625
+    4       -0.053069517993585   0.000539913266417   0.00645
+    5       -0.053059953997849   0.000053223390693   0.00647
+    6       -0.053060957630582   0.000009198688691   0.00647
+    7       -0.053060688189750   0.000002023264445   0.00647
+    8       -0.053060736104876   0.000000394238947   0.00647
+    9       -0.053060728397946   0.000000039595741   0.00647
+   10       -0.053060728044370   0.000000022083801   0.00647
 
 
- WARNING: Requested convergence not reached in CCSD :RMS =    0.000000022083800
+ WARNING: Requested convergence not reached in CCSD :RMS =    0.000000022083801
 
 
   CCSD results
 
- SCF energy :                                -75.731954679780713
- CCSD correlation energy :                    -0.053060728044386
- Total CCSD energy :                         -75.785015407825099
+ SCF energy :                                -75.731954679780600
+ CCSD correlation energy :                    -0.053060728044370
+ Total CCSD energy :                         -75.785015407824972
 
 
  Individual terms in the correlation energy
 
    Irrep Spinor     Relaxation energy (T1-amplitudes)
-      1       3            -0.000006347332943
-      1       4             0.000005861432832
-      2       3            -0.000006347332943
-      2       4             0.000005861432832
+      1       3            -0.000006347332928
+      1       4             0.000005861432831
+      2       3            -0.000006347332928
+      2       4             0.000005861432831
 
    Irrep1 Spinor1 Irrep2 Spinor2     Correlation energy (T2-amplitudes)
       2       1      1       1            -0.000031697550599
@@ -1252,42 +1246,42 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
       2       3      1       1            -0.000004844732357
       2       4      1       1            -0.000006252917467
       2       1      1       2            -0.000015553974995
-      2       2      1       2            -0.004387685955369
-      2       3      1       2            -0.000447275995457
-      2       4      1       2            -0.002159198008674
+      2       2      1       2            -0.004387685955302
+      2       3      1       2            -0.000447275995451
+      2       4      1       2            -0.002159198008678
       2       1      1       3            -0.000004844732357
-      2       2      1       3            -0.000447275995457
-      2       3      1       3            -0.015949809678448
-      2       4      1       3            -0.000486411883635
+      2       2      1       3            -0.000447275995451
+      2       3      1       3            -0.015949809678467
+      2       4      1       3            -0.000486411883642
       2       1      1       4            -0.000006252917467
-      2       2      1       4            -0.002159198008674
-      2       3      1       4            -0.000486411883635
-      2       4      1       4            -0.006867161419112
-      2       5      1       5            -0.001253240327702
+      2       2      1       4            -0.002159198008678
+      2       3      1       4            -0.000486411883642
+      2       4      1       4            -0.006867161419175
+      2       5      1       5            -0.001253240327697
       1       3      1       1            -0.000002395620352
-      1       3      1       2            -0.003128540505199
-      1       4      1       3            -0.006033868783610
+      1       3      1       2            -0.003128540505138
+      1       4      1       3            -0.006033868783679
       2       3      2       1            -0.000002395620352
-      2       3      2       2            -0.003128540505199
-      2       4      2       3            -0.006033868783610
+      2       3      2       2            -0.003128540505138
+      2       4      2       3            -0.006033868783679
 
 
 
- T1 diagnostic :                               0.006473420695942
- Convergence :                                 0.000000022083800
+ T1 diagnostic :                               0.006473420695869
+ Convergence :                                 0.000000022083801
  Number or iterations used :                                  10
 
 
   Perturbative treatment of triple excitations
 
- SCF energy :                                -75.731954679780713
- CCSD correlation energy :                    -0.053060728044386
- 4th order triples correction :               -0.000082514849266
- 5th order triples (T) correction :            0.000012045320371
- 5th order triples -T  correction :            0.000020518981699
- Total CCSD+T  energy :                      -75.785097922674368
- Total CCSD(T) energy :                      -75.785085877353993
- Total CCSD-T  energy :                      -75.785077403692668
+ SCF energy :                                -75.731954679780600
+ CCSD correlation energy :                    -0.053060728044370
+ 4th order triples correction :               -0.000082514849267
+ 5th order triples (T) correction :            0.000012045320369
+ 5th order triples -T  correction :            0.000020518981697
+ Total CCSD+T  energy :                      -75.785097922674240
+ Total CCSD(T) energy :                      -75.785085877353865
+ Total CCSD-T  energy :                      -75.785077403692540
 
 
  Relaxed density matrix for MP2 properties
@@ -1309,10 +1303,10 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
             *********************************************************
 
 
- Transformation started at : Thu Dec 15 16:41:44 2011
+ Transformation started at : Fri Dec 16 17:19:08 2011
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326675581
-* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:41 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326673733
+* Heading :electric properties for frozen density embedding  Fri Dec 16 17:19:05 2011
 
 * Orbital ranges for 4-index transformation:
 
@@ -1343,8 +1337,8 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
  - Integral class 2
    - Beginning task   4 of   7 after      0. seconds and      0. CPU-seconds
    - Beginning task   5 of   7 after      0. seconds and      0. CPU-seconds
-   - Beginning task   6 of   7 after      0. seconds and      2. CPU-seconds
-   - Beginning task   7 of   7 after      0. seconds and      4. CPU-seconds
+   - Beginning task   6 of   7 after      1. seconds and      0. CPU-seconds
+   - Beginning task   7 of   7 after      1. seconds and      0. CPU-seconds
 * Screening statistics:
    (LL|LL)ints :   0.00%
    (SS|LL)ints :   0.00%
@@ -1353,11 +1347,11 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
 
 
  Total wall time used in LAGTAU :   00:00:01
- Total CPU  time used in LAGTAU :   00:00:08
+ Total CPU  time used in LAGTAU :   00:00:01
 
 
 
- Transformation ended at : Thu Dec 15 16:41:45 2011
+ Transformation ended at : Fri Dec 16 17:19:09 2011
 
 
     **************************************************************************
@@ -1365,9 +1359,9 @@ It.    4    -75.73160488407      4.69D-04  2.65D-02  2.64D-03   DIIS   2    4.07
     **************************************************************************
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.07000160s
-SOfock:SL  1.00D-12    0.00%    2.50%    0.00%    0.00%   0.44999886s
-SOfock:SS  1.00D-12    0.00%   41.44%    0.00%    0.00%   2.46999931s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800085s
+SOfock:SL  1.00D-12    0.00%    2.50%    0.00%    0.00%   0.05200338s
+SOfock:SS  1.00D-12    0.00%   41.44%    0.00%    0.00%   0.34802198s
 
 
     *************************************************************************
@@ -1377,54 +1371,54 @@ SOfock:SS  1.00D-12    0.00%   41.44%    0.00%    0.00%   2.46999931s
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/andre/dirac/andre/DIRAC_cc_pbe+pw91k_vemb-update_sh
-* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:41 2011
- 
+* REAFCK: Fock matrix read from file DFFCK2                                                      
+* Heading :electric properties for frozen density embedding  Fri Dec 16 17:19:05 2011
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   1.50 seconds
- 
+
+   time spent in FDE integration                  =   0.37 seconds
+
  FDE Fock matrix contributions (re)calculated
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/andre/dirac/andre/DIRAC_cc_pbe+pw91k_vemb-update_sh
-* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:39 2011
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :electric properties for frozen density embedding  Fri Dec 16 17:19:03 2011
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-10
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
 
-########## START MICROITERATION NO.   1 ##########   Thu Dec 15 16:41:46 2011
+########## START MICROITERATION NO.   1 ##########   Fri Dec 16 17:19:10 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.03000259s
-SOfock:SL  1.49D-10    0.00%    2.85%    0.00%    0.00%   0.18000031s
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00800085s
+SOfock:SL  1.49D-10    0.00%    2.85%    0.00%    0.00%   0.05600309s
  Triplet contributions to FDE kernel neglected
- 
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   1.54 seconds
- 
+
+   time spent in FDE integration                  =   0.50 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  0
 
@@ -1432,26 +1426,26 @@ SOfock:SL  1.49D-10    0.00%    2.85%    0.00%    0.00%   0.18000031s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-07  4.84E-03  4.83E-03  2.98E-04
 
-########## START MICROITERATION NO.   2 ##########   Thu Dec 15 16:41:46 2011
+########## START MICROITERATION NO.   2 ##########   Fri Dec 16 17:19:11 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.06000137s
-SOfock:SL  1.49D-10    0.00%    2.91%    0.00%    0.00%   0.22999954s
- 
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00799990s
+SOfock:SL  1.49D-10    0.00%    2.91%    0.00%    0.00%   0.05600405s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   1.67 seconds
- 
+
+   time spent in FDE integration                  =   0.60 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1459,26 +1453,26 @@ SOfock:SL  1.49D-10    0.00%    2.91%    0.00%    0.00%   0.22999954s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-07  6.54E-04  6.53E-04  2.08E-05
 
-########## START MICROITERATION NO.   3 ##########   Thu Dec 15 16:41:47 2011
+########## START MICROITERATION NO.   3 ##########   Fri Dec 16 17:19:12 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.06999969s
-SOfock:SL  1.49D-10    0.00%    3.03%    0.00%    0.00%   0.46000290s
- 
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00800133s
+SOfock:SL  1.49D-10    0.00%    3.03%    0.00%    0.00%   0.05600262s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   1.26 seconds
- 
+
+   time spent in FDE integration                  =   0.60 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1486,27 +1480,27 @@ SOfock:SL  1.49D-10    0.00%    3.03%    0.00%    0.00%   0.46000290s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-07  1.76E-05  1.75E-05  2.37E-06
 
-########## START MICROITERATION NO.   4 ##########   Thu Dec 15 16:41:48 2011
+########## START MICROITERATION NO.   4 ##########   Fri Dec 16 17:19:12 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.06999969s
-SOfock:SL  1.49D-10    0.00%    2.85%    0.00%    0.00%   0.43999863s
-SOfock:SS  1.49D-10    0.00%   21.77%    0.00%    0.00%   2.70000076s
- 
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  1.49D-10    0.00%    2.85%    0.00%    0.00%   0.05600262s
+SOfock:SS  1.49D-10    0.00%   21.77%    0.00%    0.00%   0.39202499s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   1.17 seconds
- 
+
+   time spent in FDE integration                  =   0.60 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1514,27 +1508,27 @@ SOfock:SS  1.49D-10    0.00%   21.77%    0.00%    0.00%   2.70000076s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-07  1.76E-05  1.75E-05  2.36E-06
 
-########## START MICROITERATION NO.   5 ##########   Thu Dec 15 16:41:49 2011
+########## START MICROITERATION NO.   5 ##########   Fri Dec 16 17:19:13 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.05999756s
-SOfock:SL  1.49D-10    0.00%    2.91%    0.00%    0.00%   0.47000122s
-SOfock:SS  1.49D-10    0.00%   20.50%    0.00%    0.00%   2.82999802s
- 
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  1.49D-10    0.00%    2.91%    0.00%    0.00%   0.05600357s
+SOfock:SS  1.49D-10    0.00%   20.50%    0.00%    0.00%   0.39202499s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   1.03 seconds
- 
+
+   time spent in FDE integration                  =   0.59 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1542,27 +1536,27 @@ SOfock:SS  1.49D-10    0.00%   20.50%    0.00%    0.00%   2.82999802s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-07  9.95E-07  9.95E-07  1.23E-08
 
-########## START MICROITERATION NO.   6 ##########   Thu Dec 15 16:41:50 2011
+########## START MICROITERATION NO.   6 ##########   Fri Dec 16 17:19:14 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.06999969s
-SOfock:SL  1.49D-10    0.00%    2.90%    0.00%    0.00%   0.43999863s
-SOfock:SS  1.49D-10    0.00%   20.03%    0.00%    0.00%   2.90999985s
- 
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00800037s
+SOfock:SL  1.49D-10    0.00%    2.90%    0.00%    0.00%   0.05600357s
+SOfock:SS  1.49D-10    0.00%   20.03%    0.00%    0.00%   0.39602470s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   0.93 seconds
- 
+
+   time spent in FDE integration                  =   0.59 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1570,27 +1564,27 @@ SOfock:SS  1.49D-10    0.00%   20.03%    0.00%    0.00%   2.90999985s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-07  3.62E-08  3.61E-08  3.13E-09
 
-########## START MICROITERATION NO.   7 ##########   Thu Dec 15 16:41:51 2011
+########## START MICROITERATION NO.   7 ##########   Fri Dec 16 17:19:15 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.06999969s
-SOfock:SL  1.49D-10    0.00%    2.91%    0.00%    0.00%   0.43999863s
-SOfock:SS  1.49D-10    0.00%   21.03%    0.00%    0.00%   2.90000153s
- 
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  1.49D-10    0.00%    2.91%    0.00%    0.00%   0.05600357s
+SOfock:SS  1.49D-10    0.00%   21.03%    0.00%    0.00%   0.39202499s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   0.91 seconds
- 
+
+   time spent in FDE integration                  =   0.59 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1598,27 +1592,27 @@ SOfock:SS  1.49D-10    0.00%   21.03%    0.00%    0.00%   2.90000153s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-07  7.70E-09  7.70E-09  6.88E-11
 
-########## START MICROITERATION NO.   8 ##########   Thu Dec 15 16:41:52 2011
+########## START MICROITERATION NO.   8 ##########   Fri Dec 16 17:19:16 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.06999969s
-SOfock:SL  1.49D-10    0.00%    2.93%    0.00%    0.00%   0.42000198s
-SOfock:SS  1.49D-10    0.00%   43.77%    0.00%    0.00%   2.40999985s
- 
+SOfock:LL  1.49D-10    0.00%    0.00%    0.00%    0.00%   0.00799942s
+SOfock:SL  1.49D-10    0.00%    2.93%    0.00%    0.00%   0.05600452s
+SOfock:SS  1.49D-10    0.00%   43.77%    0.00%    0.00%   0.35202122s
+
  FDE integration
- 
+
    number of grid points                          =      4816
    number of grid points below density threshold  =         0
-   number of electrons from numerical integration =         0.0011355953569548
+   number of electrons from numerical integration =         0.0011355953569585
    number of electrons from orbital occupations   =         0
-   WARNING: error in the number of electrons      =         0.0011355953569548
+   WARNING: error in the number of electrons      =         0.0011355953569585
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
- 
-   time spent in FDE integration                  =   1.31 seconds
- 
+
+   time spent in FDE integration                  =   0.50 seconds
+
  FDE response contributions included
 * Trial vectors in this micro iteration:  E+:  1  P+:  0
 
@@ -1635,49 +1629,49 @@ SOfock:SS  1.49D-10    0.00%   43.77%    0.00%    0.00%   2.40999985s
 
             Freq.(au)   Total norm    E+ norm   P+ norm 
 ========================================================
-* It.  1   1.85999680s  (LL SL    )     [  1]     [  0]
+* It.  1   0.56803608s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   4.84D-03 |   4.83D-03  2.98D-04
 ========================================================
-* It.  2   2.05000305s  (LL SL    )     [  1]     [  1]
+* It.  2   0.67604160s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   6.53D-04 |   6.53D-04  2.08D-05
 ========================================================
-* It.  3   1.85999680s  (LL SL    )     [  1]     [  1]
+* It.  3   0.67204285s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.77D-05 |   1.75D-05  2.37D-06
 ========================================================
-* It.  4   4.49000168s  (LL SL SS )     [  1]     [  1]
+* It.  4   1.06406689s  (LL SL SS )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.77D-05 |   1.75D-05  2.36D-06
 ========================================================
-* It.  5   4.47999954s  (LL SL SS )     [  1]     [  1]
+* It.  5   1.06406593s  (LL SL SS )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   9.95D-07 |   9.95D-07  1.23D-08
 ========================================================
-* It.  6   4.44000244s  (LL SL SS )     [  1]     [  1]
+* It.  6   1.06406689s  (LL SL SS )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   3.62D-08 |   3.61D-08  3.13D-09
 ========================================================
-* It.  7   4.41999817s  (LL SL SS )     [  1]     [  1]
+* It.  7   1.06406593s  (LL SL SS )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   7.70D-09 |   7.70D-09  6.88D-11
 ========================================================
-* It.  8   4.27000046s  (LL SL SS )     [  1]     [  0]
+* It.  8   0.92405701s  (LL SL SS )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   9.82D-10 |   9.80D-10  6.58D-11
 ========================================================
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326675581
-* Heading :electric properties for frozen density embedding  Thu Dec 15 16:41:41 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -75.7311361326673733
+* Heading :electric properties for frozen density embedding  Fri Dec 16 17:19:05 2011
  Storing the MP2  density matrix on file
 
 
 --------------------------------------------------------------------------------
 
 
- Today is :   15 Dec 11 
- The time is :  16:41:52
+ Today is :   16 Dec 11 
+ The time is :  17:19:17
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -1688,53 +1682,56 @@ SOfock:SS  1.49D-10    0.00%   43.77%    0.00%    0.00%   2.40999985s
  CCSD(T) energy calculation :          Completed, restartable        
 
  Overview of calculated energies
-@ SCF energy :                               -75.731954679780713
-@ MP2 correlation energy :                    -0.037917666231308
-@ CCSD correlation energy :                   -0.053060728044386
-@ 4th order triples correction :              -0.000082514849266
-@ 5th order triples (T) correction :           0.000012045320371
-@ 5th order triples -T  correction :           0.000020518981699
-@ Total MP2 energy :                         -75.769872346012022
-@ Total CCSD energy :                        -75.785015407825099
-@ Total CCSD+T  energy :                     -75.785097922674368
-@ Total CCSD(T) energy :                     -75.785085877353993
-@ Total CCSD-T  energy :                     -75.785077403692668
+@ SCF energy :                               -75.731954679780600
+@ MP2 correlation energy :                    -0.037917666231296
+@ CCSD correlation energy :                   -0.053060728044370
+@ 4th order triples correction :              -0.000082514849267
+@ 5th order triples (T) correction :           0.000012045320369
+@ 5th order triples -T  correction :           0.000020518981697
+@ Total MP2 energy :                         -75.769872346011894
+@ Total CCSD energy :                        -75.785015407824972
+@ Total CCSD+T  energy :                     -75.785097922674240
+@ Total CCSD(T) energy :                     -75.785085877353865
+@ Total CCSD-T  energy :                     -75.785077403692540
 
 
 --------------------------------------------------------------------------------
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
- Time in Sorting of integrals          0.040 seconds
- Time in CCSD equations                0.010 seconds
- Time in - T1 equations                0.010 seconds
+ Time in Sorting of integrals          0.052 seconds
+ Time in CCSD equations                0.008 seconds
+ Time in - T2 equations                0.008 seconds
+ Time in -- GOINTM                     0.004 seconds
+ Time in -- T2 EQNS                    0.004 seconds
+ Time in --- T2EQNS: VOVV*T1           0.004 seconds
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :                  4.00                    21.74
- Initialization :                    0.00                     0.10
- Integral sorting :                  0.00                     0.04
- Energy calculation :                1.00                     0.06
- First order properties :            8.00                    41.68
+ Before CC driver :                  5.00                     4.74
+ Initialization :                    0.00                     0.16
+ Integral sorting :                  0.00                     0.05
+ Energy calculation :                0.00                     0.08
+ First order properties :            9.00                     9.12
  Second order properties :           0.00                     0.00
  Fock space energies :               0.00                     0.00
  Untimed parts :                     0.00                     0.00
- Total time in CC driver :             9.                    41.88
+ Total time in CC driver :             9.                     9.41
 
  Statistics for the word-addressable I/O
  Number of write calls                                 517.
  Number of read calls                                  526.
- Megabytes written                                    0.031
- Megabytes read                                       0.451
+ Megabytes written                                    0.061
+ Megabytes read                                       0.902
  Seconds spent in reads                               0.000
  Seconds spent in writes                              0.000
  average I/O speed for write (Mb/s)                   0.000
  average I/O speed for read  (Mb/s)                   0.000
 
 
- CPU time (seconds) used in RELCCSD:                    41.8800
- CPU time (seconds) used before RELCCSD:                21.7400
- CPU time (seconds) used in total sofar:                63.6200
+ CPU time (seconds) used in RELCCSD:                     9.4086
+ CPU time (seconds) used before RELCCSD:                 4.7443
+ CPU time (seconds) used in total sofar:                14.1529
 
   --- Normal end of RELCCSD Run ---
 
@@ -1788,7 +1785,7 @@ SOfock:SS  1.49D-10    0.00%   43.77%    0.00%    0.00%   2.40999985s
 ----------------------------------------------------------------------------
     Dipole length: X :     0.00000000D+00 a.u.      T   F
     Dipole length: Y :     0.00000000D+00 a.u.      T   F
-    Dipole length: Z :     3.349004976062 a.u.      F   F
+    Dipole length: Z :     3.349004976058 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1821,7 +1818,7 @@ z         8.51240038 Debye        -6.77337478 Debye         1.73902559 Debye
 ----------------------------------------------------------------------------
     Dipole length: X :     0.00000000D+00 a.u.      T   F
     Dipole length: Y :     0.00000000D+00 a.u.      T   F
-    Dipole length: Z :     3.319081502680 a.u.      F   F
+    Dipole length: Z :     3.319081502676 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1839,8 +1836,10 @@ z         8.43634179 Debye        -6.77337478 Debye         1.66296701 Debye
  1 a.u =   2.54177000 Debye
 
  
-     Date and time (Linux)  : Thu Dec 15 16:41:52 2011
+     Date and time (Linux)  : Fri Dec 16 17:19:17 2011
      Host name              : not found                               
+>>>> Node 0, utime: 13, stime: 0, minflt: 112854, majflt: 6, nvcsw: 11, nivcsw: 1268, maxrss: 251264
+>>>> Total WALL time used in DIRAC: 14s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
@@ -1849,25 +1848,23 @@ z         8.43634179 Debye        -6.77337478 Debye         1.66296701 Debye
   
   Mean allocation size (Mb) :         2.24
   
-  Largest                    10  allocations
+  Largest          10  allocations
   
-      488.28 Mb at subroutine MAIN__+0x579                               for work array at main                        
-      177.56 Mb at subroutine ccfopr_+0x367a                             for buf3                                      
-      177.56 Mb at subroutine ccfopr_+0x367a                             for buf3                                      
-        0.22 Mb at subroutine fde_data_mp_fde_import_frozen_+0x620       for fde_active_hn                             
-        0.22 Mb at subroutine fde_data_mp_fde_import_frozen_+0xb0c       for fde_frozen_hn                             
-        0.22 Mb at subroutine fde_io_mp_read_grid_manycol_+0x120         for properties_on_grid                        
-        0.17 Mb at subroutine ccseti_+0x1313                             for ibuf                                      
-        0.17 Mb at subroutine ccseti_+0x1313                             for ibuf                                      
-        0.15 Mb at subroutine fde_data_mp_fde_import_frozen_+0x158       for fde_grid                                  
-        0.15 Mb at subroutine fde_io_mp_read_grid_manycol_+0x101         for grid_points                               
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
+      177.56 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf3                                      
+      177.56 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf3                                      
+        0.22 Mb at subroutine __allocator_track_if_MOD_allocator_registe for fde_active_hn                             
+        0.22 Mb at subroutine __allocator_track_if_MOD_allocator_registe for fde_frozen_hn                             
+        0.22 Mb at subroutine __allocator_track_if_MOD_allocator_registe for properties_on_grid                        
+        0.15 Mb at subroutine __allocator_track_if_MOD_allocator_registe for fde_grid                                  
+        0.15 Mb at subroutine __allocator_track_if_MOD_allocator_registe for grid_points                               
+        0.11 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.11 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
   
   Peak memory usage    (Mb) :       667.00
-       reached at subroutine : qtrans90_+0x231                           
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : QTRANS90-buffer-space                     
   
- MEMGET high-water mark:   895.87 MB
+ MEMGET high-water mark:    70.63 MB
 
 *****************************************************
->>>> Node 0, utime: 63, stime: 2, minflt: 132165, majflt: 0, nvcsw: 587, nivcsw: 523, maxrss: 269800
->>>> Total WALL time used in DIRAC: 13s
