@@ -111,7 +111,7 @@ macro(find_acml)
 endmacro()
 
 macro(find_atlas)
-    set(path_suffixes lib lib/atlas lib/atlas-base lib/atlas-base/atlas)
+    set(path_suffixes atlas lib/atlas lib/atlas-base lib/atlas-base/atlas lib)
     if (MATH_LANG STREQUAL "C")
         set(blas_libs cblas atlas f77blas)
     else()

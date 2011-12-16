@@ -23,7 +23,8 @@ cd $DIRAC
 
 #svn --force up
 #svn up
-git pull origin master
+#git pull origin master
+git pull --rebase
 
 ./pamadm -a --hsfsdyn --auto
 

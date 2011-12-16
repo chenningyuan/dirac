@@ -567,6 +567,7 @@ C
       DO I = 1, NFSYM
          IREP  = IREP  + 1
          IREPA = IREPA + 1
+C........Loop over first Kramers partner
          DO ISTR = 1, NSTR(I)
             II = II + 1
             IK = IK + 1
@@ -591,6 +592,7 @@ C
          ENDDO
          IREP = IREP + 1
          IF (NZ.NE.4) IREPA = IREPA + 1
+C........Loop over second Kramers partner; reset index IK over partners
          IK = IK - NSTR(I)
          DO ISTR = 1, NSTR(I)
             II = II + 1
