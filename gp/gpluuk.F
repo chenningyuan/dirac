@@ -1518,17 +1518,16 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
-#include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL READY
+      integer :: status_array(df_mpi_status_size)
 C
       IFREE = 0
       READY = .FALSE.
       DO I = 1, MAX_SEND_BUFFERS
-         CALL MPI_TEST(IREQ(I), READY, ISTAT, IERR)
+         CALL interface_MPI_TEST(IREQ(I), READY, status_array)
          IF (READY) THEN
             IFREE = I
             RETURN
@@ -1640,10 +1639,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER ISTATS(MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTATS(df_MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL
       INTEGER IEND
       INTEGER IBUFMPI(5)
@@ -1667,8 +1665,8 @@ C
    1  CONTINUE
 C     Verify status of our own messages
       IF (.NOT.ALLRECV) THEN
-         CALL MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
-     &                    ISTATS, IERR)
+         CALL interface_MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
+     &                              ISTATS)
 C        Tell master in case all our messages were received
          IF (ALLRECV) CALL interface_MPI_ISEND(IEND,1,MPARID,98,
      &               global_communicator,IREQ(1))

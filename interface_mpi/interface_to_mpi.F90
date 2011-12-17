@@ -34,16 +34,21 @@ module interface_to_mpi
 
   public interface_mpi_bcast
   public interface_mpi_iprobe
+  public interface_mpi_probe
   public interface_mpi_send
   public interface_mpi_isend
   public interface_mpi_recv
+  public interface_mpi_irecv
   public interface_mpi_reduce
   public interface_mpi_allreduce
   public interface_mpi_gather
-! public interface_mpi_test
-! public interface_mpi_testall
+  public interface_mpi_test
+  public interface_mpi_testall
+  public interface_mpi_wait
   public interface_mpi_comm_rank
   public interface_mpi_comm_size
+  public interface_mpi_comm_split
+  public interface_mpi_comm_free
   public interface_mpi_barrier
   public interface_mpi_get_processor_name
   public interface_mpi_init
@@ -91,6 +96,10 @@ module interface_to_mpi
     module procedure interface_mpi_recv_cx
   end interface
 
+  interface interface_mpi_irecv
+    module procedure interface_mpi_irecv_i0
+  end interface
+
   interface interface_mpi_reduce
     module procedure interface_mpi_reduce_i0
     module procedure interface_mpi_reduce_i1
@@ -122,7 +131,10 @@ module interface_to_mpi
   integer,                        parameter, public :: op_mpi_max          = mpi_max
   integer,                        parameter, public :: op_mpi_min          = mpi_min
   integer,                        parameter, public :: df_mpi_source       = mpi_source
+  integer,                        parameter, public :: df_mpi_tag          = mpi_tag
   integer,                        parameter, public :: df_mpi_any_source   = mpi_any_source
+  integer,                        parameter, public :: df_mpi_any_tag      = mpi_any_tag
+  integer,                        parameter, public :: df_mpi_status_size  = mpi_status_size
   integer(kind=MPI_OFFSET_KIND),  parameter, public :: df_MPI_OFFSET_KIND  = MPI_OFFSET_KIND
   integer(kind=MPI_ADDRESS_KIND), parameter, public :: df_MPI_ADDRESS_KIND = MPI_ADDRESS_KIND
 
@@ -454,6 +466,39 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_probe(rank,message_id,communicator,status_container)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE)
+    integer(kind=integer_kind) :: rank
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: rank_i4
+    integer(kind=4)            :: i
+!-------------------------------------------------------------------------------
+    communicator_i4 = communicator
+    message_id_i4   = message_id
+    rank_i4         = rank
+
+    call mpi_probe(rank_i4, message_id_i4, communicator_i4, status_container_i4, ierr_i4)
+
+    do i = 1, MPI_STATUS_SIZE
+      status_container(i) = status_container_i4(i)
+    end do
+#else
+    call mpi_probe(rank   , message_id   , communicator   , status_container   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
   subroutine interface_mpi_iprobe_l0(rank,message_id,x,communicator,status_container)
 
 !-------------------------------------------------------------------------------
@@ -485,6 +530,100 @@ contains
     x               = x_l4
 #else
     call mpi_iprobe(rank   , message_id   , communicator   , x   , status_container   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_test(request,x,status_container)
+
+!-------------------------------------------------------------------------------
+    logical(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE)
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    logical(kind=4)            :: x_l4
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: i
+!-------------------------------------------------------------------------------
+    request_i4      = request
+
+    call mpi_test(request_i4, x_l4, status_container_i4, ierr_i4)
+
+    do i = 1, MPI_STATUS_SIZE
+      status_container(i) = status_container_i4(i)
+    end do
+    x               = x_l4
+#else
+    call mpi_test(request   , x   , status_container   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_testall(ndim,request,x,status_container)
+
+!-------------------------------------------------------------------------------
+    logical(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: request(ndim)
+    integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE,ndim)
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    logical(kind=4)            :: x_l4
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: request_i4(ndim)
+    integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE,ndim)
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: i,j
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    do i = 1, ndim_i4
+      request_i4(i) = request(i)
+    end do
+
+    call mpi_testall(ndim_i4, request_i4, x_l4, status_container_i4, ierr_i4)
+
+    do i = 1, MPI_STATUS_SIZE
+      do j = 1, ndim_i4
+        status_container(i,j) = status_container_i4(i,j)
+      end do
+    end do
+    x               = x_l4
+#else
+    call mpi_testall(ndim   , request   , x   , status_container   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_wait(request,status_container)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE)
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: i
+!-------------------------------------------------------------------------------
+    request_i4      = request
+
+    call mpi_wait(request_i4, status_container_i4, ierr_i4)
+
+    do i = 1, MPI_STATUS_SIZE
+      status_container(i) = status_container_i4(i)
+    end do
+#else
+    call mpi_wait(request   , status_container   , ierr   )
 #endif
 
   end subroutine
@@ -891,6 +1030,39 @@ contains
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
     call mpi_recv(x, ndim   , MPI_CHARACTER, sender   , message_id   , communicator   , status_array   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_irecv_i0(x,ndim,sender,message_id,communicator,request)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: sender
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: sender_i4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    message_id_i4   = message_id
+    sender_i4       = sender
+    communicator_i4 = communicator
+    call mpi_irecv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
+    request         = request_i4
+#else
+!-------------------------------------------------------------------------------
+    call mpi_irecv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , request   , ierr   )
 #endif
 
   end subroutine
@@ -1395,6 +1567,54 @@ contains
     is_size         = is_size_i4
 #else
     call mpi_comm_rank(communicator   , is_size      , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_comm_split(old_communicator, color, key, new_communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: old_communicator
+    integer(kind=integer_kind) :: new_communicator
+    integer(kind=integer_kind) :: color
+    integer(kind=integer_kind) :: key
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: old_communicator_i4
+    integer(kind=4)            :: new_communicator_i4
+    integer(kind=4)            :: color_i4
+    integer(kind=4)            :: key_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    old_communicator_i4 = old_communicator
+    color_i4            = color
+    key_i4              = key
+    call mpi_comm_split(old_communicator_i4, color_i4, key_i4, new_communicator_i4, ierr_i4)
+    new_communicator    = new_communicator_i4
+#else
+    call mpi_comm_split(old_communicator   , color   , key   , new_communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_comm_free(communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    communicator_i4 = communicator
+    call mpi_comm_free(communicator_i4, ierr_i4)
+    communicator    = communicator_i4
+#else
+    call mpi_comm_free(communicator   , ierr   )
 #endif
 
   end subroutine

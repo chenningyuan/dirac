@@ -145,14 +145,15 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE GLOBAL_FILE_CLOSE_WRITE
+      use interface_to_mpi
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
 #include "bucket_sort.h"
 
-      INTEGER IERR
+      INTEGER IERR, istat(df_mpi_status_size)
 
-      CALL MPI_WAIT(WRITE_REQUEST,MPI_STATUS_IGNORE,IERR)
+      CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
       CALL MPI_FILE_CLOSE(GF_HANDLE, IERR)
 
       RETURN
@@ -254,10 +255,11 @@ C     in two parts (the first part performs an implicit cast).
 
       SUBROUTINE GLOBAL_FILE_WRITE(
      +   RGBUF,IGBUF,N,SOURCE_NODE,TARGET_NODE,IBUF)
+      use interface_to_mpi
       IMPLICIT NONE
       INTEGER N, SOURCE_NODE, TARGET_NODE, IBUF
       REAL*8 RGBUF
-      INTEGER IGBUF
+      INTEGER IGBUF, istat(df_mpi_status_size)
 
       INCLUDE "mpif.h"
 #include "bucket_sort.h"
@@ -270,7 +272,7 @@ C     in two parts (the first part performs an implicit cast).
       INTEGER(KIND=MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
       EXTERNAL GLOBAL_FILE_OFFSET
 
-      CALL MPI_WAIT(WRITE_REQUEST,MPI_STATUS_IGNORE,IERR)
+      CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
 
       PREV_REC = GF_BREC(IBUF,TARGET_NODE,SOURCE_NODE)
       THIS_REC = GF_NREC(TARGET_NODE,SOURCE_NODE) + 1
@@ -461,20 +463,22 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE LOCAL_FILE_CLOSE_WRITE
+      use interface_to_mpi
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
 #include "bucket_sort.h"
 
-      INTEGER IERR
+      INTEGER IERR, istat(df_mpi_status_size)
 
-      CALL MPI_WAIT(WRITE_REQUEST,MPI_STATUS_IGNORE,IERR)
+      CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
       CALL MPI_FILE_CLOSE(LF_HANDLE, IERR)
 
       RETURN
       END
 
       SUBROUTINE SELECT_LOCAL_FROM_GLOBAL
+      use interface_to_mpi
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
@@ -483,7 +487,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
       INTEGER I
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
 
@@ -508,7 +512,7 @@ CSK         ... zero NUMREAD, otherwise it may fail
                CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
             ENDIF
 
-            CALL MPI_WAIT(WRITE_REQUEST,MPI_STATUS_IGNORE,IERR)
+            CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
 
             DO I = 1, GF_RECLEN
               LF_RECBUF(I) = GF_RECBUF(I)

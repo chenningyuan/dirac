@@ -170,26 +170,23 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
-#include "maxorb.h"
 #if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
-#include "dcbgen.h"
 #include "infpar.h"
 C
-      IF (.NOT.PARCAL) RETURN
+      if(numnod.eq.0) return
 C
 C     Find the slaves and release them
 C
       NTEST = -1
 #if defined (VAR_MPI)
       DO I = 1,NUMNOD
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,ISTAT,IERR)
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_IRECV(NODE,1,df_MPI_ANY_SOURCE,20,
+     &                            global_communicator,IREQ)
+         CALL interface_MPI_WAIT(IREQ,ISTAT)
+         CALL interface_MPI_SEND(NTEST,1,NODE,30,
+     &                           global_communicator)
       ENDDO
 #endif
 C
@@ -251,20 +248,21 @@ C     Get the correct arithmetic (NZ is not initialized on slaves if you do not 
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,global_communicator,
+     &                  IERR)
          CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &                  global_communicator,IERR)
       END IF
       IF( MP2_DENRUN )THEN
         CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &                  global_communicator,IERR)
         IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
         CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &                 global_communicator,IERR)
         CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &                 global_communicator,IERR)
         CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &                 global_communicator,IERR)
       END IF
 #endif
 C
@@ -331,17 +329,16 @@ C     The slave is finished, wait for the master
 C
       CCEND = .FALSE.
 #if defined (VAR_MPI)
-      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
-     &              MPI_COMM_WORLD,IREQ,IERR)
+      CALL interface_MPI_ISEND(MYTID,1,MPARID,20,
+     &                         global_communicator,IREQ)
 C
     1    CONTINUE
          CALL SLEEP(1)
-         call interface_mpi_iprobe(MPARID,30,CCEND,MPI_COMM_WORLD,
+         call interface_mpi_iprobe(MPARID,30,CCEND,global_communicator,
      &                             istat)
          IF (.NOT.CCEND) GOTO 1
 C
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
+      CALL interface_MPI_RECV(NTEST,1,MPARID,30,global_communicator)
 #endif
 C
       RETURN
