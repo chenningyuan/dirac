@@ -5613,83 +5613,28 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
 *
-      IF(NTYPE .EQ. 1) THEN
-        DATATYPE = my_MPI_INTEGER
-      ELSE IF (NTYPE .EQ. 2) THEN
-C MPI_REAL8 is equivalent to MPI_DOUBLE_PRECISION
-C the old LAM-MPI library does not support MPI_ALLREDUCE for MPI_REAL8
-C so we use instead MPI_DOUBLE_PRECISION
-CSK        DATATYPE = MPI_REAL8
-        DATATYPE = MPI_DOUBLE_PRECISION
-      ELSE IF (NTYPE .EQ. 3)THEN
-        DATATYPE = MPI_REAL
-      ELSE IF (NTYPE .EQ. 4 .OR. NTYPE .EQ. 5) THEN
-        DATATYPE  =  MPI_CHARACTER 
-      ELSE
-        WRITE(6,*)' REDVEC: TYPE "',NTYPE,'" does not exist!'
-        CALL Abend2('ERROR in REDVEC: Nonexisting DATATYPE')
-      END IF
-*
       IF(NTARGET.GE.0)THEN
-        CALL MPI_REDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,NTARGET,
-     &                  NCOMM,IERR)
+        if(NTYPE .eq. 1)then
+          call interface_mpi_reduce_i1_work_f77(VECIN,VECOUT,NDIM,NOP,
+     &                                          NTARGET,NCOMM)
+        else if(NTYPE .eq. 2)then
+          call interface_mpi_reduce_r1_work_f77(VECIN,VECOUT,NDIM,NOP,
+     &                                          NTARGET,NCOMM)
+        end if
       ELSE IF(NTARGET.LT.0)THEN
-        CALL MPI_ALLREDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,
-     &                     NCOMM,IERR)
+        if(NTYPE .eq. 1)then
+          call interface_mpi_allreduce_i1_work_f77(VECIN,VECOUT,NDIM,
+     &                                             NOP,NCOMM)
+        else if(NTYPE .eq. 2)then
+          call interface_mpi_allreduce_r1_work_f77(VECIN,VECOUT,NDIM,
+     &                                             NOP,NCOMM)
+        end if
       ENDIF
-*. return since everything is reduced now!
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE REDVEC_REL(VECIN,VECOUT,NDIM,NTYPE,NOP,NCOMM,NTARGET)
-*
-*. Reduce an array VECIN of dimension NDIM that is distributed over 
-*. NCOMM to VECOUT on either a single process (NTARGET >= 0) or on 
-*. all processes (NTARGET < 0). NTYPE determines the MPI_DATATYPE 
-*. used in the reduce-call. NOP is the reduce-operation.
-*
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION VECIN(*),VECOUT(*)
-      INTEGER DATATYPE
-*
-      IF(NTYPE .EQ. 1) THEN
-        DATATYPE = my_MPI_INTEGER
-      ELSE IF (NTYPE .EQ. 2) THEN
-C MPI_REAL8 is equivalent to MPI_DOUBLE_PRECISION
-C the old LAM-MPI library does not support MPI_ALLREDUCE for MPI_REAL8
-C so we use instead MPI_DOUBLE_PRECISION
-CSK        DATATYPE = MPI_REAL8
-        DATATYPE = MPI_DOUBLE_PRECISION
-      ELSE IF (NTYPE .EQ. 3)THEN
-        DATATYPE = MPI_REAL
-      ELSE IF (NTYPE .EQ. 4 .OR. NTYPE .EQ. 5) THEN
-        DATATYPE  =  MPI_CHARACTER 
-      ELSE
-        WRITE(6,*)' REDVEC: TYPE "',NTYPE,'" does not exist!'
-        CALL Abend2('ERROR in REDVEC: Nonexisting DATATYPE')
-      END IF
-*
-      IF(NTARGET.GE.0)THEN
-        CALL MPI_REDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,NTARGET,
-     &                  NCOMM,IERR)
-      ELSE IF(NTARGET.LT.0)THEN
-        CALL MPI_ALLREDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,
-     &                     NCOMM,IERR)
-      ENDIF
-*. return since everything is reduced now!
-*
+
       END
 ***********************************************************************
 *                                                                     *

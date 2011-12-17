@@ -257,6 +257,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -342,9 +343,12 @@ C     LV 16-10-2002
 C     The next statements might be combined to an MPI_ALLREDUCE
 C     but I found the SGI implementation to give a runtime error.
 C
-        CALL MPI_REDUCE(XVO,BUF1,RCW*NDIMX,
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
-     &    MPI_COMM_WORLD,IERR)
+        call interface_MPI_REDUCE_r1_work_f77(XVO,BUF1,RCW*NDIMX,
+     &                                        op_mpi_sum,MASTER,
+     &                                        global_communicator)
+!       CALL MPI_REDUCE(XVO,BUF1,RCW*NDIMX,
+!    &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
+!    &    MPI_COMM_WORLD,IERR)
         CALL XCOPY(NDIMX,BUF1,1,XVO,1)
         CALL MPI_BCAST (XVO,RCW*NDIMX,
      &    MPI_DOUBLE_PRECISION,MASTER,

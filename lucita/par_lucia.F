@@ -162,7 +162,7 @@ C     ^ loop over batches
 C
 C     communicate REDSCRVAR to get full RNORM
 C
-      CALL REDVEC_REL(REDSCRVAR,SCRRED,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCRRED,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
       CALL DCOPY(1,SCRRED,1,REDSCRVAR,1)
 C
       RNORM = SQRT(REDSCRVAR)
@@ -358,7 +358,7 @@ C
 C
 C     communicate REDSCRVAR to get full GAMMA
 C
-      CALL REDVEC_REL(REDSCRVAR,GAMMA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,GAMMA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 CSK   WRITE(LUWRT,*) 'THIS IS GAMMA',GAMMA
 C
@@ -430,7 +430,7 @@ C
 C
 C     communicate REDSCRVAR to get full VNORM_Q
 C
-      CALL REDVEC_REL(REDSCRVAR,VNORM_Q,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,VNORM_Q,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C     is X an eigen vector for (H0 - 1 ) - 1 ???
 C
@@ -500,7 +500,7 @@ C
 C
 C       communicate REDSCRVAR to get full DELTA
 C
-        CALL REDVEC_REL(REDSCRVAR,DELTA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+        CAll redvec(REDSCRVAR,DELTA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C
 CSK     WRITE(LUWRT,*) ' THIS IS DELTA'
@@ -710,7 +710,7 @@ C
 C
 C     communicate SCRRED to get full OVERLAP matrix
 C
-      CALL REDVEC_REL(SCRRED,SUBSPH,NROOT_INFO,2,MPI_SUM,
+      CAll redvec(SCRRED,SUBSPH,NROOT_INFO,2,MPI_SUM,
      &                MPI_COMM_WORLD,-1)
 C
 C
@@ -900,7 +900,7 @@ C
 C
 C       communicate SCRRED to get full OVERLAP matrix
 C
-        CALL REDVEC_REL(SCRRED,SUBSPH,NVEC+IADD-1-NROOT_INFO,2,MPI_SUM,
+        CAll redvec(SCRRED,SUBSPH,NVEC+IADD-1-NROOT_INFO,2,MPI_SUM,
      &                  MPI_COMM_WORLD,-1)
 C
 C       zero scratch offsets
@@ -997,7 +997,7 @@ C
 C
 C     communicate REDSCRVAR to get full scale factor
 C       
-      CALL REDVEC_REL(REDSCRVAR,SCALEVEC,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCALEVEC,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C     1.4 normalizing the new vector
 C
@@ -1506,7 +1506,7 @@ C     "mpi_allsum" local LUCLIST which then on all
 C     nodes will contain the number of non-zero C-blocks in
 C     the complete CI-vector
 C
-      CALL REDVEC_REL(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
+      CAll redvec(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
      &                MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C     find all c-blocks connecting to all sigma-blocks on each cpu
@@ -1521,7 +1521,7 @@ C
 *
       IF( NEWCOMM_PROC .ne. NMPROC ) THEN
 *
-        CALL REDVEC_REL(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
+        CAll redvec(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
      &                  MPI_SUM,MYNEW_COMM,0)
 *
 *       all local node-masters call this routine!

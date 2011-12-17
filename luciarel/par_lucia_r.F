@@ -1607,20 +1607,19 @@ C     last revision:
 C
 C**********************************************************************
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krciprop.h"
 C
       DIMENSION IGROUPLIST(*), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION IBLOCKD_X(NUM_BLOCKS,*)
       INTEGER NBLK_MAX_GP
-      integer(kind=mpi_offset_kind) ivec_max_gp_tmp2, ivec_max_gp_tmp
+      integer(kind=df_MPI_OFFSET_KIND) ivec_max_gp_tmp2, ivec_max_gp_tmp
       integer                       nblk_max_gp_tmp2, nblk_max_gp_tmp
-      INTEGER(KIND=MPI_OFFSET_KIND) MULT1, MULT2, JVEC1, JVEC2
-      INTEGER(KIND=MPI_OFFSET_KIND) LVECLEN, IVEC_MAX_GP, IPROC_OFF
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MULT1, MULT2, JVEC1, JVEC2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) LVECLEN, IVEC_MAX_GP, IPROC_OFF
 C
       IVEC_MAX_GP      = 0
       NBLK_MAX_GP      = 0
@@ -1668,12 +1667,11 @@ C         and process JPROC
 
 !     make sure that all processes in this group obtain the correct
 !     offset
-      call mpi_allreduce(ivec_max_gp_tmp2,ivec_max_gp_tmp,
-     &                   1,MPI_INTEGER8,mpi_max,
-     &                   mynew_comm,ierr)
-      call mpi_allreduce(nblk_max_gp_tmp2,nblk_max_gp_tmp,
-     &                   1,my_MPI_INTEGER,mpi_max,
-     &                   mynew_comm,ierr)
+      call interface_mpi_allreduce(ivec_max_gp_tmp2,ivec_max_gp_tmp,
+     &                             1,op_mpi_max,mynew_comm)
+     
+      call interface_mpi_allreduce(nblk_max_gp_tmp2,nblk_max_gp_tmp,
+     &                             1,op_mpi_max,mynew_comm)
       
       ivec_max_gp = ivec_max_gp_tmp
       nblk_max_gp = nblk_max_gp_tmp
@@ -1730,13 +1728,13 @@ C     last revision:
 C
 C**********************************************************************
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), VEC1(*), IXBLK(*), IXSYMLIST(*)
+      DIMENSION VEC1(*), IXBLK(*), IXSYMLIST(*)
       DIMENSION LU1LIST(*), NPARBLOCK_X(NUM_BLOCKS,*)
       DIMENSION IBLOCKL_X(NUM_BLOCKS,*)
-      INTEGER(KIND=MPI_OFFSET_KIND) ILU1_IOFFX, MULTX
+      INTEGER(KIND=df_MPI_OFFSET_KIND) ILU1_IOFFX, MULTX
       LOGICAL EX
 #include "parluci.h"
 #include "mxmcgas.h"
@@ -1747,8 +1745,8 @@ C
       NVEC       = 0
 C
 C     update slaves of #roots per irrep
-      CALL MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,my_MPI_INTEGER,
-     &               MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,
+     &                         MASTER,global_communicator)
 C
 c     loop over active irreps
       DO IXA = 1, IXSYMACT
@@ -1888,7 +1886,7 @@ csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *         start update 
           IF( ISHARE .eq. 0 )THEN
 *           sum up partial density matrix elements on MASTER
-            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+            CAll redvec(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
      &                      MPI_SUM,ISHCOMM,MASTER)
 *
 *           copy back updated matrix elements
@@ -1896,7 +1894,7 @@ csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *
           ELSE IF( ISHARE .eq. 1 )THEN
 *           sum up partial density matrix elements on ALL CPUs
-            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+            CAll redvec(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
      &                      MPI_SUM,MPI_COMM_WORLD, - 1 )
 *
 *           copy back updated matrix elements
@@ -2023,7 +2021,7 @@ C            length of T block to compute T_BUFF offset
 *
 *          "global" update  
 *
-           CALL REDVEC_REL(DENS(ITB_BUFF),DENS_SCR,NINT_TP,2,
+           CAll redvec(DENS(ITB_BUFF),DENS_SCR,NINT_TP,2,
      &                     MPI_SUM,ISHCOMM, - 1 )
            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(ITB_BUFF),1)
 *
@@ -2146,7 +2144,7 @@ C              ------------
 C
 C              1. sum up partial density matrix elements
 C              ---------------------------------------------------
-               CALL REDVEC_REL(DENS(ITB_I8+1),DENS_SCR,NINT_TP,2,
+               CAll redvec(DENS(ITB_I8+1),DENS_SCR,NINT_TP,2,
      &                         MPI_SUM,ISHCOMM,-1)
 C
 C              2. copy back updated matrix elements
@@ -4909,7 +4907,7 @@ C     ^ loop over batches
       END DO
 C     ^ loop over IRI_RUN 
 C
-      CALL REDVEC_REL(XXXNORM,XNORM,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(XXXNORM,XNORM,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C      
 C
       END
@@ -6536,7 +6534,7 @@ C
 C
 C     communicate REDSCRVAR to get full RNORM
 C
-      CALL REDVEC_REL(REDSCRVAR,SCRRED,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCRRED,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
       CALL DCOPY(1,SCRRED,1,REDSCRVAR,1)
 CSK      WRITE(LUWRT,*) 'RNORM**2',REDSCRVAR
       RNORM = SQRT(REDSCRVAR)
@@ -6934,10 +6932,10 @@ C     ^ loop over batches ( imag part )
 C
 C     communicate real and imag part of REDSCRVAR to get full RNORM
 C
-      CALL REDVEC_REL(REDSCRVAR_R,SCRRED_R,1,2,MPI_SUM,
+      CAll redvec(REDSCRVAR_R,SCRRED_R,1,2,MPI_SUM,
      &                MPI_COMM_WORLD,-1)
 C
-      CALL REDVEC_REL(REDSCRVAR_I,SCRRED_I,1,2,MPI_SUM,
+      CAll redvec(REDSCRVAR_I,SCRRED_I,1,2,MPI_SUM,
      &                MPI_COMM_WORLD,-1)
 C
       CALL DCOPY(1,SCRRED_R,1,REDSCRVAR_R,1)
@@ -7179,7 +7177,7 @@ C
 C
 C     communicate REDSCRVAR to get full GAMMA
 C
-      CALL REDVEC_REL(REDSCRVAR,GAMMA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,GAMMA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 CSK      WRITE(LUWRT,*) 'THIS IS GAMMA',GAMMA
 C
@@ -7251,7 +7249,7 @@ C
 C
 C     communicate REDSCRVAR to get full VNORM_Q
 C
-      CALL REDVEC_REL(REDSCRVAR,VNORM_Q,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,VNORM_Q,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C     is X an eigen vector for (H0 - 1 ) - 1 ???
 C
@@ -7321,7 +7319,7 @@ C
 C
 C       communicate REDSCRVAR to get full DELTA
 C
-        CALL REDVEC_REL(REDSCRVAR,DELTA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+        CAll redvec(REDSCRVAR,DELTA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C
 CSK        WRITE(LUWRT,*) ' THIS IS DELTA'
@@ -7535,7 +7533,7 @@ C
 C
 C     communicate SCRRED to get full OVERLAP matrix
 C
-      CALL REDVEC_REL(SCRRED,SUBSPH,NVEC+IADD-1,2,MPI_SUM,
+      CAll redvec(SCRRED,SUBSPH,NVEC+IADD-1,2,MPI_SUM,
      &                MPI_COMM_WORLD,-1)
 C
 C
@@ -7639,7 +7637,7 @@ C
 C
 C     communicate REDSCRVAR to get full scale factor
 C       
-      CALL REDVEC_REL(REDSCRVAR,SCALEVEC,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCALEVEC,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C     1.4 normalizing the new vector
 C
@@ -7729,9 +7727,9 @@ C
       IF(THR_CVEC .GT. 0.0D0 .AND. IROUND .EQ. 1) THEN
          I_REMOVED_total = 0
          I_ZERO_total    = 0
-         CALL REDVEC_REL(I_REMOVED,I_REMOVED_total,1,1,
+         CAll redvec(I_REMOVED,I_REMOVED_total,1,1,
      &                MPI_SUM,MPI_COMM_WORLD,-1)
-         CALL REDVEC_REL(I_ZERO,I_ZERO_total,1,1,
+         CAll redvec(I_ZERO,I_ZERO_total,1,1,
      &                MPI_SUM,MPI_COMM_WORLD,-1)
          IF(I_REMOVED_total .GT. 0) THEN
 #ifdef LUCI_DEBUG
@@ -8901,7 +8899,7 @@ C
 C     "mpi_allsum" local LUCLIST which then on all
 C     nodes will contain the number of non-zero C-blocks in
 C     the complete CI-vector
-      CALL REDVEC_REL(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
+      CAll redvec(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
      &                MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C     find all c-blocks connecting to all sigma-blocks on each cpu
@@ -8917,7 +8915,7 @@ C     case 2: number of CPUs in new group == to total number of CPUs
 C
       IF( NEWCOMM_PROC .ne. NMPROC ) THEN
 C
-        CALL REDVEC_REL(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
+        CAll redvec(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
      &                  MPI_SUM,MYNEW_COMM,0)
 C
 C       all local node-masters call this routine!

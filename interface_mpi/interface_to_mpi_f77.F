@@ -21,6 +21,7 @@
 !
 ! purpose: interface to MPI library via f77 interface
 !
+#define VAR_MPI_32bit_int
 #ifdef VAR_MPI
 
       subroutine interface_mpi_bcast_l0_f77(x,ndim,root_proc,
@@ -155,6 +156,182 @@
       print *, ' enter r1 special: ndim == ',ndim
       call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   ,
      &               communicator   , ierr   )
+#endif
+
+      end subroutine
+!-------------------------------------------------------------------------------
+
+      subroutine interface_mpi_reduce_i1_work_f77(x,y,ndim,operation,
+     &                                            receiver,communicator)
+!-------------------------------------------------------------------------------
+      use integer_kind_mpilib
+      implicit none
+#include "mpif.h"
+#include "interface_to_mpi_f77_typedef.h"
+      integer(kind=integer_kind) :: x(*)
+      integer(kind=integer_kind) :: y(*)
+      integer(kind=integer_kind) :: ndim
+      integer(kind=integer_kind) :: operation
+      integer(kind=integer_kind) :: receiver
+      integer(kind=integer_kind) :: communicator
+      integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+      integer(kind=4)            :: ndim_i4
+      integer(kind=4)            :: operation_i4
+      integer(kind=4)            :: receiver_i4
+      integer(kind=4)            :: communicator_i4
+      integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+      ndim_i4         = ndim
+      operation_i4    = operation
+      receiver_i4     = receiver
+      communicator_i4 = communicator
+      call mpi_reduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, 
+     &                receiver_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+      call mpi_reduce(x, y, ndim   , my_MPI_INTEGER, operation   ,
+     &                receiver   , communicator   , ierr   )
+#endif
+      end subroutine
+!-------------------------------------------------------------------------------
+
+      subroutine interface_mpi_reduce_r1_work_f77(x,y,ndim,operation,
+     &                                            receiver,communicator)
+!-------------------------------------------------------------------------------
+      use integer_kind_mpilib
+      implicit none
+#include "mpif.h"
+#include "interface_to_mpi_f77_typedef.h"
+      real(8)                    :: x(*)
+      real(8)                    :: y(*)
+      integer(kind=integer_kind) :: ndim
+      integer(kind=integer_kind) :: operation
+      integer(kind=integer_kind) :: receiver
+      integer(kind=integer_kind) :: communicator
+      integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+      integer(kind=4)            :: ndim_i4
+      integer(kind=4)            :: operation_i4
+      integer(kind=4)            :: receiver_i4
+      integer(kind=4)            :: communicator_i4
+      integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+      ndim_i4         = ndim
+      operation_i4    = operation
+      receiver_i4     = receiver
+      communicator_i4 = communicator
+      call mpi_reduce(x, y, ndim_i4, MPI_REAL8, operation_i4, 
+     &                receiver_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+      call mpi_reduce(x, y, ndim   , MPI_REAL8, operation   ,
+     &                receiver   , communicator   , ierr   )
+#endif
+      end subroutine
+!-------------------------------------------------------------------------------
+
+      subroutine interface_mpi_allreduce_i1_work_f77(x,y,ndim,operation,
+     &                                               communicator)
+!-------------------------------------------------------------------------------
+      use integer_kind_mpilib
+      implicit none
+#include "mpif.h"
+#include "interface_to_mpi_f77_typedef.h"
+      integer(kind=integer_kind) :: x(*)
+      integer(kind=integer_kind) :: y(*)
+      integer(kind=integer_kind) :: ndim
+      integer(kind=integer_kind) :: operation
+      integer(kind=integer_kind) :: communicator
+      integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+      integer(kind=4)            :: ndim_i4
+      integer(kind=4)            :: operation_i4
+      integer(kind=4)            :: communicator_i4
+      integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+      ndim_i4         = ndim
+      operation_i4    = operation
+      communicator_i4 = communicator
+      call mpi_allreduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, 
+     &                communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+      call mpi_allreduce(x, y, ndim   , my_MPI_INTEGER, operation   ,
+     &                communicator   , ierr   )
+#endif
+      end subroutine
+!-------------------------------------------------------------------------------
+
+      subroutine interface_mpi_allreduce_r1_work_f77(x,y,ndim,operation,
+     &                                               communicator)
+!-------------------------------------------------------------------------------
+      use integer_kind_mpilib
+      implicit none
+#include "mpif.h"
+#include "interface_to_mpi_f77_typedef.h"
+      real(8)                    :: x(*)
+      real(8)                    :: y(*)
+      integer(kind=integer_kind) :: ndim
+      integer(kind=integer_kind) :: operation
+      integer(kind=integer_kind) :: communicator
+      integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+      integer(kind=4)            :: ndim_i4
+      integer(kind=4)            :: operation_i4
+      integer(kind=4)            :: communicator_i4
+      integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+      ndim_i4         = ndim
+      operation_i4    = operation
+      communicator_i4 = communicator
+      call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, 
+     &                   communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+      call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   ,
+     &                   communicator   , ierr   )
+#endif
+      end subroutine
+!-------------------------------------------------------------------------------
+
+      subroutine interface_mpi_scatter_r1_work_f77(x,ndim1,y,ndim2,
+     &                                             root_proc,
+     &                                             communicator)
+!-------------------------------------------------------------------------------
+      use integer_kind_mpilib
+      implicit none
+#include "mpif.h"
+#include "interface_to_mpi_f77_typedef.h"
+      real(8)                    :: x(*)
+      real(8)                    :: y(*)
+      integer(kind=integer_kind) :: ndim1
+      integer(kind=integer_kind) :: ndim2
+      integer(kind=integer_kind) :: root_proc
+      integer(kind=integer_kind) :: communicator
+      integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+      integer(kind=4)            :: ndim1_i4
+      integer(kind=4)            :: ndim2_i4
+      integer(kind=4)            :: root_proc_i4
+      integer(kind=4)            :: communicator_i4
+      integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+      ndim1_i4        = ndim1
+      ndim2_i4        = ndim2
+      root_proc_i4    = root_proc
+      communicator_i4 = communicator
+      call mpi_scatter(x, ndim1_i4, MPI_REAL8, y, ndim2_i4, MPI_REAL8,
+     &                 root_proc_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+      call mpi_scatter(x, ndim1   , MPI_REAL8, y, ndim2   , MPI_REAL8,
+     &                 root_proc   , communicator   , ierr   )
 #endif
 
       end subroutine

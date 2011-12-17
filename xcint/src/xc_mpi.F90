@@ -235,24 +235,24 @@ contains
       nr_points_on_this_proc = nr_points_batch/xc_mpi_get_nr_proc()
       if (xc_mpi_is_master()) then
          allocate(buffer(nr_points_on_this_proc))
-         call mpi_scatter(rx, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
-         call mpi_scatter(ry, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
-         call mpi_scatter(rz, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
-         call mpi_scatter(rw, nr_points_on_this_proc, mpi_real8, buffer, &
-              nr_points_on_this_proc, mpi_real8, irank_master, global_communicator, ierr)
+         call interface_mpi_scatter_r1_work_f77(rx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(ry, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(rz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(rw, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
          deallocate(buffer)
       else
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, rx, nr_points_on_this_proc, mpi_real8, irank_master, &
-                          global_communicator, ierr)
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, ry, nr_points_on_this_proc, mpi_real8, irank_master, &
-                          global_communicator, ierr)
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, rz, nr_points_on_this_proc, mpi_real8, irank_master, &
-                          global_communicator, ierr)
-         call mpi_scatter((/0.0d0/), 0, mpi_real8, rw, nr_points_on_this_proc, mpi_real8, irank_master, &
-                          global_communicator, ierr)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, rx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, ry, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, rz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, rw, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
       end if
 
 !     if there is a rest of points, send them to the last proc

@@ -1607,7 +1607,7 @@ C
      &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
-         INODE = ISTAT(MPI_SOURCE)
+         INODE = ISTAT(df_mpi_source)
 C        Receive the buffer
          CALL MPI_RECV(IHBUF,4*NGBFSZ+4,my_MPI_INTEGER,INODE,95,
      &                 global_communicator,ISTAT,IERR)
@@ -1670,16 +1670,16 @@ C     Verify status of our own messages
          CALL MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
      &                    ISTATS, IERR)
 C        Tell master in case all our messages were received
-         IF (ALLRECV) CALL MPI_ISEND(IEND,1,my_MPI_INTEGER,MPARID,98,
-     &               MPI_COMM_WORLD,IREQ(1),IERR)
+         IF (ALLRECV) CALL interface_MPI_ISEND(IEND,1,MPARID,98,
+     &               global_communicator,IREQ(1))
       ENDIF
 C     Check for end signal
       call interface_mpi_iprobe(mparid,99,NEWMAIL,global_communicator,
      &                          istat)
       IF (NEWMAIL) THEN
 C        Receive the end signal message and return
-         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,MPARID,99,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(IEND,1,MPARID,99,
+     &                           global_communicator)
          RETURN
       ELSE
 C        There are still buffers waiting out there, see if we get some
@@ -1701,12 +1701,12 @@ C
      &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
-         INODE = ISTAT(MPI_SOURCE)
+         INODE = ISTAT(df_mpi_source)
 C        Receive this signal
-         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,20,
-     &                 global_communicator,ISTAT,IERR)
-         CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,INODE,30,
-     &                 global_communicator,IERR)
+         CALL interface_MPI_RECV(IEND,1,INODE,20,
+     &                           global_communicator)
+         CALL interface_MPI_SEND(IBUFMPI,5,INODE,30,
+     &                           global_communicator)
       ENDIF
 C
 C     Check for ready signals from the slaves
@@ -1715,10 +1715,10 @@ C
      &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
-         INODE = ISTAT(MPI_SOURCE)
+         INODE = ISTAT(df_mpi_source)
 C        Receive this signal
-         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,98,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(IEND,1,INODE,98,
+     &                           global_communicator)
          NREADY = NREADY + 1
       ENDIF
 C
@@ -1726,8 +1726,8 @@ C     Send out end signal when all nodes are ready
 C
       IF (NREADY.EQ.NODES) THEN
          DO INODE = 1, NODES
-            CALL MPI_SEND(IEND,1,my_MPI_INTEGER,INODE,99,
-     &                    MPI_COMM_WORLD,IERR)
+            CALL interface_MPI_SEND(IEND,1,INODE,99,
+     &                              global_communicator)
          ENDDO
          RETURN
       ELSE

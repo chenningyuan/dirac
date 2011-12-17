@@ -35,9 +35,13 @@ module interface_to_mpi
   public interface_mpi_bcast
   public interface_mpi_iprobe
   public interface_mpi_send
+  public interface_mpi_isend
   public interface_mpi_recv
   public interface_mpi_reduce
+  public interface_mpi_allreduce
   public interface_mpi_gather
+! public interface_mpi_test
+! public interface_mpi_testall
   public interface_mpi_comm_rank
   public interface_mpi_comm_size
   public interface_mpi_barrier
@@ -74,6 +78,10 @@ module interface_to_mpi
     module procedure interface_mpi_send_cx
   end interface
 
+  interface interface_mpi_isend
+    module procedure interface_mpi_isend_i0
+  end interface
+
   interface interface_mpi_recv
     module procedure interface_mpi_recv_i0
     module procedure interface_mpi_recv_i1
@@ -91,7 +99,17 @@ module interface_to_mpi
     module procedure interface_mpi_reduce_r1
     module procedure interface_mpi_reduce_r2
   end interface
-  
+
+  interface interface_mpi_allreduce
+    module procedure interface_mpi_allreduce_i0
+    module procedure interface_mpi_allreduce_i1
+#ifndef INT_STAR8
+    module procedure interface_mpi_allreduce_i0_i8
+#endif
+    module procedure interface_mpi_allreduce_r0
+    module procedure interface_mpi_allreduce_r1
+    module procedure interface_mpi_allreduce_r2
+  end interface
   
   interface interface_mpi_iprobe
     module procedure interface_mpi_iprobe_l0
@@ -99,10 +117,14 @@ module interface_to_mpi
 
   private
 
-  integer, parameter, public :: global_communicator = mpi_comm_world
-  integer, parameter, public :: op_mpi_sum          = mpi_sum
-  integer, parameter, public :: op_mpi_max          = mpi_max
-  integer, parameter, public :: op_mpi_min          = mpi_min
+  integer,                        parameter, public :: global_communicator = mpi_comm_world
+  integer,                        parameter, public :: op_mpi_sum          = mpi_sum
+  integer,                        parameter, public :: op_mpi_max          = mpi_max
+  integer,                        parameter, public :: op_mpi_min          = mpi_min
+  integer,                        parameter, public :: df_mpi_source       = mpi_source
+  integer,                        parameter, public :: df_mpi_any_source   = mpi_any_source
+  integer(kind=MPI_OFFSET_KIND),  parameter, public :: df_MPI_OFFSET_KIND  = MPI_OFFSET_KIND
+  integer(kind=MPI_ADDRESS_KIND), parameter, public :: df_MPI_ADDRESS_KIND = MPI_ADDRESS_KIND
 
   save
 
@@ -646,6 +668,38 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_isend_i0(x,ndim,receiver,message_id,communicator,request)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: receiver
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: receiver_i4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    message_id_i4   = message_id
+    receiver_i4     = receiver
+    communicator_i4 = communicator
+    call mpi_isend(x, ndim_i4, my_MPI_INTEGER, receiver_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
+    request         = request_i4
+#else
+    call mpi_isend(x, ndim   , my_MPI_INTEGER, receiver   , message_id   , communicator   , request   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
 !-------------------------------------------------------------------------------
 ! mpi_recv interfaces
 !-------------------------------------------------------------------------------
@@ -978,7 +1032,6 @@ contains
     real(8)                    :: y(:)
     integer(kind=integer_kind) :: ndim
     integer(kind=integer_kind) :: operation
-    integer(kind=integer_kind) :: operation_in
     integer(kind=integer_kind) :: receiver
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
@@ -990,33 +1043,14 @@ contains
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
-    select case(operation)
-      case(1)
-       operation_i4    = MPI_MAX
-      case(2)
-       operation_i4    = MPI_MIN
-      case(3)
-       operation_i4    = MPI_SUM
-      case default
-        stop 'unknown operation type'
-    end select
     ndim_i4         = ndim
+    operation_i4    = operation
     receiver_i4     = receiver
     communicator_i4 = communicator
     call mpi_reduce(x, y, ndim_i4, MPI_REAL8, operation_i4, receiver_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
-    select case(operation)
-      case(1)
-       operation_in    = MPI_MAX
-      case(2)
-       operation_in    = MPI_MIN
-      case(3)
-       operation_in    = MPI_SUM
-      case default
-        stop 'unknown operation type'
-    end select
-    call mpi_reduce(x, y, ndim   , MPI_REAL8, operation_in, receiver   , communicator   , ierr   )
+    call mpi_reduce(x, y, ndim   , MPI_REAL8, operation   , receiver   , communicator   , ierr   )
 #endif
 
   end subroutine
@@ -1048,6 +1082,207 @@ contains
 #else
 !-------------------------------------------------------------------------------
     call mpi_reduce(x, y, ndim   , MPI_REAL8, operation   , receiver   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_allreduce_i0(x,y,ndim,operation,communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: y
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: operation
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: operation_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    operation_i4    = operation
+    communicator_i4 = communicator
+    call mpi_allreduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+    call mpi_allreduce(x, y, ndim   , my_MPI_INTEGER, operation   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_allreduce_i1(x,y,ndim,operation,communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x(:)
+    integer(kind=integer_kind) :: y(:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: operation
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: operation_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    operation_i4    = operation
+    communicator_i4 = communicator
+    call mpi_allreduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+    call mpi_allreduce(x, y, ndim   , my_MPI_INTEGER, operation   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+#ifndef INT_STAR8
+  subroutine interface_mpi_allreduce_i0_i8(x,y,ndim,operation,communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=8)            :: x
+    integer(kind=8)            :: y
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: operation
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: operation_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    operation_i4    = operation
+    communicator_i4 = communicator
+    call mpi_allreduce(x, y, ndim_i4, MPI_INTEGER8, operation_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+    call mpi_allreduce(x, y, ndim   , MPI_INTEGER8, operation   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+#endif
+
+  subroutine interface_mpi_allreduce_r0(x,y,ndim,operation,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x
+    real(8)                    :: y
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: operation
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: operation_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    operation_i4    = operation
+    communicator_i4 = communicator
+    call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+    call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_allreduce_r1(x,y,ndim,operation,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x(:)
+    real(8)                    :: y(:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: operation
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: operation_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    operation_i4    = operation
+    communicator_i4 = communicator
+    call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+    call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_allreduce_r2(x,y,ndim,operation,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x(:,:)
+    real(8)                    :: y(:,:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: operation
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: operation_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    operation_i4    = operation
+    communicator_i4 = communicator
+    call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+    call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_scatter_r1(x,ndim1,y,ndim2,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x(:)
+    real(8)                    :: y(:)
+    integer(kind=integer_kind) :: ndim1
+    integer(kind=integer_kind) :: ndim2
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim1_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim1_i4        = ndim1
+    ndim2_i4        = ndim2
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_scatter(x, ndim1_i4, MPI_REAL8, y, ndim2_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
+#else
+!-------------------------------------------------------------------------------
+    call mpi_scatter(x, ndim1   , MPI_REAL8, y, ndim2   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
   end subroutine
