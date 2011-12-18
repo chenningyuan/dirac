@@ -35,7 +35,7 @@ type :: external_variales
 end type external_variales
 
 type( localization_flags ), private :: loc
-type( external_variales  ), private :: var
+type( external_variales  ), private :: var_
 
 ! Some global parameters
 real*8, parameter, private :: thresh = 1.0d-13, trsh_mu = 1.0d-4
@@ -78,36 +78,36 @@ contains
   loc%lgchck     = lgchck
   loc%hesloc     = hesloc
   ! priunit.h
-  var%lupri      = lupri
+  var_%lupri      = lupri
   ! dcbgen.h
-  var%lucoef     = lucoef
+  var_%lucoef     = lucoef
   ! dcbbas.h
-  var%nfbas(:,:) = nfbas(:,:)
-  var%n2bbasx    = n2bbasx
-  var%n2bbasxq   = n2bbasxq
+  var_%nfbas(:,:) = nfbas(:,:)
+  var_%n2bbasx    = n2bbasx
+  var_%n2bbasxq   = n2bbasxq
   ! dcborb.h
-  var%nish(:)    = nish(:)
-  var%norb(:)    = norb(:)
-  var%npsh(:)    = npsh(:)
-  var%nesh(:)    = nesh(:)
-  var%norbt      = norbt
+  var_%nish(:)    = nish(:)
+  var_%norb(:)    = norb(:)
+  var_%npsh(:)    = npsh(:)
+  var_%nesh(:)    = nesh(:)
+  var_%norbt      = norbt
   ! dcbham.h
-  var%ssmtrc     = ssmtrc
-  var%twocompbss = twocompbss
-  var%levyle     = levyle
+  var_%ssmtrc     = ssmtrc
+  var_%twocompbss = twocompbss
+  var_%levyle     = levyle
   ! dgroup.h
-  var%ipqtoq(:,:)= ipqtoq(:,:)
-  var%nz         = nz
+  var_%ipqtoq(:,:)= ipqtoq(:,:)
+  var_%nz         = nz
   ! nuclei.h
-  var%nucdep     = nucdep
+  var_%nucdep     = nucdep
   ! thrzer.h
-  var%thrzer     = thrzer
+  var_%thrzer     = thrzer
   ! dcbprj.h
-  var%nrefs      = nrefs
-  var%iprprj     = iprprj
-  var%maxref     = min(maxref,15)
-  var%prothr     = prothr
-  var%ownbas     = ownbas
+  var_%nrefs      = nrefs
+  var_%iprprj     = iprprj
+  var_%maxref     = min(maxref,15)
+  var_%prothr     = prothr
+  var_%ownbas     = ownbas
 
   if(maxref /= 15)then
     write(lupri,'(a)')' WARNING: The maxref dimension in localization module and Dirac differ'
@@ -116,10 +116,10 @@ contains
     write(lupri,'(a,I4)')' maxref(Localization module) = 15'
   endif
 
-  do i=1,var%maxref
-    var%reffil(i)   = reffil(i)
-    var%vecref(1,i) = vecref(1,i)
-    var%vecref(2,i) = vecref(2,i)
+  do i=1,var_%maxref
+    var_%reffil(i)   = reffil(i)
+    var_%vecref(1,i) = vecref(1,i)
+    var_%vecref(2,i) = vecref(2,i)
   enddo
 
   end subroutine initialize_localization
@@ -159,14 +159,14 @@ contains
 
   ! Set some parameters
   ifrp   = 1
-  lupri  = var%lupri
-  nish   = var%nish(ifrp)
-  norb   = var%norb(ifrp)
-  nucdep = var%nucdep
-  maxref = var%maxref
+  lupri  = var_%lupri
+  nish   = var_%nish(ifrp)
+  norb   = var_%norb(ifrp)
+  nucdep = var_%nucdep
+  maxref = var_%maxref
 
-  nfbas(:)    = var%nfbas(ifrp,:)
-  ipqtoq(:,:) = var%ipqtoq(:,:)
+  nfbas(:)    = var_%nfbas(ifrp,:)
+  ipqtoq(:,:) = var_%ipqtoq(:,:)
 
   ! Check thresholds
   if(loc%thdiag < thresh)then
@@ -211,7 +211,7 @@ contains
     write(lupri,*) 'lggrad=',loc%lggrad
     write(lupri,*) 'lgchck=',loc%lgchck
     write(lupri,*) 'hesloc=',loc%hesloc
-    write(lupri,*) 'thrzer=',var%thrzer
+    write(lupri,*) 'thrzer=',var_%thrzer
   endif
 
   call titler('Molecular orbital localization','*',122)
@@ -227,8 +227,8 @@ contains
   ndimh = 4 * ( nish*nish - nish ) / 2
   call alloc(scoef ,nish*nfbas(0)*4,   id='scoef  in orbloc')
   call alloc(storec,nish*nfbas(0)*4,   id='storec in orbloc')
-  call alloc(smat  ,var%n2bbasx,       id='smat   in orbloc')
-  call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
+  call alloc(smat  ,var_%n2bbasx,       id='smat   in orbloc')
+  call alloc(cmo   ,var_%n2bbasxq,      id='cmo    in orbloc')
   call alloc(grad  ,ndimh,             id='grad   in orbloc')
   call alloc(etmp  ,ndimh,             id='etmp   in orbloc')
   call alloc(xkappa,nish,nish,4,       id='xkappa in orbloc')
@@ -248,12 +248,12 @@ contains
   nullify(hmat  )
 
   ! Read coefficients
-  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
-  close(var%lucoef,status='keep')
+  call opnfil(var_%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var_%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
+  close(var_%lucoef,status='keep')
 
   ! Get overlap matrix 
-  call gtovlx(smat,var%ssmtrc)
+  call gtovlx(smat,var_%ssmtrc)
   if(loc%iprloc.ge.6)then
     write(lupri,'(/a)') '* orbloc: Molecular coefficients:'
     call prqmat(cmo,nfbas(0),norb,nfbas(0),norb,4,ipqtoq(1,0),lupri)
@@ -506,7 +506,7 @@ contains
   real*8, allocatable, dimension(:) :: xtmp
 
   !------------------------------------------------------------------------------!
-  lupri  = var%lupri
+  lupri  = var_%lupri
 
   ! Get some dimensions
   ni    = size(xkappa,1)
@@ -628,7 +628,7 @@ contains
       DO I = 1,NUCDEP-1
          NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
       ENDDO
-      NFNUC(2*NUCDEP)=VAR%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
+      NFNUC(2*NUCDEP)=var_%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
 
   END SUBROUTINE ORBLO4
 
@@ -660,31 +660,31 @@ contains
   !------------------------------------------------------------------------------!
       ! allocate arrays
       CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
-      CALL ALLOC(EIG  ,VAR%NORBT  ,ID='EIG   IN ORBLO5')
-      CALL ALLOC(IBEIG,VAR%NORBT  ,ID='IBEIG IN ORBLO5')
+      CALL ALLOC(EIG  ,var_%NORBT  ,ID='EIG   IN ORBLO5')
+      CALL ALLOC(IBEIG,var_%NORBT  ,ID='IBEIG IN ORBLO5')
 
       ! open DFCOEF file and read EIG, IBEIG and TOTERG
-      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+      CALL OPNFIL(var_%LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO_no_work(var_%LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
 
       ! reorganize MO
       DO I = 1,NB
         DO J = 1,NI
           DO K = 1,4
             L = J + NO/2
-            IF (VAR%LEVYLE) L = J
+            IF (var_%LEVYLE) L = J
             CMO(I,L,K) = SCOEF(I,J,K)
           ENDDO
         ENDDO
       ENDDO
       IF (LOC%IPRLOC.GE.5)THEN
-         WRITE(VAR%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
-         CALL PRQMAT(CMO,NB,NO,NB,NO,4,VAR%IPQTOQ(1,0),VAR%LUPRI)
+         WRITE(var_%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
+         CALL PRQMAT(CMO,NB,NO,NB,NO,4,var_%IPQTOQ(1,0),var_%LUPRI)
       ENDIF
 
       ! write MO to file and close him
-      CALL WRICMO(VAR%LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(VAR%LUCOEF,STATUS='KEEP')
+      CALL WRICMO(var_%LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CLOSE(var_%LUCOEF,STATUS='KEEP')
 
       ! deallocate arrays
       CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
@@ -735,7 +735,7 @@ contains
       REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
 
   !------------------------------------------------------------------------------!
-      LUPRI  = VAR%LUPRI
+      LUPRI  = var_%LUPRI
 
       CALL GETTIM(CPU1,WALL1)
       IF (LOC%IPRLOC.GE.5) CALL HEADER('Output from ROTCMO_MOD',-1)
@@ -784,7 +784,7 @@ contains
          IADDR = (I-1) + (I-1)*NORBI
          EIG = REIG(I)
          IF (EIG .LT. D0) THEN
-            IF (LOC%IPRLOC.GE.3 .AND. ABS(EIG).GT.VAR%THRZER) WRITE(LUPRI,9010) EIG
+            IF (LOC%IPRLOC.GE.3 .AND. ABS(EIG).GT.var_%THRZER) WRITE(LUPRI,9010) EIG
             EIG = D0
             REIG(I)   = D0
          END IF
@@ -881,7 +881,7 @@ contains
       END DO
       END DO
       IF(LOC%IPRLOC.GE.1)THEN
-        IF(D_MAX.GT.VAR%THRZER)THEN
+        IF(D_MAX.GT.var_%THRZER)THEN
            WRITE(LUPRI,'(/A)')' WARNING: ROTCMO_MOD: maximum deviation from unitary matrix'
            WRITE(LUPRI,*)'WARNING: Element ',J_MAX,I_MAX,' value :',D_MAX
         ENDIF
@@ -953,7 +953,7 @@ contains
   real*8,  allocatable, dimension(:)   :: work
 
   !------------------------------------------------------------------------------!
-  lupri = var%lupri
+  lupri = var_%lupri
 
   ! Get some dimensions
   ndimh = size(hmat,1)
@@ -1098,7 +1098,7 @@ contains
   real*8  :: tcurr, xcurr, cutoff, xmax, xmin, step
 
   !------------------------------------------------------------------------------!
-  lupri = var%lupri
+  lupri = var_%lupri
 
   ! If we are not performing Newton step quit.
   if(.not.nstep)then
@@ -1214,7 +1214,7 @@ contains
   !------------------------------------------------------------------------------!
   !                              Initialization                                  !
   !------------------------------------------------------------------------------!
-  lupri   = var%lupri
+  lupri   = var_%lupri
   nred    = size(eval,1)
   tradold = tradius
   R       = diffg / diffq
