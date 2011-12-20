@@ -10,6 +10,7 @@
 #  BLAS_LIBRARIES Libraries to link against to use BLAS
 #  BLAS_FOUND Defined if BLAS is available
 #  HAVE_BLAS To be used in #ifdefs
+#  HAVE_ATLAS_BLAS To be used in #ifdefs
 #  BLAS_H Name of BLAS header file
 #
 # None of the above will be defined unless BLAS can be found.
@@ -110,11 +111,11 @@ macro(find_acml)
 endmacro()
 
 macro(find_atlas)
-    set(path_suffixes lib lib/atlas)
+    set(path_suffixes atlas lib/atlas lib/atlas-base lib/atlas-base/atlas lib)
     if (MATH_LANG STREQUAL "C")
         set(blas_libs cblas atlas f77blas)
     else()
-        set(blas_libs atlas f77blas)
+        set(blas_libs atlas f77blas blas)
     endif()
 
     find_math_header(blas)

@@ -84,7 +84,7 @@ C
 C     Open shells that do couple:
 C     ---------------------------
 C
-C     See thesis of J. Thyssen
+C     See thesis of J. Thyssen : http://dirac.chem.sdu.dk/thesis/thesis-jth2001.pdf
 C
 C     Transform FD to MO-basis
 C     ========================

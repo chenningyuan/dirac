@@ -1060,9 +1060,11 @@ C
 C     Manual assignment for each abelian subgroup (Ivan Infante jan04)
 C    
 C
+C...........Loop over parent group 
             DO IRP = 1, NSYMRP
                NELEC(IRP) = 0
                NVIRT(IRP) = 0
+C..............Loop over Abelian subgroup
                DO IREP = 1, NREP
                   IN = 0
                   DO I = 1, NSP
@@ -1950,6 +1952,8 @@ C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
+      KFRSAV=KFREE
+      LFRSAV=LFREE
 C
       call allocator_get_words_inuse(start_mem_use)
 C
@@ -3917,6 +3921,8 @@ c debug end
 
        READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 C      IREPSP is to be used as 2-dimensional array, read it like that
+C      IREPSP(ISP)     = IREPSP(ISP,1) contains irrep in parent group
+C      IREPSP(NSP+ISP) = IREPSP(ISP,2) contains irrep in Abelian subgroup
        READ (MRCONEE) (IREPSP(ISP),IREPSP(NSP+ISP),
      &                 EPS1(ISP),ISP=1,NSP)
        CLOSE (MRCONEE,STATUS='KEEP')
