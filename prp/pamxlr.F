@@ -83,6 +83,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -105,7 +106,9 @@ C
         NEP = 1
       ENDIF
       NCI = 0
-      N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)
+      NDAMP = 1
+      IF(DMPFRLR.NE.D0) NDAMP = 2
+      N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)*NDAMP
       CALL MEMGET('REAL',KLRF,N2LRF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KLRF),N2LRF)
       CALL MEMGET('REAL',KCNV,NRSPF,WORK,KFREE,LFREE)
@@ -158,7 +161,9 @@ C
       integer, allocatable :: ibeig(:)
       real(8), allocatable :: cmo(:)
       logical :: parcal_save
-
+C
+C svillaume: NFREQ=0 right now, not defined until call to SETXRS
+C it should be ABLRF(NBFREQ,NLRAPT,NLRBPT,*) no?
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          WORK(*)
       SAVE TTYP
@@ -219,7 +224,7 @@ C
 C     Dimensions of reduced system
 C
       KXLR = KFREE
-      NEVECR    = NREDM*NFREQ
+      NEVECR = NREDM*NFREQ*NDAMP
       CALL MEMGET('INTE',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBCVC,NREDM  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEVC,NREDM  ,WORK,KFREE,LFREE)
@@ -367,7 +372,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 36,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 38,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -378,7 +383,7 @@ C
 #include "pgroup.h"
 #include "dcbxpr.h"
 C
-      LOGICAL SET, NEWDEF, RESET
+      LOGICAL SET, NEWDEF, RESET, FINTER, FLIST
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          MXFORM*6,FMT*6
       DIMENSION WORK(LWORK)
@@ -392,7 +397,8 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
-     &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC'/
+     &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
+     &            '.DAMPIN','.FREQ I'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -444,6 +450,12 @@ C     Ordinary linear response calculation
          XLR_IMFREQ = .FALSE.
          NBFREQ     = 1
          BFREQ(1)   = D0
+         DAMPFRLR   = D0
+         STARTFREQ  = D0
+         ENDFREQ    = D0
+         STEPFREQ   = D1
+         FINTER     = .FALSE.
+         FLIST      = .FALSE.
       ELSE
 C     Calculation of C6 dispersion coefficient
          XLR_IMFREQ = .TRUE.
@@ -503,7 +515,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36), I
+     &                     31,32,33,34,35,36,37,38), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -551,6 +563,7 @@ C                 set by the choice of quadrature scheme
                      WRITE (LUPRI,'(/A)') 'Warning: frequencies ignored'
                      GOTO 100
                   END IF
+                  FLIST = .TRUE.
                   READ (LUCMD, *) NBFREQ
                   IF (NBFREQ.GT.0) THEN
                     IF (NBFREQ.LE.MAXFLR) THEN
@@ -743,6 +756,15 @@ C&&& E2CHEK: explicit contruction of the electronic Hessian E2
 C&&& STERNC: Sternheimer complement
                XSTERNC = .TRUE.
                GO TO 100
+ 37            CONTINUE
+C&&& DAMPING: specify a damping parameter
+               READ(LUCMD,*) DMPFRLR
+               GO TO 100
+ 38            CONTINUE
+C&&& FREQ INTERVAL: specify frequencies with start, end, step values
+               FINTER = .TRUE.
+               READ(LUCMD,*) STARTFREQ,ENDFREQ,STEPFREQ
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -757,6 +779,49 @@ C
 C     Process section
 C     ===============
 C
+C specific complex response process section
+      IF (XLR_IMFREQ .AND. DMPFRLR.NE.D0) THEN
+      	XLR_IMFREQ = .FALSE.
+      	WRITE(LUPRI,'( 2(/A) )') ' Warning!! .IMAGINARY and .DAMPING'//
+     & 	' both specified',
+     &	'keyword .IMAGINARY ignored assuming complex frequencies!'
+      END IF
+      IF (FINTER .AND. FLIST) THEN
+        FLIST = .FALSE.
+        WRITE(LUPRI,'( 2(/A) )') ' Warning!! .B FREQ and .FREQ I'//
+     &  ' both specified',
+     &  'keyword .B FREQ ignored!'
+      END IF
+      IF (FINTER) THEN
+        NBFREQ = IFIX(0.5+SNGL((ENDFREQ-STARTFREQ)/STEPFREQ))+1
+        IF (NBFREQ .GE. MAXFLR) THEN
+          NBFREQ = MAXFLR
+     	  WRITE(LUPRI,'( 2(/A),I3 )') 'Warning Number of frequencies'//
+     &	  ' is exceeding maximum numbers of frequencies allowed',
+     &    'maximum allowed (MAXFLR) is : ',MAXFLR
+        CALL QUIT('Too many frequencies specified!!!')
+        END IF
+        BFREQ(1)=STARTFREQ
+        DO IFREQ=1,NBFREQ-1
+          BFREQ(IFREQ+1)=STARTFREQ+IFREQ*STEPFREQ
+        END DO
+      END IF
+      IF(DMPFRLR.NE.D0) THEN
+C.....check frequencies; zeros not allowed
+        DO IFREQ = 1,NBFREQ
+          IF(BFREQ(IFREQ).EQ.D0) THEN
+             WRITE(LUPRI,'(A)')
+     &     'FATAL ERROR: do not combine zero frequencies with damping.',
+     &     'Purely imaginary frequencies are handled by '//
+     &     'keyword IMAGINARY'
+           CALL QUIT(
+     &     'XLRINP: Do not combine zero frequency with damping')
+          ENDIF
+        ENDDO
+        WRITE(LUPRI,'(A,1P,D12.6)')
+     &    ' * Damping frequency   :',DMPFRLR
+      ENDIF
+C end of complex freq processing
       IF(CNVXLR(1).LT.DUMMY) ITRILR(1) = 1
       IF(CNVXLR(2).LT.DUMMY) ITRILR(2) = 1
 C
@@ -965,14 +1030,24 @@ C     CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
      &   'IMAGINARY frequencies:'
+      ELSE IF (DMPFRLR.NE.D0) THEN
+      	WRITE(LUPRI,'(A)')
+     &' * Linear response functions evaluated at the following '//
+     &   'COMPLEX frequencies:'
       ELSE
         WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
      &   'REAL frequencies:'
-      ENDIF    
+      ENDIF
       DO J = 1,NBFREQ
-        FMT = MXFORM(BFREQ(J),12)
-        WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
+        IF (DMPFRLR.NE.D0) THEN
+          FMT = MXFORM(BFREQ(J),12)
+          WRITE(LUPRI,'(6X,'//FMT//',A,'//FMT//',A)')
+     &      BFREQ(J),' +',DMPFRLR,'i a.u.'
+        ELSE
+          FMT = MXFORM(BFREQ(J),12)
+          WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
+        ENDIF
       ENDDO
       IF(DOVDW) THEN
         WRITE(LUPRI,'(A)')
@@ -1137,6 +1212,9 @@ C
       STERNH    = XSTERN
       STERNC    = XSTERNC
       E2CHEK    = XLR_E2CHEK
+      DAMPFREQ  = DMPFRLR
+      NDAMP     = 1
+      IF(DAMPFREQ.NE.D0) NDAMP = 2
 C
 C     Restart info used by MCSCF program.
 C
@@ -1190,7 +1268,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0,D0=0.0D0)
 C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
@@ -1202,12 +1280,12 @@ C
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
-     &          IBPVC(*),EVALR(*),EVECR(NREDM,*),WORK(*)
+     &          IBPVC(*),EVALR(*),EVECR(NEVEC,*),WORK(*)
 C
       CALL QENTER('GETLRF')
       KFRSAV = KFREE
       FIRST = .TRUE.
-      NRSP = NFREQ*NLRAPT*NLRBPT
+      NRSP = NFREQ*NLRAPT*NLRBPT*NDAMP
 C
 C     First evaluate solution vectors for all frequencies
 C     and write them to direct access file
@@ -1216,8 +1294,6 @@ C
       NESIM = 0
       NPSIM = 0
       NCSIM = 0
-      IFAC  = 1
-      IF(.NOT.STATIC) IFAC = 2
 C
 C     Get coefficients
 C     ----------------
@@ -1250,14 +1326,14 @@ C
 C     Solution vector - orbital (e-e) part
 C     ====================================
 C
-      IOFF  = 1
+      IOFF  = 1*NDAMP
       IF(NZXOPE.GT.0) THEN
-        NESIM = NFREQ * IFAC
+        NESIM = NFREQ * NSTAT
         KEE   = KFREE
-        CALL MEMGET('REAL',KGVEC,NZXOPEQ      ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBBUF,NZXOPEQ      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIVEC,NESIM        ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGVEC,NZXOPEQ            ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ*NDAMP,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBBUF,NZXOPEQ            ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIVEC,NESIM              ,WORK,KFREE,LFREE)
         IF(XLRANA) THEN
           NI = 0
           NV = 0
@@ -1294,19 +1370,19 @@ C...secondary electron orbitals
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-e',WORK,1,KEE,KFREE,LFREE)
-        IOFF = IOFF + 1
+        IOFF = IOFF + 1*NDAMP
       ENDIF
 C
 C     Solution vector - orbital (e-p) part
 C     ====================================
 C
       IF(NZXOPP.GT.0) THEN
-        NPSIM = NFREQ * IFAC
+        NPSIM = NFREQ * NSTAT
         KEP   = KFREE
-        CALL MEMGET('REAL',KXVEC,NZXOPPQ*NFREQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGVEC,NZXOPPQ      ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBBUF,NZXOPPQ      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KXVEC,NZXOPPQ*NFREQ*NDAMP,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGVEC,NZXOPPQ            ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBBUF,NZXOPPQ            ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIVEC,NPSIM              ,WORK,KFREE,LFREE)
         IF(XLRANA) THEN
           NI = 0
           NV = 0
@@ -1343,7 +1419,7 @@ C...secondary positron orbitals
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-p',WORK,1,KEP,KFREE,LFREE)
-        IOFF = IOFF + 1
+        IOFF = IOFF + 1*NDAMP
       ENDIF
 C
 C     Solution vector - configurational part
@@ -1383,10 +1459,10 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
-      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
-     &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
+      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,NDAMP,*),RCNV(*),
+     &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NDAMP,NFREQ),BBUF(*),
      &          CMO(*),IBEIG(*),IORBCL(4,*),
-     &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
+     &          IBVEC(*),IBTYP(2,*),EVECR(NEVEC,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),IIBF(*),IVBF(*),INDX(*),
      &          RIBF(*),RVBF(*),WORK(*)
       CHARACTER TYP(3)*1
@@ -1457,7 +1533,7 @@ C
       OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NBDIM,STATUS='UNKNOWN')
       ITIM = IPX
-      NXDIM = NBDIM*NFREQ
+      NXDIM = NBDIM*NFREQ*NDAMP
 C
 C     If static we have one round with ITIM = IPX, if
 C     non-zero freq. then we have a second round with ITIM = IMX
@@ -1478,6 +1554,7 @@ C
           WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
      &   '- part of solution vectors for',NFREQ,' frequencies:'
         ENDIF
+CPP.....make space for complex case
         CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
         CALL FLSHFO(LUPRI)
       ENDIF
@@ -1513,37 +1590,39 @@ C         ----------------------------
 C
           DO IFREQ = 1,NFREQ
             IF (KTIMOP .EQ. ITIM) THEN
-              ABLRF(IFREQ,INDAP,INDBP,1)  =
-     &        D2*DDOT(NBDIM,GPO,1,XPO(1,1,IFREQ),1)
-              IF(XLRANA.OR.IPRXLR.GE.2) THEN
-                FREQ = EVALR(IFREQ)
-                WRITE(LUPRI,1000)
-     &            '<<',INDAP,',',INDBP,'>>:',ABLRF(IFREQ,INDAP,INDBP,1),
+              DO IDAMP = 1,NDAMP
+                ABLRF(IFREQ,INDAP,INDBP,IDAMP,1)  =
+     &          D2*DDOT(NBDIM,GPO,1,XPO(1,1,IDAMP,IFREQ),1)
+                IF(XLRANA.OR.IPRXLR.GE.2) THEN
+                  FREQ = EVALR(IFREQ)
+                  WRITE(LUPRI,1000)
+     &            '<<',INDAP,',',INDBP,'>>:',
+     &            ABLRF(IFREQ,INDAP,INDBP,IDAMP,1),
      &            ' a.u.,  ',BVTYP(ITYP),
      &            '-contribution at frequency',FREQ,' a.u.'
-              ENDIF
-              IF(XLRANA) THEN
-                CALL PRSYMB(LUPRI,'-',95,0)
-                WRITE(LUPRI,'(/A/)') '* ORBITAL ANALYSIS'
-                CALL DZERO(BBUF,NXPAR)
-                DO IZ = 1,NZ
-                  DO I = 1,NXPAR
-                    BBUF(I) = BBUF(I)+GPO(I,IZ)*XPO(I,IZ,IFREQ)
+                ENDIF
+                IF(XLRANA) THEN
+                  CALL PRSYMB(LUPRI,'-',95,0)
+                  WRITE(LUPRI,'(/A/)') '* ORBITAL ANALYSIS'
+                  CALL DZERO(BBUF,NXPAR)
+                  DO IZ = 1,NZ
+                    DO I = 1,NXPAR
+                      BBUF(I) = BBUF(I)+GPO(I,IZ)*XPO(I,IZ,IDAMP,IFREQ)
+                    ENDDO
                   ENDDO
-                ENDDO
-                CALL DSCAL(NXPAR,D2,BBUF,1)
-                TMP = 100.0D0/ABLRF(IFREQ,INDAP,INDBP,1)
-                CALL DZERO(RIBF,NI)
-                CALL DZERO(RVBF,NV)
-                DO J = 1,NXPAR
-                  I1 = JXOP(1,J)
-                  J1 = IORBCL(4,I1)
-                  I2 = JXOP(2,J)
-                  J2 = IORBCL(4,I2)
-                  RIBF(J1) = RIBF(J1) + BBUF(J)
-                  RVBF(J2) = RVBF(J2) + BBUF(J)
-                ENDDO
-        THR = 2.0D-0
+                  CALL DSCAL(NXPAR,D2,BBUF,1)
+                  TMP = 100.0D0/ABLRF(IFREQ,INDAP,INDBP,IDAMP,1)
+                  CALL DZERO(RIBF,NI)
+                  CALL DZERO(RVBF,NV)
+                  DO J = 1,NXPAR
+                    I1 = JXOP(1,J)
+                    J1 = IORBCL(4,I1)
+                    I2 = JXOP(2,J)
+                    J2 = IORBCL(4,I2)
+                    RIBF(J1) = RIBF(J1) + BBUF(J)
+                    RVBF(J2) = RVBF(J2) + BBUF(J)
+                  ENDDO
+          THR = 2.0D-0
 C.......Give major inactive orbitals
         WRITE(LUPRI,'(3X,A)') 'Dominant inactive orbitals:'
         CALL ABSIND (NI,RIBF,INDX)
@@ -1592,6 +1671,7 @@ C       Give major virtual orbitals
  5      CONTINUE
             CALL PRSYMB(LUPRI,'-',95,0)
               ENDIF
+              ENDDO
             ENDIF
           ENDDO
         ENDDO
@@ -1600,10 +1680,11 @@ C
 C
 C     Write solution vectors to unformatted file for restart
 C
+CPP...we only write real part to file for now
       DO IFREQ = 1,NFREQ
         FREQ = EVALR(IFREQ)
         IF (IROUND.EQ.1 .OR. FREQ.NE.D0) THEN
-          CALL WRTRSP(LUXVC,XPO(1,1,IFREQ),JXOP,
+          CALL WRTRSP(LUXVC,XPO(1,1,1,IFREQ),JXOP,
      &         RSPLAB,BVTYP(ITYP),FREQ,JSYMOP,JTIMOP,
      &         BLANK16,BLANK2,D0,0,0,RCNV(IFREQ),INTXRS,NBDIM)
         END IF
@@ -1634,6 +1715,7 @@ C
 C     Written by T.Saue Oct 31 1996
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1644,15 +1726,21 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      CHARACTER MXFORM*6,FMT*6,TTYP(-1:1)*2
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+      CHARACTER MXFORM*6,FMT*6,FMT2*6,TTYP(-1:1)*2,FREQLAB*4,
+     &          RESPLAB(3)*20
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,NDAMP,*),
      &          RCNV(NBFREQ,NLRBPT),IBUF(2),WORK(*)
       DATA TTYP /'T-','T0','T+'/
+      DATA RESPLAB/'Real part           ',
+     &             'Imaginary part      ',
+     &             '                    '/
 C
 C
 C     Loop over perturbation operators
 C     ================================
 C
+      FREQLAB = 'real'
+      IF(IMFREQ) FREQLAB = 'imag'
       CALL HEADER('Linear response; final output ',-1)
       IF(.NOT.ALLCMB) THEN
         DO IOPSY = 1,NFSYM
@@ -1674,45 +1762,96 @@ C
                 IREPB  = IPRPSYM(INDPRB)-1
                 ITIMB  = IPRPTIM(INDPRB)
                 ITIMAB = ITIMA*ITIMB
-                IF    (ITIMAB.EQ. 1) THEN
+                IF(DAMPFREQ.NE.D0) THEN
                   WRITE(LUPRI,'(/A,I2,A,I2,A)')
-     &             '<<A(',INDAP,'),B(',INDBP,
-     &             ')>> - linear response function (real):'
-                ELSEIF(ITIMAB.EQ.-1) THEN
-                  WRITE(LUPRI,'(/A,I2,A,I2,A)')
-     &             '<<A(',INDAP,'),B(',INDBP,
-     &             ')>> - linear response function (imaginary):'
+     &               '<<A(',INDAP,'),B(',INDBP,
+     &               ')>> - linear response function (complex):'
+                  J1 = 1
+                  J2 = 2
+                  J3 = 1
+                ELSE
+                  IF    (ITIMAB.EQ. 1) THEN
+                    WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &               '<<A(',INDAP,'),B(',INDBP,
+     &               ')>> - linear response function (real):'
+                    J1 = 1
+                    J2 = 3
+                    J3 = 2
+                  ELSEIF(ITIMAB.EQ.-1) THEN
+                    WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &               '<<A(',INDAP,'),B(',INDBP,
+     &               ')>> - linear response function (imaginary):'
+                    J1 = 2
+                    J2 = 3
+                    J3 = 1
+                  ENDIF
                 ENDIF
                 CALL PRSYMB(LUPRI,'-',95,0)
                 WRITE(LUPRI,'(3X,A,A16,5X,A3,2X,A2)')
      &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
      &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
                 CALL PRSYMB(LUPRI,'-',95,0)
+                WRITE(LUPRI,'(1X,A,A4,A1,5X,2(A,3X),A)')
+     &           'Frequency (',FREQLAB,')',(RESPLAB(J),J=J1,J2,J3),
+     &           'Convergence'
+                CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
-                  FMT = MXFORM(ABLRF(I,INDAP,INDBP,1),15)
-                  IF(UNCOUP) THEN
-                    WRITE(LUPRI,
-     &                '(3X,'//FMT//',A,A,F15.8,A,3X,A)')
-     &                ABLRF(I,INDAP,INDBP,1),' a.u.',
-     &                ' at frequency ',BFREQ(I),' a.u.',
-     &                '--- (uncoupled calculation)'
-                  ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
-                    WRITE(LUPRI,
-     &                '(3X,'//FMT//',A,A,F15.8,A,3X,1P,E9.2,3X,A)')
-     &                ABLRF(I,INDAP,INDBP,1),' a.u.',
-     &                ' at frequency ',BFREQ(I),' a.u.',
-     &                RCNV(I,INDBP),'(converged)'
+                  DO J = J1,J2
+                  ENDDO
+                  IF(DAMPFREQ.NE.D0) THEN
+                    FMT = MXFORM(ABLRF(I,INDAP,INDBP,1,1),15)
+                    FMT2 = MXFORM(ABLRF(I,INDAP,INDBP,2,1),15)
+                    IF(UNCOUP) THEN
+                      WRITE(LUPRI,
+     &    '(F12.8,A,3X,'//FMT//',A,3X,'//FMT2//',A,1X,E9.2,1X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',ABLRF(I,INDAP,INDBP,2,1),
+     &                    ' a.u.',RCNV(I,INDBP),
+     &                    '--- (uncoupled calculation)'
+                    ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
+                      WRITE(LUPRI,
+     &    '(F12.8,A,3X,'//FMT//',A,3X,'//FMT2//',A,1X,E9.2,1X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',ABLRF(I,INDAP,INDBP,2,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(converged)'
+                    ELSE
+                      WRITE(LUPRI,
+     &    '(F12.8,A,3X,'//FMT//',A,3X,'//FMT2//',A,1X,E9.2,1X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',ABLRF(I,INDAP,INDBP,2,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(**NOT** converged!)'
+                    ENDIF
                   ELSE
-                    WRITE(LUPRI,
-     &                '(3X,'//FMT//',A,A,F15.8,A,3X,1P,E9.2,3X,A)')
-     &                ABLRF(I,INDAP,INDBP,1),' a.u.',
-     &                ' at frequency ',BFREQ(I),' a.u.',
-     &                RCNV(I,INDBP),'(**NOT** converged!)'
+                      FMT = MXFORM(ABLRF(I,INDAP,INDBP,1,1),15)
+                      IF(UNCOUP) THEN
+                        WRITE(LUPRI,
+     &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',RCNV(I,INDBP),
+     &                    '--- (uncoupled calculation)'
+                      ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
+                        WRITE(LUPRI,
+     &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(converged)'
+                      ELSE
+                        WRITE(LUPRI,
+     &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(**NOT** converged!)'
+                      ENDIF
                   ENDIF
                 ENDDO
                 CALL PRSYMB(LUPRI,'-',95,0)
               ENDDO
             ENDDO
+            IF(DAMPFREQ.NE.D0) THEN
+              DFREQEV = DAMPFREQ * XTEV
+              DFREQCM = DAMPFREQ * XTKAYS
+              WRITE(LUPRI,'(3X,A,F10.6,A,F10.6,A,F10.1,A)')
+     &             'Damping parameter equals',DAMPFREQ,' a.u. =',
+     &              DFREQEV,' eV =',DFREQCM,' cm-1'
+            ENDIF
           ENDDO
         ENDDO
       ELSE

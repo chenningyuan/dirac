@@ -144,7 +144,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dcbibt.h"
 
-      iprint = dft_cfg_print_level
 
 
 C
@@ -206,7 +205,7 @@ C
      &               NPOINT,
      &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,BUF,IPRINT)
+     &               NCNT,BUF)
 
          call dealloc(kx)
          call dealloc(ky)
@@ -465,8 +464,7 @@ C     /* Deck grtes2 */                                                C
       SUBROUTINE GRTES2(CORX,CORY,CORZ,WEIGHT,NPOINT,
      &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,BUF,
-     &               IPRINT)
+     &               NCNT,BUF)
 C                                                                      C
 C     Written by Trond Saue and T.Helgaker                             C
 C     Modified for grid testing by Olav Fossgaard July 2002.           C

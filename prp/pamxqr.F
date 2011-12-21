@@ -1074,13 +1074,11 @@ C
       NESIM = 0
       NPSIM = 0
       NCSIM = 0
-      IFAC  = 1
-      IF (.NOT.STATIC) IFAC = 2
 C
 C     Solution vector - orbital (e-e) part
 C
       IF(NZXOPE.GT.0) THEN
-        NESIM = NFREQ*IFAC
+        NESIM = NFREQ*NSTAT
         CALL MEMGET('REAL',KVECZ,NZXOPE*NZ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KVECY,NZXOPE*NZ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KRSPVC,MZYEE*NZ,WORK,KFREE,LFREE)
@@ -1094,7 +1092,7 @@ C
 C     Solution vector - orbital (e-p) part
 C
       IF(NZXOPP.GT.0) THEN
-        NPSIM = NFREQ*IFAC
+        NPSIM = NFREQ*NSTAT
         CALL MEMGET('REAL',KVECZ,NZXOPP*NZ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KVECY,NZXOPP*NZ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KRSPVC,MZYEP*NZ,WORK,KFREE,LFREE)
@@ -3196,7 +3194,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxpr.h"
 C
-      PARAMETER ( D0 = 0.0D0, THD = 1.0D-9 )
+      PARAMETER ( D0 = 0.0D0, D2=2.0D0, THD = 1.0D-9 )
 C
       LOGICAL ZERO
       DIMENSION GPC(NZCQ),GPE(NZEQ),GPP(NZPQ)
@@ -3207,15 +3205,16 @@ C
 C
       ZERO = .FALSE.
 C     
-      GPNRM = DNRM2(NZCQ,GPC,1)+DNRM2(NZEQ,GPE,1)+DNRM2(NZPQ,GPP,1)
-      IF (GPNRM.LT.THD) THEN
+      GPTNRM = SQRT(D2*(DNRM2(NZCQ,GPC,1)+DNRM2(NZEQ,GPE,1)+
+     &                  DNRM2(NZPQ,GPP,1)))
+      IF (GPTNRM.LT.THD) THEN
 C
          ZERO = .TRUE.
 C
          WRITE(LUPRI,'(2(/A),A16,2(/A,D7.1),//2A)') 
      &        ' *** WARNING ****',
      &        ' Skipping property     : ',PRPNAM(INDPRP),
-     &        ' since norm of gradient: ',GPNRM,
+     &        ' since norm of gradient: ',GPTNRM,
      &        ' is below threshold    : ',THD,
      &        ' The program will continue assuming response vector',
      &        ' equal to zero vector.'
