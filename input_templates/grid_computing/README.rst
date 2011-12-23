@@ -12,21 +12,25 @@ Don't forget to include "--static" to your setup flags.
 Making Python static
 --------------------
 
+ http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
+
 Download Python-2.7.2
 
   $./configure --prefix=/home/ilias/bin/python_static  LDFLAGS="-static -static-libgcc" CPPFLAGS="-static"
 
 put "*static*" into Modules/Setup.local
 
+Currently I (MI) wasn't able to get static version due to compilation problems...
 
-Working with "gLite" middleware
---------------------------------
+
+Working with the "gLite" middleware
+---------------------------------------
 
 Some "gLite" howtos 
  http://egee-uig.web.cern.ch/egee-uig/production_pages/SimpleJobCycle.html
  http://iag.iucc.ac.il/workshop/complex_jobs.htm
 
-What you have in your VO space:
+What you have in your VO-VOCE space:
 lcg-ls -l  lfn://grid/voce/ilias/
 
 Submit job script:
@@ -37,5 +41,4 @@ glite-wms-job-status  <JOB_ID>
 
 Get job files:
 glite-wms-job-output  <JOB_ID>
-
 
