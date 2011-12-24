@@ -43,8 +43,9 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-#miro: extract username
+#miro: extract username@hostname
 SET(USER_NAME $ENV{USER})
+SET(HOST_NAME $ENV{HOSTNAME})
 
 option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
@@ -65,7 +66,7 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
     if (ENABLE_MPI OR ENABLE_OMP)
-        message(FATAL_ERROR "Static linking only works in sequential mode")
+        message("Static linking only works in sequential mode - you get nonworking executable !")
     endif()
 endif()
 
