@@ -48,3 +48,13 @@ Linux-2.6.30-1-amd64, ATLAS BLAS+LAPACK; i32lp64, GNU Fortran/gcc (Debian 4.6.2-
 
 One can summarize that linking to external static libraries from GNU does not give proper static executable.
 
+Static parallel dirac.x - not working at all
+
+ Linking Fortran executable dirac.x:
+/home/ilias/bin/openmpi_ilp64/lib/libopen-pal.a(dlopen.o): In function `vm_open':
+dlopen.c:(.text+0x148): warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/home/ilias/bin/openmpi_ilp64/lib/libopen-rte.a(plm_rsh_module.o): In function `setup_launch':
+plm_rsh_module.c:(.text+0x821): warning: Using 'getpwuid' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/home/ilias/bin/openmpi_ilp64/lib/libmpi.a(btl_tcp_component.o): In function `mca_btl_tcp_component_create_listen':
+btl_tcp_component.c:(.text+0x104): warning: Using 'getaddrinfo' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+[100%] Built target dirac.x
