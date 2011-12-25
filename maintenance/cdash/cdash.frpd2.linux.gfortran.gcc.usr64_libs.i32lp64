@@ -32,7 +32,7 @@ make Experimental
 ###
 ### now run the Nightly test suite
 ###
-TMP_DIR=/var/tmp/dirac_build
+TMP_DIR=/tmp/dirac_build
 mkdir -p $TMP_DIR
 # clone from here
 git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
