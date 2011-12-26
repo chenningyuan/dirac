@@ -43,9 +43,15 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-#miro: extract username@hostname; 
-SET(USER_NAME $ENV{USER})
-#FYI: $ENV{HOSTNAME} is not working on all machines, prefered Linux command 'hostname`
+#miro: extract username@hostname 
+#FYI: $ENV{USER} is not working on all machines from crontab, prefered Linux command 'whoami`
+execute_process(
+    COMMAND whoami
+    TIMEOUT 1
+    OUTPUT_VARIABLE USER_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+#FYI: $ENV{HOSTNAME} is not working on all machines from crontab, prefered Linux command 'hostname`
 execute_process(
     COMMAND hostname
     TIMEOUT 1
