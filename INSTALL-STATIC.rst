@@ -14,6 +14,10 @@ Linux-2.6.30-1-amd64, ownmath, i32lp64, GNU Fortran/gcc (Debian 4.6.2-9); -stati
 ilias@frpd2.utcpd.sk:
 Linux-2.6.32-5-amd64; ownmath; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4); -static -fpic, nooptim
 
+ilias@grid3.ui.savba.sk:
+Linux-2.6.18-274.3.1.el5; ownath; x86_64, ilp64, GNU Fortran (GCC) 4.4.4 20100726 (Red Hat 4.4.4-13)';  -g -static -fpic; opt
+Note: this gfortran shows error in test program for NAMELIST reading, however, DIRAC runs OK...
+
 Based on these results we may say that GNU compilers produce proper static executable
 NOT LINKED against GNU external static libraries (libblas-dev,liblapack-dev,libatlas).
 
