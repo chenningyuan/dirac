@@ -43,9 +43,21 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-#miro: extract username@hostname
-SET(USER_NAME $ENV{USER})
-SET(HOST_NAME $ENV{HOSTNAME})
+#miro: extract username@hostname 
+#FYI: $ENV{USER} is not working on all machines from crontab, prefered Linux command 'whoami`
+execute_process(
+    COMMAND whoami
+    TIMEOUT 1
+    OUTPUT_VARIABLE USER_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+#FYI: $ENV{HOSTNAME} is not working on all machines from crontab, prefered Linux command 'hostname`
+execute_process(
+    COMMAND hostname
+    TIMEOUT 1
+    OUTPUT_VARIABLE HOST_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)

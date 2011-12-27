@@ -27,9 +27,14 @@ export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
 Linux-2.6.26-2-xen-amd64;ilp64,MKL ilp64 static math, ifort (IFORT) 12.0.2 20110112, gcc (Debian 4.3.2-1.1) 4.3.2
 (failures: DFTINPUT, CI/RELCCSD input readings)
 
+ilias@pd.uniza.sk:
+./setup --static -D VERBOSE_OUTPUT=ON  --internal-math (--debug)
+Linux-2.6.32-5-amd64, i32lp64, ownmath; GNU Fortran/gcc (Debian 4.4.5-8) 4.4.5
+
+
 Wrong executables
 ------------------
-- crashing already from beginning 
+- crashing already from the beginning 
 
 ilias@frpd2.utcpd.sk:
 Linux-2.6.32-5-amd64, ATLAS BLAS+LAPACK; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4) 4.6.1; opt
@@ -48,9 +53,9 @@ Linux-2.6.30-1-amd64, ATLAS BLAS+LAPACK; i32lp64, GNU Fortran/gcc (Debian 4.6.2-
 
 One can summarize that linking to external static libraries from GNU does not give proper static executable.
 
-Static parallel dirac.x - not working at all
+* Static parallel dirac.x - not working at all
 
- Linking Fortran executable dirac.x:
+ Linking Fortran executable dirac.x gives:
 /home/ilias/bin/openmpi_ilp64/lib/libopen-pal.a(dlopen.o): In function `vm_open':
 dlopen.c:(.text+0x148): warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
 /home/ilias/bin/openmpi_ilp64/lib/libopen-rte.a(plm_rsh_module.o): In function `setup_launch':
