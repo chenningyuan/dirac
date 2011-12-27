@@ -31,6 +31,8 @@ ilias@pd.uniza.sk:
 ./setup --static -D VERBOSE_OUTPUT=ON  --internal-math (--debug)
 Linux-2.6.32-5-amd64, i32lp64, ownmath; GNU Fortran/gcc (Debian 4.4.5-8) 4.4.5
 
+Gfortran error in NAMELIST reading is decribed here:  http://comments.gmane.org/gmane.comp.gcc.bugs/289633 .
+Such 'ill' gfortran installation is probably causing mentioned failures of tests.
 
 Wrong executables
 ------------------
