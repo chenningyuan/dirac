@@ -18,8 +18,17 @@ ilias@grid3.ui.savba.sk:
 Linux-2.6.18-274.3.1.el5; ownath; x86_64, ilp64, GNU Fortran (GCC) 4.4.4 20100726 (Red Hat 4.4.4-13)';  -g -static -fpic; opt
 Note: this gfortran shows error in test program for NAMELIST reading, however, DIRAC runs OK...
 
+ilias@miro_ilias_desktop:
+Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
+/usr/lib/libblas.a+/usr/lib/liblapack.a; -g -static -fpic -O0
+(NB: as superuser remove xerbla.o from /usr/lib/liblapack.a -mixing with /usr/lib/liblas.a)
+
+ilias@miro_ilias_desktop:
+Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
+ATLAS-static; -g -static -fpic -O0 (fixed bug below)
+
 Based on these results we may say that GNU compilers produce proper static executable
-NOT LINKED against GNU external static libraries (libblas-dev,liblapack-dev,libatlas).
+mostly not linked against GNU external static libraries (libblas-dev,liblapack-dev,libatlas).
 
 Partially wrong executable
 ----------------------------
@@ -41,6 +50,18 @@ Such 'ill' gfortran installation is probably causing mentioned failures of tests
 Wrong executables
 ------------------
 - crashing already from the beginning 
+
+ilias@miro_ilias_desktop:
+Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
+ATLAS-static; -g -static -fpic -O0
+Program received signal 11 (SIGSEGV): Segmentation fault.
+
+Backtrace for this error:
+  + function __restore_rt (0x15C4220)
+    from file sigaction.c
+Segmentation fault
+(see http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477)
+
 
 ilias@frpd2.utcpd.sk:
 Linux-2.6.32-5-amd64, ATLAS BLAS+LAPACK; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4) 4.6.1; opt

@@ -262,10 +262,18 @@ foreach(
         )
 endforeach()
 
-#miro: fix of static buildup with gfortran+ATLAS
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND DETECTED_MATH_VENDOR MATCHES ATLAS)
-    target_link_libraries(dirac.x -lpthread)
-    message("-- static executable buildup with gfortran+ATLAS - added linking against libpthread")
+#miro: fix of static buildup with gfortran+blas&lapack/ATLAS
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND NOT ENABLE_INTERNAL_MATH)
+    #miro: Only newer versions of GNU-linkers have this flag ! Check "ld --help"
+    # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
+    message("-- static executable buildup with gfortran+usr-library: added --no-export-dynamic linking flag, not working for gfortran44")
+    target_link_libraries(dirac.x -Wl,--no-export-dynamic)
+    if (DETECTED_MATH_VENDOR MATCHES ATLAS)
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+        message("-- static executable buildup with gfortran+ATLAS: added workaround linking against libpthread")
+        target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+    endif()
 endif()
 
 # forward CPP directly to the code
