@@ -263,9 +263,12 @@ foreach(
 endforeach()
 
 #miro: fix of static buildup with gfortran+ATLAS
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND DETECTED_MATH_VENDOR MATCHES ATLAS)
-    target_link_libraries(dirac.x -lpthread)
-    message("-- static executable buildup with gfortran+ATLAS - added linking against libpthread")
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU) 
+    target_link_libraries(dirac.x -Wl,--no-export-dynamic)
+    if (DETECTED_MATH_VENDOR MATCHES ATLAS)
+        target_link_libraries(dirac.x -lpthread)
+        message("-- static executable buildup with gfortran+ATLAS - added linking against libpthread")
+    endif()
 endif()
 
 # forward CPP directly to the code
