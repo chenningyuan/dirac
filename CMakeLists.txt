@@ -266,8 +266,10 @@ endforeach()
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU) 
     target_link_libraries(dirac.x -Wl,--no-export-dynamic)
     if (DETECTED_MATH_VENDOR MATCHES ATLAS)
-        target_link_libraries(dirac.x -lpthread)
-        message("-- static executable buildup with gfortran+ATLAS - added linking against libpthread")
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+        target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+        message("-- static executable buildup with gfortran+ATLAS - added workaround linking against libpthread")
     endif()
 endif()
 
