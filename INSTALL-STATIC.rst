@@ -32,20 +32,27 @@ mostly not linked against GNU external static libraries (libblas-dev,liblapack-d
 
 Partially wrong executable
 ----------------------------
-- crashing lot of tests
+- crashing substantial portion of tests
+
+(failures: DFTINPUT, CI/RELCCSD input readings)
 
 milias@gbb4.grid.umb.sk:
 export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
 ./setup --static -D VERBOSE_OUTPUT=ON  --int64
 Linux-2.6.26-2-xen-amd64;ilp64,MKL ilp64 static math, ifort (IFORT) 12.0.2 20110112, gcc (Debian 4.3.2-1.1) 4.3.2
-(failures: DFTINPUT, CI/RELCCSD input readings)
 
 ilias@pd.uniza.sk:
 ./setup --static -D VERBOSE_OUTPUT=ON  --internal-math (--debug)
 Linux-2.6.32-5-amd64, i32lp64, ownmath; GNU Fortran/gcc (Debian 4.4.5-8) 4.4.5
 
-Gfortran error in NAMELIST reading is decribed here:  http://comments.gmane.org/gmane.comp.gcc.bugs/289633 .
-Such 'ill' gfortran installation is probably causing mentioned failures of tests.
+milias@grafix.fpv.umb.sk:
+./setup --static -D VERBOSE_OUTPUT=ON  --debug
+Linux-2.6.32-28-generic; x86_64; i32lp64; GNU Fortran/Gcc (Ubuntu 4.4.3-4ubuntu5) 4.4.3; ATLAS-static
+./setup -D VERBOSE_OUTPUT=ON --debug --static --int64 --internal-math
+Linux-2.6.32-28-generic; x86_64; ilp64; GNU Fortran/Gcc (Ubuntu 4.4.3-4ubuntu5) 4.4.3; ownmath
+
+Note: Gfortran error in NAMELIST reading is decribed here:  http://comments.gmane.org/gmane.comp.gcc.bugs/289633 .
+Such 'ill' Gcc nstallation is probably causing mentioned failures of tests.
 
 Wrong executables
 ------------------
@@ -78,7 +85,6 @@ Likewise:
 The upgrade is compilable, but does not work with static ATLAS (as frpd2):
 Linux-2.6.30-1-amd64, ATLAS BLAS+LAPACK; i32lp64, GNU Fortran/gcc (Debian 4.6.2-9); -static -fpic, nooptim
 
-One can summarize that linking to external static libraries from GNU does not give proper static executable.
 
 * Static parallel dirac.x - not working at all
 
