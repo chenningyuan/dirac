@@ -178,7 +178,7 @@ include(CompilationInfo)
 
 configure_file(
     ${PROJECT_SOURCE_DIR}/config.h.in
-    ${PROJECT_BINARY_DIR}/config.h
+    ${PROJECT_SOURCE_DIR}/main/config.h
     )
 
 # copy pam to build dir as pam and pam-dirac
