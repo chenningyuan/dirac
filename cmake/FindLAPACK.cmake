@@ -63,7 +63,11 @@ if (LAPACK_INCLUDE_DIRS AND LAPACK_LIBRARIES)
 endif ()
 
 if (NOT LAPACK_FIND_COMPONENTS)
-    set(LAPACK_FIND_COMPONENTS MKL MKL_LAPACK95 Atlas ACML default)
+    if(ENABLE_64BIT_INTEGERS)
+        set(LAPACK_FIND_COMPONENTS MKL MKL_LAPACK95)
+    else()
+        set(LAPACK_FIND_COMPONENTS MKL MKL_LAPACK95 Atlas ACML default)
+    endif()
 endif()
 
 function(find_lapack)
