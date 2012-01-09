@@ -145,7 +145,8 @@ program dirprg
      write(lupri, *)
 
      call print_compilation_info()
-     call print_git_revision_info()
+!radovan: is not portable and too complicated, will adapt it soon
+!    call print_git_revision_info()
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
