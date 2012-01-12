@@ -5,7 +5,7 @@ rem the directory where your DIRAC sits
 echo "Hello, building up DIRAC on Windows 7 server Miro-FPV UMB"
 
 set DIRAC=C:\Users\milias\Documents\Work\QCH\Dirac_git\trunk
-set BUILD=%DIRAC%\build_gnu_i8_dynamic
+set BUILD=%DIRAC%\build
 set BUILD_STATIC=%DIRAC%\build_gnu_i8_static
 
 echo %BUILD%
