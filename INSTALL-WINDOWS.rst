@@ -53,7 +53,6 @@ Note that you have to set the editor for git commits, for the Notepad++ follow
 
 C:\Git\bin\git.exe config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
 
-
 "Pageant" agent, running in the background, also enables passwordless terminal conections (or PuTTy sessions) 
 onto server which are provided with users's public key. Pageant can be activated during Windows startup.
 
