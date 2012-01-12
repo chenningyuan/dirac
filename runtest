@@ -260,7 +260,8 @@ class run:
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
          return '%s_%s.out' % (inp_file_strip, mol_file_strip)
      def get_test_name(self):
-         return string.split(self.test, '/')[-1]
+         (head,tail)=os.path.split(self.test)
+         return tail
      def run_and_controlled_exit(self):
          pgid = None # process group id of the "dirac" process
          def child_signaller(signum, frame):
