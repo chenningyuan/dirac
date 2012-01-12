@@ -23,9 +23,9 @@ python pamadm -a
 rem delete the old build directory
 rmdir /S /Q %BUILD%
 
-python setup -D BUILDNAME="Miro PC Destkop Win7" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --build=%BUILD% -G "MinGW Makefiles"
+python setup -D BUILDNAME="Miro-PC-Desktop-Win7" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --build=%BUILD% -G "MinGW Makefiles" --int64
 
-cd %DIRAC%/%BUILD%
+cd %BUILD%
 mingw32-make Experimental
 
 rem return to the top of the DIRAC directory
