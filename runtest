@@ -194,6 +194,31 @@ def int32_run(s):
                 return False
     return True
 
+class filter_task:
+     def __init__(self, precision, ignore_sign, start_string, end_string='', \
+                  start_is_regex = False, end_is_regex = False, plus_n_lines = 0):
+         self.precision      = precision
+         self.ignore_sign    = ignore_sign
+         self.start_string   = start_string
+         self.end_string     = end_string
+         self.start_is_regex = start_is_regex
+         self.end_is_regex   = end_is_regex
+         self.plus_n_lines   = plus_n_lines
+
+def read_filter(filter_file):
+    s = readlines_from_file(filter_file)
+    filter_task_l = []
+    default_precision = 0.001
+    precision = default_precision
+    ignore_sign = False
+    for line in s:
+        if '$ERROR' in line:
+            precision = float(line.split()[-1])
+        if '$IGNORESIGN' in line:
+            ignore_sign = True
+        filter_task_l.append(filter_task(precision, ignore_sign, 'raboof'))
+    return filter_task_l
+
 # create directory LOGS
 if not os.path.isdir('test/LOGS'):
     os.mkdir('test/LOGS')
@@ -311,9 +336,8 @@ class run:
 
      def apply_filter(self):
 
-         # read filter
-
-
+         # read filter and get list of filter tasks
+         filter_task_l = read_filter('result/filter')
 
 
 
