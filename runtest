@@ -1,20 +1,8 @@
 #!/usr/bin/env python
 
-'''
-runtest - script to run tests and compare results with reference data
-(c) Radovan Bast 2010 <radovan.bast@irsamc.ups-tlse.fr>
-
-menu format: free form
-             blank lines are ignored
-             lines starting with "#" are ignored
-             sections can start with "quick" or "regular" or "benchmark"
-             "regular" is default and can be omitted
-             shell commands are triggered with "sh"
-
-how to add new tests to the testset "--all":
-             developers: add them to pamadm which generates test/list_of_tests
-             users:      add them to test/list_of_tests
-'''
+# runtest - script to run tests and compare results with reference data
+# (c) Radovan Bast (radovan.bast at irsamc.ups-tlse.fr) and friends 2010
+# licensed under the GNU Lesser General Public License
 
 import re
 import os
