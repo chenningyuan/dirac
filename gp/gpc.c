@@ -48,7 +48,6 @@
 #endif
 
 #include <math.h>
-#include "patchlevel.h"
 #include "fortran_interface.h"
 
 void printaddr_(void *p)

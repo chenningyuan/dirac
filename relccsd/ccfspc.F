@@ -2543,6 +2543,7 @@ C
 #include "complex.inc"
 #include "files.inc"
 #include "ccpar.inc"
+#include "inpt.inc"
 C
 C---------------Calling variables------------------------------------
 C

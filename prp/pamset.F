@@ -714,6 +714,9 @@ C          Hermitian operator
      &                       fde_fmat               = fmo,
      &                       fde_do_potential       = .true.)
 
+         write (*,*) 'FDE Fock matrix contributions (re)calculated'
+        else if (itmp%im_vemb) then
+         write (*,*) 'FDE Fock matrix contributions (in AOPROPER) added'
         endif
 !!!!!
 #endif

@@ -43,6 +43,22 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
+#miro: extract username@hostname 
+#FYI: $ENV{USER} is not working on all machines from crontab, prefered Linux command 'whoami`
+execute_process(
+    COMMAND whoami
+    TIMEOUT 1
+    OUTPUT_VARIABLE USER_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+#FYI: $ENV{HOSTNAME} is not working on all machines from crontab, prefered Linux command 'hostname`
+execute_process(
+    COMMAND hostname
+    TIMEOUT 1
+    OUTPUT_VARIABLE HOST_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
@@ -62,7 +78,7 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
     if (ENABLE_MPI OR ENABLE_OMP)
-        message(FATAL_ERROR "Static linking only works in sequential mode")
+        message("Static linking only works in sequential mode - you get nonworking executable !")
     endif()
 endif()
 
@@ -160,6 +176,11 @@ set(LIBS
 
 include(CompilationInfo)
 
+configure_file(
+    ${PROJECT_SOURCE_DIR}/config.h.in
+    ${PROJECT_SOURCE_DIR}/main/config.h
+    )
+
 # copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
@@ -246,10 +267,18 @@ foreach(
         )
 endforeach()
 
-#miro: fix of static buildup with gfortran+ATLAS
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND DETECTED_MATH_VENDOR MATCHES ATLAS)
-    target_link_libraries(dirac.x -lpthread)
-    message("-- static executable buildup with gfortran+ATLAS - added linking against libpthread")
+#miro: fix of static buildup with gfortran+blas&lapack/ATLAS
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND NOT ENABLE_INTERNAL_MATH)
+    #miro: Only newer versions of GNU-linkers have this flag ! Check "ld --help"
+    # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
+    message("-- static executable buildup with gfortran+usr-library: added --no-export-dynamic linking flag, not working for gfortran44")
+    target_link_libraries(dirac.x -Wl,--no-export-dynamic)
+    if (DETECTED_MATH_VENDOR MATCHES ATLAS)
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+        message("-- static executable buildup with gfortran+ATLAS: added workaround linking against libpthread")
+        target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+    endif()
 endif()
 
 # forward CPP directly to the code

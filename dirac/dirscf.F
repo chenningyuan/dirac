@@ -198,7 +198,11 @@ C         .... prepare the DFCOEF file with staring MO's
 
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) THEN
+#if defined SYS_WINDOWS
+          CALL SYSTEM('del DFDIIS')
+#else
           CALL SYSTEM('/bin/rm DFDIIS')
+#endif
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
      &    'PSIDHF: DFDIIS file from previous SCF cycle was deleted.'
         ENDIF
@@ -1781,7 +1785,11 @@ c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
          write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
+#if defined SYS_WINDOWS
+         call system('copy DFCOEF DFCOEF.BEST')
+#else
          call system('cp DFCOEF DFCOEF.BEST')
+#endif
          besterg = dhferg
       endif
       CALL QEXIT('ERGCAL')
