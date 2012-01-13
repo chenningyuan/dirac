@@ -314,6 +314,8 @@ def extract_and_compare_floats(log_file,   \
                 log_file.write('error: found=%20.16f reference=%20.16f\n' % (r, r_ref))
     else:
         log_file.write('compare floats sizes do not match\n')
+        log_file.write(str(line_l))
+        log_file.write(str(line_l_ref))
 
 #-------------------------------------------------------------------------------
 
