@@ -195,6 +195,8 @@ def int32_run(s):
                 return False
     return True
 
+#-------------------------------------------------------------------------------
+
 class filter_task:
      def __init__(self, precision, ignore_sign, start_string, start_is_regex, \
                   end_string='', end_is_regex=False, end_is_including=False, plus_nr_lines=0):
@@ -281,11 +283,18 @@ def read_filter(filter_file):
 
 #-------------------------------------------------------------------------------
 
-def extract_and_compare_floats(file, s, s_ref, line_l, line_l_ref, precision, ignore_sign):
+def extract_and_compare_floats(log_file,   \
+                               output,     \
+                               output_ref, \
+                               line_l,     \
+                               line_l_ref, \
+                               precision,  \
+                               ignore_sign):
     """
-    in:  s        a list of strings (= a file)
-         line_l   list of integers that correspond to line numbers in python numbering
-    out: f_l      list of floats
+    in:  output      a list of strings (= a file)
+         output_ref  a list of strings (= a file)
+         line_l      list of integers that correspond to line numbers in python numbering
+         line_l_ref  list of integers that correspond to line numbers in python numbering
     """
 
     p  = re.compile(r'[+-]*[0-9]+[.]*[0-9]*[d|d-|d+|D|D-|D+|e|e-|e+|E|E-|E+]*[0-9]*', re.DOTALL)
@@ -294,34 +303,38 @@ def extract_and_compare_floats(file, s, s_ref, line_l, line_l_ref, precision, ig
     f_l     = []
     f_l_ref = []
     for line in line_l:
-        for m in p.findall(s[line]):
+        for m in p.findall(output[line]):
 #           in fortran output we can have 1.0d0 but python understands 1.0e0
             m = pd.sub('e', m)
             f_l.append(float(m))
     for line in line_l_ref:
-        for m in p.findall(s_ref[line]):
+        for m in p.findall(output_ref[line]):
 #           in fortran output we can have 1.0d0 but python understands 1.0e0
             m = pd.sub('e', m)
             f_l_ref.append(float(m))
+
+    print f_l
+    print f_l_ref
 
     ierr = 0
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
             r_ref = f_l_ref[i]
-        
+
 #           if ignore sign take absolute values
             if ignore_sign:
                 r     = abs(r)
                 r_ref = abs(r_ref)
             rel_error = r - r_ref
-        
+
 #           avoid zero division
             if abs(r_ref) > 1.0e-10:
                 rel_error /= r_ref
-        
+
+            print abs(rel_error), precision
             if abs(rel_error) > precision:
-                print 'error: file=%s  line=%i  found=%f  reference=%f  error=%f  precision=%f' % (file, i+ 1, r, r_ref, rel_error, precision)
+                print 'error: line=%i  found=%f  reference=%f  error=%f  precision=%f' % (i+ 1, r, r_ref, rel_error, precision)
                 ierr = 1
     else:
         print 'compare floats sizes do not match'
@@ -330,19 +343,25 @@ def extract_and_compare_floats(file, s, s_ref, line_l, line_l_ref, precision, ig
 
 #-------------------------------------------------------------------------------
 
-def find_regex_plus_n(s, regex, n):
+def find_string_plus_nr_lines(output, s, n, is_regex=False):
     """
-    in:  s        a list of strings (= a file)
-         regex    a regular expression
-         n        means i want n lines that follow the line(s) that match(es) regex
+    in:  output   a list of strings (= a file)
+         s        a string or regular expression
+         n        means i want n lines that follow the line(s) that match(es) string/regex
     out: line_l   list of integers that correspond to line numbers in python numbering
     """
     line_l = []
-    p = re.compile(regex)
-    for i in range(len(s)):
-        if p.match(s[i]):
-            for j in range(n + 1):
-                line_l.append(i + j)
+    if is_regex:
+        p = re.compile(regex)
+        for i in range(len(output)):
+            if p.match(output[i]):
+                for j in range(n + 1):
+                    line_l.append(i + j)
+    else:
+        for i in range(len(output)):
+            if s in output[i]:
+                for j in range(n + 1):
+                    line_l.append(i + j)
     return line_l
 
 #-------------------------------------------------------------------------------
@@ -351,7 +370,7 @@ def find_regex_plus_n(s, regex, n):
 if not os.path.isdir('test/LOGS'):
     os.mkdir('test/LOGS')
 
-global pam_output_file 
+global pam_output_file
 
 class run:
      def __init__(self, test, line, kind):
@@ -428,10 +447,10 @@ class run:
                                   shell=True,
                                   stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE)
-         
+
          pam_output = p.communicate()[0]
          global pam_output_file
-         pam_output_file.write(pam_output) 
+         pam_output_file.write(pam_output)
          # check whether DIRAC terminated normally
          if 'exit           : normal' in pam_output:
              return 'NORMAL'
@@ -467,20 +486,44 @@ class run:
          # read filter and get list of filter tasks
          filter_task_l = read_filter('result/filter')
 
-      # debug:
-      #  itask = 0
-      #  for filter_task in filter_task_l:
-      #      itask += 1
-      #      print 'task',             itask
-      #      print 'precision       ', filter_task.precision           
-      #      print 'ignore_sign     ', filter_task.ignore_sign           
-      #      print 'start_string    ', filter_task.start_string           
-      #      print 'start_is_regex  ', filter_task.start_is_regex           
-      #      print 'end_string      ', filter_task.end_string           
-      #      print 'end_is_regex    ', filter_task.end_is_regex           
-      #      print 'end_is_including', filter_task.end_is_including           
-      #      print 'plus_nr_lines   ', filter_task.plus_nr_lines           
-      #      print
+  #   # debug:
+  #      itask = 0
+  #      for filter_task in filter_task_l:
+  #          itask += 1
+  #          print 'task',             itask
+  #          print 'precision       ', filter_task.precision
+  #          print 'ignore_sign     ', filter_task.ignore_sign
+  #          print 'start_string    ', filter_task.start_string
+  #          print 'start_is_regex  ', filter_task.start_is_regex
+  #          print 'end_string      ', filter_task.end_string
+  #          print 'end_is_regex    ', filter_task.end_is_regex
+  #          print 'end_is_including', filter_task.end_is_including
+  #          print 'plus_nr_lines   ', filter_task.plus_nr_lines
+  #          print
+
+#        read output and reference output
+         output     = readlines_from_file(self.get_output_name())
+         output_ref = readlines_from_file('result/' + self.get_output_name())
+
+         log_file = open('compare/%s.txt' % self.get_output_name())
+         for filter_task in filter_task_l:
+             if filter_task.plus_nr_lines > 0:
+                 line_l     = find_string_plus_nr_lines(output,                    \
+                                                        filter_task.start_string,  \
+                                                        filter_task.plus_nr_lines, \
+                                                        is_regex=filter_task.start_is_regex)
+                 line_l_ref = find_string_plus_nr_lines(output_ref,                \
+                                                        filter_task.start_string,  \
+                                                        filter_task.plus_nr_lines, \
+                                                        is_regex=filter_task.start_is_regex)
+                 extract_and_compare_floats(log_file,              \
+                                            output,                \
+                                            output_ref,            \
+                                            line_l,                \
+                                            line_l_ref,            \
+                                            filter_task.precision, \
+                                            filter_task.ignore_sign)
+         log_file.close()
 
          os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
                    % (self.get_output_name(), self.get_output_name()))
@@ -583,12 +626,12 @@ def main(*args):
 
     testname_0=None
     for task in l:
-        
+
 	(head,tail)=os.path.split(task.test)
 	testname_1=tail
         open_new_log_file=(testname_0 != testname_1)
 
-        if open_new_log_file : 
+        if open_new_log_file :
             global pam_output_file
 	    runtestlogfile='runtest_'+testname_1+'.log'
             log_file=os.path.join(root_directory,"test","LOGS",runtestlogfile)
@@ -609,13 +652,13 @@ def main(*args):
                     # overwrite reference files
                     if options.overwrite:
                         os.system('cp %s %s' % (task.get_output_name(), output_file))
-                
+
                     # create directory where outputs are compared
                     if not os.path.isdir('compare'):
                         os.mkdir('compare')
-               
-                    task.apply_filter() 
-                
+
+                    task.apply_filter()
+
                     if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
                         # filter does not produce anything
                         if os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
@@ -651,7 +694,7 @@ def main(*args):
             if options.showdiff:
                 if result_text == 'FAIL':
                     os.system('more compare/%s.txt' % task.get_output_name())
-        
+
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print('')
                 print('cowardly gave up after the first problem')
@@ -659,7 +702,7 @@ def main(*args):
                 sys.exit(1)
 
             if options.timeout:
-                if global_elapsed > timeout:  
+                if global_elapsed > timeout:
                     error_message = '\n Giving up runtest. Total allowed time of %s seconds exceeded.\n' % timeout
                     print(error_message)
                     sys.exit(1)
@@ -694,38 +737,3 @@ def main(*args):
 # launch the main function
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
-
-
-
-
-
-
-
-
-
-
-
-
-foo = '''
-file     = 'inp_mol.out'
-file_ref = 'inp_mol.out_ref'
-
-f = open(file, 'r')
-s = f.readlines()
-f.close()
-
-f = open(file_ref, 'r')
-s_ref = f.readlines()
-f.close()
-
-regex = r'd/dg Alpha'        
-line_l = find_regex_plus_n(s, regex, 9)
-line_l_ref = find_regex_plus_n(s_ref, regex, 9)
-
-precision   = 1.0e-5
-ignore_sign = False
-
-ierr = extract_and_compare_floats(file, s, s_ref, line_l, line_l_ref, precision, ignore_sign)
-if ierr != 0:
-    print 'error in %s' % regex
-'''
