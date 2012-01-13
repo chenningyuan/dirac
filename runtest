@@ -238,22 +238,43 @@ def read_filter(filter_file):
         if (line.lower()[0:6] == 'nlines'):
             nr_lines = int(line.split(':')[0].split()[-1])
             start_string = line.split(line.split(':')[0] + ':')[-1].rstrip()
-            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
+            filter_task_l.append(filter_task(precision,      \
+                                             ignore_sign,    \
+                                             start_string,   \
+                                             start_is_regex, \
                                              plus_nr_lines=nr_lines))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:3] == 'to:'):
-            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
+            filter_task_l.append(filter_task(precision,      \
+                                             ignore_sign,    \
+                                             start_string,   \
+                                             start_is_regex, \
                                              end_string=line[3:].rstrip()))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:5] == 'tore:'):
-            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
-                                             end_string=line[5:].rstrip(),end_is_regex=True))
+            filter_task_l.append(filter_task(precision,                    \
+                                             ignore_sign,                  \
+                                             start_string,                 \
+                                             start_is_regex,               \
+                                             end_string=line[5:].rstrip(), \
+                                             end_is_regex=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:4] == 'toi:'):
-            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
-                                             end_string=line[4:].rstrip(),end_is_including=True))
+            filter_task_l.append(filter_task(precision,                    \
+                                             ignore_sign,                  \
+                                             start_string,                 \
+                                             start_is_regex,               \
+                                             end_string=line[4:].rstrip(), \
+                                             end_is_including=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:6] == 'toire:'):
-            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
-                                             end_string=line[6:].rstrip(),end_is_regex=True,end_is_including=True))
+            filter_task_l.append(filter_task(precision,                    \
+                                             ignore_sign,                  \
+                                             start_string,                 \
+                                             start_is_regex,               \
+                                             end_string=line[6:].rstrip(), \
+                                             end_is_regex=True,            \
+                                             end_is_including=True))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
 
     return filter_task_l
