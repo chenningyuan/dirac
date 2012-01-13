@@ -528,50 +528,69 @@ class run:
 
      def apply_filter(self):
 
-         # read filter and get list of filter tasks
-         filter_task_l = read_filter('result/filter')
+         filter_name = {}
+         if program_is_dirac:
+             output_suffix_l = ['out']
+             filter_name['out'] = 'filter'
+         if program_is_dalton:
+             # dalton has several outputs and thus several filters
+             output_suffix_l = ['out', 'stdout']
+             filter_name['out']    = 'filter.out'
+             filter_name['stdout'] = 'filter.stdout'
 
-#        read output and reference output
-         output     = open(self.get_output_name()).readlines()
-         output_ref = open('result/' + self.get_output_name()).readlines()
+         if program_is_dirac:
+             output_prefix = self.get_output_name().rstrip('.out')
+         if program_is_dalton:
+             output_prefix = '%s_%s' % (self.inp.rstrip('.dal'), self.mol.rstrip('.mol'))
 
          log_file = open('compare/%s.txt' % self.get_output_name(), 'w')
-         for filter_task in filter_task_l:
-             if filter_task.plus_nr_lines > 0:
-                 line_l     = find_string_plus_nr_lines(output,                    \
-                                                        filter_task.start_string,  \
-                                                        filter_task.plus_nr_lines, \
-                                                        is_regex=filter_task.start_is_regex)
-                 line_l_ref = find_string_plus_nr_lines(output_ref,                \
-                                                        filter_task.start_string,  \
-                                                        filter_task.plus_nr_lines, \
-                                                        is_regex=filter_task.start_is_regex)
-             else:
-                 line_l     = find_from_to(output,         \
-                                           filter_task.start_string,   \
-                                           filter_task.start_is_regex, \
-                                           filter_task.end_string,     \
-                                           filter_task.end_is_regex,   \
-                                           filter_task.end_is_including)
-                 line_l_ref = find_from_to(output_ref,     \
-                                           filter_task.start_string,   \
-                                           filter_task.start_is_regex, \
-                                           filter_task.end_string,     \
-                                           filter_task.end_is_regex,   \
-                                           filter_task.end_is_including)
 
+         for output_suffix in output_suffix_l:
+             output_name = output_prefix + '.' + output_suffix
 
-             # bad filter, did not find either start or end
-             if (line_l == [] or (-1 in line_l)):
-                 log_file.write('BAD FILTER\n')
-             else:
-                 extract_and_compare_floats(log_file,              \
-                                            output,                \
-                                            output_ref,            \
-                                            line_l,                \
-                                            line_l_ref,            \
-                                            filter_task.precision, \
-                                            filter_task.ignore_sign)
+             # read filter and get list of filter tasks
+             filter_task_l = read_filter('result/%s' % filter_name[output_suffix])
+            
+             # read output and reference output
+             output     = open(            output_name).readlines()
+             output_ref = open('result/' + output_name).readlines()
+            
+             for filter_task in filter_task_l:
+                 if filter_task.plus_nr_lines > 0:
+                     line_l     = find_string_plus_nr_lines(output,                    \
+                                                            filter_task.start_string,  \
+                                                            filter_task.plus_nr_lines, \
+                                                            is_regex=filter_task.start_is_regex)
+                     line_l_ref = find_string_plus_nr_lines(output_ref,                \
+                                                            filter_task.start_string,  \
+                                                            filter_task.plus_nr_lines, \
+                                                            is_regex=filter_task.start_is_regex)
+                 else:
+                     line_l     = find_from_to(output,         \
+                                               filter_task.start_string,   \
+                                               filter_task.start_is_regex, \
+                                               filter_task.end_string,     \
+                                               filter_task.end_is_regex,   \
+                                               filter_task.end_is_including)
+                     line_l_ref = find_from_to(output_ref,     \
+                                               filter_task.start_string,   \
+                                               filter_task.start_is_regex, \
+                                               filter_task.end_string,     \
+                                               filter_task.end_is_regex,   \
+                                               filter_task.end_is_including)
+            
+            
+                 # bad filter, did not find either start or end
+                 if (line_l == [] or (-1 in line_l)):
+                     log_file.write('BAD FILTER\n')
+                 else:
+                     extract_and_compare_floats(log_file,              \
+                                                output,                \
+                                                output_ref,            \
+                                                line_l,                \
+                                                line_l_ref,            \
+                                                filter_task.precision, \
+                                                filter_task.ignore_sign)
          log_file.close()
 
      def is_shell_command(self):
