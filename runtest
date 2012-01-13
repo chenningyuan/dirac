@@ -429,18 +429,14 @@ def main(*args):
     testname_0=None
     for task in l:
         
-	#print "task.text=",task.test
-        #testname_1=string.split(task.test, '/')[-1]
 	(head,tail)=os.path.split(task.test)
 	testname_1=tail
         open_new_log_file=(testname_0 != testname_1)
 
         if open_new_log_file : 
             global pam_output_file
-	    #print "testname_1=",testname_1
 	    runtestlogfile='runtest_'+testname_1+'.log'
             log_file=os.path.join(root_directory,"test","LOGS",runtestlogfile)
-	    #print "test log file",log_file
             backup(log_file)
             pam_output_file = open(log_file,'w', 0)
             pam_output_file.write(" runtest pam outputs \n\n ")
