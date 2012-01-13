@@ -195,29 +195,65 @@ def int32_run(s):
     return True
 
 class filter_task:
-     def __init__(self, precision, ignore_sign, start_string, end_string='', \
-                  start_is_regex = False, end_is_regex = False, plus_n_lines = 0):
-         self.precision      = precision
-         self.ignore_sign    = ignore_sign
-         self.start_string   = start_string
-         self.end_string     = end_string
-         self.start_is_regex = start_is_regex
-         self.end_is_regex   = end_is_regex
-         self.plus_n_lines   = plus_n_lines
+     def __init__(self, precision, ignore_sign, start_string, start_is_regex, \
+                  end_string='', end_is_regex=False, end_is_including=False, plus_nr_lines=0):
+         self.precision        = precision
+         self.ignore_sign      = ignore_sign
+         self.start_string     = start_string
+         self.start_is_regex   = start_is_regex
+         self.end_string       = end_string
+         self.end_is_regex     = end_is_regex
+         self.end_is_including = end_is_including
+         self.plus_nr_lines    = plus_nr_lines
+
+def set_filter_defaults():
+    precision         = 0.001
+    ignore_sign       = False
+    start_string      = ''
+    start_is_regex    = False
+    return (precision, ignore_sign, start_string, start_is_regex)
+
 
 def read_filter(filter_file):
+
     s = readlines_from_file(filter_file)
     filter_task_l = []
-    default_precision = 0.001
-    precision = default_precision
-    ignore_sign = False
+
+    (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+
     for line in s:
         if '$ERROR' in line:
             precision = float(line.split()[-1])
         if '$IGNORESIGN' in line:
             ignore_sign = True
-        filter_task_l.append(filter_task(precision, ignore_sign, 'raboof'))
+        if (line.lower()[0:5] == 'from:'):
+            start_string = line[5:].rstrip()
+        if (line.lower()[0:7] == 'fromre:'):
+            start_string = line[7:].rstrip()
+            start_is_regex = True
+        if (line.lower()[0:6] == 'nlines'):
+            nr_lines = int(line.split(':')[0].split()[-1])
+            start_string = line.split(line.split(':')[0] + ':')[-1].rstrip()
+            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
+                                             plus_nr_lines=nr_lines))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+        if (line.lower()[0:3] == 'to:'):
+            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
+                                             end_string=line[3:].rstrip()))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+        if (line.lower()[0:5] == 'tore:'):
+            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
+                                             end_string=line[5:].rstrip(),end_is_regex=True))
+        if (line.lower()[0:4] == 'toi:'):
+            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
+                                             end_string=line[4:].rstrip(),end_is_including=True))
+        if (line.lower()[0:6] == 'toire:'):
+            filter_task_l.append(filter_task(precision, ignore_sign, start_string, start_is_regex, \
+                                             end_string=line[6:].rstrip(),end_is_regex=True,end_is_including=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+
     return filter_task_l
+
 
 # create directory LOGS
 if not os.path.isdir('test/LOGS'):
@@ -339,9 +375,20 @@ class run:
          # read filter and get list of filter tasks
          filter_task_l = read_filter('result/filter')
 
-
-
-
+      # debug:
+      #  itask = 0
+      #  for filter_task in filter_task_l:
+      #      itask += 1
+      #      print 'task',             itask
+      #      print 'precision       ', filter_task.precision           
+      #      print 'ignore_sign     ', filter_task.ignore_sign           
+      #      print 'start_string    ', filter_task.start_string           
+      #      print 'start_is_regex  ', filter_task.start_is_regex           
+      #      print 'end_string      ', filter_task.end_string           
+      #      print 'end_is_regex    ', filter_task.end_is_regex           
+      #      print 'end_is_including', filter_task.end_is_including           
+      #      print 'plus_nr_lines   ', filter_task.plus_nr_lines           
+      #      print
 
          os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
                    % (self.get_output_name(), self.get_output_name()))
