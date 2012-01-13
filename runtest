@@ -363,6 +363,14 @@ def find_from_to(output,         \
 
 #-------------------------------------------------------------------------------
 
+def print_filtered_output(file_name, output, line_l):
+    f = open(file_name, 'w')
+    for line in line_l:
+        f.write(output[line])
+    f.close()
+
+#-------------------------------------------------------------------------------
+
 def find_string_plus_nr_lines(output, s, n, is_regex=False):
     """
     in:  output   a list of strings (= a file)
@@ -539,22 +547,22 @@ class run:
              filter_name['stdout'] = 'filter.stdout'
 
          if program_is_dirac:
-             output_prefix = self.get_output_name().rstrip('.out')
+             output_prefix = string.replace(self.get_output_name(), '.out', '')
          if program_is_dalton:
-             output_prefix = '%s_%s' % (self.inp.rstrip('.dal'), self.mol.rstrip('.mol'))
+             output_prefix = '%s_%s' % (string.replace(self.inp, '.dal', ''), string.replace(self.mol, '.mol', ''))
 
-         log_file = open('compare/%s.txt' % self.get_output_name(), 'w')
+         log_file = open('compare/%s.diff' % self.get_output_name(), 'w')
 
          for output_suffix in output_suffix_l:
              output_name = output_prefix + '.' + output_suffix
 
              # read filter and get list of filter tasks
              filter_task_l = read_filter('result/%s' % filter_name[output_suffix])
-            
+
              # read output and reference output
              output     = open(            output_name).readlines()
              output_ref = open('result/' + output_name).readlines()
-            
+
              for filter_task in filter_task_l:
                  if filter_task.plus_nr_lines > 0:
                      line_l     = find_string_plus_nr_lines(output,                    \
@@ -578,12 +586,14 @@ class run:
                                                filter_task.end_string,     \
                                                filter_task.end_is_regex,   \
                                                filter_task.end_is_including)
-            
-            
+
+
                  # bad filter, did not find either start or end
                  if (line_l == [] or (-1 in line_l)):
                      log_file.write('BAD FILTER\n')
                  else:
+                     print_filtered_output('compare/%s.own' % self.get_output_name(), output,     line_l)
+                     print_filtered_output('compare/%s.ref' % self.get_output_name(), output_ref, line_l_ref)
                      extract_and_compare_floats(log_file,              \
                                                 output,                \
                                                 output_ref,            \
@@ -718,11 +728,11 @@ def main(*args):
 
                     task.apply_filter()
 
-                    if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
+                    if os.path.getsize('compare/%s.diff' % task.get_output_name()) == 0:
                         result_text = 'OK'
                         nr_ok += 1
                     else:
-                        if 'BAD FILTER' in open('compare/%s.txt' % task.get_output_name()).read():
+                        if 'BAD FILTER' in open('compare/%s.diff' % task.get_output_name()).read():
                             # filter does not produce anything
                             result_text = 'BAD FILTER'
                             nr_bad_filter += 1
@@ -752,7 +762,7 @@ def main(*args):
 
             if options.showdiff:
                 if result_text == 'FAIL':
-                    os.system('more compare/%s.txt' % task.get_output_name())
+                    os.system('more compare/%s.diff' % task.get_output_name())
 
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print('')
