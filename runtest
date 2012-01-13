@@ -313,10 +313,6 @@ def extract_and_compare_floats(log_file,   \
             m = pd.sub('e', m)
             f_l_ref.append(float(m))
 
-    print f_l
-    print f_l_ref
-
-    ierr = 0
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
@@ -332,14 +328,10 @@ def extract_and_compare_floats(log_file,   \
             if abs(r_ref) > 1.0e-10:
                 rel_error /= r_ref
 
-            print abs(rel_error), precision
             if abs(rel_error) > precision:
                 print 'error: line=%i  found=%f  reference=%f  error=%f  precision=%f' % (i+ 1, r, r_ref, rel_error, precision)
-                ierr = 1
     else:
         print 'compare floats sizes do not match'
-        ierr = 2
-    return ierr
 
 #-------------------------------------------------------------------------------
 
