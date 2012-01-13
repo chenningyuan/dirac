@@ -323,10 +323,51 @@ def extract_and_compare_floats(log_file,   \
                 rel_error /= r_ref
 
             if abs(rel_error) > precision:
-                log_file.write('error: line=%i  found=%f  reference=%f  error=%f  precision=%f\n' % (line_l[i]+1, r, r_ref, rel_error, precision))
-                log_file.write(output[line_l[i]])
+                log_file.write('error: found=%20.16f reference=%20.16f\n' % (r, r_ref))
     else:
         log_file.write('compare floats sizes do not match\n')
+
+#-------------------------------------------------------------------------------
+
+def find_from_to(output,         \
+                 start_string,   \
+                 start_is_regex, \
+                 end_string,     \
+                 end_is_regex,   \
+                 end_is_including):
+
+    start_line = -1
+    if start_is_regex:
+        p = re.compile(r'.*%s' % start_string)
+        for i in range(len(output)):
+            if p.match(output[i]):
+                start_line = i
+                break
+    else:
+        for i in range(len(output)):
+            if start_string in output[i]:
+                start_line = i
+                break
+
+    end_line = -1
+    if end_is_regex:
+        p = re.compile(r'.*%s' % end_string)
+        for i in range(len(output)):
+            if p.match(output[i]):
+                end_line = i
+                break
+    else:
+        for i in range(len(output)):
+            if end_string in output[i]:
+                end_line = i
+                break
+
+    if end_is_including:
+        line_l = range(start_line, end_line+1)
+    else:
+        line_l = range(start_line, end_line)
+
+    return line_l
 
 #-------------------------------------------------------------------------------
 
@@ -339,7 +380,7 @@ def find_string_plus_nr_lines(output, s, n, is_regex=False):
     """
     line_l = []
     if is_regex:
-        p = re.compile(regex)
+        p = re.compile(s)
         for i in range(len(output)):
             if p.match(output[i]):
                 for j in range(n + 1):
@@ -488,6 +529,25 @@ class run:
                                                         filter_task.start_string,  \
                                                         filter_task.plus_nr_lines, \
                                                         is_regex=filter_task.start_is_regex)
+             else:
+                 line_l     = find_from_to(output,         \
+                                           filter_task.start_string,   \
+                                           filter_task.start_is_regex, \
+                                           filter_task.end_string,     \
+                                           filter_task.end_is_regex,   \
+                                           filter_task.end_is_including)
+                 line_l_ref = find_from_to(output_ref,     \
+                                           filter_task.start_string,   \
+                                           filter_task.start_is_regex, \
+                                           filter_task.end_string,     \
+                                           filter_task.end_is_regex,   \
+                                           filter_task.end_is_including)
+
+
+             # bad filter, did not find either start or end
+             if (line_l == [] or (-1 in line_l)):
+                 log_file.write('BAD FILTER\n')
+             else:
                  extract_and_compare_floats(log_file,              \
                                             output,                \
                                             output_ref,            \
@@ -623,16 +683,16 @@ def main(*args):
                     task.apply_filter()
 
                     if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
-                        # filter does not produce anything
-                        if os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
+                        result_text = 'OK'
+                        nr_ok += 1
+                    else:
+                        if 'BAD FILTER' in open('compare/%s.txt' % task.get_output_name()).read():
+                            # filter does not produce anything
                             result_text = 'BAD FILTER'
                             nr_bad_filter += 1
                         else:
-                            result_text = 'OK'
-                            nr_ok += 1
-                    else:
-                        result_text = 'FAIL'
-                        nr_failed += 1
+                            result_text = 'FAIL'
+                            nr_failed += 1
 
                 else:
                     if task.noref:
