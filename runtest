@@ -323,9 +323,10 @@ def extract_and_compare_floats(log_file,   \
                 rel_error /= r_ref
 
             if abs(rel_error) > precision:
-                print 'error: line=%i  found=%f  reference=%f  error=%f  precision=%f' % (i+ 1, r, r_ref, rel_error, precision)
+                log_file.write('error: line=%i  found=%f  reference=%f  error=%f  precision=%f\n' % (line_l[i]+1, r, r_ref, rel_error, precision))
+                log_file.write(output[line_l[i]])
     else:
-        print 'compare floats sizes do not match'
+        log_file.write('compare floats sizes do not match\n')
 
 #-------------------------------------------------------------------------------
 
@@ -476,7 +477,7 @@ class run:
          output     = open(self.get_output_name()).readlines()
          output_ref = open('result/' + self.get_output_name()).readlines()
 
-         log_file = open('compare/%s.txt' % self.get_output_name())
+         log_file = open('compare/%s.txt' % self.get_output_name(), 'w')
          for filter_task in filter_task_l:
              if filter_task.plus_nr_lines > 0:
                  line_l     = find_string_plus_nr_lines(output,                    \
@@ -495,15 +496,6 @@ class run:
                                             filter_task.precision, \
                                             filter_task.ignore_sign)
          log_file.close()
-
-       # os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
-       #           % (self.get_output_name(), self.get_output_name()))
-       # # apply the filter on reference output
-       # os.system('perl -X ../../utils/crep.pl result/%s result/filter > compare/%s.ref' \
-       #           % (self.get_output_name(), self.get_output_name()))
-       # # compare filtered result with reference
-       # os.system('perl -X ../../utils/bdrep.pl compare/%s.own compare/%s.ref > compare/%s.txt' \
-       #           % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
 
      def is_shell_command(self):
          return False
