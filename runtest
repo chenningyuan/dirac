@@ -308,13 +308,9 @@ def extract_and_compare_floats(log_file,   \
             if ignore_sign:
                 r     = abs(r)
                 r_ref = abs(r_ref)
-            rel_error = r - r_ref
+            error = r - r_ref
 
-#           avoid zero division
-            if abs(r_ref) > 1.0e-10:
-                rel_error /= r_ref
-
-            if abs(rel_error) > precision:
+            if abs(error) > precision:
                 log_file.write('error: found=%20.16f reference=%20.16f\n' % (r, r_ref))
     else:
         log_file.write('compare floats sizes do not match\n')
