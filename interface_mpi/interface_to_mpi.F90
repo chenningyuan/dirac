@@ -74,6 +74,11 @@ module interface_to_mpi
     module procedure interface_mpi_gather_r
   end interface
 
+  interface interface_mpi_allgather
+    module procedure interface_mpi_allgather_i
+    module procedure interface_mpi_allgather_r
+  end interface
+
   interface interface_mpi_send
     module procedure interface_mpi_send_i0
     module procedure interface_mpi_send_i1
@@ -1519,6 +1524,60 @@ contains
     call mpi_gather(x, ndim_i4, MPI_REAL8, y, disp_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
     call mpi_gather(x, ndim   , MPI_REAL8, y, disp   , MPI_REAL8, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_allgather_i(x,ndim,y,ndim2,communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x(*)
+    integer(kind=integer_kind) :: y(*)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: ndim2
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    ndim2_i4        = ndim2
+    communicator_i4 = communicator
+    call mpi_allgather(x, ndim_i4, my_MPI_INTEGER, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
+#else
+    call mpi_allgather(x, ndim   , my_MPI_INTEGER, y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_allgather_r(x,ndim,y,ndim2,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x(*)
+    real(8)                    :: y(*)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: ndim2
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    ndim2_i4        = ndim2
+    communicator_i4 = communicator
+    call mpi_allgather(x, ndim_i4, MPI_REAL8, y, ndim2_i4, MPI_REAL8, communicator_i4, ierr_i4)
+#else
+    call mpi_allgather(x, ndim   , MPI_REAL8, y, ndim2   , MPI_REAL8, communicator   , ierr   )
 #endif
 
   end subroutine
