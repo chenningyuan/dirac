@@ -32,12 +32,6 @@ if sys.version < '2.4':
 root_directory = os.path.realpath(__file__)[:-8]
 current_directory = os.path.realpath('.')
 
-def readlines_from_file(file_name):
-    f = open(file_name, 'r')
-    s = f.readlines()
-    f.close()
-    return s
-
 def extract_time(time_string):
 # extract time (in seconds) from the entering time string "hh:mm:ss"
 # returns time in secs
@@ -222,7 +216,7 @@ def set_filter_defaults():
 
 def read_filter(filter_file):
 
-    s = readlines_from_file(filter_file)
+    s = open(filter_file).readlines()
     filter_task_l = []
 
     (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
@@ -478,24 +472,9 @@ class run:
          # read filter and get list of filter tasks
          filter_task_l = read_filter('result/filter')
 
-  #   # debug:
-  #      itask = 0
-  #      for filter_task in filter_task_l:
-  #          itask += 1
-  #          print 'task',             itask
-  #          print 'precision       ', filter_task.precision
-  #          print 'ignore_sign     ', filter_task.ignore_sign
-  #          print 'start_string    ', filter_task.start_string
-  #          print 'start_is_regex  ', filter_task.start_is_regex
-  #          print 'end_string      ', filter_task.end_string
-  #          print 'end_is_regex    ', filter_task.end_is_regex
-  #          print 'end_is_including', filter_task.end_is_including
-  #          print 'plus_nr_lines   ', filter_task.plus_nr_lines
-  #          print
-
 #        read output and reference output
-         output     = readlines_from_file(self.get_output_name())
-         output_ref = readlines_from_file('result/' + self.get_output_name())
+         output     = open(self.get_output_name()).readlines()
+         output_ref = open('result/' + self.get_output_name()).readlines()
 
          log_file = open('compare/%s.txt' % self.get_output_name())
          for filter_task in filter_task_l:
