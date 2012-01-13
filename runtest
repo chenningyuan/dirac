@@ -359,14 +359,6 @@ def find_from_to(output,         \
 
 #-------------------------------------------------------------------------------
 
-def print_filtered_output(file_name, output, line_l):
-    f = open(file_name, 'w')
-    for line in line_l:
-        f.write(output[line])
-    f.close()
-
-#-------------------------------------------------------------------------------
-
 def find_string_plus_nr_lines(output, s, n, is_regex=False):
     """
     in:  output   a list of strings (= a file)
@@ -547,7 +539,9 @@ class run:
          if program_is_dalton:
              output_prefix = '%s_%s' % (string.replace(self.inp, '.dal', ''), string.replace(self.mol, '.mol', ''))
 
-         log_file = open('compare/%s.diff' % self.get_output_name(), 'w')
+         log_file   = open('compare/%s.diff' % self.get_output_name(), 'w')
+         own_result = open('compare/%s.own'  % self.get_output_name(), 'w')
+         ref_result = open('compare/%s.ref'  % self.get_output_name(), 'w')
 
          for output_suffix in output_suffix_l:
              output_name = output_prefix + '.' + output_suffix
@@ -588,8 +582,10 @@ class run:
                  if (line_l == [] or (-1 in line_l)):
                      log_file.write('BAD FILTER\n')
                  else:
-                     print_filtered_output('compare/%s.own' % self.get_output_name(), output,     line_l)
-                     print_filtered_output('compare/%s.ref' % self.get_output_name(), output_ref, line_l_ref)
+                     for line in line_l:
+                         own_result.write(output[line])
+                     for line in line_l_ref:
+                         ref_result.write(output_ref[line])
                      extract_and_compare_floats(log_file,              \
                                                 output,                \
                                                 output_ref,            \
@@ -598,6 +594,8 @@ class run:
                                                 filter_task.precision, \
                                                 filter_task.ignore_sign)
          log_file.close()
+         own_result.close()
+         ref_result.close()
 
      def is_shell_command(self):
          return False
