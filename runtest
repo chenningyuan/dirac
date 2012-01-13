@@ -496,14 +496,14 @@ class run:
                                             filter_task.ignore_sign)
          log_file.close()
 
-         os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
-                   % (self.get_output_name(), self.get_output_name()))
-         # apply the filter on reference output
-         os.system('perl -X ../../utils/crep.pl result/%s result/filter > compare/%s.ref' \
-                   % (self.get_output_name(), self.get_output_name()))
-         # compare filtered result with reference
-         os.system('perl -X ../../utils/bdrep.pl compare/%s.own compare/%s.ref > compare/%s.txt' \
-                   % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
+       # os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
+       #           % (self.get_output_name(), self.get_output_name()))
+       # # apply the filter on reference output
+       # os.system('perl -X ../../utils/crep.pl result/%s result/filter > compare/%s.ref' \
+       #           % (self.get_output_name(), self.get_output_name()))
+       # # compare filtered result with reference
+       # os.system('perl -X ../../utils/bdrep.pl compare/%s.own compare/%s.ref > compare/%s.txt' \
+       #           % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
 
      def is_shell_command(self):
          return False
