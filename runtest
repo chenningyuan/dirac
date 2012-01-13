@@ -467,8 +467,14 @@ class run:
              command = 'python ' + launcher_command + ' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.launcher_flags)
          if program_is_dalton:
              launcher_command = os.path.join(root_directory, '../build/dalton')
-             command = launcher_command + ' -d %s %s %s 1> stdout 2> stderr' % (self.launcher_flags, self.inp, self.mol)
-         
+             output_prefix = '%s_%s' % (string.replace(self.inp, '.dal', ''), string.replace(self.mol, '.mol', ''))
+             command = launcher_command + \
+                 ' -d %s %s %s 1> %s.stdout 2> %s.stderr' % (self.launcher_flags, \
+                                                             self.inp,            \
+                                                             self.mol,            \
+                                                             output_prefix,       \
+                                                             output_prefix)
+
          if program_is_dirac:
              if sys.platform != 'win32':
                  p = subprocess.Popen(command,
