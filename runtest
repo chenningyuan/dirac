@@ -234,7 +234,7 @@ def read_filter(filter_file):
                                              ignore_sign,    \
                                              start_string,   \
                                              start_is_regex, \
-                                             plus_nr_lines=nr_lines-1))
+                                             plus_nr_lines=nr_lines))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:3] == 'to:'):
             filter_task_l.append(filter_task(precision,      \
