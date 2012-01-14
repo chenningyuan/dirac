@@ -288,6 +288,7 @@ def extract_and_compare_floats(log_file,   \
     """
 
     p  = re.compile(r'[0-9\.eEdD\+\-]+', re.DOTALL)
+  # p  = re.compile(r'[-+]?(\d+(\.\d*)?|\.\d+)([dDeE][-+]?\d+)?', re.DOTALL)
     pd = re.compile(r'[dD]')
 
     f_l     = []
