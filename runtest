@@ -174,15 +174,17 @@ def int32_run(s):
 
 class filter_task:
      def __init__(self, precision, ignore_sign, start_string, start_is_regex, \
-                  end_string='', end_is_regex=False, end_is_including=False, plus_nr_lines=0):
-         self.precision        = precision
-         self.ignore_sign      = ignore_sign
-         self.start_string     = start_string
-         self.start_is_regex   = start_is_regex
-         self.end_string       = end_string
-         self.end_is_regex     = end_is_regex
-         self.end_is_including = end_is_including
-         self.plus_nr_lines    = plus_nr_lines
+                  end_string='', end_is_regex=False, end_is_including=False, plus_nr_lines=0, \
+                  compare_everything=False):
+         self.precision          = precision
+         self.ignore_sign        = ignore_sign
+         self.start_string       = start_string
+         self.start_is_regex     = start_is_regex
+         self.end_string         = end_string
+         self.end_is_regex       = end_is_regex
+         self.end_is_including   = end_is_including
+         self.plus_nr_lines      = plus_nr_lines
+         self.compare_everything = compare_everything
 
 #-------------------------------------------------------------------------------
 
@@ -209,6 +211,13 @@ def read_filter(filter_file):
             precision = float(line.split()[-1])
         if '$IGNORESIGN' in line:
             ignore_sign = True
+        if (line.lower()[0:10] == 'everything'):
+            filter_task_l.append(filter_task(precision,      \
+                                             ignore_sign,    \
+                                             start_string,   \
+                                             start_is_regex, \
+                                             compare_everything=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:5] == 'from:'):
             start_string = line[5:].rstrip()
         if (line.lower()[0:7] == 'fromre:'):
@@ -540,7 +549,10 @@ class run:
              output_ref = open('result/' + output_name).readlines()
 
              for filter_task in filter_task_l:
-                 if filter_task.plus_nr_lines > 0:
+                 if filter_task.compare_everything:
+                     line_l     = range(output)
+                     line_l_ref = range(output_ref)
+                 elif filter_task.plus_nr_lines > 0:
                      line_l     = find_string_plus_nr_lines(output,                    \
                                                             filter_task.start_string,  \
                                                             filter_task.plus_nr_lines, \
