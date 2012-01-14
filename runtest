@@ -295,11 +295,14 @@ def extract_and_compare_floats(log_file,   \
             if m.isdigit():
                 f_l.append(float(m))
     for line in line_l_ref:
-        for m in p.findall(output_ref[line]):
-#           in fortran output we can have 1.0d0 but python understands 1.0e0
-            m = pd.sub('e', m)
-            if m.isdigit():
-                f_l_ref.append(float(m))
+        try:
+            for m in p.findall(output_ref[line]):
+#               in fortran output we can have 1.0d0 but python understands 1.0e0
+                m = pd.sub('e', m)
+                if m.isdigit():
+                    f_l_ref.append(float(m))
+        except IndexError:
+            pass
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
@@ -588,7 +591,10 @@ class run:
                      for line in line_l:
                          own_result.write(output[line])
                      for line in line_l_ref:
-                         ref_result.write(output_ref[line])
+                         try:
+                             ref_result.write(output_ref[line])
+                         except IndexError:
+                             pass
                      extract_and_compare_floats(log_file,              \
                                                 output,                \
                                                 output_ref,            \
