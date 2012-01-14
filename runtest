@@ -580,7 +580,6 @@ class run:
                                                filter_task.end_is_regex,   \
                                                filter_task.end_is_including)
 
-
                  # bad filter, did not find either start or end
                  if (line_l == [] or (-1 in line_l)):
                      log_file.write('BAD FILTER\n')
@@ -588,10 +587,7 @@ class run:
                      for line in line_l:
                          own_result.write(output[line])
                      for line in line_l_ref:
-                         try:
-                             ref_result.write(output_ref[line])
-                         except IndexError:
-                             pass
+                         ref_result.write(output_ref[line])
                      extract_and_compare_floats(log_file,              \
                                                 output,                \
                                                 output_ref,            \
