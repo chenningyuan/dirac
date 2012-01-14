@@ -292,13 +292,31 @@ def extract_and_compare_floats(log_file,   \
         for m in p.findall(output[line]):
 #           in fortran output we can have 1.0d0 but python understands 1.0e0
             m = pd.sub('e', m)
-            f_l.append(float(m))
+            #miro: it could catch time string, like, 0.12400794s, remove 's', and various type of strings...
+            #m = m.replace('s','')           
+            #m = m.replace('e|','')           
+            #m = m.replace('g|','')           
+            #m = m.replace('p','')           
+            #m = m.replace('f','')           
+            #m = m.replace('g','')           
+            #m = m.replace('th','')           
+            #f_l.append(float(m))
+            if m.isdigit():
+                f_l_ref.append(float(m))
     for line in line_l_ref:
         for m in p.findall(output_ref[line]):
 #           in fortran output we can have 1.0d0 but python understands 1.0e0
             m = pd.sub('e', m)
-            f_l_ref.append(float(m))
-
+            #miro: it could catch time string, like, 0.12400794s, remove 's', and various type of strings...
+            #m = m.replace('s','')           
+            #m = m.replace('e|','')           
+            #m = m.replace('g|','')           
+            #m = m.replace('p','')           
+            #m = m.replace('f','')           
+            #m = m.replace('g','')           
+            #m = m.replace('th','')           
+            if m.isdigit():
+                f_l_ref.append(float(m))
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
