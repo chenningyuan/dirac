@@ -203,6 +203,8 @@ def read_filter(filter_file):
     (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
 
     for line in s:
+        # the syntax ($ERROR, $IGNORESIGN, ...) is for backwards copmatibility
+        # with DIRAC's old perl scripts - if you change it here, please change it globally in DIRAC repo
         if '$ERROR' in line:
             precision = float(line.split()[-1])
         if '$IGNORESIGN' in line:
