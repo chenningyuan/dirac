@@ -287,8 +287,18 @@ def extract_and_compare_floats(log_file,   \
          line_l_ref  list of integers that correspond to line numbers in python numbering
     """
 
-    p  = re.compile(r'[0-9\.eEdD\+\-]+', re.DOTALL)
-  # p  = re.compile(r'[-+]?(\d+(\.\d*)?|\.\d+)([dDeE][-+]?\d+)?', re.DOTALL)
+    numeric_const_pattern = r"""
+    [-+]? # optional sign
+    (?:
+        (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
+        |
+        (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
+    )
+    # followed by optional exponent part if desired
+    (?: [EeDd] [+-]? \d+ ) ?
+    """
+
+    p  = re.compile(numeric_const_pattern, re.VERBOSE)
     pd = re.compile(r'[dD]')
 
     f_l     = []
