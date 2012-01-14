@@ -389,12 +389,12 @@ def find_string_plus_nr_lines(output, s, n, is_regex=False):
         p = re.compile(s)
         for i in range(len(output)):
             if p.match(output[i]):
-                for j in range(n + 1):
+                for j in range(n):
                     line_l.append(i + j)
     else:
         for i in range(len(output)):
             if s in output[i]:
-                for j in range(n + 1):
+                for j in range(n):
                     line_l.append(i + j)
     return line_l
 
