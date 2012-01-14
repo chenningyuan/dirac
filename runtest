@@ -283,7 +283,7 @@ def extract_and_compare_floats(log_file,   \
          line_l_ref  list of integers that correspond to line numbers in python numbering
     """
 
-    p  = re.compile(r'[+-]*[0-9]+[.]*[0-9]*[d|d-|d+|D|D-|D+|e|e-|e+|E|E-|E+]*[0-9]*', re.DOTALL)
+    p  = re.compile(r'[0-9\.eEdD\+\-]+', re.DOTALL)
     pd = re.compile(r'[dD]')
 
     f_l     = []
@@ -292,24 +292,21 @@ def extract_and_compare_floats(log_file,   \
         for m in p.findall(output[line]):
 #           in fortran output we can have 1.0d0 but python understands 1.0e0
             m = pd.sub('e', m)
-            if m.isdigit():
+            if re.match(r'[0-9]+', m):
                 f_l.append(float(m))
     for line in line_l_ref:
-        try:
-            for m in p.findall(output_ref[line]):
-#               in fortran output we can have 1.0d0 but python understands 1.0e0
-                m = pd.sub('e', m)
-                if m.isdigit():
-                    f_l_ref.append(float(m))
-        except IndexError:
-            pass
+        for m in p.findall(output_ref[line]):
+#           in fortran output we can have 1.0d0 but python understands 1.0e0
+            m = pd.sub('e', m)
+            if re.match(r'[0-9]+', m):
+                f_l_ref.append(float(m))
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
             r_ref = f_l_ref[i]
 
-#           if ignore sign take absolute values
             if ignore_sign:
+                # if ignore sign take absolute values
                 r     = abs(r)
                 r_ref = abs(r_ref)
             error = r - r_ref
