@@ -46,17 +46,6 @@ def extract_time(time_string):
     total_time=secs+(60*mins)+(60*60*hours)
     return total_time
 
-def backup(file):
-    import os.path, shutil
-    max_depth = 7
-    for i in range(max_depth-1, -1, -1):
-        file_from = file + '.' + str(i)
-        file_to   = file + '.' + str(i+1)
-        if (os.path.isfile(file_from)):
-            shutil.copy(file_from, file_to)
-    if (os.path.isfile(file)):
-        shutil.copy(file, file + '.0')
-
 # define example usage
 
 usage = '''
@@ -385,12 +374,6 @@ def find_string_plus_nr_lines(output, s, n, is_regex=False):
 
 #-------------------------------------------------------------------------------
 
-# create directory LOGS
-if not os.path.isdir('test/LOGS'):
-    os.mkdir('test/LOGS')
-
-global launcher_output_file
-
 class run:
      def __init__(self, test, line, kind):
          self.test = test
@@ -491,8 +474,6 @@ class run:
 
          if program_is_dirac:
              launcher_output = p.communicate()[0]
-             global launcher_output_file
-             launcher_output_file.write(launcher_output)
              normal_termination = ('exit           : normal' in launcher_output)
          if program_is_dalton:
              normal_termination = ('Total wall time used in DALTON' in open(self.get_output_name()).read())
@@ -689,22 +670,7 @@ def main(*args):
     nr_bad_filter    = 0
     global_elapsed   = 0.0
 
-    testname_0=None
     for task in l:
-
-        (head,tail)=os.path.split(task.test)
-        testname_1=tail
-        open_new_log_file=(testname_0 != testname_1)
-
-        if open_new_log_file :
-            global launcher_output_file
-            runtestlogfile='runtest_'+testname_1+'.log'
-            log_file=os.path.join(root_directory,"test","LOGS",runtestlogfile)
-            backup(log_file)
-            launcher_output_file = open(log_file,'w', 0)
-            launcher_output_file.write(" runtest launcher outputs \n\n ")
-            #TODO: how to ensure closing of launcher_output_file files ?
-
         if task.is_shell_command():
             task.execute()
         else:
@@ -771,8 +737,6 @@ def main(*args):
                     error_message = '\n Giving up runtest. Total allowed time of %s seconds exceeded.\n' % timeout
                     print(error_message)
                     sys.exit(1)
-
-        testname_0 = testname_1
 
     print('')
     print('summary: %5i ok'                     % nr_ok)
