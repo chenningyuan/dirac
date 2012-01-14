@@ -307,14 +307,12 @@ def extract_and_compare_floats(log_file,   \
         for m in p.findall(output[line]):
 #           in fortran output we can have 1.0d0 but python understands 1.0e0
             m = pd.sub('e', m)
-            if re.match(r'[0-9]+', m):
-                f_l.append(float(m))
+            f_l.append(float(m))
     for line in line_l_ref:
         for m in p.findall(output_ref[line]):
 #           in fortran output we can have 1.0d0 but python understands 1.0e0
             m = pd.sub('e', m)
-            if re.match(r'[0-9]+', m):
-                f_l_ref.append(float(m))
+            f_l_ref.append(float(m))
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
@@ -590,10 +588,10 @@ class run:
                                                filter_task.end_is_regex,   \
                                                filter_task.end_is_including)
 
-                 # bad filter, did not find either start or end
-                 if (line_l == [] or (-1 in line_l)):
-                     log_file.write('BAD FILTER\n')
-                 else:
+                 if not (line_l == [] or (-1 in line_l)):
+                     # did not filter anything
+                     # this can happen since sometimes we use same filter
+                     # for very different outputs
                      for line in line_l:
                          own_result.write(output[line])
                      for line in line_l_ref:
@@ -719,14 +717,14 @@ def main(*args):
 
                     task.apply_filter()
 
-                    if os.path.getsize('compare/%s.diff' % task.get_output_name()) == 0:
-                        result_text = 'OK'
-                        nr_ok += 1
+                    if os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
+                        # filter does not produce anything
+                        result_text = 'BAD FILTER'
+                        nr_bad_filter += 1
                     else:
-                        if 'BAD FILTER' in open('compare/%s.diff' % task.get_output_name()).read():
-                            # filter does not produce anything
-                            result_text = 'BAD FILTER'
-                            nr_bad_filter += 1
+                        if os.path.getsize('compare/%s.diff' % task.get_output_name()) == 0:
+                            result_text = 'OK'
+                            nr_ok += 1
                         else:
                             result_text = 'FAIL'
                             nr_failed += 1
