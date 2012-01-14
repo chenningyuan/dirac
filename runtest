@@ -144,6 +144,14 @@ if len(sys.argv) == 1:
         print(parser.format_help().strip())
         sys.exit()
 
+if options.individual:
+    if options.individual.split() == ['all']:
+        options.all        = True
+        options.individual = False
+    else:
+        for w in options.individual.split():
+            list_of_tests_to_run.append(os.path.join(root_directory, 'test', w))
+
 if options.all or (options.quick and not options.individual):
     file = root_directory + '/test/list_of_tests'
     if os.path.isfile(file):
@@ -154,10 +162,6 @@ if options.all or (options.quick and not options.individual):
     else:
         print('file %s does not exist' % file)
         sys.exit()
-
-if options.individual:
-    for w in options.individual.split():
-        list_of_tests_to_run.append(os.path.join(root_directory, 'test', w))
 
 if options.timeout:
     # extract the total time in seconds
