@@ -305,16 +305,22 @@ def extract_and_compare_floats(log_file,   \
     f_l_ref = []
     for x in line_l:
         for line in x:
-            for m in p.findall(output[line]):
-#               in fortran output we can have 1.0d0 but python understands 1.0e0
-                m = pd.sub('e', m)
-                f_l.append(float(m))
+            for w in output[line].split():
+                # do not consider words like TzB1g
+                # otherwise we would extract 1 later
+                if re.match(r'[0-9\.eEdD\+\-]+', w):
+                    # apply floating point regex
+                    for m in p.findall(w):
+                         # substitute dD by e
+                         m = pd.sub('e', m)
+                         f_l.append(float(m))
     for x in line_l_ref:
         for line in x:
-            for m in p.findall(output_ref[line]):
-#               in fortran output we can have 1.0d0 but python understands 1.0e0
-                m = pd.sub('e', m)
-                f_l_ref.append(float(m))
+            for w in output_ref[line].split():
+                if re.match(r'[0-9\.eEdD\+\-]+', w):
+                    for m in p.findall(w):
+                         m = pd.sub('e', m)
+                         f_l_ref.append(float(m))
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
@@ -325,6 +331,10 @@ def extract_and_compare_floats(log_file,   \
                 r     = abs(r)
                 r_ref = abs(r_ref)
             error = r - r_ref
+
+#           # avoid zero division and complaints about numerically noisy zeros
+            if abs(r_ref) > 1.0e-10:
+                error /= r_ref
 
             if abs(error) > precision:
                 log_file.write('error: found=%20.16f reference=%20.16f\n' % (r, r_ref))
