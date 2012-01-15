@@ -188,11 +188,34 @@ def int32_run(s):
                 return False
     return True
 
+# write the html header
+
+os.chdir(root_directory)
+html_header = '''
+<HTML>
+<TITLE> Error report for DIRAC test runs </TITLE>
+<BODY TEXT="#FFFFFF" BGCOLOR="#000000">
+<PRE>
+<H1>drep output by color</H1>
+
+<p>The colors are determined using relative errors for numbers larger than 0.001,
+and absolute errors otherwise.</p>
+<p>Only those digits that actually differ are yellow or red, the others are white.</p>
+<p>The coloring scheme used:</p>
+1.23456789  white: difference can be neglected (less than 1e-12)
+1.23456<FONT COLOR="#FFFF00">789</FONT> yellow: difference probably neglegible (less than 0.001)
+1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
+<p> </p><hr><p> </p>'''
+
 # create directory LOGS
 if not os.path.isdir('test/LOGS'):
     os.mkdir('test/LOGS')
 
 global pam_output_file 
+backup('test/LOGS/runtest.htm')
+f = open('test/LOGS/runtest.htm', 'w')
+f.write(html_header)
+f.close()
 
 class run:
      def __init__(self, test, line, kind):
