@@ -1,14 +1,2 @@
 $ERROR 1.E-7
-Nlines 28:d/df d/db G-prime-noL
-
-$ERROR 1.E-7
-Nlines 28:d/df d/db A-tensor-noL
-
-$ERROR 1.E-7
-Nlines 28:d/df d/db G-prime-Lon
-
-$ERROR 1.E-7
-Nlines 28:d/df d/db A-tensor-Lon
-
-$ERROR 1.E-7
 Nlines 12:                London Cotton-mouton constant
