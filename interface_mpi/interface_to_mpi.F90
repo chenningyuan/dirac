@@ -53,6 +53,7 @@ module interface_to_mpi
   public interface_mpi_get_processor_name
   public interface_mpi_init
   public interface_mpi_finalize
+  public interface_mpi_abort
 
   interface interface_mpi_bcast
     module procedure interface_mpi_bcast_i0
@@ -1745,6 +1746,28 @@ contains
     call mpi_finalize(ierr_i4)
 #else
     call mpi_finalize(ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_abort(communicator, error_code)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: error_code
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: error_code_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    communicator_i4 = communicator
+    error_code_i4   = error_code
+    call mpi_abort(communicator_i4, error_code_i4, ierr_i4)
+#else
+    call mpi_abort(communicator   , error_code   , ierr   )
 #endif
 
   end subroutine
