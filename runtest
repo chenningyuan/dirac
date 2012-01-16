@@ -309,7 +309,7 @@ def extract_and_compare_floats(log_file,   \
             for w in output[line].split():
                 # do not consider words like TzB1g
                 # otherwise we would extract 1 later
-                if re.match(r'[0-9\.eEdD\+\-]+', w):
+                if re.match(r'^[0-9\.eEdD\+\-]*$', w):
                     # apply floating point regex
                     for m in p.findall(w):
                          # substitute dD by e
@@ -320,7 +320,7 @@ def extract_and_compare_floats(log_file,   \
     for x in line_l_ref:
         for line in x:
             for w in output_ref[line].split():
-                if re.match(r'[0-9\.eEdD\+\-]+', w):
+                if re.match(r'^[0-9\.eEdD\+\-]*$', w):
                     for m in p.findall(w):
                          m = pd.sub('e', m)
                          f_l_ref.append(float(m))
