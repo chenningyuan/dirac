@@ -335,14 +335,19 @@ def extract_and_compare_floats(log_file,   \
                 r_ref = abs(r_ref)
             error = r - r_ref
 
-            rel_error = error
-            if abs(r_ref) > 1.0e-40:
-                rel_error /= r_ref
-
-            if abs(rel_error) > precision:
-                log_file.write('line %i: %s' % (f_to_line[i]+1, output[f_to_line[i]]))
-                log_file.write('            relative error=%19.16f\n' % rel_error)
-                log_file.write('desired relative precision=%19.16f\n' % precision)
+            if program_is_dirac:
+                rel_error = error
+                if abs(r_ref) > 1.0e-40:
+                    rel_error /= r_ref
+                if abs(rel_error) > precision:
+                    log_file.write('line %i: %s' % (f_to_line[i]+1, output[f_to_line[i]]))
+                    log_file.write('            relative error=%19.16f\n' % rel_error)
+                    log_file.write('desired relative precision=%19.16f\n' % precision)
+            if program_is_dalton:
+                if abs(error) > precision:
+                    log_file.write('line %i: %s' % (f_to_line[i]+1, output[f_to_line[i]]))
+                    log_file.write('            error=%19.16f\n' % error)
+                    log_file.write('desired precision=%19.16f\n' % precision)
     else:
         log_file.write('compare floats sizes do not match\n')
         log_file.write('this means that output and reference yield different number of results\n')
@@ -530,7 +535,10 @@ class run:
          """
           print result of the test
          """
-         inp_file_strip = string.replace(self.inp,       '.inp', '')
+         if program_is_dirac:
+             inp_file_strip = string.replace(self.inp,       '.inp', '')
+         if program_is_dalton:
+             inp_file_strip = string.replace(self.inp,       '.dal', '')
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
 
@@ -573,8 +581,8 @@ class run:
 
              for filter_task in filter_task_l:
                  if filter_task.compare_everything:
-                     line_l     = [range(output)]
-                     line_l_ref = [range(output_ref)]
+                     line_l     = [range(len(output))]
+                     line_l_ref = [range(len(output_ref))]
                  elif filter_task.plus_nr_lines > 0:
                      line_l     = find_string_plus_nr_lines(output,                    \
                                                             filter_task.start_string,  \
