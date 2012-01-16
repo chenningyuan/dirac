@@ -71,16 +71,8 @@ IF( IPAREX .gt. 0 )THEN
   call interface_mpi_comm_rank(global_communicator, MYTID)
 ! determine size of mpi_comm_world
   call interface_mpi_comm_size(global_communicator, NUMPROC)
-
-! synchronize loosely, so the nodes may print to output before the master
-! goes on printing header ...
-  call interface_mpi_barrier(global_communicator)
 !
 ! we count the number of slave nodes, subtract the master
-!
-! at present this subtraction is still done in the subroutine DIRAC (dirac.F)
-! NUMNOD = NUMPROC
-! SK - Sep 08: subtraction is now done here.
   NUMNOD = NUMPROC - 1
 !
   PARCAL = .TRUE.
@@ -339,6 +331,7 @@ use interface_to_mpi
       END IF
       CALL interface_MPI_BARRIER(global_communicator)
     END DO
+     print *, ' itask 1 performed by MYTID',MYTID,NUMNOD
   ELSE IF( ITASK .eq. 2 )THEN
     CALL interface_MPI_GET_PROCESSOR_NAME(HOST,LHOST)
     IF( MYTID .eq. MPARID ) THEN

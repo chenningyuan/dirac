@@ -995,10 +995,8 @@ C***********************************************************************
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
-C
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
       LOGICAL NEWTASK
 C
 C
@@ -1041,13 +1039,14 @@ C
 ! then one can define VAR_SLEEPING SLAVES.
 ! If set, then the slaves test once per second if there
 ! is a new task (because of the CALL SLEEP(1))
-      call interface_mpi_iprobe(MPARID,27,NEWTASK,MPI_COMM_WORLD,ISTAT)
+      call interface_mpi_iprobe(MPARID,27,NEWTASK,global_communicator,
+     &                          ISTAT)
       IF (NEWTASK) THEN
 chj      write (0,*) 'mpi_iprobe true for node',mytid
 chj      write (0,*) 'istatus(source,tag,error):',
 chj  &     ( istatus(i),i=1,3)
-         CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(ITASK,1,MPARID,27,
+     &                           global_communicator)
 chj      write (0,*) ' itask, node',itask,mytid
 chj      write (0,*) 'istatus(source,tag,error):',
 chj  &     ( istatus(i),i=1,3)
@@ -1058,8 +1057,8 @@ chj  &     ( istatus(i),i=1,3)
 #else
 C
 Csk      write(6,*) 'node will recieve itask',MYTID
-      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
-     &              MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(ITASK,1,MPARID,27,
+     &                           global_communicator)
 Csk      write(6,*) 'node has recieved itask',MYTID,itask
 #endif
 C
@@ -1157,15 +1156,13 @@ C     of work during a calculation (i.e. : if one parallel module calls the
 C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
-
+      use interface_to_mpi
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 C
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 C
 C
@@ -1177,8 +1174,8 @@ C
 C
  100  CONTINUE
 C
-      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
-     &              MPI_COMM_WORLD,ISTAT,IERR)
+      CALL interface_MPI_RECV(ITASK,1,MPARID,27,
+     &                        global_communicator)
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -1276,23 +1273,23 @@ C ITASK .eq. 0: send slaves to sleep ("0" makes sure they are in menu)
 C ITASK .lt. 0: release slaves from current task and send them to sleep
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 C
 C
 #if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
 C
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
-         CALL MPI_BCAST(ITASK,1,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_BCAST(ITASK,1,MPARID,
+     &                            global_communicator)
       ELSE
 C        slave should be in main menu, ready to receive task
          DO NODE = 1,NUMNOD
-            CALL MPI_SEND(ITASK,1,my_MPI_INTEGER,NODE,27,
-     &           MPI_COMM_WORLD,IERR)
+            CALL interface_MPI_SEND(ITASK,1,NODE,27,
+     &                              global_communicator)
          END DO
       END IF
 

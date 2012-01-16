@@ -1622,10 +1622,10 @@ contains
     integer(kind=4)            :: is_size_i4
 !-------------------------------------------------------------------------------
     communicator_i4 = communicator
-    call mpi_comm_rank(communicator_i4, is_size_i4, ierr_i4)
+    call mpi_comm_size(communicator_i4, is_size_i4, ierr_i4)
     is_size         = is_size_i4
 #else
-    call mpi_comm_rank(communicator   , is_size      , ierr   )
+    call mpi_comm_size(communicator   , is_size      , ierr   )
 #endif
 
   end subroutine
