@@ -63,7 +63,11 @@ if (BLAS_INCLUDE_DIRS AND BLAS_LIBRARIES)
 endif ()
 
 if (NOT BLAS_FIND_COMPONENTS) 
-    set(BLAS_FIND_COMPONENTS MKL Atlas ACML default)
+    if(ENABLE_64BIT_INTEGERS)
+        set(BLAS_FIND_COMPONENTS MKL)
+    else()
+        set(BLAS_FIND_COMPONENTS MKL Atlas ACML default)
+    endif()
 endif()
 
 function(find_blas)
