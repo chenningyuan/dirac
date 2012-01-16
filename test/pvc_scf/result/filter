@@ -1,3 +1,2 @@
-$ERROR 1.E-10
-
-Nlines 11:* Parity violation - chirality E(PV)
+$ERROR 1.E-5
+Nlines 1:Total EPV =
