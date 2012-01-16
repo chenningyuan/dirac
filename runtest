@@ -193,7 +193,7 @@ class filter_task:
 #-------------------------------------------------------------------------------
 
 def set_filter_defaults():
-    precision         = 0.001
+    precision         = 0.0001
     ignore_sign       = False
     start_string      = ''
     start_is_regex    = False
@@ -301,8 +301,9 @@ def extract_and_compare_floats(log_file,   \
     p  = re.compile(numeric_const_pattern, re.VERBOSE)
     pd = re.compile(r'[dD]')
 
-    f_l     = []
-    f_l_ref = []
+    f_l       = []
+    f_l_ref   = []
+    f_to_line = []
     for x in line_l:
         for line in x:
             for w in output[line].split():
@@ -314,6 +315,8 @@ def extract_and_compare_floats(log_file,   \
                          # substitute dD by e
                          m = pd.sub('e', m)
                          f_l.append(float(m))
+                         f_to_line.append(line)
+
     for x in line_l_ref:
         for line in x:
             for w in output_ref[line].split():
@@ -332,14 +335,17 @@ def extract_and_compare_floats(log_file,   \
                 r_ref = abs(r_ref)
             error = r - r_ref
 
-#           # avoid zero division and complaints about numerically noisy zeros
-            if abs(r_ref) > 1.0e-10:
-                error /= r_ref
+            rel_error = error
+            if abs(r_ref) > 1.0e-40:
+                rel_error /= r_ref
 
-            if abs(error) > precision:
-                log_file.write('error: found=%20.16f reference=%20.16f\n' % (r, r_ref))
+            if abs(rel_error) > precision:
+                log_file.write('line %i: %s' % (f_to_line[i]+1, output[f_to_line[i]]))
+                log_file.write('            relative error=%19.16f\n' % rel_error)
+                log_file.write('desired relative precision=%19.16f\n' % precision)
     else:
         log_file.write('compare floats sizes do not match\n')
+        log_file.write('this means that output and reference yield different number of results\n')
         log_file.write(str(line_l))
         log_file.write(str(line_l_ref))
 
