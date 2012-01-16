@@ -1,21 +1,10 @@
 #!/usr/bin/env python
 
-'''
-runtest - script to run tests and compare results with reference data
-(c) Radovan Bast 2010 <radovan.bast@irsamc.ups-tlse.fr>
+# runtest - script to run tests and compare results with reference data
+# (c) Radovan Bast (radovan.bast at irsamc.ups-tlse.fr) and friends 2010
+# licensed under the GNU Lesser General Public License
 
-menu format: free form
-             blank lines are ignored
-             lines starting with "#" are ignored
-             sections can start with "quick" or "regular" or "benchmark"
-             "regular" is default and can be omitted
-             shell commands are triggered with "sh"
-
-how to add new tests to the testset "--all":
-             developers: add them to pamadm which generates test/list_of_tests
-             users:      add them to test/list_of_tests
-'''
-
+import re
 import os
 import sys
 import string
@@ -23,6 +12,10 @@ import subprocess
 import time
 import signal
 from optparse import OptionParser, OptionGroup
+
+# global variables
+program_is_dirac  = True
+program_is_dalton = False
 
 if sys.version < '2.4':
     print('runtest requires python version >= 2.4')
@@ -52,17 +45,6 @@ def extract_time(time_string):
     # sum up the total time and return
     total_time=secs+(60*mins)+(60*60*hours)
     return total_time
-
-def backup(file):
-    import os.path, shutil
-    max_depth = 7
-    for i in range(max_depth-1, -1, -1):
-        file_from = file + '.' + str(i)
-        file_to   = file + '.' + str(i+1)
-        if (os.path.isfile(file_from)):
-            shutil.copy(file_from, file_to)
-    if (os.path.isfile(file)):
-        shutil.copy(file, file + '.0')
 
 # define example usage
 
@@ -115,7 +97,7 @@ group = OptionGroup(parser, 'Change default paths')
 group.add_option('--binary',
                  dest='binary',
                  default=None,
-                 help='full path to binary to test [default: default binary picked by pam]')
+                 help='full path to binary to test')
 parser.add_option_group(group)
 
 group = OptionGroup(parser, 'Development options')
@@ -162,6 +144,14 @@ if len(sys.argv) == 1:
         print(parser.format_help().strip())
         sys.exit()
 
+if options.individual:
+    if options.individual.split() == ['all']:
+        options.all        = True
+        options.individual = False
+    else:
+        for w in options.individual.split():
+            list_of_tests_to_run.append(os.path.join(root_directory, 'test', w))
+
 if options.all or (options.quick and not options.individual):
     file = root_directory + '/test/list_of_tests'
     if os.path.isfile(file):
@@ -170,12 +160,8 @@ if options.all or (options.quick and not options.individual):
             list_of_tests_to_run.append(root_directory + '/test/' + line.strip('\n'))
         f.close()
     else:
-        print('file %s does not exist, run pamadm first' % file)
+        print('file %s does not exist' % file)
         sys.exit()
-
-if options.individual:
-    for w in options.individual.split():
-        list_of_tests_to_run.append(os.path.join(root_directory, 'test', w))
 
 if options.timeout:
     # extract the total time in seconds
@@ -188,17 +174,250 @@ def int32_run(s):
                 return False
     return True
 
-# create directory LOGS
-if not os.path.isdir('test/LOGS'):
-    os.mkdir('test/LOGS')
+#-------------------------------------------------------------------------------
 
-global pam_output_file 
+class filter_task:
+     def __init__(self, precision, ignore_sign, start_string, start_is_regex, \
+                  end_string='', end_is_regex=False, end_is_including=False, plus_nr_lines=0, \
+                  compare_everything=False):
+         self.precision          = precision
+         self.ignore_sign        = ignore_sign
+         self.start_string       = start_string
+         self.start_is_regex     = start_is_regex
+         self.end_string         = end_string
+         self.end_is_regex       = end_is_regex
+         self.end_is_including   = end_is_including
+         self.plus_nr_lines      = plus_nr_lines
+         self.compare_everything = compare_everything
+
+#-------------------------------------------------------------------------------
+
+def set_filter_defaults():
+    precision         = 0.0001
+    ignore_sign       = False
+    start_string      = ''
+    start_is_regex    = False
+    return (precision, ignore_sign, start_string, start_is_regex)
+
+#-------------------------------------------------------------------------------
+
+def read_filter(filter_file):
+
+    s = open(filter_file).readlines()
+    filter_task_l = []
+
+    (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+
+    for line in s:
+        # the syntax ($ERROR, $IGNORESIGN, ...) is for backwards copmatibility
+        # with DIRAC's old perl scripts - if you change it here, please change it globally in DIRAC repo
+        if '$ERROR' in line:
+            precision = float(line.split()[-1])
+        if '$IGNORESIGN' in line:
+            ignore_sign = True
+        if (line.lower()[0:10] == 'everything'):
+            filter_task_l.append(filter_task(precision,      \
+                                             ignore_sign,    \
+                                             start_string,   \
+                                             start_is_regex, \
+                                             compare_everything=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+        if (line.lower()[0:5] == 'from:'):
+            start_string = line[5:].rstrip()
+        if (line.lower()[0:7] == 'fromre:'):
+            start_string = line[7:].rstrip()
+            start_is_regex = True
+        if (line.lower()[0:6] == 'nlines'):
+            nr_lines = int(line.split(':')[0].split()[-1])
+            start_string = line.split(line.split(':')[0] + ':')[-1].rstrip()
+            filter_task_l.append(filter_task(precision,      \
+                                             ignore_sign,    \
+                                             start_string,   \
+                                             start_is_regex, \
+                                             plus_nr_lines=nr_lines))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+        if (line.lower()[0:3] == 'to:'):
+            filter_task_l.append(filter_task(precision,      \
+                                             ignore_sign,    \
+                                             start_string,   \
+                                             start_is_regex, \
+                                             end_string=line[3:].rstrip()))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+        if (line.lower()[0:5] == 'tore:'):
+            filter_task_l.append(filter_task(precision,                    \
+                                             ignore_sign,                  \
+                                             start_string,                 \
+                                             start_is_regex,               \
+                                             end_string=line[5:].rstrip(), \
+                                             end_is_regex=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+        if (line.lower()[0:4] == 'toi:'):
+            filter_task_l.append(filter_task(precision,                    \
+                                             ignore_sign,                  \
+                                             start_string,                 \
+                                             start_is_regex,               \
+                                             end_string=line[4:].rstrip(), \
+                                             end_is_including=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+        if (line.lower()[0:6] == 'toire:'):
+            filter_task_l.append(filter_task(precision,                    \
+                                             ignore_sign,                  \
+                                             start_string,                 \
+                                             start_is_regex,               \
+                                             end_string=line[6:].rstrip(), \
+                                             end_is_regex=True,            \
+                                             end_is_including=True))
+            (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
+
+    return filter_task_l
+
+#-------------------------------------------------------------------------------
+
+def extract_and_compare_floats(log_file,   \
+                               output,     \
+                               output_ref, \
+                               line_l,     \
+                               line_l_ref, \
+                               precision,  \
+                               ignore_sign):
+    """
+    in:  output      a list of strings (= a file)
+         output_ref  a list of strings (= a file)
+         line_l      list of integers that correspond to line numbers in python numbering
+         line_l_ref  list of integers that correspond to line numbers in python numbering
+    """
+
+    numeric_const_pattern = r"""
+    [-+]? # optional sign
+    (?:
+        (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
+        |
+        (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
+    )
+    # followed by optional exponent part if desired
+    (?: [EeDd] [+-]? \d+ ) ?
+    """
+
+    p  = re.compile(numeric_const_pattern, re.VERBOSE)
+    pd = re.compile(r'[dD]')
+
+    f_l       = []
+    f_l_ref   = []
+    f_to_line = []
+    for x in line_l:
+        for line in x:
+            for w in output[line].split():
+                # do not consider words like TzB1g
+                # otherwise we would extract 1 later
+                if re.match(r'^[0-9\.eEdD\+\-]*$', w):
+                    # apply floating point regex
+                    for m in p.findall(w):
+                         # substitute dD by e
+                         m = pd.sub('e', m)
+                         f_l.append(float(m))
+                         f_to_line.append(line)
+
+    for x in line_l_ref:
+        for line in x:
+            for w in output_ref[line].split():
+                if re.match(r'^[0-9\.eEdD\+\-]*$', w):
+                    for m in p.findall(w):
+                         m = pd.sub('e', m)
+                         f_l_ref.append(float(m))
+    if len(f_l) == len(f_l_ref):
+        for i in range(len(f_l)):
+            r     = f_l[i]
+            r_ref = f_l_ref[i]
+
+            if ignore_sign:
+                # if ignore sign take absolute values
+                r     = abs(r)
+                r_ref = abs(r_ref)
+            error = r - r_ref
+
+            if program_is_dirac:
+                rel_error = error
+                if abs(r_ref) > 1.0e-40:
+                    rel_error /= r_ref
+                if abs(rel_error) > precision:
+                    log_file.write('line %i: %s' % (f_to_line[i]+1, output[f_to_line[i]]))
+                    log_file.write('            relative error=%19.16f\n' % rel_error)
+                    log_file.write('desired relative precision=%19.16f\n' % precision)
+            if program_is_dalton:
+                if abs(error) > precision:
+                    log_file.write('line %i: %s' % (f_to_line[i]+1, output[f_to_line[i]]))
+                    log_file.write('            error=%19.16f\n' % error)
+                    log_file.write('desired precision=%19.16f\n' % precision)
+    else:
+        log_file.write('compare floats sizes do not match\n')
+        log_file.write('this means that output and reference yield different number of results\n')
+        log_file.write(str(line_l))
+        log_file.write(str(line_l_ref))
+
+#-------------------------------------------------------------------------------
+
+def find_from_to(output,         \
+                 start_string,   \
+                 start_is_regex, \
+                 end_string,     \
+                 end_is_regex,   \
+                 end_is_including):
+
+    if start_is_regex:
+        ps = re.compile(r'.*%s' % start_string)
+    if end_is_regex:
+        pe = re.compile(r'.*%s' % end_string)
+
+    line_l = []
+    for i in range(len(output)):
+        start_line_matches = False
+        if start_is_regex:
+            start_line_matches = ps.match(output[i])
+        else:
+            start_line_matches = (start_string in output[i])
+        if start_line_matches:
+            for j in range(i, len(output)):
+                end_line_matches = False
+                if end_is_regex:
+                    end_line_matches = pe.match(output[j])
+                else:
+                    end_line_matches = (end_string in output[j])
+                if end_line_matches:
+                    if end_is_including:
+                        line_l.append(range(i, j+1))
+                        break
+                    else:
+                        line_l.append(range(i, j))
+                        break
+
+    return line_l
+
+#-------------------------------------------------------------------------------
+
+def find_string_plus_nr_lines(output, start_string, n, start_is_regex=False):
+
+    if start_is_regex:
+        p = re.compile(r'.*%s' % start_string)
+
+    line_l = []
+    for i in range(len(output)):
+        start_line_matches = False
+        if start_is_regex:
+            start_line_matches = p.match(output[i])
+        else:
+            start_line_matches = (start_string in output[i])
+        if start_line_matches:
+            line_l.append(range(i, i+n))
+
+    return line_l
+
+#-------------------------------------------------------------------------------
 
 class run:
      def __init__(self, test, line, kind):
          self.test = test
          self.kind = kind
-         pam_flags = ''
+         launcher_flags = ''
 
          if (line.split()[0] == 'noref'):
              self.noref = True
@@ -209,30 +428,38 @@ class run:
              self.inp   = line.split()[0]
              self.mol   = line.split()[1]
 
-         # pretty please no timeout when executed interactively
-         if not executed_from_subdir:
-            # default timeouts for quick, regular and benchmark tests
-            if self.kind == 'q':
-                pam_flags +=  '--timeout=21m '
-            elif self.kind == 'r':
-                pam_flags +=  '--timeout=21m '
-            else:
-                pam_flags +=  '--timeout=1h '
+         if program_is_dirac:
+             # pretty please no timeout when executed interactively
+             if not executed_from_subdir:
+                # default timeouts for quick, regular and benchmark tests
+                if self.kind == 'q':
+                    launcher_flags +=  '--timeout=21m '
+                elif self.kind == 'r':
+                    launcher_flags +=  '--timeout=21m '
+                else:
+                    launcher_flags +=  '--timeout=1h '
 
          if len(line.split()) > 2:
              for i in range(2, len(line.split())):
-                 pam_flags += line.split()[i] + ' '
-         if not options.verbose:
-             pam_flags += '--silent '
-         pam_flags += '--nobackup '
-         pam_flags += '--noarch '
+                 launcher_flags += line.split()[i] + ' '
+         if program_is_dirac:
+             if not options.verbose:
+                 launcher_flags += '--silent '
+             launcher_flags += '--nobackup '
+             launcher_flags += '--noarch '
+         if program_is_dalton:
+             launcher_flags += '-nobackup '
+             launcher_flags += '-noarch '
          if options.binary:
-             pam_flags += '--dirac=%s ' % options.binary
+             launcher_flags += '--dirac=%s ' % options.binary
          if options.mpi > 1:
-             pam_flags += '--mpi=%i ' % options.mpi
-         self.pam_flags = pam_flags
+             launcher_flags += '--mpi=%i ' % options.mpi
+         self.launcher_flags = launcher_flags
      def get_output_name(self):
-         inp_file_strip = string.replace(self.inp,       '.inp', '')
+         if program_is_dirac:
+             inp_file_strip = string.replace(self.inp,       '.inp', '')
+         if program_is_dalton:
+             inp_file_strip = string.replace(self.inp,       '.dal', '')
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
          return '%s_%s.out' % (inp_file_strip, mol_file_strip)
@@ -240,9 +467,9 @@ class run:
          (head,tail)=os.path.split(self.test)
          return tail
      def run_and_controlled_exit(self):
-         pgid = None # process group id of the "dirac" process
+         pgid = None # process group id of the program process (not the launcher)
          def child_signaller(signum, frame):
-             '''Pass on signals to pam to its children'''
+             '''Pass on signals to the launcher to its children'''
              if pgid is not None:
                  print('runtest: got signal %s, passing on to children' % signum)
                  os.killpg(pgid,signum) # TODO: adapt for Windows
@@ -254,27 +481,42 @@ class run:
          signal.signal(signal.SIGINT,child_signaller)
 
          os.chdir(self.test)
-         # run pam
-	 pam_command=os.path.join(root_directory,"pam")
-         command = 'python '+pam_command+' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.pam_flags)
-         if sys.platform != 'win32':
-             p = subprocess.Popen(command,
-                                  shell=True,
-                                  stdin=subprocess.PIPE,
-                                  stdout=subprocess.PIPE,
-                                  preexec_fn=os.setsid)
-             pgid = p.pid
-         else:
-             p = subprocess.Popen(command,
-                                  shell=True,
-                                  stdin=subprocess.PIPE,
-                                  stdout=subprocess.PIPE)
-         
-         pam_output = p.communicate()[0]
-         global pam_output_file
-         pam_output_file.write(pam_output) 
-         # check whether DIRAC terminated normally
-         if 'exit           : normal' in pam_output:
+
+         # run the launcher
+         if program_is_dirac:
+             launcher_command = os.path.join(root_directory, "pam")
+             command = 'python ' + launcher_command + ' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.launcher_flags)
+         if program_is_dalton:
+             launcher_command = os.path.join(root_directory, '../build/dalton')
+             output_prefix = '%s_%s' % (string.replace(self.inp, '.dal', ''), string.replace(self.mol, '.mol', ''))
+             command = launcher_command + \
+                 ' -d %s %s %s 1> %s.stdout 2> %s.stderr' % (self.launcher_flags, \
+                                                             self.inp,            \
+                                                             self.mol,            \
+                                                             output_prefix,       \
+                                                             output_prefix)
+
+         if program_is_dirac:
+             if sys.platform != 'win32':
+                 p = subprocess.Popen(command,
+                                      shell=True,
+                                      stdin=subprocess.PIPE,
+                                      stdout=subprocess.PIPE,
+                                      preexec_fn=os.setsid)
+             else:
+                 p = subprocess.Popen(command,
+                                      shell=True,
+                                      stdin=subprocess.PIPE,
+                                      stdout=subprocess.PIPE)
+         if program_is_dalton:
+             os.system(command)
+
+         if program_is_dirac:
+             launcher_output = p.communicate()[0]
+             normal_termination = ('exit           : normal' in launcher_output)
+         if program_is_dalton:
+             normal_termination = ('Total wall time used in DALTON' in open(self.get_output_name()).read())
+         if normal_termination:
              return 'NORMAL'
          else:
              exit = 'CRASH'
@@ -293,7 +535,10 @@ class run:
          """
           print result of the test
          """
-         inp_file_strip = string.replace(self.inp,       '.inp', '')
+         if program_is_dirac:
+             inp_file_strip = string.replace(self.inp,       '.inp', '')
+         if program_is_dalton:
+             inp_file_strip = string.replace(self.inp,       '.dal', '')
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
 
@@ -304,14 +549,83 @@ class run:
               inp_file_strip, mol_file_strip, elapsed_str))
 
      def apply_filter(self):
-         os.system('perl -X ../../utils/crep.pl %s        result/filter > compare/%s.own' \
-                   % (self.get_output_name(), self.get_output_name()))
-         # apply the filter on reference output
-         os.system('perl -X ../../utils/crep.pl result/%s result/filter > compare/%s.ref' \
-                   % (self.get_output_name(), self.get_output_name()))
-         # compare filtered result with reference
-         os.system('perl -X ../../utils/bdrep.pl compare/%s.own compare/%s.ref > compare/%s.txt' \
-                   % (self.get_output_name(), self.get_output_name(), self.get_output_name()))
+
+         filter_name = {}
+         if program_is_dirac:
+             output_suffix_l = ['out']
+             filter_name['out'] = 'filter'
+         if program_is_dalton:
+             # dalton has several outputs and thus several filters
+             output_suffix_l = ['out', 'stdout']
+             filter_name['out']    = 'filter.out'
+             filter_name['stdout'] = 'filter.stdout'
+
+         if program_is_dirac:
+             output_prefix = string.replace(self.get_output_name(), '.out', '')
+         if program_is_dalton:
+             output_prefix = '%s_%s' % (string.replace(self.inp, '.dal', ''), string.replace(self.mol, '.mol', ''))
+
+         log_file   = open('compare/%s.diff' % self.get_output_name(), 'w')
+         own_result = open('compare/%s.own'  % self.get_output_name(), 'w')
+         ref_result = open('compare/%s.ref'  % self.get_output_name(), 'w')
+
+         for output_suffix in output_suffix_l:
+             output_name = output_prefix + '.' + output_suffix
+
+             # read filter and get list of filter tasks
+             filter_task_l = read_filter('result/%s' % filter_name[output_suffix])
+
+             # read output and reference output
+             output     = open(            output_name).readlines()
+             output_ref = open('result/' + output_name).readlines()
+
+             for filter_task in filter_task_l:
+                 if filter_task.compare_everything:
+                     line_l     = [range(len(output))]
+                     line_l_ref = [range(len(output_ref))]
+                 elif filter_task.plus_nr_lines > 0:
+                     line_l     = find_string_plus_nr_lines(output,                    \
+                                                            filter_task.start_string,  \
+                                                            filter_task.plus_nr_lines, \
+                                                            start_is_regex=filter_task.start_is_regex)
+                     line_l_ref = find_string_plus_nr_lines(output_ref,                \
+                                                            filter_task.start_string,  \
+                                                            filter_task.plus_nr_lines, \
+                                                            start_is_regex=filter_task.start_is_regex)
+                 else:
+                     line_l     = find_from_to(output,         \
+                                               filter_task.start_string,   \
+                                               filter_task.start_is_regex, \
+                                               filter_task.end_string,     \
+                                               filter_task.end_is_regex,   \
+                                               filter_task.end_is_including)
+                     line_l_ref = find_from_to(output_ref,     \
+                                               filter_task.start_string,   \
+                                               filter_task.start_is_regex, \
+                                               filter_task.end_string,     \
+                                               filter_task.end_is_regex,   \
+                                               filter_task.end_is_including)
+
+                 if not (line_l == []):
+                     # subtask did not filter anything
+                     # this can happen since sometimes we use same filter
+                     # for very different outputs
+                     for x in line_l:
+                         for line in x:
+                             own_result.write(output[line])
+                     for x in line_l_ref:
+                         for line in x:
+                             ref_result.write(output_ref[line])
+                     extract_and_compare_floats(log_file,              \
+                                                output,                \
+                                                output_ref,            \
+                                                line_l,                \
+                                                line_l_ref,            \
+                                                filter_task.precision, \
+                                                filter_task.ignore_sign)
+         log_file.close()
+         own_result.close()
+         ref_result.close()
 
      def is_shell_command(self):
          return False
@@ -403,22 +717,7 @@ def main(*args):
     nr_bad_filter    = 0
     global_elapsed   = 0.0
 
-    testname_0=None
     for task in l:
-        
-	(head,tail)=os.path.split(task.test)
-	testname_1=tail
-        open_new_log_file=(testname_0 != testname_1)
-
-        if open_new_log_file : 
-            global pam_output_file
-	    runtestlogfile='runtest_'+testname_1+'.log'
-            log_file=os.path.join(root_directory,"test","LOGS",runtestlogfile)
-            backup(log_file)
-            pam_output_file = open(log_file,'w', 0)
-            pam_output_file.write(" runtest pam outputs \n\n ")
-            #TODO: how to ensure closing of pam_output_file files ?
-
         if task.is_shell_command():
             task.execute()
         else:
@@ -431,24 +730,24 @@ def main(*args):
                     # overwrite reference files
                     if options.overwrite:
                         os.system('cp %s %s' % (task.get_output_name(), output_file))
-                
+
                     # create directory where outputs are compared
                     if not os.path.isdir('compare'):
                         os.mkdir('compare')
-               
-                    task.apply_filter() 
-                
-                    if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
+
+                    task.apply_filter()
+
+                    if (not task.noref) and os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
                         # filter does not produce anything
-                        if os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
-                            result_text = 'BAD FILTER'
-                            nr_bad_filter += 1
-                        else:
+                        result_text = 'BAD FILTER'
+                        nr_bad_filter += 1
+                    else:
+                        if os.path.getsize('compare/%s.diff' % task.get_output_name()) == 0:
                             result_text = 'OK'
                             nr_ok += 1
-                    else:
-                        result_text = 'FAIL'
-                        nr_failed += 1
+                        else:
+                            result_text = 'FAIL'
+                            nr_failed += 1
 
                 else:
                     if task.noref:
@@ -472,8 +771,8 @@ def main(*args):
 
             if options.showdiff:
                 if result_text == 'FAIL':
-                    os.system('more compare/%s.txt' % task.get_output_name())
-        
+                    os.system('more compare/%s.diff' % task.get_output_name())
+
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print('')
                 print('cowardly gave up after the first problem')
@@ -481,12 +780,10 @@ def main(*args):
                 sys.exit(1)
 
             if options.timeout:
-                if global_elapsed > timeout:  
+                if global_elapsed > timeout:
                     error_message = '\n Giving up runtest. Total allowed time of %s seconds exceeded.\n' % timeout
                     print(error_message)
                     sys.exit(1)
-
-        testname_0 = testname_1
 
     print('')
     print('summary: %5i ok'                     % nr_ok)

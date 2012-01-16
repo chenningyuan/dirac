@@ -678,11 +678,11 @@ CMI  ... printout with symmetry classification ...real energies only...
  1005 FORMAT(//' Energy eigenvalues in atomic units'
      +            //' Level   Rel eigenvalue     ',
      +            'Abs eigenvalue      Total Energy    Degeneracy'/)
- 1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
+ 1010 FORMAT(I5,F17.10,F20.12,'  ',F20.12,' (',I4,' * )')
  1007 FORMAT(//' Energy eigenvalues in atomic units'
      & //' Level   Rel eigenvalue     Abs eigenvalue     ',
      & ' Total Energy       Total imag.ener.  Degeneracy'/)
- 1015 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' ',F20.15,' (',I4,' * )')
+ 1015 FORMAT(I5,F17.10,F20.12,'  ',F20.12,' ',F20.15,' (',I4,' * )')
  1020 FORMAT(//' Total average: ',F20.10)
  1025 FORMAT(//' Relative real eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
