@@ -737,7 +737,7 @@ def main(*args):
 
                     task.apply_filter()
 
-                    if os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
+                    if (not task.noref) and os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
                         # filter does not produce anything
                         result_text = 'BAD FILTER'
                         nr_bad_filter += 1
