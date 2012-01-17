@@ -1,17 +1,18 @@
 #
 # gLite script
 #
-#
 
 Executable = "launch_compchem_pam.sh";
 
 # files with full paths
-InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/input_templates/grid_computing/launch_compchem_pam.sh","/home/ilias/qch_work/software/dirac_git/trunk/test/fscc/fsccsd_IH.inp","/home/ilias/qch_work/software/dirac_git/trunk/test/fscc/Mg.mol"};
+InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/input_templates/grid_computing/launch_compchem_pam.sh",
+                "/home/ilias/qch_work/software/dirac_git/trunk/test/fscc/fsccsd_IH.inp",
+                "/home/ilias/qch_work/software/dirac_git/trunk/test/fscc/Mg.mol"};
 
 # stdout,stderr output & other working files
 StdOutput = "std.out";
 StdError = "std.err";
-OutputSandbox = {"std.out", "std.err", "DFCOEF"};
+OutputSandbox = {"std.out", "std.err", "DFCOEF","fsccsd_IH_Mg.out"};
 
 # other conditions
 #Requirements =
