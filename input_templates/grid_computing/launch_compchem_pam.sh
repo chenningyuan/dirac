@@ -13,12 +13,13 @@ lcg-cp lfn://grid/compchem/ilias/pam       file://$rundir/pam      ||  { echo "E
 ##  make it executable and finally launch
 ##########################################
 chmod 755 dirac.x
-python ./pam --inp=fsccsd_IH.inp --mol=Mg.mol  --mw=92 --scratch=$PWD 
+python ./pam --inp=fsccsd_IH.inp --mol=Mg.mol  --mw=92 --scratch=$PWD --outcmo
 
 # print out some info .. 
 ############################
 echo "Done, date, hostname, current directory, list of files:"
 date
 hostname -f
+df -h
 pwd
 ls -lt
