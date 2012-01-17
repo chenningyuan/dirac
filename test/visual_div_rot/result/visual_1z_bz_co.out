@@ -174,15 +174,15 @@ Compilation info
  LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
                           | l_lapack95_ilp64.a;-Wl,--end-group
  static libraries linking | OFF
- Configuration time       | 2012-01-16 11:38:18.420985
- Git revision             | 52a4bb87d533c7925b97708784ea80aaa7e72cec
+ Configuration time       | 2012-01-17 09:41:44.185270
+ Git revision             | 65449f064f739231ca1efec825642f8589187f1e
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Mon Jan 16 14:36:43 2012 
+     Date and time (Linux)  : Tue Jan 17 10:02:34 2012 
      Host name              : not found                               
 
 
@@ -659,11 +659,11 @@ Total no. of orbitals           (NORB):   104
 
      r_x           r_y           r_z            scalar          x-component       y-component       z-component
 
-  0.000000E+00  0.100000E+00  0.000000E+00      130.90740278        0.00000000        0.00000000        0.00000000
-  0.000000E+00  0.200000E+00  0.000000E+00       20.44356882        0.00000000        0.00000000        0.00000000
-  0.000000E+00  0.500000E+00  0.000000E+00        0.42420722        0.00000000        0.00000000        0.00000000
-  0.000000E+00  0.100000E+01  0.000000E+00        0.06500899        0.00000000        0.00000000        0.00000000
-  0.000000E+00  0.200000E+01  0.000000E+00        0.00481791        0.00000000        0.00000000        0.00000000
+  0.000000E+00  0.100000E+00  0.000000E+00       130.9074028         0.0000000         0.0000000         0.0000000
+  0.000000E+00  0.200000E+00  0.000000E+00        20.4435688         0.0000000         0.0000000         0.0000000
+  0.000000E+00  0.500000E+00  0.000000E+00         0.4242072         0.0000000         0.0000000         0.0000000
+  0.000000E+00  0.100000E+01  0.000000E+00         0.0650090         0.0000000         0.0000000         0.0000000
+  0.000000E+00  0.200000E+01  0.000000E+00         0.0048179         0.0000000         0.0000000         0.0000000
 
 ----------------------------------------------------------------------------------------------------
 
@@ -672,10 +672,10 @@ Total no. of orbitals           (NORB):   104
  >>>> time used in integration:   0.00 seconds
 
  
-     Date and time (Linux)  : Mon Jan 16 14:36:44 2012 
+     Date and time (Linux)  : Tue Jan 17 10:02:34 2012 
      Host name              : not found                               
->>>> Node 0, utime: 0, stime: 0, minflt: 5571, majflt: 0, nvcsw: 0, nivcsw: 20, maxrss: 20492
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 0, stime: 0, minflt: 5570, majflt: 0, nvcsw: 0, nivcsw: 18, maxrss: 20488
+>>>> Total WALL time used in DIRAC: 0s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 

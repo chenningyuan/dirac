@@ -16,6 +16,19 @@ from optparse import OptionParser, OptionGroup
 # global variables
 program_is_dirac  = True
 program_is_dalton = False
+pgid_dirac=None # DIRAC process group id of the program process (not the launcher)
+
+def kill_win(pid):
+    """
+    kill process on  Win32
+    http://docs.python.org/faq/windows.html#id11
+    see also http://code.activestate.com/recipes/347462-terminating-a-subprocess-on-windows/
+    """
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(1, 0, pid)
+    return (0 != kernel32.TerminateProcess(handle, 0))
+
 
 if sys.version < '2.4':
     print('runtest requires python version >= 2.4')
@@ -467,16 +480,30 @@ class run:
          (head,tail)=os.path.split(self.test)
          return tail
      def run_and_controlled_exit(self):
-         pgid = None # process group id of the program process (not the launcher)
          def child_signaller(signum, frame):
              '''Pass on signals to the launcher to its children'''
-             if pgid is not None:
-                 print('runtest: got signal %s, passing on to children' % signum)
-                 os.killpg(pgid,signum) # TODO: adapt for Windows
+             signum_kill=2 # for killing, prepare the strongest ammo
+             if pgid_dirac is not None:
+                 print('runtest: got signal #%s, passing #2 (SIGINT) on to children' % str(signum))
+                 if sys.platform != 'win32':
+                     os.killpg(pgid_dirac,signum_kill) 
+                 else: 
+                     kill_win(pgid_dirac)
+                 #miro: important to have short time delay !
+                 time.sleep(2)
              sys.exit()
          if sys.platform != 'win32':
              signal.signal(signal.SIGHUP,child_signaller)
              signal.signal(signal.SIGPIPE,child_signaller)
+         else:
+            # these commented signals should work with newer versions of Python
+            #signal.signal(signal.CTRL_C_EVENT,self.child_signaller)
+            #signal.signal(signal.CTRL_BREAK_EVENT,self.child_signaller)
+            signal.signal(signal.SIGABRT,self.child_signaller)
+            signal.signal(signal.SIGFPE,self.child_signaller)
+            signal.signal(signal.SIGILL,self.child_signaller)
+            signal.signal(signal.SIGSEGV,self.child_signaller)
+         #miro: platform independent signals
          signal.signal(signal.SIGTERM,child_signaller)
          signal.signal(signal.SIGINT,child_signaller)
 
@@ -508,6 +535,8 @@ class run:
                                       shell=True,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE)
+             pgid_dirac = p.pid # save DIRAC process group id for latter killing of subprocesses
+
          if program_is_dalton:
              os.system(command)
 
