@@ -456,7 +456,6 @@ C  /* Deck odcdr1 */
      &          CSQ(NCSQ1,NCSQ2), WORK(LWORK)
       LOGICAL CLASSIC
 #if defined(VAR_MPI)
-      INCLUDE 'mpif.h'
 #include "infpar.h"
 #include "ibtfun.h"
       NOFF  = MYNUM
@@ -1565,7 +1564,6 @@ c ===================================================================
 #include "primit.h"
 #include "priunit.h"
 #include "shells.h"
-      INCLUDE "mpif.h"
 #include "infpar.h"
 c
 #include "memint.h"
@@ -1636,7 +1634,6 @@ c
 #include "implicit.h"
 #include "inforb.h"
       DIMENSION FMAT(N2BASX,NDMAT), WORK(*)
-      INCLUDE 'mpif.h'
 #include "maxorb.h"
 #include "infpar.h"
 #include "priunit.h"
