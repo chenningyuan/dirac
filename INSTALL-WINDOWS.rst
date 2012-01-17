@@ -17,8 +17,7 @@ The user has to install on his Windows machine this software:
 1. CMake (www.cmake.org)
 2. The MinGW program suite ("Minimalist GNU for Windows") with GNU compilers and Linux commands  (www.mingw.org)
 3. The Python programming language (www.python.org)
-4. The Perl programming language (www.perl.org), download the 'Strawberry Perl' 
-(5. The developper have to install the Git suite (see below) 
+(4. The developper have to install the Git suite (see below) 
 
 The CMake suite can not be used when shell command (sh.exe) in the same %PATH% enviroment variable.
 Therefore please avoid "...\Git\bin" and "...\MinGW\msys\1.0\bin" in your %PATH% is these are 
@@ -54,7 +53,7 @@ Note that you have to set the editor for git commits, for the Notepad++ follow
 C:\Git\bin\git.exe config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
 
 "Pageant" agent, running in the background, also enables passwordless terminal conections (or PuTTy sessions) 
-onto server which are provided with users's public key. Pageant can be activated during Windows startup.
+onto server which are provided with users's public key. Pageant can be activated during the Windows startup.
 
 
 Usage
