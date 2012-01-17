@@ -1252,6 +1252,7 @@ C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
 
 C  /* Deck optmin */
       SUBROUTINE OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1259,9 +1260,6 @@ C  /* Deck optmin */
 #include "dcbgen.h"
 #else
 #include "infpar.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include "gnrinf.h"
 #endif
 #include "optinf.h"
@@ -1364,8 +1362,8 @@ C
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IJOB = 0
-         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MOTHER),
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_BCAST(IJOB,1,NODEID(MOTHER),
+     &                  global_communicator)
       END IF
 #endif      
 #endif 

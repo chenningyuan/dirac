@@ -250,10 +250,7 @@ C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
       use interface_to_mpi
 #include "implicit.h"
-#if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
-#endif
 #include "priunit.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"

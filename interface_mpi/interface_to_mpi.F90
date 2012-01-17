@@ -18,12 +18,15 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
-#define VAR_MPI_32bit_int
 !
 ! purpose: determine integer size in MPI library to 
 !
 module interface_to_mpi
 #ifdef VAR_MPI
+
+!#ifndef INT_STAR8
+#define VAR_MPI_32bit_int
+!#endif
 
   use integer_kind_mpilib
   use mpi
@@ -143,6 +146,7 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_any_source   = mpi_any_source
   integer,                        parameter, public :: df_mpi_any_tag      = mpi_any_tag
   integer,                        parameter, public :: df_mpi_status_size  = mpi_status_size
+  integer,                        parameter, public :: df_mpi_request_null = mpi_request_null
   integer(kind=MPI_OFFSET_KIND),  parameter, public :: df_MPI_OFFSET_KIND  = MPI_OFFSET_KIND
   integer(kind=MPI_ADDRESS_KIND), parameter, public :: df_MPI_ADDRESS_KIND = MPI_ADDRESS_KIND
 

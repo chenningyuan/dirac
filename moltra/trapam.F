@@ -3216,12 +3216,10 @@ C
 C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
-#if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
-#endif
 #include "dummy.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -3626,10 +3624,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
-#endif
 C
 #include "maxorb.h"
 #include "dcbtra.h"
@@ -3950,10 +3945,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
-#endif
 C
 #include "maxorb.h"
 #include "dcbtra.h"
@@ -4379,7 +4371,6 @@ C
       PARAMETER(D0=0.0D0)
 C
 #include "infpar.h"
-      INCLUDE 'mpif.h'
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -4536,8 +4527,6 @@ C     dcborb.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
-!     CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(I1_DCBORB,NUMELM,MPARID,
      &                         global_communicator)
 C
@@ -4545,8 +4534,6 @@ C     dcbbas.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-!     CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(I1_DCBBAS,NUMELM,MPARID,
      &                         global_communicator)
 C
@@ -4554,8 +4541,6 @@ C     dcbham.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCLHAM,I2_DCLHAM)
-!     CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_mpi_bcast_l0_f77(QED,NUMELM,MPARID,
      &                                global_communicator)
 C
@@ -4563,10 +4548,6 @@ C     dgroup.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-!     CALL MPI_BCAST(I1_DGROUP,NUMELM,my_MPI_INTEGER,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
-!     CALL MPI_BCAST(LINEAR,1,MPI_LOGICAL,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(I1_DGROUP,NUMELM,MPARID,
      &                         global_communicator)
       call interface_mpi_bcast_l0_f77(LINEAR,1,MPARID,
@@ -4578,22 +4559,16 @@ C
 C     integers...
 C
       NUMELM = NDCBTRI
-!     CALL MPI_BCAST(IPRTRA,NUMELM,my_MPI_INTEGER,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(IPRTRA,NUMELM,MPARID,global_communicator)
 C
 C     reals...
 C
       NUMELM = NDCBTRR
-!     CALL MPI_BCAST(THROUT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(THROUT,NUMELM,MPARID,global_communicator)
 C
 C     logicals...
 C
       NUMELM = NDCBTRL
-!     CALL MPI_BCAST(TRA_ANTIS,NUMELM,MPI_LOGICAL,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_mpi_bcast_l0_f77(TRA_ANTIS,NUMELM,MPARID,
      &                                global_communicator)
 C
@@ -4601,8 +4576,6 @@ C     comdis.h
 C     --------
 C
       NUMELM = NCOMDIS
-!     CALL MPI_BCAST(NSPCK,NUMELM,my_MPI_INTEGER,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(NSPCK,NUMELM,MPARID,global_communicator)
 C
 C     symmet.h
@@ -4611,16 +4584,12 @@ C
 C     integers...
 C
       NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
-!     CALL MPI_BCAST(I1_SYMMTI,NUMELM,my_MPI_INTEGER,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(I1_SYMMTI,NUMELM,MPARID,
      &                         global_communicator)
 C
 C     reals...
 C
       NUMELM = NSYMMTR
-!     CALL MPI_BCAST(FMULT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
-!    &               MPI_COMM_WORLD,IERR)
       call interface_MPI_BCAST(FMULT,NUMELM,MPARID,global_communicator)
 C
 C     The rest
@@ -4900,12 +4869,12 @@ C     Slave --> Master:
 C       - Screening information
 C       - MP2 results
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "infpar.h"
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -4940,8 +4909,8 @@ C         signal the slave to stop computing & transforming integrals.
 #if defined (MPE)
           CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
-          CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,ISTAT,IERR)
+          call interface_mpi_RECV(ITEST,1,df_MPI_ANY_SOURCE,20,
+     &                            global_communicator,ISTAT)
 #if defined (MPE)
           CALL MPE_LOG_EVENT(4, 0, "end wait")
 #endif
@@ -4950,7 +4919,7 @@ C         ... this node sends the wrong message, abort
              CALL QUIT('TRARES: wrong code sent by slave')
              GO TO 100
           END IF
-          NWHO = ISTAT(MPI_SOURCE)
+          NWHO = ISTAT(df_MPI_SOURCE)
 #if defined (MPE)
           CALL MPE_LOG_EVENT(7, 0, "start rcvint")
 #endif
@@ -4960,25 +4929,25 @@ C         ... this node sends the wrong message, abort
      &           ' finished at ',WALLST-WALLBEF,' seconds after start'
           CALL FLSHFO(LUPRI)
           IF(ISTRAT.EQ.4) THEN
-            CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
-     &                    MPI_COMM_WORLD,IERR)
+            call interface_mpi_SEND(IBUFMPI,5,NWHO,30,
+     &                    global_communicator)
           ELSEIF(ISTRAT.EQ.2) THEN
             ITEST = -1
-            CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,NWHO,30,
-     &                    MPI_COMM_WORLD,IERR)
+            call interface_mpi_SEND(ITEST,1,NWHO,30,
+     &                    global_communicator)
           ELSE
             WRITE(6,*) 'Inside TRARES in scheme ..',ISTRAT
             CALL QUIT('TRARES not adapted for this strategy !')
           ENDIF
-          CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
-     &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+          call interface_mpi_RECV(WORK(KBUF),8,
+     &          NWHO,40,global_communicator)
           CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
           IF(LMP2) THEN
-            CALL MPI_RECV(EBUF,1,MPI_DOUBLE_PRECISION,
-     &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+            call interface_mpi_RECV(EBUF,1,
+     &            NWHO,40,global_communicator)
             EMP2 = EMP2 + EBUF
-            CALL MPI_RECV(TIM1(1,NWHO),7,MPI_DOUBLE_PRECISION,
-     &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+            call interface_mpi_RECV(TIM1(1,NWHO),7,
+     &            NWHO,40,global_communicator)
           ENDIF
 #if defined (MPE)
           CALL MPE_LOG_EVENT(8, 0, "end rcvint")
@@ -4991,13 +4960,13 @@ C     ***********************
 C     ***** Slave send  *****
 C     ***********************
 C
-        CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,
-     &          MPARID,40,MPI_COMM_WORLD,IERR)
+        call interface_mpi_SEND(DINTSKP,8,
+     &          MPARID,40,global_communicator)
         IF(LMP2) THEN
-          CALL MPI_SEND(EMP2,1,MPI_DOUBLE_PRECISION,
-     &          MPARID,40,MPI_COMM_WORLD,IERR)
-          CALL MPI_SEND(TIM1,7,MPI_DOUBLE_PRECISION,
-     &          MPARID,40,MPI_COMM_WORLD,IERR)
+          call interface_mpi_SEND(EMP2,1,
+     &          MPARID,40,global_communicator)
+          call interface_mpi_send_r1_work_f77(TIM1,7,
+     &          MPARID,40,global_communicator)
         ENDIF
       ENDIF
 C

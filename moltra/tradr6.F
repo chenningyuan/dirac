@@ -69,7 +69,6 @@ C***********************************************************************
 #include "aovec.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-#include "mpif.h"
       DIMENSION IBUFMPI(5)
 #endif
 #include "dcbgen.h"
@@ -200,8 +199,8 @@ CSK   ... safe implementation
       ILEN_STAT = 8
       CALL DZERO(XINTSTAT,ILEN_STAT)
       CALL DCOPY(ILEN_STAT,DINTSKP,1,XINTSTAT,1)
-      call mpi_reduce(XINTSTAT,DINTSKP,ILEN_STAT,MPI_REAL8,
-     &                MPI_SUM,MPARID,global_communicator,ierr)
+      call interface_mpi_reduce_r1_work_f77(XINTSTAT,DINTSKP,ILEN_STAT,
+     &                          op_MPI_SUM,MPARID,global_communicator)
 #endif
       IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
 C
@@ -540,10 +539,6 @@ C
 #include "dcbtra.h"
 #include "dgroup.h"
 #include "infpar.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LDIST(NSTR2T),LSORT(3,NFPCK12T,0:7)

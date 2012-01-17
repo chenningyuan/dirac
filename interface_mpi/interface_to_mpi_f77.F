@@ -372,6 +372,45 @@
 
       end subroutine
 !-------------------------------------------------------------------------------
+
+      subroutine interface_mpi_issend_i2_work_f77(x,ndim,receiver,
+     &                                            message_id,
+     &                                            communicator,request)
+!-------------------------------------------------------------------------------
+      use integer_kind_mpilib
+      implicit none
+#include "mpif.h"
+#include "interface_to_mpi_f77_typedef.h"
+      real(8)                    :: x(ndim)
+      integer(kind=integer_kind) :: ndim
+      integer(kind=integer_kind) :: receiver
+      integer(kind=integer_kind) :: message_id
+      integer(kind=integer_kind) :: communicator
+      integer(kind=integer_kind) :: request
+      integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+      integer(kind=4)            :: ndim_i4
+      integer(kind=4)            :: receiver_i4
+      integer(kind=4)            :: message_id_i4
+      integer(kind=4)            :: communicator_i4
+      integer(kind=4)            :: request_i4
+      integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+      ndim_i4         = ndim
+      receiver_i4     = receiver 
+      message_id_i4   = message_id
+      communicator_i4 = communicator
+      call mpi_issend(x, ndim_i4, my_MPI_INTEGER, receiver_i4, 
+     &                message_id_i4, communicator_i4, request_i4, 
+     &                ierr_i4)
+      request = request_i4
+#else
+      call mpi_issend(x, ndim   , my_MPI_INTEGER, receiver, message_id,
+     &                communicator   , request, ierr   )
+#endif
+      end subroutine
+!-------------------------------------------------------------------------------
 #else
       subroutine dummy_mpi_f77_interface
       end subroutine

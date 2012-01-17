@@ -937,14 +937,12 @@ C                    TPRNTA=4 : Write contents of all timers to output
 C                    TINIT=-1 : Initialize all timers
 C         - NAME   : Name of the timer (max 30 characters)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
       CHARACTER*30 NAME,T_REPORT
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
 #include "priunit.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
 #include "infpar.h"
       REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
 C
@@ -995,8 +993,8 @@ C
          DO I = 1, MXTIMF
 C          Tell the slaves to look for timer I
            T_REPORT = CPUTT(I)
-           CALL MPI_BCAST (T_REPORT,30,MPI_CHARACTER,
-     &                     MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_BCAST(T_REPORT,30,
+     &                              MPARID,global_communicator)
 C          Find the timer (we do this code on master also for simplicity)
            TIMERN = -1
            DO J = 1, MXTIMF
@@ -1016,17 +1014,17 @@ C          Compute the average time spent by the slaves
            ELSE
               A = MY_T
            ENDIF
-           CALL MPI_REDUCE (A,CPU_AV,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_AV,1,op_MPI_SUM,MPARID,
+     &                               global_communicator)
            CPU_AV = (CPU_AV)/DBLE(NUMNOD)
 C          Compute the minimum time
            IF (MYTID.EQ.MPARID) A = 1.D8
-           CALL MPI_REDUCE (A,CPU_MI,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MIN,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MI,1,
+     &                      op_MPI_MIN,MPARID,global_communicator)
 C          Compute the maximum time
            IF (MYTID.EQ.MPARID) A = -1.D8
-           CALL MPI_REDUCE (A,CPU_MA,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MAX,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MA,1,
+     &                      op_MPI_MAX,MPARID,global_communicator)
 C
 C          Write the result to the output
 C
@@ -1041,8 +1039,8 @@ C
          DO I = 1, MXTIMF
            SPARTACUS = MPARID+1
            T_REPORT = CPUTT(I)
-           CALL MPI_BCAST (T_REPORT,30,MPI_CHARACTER,
-     &                     SPARTACUS,MPI_COMM_WORLD,IERR)
+           call interface_mpi_BCAST(T_REPORT,30,
+     &                     SPARTACUS,global_communicator)
            TIMERN = -1
            DO J = 1, MXTIMF
               IF (T_REPORT.EQ.CPUTT(J)) TIMERN = J
@@ -1059,17 +1057,17 @@ C             Timer not used, give zero values
               A = MY_T
            ENDIF
 C          Compute the average time spent by the slaves
-           CALL MPI_REDUCE (A,CPU_AV,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_AV,1,
+     &                      op_MPI_SUM,MPARID,global_communicator)
            CPU_AV = (CPU_AV)/DBLE(NUMNOD)
 C          Compute the minimum time
            IF (MYTID.EQ.MPARID) A = 1.D8
-           CALL MPI_REDUCE (A,CPU_MI,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MIN,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MI,1,
+     &                      op_MPI_MIN,MPARID,global_communicator)
 C          Compute the maximum time
            IF (MYTID.EQ.MPARID) A = -1.D8
-           CALL MPI_REDUCE (A,CPU_MA,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MAX,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MA,1,
+     &                      op_MPI_MAX,MPARID,global_communicator)
 C
 C          Write the result to the output
 C          The master has to have TIMERN -1, otherwise this timer
@@ -1266,12 +1264,10 @@ C     I_FILE   : Bucket sort indentifier (we may have more than one active)
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
       CHARACTER*10 NAME*5,FNODE,LFNAM
 C
 C     The record size needs to be NGBFSZ real + (2*NGBFSZ + 2) integer
@@ -1301,7 +1297,7 @@ C
 C
 #if defined (VAR_MPI)
       DO I = 1, MAX_SEND_BUFFERS
-         IREQ(I) = MPI_REQUEST_NULL
+         IREQ(I) = df_MPI_REQUEST_NULL
       ENDDO
 #endif
 C
@@ -1553,10 +1549,10 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
 #include "infpar.h"
       REAL*8 RGBUF(NGBFSZ)
 !     INTEGER*4 IGBUF(2,NGBFSZ) ! should be default int as far as i can see
@@ -1575,8 +1571,8 @@ C     Pack all data in the integer array ISGBUF
       ISGBUF(4,IFREE) = IFREE
       CALL ICOPY (2*N,IGBUF,1,ISGBUF(5,IFREE),1)
       CALL DCOPY (N,RGBUF,1,ISGBUF(5+2*N,IFREE),1)
-      CALL MPI_ISSEND(ISGBUF(1,IFREE),4*NGBFSZ+4,my_MPI_INTEGER,
-     &               INODE,95,MPI_COMM_WORLD,IREQ(IFREE),IERR)
+      call interface_mpi_issend_i2_work_f77(ISGBUF(1,IFREE),4*NGBFSZ+4,
+     &               INODE,95,global_communicator,IREQ(IFREE))
 C
       RETURN
       END
@@ -1594,22 +1590,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
 C
 C     Check whether there are any messages waiting
 C
-   1  call interface_mpi_iprobe(MPI_ANY_SOURCE,95,NEWMAIL,
+   1  call interface_mpi_iprobe(df_MPI_ANY_SOURCE,95,NEWMAIL,
      &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
          INODE = ISTAT(df_mpi_source)
 C        Receive the buffer
-         CALL MPI_RECV(IHBUF,4*NGBFSZ+4,my_MPI_INTEGER,INODE,95,
-     &                 global_communicator,ISTAT,IERR)
+         call interface_mpi_RECV(IHBUF,4*NGBFSZ+4,INODE,95,
+     &                 global_communicator)
 C        Decode the information and determine where the buffer should go
          N      = IHBUF(1)
          IBUF   = IHBUF(2)
