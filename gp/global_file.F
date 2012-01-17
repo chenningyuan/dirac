@@ -61,9 +61,9 @@ C (a DECI / DEISA project).
 C Written by Walter.Lioen@sara.nl, 2007.
 C
       SUBROUTINE GLOBAL_FILE_OPEN_WRITE
+      use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
 
@@ -82,8 +82,8 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 #endif
 
       CALL MPI_FILE_OPEN(
-     +   MPI_COMM_WORLD, GF_NAME,
-     +   MPI_MODE_WRONLY + MPI_MODE_CREATE + MPI_MODE_EXCL,
+     +   global_communicator, GF_NAME,
+     +   df_MPI_MODE_WRONLY + df_MPI_MODE_CREATE + df_MPI_MODE_EXCL,
      +   GF_INFO, GF_HANDLE, IERR
      +)
       CALL MPI_INFO_FREE(GF_INFO, IERR)
@@ -97,15 +97,15 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
          ENDDO
       ENDDO
 
-      WRITE_REQUEST = MPI_REQUEST_NULL
+      WRITE_REQUEST = df_MPI_REQUEST_NULL
 
       RETURN
       END
 
       SUBROUTINE GLOBAL_FILE_OPEN_READ
+      use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
 
@@ -127,8 +127,8 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 #endif
 
       CALL MPI_FILE_OPEN(
-     +   MPI_COMM_WORLD, GF_NAME,
-     +   MPI_MODE_RDONLY + MPI_MODE_DELETE_ON_CLOSE,
+     +   global_communicator, GF_NAME,
+     +   df_MPI_MODE_RDONLY + df_MPI_MODE_DELETE_ON_CLOSE,
      +   GF_INFO, GF_HANDLE, IERR
      +)
 
@@ -136,9 +136,9 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
       DO I=0,NUMNOD
          CALL MPI_BCAST(GF_NREC(0,I),NMPROC,my_MPI_INTEGER,I,
-     +                  MPI_COMM_WORLD,IERR)
+     +                  global_communicator,IERR)
          CALL MPI_BCAST(GF_BREC(1,0,I),NMBUFF,my_MPI_INTEGER,I,
-     +                  MPI_COMM_WORLD,IERR)
+     +                  global_communicator,IERR)
       ENDDO
 
       RETURN
@@ -148,10 +148,9 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 
-      INTEGER IERR, istat(df_mpi_status_size)
+      INTEGER IERR, istat(df_MPI_STATUS_SIZE)
 
       CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
       CALL MPI_FILE_CLOSE(GF_HANDLE, IERR)
@@ -160,9 +159,9 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE GLOBAL_FILE_CLOSE_READ
+      use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 
       INTEGER IERR
@@ -174,10 +173,10 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
       INTEGER FUNCTION GLOBAL_FILE_RECORD(
      +   TARGET_NODE, SOURCE_NODE, LOCAL_RECORD)
+      use interface_to_mpi
       IMPLICIT NONE
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
       INTEGER IERR
@@ -185,18 +184,18 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       IF (TARGET_NODE .LT. 0 .OR. TARGET_NODE .GT. NUMNOD) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_RECORD: TARGET_NODE = ',
      +      TARGET_NODE
-         CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+         CALL MPI_ABORT(global_communicator,1,IERR)
       ENDIF
       IF (SOURCE_NODE .LT. 1 .OR. SOURCE_NODE .GT. NUMNOD) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_RECORD: SOURCE_NODE = ',
      +      SOURCE_NODE
-         CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+         CALL MPI_ABORT(global_communicator,1,IERR)
       ENDIF
       IF (LOCAL_RECORD .LT. 1 .OR. LOCAL_RECORD .GT. GF_MAXREC) THEN
 C increase GF_MAXREC in bucket_sort.h
          PRINT *, 'ERROR: GLOBAL_FILE_RECORD: LOCAL_RECORD = ',
      +      LOCAL_RECORD
-         CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+         CALL MPI_ABORT(global_communicator,1,IERR)
       ENDIF
 
       GLOBAL_FILE_RECORD =
@@ -213,9 +212,9 @@ C increase GF_MAXREC in bucket_sort.h
 
       FUNCTION GLOBAL_FILE_OFFSET(
      +   TARGET_NODE, SOURCE_NODE, LOCAL_RECORD)
+      use interface_to_mpi
       IMPLICIT NONE
-      INCLUDE "mpif.h"
-      INTEGER(KIND=MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
 #include "bucket_sort.h"
@@ -233,22 +232,22 @@ C     in two parts (the first part performs an implicit cast).
       END
 
       SUBROUTINE GLOBAL_FILE_SEEK(TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
+      use interface_to_mpi
       IMPLICIT NONE
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
-      INTEGER(KIND=MPI_OFFSET_KIND) RECORD_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) RECORD_OFFSET
       INTEGER IERR
 
-      INTEGER(KIND=MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
       EXTERNAL GLOBAL_FILE_OFFSET
 
       RECORD_OFFSET =
      +   GLOBAL_FILE_OFFSET(TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
 
       CALL MPI_FILE_SEEK(
-     +   GF_HANDLE,RECORD_OFFSET,MPI_SEEK_SET,IERR)
+     +   GF_HANDLE,RECORD_OFFSET,df_MPI_SEEK_SET,IERR)
 
       RETURN
       END
@@ -259,17 +258,16 @@ C     in two parts (the first part performs an implicit cast).
       IMPLICIT NONE
       INTEGER N, SOURCE_NODE, TARGET_NODE, IBUF
       REAL*8 RGBUF
-      INTEGER IGBUF, istat(df_mpi_status_size)
+      INTEGER IGBUF, istat(df_MPI_STATUS_SIZE)
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 
       DIMENSION RGBUF(NGBFSZ)
       DIMENSION IGBUF(2,NGBFSZ)
       INTEGER PREV_REC, THIS_REC, INCOUNT, POSITION, IERR
-      INTEGER(KIND=MPI_OFFSET_KIND) RECORD_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) RECORD_OFFSET
 
-      INTEGER(KIND=MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
       EXTERNAL GLOBAL_FILE_OFFSET
 
       CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
@@ -281,19 +279,19 @@ C     in two parts (the first part performs an implicit cast).
 
       INCOUNT = 1
       CALL MPI_PACK(PREV_REC,INCOUNT,my_MPI_INTEGER,
-     +  GF_RECBUF,GF_RECLEN,POSITION,MPI_COMM_SELF,IERR)
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
 
       INCOUNT = 1
       CALL MPI_PACK(N,INCOUNT,my_MPI_INTEGER,
-     +  GF_RECBUF,GF_RECLEN,POSITION,MPI_COMM_SELF,IERR)
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
 
       INCOUNT = NGBFSZ
       CALL MPI_PACK(RGBUF,INCOUNT,MPI_DOUBLE_PRECISION,
-     +  GF_RECBUF,GF_RECLEN,POSITION,MPI_COMM_SELF,IERR)
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
 
       INCOUNT = 2*NGBFSZ
       CALL MPI_PACK(IGBUF,INCOUNT,my_MPI_INTEGER,
-     +  GF_RECBUF,GF_RECLEN,POSITION,MPI_COMM_SELF,IERR)
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
 
       RECORD_OFFSET =
      +  GLOBAL_FILE_OFFSET(TARGET_NODE,SOURCE_NODE,THIS_REC)
@@ -312,7 +310,7 @@ C     in two parts (the first part performs an implicit cast).
         PRINT *, 'ERROR: GLOBAL_FILE_WRITE: writing failed at
      +  RECORD_OFFSET (mytid) =',RECORD_OFFSET,SOURCE_NODE
 !       errorcode 112
-        CALL MPI_ABORT(MPI_COMM_WORLD,112,IERR)
+        CALL MPI_ABORT(global_communicator,112,IERR)
       END IF
 
       GF_BREC(IBUF,TARGET_NODE,SOURCE_NODE) = THIS_REC
@@ -323,17 +321,17 @@ C     in two parts (the first part performs an implicit cast).
 
       SUBROUTINE GLOBAL_FILE_GET_RECORD(
      +   TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
+      use interface_to_mpi
       IMPLICIT NONE
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
-      INTEGER   STATUS(MPI_STATUS_SIZE)
+      INTEGER   STATUS(df_MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
-      INTEGER(KIND=MPI_OFFSET_KIND) RECORD_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) RECORD_OFFSET
 
-      INTEGER(KIND=MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
       EXTERNAL GLOBAL_FILE_OFFSET
 
       RECORD_OFFSET = GLOBAL_FILE_OFFSET(
@@ -348,20 +346,20 @@ CSK   ... zero NUMREAD, otherwise it may fail
       WRITE(6,*) ' GLOBAL_FILE_GET... NUMREAD',NUMREAD
       IF (NUMREAD .NE. GF_RECLEN) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_GET_RECORD: NUMREAD = ', NUMREAD
-         CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+         CALL MPI_ABORT(global_communicator,1,IERR)
       ENDIF
 
       RETURN
       END
 
       SUBROUTINE GLOBAL_FILE_READ(A,NROW,ICOL,IBUF)
+      use interface_to_mpi
       IMPLICIT NONE
       INTEGER NROW, ICOL,IBUF
       REAL*8 A(NROW)
 C
 C     Read back the sorted integrals and put them at the right position
 C
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
       INTEGER SOURCE_NODE
@@ -385,33 +383,33 @@ C
 
             OUTCOUNT = 1
             CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         PREV_REC,OUTCOUNT,my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
+     +         PREV_REC,OUTCOUNT,my_MPI_INTEGER,global_communicator,IERR)
 
             OUTCOUNT = 1
             CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         N,OUTCOUNT,my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
+     +         N,OUTCOUNT,my_MPI_INTEGER,global_communicator,IERR)
 
             OUTCOUNT = NGBFSZ
             CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         RGBUF,OUTCOUNT,MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,IERR)
+     +         RGBUF,OUTCOUNT,MPI_DOUBLE_PRECISION,global_communicator,IERR)
 
             OUTCOUNT = 2*NGBFSZ
             CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         IGBUF,OUTCOUNT,my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
+     +         IGBUF,OUTCOUNT,my_MPI_INTEGER,global_communicator,IERR)
 
 C           Pick out the integrals that we need.
 
             IF (N.GT.NGBFSZ) THEN
                PRINT *, 'ERROR: GLOBAL_FILE_READ: N, NGBFSZ =',
      +                  N, NGBFSZ
-               CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+               CALL MPI_ABORT(global_communicator,1,IERR)
             ENDIF
             DO I = 1, N
                IF (IGBUF(2,I).EQ.ICOL) THEN
                   IF (IGBUF(1,I) .LT. 1 .OR. IGBUF(1,I) .GT. NROW) THEN
                      PRINT *, 'ERROR: GLOBAL_FILE_READ: IGBUF(1,I) =',
      +                        IGBUF(1,I),'I =',I
-                     CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+                     CALL MPI_ABORT(global_communicator,1,IERR)
                   ENDIF
                   A(IGBUF(1,I)) = RGBUF(I)
                ENDIF
@@ -428,9 +426,9 @@ C           Pick out the integrals that we need.
       END
 
       SUBROUTINE LOCAL_FILE_OPEN_WRITE
+      use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
 
@@ -450,14 +448,14 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 #endif
 
       CALL MPI_FILE_OPEN(
-     +   MPI_COMM_SELF, LF_NAME,
-     +   MPI_MODE_WRONLY + MPI_MODE_CREATE,
+     +   self_communicator, LF_NAME,
+     +   df_MPI_MODE_WRONLY + df_MPI_MODE_CREATE,
      +   GF_INFO, LF_HANDLE, IERR
      +)
 
       CALL MPI_INFO_FREE(GF_INFO, IERR)
 
-      WRITE_REQUEST = MPI_REQUEST_NULL
+      WRITE_REQUEST = df_MPI_REQUEST_NULL
 
       RETURN
       END
@@ -466,10 +464,9 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 
-      INTEGER IERR, istat(df_mpi_status_size)
+      INTEGER IERR, istat(df_MPI_STATUS_SIZE)
 
       CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
       CALL MPI_FILE_CLOSE(LF_HANDLE, IERR)
@@ -481,7 +478,6 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
       CHARACTER LF_RECBUF(GF_RECLEN)
@@ -509,7 +505,7 @@ CSK         ... zero NUMREAD, otherwise it may fail
             IF (NUMREAD .NE. GF_RECLEN) THEN
                PRINT *, 'ERROR: SELECT_LOCAL_FROM_GLOBAL: NUMREAD = ',
      +         NUMREAD
-               CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+               CALL MPI_ABORT(global_communicator,1,IERR)
             ENDIF
 
             CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
@@ -533,9 +529,9 @@ CSK         ... zero NUMREAD, otherwise it may fail
       END
 
       SUBROUTINE LOCAL_FILE_OPEN_READ
+      use interface_to_mpi
       IMPLICIT NONE
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
 
@@ -556,24 +552,23 @@ CSK         ... zero NUMREAD, otherwise it may fail
       END
 
       INTEGER FUNCTION LOCAL_FILE_RECORD(SOURCE_NODE, LOCAL_RECORD)
+      use interface_to_mpi
       IMPLICIT NONE
       INTEGER SOURCE_NODE, LOCAL_RECORD
 
-      INCLUDE "mpif.h"
 #include "bucket_sort.h"
 #include "infpar.h"
-      INTEGER IERR
 
       IF (SOURCE_NODE .LT. 1 .OR. SOURCE_NODE .GT. NUMNOD) THEN
          PRINT *, 'ERROR: LOCAL_FILE_RECORD: SOURCE_NODE = ',
      +      SOURCE_NODE
-         CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+         CALL interface_MPI_ABORT(global_communicator,1)
       ENDIF
       IF (LOCAL_RECORD .LT. 1 .OR. LOCAL_RECORD .GT. GF_MAXREC) THEN
 C increase GF_MAXREC in bucket_sort.h
          PRINT *, 'ERROR: LOCAL_FILE_RECORD: LOCAL_RECORD = ',
      +      LOCAL_RECORD
-         CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+         CALL interface_MPI_ABORT(global_communicator,1)
       ENDIF
 
       LOCAL_FILE_RECORD = LF_OFFSET(SOURCE_NODE) + LOCAL_RECORD

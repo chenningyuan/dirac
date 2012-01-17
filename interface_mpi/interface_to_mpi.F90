@@ -138,6 +138,7 @@ module interface_to_mpi
   private
 
   integer,                        parameter, public :: global_communicator = mpi_comm_world
+  integer,                        parameter, public :: self_communicator   = mpi_comm_self
   integer,                        parameter, public :: op_mpi_sum          = mpi_sum
   integer,                        parameter, public :: op_mpi_max          = mpi_max
   integer,                        parameter, public :: op_mpi_min          = mpi_min
@@ -147,6 +148,15 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_any_tag      = mpi_any_tag
   integer,                        parameter, public :: df_mpi_status_size  = mpi_status_size
   integer,                        parameter, public :: df_mpi_request_null = mpi_request_null
+  integer,                        parameter, public :: df_mpi_mode_wronly  = mpi_mode_wronly 
+  integer,                        parameter, public :: df_mpi_mode_rdonly  = mpi_mode_rdonly 
+  integer,                        parameter, public :: df_mpi_mode_rdwr    = mpi_mode_rdwr   
+  integer,                        parameter, public :: df_mpi_mode_create  = mpi_mode_create 
+  integer,                        parameter, public :: df_mpi_mode_excl    = mpi_mode_excl
+  integer,                        parameter, public :: df_mpi_mode_delete_on_close  = mpi_mode_delete_on_close 
+  integer,                        parameter, public :: df_mpi_file_null    = mpi_file_null
+  integer,                        parameter, public :: df_mpi_seek_set     = mpi_seek_set
+  integer,                        parameter, public :: df_mpi_seek_cur     = mpi_seek_cur
   integer(kind=MPI_OFFSET_KIND),  parameter, public :: df_MPI_OFFSET_KIND  = MPI_OFFSET_KIND
   integer(kind=MPI_ADDRESS_KIND), parameter, public :: df_MPI_ADDRESS_KIND = MPI_ADDRESS_KIND
 
