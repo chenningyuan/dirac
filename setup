@@ -148,7 +148,7 @@ group.add_option('-D',
 group.add_option('-G',
                  action="append",
                  dest='cmake_generator',
-                 default=[],
+                 default=None,
                  help='forward generator name to cmake (example: -G "MinGW Makefiles"); \
                        (see the list of available generators in cmake -help)',
                  metavar='STRING')				 
