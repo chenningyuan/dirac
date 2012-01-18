@@ -492,17 +492,19 @@ class run:
                  #miro: important to have short time delay !
                  time.sleep(2)
              sys.exit()
+			 
          if sys.platform != 'win32':
              signal.signal(signal.SIGHUP,child_signaller)
              signal.signal(signal.SIGPIPE,child_signaller)
          else:
             # these commented signals should work with newer versions of Python
-            #signal.signal(signal.CTRL_C_EVENT,self.child_signaller)
-            #signal.signal(signal.CTRL_BREAK_EVENT,self.child_signaller)
-            signal.signal(signal.SIGABRT,self.child_signaller)
-            signal.signal(signal.SIGFPE,self.child_signaller)
-            signal.signal(signal.SIGILL,self.child_signaller)
-            signal.signal(signal.SIGSEGV,self.child_signaller)
+            #signal.signal(signal.CTRL_C_EVENT,child_signaller)
+            #signal.signal(signal.CTRL_BREAK_EVENT,child_signaller)
+            signal.signal(signal.SIGABRT,child_signaller)
+            signal.signal(signal.SIGFPE,child_signaller)
+            signal.signal(signal.SIGILL,child_signaller)
+            signal.signal(signal.SIGSEGV,child_signaller)
+ 
          #miro: platform independent signals
          signal.signal(signal.SIGTERM,child_signaller)
          signal.signal(signal.SIGINT,child_signaller)

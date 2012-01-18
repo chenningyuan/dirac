@@ -145,6 +145,13 @@ group.add_option('-D',
                        you can also forward CPP defintions all the way to the program \
                        (example: -D CPP="-DDEBUG")',
                  metavar='STRING')
+group.add_option('-G',
+                 action="append",
+                 dest='cmake_generator',
+                 default=None,
+                 help='forward generator name to cmake (example: -G "MinGW Makefiles"); \
+                       (see the list of available generators in cmake -help)',
+                 metavar='STRING')				 
 parser.add_option_group(group)
 
 # process input
@@ -231,6 +238,10 @@ def gen_cmake_command():
         for definition in options.cmake:
             command += ' -D%s' % definition
 
+    if options.cmake_generator:
+        for definition in options.cmake_generator:
+            command += ' -Wno-dev -G \"%s\"' % definition
+
     command += ' %s' % root_directory
     
     print('%s\n' % command)
@@ -252,12 +263,19 @@ def print_build_help(build_path):
     print('   $ make')
 
 def gen_reconfigure_script(command, build_path):
-    file_name = os.path.join(build_path, 'reconfigure')
+    """ tweak between Windows & Unix-like architectures """
+    if sys.platform != "win32":
+        file_name = os.path.join(build_path, 'reconfigure')
+    else:
+        file_name = os.path.join(build_path, 'reconfigure.bat')
     f = open(file_name, 'w')
-    f.write('#!/bin/sh \n')
+    if sys.platform != "win32":
+        f.write('#!/bin/sh \n')
+    # write cmake command
     f.write('%s' % command)
     f.close()
-    os.system('chmod 700 %s' % file_name)
+    if sys.platform != "win32": # make executable on Unix archs
+        os.system('chmod 700 %s' % file_name)
 
 def save_setup_command(argv, build_path):
     file_name = os.path.join(build_path, 'setup_command')

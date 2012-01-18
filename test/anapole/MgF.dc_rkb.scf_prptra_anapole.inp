@@ -38,7 +38,7 @@
 .MULPOP
 *MULPOP
 .VECPOP
-all  
+1..28
 **MOLTRA
 .SCHEME
 6
