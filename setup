@@ -239,7 +239,7 @@ def gen_cmake_command():
             command += ' -D%s' % definition
 
     if options.cmake_generator:
-        command += ' -Wno-dev -G %s' % str(options.cmake_generator)
+        command += ' -Wno-dev -G \"%s\"' % str(options.cmake_generator)
 
     command += ' %s' % root_directory
     
