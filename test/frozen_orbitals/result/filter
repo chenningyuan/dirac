@@ -1,8 +1,2 @@
-
-$ERROR 1.E-3
-From:<<<<<<<<<<<<<<<<<<<<  End of Minimization  <<<<<<<<<<<<<<<<<<<<
-To:Iter     Energy     Change    GradNorm
-
-$ERROR 1.E-5
+$ERROR 1.E-4
 Nlines 3:Energy at final geometry is
-

@@ -5,8 +5,8 @@ $ERROR 1.E-5
 From:Eigenvalues
 ToRE:HOMO - LUMO
 
-From:Expectation values
-To:    s0 = T : Expectation value zero by point group symmetry.
+$ERROR 1.E-5 
+nlines 5:contribution             contribution             contribution
 
 From:Quadratic Response Functions
 To:@   average 
@@ -16,5 +16,3 @@ ToI:DSO contribution to reduced SSCC K (SI)
 
 $ERROR 1.0E-5
 Nlines 4:At1  #  iso 
-
-

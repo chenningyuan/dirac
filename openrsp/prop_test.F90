@@ -836,7 +836,9 @@ contains
       !dec = max(dec,ceiling(log10( maxval(tensor(1:siz)))))
       cwid = 15
       if (present(colwidth)) cwid = max(colwidth,dec+2)
-      dec = cwid - dec - 1
+     !dec = cwid - dec - 1
+     !radovan: too much
+      dec = cwid - dec - 4
       fmt = '(fww.dd)'
       write (fmt(3:7),'(i2,a1,i2)') cwid, '.', dec
       if (any(dimag(tensor(1:siz)) /= 0)) write (uni,'(a)') '    (real part)'

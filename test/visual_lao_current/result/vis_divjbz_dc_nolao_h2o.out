@@ -1,8 +1,8 @@
-DIRAC pam run in /home/bast/dirac/git-repo/test/visual_lao_current
+DIRAC pam run in /home/bast/dirac/master/test/visual_lao_current
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
-Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+Note: maximum allocatable memory for serial run can be set by pam --aw
  
  ******************************************************************************
  *                                                                            *
@@ -78,39 +78,48 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *          Direct Iterative Relativistic All-electron Calculations           *
  *         =========================================================          *
  *                                                                            *
- *                      VERSION 10.00  10 October 2010                        *
- *                                                                            *
- ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
- *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions since the DIRAC08 release from:                  *
+ *    with contributions from:                                                *
  *                                                                            *
- *    Radovan Bast             University of Tromsø              Norway       *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
- *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
  *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
  *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
- *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
- *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linköping University              Sweden       *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
  *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas Thorvaldsen      University of Tromsø              Norway       *
- *    Jørn Thyssen             University of Southern Denmark    Denmark      *
- *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
@@ -127,64 +136,59 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC10 (2010),                                                 *
- *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
- *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
- *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
- *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
- *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
- *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
- *    (see http://dirac.chem.vu.nl).                                          *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
 
 
-Compilation settings
---------------------
+Compilation info
+----------------
 
-CMAKE_SYSTEM_NAME           : Linux 
+ User (who compiled)      | bast@lpqlx131
+ System                   | Linux-2.6.32-5-amd64
+ Processor                | x86_64
+ Internal math            | OFF
+ 64-bit integers          | ON
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Debian 4.4.5-8) 4.4.5
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -fdefault-integer-8 -O3 -fu
+                          | nroll-all-loops
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
+ C flags                  | -g -O2 -Wno-unused
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
+                          | ilp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequent
+                          | ial.so;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_lapack95_ilp64.a;-Wl,--end-group
+ static libraries linking | OFF
+ Configuration time       | 2012-01-16 11:38:18.420985
+ Git revision             | 52a4bb87d533c7925b97708784ea80aaa7e72cec
 
-ENABLE_EXTERNAL_MATH        : ON 
-ENABLE_64BIT_INTEGERS       : OFF 
-ENABLE_MPI                  : OFF 
-ENABLE_XCFUN                : ON 
-ENABLE_LOCAL_DISKS          :  
-NO_SSH_ACCESS_TO_NODES      :  
 
-CMAKE_BUILD_TYPE            : Debug 
-
-CMAKE_Fortran_COMPILER      : /opt/intel/bin/ifort 
-FORTRAN_COMPILER_VERSION    : ifort (IFORT) 12.0.3 20110309 
-CMAKE_Fortran_FLAGS         : -w -assume byterecl -DVAR_IFORT -g -traceback 
-CMAKE_Fortran_FLAGS_DEBUG   : -O0 
-CMAKE_Fortran_FLAGS_RELEASE : -O3 -ip 
-
-CMAKE_C_COMPILER            : /usr/bin/gcc 
-C_COMPILER_VERSION          : gcc (Ubuntu/Linaro 4.5.2-8ubuntu4) 4.5.2 
-CMAKE_C_FLAGS               :   
-CMAKE_C_FLAGS_DEBUG         : -O0 -g3 
-CMAKE_C_FLAGS_RELEASE       : -g -O2 -Wno-unused 
-
-BLAS_LIBRARIES              : -Wl,--start-group;/opt/intel/mkl/lib/ia32/libmkl_core.so;/opt/intel/mkl/lib/ia32/libmkl_intel.so;/opt/intel/mkl/lib/ia32/libmkl_sequential.so;-Wl,--end-group 
-LAPACK_LIBRARIES            : -Wl,--start-group;/opt/intel/mkl/lib/ia32/libmkl_lapack95.a;-Wl,--end-group 
-
-SVN_REVISION                :  
-GIT_REVISION                : b747ab68ca48a51ede7f1b0a79c6b31573304761 
-
-Compilation time            : Fri Jun 24 15:24:27 CEST 2011 
- 
- 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Jun 24 15:55:02 2011
-     Host name              :                                         
- 
- 
+     Date and time (Linux)  : Mon Jan 16 15:02:03 2012 
+     Host name              : not found                               
+
+
 Contents of the input file
 --------------------------
- 
+
 **DIRAC                                                                                             
 .ANALYZE                                                                                            
 **GENERAL                                                                                           
@@ -208,11 +212,11 @@ Contents of the input file
 .DIVJ                                                                                               
  PAMXVC 2                                                                                           
 *END OF                                                                                             
- 
- 
+
+
 Contents of the molecule file
 -----------------------------
- 
+
 INTGRL                                                                                              
 ..                                                                                                  
 ..                                                                                                  
@@ -244,7 +248,7 @@ FINISH
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
    * The speed of light scaled by  5.11D+01 to :  7000.00000000
- * running in four-component mode
+ * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -279,12 +283,6 @@ FINISH
  -------------------------------
 
 
-
-
- Settings for FCK3 calculation:
- ------------------------------
-
-Dynamical threshold is not (yet) implemented in DIRAC
 
 
     *************************************************************************
@@ -350,10 +348,8 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :    9.055004525638
-  QM-pc interaction energy       :    0.000000000000
-  pc-pc interaction energy       :    0.000000000000
-  Total interaction energy       :    9.055004525638
+  QM-QM nuclear repulsion energy :      9.055004525638
+
 
 
   Atoms and basis sets
@@ -366,9 +362,7 @@ Point group: C1
   ----------------------------------------------------------------------
   O           1       8      27      15      L  - [9s4p1d|3s2p1d]                                                
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
-  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
-                             19      19      S  - [1s4p1d|1s4p1d]                                                
-  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
+  H           2       1       7       5      L  - [4s1p|2s1p]                                                    
                              19      19      S  - [1s4p1d|1s4p1d]                                                
   ----------------------------------------------------------------------
                              41      25      L  - large components
@@ -378,9 +372,6 @@ Point group: C1
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-
-  MNF.INP input file (for the AMFI stuff) is ready.
-  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
   References for the basis sets
@@ -423,7 +414,7 @@ Point group: C1
   -------------------------------------------
 
     3
- 
+
 O      0.0000000000  -0.1190150726   0.0000000000
 H      0.7685505185   0.4760599877   0.0000000000
 H     -0.7685505185   0.4760599877   0.0000000000
@@ -639,7 +630,18 @@ H     -0.7685505185   0.4760599877   0.0000000000
     ************************ End of input processing ************************
     *************************************************************************
 
-  * WARNING: DIRAC found the AOPROPER file (one-electron integrals) ...will attempt restart.
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y     -0.00000114     -0.00000291
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
 
 
                        Generating Lowdin canonical matrix:
@@ -671,20 +673,22 @@ Total no. of orbitals           (NORB):    48
                          ! Requested density at point(s) !
                          +-------------------------------+
 
- 
+
      r_x           r_y           r_z            scalar          x-component       y-component       z-component
- 
-  0.500000E+00  0.100000E+01  0.000000E+00  0.1413322089E+00  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
- 
+
+  0.500000E+00  0.100000E+01  0.000000E+00        0.14133221        0.00000000        0.00000000        0.00000000
+
 ----------------------------------------------------------------------------------------------------
- 
- 
+
+
  >>>> time used in plot:   0.00 seconds
  >>>> time used in integration:   0.00 seconds
 
  
-     Date and time (Linux)  : Fri Jun 24 15:55:03 2011
-     Host name              :                                         
+     Date and time (Linux)  : Mon Jan 16 15:02:03 2012 
+     Host name              : not found                               
+>>>> Node 0, utime: 0, stime: 0, minflt: 4081, majflt: 0, nvcsw: 0, nivcsw: 13, maxrss: 15408
+>>>> Total WALL time used in DIRAC: 0s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
@@ -693,25 +697,23 @@ Total no. of orbitals           (NORB):    48
   
   Mean allocation size (Mb) :        37.62
   
-  Largest          10  allocations
+  Largest                   10  allocations
   
-      488.28 Mb at subroutine                                            for work array at main                        
-        0.13 Mb at subroutine                                            for buf in butobs                             
-        0.13 Mb at subroutine                                            for unnamed variable                          
-        0.07 Mb at subroutine                                            for unnamed variable                          
-        0.07 Mb at subroutine                                            for unnamed variable                          
-        0.00 Mb at subroutine                                            for unnamed variable                          
-        0.00 Mb at subroutine                                            for unnamed variable                          
-        0.00 Mb at subroutine                                            for unnamed variable                          
-        0.00 Mb at subroutine                                            for unnamed variable                          
-        0.00 Mb at subroutine                                            for unnamed variable                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
+        0.13 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.13 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
   
   Peak memory usage    (Mb) :       488.00
-       reached at subroutine :                                           
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : unnamed variable                          
   
  MEMGET high-water mark:     2.43 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 128385, majflt: 0, nvcsw: 1, nivcsw: 145, maxrss: 510920
->>>> Total WALL time used in DIRAC: 1s

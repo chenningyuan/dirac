@@ -24,3 +24,4 @@ DIRAC11 version 11.0.2 (20xx-xx-xx)
 -----------------------------------
 
  * Introduce block for .NONREL in combination with linear and quadratic response.
+ * No longer dependence on Perl for test running script, only on Python
