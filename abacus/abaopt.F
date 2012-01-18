@@ -1252,7 +1252,9 @@ C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
 
 C  /* Deck optmin */
       SUBROUTINE OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+
       use interface_to_mpi
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5290,9 +5292,9 @@ C
          RATIO = ERGDIF/ERGPRD
          IF (IPRINT .GT. 2) THEN
             CALL HEADER('Energy difference to previous geometry:',-1)
-            WRITE(LUPRI,'(/A),/)')
+            WRITE(LUPRI,'(/A/))')
      &      '      Actual           /  Predicted       =    Ratio '
-            WRITE(LUPRI,'(5X,F15.10,2(A,F15.10))')
+            WRITE(LUPRI,'(5X,F15.10,A,F15.10,A,F15.10)')
      &            ERGDIF,'  /  ',ERGPRD,'  =  ',RATIO
          END IF
       ELSE

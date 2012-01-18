@@ -60,9 +60,21 @@ module interface_to_mpi
   public interface_mpi_file_open
   public interface_mpi_file_close
   public interface_mpi_file_seek
+  public interface_mpi_file_iwrite
+  public interface_mpi_file_iwrite_at
+  public interface_mpi_file_write_at
+  public interface_mpi_file_read
+  public interface_mpi_file_read_at
   public interface_mpi_info_create
   public interface_mpi_info_free
   public interface_mpi_info_set
+  public interface_mpi_pack_i0
+  public interface_mpi_pack_i2
+  public interface_mpi_pack_r
+  public interface_mpi_unpack_i0
+  public interface_mpi_unpack_i2
+  public interface_mpi_unpack_r
+  public interface_mpi_get_count
 
   interface interface_mpi_bcast
     module procedure interface_mpi_bcast_i0
@@ -165,12 +177,8 @@ module interface_to_mpi
     module procedure interface_mpi_info_set
   end interface
 
-  interface interface_mpi_pack
-    module procedure interface_mpi_pack
-  end interface
-
-  interface interface_mpi_unpack
-    module procedure interface_mpi_unpack
+  interface interface_mpi_get_count
+    module procedure interface_mpi_get_count
   end interface
 
   private
@@ -195,6 +203,7 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_file_null    = mpi_file_null
   integer,                        parameter, public :: df_mpi_seek_set     = mpi_seek_set
   integer,                        parameter, public :: df_mpi_seek_cur     = mpi_seek_cur
+  integer,                        parameter, public :: df_mpi_packed       = mpi_packed
   integer(kind=MPI_OFFSET_KIND),  parameter, public :: df_MPI_OFFSET_KIND  = MPI_OFFSET_KIND
   integer(kind=MPI_ADDRESS_KIND), parameter, public :: df_MPI_ADDRESS_KIND = MPI_ADDRESS_KIND
 
@@ -1967,6 +1976,35 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_file_iwrite(communicator, fname, amode, info, file_handle)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: file_handle
+    integer(kind=integer_kind)       :: info
+    integer(kind=integer_kind)       :: amode
+    integer(kind=integer_kind)       :: communicator
+    character*(*)                    :: fname
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: file_handle_i4
+    integer(kind=4)            :: info_i4
+    integer(kind=4)            :: amode_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    info_i4         = info
+    amode_i4        = amode
+    communicator_i4 = communicator
+    call mpi_file_iwrite(communicator_i4, fname, amode_i4, info_i4, file_handle_i4, ierr_i4)
+    file_handle     = file_handle_i4
+#else
+    call mpi_file_iwrite(communicator   , fname, amode   , info   , file_handle   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
   subroutine interface_mpi_info_create(info_object)
 
 !-------------------------------------------------------------------------------
@@ -2025,6 +2063,219 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_pack_i0(x, ndim1, y, ndim2, pos, communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: x
+    integer(kind=integer_kind)       :: ndim1
+    character*(*)                    :: y(:)
+    integer(kind=integer_kind)       :: ndim2
+    integer(kind=integer_kind)       :: pos
+    integer(kind=integer_kind)       :: communicator
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim1_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: pos_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim1_i4        = ndim1
+    ndim2_i4        = ndim2
+    pos_i4          = pos
+    communicator_i4 = communicator
+    call mpi_pack(x, ndim1_i4, my_MPI_INTEGER, y, ndim2_i4, pos_i4, communicator_i4, ierr_i4)
+    pos             = pos_i4
+#else
+    call mpi_pack(x, ndim1   , my_MPI_INTEGER, y, ndim2   , pos   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_pack_i2(x, ndim1, y, ndim2, pos, communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: x(:,:)
+    integer(kind=integer_kind)       :: ndim1
+    character*(*)                    :: y(:)
+    integer(kind=integer_kind)       :: ndim2
+    integer(kind=integer_kind)       :: pos
+    integer(kind=integer_kind)       :: communicator
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim1_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: pos_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim1_i4        = ndim1
+    ndim2_i4        = ndim2
+    pos_i4          = pos
+    communicator_i4 = communicator
+    call mpi_pack(x, ndim1_i4, my_MPI_INTEGER, y, ndim2_i4, pos_i4, communicator_i4, ierr_i4)
+    pos             = pos_i4
+#else
+    call mpi_pack(x, ndim1   , my_MPI_INTEGER, y, ndim2   , pos   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_pack_r(x, ndim1, y, ndim2, pos, communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                          :: x(:)
+    integer(kind=integer_kind)       :: ndim1
+    character*(*)                    :: y(:)
+    integer(kind=integer_kind)       :: ndim2
+    integer(kind=integer_kind)       :: pos
+    integer(kind=integer_kind)       :: communicator
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim1_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: pos_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim1_i4        = ndim1
+    ndim2_i4        = ndim2
+    pos_i4          = pos
+    communicator_i4 = communicator
+    call mpi_pack(x, ndim1_i4, MPI_REAL8, y, ndim2_i4, pos_i4, communicator_i4, ierr_i4)
+    pos             = pos_i4
+#else
+    call mpi_pack(x, ndim1   , MPI_REAL8, y, ndim2   , pos   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_unpack_i0(x, ndim1, pos, y, ndim2, communicator)
+
+!-------------------------------------------------------------------------------
+    character*(*)                    :: x(:)
+    integer(kind=integer_kind)       :: ndim1
+    integer(kind=integer_kind)       :: y
+    integer(kind=integer_kind)       :: ndim2
+    integer(kind=integer_kind)       :: pos
+    integer(kind=integer_kind)       :: communicator
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim1_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: pos_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim1_i4        = ndim1
+    ndim2_i4        = ndim2
+    pos_i4          = pos
+    communicator_i4 = communicator
+    call mpi_unpack(x, ndim1_i4, pos_i4, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
+    pos             = pos_i4
+#else
+    call mpi_unpack(x, ndim1   , pos   , y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_unpack_i2(x, ndim1, pos, y, ndim2, communicator)
+
+!-------------------------------------------------------------------------------
+    character*(*)                    :: x(:)
+    integer(kind=integer_kind)       :: ndim1
+    integer(kind=integer_kind)       :: y(:,:)
+    integer(kind=integer_kind)       :: ndim2
+    integer(kind=integer_kind)       :: pos
+    integer(kind=integer_kind)       :: communicator
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim1_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: pos_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim1_i4        = ndim1
+    ndim2_i4        = ndim2
+    pos_i4          = pos
+    communicator_i4 = communicator
+    call mpi_unpack(x, ndim1_i4, pos_i4, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
+    pos             = pos_i4
+#else
+    call mpi_unpack(x, ndim1   , pos   , y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_unpack_r(x, ndim1, pos, y, ndim2, communicator)
+
+!-------------------------------------------------------------------------------
+    character*(*)                    :: x(:)
+    integer(kind=integer_kind)       :: ndim1
+    real(8)                          :: y(:)
+    integer(kind=integer_kind)       :: ndim2
+    integer(kind=integer_kind)       :: pos
+    integer(kind=integer_kind)       :: communicator
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim1_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: pos_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim1_i4        = ndim1
+    ndim2_i4        = ndim2
+    pos_i4          = pos
+    communicator_i4 = communicator
+    call mpi_unpack(x, ndim1_i4, pos_i4, y, ndim2_i4, MPI_REAL8, communicator_i4, ierr_i4)
+    pos             = pos_i4
+#else
+    call mpi_unpack(x, ndim1   , pos   , y, ndim2   , MPI_REAL8, communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_get_count(status_array, datatype, elements)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
+    integer(kind=integer_kind)       :: datatype
+    integer(kind=integer_kind)       :: elements
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: datatype_i4
+    integer(kind=4)            :: elements_i4
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: i
+!-------------------------------------------------------------------------------
+    datatype_i4     = datatype
+    do i = 1, MPI_STATUS_SIZE
+      status_array_i4(i) = status_array(i)
+    end do
+    call mpi_get_count(status_array_i4, datatype_i4, elements_i4, ierr_i4)
+    elements        = elements_i4
+#else
+    call mpi_get_count(status_array   , datatype   , elements   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
 
 #else
   implicit none

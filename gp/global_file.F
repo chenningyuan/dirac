@@ -277,20 +277,20 @@ C     in two parts (the first part performs an implicit cast).
       POSITION = 0
 
       INCOUNT = 1
-      CALL MPI_PACK(PREV_REC,INCOUNT,my_MPI_INTEGER,
-     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
+      call interface_mpi_pack_i0(PREV_REC,INCOUNT,
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator)
 
       INCOUNT = 1
-      CALL MPI_PACK(N,INCOUNT,my_MPI_INTEGER,
-     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
+      call interface_mpi_pack_i0(N,INCOUNT,
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator)
 
       INCOUNT = NGBFSZ
-      CALL MPI_PACK(RGBUF,INCOUNT,MPI_DOUBLE_PRECISION,
-     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
+      call interface_mpi_pack_r(RGBUF,INCOUNT,
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator)
 
       INCOUNT = 2*NGBFSZ
-      CALL MPI_PACK(IGBUF,INCOUNT,my_MPI_INTEGER,
-     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator,IERR)
+      call interface_mpi_pack_i2(IGBUF,INCOUNT,
+     +  GF_RECBUF,GF_RECLEN,POSITION,self_communicator)
 
       RECORD_OFFSET =
      +  GLOBAL_FILE_OFFSET(TARGET_NODE,SOURCE_NODE,THIS_REC)
@@ -298,7 +298,7 @@ C     in two parts (the first part performs an implicit cast).
       IERR = 0
 
       CALL MPI_FILE_IWRITE_AT(
-     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,MPI_PACKED,
+     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,df_mpi_packed,
      +  WRITE_REQUEST,IERR)
 
 !     check for successful writing. SK - Aug 2010
@@ -337,11 +337,11 @@ C     in two parts (the first part performs an implicit cast).
      +  TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
 
       CALL MPI_FILE_READ_AT(
-     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,MPI_PACKED,
+     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,df_mpi_packed,
      +  STATUS,IERR)
 CSK   ... zero NUMREAD, otherwise it may fail
       NUMREAD = 0
-      CALL MPI_GET_COUNT(STATUS,MPI_PACKED,NUMREAD,IERR)
+      call interface_mpi_get_count(STATUS,df_mpi_packed,NUMREAD)
       IF (NUMREAD .NE. GF_RECLEN) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_GET_RECORD: NUMREAD = ', NUMREAD
          call interface_MPI_ABORT(global_communicator,1)
@@ -380,20 +380,20 @@ C
             POSITION = 0
 
             OUTCOUNT = 1
-            CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         PREV_REC,OUTCOUNT,my_MPI_INTEGER,global_communicator,IERR)
+            call interface_mpi_unpack_i0(GF_RECBUF,GF_RECLEN,POSITION,
+     +         PREV_REC,OUTCOUNT,global_communicator)
 
             OUTCOUNT = 1
-            CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         N,OUTCOUNT,my_MPI_INTEGER,global_communicator,IERR)
+            call interface_mpi_unpack_i0(GF_RECBUF,GF_RECLEN,POSITION,
+     +         N,OUTCOUNT,global_communicator)
 
             OUTCOUNT = NGBFSZ
-            CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         RGBUF,OUTCOUNT,MPI_DOUBLE_PRECISION,global_communicator,IERR)
+            call interface_mpi_unpack_r1(GF_RECBUF,GF_RECLEN,POSITION,
+     +         RGBUF,OUTCOUNT,global_communicator)
 
             OUTCOUNT = 2*NGBFSZ
-            CALL MPI_UNPACK(GF_RECBUF,GF_RECLEN,POSITION,
-     +         IGBUF,OUTCOUNT,my_MPI_INTEGER,global_communicator,IERR)
+            call interface_mpi_unpack_i2(GF_RECBUF,GF_RECLEN,POSITION,
+     +         IGBUF,OUTCOUNT,global_communicator)
 
 C           Pick out the integrals that we need.
 
@@ -495,11 +495,11 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
          DO LOCAL_RECORD = 1, GF_NREC(MYTID,SOURCE_NODE)
 
             CALL MPI_FILE_READ(
-     +        GF_HANDLE,GF_RECBUF,GF_RECLEN,MPI_PACKED,
+     +        GF_HANDLE,GF_RECBUF,GF_RECLEN,df_mpi_packed,
      +        ISTAT,IERR)
 CSK         ... zero NUMREAD, otherwise it may fail
             NUMREAD = 0
-            CALL MPI_GET_COUNT(ISTAT,MPI_PACKED,NUMREAD,IERR)
+            call interface_mpi_get_count(ISTAT,df_mpi_packed,NUMREAD)
             IF (NUMREAD .NE. GF_RECLEN) THEN
                PRINT *, 'ERROR: SELECT_LOCAL_FROM_GLOBAL: NUMREAD = ',
      +         NUMREAD
@@ -513,7 +513,7 @@ CSK         ... zero NUMREAD, otherwise it may fail
             ENDDO
 
             CALL MPI_FILE_IWRITE(
-     +        LF_HANDLE,LF_RECBUF,GF_RECLEN,MPI_PACKED,
+     +        LF_HANDLE,LF_RECBUF,GF_RECLEN,df_mpi_packed,
      +        WRITE_REQUEST,IERR)
 
          ENDDO
