@@ -71,22 +71,22 @@ C
       INTEGER GF_INFO
       INTEGER I, J, K
 
-      CALL MPI_INFO_CREATE(GF_INFO, IERR)
+      CALL interface_MPI_INFO_CREATE(GF_INFO)
 #if defined (SYS_AIX) || defined (SYS_IBM)
 C     ... IBMs GPFS specific file hint - SK Aug 2008
-      CALL MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true",IERR)
+      CALL interface_MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true")
 #else
-      CALL MPI_INFO_SET(GF_INFO, "direct_write", "true", IERR)
-      CALL MPI_INFO_SET(GF_INFO, "romio_cb_write", "disable", IERR)
-      CALL MPI_INFO_SET(GF_INFO, "romio_ds_write", "disable", IERR)
+      CALL interface_MPI_INFO_SET(GF_INFO, "direct_write", "true")
+      CALL interface_MPI_INFO_SET(GF_INFO, "romio_cb_write", "disable")
+      CALL interface_MPI_INFO_SET(GF_INFO, "romio_ds_write", "disable")
 #endif
 
-      CALL MPI_FILE_OPEN(
+      CALL interface_MPI_FILE_OPEN(
      +   global_communicator, GF_NAME,
      +   df_MPI_MODE_WRONLY + df_MPI_MODE_CREATE + df_MPI_MODE_EXCL,
-     +   GF_INFO, GF_HANDLE, IERR
+     +   GF_INFO, GF_HANDLE
      +)
-      CALL MPI_INFO_FREE(GF_INFO, IERR)
+      CALL interface_MPI_INFO_FREE(GF_INFO)
 
       DO K = 0, NUMNOD
          DO J = 0, NUMNOD
@@ -116,29 +116,30 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       NMPROC = NUMNOD + 1
       NMBUFF = N_BUFFER * NMPROC
 
-      CALL MPI_INFO_CREATE(GF_INFO, IERR)
+      CALL interface_MPI_INFO_CREATE(GF_INFO)
 #if defined (SYS_AIX) || defined (SYS_IBM)
 C     ... IBMs GPFS specific file hint - SK Aug 2008
-      CALL MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true",IERR)
+      CALL interface_MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true")
 #else
-      CALL MPI_INFO_SET(GF_INFO, "ind_rd_buffer_size", "16777216", IERR)
-      CALL MPI_INFO_SET(GF_INFO, "romio_cb_read", "disable", IERR)
-      CALL MPI_INFO_SET(GF_INFO, "romio_ds_read", "enable", IERR)
+      CALL interface_MPI_INFO_SET(GF_INFO, "ind_rd_buffer_size", 
+     &                            "16777216")
+      CALL interface_MPI_INFO_SET(GF_INFO, "romio_cb_read", "disable")
+      CALL interface_MPI_INFO_SET(GF_INFO, "romio_ds_read", "enable")
 #endif
 
-      CALL MPI_FILE_OPEN(
+      CALL interface_MPI_FILE_OPEN(
      +   global_communicator, GF_NAME,
      +   df_MPI_MODE_RDONLY + df_MPI_MODE_DELETE_ON_CLOSE,
-     +   GF_INFO, GF_HANDLE, IERR
+     +   GF_INFO, GF_HANDLE
      +)
 
-      CALL MPI_INFO_FREE(GF_INFO, IERR)
+      CALL interface_MPI_INFO_FREE(GF_INFO)
 
       DO I=0,NUMNOD
-         CALL MPI_BCAST(GF_NREC(0,I),NMPROC,my_MPI_INTEGER,I,
-     +                  global_communicator,IERR)
-         CALL MPI_BCAST(GF_BREC(1,0,I),NMBUFF,my_MPI_INTEGER,I,
-     +                  global_communicator,IERR)
+         CALL interface_MPI_BCAST(GF_NREC(0,I),NMPROC,I,
+     +                  global_communicator)
+         CALL interface_MPI_BCAST(GF_BREC(1,0,I),NMBUFF,I,
+     +                  global_communicator)
       ENDDO
 
       RETURN
@@ -150,10 +151,10 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
 #include "bucket_sort.h"
 
-      INTEGER IERR, istat(df_MPI_STATUS_SIZE)
+      INTEGER istat(df_MPI_STATUS_SIZE)
 
       CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
-      CALL MPI_FILE_CLOSE(GF_HANDLE, IERR)
+      CALL interface_MPI_FILE_CLOSE(GF_HANDLE)
 
       RETURN
       END
@@ -164,9 +165,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
 #include "bucket_sort.h"
 
-      INTEGER IERR
-
-      CALL MPI_FILE_CLOSE(GF_HANDLE, IERR)
+      CALL interface_MPI_FILE_CLOSE(GF_HANDLE)
 
       RETURN
       END
@@ -184,18 +183,18 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       IF (TARGET_NODE .LT. 0 .OR. TARGET_NODE .GT. NUMNOD) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_RECORD: TARGET_NODE = ',
      +      TARGET_NODE
-         CALL MPI_ABORT(global_communicator,1,IERR)
+         call interface_MPI_ABORT(global_communicator,1)
       ENDIF
       IF (SOURCE_NODE .LT. 1 .OR. SOURCE_NODE .GT. NUMNOD) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_RECORD: SOURCE_NODE = ',
      +      SOURCE_NODE
-         CALL MPI_ABORT(global_communicator,1,IERR)
+         call interface_MPI_ABORT(global_communicator,1)
       ENDIF
       IF (LOCAL_RECORD .LT. 1 .OR. LOCAL_RECORD .GT. GF_MAXREC) THEN
 C increase GF_MAXREC in bucket_sort.h
          PRINT *, 'ERROR: GLOBAL_FILE_RECORD: LOCAL_RECORD = ',
      +      LOCAL_RECORD
-         CALL MPI_ABORT(global_communicator,1,IERR)
+         call interface_MPI_ABORT(global_communicator,1)
       ENDIF
 
       GLOBAL_FILE_RECORD =
@@ -246,8 +245,8 @@ C     in two parts (the first part performs an implicit cast).
       RECORD_OFFSET =
      +   GLOBAL_FILE_OFFSET(TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
 
-      CALL MPI_FILE_SEEK(
-     +   GF_HANDLE,RECORD_OFFSET,df_MPI_SEEK_SET,IERR)
+      CALL interface_mpi_file_seek(GF_HANDLE,RECORD_OFFSET,
+     +                             df_MPI_SEEK_SET)
 
       RETURN
       END
@@ -310,7 +309,7 @@ C     in two parts (the first part performs an implicit cast).
         PRINT *, 'ERROR: GLOBAL_FILE_WRITE: writing failed at
      +  RECORD_OFFSET (mytid) =',RECORD_OFFSET,SOURCE_NODE
 !       errorcode 112
-        CALL MPI_ABORT(global_communicator,112,IERR)
+        call interface_MPI_ABORT(global_communicator,112)
       END IF
 
       GF_BREC(IBUF,TARGET_NODE,SOURCE_NODE) = THIS_REC
@@ -343,10 +342,9 @@ C     in two parts (the first part performs an implicit cast).
 CSK   ... zero NUMREAD, otherwise it may fail
       NUMREAD = 0
       CALL MPI_GET_COUNT(STATUS,MPI_PACKED,NUMREAD,IERR)
-      WRITE(6,*) ' GLOBAL_FILE_GET... NUMREAD',NUMREAD
       IF (NUMREAD .NE. GF_RECLEN) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_GET_RECORD: NUMREAD = ', NUMREAD
-         CALL MPI_ABORT(global_communicator,1,IERR)
+         call interface_MPI_ABORT(global_communicator,1)
       ENDIF
 
       RETURN
@@ -402,14 +400,14 @@ C           Pick out the integrals that we need.
             IF (N.GT.NGBFSZ) THEN
                PRINT *, 'ERROR: GLOBAL_FILE_READ: N, NGBFSZ =',
      +                  N, NGBFSZ
-               CALL MPI_ABORT(global_communicator,1,IERR)
+               call interface_MPI_ABORT(global_communicator,1)
             ENDIF
             DO I = 1, N
                IF (IGBUF(2,I).EQ.ICOL) THEN
                   IF (IGBUF(1,I) .LT. 1 .OR. IGBUF(1,I) .GT. NROW) THEN
                      PRINT *, 'ERROR: GLOBAL_FILE_READ: IGBUF(1,I) =',
      +                        IGBUF(1,I),'I =',I
-                     CALL MPI_ABORT(global_communicator,1,IERR)
+                     call interface_MPI_ABORT(global_communicator,1)
                   ENDIF
                   A(IGBUF(1,I)) = RGBUF(I)
                ENDIF
@@ -437,23 +435,23 @@ C           Pick out the integrals that we need.
 
       WRITE (LF_NAME,'(a,i5.5)') 'local', MYTID
 
-      CALL MPI_INFO_CREATE(GF_INFO, IERR)
+      CALL interface_MPI_INFO_CREATE(GF_INFO)
 #if defined (SYS_AIX) || defined (SYS_IBM)
 C     ... IBMs GPFS specific file hint - SK Aug 2008
-      CALL MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true",IERR)
+      CALL interface_MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true")
 #else
-      CALL MPI_INFO_SET(GF_INFO, "direct_write", "true", IERR)
-      CALL MPI_INFO_SET(GF_INFO, "romio_cb_write", "disable", IERR)
-      CALL MPI_INFO_SET(GF_INFO, "romio_ds_write", "disable", IERR)
+      CALL interface_MPI_INFO_SET(GF_INFO, "direct_write", "true")
+      CALL interface_MPI_INFO_SET(GF_INFO, "romio_cb_write", "disable")
+      CALL interface_MPI_INFO_SET(GF_INFO, "romio_ds_write", "disable")
 #endif
 
-      CALL MPI_FILE_OPEN(
+      CALL interface_MPI_FILE_OPEN(
      +   self_communicator, LF_NAME,
      +   df_MPI_MODE_WRONLY + df_MPI_MODE_CREATE,
-     +   GF_INFO, LF_HANDLE, IERR
+     +   GF_INFO, LF_HANDLE
      +)
 
-      CALL MPI_INFO_FREE(GF_INFO, IERR)
+      CALL interface_MPI_INFO_FREE(GF_INFO)
 
       WRITE_REQUEST = df_MPI_REQUEST_NULL
 
@@ -466,10 +464,10 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
 #include "bucket_sort.h"
 
-      INTEGER IERR, istat(df_MPI_STATUS_SIZE)
+      INTEGER istat(df_MPI_STATUS_SIZE)
 
       CALL interface_MPI_WAIT(WRITE_REQUEST,istat)
-      CALL MPI_FILE_CLOSE(LF_HANDLE, IERR)
+      CALL interface_MPI_FILE_CLOSE(LF_HANDLE)
 
       RETURN
       END
@@ -505,7 +503,7 @@ CSK         ... zero NUMREAD, otherwise it may fail
             IF (NUMREAD .NE. GF_RECLEN) THEN
                PRINT *, 'ERROR: SELECT_LOCAL_FROM_GLOBAL: NUMREAD = ',
      +         NUMREAD
-               CALL MPI_ABORT(global_communicator,1,IERR)
+               call interface_MPI_ABORT(global_communicator,1)
             ENDIF
 
             CALL interface_MPI_WAIT(WRITE_REQUEST,istat)

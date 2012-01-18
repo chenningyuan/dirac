@@ -57,6 +57,12 @@ module interface_to_mpi
   public interface_mpi_init
   public interface_mpi_finalize
   public interface_mpi_abort
+  public interface_mpi_file_open
+  public interface_mpi_file_close
+  public interface_mpi_file_seek
+  public interface_mpi_info_create
+  public interface_mpi_info_free
+  public interface_mpi_info_set
 
   interface interface_mpi_bcast
     module procedure interface_mpi_bcast_i0
@@ -133,6 +139,38 @@ module interface_to_mpi
   
   interface interface_mpi_iprobe
     module procedure interface_mpi_iprobe_l0
+  end interface
+
+  interface interface_mpi_file_open
+    module procedure interface_mpi_file_open
+  end interface
+
+  interface interface_mpi_file_close
+    module procedure interface_mpi_file_close
+  end interface
+
+  interface interface_mpi_file_seek
+    module procedure interface_mpi_file_seek
+  end interface
+
+  interface interface_mpi_info_create
+    module procedure interface_mpi_info_create
+  end interface
+
+  interface interface_mpi_info_free
+    module procedure interface_mpi_info_free
+  end interface
+
+  interface interface_mpi_info_set
+    module procedure interface_mpi_info_set
+  end interface
+
+  interface interface_mpi_pack
+    module procedure interface_mpi_pack
+  end interface
+
+  interface interface_mpi_unpack
+    module procedure interface_mpi_unpack
   end interface
 
   private
@@ -1854,6 +1892,134 @@ contains
     call mpi_abort(communicator_i4, error_code_i4, ierr_i4)
 #else
     call mpi_abort(communicator   , error_code   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_file_open(communicator, fname, amode, info, file_handle)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: file_handle
+    integer(kind=integer_kind)       :: info
+    integer(kind=integer_kind)       :: amode
+    integer(kind=integer_kind)       :: communicator
+    character*(*)                    :: fname
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: file_handle_i4
+    integer(kind=4)            :: info_i4
+    integer(kind=4)            :: amode_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    info_i4         = info
+    amode_i4        = amode
+    communicator_i4 = communicator
+    call mpi_file_open(communicator_i4, fname, amode_i4, info_i4, file_handle_i4, ierr_i4)
+    file_handle     = file_handle_i4
+#else
+    call mpi_file_open(communicator   , fname, amode   , info   , file_handle   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_file_close(file_handle)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: file_handle
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: file_handle_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    file_handle_i4 = file_handle
+    call mpi_file_close(file_handle_i4, ierr_i4)
+#else
+    call mpi_file_close(file_handle   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+  subroutine interface_mpi_file_seek(file_handle, offset, whence)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: file_handle
+    integer(kind=df_mpi_offset_kind) :: offset
+    integer(kind=integer_kind)       :: whence
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: file_handle_i4
+    integer(kind=4)            :: whence_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    file_handle_i4 = file_handle
+    whence_i4      = whence
+    call mpi_file_seek(file_handle_i4, offset, whence_i4, ierr_i4)
+#else
+    call mpi_file_seek(file_handle   , offset, whence   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_info_create(info_object)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: info_object
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)                  :: info_object_i4
+    integer(kind=4)                  :: ierr_i4
+!-------------------------------------------------------------------------------
+    call mpi_info_create(info_object_i4, ierr_i4)
+    info_object = info_object_i4
+#else
+    call mpi_info_create(info_object   , ierr  )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_info_free(info_object)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: info_object
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)                  :: info_object_i4
+    integer(kind=4)                  :: ierr_i4
+!-------------------------------------------------------------------------------
+    call mpi_info_free(info_object_i4, ierr_i4)
+    info_object = info_object_i4
+#else
+    call mpi_info_free(info_object   , ierr  )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_info_set(info_object, key, value)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: info_object
+    character*(*)                    :: key
+    character*(*)                    :: value
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)                  :: info_object_i4
+    integer(kind=4)                  :: ierr_i4
+!-------------------------------------------------------------------------------
+    call mpi_info_set(info_object_i4, key, value, ierr_i4)
+    info_object = info_object_i4
+#else
+    call mpi_info_set(info_object   , key, value, ierr  )
 #endif
 
   end subroutine
