@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+DIRAC=/home/ilias/qch_work/software/dirac_git/trunk
+
+### update, compile & pack ###
+
+cd $DIRAC
+#git pull
+#pamadm -a
+#cd $DIRAC/build
+#cmake ..
+#make -j 2
+
+# make one tgz-file with all Dirac stuff for testing
+
+cd $DIRAC/maintenance/grid_testing
+
+tar cvzf dirac_test_suite.tgz diracrc ../../build/dirac.x ../../pam ../../runtest ../../test ../../basis ../../basis_dalton
+
+echo "package ready"
+
+exit 0
