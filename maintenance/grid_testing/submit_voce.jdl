@@ -25,7 +25,7 @@ VirtualOrganisation="voce";
 
 # other conditions
 Requirements =
- other.GlueCEPolicyMaxWallClockTime > 600 
+ other.GlueCEPolicyMaxWallClockTime > 900;
 #  &&
 # RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
 # other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||

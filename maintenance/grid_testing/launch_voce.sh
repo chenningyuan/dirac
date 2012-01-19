@@ -1,8 +1,11 @@
 #!/bin/sh
 #
 # short script for copying and launching the DIRAC testing machinery
+
 export rundir=`pwd`
-echo "rundir=$rundir"
+
+echo -e "Hostname: \c"; hostname -f
+echo -e "I am here: \c";$rundir
 
 echo "files on my voce space lfn://grid/voce/ilias:"
 lcg-ls lfn://grid/voce/ilias
@@ -16,21 +19,25 @@ lcg-cp lfn://grid/voce/ilias/dirac_test_suite.tgz    file://$rundir/dirac_test_s
 ##########################################
 ##  make it executable and finally launch
 ##########################################
+echo -e "\n Job started at : \c"; date
+
 tar -xvf dirac_test_suite.tgz
 chmod  u+x build/dirac.x pam runtest
 
+echo -e "\n --- Launching runtest --- \n "; 
+
 #python ./pam --inp=fsccsd_IH.inp --mol=Mg.mol  --mw=92 --scratch=$PWD --outcmo
-#python ./runtest --verbose --tests=cosci_energy
-python ./runtest --verbose --tests="cosci_energy fscc acmoin"
+#python ./runtest --verbose --tests=cosci_energy # works
+#python ./runtest --verbose --tests="cosci_energy fscc acmoin" # works
+#python ./runtest --verbose --quick # works
+python ./runtest --verbose --all
 
 ############################
 #  print out some info .. 
 ############################
-echo "Done, date, hostname, current directory, list of files:"
-date
-echo "Hostname:"; hostname -f
-echo "My space:"; df -h .
-pwd
-ls -lt
-echo "Total occupied space:"
-du -h -s .
+echo "\n -------------------------------------------------------"
+echo -e "Job finished at: \c"; date
+echo -e "My space: \c"; df -h .
+echo -e "I am here: \c";pwd
+echo  "All files:"; ls -lt
+echo -e "Total occupied space: \c"; du -h -s .
