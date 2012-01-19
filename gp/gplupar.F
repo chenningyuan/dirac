@@ -51,16 +51,16 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
       DIMENSION LUINLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -147,8 +147,8 @@ C
              IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
 C
 C             read block in
-               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                               MPI_REAL8,ISTAT,IERR)
+               call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+     &              SEGMNT,LBL,ISTAT)
                IMZERO = 0
              ELSE
                IMZERO = 1
@@ -187,15 +187,15 @@ C
           ISENDTOM = 0
           ISENDTOM = LUINLIST( IOFFSET_INT_IN )
 C
-          CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,MASTER,90,
-     &                  JCOMM,IERR)
+          call interface_mpi_SEND(ISENDTOM,1,MASTER,90,
+     &                  JCOMM)
 C
           IF( ISENDTOM .gt. 0 ) THEN
 C
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
-            CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,MASTER,91,
-     &                    JCOMM,IERR)
+            call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,
+     &                            lbl,ISTAT)
+            call interface_mpi_SEND(SEGMNT,LBL,MASTER,91,
+     &                    JCOMM)
 C
           END IF
           IOFFSET_SCRATCH = LBL
@@ -207,13 +207,13 @@ C
 C
           ISENDTOM = 0
 C
-          CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,90,
-     &                  JCOMM,ISTAT,IERR)
+          call interface_mpi_RECV(ISENDTOM,1,MYNSLV,90,
+     &                  JCOMM)
 C
           IF( ISENDTOM .gt. 0 ) THEN
 C
-            CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                     JCOMM,ISTAT,IERR)
+            call interface_mpi_RECV(SEGMNT,LBL,MYNSLV,91,
+     &                     JCOMM)
             CALL TODSC(SEGMNT,LBL,-1,LUOUT)
           ELSE
             CALL ZERORC(LBL,LUOUT,0)
@@ -308,8 +308,8 @@ C
              IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
 C
 C             read block in
-               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                               MPI_REAL8,ISTAT,IERR)
+               call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+     &              SEGMNT,LBL,ISTAT)
                IMZERO = 0
              ELSE
                IMZERO = 1
@@ -348,15 +348,15 @@ C
             ISENDTOM = 0
             ISENDTOM = LUINLIST( IOFFSET_INT_IN )
 C
-            CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,MASTER,93,
-     &                    JCOMM,IERR)
+            call interface_mpi_SEND(ISENDTOM,1,MASTER,93,
+     &                    JCOMM)
 C
             IF( ISENDTOM .gt. 0 ) THEN
 C
-              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                              MPI_REAL8,ISTAT,IERR)
-              CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,MASTER,94,
-     &                      JCOMM,IERR)
+              call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+     &             SEGMNT,LBL,ISTAT,IERR)
+              call interface_mpi_SEND(SEGMNT,LBL,MASTER,94,
+     &                      JCOMM)
 C
             END IF
             IOFFSET_SCRATCH = LBL
@@ -368,13 +368,13 @@ C
 C
             ISENDTOM = 0
 C
-            CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,93,
-     &                    JCOMM,ISTAT,IERR)
+            call interface_mpi_RECV(ISENDTOM,1,MYNSLV,93,
+     &                    JCOMM)
 C
             IF( ISENDTOM .gt. 0 ) THEN
 C
-              CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
-     &                       JCOMM,ISTAT,IERR)
+              call interface_mpi_RECV(SEGMNT,LBL,MYNSLV,94,
+     &                       JCOMM)
               CALL TODSC(SEGMNT,LBL,-1,LUOUT)
             ELSE
               CALL ZERORC(LBL,LUOUT,0)
@@ -420,15 +420,15 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -495,8 +495,8 @@ C
              CALL ITODS(LBL,1,-1,LUOUT)
 C
 C            read block in
-             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+             call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+     &            SEGMNT,LBL,ISTAT)
 C
              CALL TODSC(SEGMNT,LBL,-1,LUOUT)
 C
@@ -523,10 +523,10 @@ C
 C
         IF(MYPROC.NE.MASTER) THEN
 C
-          CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                          MPI_REAL8,ISTAT,IERR)
-          CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,MASTER,91,
-     &                  JCOMM,IERR)
+          call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+     &         SEGMNT,LBL,ISTAT)
+          call interface_mpi_SEND(SEGMNT,LBL,MASTER,91,
+     &                  JCOMM)
 C
           IOFFSET_SCRATCH = LBL
         END IF
@@ -534,8 +534,8 @@ C
 C
         IF(MYPROC.EQ.MASTER) THEN
 C
-          CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                  JCOMM,ISTAT,IERR)
+          call interface_mpi_RECV(SEGMNT,LBL,MYNSLV,91,
+     &                  JCOMM)
           CALL TODSC(SEGMNT,LBL,-1,LUOUT)
 C
           IOFFSET_SCRATCH = 0
@@ -580,9 +580,9 @@ C
 C      LUOUT       LUDIA        LUIN
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 *
 * =====
@@ -609,12 +609,12 @@ C
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUDIA
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN, IOFFSET_IN_LUDIA
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -736,18 +736,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) ISCRATCH_SP
-      INTEGER(KIND=MPI_OFFSET_KIND) ILEN_COMB
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN, IOFFSET_OUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) ISCRATCH_SP
+      INTEGER(KIND=df_mpi_offset_kind) ILEN_COMB
       INTEGER NUM_BLK
 C
       I_RUN_CPLX = 1
@@ -855,14 +855,14 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*) 
       DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET
       INTEGER JOFF
       JOFF = 0
 C
@@ -893,8 +893,8 @@ CSK     &                 IOFFSET
 C
 C           read vector
 C
-              CALL MPI_FILE_READ_AT(LUIN,IOFFSET,SCR(JOFF),
-     &                              ILEN2,MPI_REAL8,ISTAT,IERR)
+              call interface_mpi_FILE_READ_AT(LUIN,IOFFSET,SCR(JOFF),
+     &                              ILEN2,ISTAT)
 C
 CSK              WRITE(LUWRT,'(2X,A,1X,I12,1X,A,1X,I6,1X,I6)') 
 CSK     & 'Read-in from ILU1 at',IOFFSET,'for block',IOFFSET_INT_OUT +
@@ -936,14 +936,14 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, ISCRATCH_SP
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET, ISCRATCH_SP
       INTEGER JOFF, LENGTH
 C
       JOFF   = 0
@@ -977,8 +977,8 @@ csk     WRITE(LUWRT,'(2X,A,1X,I6,1X,A,1X,I14,1X,I6)') 'THIS IS block',
 csk  &       IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
 csk       CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
 C
-          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
-     &                           LENGTH,MPI_REAL8,ISTAT,IERR)
+          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
+     &                           LENGTH,ISTAT)
 C
 C
  100    CONTINUE  ! skip zero blocks on file
@@ -1016,16 +1016,16 @@ C
 C     Written by  S. Knecht         - May 23 2007
 C
 C**********************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), IBLOCKD(NBLOCK), IBLOCKL(NBLOCK)
       DIMENSION ISCALFAC(*), ISCALFAC_GROUP(*)
       DIMENSION IGROUPLIST(NMPROC),IPROCLIST(NMPROC)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCRATCH_P
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN, IOFFSET_OUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFF_SCRATCH_P
       INTEGER IGROUPBLK, ROOTPROC, IOFF_BLOCK
       CHARACTER*12 WALLTID, SECTID
 C
@@ -1075,8 +1075,8 @@ C
 csk         WRITE(6,*) 'ACTIVE BLOCK ',IBLK
 csk         WRITE(6,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
             xrw_time = MPI_WTIME()
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
+     &                            ISTAT)
 csk         WRITE(6,*) 'MY read-in result '
 csk         CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,6)
             read_write = read_write + MPI_WTIME() - xrw_time
@@ -1088,7 +1088,7 @@ C         find the sending root processor
 csk       write(6,*) ' processor list:myproc,mynew_id,icomm_id',
 csk  &    myproc,mynew_id,icomm_id
 csk       CALL IWRTMAMN(IPROCLIST,1,NMPROC,1,NMPROC,6)
-csk       CALL MPI_BARRIER(ICOMM,IERR)
+csk       call interface_mpi_BARRIER(ICOMM,IERR)
           ROOTPROC = IPROCLIST(ISCRNODE+1) - 1
 csk       write(6,*)' ROOT proc should send: ICOMM_ID, ROOTPROC,MYPROC',
 csk  &    ICOMM_ID,ROOTPROC,MYPROC
@@ -1104,25 +1104,25 @@ csk       WRITE(6,*) ' MYPROC,ROOTPROC,NNKEY',MYPROC,ROOTPROC,NNKEY
           ELSE
             NNCOLOR = 8
           END IF
-          CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
+          call interface_mpi_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM)
 C
           IF( NNCOLOR .eq. 8 ) GOTO 200
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
+          call interface_mpi_BCAST(SEGMNT,LBL,0,IBLOCKCOMM)
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 C         transfer the recieved block to disk
 csk       WRITE(LUWRT,*)'THIS IS WHAT I GOT',ICOMM_ID
 csk       CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
 csk       WRITE(LUWRT,*) 'IOFFSET_OUT = ',IOFFSET_OUT
           xrw_time = MPI_WTIME()
-          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                           MPI_REAL8,ISTAT,IERR)
+          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
+     &                           ISTAT)
           read_write = read_write + MPI_WTIME() - xrw_time
           IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
 C
  200      CONTINUE
-          CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
+          call interface_mpi_COMM_FREE(IBLOCKCOMM)
 C
         ELSE 
 C         set local iscalfac to 0
@@ -1180,8 +1180,8 @@ C
 CSK            WRITE(LUWRT,*) 'START READING AT IOFFSET_IN imag part = ',
 CSK     &                      IOFFSET_IN
             xrw_time = MPI_WTIME()
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
+     &                            ISTAT)
             read_write = read_write + MPI_WTIME() - xrw_time
             IBI_DIST_NBLOCKS = IBI_DIST_NBLOCKS + 1
 C
@@ -1191,7 +1191,7 @@ C         find the sending root processor
 CSK          write(LUWRT,*) ' processor list:myproc,mynew_id,icomm_id',
 CSK     &    myproc,mynew_id,icomm_id
 CSK          CALL IWRTMAMN(IPROCLIST,1,NMPROC,1,NMPROC,LUWRT)
-CSK          CALL MPI_BARRIER(ICOMM,IERR)
+CSK          call interface_mpi_BARRIER(ICOMM,IERR)
           ROOTPROC = IPROCLIST(ISCRNODE+1) - 1
 CSK          write(LUWRT,*)' ROOT proc should send: ICOMM_ID, ROOTPROC',
 CSK     &    ICOMM_ID,ROOTPROC
@@ -1207,12 +1207,12 @@ C
           ELSE
             NNCOLOR = 8
           END IF
-          CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
+          call interface_mpi_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM)
 C
           IF( NNCOLOR .eq. 8 ) GOTO 300
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
+          call interface_mpi_BCAST(SEGMNT,LBL,0,IBLOCKCOMM)
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 C         transfer the recieved block to disk if necessary
 CSK            WRITE(LUWRT,*)'THIS IS WHAT I GOT from ROOTPROC',MYPROC,
@@ -1222,13 +1222,13 @@ CSK            WRITE(LUWRT,*) 'IOFFSET_OUT imag part = ',IOFFSET_OUT
 CSK            WRITE(LUWRT,*) 'block to write imag part',IBLK,
 CSK     &                      IBLK + IOFF_BLOCK
           xrw_time = MPI_WTIME()
-          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                           MPI_REAL8,ISTAT,IERR)
+          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
+     &                           ISTAT)
           read_write = read_write + MPI_WTIME() - xrw_time
           IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
 C
  300      CONTINUE
-          CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
+          call interface_mpi_COMM_FREE(IBLOCKCOMM)
 C
         ELSE 
 C         set local iscalfac to 0
@@ -1290,16 +1290,16 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LUOUTLIST(*), NPARBLOCK(*), IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -1367,20 +1367,20 @@ C
               NUM_BLK = NUM_BLK + 1
               IMZERO = 0
 C
-              CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,MASTER,90,
-     &                      MPI_COMM_WORLD,ISTAT,IERR)
+              call interface_mpi_RECV(IMZERO,1,MASTER,90,
+     &                      global_communicator)
 C
               IF( IMZERO .eq. 0 ) THEN
 C
 C               recieve block and transfer to file
-                CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,MASTER,91,
-     &                        MPI_COMM_WORLD,ISTAT,IERR)
+                call interface_mpi_RECV(VEC1,ILEN,MASTER,91,
+     &                        global_communicator)
                 LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
 !               WRITE(6,*) ' S will write this to disk for block',
 !    &          IOFFSET_LUOUT, IBLK
 !               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
-                CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,ISTAT,IERR)
+                call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,
+     &               VEC1,ILEN,ISTAT)
 C
               ELSE
 C
@@ -1410,13 +1410,13 @@ C             read block in core and send to CPU I_NEED_BLK if necessary
               CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
      &                     NO_ZEROING)
               IF( MYPROC .ne. I_NEED_BLK )THEN
-                CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,90,
-     &                        MPI_COMM_WORLD,IERR)
-CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        MPI_COMM_WORLD,IERR)
+                call interface_mpi_SEND(IMZERO,1,I_NEED_BLK,90,
+     &                        global_communicator)
+CSK                call interface_mpi_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
+CSK     &                        global_communicator,IERR)
                 IF( IMZERO .eq. 0 ) THEN
-                  CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,91,
-     &                          MPI_COMM_WORLD,IERR)
+                  call interface_mpi_SEND(VEC1,ILEN,I_NEED_BLK,91,
+     &                          global_communicator)
                 END IF
               ELSE
 C               count active blocks
@@ -1428,8 +1428,8 @@ C
 !    &            IOFFSET_LUOUT, IBLK
 !                 CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
 C
-                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,ISTAT,IERR)
+                  call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,
+     &                 VEC1,ILEN,ISTAT)
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
                 ELSE
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
@@ -1507,17 +1507,17 @@ C
                 NUM_BLK = NUM_BLK + 1
                 IMZERO = 0
 C
-                CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,MASTER,93,
-     &                        MPI_COMM_WORLD,ISTAT,IERR)
+                call interface_mpi_RECV(IMZERO,1,MASTER,93,
+     &                        global_communicator)
 C
                 IF( IMZERO .eq. 0 ) THEN
 C
 C                 recieve block and transfer to file
-                  CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,MASTER,94,
-     &                          MPI_COMM_WORLD,ISTAT,IERR)
+                  call interface_mpi_RECV(VEC1,ILEN,MASTER,94,
+     &                          global_communicator)
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                   MPI_REAL8,ISTAT,IERR)
+                  call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,
+     &                                   VEC1,ILEN,ISTAT)
 C
                 ELSE
 C
@@ -1547,13 +1547,13 @@ C               read block in core and send to CPU I_NEED_BLK if necessary
                 CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
      &                       NO_ZEROING)
                 IF( MYPROC .ne. I_NEED_BLK )THEN
-                  CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,93,
-     &                          MPI_COMM_WORLD,IERR)
-CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        MPI_COMM_WORLD,IERR)
+                  call interface_mpi_SEND(IMZERO,1,I_NEED_BLK,93,
+     &                          global_communicator)
+CSK                call interface_mpi_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
+CSK     &                        global_communicator,IERR)
                   IF( IMZERO .eq. 0 ) THEN
-                    CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,94,
-     &                            MPI_COMM_WORLD,IERR)
+                    call interface_mpi_SEND(VEC1,ILEN,I_NEED_BLK,94,
+     &                            global_communicator)
                   END IF
                 ELSE
 C                 count active blocks
@@ -1561,8 +1561,9 @@ C                 count active blocks
 C
                   IF( IMZERO .eq. 0 ) THEN
 C
-                    CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
-     &                                     ILEN,MPI_REAL8,ISTAT,IERR)
+                    call interface_mpi_FILE_WRITE_AT(LUOUT,
+     &                   IOFFSET_LUOUT,VEC1,
+     &                                     ILEN,ISTAT)
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
                   ELSE
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
@@ -1614,10 +1615,10 @@ C
       SUBROUTINE GROUP_CONSTRUCTOR_REL(IGROUPLIST,IPROCLIST,
      &                                 IPROCLIST_SM)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),IGROUPLIST(NMPROC)
@@ -1632,15 +1633,16 @@ C
       IKEY = MYPROC
       ICOLOR = IPROCLIST(MYPROC+1)
 C
-      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ICOLOR,IKEY,MYNEW_COMM,IERR)
+      call interface_mpi_COMM_SPLIT(global_communicator,ICOLOR,IKEY,
+     &                              MYNEW_COMM)
 C
 C     collect useful information about each group,
 C     store on common block
 C
       NEWCOMM_PROC = 0
       MYNEW_ID = 0
-      CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
-      CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
+      call interface_mpi_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC)
+      call interface_mpi_COMM_RANK(MYNEW_COMM,MYNEW_ID)
 C
 C     T-communicator MYNEW_COMM_SM ( 1st "shared memory" communicator)
 C
@@ -1653,16 +1655,16 @@ C
         KCOLOR = 1
       END IF
 C
-      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,KCOLOR,KKEY,
-     &                    MYNEW_COMM_SM,IERR)
+      call interface_mpi_COMM_SPLIT(global_communicator,KCOLOR,KKEY,
+     &                    MYNEW_COMM_SM)
 C
 C       collect useful information about each group,
 C       store on common block
 C
       NEWCOMM_PROC_SM = 0
       MYNEW_ID_SM     = 0
-      CALL MPI_COMM_SIZE(MYNEW_COMM_SM,NEWCOMM_PROC_SM,IERR)
-      CALL MPI_COMM_RANK(MYNEW_COMM_SM,MYNEW_ID_SM,IERR)
+      call interface_mpi_COMM_SIZE(MYNEW_COMM_SM,NEWCOMM_PROC_SM)
+      call interface_mpi_COMM_RANK(MYNEW_COMM_SM,MYNEW_ID_SM)
 C
 C     C-communicator MYNEW_COMM_SM_C ( 2nd "shared memory" communicator)
 C
@@ -1675,16 +1677,16 @@ C
         LCOLOR = 1
       END IF
 C
-      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,LCOLOR,LKEY,
-     &                    MYNEW_COMM_SM_C,IERR)
+      call interface_mpi_COMM_SPLIT(global_communicator,LCOLOR,LKEY,
+     &                    MYNEW_COMM_SM_C)
 C
 C       collect useful information about each group,
 C       store on common block
 C
       NEWCOMM_PROC_SM_C = 0
       MYNEW_ID_SM_C     = 0
-      CALL MPI_COMM_SIZE(MYNEW_COMM_SM_C,NEWCOMM_PROC_SM_C,IERR)
-      CALL MPI_COMM_RANK(MYNEW_COMM_SM_C,MYNEW_ID_SM_C,IERR)
+      call interface_mpi_COMM_SIZE(MYNEW_COMM_SM_C,NEWCOMM_PROC_SM_C)
+      call interface_mpi_COMM_RANK(MYNEW_COMM_SM_C,MYNEW_ID_SM_C)
 C
 C     set node-master (might be MASTER of all CPU's)
       N_MASTER_SM_C = 0
@@ -1699,14 +1701,15 @@ C
         JCOLOR = 3
       END IF
 C
-      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,JCOLOR,JKEY,ICOMM,IERR)
+      call interface_mpi_COMM_SPLIT(global_communicator,JCOLOR,JKEY,
+     /     ICOMM)
 C
 C     collect again ...     
 C
       ICOMM_ID = 0
       ICOMM_SIZE = 0
-      CALL MPI_COMM_RANK(ICOMM,ICOMM_ID,IERR)
-      CALL MPI_COMM_SIZE(ICOMM,ICOMM_SIZE,IERR)
+      call interface_mpi_COMM_RANK(ICOMM,ICOMM_ID)
+      call interface_mpi_COMM_SIZE(ICOMM,ICOMM_SIZE)
 C
 C     set-up and store group information 
 C
@@ -1734,10 +1737,10 @@ C
 ***********************************************************************
       SUBROUTINE SET_GROUP_TABLE_REL(IGROUPLIST,IPROCLIST,ICOLOR)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 C
 C     INPUT
@@ -1777,8 +1780,7 @@ C
 *. Non vanishing block has a nonzero blocklength
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
+#include "infpar.h
 #include "parluci.h"
 #include "../lucita/clunit.inc"
 *
@@ -1947,7 +1949,6 @@ CSK      END IF
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 C     INPUT
       INTEGER ICOUNTABLK, NTEST,MWEIGHT
@@ -2357,7 +2358,6 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 C     -----
 C     INPUT
@@ -2382,10 +2382,10 @@ C     MXNUMB: number of the current largest block
 C     MMPINFA(*,1): total number of blocks for the n-th proc
 C     MMPINFA(*,2): total length ('weight') of the blocks
       INTEGER ITEMPN, IAMGPROC, IAMTPROC, MXNUMB, IRUN
-      INTEGER(KIND=MPI_OFFSET_KIND) ITLTND,MXSIZE,MXSZTMP
-      INTEGER(KIND=MPI_OFFSET_KIND) ITEMPL, ITEMPW1, ITEMPW2
-      INTEGER(KIND=MPI_OFFSET_KIND) ILEN, ITOTBLCKL 
-      INTEGER(KIND=MPI_OFFSET_KIND) IIWEIGHTBLK, IILENGTH 
+      INTEGER(KIND=df_mpi_offset_kind) ITLTND,MXSIZE,MXSZTMP
+      INTEGER(KIND=df_mpi_offset_kind) ITEMPL, ITEMPW1, ITEMPW2
+      INTEGER(KIND=df_mpi_offset_kind) ILEN, ITOTBLCKL 
+      INTEGER(KIND=df_mpi_offset_kind) IIWEIGHTBLK, IILENGTH 
 *
       NTEST = 0
       IIWEIGHTBLK = 0
@@ -3022,7 +3022,6 @@ CSK            END IF
 *
       IMPLICIT REAL*8           ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 *     ==========
 *       INPUT
@@ -3061,10 +3060,10 @@ CSK            END IF
       SUBROUTINE FIND_GROUP_OF_PROCS(MYOWNNAME,MYNAMELENGTH,
      &                               IPROCLIST,NAMELENGTHLIST)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
@@ -3080,9 +3079,9 @@ C     NTEST = 10
 C
 C     start with an all_gather of all name length
 C
-      CALL MPI_ALLGATHER(MYNAMELENGTH,1,my_MPI_INTEGER,
-     &                   NAMELENGTHLIST,1,my_MPI_INTEGER,
-     &                   MPI_COMM_WORLD,IERR)
+      call interface_mpi_ALLGATHER(MYNAMELENGTH,1,
+     &                   NAMELENGTHLIST,1,
+     &                   global_communicator)
 C
 C     ... all name length are stored now!
 C     ... save own name in scratch array!
@@ -3093,8 +3092,8 @@ C     ... we start to gather the names ...
       DO IPROC = 1, NMPROC
 C
          MYSCRNAME = MYOWNNAME
-         CALL MPI_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),MPI_CHARACTER,
-     &                 IPROC-1,MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),
+     &                 IPROC-1,global_communicator)
          IF( MYPROC .NE. IPROC -1 ) THEN
            PNAMELIST(IPROC) = MYSCRNAME(1:NAMELENGTHLIST(IPROC))
          END IF
@@ -3176,7 +3175,6 @@ C
 *
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 *. Input
       INTEGER IGAT(NGAT)
@@ -3399,18 +3397,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) ISCRATCH_SP
-      INTEGER(KIND=MPI_OFFSET_KIND) ILEN_COMB
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN, IOFFSET_OUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) ISCRATCH_SP
+      INTEGER(KIND=df_mpi_offset_kind) ILEN_COMB
       INTEGER NUM_BLK
 C     some constants
       IONE = 1
@@ -3597,18 +3595,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -3691,18 +3689,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -3853,14 +3851,14 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, ISCRATCH_SP
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET, ISCRATCH_SP
       INTEGER JOFF, LENGTH
 C
       JOFF   = 0
@@ -3891,8 +3889,8 @@ CSK          WRITE(LUWRT,'(2X,A,1X,I6,1X,A,1X,I14,1X,I6)') 'THIS IS block',
 CSK     &         IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
 CSK          CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
 C
-          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
-     &                           LENGTH,MPI_REAL8,ISTAT,IERR)
+          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
+     &                           LENGTH,ISTAT)
 C
 C
  100    CONTINUE  ! skip zero blocks on file
@@ -3920,13 +3918,13 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET
       INTEGER JOFF
       JOFF = 0
 C
@@ -3949,8 +3947,8 @@ C             memory offset
 C
 CSK              WRITE(LUWRT,*) 'JOFF,ILEN2,ILEN again for block 
 CSK     & IOFFSET_INT+ NUM_A_B -1',JOFF,ILEN2,ILEN,IOFFSET_INT+ NUM_A_B -1
-              CALL MPI_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
-     &                              ILEN2,MPI_REAL8,ISTAT,IERR)
+              call interface_mpi_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
+     &                              ILEN2,ISTAT)
 CSK              WRITE(LUWRT,*) ' my block'
 CSK              CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
             ENDIF 
@@ -3981,13 +3979,13 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET
       INTEGER JOFF
       JOFF = 0
 C
@@ -4020,8 +4018,8 @@ C
      & IOFFSET
               CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
 #endif
-              CALL MPI_FILE_WRITE_AT(MY_LUOUT,IOFFSET,SCR(JOFF),
-     &                               ILEN2,MPI_REAL8,ISTAT,IERR)
+              call interface_mpi_FILE_WRITE_AT(MY_LUOUT,IOFFSET,
+     &             SCR(JOFF),ILEN2,ISTAT)
 C
  100        CONTINUE
 C
@@ -4047,13 +4045,13 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET
       INTEGER JOFF
 C
       JOFF = 0
@@ -4069,8 +4067,8 @@ C           memory offset
 C
             JOFF = NBATCH_INF(6,IBLK)
 C
-            CALL MPI_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
-     &                            ILEN2,MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
+     &                            ILEN2,ISTAT)
 C
           ENDIF 
 C
@@ -4106,15 +4104,15 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XMAT(NVEC,NVEC2)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN1
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
       NZERO = 0
 C
 C     transform: LUIN1 --> LUOUT
@@ -4163,18 +4161,18 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), FAC(NVEC)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN1
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN1
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -4320,7 +4318,7 @@ C     resp. LUIN1 and LUIN3. Store vector VEC2 on LUOUT
 C                            ==> LUIN1(VEC2) --> LUOUT(VEC2)
 C
 C     dot products SUM_batches ( VEC1 * VEC2 ) are reduced on every 
-C     process in MPI_COMM_WORLD
+C     process in global_communicator
 C
 C     active blocks on the MPI-file are flagged by a nonzero length
 C
@@ -4330,22 +4328,22 @@ C
 C     Last revision:     S. Knecht       - March 2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SUBSPH(*), SCRRED(*), SCRRED2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUIN2LIST(*), LUIN3LIST(*)
       DIMENSION LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN, MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN, MY_IOFF_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN3
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN3
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK, ISTRED, ISTRED2
       CHARACTER*12 SECTID, WALLTID
 C     initialize scratch vector offsets
@@ -4483,12 +4481,12 @@ C
 C
       CALL DZERO(SUBSPH(ISTRED),NROOT)
       CALL REDVEC(SCRRED,SUBSPH(ISTRED),NROOT,2,
-     &            MPI_SUM,MPI_COMM_WORLD,-1)
+     &            MPI_SUM,global_communicator,-1)
 C
       IF( (JOFF - 1) .gt. 0 ) THEN
         CALL DZERO(SUBSPH(ISTRED2),JOFF-1)
         CALL REDVEC(SCRRED2,SUBSPH(ISTRED2),JOFF-1,2,
-     &              MPI_SUM,MPI_COMM_WORLD,-1)
+     &              MPI_SUM,global_communicator,-1)
       END IF
 C
       endtime = MPI_WTIME()
@@ -4528,22 +4526,22 @@ C
 C     Last revision:     S. Knecht       - March 2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION SCAL_ARRAY(*), FACIN1(*), FACIN2(1)
       DIMENSION LUINLIST(*),LUIN2LIST(*), LUIN3LIST(*)
       DIMENSION LUOUTLIST(*), LUOUT2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN, MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT, MY_IOFF_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT, IOFFSET_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN, MY_IOFF_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN3
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT, MY_IOFF_LUOUT2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN3
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT, IOFFSET_LUOUT2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
       REAL*8 REDFAC
 C     initialize scratch factor 
@@ -4684,7 +4682,7 @@ C
 C     communicate REDFAC to obtain correct scaling factor
       
       FACTOR = 0.0D0
-      CALL REDVEC(REDFAC,FACTOR,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CALL REDVEC(REDFAC,FACTOR,1,2,MPI_SUM,global_communicator,-1)
 csk   WRITE(LUWRT,*) 'REDUCED FACTOR IN PART 3.2',FACTOR
 C
       SCALING = 0.0D0
@@ -4796,22 +4794,22 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION FACIN1(*), FACIN3(1)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUIN2LIST(*), LUIN3LIST(*)
       DIMENSION LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN, MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN, MY_IOFF_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN3
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN3
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_LUOUT
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C     initialize scratch offsets
       NUM_BLK = 0
@@ -4975,21 +4973,21 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SCRRED(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUIN2LIST(*), LUIN3LIST(*)
       DIMENSION LUIN4LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN, MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN4
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN3, IOFFSET_IN_LUIN4
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN, MY_IOFF_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN3
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN4
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN3,IOFFSET_IN_LUIN4
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C     initialize scratch offsets
       NUM_BLK = 0
@@ -5171,9 +5169,9 @@ C
 C     Last revision:     S. Knecht       - March  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 C     Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -5347,9 +5345,9 @@ C
 C     Last revision:     S. Knecht       - March  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 C     input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -5519,7 +5517,6 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
       DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
@@ -5656,7 +5653,6 @@ C
 ************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
       INTEGER JOFF,ILEN
@@ -5693,7 +5689,6 @@ C
 ************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
       INTEGER JOFF,ILEN
@@ -5865,17 +5860,17 @@ C
 * IXROOT is the current root to place a 1.0D0.
 * LU1LIST is the MPI file list.
 *
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
 #include "parluci.h"
 *     input
       DIMENSION IPLAC(*),VAL(*),IBLOCKL(NBLOCK),IBLOCKD(NBLOCK)
 *     scratch
       DIMENSION VEC1(*)
       LOGICAL FOUND_ONE
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      INTEGER(KIND=df_mpi_offset_kind) IOFF_SCR1, IOFF_SCR2
       DIMENSION LU1LIST(*)
       INTEGER IBOTTO
 *
@@ -5952,8 +5947,8 @@ csk         CALL WRTMATMN(VEC1,1,LBL,1,LBL,LUWRT)
 csk         WRITE(LUWRT,*) 'OFFSET',IOFF_SCR1
 csk         WRITE(LUWRT,*) 'INT_IOFF1 is ',INT_IOFF1
             LU1LIST( INT_IOFF1 ) = IONE
-            CALL MPI_FILE_WRITE_AT(ILU1,IOFF_SCR1,VEC1,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_WRITE_AT(ILU1,IOFF_SCR1,VEC1,LBL,
+     &                             ISTAT)
           END IF
 C
           FOUND_ONE = .FALSE.
@@ -5992,17 +5987,18 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN1
+      INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN1 
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_mpi_offset_kind) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets

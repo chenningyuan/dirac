@@ -297,9 +297,8 @@ C     in two parts (the first part performs an implicit cast).
 
       IERR = 0
 
-      CALL MPI_FILE_IWRITE_AT(
-     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,df_mpi_packed,
-     +  WRITE_REQUEST,IERR)
+      call interface_MPI_FILE_IWRITE_AT(
+     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,WRITE_REQUEST)
 
 !     check for successful writing. SK - Aug 2010
 !     if it fails you need to change the general record offset 
@@ -313,7 +312,7 @@ C     in two parts (the first part performs an implicit cast).
       END IF
 
       GF_BREC(IBUF,TARGET_NODE,SOURCE_NODE) = THIS_REC
-      GF_NREC(TARGET_NODE,SOURCE_NODE) = THIS_REC
+      GF_NREC(TARGET_NODE,SOURCE_NODE)      = THIS_REC
 
       RETURN
       END
@@ -336,9 +335,8 @@ C     in two parts (the first part performs an implicit cast).
       RECORD_OFFSET = GLOBAL_FILE_OFFSET(
      +  TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
 
-      CALL MPI_FILE_READ_AT(
-     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,df_mpi_packed,
-     +  STATUS,IERR)
+      CALL interface_MPI_FILE_READ_AT(
+     +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,STATUS)
 CSK   ... zero NUMREAD, otherwise it may fail
       NUMREAD = 0
       call interface_mpi_get_count(STATUS,df_mpi_packed,NUMREAD)
@@ -494,9 +492,8 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
          DO LOCAL_RECORD = 1, GF_NREC(MYTID,SOURCE_NODE)
 
-            CALL MPI_FILE_READ(
-     +        GF_HANDLE,GF_RECBUF,GF_RECLEN,df_mpi_packed,
-     +        ISTAT,IERR)
+            CALL interface_MPI_FILE_READ(
+     +        GF_HANDLE,GF_RECBUF,GF_RECLEN,ISTAT)
 CSK         ... zero NUMREAD, otherwise it may fail
             NUMREAD = 0
             call interface_mpi_get_count(ISTAT,df_mpi_packed,NUMREAD)
@@ -512,9 +509,8 @@ CSK         ... zero NUMREAD, otherwise it may fail
               LF_RECBUF(I) = GF_RECBUF(I)
             ENDDO
 
-            CALL MPI_FILE_IWRITE(
-     +        LF_HANDLE,LF_RECBUF,GF_RECLEN,df_mpi_packed,
-     +        WRITE_REQUEST,IERR)
+            call interface_mpi_file_iwrite(
+     +           lf_handle,lf_recbuf,gf_reclen,write_request)
 
          ENDDO
 

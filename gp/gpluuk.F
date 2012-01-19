@@ -1690,7 +1690,7 @@ C
 C     Initially the slaves are still waiting for a new integral task,
 C     tell them that they should do something else
 C
-      call interface_mpi_iprobe(mpi_any_source,20,NEWMAIL,
+      call interface_mpi_iprobe(df_mpi_any_source,20,NEWMAIL,
      &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
@@ -1704,7 +1704,7 @@ C        Receive this signal
 C
 C     Check for ready signals from the slaves
 C
-      call interface_mpi_iprobe(mpi_any_source,98,NEWMAIL,
+      call interface_mpi_iprobe(df_mpi_any_source,98,NEWMAIL,
      &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
