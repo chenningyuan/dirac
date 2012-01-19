@@ -6,17 +6,23 @@ DIRAC=/home/ilias/qch_work/software/dirac_git/trunk
 ### update, compile & pack ###
 
 cd $DIRAC
-#git pull
-#pamadm -a
-#cd $DIRAC/build
-#cmake ..
-#make -j 2
-
-# make one tgz-file with all Dirac stuff for testing
+git pull
+pamadm -a
+cd $DIRAC/build
+cmake ..
+make -j 2
 
 cd $DIRAC/maintenance/grid_testing
 
-tar cvzf dirac_test_suite.tgz diracrc ../../build/dirac.x ../../pam ../../runtest ../../test ../../basis ../../basis_dalton
+#--------------------------------------------------------------
+# make one tgz-file with all Dirac stuff for testing & running 
+#--------------------------------------------------------------
+
+# problems with "--exclude test/*/*.out"  - remove them
+/bin/rm ../../test/*/*.out*
+
+# pack all necessary stuff
+tar cvzf dirac_test_suite.tgz diracrc ../../build/dirac.x ../../pam ../../runtest ../../test ../../basis ../../basis_dalton --exclude ../../test/*/compare
 
 echo "package ready"
 
