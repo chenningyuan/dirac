@@ -295,7 +295,7 @@ C?          WRITE(6,*)  ' IA = ', IA
           end if
         END IF
 #if defined (VAR_MPI2)
-        call interface_mpi_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
+        call interface_mpi_FILE_WRITE_AT_r(IDIA,IDIA_OFFSET,DIAG,IDET,
      &                         ISTAT)
 *       new offset
         IDIA_OFFSET = IDIA_OFFSET + IDET
@@ -1026,7 +1026,6 @@ C           write(LUWRT,*) ' fetch integral from pos',IPOSDIA(INT)
 #include "mxpdim.inc"
 #include "integrals_off.inc"
 #include "parluci.h"
-#include "krmc_shmem.h"
 *
       character*4 TYPE
 *

@@ -1691,8 +1691,6 @@ c     for DENS_FIT
 c     for SETAOS
       KMAXX = KMAX
       IF (DOFIT) KMAXX = KMAXTOT
-c     CAll interface_mpi_bcast(ISTBAO,KMAXX,my_MPI_INTEGER,MASTER,
-c    &               global_communicator,IERR)
       CAll interface_mpi_bcast(MULT,8,MASTER,global_communicator)
       CAll interface_mpi_bcast(JSTRT,KMAXX,MASTER,global_communicator)
       CAll interface_mpi_bcast(NCENT,KMAXX,MASTER,global_communicator)

@@ -298,11 +298,11 @@ C***********************************************************************
 #include "infpar.h"
 #include "typesz_mpi2.h"
 C
-      call interface_MPI_TYPE_EXTENT(MPI_REAL8,ISIZE_DP)
-      call interface_MPI_TYPE_EXTENT(my_MPI_INTEGER,ISIZE_my_int)
-      call interface_MPI_TYPE_EXTENT(MPI_INTEGER8,ISIZE_int8)
-      call interface_MPI_TYPE_EXTENT(MPI_INTEGER,ISIZE_intdef)
-      call interface_MPI_TYPE_EXTENT(MPI_LOGICAL,ISIZE_log)
+      call interface_MPI_TYPE_EXTENT(df_MPI_REAL8,ISIZE_DP)
+      call interface_MPI_TYPE_EXTENT(df_my_MPI_INTEGER,ISIZE_my_int)
+      call interface_MPI_TYPE_EXTENT(df_MPI_INTEGER8,ISIZE_int8)
+      call interface_MPI_TYPE_EXTENT(df_MPI_INTEGER,ISIZE_intdef)
+      call interface_MPI_TYPE_EXTENT(df_MPI_LOGICAL,ISIZE_log)
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

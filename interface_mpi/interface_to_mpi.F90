@@ -45,6 +45,7 @@ module interface_to_mpi
   public interface_mpi_reduce
   public interface_mpi_allreduce
   public interface_mpi_gather
+  public interface_mpi_allgather
   public interface_mpi_test
   public interface_mpi_testall
   public interface_mpi_wait
@@ -59,18 +60,21 @@ module interface_to_mpi
   public interface_mpi_abort
   public interface_mpi_file_open
   public interface_mpi_file_close
+  public interface_mpi_file_set_view
   public interface_mpi_file_seek
   public interface_mpi_file_iwrite
   public interface_mpi_file_iwrite_at_pck
   public interface_mpi_file_write_at
   public interface_mpi_file_write_at_i
   public interface_mpi_file_write_at_r
-  public interface_mpi_file_write_at_b
+  public interface_mpi_file_write_at_bi
+  public interface_mpi_file_write_at_br
   public interface_mpi_file_read_pck
   public interface_mpi_file_read_at
   public interface_mpi_file_read_at_i
   public interface_mpi_file_read_at_r
-  public interface_mpi_file_read_at_b
+  public interface_mpi_file_read_at_bi
+  public interface_mpi_file_read_at_br
   public interface_mpi_info_create
   public interface_mpi_info_free
   public interface_mpi_info_set
@@ -104,6 +108,7 @@ module interface_to_mpi
   end interface
 
   interface interface_mpi_allgather
+    module procedure interface_mpi_allgather_i0
     module procedure interface_mpi_allgather_i
     module procedure interface_mpi_allgather_r
   end interface
@@ -166,6 +171,10 @@ module interface_to_mpi
 
   interface interface_mpi_file_close
     module procedure interface_mpi_file_close
+  end interface
+
+  interface interface_mpi_file_set_view
+    module procedure interface_mpi_file_set_view
   end interface
 
   interface interface_mpi_file_seek
@@ -232,6 +241,11 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_packed       = mpi_packed
   integer,                        parameter, public :: df_mpi_info_null    = mpi_info_null
   integer,                        parameter, public :: df_mpi_byte         = mpi_byte
+  integer,                        parameter, public :: df_mpi_real8        = mpi_real8
+  integer,                        parameter, public :: df_mpi_integer      = mpi_integer
+  integer,                        parameter, public :: df_mpi_integer8     = mpi_integer8
+  integer,                        parameter, public :: df_mpi_logical      = mpi_logical
+  integer,                        parameter, public :: df_my_mpi_integer   = my_MPI_INTEGER
   integer(kind=MPI_OFFSET_KIND),  parameter, public :: df_MPI_OFFSET_KIND  = MPI_OFFSET_KIND
   integer(kind=MPI_ADDRESS_KIND), parameter, public :: df_MPI_ADDRESS_KIND = MPI_ADDRESS_KIND
 
@@ -261,7 +275,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter i0: ndim == ',ndim 
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -288,7 +301,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter i1: ndim == ',ndim 
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -315,7 +327,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter i2: ndim == ',ndim 
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -342,7 +353,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter i3: ndim == ',ndim 
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -369,7 +379,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter i4: ndim == ',ndim 
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -396,7 +405,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter r0: ndim == ',ndim 
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -423,7 +431,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter r1: ndim == ',ndim 
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -450,7 +457,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter r2: ndim == ',ndim 
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -477,7 +483,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter r3: ndim == ',ndim 
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -504,7 +509,6 @@ contains
     communicator_i4 = communicator
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
-    print *,       ' enter r4: ndim == ',ndim 
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -1691,6 +1695,32 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_allgather_i0(x,ndim,y,ndim2,communicator)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: y(*)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: ndim2
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: ndim2_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    ndim2_i4        = ndim2
+    communicator_i4 = communicator
+    call mpi_allgather(x, ndim_i4, my_MPI_INTEGER, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
+#else
+    call mpi_allgather(x, ndim   , my_MPI_INTEGER, y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
   subroutine interface_mpi_allgather_i(x,ndim,y,ndim2,communicator)
 
 !-------------------------------------------------------------------------------
@@ -1981,6 +2011,37 @@ contains
 
   end subroutine
 !-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_file_set_view(file_handle, disp, etype, ftype, datarep, info)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: file_handle
+    integer(kind=integer_kind)       :: info
+    integer(kind=integer_kind)       :: etype
+    integer(kind=integer_kind)       :: ftype
+    character*(*)                    :: datarep
+    integer(kind=df_mpi_offset_kind) :: disp
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: file_handle_i4
+    integer(kind=4)            :: info_i4
+    integer(kind=4)            :: etype_i4
+    integer(kind=4)            :: ftype_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    info_i4         = info
+    etype_i4        = etype
+    ftype_i4        = ftype
+    file_handle_i4  = file_handle
+    call mpi_file_set_view(file_handle_i4, disp, etype_i4, ftype_i4, datarep, info_i4, ierr_i4)
+#else
+    call mpi_file_set_view(file_handle   , disp, etype   , ftype   , datarep, info   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
   subroutine interface_mpi_file_seek(file_handle, offset, whence)
 
 !-------------------------------------------------------------------------------
@@ -2237,11 +2298,42 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
-  subroutine interface_mpi_file_write_at_b(file_handle, offset, buf, length, byte_tp, status_array)
+  subroutine interface_mpi_file_write_at_bi(file_handle, offset, buf, length, byte_tp, status_array)
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind)       :: file_handle
-    real(8)                          :: buf(:)
+    integer(kind=integer_kind)       :: buf
+    integer(kind=df_mpi_offset_kind) :: offset
+    integer(kind=integer_kind)       :: length
+    integer(kind=integer_kind)       :: byte_tp
+    integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: file_handle_i4
+    integer(kind=4)            :: length_i4
+    integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: i
+!-------------------------------------------------------------------------------
+    file_handle_i4  = file_handle
+    length_i4       = length
+    call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, MPI_BYTE, status_array_i4, ierr_i4)
+    do i = 1, MPI_STATUS_SIZE
+      status_array(i) = status_array_i4(i)
+    end do
+#else
+    call mpi_file_write_at(file_handle   , offset, buf, length   , MPI_BYTE, status_array   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_file_write_at_br(file_handle, offset, buf, length, byte_tp, status_array)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: file_handle
+    real(8)                          :: buf(*)
     integer(kind=df_mpi_offset_kind) :: offset
     integer(kind=integer_kind)       :: length
     integer(kind=integer_kind)       :: byte_tp
@@ -2507,7 +2599,38 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
-  subroutine interface_mpi_file_read_at_b(file_handle, offset, buf, length, byte_tp, status_array)
+  subroutine interface_mpi_file_read_at_bi(file_handle, offset, buf, length, byte_tp, status_array)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind)       :: file_handle
+    integer(kind=integer_kind)       :: buf
+    integer(kind=df_mpi_offset_kind) :: offset
+    integer(kind=integer_kind)       :: length
+    integer(kind=integer_kind)       :: byte_tp
+    integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
+    integer(kind=integer_kind)       :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32bit_int
+    integer(kind=4)            :: file_handle_i4
+    integer(kind=4)            :: length_i4
+    integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: i
+!-------------------------------------------------------------------------------
+    file_handle_i4  = file_handle
+    length_i4       = length
+    call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, MPI_BYTE, status_array_i4, ierr_i4)
+    do i = 1, MPI_STATUS_SIZE
+      status_array(i) = status_array_i4(i)
+    end do
+#else
+    call mpi_file_read_at(file_handle   , offset, buf, length   , MPI_BYTE, status_array   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_file_read_at_br(file_handle, offset, buf, length, byte_tp, status_array)
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind)       :: file_handle
@@ -2548,8 +2671,9 @@ contains
     integer(kind=4)                  :: info_object_i4
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
+    info_object_i4 = info_object
     call mpi_info_create(info_object_i4, ierr_i4)
-    info_object = info_object_i4
+    info_object    = info_object_i4
 #else
     call mpi_info_create(info_object   , ierr  )
 #endif
@@ -2567,8 +2691,9 @@ contains
     integer(kind=4)                  :: info_object_i4
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
+    info_object_i4 = info_object
     call mpi_info_free(info_object_i4, ierr_i4)
-    info_object = info_object_i4
+    info_object    = info_object_i4
 #else
     call mpi_info_free(info_object   , ierr  )
 #endif
@@ -2587,9 +2712,11 @@ contains
     integer(kind=4)                  :: info_object_i4
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
+    info_object_i4 = info_object
     call mpi_info_set(info_object_i4, key, value, ierr_i4)
-    info_object = info_object_i4
+    info_object    = info_object_i4
 #else
+    integer(kind=integer_kind)       :: ierr
     call mpi_info_set(info_object   , key, value, ierr  )
 #endif
 
@@ -2826,7 +2953,9 @@ contains
     extent          = extent_i4
 #else
     integer(kind=integer_kind)       :: ierr
+    print *, 'datatype ',datatype
     call mpi_type_extent(datatype   , extent   , ierr   )
+    print *, 'extent ',extent
 #endif
 
   end subroutine

@@ -238,7 +238,8 @@ CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
        IREDL = 0
        IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
        CALL DZERO(SCRRED,IREDL)
-       CAll redvec(APROJ,SCRRED,IREDL,2,MPI_SUM,global_communicator,-1)
+       CAll redvec(APROJ,SCRRED,IREDL,2,op_MPI_SUM,
+     &             global_communicator,-1)
        CALL DCOPY(IREDL,SCRRED,1,APROJ,1)
 *
 *
@@ -464,7 +465,7 @@ C       end of timing
        xidletime = MPI_WTIME()
        CALL DZERO(APROJ(ISTRED),IMUSTRED)
        CAll redvec(SCRRED(ISTRED),APROJ(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,global_communicator,-1)
+     &                 op_MPI_SUM,global_communicator,-1)
        xixidletime = xixidletime - xidletime + MPI_WTIME()
 *
 *     2.2: diagonalize projected matrix
@@ -980,9 +981,9 @@ C
       CALL DZERO(SCRRED_R,IREDL)
       CALL DZERO(SCRRED_I,IREDL)
 *     ... sum up
-      CAll redvec(APROJR,SCRRED_R,IREDL,2,MPI_SUM,
+      CAll redvec(APROJR,SCRRED_R,IREDL,2,op_MPI_SUM,
      &                global_communicator,-1)
-      CAll redvec(APROJI,SCRRED_I,IREDL,2,MPI_SUM,
+      CAll redvec(APROJI,SCRRED_I,IREDL,2,op_MPI_SUM,
      &                global_communicator,-1)
 *     ... update APROJR and APROJI 
       CALL DCOPY(IREDL,SCRRED_R,1,APROJR,1)
@@ -1113,9 +1114,9 @@ CSK        WRITE(LUWRT,*) 'THIS IS XNORMO',XNORMO
            CALL DZERO(VEC2,NVEC+IADD-1)
 *
            CAll redvec(SCRRED_R,VEC1,NVEC+IADD-1,2,
-     &                     MPI_SUM,global_communicator,-1)
+     &                     op_MPI_SUM,global_communicator,-1)
            CAll redvec(SCRRED_I,VEC2,NVEC+IADD-1,2,
-     &                     MPI_SUM,global_communicator,-1)
+     &                     op_MPI_SUM,global_communicator,-1)
 *
 *          transfer information to WORK array...
            CALL DCOPY(NVEC+IADD-1,VEC1,1,WORK(1),2)
@@ -1247,9 +1248,9 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
        CALL DZERO(APROJI(ISTRED),IMUSTRED)
 *
        CAll redvec(SCRRED_R(ISTRED),APROJR(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,global_communicator,-1)
+     &                 op_MPI_SUM,global_communicator,-1)
        CAll redvec(SCRRED_I(ISTRED),APROJI(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,global_communicator,-1)
+     &                 op_MPI_SUM,global_communicator,-1)
 *
       endtime = MPI_WTIME()
       tottime = 0.D0

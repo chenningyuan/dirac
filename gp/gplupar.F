@@ -147,7 +147,7 @@ C
              IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
 C
 C             read block in
-               call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+               call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
      &              SEGMNT,LBL,ISTAT)
                IMZERO = 0
              ELSE
@@ -192,9 +192,9 @@ C
 C
           IF( ISENDTOM .gt. 0 ) THEN
 C
-            call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,
-     &                            lbl,ISTAT)
-            call interface_mpi_SEND(SEGMNT,LBL,MASTER,91,
+            call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
+     &                            SEGMNT,lbl,ISTAT)
+            call interface_mpi_send_r1_work_f77(SEGMNT,LBL,MASTER,91,
      &                    JCOMM)
 C
           END IF
@@ -212,7 +212,7 @@ C
 C
           IF( ISENDTOM .gt. 0 ) THEN
 C
-            call interface_mpi_RECV(SEGMNT,LBL,MYNSLV,91,
+            call interface_mpi_recv_r1_work_f77(SEGMNT,LBL,MYNSLV,91,
      &                     JCOMM)
             CALL TODSC(SEGMNT,LBL,-1,LUOUT)
           ELSE
@@ -308,7 +308,7 @@ C
              IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
 C
 C             read block in
-               call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+               call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
      &              SEGMNT,LBL,ISTAT)
                IMZERO = 0
              ELSE
@@ -353,9 +353,9 @@ C
 C
             IF( ISENDTOM .gt. 0 ) THEN
 C
-              call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
-     &             SEGMNT,LBL,ISTAT,IERR)
-              call interface_mpi_SEND(SEGMNT,LBL,MASTER,94,
+              call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
+     &             SEGMNT,LBL,ISTAT)
+              call interface_mpi_send_r1_work_f77(SEGMNT,LBL,MASTER,94,
      &                      JCOMM)
 C
             END IF
@@ -373,7 +373,7 @@ C
 C
             IF( ISENDTOM .gt. 0 ) THEN
 C
-              call interface_mpi_RECV(SEGMNT,LBL,MYNSLV,94,
+              call interface_mpi_recv_r1_work_f77(SEGMNT,LBL,MYNSLV,94,
      &                       JCOMM)
               CALL TODSC(SEGMNT,LBL,-1,LUOUT)
             ELSE
@@ -495,7 +495,7 @@ C
              CALL ITODS(LBL,1,-1,LUOUT)
 C
 C            read block in
-             call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+             call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
      &            SEGMNT,LBL,ISTAT)
 C
              CALL TODSC(SEGMNT,LBL,-1,LUOUT)
@@ -523,9 +523,9 @@ C
 C
         IF(MYPROC.NE.MASTER) THEN
 C
-          call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
+          call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
      &         SEGMNT,LBL,ISTAT)
-          call interface_mpi_SEND(SEGMNT,LBL,MASTER,91,
+          call interface_mpi_send_r1_work_f77(SEGMNT,LBL,MASTER,91,
      &                  JCOMM)
 C
           IOFFSET_SCRATCH = LBL
@@ -534,7 +534,7 @@ C
 C
         IF(MYPROC.EQ.MASTER) THEN
 C
-          call interface_mpi_RECV(SEGMNT,LBL,MYNSLV,91,
+          call interface_mpi_recv_r1_work_f77(SEGMNT,LBL,MYNSLV,91,
      &                  JCOMM)
           CALL TODSC(SEGMNT,LBL,-1,LUOUT)
 C
@@ -893,7 +893,7 @@ CSK     &                 IOFFSET
 C
 C           read vector
 C
-              call interface_mpi_FILE_READ_AT(LUIN,IOFFSET,SCR(JOFF),
+              call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET,SCR(JOFF),
      &                              ILEN2,ISTAT)
 C
 CSK              WRITE(LUWRT,'(2X,A,1X,I12,1X,A,1X,I6,1X,I6)') 
@@ -977,7 +977,7 @@ csk     WRITE(LUWRT,'(2X,A,1X,I6,1X,A,1X,I14,1X,I6)') 'THIS IS block',
 csk  &       IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
 csk       CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
 C
-          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
+          call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET,SCR(JOFF),
      &                           LENGTH,ISTAT)
 C
 C
@@ -1075,8 +1075,8 @@ C
 csk         WRITE(6,*) 'ACTIVE BLOCK ',IBLK
 csk         WRITE(6,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
             xrw_time = MPI_WTIME()
-            call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
-     &                            ISTAT)
+            call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN,SEGMNT,
+     &                            lbl,ISTAT)
 csk         WRITE(6,*) 'MY read-in result '
 csk         CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,6)
             read_write = read_write + MPI_WTIME() - xrw_time
@@ -1109,15 +1109,15 @@ C
           IF( NNCOLOR .eq. 8 ) GOTO 200
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
-          call interface_mpi_BCAST(SEGMNT,LBL,0,IBLOCKCOMM)
+          call interface_mpi_bcast_r1_work_f77(SEGMNT,LBL,0,IBLOCKCOMM)
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 C         transfer the recieved block to disk
 csk       WRITE(LUWRT,*)'THIS IS WHAT I GOT',ICOMM_ID
 csk       CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
 csk       WRITE(LUWRT,*) 'IOFFSET_OUT = ',IOFFSET_OUT
           xrw_time = MPI_WTIME()
-          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                           ISTAT)
+          call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET_OUT,SEGMNT,
+     &                           lbl,ISTAT)
           read_write = read_write + MPI_WTIME() - xrw_time
           IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
 C
@@ -1180,8 +1180,8 @@ C
 CSK            WRITE(LUWRT,*) 'START READING AT IOFFSET_IN imag part = ',
 CSK     &                      IOFFSET_IN
             xrw_time = MPI_WTIME()
-            call interface_mpi_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
-     &                            ISTAT)
+            call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN,SEGMNT,
+     &                            lbl,ISTAT)
             read_write = read_write + MPI_WTIME() - xrw_time
             IBI_DIST_NBLOCKS = IBI_DIST_NBLOCKS + 1
 C
@@ -1212,7 +1212,7 @@ C
           IF( NNCOLOR .eq. 8 ) GOTO 300
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
-          call interface_mpi_BCAST(SEGMNT,LBL,0,IBLOCKCOMM)
+          call interface_mpi_bcast_r1_work_f77(SEGMNT,LBL,0,IBLOCKCOMM)
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 C         transfer the recieved block to disk if necessary
 CSK            WRITE(LUWRT,*)'THIS IS WHAT I GOT from ROOTPROC',MYPROC,
@@ -1222,8 +1222,8 @@ CSK            WRITE(LUWRT,*) 'IOFFSET_OUT imag part = ',IOFFSET_OUT
 CSK            WRITE(LUWRT,*) 'block to write imag part',IBLK,
 CSK     &                      IBLK + IOFF_BLOCK
           xrw_time = MPI_WTIME()
-          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                           ISTAT)
+          call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET_OUT,SEGMNT,
+     &                           lbl,ISTAT)
           read_write = read_write + MPI_WTIME() - xrw_time
           IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
 C
@@ -1373,13 +1373,13 @@ C
               IF( IMZERO .eq. 0 ) THEN
 C
 C               recieve block and transfer to file
-                call interface_mpi_RECV(VEC1,ILEN,MASTER,91,
+                call interface_mpi_recv_r1_work_f77(VEC1,ILEN,MASTER,91,
      &                        global_communicator)
                 LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
 !               WRITE(6,*) ' S will write this to disk for block',
 !    &          IOFFSET_LUOUT, IBLK
 !               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
-                call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,
+                call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET_LUOUT,
      &               VEC1,ILEN,ISTAT)
 C
               ELSE
@@ -1412,11 +1412,9 @@ C             read block in core and send to CPU I_NEED_BLK if necessary
               IF( MYPROC .ne. I_NEED_BLK )THEN
                 call interface_mpi_SEND(IMZERO,1,I_NEED_BLK,90,
      &                        global_communicator)
-CSK                call interface_mpi_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        global_communicator,IERR)
                 IF( IMZERO .eq. 0 ) THEN
-                  call interface_mpi_SEND(VEC1,ILEN,I_NEED_BLK,91,
-     &                          global_communicator)
+                  call interface_mpi_send_r1_work_f77(VEC1,ILEN,
+     &                          I_NEED_BLK,91,global_communicator)
                 END IF
               ELSE
 C               count active blocks
@@ -1428,9 +1426,9 @@ C
 !    &            IOFFSET_LUOUT, IBLK
 !                 CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
 C
-                  call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,
-     &                 VEC1,ILEN,ISTAT)
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
+                 call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET_LUOUT,
+     &                VEC1,ILEN,ISTAT)
+                 LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
                 ELSE
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
                 END IF 
@@ -1513,11 +1511,11 @@ C
                 IF( IMZERO .eq. 0 ) THEN
 C
 C                 recieve block and transfer to file
-                  call interface_mpi_RECV(VEC1,ILEN,MASTER,94,
-     &                          global_communicator)
+                  call interface_mpi_recv_r1_work_f77(VEC1,ILEN,
+     &                          MASTER,94,global_communicator)
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                  call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,
-     &                                   VEC1,ILEN,ISTAT)
+                  call interface_mpi_FILE_WRITE_AT_r(LUOUT,
+     &                                   IOFFSET_LUOUT,VEC1,ILEN,ISTAT)
 C
                 ELSE
 C
@@ -1549,11 +1547,9 @@ C               read block in core and send to CPU I_NEED_BLK if necessary
                 IF( MYPROC .ne. I_NEED_BLK )THEN
                   call interface_mpi_SEND(IMZERO,1,I_NEED_BLK,93,
      &                          global_communicator)
-CSK                call interface_mpi_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        global_communicator,IERR)
                   IF( IMZERO .eq. 0 ) THEN
-                    call interface_mpi_SEND(VEC1,ILEN,I_NEED_BLK,94,
-     &                            global_communicator)
+                    call interface_mpi_send_r1_work_f77(VEC1,ILEN,
+     &                            I_NEED_BLK,94,global_communicator)
                   END IF
                 ELSE
 C                 count active blocks
@@ -1561,9 +1557,8 @@ C                 count active blocks
 C
                   IF( IMZERO .eq. 0 ) THEN
 C
-                    call interface_mpi_FILE_WRITE_AT(LUOUT,
-     &                   IOFFSET_LUOUT,VEC1,
-     &                                     ILEN,ISTAT)
+                    call interface_mpi_FILE_WRITE_AT_r(LUOUT,
+     &                   IOFFSET_LUOUT,VEC1,ILEN,ISTAT)
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
                   ELSE
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
@@ -1780,7 +1775,7 @@ C
 *. Non vanishing block has a nonzero blocklength
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h
+#include "infpar.h"
 #include "parluci.h"
 #include "../lucita/clunit.inc"
 *
@@ -2356,6 +2351,7 @@ C
 *. Find distribution for (nonvanishing blocks) among the nodes
 *. Non vanishing block has a nonzero blocklength
 *
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
 #include "parluci.h"
@@ -3066,7 +3062,7 @@ C
 #include "infpar.h"
 #include "parluci.h"
 C
-      DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
+      INTEGER IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
       CHARACTER*255 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
       CHARACTER*255 OLD_NAME
       INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
@@ -3889,7 +3885,7 @@ CSK          WRITE(LUWRT,'(2X,A,1X,I6,1X,A,1X,I14,1X,I6)') 'THIS IS block',
 CSK     &         IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
 CSK          CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
 C
-          call interface_mpi_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
+          call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET,SCR(JOFF),
      &                           LENGTH,ISTAT)
 C
 C
@@ -3947,8 +3943,8 @@ C             memory offset
 C
 CSK              WRITE(LUWRT,*) 'JOFF,ILEN2,ILEN again for block 
 CSK     & IOFFSET_INT+ NUM_A_B -1',JOFF,ILEN2,ILEN,IOFFSET_INT+ NUM_A_B -1
-              call interface_mpi_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
-     &                              ILEN2,ISTAT)
+              call interface_mpi_FILE_READ_AT_r(MY_LUIN,IOFFSET,
+     &                              SCR(JOFF),ILEN2,ISTAT)
 CSK              WRITE(LUWRT,*) ' my block'
 CSK              CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
             ENDIF 
@@ -4018,7 +4014,7 @@ C
      & IOFFSET
               CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
 #endif
-              call interface_mpi_FILE_WRITE_AT(MY_LUOUT,IOFFSET,
+              call interface_mpi_FILE_WRITE_AT_r(MY_LUOUT,IOFFSET,
      &             SCR(JOFF),ILEN2,ISTAT)
 C
  100        CONTINUE
@@ -4067,7 +4063,7 @@ C           memory offset
 C
             JOFF = NBATCH_INF(6,IBLK)
 C
-            call interface_mpi_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
+            call interface_mpi_FILE_READ_AT_r(MY_LUIN,IOFFSET,SCR(JOFF),
      &                            ILEN2,ISTAT)
 C
           ENDIF 
@@ -4481,12 +4477,12 @@ C
 C
       CALL DZERO(SUBSPH(ISTRED),NROOT)
       CALL REDVEC(SCRRED,SUBSPH(ISTRED),NROOT,2,
-     &            MPI_SUM,global_communicator,-1)
+     &            op_MPI_SUM,global_communicator,-1)
 C
       IF( (JOFF - 1) .gt. 0 ) THEN
         CALL DZERO(SUBSPH(ISTRED2),JOFF-1)
         CALL REDVEC(SCRRED2,SUBSPH(ISTRED2),JOFF-1,2,
-     &              MPI_SUM,global_communicator,-1)
+     &              op_MPI_SUM,global_communicator,-1)
       END IF
 C
       endtime = MPI_WTIME()
@@ -4682,7 +4678,7 @@ C
 C     communicate REDFAC to obtain correct scaling factor
       
       FACTOR = 0.0D0
-      CALL REDVEC(REDFAC,FACTOR,1,2,MPI_SUM,global_communicator,-1)
+      CALL REDVEC(REDFAC,FACTOR,1,2,op_MPI_SUM,global_communicator,-1)
 csk   WRITE(LUWRT,*) 'REDUCED FACTOR IN PART 3.2',FACTOR
 C
       SCALING = 0.0D0
@@ -5947,7 +5943,7 @@ csk         CALL WRTMATMN(VEC1,1,LBL,1,LBL,LUWRT)
 csk         WRITE(LUWRT,*) 'OFFSET',IOFF_SCR1
 csk         WRITE(LUWRT,*) 'INT_IOFF1 is ',INT_IOFF1
             LU1LIST( INT_IOFF1 ) = IONE
-            call interface_mpi_FILE_WRITE_AT(ILU1,IOFF_SCR1,VEC1,LBL,
+            call interface_mpi_FILE_WRITE_AT_r(ILU1,IOFF_SCR1,VEC1,LBL,
      &                             ISTAT)
           END IF
 C

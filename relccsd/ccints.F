@@ -1034,7 +1034,7 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
      &                 MREADER,global_communicator)
         call interface_mpi_bcast_i1_work_f77(INDL,NONZR,
      &                 MREADER,global_communicator)
-        call interface_mpi_bcast_r2_work_f77(CBUF,NONZR*RCW,
+        call interface_mpi_bcast_r2_work_f77(CBUF,RCW,NONZR,
      &                 MREADER,global_communicator)
       ENDIF
       ENDIF

@@ -737,7 +737,7 @@ CSK          WRITE(LUWRT,*) 'OFFSET',IOFF_SCR1
 CSK          WRITE(LUWRT,*) 'INT_IOFF1 is ',INT_IOFF1
 C
             LU1LIST( INT_IOFF1 ) = IONE
-            CALL interface_MPI_FILE_WRITE_AT(ILU1,IOFF_SCR1,VEC1,LBL,
+            CALL interface_MPI_FILE_WRITE_AT_r(ILU1,IOFF_SCR1,VEC1,LBL,
      &                             ISTAT)
 C
           END IF

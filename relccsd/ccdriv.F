@@ -566,10 +566,6 @@ C
 #include "ccpar.inc"
 #include "waio.h"
 #include "dcbmp2no.h"
-#if defined (VAR_MPI)
-CSK#include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -2477,9 +2473,6 @@ C
 #include "ccpar.inc"
 #include "dcbmp2no.h"
 #include "mp1stpr.h"
-#if defined (VAR_MPI)
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -3860,10 +3853,6 @@ C
 #include "inpt.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#if defined (VAR_MPI)
-
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -3968,7 +3957,7 @@ C
       IF (NMPROC.GT.1) THEN
          call interface_mpi_BCAST(NSP,1,MASTER,
      &                  global_communicator)
-         call interface_mpi_BCAST(BREIT,1,MASTER,
+         call interface_mpi_BCAST_l0(BREIT,1,MASTER,
      &                  global_communicator)
          call interface_mpi_BCAST(ECORE,1,MASTER,
      &                  global_communicator)
@@ -3978,7 +3967,7 @@ C
      &                  global_communicator)
          call interface_mpi_BCAST(NZ,1,MASTER,
      &                  global_communicator)
-         call interface_mpi_BCAST(SPFR,1,MASTER,
+         call interface_mpi_BCAST_l0(SPFR,1,MASTER,
      &                  global_communicator)
          call interface_mpi_BCAST(NORBT,1,MASTER,
      &                  global_communicator)
@@ -3992,9 +3981,9 @@ C
      &                  global_communicator)
          call interface_mpi_BCAST(MULTB,MXREP*MXREP*8,MASTER,
      &                  global_communicator)
-         call interface_mpi_BCAST(IREPSP,2*NSP,MASTER,
+         call interface_mpi_bcast_i1_work_f77(IREPSP,2*NSP,MASTER,
      &                  global_communicator)
-         call interface_mpi_BCAST(EPS1,NSP,MASTER,
+         call interface_mpi_bcast_r1_work_f77(EPS1,NSP,MASTER,
      &                  global_communicator)
       END IF
 #endif

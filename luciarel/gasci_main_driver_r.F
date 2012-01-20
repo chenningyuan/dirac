@@ -216,9 +216,9 @@ C       allocate T-block processor and offset list
 #if defined VAR_SHMEM
         MY_TTOL_LEN = NSPOBEX_TP * IRC
         CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
-     &                      MPI_INFO_NULL, .FALSE.)
+     &                      df_MPI_INFO_NULL, .FALSE.)
         CALL MPIXMEM_ALLOC( MY_TTOL_PTR, 3, MY_TTOL_LEN,
-     &                      MPI_INFO_NULL, .FALSE.)
+     &                      df_MPI_INFO_NULL, .FALSE.)
         CALL IMINO8(IT_TTOL,MY_TTOL_LEN)
 #else
         allocate(IT_TTPL(MY_TTPL_LEN))
@@ -1147,7 +1147,7 @@ C
                MY_XT_BUFF_LEN = NCALC_MAX_BLK(IRC)
 C
                CALL MPIXMEM_ALLOC(MY_XT_PTR,1,MY_XT_BUFF_LEN,
-     &                            MPI_INFO_NULL,.FALSE.)
+     &                            df_MPI_INFO_NULL,.FALSE.)
                CALL DZERO8(XT_BUFF,MY_XT_BUFF_LEN)
                CALL COLLECT_DENS_MAT_SM_LOC(T_BUFF,XT_BUFF,IT_TTPL,
      &                                      IT_TTOL,IRC,ISHARE_DENSM)

@@ -80,10 +80,7 @@
       use memory_allocator
 #include "implicit.inc"
 #include "ipoist8.inc"
-#if defined (VAR_MPI2)
 #include "infpar.h"
-use interface_to_mpi
-#endif
 #include "parluci.h"
 #include "krciprop.h"
 #include "mxpdim.inc"
@@ -221,10 +218,10 @@ CSK     WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
         IXCOMM_SZ = 0
         IXCOMM_RK = 0
         IXCOMM    = 0
-        call interface_mpi_COMM_SPLIT(df_global_communicator,IXXX_CLR,
-     &                       IXXX_KEY,IXCOMM,IERR)
-        call interface_mpi_COMM_SIZE(IXCOMM,IXCOMM_SZ,IERR)
-        call interface_mpi_COMM_RANK(IXCOMM,IXCOMM_RK,IERR)
+        call interface_mpi_COMM_SPLIT(global_communicator,IXXX_CLR,
+     &                       IXXX_KEY,IXCOMM)
+        call interface_mpi_COMM_SIZE(IXCOMM,IXCOMM_SZ)
+        call interface_mpi_COMM_RANK(IXCOMM,IXCOMM_RK)
         IF(ALLOC_INT)THEN
 
           call alloc(icheck_file,ixcomm_sz)
@@ -236,9 +233,9 @@ CSK     WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
 #ifdef LUCI_DEBUG
           NPTESTVAR = 0
           IF( NPTESTVAR .ge. 20 )THEN
-            call interface_mpi_BARRIER(IXCOMM,IERR)
+            call interface_mpi_BARRIER(IXCOMM)
             DO IJK = 1, IXCOMM_SZ
-              call interface_mpi_BARRIER(IXCOMM,IERR)
+              call interface_mpi_BARRIER(IXCOMM)
               IF( IXCOMM_RK .eq. IJK - 1 )THEN
                 WRITE(6,*) ' my icheck_file array', 
      &                       MYPROC, MYNEW_ID, IXCOMM_RK
@@ -256,8 +253,9 @@ CSK     WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
           call dealloc(icheck_file)
         END IF ! alloc_int
 C       consistency is checked; update global_communicator
-        call interface_mpi_BCAST(EX,1,MPI_LOGICAL,MASTER,global_communicator)
-        call interface_mpi_COMM_FREE(IXCOMM,IERR)
+        call interface_mpi_BCAST_l0(EX,1,MASTER,
+     &       global_communicator)
+        call interface_mpi_COMM_FREE(IXCOMM)
 #endif
       END IF
 C     CIRUN == IJKLRO
@@ -340,7 +338,7 @@ C     orbital symmetry info
       call izero(ibeig,norbt)
 #if defined (VAR_MPI)
       if(CIRUN.ne.'PROP1 ')then
-        call interface_mpi_bcast(linear,1,MPI_LOGICAL,master,
+        call interface_mpi_bcast_l0(linear,1,master,
      &                 global_communicator)
       end if
 #endif
@@ -361,7 +359,7 @@ C     orbital symmetry info
         end if
 #if defined (VAR_MPI)
         if(CIRUN.ne.'PROP1 ')then
-          call interface_mpi_bcast(ibeig,norbt,my_MPI_INTEGER,master,
+          call interface_mpi_bcast(ibeig,norbt,master,
      &                   global_communicator)
         end if
 #endif
@@ -398,8 +396,8 @@ C
             IXXX_CLR = 2
           END IF
           IXXX_KEY = MYPROC
-          call interface_mpi_COMM_SPLIT(df_global_communicator,IXXX_CLR,
-     &                        IXXX_KEY,IXCOMM,IERR)
+          call interface_mpi_COMM_SPLIT(global_communicator,IXXX_CLR,
+     &                        IXXX_KEY,IXCOMM)
 C
           IF( IXXX_CLR .eq. 2 ) GOTO 797
 #endif
@@ -420,7 +418,7 @@ C
  797      CONTINUE
 C
 #if defined (VAR_MPI2)
-          call interface_mpi_COMM_FREE(IXCOMM,IERR)
+          call interface_mpi_COMM_FREE(IXCOMM)
 #endif
 C
           call dealloc(ibeig)
@@ -478,7 +476,8 @@ C
           XLENALL = REAL(LEN_ALL_INT)
           LEN_INT_BCAST = IGIVE_I_B(XLENALL)
 #endif
-          call interface_mpi_BCAST(WORK(KINTI12),LEN_INT_BCAST,MPI_REAL8,
+          call interface_mpi_BCAST_r1_work_f77(WORK(KINTI12),
+     &                   LEN_INT_BCAST,
      &                   MASTER,global_communicator)
         END IF
 #endif
@@ -567,6 +566,7 @@ C
 * 
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -577,7 +577,6 @@ C
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-use interface_to_mpi
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
@@ -657,12 +656,14 @@ C     NOINT_FILE = .TRUE.
 !     open file with pre-fetched integrals
       if( lowsrt_ijkl ) then
 #if defined (VAR_MPI2)
-        call interface_mpi_file_open(df_MPI_comm_self,"IJKL_PRESORT",
-     &                     mpi_mode_rdonly + mpi_mode_delete_on_close,
-     &                     mpi_info_null,ijkl_pre,ierr)
+        call interface_mpi_file_open(self_communicator,"IJKL_PRESORT",
+     &                     df_mpi_mode_rdonly + 
+     &                     df_mpi_mode_delete_on_close,
+     &                     df_mpi_info_null,ijkl_pre)
         idisp = 0
-        call interface_mpi_file_set_view(ijkl_pre,idisp,mpi_real8,mpi_real8,
-     &                         "native",mpi_info_null,ierr)
+        call interface_mpi_file_set_view(ijkl_pre,idisp,
+     &                         df_mpi_real8,df_mpi_real8,
+     &                         "native",df_mpi_info_null)
 #endif
       end if
 !
@@ -1251,7 +1252,7 @@ C
 !     close (and destroy) file with pre-fetched integrals
       if( lowsrt_ijkl ) then
 #if defined (VAR_MPI2)
-        call interface_mpi_file_close(ijkl_pre,ierr)
+        call interface_mpi_file_close(ijkl_pre)
 #endif
       end if
 !     call quit('*** bla bla: stop after dist_ints_sigden... ***')
@@ -1267,6 +1268,7 @@ C
 *
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -1277,7 +1279,6 @@ C
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-use interface_to_mpi
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
@@ -1357,12 +1358,14 @@ C     NOINT_FILE = .TRUE.
 !     open file with pre-fetched integrals
       if( lowsrt_ijkl ) then
 #if defined (VAR_MPI2)
-        call interface_mpi_file_open(df_MPI_comm_self,"IJKL_PRESORT",
-     &                     mpi_mode_rdonly + mpi_mode_delete_on_close,
-     &                     mpi_info_null,ijkl_pre,ierr)
+        call interface_mpi_file_open(self_communicator,"IJKL_PRESORT",
+     &                 df_mpi_mode_rdonly + df_mpi_mode_delete_on_close,
+     &                 df_mpi_info_null,ijkl_pre)
         idisp = 0
-        call interface_mpi_file_set_view(ijkl_pre,idisp,mpi_real8,mpi_real8,
-     &                         "native",mpi_info_null,ierr)
+        call interface_mpi_file_set_view(ijkl_pre,idisp,
+     &                         df_mpi_real8,
+     &                         df_mpi_real8,
+     &                         "native",df_mpi_info_null)
 #endif
       end if
 !
@@ -1968,7 +1971,7 @@ C
 !     close (and destroy) file with pre-fetched integrals
       if( lowsrt_ijkl ) then
 #if defined (VAR_MPI2)
-        call interface_mpi_file_close(ijkl_pre,ierr)
+        call interface_mpi_file_close(ijkl_pre)
 #endif
       end if
 *
@@ -1985,11 +1988,11 @@ C
 *=========================
 *
 *
+      use interface_to_mpi
 #include "implicit.h"
 #include "dgroup.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-use interface_to_mpi
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET
 #endif
@@ -2139,8 +2142,8 @@ C     YINT = H2AC(IIN) * IRIFAC * IRIFAC2
         yint4 = 0.0D0
 !       file offset is 0!
         ioffset = iin - 1
-        call interface_mpi_file_read_at(ijkl_pre,ioffset,yint4,1,mpi_real8,
-     &                        istat,ierr)
+        call interface_mpi_file_read_at(ijkl_pre,ioffset,yint4,1,
+     &                        istat)
 !       write(6,*) 'iin ,ioffset, yint4',iin ,ioffset, yint4
         yint = yint4 * irifac * irifac2
 #endif
@@ -3128,8 +3131,8 @@ csk               write(LUWRT,*) ' continuing ...'
 *    -1 for barred   (beta)
 * #############################################
 *
+      use interface_to_mpi
 #include "implicit.h"
-use interface_to_mpi
 #include "infpar.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
@@ -3394,9 +3397,9 @@ csk               write(LUWRT,*) ' continuing ...'
 *    -1 for barred   (beta)
 * #############################################
 *
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-use interface_to_mpi
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3534,14 +3537,15 @@ C           receive or copy DENS block - at present: MASTER only
 csk             WRITE(LUWRT,*) ' density block at ITB_BUFF'
 csk             CALL WRTMATMN(DENS_SCR,1,NINT_TP,1,NINT_TP,LUWRT)
               ELSE
-                call interface_mpi_RECV(DENS_SCR,NINT_TP,MPI_REAL8,ID_GET,821,
-     &                        global_communicator,ISTAT,IERR)
+                call interface_mpi_RECV_r1_work_f77(DENS_SCR,NINT_TP,
+     &                        ID_GET,821,
+     &                        global_communicator)
                 ITB_BUFF_ADD = 0
               END IF
             ELSE
               IRUN         = IRUN + NINT_TP
               IF( MYPROC .eq. ID_GET )THEN
-                call interface_mpi_SEND(DENS(ITB_BUFF),NINT_TP,MPI_REAL8,
+                call interface_mpi_SEND(DENS(ITB_BUFF),NINT_TP,
      &                        MASTER,821,global_communicator)
                 ITB_BUFF     = ITB_BUFF + ITB_BUFF_ADD
               ELSE
@@ -3663,9 +3667,9 @@ csk               write(LUWRT,*) ' continuing ...'
 *    -1 for barred   (beta)
 * #############################################
 *
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-use interface_to_mpi
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3800,7 +3804,8 @@ C           receive or copy DENS block - at present: MASTER only
               IF( ID_GET .eq. 0 )THEN
                 CALL DCOPY(NINT_TP,DENS(ITB_BUFF),1,DENS_SCR,1)
               ELSE
-                call interface_mpi_RECV(DENS_SCR,NINT_TP,ID_GET,821,
+                call interface_mpi_RECV_r1_work_f77(DENS_SCR,NINT_TP,
+     &                        ID_GET,821,
      &                        global_communicator)
                 ITB_BUFF_ADD = 0
               END IF

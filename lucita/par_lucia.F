@@ -2032,23 +2032,32 @@ C
 C
 C     ... set fileview
 C
-      call interface_mpi_FILE_SET_VIEW(IDIA,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(IDIA,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILU1,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILU1,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILU2,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILU2,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILU3,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILU3,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILU4,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILU4,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILU5,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILU5,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILU6,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILU6,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILU7,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILU7,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
-      call interface_mpi_FILE_SET_VIEW(ILUC,IDISP,MPI_REAL8,MPI_REAL8,
+      call interface_mpi_FILE_SET_VIEW(ILUC,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
      &        "native",df_mpi_info_NULL)
 C
       END
