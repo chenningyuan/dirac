@@ -2420,8 +2420,8 @@ use interface_to_mpi
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
-      CHARACTER*72 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
-      CHARACTER*72 OLD_NAME
+      CHARACTER*255 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
+      CHARACTER*255 OLD_NAME
       INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
 C
       NTEST = 000
@@ -2531,8 +2531,8 @@ use interface_to_mpi
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
-      CHARACTER*72 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
-      CHARACTER*72 OLD_NAME
+      CHARACTER*255 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
+      CHARACTER*255 OLD_NAME
       INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
 C
       NTEST =  0
@@ -8778,7 +8778,7 @@ csk         WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
 csk  &                                        IOFF_SCR,   IREAD_BYTE
 csk         WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
               call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
-     &                              IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+     &                              IREAD_BYTE,df_MPI_BYTE,ISTAT,IERR)
               IOFF_T_B = IOFF_T_B + ISLEN_TBL
             ENDIF
             INUM_BYTE  = IS_BYTE8 * ISLEN_TBL
@@ -8806,7 +8806,7 @@ csk         WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
 csk  &                                        IOFF_SCR,   IREAD_BYTE
 csk         WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
               call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
-     &                              IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+     &                              IREAD_BYTE,df_MPI_BYTE,ISTAT,IERR)
               IOFF_T_B = IOFF_T_B + ISLEN_TBL
             ENDIF
             INUM_BYTE  = IS_BYTE8 * ISLEN_TBL

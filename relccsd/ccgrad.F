@@ -343,9 +343,8 @@ C
      &                                        op_mpi_sum,MASTER,
      &                                        global_communicator)
         CALL XCOPY(NDIMX,BUF1,1,XVO,1)
-        CALL interface_MPI_BCAST(XVO,RCW*NDIMX,
-     &    MASTER,
-     &    global_communicator)
+        CALL interface_mpi_bcast_r1_work_f77(XVO,RCW*NDIMX,
+     &       MASTER,global_communicator)
       ENDIF
 #endif
 C--------------------------------------------

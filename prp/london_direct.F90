@@ -57,10 +57,6 @@ module london_direct_hb
 #include "shells.h"
 
 #include "infpar.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-  dimension     istat(mpi_status_size)
-#endif /* ifdef VAR_MPI */
 
 
 

@@ -163,7 +163,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
@@ -354,8 +354,9 @@ C ... we collect the H array
         CALL XCOPY (NBUF3,A0,0,BUF3,1)
 CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
         IERR = 0
-        call interface_mpi_ALLREDUCE(H,BUF3,RCW*IVOVO(NREP+1),
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,global_communicator,IERR)
+        call interface_mpi_allreduce_r1_work_f77(H,BUF3,
+     &       RCW*IVOVO(NREP+1),
+     &       op_MPI_SUM,global_communicator)
         IF(IERR.GT.0) THEN
            CALL QUIT('MPI_REDUCE ERROR in collecting HINTM !')
         ENDIF
@@ -1229,7 +1230,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
 C
@@ -1369,9 +1370,10 @@ C       Switch off the overall timer for this part and focus on
 C       the communication.
         CALL XTIME(0,2,'-- T3CORR: VOVV contraction        ')
         CALL XTIME(0,1,'-- T3CORR: addition of partial U   ')
-        call interface_mpi_REDUCE(BUF1(OFF1),BUF2(1),RCW*M*N,
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
-     &    global_communicator,IERR)
+        call interface_mpi_reduce_r1_work_f77(BUF1(OFF1),BUF2(1),
+     &       RCW*M*N,
+     &       op_MPI_SUM,MASTER,
+     &       global_communicator)
         CALL XCOPY(M*N,BUF2(1),1,BUF1(OFF1),1)
 C       Communication completed, switch back to operations timer
         CALL XTIME(0,2,'-- T3CORR: addition of partial U   ')
@@ -1798,7 +1800,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
@@ -1808,20 +1810,20 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC.EQ.1) RETURN
       IF (IMODE.EQ.1) THEN
-          call interface_mpi_REDUCE(T1,BUF1,NDIMT1*RCW,MPI_DOUBLE_PRECISION,
-     &                    MPI_SUM,MASTER,global_communicator,IERR)
-          call interface_mpi_REDUCE(T2,BUF2,NDIMT2*RCW,MPI_DOUBLE_PRECISION,
-     &                    MPI_SUM,MASTER,global_communicator,IERR)
+          call interface_mpi_reduce_r1_work_f77(T1,BUF1,NDIMT1*RCW,
+     &                    op_MPI_SUM,MASTER,global_communicator)
+          call interface_mpi_reduce_r1_work_f77(T2,BUF2,NDIMT2*RCW,
+     &                    op_MPI_SUM,MASTER,global_communicator)
           IF (MYPROC.EQ.MASTER) CALL XCOPY (NDIMT1,BUF1,1,T1,1)
           IF (MYPROC.EQ.MASTER) CALL XCOPY (NDIMT2,BUF2,1,T2,1)
       ENDIF
 C
-      call interface_mpi_BCAST(T1,NDIMT1*RCW,MPI_DOUBLE_PRECISION,MASTER,
-     &               global_communicator,IERR)
-      call interface_mpi_BCAST(T2,NDIMT2*RCW,MPI_DOUBLE_PRECISION,MASTER,
-     &               global_communicator,IERR)
-      call interface_mpi_BCAST(RMS,1,MPI_DOUBLE_PRECISION,MASTER,
-     &               global_communicator,IERR)
+      call interface_mpi_bcast_r1_work_f77(T1,NDIMT1*RCW,MASTER,
+     &               global_communicator)
+      call interface_mpi_bcast_r1_work_f77(T2,NDIMT2*RCW,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(RMS,1,MASTER,
+     &               global_communicator)
 #endif
       RETURN
       END

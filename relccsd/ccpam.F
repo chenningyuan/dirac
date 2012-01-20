@@ -99,8 +99,8 @@ C     if you do not run HF !)
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         call interface_mpi_BCAST(CA,1,MASTER,global_communicator)
-         call interface_mpi_BCAST(MP2_DENRUN,1,MASTER,
+         call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
+         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
      &                  global_communicator)
       END IF
 C
@@ -242,8 +242,8 @@ C     Get the correct arithmetic (NZ is not initialized on slaves if you do not 
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         call interface_mpi_BCAST(CA,1,MASTER,global_communicator)
-         call interface_mpi_BCAST(MP2_DENRUN,1,MASTER,
+         call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
+         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
      &                  global_communicator)
       END IF
       IF( MP2_DENRUN )THEN

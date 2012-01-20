@@ -294,7 +294,7 @@ C information for property run
 #include "krciprop.h"
 CTF
       character*6 CIRUN
-      CHARACTER*72 MACHINENAME
+      CHARACTER*255 MACHINENAME
       INTEGER NAMELENGTH, MZ_NUM
       logical MCSCF, RUN_SHMEM_T
 CTF  global reference values for Z_BLKFO needed in MV7 !!

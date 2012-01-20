@@ -2175,9 +2175,8 @@ C
            LENGTH_BLK = IBLOCKL(IBLK)
 C
            IF( ISCLFAC_GROUP( IBLK ) .ne. 0 ) THEN
-             call interface_mpi_FILE_READ_AT(LUC,IOFFSET_SCRATCH,CB,
-     &                             LENGTH_BLK,
-     &                             ISTAT)
+             call interface_mpi_FILE_READ_AT_r(LUC,IOFFSET_SCRATCH,CB,
+     &                             LENGTH_BLK,ISTAT)
              WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
      &             IOFFSET_SCRATCH,'for block', IBLK, LENGTH_BLK
              CALL WRTMATMN(CB,1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
@@ -2319,9 +2318,8 @@ csk     WRITE(LUCIWT,*) 'I transfer to file block ISBLK',
 csk  &                     ISBLK
 csk        CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,LUCIWT)
 csk        WRITE(LUCIWT,*) 'offset,length',IOFF_SCR1,LEN
-              call interface_mpi_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),
-     &                               LEN,
-     &                               ISTAT)
+             call interface_mpi_FILE_WRITE_AT_r(LUHC,IOFF_SCR1,SB(IOFF),
+     &            LEN,ISTAT)
               ISI_CALC_BL = ISI_CALC_BL + 1
            END IF
 *          keep track of correct offset
@@ -5805,7 +5803,7 @@ C            file offset
 C
 csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
              xxxreadtime = MPI_WTIME()
-             call interface_mpi_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
+             call interface_mpi_FILE_READ_AT_r(LUC,IOFF_SCR_C1,CB(JOFF),
      &                             LBL,ISTAT)
 csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
              xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()

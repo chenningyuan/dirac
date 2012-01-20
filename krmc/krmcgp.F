@@ -2140,8 +2140,8 @@ C
 #ifdef VAR_MPI
       if(isync_nodes .eq. 1)then
        call interface_mpi_BCAST(GROUP, 3,MASTER,global_communicator)
-       call interface_mpi_BCAST(spinfr,1,MASTER,global_communicator)
-       call interface_mpi_BCAST(linear,1,MASTER,global_communicator)
+       call interface_mpi_bcast_l0(spinfr,1,MASTER,global_communicator)
+       call interface_mpi_bcast_l0(linear,1,MASTER,global_communicator)
       end if
 #endif
 
@@ -2442,7 +2442,7 @@ C     GAS shells and constraints.
 C     ... just in case these variable have not 
 C     been initialized on the outside.
       IF( ISYNC_NODES .eq. 1 ) THEN
-        call interface_mpi_BCAST(OPT_UCIBOS,1,MASTER,
+        call interface_mpi_bcast_l0(OPT_UCIBOS,1,MASTER,
      &                 global_communicator)
         call interface_mpi_BCAST(NBSYM,1,MASTER,
      &                 global_communicator)
@@ -2504,8 +2504,8 @@ C     Density matrices requested
 C     Type of operator wrt. relativity
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) THEN
-        call interface_mpi_BCAST(SPINFR,1,MASTER,global_communicator)
-        call interface_mpi_BCAST(LEVYLE,1,MASTER,global_communicator)
+        call interface_mpi_BCAST_L0(SPINFR,1,MASTER,global_communicator)
+        call interface_mpi_BCAST_L0(LEVYLE,1,MASTER,global_communicator)
       END IF
 #endif
 C     Relativistic CI
@@ -2552,13 +2552,13 @@ C     calculate property operator symmetry in double group subgroup
 C     notation
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST(DOSYMOPPRP,1,MASTER,
+     &  call interface_mpi_BCAST_L0(DOSYMOPPRP,1,MASTER,
      &                 global_communicator)
 #endif
 C     reorder property operator matrix (already done by the MASTER...)
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST(DOPROPREOD,1,MASTER,
+     &  call interface_mpi_BCAST_L0(DOPROPREOD,1,MASTER,
      &                 global_communicator)
 #endif
 C     Wave function analysis
@@ -2619,7 +2619,7 @@ C     running a nat. orb. occ. num. run?
       NOOCCN_DENS_RUN = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(NATOLCR,1,MASTER,
+     &   call interface_mpi_BCAST_L0(NATOLCR,1,MASTER,
      &                  global_communicator)
 #endif
       NOOCCN_DENS_RUN = NATOLCR
@@ -2640,7 +2640,7 @@ C     running in "shared memory" mode?
       IC_SHL      = - 1
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(CSHMEMO,1,MASTER,
+     &   call interface_mpi_BCAST_L0(CSHMEMO,1,MASTER,
      &                  global_communicator)
 #endif
       SHARED_M = CSHMEMO
@@ -2685,7 +2685,7 @@ C       disable shared memory usage
 C     write check point file during large-scale CI optimization 
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(CHCKPT_WRT,1,MASTER,
+     &   call interface_mpi_BCAST_L0(CHCKPT_WRT,1,MASTER,
      &                  global_communicator)
 #endif
       CHECKPOINT_LUCIX = CHCKPT_WRT
@@ -2693,7 +2693,7 @@ C     read from / write to block distribution file KRCI_BLOCKDIST.x
 C     (x=sym)
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(CPBLCK_FILE,1,MASTER,
+     &   call interface_mpi_BCAST_L0(CPBLCK_FILE,1,MASTER,
      &                  global_communicator)
 #endif
       CPBLCK_FILE_LUCIX = CPBLCK_FILE
@@ -2701,7 +2701,7 @@ C     using GAS-scheme specific integral file resp. writing it
       REORD_IJKL = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(CINT_REORD,1,MASTER,
+     &   call interface_mpi_BCAST_L0(CINT_REORD,1,MASTER,
      &                  global_communicator)
 #endif
       REORD_IJKL = CINT_REORD
@@ -2709,7 +2709,7 @@ C     using revised integral allocation scheme
       SPLIT_IJKL = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(CINT_SPLIT,1,MASTER,
+     &   call interface_mpi_BCAST_L0(CINT_SPLIT,1,MASTER,
      &                  global_communicator)
 #endif
       SPLIT_IJKL = CINT_SPLIT
@@ -2717,7 +2717,7 @@ C     using low-memory scheme for integral resorting
       LOWSRT_IJKL = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(CINT_LOWSRT,1,MASTER,
+     &   call interface_mpi_BCAST_L0(CINT_LOWSRT,1,MASTER,
      &                  global_communicator)
 #endif
       LOWSRT_IJKL = CINT_LOWSRT
@@ -2744,7 +2744,7 @@ C     do not write file CIDIA_REL.x
          IF( MOPT_MXMACRO .ge. 0 ) NO_CDIAF = .FALSE.
       END IF
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(NO_CDIAF,1,MASTER,
+     &   call interface_mpi_BCAST_L0(NO_CDIAF,1,MASTER,
      &                  global_communicator)
 #else
       NO_CDIAF = .FALSE.

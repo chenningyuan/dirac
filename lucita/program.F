@@ -520,7 +520,7 @@ C     debug printing
             CALL GET_BLOCK_PROC(WORK(KBLCKPD),IIBLK,IPROC)
             IF( MYPROC .eq. IPROC ) THEN
               CALL GET_BLOCK_LENGTH(WORK(KBLCKIF),IIBLK,ILEN)
-              call interface_mpi_FILE_READ_AT(IDIA,ITEST_OFF,
+              call interface_mpi_FILE_READ_AT_r(IDIA,ITEST_OFF,
      &                              WORK(KVEC1),ILEN,
      &                              ISTAT)
               WRITE(LUWRT,*) ' Diagonal elements',ILEN
@@ -1032,7 +1032,8 @@ C
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
 C     character line and machinename
-      CHARACTER*72 CARD,MACHINENAME
+      CHARACTER*72 CARD
+      CHARACTER*255 MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
       INTEGER*8 K_OFFSET, K8BASE_LUCITA
       integer global_scratch_disk

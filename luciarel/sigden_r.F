@@ -168,11 +168,11 @@ C (alpha creation, beta creation, alpha annihilation, beta annihilation)
 C
 C***********************************************************************
 C
+       use interface_to_mpi
 #include "implicit.inc"
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -1073,11 +1073,11 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
 #endif
 *. General input
 #include "mxpdim.inc"
@@ -1679,11 +1679,11 @@ C
 *
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
 #endif
 *. General input
 #include "mxpdim.inc"
@@ -3364,10 +3364,10 @@ C
 * Modified mv7 routine 
 *  Timo Fleig, Halloween 2001  =:-()
 *
+      use interface_to_mpi
 #include "implicit.inc"
 * some stuff relevant for parallel runs
 #if defined (VAR_MPI2)
-#include "mpif.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)     
       INTEGER RCCTOS(*)
 #endif
@@ -3463,6 +3463,7 @@ C
 C***********************************************************************
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3485,7 +3486,6 @@ C***********************************************************************
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL_C(*), NPARBLOCK_C(*), IGROUPLIST(*)
       DIMENSION IPROCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*)
@@ -3593,8 +3593,8 @@ C***********************************************************************
 *
           LENGTH_BLK = IBLOCKL_C(IBLK)
           IF(ISCLFAC_GROUP(((I_COMPLEX-1)*NUM_BLOCKS)+IBLK).ne.0)THEN
-            call interface_mpi_FILE_READ_AT(LLUC,IOFFSET_SCRATCH,C,
-     &                            LENGTH_BLK,ISTAT)
+          call interface_mpi_FILE_READ_AT_r(LLUC,IOFFSET_SCRATCH,C,
+     &                                    LENGTH_BLK,ISTAT)
             WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
      &            IOFFSET_SCRATCH,'for block', 
      &            (I_COMPLEX - 1 ) * NUM_BLOCKS  + IBLK,
@@ -4034,10 +4034,10 @@ C
 * =====
 *
       use symmetry_setup_krci
+      use interface_to_mpi
 #include "implicit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_C(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), IBLOCKL_C(*)
       DIMENSION LUHCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*) 
@@ -4175,6 +4175,7 @@ C           CPU-block - test if non-zero
 *
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -4206,7 +4207,6 @@ C     integer array may become very long
 C
 #if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "cintfo.inc"
@@ -4518,12 +4518,12 @@ C
 *
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 *
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), LUHCLIST(*)
       DIMENSION NPARBLOCK_C(*), IBLOCKL_C(*), IT_TTPL(*)
@@ -5358,11 +5358,12 @@ C
 C     last revision:
 C
 C**********************************************************************
+      use interface_to_mpi
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "krciprop.h"
 #include "parluci.h"
 #if defined (VAR_MPI2)
-#include "mpif.h"
 #include "infpar.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*) 

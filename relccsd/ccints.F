@@ -142,10 +142,10 @@ C     and check for consistency afterwards
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         call interface_mpi_BCAST(NKR,1,my_MPI_INTEGER,
-     &                  MASTER,global_communicator,IERR)
-         call interface_mpi_BCAST(KR,2*NSP+1,my_MPI_INTEGER,
-     &                  MASTER,global_communicator,IERR)
+         call interface_mpi_BCAST(NKR,1,
+     &                  MASTER,global_communicator)
+         call interface_mpi_BCAST(KR,2*NSP+1,
+     &                  MASTER,global_communicator)
       END IF
 #endif
       IF (2*NKR.NE.NSP) 
@@ -576,8 +576,8 @@ C     when we run with the MOLMF(3) hamiltonian
      &                        ORIG_TOTSCF,1)
         ENDIF
 #if defined VAR_MPI
-        call interface_mpi_BCAST(ORIG_TOTSCF,1,MPI_REAL8,MASTER,
-     &                 global_communicator,IERR)
+        call interface_mpi_BCAST(ORIG_TOTSCF,1,MASTER,
+     &                 global_communicator)
 #endif
         ESCF = ORIG_TOTSCF
         WRITE(IW,1013) ESCF
@@ -769,10 +769,10 @@ C     Distribute the information read from MDPROP
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         call interface_mpi_BCAST(INOP,1,my_MPI_INTEGER,MASTER,
-     &                  global_communicator,IERR)
-         call interface_mpi_BCAST(PROP,2*NSP*NSP,MPI_DOUBLE_PRECISION,MASTER,
-     &                  global_communicator,IERR)
+         call interface_mpi_BCAST(INOP,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(PROP,2*NSP*NSP,MASTER,
+     &                  global_communicator)
       END IF
 #endif
 C
@@ -1026,16 +1026,16 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
 
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1 ) THEN
-      call interface_mpi_BCAST(IKR,  1,my_MPI_INTEGER,MREADER,global_communicator,IERR)
-      call interface_mpi_BCAST(JKR,  1,my_MPI_INTEGER,MREADER,global_communicator,IERR)
-      call interface_mpi_BCAST(NONZR,1,my_MPI_INTEGER,MREADER,global_communicator,IERR)
+      call interface_mpi_BCAST(IKR,  1,MREADER,global_communicator)
+      call interface_mpi_BCAST(JKR,  1,MREADER,global_communicator)
+      call interface_mpi_BCAST(NONZR,1,MREADER,global_communicator)
       IF (NONZR.GT.0) THEN
-        call interface_mpi_BCAST(INDK,NONZR,my_MPI_INTEGER,
-     &                 MREADER,global_communicator,IERR)
-        call interface_mpi_BCAST(INDL,NONZR,my_MPI_INTEGER,
-     &                 MREADER,global_communicator,IERR)
-        call interface_mpi_BCAST(CBUF,NONZR*RCW,MPI_DOUBLE_PRECISION,
-     &                 MREADER,global_communicator,IERR)
+        call interface_mpi_bcast_i1_work_f77(INDK,NONZR,
+     &                 MREADER,global_communicator)
+        call interface_mpi_bcast_i1_work_f77(INDL,NONZR,
+     &                 MREADER,global_communicator)
+        call interface_mpi_bcast_r2_work_f77(CBUF,NONZR*RCW,
+     &                 MREADER,global_communicator)
       ENDIF
       ENDIF
 #endif
@@ -1303,10 +1303,10 @@ C       Use the VBUF arrays as scratch arrays, they will always be large enough
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         call interface_mpi_BCAST(BUF1,NSPQ,MPI_DOUBLE_PRECISION,MASTER,
-     &                  global_communicator,IERR)
-         call interface_mpi_BCAST(BUF2,NSPQ,MPI_DOUBLE_PRECISION,MASTER,
-     &                  global_communicator,IERR)
+         call interface_mpi_bcast_r1_work_f77(BUF1,NSPQ,MASTER,
+     &                  global_communicator)
+         call interface_mpi_bcast_r1_work_f77(BUF2,NSPQ,MASTER,
+     &                  global_communicator)
       END IF
 #endif
 C  

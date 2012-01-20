@@ -431,7 +431,8 @@ C
 C
 C     communicate REDSCRVAR to get full VNORM_Q
 C
-      CAll redvec(REDSCRVAR,VNORM_Q,1,2,op_MPI_SUM,global_communicator,-1)
+      CAll redvec(REDSCRVAR,VNORM_Q,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
 C
 C     is X an eigen vector for (H0 - 1 ) - 1 ???
 C
@@ -501,7 +502,8 @@ C
 C
 C       communicate REDSCRVAR to get full DELTA
 C
-        CAll redvec(REDSCRVAR,DELTA,1,2,op_MPI_SUM,global_communicator,-1)
+        CAll redvec(REDSCRVAR,DELTA,1,2,op_MPI_SUM,
+     &              global_communicator,-1)
 C
 C
 CSK     WRITE(LUWRT,*) ' THIS IS DELTA'
@@ -998,7 +1000,8 @@ C
 C
 C     communicate REDSCRVAR to get full scale factor
 C       
-      CAll redvec(REDSCRVAR,SCALEVEC,1,2,op_MPI_SUM,global_communicator,-1)
+      CAll redvec(REDSCRVAR,SCALEVEC,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
 C
 C     1.4 normalizing the new vector
 C
@@ -1539,8 +1542,8 @@ C     &                               IGROUPLIST,IPROCLIST,IRILP)
 C
 
         END IF
-           call interface_mpi_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
-     &                    0,MYNEW_COMM)
+        call interface_mpi_bcast_i1_work_f77(ISCLFAC_GROUP,NUM_BLOCKS2,
+     &       0,MYNEW_COMM)
 *
       ELSE
 *
@@ -3119,7 +3122,7 @@ C
             KBLK = -1
           END IF
           IF( IBLOCKD(II) .eq. MYPROC )THEN 
-             call interface_mpi_FILE_READ_AT(IDIA,IOFF_SCR,SEGMNT,LBL,
+             call interface_mpi_FILE_READ_AT_r(IDIA,IOFF_SCR,SEGMNT,LBL,
      &                             ISTAT)
           ENDIF
           IF(NTEST.GE.100) THEN

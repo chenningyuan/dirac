@@ -536,8 +536,8 @@ C
 C     WRITE(LUWRT,*)' writing WORK(KLH1DA): offset + bytes',
 C    &                IOFFSET, IWRITE_BYTE
 C     CALL WRTMAT(WORK(KLH1DA),1,NTOOB,1,NTOOB)
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DA),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,WORK(KLH1DA),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -550,8 +550,8 @@ C
 C     WRITE(LUWRT,*)' writing WORK(KLH1DB): offset + bytes',
 C    &                IOFFSET, IWRITE_BYTE
 C     CALL WRTMAT(WORK(KLH1DB),1,NTOOB,1,NTOOB)
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DB),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,WORK(KLH1DB),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -564,8 +564,8 @@ C
 C     WRITE(LUWRT,*)' writing WORK(KLJ): offset + bytes',
 C    &                IOFFSET, IWRITE_BYTE
 C     CALL WRTMAT(WORK(KLJ),1,NTOOB**2,1,NTOOB**2)
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLJ),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,WORK(KLJ),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -575,8 +575,8 @@ C
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,WORK(KLK),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C     
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -586,8 +586,8 @@ C
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK2),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,WORK(KLK2),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
 #endif
 C     flush local memory
@@ -729,9 +729,9 @@ C
 !
 !
         DO IJ = 1, ILOOP_WRITE
-           call interface_mpi_FILE_WRITE_AT(IJKL_PRE,IOFFSET,
+           call interface_mpi_FILE_WRITE_AT_b(IJKL_PRE,IOFFSET,
      &                            t_unsort(IT_TOFFW),
-     &                            IWRITE_BYTE,MPI_BYTE,ISTAT)
+     &                            IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 !          new offsets
            IT_TOFFW    = IT_TOFFW + IWRITE_ELM
            IOFFSET     = IOFFSET  + IOFF_ADD
@@ -748,9 +748,9 @@ C
            IWRITE_ELM4 = IGIVE_I_B(XLENALL)
            IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
 #endif
-           call interface_mpi_FILE_WRITE_AT(IJKL_PRE,IOFFSET,
+           call interface_mpi_FILE_WRITE_AT_b(IJKL_PRE,IOFFSET,
      &                                      t_unsort(IT_TOFFW),
-     &                                      IWRITE_BYTE,MPI_BYTE,
+     &                                      IWRITE_BYTE,df_MPI_BYTE,
      &                                      ISTAT)
            IOFFSET     = IOFFSET  + IOFF_ADD
         END IF
@@ -912,23 +912,23 @@ C
 C     WRITE(LUWRT,*) ' NTEST_DIA',NTEST_DIA
       IOFFSET     = 0 
       IWRITE_BYTE = ISIZE_int8
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NALLINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,NALLINT,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IWRITE_BYTE = ISIZE_my_int
 C     WRITE(LUWRT,*) ' NDIAINT',NDIAINT
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NDIAINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,NDIAINT,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IWRITE_BYTE = ISIZE_my_int
 C     WRITE(LUWRT,*) ' N1DIAINT',N1DIAINT
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,N1DIAINT,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IWRITE_BYTE = ISIZE_my_int
 C     WRITE(LUWRT,*) ' N2DIAINT',N2DIAINT
-      call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,N2DIAINT,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
 C     T in SIGDEN ordered format
 C
@@ -973,8 +973,8 @@ C
 C        WRITE(LUWRT,*) ' loop index IJ',IJ
 C        CALL WRTMATMN8(T(IT_TOFFW),1,IWRITE_ELM,1,
 C    &   IWRITE_ELM,LUWRT)
-         call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                          IWRITE_BYTE,MPI_BYTE,ISTAT)
+         call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET,
+     &        T(IT_TOFFW),IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C        new offsets
          IT_TOFFW    = IT_TOFFW + IWRITE_ELM
          IOFFSET     = IOFFSET  + IOFF_ADD
@@ -992,9 +992,8 @@ C        bytes to add in remaining step
           IWRITE_ELM4 = IGIVE_I_B(XLENALL)
           IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
 #endif
-          call interface_mpi_FILE_WRITE_AT(IIJKL_ROD,IOFFSET, 
-     &         T(IT_TOFFW),
-     &                           IWRITE_BYTE,MPI_BYTE,ISTAT)
+          call interface_mpi_FILE_WRITE_AT_b(IIJKL_ROD,IOFFSET, 
+     &         T(IT_TOFFW),IWRITE_BYTE,df_MPI_BYTE,ISTAT)
           IOFFSET     = IOFFSET  + IOFF_ADD
       END IF
 C
@@ -1087,31 +1086,31 @@ C
 C
 #endif
       call interface_mpi_FILE_SET_VIEW(IIJKL_ROD,IDISP,
-     &     MPI_BYTE,MPI_BYTE,
+     &     MPI_BYTE,df_MPI_BYTE,
      &                       "native",df_MPI_INFO_NULL)
 C
       IOFFSET     = 0
       IREAD_BYTE  = ISIZE_int8
-      call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFFSET,NALLINT,
-     &                     IREAD_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_READ_AT_b(IIJKL_ROD,IOFFSET,NALLINT,
+     &                     IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: NALLINT ',NALLINT
       IOFFSET     = IOFFSET + IREAD_BYTE
       IREAD_BYTE  = ISIZE_my_int
-      call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFFSET,NDIAINT,
-     &                       IREAD_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_READ_AT_b(IIJKL_ROD,IOFFSET,NDIAINT,
+     &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: NDIAINT ',NDIAINT
       IOFFSET     = IOFFSET + IREAD_BYTE
       IREAD_BYTE  = ISIZE_my_int
-      call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
-     &                       IREAD_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_READ_AT_b(IIJKL_ROD,IOFFSET,N1DIAINT,
+     &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: N1DIAINT',N1DIAINT
       IOFFSET     = IOFFSET + IREAD_BYTE
       IREAD_BYTE  = ISIZE_my_int
-      call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
-     &                       IREAD_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_READ_AT_b(IIJKL_ROD,IOFFSET,N2DIAINT,
+     &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: N2DIAINT',N2DIAINT
 C
@@ -1164,9 +1163,9 @@ C    &                   IMOD_READ, IOFFSET
 C
 C       WRITE(LUWRT,*) ' ILOOP_READ',ILOOP_READ
         DO IJ = 1, ILOOP_READ
-           call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFFSET,
+           call interface_mpi_FILE_READ_AT_b(IIJKL_ROD,IOFFSET,
      &          T(IT_TOFFW),
-     &                           IREAD_BYTE,MPI_BYTE,ISTAT)
+     &                           IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C          WRITE(LUWRT,*) ' read cycle IJ',IJ
 C          new offsets
            IT_TOFFW    = IT_TOFFW + IREAD_ELM
@@ -1185,8 +1184,8 @@ C         bytes to add in remaining step
           IREAD_ELM4 = IGIVE_I_B(XLENALL)
           IREAD_BYTE = IREAD_ELM4 * ISIZE_dp
 #endif
-          call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                           IREAD_BYTE,MPI_BYTE,ISTAT)
+          call interface_mpi_FILE_READ_AT_b(IIJKL_ROD,IOFFSET,
+     &         T(IT_TOFFW),IREAD_BYTE,df_MPI_BYTE,ISTAT)
           IOFFSET     = IOFFSET  + IOFF_ADD
         END IF
       
@@ -1209,8 +1208,8 @@ C
 #endif
 C     WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
 C     WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
-      call interface_mpi_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,
-     &                      IREAD_BYTE,MPI_BYTE,ISTAT)
+      call interface_mpi_FILE_READ_AT_b(IIJKL_ROD,IOFFSET,T_BUFF_D,
+     &                      IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C
 C     WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
 C    &                                          MY_T_LEN_D
@@ -1335,7 +1334,7 @@ C     XPROP distribution
            IF( MYNEW_ID .eq. N_MASTER ) THEN
              call interface_mpi_BCAST(XPROP,LEN_XPRP_INT,MASTER,
      &                      ICOMM)
-             call interface_mpi_FILE_WRITE_AT(ILPRP_X,IOFF_XPRP,XPROP,
+             call interface_mpi_FILE_WRITE_AT_r(ILPRP_X,IOFF_XPRP,XPROP,
      &                              LEN_XPRP_INT,ISTAT)
 C            new offset
              IOFF_XPRP = IOFF_XPRP + LEN_XPRP_INT

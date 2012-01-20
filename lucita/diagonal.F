@@ -1214,8 +1214,8 @@ C     REAL * 8  INPROD
             end if
           END IF
 #if defined (VAR_MPI2)
-          CALL interface_MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
-     &                           ISTAT)
+          CALL interface_MPI_FILE_WRITE_AT_r(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                                       ISTAT)
 C         new offset
           IDIA_OFFSET = IDIA_OFFSET + IDET
 #else
