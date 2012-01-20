@@ -224,6 +224,8 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_seek_set     = mpi_seek_set
   integer,                        parameter, public :: df_mpi_seek_cur     = mpi_seek_cur
   integer,                        parameter, public :: df_mpi_packed       = mpi_packed
+  integer,                        parameter, public :: df_mpi_info_null    = mpi_info_null
+  integer,                        parameter, public :: df_mpi_byte         = mpi_byte
   integer(kind=MPI_OFFSET_KIND),  parameter, public :: df_MPI_OFFSET_KIND  = MPI_OFFSET_KIND
   integer(kind=MPI_ADDRESS_KIND), parameter, public :: df_MPI_ADDRESS_KIND = MPI_ADDRESS_KIND
 

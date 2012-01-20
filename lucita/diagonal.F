@@ -1048,12 +1048,12 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * Parallel adaption in January 2007, Stefan Knecht
 * last parallel revision: March 2008
 *
+      use interface_to_mpi
       IMPLICIT REAL*8           (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
 #include "parluci.h"
 C     REAL * 8  INPROD
@@ -1214,8 +1214,8 @@ C     REAL * 8  INPROD
             end if
           END IF
 #if defined (VAR_MPI2)
-          CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
-     &                           MPI_REAL8,ISTAT,IERR)
+          CALL interface_MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                           ISTAT)
 C         new offset
           IDIA_OFFSET = IDIA_OFFSET + IDET
 #else
@@ -1280,8 +1280,6 @@ C         new offset
 C
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 

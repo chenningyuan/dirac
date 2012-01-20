@@ -66,10 +66,10 @@
 * On input ILU1 is supposed to hold initial guesses to eigenvectors
 *
 *
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
@@ -82,7 +82,7 @@
        DIMENSION T_CC(*), SCRRED(*), T_BUFF(*)
        INTEGER   RCCTOS(*)
        DIMENSION IT_TTPL(*) 
-       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+       INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -96,7 +96,7 @@
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
        CHARACTER WPART22*12, FILELAB*8
        INTEGER NZERO,LZERO_SCRRED
-       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR
+       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR
 *
        call qenter('MICDV4')
 *
@@ -169,7 +169,7 @@ C?       WRITE(6,*) ' Variational  solver '
 *        
 *        copy c-vector to working-file ILUC
 *
-         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+         call interface_mpi_BARRIER(MYNEW_COMM)
 *
          CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
@@ -183,7 +183,7 @@ C?       WRITE(6,*) ' Variational  solver '
          CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                       IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                       LUCLIST,IBLOCKL,IVEC-1)
-CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
 *
 *         WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
 *         CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
@@ -233,12 +233,12 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
        WRITE(LUWRT,9888) WALLTID
        WRITE(LUWRT,*) '   '
 *
-*      synchronize MPI_COMM_WORLD
+*      synchronize global_communicator
 * 
        IREDL = 0
        IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
        CALL DZERO(SCRRED,IREDL)
-       CAll redvec(APROJ,SCRRED,IREDL,2,MPI_SUM,MPI_COMM_WORLD,-1)
+       CAll redvec(APROJ,SCRRED,IREDL,2,MPI_SUM,global_communicator,-1)
        CALL DCOPY(IREDL,SCRRED,1,APROJ,1)
 *
 *
@@ -404,7 +404,7 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *
 *
         xidletime = MPI_WTIME()
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        call interface_mpi_BARRIER(MYNEW_COMM)
         xixidletime = xixidletime - xidletime + MPI_WTIME()
 *
 CSK        WRITE(LUWRT,*) 'LU1LIST again:'
@@ -418,7 +418,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
      &                      IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                      LUCLIST,IBLOCKL,NVEC+IVEC-1)
 *
-CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
 *
 CSK        WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
 CSK        CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
@@ -459,12 +459,12 @@ C       end of timing
 *
   150 CONTINUE
 *
-*      synchronize MPI_COMM_WORLD
+*      synchronize global_communicator
 *
        xidletime = MPI_WTIME()
        CALL DZERO(APROJ(ISTRED),IMUSTRED)
        CAll redvec(SCRRED(ISTRED),APROJ(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,MPI_COMM_WORLD,-1)
+     &                 MPI_SUM,global_communicator,-1)
        xixidletime = xixidletime - xidletime + MPI_WTIME()
 *
 *     2.2: diagonalize projected matrix
@@ -624,7 +624,7 @@ C           scratch file LUSC41 (unit 79 see io_r.F)
             DO JROOT = 1, NROOT
               CALL COPVCD_PAR_BDRIV_REL(ILU1,79,VEC1,
      &                                  NPARBLOCK,NUM_BLOCKS,
-     &                                  IBLOCKL,MPI_COMM_WORLD,-1,
+     &                                  IBLOCKL,global_communicator,-1,
      &                                  JROOT,LU1LIST,MY_LU1_OFF,1)
             END DO
             IF( MYPROC .eq. MASTER )THEN
@@ -798,11 +798,11 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
 * The real and imaginary parts are separated by end of vector marks
 * (-1) in my simple world
 *
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "ipoist8.inc"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
@@ -823,7 +823,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
       DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
       DIMENSION IT_TTPL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
       COMPLEX*16 AMATC(MAXVEC,*), CWORK(*)
       DIMENSION RWORK(*),EVL(*)
       INTEGER   IWORK(*)
@@ -922,7 +922,7 @@ C
       DO 10 IVEC = 1,NINVEC
 *
 *       copy c-vector to working-file ILUC
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        call interface_mpi_BARRIER(MYNEW_COMM)
 *
 *       reset LUCLIST; MY_ACT_BLK_ALL = NUMBLOCKS!
 *
@@ -972,7 +972,7 @@ C
       WALLTID = SECTID(xinit_time2-xinit_time)
       WRITE(LUWRT,9888) WALLTID
 *
-*     synchronize MPI_COMM_WORLD
+*     synchronize global_communicator
 *
       CONE = - 1.0D0
       IREDL = 0
@@ -981,9 +981,9 @@ C
       CALL DZERO(SCRRED_I,IREDL)
 *     ... sum up
       CAll redvec(APROJR,SCRRED_R,IREDL,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
+     &                global_communicator,-1)
       CAll redvec(APROJI,SCRRED_I,IREDL,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
+     &                global_communicator,-1)
 *     ... update APROJR and APROJI 
       CALL DCOPY(IREDL,SCRRED_R,1,APROJR,1)
       CALL DSCAL(IREDL,CONE,SCRRED_I,1)
@@ -1113,9 +1113,9 @@ CSK        WRITE(LUWRT,*) 'THIS IS XNORMO',XNORMO
            CALL DZERO(VEC2,NVEC+IADD-1)
 *
            CAll redvec(SCRRED_R,VEC1,NVEC+IADD-1,2,
-     &                     MPI_SUM,MPI_COMM_WORLD,-1)
+     &                     MPI_SUM,global_communicator,-1)
            CAll redvec(SCRRED_I,VEC2,NVEC+IADD-1,2,
-     &                     MPI_SUM,MPI_COMM_WORLD,-1)
+     &                     MPI_SUM,global_communicator,-1)
 *
 *          transfer information to WORK array...
            CALL DCOPY(NVEC+IADD-1,VEC1,1,WORK(1),2)
@@ -1193,7 +1193,7 @@ CTF
 *       copy c-vector to working-file ILUC
 *
 *
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        call interface_mpi_BARRIER(MYNEW_COMM)
 *
 csk     WRITE(LUWRT,*) 'LU1LIST again:'
 csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
@@ -1241,15 +1241,15 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
  150  CONTINUE 
 *
-*      synchronize MPI_COMM_WORLD
+*      synchronize global_communicator
 *
        CALL DZERO(APROJR(ISTRED),IMUSTRED)
        CALL DZERO(APROJI(ISTRED),IMUSTRED)
 *
        CAll redvec(SCRRED_R(ISTRED),APROJR(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,MPI_COMM_WORLD,-1)
+     &                 MPI_SUM,global_communicator,-1)
        CAll redvec(SCRRED_I(ISTRED),APROJI(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,MPI_COMM_WORLD,-1)
+     &                 MPI_SUM,global_communicator,-1)
 *
       endtime = MPI_WTIME()
       tottime = 0.D0
@@ -1382,7 +1382,7 @@ C           scratch file LUSC41 (unit 79 see io_r.F)
             DO JROOT = 1, NROOT
               CALL COPVCD_PAR_BDRIV_REL(ILU1,79,VEC1,
      &                                  NPARBLOCK,NUM_BLOCKS,
-     &                                  IBLOCKL,MPI_COMM_WORLD,LBLK,
+     &                                  IBLOCKL,global_communicator,LBLK,
      &                                  JROOT,LU1LIST,MY_LU1_OFF,IRC)
             END DO
             IF(MYPROC.EQ.MASTER) THEN

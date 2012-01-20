@@ -295,10 +295,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -346,13 +342,10 @@ C
         call interface_MPI_REDUCE_r1_work_f77(XVO,BUF1,RCW*NDIMX,
      &                                        op_mpi_sum,MASTER,
      &                                        global_communicator)
-!       CALL MPI_REDUCE(XVO,BUF1,RCW*NDIMX,
-!    &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
-!    &    MPI_COMM_WORLD,IERR)
         CALL XCOPY(NDIMX,BUF1,1,XVO,1)
-        CALL MPI_BCAST (XVO,RCW*NDIMX,
-     &    MPI_DOUBLE_PRECISION,MASTER,
-     &    MPI_COMM_WORLD,IERR)
+        CALL interface_MPI_BCAST(XVO,RCW*NDIMX,
+     &    MASTER,
+     &    global_communicator)
       ENDIF
 #endif
 C--------------------------------------------
@@ -652,9 +645,6 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
 C
       DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
       LOGICAL NOZG

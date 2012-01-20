@@ -41,6 +41,7 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "maxorb.h"
 #include "priunit.h"
@@ -48,11 +49,7 @@ C
 #include "dcbham.h"
 #include "dcbpsi.h"
 #include "dcbmp2no.h"
-#if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "ccpar.inc"
 #include "files.inc"
 #include "complex.inc"
@@ -102,23 +99,23 @@ C     if you do not run HF !)
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(CA,1,MASTER,global_communicator)
+         call interface_mpi_BCAST(MP2_DENRUN,1,MASTER,
+     &                  global_communicator)
       END IF
 C
 C     if MP2-NO is enabled, tell the slaves about the correct interface
 C
       IF( MP2_DENRUN )THEN
-        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
+     &                 global_communicator)
         IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
+     &                 global_communicator)
       END IF
 #endif
 C
@@ -170,10 +167,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
-#if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
-#endif
 #include "infpar.h"
+      dimension istat(df_mpi_status_size)
 C
       if(numnod.eq.0) return
 C
@@ -211,8 +206,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      dimension istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
 #include "dgroup.h"
@@ -248,21 +242,20 @@ C     Get the correct arithmetic (NZ is not initialized on slaves if you do not 
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,global_communicator,
-     &                  IERR)
-         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
-     &                  global_communicator,IERR)
+         call interface_mpi_BCAST(CA,1,MASTER,global_communicator)
+         call interface_mpi_BCAST(MP2_DENRUN,1,MASTER,
+     &                  global_communicator)
       END IF
       IF( MP2_DENRUN )THEN
-        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
-     &                  global_communicator,IERR)
+        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
+     &                  global_communicator)
         IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
-     &                 global_communicator,IERR)
-        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
-     &                 global_communicator,IERR)
-        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
-     &                 global_communicator,IERR)
+        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
+     &                 global_communicator)
       END IF
 #endif
 C

@@ -1056,11 +1056,11 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * Written in terms of RASG3/SBLOCK, May 1997
 * Works only for ICISTR .ne. 1, i.e. pure memory version
 * has been eliminated.
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -2114,17 +2114,17 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 * Input
 * =====
 *
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
       INTEGER IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12
       LOGICAL WRITE_SB
 #endif
@@ -2175,8 +2175,9 @@ C
            LENGTH_BLK = IBLOCKL(IBLK)
 C
            IF( ISCLFAC_GROUP( IBLK ) .ne. 0 ) THEN
-             CALL MPI_FILE_READ_AT(LUC,IOFFSET_SCRATCH,CB,LENGTH_BLK,
-     &                             MPI_REAL8,ISTAT,IERR)
+             call interface_mpi_FILE_READ_AT(LUC,IOFFSET_SCRATCH,CB,
+     &                             LENGTH_BLK,
+     &                             ISTAT)
              WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
      &             IOFFSET_SCRATCH,'for block', IBLK, LENGTH_BLK
              CALL WRTMATMN(CB,1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
@@ -2318,8 +2319,9 @@ csk     WRITE(LUCIWT,*) 'I transfer to file block ISBLK',
 csk  &                     ISBLK
 csk        CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,LUCIWT)
 csk        WRITE(LUCIWT,*) 'offset,length',IOFF_SCR1,LEN
-              CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
-     &                               MPI_REAL8,ISTAT,IERR)
+              call interface_mpi_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),
+     &                               LEN,
+     &                               ISTAT)
               ISI_CALC_BL = ISI_CALC_BL + 1
            END IF
 *          keep track of correct offset
@@ -5165,11 +5167,11 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 * Cbatches ICBAT_INI to ICBAT_END are stored on  LUC
 *
 *
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -5571,11 +5573,11 @@ C
 * If IRESTRICT.NE. 0 THEN we are after :
 * sigma(iblk) = summa(jblk.le.iblk) (2-delta(iblk,jblk))/2
 *                                                 * <Iblk!H!Jblk>C(Jblk)
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *. Specific input
@@ -5605,9 +5607,9 @@ C
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       DIMENSION SCLFAC(*),SSCLFAC(*)
 #if defined (VAR_MPI2)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCR
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C1, IOFF_SCR_C_EXPL
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCR
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR_C1, IOFF_SCR_C_EXPL
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR_C2
       DIMENSION LUCLIST(*),NPARBLOCK(*),IBLOCKL(*)
 #endif
 *     new scratch
@@ -5803,8 +5805,8 @@ C            file offset
 C
 csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
              xxxreadtime = MPI_WTIME()
-             CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
-     &                             LBL,MPI_REAL8,ISTAT,IERR)
+             call interface_mpi_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
+     &                             LBL,ISTAT)
 csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
              xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()
              IBI_MULT_BL = IBI_MULT_BL + 1

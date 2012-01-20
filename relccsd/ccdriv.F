@@ -539,6 +539,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c
       use memory_allocator
       use allocator_parameters, only : klongint, kreal 
+      use interface_to_mpi
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -567,7 +568,6 @@ C
 #include "dcbmp2no.h"
 #if defined (VAR_MPI)
 CSK#include "infpar.h"
-#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -886,10 +886,10 @@ C
       TIME_SYNC     = 0.0D0
       TIME_SYNC_TOT = 0.0D0
       DO 8888 I = 1, 2
-        CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+        call interface_mpi_BARRIER(global_communicator)
         TIME_SYNC = MPI_Wtime()
         WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
-        CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+        call interface_mpi_BARRIER(global_communicator)
         TIME_SYNC_TOT = MPI_Wtime() - TIME_SYNC
  8888  CONTINUE
 C
@@ -2437,6 +2437,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
+      use interface_to_mpi
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2477,7 +2478,6 @@ C
 #include "dcbmp2no.h"
 #include "mp1stpr.h"
 #if defined (VAR_MPI)
-#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -2792,8 +2792,8 @@ C
 #if defined (VAR_MPI)
          NTEST = -1
          DO NODE = 1,NMPROC-1
-            CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,27,
-     &                     MPI_COMM_WORLD,IERR)
+            call interface_mpi_SEND(NTEST,1,NODE,27,
+     &                     global_communicator)
          ENDDO
 #endif
  431  CONTINUE
@@ -3832,6 +3832,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDSYMI (NSP,EPS1,IREPSP)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -3860,7 +3861,6 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include "mpif.h"
 
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -3966,36 +3966,36 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(NSP,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(ECORE,1,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NSYMRP,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NORBT,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(REPN,NSYMRP*4,MPI_CHARACTER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NELEC,NSYMRP,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NREP,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(REPNA,2*NREP*4,MPI_CHARACTER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MULTB,MXREP*MXREP*8,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IREPSP,2*NSP,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(EPS1,NSP,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(NSP,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(BREIT,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(ECORE,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(NSYMRP,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(NFSYM,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(NZ,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(SPFR,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(NORBT,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(REPN,NSYMRP*4,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(NELEC,NSYMRP,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(NREP,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(REPNA,2*NREP*4,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(MULTB,MXREP*MXREP*8,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(IREPSP,2*NSP,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(EPS1,NSP,MASTER,
+     &                  global_communicator)
       END IF
 #endif
       RETURN

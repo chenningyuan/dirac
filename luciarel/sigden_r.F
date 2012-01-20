@@ -173,7 +173,7 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -3368,7 +3368,7 @@ C
 * some stuff relevant for parallel runs
 #if defined (VAR_MPI2)
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)     
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)     
       INTEGER RCCTOS(*)
 #endif
 #include "infpar.h"
@@ -3486,14 +3486,14 @@ C***********************************************************************
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL_C(*), NPARBLOCK_C(*), IGROUPLIST(*)
       DIMENSION IPROCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*)
       INTEGER   RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SCR2_C
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SCR2_C
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
 #endif /* if def VAR_MPI2 */
 #include "parluci.h"
@@ -3593,8 +3593,8 @@ C***********************************************************************
 *
           LENGTH_BLK = IBLOCKL_C(IBLK)
           IF(ISCLFAC_GROUP(((I_COMPLEX-1)*NUM_BLOCKS)+IBLK).ne.0)THEN
-            CALL MPI_FILE_READ_AT(LLUC,IOFFSET_SCRATCH,C,LENGTH_BLK,
-     &                            MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_READ_AT(LLUC,IOFFSET_SCRATCH,C,
+     &                            LENGTH_BLK,ISTAT)
             WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
      &            IOFFSET_SCRATCH,'for block', 
      &            (I_COMPLEX - 1 ) * NUM_BLOCKS  + IBLK,
@@ -3896,8 +3896,9 @@ C                 transfer block to disc
 !                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
 !                 WRITE(LUWRT,*) 'offset,length, IRIS',
 !    &                            IOFF_SCR1,LEN_T,IRIS
-                  CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
-     &                                   MPI_REAL8,ISTAT,IERR)
+                  call interface_mpi_FILE_WRITE_AT(LLUHC,IOFF_SCR1,
+     &                                   HC(IOFF),LEN_T,
+     &                                   ISTAT)
                   ISI_CALC_BL = ISI_CALC_BL + 1
                 END IF
 *               keep track of correct offset
@@ -4037,11 +4038,11 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), NPARBLOCK_C(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_C(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), IBLOCKL_C(*)
       DIMENSION LUHCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*) 
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2 
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_EXPL
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2 
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR_EXPL
       INTEGER INT_IOFF1, INT_IOFF2, INT_IOFF3, INT_IOFF_EXPL
 #endif
 #include "parluci.h"
@@ -4206,7 +4207,7 @@ C
 #if defined (VAR_MPI)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "cintfo.inc"
 #include "parluci.h"
@@ -4523,13 +4524,13 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), LUHCLIST(*)
       DIMENSION NPARBLOCK_C(*), IBLOCKL_C(*), IT_TTPL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C, IOFF_SCR_C_EXPL
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SAVE
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
-      INTEGER(KIND=MPI_ADDRESS_KIND) ICPL_I8, ITB_I8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR_C, IOFF_SCR_C_EXPL
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SAVE
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
+      INTEGER(KIND=df_MPI_ADDRESS_KIND) ICPL_I8, ITB_I8
 #endif
 #include "parluci.h"
 C     general input
@@ -5363,7 +5364,7 @@ C**********************************************************************
 #if defined (VAR_MPI2)
 #include "mpif.h"
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*) 
       DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*), LU1LIST(*), LU2LIST(*)
       DIMENSION LUCLIST(*), LBATX(*), LEBATX(*), I1BATX(*), IBATX(8,*)
