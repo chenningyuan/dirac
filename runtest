@@ -544,8 +544,11 @@ class run:
 
          if program_is_dirac:
              launcher_output = p.communicate()[0]
-             if options.verbose:
-                 print launcher_output
+           # radovan: too much output, the test output is completely flooded
+           #          by pam output
+           #          impossible to see anything on cdash
+           # if options.verbose:
+           #     print launcher_output
              normal_termination = ('exit           : normal' in launcher_output)
          if program_is_dalton:
              normal_termination = ('Total wall time used in DALTON' in open(self.get_output_name()).read())
