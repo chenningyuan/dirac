@@ -64,8 +64,10 @@ module xc_mpi
    end interface
 #endif
 
-   integer            :: istat, ierr
+#ifdef VAR_MPI
+   integer            :: istat(MPI_STATUS_SIZE), ierr
    integer, parameter :: irank_master = 0
+#endif
 
 contains
 
