@@ -77,7 +77,6 @@
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      print *, 'end up in VAR_MPI_32bit_int'
       call mpi_bcast(x, ndim_i4, my_MPI_LOGICAL, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
@@ -113,7 +112,6 @@
       call mpi_bcast(x, ndim_i4, my_MPI_LOGICAL, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
-      print *, ' enter l1 special: ndim == ',ndim
       call mpi_bcast(x, ndim   , my_MPI_LOGICAL, root_proc   , 
      &               communicator   , ierr   )
 #endif
@@ -151,7 +149,6 @@
       call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
-      print *, ' enter i1 special: ndim == ',ndim
       call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   ,
      &               communicator   , ierr   )
 #endif
@@ -185,7 +182,6 @@
       call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
-      print *, ' enter i1 special: ndim == ',ndim
       call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   ,
      &               communicator   , ierr   )
 #endif
@@ -464,8 +460,6 @@
       call mpi_send(x, ndim_i4, MPI_REAL8, receiver_i4, 
      &              message_id_i4, communicator_i4, ierr_i4)
 #else
-      print *, 'f77_r_snd ndim, receiver, message_id, communicator',
-     & ndim, receiver, message_id, communicator
       call mpi_send(x, ndim   , MPI_REAL8, receiver   , message_id,
      &              communicator   , ierr   )
 #endif
@@ -498,15 +492,11 @@
       receiver_i4     = receiver 
       message_id_i4   = message_id
       communicator_i4 = communicator
-      print *, 'f77_r_rcv4 ndim, receiver, message_id, communicator',
-     & ndim, receiver, message_id, communicator
       call mpi_recv(x, ndim_i4, MPI_REAL8, receiver_i4, 
      &              message_id_i4, communicator_i4, 
      &              status_array_i4, ierr_i4)
 #else
       integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
-      print *, 'f77_r_rcv ndim, receiver, message_id, communicator',
-     & ndim, receiver, message_id, communicator
       call mpi_recv(x, ndim   , MPI_REAL8, receiver   , message_id,
      &              communicator   , status_array, ierr   )
 #endif

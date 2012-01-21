@@ -148,6 +148,9 @@ C
      &                  MASTER,global_communicator)
       END IF
 #endif
+      do i = 1, NSP*2
+      print *, 'kr(-i), kr(i) ',kr(-i), kr(i)
+      end do
       IF (2*NKR.NE.NSP) 
      &   CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
       ITRSGN = 1
@@ -958,8 +961,8 @@ C     be distributed over the nodes or only on the master
 C     They will always need to be dsitributed at this point
 C 
 
-C     CHECK_INTS = .TRUE.
-      CHECK_INTS = .false.
+      CHECK_INTS = .TRUE.
+!     CHECK_INTS = .false.
 
    1  CONTINUE
       IF (MYPROC.EQ.MREADER) THEN
@@ -1309,6 +1312,9 @@ C
      &                  global_communicator)
       END IF
 #endif
+      print *, 'buf...'
+      call wrtmatmn(BUF1,1,NSPQ,1,NSPQ,iw)
+      call wrtmatmn(BUF2,1,NSPQ,1,NSPQ,iw)
 C  
 C  ORDER AND PUT IN FOCK MATRIX
 C
