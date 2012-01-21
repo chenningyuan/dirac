@@ -66,8 +66,8 @@ module xc_mpi
 
 #ifdef VAR_MPI
    integer            :: istat(MPI_STATUS_SIZE), ierr
-   integer, parameter :: irank_master = 0
 #endif
+   integer, parameter :: irank_master = 0
 
 contains
 
