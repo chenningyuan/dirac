@@ -21,12 +21,10 @@
 !
 ! purpose: determine integer size in MPI library to 
 !
+!#define VAR_MPI_32bit_int
 module interface_to_mpi
 #ifdef VAR_MPI
 
-!#ifndef INT_STAR8
-#define VAR_MPI_32bit_int
-!#endif
 
   use integer_kind_mpilib
   use mpi
@@ -86,6 +84,7 @@ module interface_to_mpi
   public interface_mpi_unpack_r
   public interface_mpi_get_count
   public interface_mpi_type_extent
+  public interface_MPI_WTIME
 
   interface interface_mpi_bcast
     module procedure interface_mpi_bcast_i0
@@ -2959,6 +2958,13 @@ contains
 #endif
 
   end subroutine
+!-------------------------------------------------------------------------------
+
+  real(8) function interface_MPI_WTIME()
+
+!-------------------------------------------------------------------------------
+    interface_MPI_WTIME = MPI_WTIME()
+  end function
 !-------------------------------------------------------------------------------
 
 #else

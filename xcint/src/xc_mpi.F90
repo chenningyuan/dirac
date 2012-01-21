@@ -64,7 +64,7 @@ module xc_mpi
    end interface
 #endif
 
-   integer            :: istat(mpi_status_size), ierr
+   integer            :: ierr
    integer, parameter :: irank_master        = 0
 
 contains

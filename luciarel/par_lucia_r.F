@@ -8897,7 +8897,7 @@ C     fill complete local iscalfac arrays with zero
       CALL IZERO(WORK(KSCALLOC3), NUM_BLOCKS2)
       CALL IZERO(ISCLFAC_GROUP  , NUM_BLOCKS2)
 C
-      starttimer = MPI_WTIME()
+      starttimer = interface_MPI_WTIME()
 C
 C     "mpi_allsum" local LUCLIST which then on all
 C     nodes will contain the number of non-zero C-blocks in
@@ -8954,7 +8954,7 @@ C
 !     CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
 C
 C     final timing for block distribution
-      blocktime = blocktime + MPI_WTIME() - starttimer
+      blocktime = blocktime + interface_MPI_WTIME() - starttimer
 C
 C     flush local memory
 C

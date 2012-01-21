@@ -148,9 +148,6 @@ C
      &                  MASTER,global_communicator)
       END IF
 #endif
-      do i = 1, NKR
-      print *, 'kr(-i), kr(i) i, myproc',kr(-i), kr(i),i,myproc
-      end do
       IF (2*NKR.NE.NSP) 
      &   CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
       ITRSGN = 1
@@ -246,7 +243,7 @@ C            This was the last node, we're done processing the integrals, goto t
 C
 C     ADD THE DIRECT AND EXCHANGE INTEGRALS
 C
-  110 CALL XAXPY (NV1,-A1,VOOOOA,1,VOOOO,1)
+ 110  CALL XAXPY (NV1,-A1,VOOOOA,1,VOOOO,1)
       CALL XAXPY (NV2,-A1,VVOOOA,1,VVOOO,1)
       CALL XAXPY (NV3,-A1,VVVOOA,1,VVVOO,1)
       CALL XAXPY (NV4,-A1,VVOVOA,1,VVOVO,1)
@@ -263,14 +260,6 @@ C
          CALL XAXPY(NV3,A1,VVVOOA,1,VVVOO,1)
          CALL XAXPY(NV4,A1,VVOVOA,1,VVOVO,1)
       ENDIF
-      write(6,*) 'myproc, type1',myproc
-      call wrtmatmn(VOOOO,1,NV1*RCW*IRW,1,NV1*RCW*IRW,6)
-      write(6,*) 'myproc, type2',myproc
-      call wrtmatmn(VVOOO,1,NV2*RCW*IRW,1,NV2*RCW*IRW,6)
-      write(6,*) 'myproc, type3',myproc
-      call wrtmatmn(VVVOO,1,NV3*RCW*IRW,1,NV3*RCW*IRW,6)
-      write(6,*) 'myproc, type4',myproc
-      call wrtmatmn(VVOVO,1,NV4*RCW*IRW,1,NV4*RCW*IRW,6)
       CALL RWRIT(ITAPT+1,VOOOO,NV1*RCW*IRW,1)
       CALL RWRIT(ITAPT+2,VVOOO,NV2*RCW*IRW,1)
       CALL RWRIT(ITAPT+3,VVVOO,NV3*RCW*IRW,1)
@@ -969,8 +958,8 @@ C     be distributed over the nodes or only on the master
 C     They will always need to be dsitributed at this point
 C 
 
-      CHECK_INTS = .TRUE.
-!     CHECK_INTS = .false.
+!     CHECK_INTS = .TRUE.
+      CHECK_INTS = .false.
 
    1  CONTINUE
       IF (MYPROC.EQ.MREADER) THEN
@@ -983,9 +972,11 @@ C     A number of different formats are possible.
      &        (CBUF(1,INZ),INZ=1,NONZR) 
 CMI      ... NONZR is read before from MDINT file !
 CMI      ... zero imaginary part of two-el. integrals
-         DO INZ=1,NONZR
-          CBUF(2,INZ) = 0.0D0
-         ENDDO
+         if(rcw > 1)then
+           DO INZ=1,NONZR
+            CBUF(2,INZ) = 0.0D0
+           END DO
+         end if
        ELSE
 C     For complex groups we read the real and imaginary part.
          IF (LEVYLE) THEN
@@ -1026,19 +1017,18 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
 
 
 #if defined (VAR_MPI)
-      print *, 'mreader is ==> ',mreader
       IF (NMPROC.GT.1 ) THEN
-      call interface_mpi_BCAST(IKR,  1,MREADER,global_communicator)
-      call interface_mpi_BCAST(JKR,  1,MREADER,global_communicator)
-      call interface_mpi_BCAST(NONZR,1,MREADER,global_communicator)
-      IF (NONZR.GT.0) THEN
-        call interface_mpi_bcast_i1_work_f77(INDK,NONZR,
-     &                 MREADER,global_communicator)
-        call interface_mpi_bcast_i1_work_f77(INDL,NONZR,
-     &                 MREADER,global_communicator)
-        call interface_mpi_bcast_r2_work_f77(CBUF,RCW,NONZR,
-     &                 MREADER,global_communicator)
-      ENDIF
+        call interface_mpi_BCAST(IKR,  1,MREADER,global_communicator)
+        call interface_mpi_BCAST(JKR,  1,MREADER,global_communicator)
+        call interface_mpi_BCAST(NONZR,1,MREADER,global_communicator)
+        IF (NONZR.GT.0) THEN
+          call interface_mpi_bcast_i1_work_f77(INDK,NONZR,
+     &                   MREADER,global_communicator)
+          call interface_mpi_bcast_i1_work_f77(INDL,NONZR,
+     &                   MREADER,global_communicator)
+          call interface_mpi_bcast_r2_work_f77(CBUF,RCW,NONZR,
+     &                   MREADER,global_communicator)
+        ENDIF
       ENDIF
 #endif
       IF (NONZR.EQ.-1) RETURN
@@ -1323,10 +1313,6 @@ C
      &                  global_communicator)
       END IF
 #endif
-      print *, 'buf 1...',nspq,myproc
-      call wrtmatmn(BUF1,1,NSPQ,1,NSPQ,6)
-      print *, 'buf 2...',nspq,myproc
-      call wrtmatmn(BUF2,1,NSPQ,1,NSPQ,6)
 C  
 C  ORDER AND PUT IN FOCK MATRIX
 C

@@ -2236,7 +2236,7 @@ C
 *
 *       start various timings...
 *
-        starttime  = mpi_wtime()
+        starttime  = interface_MPI_WTIME()
         sbatchtime = 0.0D0
         writetime  = 0.0D0
 C
@@ -2251,7 +2251,7 @@ C
         END DO
 csk     WRITE(LUWRT,*) ' ICOMPUTE is',ICOMPUTE
         IF( ICOMPUTE .eq. 0 ) THEN
-           starttimer = MPI_WTIME()
+           starttimer = interface_MPI_WTIME()
            GOTO 60
         ENDIF
 *
@@ -2273,7 +2273,7 @@ C
  60     CONTINUE
 C
 #if defined (VAR_MPI2)
-        starttimer = MPI_WTIME()
+        starttimer = interface_MPI_WTIME()
         IF( ICOMPUTE .eq. 0 ) GOTO 70
 #endif /* if def VAR_MPI2 */
 C
@@ -2335,8 +2335,8 @@ C
  70     CONTINUE
 #if defined (VAR_MPI2)
         IF( ICOMPUTE .ne. 0 ) THEN
-            writetime = writetime + MPI_WTIME() - starttimer
-            sbatchtime = sbatchtime + MPI_WTIME() - starttime
+            writetime = writetime + interface_MPI_WTIME() - starttimer
+            sbatchtime = sbatchtime + interface_MPI_WTIME() - starttime
 CSK too much information?                WALLTID  = SECTID(writetime)
             WALLTID2 = SECTID(sbatchtime)
 CSK too much information?                 WRITE(LUWRT,50000) WALLTID
@@ -5802,11 +5802,12 @@ C
 C            file offset
 C
 csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
-             xxxreadtime = MPI_WTIME()
+             xxxreadtime = interface_MPI_WTIME()
              call interface_mpi_FILE_READ_AT_r(LUC,IOFF_SCR_C1,CB(JOFF),
      &                             LBL,ISTAT)
 csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
-             xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()
+             xreadtimebi = xreadtimebi - xxxreadtime 
+     &                   + interface_MPI_WTIME()
              IBI_MULT_BL = IBI_MULT_BL + 1
              SCLFAC(JBLOCK) = 1.0D0
           ELSE
@@ -6011,7 +6012,7 @@ C?   &                         IPTSPC,JPTSPC,IJOP
                 END IF
 *
 #if defined (VAR_MPI2)
-                xxxcomputtime = MPI_WTIME()
+                xxxcomputtime = interface_MPI_WTIME()
 #endif
 *
                 CALL RSSBCB2(IASM,IATP,IOCTPA,
@@ -6035,7 +6036,8 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &               IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
      &               MXTSOB,SOMESCR,SOMEH,XIJILS)
 #if defined (VAR_MPI2)
-                xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
+                xcomputesi = xcomputesi - xxxcomputtime 
+     &                     + interface_MPI_WTIME()
 #endif
 C
  8764         CONTINUE

@@ -883,10 +883,10 @@ C
       TIME_SYNC_TOT = 0.0D0
       DO 8888 I = 1, 2
         call interface_mpi_BARRIER(global_communicator)
-        TIME_SYNC = MPI_Wtime()
+        TIME_SYNC = interface_MPI_WTIME()
         WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
         call interface_mpi_BARRIER(global_communicator)
-        TIME_SYNC_TOT = MPI_Wtime() - TIME_SYNC
+        TIME_SYNC_TOT = interface_MPI_WTIME() - TIME_SYNC
  8888  CONTINUE
 C
        WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
@@ -3985,15 +3985,8 @@ C
      &                  global_communicator)
          call interface_mpi_bcast_r1_work_f77(EPS1,NSP,MASTER,
      &                  global_communicator)
-!        print *, 'MULTB, MXREP',MXREP,myproc
-!        call iwrtmamn(MULTB,1,MXREP*MXREP*8,1,MXREP*MXREP*8,6)
       END IF
 #endif
-         print *, 'NSP, NREP',NSP, NREP
-         do i = 1, NSP
-           print *, 'EPS1(i)  = ', EPS1(i), myproc
-           print *, 'REPNA(i) = ', REPNA(i), myproc
-         end do
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

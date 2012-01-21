@@ -1300,7 +1300,7 @@ C      Initial iteration
 C     ===================
 C
 C     start timing of initial iteration
-      WALLITR1 = MPI_WTIME()
+      WALLITR1 = interface_MPI_WTIME()
 
       CALL DZERO(APROJ, MAXVEC*(MAXVEC+1)/2 )
 C
@@ -1341,7 +1341,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *
 *       timing this sigma-vector computation
 *
-        sigmatime = MPI_WTIME()
+        sigmatime = interface_MPI_WTIME()
 *
 *=======================================================================
         CALL MV7(VEC1,VEC2,ILUC,ILU2 
@@ -1353,7 +1353,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *=======================================================================
 *
 *       end of timing
-        sigmatime2 = MPI_WTIME()
+        sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUCIWT,9777) WALLTID
         WRITE(LUCIWT,*) '   '
@@ -1369,7 +1369,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *
 *     timing of initial iteration
 *
-      WALLITR2 = MPI_WTIME()
+      WALLITR2 = interface_MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
       WRITE(LUCIWT,9888) WALLTID
       WRITE(LUCIWT,*) '   '
@@ -1447,8 +1447,8 @@ C
 *
  1000 CONTINUE
 *     start timing of iteration
-      WALLITR1 = MPI_WTIME()
-      starttime = MPI_WTIME()
+      WALLITR1 = interface_MPI_WTIME()
+      starttime = interface_MPI_WTIME()
 *
       write(LUCIWT,*)
       write(LUCIWT,'(A21,3X,I3)') ' Info from iteration ',ITER
@@ -1549,7 +1549,7 @@ csk       CSCREEN = .FALSE.
         END IF
 *       ^ converged?
   100 CONTINUE
-      endtime = MPI_WTIME()
+      endtime = interface_MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
       IF( TIMING )
      &WRITE(LUWRT,9250)WALLTID
@@ -1571,7 +1571,7 @@ csk       CSCREEN = .FALSE.
 *
 *     2.1: multiply new directions with matrix
 *
-      starttime = MPI_WTIME()
+      starttime = interface_MPI_WTIME()
       xixidletime = 0.0D0
 *
       CALL DZERO(SCRRED,LZERO_SCRRED)
@@ -1583,9 +1583,9 @@ csk       CSCREEN = .FALSE.
 *       copy c-vector to working-file ILUC
 *
 *
-        xidletime = MPI_WTIME()
+        xidletime = interface_MPI_WTIME()
         call interface_mpi_BARRIER(MYNEW_COMM)
-        xixidletime = xixidletime - xidletime + MPI_WTIME()
+        xixidletime = xixidletime - xidletime + interface_MPI_WTIME()
 *
 csk     WRITE(LUWRT,*) 'LU3LIST again:'
 csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
@@ -1610,7 +1610,7 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *       start calculation: sigma = H x C
 *
 *       timing this sigma-vector computation
-        sigmatime = MPI_WTIME()
+        sigmatime = interface_MPI_WTIME()
 *
 *==================================================================
         CALL MV7(VEC1,VEC2,ILUC,ILU4
@@ -1622,7 +1622,7 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *==================================================================
 *
 *       end of timing
-        sigmatime2 = MPI_WTIME()
+        sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRT,9400) WALLTID
         WRITE(LUWRT,*) '   '
@@ -1640,11 +1640,11 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *     synchronize global_communicator
 *
 *
-      xidletime = MPI_WTIME()
+      xidletime = interface_MPI_WTIME()
       CALL DZERO(APROJ(ISTRED),IMUSTRED)
       CAll redvec(SCRRED(ISTRED),APROJ(ISTRED),IMUSTRED,2,
      &                op_MPI_SUM,global_communicator,-1)
-      xixidletime = xixidletime - xidletime + MPI_WTIME()
+      xixidletime = xixidletime - xidletime + interface_MPI_WTIME()
 *
 csk   write(LUWRTOUT,*)'APROJ is'
 csk   CALL WRTMATMN(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,
@@ -1657,7 +1657,7 @@ csk  &              MAXVEC*(MAXVEC+1)/2,LUWRT)
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
 *
-      endtime      = MPI_WTIME()
+      endtime      = interface_MPI_WTIME()
       tottime      = 0.0D0
       tottime_save = 0.0D0
       tottime      = endtime - starttime
@@ -1759,7 +1759,7 @@ csk     CALL PRSYM(APROJ,NVEC)
 *
 *     check timing
       timer3 = 0.0D0
-      starttimer = MPI_WTIME()
+      starttimer = interface_MPI_WTIME()
 *
 *===========================================================
 *                         PART 3                           =
@@ -1953,23 +1953,23 @@ csk     CALL PRSYM(APROJ,NVEC)
 *     communicate new subspace hamiltonian ...
 *
       CALL DZERO(APROJ(ISTRED),IMUSTRED)
-      starttime = MPI_WTIME()
+      starttime = interface_MPI_WTIME()
       CALL REDVEC(SCRRED,APROJ(ISTRED),IMUSTRED,2,op_MPI_SUM,
      &            global_communicator,-1)
-      endtime = MPI_WTIME()
+      endtime = interface_MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
       IF( TIMING )
      &WRITE(LUWRTOUT,9460)WALLTID
 *
 *     finish timing
 *
-      timer3 = timer3 + MPI_WTIME() - starttimer
+      timer3 = timer3 + interface_MPI_WTIME() - starttimer
       WALLTSTEP = SECTID(timer3)
       WRITE(LUWRTOUT,9600) WALLTSTEP
 *
 *     timing for this iteration
 *
-      WALLITR2 = MPI_WTIME()
+      WALLITR2 = interface_MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
       WRITE(LUWRTOUT,9300) WALLTID
 *
@@ -1987,8 +1987,8 @@ C       copy c-vectors from nodes and master back to the master
         DO JXROOT = 1, NROOT
           CALL REWINE(97,-1)
           CALL COPVCD_PAR_BDRIV_REL(ILU1,97,VEC1,NBLOCKDN,NUM_BLOCKS2,
-     &                              IBLOCKL,global_communicator,-1,JXROOT,
-     &                              LU1LIST,MY_LU1_OFF,1)
+     &                              IBLOCKL,global_communicator,-1,
+     &                              JXROOT,LU1LIST,MY_LU1_OFF,1)
           IF(MYPROC .eq. MASTER) THEN
              CALL REWINE(97,-1)
              CALL COPVCD(97,61,VEC1,0,-1)
@@ -2007,11 +2007,11 @@ C      let's synchronize all processes!
 C
  1003  DO 1004 I = 1, 2
         call interface_mpi_BARRIER(ICOMM)
-        TIME1 = MPI_Wtime()
+        TIME1 = interface_MPI_WTIME()
         IF( IPRT .gt. 100 ) 
      &     WRITE(LUWRT,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
         call interface_mpi_BARRIER(ICOMM)
-        TOTAL_TIME = MPI_Wtime() - TIME1
+        TOTAL_TIME = interface_MPI_WTIME() - TIME1
  1004  CONTINUE
 C
        IF( IPRT .gt. 100) 

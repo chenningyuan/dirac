@@ -21,7 +21,7 @@
 !
 ! purpose: interface to MPI library via f77 interface
 !
-#define VAR_MPI_32bit_int
+!#define VAR_MPI_32bit_int
 #ifdef VAR_MPI
 
       subroutine interface_mpi_bcast_l0(x,ndim,root_proc,
@@ -243,13 +243,13 @@
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
       ndim_i4         = ndim
-      ndim2_i4        = ndim
+      ndim2_i4        = ndim2
       root_proc_i4    = root_proc
       communicator_i4 = communicator
       call mpi_bcast(x, ndim_i4*ndim2_i4, MPI_REAL8, root_proc_i4,
      &               communicator_i4, ierr_i4)
 #else
-      call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   ,
+      call mpi_bcast(x, ndim   *ndim2   , MPI_REAL8, root_proc   ,
      &               communicator   , ierr   )
 #endif
 

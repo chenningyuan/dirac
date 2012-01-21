@@ -312,12 +312,12 @@ C
 
       
 CMI  ... debugging output ...
-!     IF (DEBUG) THEN
+      IF (DEBUG) THEN
         WRITE (*,111) "ho ",MYPROC,DDOT(RCW*NFOO,HO,1,HO,1)
         WRITE (*,111) "hv ",MYPROC,DDOT(RCW*NFVV,HV,1,HV,1)
         WRITE (*,111) "hov",MYPROC,DDOT(RCW*NDIMT1,HOV,1,HOV,1)
         WRITE (*,111) "s1 ",MYPROC,DDOT(RCW*NDIMT1,S1,1,S1,1)
-!     ENDIF
+      ENDIF
 C
 C  EVALUATE T2 INTERMEDIATES
 C
@@ -370,14 +370,14 @@ CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
       ENDIF
 
 C
-!     IF (DEBUG) THEN
+      IF (DEBUG) THEN
          WRITE (*,111)"go ",MYPROC,DDOT(RCW*NFOO,HO,1,HO,1)
          WRITE (*,111)"gv ",MYPROC,DDOT(RCW*NFVV,HV,1,HV,1)
          LEN = IOOOOTT(NREP+1)
          WRITE (*,111)"az ",MYPROC,4.D0*DDOT(RCW*LEN,AZ,1,AZ,1)
          LEN = IVOVO(NREP+1)
          WRITE (*,111)"h  ",MYPROC,DDOT(RCW*LEN,H,1,H,1)
-!     ENDIF
+      ENDIF
 C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C

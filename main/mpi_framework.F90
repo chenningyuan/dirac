@@ -53,17 +53,12 @@ NUMPROC    = 0
 MPARID     = 0
 
 !
-! determine integer size in MPI library
-call determine_integer_model_in_mpi
-if(sizeof(ierr) /= integer_kind_in_mpi)then
-  WRITE(LUPRI,'(/A,I2,A,I2)') '  ** ERROR in MPIXINIT ** integer kinds do not match: dirac -->'// & 
-  ' kind =',sizeof(ierr),' MPI library --> kind = ',integer_kind_in_mpi
-end if
-!
 ! initialize MPI_COMM_WORLD
 !
 IF( IPAREX .gt. 0 )THEN
 
+! determine integer size in MPI library
+  call determine_integer_model_in_mpi
 
   call interface_mpi_init()
 
@@ -71,6 +66,17 @@ IF( IPAREX .gt. 0 )THEN
   call interface_mpi_comm_rank(global_communicator, MYTID)
 ! determine size of mpi_comm_world
   call interface_mpi_comm_size(global_communicator, NUMPROC)
+
+  if(mytid == 0)then
+    if(sizeof(ierr) /= integer_kind_in_mpi)then
+      print '(/A,I2,A,I2)', '  ** notice ** integer kinds do not match: dirac -->'// & 
+      ' kind =',sizeof(ierr),' MPI library --> kind = ',integer_kind_in_mpi
+      print '(A/)', '  ** interface to 32-bit integer MPI enabled **'
+    else
+      print '(A/)', '  ** interface to 64-bit integer MPI enabled **'
+    end if
+!
+  end if
 !
 ! we count the number of slave nodes, subtract the master
   NUMNOD = NUMPROC - 1
@@ -331,7 +337,6 @@ use interface_to_mpi
       END IF
       CALL interface_MPI_BARRIER(global_communicator)
     END DO
-     print *, ' itask 1 performed by MYTID',MYTID,NUMNOD
   ELSE IF( ITASK .eq. 2 )THEN
     CALL interface_MPI_GET_PROCESSOR_NAME(HOST,LHOST)
     IF( MYTID .eq. MPARID ) THEN

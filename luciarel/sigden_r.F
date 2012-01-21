@@ -1525,7 +1525,7 @@ C                                 statistics
                                   T_INI = Second()
 C
 #if defined (VAR_MPI2)
-                                  xxxsitime = MPI_WTIME()
+                                  xxxsitime = interface_MPI_WTIME()
 #endif
                                   IF(ISD.EQ.1) THEN
 C
@@ -1567,7 +1567,7 @@ C
 C
 #if defined (VAR_MPI2)
                                   xcomputesi = xcomputesi - xxxsitime 
-     &                                       + MPI_WTIME()
+     &                                       + interface_MPI_WTIME()
 #endif
 C                                 ISD == 1:
 C                                 S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
@@ -2149,7 +2149,7 @@ C                                 statistics
                                   T_INI = Second()
 C
 #if defined (VAR_MPI2)
-                                  xxxsitime = MPI_WTIME()
+                                  xxxsitime = interface_MPI_WTIME()
 #endif
                                   IF(ISD.EQ.1) THEN
 C
@@ -2191,7 +2191,7 @@ C
 C
 #if defined (VAR_MPI2)
                                   xcomputesi = xcomputesi - xxxsitime 
-     &                                       + MPI_WTIME()
+     &                                       + interface_MPI_WTIME()
 #endif
 C                                 ISD == 1:
 C                                 S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
@@ -3700,7 +3700,7 @@ C***********************************************************************
 #if defined (VAR_MPI2)
 *
 *           start various timings...
-            starttime  = mpi_wtime()
+            starttime  = interface_MPI_WTIME()
             sbatchtime = 0.0D0
             writetime  = 0.0D0
             KBATSEND = I1BATS(JBATABS) + LBATS(JBATABS)
@@ -3724,7 +3724,7 @@ C***********************************************************************
               END IF
             END DO
             IF( ICOMPUTE .eq. 0 ) THEN
-              starttimer = MPI_WTIME()
+              starttimer = interface_MPI_WTIME()
               GOTO 60
             ENDIF
 #endif /* if def VAR_MPI2 */
@@ -3869,7 +3869,7 @@ C                 skip blocks with given MK2_C
 #endif
               KBATSEND = I1BATS(JBATABS) + LBATS(JBATABS)
 #if defined (VAR_MPI2)
-              starttimer = MPI_WTIME()
+              starttimer = interface_MPI_WTIME()
               IF( ICOMPUTE .eq. 0 ) GOTO 70
 #endif /* if def VAR_MPI2 */
               do ISBLK = I1BATS(JBATABS),KBATSEND-1,1
@@ -3916,8 +3916,10 @@ C                 transfer block to disc
  70           CONTINUE
 #if defined (VAR_MPI2)
               IF( ICOMPUTE .ne. 0 ) THEN
-                writetime = writetime + MPI_WTIME() - starttimer
-                sbatchtime = sbatchtime + MPI_WTIME() - starttime
+                writetime  = writetime  + interface_MPI_WTIME() 
+     &                     - starttimer
+                sbatchtime = sbatchtime + interface_MPI_WTIME() 
+     &                     - starttime
 CSK too much information?                WALLTID  = SECTID(writetime)
                 WALLTID2 = SECTID(sbatchtime)
 CSK too much information?                 WRITE(LUWRT,50000) WALLTID
@@ -4789,7 +4791,7 @@ C
                    IF( ISIGDEN .eq. 1 )THEN
 csk                  write(luwrt,*) ' ID_GET, ITB_I8, IXXTTP, ICPL',
 csk  &                                ID_GET, ITB_I8, IXXTTP, ICPL
-                     start_timer = MPI_WTIME() 
+                     start_timer = interface_MPI_WTIME() 
                      IF( MYNEW_ID_SM .eq. ID_GET )THEN
                        CALL DCOPY(ICPL,T_BUFF(ITB_I8+1),1,T_SCR_CC,1)
                      ELSE
@@ -4797,7 +4799,7 @@ csk  &                                ID_GET, ITB_I8, IXXTTP, ICPL
      &                              ITB_I8,ICPL,2,MY_T_WIN)
                      END IF
                      mem_cp_time = mem_cp_time + 
-     &                             MPI_WTIME() - start_timer
+     &                             interface_MPI_WTIME() - start_timer
                    ELSE IF( ISIGDEN .eq. 2 )THEN
                      CALL DZERO8( T_SCR_CC, ICPL_I8)
                    END IF
@@ -4841,10 +4843,11 @@ CSK                  WRITE(LUWRT,*) ' memory offset',
 CSK  &                                JOFF
 C
 C                    read block in core
-                     xxxbitime = MPI_WTIME()
+                     xxxbitime = interface_MPI_WTIME()
                      CALL GSTTBLD_PAR2(CB(JOFF),LLUC,
      &                                 IOFF_SCR_C_EXPL,JLEN)
-                     xreadtimebi = xreadtimebi-xxxbitime+MPI_WTIME()
+                     xreadtimebi = xreadtimebi-xxxbitime
+     &                           + interface_MPI_WTIME()
 #else
                      CALL GSTTBLD2(CB(JOFF),LUC)
 #endif

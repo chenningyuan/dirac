@@ -138,7 +138,7 @@
                      kbytesRequested = (sizeLocal*kindLocal)/b2kbfac
 
                      InfoMessage  = 'Error! Allocation failed!'
-                     write (InfoMessage,'(a,i25,a)')                    &
+                     write (InfoMessage,'(a,i18,a)')                    &
                         'Asked for ',kbytesRequested,' Kb, '//  &
                         'memory available is '//kbytesAvailable(1:24)
 !                        radovan: this error message can be very confusing

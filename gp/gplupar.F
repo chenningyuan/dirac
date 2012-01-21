@@ -1074,12 +1074,12 @@ C
 C
 csk         WRITE(6,*) 'ACTIVE BLOCK ',IBLK
 csk         WRITE(6,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
-            xrw_time = MPI_WTIME()
+            xrw_time = interface_MPI_WTIME()
             call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN,SEGMNT,
      &                            lbl,ISTAT)
 csk         WRITE(6,*) 'MY read-in result '
 csk         CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,6)
-            read_write = read_write + MPI_WTIME() - xrw_time
+            read_write = read_write + interface_MPI_WTIME() - xrw_time
             IBI_DIST_NBLOCKS = IBI_DIST_NBLOCKS + 1
 C
           END IF
@@ -1108,17 +1108,17 @@ csk       WRITE(6,*) ' MYPROC,ROOTPROC,NNKEY',MYPROC,ROOTPROC,NNKEY
 C
           IF( NNCOLOR .eq. 8 ) GOTO 200
 C         broadcast the nonvanishing block
-          xcast_time = MPI_WTIME()
+          xcast_time = interface_MPI_WTIME()
           call interface_mpi_bcast_r1_work_f77(SEGMNT,LBL,0,IBLOCKCOMM)
-          bcast_time = bcast_time + MPI_WTIME() - xcast_time
+          bcast_time = bcast_time + interface_MPI_WTIME() - xcast_time
 C         transfer the recieved block to disk
 csk       WRITE(LUWRT,*)'THIS IS WHAT I GOT',ICOMM_ID
 csk       CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
 csk       WRITE(LUWRT,*) 'IOFFSET_OUT = ',IOFFSET_OUT
-          xrw_time = MPI_WTIME()
+          xrw_time = interface_MPI_WTIME()
           call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET_OUT,SEGMNT,
      &                           lbl,ISTAT)
-          read_write = read_write + MPI_WTIME() - xrw_time
+          read_write = read_write + interface_MPI_WTIME() - xrw_time
           IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
 C
  200      CONTINUE
@@ -1179,10 +1179,10 @@ C
 C
 CSK            WRITE(LUWRT,*) 'START READING AT IOFFSET_IN imag part = ',
 CSK     &                      IOFFSET_IN
-            xrw_time = MPI_WTIME()
+            xrw_time = interface_MPI_WTIME()
             call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN,SEGMNT,
      &                            lbl,ISTAT)
-            read_write = read_write + MPI_WTIME() - xrw_time
+            read_write = read_write + interface_MPI_WTIME() - xrw_time
             IBI_DIST_NBLOCKS = IBI_DIST_NBLOCKS + 1
 C
           END IF
@@ -1211,9 +1211,9 @@ C
 C
           IF( NNCOLOR .eq. 8 ) GOTO 300
 C         broadcast the nonvanishing block
-          xcast_time = MPI_WTIME()
+          xcast_time = interface_MPI_WTIME()
           call interface_mpi_bcast_r1_work_f77(SEGMNT,LBL,0,IBLOCKCOMM)
-          bcast_time = bcast_time + MPI_WTIME() - xcast_time
+          bcast_time = bcast_time + interface_MPI_WTIME() - xcast_time
 C         transfer the recieved block to disk if necessary
 CSK            WRITE(LUWRT,*)'THIS IS WHAT I GOT from ROOTPROC',MYPROC,
 CSK     &                     ROOTPROC
@@ -1221,10 +1221,10 @@ CSK            CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
 CSK            WRITE(LUWRT,*) 'IOFFSET_OUT imag part = ',IOFFSET_OUT
 CSK            WRITE(LUWRT,*) 'block to write imag part',IBLK,
 CSK     &                      IBLK + IOFF_BLOCK
-          xrw_time = MPI_WTIME()
+          xrw_time = interface_MPI_WTIME()
           call interface_mpi_FILE_WRITE_AT_r(LUOUT,IOFFSET_OUT,SEGMNT,
      &                           lbl,ISTAT)
-          read_write = read_write + MPI_WTIME() - xrw_time
+          read_write = read_write + interface_MPI_WTIME() - xrw_time
           IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
 C
  300      CONTINUE
@@ -4473,7 +4473,7 @@ C     ^ loop over batches
 C
 C     individual dot products need to be communicated
 C
-      starttime = MPI_WTIME()
+      starttime = interface_MPI_WTIME()
 C
       CALL DZERO(SUBSPH(ISTRED),NROOT)
       CALL REDVEC(SCRRED,SUBSPH(ISTRED),NROOT,2,
@@ -4485,7 +4485,7 @@ C
      &              op_MPI_SUM,global_communicator,-1)
       END IF
 C
-      endtime = MPI_WTIME()
+      endtime = interface_MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
 csk   WRITE(LUWRT,*) 'THIS IS WHAT I HAVE REDUCED TO'
 csk   WRITE(LUWRT,*) ' ISTRED, ISTRED2, NROOT, JOFF',

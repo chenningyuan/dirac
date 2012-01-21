@@ -1504,7 +1504,7 @@ csk   CALL IWRTMAMN(WORK(KSCALLOC2),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
 csk   WRITE(LUCIWT,*) 'WORK(KSCALLOC3):'
 csk   CALL IWRTMAMN(WORK(KSCALLOC3),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
 C
-      starttimer = MPI_WTIME()
+      starttimer = interface_MPI_WTIME()
 C
 C     "mpi_allsum" local LUCLIST which then on all
 C     nodes will contain the number of non-zero C-blocks in
@@ -1566,7 +1566,7 @@ csk   WRITE(LUCIWT,*) 'ISCLFAC_GROUP:'
 csk   CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
 C
 C     final timing for block distribution
-      blocktime = blocktime + MPI_WTIME() - starttimer
+      blocktime = blocktime + interface_MPI_WTIME() - starttimer
 C
 C     flush local memory
 C

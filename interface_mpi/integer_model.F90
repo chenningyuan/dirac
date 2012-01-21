@@ -37,7 +37,6 @@ contains
   subroutine determine_integer_model_in_mpi
 
   integer_kind_in_mpi = sizeof(MPI_INTEGER)
-  print *, 'integer kind of MPI library is: ',integer_kind_in_mpi
 
   end subroutine determine_integer_model_in_mpi
 
