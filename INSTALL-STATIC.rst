@@ -17,6 +17,8 @@ Linux-2.6.32-5-amd64; ownmath; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4); -stati
 ilias@grid3.ui.savba.sk:
 Linux-2.6.18-274.3.1.el5; ownath; x86_64, ilp64, GNU Fortran (GCC) 4.4.4 20100726 (Red Hat 4.4.4-13)';  -g -static -fpic; opt
 Note: this gfortran shows error in test program for NAMELIST reading, however, DIRAC runs OK...
+NB: gfortran44 gives crashes for these OpenRSP tests: openrsp_pv,openrsp_jones,openrsp_cme.
+For "pure" runs you have to havehigher version of GNU compilers.
 
 ilias@miro_ilias_desktop:
 Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 

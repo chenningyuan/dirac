@@ -280,7 +280,13 @@ class pam_enviroment:
         print "Current settings:"
         print "  Install directory   ", self.dirac_home
         print "  Basis directories   ",  self.basdir
-        print "  Scratch directory   ",  self.scratch_dir
+        disk= disk_space_find(self.scratch_dir)
+        if disk.available:
+            scratch_disk_usage="(avail=%10.3f[GB])"%(disk.available) 
+            scratch_disk_usage=scratch_disk_usage.replace(" ","")
+            print "  Scratch directory   ",  self.scratch_dir,scratch_disk_usage
+        else:
+            print 'scratch dir:', self.scratch_dir,' not found/not accessible !'
         print "  Relevant for parallel builds:"
         print "    mpi launcher         ",  self.mpirun
         print "    mpirun extra args    ",  self.mpiarg
@@ -380,7 +386,7 @@ class pam_enviroment:
             sys.stdout.flush()
         print '  ------------------------------------------------------------------------------'
         print '      Total size of all files :  %10.3f  MB ' % sum_filesize_mb
-        disk = disk_space(self.scratch_dir)
+        disk = disk_space_find(self.scratch_dir)
         print '      Disk info:  used    available   capacity [GB]'
         print '             %10.3f %10.3f   %10.3f ' % (disk.used,disk.available,disk.capacity)
         print ''
@@ -1599,7 +1605,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
                 print '  executable      :', self.dirac_exe
-            print '  scratch dir    :', self.scratch_dir
+            disk= disk_space_find(self.scratch_dir)
+            if disk.available:
+                scratch_disk_usage="(avail=%10.3f[GB])"%(disk.available) 
+                scratch_disk_usage=scratch_disk_usage.replace(" ","")
+                print '  scratch dir    :', self.scratch_dir,scratch_disk_usage
+            else:
+                print 'scratch dir:', self.scratch_dir,' not found/not accessible !'
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run
             # print out more stuff regarding the parallel setting
@@ -1818,19 +1830,48 @@ class disk_space:
     def __init__(self,path):
         """
         fill (initialize) wanted variables, no other info needed sofar
-        TODO: check the path
+        if entering variable path is not proper, returns None
         """
         import os
         gb_factor = float(1024*1024*1024)
+        # initialize
+        self.capacity=None
+        self.available=None
+        self.used=None
+        # if path not defined, return with None attributes
+        if not os.path.isdir(path): return
         if not is_windows():
             self.disk_info = os.statvfs(path)
             self.capacity = ( self.disk_info.f_bsize * self.disk_info.f_blocks ) / gb_factor
             self.available = ( self.disk_info.f_bsize * self.disk_info.f_bavail ) /  gb_factor
             self.used = ( self.disk_info.f_bsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
         else:
+            # TODO: define for Windows
             self.available = 0
             self.capacity = 0
             self.used = 0
+
+class disk_space_find:
+    """
+    extracts disk space data - capacity, available, used -  in GB
+    """
+    def __init__(self,path):
+        """
+        fill (initialize) wanted variables, no other info needed sofar
+        if entering variable path is not proper, returns None
+        """
+        import os
+        # initialize
+        self.capacity=disk_space(path).capacity
+        self.available=disk_space(path).available
+        self.used=disk_space(path).used
+        # cycle for finding existing path
+        this_path=path
+        while disk_space(this_path).used is None:
+            this_path=os.path.dirname(this_path)
+            self.capacity=disk_space(this_path).capacity
+            self.available=disk_space(this_path).available
+            self.used=disk_space(this_path).used
 
 class extract_path_file:
     """
