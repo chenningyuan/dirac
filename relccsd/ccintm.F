@@ -450,6 +450,7 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -459,15 +460,21 @@ C
 C---------------------------------------
 C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
 C---------------------------------------
+      call dzero(ho,nfoo)
       CALL XCOPY (NFOO,FOO,1,HO,1)
       II = 1
       I = 1
+      print *, 'myproc, nrep ',myproc, nrep
+      call wrtmatmn(foo,1,nfoo,1,nfoo,6)
+      call wrtmatmn(ho,1,nfoo,1,nfoo,6)
+
       DO IRP = 1, NREP
          N = NO(IRP)
          ND = (N+1) * RCW
          CALL DAXPY(N,-A1,EPS(I),1,HO(II),ND)
          I = I + N
          II = II + N * N * RCW
+         print *, 'eps(i), n, -a1, nd ,ho(ii)',eps(i), n, -a1,nd,ho(ii)
       ENDDO
       CALL DELFCK ('OO','DK',HO)
 C----------------------------------------------------------------------
@@ -482,6 +489,7 @@ C----------------------------------------------------------------------
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             BUF3,BUF2)
       CALL CNTRCT ('C','N',NO,NO,NVVOT,A1,BUF1,BUF2,A1,HO,NREP)
+      print *, 'no, nvtot,ho(1)',no, nvtot,myproc,ho(1)
 C
       RETURN
       END

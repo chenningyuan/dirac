@@ -312,12 +312,12 @@ C
 
       
 CMI  ... debugging output ...
-      IF (DEBUG) THEN
+!     IF (DEBUG) THEN
         WRITE (*,111) "ho ",MYPROC,DDOT(RCW*NFOO,HO,1,HO,1)
         WRITE (*,111) "hv ",MYPROC,DDOT(RCW*NFVV,HV,1,HV,1)
         WRITE (*,111) "hov",MYPROC,DDOT(RCW*NDIMT1,HOV,1,HOV,1)
         WRITE (*,111) "s1 ",MYPROC,DDOT(RCW*NDIMT1,S1,1,S1,1)
-      ENDIF
+!     ENDIF
 C
 C  EVALUATE T2 INTERMEDIATES
 C

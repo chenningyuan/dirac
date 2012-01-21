@@ -46,6 +46,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "ccpar.inc"
 #include "waio.h"
 C
 C---------------Local variables--------------------------------------
@@ -64,6 +65,10 @@ C
 C
 C     Read/write blocks
 C
+      print *, 'fmat...',myproc
+      call wrtmatmn(fvo,1,NFVO*RCW*IRW,1,NFVO*RCW*IRW,6)
+      call wrtmatmn(foo,1,NFoO*RCW*IRW,1,NFoO*RCW*IRW,6)
+      call wrtmatmn(fvv,1,NFVv*RCW*IRW,1,NFVv*RCW*IRW,6)
       IF (PUT) THEN
          CALL RWRIT(ITAPT+0,FVO,NFVO*RCW*IRW,NSEC0)
          CALL RWRIT(ITAPT+0,FOO,NFOO*RCW*IRW,NSEC1)
