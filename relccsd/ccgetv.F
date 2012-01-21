@@ -65,9 +65,11 @@ C
 C
 C     Read/write blocks
 C
-      print *, 'fmat...',myproc
+      print *, 'fmat... fvo',myproc,NFVO*RCW*IRW
       call wrtmatmn(fvo,1,NFVO*RCW*IRW,1,NFVO*RCW*IRW,6)
+      print *, 'fmat... foo',myproc,NFOO*RCW*IRW
       call wrtmatmn(foo,1,NFoO*RCW*IRW,1,NFoO*RCW*IRW,6)
+      print *, 'fmat... fvv',myproc,nfvv*rcw*irw
       call wrtmatmn(fvv,1,NFVv*RCW*IRW,1,NFVv*RCW*IRW,6)
       IF (PUT) THEN
          CALL RWRIT(ITAPT+0,FVO,NFVO*RCW*IRW,NSEC0)

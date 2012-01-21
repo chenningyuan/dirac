@@ -335,16 +335,11 @@ C
 #if defined (VAR_MPI)
       IF(NMPROC.GT.1) THEN
 C
-C     LV 16-10-2002
-C     The next statements might be combined to an MPI_ALLREDUCE
-C     but I found the SGI implementation to give a runtime error.
-C
-        call interface_MPI_REDUCE_r1_work_f77(XVO,BUF1,RCW*NDIMX,
-     &                                        op_mpi_sum,MASTER,
-     &                                        global_communicator)
-        CALL XCOPY(NDIMX,BUF1,1,XVO,1)
-        CALL interface_mpi_bcast_r1_work_f77(XVO,RCW*NDIMX,
-     &       MASTER,global_communicator)
+        CALL XCOPY(NDIMX,XVO,1,BUF1,1)
+        CALL DZERO(XVO,RCW*NDIMX)
+        call interface_MPI_allREDUCE_r1_work_f77(BUF1,XVO,RCW*NDIMX,
+     &                                           op_mpi_sum,
+     &                                           global_communicator)
       ENDIF
 #endif
 C--------------------------------------------

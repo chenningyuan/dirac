@@ -148,8 +148,8 @@ C
      &                  MASTER,global_communicator)
       END IF
 #endif
-      do i = 1, NSP*2
-      print *, 'kr(-i), kr(i) ',kr(-i), kr(i)
+      do i = 1, NKR
+      print *, 'kr(-i), kr(i) i, myproc',kr(-i), kr(i),i,myproc
       end do
       IF (2*NKR.NE.NSP) 
      &   CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
@@ -263,6 +263,14 @@ C
          CALL XAXPY(NV3,A1,VVVOOA,1,VVVOO,1)
          CALL XAXPY(NV4,A1,VVOVOA,1,VVOVO,1)
       ENDIF
+      write(6,*) 'myproc, type1',myproc
+      call wrtmatmn(VOOOO,1,NV1*RCW*IRW,1,NV1*RCW*IRW,6)
+      write(6,*) 'myproc, type2',myproc
+      call wrtmatmn(VVOOO,1,NV2*RCW*IRW,1,NV2*RCW*IRW,6)
+      write(6,*) 'myproc, type3',myproc
+      call wrtmatmn(VVVOO,1,NV3*RCW*IRW,1,NV3*RCW*IRW,6)
+      write(6,*) 'myproc, type4',myproc
+      call wrtmatmn(VVOVO,1,NV4*RCW*IRW,1,NV4*RCW*IRW,6)
       CALL RWRIT(ITAPT+1,VOOOO,NV1*RCW*IRW,1)
       CALL RWRIT(ITAPT+2,VVOOO,NV2*RCW*IRW,1)
       CALL RWRIT(ITAPT+3,VVVOO,NV3*RCW*IRW,1)
@@ -946,7 +954,7 @@ C
 C---------------Local variables--------------------------------------
 C
       INTEGER IKR,JKR,KKR,LKR
-      integer*4 INZ
+      integer   INZ
 
       REAL*8 RDUM
       LOGICAL FOCKSP, CHECK_INTS
@@ -1003,13 +1011,6 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
      &        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ENDIF
 
-      IF (CHECK_INTS) THEN
-        write(6,*) 'IKR,JKR,NONZR:',IKR,JKR,NONZR
-        write(6,*) ' ... INDK,INDL,CBUF: '
-        do i=1,NONZR
-          write(6,*) INDK(I),INDL(I),CBUF(1,I)
-        enddo
-      ENDIF
 
       IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
@@ -1023,11 +1024,9 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       ENDIF
       ENDIF
 
-      IF (CHECK_INTS) THEN
-!      call quit('GET2INTS: here end...')
-      ENDIF
 
 #if defined (VAR_MPI)
+      print *, 'mreader is ==> ',mreader
       IF (NMPROC.GT.1 ) THEN
       call interface_mpi_BCAST(IKR,  1,MREADER,global_communicator)
       call interface_mpi_BCAST(JKR,  1,MREADER,global_communicator)
@@ -1043,6 +1042,18 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       ENDIF
 #endif
       IF (NONZR.EQ.-1) RETURN
+
+      IF (CHECK_INTS) THEN
+        write(6,*) 'IKR,JKR,NONZR:',IKR,JKR,NONZR
+        write(6,*) ' ... INDK,INDL,CBUF: '
+        do i=1,NONZR
+          write(6,*) INDK(I),INDL(I),CBUF(1,I),myproc
+        enddo
+      ENDIF
+
+      IF (CHECK_INTS) THEN
+!      call quit('GET2INTS: here end...')
+      ENDIF
          
       IJSIGN = SIGN(1,IKR*JKR) * ITRSGN
 C
@@ -1312,9 +1323,10 @@ C
      &                  global_communicator)
       END IF
 #endif
-      print *, 'buf...'
-      call wrtmatmn(BUF1,1,NSPQ,1,NSPQ,iw)
-      call wrtmatmn(BUF2,1,NSPQ,1,NSPQ,iw)
+      print *, 'buf 1...',nspq,myproc
+      call wrtmatmn(BUF1,1,NSPQ,1,NSPQ,6)
+      print *, 'buf 2...',nspq,myproc
+      call wrtmatmn(BUF2,1,NSPQ,1,NSPQ,6)
 C  
 C  ORDER AND PUT IN FOCK MATRIX
 C
