@@ -168,7 +168,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
+#ifdef VAR_MPI
       dimension istat(df_mpi_status_size)
+#endif
 C
       if(numnod.eq.0) return
 C

@@ -306,6 +306,8 @@ CADDE
 
         work(KBASE-1)  = PAD1
         work(KFREEL-1) = PAD2
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
 !       WRITE(lupri,*) ' global tag set at: ',KBASE-1,KFREEL-1
 *
 **. Local memory
@@ -344,8 +346,10 @@ CADDE
         IIDENT(NSNLI)  = IDENT
         IBASE(NSNLI)   = KBASE
 
-        work(KBASE-1)  = PAD1
-        work(KFREEL-1) = PAD2
+!       work(KBASE-1)  = PAD1
+!       work(KFREEL-1) = PAD2
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
 !       WRITE(lupri,*) ' local tag set at: ',KBASE-1,KFREEL-1
 *
 ** Flush local memory
