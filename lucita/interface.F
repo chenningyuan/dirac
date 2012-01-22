@@ -4046,8 +4046,6 @@ C
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 
-      CALL LMEMCHK
-*
 *. : Pointers for symmetry blocks of integrals
 *
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
@@ -4133,8 +4131,6 @@ C     IF(NOINT.EQ.0)
 C    &CALL IJKK(WORK(KIJKK),1,WORK(KPNIJ),1,NSMOB,NTOOBS,
 C    &          IBSO,IREOST,NTOOB)
 C     WRITE(6,*) ' Memcheck after IJKK '
-C     CALL LMEMCHK
-C?    write(6,*) ' home from IJKK '
 *. Change one-electron integrals to inactive fock matrix
       IF(NOINT.EQ.0) THEN
 C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
@@ -4150,7 +4146,6 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       if (myproc.eq.master) then
         WRITE(6,*) 'Updated core energy ',ECORE
       end if
-      CALL LMEMCHK
 *
 C?    WRITE(6,*) ' IDMPIN ', IDMPIN
       IF (IDMPIN.EQ.1 ) THEN
@@ -6477,7 +6472,6 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                 WORK(KKR),WORK(KIOFF12),WORK(KNUMINT),
      &                 WORK(KINDK),WORK(KINDL),NTEST)
 *
-CSK      call lmemchk
       IHAM12 = 2
       ISYDISUM2 = ISYDISUM*2
       call dist_ints_dirac2(WORK(KPICHE2),WORK(KDIONEE),
@@ -6493,7 +6487,6 @@ CSK      call lmemchk
 *
 !     NTEST = NTEST_save
 
-CSK      call lmemchk
       call memman(IDUM,IDUM,'FLUSM ',IDUM,'RDIRAC')
 *
       return
