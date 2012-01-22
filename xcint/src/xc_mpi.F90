@@ -151,12 +151,12 @@ contains
 
    subroutine xc_mpi_bcast_l0(x)
       logical :: x
-      call interface_mpi_bcast_l0_f77(x, 1, irank_master, global_communicator)
+      call interface_mpi_bcast_l0(x, 1, irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_bcast_l1(x)
       logical :: x(:)
-      call interface_mpi_bcast_l1_f77(x, size(x),  irank_master, global_communicator)
+      call interface_mpi_bcast_l1(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_reduce_i0(x)

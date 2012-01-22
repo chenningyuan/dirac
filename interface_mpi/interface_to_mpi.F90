@@ -19,12 +19,21 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 !
-! purpose: determine integer size in MPI library to 
+! purpose: provide common interface routines from Dirac to MPI based on the
+!          default integer type in the respective MPI library
 !
-!#define VAR_MPI_32bit_int
+!          the library module is by far not complete wrt all functionalities
+!          available in MPI but merely resembles those that are at present 
+!          used in Dirac.
+!
+!          note that some of the interface routines (difficult cases)
+!          are located in interface_mpi/interface_to_mpi_f77.F.
+!
+! written by s. knecht - Odense/Santiago de Chile 2011-2012.
+!
 module interface_to_mpi
-#ifdef VAR_MPI
 
+#ifdef VAR_MPI
 
   use integer_kind_mpilib
   use mpi

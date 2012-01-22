@@ -4541,7 +4541,7 @@ C     dcbham.h
 C     --------
 C
       NUMELM = ICOMMSIZE(I1_DCLHAM,I2_DCLHAM)
-      call interface_mpi_bcast_l0_f77(QED,NUMELM,MPARID,
+      call interface_mpi_bcast_l0(QED,NUMELM,MPARID,
      &                                global_communicator)
 C
 C     dgroup.h
@@ -4550,7 +4550,7 @@ C
       NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
       call interface_MPI_BCAST(I1_DGROUP,NUMELM,MPARID,
      &                         global_communicator)
-      call interface_mpi_bcast_l0_f77(LINEAR,1,MPARID,
+      call interface_mpi_bcast_l0(LINEAR,1,MPARID,
      &                                global_communicator)
 C
 C     dcbtra.h
@@ -4569,7 +4569,7 @@ C
 C     logicals...
 C
       NUMELM = NDCBTRL
-      call interface_mpi_bcast_l0_f77(TRA_ANTIS,NUMELM,MPARID,
+      call interface_mpi_bcast_l0(TRA_ANTIS,NUMELM,MPARID,
      &                                global_communicator)
 C
 C     comdis.h
@@ -4596,19 +4596,19 @@ C     The rest
 C     --------
 C
       NUMELM = 1
-      CALL interface_mpi_bcast_l0_f77(TESTLS,NUMELM,MPARID,
+      CALL interface_mpi_bcast_l0(TESTLS,NUMELM,MPARID,
      &                                      global_communicator)
       NUMELM = 1
-      CALL interface_mpi_bcast_l0_f77(TESTSL,NUMELM,MPARID,
+      CALL interface_mpi_bcast_l0(TESTSL,NUMELM,MPARID,
      &                                      global_communicator)
       NUMELM = 1
-      CALL interface_mpi_bcast_l0_f77(MP2ORG,NUMELM,MPARID,
+      CALL interface_mpi_bcast_l0(MP2ORG,NUMELM,MPARID,
      &                                      global_communicator)
       NUMELM = 1
-      CALL interface_mpi_bcast_l0_f77(GTHSHL,NUMELM,MPARID,
+      CALL interface_mpi_bcast_l0(GTHSHL,NUMELM,MPARID,
      &                                      global_communicator)
       NUMELM = 1
-      CALL interface_mpi_bcast_l0_f77(CMMNFO,NUMELM,MPARID,
+      CALL interface_mpi_bcast_l0(CMMNFO,NUMELM,MPARID,
      &                                      global_communicator)
       NUMELM = 1
       CALL interface_MPI_BCAST(TPRI34,NUMELM,MPARID,
@@ -4620,10 +4620,10 @@ C
       CALL interface_MPI_BCAST(INTFLG,NUMELM,MPARID,
      &               global_communicator)
       NUMELM = 1
-      CALL interface_mpi_bcast_l0_f77(ANTIS,NUMELM,MPARID,
+      CALL interface_mpi_bcast_l0(ANTIS,NUMELM,MPARID,
      &               global_communicator)
       NUMELM = 1
-      CALL interface_mpi_bcast_l0_f77(LMP2,NUMELM,MPARID,
+      CALL interface_mpi_bcast_l0(LMP2,NUMELM,MPARID,
      &               global_communicator)
       NUMELM = 24
       CALL interface_MPI_BCAST(NSTR,NUMELM,MPARID,

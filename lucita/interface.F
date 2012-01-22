@@ -3780,7 +3780,7 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
         CALL interface_MPI_BCAST(MORB,1,MASTER,global_communicator)
-        CALL interface_mpi_bcast_l0_f77(BREIT,1,MASTER,
+        CALL interface_mpi_bcast_l0(BREIT,1,MASTER,
      &                                  global_communicator)
         CALL interface_MPI_BCAST(ECORE_DIR,1,MASTER,
      &                 global_communicator)
@@ -7335,7 +7335,7 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
          CALL interface_MPI_BCAST(MORB,1,MASTER,global_communicator)
-         CALL interface_mpi_bcast_l0_f77(BREIT,1,MASTER,
+         CALL interface_mpi_bcast_l0(BREIT,1,MASTER,
      &                                   global_communicator)
          CALL interface_MPI_BCAST(ECORE_DIR,1,MASTER,
      &                            global_communicator)
@@ -7480,7 +7480,7 @@ C     check for integral file on local disks
           IF( IDIST_IJKL_TEMP .ne. IDIST_IJKL_A(I)) IJKL_AV = .FALSE.
         END DO
       END IF
-      CALL interface_mpi_bcast_l0_f77(IJKL_AV,1,MASTER,
+      CALL interface_mpi_bcast_l0(IJKL_AV,1,MASTER,
      &                                global_communicator)
 #endif
 C

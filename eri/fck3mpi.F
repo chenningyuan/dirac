@@ -196,7 +196,7 @@ C     /MULBAS/
 #include "nuclei.h"
 #include "densfit.h"
       CALL interface_MPI_BCAST(NBASISAUX,1,MASTER,global_communicator)
-      CALL interface_mpi_bcast_l0_f77(DOFIT,1,MASTER,
+      CALL interface_mpi_bcast_l0(DOFIT,1,MASTER,
      &                                global_communicator)
       RETURN
       END                  
