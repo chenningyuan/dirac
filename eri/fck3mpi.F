@@ -188,16 +188,16 @@ C     /MULBAS/
 
 
       SUBROUTINE DF_DIMS()
+      use interface_to_mpi
 #include "implicit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "densfit.h"
-      INCLUDE "mpif.h"
-      CALL MPI_BCAST(NBASISAUX,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOFIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NBASISAUX,1,MASTER,global_communicator)
+      CALL interface_mpi_bcast_l0_f77(DOFIT,1,MASTER,
+     &                                global_communicator)
       RETURN
       END                  
       
@@ -208,10 +208,10 @@ C     /MULBAS/
 
 #if defined (USE_FCK3COLLECT)
       SUBROUTINE fck3collect(FMAT,NDMAT,tm,WORK,LFREE,IPRINT)
+      use interface_to_mpi
 #include "implicit.h"
 #include "inforb.h"
       DIMENSION FMAT(N2BASX,NDMAT), WORK(*)
-      INCLUDE 'mpif.h'
 #include "maxorb.h"
 #include "infpar.h"
 #include "priunit.h"
@@ -224,13 +224,13 @@ c
         Call QUIT('Insufficient memory in fck3collect')
       END IF
       CALL DCOPY(NSIZE,FMAT,1,WORK,1)
-      CALL MPI_REDUCE(WORK,FMAT,NSIZE,MPI_DOUBLE_PRECISION,MPI_SUM,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_reduce_r1_work_f77(WORK,FMAT,NSIZE,op_MPI_SUM,
+     &                                      MASTER,global_communicator)
       iF(iprint.ge.0) THEN
 c     for a good measure, collect times to to provide more info about
 c     load balancing.
-         CALL MPI_GATHER(tm,1,MPI_DOUBLE_PRECISION,
-     &        tms,1,MPI_DOUBLE_PRECISION,MASTER,MPI_COMM_WORLD,IERR)
+         call interface_MPI_GATHER(tm,1,tms,1,MASTER,
+     &                             global_communicator)
          if(IERR.NE.0) WRITE(LUPRI,*) 'error collecting times:',IERR
          WRITE(LUPRI,"('Node times:',/,20(10F7.2,/))")
      &        (tms(i),i=1,NODTOT+1)

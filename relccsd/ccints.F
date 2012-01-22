@@ -28,6 +28,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC,
      &                  CC)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -55,10 +56,6 @@ C
 #include "waio.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Calling variables--------------------------------------
 C
@@ -145,10 +142,10 @@ C     and check for consistency afterwards
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(NKR,1,my_MPI_INTEGER,
-     &                  MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(KR,2*NSP+1,my_MPI_INTEGER,
-     &                  MASTER,MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(NKR,1,
+     &                  MASTER,global_communicator)
+         call interface_mpi_BCAST(KR,2*NSP+1,
+     &                  MASTER,global_communicator)
       END IF
 #endif
       IF (2*NKR.NE.NSP) 
@@ -246,7 +243,7 @@ C            This was the last node, we're done processing the integrals, goto t
 C
 C     ADD THE DIRECT AND EXCHANGE INTEGRALS
 C
-  110 CALL XAXPY (NV1,-A1,VOOOOA,1,VOOOO,1)
+ 110  CALL XAXPY (NV1,-A1,VOOOOA,1,VOOOO,1)
       CALL XAXPY (NV2,-A1,VVOOOA,1,VVOOO,1)
       CALL XAXPY (NV3,-A1,VVVOOA,1,VVVOO,1)
       CALL XAXPY (NV4,-A1,VVOVOA,1,VVOVO,1)
@@ -579,8 +576,8 @@ C     when we run with the MOLMF(3) hamiltonian
      &                        ORIG_TOTSCF,1)
         ENDIF
 #if defined VAR_MPI
-        CALL MPI_BCAST(ORIG_TOTSCF,1,MPI_REAL8,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(ORIG_TOTSCF,1,MASTER,
+     &                 global_communicator)
 #endif
         ESCF = ORIG_TOTSCF
         WRITE(IW,1013) ESCF
@@ -709,6 +706,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDPROP(IPRNT,NAMEA,NSP,RDDIAG,PROP,IREPSPI,APHASE,
      &                  AVO,AOV,AOO,AVV)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -730,10 +728,6 @@ C
 #include "complex.inc"
 #include "files.inc"
 #include "ccpar.inc"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Calling variables--------------------------------------
 C
@@ -775,10 +769,10 @@ C     Distribute the information read from MDPROP
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(INOP,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(PROP,2*NSP*NSP,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(INOP,1,MASTER,
+     &                  global_communicator)
+         call interface_mpi_BCAST(PROP,2*NSP*NSP,MASTER,
+     &                  global_communicator)
       END IF
 #endif
 C
@@ -906,6 +900,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,IATYP,INDK,INDL,
      &                     NONZR,NZE,CBUF,IBUF,MREADER)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -944,15 +939,11 @@ C
 #include "ccpar.inc"
 #include "dgroup.h"
 #include "dcbham.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
       INTEGER IKR,JKR,KKR,LKR
-      integer*4 INZ
+      integer   INZ
 
       REAL*8 RDUM
       LOGICAL FOCKSP, CHECK_INTS
@@ -967,7 +958,7 @@ C     be distributed over the nodes or only on the master
 C     They will always need to be dsitributed at this point
 C 
 
-C     CHECK_INTS = .TRUE.
+!     CHECK_INTS = .TRUE.
       CHECK_INTS = .false.
 
    1  CONTINUE
@@ -981,9 +972,11 @@ C     A number of different formats are possible.
      &        (CBUF(1,INZ),INZ=1,NONZR) 
 CMI      ... NONZR is read before from MDINT file !
 CMI      ... zero imaginary part of two-el. integrals
-         DO INZ=1,NONZR
-          CBUF(2,INZ) = 0.0D0
-         ENDDO
+         if(rcw > 1)then
+           DO INZ=1,NONZR
+            CBUF(2,INZ) = 0.0D0
+           END DO
+         end if
        ELSE
 C     For complex groups we read the real and imaginary part.
          IF (LEVYLE) THEN
@@ -1009,13 +1002,6 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
      &        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ENDIF
 
-      IF (CHECK_INTS) THEN
-        write(6,*) 'IKR,JKR,NONZR:',IKR,JKR,NONZR
-        write(6,*) ' ... INDK,INDL,CBUF: '
-        do i=1,NONZR
-          write(6,*) INDK(I),INDL(I),CBUF(1,I)
-        enddo
-      ENDIF
 
       IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
@@ -1029,26 +1015,35 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       ENDIF
       ENDIF
 
-      IF (CHECK_INTS) THEN
-!      call quit('GET2INTS: here end...')
-      ENDIF
 
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1 ) THEN
-      CALL MPI_BCAST(IKR,  1,my_MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JKR,  1,my_MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NONZR,1,my_MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
-      IF (NONZR.GT.0) THEN
-        CALL MPI_BCAST(INDK,NONZR,my_MPI_INTEGER,
-     &                 MREADER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(INDL,NONZR,my_MPI_INTEGER,
-     &                 MREADER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(CBUF,NONZR*RCW,MPI_DOUBLE_PRECISION,
-     &                 MREADER,MPI_COMM_WORLD,IERR)
-      ENDIF
+        call interface_mpi_BCAST(IKR,  1,MREADER,global_communicator)
+        call interface_mpi_BCAST(JKR,  1,MREADER,global_communicator)
+        call interface_mpi_BCAST(NONZR,1,MREADER,global_communicator)
+        IF (NONZR.GT.0) THEN
+          call interface_mpi_bcast_i1_work_f77(INDK,NONZR,
+     &                   MREADER,global_communicator)
+          call interface_mpi_bcast_i1_work_f77(INDL,NONZR,
+     &                   MREADER,global_communicator)
+          call interface_mpi_bcast_r2_work_f77(CBUF,RCW,NONZR,
+     &                   MREADER,global_communicator)
+        ENDIF
       ENDIF
 #endif
       IF (NONZR.EQ.-1) RETURN
+
+      IF (CHECK_INTS) THEN
+        write(6,*) 'IKR,JKR,NONZR:',IKR,JKR,NONZR
+        write(6,*) ' ... INDK,INDL,CBUF: '
+        do i=1,NONZR
+          write(6,*) INDK(I),INDL(I),CBUF(1,I),myproc
+        enddo
+      ENDIF
+
+      IF (CHECK_INTS) THEN
+!      call quit('GET2INTS: here end...')
+      ENDIF
          
       IJSIGN = SIGN(1,IKR*JKR) * ITRSGN
 C
@@ -1235,6 +1230,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETFM (INDEX,NSP,EPS,BUF1,BUF2,VBUF1,VBUF2,
      &                  FOO,FVO,FVV,E0,E1)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -1267,10 +1263,6 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "ihm.inc"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C---------------Local variables--------------------------------------
 C
       REAL*8 SYM_CHECK
@@ -1315,10 +1307,10 @@ C       Use the VBUF arrays as scratch arrays, they will always be large enough
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(BUF1,NSPQ,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BUF2,NSPQ,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         call interface_mpi_bcast_r1_work_f77(BUF1,NSPQ,MASTER,
+     &                  global_communicator)
+         call interface_mpi_bcast_r1_work_f77(BUF2,NSPQ,MASTER,
+     &                  global_communicator)
       END IF
 #endif
 C  

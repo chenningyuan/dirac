@@ -61,6 +61,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -68,8 +69,7 @@ C***********************************************************************
 #include "aovec.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
+      DIMENSION IBUFMPI(5)
 #endif
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -199,8 +199,8 @@ CSK   ... safe implementation
       ILEN_STAT = 8
       CALL DZERO(XINTSTAT,ILEN_STAT)
       CALL DCOPY(ILEN_STAT,DINTSKP,1,XINTSTAT,1)
-      CALL MPI_REDUCE(XINTSTAT,DINTSKP,ILEN_STAT,MPI_REAL8,
-     &                MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+      call interface_mpi_reduce_r1_work_f77(XINTSTAT,DINTSKP,ILEN_STAT,
+     &                          op_MPI_SUM,MPARID,global_communicator)
 #endif
       IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
 C
@@ -341,14 +341,14 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "maxorb.h"
 #include "aovec.h"
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -431,17 +431,17 @@ C
 C
               CALL XTIME(2,1,' Slave requesting task from master')
    10         CONTINUE
-              CALL MPI_PROBE (MPI_ANY_SOURCE,MPI_ANY_TAG,
-     &                        MPI_COMM_WORLD,ISTAT,IERR)
-              IF (ISTAT(MPI_TAG).EQ.20) THEN
-                 CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                         MPI_COMM_WORLD,ISTAT,IERR)
+              CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG,
+     &                                 global_communicator,ISTAT)
+              IF (ISTAT(df_MPI_TAG).EQ.20) THEN
+                 CALL interface_MPI_RECV(ITEST,1,df_MPI_ANY_SOURCE,20,
+     &                                   global_communicator)
               ELSE
                  CALL BUFFER_FILE_RECV ()
                  GOTO 10
               ENDIF
               CALL XTIME(2,2,' Slave requesting task from master')
-              NWHO = ISTAT(MPI_SOURCE)
+              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
 C                ... slave wants new set of A,B shells
                  CALL GETTIM(CPUST,WALLST)
@@ -453,8 +453,8 @@ C                ... slave wants new set of A,B shells
                     CALL FLSHFO(LUPRI)
                  END IF
                  CALL XTIME(3,1,' Master and slave negotiating task')
-                 CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
+                 CALL interface_MPI_SEND(IBUFMPI,5,NWHO,30,
+     &                      global_communicator)
                  CALL XTIME(3,2,' Master and slave negotiating task')
               ELSE
                  CALL QUIT('Illegal ITEST')
@@ -473,10 +473,10 @@ C
          ITEST = 0
 C        ... ask for new set of A,B shells
          CALL XTIME(2,1,' Slave requesting task from master')
-         CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,MPARID,20,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_RECV(IBUFMPI,5,my_MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_SEND(ITEST,1,MPARID,20,
+     &                           global_communicator)
+         CALL interface_MPI_RECV(IBUFMPI,5,MPARID,30,
+     &                           global_communicator)
          IC     = IBUFMPI(1)
          I2TYP  = IBUFMPI(2)
          ISHLA  = IBUFMPI(3)
@@ -539,10 +539,6 @@ C
 #include "dcbtra.h"
 #include "dgroup.h"
 #include "infpar.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LDIST(NSTR2T),LSORT(3,NFPCK12T,0:7)

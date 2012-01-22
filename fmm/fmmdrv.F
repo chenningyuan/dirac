@@ -1077,24 +1077,25 @@ C
 c ---------------------------------------------------------------------------
 #if defined(VAR_MPI)
       SUBROUTINE mm_getj_wake_up_slaves
+      use interface_to_mpi
 #include "maxorb.h"
 #include "inforb.h"
 #include "infpar.h"
-      INCLUDE 'mpif.h'
       INTEGER IPRTYP, IPRINT, IERR
       IPRTYP = 6
       IPRINT = 0
       IF(mynum.EQ.MASTER) THEN
 c        IPRTYP and IPRINT are received by eri slave dispatch routines
-         CALL MPI_Bcast(IPRTYP,1,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-         CALL MPI_Bcast(IPRINT,1,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_Bcast(IPRTYP,1,0,global_communicator)
+         CALL interface_MPI_Bcast(IPRINT,1,0,global_communicator)
 c        nbast is received by fmm_slave_fock 
-         CALL MPI_Bcast(NBAST, 2,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_Bcast(NBAST, 2,0,global_communicator)
       END IF
       END
 !
       SUBROUTINE FMM_SLAVE_FOCK(WORK,LWORK,IPRINT)
 !     FMM parallelization: Pawel Salek
+      use interface_to_mpi
       DIMENSION WORK(LWORK)
       INTEGER MWORK, IPRINT
       CHARACTER MMTYPE(6)
@@ -1102,8 +1103,7 @@ c        nbast is received by fmm_slave_fock
 #include "infpar.h"
 #include "priunit.h"
 #include "densfit.h"
-      INCLUDE  'mpif.h'
-      CALL MPI_Bcast(NBAST, 2,my_MPI_INTEGER,master,MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_Bcast(NBAST, 2,master,global_communicator)
       KHMSQ = 1
       LWRK  = KHMSQ+NBAST*NBAST
 !     check mem here.

@@ -109,11 +109,9 @@ C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
 C
 C
+      use interface_to_mpi
 #include "implicit.h"
 C
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -235,7 +233,7 @@ C
 C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
-CSK      write(6,*)'master has been here',master
+!     write(6,*)'master has been here',master
 
 
 C
@@ -244,10 +242,11 @@ C     Start calculation.
 C-----------------------
 C
       CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
-CSK      write(6,*)'master has been here again',master
+!     write(6,*)'master has been here again',master
 
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+!     write(6,*)'master has been here again #3',master
 
 C
 C--------------------------------------
@@ -257,6 +256,7 @@ C      and let them return to main menu.
 C--------------------------------------
 C
       ITASK = - 1
+!     call quit('bla bla')
       CALL DIRAC_PARCTL( -1 )
 C
 C-----------------------------------------
@@ -383,11 +383,9 @@ C  /* Deck sdinit */
 C
 C     Written by Henrik Koch and Paal Dahle
 C
+      use interface_to_mpi
 #include "implicit.h"
 C
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -514,52 +512,52 @@ C
 #if defined (VAR_MPI)
       PRIMUPD_NODES = .FALSE.
       IF (NEWGEO) THEN
-         CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,
-     &       MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_BCAST(NMLINE,1,MPARID,
+     &       global_communicator)
 
 C........inforb.h
          NUMELM=ICOMMSIZE(I1_INFORB,I2_INFORB)
-         CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_BCAST(NUMELM,1,MPARID,
+     &               global_communicator)
 C........note that with icommsize COMMON blocks must be sent as integers...
-         CALL MPI_BCAST(I1_INFORB,NUMELM,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_BCAST(I1_INFORB,NUMELM,MPARID,
+     &                  global_communicator)
 C
-         CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MAXPRI,1,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_bcast_l0_f77(UNCONT,1,MPARID,
+     &                  global_communicator)
+         CAll interface_mpi_BCAST(MAXPRI,1,MPARID,
+     &                  global_communicator)
          NEWGEO = .FALSE.
          PRIMUPD_NODES = .TRUE.
       ELSE
          NFINIS = 0
-         CALL MPI_BCAST(NFINIS,1,my_MPI_INTEGER,MPARID,
-     &       MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_BCAST(NFINIS,1,MPARID,
+     &       global_communicator)
       END IF
 C
 C     Send Panas value and screening threshold
 
       DSEND(1) = PANAS
       DSEND(2) = SCREEN
-      CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(DSEND,2,MPARID,
+     &               global_communicator)
 #if defined (PRG_DIRAC)
 C     Send SMLV1C and ONECAP,INTV1C
       LSEND(1) = SMLV1C
       LSEND(2) = ONECAP
-      CALL MPI_BCAST(LSEND,2,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(INTV1C,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast_l0_f77(LSEND,2,MPARID,
+     &               global_communicator)
+      CAll interface_mpi_BCAST(INTV1C,1,MPARID,
+     &               global_communicator)
 #endif
 C
 C     Send parint.h
       NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(NUMELM,1,MPARID,
+     &               global_communicator)
 C........note that with icommsize COMMON blocks must be sent as integers...
-      CALL MPI_BCAST(I1_PARINT,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(I1_PARINT,NUMELM,MPARID,
+     &               global_communicator)
 C
 C     ... otherwise xyz reader fails in parallel mode
 C
@@ -570,15 +568,15 @@ C
       END IF
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
-      CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(ISEND,2,MPARID,global_communicator)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
-        CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_bcast_r1_work_f77(DMAT,N2BASX*NDMAT,MPARID,
+     &               global_communicator)
       ENDIF
 C
       IF(NFMAT.GT.0) THEN
-        CALL MPI_BCAST(IREPDM,NDMAT,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(IREPDM,NDMAT,MPARID,
+     &               global_communicator)
       ENDIF
       IF(ITYPE.NE.4) THEN
         IF (ITYPE.EQ.2) THEN
@@ -586,17 +584,17 @@ C
         ELSE
           NFCTYP = NFMAT
         ENDIF
-        CALL MPI_BCAST(IFCTYP,NFCTYP,my_MPI_INTEGER,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(IFCTYP,NFCTYP,MPARID,
+     &                 global_communicator)
       END IF
-      CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(HFXATT,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      call mpi_bcast(spinfr, 1, mpi_logical, mparid,
-     &               mpi_comm_world, ierr)
+      CAll interface_mpi_BCAST(HFXFAC,1,MPARID,
+     &               global_communicator)
+      CAll interface_mpi_BCAST(HFXATT,1,MPARID,
+     &               global_communicator)
+      CAll interface_mpi_BCAST(HFXMU,1,MPARID,
+     &               global_communicator)
+      call interface_mpi_bcast_l0_f77(spinfr, 1, mparid,
+     &               global_communicator)
 
 
 
@@ -609,24 +607,24 @@ C
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
 C       ... broadcast screening matrix
         N2RED = NSYMBL*NSYMBL
-        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DMRAO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(N2RED,1,MPARID,
+     &                 global_communicator)
+        CAll interface_mpi_bcast_r1_work_f77(DMRAO,N2RED*NDMAT,MPARID,
+     &                 global_communicator)
         IF (ITYPE .EQ. 2) THEN
-           CALL MPI_BCAST(GABRAO,4*N2RED,MPI_DOUBLE_PRECISION,MPARID,
-     &                    MPI_COMM_WORLD,IERR)
+           CAll interface_mpi_bcast_r1_work_f77(GABRAO,4*N2RED,MPARID,
+     &                    global_communicator)
         ELSE
-           CALL MPI_BCAST(GABRAO,N2RED,MPI_DOUBLE_PRECISION,MPARID,
-     &                    MPI_COMM_WORLD,IERR)
+           CAll interface_mpi_bcast_r1_work_f77(GABRAO,N2RED,MPARID,
+     &                    global_communicator)
         END IF
       END IF
       IF(ITYPE.EQ.9) THEN
         N2RED = MAXSHL*MAXSHL
-        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DMRSO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(N2RED,1,MPARID,
+     &                 global_communicator)
+        CAll interface_mpi_bcast_r1_work_f77(DMRSO,N2RED*NDMAT,MPARID,
+     &                 global_communicator)
       END IF
 #endif
       RETURN
@@ -636,10 +634,10 @@ C  /* Deck dopar */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
+      use interface_to_mpi
 #include "implicit.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#ifdef VAR_MPI
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "infpar.h"
 #include "priunit.h"
@@ -665,11 +663,11 @@ C
 #if defined (VAR_MPI)
 
 
-         CALL MPI_RECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CAll interface_mpi_RECV(NODE,1,df_MPI_ANY_SOURCE,20,
+     &                 global_communicator)
 C
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                 MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_SEND(NTEST,1,NODE,30,
+     &                 global_communicator)
 
 #endif
 CSK         write(6,*)'send and recieve done',mytid
@@ -681,8 +679,8 @@ C
             ISHELL(2) = IPLACE
 C
 #if defined (VAR_MPI)
-            CALL MPI_SEND(ISHELL,2,my_MPI_INTEGER,NODE,30,
-     &                    MPI_COMM_WORLD,IERR)
+            CAll interface_mpi_SEND(ISHELL,2,NODE,30,
+     &                    global_communicator)
 #endif
 C
 C           Pack only one null-task.
@@ -719,11 +717,11 @@ C
 C           Ready to receive request from any node.
 C
 #if defined (VAR_MPI)
-         CALL MPI_RECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CAll interface_mpi_RECV(NODE,1,df_MPI_ANY_SOURCE,20,
+     &                 global_communicator)
 C
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                 MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_SEND(NTEST,1,NODE,30,
+     &                 global_communicator)
 #endif
 C
   400 CONTINUE
@@ -737,10 +735,10 @@ C     Written by Henrik Koch and Paal Dahle July-1994
 C
 C   MI: Added TEC changes....
 C
+      use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
       PARAMETER (D1 = 1.0D0)
 C
@@ -779,24 +777,24 @@ C
       DO 100 I = 1,NODES
 C
 #if defined (VAR_MPI)
-         CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPI_ANY_SOURCE,40,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CAll interface_mpi_RECV(ITASK,1,df_mpi_any_source,40,
+     &                 global_communicator,ISTAT)
 C
          ICOUNT = ICOUNT + ITASK
 C
-         NWHO = ISTAT(MPI_SOURCE)
-C         write(6,*)'NWHO is',NWHO,mytid
+         NWHO = ISTAT(df_MPI_SOURCE)
+!        write(6,*)'NWHO is',NWHO,mytid
 
 C
          IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
-             CALL MPI_RECV(DNSKBF,LDINTSKP,MPI_DOUBLE_PRECISION,
-     &           NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+             CAll interface_mpi_RECV(DNSKBF,LDINTSKP,
+     &           NWHO,40,global_communicator)
          ENDIF
 C
 Cjth & trond - this is a bit risky
 C
-         CALL MPI_RECV(WORK,NREQUI,MPI_DOUBLE_PRECISION,NWHO,40,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CAll interface_mpi_RECV(WORK,NREQUI,NWHO,40,
+     &                 global_communicator)
 C
 C        Add results to final matrices.
 C
@@ -828,8 +826,8 @@ C
 C              NPOS = 3*NNBASX + 1
 C              CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
 
-             CALL MPI_RECV(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,NWHO,40,
-     &                MPI_COMM_WORLD,ISTAT,IERR)
+             CAll interface_mpi_RECV(SUS2ELBUF,9,NWHO,40,
+     &                global_communicator)
               CALL DAXPY(9,D1,SUS2ELBUF,1,SUS2EL,1)
 
             END IF
@@ -840,10 +838,10 @@ C
          IF (TIMING) THEN
             DO 300, K = 1, ITASK
 C
-               CALL MPI_RECV(NUMBER,1,my_MPI_INTEGER,NWHO,40,
-     &                       MPI_COMM_WORLD,ISTAT,IERR)
-               CALL MPI_RECV(VALUE,1,MPI_DOUBLE_PRECISION,NWHO,40,
-     &                       MPI_COMM_WORLD,ISTAT,IERR)
+               CAll interface_mpi_RECV(NUMBER,1,NWHO,40,
+     &                       global_communicator)
+               CAll interface_mpi_RECV(VALUE,1,NWHO,40,
+     &                       global_communicator)
 C
                TIMES(NUMBER) = VALUE
 C
@@ -941,11 +939,11 @@ C  /* Deck timres */
       SUBROUTINE TIMRES(NSTAT)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
+      use interface_to_mpi
 #include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -968,9 +966,9 @@ C
 #endif
       DO 100 I = 1,NODES
 #if defined (VAR_MPI)
-         CALL MPI_RECV(RBUF,2,MPI_DOUBLE_PRECISION,MPI_ANY_SOURCE,
-     &                 50,MPI_COMM_WORLD,ISTAT,IERR)
-         NODE = ISTAT(MPI_SOURCE)
+         CAll interface_mpi_RECV(RBUF,2,df_mpi_any_source,
+     &                 50,global_communicator,istat)
+         NODE = ISTAT(df_MPI_SOURCE)
          CPUS(NODE)  = RBUF(1)
          WALLS(NODE) = RBUF(2)
 C
@@ -1037,11 +1035,9 @@ C
 CMI called from DIRNOD,DIRNOD2 (main/dirac.F)
 C
 CMI  TEC changes for LAO (2003,2006)
+      use interface_to_mpi
 #include "implicit.h"
 C
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -1193,12 +1189,10 @@ C
 C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
 C
+      use interface_to_mpi
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1235,22 +1229,22 @@ C-----------------------------------------
 C
 #if defined (VAR_MPI)
 
-      CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(NMLINE,1,MPARID,global_communicator)
       IF (NMLINE .LT. 0) THEN
          FINISH = .TRUE.
          RETURN
       ELSE IF (NMLINE .GT. 0) THEN
 
 C........inforb.h
-         CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(I1_INFORB,NUMELM,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_BCAST(NUMELM,1,MPARID,
+     &                  global_communicator)
+         CAll interface_mpi_BCAST(I1_INFORB,NUMELM,MPARID,
+     &                  global_communicator)
 C........
-         CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MAXPRI,1,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_bcast_l0_f77(UNCONT,1,MPARID,
+     &                  global_communicator)
+         CAll interface_mpi_BCAST(MAXPRI,1,MPARID,
+     &                  global_communicator)
          NEWGEO = .TRUE.
       ELSE
         NEWGEO = .FALSE.
@@ -1258,24 +1252,24 @@ C........
 
 
 C     Receive PANAS and screening threshold
-      CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(DSEND,2,MPARID,
+     &               global_communicator)
       PANAS  = DSEND(1)
       SCREEN = DSEND(2)
 #if defined (PRG_DIRAC)
 C     Receive SMLV1C and ONECAP,INTV1C
-      CALL MPI_BCAST(LSEND,2,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast_l0_f77(LSEND,2,MPARID,
+     &               global_communicator)
       SMLV1C = LSEND(1)
       ONECAP = LSEND(2)
-      CALL MPI_BCAST(INTV1C,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(INTV1C,1,MPARID,
+     &               global_communicator)
 #endif
 C.....receive parint.h
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_PARINT,NUMELM,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(NUMELM,1,MPARID,
+     &               global_communicator)
+      CAll interface_mpi_BCAST(I1_PARINT,NUMELM,MPARID,
+     &               global_communicator)
 #endif
 C
 C------------------------------------
@@ -1377,15 +1371,15 @@ C
 C
 
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(ISEND,2,MPARID,global_communicator)
       NDMAT = ISEND(1)
       NFMAT = ISEND(2)
 
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         LDMAT = NDMAT*N2BASX
         CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
-     &                 MPARID,MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(WORK(KDMAT),LDMAT,
+     &                 MPARID,global_communicator)
       ELSE
         KDMAT = KFREE
       ENDIF
@@ -1395,8 +1389,8 @@ C
       IF(NFMAT.GT.0) THEN       
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KIRD),NDMAT,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(WORK(KIRD),NDMAT,MPARID,
+     &               global_communicator)
       ELSE
         KFMAT = KFREE
         KIRD  = KFREE
@@ -1405,37 +1399,37 @@ C
         KIFC = KFREE
       ELSEIF (ITYPE.EQ.2) THEN
         CALL MEMGET('INTE',KIFC,NDMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KIFC),NDMAT,my_MPI_INTEGER,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(WORK(KIFC),NDMAT,MPARID,
+     &                 global_communicator)
       ELSE
         CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KIFC),NFMAT,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(WORK(KIFC),NFMAT,MPARID,
+     &                  global_communicator)
       END IF
-      CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(HFXATT,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_BCAST(HFXFAC,1,MPARID,
+     &               global_communicator)
+      CAll interface_mpi_BCAST(HFXATT,1,MPARID,
+     &               global_communicator)
+      CAll interface_mpi_BCAST(HFXMU,1,MPARID,
+     &               global_communicator)
 
-      call mpi_bcast(spinfr, 1, mpi_logical, mparid,
-     &               mpi_comm_world, ierr)
+      call interface_mpi_bcast_l0_f77(spinfr, 1, mparid,
+     &               global_communicator)
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
-        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(N2RED,1,MPARID,
+     &               global_communicator)
         LDMRAO = NDMAT*N2RED
         CALL MEMGET('REAL',KDMRAO,LDMRAO,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KDMRAO),LDMRAO,MPI_DOUBLE_PRECISION,
-     &               MPARID,MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(WORK(KDMRAO),LDMRAO,
+     &               MPARID,global_communicator)
         IF (ITYPE.EQ.2) THEN
            CALL MEMGET('REAL',KGABAO,4*N2RED,WORK,KFREE,LFREE)
-           CALL MPI_BCAST(WORK(KGABAO),4*N2RED,MPI_DOUBLE_PRECISION,
-     &                  MPARID,MPI_COMM_WORLD,IERR)
+           CAll interface_mpi_BCAST(WORK(KGABAO),4*N2RED,
+     &                  MPARID,global_communicator)
         ELSE
            CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
-           CALL MPI_BCAST(WORK(KGABAO),N2RED,MPI_DOUBLE_PRECISION,
-     &                  MPARID,MPI_COMM_WORLD,IERR)
+           CAll interface_mpi_BCAST(WORK(KGABAO),N2RED,
+     &                  MPARID,global_communicator)
         END IF
       ELSE
         KDMRAO = KFREE
@@ -1443,12 +1437,12 @@ C
       ENDIF
 
       IF(ITYPE.EQ.9) THEN
-        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,
-     &               MPARID,MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(N2RED,1,
+     &               MPARID,global_communicator)
         LDMRSO = NDMAT*N2RED
         CALL MEMGET('REAL',KDMRSO,LDMRSO,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KDMRSO),LDMRSO,MPI_DOUBLE_PRECISION,
-     &               MPARID,MPI_COMM_WORLD,IERR)
+        CAll interface_mpi_BCAST(WORK(KDMRSO),LDMRSO,
+     &               MPARID,global_communicator)
       ELSE
          KDMRSO = KFREE
       ENDIF
@@ -1458,25 +1452,24 @@ C
       END
 #if defined(VAR_MPI)
       SUBROUTINE GET_PRIMITF()
+      use interface_to_mpi
 #include "implicit.h"
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "primit.h"
 #include "infpar.h"
 C........primit.h
-         CALL MPI_BCAST(PRIEXP,MXPRIM,MPI_REAL8,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(PRICCF,MXPRIM*MXCONT,MPI_REAL8,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(PRICRX,MXPRIM,MPI_REAL8,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(PRICRY,MXPRIM,MPI_REAL8,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(PRICRZ,MXPRIM,MPI_REAL8,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_BCAST(PRIEXP,MXPRIM,MPARID,
+     &                  global_communicator)
+         CAll interface_mpi_BCAST(PRICCF,MXPRIM*MXCONT,MPARID,
+     &                  global_communicator)
+         CAll interface_mpi_BCAST(PRICRX,MXPRIM,MPARID,
+     &                  global_communicator)
+         CAll interface_mpi_BCAST(PRICRY,MXPRIM,MPARID,
+     &                  global_communicator)
+         CAll interface_mpi_BCAST(PRICRZ,MXPRIM,MPARID,
+     &                  global_communicator)
       END
 #endif
 C  /* Deck parlop */
@@ -1494,10 +1487,10 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
 CMI changes from TEC for LAO
+      use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1610,18 +1603,18 @@ C
 #if defined (VAR_MPI)
   100 CONTINUE
 C
-      CALL MPI_SEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
-     &              MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_SEND(MYTID,1,MPARID,20,
+     &              global_communicator)
 C
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
+      CAll interface_mpi_RECV(NTEST,1,MPARID,30,
+     &               global_communicator)
 C
       IF (NTEST .EQ. -1) GOTO 300
 C
       DO 200 I = 1, NTASK
 C
-         CALL MPI_RECV(IJSHEL,2,my_MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CAll interface_mpi_RECV(IJSHEL,2,MPARID,30,
+     &                 global_communicator)
 C
 C        **************************************
 C        ***** Check if it is a null task *****
@@ -1898,12 +1891,10 @@ C  /* Deck sdres */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
-CMi TEC's changes for LAO
+CMi TECs changes for LAO
 C
+      use interface_to_mpi
 #include "implicit.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include "mxcent.h"
 #include "maxorb.h"
 #ifdef PRG_DIRAC
@@ -1920,41 +1911,41 @@ C
       DIMENSION RBUF(2)
 #endif
 #if defined (VAR_MPI)
-      CALL MPI_SEND(ICOUNT,1,my_MPI_INTEGER,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_SEND(ICOUNT,1,MPARID,40,
+     &                 global_communicator)
       IF(ITYPE.EQ.7) THEN
 !        radovan: this looks like unused code
-         CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(ERGDRC,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(ERGVWN,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(ERGBCK,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(ERGLYP,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_SEND(ELCTRN,1,MPARID,40,
+     &                 global_communicator)
+         CAll interface_mpi_SEND(ERGDRC,1,MPARID,40,
+     &                 global_communicator)
+         CAll interface_mpi_SEND(ERGVWN,1,MPARID,40,
+     &                 global_communicator)
+         CAll interface_mpi_SEND(ERGBCK,1,MPARID,40,
+     &                 global_communicator)
+         CAll interface_mpi_SEND(ERGLYP,1,MPARID,40,
+     &                 global_communicator)
+         CAll interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
+     &                 global_communicator)
          RETURN
       ENDIF
 
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
-         CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_send_r1_work_f77(DINTSKP,8,MPARID,40,
+     &                 global_communicator)
+         CAll interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
+     &                 global_communicator)
       ELSE IF (ITYPE.EQ.2) THEN
-         CALL MPI_SEND(DINTSKP,3*3*14,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(GRADEE,NUMGRA,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_send_r1_work_f77(DINTSKP,3*3*14,MPARID,40,
+     &                 global_communicator)
+         CAll interface_mpi_SEND(GRADEE,NUMGRA,MPARID,40,
+     &                 global_communicator)
       ELSE IF(ITYPE.EQ.-5) THEN 
-          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
+          CAll interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
+     &                 global_communicator)
           CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
-          CALL MPI_SEND(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
+          CAll interface_mpi_SEND(SUS2ELBUF,9,MPARID,40,
+     &                 global_communicator)
 
       ENDIF
 C
@@ -1962,10 +1953,10 @@ C
       IF (TIMING) THEN
          DO 200, I = 1, ICOUNT
 C
-            CALL MPI_SEND(INDEX(I),1,my_MPI_INTEGER,MPARID,40,
-     &                    MPI_COMM_WORLD,IERR)
-            CALL MPI_SEND(TIMES(I),1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                    MPI_COMM_WORLD,IERR)
+            CAll interface_mpi_SEND(INDEX(I),1,MPARID,40,
+     &                    global_communicator)
+            CAll interface_mpi_SEND(TIMES(I),1,MPARID,40,
+     &                    global_communicator)
 C
   200    CONTINUE
       END IF
@@ -1984,8 +1975,8 @@ C
 #if defined (VAR_MPI)
          RBUF(1) = CPU
          RBUF(2) = WALL
-         CALL MPI_SEND(RBUF,2,MPI_DOUBLE_PRECISION,MPARID,50,
-     &                 MPI_COMM_WORLD,IERR)
+         CAll interface_mpi_SEND(RBUF,2,MPARID,50,
+     &                 global_communicator)
 #endif
 C
       END IF
@@ -1994,10 +1985,8 @@ C
       END
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
+      use interface_to_mpi
 #include "implicit.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"

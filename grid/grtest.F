@@ -48,7 +48,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real(8), allocatable :: gao1(:)
       real(8), allocatable :: gao2(:)
       real(8), allocatable :: gab1(:)
-      real(8), allocatable :: ncnt(:)
+!     real(8), allocatable :: ncnt(:) stefan: FIXME - as far as i can see this array should be integer
+      integer, allocatable :: ncnt(:)
       real(8), allocatable :: buf(:)
       integer, allocatable :: iclab(:)
 
@@ -71,7 +72,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            ncnt,
      &            buf,
      &            iclab,
-     &            dft_cfg_print_level)
+     &            iprham)
 
       call dealloc(smat)
       call dealloc(gao)

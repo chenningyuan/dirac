@@ -36,15 +36,16 @@ program dirprg
   use interface_ao
   use interface_mo
 
+#ifdef VAR_MPI
+  use mpi
+#endif
+
   implicit none
 #include "config.h"
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr
   integer(kind=8) :: maxsize = -1
@@ -98,7 +99,6 @@ program dirprg
 
 #ifdef VAR_MPI
   if (parcal) then
-    call mpi_barrier(mpi_comm_world,ierr)
     call allocator_init()
     call allocator_set_max(maxsize)
     call sync_nodes(int(memsize,8),0)

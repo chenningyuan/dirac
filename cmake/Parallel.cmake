@@ -54,10 +54,9 @@ if(ENABLE_MPI)
                 )
             if(NOT MPI_ITYPE_MATCHES)
                 if(ENABLE_64BIT_INTEGERS)
-                    message(
-                        FATAL_ERROR
-                        "ERROR: You want to compile DIRAC with 64bit integers but your MPI is built with 32bit integers (consult the manual; if you know what you are doing you can disable this check using ./setup --nochecks)"
+                    message( "** BUILD INFO **: 32-bit integer MPI interface enabled"
                         )
+                    add_definitions(-DVAR_MPI_32bit_int)
                 else()
                     message(
                         FATAL_ERROR
