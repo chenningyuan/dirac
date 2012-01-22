@@ -50,12 +50,12 @@
 *        = 2 =>      one+two-body part
 *
 * separate alpha and beta 1-electron integrals  May 1998
+      use interface_to_mpi
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *
@@ -73,7 +73,7 @@
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
       DIMENSION RJKAA(*)
 #if defined (VAR_MPI2)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
 *. Output
       DIMENSION DIAG(*)
@@ -295,8 +295,8 @@ C?          WRITE(6,*)  ' IA = ', IA
           end if
         END IF
 #if defined (VAR_MPI2)
-        CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
-     &                         MPI_REAL8,ISTAT,IERR)
+        call interface_mpi_FILE_WRITE_AT_r(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                         ISTAT)
 *       new offset
         IDIA_OFFSET = IDIA_OFFSET + IDET
 #endif
@@ -336,6 +336,7 @@ C?          WRITE(6,*)  ' IA = ', IA
       use memory_allocator
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 * =====
@@ -356,8 +357,7 @@ C?          WRITE(6,*)  ' IA = ', IA
 #include "gasstr.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *
@@ -365,7 +365,7 @@ C?          WRITE(6,*)  ' IA = ', IA
       DIMENSION IBLTP(*), T_BUFF_D(*)
       DIMENSION IBLKFO(8,NBLOCK), NPARBLOCK(*)
 #if defined (VAR_MPI2)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
       integer, allocatable :: astring(:,:)
       integer, allocatable :: bstring(:,:)
@@ -1025,11 +1025,7 @@ C           write(LUWRT,*) ' fetch integral from pos',IPOSDIA(INT)
 #include "implicit.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
-#if defined (VAR_MPI2)
-#include "mpif.h"
-#endif
 #include "parluci.h"
-#include "krmc_shmem.h"
 *
       character*4 TYPE
 *

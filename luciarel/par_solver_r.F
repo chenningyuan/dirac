@@ -66,10 +66,10 @@
 * On input ILU1 is supposed to hold initial guesses to eigenvectors
 *
 *
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
@@ -82,7 +82,7 @@
        DIMENSION T_CC(*), SCRRED(*), T_BUFF(*)
        INTEGER   RCCTOS(*)
        DIMENSION IT_TTPL(*) 
-       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+       INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -96,7 +96,7 @@
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
        CHARACTER WPART22*12, FILELAB*8
        INTEGER NZERO,LZERO_SCRRED
-       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR
+       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR
 *
        call qenter('MICDV4')
 *
@@ -158,7 +158,7 @@ C?       WRITE(6,*) ' Variational  solver '
 *      ===================
 *
 *      start timing of initial iteration
-       WALLITR1 = MPI_WTIME()
+       WALLITR1 = interface_MPI_WTIME()
         
        CALL DZERO(APROJ, MAXVEC*(MAXVEC+1)/2 )
 *
@@ -169,7 +169,7 @@ C?       WRITE(6,*) ' Variational  solver '
 *        
 *        copy c-vector to working-file ILUC
 *
-         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+         call interface_mpi_BARRIER(MYNEW_COMM)
 *
          CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
@@ -183,7 +183,7 @@ C?       WRITE(6,*) ' Variational  solver '
          CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                       IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                       LUCLIST,IBLOCKL,IVEC-1)
-CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
 *
 *         WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
 *         CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
@@ -198,7 +198,7 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *
 *        timing this sigma-vector computation
 *
-         sigmatime = MPI_WTIME()
+         sigmatime = interface_MPI_WTIME()
 *
 *=======================================================================
          call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
@@ -212,7 +212,7 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *=======================================================================
 *
 *        end of timing
-         sigmatime2 = MPI_WTIME()
+         sigmatime2 = interface_MPI_WTIME()
          WALLTID = SECTID(sigmatime2-sigmatime)
          WRITE(LUWRT,9777) WALLTID
          WRITE(LUWRT,*) '   '
@@ -228,17 +228,18 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *
 *      timing of initial iteration
 *
-       WALLITR2 = MPI_WTIME()
+       WALLITR2 = interface_MPI_WTIME()
        WALLTID = SECTID(WALLITR2-WALLITR1)
        WRITE(LUWRT,9888) WALLTID
        WRITE(LUWRT,*) '   '
 *
-*      synchronize MPI_COMM_WORLD
+*      synchronize global_communicator
 * 
        IREDL = 0
        IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
        CALL DZERO(SCRRED,IREDL)
-       CALL REDVEC_REL(APROJ,SCRRED,IREDL,2,MPI_SUM,MPI_COMM_WORLD,-1)
+       CAll redvec(APROJ,SCRRED,IREDL,2,op_MPI_SUM,
+     &             global_communicator,-1)
        CALL DCOPY(IREDL,SCRRED,1,APROJ,1)
 *
 *
@@ -277,8 +278,8 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *
  1000 CONTINUE
 *       start timing of iteration
-        WALLITR1 = MPI_WTIME()
-        starttime = MPI_WTIME()
+        WALLITR1 = interface_MPI_WTIME()
+        starttime = interface_MPI_WTIME()
 *
         write(LUWRT,*)
         write(LUWRT,'(A21,3X,I3)') ' Info from iteration ',ITER
@@ -372,7 +373,7 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
          END IF
 *        ^ converged?
   100 CONTINUE
-      endtime = MPI_WTIME()
+      endtime = interface_MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
       IF( TIMING )
      &WRITE(LUWRT,9250) WALLTID
@@ -391,7 +392,7 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *
 *     2.1: multiply new directions with matrix
 *
-      starttime = MPI_WTIME()
+      starttime = interface_MPI_WTIME()
       xixidletime = 0.0D0
 *
 
@@ -403,9 +404,9 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *       copy c-vector to working-file ILUC
 *
 *
-        xidletime = MPI_WTIME()
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
-        xixidletime = xixidletime - xidletime + MPI_WTIME()
+        xidletime = interface_MPI_WTIME()
+        call interface_mpi_BARRIER(MYNEW_COMM)
+        xixidletime = xixidletime - xidletime + interface_MPI_WTIME()
 *
 CSK        WRITE(LUWRT,*) 'LU1LIST again:'
 CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
@@ -418,7 +419,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
      &                      IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                      LUCLIST,IBLOCKL,NVEC+IVEC-1)
 *
-CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
 *
 CSK        WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
 CSK        CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
@@ -432,7 +433,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *       start calculation: sigma = H x C
 *
 *       timing this sigma-vector computation
-        sigmatime = MPI_WTIME()
+        sigmatime = interface_MPI_WTIME()
 *
 *=======================================================================
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
@@ -446,7 +447,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *=======================================================================
 *
 C       end of timing
-        sigmatime2 = MPI_WTIME()
+        sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRT,9400) WALLTID
 *
@@ -459,13 +460,13 @@ C       end of timing
 *
   150 CONTINUE
 *
-*      synchronize MPI_COMM_WORLD
+*      synchronize global_communicator
 *
-       xidletime = MPI_WTIME()
+       xidletime = interface_MPI_WTIME()
        CALL DZERO(APROJ(ISTRED),IMUSTRED)
-       CALL REDVEC_REL(SCRRED(ISTRED),APROJ(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,MPI_COMM_WORLD,-1)
-       xixidletime = xixidletime - xidletime + MPI_WTIME()
+       CAll redvec(SCRRED(ISTRED),APROJ(ISTRED),IMUSTRED,2,
+     &                 op_MPI_SUM,global_communicator,-1)
+       xixidletime = xixidletime - xidletime + interface_MPI_WTIME()
 *
 *     2.2: diagonalize projected matrix
 *
@@ -473,7 +474,7 @@ C       end of timing
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
 *
-      endtime      = MPI_WTIME()
+      endtime      = interface_MPI_WTIME()
       tottime      = 0.0D0
       tottime_save = 0.0D0
       tottime      = endtime - starttime
@@ -537,7 +538,7 @@ C     TIMING FOR PARTS 2.1 - 2.2
 *
 *     check timing
       timer3 = 0.0D0
-      starttimer = MPI_WTIME()
+      starttimer = interface_MPI_WTIME()
 *
 *
 CSK        CALL DZERO(SCRRED,NROOT)
@@ -624,7 +625,7 @@ C           scratch file LUSC41 (unit 79 see io_r.F)
             DO JROOT = 1, NROOT
               CALL COPVCD_PAR_BDRIV_REL(ILU1,79,VEC1,
      &                                  NPARBLOCK,NUM_BLOCKS,
-     &                                  IBLOCKL,MPI_COMM_WORLD,-1,
+     &                                  IBLOCKL,global_communicator,-1,
      &                                  JROOT,LU1LIST,MY_LU1_OFF,1)
             END DO
             IF( MYPROC .eq. MASTER )THEN
@@ -639,7 +640,7 @@ C           scratch file LUSC41 (unit 79 see io_r.F)
         END IF
 C
 C       finish timing part3
-        timer3 = timer3 + MPI_WTIME() - starttimer
+        timer3 = timer3 + interface_MPI_WTIME() - starttimer
         WALLTSTEP = SECTID(timer3)
         WRITE(LUWRT,9600) WALLTSTEP
       END IF
@@ -647,7 +648,7 @@ C       finish timing part3
 *
 *     timing of this iteration
 *
-      WALLITR2 = MPI_WTIME()
+      WALLITR2 = interface_MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
       WRITE(LUWRT,9300) WALLTID
 *
@@ -798,11 +799,11 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
 * The real and imaginary parts are separated by end of vector marks
 * (-1) in my simple world
 *
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "ipoist8.inc"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
@@ -823,7 +824,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
       DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
       DIMENSION IT_TTPL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
       COMPLEX*16 AMATC(MAXVEC,*), CWORK(*)
       DIMENSION RWORK(*),EVL(*)
       INTEGER   IWORK(*)
@@ -912,7 +913,7 @@ C
       ITER = 1
       NVEC = 0
 *     start timing of initial iteration
-      xinit_time = MPI_WTIME()
+      xinit_time = interface_MPI_WTIME()
 *              
       CALL DZERO(APROJR, MAXVEC*(MAXVEC+1)/2 )
       CALL DZERO(APROJI, MAXVEC*(MAXVEC+1)/2 )
@@ -922,7 +923,7 @@ C
       DO 10 IVEC = 1,NINVEC
 *
 *       copy c-vector to working-file ILUC
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        call interface_mpi_BARRIER(MYNEW_COMM)
 *
 *       reset LUCLIST; MY_ACT_BLK_ALL = NUMBLOCKS!
 *
@@ -940,7 +941,7 @@ C
 *
 *       timing this sigma-vector computation
 *
-        sigmatime = MPI_WTIME()
+        sigmatime = interface_MPI_WTIME()
 *=======================================================================
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
@@ -952,7 +953,7 @@ C
      &                  )
 *=======================================================================
 *       end of timing
-        sigmatime2 = MPI_WTIME()
+        sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRT,9777) WALLTID
         WRITE(LUWRT,*) '   '
@@ -968,11 +969,11 @@ C
 
 *     timing of initial iteration
 *
-      xinit_time2 = MPI_WTIME()
+      xinit_time2 = interface_MPI_WTIME()
       WALLTID = SECTID(xinit_time2-xinit_time)
       WRITE(LUWRT,9888) WALLTID
 *
-*     synchronize MPI_COMM_WORLD
+*     synchronize global_communicator
 *
       CONE = - 1.0D0
       IREDL = 0
@@ -980,10 +981,10 @@ C
       CALL DZERO(SCRRED_R,IREDL)
       CALL DZERO(SCRRED_I,IREDL)
 *     ... sum up
-      CALL REDVEC_REL(APROJR,SCRRED_R,IREDL,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
-      CALL REDVEC_REL(APROJI,SCRRED_I,IREDL,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
+      CAll redvec(APROJR,SCRRED_R,IREDL,2,op_MPI_SUM,
+     &                global_communicator,-1)
+      CAll redvec(APROJI,SCRRED_I,IREDL,2,op_MPI_SUM,
+     &                global_communicator,-1)
 *     ... update APROJR and APROJI 
       CALL DCOPY(IREDL,SCRRED_R,1,APROJR,1)
       CALL DSCAL(IREDL,CONE,SCRRED_I,1)
@@ -1028,7 +1029,7 @@ C
 *
  1000 CONTINUE
 *       start timing of iteration
-        WALLITR1 = MPI_WTIME()
+        WALLITR1 = interface_MPI_WTIME()
 *
         write(LUWRT,'(/A21,3X,I3)') ' Info from iteration ',ITER
         write(LUWRT,*) '_______________________'
@@ -1112,10 +1113,10 @@ CSK        WRITE(LUWRT,*) 'THIS IS XNORMO',XNORMO
            CALL DZERO(VEC1,NVEC+IADD-1)
            CALL DZERO(VEC2,NVEC+IADD-1)
 *
-           CALL REDVEC_REL(SCRRED_R,VEC1,NVEC+IADD-1,2,
-     &                     MPI_SUM,MPI_COMM_WORLD,-1)
-           CALL REDVEC_REL(SCRRED_I,VEC2,NVEC+IADD-1,2,
-     &                     MPI_SUM,MPI_COMM_WORLD,-1)
+           CAll redvec(SCRRED_R,VEC1,NVEC+IADD-1,2,
+     &                     op_MPI_SUM,global_communicator,-1)
+           CAll redvec(SCRRED_I,VEC2,NVEC+IADD-1,2,
+     &                     op_MPI_SUM,global_communicator,-1)
 *
 *          transfer information to WORK array...
            CALL DCOPY(NVEC+IADD-1,VEC1,1,WORK(1),2)
@@ -1181,7 +1182,7 @@ CTF
 *
 *     2.1: multiply new directions with matrix
 *
-      starttime = MPI_WTIME()
+      starttime = interface_MPI_WTIME()
 *
       CALL DZERO(SCRRED_R,LZERO_SCRRED)
       CALL DZERO(SCRRED_I,LZERO_SCRRED)
@@ -1193,7 +1194,7 @@ CTF
 *       copy c-vector to working-file ILUC
 *
 *
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        call interface_mpi_BARRIER(MYNEW_COMM)
 *
 csk     WRITE(LUWRT,*) 'LU1LIST again:'
 csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
@@ -1217,7 +1218,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *       start calculation: sigma = H x C
 *
 *       timing this sigma-vector computation
-        sigmatime = MPI_WTIME()
+        sigmatime = interface_MPI_WTIME()
 *=======================================================================
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
@@ -1229,7 +1230,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
      &                  )
 *=======================================================================
 *       end of timing
-        sigmatime2 = MPI_WTIME()
+        sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRT,9400) WALLTID
 *
@@ -1241,17 +1242,17 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
  150  CONTINUE 
 *
-*      synchronize MPI_COMM_WORLD
+*      synchronize global_communicator
 *
        CALL DZERO(APROJR(ISTRED),IMUSTRED)
        CALL DZERO(APROJI(ISTRED),IMUSTRED)
 *
-       CALL REDVEC_REL(SCRRED_R(ISTRED),APROJR(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,MPI_COMM_WORLD,-1)
-       CALL REDVEC_REL(SCRRED_I(ISTRED),APROJI(ISTRED),IMUSTRED,2,
-     &                 MPI_SUM,MPI_COMM_WORLD,-1)
+       CAll redvec(SCRRED_R(ISTRED),APROJR(ISTRED),IMUSTRED,2,
+     &                 op_MPI_SUM,global_communicator,-1)
+       CAll redvec(SCRRED_I(ISTRED),APROJI(ISTRED),IMUSTRED,2,
+     &                 op_MPI_SUM,global_communicator,-1)
 *
-      endtime = MPI_WTIME()
+      endtime = interface_MPI_WTIME()
       tottime = 0.D0
       tottime = endtime - starttime
 *     TIMING FOR PARTS 2.1 - 2.2
@@ -1307,7 +1308,7 @@ C
 *
 *       check timing
         timer3 = 0.0D0
-        starttimer = MPI_WTIME()
+        starttimer = interface_MPI_WTIME()
 *
         CALL IZERO(LU3LIST,IALL_LU3)
 *
@@ -1380,10 +1381,10 @@ C           reset ITER_CHECKP
 C           scratch file LUSC41 (unit 79 see io_r.F)
             CALL REWINE(79,-1)
             DO JROOT = 1, NROOT
-              CALL COPVCD_PAR_BDRIV_REL(ILU1,79,VEC1,
-     &                                  NPARBLOCK,NUM_BLOCKS,
-     &                                  IBLOCKL,MPI_COMM_WORLD,LBLK,
-     &                                  JROOT,LU1LIST,MY_LU1_OFF,IRC)
+             CALL COPVCD_PAR_BDRIV_REL(ILU1,79,VEC1,
+     &                                 NPARBLOCK,NUM_BLOCKS,
+     &                                 IBLOCKL,global_communicator,LBLK,
+     &                                 JROOT,LU1LIST,MY_LU1_OFF,IRC)
             END DO
             IF(MYPROC.EQ.MASTER) THEN
               CALL REWINE(79,-1)
@@ -1397,14 +1398,14 @@ C           scratch file LUSC41 (unit 79 see io_r.F)
         END IF
 C
 C     finish timing part3
-      timer3 = timer3 + MPI_WTIME() - starttimer
+      timer3 = timer3 + interface_MPI_WTIME() - starttimer
       WALLTSTEP = SECTID(timer3)
       WRITE(LUWRT,9600) WALLTSTEP
       END IF
 *     ^ NVEC + NROOT > MAXVEC or CONVER == .TRUE. or ITER == MAXIT
 *
 *     timing of this iteration
-      WALLITR2 = MPI_WTIME()
+      WALLITR2 = interface_MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
       WRITE(LUWRT,9300) WALLTID
 *

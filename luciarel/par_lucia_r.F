@@ -50,10 +50,10 @@ C     optional reading from/writing to block file KRCI_BLOCKDIST.x
 C     added.
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IT_TTPL(*), IGROUPLIST(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IT_TTPL(*), IGROUPLIST(*)
       DIMENSION NPARBLOCK(*), IBLOCKL_S(*), IBLOCKL_C(*)
       INTEGER   RCCTOS(*)
 #include "parluci.h"
@@ -72,14 +72,15 @@ C**********************************************************************
       POINTER (MY_IAPROC_PTR, I_APROC(IDUMMY_BUFF_SZ))
       POINTER (MY_BWEIGHT_PTR,I_BWEIGHT(IDUMMY_BUFF_SZ))
       POINTER (MY_BPROC_PTR,  I_BPROC(IDUMMY_BUFF_SZ))
-      INTEGER(KIND=MPI_OFFSET_KIND)  I_BWEIGHT, I_BPROC
-      INTEGER(KIND=MPI_ADDRESS_KIND) MY_TCTR_LEN
-      INTEGER(KIND=MPI_ADDRESS_KIND) MY_TRED_LEN
-      INTEGER(KIND=MPI_ADDRESS_KIND) MY_RCCTOS_LEN
-      INTEGER(KIND=MPI_ADDRESS_KIND) MY_IAPROC_LEN
+      INTEGER(KIND=df_MPI_OFFSET_KIND)  I_BWEIGHT, I_BPROC
+      INTEGER(KIND=df_MPI_ADDRESS_KIND) MY_TCTR_LEN
+      INTEGER(KIND=df_MPI_ADDRESS_KIND) MY_TRED_LEN
+      INTEGER(KIND=df_MPI_ADDRESS_KIND) MY_RCCTOS_LEN
+      INTEGER(KIND=df_MPI_ADDRESS_KIND) MY_IAPROC_LEN
       CHARACTER BLOCKFLE*18
       LOGICAL EX_BFL, DIST_COMPLETE, SPLIT_IJKL_FILE, SHARED_M_FILE
       LOGICAL PRINT_BLOCK_DIST
+      integer, allocatable :: GROUPCHECK(:)
 C
       IMIN1 = -1
       IT_ACTIVE_R  = 0
@@ -124,14 +125,13 @@ C     transfer to common block
 C
 C     needed for T-split distribution
       ICOMM_SIZE_TMP = ICOMM_SIZE
-      CALL MPI_BCAST(ICOMM_SIZE_TMP,1,my_MPI_INTEGER,N_MASTER,
-     &               MYNEW_COMM,IERR)
+      call interface_mpi_BCAST(ICOMM_SIZE_TMP,1,N_MASTER,
+     &               MYNEW_COMM)
 C
       CALL MEMMAR(KCWEIGHTF  ,I_NZERO_LEN_S        ,'ADDL  ',1,'ICWGHT')
       CALL MEMMAR(KACT_NUM   ,I_NZERO_LEN_S        ,'ADDL  ',1,'IACTNM')
       CALL MEMMAR(KAM_BLK_ACTC,NUM_BLOCKS          ,'ADDL  ',1,'IM_BLC')
       CALL MEMMAR(KAM_BLK_ACTS,NUM_BLOCKS          ,'ADDL  ',1,'IM_BLS')
-      CALL MEMMAR(KGROUPCHECK,NMPROC*ICOMM_SIZE_TMP,'ADDL  ',1,'IGPCHK')
       CALL MEMMAR(KICCTOS,I_NZERO_LEN_C*I_NZERO_LEN_S,
      &                                              'ADDL  ',1,'ICCTOS')
 C
@@ -140,7 +140,8 @@ C
       CALL IZERO(WORK(KAM_BLK_ACTS),NUM_BLOCKS)
       CALL IZERO(WORK(KCWEIGHTF)  ,I_NZERO_LEN_S)
       CALL IZERO(WORK(KACT_NUM)  , I_NZERO_LEN_S)
-      CALL IZERO(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
+      allocate(GROUPCHECK(NMPROC*ICOMM_SIZE_TMP))
+      GROUPCHECK = 0
 C
       CALL ISET_ARRAY_ACT_BLK(WORK(KAM_BLK_ACTS),IBLOCKL_S,NUM_BLOCKS)
       IF( CXPROPRUN ) THEN
@@ -165,7 +166,7 @@ C     KRCI_BLOCKDIST.x
 C       ^ end if MASTER
 C    
 C       slave update
-        CALL MPI_BCAST(EX_BFL,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST_l0(EX_BFL,1,MASTER,global_communicator)
         IF( EX_BFL )THEN
           CALL SYNC_NODES_BLOCKFILE_DATA(NMPROC_FILE,SPLIT_IJKL_FILE,
      &                                   SHARED_M_FILE,DIST_COMPLETE,
@@ -211,29 +212,30 @@ C
 C       gather on each node-master
         IF( MYNEW_ID .eq. N_MASTER )THEN
 C
-          CALL MPI_ALLGATHER(IGROUPLIST,NMPROC,my_MPI_INTEGER,
-     &                       WORK(KGROUPCHECK),NMPROC,my_MPI_INTEGER,
-     &                       ICOMM,IERR)
+          call interface_mpi_ALLGATHER(IGROUPLIST,NMPROC,
+     &                       GROUPCHECK,NMPROC,
+     &                       ICOMM)
         END IF
 C
-        CALL MPI_BCAST(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP,
-     &                 my_MPI_INTEGER,N_MASTER,MYNEW_COMM,IERR)
+        call interface_mpi_bcast_i1_work_f77(GROUPCHECK,
+     &                 NMPROC*ICOMM_SIZE_TMP,
+     &                 N_MASTER,MYNEW_COMM)
 C
 C       order group array
-        CALL ORDER_ARRAY(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
+        CALL ORDER_ARRAY(GROUPCHECK,NMPROC*ICOMM_SIZE_TMP)
 C
         MY_BWEIGHT_LEN = I_NZERO_LEN_S
         CALL MPIXMEM_ALLOC( MY_BWEIGHT_PTR, 3, MY_BWEIGHT_LEN,
-     &                      MPI_INFO_NULL, .FALSE.)
+     &                      df_MPI_INFO_NULL, .FALSE.)
         MY_BPROC_LEN   = NMPROC
         CALL MPIXMEM_ALLOC( MY_BPROC_PTR, 3, MY_BPROC_LEN,
-     &                      MPI_INFO_NULL, .FALSE.)
+     &                      df_MPI_INFO_NULL, .FALSE.)
 C
         CALL IZERO8(I_BWEIGHT,MY_BWEIGHT_LEN)
         CALL IZERO8(I_BPROC  ,MY_BPROC_LEN)
         CALL BLOCK_DISTR_2(NUM_BLOCKS,IBLOCKL_S,NPARBLOCK,
      &                     WORK(KCWEIGHTF),
-     &                     WORK(KGROUPCHECK),I_BWEIGHT,I_BPROC,
+     &                     GROUPCHECK,I_BWEIGHT,I_BPROC,
      &                     WORK(KACT_NUM),ICOMM_SIZE_TMP,ISSM)
 C       release memory
         CALL MPIXMEM_FREE(I_BWEIGHT)
@@ -262,7 +264,7 @@ C
 C       find required T-blocks
         MY_TCTR_LEN   = NSPOBEX_TP * IRC_SAVE
         CALL MPIXMEM_ALLOC( MY_TCTR_PTR ,   2, MY_TCTR_LEN, 
-     &                      MPI_INFO_NULL, .FALSE.)
+     &                      df_MPI_INFO_NULL, .FALSE.)
 C
         CALL IZERO(IT_CTONE, NSPOBEX_TP * IRC_SAVE )
         CALL IZERO(IT_TTPL , NSPOBEX_TP * IRC_SAVE )
@@ -299,16 +301,16 @@ C
           MY_IAPROC_LEN = NEWCOMM_PROC_SM
 C
           CALL MPIXMEM_ALLOC( MY_TCTR_PTR ,   2, MY_TCTR_LEN, 
-     &                        MPI_INFO_NULL, .FALSE.)
+     &                        df_MPI_INFO_NULL, .FALSE.)
           CALL MPIXMEM_ALLOC( MY_TRED_PTR ,   2, MY_TRED_LEN, 
-     &                        MPI_INFO_NULL, .FALSE.)
+     &                        df_MPI_INFO_NULL, .FALSE.)
           CALL MPIXMEM_ALLOC( MY_RCCTOS_PTR , 2, MY_RCCTOS_LEN, 
-     &                        MPI_INFO_NULL, .FALSE.)
+     &                        df_MPI_INFO_NULL, .FALSE.)
           CALL MPIXMEM_ALLOC( MY_IAPROC_PTR , 2, MY_IAPROC_LEN, 
-     &                        MPI_INFO_NULL, .FALSE.)
+     &                        df_MPI_INFO_NULL, .FALSE.)
 C
 C         in case of MPI based "shared memory" runs, it is important
-C         to know how to distribute all integrals among the CPU's
+C         to know how to distribute all integrals among the CPUs
 C         |
 C         --> use connection vector RCCTOS and NPARBLOCK to produce
 C             output on IT_CTONE / IT_CTALL <==> input for T_BLOCK_DISTR
@@ -326,10 +328,10 @@ C         3. check for T-connections
      &                          DUMMY,DUMMY,NUM_BLOCKS)
 C
 C
-          CALL MPI_ALLGATHER(IT_CTONE,NSPOBEX_TP*IRC_SAVE,
-     &                       my_MPI_INTEGER,IT_CTALL,
+          call interface_mpi_ALLGATHER(IT_CTONE,NSPOBEX_TP*IRC_SAVE,
+     &                       IT_CTALL,
      &                       NSPOBEX_TP*IRC_SAVE,
-     &                       my_MPI_INTEGER,MYNEW_COMM_SM,IERR)
+     &                       MYNEW_COMM_SM)
 C
 C         find active T-blocks...
           CALL IZERO(IT_CTONE,NSPOBEX_TP*IRC_SAVE)
@@ -379,6 +381,7 @@ C     determine whether this process is "active" or not
       IF( IAM_NOT_INV .eq. 0) CALL ISETVC(NPARBLOCK,-2,NUM_BLOCKS)
 C
 C     flush local memory
+      deallocate(GROUPCHECK)
       IDUM = 0
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'BLOCKD')
 C
@@ -398,11 +401,11 @@ C
 C     Written by  S. Knecht         - April 30 2007
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 C
 C     -----
 C     INPUT
@@ -708,11 +711,11 @@ C
 C     Written by  S. Knecht         - April 30 2007
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 C
 C     -----
 C     INPUT
@@ -735,7 +738,7 @@ C
       INTEGER ICOUNTABLK, NPTEST
       DIMENSION ICWEIGHTF(*), IACT_NUM(*)
       DIMENSION NPARBLOCK(NDIM), IBLOCKL(NDIM), IALLGRPLST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) I_BWEIGHT(*), I_BPROC(*)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) I_BWEIGHT(*), I_BPROC(*)
 C     -------
 C     SCRATCH
 C     -------
@@ -972,11 +975,11 @@ C
 C     Written by  S. Knecht         - Dec 2008
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBLOCKL(*), NPARBLOCK(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBLOCKL(*), NPARBLOCK(*)
       DIMENSION ICWEIGHTF(*)
       CHARACTER BLKFILE*16
       INTEGER*8 ITLTND, MXSIZE, ILEN, ITOTBLCKL, IPRODLEN
@@ -1094,10 +1097,10 @@ C
 C     Written by  S. Knecht         - February 01 2008
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
-#include "mpif.h"
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
@@ -1435,13 +1438,13 @@ C
            IJKEY   = MYNEW_ID_SM
            IJCOLOR = 6
         END IF
-        CALL MPI_COMM_SPLIT(MYNEW_COMM_SM,IJCOLOR,IJKEY,
-     &                      IJ_LIST_COMM,IERR)
+        call interface_mpi_COMM_SPLIT(MYNEW_COMM_SM,IJCOLOR,IJKEY,
+     &                      IJ_LIST_COMM)
         IF( IJCOLOR .eq. 6 ) GOTO 8899
-        CALL MPI_BCAST(IT_TTPL,NDIM*IRC_SAVE,my_MPI_INTEGER,N_MASTER_SM,
-     &                 IJ_LIST_COMM,IERR)
+        call interface_mpi_bcast_i1_work_f77(IT_TTPL,NDIM*IRC_SAVE,
+     &                 N_MASTER_SM,IJ_LIST_COMM)
 8899    CONTINUE
-        CALL MPI_COMM_FREE(IJ_LIST_COMM,IERR)
+        call interface_mpi_COMM_FREE(IJ_LIST_COMM)
       END IF
 C
       END
@@ -1454,18 +1457,18 @@ C
       SUBROUTINE CALC_OFF_MPI_FILE(FILENAME,IGROUPLIST,IBLOCKL,
      &                             IBLOCKD,IVEC_IN)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
       DIMENSION IGROUPLIST(*), IBLOCKL(*), IBLOCKD(*)
       CHARACTER*6 FILENAME
-      INTEGER(KIND=MPI_OFFSET_KIND) ND_VEC_IOFF, ND_VEC_IOFF2
-      INTEGER(KIND=MPI_OFFSET_KIND) MULT1, MULT2, JVEC
-      INTEGER(KIND=MPI_OFFSET_KIND) I_VEC_LEN_SCR
+      INTEGER(KIND=df_MPI_OFFSET_KIND) ND_VEC_IOFF, ND_VEC_IOFF2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MULT1, MULT2, JVEC
+      INTEGER(KIND=df_MPI_OFFSET_KIND) I_VEC_LEN_SCR
 C
       I_VEC_LEN_SCR = 0
       JVEC  = IVEC_IN
@@ -1607,20 +1610,19 @@ C     last revision:
 C
 C**********************************************************************
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krciprop.h"
 C
       DIMENSION IGROUPLIST(*), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION IBLOCKD_X(NUM_BLOCKS,*)
       INTEGER NBLK_MAX_GP
-      integer(kind=mpi_offset_kind) ivec_max_gp_tmp2, ivec_max_gp_tmp
+      integer(kind=df_MPI_OFFSET_KIND) ivec_max_gp_tmp2, ivec_max_gp_tmp
       integer                       nblk_max_gp_tmp2, nblk_max_gp_tmp
-      INTEGER(KIND=MPI_OFFSET_KIND) MULT1, MULT2, JVEC1, JVEC2
-      INTEGER(KIND=MPI_OFFSET_KIND) LVECLEN, IVEC_MAX_GP, IPROC_OFF
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MULT1, MULT2, JVEC1, JVEC2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) LVECLEN, IVEC_MAX_GP, IPROC_OFF
 C
       IVEC_MAX_GP      = 0
       NBLK_MAX_GP      = 0
@@ -1668,12 +1670,11 @@ C         and process JPROC
 
 !     make sure that all processes in this group obtain the correct
 !     offset
-      call mpi_allreduce(ivec_max_gp_tmp2,ivec_max_gp_tmp,
-     &                   1,MPI_INTEGER8,mpi_max,
-     &                   mynew_comm,ierr)
-      call mpi_allreduce(nblk_max_gp_tmp2,nblk_max_gp_tmp,
-     &                   1,my_MPI_INTEGER,mpi_max,
-     &                   mynew_comm,ierr)
+      call interface_mpi_allreduce(ivec_max_gp_tmp2,ivec_max_gp_tmp,
+     &                             1,op_mpi_max,mynew_comm)
+     
+      call interface_mpi_allreduce(nblk_max_gp_tmp2,nblk_max_gp_tmp,
+     &                             1,op_mpi_max,mynew_comm)
       
       ivec_max_gp = ivec_max_gp_tmp
       nblk_max_gp = nblk_max_gp_tmp
@@ -1730,13 +1731,13 @@ C     last revision:
 C
 C**********************************************************************
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), VEC1(*), IXBLK(*), IXSYMLIST(*)
+      DIMENSION VEC1(*), IXBLK(*), IXSYMLIST(*)
       DIMENSION LU1LIST(*), NPARBLOCK_X(NUM_BLOCKS,*)
       DIMENSION IBLOCKL_X(NUM_BLOCKS,*)
-      INTEGER(KIND=MPI_OFFSET_KIND) ILU1_IOFFX, MULTX
+      INTEGER(KIND=df_MPI_OFFSET_KIND) ILU1_IOFFX, MULTX
       LOGICAL EX
 #include "parluci.h"
 #include "mxmcgas.h"
@@ -1747,8 +1748,8 @@ C
       NVEC       = 0
 C
 C     update slaves of #roots per irrep
-      CALL MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,my_MPI_INTEGER,
-     &               MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,
+     &                         MASTER,global_communicator)
 C
 c     loop over active irreps
       DO IXA = 1, IXSYMACT
@@ -1803,10 +1804,10 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -1878,8 +1879,8 @@ csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *           key value: MASTER will be MASTER again
             ISHKEY = MYPROC
 *           new communicator for REDUCE on MASTER
-            CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ISHCOLOR,ISHKEY,
-     &                          ISHCOMM,IERR)
+            call interface_mpi_COMM_SPLIT(global_communicator,
+     &                          ISHCOLOR,ISHKEY,ISHCOMM)
 *
             IF( ISHCOLOR .eq. 6 ) GOTO 100
 *
@@ -1888,16 +1889,16 @@ csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *         start update 
           IF( ISHARE .eq. 0 )THEN
 *           sum up partial density matrix elements on MASTER
-            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
-     &                      MPI_SUM,ISHCOMM,MASTER)
+            CAll redvec(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+     &                      op_MPI_SUM,ISHCOMM,MASTER)
 *
 *           copy back updated matrix elements
             CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
 *
           ELSE IF( ISHARE .eq. 1 )THEN
 *           sum up partial density matrix elements on ALL CPUs
-            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
-     &                      MPI_SUM,MPI_COMM_WORLD, - 1 )
+            CAll redvec(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+     &                      op_MPI_SUM,global_communicator, - 1 )
 *
 *           copy back updated matrix elements
             CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
@@ -1905,7 +1906,7 @@ csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *         ^ update either MASTER or all CPUs
   100     CONTINUE
 *
-          IF( ISHARE .eq. 0 ) CALL MPI_COMM_FREE(ISHCOMM,IERR)
+          IF( ISHARE .eq. 0 ) call interface_mpi_COMM_FREE(ISHCOMM)
 *
 *         keep track of correct offset
           IRUN = IRUN + NINT_TP
@@ -1935,10 +1936,10 @@ C
 C     Last revision:     S. Knecht       - May 2008
 C
 ************************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -2018,17 +2019,17 @@ C            length of T block to compute T_BUFF offset
 *
            ISHKEY = MYPROC
 *          new communicator for REDUCE on MASTER
-           CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ISHCOLOR,ISHKEY,
-     &                         ISHCOMM,IERR)
+           call interface_mpi_COMM_SPLIT(global_communicator,
+     &                         ISHCOLOR,ISHKEY,ISHCOMM)
 *
 *          "global" update  
 *
-           CALL REDVEC_REL(DENS(ITB_BUFF),DENS_SCR,NINT_TP,2,
-     &                     MPI_SUM,ISHCOMM, - 1 )
+           CAll redvec(DENS(ITB_BUFF),DENS_SCR,NINT_TP,2,
+     &                     op_MPI_SUM,ISHCOMM, - 1 )
            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(ITB_BUFF),1)
 *
   100      CONTINUE
-           CALL MPI_COMM_FREE(ISHCOMM,IERR)
+           call interface_mpi_COMM_FREE(ISHCOMM)
 *
 *          keep track of correct DENS offset
            ITB_BUFF = ITB_BUFF + ITB_BUFF_ADD
@@ -2064,17 +2065,17 @@ C
 C     Last revision:     S. Knecht       - February  2008
 C
 ************************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
       DIMENSION DENS(NALLINT), DENS_SCR(*), IT_TTPL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
       INTEGER*8 NINT_TOT, NINT_TP_I8,ITB_I8, nelm_cc
 *
@@ -2134,8 +2135,8 @@ C
 C              key value: MASTER will be MASTER again
                ISHKEY = MYPROC
 C              new communicator for REDUCE task
-               CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ISHCOLOR,ISHKEY,
-     &                             ISHCOMM,IERR)
+               call interface_mpi_COMM_SPLIT(global_communicator,
+     &                             ISHCOLOR,ISHKEY,ISHCOMM)
 C
                IF( ISHCOLOR .eq. 6 ) GOTO 100
 C              window offset
@@ -2146,15 +2147,15 @@ C              ------------
 C
 C              1. sum up partial density matrix elements
 C              ---------------------------------------------------
-               CALL REDVEC_REL(DENS(ITB_I8+1),DENS_SCR,NINT_TP,2,
-     &                         MPI_SUM,ISHCOMM,-1)
+               CAll redvec(DENS(ITB_I8+1),DENS_SCR,NINT_TP,2,
+     &                         op_MPI_SUM,ISHCOMM,-1)
 C
 C              2. copy back updated matrix elements
 C              ------------------------------------
                CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(ITB_I8+1),1)
   100          CONTINUE
 C
-               CALL MPI_COMM_FREE(ISHCOMM,IERR)
+               call interface_mpi_COMM_FREE(ISHCOMM)
              END IF
            END IF
 C
@@ -2174,10 +2175,10 @@ C     ^ loop over real and imag part of density matrix elements
 *. Find distribution for (nonvanishing blocks) among the nodes
 *. Non vanishing block has a nonzero blocklength
 *
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 *
       INTEGER*8 NPARBLKWT
@@ -2355,10 +2356,10 @@ C     Last revision : S. Knecht - Oct 2008
 C                   - adaption for property calculations
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C     ==========
 C       INPUT
@@ -2414,16 +2415,16 @@ C
       SUBROUTINE FIND_GROUP_OF_PROCS_REL(MYOWNNAME,MYNAMELENGTH,
      &                                   IPROCLIST,NAMELENGTHLIST)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
-      CHARACTER*72 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
-      CHARACTER*72 OLD_NAME
+      CHARACTER*255 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
+      CHARACTER*255 OLD_NAME
       INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
 C
       NTEST = 000
@@ -2433,9 +2434,9 @@ C
 C
 C     start with an all_gather of all name length
 C
-      CALL MPI_ALLGATHER(MYNAMELENGTH,1,my_MPI_INTEGER,
-     &                   NAMELENGTHLIST,1,my_MPI_INTEGER,
-     &                   MPI_COMM_WORLD,IERR)
+      call interface_mpi_ALLGATHER(MYNAMELENGTH,1,
+     &                   NAMELENGTHLIST,1,
+     &                   global_communicator)
 C
 C     ... all name length are stored now!
 C     ... save own name in scratch array!
@@ -2446,8 +2447,8 @@ C     ... we start to gather the names ...
       DO IPROC = 1, NMPROC
 C
          MYSCRNAME = MYOWNNAME
-         CALL MPI_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),MPI_CHARACTER,
-     &                 IPROC-1,MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),
+     &                 IPROC-1,global_communicator)
          IF( MYPROC .NE. IPROC -1 ) THEN
            PNAMELIST(IPROC) = MYSCRNAME(1:NAMELENGTHLIST(IPROC))
          END IF
@@ -2525,16 +2526,16 @@ C
       SUBROUTINE FIND_GROUP_OF_PROCS_REL_SM(MYOWNNAME,MYNAMELENGTH,
      &                                     IPROCLIST,NAMELENGTHLIST)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
-      CHARACTER*72 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
-      CHARACTER*72 OLD_NAME
+      CHARACTER*255 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
+      CHARACTER*255 OLD_NAME
       INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
 C
       NTEST =  0
@@ -2546,9 +2547,9 @@ C
 C
 C     start with an all_gather of all name length
 C
-      CALL MPI_ALLGATHER(MYNAMELENGTH,1,my_MPI_INTEGER,
-     &                   NAMELENGTHLIST,1,my_MPI_INTEGER,
-     &                   MPI_COMM_WORLD,IERR)
+      call interface_mpi_ALLGATHER(MYNAMELENGTH,1,
+     &                   NAMELENGTHLIST,1,
+     &                   global_communicator)
 C
 C     ... all name length are stored now!
 C     ... save own name in scratch array!
@@ -2559,8 +2560,8 @@ C     ... we start to gather the names ...
       DO IPROC = 1, NMPROC
 C
          MYSCRNAME = MYOWNNAME
-         CALL MPI_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),MPI_CHARACTER,
-     &                 IPROC-1,MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),
+     &                 IPROC-1,global_communicator)
          IF( MYPROC .NE. IPROC -1 ) THEN
            PNAMELIST(IPROC) = MYSCRNAME(1:NAMELENGTHLIST(IPROC))
          END IF
@@ -2635,10 +2636,10 @@ C
 *
 *  Find density block sender == lowest processor tag 
 *
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION ID_LIST(*), ID_LIST_ALL(*)
 C
@@ -2672,17 +2673,13 @@ C
 ***********************************************************************
       SUBROUTINE GROUP_DESTRUCTOR_REL(JCOMM1,JCOMM2,JCOMM3,JCOMM4)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-C
-      CALL MPI_COMM_FREE(JCOMM1,IERR)
-      CALL MPI_COMM_FREE(JCOMM3,IERR)
-      CALL MPI_COMM_FREE(JCOMM2,IERR)
-      CALL MPI_COMM_FREE(JCOMM4,IERR)
+      call interface_mpi_COMM_FREE(JCOMM1)
+      call interface_mpi_COMM_FREE(JCOMM3)
+      call interface_mpi_COMM_FREE(JCOMM2)
+      call interface_mpi_COMM_FREE(JCOMM4)
 C
       END
 ***********************************************************************
@@ -2702,10 +2699,10 @@ C
 C     Last revision:     S. Knecht       - October 1 2007
 C
 ************************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -2764,10 +2761,10 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       CHARACTER*6 CIRUN
 C
@@ -2777,27 +2774,27 @@ C
         IF( CIRUN .eq. 'KR-CI ')THEN
 C
           IF( JTYPE .eq. 1 )THEN
-            CALL MPI_FILE_CLOSE(IDIA,IERR)
-            CALL MPI_FILE_CLOSE(ILU2,IERR)
-            CALL MPI_FILE_CLOSE(ILU3,IERR)
-            CALL MPI_FILE_CLOSE(ILU4,IERR)
-            CALL MPI_FILE_CLOSE(ILU5,IERR)
-            CALL MPI_FILE_CLOSE(ILU7,IERR)
-            CALL MPI_FILE_CLOSE(ILUC,IERR)
+            call interface_mpi_FILE_CLOSE(IDIA)
+            call interface_mpi_FILE_CLOSE(ILU2)
+            call interface_mpi_FILE_CLOSE(ILU3)
+            call interface_mpi_FILE_CLOSE(ILU4)
+            call interface_mpi_FILE_CLOSE(ILU5)
+            call interface_mpi_FILE_CLOSE(ILU7)
+            call interface_mpi_FILE_CLOSE(ILUC)
 C
           ELSE IF( JTYPE .eq. 2 )THEN
-            CALL MPI_FILE_CLOSE(ILU1,IERR)
+            call interface_mpi_FILE_CLOSE(ILU1)
           END IF
         END IF
       ELSE
-        CALL MPI_FILE_CLOSE(IDIA,IERR)
-        CALL MPI_FILE_CLOSE(ILU1,IERR)
-        CALL MPI_FILE_CLOSE(ILU2,IERR)
-        CALL MPI_FILE_CLOSE(ILU3,IERR)
-        CALL MPI_FILE_CLOSE(ILU4,IERR)
-        CALL MPI_FILE_CLOSE(ILU5,IERR)
-        CALL MPI_FILE_CLOSE(ILU7,IERR)
-        CALL MPI_FILE_CLOSE(ILUC,IERR)
+        call interface_mpi_FILE_CLOSE(IDIA)
+        call interface_mpi_FILE_CLOSE(ILU1)
+        call interface_mpi_FILE_CLOSE(ILU2)
+        call interface_mpi_FILE_CLOSE(ILU3)
+        call interface_mpi_FILE_CLOSE(ILU4)
+        call interface_mpi_FILE_CLOSE(ILU5)
+        call interface_mpi_FILE_CLOSE(ILU7)
+        call interface_mpi_FILE_CLOSE(ILUC)
       END IF
 C
       END
@@ -2818,10 +2815,10 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxmcgas.h"
 #include "dcbkrmc.h"
@@ -2830,7 +2827,7 @@ C
       CHARACTER*6 PDIABL 
       CHARACTER*4 FILE_INFO_GROUPSZ
       INTEGER PFILELENGTH
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IDIA_SIZE
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IDIA_SIZE
       IDISP = 0
       PFILELENGTH = 0
 C
@@ -2883,84 +2880,86 @@ C     may be necessary --> DIAPAR.1 trick!
 C
 C     file info object - provide useful hints for the MPI implementation
 C
-      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+      call interface_mpi_INFO_CREATE(FILE_INFO_OBJ)
 C
 C     ... number of CPUs sharing the following MPI-I/O files
       WRITE (FILE_INFO_GROUPSZ,'(I4)') NEWCOMM_PROC
-      CALL MPI_INFO_SET(FILE_INFO_OBJ,"nb_proc",FILE_INFO_GROUPSZ,IERR)
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ,"nb_proc",
+     &                            FILE_INFO_GROUPSZ)
 C
 #if defined (VAR_PFS)
 C
 C     special information on IBMs GPFS to enhance I/O performance
 C
-      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io", "true",IERR)
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io", 
+     &                            "true")
 #endif
 C
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PDIA(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,FILE_INFO_OBJ,IDIA,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU1(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU1,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU2(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU2,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU3(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU3,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU4(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU4,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU5(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU5,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU7(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU7,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLUC(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILUC,IERR)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PDIA(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR,FILE_INFO_OBJ,IDIA)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU1(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR 
+     &   + df_MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU1)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU2(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR
+     &   + df_MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU2)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU3(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR
+     &   + df_MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU3)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU4(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR
+     &   + df_MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU4)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU5(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR
+     &   + df_MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU5)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU7(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR
+     &   + df_MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU7)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLUC(1:PFILELENGTH),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_RDWR
+     &   + df_MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILUC)
 C
-      CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
+      call interface_mpi_INFO_FREE(FILE_INFO_OBJ)
 C
 C     ... set fileview
 C
-      CALL MPI_FILE_SET_VIEW(IDIA,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU1,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU2,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU3,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU4,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU5,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU7,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILUC,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
+      call interface_mpi_FILE_SET_VIEW(IDIA,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU1,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU2,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU3,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU4,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU5,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU7,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILUC,IDISP,
+     &         df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_MPI_INFO_NULL)
 C
 C     IF (NFLGRPS_REL == 1 .and. ICIONLY .eq. 1) THEN
 C       check for existing DIAPAR.1 which could be reused...
 C     END IF
 C
       USE_EX_IDIA = .FALSE.
-C
-CSK   IF( MYPROC .eq. MASTER )THEN
-CSK     IF( NEWCOMM_PROC .eq. NMPROC .and. CKRCIONLY )THEN
-CSK       IDIA_SIZE = 0
-CSK       CALL MPI_FILE_GET_SIZE(IDIA,IDIA_SIZE,IERR)
-CSK          WRITE(LUWRT,*) ' DIAPAR.1 found with size (bytes):',IDIA_SIZE
-CSK       IF( IDIA_SIZE .gt. 0 ) USE_EX_IDIA = .TRUE.
-CSK     END IF
-CSK   END IF
-CSK   CALL MPI_BCAST(USE_EX_IDIA,1,MPI_LOGICAL,0,MYNEW_COMM,IERR)
-C
-csk      IF( USE_EX_IDIA )THEN
-csk       WRITE(LUWRT,*) ' existing DIAPAR.1 found which may be reused.'
-csk      END IF
-C
       END
 ***********************************************************************
 
@@ -3004,10 +3003,10 @@ C
 C     Last revision:     S. Knecht       - May    2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C     input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -3419,10 +3418,10 @@ C
 C     Written by  S. Knecht         - June 20 2007 
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krciprop.h"
       DIMENSION ISCALFAC_C(*),ISCALFAC_S(*),ICCTOS(I_NZERO_LEN_C,*)
@@ -3474,6 +3473,7 @@ C
 *
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3494,8 +3494,7 @@ C
 #include "ctcc.inc"
 #include "clunit.inc"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), ICWEIGHTF(*), ISCLFAC_C(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), ICWEIGHTF(*), ISCLFAC_C(*)
       DIMENSION IAM_BLK_ACT_S(*),IAM_BLK_ACT_C(*),ISCLFAC_S(*)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S) 
 #include "parluci.h"
@@ -3875,12 +3874,12 @@ C     release local memory
 *
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
 #include "implicit.h"
 #include "ipoist8.inc"
 *
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), ICWEIGHTF(*),ISCLFAC_C(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), ICWEIGHTF(*),ISCLFAC_C(*)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), ISCLFAC_S(*)
       DIMENSION IAM_BLK_ACT_S(*), IAM_BLK_ACT_C(*)
 #include "parluci.h"
@@ -4389,6 +4388,7 @@ C
 C     Written by  S. Knecht         - April 30 2007 
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 *
 * FIND NSUB LOWEST ELEMENTS OF VECTOR RESIDING ON FILE
@@ -4410,15 +4410,14 @@ C**********************************************************************
 *        ELEMENT I
 *SUBVAL: VALUE OF SORTED ELEMENTS
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "ipoist8.inc"
 #include "wrkspc.inc"
 
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
       DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR
 *
 *.LOOP OVER BLOCKS
 *
@@ -4454,8 +4453,8 @@ Cold     CALL REWINE(LU,-1)
             KBLK = -1
           END IF
           IF( IBLOCKD(II) .eq. MYPROC )THEN
-            CALL MPI_FILE_READ_AT(IDIA,IOFF_SCR,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_READ_AT_r(IDIA,IOFF_SCR,SEGMNT,LBL,
+     &                            ISTAT)
           ENDIF
           IF(NTEST.GE.100) THEN
             WRITE(6,*) ' Elements read in '
@@ -4537,7 +4536,7 @@ Cold     CALL REWINE(LU,-1)
       CALL GATHER_LOW_PAR_REL(NSUB,NSUBMX,SUBVAL,ISCAT,
      &                        WORK(KGATHERA),WORK(KGATHERB),
      &                        WORK(KGATHERC),WORK(KGATHERD),
-     &                        WORK(KGATHERE),MPI_COMM_WORLD,NTESTG)
+     &                        WORK(KGATHERE),global_communicator,NTESTG)
 *. update SCR1 and ISCR1
       CALL DCOPY(NSUBMX,SUBVAL,1,SCR,1)
       CALL ICOPVE(ISCAT,ISCR,NSUBMX)
@@ -4578,10 +4577,10 @@ C
 C     Written by  S. Knecht         - April 30 2007
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SUBVAL(*),ISCAT(*),RECVARRAY(*),TESTARR(*)
       DIMENSION IRECVARRAY(*),ITESTARRAY(*),IRANKARR(NSUBMX)
@@ -4614,12 +4613,12 @@ C**********************************************************************
       ENDDO
 *
 *.    gather lowest elements from nodes on all nodes - we need no master
-      CALL MPI_ALLGATHER(SUBVAL,NSUBMX,MPI_REAL8,RECVARRAY,NSUBMX,
-     &                  MPI_REAL8,IGATCOMM,IERR)
-      CALL MPI_ALLGATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
-     &                  my_MPI_INTEGER,IGATCOMM,IERR)
-      CALL MPI_ALLGATHER(IRANKARR,NSUBMX,my_MPI_INTEGER,ITESTARRAY,
-     &                   NSUBMX,my_MPI_INTEGER,IGATCOMM,IERR)
+      call interface_mpi_ALLGATHER(SUBVAL,NSUBMX,RECVARRAY,NSUBMX,
+     &                  IGATCOMM)
+      call interface_mpi_ALLGATHER(ISCAT,NSUBMX,IRECVARRAY,NSUBMX,
+     &                  IGATCOMM)
+      call interface_mpi_ALLGATHER(IRANKARR,NSUBMX,ITESTARRAY,
+     &                   NSUBMX,IGATCOMM)
 *
       IF(MYPROC.EQ.MASTER.AND.NTEST.GE.10)THEN
         WRITE(LUWRT,*)'before search: RECVARRAY and IRECVARRAY'
@@ -4779,10 +4778,10 @@ C
 C      LUOUT       LUDIA        LUIN
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 *
 * =====
@@ -4809,12 +4808,12 @@ C
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUDIA
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUDIA
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
       XXXNORM = 0.0D0
@@ -4909,7 +4908,7 @@ C     ^ loop over batches
       END DO
 C     ^ loop over IRI_RUN 
 C
-      CALL REDVEC_REL(XXXNORM,XNORM,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(XXXNORM,XNORM,1,2,op_MPI_SUM,global_communicator,-1)
 C      
 C
       END
@@ -4945,18 +4944,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH_R(*), SUBSPH_I(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -5319,18 +5318,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH_R(*), SUBSPH_I(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -5566,18 +5565,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH_R(*), SUBSPH_I(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -5826,19 +5825,19 @@ C
 C     Last revision:     S. Knecht  - Oct 2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XR(*), XI(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), ISYM_CTRL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) IXOFF_internal
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IXOFF_internal
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -6049,18 +6048,18 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -6280,14 +6279,14 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "ipoist8.inc"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION CTT(*), SCR(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN
       DIMENSION NSASO( NSMST, * ), NSBSO( NSMST, * )
 C
       NTEST = 000
@@ -6300,8 +6299,8 @@ C
 * =================
 * Read in from disc
 * =================
-      CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
-     &                     SCR,ILEN,MPI_REAL8,ISTAT,IERR)
+      call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
+     &                     SCR,ILEN,ISTAT)
 *
       NAST = NSASO(IASM,IATP)
       NBST = NSBSO(IBSM,IBTP)
@@ -6330,19 +6329,19 @@ C
 C     Last revision:     S. Knecht       - July  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION CTT(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN
 *
       NTEST = 000
 *
 *     read in from disc
-      CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,
-     &                      CTT,ILEN,MPI_REAL8,ISTAT,IERR)
+      call interface_mpi_FILE_READ_AT_r(LUIN,IOFFSET_IN_LUIN,
+     &                      CTT,ILEN,ISTAT)
 *
 *
       IF( NTEST .GE. 100 )THEN
@@ -6379,10 +6378,10 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -6390,12 +6389,12 @@ C
       DIMENSION RNRM(MAXIT,*), EIG(MAXIT,*)
       DIMENSION SCRRED(*)
       LOGICAL CONVER, RTCNV(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -6536,7 +6535,8 @@ C
 C
 C     communicate REDSCRVAR to get full RNORM
 C
-      CALL REDVEC_REL(REDSCRVAR,SCRRED,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCRRED,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
       CALL DCOPY(1,SCRRED,1,REDSCRVAR,1)
 CSK      WRITE(LUWRT,*) 'RNORM**2',REDSCRVAR
       RNORM = SQRT(REDSCRVAR)
@@ -6594,10 +6594,10 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*), SUBSPH_2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -6606,12 +6606,12 @@ C
       DIMENSION SCRRED_R(*), SCRRED_I(*)
       LOGICAL CONVER, RTCNV(*)
 C     LOGICAL CONVER, RTCNV(100)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -6934,11 +6934,11 @@ C     ^ loop over batches ( imag part )
 C
 C     communicate real and imag part of REDSCRVAR to get full RNORM
 C
-      CALL REDVEC_REL(REDSCRVAR_R,SCRRED_R,1,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR_R,SCRRED_R,1,2,op_MPI_SUM,
+     &                global_communicator,-1)
 C
-      CALL REDVEC_REL(REDSCRVAR_I,SCRRED_I,1,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR_I,SCRRED_I,1,2,op_MPI_SUM,
+     &                global_communicator,-1)
 C
       CALL DCOPY(1,SCRRED_R,1,REDSCRVAR_R,1)
       CALL DCOPY(1,SCRRED_I,1,REDSCRVAR_I,1)
@@ -6997,25 +6997,25 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUT1LIST(*), LUOUT2LIST(*)
       DIMENSION LUOUT3LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT3
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_LUOUT1
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT3
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT3
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUDIA
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_LUOUT1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT3
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUDIA
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -7179,7 +7179,7 @@ C
 C
 C     communicate REDSCRVAR to get full GAMMA
 C
-      CALL REDVEC_REL(REDSCRVAR,GAMMA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,GAMMA,1,2,op_MPI_SUM,global_communicator,-1)
 C
 CSK      WRITE(LUWRT,*) 'THIS IS GAMMA',GAMMA
 C
@@ -7251,7 +7251,8 @@ C
 C
 C     communicate REDSCRVAR to get full VNORM_Q
 C
-      CALL REDVEC_REL(REDSCRVAR,VNORM_Q,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,VNORM_Q,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
 C
 C     is X an eigen vector for (H0 - 1 ) - 1 ???
 C
@@ -7321,7 +7322,8 @@ C
 C
 C       communicate REDSCRVAR to get full DELTA
 C
-        CALL REDVEC_REL(REDSCRVAR,DELTA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+        CAll redvec(REDSCRVAR,DELTA,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
 C
 C
 CSK        WRITE(LUWRT,*) ' THIS IS DELTA'
@@ -7423,21 +7425,21 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), LUOUTLIST(*)
       DIMENSION SCRRED(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
       THR_CVEC = 1.0d-03
@@ -7535,8 +7537,8 @@ C
 C
 C     communicate SCRRED to get full OVERLAP matrix
 C
-      CALL REDVEC_REL(SCRRED,SUBSPH,NVEC+IADD-1,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
+      CAll redvec(SCRRED,SUBSPH,NVEC+IADD-1,2,op_MPI_SUM,
+     &                global_communicator,-1)
 C
 C
 C
@@ -7639,7 +7641,8 @@ C
 C
 C     communicate REDSCRVAR to get full scale factor
 C       
-      CALL REDVEC_REL(REDSCRVAR,SCALEVEC,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCALEVEC,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
 C
 C     1.4 normalizing the new vector
 C
@@ -7729,10 +7732,10 @@ C
       IF(THR_CVEC .GT. 0.0D0 .AND. IROUND .EQ. 1) THEN
          I_REMOVED_total = 0
          I_ZERO_total    = 0
-         CALL REDVEC_REL(I_REMOVED,I_REMOVED_total,1,1,
-     &                MPI_SUM,MPI_COMM_WORLD,-1)
-         CALL REDVEC_REL(I_ZERO,I_ZERO_total,1,1,
-     &                MPI_SUM,MPI_COMM_WORLD,-1)
+         CAll redvec(I_REMOVED,I_REMOVED_total,1,1,
+     &                op_MPI_SUM,global_communicator,-1)
+         CAll redvec(I_ZERO,I_ZERO_total,1,1,
+     &                op_MPI_SUM,global_communicator,-1)
          IF(I_REMOVED_total .GT. 0) THEN
 #ifdef LUCI_DEBUG
             WRITE (luwrt,'(/A,I12,A,I4,A,1P,D10.2,I14)')
@@ -7772,20 +7775,20 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
       ONEM = - 1.0D0
@@ -8080,19 +8083,19 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -8222,19 +8225,19 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*), SUBSPH_2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -8460,10 +8463,10 @@ C
 C     Written by  S. Knecht         - April 13 2007 (Friday!)
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -8478,67 +8481,67 @@ C**********************************************************************
       CHARACTER*6 CIRUN
 !
 !     introduce CIRUN and JKRRUNTYPE for NODES
-      CALL MPI_BCAST(CIRUN,6,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JKRRUNTYPE,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(CIRUN,6,MASTER,global_communicator)
+      call interface_mpi_BCAST(JKRRUNTYPE,1,MASTER,
+     &               global_communicator)
 !
       IF( MYPROC .ne. MASTER )THEN
         CALL LUCI_TASK_NODES(CIRUN)
       END IF
  
 !     communicate some CIRUN specific variables, arrays ...
-      CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(NZ,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(NFSYM,1,MASTER,
+     &               global_communicator)
 
 !     ISYM_KRMC == IOPT_SYMMETRY
-      CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ECORE_KRMC,1,MPI_REAL8,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(ISYM_KRMC,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(ECORE_KRMC,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(NASHT,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(NNASHX,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IASH,NFSYM,MASTER,
+     &               global_communicator)
 !
 !     all needed for proper read-in of integrals...
-      CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JBTOF,8*2,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IPQTOQ,4*8,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IQTOPQ,4*8,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JTRLVL,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(nzxopp,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(OPT_NOPFQ,1,MPI_LOGICAL,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(NBSYM,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(JBTOF,8*2,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IPQTOQ,4*8,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IQTOPQ,4*8,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(JTRLVL,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(nzxopp,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST_l0(OPT_NOPFQ,1,MASTER,
+     &               global_communicator)
 !     big integer arrays ...
-      CALL MPI_BCAST(IDXT2G,4*MXCORB,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IDXU2G,MAXASH,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IDXG2U,MXCORB,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(IDXT2G,4*MXCORB,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IDXU2G,MAXASH,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IDXG2U,MXCORB,MASTER,
+     &               global_communicator)
 !
-      CALL MPI_BCAST(NIDX3,2,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NIDX4,2,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IIDX3,2,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IIDX4,2,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NORBT,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(N2ORBX,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(NIDX3,2,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(NIDX4,2,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IIDX3,2,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IIDX4,2,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(NORBT,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(N2ORBX,1,MASTER,
+     &               global_communicator)
 
       END
 ***********************************************************************
@@ -8550,10 +8553,10 @@ C
 C     Written by  S. Knecht         - April 16 2007
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -8570,8 +8573,8 @@ C                   that are really needed on a CPU
 C
 C     Fock matrix ...
 C
-      CALL MPI_BCAST(F1,(2*NASHT)*(2*NASHT)*MZ,MPI_REAL8,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_bcast_r1_work_f77(F1,(2*NASHT)*(2*NASHT)*MZ,
+     &               MASTER,global_communicator)
 C
 C     debug printing
 C
@@ -8591,13 +8594,10 @@ C     store some important information
 C
 C     broadcast only for SIGMA and SIGMAD (current fix for large-scale 
 C     CIINII runs). FIXME: large-scale KR-MCSCF - SK - july 10, 2007
-      IF( CIRUN .eq. 'SIGMA' )THEN
+      IF( CIRUN(1:5) .eq. 'SIGMA' )THEN
 C       ... integrals
-        CALL MPI_BCAST(F2,NASHT*NASHT*NNASHX*NZ*3,MPI_REAL8,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-      ELSE IF( CIRUN .eq. 'SIGMAD')THEN
-        CALL MPI_BCAST(F2,NASHT*NASHT*NNASHX*NZ*3,MPI_REAL8,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_bcast_r1_work_f77(F2,NASHT*NASHT*NNASHX*NZ*3,
+     &                 MASTER,global_communicator)
       END IF
 C
       END
@@ -8612,10 +8612,10 @@ C
 C     last revision:
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -8624,38 +8624,38 @@ C**********************************************************************
 #include "dcbxpr.h"
 C
 C     common block in dcbkrci.h
-      CALL MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,my_MPI_INTEGER,
-     &               MASTER,MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,
+     &               MASTER,global_communicator)
 C  
 C     common block in krciprop.h - integer part
-      CALL MPI_BCAST(NPROP_KRCI,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(LPROP_KRCI,MXPROP_KRCI,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NPROP_ROOTS_KRCI,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISYMOPPRP_KRCI,MXPROP_KRCI,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IN1ELPRP_KRCI,MXPROP_KRCI,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISYMEIG_KRCI,MXPRPE_KRCI,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IHTYPE_X,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(NPROP_KRCI,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(LPROP_KRCI,MXPROP_KRCI,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(NPROP_ROOTS_KRCI,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(ISYMOPPRP_KRCI,MXPROP_KRCI,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IN1ELPRP_KRCI,MXPROP_KRCI,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(ISYMEIG_KRCI,MXPRPE_KRCI,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(IHTYPE_X,1,MASTER,
+     &               global_communicator)
 C  
 C     common block in krciprop.h - logicals
-      CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST_l0(DOPROPREOD,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST_l0(DOPROPREOD,1,MASTER,
+     &               global_communicator)
 C
 C     common block in dcbxpr.h - integer part
-      CALL MPI_BCAST(IPRPTIM,MAXPRPS,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(IPRPTIM,MAXPRPS,MASTER,
+     &               global_communicator)
 C
 C     common block in dcbxpr.h - character array
-      CALL MPI_BCAST(PRPNAM,MAXPRPS*16,MPI_CHARACTER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(PRPNAM,MAXPRPS*16,MASTER,
+     &               global_communicator)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SYNC_NODES_BLOCKFILE_DATA(NMPROC_FILE,SPLIT_IJKL_FILE,
@@ -8672,44 +8672,46 @@ C
 C     last revision:
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), NPARBLOCK(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK(*)
       INTEGER   RCCTOS(*)
 #include "parluci.h"
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), IT_TTPL(LEN_TTPL)
       LOGICAL SHARED_M_FILE, SPLIT_IJKL_FILE, DIST_COMPLETE
 C
-      CALL MPI_BCAST(NMPROC_FILE,1,my_MPI_INTEGER,
-     &               MASTER,MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(NMPROC_FILE,1,
+     &               MASTER,global_communicator)
 C
       IF( NMPROC_FILE .ne. NMPROC)THEN
-        CALL MPI_BCAST(ICCTOS,I_NZERO_LEN_C*I_NZERO_LEN_S,
-     &                 my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ICWEIGHTF,I_NZERO_LEN_S,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_bcast_i2_work_f77(ICCTOS,
+     &                 I_NZERO_LEN_C*I_NZERO_LEN_S,
+     &                 MASTER,global_communicator)
+        call interface_mpi_bcast_i1_work_f77(ICWEIGHTF,
+     &                 I_NZERO_LEN_S,MASTER,
+     &                 global_communicator)
       END IF
 C
 C     reduced connection list and block distribution list
-      CALL MPI_BCAST(RCCTOS,NUM_BLOCKS2,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NPARBLOCK,NUM_BLOCKS,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_bcast_i1_work_f77(RCCTOS,NUM_BLOCKS2,MASTER,
+     &               global_communicator)
+      call interface_mpi_bcast_i1_work_f77(NPARBLOCK,NUM_BLOCKS,MASTER,
+     &               global_communicator)
 C
 C     T list?
-      CALL MPI_BCAST(SHARED_M_FILE,1,MPI_LOGICAL,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(SPLIT_IJKL_FILE,1,MPI_LOGICAL,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST_l0(SHARED_M_FILE,1,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST_l0(SPLIT_IJKL_FILE,1,MASTER,
+     &               global_communicator)
       IF( SHARED_M_FILE .or. SPLIT_IJKL_FILE )THEN
-        CALL MPI_BCAST(LEN_TTPL,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IT_TTPL,LEN_TTPL,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(LEN_TTPL,1,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(IT_TTPL,LEN_TTPL,MASTER,
+     &                 global_communicator)
       END IF
-      CALL MPI_BCAST(DIST_COMPLETE,1,MPI_LOGICAL,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST_l0(DIST_COMPLETE,1,MASTER,
+     &               global_communicator)
 C
       END
 ***********************************************************************
@@ -8730,22 +8732,22 @@ C
 C     Last revision: 
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "typesz_mpi2.h"
 #include "ctcc.inc"
       DIMENSION T_BUFF(*), IT_TTPL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T, IOFF_SCR
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_T, IOFF_SCR
 #if defined (INT_STAR8)
-      INTEGER(KIND=MPI_OFFSET_KIND)  IREAD_BYTE
+      INTEGER(KIND=df_MPI_OFFSET_KIND)  IREAD_BYTE
 #else
       INTEGER IREAD_BYTE
 #endif
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, ISLEN_TBL, NINT_8, N1_8
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_B, INUM_BYTE, nelm_cc
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8, ISLEN_TBL, NINT_8, N1_8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_T_B, INUM_BYTE, nelm_cc
 C
       N1_8       = N1_INT
       NINT_8     = N1_8 + N2ELINT
@@ -8779,8 +8781,9 @@ C
 csk         WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
 csk  &                                        IOFF_SCR,   IREAD_BYTE
 csk         WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
-              CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
-     &                              IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+              call interface_mpi_FILE_READ_AT_br(IIJKL_ROD,IOFF_SCR,
+     &                              T_BUFF(IOFF_T_B),
+     &                              IREAD_BYTE,df_MPI_BYTE,ISTAT)
               IOFF_T_B = IOFF_T_B + ISLEN_TBL
             ENDIF
             INUM_BYTE  = IS_BYTE8 * ISLEN_TBL
@@ -8807,8 +8810,9 @@ C
 csk         WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
 csk  &                                        IOFF_SCR,   IREAD_BYTE
 csk         WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
-              CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
-     &                              IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+              call interface_mpi_FILE_READ_AT_br(IIJKL_ROD,IOFF_SCR,
+     &                              T_BUFF(IOFF_T_B),
+     &                              IREAD_BYTE,df_MPI_BYTE,ISTAT)
               IOFF_T_B = IOFF_T_B + ISLEN_TBL
             ENDIF
             INUM_BYTE  = IS_BYTE8 * ISLEN_TBL
@@ -8838,9 +8842,6 @@ C
 C**********************************************************************
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
 #include "dcbgen.h"
       LOGICAL PARCAL_SAVE
 C
@@ -8863,7 +8864,7 @@ C
      &                           IPROCLIST,IRILP,BLOCKTIME)
 C
 C     make an update of of grouplist for c-vector file based on 
-C     different list gathered from MPI_COMM_WORLD
+C     different list gathered from global_communicator
 C
 C
 C     Written by  S. Knecht         - July 04 2007 
@@ -8871,10 +8872,10 @@ C
 C     OUTPUT: ISCLFAC_GROUP and updated file ILUC
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
 #include "ipoist8.inc"
@@ -8891,18 +8892,18 @@ C
       CALL MEMMAR(KSCALLOC2,NUM_BLOCKS2,'ADDL  ',1,'ICLLC2')
       CALL MEMMAR(KSCALLOC3,NUM_BLOCKS2,'ADDL  ',1,'ICLLC3')
 C
-C     fill complete local iscalfac arrays with zero's
+C     fill complete local iscalfac arrays with zero
       CALL IZERO(WORK(KSCALLOC2), NUM_BLOCKS2)
       CALL IZERO(WORK(KSCALLOC3), NUM_BLOCKS2)
       CALL IZERO(ISCLFAC_GROUP  , NUM_BLOCKS2)
 C
-      starttimer = MPI_WTIME()
+      starttimer = interface_MPI_WTIME()
 C
 C     "mpi_allsum" local LUCLIST which then on all
 C     nodes will contain the number of non-zero C-blocks in
 C     the complete CI-vector
-      CALL REDVEC_REL(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
-     &                MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
+     &                op_MPI_SUM,global_communicator,-1)
 C
 C     find all c-blocks connecting to all sigma-blocks on each cpu
       CALL ICOPY(NUM_BLOCKS2,RCCTOS,1,WORK(KSCALLOC3),1)
@@ -8917,8 +8918,8 @@ C     case 2: number of CPUs in new group == to total number of CPUs
 C
       IF( NEWCOMM_PROC .ne. NMPROC ) THEN
 C
-        CALL REDVEC_REL(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
-     &                  MPI_SUM,MYNEW_COMM,0)
+        CAll redvec(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
+     &                  op_MPI_SUM,MYNEW_COMM,0)
 C
 C       all local node-masters call this routine!
 C
@@ -8934,8 +8935,8 @@ C     &                               IGROUPLIST,IPROCLIST,IRILP)
 C
 
         END IF
-        CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,my_MPI_INTEGER,0,
-     &                 MYNEW_COMM,IERR)
+        call interface_mpi_bcast_i1_work_f77(ISCLFAC_GROUP,NUM_BLOCKS2,
+     &                 0,MYNEW_COMM)
       ELSE
 C
        CALL UPDATE_GEN_LIST(WORK(KSCALLOC3),WORK(KSCALLOC2),NUM_BLOCKS2)
@@ -8953,7 +8954,7 @@ C
 !     CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
 C
 C     final timing for block distribution
-      blocktime = blocktime + MPI_WTIME() - starttimer
+      blocktime = blocktime + interface_MPI_WTIME() - starttimer
 C
 C     flush local memory
 C

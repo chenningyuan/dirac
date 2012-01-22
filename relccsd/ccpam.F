@@ -41,6 +41,7 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "maxorb.h"
 #include "priunit.h"
@@ -48,11 +49,7 @@ C
 #include "dcbham.h"
 #include "dcbpsi.h"
 #include "dcbmp2no.h"
-#if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "ccpar.inc"
 #include "files.inc"
 #include "complex.inc"
@@ -102,23 +99,23 @@ C     if you do not run HF !)
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
+         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
+     &                  global_communicator)
       END IF
 C
 C     if MP2-NO is enabled, tell the slaves about the correct interface
 C
       IF( MP2_DENRUN )THEN
-        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
+     &                 global_communicator)
         IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
+     &                 global_communicator)
       END IF
 #endif
 C
@@ -168,27 +165,25 @@ C     Written by Luuk Visscher, August 1997
 C     Release the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
-#include "maxorb.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-#include "dcbgen.h"
 #include "infpar.h"
+#ifdef VAR_MPI
+      dimension istat(df_mpi_status_size)
+#endif
 C
-      IF (.NOT.PARCAL) RETURN
+      if(numnod.eq.0) return
 C
 C     Find the slaves and release them
 C
       NTEST = -1
 #if defined (VAR_MPI)
       DO I = 1,NUMNOD
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,ISTAT,IERR)
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_IRECV(NODE,1,df_MPI_ANY_SOURCE,20,
+     &                            global_communicator,IREQ)
+         CALL interface_MPI_WAIT(IREQ,ISTAT)
+         CALL interface_MPI_SEND(NTEST,1,NODE,30,
+     &                           global_communicator)
       ENDDO
 #endif
 C
@@ -206,14 +201,14 @@ C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      dimension istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
 #include "dgroup.h"
@@ -249,22 +244,23 @@ C     Get the correct arithmetic (NZ is not initialized on slaves if you do not 
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
+         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
+     &                  global_communicator)
       END IF
       IF( MP2_DENRUN )THEN
-        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
+     &                  global_communicator)
         IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
+     &                 global_communicator)
       END IF
 #endif
+      print *, 'slave: CA, IAOMOSCHEME',CA, IAOMOSCHEME,INTFCE
 C
 C     create a node-unique filename as output file. Important on
 C     shared file systems. Otherwise all the output gets mingled in one
@@ -329,16 +325,16 @@ C     The slave is finished, wait for the master
 C
       CCEND = .FALSE.
 #if defined (VAR_MPI)
-      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
-     &              MPI_COMM_WORLD,IREQ,IERR)
+      CALL interface_MPI_ISEND(MYTID,1,MPARID,20,
+     &                         global_communicator,IREQ)
 C
     1    CONTINUE
          CALL SLEEP(1)
-         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,CCEND,ISTAT,IERR)
+         call interface_mpi_iprobe(MPARID,30,CCEND,global_communicator,
+     &                             istat)
          IF (.NOT.CCEND) GOTO 1
 C
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
+      CALL interface_MPI_RECV(NTEST,1,MPARID,30,global_communicator)
 #endif
 C
       RETURN

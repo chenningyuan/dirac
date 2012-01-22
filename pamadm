@@ -125,6 +125,7 @@ vital_directories.append('x2c')
 vital_directories.append('cmake')
 vital_directories.append('xcfun')
 vital_directories.append('xcfun/fortran')
+vital_directories.append('interface_mpi')
 
 # these tests are always packaged
 
