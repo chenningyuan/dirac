@@ -21,6 +21,8 @@
 
 module xc_mpi
 
+#ifdef VAR_MPI
+
    use interface_to_mpi
 #ifdef USE_MPI_MOD_F90
    use mpi
@@ -28,6 +30,12 @@ module xc_mpi
 #else
    implicit none
 #include "mpif.h"
+#endif
+
+#else
+
+   implicit none
+
 #endif
 
    public xc_mpi_is_master
