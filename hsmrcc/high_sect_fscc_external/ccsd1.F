@@ -1994,10 +1994,10 @@ c
       if (dabs(gen(istrt12+i1)).ge.1.0d+5) then
         write(LUPRI,*) 'mult: too big value !, gen=',gen(istrt12+i1) 
          do jj=1,n2
-          write(LUPRI,'(2(i6,1x,d13.7,1x))')
+          write(LUPRI,'(2(i10,1x,d15.7,1x))')
      &     n20+jj-1,gen(n20+jj-1),n30+jj-1,gen(n30+jj-1)
          enddo
-        call quit('mult: error exit!') 
+        !call quit('mult: error exit!') 
       endif
 
 250   continue
@@ -2437,16 +2437,11 @@ c  iparm=6 : 8x2=8
 !--------------------------------------------------------
 !  ... exit routine, extended by DIRAC quit
 !--------------------------------------------------------
-#include "implicit.h"
 #include "priunit.h"
-!     implicit real*8 (a-h,o-z)
-      character*8 aa
-      integer*4 ii
-      ii=99
+      character(*) aa
       write(LUPRI,*) 'abext: aborted from ',aa
       call flush(LUPRI)
       call quit(aa)
-!     call abort()
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
