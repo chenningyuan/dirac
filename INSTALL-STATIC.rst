@@ -1,3 +1,5 @@
+
+====================================
 Installing static dirac.x executable
 ====================================
 
@@ -29,8 +31,14 @@ ilias@miro_ilias_desktop:
 Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
 ATLAS-static; -g -static -fpic -O0 (fixed bug below)
 
+miro@opteron.tau.ac.il:~/qch_software/dirac_git/trunk_working/.
+./setup  --debug  -D VERBOSE_OUTPUT=ON --build=build_static  --static --internal-math  --int64
+/opt/intel/fce/10.1.015/bin/ifort (ifort (IFORT) 10.1 20080312); /usr/bin/gcc - gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-51)
+
 Based on these results we may say that GNU compilers produce proper static executable
 mostly not linked against GNU external static libraries (libblas-dev,liblapack-dev,libatlas).
+Likewise Ifort gives correct static executable.
+
 
 Partially wrong executable
 ----------------------------
@@ -98,3 +106,11 @@ plm_rsh_module.c:(.text+0x821): warning: Using 'getpwuid' in statically linked a
 /home/ilias/bin/openmpi_ilp64/lib/libmpi.a(btl_tcp_component.o): In function `mca_btl_tcp_component_create_listen':
 btl_tcp_component.c:(.text+0x104): warning: Using 'getaddrinfo' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
 [100%] Built target dirac.x
+
+
+###  export MATH_ROOT='/opt/intel/mkl/10.0.3.020/lib/em64t'   - static buildup dos not work with MKL libs
+goving:
+miro@opteron.tau.ac.il:~/qch_software/dirac_git/trunk_working/build_static/./opt/intel/fce/10.1.015/bin/ifort -static -Wl,-E -w -assume byterecl -DVART -g -traceback -static-libgcc -static-intel -i8 -O0 CMakeFiles/dirac.x.dir/main/main.F90.o  -o dirac.x lib/libdirac.a lib/libxcfun.a  -Wl,--start-g   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_lapack.a    /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_core.a   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkls_ilp64.a  /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_sequential.a /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_em64t.a   /opt/intel/mkl/10.0.3.020/lib/emibguide.a  /usr/lib64/libpthread.a /usr/lib64/libm.a -Wl,--end-group
+ld: cannot find libmkl_intel_lp64.a
+
+### 
