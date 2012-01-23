@@ -204,8 +204,9 @@ c  if possible, as significant time saving is achieved.
       write(6,2400) tmax,idec(itmax),t3max,idec(id3mx),idec(ind3mx)
 2400  format(' max t,t3=',f15.9,2x,i12,2x,f15.9,2x,i6,2x,i10)
       if (abs(tmax).gt.1.d10.or.abs(tmax).lt.1.d-10) then
-        write (*,*) ' abort. tmax out of bounds'
-        call abext('tmax    ')      
+        write (6,*) 'tmax=',tmax
+        write (6,*) 'csu: abort - tmax out of bounds !'
+        call abext('csu: abort - tmax out of bounds !')      
       endif
 c diis
       if (iopt(4).lt.0) then
