@@ -36,9 +36,13 @@ module interface_to_mpi
 #ifdef VAR_MPI
 
   use integer_kind_mpilib
+#ifdef USE_MPI_MOD_F90
   use mpi
-
   implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
 
 #include "interface_to_mpi_f77_typedef.h"
 

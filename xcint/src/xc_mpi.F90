@@ -21,12 +21,14 @@
 
 module xc_mpi
 
-#ifdef VAR_MPI
-   use mpi
    use interface_to_mpi
-#endif
-
+#ifdef USE_MPI_MOD_F90
+   use mpi
    implicit none
+#else
+   implicit none
+#include "mpif.h"
+#endif
 
    public xc_mpi_is_master
    public xc_mpi_get_nr_proc
