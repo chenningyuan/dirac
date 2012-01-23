@@ -23,9 +23,14 @@
 !
 module integer_model_in_mpi
 #ifdef VAR_MPI
-  use mpi
   use integer_kind_mpilib
+#ifdef USE_MPI_MOD_F90
+  use mpi
   implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
 
   public determine_integer_model_in_mpi
   
