@@ -257,6 +257,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -294,10 +295,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -338,17 +335,11 @@ C
 #if defined (VAR_MPI)
       IF(NMPROC.GT.1) THEN
 C
-C     LV 16-10-2002
-C     The next statements might be combined to an MPI_ALLREDUCE
-C     but I found the SGI implementation to give a runtime error.
-C
-        CALL MPI_REDUCE(XVO,BUF1,RCW*NDIMX,
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
-     &    MPI_COMM_WORLD,IERR)
-        CALL XCOPY(NDIMX,BUF1,1,XVO,1)
-        CALL MPI_BCAST (XVO,RCW*NDIMX,
-     &    MPI_DOUBLE_PRECISION,MASTER,
-     &    MPI_COMM_WORLD,IERR)
+        CALL XCOPY(NDIMX,XVO,1,BUF1,1)
+        CALL DZERO(XVO,RCW*NDIMX)
+        call interface_MPI_allREDUCE_r1_work_f77(BUF1,XVO,RCW*NDIMX,
+     &                                           op_mpi_sum,
+     &                                           global_communicator)
       ENDIF
 #endif
 C--------------------------------------------
@@ -648,9 +639,6 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
 C
       DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
       LOGICAL NOZG

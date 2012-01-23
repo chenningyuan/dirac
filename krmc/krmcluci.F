@@ -191,8 +191,6 @@ C***********************************************************************
 #include "priunit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
       CHARACTER*6 CIRUN
@@ -269,6 +267,7 @@ C***********************************************************************
 *
       use symmetry_setup_krci
       use os_utils
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
@@ -295,17 +294,13 @@ C information for property run
 #include "krciprop.h"
 CTF
       character*6 CIRUN
-      CHARACTER*72 MACHINENAME
+      CHARACTER*255 MACHINENAME
       INTEGER NAMELENGTH, MZ_NUM
       logical MCSCF, RUN_SHMEM_T
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
       DIMENSION F1(*),F2(*),WRK(LWRK)
-#if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "parluci.h"
       integer global_scratch_disk
 !     integer(8) :: kbla_blubb
@@ -404,14 +399,14 @@ C
         global_scratch_disk = 0
       end if
 
-      call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
-     &               MASTER,MPI_COMM_WORLD,ierr)
+      call interface_mpi_bcast(global_scratch_disk,1,
+     &               MASTER,global_communicator)
 
 
       if(global_scratch_disk .eq. 0)then
         NAMELENGTH = 0
 C
-        CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+        call interface_mpi_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH)
 
         CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
      &                               WORK(KPROCLIST),
@@ -442,7 +437,7 @@ C          level 0 and 5: build node-groups for shared memory usage
 C
            NAMELENGTH = 0
 C
-           CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+           call interface_mpi_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH)
 C
            CALL ISETVC(WORK(KPROCLENGTH),-1,NMPROC)
 C
@@ -2005,30 +2000,11 @@ C     Last revision: S. Knecht           - March  2007
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "dcbgen.h"
 #include "infpar.h"
 #include "parluci.h"
 C
       IF (.NOT.PARCAL) RETURN
-C
-C     Find the slaves and release them
-
-      NTEST = -1
-#if defined (VAR_MPI)
-      DO I = 1,NUMNOD
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,ISTAT,IERR)
-CSK         write(6,*)'node recieved',node,mparid
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                  MPI_COMM_WORLD,IERR)
-      ENDDO
-#endif
-
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
@@ -2052,9 +2028,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include "priunit.h"
 #include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION WORK(LWORK)
       LOGICAL LUEND
       CHARACTER LUCITABASF_REL*12, LUCIFILN_REL*16
@@ -2307,20 +2281,6 @@ C     LUCIAREL run is finished for the slaves ...
       CLOSE (MSLVOUT_REL,STATUS='KEEP')
 
       lupri = lupri_save
-C
-C     .. wait for the master
-      LUEND = .FALSE.
-C
-      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
-     &              MPI_COMM_WORLD,IREQ,IERR)
-
-    1    CONTINUE
-         CALL SLEEP(1)
-         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
-         IF (.NOT.LUEND) GOTO 1
-
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
 C
       END
 #endif    /* ifdef VAR_MPI2 */

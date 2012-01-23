@@ -1,25 +1,19 @@
 **DIRAC
 .TITLE
-Projection H2O
+Pipek-Mezey localization based on atomic charges from projection analysis
 .ANALYZE
-**HAMILTONIAN
-.LVCORR
-**INTEGRALS
-*TWOINT
-.SCREEN
- 1.0D-11
 **WAVE FUNCTIONS
 .SCF
 *SCF
 .CLOSED SHELL
  10
-.EVCCNV
- 1.0D-7
 **ANALYZE
 .MULPOP
 .LOCALIZE
 *LOCALIZE
 .PRJLOC
+.THGRAD
+1.0D-09
 .OWNBAS
 .VECREF
 3

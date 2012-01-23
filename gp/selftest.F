@@ -80,22 +80,22 @@ C
 #ifdef VAR_MPI
       subroutine selftest_mpi
 c     Call MPI routines with some small tests to see if things look ok
+      use interface_to_mpi
       implicit real*8 (A-H,O-Z)
-#include "mpif.h"
 #include "infpar.h"
       INTEGER MPIERR, IREQ
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 C
 C     send dummy message (from MASTER to MASTER...)
 C
-      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,0,25,
-     &               MPI_COMM_WORLD,IREQ,MPIERR)
-      CALL MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,
-     &               ISTAT,MPIERR)
-      IF( ISTAT(MPI_SOURCE) .ne. MPARID )THEN
+      CALL interface_MPI_ISEND(MYTID,1,0,25,
+     &                         global_communicator,IREQ)
+      CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG,
+     &                         global_communicator,ISTAT)
+      IF( ISTAT(df_MPI_SOURCE) .ne. MPARID )THEN
          print *,' *** ERROR: MPI self test failed! *** '
          print *,' sender of message should have ID 0'
-         print *,' but has ID ',ISTAT(MPI_SOURCE)
+         print *,' but has ID ',ISTAT(df_MPI_SOURCE)
          print *,' '
          print *,' Make sure that you are using the right mpirun for'
          print *,' your particular MPI library version.'
@@ -119,8 +119,8 @@ C
 C
 C     ... it looks ok, receive dummy message
 C
-      CALL MPI_IRECV(IMESS,1,my_MPI_INTEGER,0,MPI_ANY_TAG,
-     &                 MPI_COMM_WORLD,IREQ,MPIERR)
-      CALL MPI_WAIT(IREQ,ISTAT,MPIERR)
+      CALL interface_MPI_IRECV(IMESS,1,0,df_MPI_ANY_TAG,
+     &                         global_communicator,IREQ)
+      CALL interface_MPI_WAIT(IREQ,ISTAT)
       END 
 #endif

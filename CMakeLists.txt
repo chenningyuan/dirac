@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
+#miro: to suppress Windows warning about policy...
+cmake_policy(SET CMP0010 OLD)
+
 project(DIRAC Fortran C)
 add_definitions(-DPRG_DIRAC)
+
 
 # set version
 set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 1)
+set(VERSION_PATCH 2)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -18,22 +22,7 @@ include(CheckFortranSourceCompiles)
 # for windows need substitute (type)
 set(cat_program cat)
 
-# set build type
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE
-        Debug
-        CACHE STRING
-        "Choose the type of build, options are: None Debug Release."
-        FORCE
-        )
-endif()
-string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
-if(    NOT cmake_build_type_tolower STREQUAL "debug"
-		AND NOT cmake_build_type_tolower STREQUAL "release"
-		AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo")
-	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
-	Allowed values are Debug, Release, RelWithDebInfo (case-insensitive).")
-endif()
+include(ConfigSafeGuards)
 
 # do not rebuild if rules (compiler flags) change
 # this has advantages and disadvantages
@@ -54,6 +43,22 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
+#miro: extract username@hostname 
+#FYI: $ENV{USER} is not working on all machines from crontab, prefered Linux command 'whoami`
+execute_process(
+    COMMAND whoami
+    TIMEOUT 1
+    OUTPUT_VARIABLE USER_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+#FYI: $ENV{HOSTNAME} is not working on all machines from crontab, prefered Linux command 'hostname`
+execute_process(
+    COMMAND hostname
+    TIMEOUT 1
+    OUTPUT_VARIABLE HOST_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
@@ -73,7 +78,7 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
     if (ENABLE_MPI OR ENABLE_OMP)
-        message(FATAL_ERROR "Static linking only works in sequential mode")
+        message("Static linking only works in sequential mode - you get nonworking executable !")
     endif()
 endif()
 
@@ -101,8 +106,9 @@ endif()
 include(Testing)
 include(Definitions)
 include(Archs)
-include(FCompilers)
-include(CCompilers)
+include(SaveCompilerFlags)
+include(ConfigFortranCompilerFlags)
+include(ConfigCCompilerFlags)
 include(Parallel)
 
 set(LIBS)
@@ -164,11 +170,16 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 
 add_subdirectory(xcfun)
 set(LIBS
-    ${LIBS}
     xcfun
+    ${LIBS}
     )
 
 include(CompilationInfo)
+
+configure_file(
+    ${PROJECT_SOURCE_DIR}/config.h.in
+    ${PROJECT_SOURCE_DIR}/main/config.h
+    )
 
 # copy pam to build dir as pam and pam-dirac
 configure_file(
@@ -255,6 +266,20 @@ foreach(
         ${LIBS}
         )
 endforeach()
+
+#miro: fix of static buildup with gfortran+blas&lapack/ATLAS
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND NOT ENABLE_INTERNAL_MATH)
+    #miro: Only newer versions of GNU-linkers have this flag ! Check "ld --help"
+    # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
+    message("-- static executable buildup with gfortran+usr-library: added --no-export-dynamic linking flag, not working for gfortran44")
+    target_link_libraries(dirac.x -Wl,--no-export-dynamic)
+    if (DETECTED_MATH_VENDOR MATCHES ATLAS)
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+        message("-- static executable buildup with gfortran+ATLAS: added workaround linking against libpthread")
+        target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+    endif()
+endif()
 
 # forward CPP directly to the code
 set(CPP)

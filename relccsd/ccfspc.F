@@ -159,6 +159,7 @@ C
 C     Make FSTAU
       CALL GET_FSTAU (T1,T2,BUF1,BUF2,BUF3)
 C     Extract the wave function
+
       CALL EXTRT2T(BUF2,BUF3,1,2,3,3,LFA)
 C     Extract the 2-particle Hamiltonian
       CALL EXTRT2T(S2,BUF1,1,1,3,3,LFA)
@@ -406,7 +407,6 @@ C       Make the effective Hamiltonian in the full array.
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,HEFF,3,3,2,2,LFA)
       ENDIF
-
 C
 C.... Diagonalize the effective Hamiltonian (blocked by symmetry).
 C
@@ -415,8 +415,7 @@ C
          CALL SOLVE_CG (NFS_HE(IRP,ICURFSS),
      &                  HEFF(IFS_HE2(IRP,ICURFSS)*RCW+1),
      &                  EIGENVECTORS(IFS_HE2(IRP,ICURFSS)*RCW+1),
-CMI  &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)+1))
-     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+1))
+     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+RCW))
 100   CONTINUE
 
       RETURN
@@ -461,8 +460,6 @@ C---------------Local variables -----------------------------------
       INTEGER :: IERR
       REAL*8 FNOR(RCW),E_OFF
 C---------------Executable code--------------------------------------
-
-
 C
 C....... Allocate memory for the diagonalization routine
 C
@@ -550,14 +547,13 @@ C
       CALL INDEXX (NDT,EVR,INDX)
 C
 C.....Store the eigenvalues 
-CMI/July07 both real and imaginary
       DO I = 1, NDT
        EV(1,I) = EVR(INDX(I))
        IF (CARITH) EV(2,I) = EVI(INDX(I))
       ENDDO
 C
 C.....Store the eigenvectors in EVEC
-C
+C     
       DO I = 1, NDT
          DO J = 1, NDT
             EVEC(1,J,I) = VECR(J,INDX(I))
@@ -573,11 +569,9 @@ C
          IF (CARITH) FNOR(2) = 0.D0
          CALL XSCAL(NDT,FNOR,EVEC(1,1,I),1)
       ENDDO
-
 C
 C.....Release the memory
 C
-
       DEALLOCATE (EVR,STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in EVR deallocation !')
@@ -604,10 +598,10 @@ C
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX deallocation !')
       ENDIF
-
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS)
+      SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS,
+     &  NSP,IREPSPI)      
 C
       implicit real*8 (a-h,o-z)
 C---------------Description--------------------------------------------
@@ -615,12 +609,6 @@ C
 C     Analyse the eigenvectors of the effective Hamiltonian and
 C     compute oscilator strengths.
 C
-CMI/July07 EIGENVALUES contains imaginary parts in the case of carith=T
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 EPS(*),EIGENVALUES(0:*),EIGENVECTORS(*)
-      INTEGER ICURFSS
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -631,14 +619,19 @@ C
 #include "ccpar.inc"
 #include "files.inc"
 C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 EPS(*),EIGENVALUES(RCW,0:*),EIGENVECTORS(*) 
+      INTEGER ICURFSS,NSP
+C
 C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
       INTEGER :: IERR, ISIZE
       DIMENSION IND(MXREP)
+      DIMENSION IREPSPI(NSP,MXREP,2)
       REAL*8 E_OFF
 C---------------Executable code--------------------------------------
 
-!miro: fixed nastry "+1" index leak bug showing up only with sensitive compilers
       ISIZE = IFS_HE(NREP+1,ICURFSS)+1
       ALLOCATE (INDX_ALL(ISIZE),STAT=IERR)
       IF (IERR.NE.0) THEN
@@ -652,7 +645,6 @@ C---------------Executable code--------------------------------------
 C     Initialize the reference energy
 
       E_OFF = ESCF + ECCSD
-
 C
 C     Print an ordered list of eigenvalues
 C
@@ -660,17 +652,17 @@ C
 C        Odd electron case : fermion irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:ISIZE),ISIZE,
+     &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ELSE IF (ICURFSS.EQ.4) THEN
 C        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
 C        This makes the routine print excitation energies
-         EIGENVALUES(0) = 0.D0
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) + 1
+         EIGENVALUES(1:RCW,0) = 0.D0
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(0:ISIZE),ISIZE,
+     &                EIGENVALUES(1:RCW,0:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
 C        One should not forget this line : the real dimension of the first irrep should be retained !
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
@@ -678,13 +670,12 @@ C        One should not forget this line : the real dimension of the first irrep
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:ISIZE),ISIZE,
+     &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ENDIF
-
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
-     &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
+     &                E_OFF,EIGENVALUES(1,1),EIGENVECTORS,NSP,IREPSPI)
       DEALLOCATE (INDX_ALL,STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL deallocation !')
@@ -2207,7 +2198,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,EV_ALL,H)
+      SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,
+     &                        EV_ALL,H,NSP,IREPSPI)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2238,25 +2230,57 @@ C
 C---------------Calling variables--------------------------------------
 C
 #include "complex.inc"
-      REAL*8 TRES, EPS(*), E_OFF
-      REAL*8 EV_ALL(RCW,NDT_TOT),H(*)
-      REAL*8 INTENSITY(NDT_TOT),TRANS_DIPOLE(3,NDT_TOT)
-      INTEGER ICURFSS, IPR
+#include "symm.inc"
+      REAL*8 TRES,EPS(*),E_OFF
+      REAL*8 EV_ALL(RCW,NDT_TOT),H(RCW,*) 
+      REAL*8 INTENSITY(NDT_TOT),
+     &       TRANS_DIPOLE(3,RCW,NDT_TOT)
+      INTEGER ICURFSS,IPR,NSP
+      DIMENSION IREPSPI(NSP,MXREP,2)
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 #include "files.inc"
 #include "param.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
       PARAMETER (NDIMH=5000)
-      INTEGER I_EIGENVALUE , J_EIGENVALUE, I_COEFF
+      INTEGER I_EIGENVALUE, J_EIGENVALUE, I_COEFF
       CHARACTER*50 LABEL(NDIMH)
+      REAL*8 VALUE
+C
 C---------------Executable code--------------------------------------
  
-C     Initialize and gets label for the excited state coefficiens
+!     At the moment only sector 4 has intensities
+      IF (ICURFSS.EQ.4) THEN
+      CALL FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE,
+     &                           NDT_TOT,IREPSPI,NSP,E_OFF,EV_ALL)
+      WRITE (IW,1100)
+      IF (.NOT.CARITH) THEN
+         WRITE (IW,1110)
+      ELSE
+         WRITE (IW,1111)
+      ENDIF
+      I_EIGENVALUE = 0
+      DO IRP=1,NREP
+!        Not all irreps may be spanned
+         NDT = NFS_HE(IRP,ICURFSS)
+         IF (NDT.EQ.0) CYCLE
+         DO J_EIGENVALUE = 1, NDT
+              I_EIGENVALUE = I_EIGENVALUE + 1
+              IF (INTENSITY(I_EIGENVALUE).GT.1E-05) 
+     &        WRITE (IW,1112) REPNA(NREP+IRP),J_EIGENVALUE,
+     &            EV_ALL(1,I_EIGENVALUE),
+     &            INTENSITY(I_EIGENVALUE),
+     &            ((TRANS_DIPOLE(IX,IY,I_EIGENVALUE),IX=1,3),IY=1,RCW)
+         END DO
+      END DO
+      END IF ! Intensities for excitation energies
+C
+C     Now print an analysis of the vectors
+C     Initialize and get labels for the excited state coefficiens
       IF (IPR.LE.0) THEN
          TRES = 0.1
       ELSEIF (IPR.LE.2) THEN
@@ -2267,12 +2291,10 @@ C     Initialize and gets label for the excited state coefficiens
 
       I_EIGENVALUE = 0
       I_COEFF = 0
-      IJ = 0
-
+      IJ = 1
       CALL GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 
       WRITE (IW,1000) TRES
-
       DO IRP=1,NREP
  
 C     Get the dimension of the space
@@ -2289,43 +2311,51 @@ C     Add an offset for irrep names for bosonic irreps
          ENDIF
 
 C        Loop over the eigenvalues
- 
+
          DO J_EIGENVALUE = 1, NDT
             I_EIGENVALUE = I_EIGENVALUE + 1
-C           intensity not yet implemented
-c           WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
-c    &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE),
-c    &            INTENSITY(I_EIGENVALUE),
-c    &           (TRANS_DIPOLE(IX,I_EIGENVALUE),IX=1,3)
+C           I have seen crazy ouputs with large Fock space calcs, put a limit
+            IF (J_EIGENVALUE.LT.100) THEN
             WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
-CMI  &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE) 
-     &            EV_ALL(1,I_EIGENVALUE),E_OFF+EV_ALL(1,I_EIGENVALUE) 
+     &             E_OFF+EV_ALL(1,I_EIGENVALUE),EV_ALL(1,I_EIGENVALUE)
 C           Loop over the coefficients and print the interesting ones
             DO J_COEFF = 1, NDT
                K_COEFF = I_COEFF + J_COEFF
+               VALUE = ABS(H(1,IJ))
+               IF (CARITH) VALUE = VALUE + ABS(H(2,IJ))
+               IF (CARITH .AND. VALUE.GT.TRES) THEN
+                   WRITE (IW,'(2F15.5,3X,A50)') 
+     &             H(1,IJ),H(2,IJ),LABEL(K_COEFF)
+               ELSE IF (VALUE.GT.TRES) THEN              
+               WRITE (IW,'(F15.5,3X,A50)') H(1,IJ),LABEL(K_COEFF)
+               END IF
                IJ = IJ + 1
-               IF (ABS(H(IJ)).GT.TRES) 
-     &             WRITE (IW,'(F15.5,3X,A50)') H(IJ),LABEL(K_COEFF)
             END DO
+            ELSE
+               IJ = IJ + NDT
+            END IF
          END DO
          I_COEFF = I_COEFF + NDT
       END DO
-
-C      write(IW,*) 'in FS_ANALYSIS...4'
-C      call FLSHFO(IW)
-
+ 
  1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
-C    intensity not yet implemented
-c    &/' First line  : Energy, Intensity, Transition dipole vector'
-     &/' First line  : Eigenvalue, Energy'
+     &/' First line  :  Energy, Eigenvalue'
      &/' other lines : Coefficients of contributing determinants',
      & ' (above a treshold of ',E6.1,')')
- 1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8,4F10.5)
+ 1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
+ 1100 FORMAT (//' Excitation energies and intensities'/)
+ 1110 FORMAT (/' Irrep   State   Ex. Energy     f        ',
+     & '  mu(x)     mu(y)     mu(z) '  )
+ 1111 FORMAT (/' Irrep   State   Ex. Energy   f     ',
+     & 'mu_r(x)   mu_r(y)   mu_r(z)    mu_i(x)    mu_i(y)    mu_i(z)')
+ 1112 FORMAT (2X,A4,I8,2f12.6,6f10.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE)
-C
-      IMPLICIT INTEGER (A-Z)
+      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS,INTENSITY,
+     &                                 TRANS_DIPOLE,NDT_TOT,IREPSPI,NSP,
+     &                                 E_OFF,EV_ALL) 
+c
+      IMPLICIT INTEGER (A-Z)   
 C
 C---------------Description--------------------------------------------
 C
@@ -2333,63 +2363,329 @@ C     Read dipole moment in MO basis and contract with CI vectors
 C
 C     Author : Luuk Visscher
 C
-C---------------Common Blocks--------------------------------------
+C---------------Routines called--------------------------------------
+C---------------Last modified-----------------------------------------
+C---------------Common Blocks------------------------------------
 C
+#include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"
-C
-C---------------Variables-----------------------------------------------
-C
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dcbxpr.h"
 c
-c LV, 9-5-2007 : Still to do is the following
+c---------------Calling Variables-----------------------------------
+c 
+      INTEGER ICURFSS,NSP,NDT_TOT,IREPSPI(NSP,MXREP,2)
+      REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 E_OFF,EV_ALL(RCW,NDT_TOT)
+!output
+      REAL*8 INTENSITY(NDT_TOT),
+     &       TRANS_DIPOLE(3,RCW,NDT_TOT)
 c
-c 1) read in dipole matrices (make sure they are available on MDPROP)
-c 2) extract part that we need
-c    av, av for (0,1) and (0,2) sectors
-c    ao, ao for (1,0) and (2,0) sectors
-c    av, ao for (1,1) sector
-c 3) apply Slater rules, trivial for (0,1) and (1,0), analogous
-c    to construction of Heff for the (0,2) and (2,0) sectors
-c    this will in the first step give a matrix with as right dimension
-c    the original one (# of states in a give symmetry), but on the left
-c    hand side the # states in the product symmetry (e.g. irrep(dipole_z) x irrep(solution vector)
-c    this matrix can be contracted once more with the solution vectors to provide the transition dipoles
-c    for all possible transitions
-c 4) select the interesting ones and print them
-c    one may save some memory by already in step 3) contracting only over the interesting ones. will make the
-c    code a bit more complicated, though
+c---------------Local Variables-----------------------------------------------
 c
 c    NB: note that this scheme is treating a H-eff as were it a Hermitian CI matrix, a probably better approach
 c        is to use the left and righthand side eigenvectors, but this needs to be worked out more carefully.
 c
-      INTEGER ICURFSS,I,IREP,JREP
-      REAL*8 H(*),INTENSITY(*),TRANS_DIPOLE(3,*)
-      INTEGER NFS_PRP(MXREP)
-      REAL*8 DIPOLE(600),D_TERMS_C(600)
-      
-      CALL DZERO (INTENSITY,600)
-      CALL DZERO (TRANS_DIPOLE,3*600)
+      REAL*8, ALLOCATABLE:: PROP(:,:,:)
+c
+c---------------Executable code--------------------------------------------------
+c
 
-C     Contract the solution vectors with the x-dipole matrices
-C     Calculate product irreps after multiplication with x
-      DO JREP = 1, NREP
-c        IREP = MULTB(PRP_REP(1)+NREP,JREP)
-         irep = jrep ! test with totally symmetric operators
-         NFS_PRP(IREP) = NFS_HE(IREP,ICURFSS)
-      ENDDO
-
-      IF (ICURFSS.LE.3) THEN
-C        Make Dipole * Vec
-         CALL CNTRCT ('N','N',NFS_PRP,NFS_HE(1,ICURFSS),
-     &                        NFS_HE(1,ICURFSS),A1,DIPOLE,H,A0,
-     &                        D_TERMS_C,NREP)
-C        Make Vec * Dipole * Vec (all possible transition dipoles)
-         CALL CNTRCT ('C','N',NFS_PRP,NFS_HE(1,ICURFSS),
-     &                        NFS_PRP,A1,H,D_TERMS_C,A0,
-     &                        TRANS_DIPOLE,NREP)
+      ALLOCATE(PROP(RCW,NSP,NSP),STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in PROP allocation!')
       ENDIF
-      END
 
+      CALL DZERO (INTENSITY,NDT_TOT)
+      CALL DZERO (TRANS_DIPOLE,3*RCW*NDT_TOT)
+
+       DO EOPER=1, 3 !loop over components of dipole vector
+      CALL DZERO (PROP,NSP*NSP*RCW)
+c
+c Read in dipole matrices in MO-basis
+c
+      CALL READ_PROP(NAMEE(EOPER),NSP,PROP)
+c
+c  Transition dipole moments for (0,1) or (1,0) sector
+c
+      IF ((ICURFSS.EQ.2).OR.(ICURFSS.EQ.3)) THEN 
+! 
+!      CALL TRANSITION_ZEROONE_ONEZERO (ICURFSS,EOPER,PROP,
+!     &               TRANS_DIPOLE,EIGENVECTORS,NDT_TOT,NSP)
+c
+c  Transition dipole moments for (1,1) sector
+c 
+      ELSEIF (ICURFSS.EQ.4) THEN         
+
+      CALL TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
+     &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+      ENDIF
+c
+c Calculate intensity, gauge dependence? I = 2/3 * |mu|^2 * excitation energy
+c
+       IF (CARITH) THEN
+        DO I=1,NDT_TOT
+         INTENSITY(I)= INTENSITY(I) + 2.0D0/3.0D0 *
+     &        (TRANS_DIPOLE(EOPER,1,I)**2
+     &        + TRANS_DIPOLE(EOPER,2,I)**2)
+     &        * EV_ALL(1,I)
+        ENDDO
+       ELSE
+        DO I=1,NDT_TOT
+          INTENSITY(I) = INTENSITY(I) + 2.0D0/3.0D0 *
+     &     (TRANS_DIPOLE(EOPER,1,I)**2)*EV_ALL(1,I)
+       ENDDO
+      ENDIF 
+
+       ENDDO !loop over components of dipole vector
+
+      DEALLOCATE(PROP,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in PROP deallocation!')
+      ENDIF
+
+!!    Write excitation energies and transition dipoles
+
+!      OPEN(20,FILE='FSCC_Spectra.out',STATUS='NEW')
+!      WRITE(20,*) EV_ALL,TRANS_DIPOLE
+!      CLOSE(20)
+
+!!    PRINT SPECTRA
+
+!      DO I=1,NDT_TOT
+!       IF (ABS(INTENSITY(EOPER,I)).GT.0.0D0) THEN
+!         CALL OUTPUT_SPECTRA(ICURFSS,IPR,NDT_TOT,EOPER,
+!     &                      NFS_HE(NREP+1,ICURFSS))
+!       ELSE 
+!          WRITE(*,*) 'No spectra output as intensities are zero'
+!       ENDIF
+!      ENDDO
+
+      RETURN
+      END 
+!C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
+     &                       EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+      IMPLICIT INTEGER (A-Z)
+c
+c     Contraction of dipole integrals with coefficients for sector (1,1)
+c
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dcbxpr.h"
+c
+c-------------------Calling Variables-------------------------------------------------
+c
+      INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2)
+      REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,4)),PROP(RCW,NSP,NSP)
+!output
+      REAL*8 TRANS_DIPOLE(NEOPER,RCW,NDT_TOT)
+c
+c-------------------Local Variables--------------------------------------------------
+c
+      INTEGER, ALLOCATABLE:: IND(:,:)
+      REAL*8 DDOT
+c
+c------------------------------------------------------------------------------------
+c
+c
+c Contraction
+c
+      K = 0
+      JI = 0
+      DO IJREP = 1, NREP
+      NDT = NFS_HE(IJREP,4) 
+      IF (NDT.EQ.0) CYCLE
+      ALLOCATE (IND(2,NDT))
+      CALL PROPINDEX(IND,IJREP,NDT,IREPSPI,NSP)
+
+      DO I = 1,NDT  !loop over eigenvalues
+         K = K + 1
+         DO J = 1,NDT !loop over states in the model space
+           JI = JI + 1
+           IF (CARITH) THEN
+       TRANS_DIPOLE(EOPER,1,K) = TRANS_DIPOLE(EOPER,1,K)
+     &        + PROP(1,IND(1,J),IND(2,J))*EIGENVECTORS(1,JI)
+     &        + PROP(2,IND(1,J),IND(2,J))*EIGENVECTORS(2,JI)
+
+       TRANS_DIPOLE(EOPER,2,K) = TRANS_DIPOLE(EOPER,2,K)
+     &        + PROP(1,IND(1,J),IND(2,J))*EIGENVECTORS(2,JI)
+     &        - PROP(2,IND(1,J),IND(2,J))*EIGENVECTORS(1,JI)
+           ELSE
+
+       TRANS_DIPOLE(EOPER,1,K) = TRANS_DIPOLE(EOPER,1,K)
+     &       + PROP(1,IND(1,J),IND(2,J))*EIGENVECTORS(1,JI)
+           ENDIF
+             
+          ENDDO !model space 
+        ENDDO !eigenvalues
+        DEALLOCATE(IND)
+       enddo !nrep
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+       SUBROUTINE READ_PROP(DIPLEN,NSP,PROP)
+C
+       IMPLICIT INTEGER (A-Z)
+C
+C This routine is analogous to RDPROP in relccsd/ccints.F (without the sorting).
+C
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "inpt.inc"
+C
+C---------------Calling variables------------------------------------
+C
+       INTEGER NSP  
+       REAL*8 PROP(RCW,NSP,NSP)
+       CHARACTER*8 DIPLEN
+C
+C---------------Local variables--------------------------------------
+C
+      LOGICAL TOBE
+      CHARACTER*32 ACHAR
+      REAL*8 DUMPROP(2,NSP,NSP)
+      REAL*8 DUMMY,AMAXR,AMAXI,ANORM,APHASE(2)
+C
+C---------------Executable code--------------------------------------
+C
+C Property integrals are read in in MOLFDIR (RELCCSD) format
+C
+      INQUIRE(FILE='MDPROP',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+!        We need a warning here once this gets further automatized and the file should be present
+         PROP = 0.0
+         RETURN
+      END IF
+
+      OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
+        READ (MDPROP,IOSTAT=IERR) ACHAR
+        IF (IERR.NE.0) THEN
+          WRITE (6,*) ' Error reading property ',DIPLEN,'on file MDPROP'
+          CALL QUIT(' Error reading property integrals')
+        ENDIF
+        DO
+          IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.DIPLEN) THEN
+            READ (MDPROP,IOSTAT=IERR) ACHAR
+          ELSE
+            EXIT
+          ENDIF
+        ENDDO
+        IF (IERR.NE.0) THEN
+          WRITE (6,*) ' Property ',DIPLEN, ' not found on file MDPROP'
+          CALL QUIT(' Property integrals missing')
+        ENDIF
+        IF (IPRNT.GE.1) THEN
+          WRITE (IW,*) 'Read integral type ', DIPLEN,
+     &    'created ', ACHAR(9:16), 'storage info : ', ACHAR(17:24)
+        ENDIF
+        READ (MDPROP) DUMPROP
+      CLOSE (MDPROP,STATUS='KEEP')
+C
+C Multiplication with phase factors
+C For real symmetries the property integrals have to be multiplied with a phase factor
+C
+      IF (CARITH) THEN
+        PROP = DUMPROP
+      ELSE
+C  
+      APHASE(1) = D1
+      APHASE(2) = D0
+      AMAXI = D0
+      IMAX = 0
+      JMAX = 0
+      DO I = 1,NSP
+       DO J = 1,NSP
+        IF (ABS(DUMPROP(2,I,J)).GT.ABS(AMAXI)) THEN
+         AMAXR = DUMPROP(1,I,J) 
+         AMAXI = DUMPROP(2,I,J)
+         IMAX = I
+         JMAX = J
+        ENDIF
+       ENDDO
+      ENDDO
+       
+      IF (ABS(AMAXI).GT.ACCUR) THEN
+       APHASE(1) = AMAXR
+       APHASE(2) = AMAXI
+       ANORM = SQRT(AMAXR*AMAXR + AMAXI*AMAXI)
+       APHASE(1) = APHASE(1) / ANORM
+       APHASE(2) = APHASE(2) / ANORM     
+      ENDIF
+
+      DO I = 1,NSP
+        DO J = 1,NSP
+          PROP(1,I,J) = DUMPROP(1,I,J)*APHASE(1) +
+     &                  DUMPROP(2,I,J)*APHASE(2)
+          AMAXI = D0
+          DUMMY = DUMPROP(1,I,J)*APHASE(2) +
+     &            DUMPROP(2,I,J)*APHASE(1)
+           IF (ABS(DUMMY).GT.ABS(AMAXI)) THEN
+            AMAXI = DUMMY
+C consistency check
+           IF (ABS(AMAXI).GT.ACCUR) THEN
+              WRITE(*,*) I,J,AMAXI
+              CALL QUIT('USE COMPLEX ARITHMETICS')
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDDO
+      ENDIF !CARITH
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PROPINDEX(IND,IJREP,NDT,IREPSPI,NSP) 
+
+      IMPLICIT INTEGER (A-Z)
+c
+c define offsets of property matrix needed in subroutine Transition_OneOne
+c                                                      
+c----------------Common Blocks-----------------------------------------
+c 
+#include "freeze.inc"
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dcbxpr.h"
+c
+c----------------Calling variables---------------------------------------------
+c
+      INTEGER NDT, IJREP
+      INTEGER IND(2,NDT)
+      DIMENSION IREPSPI(NSP,MXREP,2)
+
+c
+c  Determine indices for property matrix (in MOLFDIR format!)
+c 
+      II = 0
+      DO JREP = 1, NREP
+         IREP = MULTB(JREP,IJREP+NREP,1)
+          DO J = 1, NAV(JREP)
+             DO I = 1, NAO(IREP)
+                II = II + 1
+                ind(1,ii) = IREPSPI(nio(irep)+i,irep,1) ! irepspi points to the orginal list of spinors
+                ind(2,ii) = IREPSPI(j,jrep,2) ! we need no offset here because active virtual come first
+             END DO
+          END DO
+      END DO
+
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C

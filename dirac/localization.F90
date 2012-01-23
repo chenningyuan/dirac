@@ -1,12 +1,13 @@
 module localization
 
 use memory_allocator
+use func_PipekMezey
 implicit none
 
-public :: orbloc, initialize_localization
+public  :: orbloc, initialize_localization
 
-private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
-private :: get_kappa, get_hessian, get_gradient, exp_func, hdiag
+private :: ORBLP2, ORBLO4, ORBLO5, ROTCMO_MOD
+private :: get_kappa, hdiag
 private :: get_mu, updateT
 
 type :: localization_flags
@@ -34,7 +35,7 @@ type :: external_variales
 end type external_variales
 
 type( localization_flags ), private :: loc
-type( external_variales  ), private :: var
+type( external_variales  ), private :: var_
 
 ! Some global parameters
 real*8, parameter, private :: thresh = 1.0d-13, trsh_mu = 1.0d-4
@@ -77,36 +78,36 @@ contains
   loc%lgchck     = lgchck
   loc%hesloc     = hesloc
   ! priunit.h
-  var%lupri      = lupri
+  var_%lupri      = lupri
   ! dcbgen.h
-  var%lucoef     = lucoef
+  var_%lucoef     = lucoef
   ! dcbbas.h
-  var%nfbas(:,:) = nfbas(:,:)
-  var%n2bbasx    = n2bbasx
-  var%n2bbasxq   = n2bbasxq
+  var_%nfbas(:,:) = nfbas(:,:)
+  var_%n2bbasx    = n2bbasx
+  var_%n2bbasxq   = n2bbasxq
   ! dcborb.h
-  var%nish(:)    = nish(:)
-  var%norb(:)    = norb(:)
-  var%npsh(:)    = npsh(:)
-  var%nesh(:)    = nesh(:)
-  var%norbt      = norbt
+  var_%nish(:)    = nish(:)
+  var_%norb(:)    = norb(:)
+  var_%npsh(:)    = npsh(:)
+  var_%nesh(:)    = nesh(:)
+  var_%norbt      = norbt
   ! dcbham.h
-  var%ssmtrc     = ssmtrc
-  var%twocompbss = twocompbss
-  var%levyle     = levyle
+  var_%ssmtrc     = ssmtrc
+  var_%twocompbss = twocompbss
+  var_%levyle     = levyle
   ! dgroup.h
-  var%ipqtoq(:,:)= ipqtoq(:,:)
-  var%nz         = nz
+  var_%ipqtoq(:,:)= ipqtoq(:,:)
+  var_%nz         = nz
   ! nuclei.h
-  var%nucdep     = nucdep
+  var_%nucdep     = nucdep
   ! thrzer.h
-  var%thrzer     = thrzer
+  var_%thrzer     = thrzer
   ! dcbprj.h
-  var%nrefs      = nrefs
-  var%iprprj     = iprprj
-  var%maxref     = min(maxref,15)
-  var%prothr     = prothr
-  var%ownbas     = ownbas
+  var_%nrefs      = nrefs
+  var_%iprprj     = iprprj
+  var_%maxref     = min(maxref,15)
+  var_%prothr     = prothr
+  var_%ownbas     = ownbas
 
   if(maxref /= 15)then
     write(lupri,'(a)')' WARNING: The maxref dimension in localization module and Dirac differ'
@@ -115,10 +116,10 @@ contains
     write(lupri,'(a,I4)')' maxref(Localization module) = 15'
   endif
 
-  do i=1,var%maxref
-    var%reffil(i)   = reffil(i)
-    var%vecref(1,i) = vecref(1,i)
-    var%vecref(2,i) = vecref(2,i)
+  do i=1,var_%maxref
+    var_%reffil(i)   = reffil(i)
+    var_%vecref(1,i) = vecref(1,i)
+    var_%vecref(2,i) = vecref(2,i)
   enddo
 
   end subroutine initialize_localization
@@ -136,11 +137,11 @@ contains
 
   ! Internal variables
   character*12 :: sectid, cputid, walltid
-  character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
-  logical      :: tobe, full, rejected, Iminmax, diagconv, trdef, flat
+  character    :: daytid*24, hessian*4, chstart*23
+  logical      :: tobe, full, rejected, Iminmin, trdef, flat, nstep, restore
 
-  integer :: ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
-  integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez
+  integer :: i, ifrp, ndimh, idum, itr, ist, lupri, nish, norb, nucdep, maxref
+  integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez, nref, ndim
 
   real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
   real*8  :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
@@ -154,16 +155,18 @@ contains
   real*8,  pointer :: pkappa(:), tgrad(:), eval(:), hmat(:,:)
 
   !------------------------------------------------------------------------------!
+  call initialize_func
+
   ! Set some parameters
   ifrp   = 1
-  lupri  = var%lupri
-  nish   = var%nish(ifrp)
-  norb   = var%norb(ifrp)
-  nucdep = var%nucdep
-  maxref = var%maxref
+  lupri  = var_%lupri
+  nish   = var_%nish(ifrp)
+  norb   = var_%norb(ifrp)
+  nucdep = var_%nucdep
+  maxref = var_%maxref
 
-  nfbas(:)    = var%nfbas(ifrp,:)
-  ipqtoq(:,:) = var%ipqtoq(:,:)
+  nfbas(:)    = var_%nfbas(ifrp,:)
+  ipqtoq(:,:) = var_%ipqtoq(:,:)
 
   ! Check thresholds
   if(loc%thdiag < thresh)then
@@ -180,14 +183,18 @@ contains
   ! Set defaults
   full = .false.
   if(loc%hesloc == 'FULL') full = .true.
+  hessian = 'DIAG'
+  if(full) hessian = 'FULL'
 
   rejected = .false.
-  Iminmax  = .false.
+  Iminmin  = .false.
   chstart = 'START ITERATION NO.    '
 
   tradius = 10.0d0
   trdef   = .true.
   flat    = .false.
+  nstep   = .true.
+  restore = .false.
 
   if(loc%iprloc.ge.4)then
     write(lupri,*) 'lupri =',lupri
@@ -204,7 +211,7 @@ contains
     write(lupri,*) 'lggrad=',loc%lggrad
     write(lupri,*) 'lgchck=',loc%lgchck
     write(lupri,*) 'hesloc=',loc%hesloc
-    write(lupri,*) 'thrzer=',var%thrzer
+    write(lupri,*) 'thrzer=',var_%thrzer
   endif
 
   call titler('Molecular orbital localization','*',122)
@@ -217,14 +224,13 @@ contains
   endif
 
   ! Memory allocation
-  ndimh = 4 * ( nish*nish + nish ) / 2
-  ndimhr= ndimh - nish
+  ndimh = 4 * ( nish*nish - nish ) / 2
   call alloc(scoef ,nish*nfbas(0)*4,   id='scoef  in orbloc')
   call alloc(storec,nish*nfbas(0)*4,   id='storec in orbloc')
-  call alloc(smat  ,var%n2bbasx,       id='smat   in orbloc')
-  call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
-  call alloc(grad  ,ndimhr,            id='grad   in orbloc')
-  call alloc(etmp  ,ndimhr,            id='etmp   in orbloc')
+  call alloc(smat  ,var_%n2bbasx,       id='smat   in orbloc')
+  call alloc(cmo   ,var_%n2bbasxq,      id='cmo    in orbloc')
+  call alloc(grad  ,ndimh,             id='grad   in orbloc')
+  call alloc(etmp  ,ndimh,             id='etmp   in orbloc')
   call alloc(xkappa,nish,nish,4,       id='xkappa in orbloc')
   call alloc(pmat  ,nish,nish,4,nucdep,id='pmat   in orbloc')
 
@@ -242,16 +248,15 @@ contains
   nullify(hmat  )
 
   ! Read coefficients
-  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
-  close(var%lucoef,status='keep')
+  call opnfil(var_%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var_%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
+  close(var_%lucoef,status='keep')
 
   ! Get overlap matrix 
-  call gtovlx(smat,var%ssmtrc)
+  call gtovlx(smat,var_%ssmtrc)
   if(loc%iprloc.ge.6)then
     write(lupri,'(/a)') '* orbloc: Molecular coefficients:'
     call prqmat(cmo,nfbas(0),norb,nfbas(0),norb,4,ipqtoq(1,0),lupri)
-
     write(lupri,'(/a)') '* orbloc: Overlap matrix' 
     call prqmat(smat,nfbas(0),nfbas(0),nfbas(0),nfbas(0),1,ipqtoq(1,0),lupri)
   endif
@@ -268,71 +273,91 @@ contains
   call indaoc(indao,indaos,indnao)
   call orblo4(indnao,nfnuc,nucdep)
 
+  !------------------------------------------------------------------------------!
+  !                           Main iteration procedure                           !
+  !------------------------------------------------------------------------------!
+  call titler(' REFERENCE POINT ','=',122)
+
   timstr = second()
-  if(loc%prjloc) then
-    ! PRJLOC = TRUE localization with projection analysis
-    call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
-  else
-    ! PRJLOC = FALSE localization with Mulliken analysis
-    call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
-  endif
+  call get_func(smat,scoef,pmat,nfnuc,dinvmg)
+  dinvmo = dinvmg
+
+  write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
+    '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
     '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
-  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
-    '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
 
-  ! SCF cycle
-  dinvmq = d0
+  ! zero step
+  call get_hessian(pmat,hmat,full,totdiag,totnond)
+  call get_gradient(pmat,grad,dnrmg)
+  call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
+
+  shift  = d0
+  dnrmk  = d0
+  dinvmq = d0; diffq = d0
+  dinvmg = d0; diffg = d0
   itr    = 0
   ist    = 0
-  do
+  write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
+    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
+  do
     ist = ist + 1
-    ! get new kappa
-    if(.not.rejected)then
-      call get_hessian(pmat,hmat,full,totdiag,totnond)
-      call get_gradient(pmat,grad,dnrmg)
-      call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmax,full)
-      shift = d0
-    else
-      call get_mu(eval,tgrad,tradius,shift,tpred)
+
+    ! start i-th iteration
+    if( .not.rejected .and. .not.restore )then
+      write(chstart(20:23),'(i4)') itr+1
+      call titler(chstart,'=',122)
+      call gtinfo(daytid)
+      write(lupri,'(/6x,a,a24)')'--- ',daytid
     endif
-    call get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,full,shift,dnrmk)
+
+    ! get new kappa
+    shift = d0
+    if(rejected) call get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
+    call get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,nstep,full,tradius,shift,dnrmk)
     call exp_func(pkappa,tgrad,eval,nish,dinvmq)
+
     if( (rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
 
-    if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
-    if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
-    call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
-    if(loc%prjloc) then
-      ! PRJLOC = TRUE localization with projection analysis
-      call gtovlx(smat,var%ssmtrc)
-      call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
-    else
-      ! PRJLOC = FALSE localization with Mulliken analysis
-      call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
+    ! get new MO coefficients
+    if(restore)then
+      scoef(:) = storec(:)  ! restore MO coefficients
+    elseif(rejected)then
+      scoef(:) = storec(:)  ! restore MO coefficients; the step was rejected
+    elseif(.not.rejected)then
+      storec(:) = scoef(:)  ! store MO coefficients
     endif
+    call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
+
+    ! get functional value in the new point (new MO)
+    call get_func(smat,scoef,pmat,nfnuc,dinvmg)
 
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,full,itr,nep)
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
+                 pkappa,tgrad,eval,nref,dnrmg)
 
-    if( .not.rejected .or. (full.and.loc%lgchck) )then
+    ! Move to the new point if the step was not rejected or old step is going to be restored
+    if( .not.rejected .and. .not.restore )then
+      !---------------------------------------------!
+      ! Calculate hessian and gradient in new point !
+      !---------------------------------------------!
+      call get_hessian(pmat,hmat,full,totdiag,totnond)
+      call get_gradient(pmat,grad,dnrmg)
+      call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
+
       itr = itr + 1
-      call gtinfo(daytid)
 
-      write(chstart(20:23),'(i4)') itr
-      call titler(chstart,'=',122)
-      write(lupri,'(/6x,a,a24)')'--- ',daytid
-
-      if((diffg < d0).and.(diffg > thresh)) &
-        write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
+      if((diffg > d0).and.(diffg > thresh)) &
+        write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old > 0; itr =',itr
       diffa = dabs(dinvmg - dinvmo)
+      hessian = 'DIAG'
       if(full) hessian = 'FULL'
       dinvmo = dinvmg
 
@@ -341,34 +366,42 @@ contains
       write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
         '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
-      ! Exit conditions
+      !----------------------------!
+      ! check convergence criteria !
+      !----------------------------!
       if(loc%hesloc == 'DIAG')then
-        if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) exit
-        if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmax ) exit
-        if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmax ) exit
+        if( .not.loc%lggrad .and.   .not.loc%lgdiag    .and. Iminmin ) exit
+        if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
+        if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmin ) exit
       endif
 
       if(loc%hesloc == 'FULL')then
-        if(Iminmax) exit
-        if( loc%lggrad .and. (dnrmg < loc%thgrad) ) exit
-        if( loc%lgfull .and. (diffa < loc%thfull) ) exit
+        if( .not.loc%lggrad .and. .not.loc%lgfull      .and. Iminmin ) exit
+        if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
+        if(      loc%lgfull .and. (diffa < loc%thfull) .and. Iminmin ) exit
       endif
 
       if(loc%hesloc == 'COMB')then
         if(full)then
-          if(loc%lgchck) exit
-          if(Iminmax) exit
-          if( loc%lgfull .and. (diffa < loc%thfull) ) exit
+          if( .not.loc%lggrad .and. .not.loc%lgfull      .and. Iminmin ) exit
+          if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmin ) exit
+          if(      loc%lgfull .and. (diffa < loc%thfull) .and. Iminmin ) exit
         else
-          if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) full = .true.
-          if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmax ) full = .true.
-          if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmax ) full = .true.
+          if( .not.loc%lgdiag                            .and. Iminmin ) full = .true.
+          if(      loc%lgdiag .and. (dnrmg < loc%thdiag) .and. Iminmin ) full = .true.
+          if(full)then
+            call get_hessian(pmat,hmat,full,totdiag,totnond)
+            call get_gradient(pmat,grad,dnrmg)
+            call hdiag(hmat,grad,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
+            hessian = 'FULL'
+            write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
+              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+            if(loc%lgchck) exit
+          endif
         endif
       endif
 
       if(itr > loc%itrloc)exit
-      ! Exit conditions
-
     endif
 
     if(ist > 2*loc%itrloc)exit
@@ -376,7 +409,7 @@ contains
   enddo
 
   write(lupri,'(//11x,a)')      '************************************************************'
-  if(Iminmax)then
+  if(Iminmin)then
     write(lupri,'(11x,a,i4,a,i4,a)') &
          '**** MAXIMUM reached after',itr,' iterations and',ist,' steps ****'
   elseif( full .and. ((diffa < loc%thfull).and.(dnrmg < loc%thgrad)) )then
@@ -425,504 +458,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLP1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,MAXREF,DINVM)
-!***********************************************************************
-!
-!     Based on T.Saue March 26 1999 : SUBROUTINE ANAPRJ
-!     Modify by S. Dubillard - Apr 21 2004
-!
-!***********************************************************************
-      USE SELECT_COEFF_OWN_BAS
-      IMPLICIT NONE
-
-      ! External variables
-      INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP, MAXREF
-      REAL*8,  INTENT(OUT) :: DINVM
-
-      REAL*8,  INTENT(IN   ) :: SCOEF(*)
-      REAL*8,  INTENT(INOUT) :: SMAT(*)
-      REAL*8,  INTENT(  OUT) :: PMAT(NI,NI,4,NUCDEP)
-
-      ! Internal variables
-      CHARACTER*6  :: REFFIL(MAXREF)
-      CHARACTER*72 :: VECREF(2,MAXREF)
-      REAL*8, PARAMETER :: DM1=-1.0D0
-
-      LOGICAL   :: TOBE
-
-      INTEGER :: I, J, K, IZ, IER, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, NMOL
-      INTEGER :: IVEC, JOFF, NREF, N2REF, LUPRI, NPSH, NESH, NORB, NREFS
-      INTEGER :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2), IPQTOQ(4,0:7)
-
-      REAL*8    :: DDUMARR(2), DINV, QLOC2, DLOC
-
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: KVECTMP, JREF, IPIV
-      REAL*8,  ALLOCATABLE, DIMENSION(:) :: RCOEF, CMO, BV, GVEC, AMAT, WMAT
-
-      TYPE :: PTR2ARRAY
-        INTEGER, DIMENSION(:), POINTER :: P
-      END TYPE PTR2ARRAY
-
-      TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
-
-  !------------------------------------------------------------------------------!
-      IFRP   = 1
-      LUPRI= VAR%LUPRI
-      NPSH = VAR%NPSH(IFRP)
-      NESH = VAR%NESH(IFRP)
-      NORB = VAR%NORB(IFRP)
-      NREFS= VAR%NREFS
-      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
-      VECREF(:,:) = VAR%VECREF(:,:)
-      REFFIL(:)   = VAR%REFFIL(:)
-
-      ALLOCATE( KVEC(2,NREFS), STAT=IER )
-      IF(IER /= 0)THEN
-        WRITE(LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
-        WRITE(LUPRI,*) "STAT=",IER
-        WRITE(0,*) "Error in allocation ==> see output file "
-        STOP
-      ENDIF
-      DO I=1,2
-      DO J=1,NREFS
-        NULLIFY(KVEC(I,J)%P)
-      ENDDO
-      ENDDO
-
-      CALL QENTER('ORBLP1')
-      NB     = NBL + NBS
-!     DO IFRP = 1,NFSYM
-        NVECS(IFRP,1) = 0
-        CALL ALLOC(KVECTMP,NORB,ID='KVECTMP IN ORBLP1')
-        DO I = 1,NREFS
-          NSTR(IFRP,0,I) = 1
-          CALL NUMLST(VECREF(IFRP,I),KVECTMP, &
-               NORB,-NPSH,NESH,               &
-               IFRP,NSTR(IFRP,0,I))
-          CALL ORBCNT(KVECTMP,NSTR(IFRP,0,I), &
-               NPSH,NESH,                     &
-               NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
-          NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
-          CALL ALLOCP(KVEC(IFRP,I)%P,NSTR(IFRP,0,I),ID='KVEC%P IN ORBLP1')
-          KVEC(IFRP,I)%P(1:NSTR(IFRP,0,I)) = KVECTMP(1:NSTR(IFRP,0,I))
-        ENDDO
-        CALL DEALLOC(KVECTMP,ID='KVECTMP IN ORBLP1')
-!     ENDDO
-      NCDIM = NB*NVECS(IFRP,1)*4
-      CALL ALLOC(RCOEF,NCDIM,ID="RCOEF in ORBLP1")
-
-!     COEFFICIENT SELECTION
-!     =====================
-
-      ICFS = 6
-      IF(VAR%IPRPRJ.GE.5) ICFS = 7
-      CALL ALLOC(CMO,VAR%N2BBASXQ,ID="CMO in ORBLP1")
-
-      IOFF(1) = 0
-      VAR%IPRPRJ = 4
-      DO I = 1,NREFS
-        INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
-        IF (.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
-          CALL QUIT('PRJANA: No reference coefficients !')
-        ENDIF
-        CALL OPNFIL(VAR%LUCOEF,REFFIL(I),'OLD','PRJANA')
-        IF(VAR%OWNBAS)THEN
-          CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,               &
-               I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
-               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
-               NSTR(1,0,I))
-          IF(LOC%IPRLOC.GE.5)THEN
-            WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
-            NQ = NB*IOFF(IFRP)+1
-            CALL PRQMAT(RCOEF(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
-          ENDIF
-!         DO IFRP = 1, NFSYM
-            IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,I)
-!         ENDDO
-        ELSE
-          WRITE(LUPRI,*) 'Current version work only with .OWNBAS option'
-          WRITE(0,*) 'Current version work only with .OWNBAS option'
-          STOP
-        ENDIF
-        CLOSE(VAR%LUCOEF,STATUS='KEEP')
-      ENDDO
-
-!     Throw away the full coefficients and eigenvalues
-!     ================================================
-
-      CALL DEALLOC(CMO,ID='CMO IN ORBLP1')
-
-!     Do projection analysis
-!     ======================
-
-!     NBDIM = 0
-!     DO IFRP = 1,NFSYM
-        NBDIM = NVECS(IFRP,1)*NI*4
-!     ENDDO
-      CALL ALLOC(BV,NBDIM,ID="BV in ORBLP1")
-!     DO IFRP = 1,NFSYM
-!     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
-      NMOL   = NI
-      NREF   = NVECS(IFRP,1)
-      N2REF  = NREF*NREF
-      CALL ALLOC(GVEC,(NREF+1)*2,ID="GVEC in ORBLP1")
-      CALL ALLOC(AMAT,N2REF*4,ID="AMAT in ORBLP1")
-      CALL ALLOC(JREF,NREF*3,ID="JREF in ORBLP1")
-      CALL ALLOC(IPIV,NREF,ID="IPIV in ORBLP1")
-      IVEC = 0
-      DO I = 1,NREFS
-        CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
-        IVEC = IVEC + NSTR(IFRP,0,I)
-      ENDDO
-      CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,NVECS(IFRP,1),BV,NSTR,IPIV,MAXREF)
-
-! Memory allocation for the matrix W = Ac
-
-      CALL ALLOC(WMAT,NREF*NI*4,ID="WMAT in ORBLP1")
-
-! Construction of W = Ac
-
-      IF(LOC%IPRLOC.GE.5)THEN
-        WRITE(LUPRI,'(/A)') '* Matrice BV'
-        CALL PRQMAT(BV,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
-        WRITE(LUPRI,'(/A)') '* Matrice AMAT'
-        CALL PRQMAT(AMAT,NREF,NREF,NREF,NI,4,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      CALL QGEMM(NREF,NI,NREF,D1,                &
-           'N','N',IPQTOQ(1,0),AMAT,NREF,NREF,4, &
-           'N','N',IPQTOQ(1,0),BV,NREF,NI,4,     &
-           D0,IPQTOQ(1,0),WMAT,NREF,NI,4)
-
-      IF(LOC%IPRLOC.GE.5)THEN
-        WRITE(LUPRI,'(/A)') '* Matrice W'
-        CALL PRQMAT(WMAT,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
-      ENDIF
-
-! Construct P_A for each center A
-
-      JOFF = 0
-      DO I = 1,NUCDEP
-        CALL QGEMM(NI,NI,NSTR(IFRP,0,I),D1,                    &
-                   'H','N',IPQTOQ(1,0),BV(JOFF+1),NREF,NI,4,   &
-                   'N','N',IPQTOQ(1,0),WMAT(JOFF+1),NREF,NI,4, &
-                   D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-        JOFF = JOFF + NSTR(IFRP,0,I)
-      ENDDO
-
-! P_A matrices symmetrization
-
-      DO I = 1,NUCDEP
-        CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
-        DO IZ = 2,4
-          CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
-        ENDDO
-      ENDDO
-
-! Multiply pmat with 1/2 just to avoid confusion in the code below
-      DO IZ=1,4
-        DO I=1,NI
-          DO J=1,NI
-            DO K=1,NUCDEP
-              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
-
-      IF(LOC%IPRLOC.GE.2)THEN
-        DO IZ=1,4
-          WRITE(LUPRI,*)
-          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
-          DO I=1, NUCDEP
-            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I
-            DO J=1,NI
-              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
-            ENDDO
-            WRITE(LUPRI,*)
-          ENDDO
-        ENDDO
-      ENDIF
-
-      IF(LOC%IPRLOC.GE.5)THEN
-        DO I = 1,NUCDEP
-          WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
-          WRITE(LUPRI,'(A)') '  ============================'
-          CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
-        ENDDO
-      ENDIF
-
-! Calculation and print of the localisation criterion
-
-      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-      DINV = D0
-      DO I = 1,NI
-        QLOC2 = D0
-        DO J = 1,NUCDEP
-          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
-        ENDDO
-        DLOC = D1/QLOC2
-        DINV = DINV + QLOC2
-        WRITE(LUPRI,'(11X,A,I3,A,2F7.4)') &
-        ' Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
-      ENDDO
-      DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-
-  !------------------------------------------------------------------------------!
-  !                             Deallocate arrays                                !
-  !------------------------------------------------------------------------------!
-      DO I=1,NREFS
-        CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
-      ENDDO
-      DEALLOCATE( KVEC )
-      CALL DEALLOC(RCOEF,ID='RCOEF IN ORBLP1')
-      CALL DEALLOC(BV,ID='BV IN ORBLP1')
-      CALL DEALLOC(GVEC,ID='GVEC IN ORBLP1')
-      CALL DEALLOC(AMAT,ID='AMAT IN ORBLP1')
-      CALL DEALLOC(JREF,ID='JREF IN ORBLP1')
-      CALL DEALLOC(IPIV,ID='IPIV IN ORBLP1')
-      CALL DEALLOC(WMAT,ID='WMAT IN ORBLP1')
-
-      CALL QEXIT('ORBLP1')
-
-  END SUBROUTINE ORBLP1
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
- SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,NSTR,IPIVOT,MAXREF)
-!***********************************************************************
-!
-!     Projection analysis for fermion ircop IFRP
-!
-!     Written by T.Saue March 26 1999
-!
-!***********************************************************************
-      IMPLICIT NONE
-
-      ! External variables
-      INTEGER, INTENT(IN ) :: NB, NMOL, NREF, MAXREF
-      INTEGER, INTENT(IN ) :: NSTR(2,0:2,0:MAXREF)
-      INTEGER, INTENT(OUT) :: IPIVOT(*)
-
-      REAL*8,  INTENT(IN   ) :: SCOEF(*), RCOEF(*)
-      REAL*8,  INTENT(INOUT) :: SMAT(*)
-      REAL*8,  INTENT(  OUT) :: AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4)
-
-      ! Internal variables
-      CHARACTER*6  :: REFFIL(MAXREF)
-      CHARACTER*72 :: VECREF(2,MAXREF)
-      INTEGER      :: I, J, IFRP, JOFF, KOFF, JOB, NEFF, NREFS, LUPRI
-      INTEGER      :: IPQTOQ(4,0:7)
-
-      REAL*8 :: PTOL
-      REAL*8, PARAMETER :: DC=1.0D-2
-
-      LOGICAL DOPOP
-
-  !------------------------------------------------------------------------------!
-      IFRP = 1
-      NREFS = VAR%NREFS
-
-      DOPOP = NREFS.GT.1
-      PTOL  = VAR%PROTHR*DC
-      LUPRI = VAR%LUPRI
-      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
-      VECREF(:,:) = VAR%VECREF(:,:)
-      REFFIL(:)   = VAR%REFFIL(:)
-
-!     Make projection vector
-
-      CALL QTRANS90('AOMO','S',D0,NB,NB,NREF,NMOL, &
-                    SMAT,NB,NB,1,IPQTOQ(1,0),      &
-                    BVEC,NREF,NMOL,4,IPQTOQ(1,0),  &
-                    RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
-                    SCOEF,NB,NMOL,4,IPQTOQ(1,0),VAR%IPRPRJ)
-      IF(NREFS.GT.1) THEN
-
-!       Make overlap matrix
-
-        CALL QTRANS90('AOMO','S',D0,NB,NB,NREF,NREF, &
-                      SMAT,NB,NB,1,IPQTOQ(1,0),      &
-                      AMAT,NREF,NREF,4,IPQTOQ(1,0),  &
-                      RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
-                      RCOEF,NB,NREF,4,IPQTOQ(1,0),VAR%IPRPRJ)
-
-!       Print overlaps
-
-        IF(LOC%IPRLOC.GE.5)THEN
-           JOFF = 1
-           DO J = 1,NREFS
-              KOFF = 1
-              DO I = 1,(J-1)
-                 WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',REFFIL(I),REFFIL(J)
-                 CALL PRQMAT(AMAT(KOFF,JOFF,1),                  &
-                      NSTR(IFRP,0,I),NSTR(IFRP,0,J),NREF,NREF,4, &
-                      IPQTOQ(1,0),LUPRI)
-                 KOFF = KOFF + NSTR(IFRP,0,I)
-              ENDDO
-              JOFF = JOFF + NSTR(IFRP,0,J)
-           ENDDO
-        ENDIF
-
-!       Solve linear system by Cholesky decomposition
-!       with full pivoting
-!        --> notice that overlap matrix SMAT is destroyed !
-
-        JOB = 1
-        CALL QCHOLD(AMAT,NREF,4,NREF,NREF,SMAT,PTOL,NEFF,JOB,IPIVOT)
-        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,4,NREF,NREF,SMAT,BVEC, &
-             NREF,NMOL,BVEC,NREF,NMOL,JOB,IPIVOT,SMAT(1+NREF))
-        IF(NEFF.LT.NREF) THEN
-          WRITE(LUPRI,'(A,A)') '* WARNING: ', &
-           ' linear dependencies detected in Cholesky decomposition'
-          WRITE(LUPRI,'(11X,A,I5,A,I5)') ' Reduced dimensionality: ',NREF,' --> ',NEFF
-        ENDIF
-
-!       Restore overlap matrix
-
-        CALL QHMRST(AMAT,NREF,VAR%NZ,NREF,NREF)
-      ENDIF
-
-      END SUBROUTINE ORBLP2
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,NFNUC,DINVM)
-!***********************************************************************
-!
-!     Written by S.Dubillard Jan 21 2004
-!     Last revision:
-!
-!     Construction of the matrices P_A=c_A^+Sc from Mulliken analysis
-!
-!     Calculation of the localisation criteria DINV
-!
-!***********************************************************************
-      IMPLICIT NONE
-
-      ! External variables
-      INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
-      REAL*8,  INTENT(OUT) :: DINVM
-
-      INTEGER, INTENT(IN ) :: NFNUC(*)
-      REAL*8,  INTENT(IN ) :: SMAT(*), SCOEF(*)
-      REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
-
-      ! Internal variables
-      INTEGER :: I, J, IZ, NB, IOFFL, IOFFS, LUPRI
-      INTEGER :: IPQTOQ(4,0:7)
-      REAL*8  :: DINV, QLOC2, DLOC
-
-      REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
-
-  !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO1')
-
-      NB = NBL + NBS
-
-      LUPRI       = VAR%LUPRI
-      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
-
-! Memory allocation for the matrix W = Sc
-
-      CALL ALLOC(WLMAT,NBL*NI*4,ID='WLMAT IN ORBLO1')
-      CALL ALLOC(WSMAT,NBS*NI*4,ID='WSMAT IN ORBLO1')
-
-! Construction of W = Sc (large and small components)
-
-      CALL QGEMM(NBL,NI,NBL,D1,               &
-           'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,  &
-           'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4, &
-           D0,IPQTOQ(1,0),WLMAT,NBL,NI,4)
-      IF(.NOT.VAR%TWOCOMPBSS) THEN
-         CALL QGEMM(NBS,NI,NBS,D1,                            &
-              'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1, &
-              'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,       &
-              D0,IPQTOQ(1,0),WSMAT,NBS,NI,4)
-      ENDIF
-
-      IF(LOC%IPRLOC.GE.5)THEN
-         WRITE(LUPRI,'(/A)') '* WL matrix :'
-         CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
-         IF(.NOT.VAR%TWOCOMPBSS) THEN
-            WRITE(LUPRI,'(/A)') '* WS matrix :'
-            CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
-         ENDIF
-      ENDIF
-
-! Construct P_A for each center A
-
-      IOFFL = 0
-      IOFFS = 0
-      DO I = 1,NUCDEP
-         CALL QGEMM(NI,NI,NFNUC(I),D1,                     &
-              'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,  &
-              'N','N',IPQTOQ(1,0),WLMAT(1+IOFFL),NBL,NI,4, &
-              D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-         IF(.NOT.VAR%TWOCOMPBSS) THEN
-            CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                 &
-                 'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4, &
-                 'N','N',IPQTOQ(1,0),WSMAT(1+IOFFS),NBS,NI,4,    &
-                 D1,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-            IOFFS = IOFFS + NFNUC(NUCDEP+I)
-         ENDIF
-         IOFFL = IOFFL + NFNUC(I)
-      ENDDO
-
-! P_A matrices symetrisation
-
-      DO I = 1,NUCDEP
-         CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
-         DO IZ = 2,4
-            CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
-         ENDDO
-      ENDDO
-!
-      IF(LOC%IPRLOC.GE.5)THEN
-         DO I = 1,NUCDEP
-            WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
-            WRITE(LUPRI,'(A)') '  ============================'
-            CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
-         ENDDO
-      ENDIF
-
-! Calculation and print of the localisation criterion
-
-      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-      DINV = D0
-      DO I = 1,NI
-         QLOC2 = D0
-         DO J = 1,NUCDEP
-            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/D4
-         ENDDO
-         DLOC = D1/QLOC2
-         DINV = DINV + QLOC2
-         WRITE(LUPRI,'(11X,A,I3,A,F7.4)') &
-         ' Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
-      ENDDO
-      DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
-
-  !------------------------------------------------------------------------------!
-  !                             Deallocate arrays                                !
-  !------------------------------------------------------------------------------!
-      CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
-      CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
-
-      CALL QEXIT('ORBLO1')
-
-  END SUBROUTINE ORBLO1
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,full,shift,dnrmk)
+  subroutine get_kappa(xkappa,pkappa,tgrad,eval,hmat,iorig,nstep,full,tradius,shift,dnrmk)
   !******************************************************************************!
   !                                                                              !
   !           Construction of the XKAPPA matrix using full hessian               !
@@ -951,8 +487,9 @@ contains
   implicit none
 
   ! External variables
-  logical, intent(in ) :: full
-  real*8,  intent(in ) :: shift
+  logical, intent(in   ) :: full
+  logical, intent(inout) :: nstep
+  real*8,  intent(in ) :: shift, tradius
   real*8,  intent(out) :: dnrmk
 
   real*8, intent(in ), dimension(:,:)   :: hmat
@@ -963,29 +500,45 @@ contains
   real*8,  intent(out), pointer :: pkappa(:)
 
   ! Internal variables
-  integer :: i, j, ij, iz, ni, ndimh, ni12, nred, lupri
-  real*8  :: dnrm2
+  integer :: i, j, ij1, ij2, ij3, ij4, iz, ni, ndimh, ni12, nred, lupri
+  real*8  :: dnrm2, dtmp
 
   real*8, allocatable, dimension(:) :: xtmp
 
   !------------------------------------------------------------------------------!
-  lupri  = var%lupri
+  lupri  = var_%lupri
 
   ! Get some dimensions
   ni    = size(xkappa,1)
   ndimh = size(hmat,1)
-  ni12  = (ndimh+ni) / 4
+  ni12  = ndimh / 4
   nred  = size(eval,1)
 
   ! allocate arrays
   if(associated(pkappa)) call deallocp(pkappa,id='pkappa in get_kappa')
   call allocp(pkappa,nred ,id='pkappa in get_kappa')
-  call alloc(xtmp  ,ndimh,id='xtmp   in get_kappa')
+  call alloc(xtmp   ,ndimh,id='xtmp   in get_kappa')
 
   ! calculate tilde{X}
-  do i=1,nred
-    pkappa(i) = - tgrad(i) / (eval(i) - shift)
-  enddo
+  if(nstep)then
+    do i=1,nred
+      pkappa(i) = - tgrad(i) / (eval(i) - shift)
+    enddo
+  else
+    dtmp = d0
+    do i=1,nred
+      if(eval(i) > d0) exit
+      dtmp = dtmp + eval(i)*eval(i)
+    enddo
+    dtmp = dsqrt(dtmp)  ! norm of the negative eigenvalues
+    ! make step in the direction of negative eigenvalues
+    ! eigenvalues are weighted with their relative size 
+    pkappa(:) = d0
+    do i=1,nred
+      if(eval(i) > d0) exit
+      pkappa(i) = tradius * dabs(eval(i)) / dtmp
+    enddo
+  endif
 
   ! calculate X
   xtmp(:) = d0
@@ -1007,27 +560,23 @@ contains
 
   ! Unpack X to kappa matrix
   xkappa(:,:,:) = d0
-  ij = 0
+  ij1 = 0
   do j = 1,ni
-    do i = j,ni
-      if(i==j)cycle
-      ij = ij + 1
-      xkappa(j,i,1) =   xtmp(ij)
+    do i = j+1,ni
+      ij1 = ij1 + 1                                                                             
+      ij2 = ij1 + ni12
+      ij3 = ij2 + ni12                                                                          
+      ij4 = ij3 + ni12
+      xkappa(j,i,1) =   xtmp(ij1)
       xkappa(i,j,1) = - xkappa(j,i,1)
-    enddo
-  enddo
 
-  ij = ni12-ni
-  do j = 1,ni
-    do i = j,ni
-      ij = ij + 1
-      xkappa(j,i,2) =   xtmp(ni12+ij)
+      xkappa(j,i,2) =   xtmp(ij3)
       xkappa(i,j,2) =   xkappa(j,i,2)
 
-      xkappa(j,i,3) = - xtmp(ij)
+      xkappa(j,i,3) = - xtmp(ij2)
       xkappa(i,j,3) =   xkappa(j,i,3)
 
-      xkappa(j,i,4) =   xtmp(2*ni12+ij)
+      xkappa(j,i,4) =   xtmp(ij4)
       xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
@@ -1072,7 +621,6 @@ contains
 
   !------------------------------------------------------------------------------!
       IFRP = 1
-      CALL QENTER('ORBLO4')
       DO I = 1,NUCDEP-1
          NFNUC(I)=INDNAO(1,I+1)-INDNAO(1,I)
       ENDDO
@@ -1080,8 +628,7 @@ contains
       DO I = 1,NUCDEP-1
          NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
       ENDDO
-      NFNUC(2*NUCDEP)=VAR%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
-      CALL QEXIT('ORBLO4')
+      NFNUC(2*NUCDEP)=var_%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
 
   END SUBROUTINE ORBLO4
 
@@ -1111,42 +658,38 @@ contains
       REAL*8,  ALLOCATABLE :: CMO(:,:,:), EIG(:)
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO5')
-
       ! allocate arrays
       CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
-      CALL ALLOC(EIG  ,VAR%NORBT  ,ID='EIG   IN ORBLO5')
-      CALL ALLOC(IBEIG,VAR%NORBT  ,ID='IBEIG IN ORBLO5')
+      CALL ALLOC(EIG  ,var_%NORBT  ,ID='EIG   IN ORBLO5')
+      CALL ALLOC(IBEIG,var_%NORBT  ,ID='IBEIG IN ORBLO5')
 
       ! open DFCOEF file and read EIG, IBEIG and TOTERG
-      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+      CALL OPNFIL(var_%LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO_no_work(var_%LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
 
       ! reorganize MO
       DO I = 1,NB
         DO J = 1,NI
           DO K = 1,4
             L = J + NO/2
-            IF (VAR%LEVYLE) L = J
+            IF (var_%LEVYLE) L = J
             CMO(I,L,K) = SCOEF(I,J,K)
           ENDDO
         ENDDO
       ENDDO
       IF (LOC%IPRLOC.GE.5)THEN
-         WRITE(VAR%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
-         CALL PRQMAT(CMO,NB,NO,NB,NO,4,VAR%IPQTOQ(1,0),VAR%LUPRI)
+         WRITE(var_%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
+         CALL PRQMAT(CMO,NB,NO,NB,NO,4,var_%IPQTOQ(1,0),var_%LUPRI)
       ENDIF
 
       ! write MO to file and close him
-      CALL WRICMO(VAR%LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(VAR%LUCOEF,STATUS='KEEP')
+      CALL WRICMO(var_%LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CLOSE(var_%LUCOEF,STATUS='KEEP')
 
       ! deallocate arrays
       CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
       CALL DEALLOC(EIG  ,ID='EIG   IN ORBLO5')
       CALL DEALLOC(IBEIG,ID='IBEIG IN ORBLO5')
-
-      CALL QEXIT('ORBLO5')
 
   END SUBROUTINE ORBLO5
 
@@ -1192,9 +735,7 @@ contains
       REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ROTCMO_MOD')
-
-      LUPRI  = VAR%LUPRI
+      LUPRI  = var_%LUPRI
 
       CALL GETTIM(CPU1,WALL1)
       IF (LOC%IPRLOC.GE.5) CALL HEADER('Output from ROTCMO_MOD',-1)
@@ -1243,7 +784,7 @@ contains
          IADDR = (I-1) + (I-1)*NORBI
          EIG = REIG(I)
          IF (EIG .LT. D0) THEN
-            IF (LOC%IPRLOC.GE.3 .AND. ABS(EIG).GT.VAR%THRZER) WRITE(LUPRI,9010) EIG
+            IF (LOC%IPRLOC.GE.3 .AND. ABS(EIG).GT.var_%THRZER) WRITE(LUPRI,9010) EIG
             EIG = D0
             REIG(I)   = D0
          END IF
@@ -1340,7 +881,7 @@ contains
       END DO
       END DO
       IF(LOC%IPRLOC.GE.1)THEN
-        IF(D_MAX.GT.VAR%THRZER)THEN
+        IF(D_MAX.GT.var_%THRZER)THEN
            WRITE(LUPRI,'(/A)')' WARNING: ROTCMO_MOD: maximum deviation from unitary matrix'
            WRITE(LUPRI,*)'WARNING: Element ',J_MAX,I_MAX,' value :',D_MAX
         ENDIF
@@ -1381,999 +922,12 @@ contains
       CALL DEALLOC(RV  ,ID='KV   IN ROTCMO_MOD')
       CALL DEALLOC(RTMP,ID='RTMP IN ROTCMO_MOD')
 
-      CALL QEXIT('ROTCMO_MOD')
-
   END SUBROUTINE ROTCMO_MOD
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_hessian(pmat,hmat,full,totdiag,totnond)
-  !******************************************************************************!
-  !                                                                              !
-  !  Construction of full hessian                                                !
-  !                                                                              ! 
-  !     HMAT         A = d^2 G / dK* dK     B = d^2 G / dK dK          K         !
-  !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbared) \ !
-  !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
-  !                                                                              ! 
-  !******************************************************************************!
-  implicit none
-
-  ! External variables
-  logical, intent(in ) :: full
-  real*8,  intent(out) :: totdiag, totnond
-
-  real*8,  intent(in ), dimension(:,:,:,:) :: pmat
-  real*8,  intent(out), pointer :: hmat(:,:)
-
-  ! Internal variables
-  real*8, parameter :: dhalf = 0.5d0
-
-  real*8  :: pij1, pkl1, plj1, pki1, pli1, pkj1
-  real*8  :: pij2, pkl2, plj2, pki2, pli2, pkj2
-  real*8  :: pii, pjj, pkk, pll, sumdiag, sumnond
-  real*8  :: dtmp
-
-  integer :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
-
-  !------------------------------------------------------------------------------!
-  lupri = var%lupri
-
-  ! Get some dimensions
-  nucdep = size(pmat,4)
-  ni     = size(pmat,1)
-  ni12   = ( ni*ni + ni ) / 2
-  ndimh  = 4*ni12 - ni
-
-  !------------------------------------------------------------------------------!
-  ! Calculate real representation of hessian and get the diagonal dominance info !
-  !------------------------------------------------------------------------------!
-  totdiag = d0
-  totnond = d0
-
-  if(.not.full)then  ! label 111
-
-    if(associated(hmat)) call deallocp(hmat,id='hmat in get_hessian')
-    call allocp(hmat,ndimh,1,id='hmat in get_hessian')
-    hmat(:,:) = d0
-
-    ! unbared-unbared A^R + B^R contribution
-    ij = 0
-    do j=1,ni
-      do i=j,ni
-        if(i==j) cycle
-        ij = ij + 1
-        do m = 1,nucdep
-          pij1 = pmat(i,j,1,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-          dtmp = d4*pij1*pij1
-          hmat(ij,1) = hmat(ij,1) + d2 * ( dtmp - (pii-pjj)*(pii-pjj) )
-        enddo
-        totdiag = totdiag + dabs( hmat(ij,1) )
-      enddo
-    enddo
-
-    ! bared-bared A^R + B^R contribution
-    ij = ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        do m = 1,nucdep
-          pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-          dtmp = d2*(pij1*pij1 + pij2*pij2)
-          hmat(ij,1) = hmat(ij,1) + d2 * ( dtmp - (pii-pjj)*(pii-pjj) )
-        enddo
-        totdiag = totdiag + dabs( hmat(ij,1) )
-      enddo
-    enddo
-
-    ! unbared-unbared A^R - B^R contribution
-    ij = 2*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        do m = 1,nucdep
-          pij2 = pmat(i,j,2,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-          dtmp = d4*pij2*pij2
-          hmat(ij,1) = hmat(ij,1) + d2 * ( dtmp - (pii-pjj)*(pii-pjj) )
-        enddo
-        totdiag = totdiag + dabs( hmat(ij,1) )
-      enddo
-    enddo
-
-    ! bared-bared A^R + B^R contribution
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        do m = 1,nucdep
-          pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-          dtmp = d2*(pij1*pij1 + pij2*pij2)
-          hmat(ij,1) = hmat(ij,1) + d2 * ( dtmp - (pii-pjj)*(pii-pjj) )
-        enddo
-        totdiag = totdiag + dabs( hmat(ij,1) )
-      enddo
-    enddo
-
-  else ! label 111
-
-    if(associated(hmat)) call deallocp(hmat,id='hmat in get_hessian')
-    call allocp(hmat,ndimh,ndimh,id='hmat in get_hessian')
-    hmat(:,:) = d0
-
-    !----------------------------------------------------------------------------!
-    !                 Unbared-unbared contribution to the hessian                !
-    !----------------------------------------------------------------------------!
-    ! A^R + B^R = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
-    !           = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK_ij dK_kl }
-    !           = Real{ (32) }                 + Real{ (36) }
-    sumdiag = d0
-    sumnond = d0
-    ij = 0
-    do j=1,ni
-      do i=j,ni
-        if(i==j) cycle
-        ij = ij + 1
-        kl = 0
-        do l=1,ni
-          do k=l,ni
-            if(k==l) cycle
-            kl = kl + 1
-            do m = 1,nucdep
-              pij1 = pmat(i,j,1,m); pkl1 = pmat(k,l,1,m)
-              plj1 = pmat(l,j,1,m); pli1 = pmat(l,i,1,m)
-              pki1 = pmat(k,i,1,m); pkj1 = pmat(k,j,1,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = d4*pij1*pkl1
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pii - dhalf*(pjj+pll) ) * plj1
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki1
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp - d2 * ( pjj - dhalf*(pii+pll) ) * pli1
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp - d2 * ( pii - dhalf*(pjj+pkk) ) * pkj1
-            enddo
-            if(ij==kl)then
-              sumdiag = sumdiag + dabs( hmat(ij,kl) )
-            else
-              sumnond = sumnond + dabs( hmat(ij,kl) )
-            endif
-          enddo
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
-      do j=1,ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^R + B^R)_uu elements (diag. vs. non-diag): ',sumdiag,sumnond
-    endif
-    totdiag = totdiag + sumdiag
-    totnond = totnond + sumnond
-
-    ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
-    !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
-    !           = Imag{ (32) }                 - Imag{ (36) }
-    sumnond = d0
-    ij = 2*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 0
-        do l=1,ni
-          do k=l,ni
-            if(k==l) cycle
-            kl = kl + 1
-            do m = 1,nucdep
-              pij2 = pmat(i,j,2,m); pkl1 = pmat(k,l,1,m)
-              plj2 = pmat(l,j,2,m); pli2 = pmat(l,i,2,m)
-              pki2 = pmat(k,i,2,m); pkj2 = pmat(k,j,2,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = -d4*pij2*pkl1
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp - d2 * ( pii - dhalf*(pjj+pll) ) * plj2
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki2
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp - d2 * ( pjj - dhalf*(pii+pll) ) * pli2
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pii - dhalf*(pjj+pkk) ) * pkj2
-            enddo
-            sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^I + B^I =   Imag{ d^2 G / dK*_kk dK_ij } + Imag{ d^2 G / dK*_kk dK*_ij }
-    !           =   Imag{ d^2 G / dK*_kk dK_ij } - Imag{ d^2 G / dK_kk dK_ij }
-    !           = - Imag{ (40) }                 - Imag{ (44) }
-    ij = 0
-    do j=1,ni
-      do i=j,ni
-        if(i==j) cycle
-        ij = ij + 1
-        kl = 2*ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij2 = pmat(i,j,2,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
-            if(j==k) hmat(kl,ij) = hmat(kl,ij) - pij2 * ( pii - pjj )
-          enddo
-          sumnond = sumnond + d2*dabs( hmat(kl,ij) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_uu'
-      do j=2*ni12-ni+1,3*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^I + B^I)_uu elements (non-diag): ',sumnond
-    endif
-    totnond = totnond + sumnond
-
-    ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
-    !           = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK_ij dK_kl }
-    !           = Real{ (32) }                 - Real{ (36) }
-    sumdiag = d0
-    sumnond = d0
-    ij = 2*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 2*ni12 - ni
-        do l=1,ni
-          do k=l,ni
-            kl = kl + 1
-            if(k==l) cycle
-            do m = 1,nucdep
-              pij2 = pmat(i,j,2,m); pkl2 = pmat(k,l,2,m)
-              plj1 = pmat(l,j,1,m); pli1 = pmat(l,i,1,m)
-              pki1 = pmat(k,i,1,m); pkj1 = pmat(k,j,1,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = d4*pij2*pkl2
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pii - dhalf*(pjj+pll) ) * plj1
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki1
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pjj - dhalf*(pii+pll) ) * pli1
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pii - dhalf*(pjj+pkk) ) * pkj1
-            enddo
-            if(ij==kl)then
-              sumdiag = sumdiag + dabs( hmat(ij,kl) )
-            else
-              sumnond = sumnond + dabs( hmat(ij,kl) )
-            endif
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK*_ij dK*_kk }
-    !           = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK_ij dK_kk }
-    !           = Real{ (40) }                 - Real{ (44) }
-    ! A^R - B^R = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK*_kk dK*_ij }
-    !           = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK_kk dK_ij }
-    !           = Real{ (40) }                 - Real{ (44) }
-    ij = 2*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 2*ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij1 = pmat(i,j,1,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
-            if(j==k) hmat(ij,kl) = hmat(ij,kl) - pij1 * ( pii - pjj )
-          enddo
-          hmat(kl,ij) = hmat(ij,kl)
-          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_uu'
-      do j=2*ni12-ni+1,3*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=2*ni12-ni+1,3*ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^R - B^R)_uu elements (diag. vs. non-diag): ',sumdiag,sumnond
-    endif
-    totdiag = totdiag + sumdiag
-    totnond = totnond + sumnond
-
-    !----------------------------------------------------------------------------!
-    !                   Bared-unbared contribution to the hessian                !
-    !----------------------------------------------------------------------------!
-    ! A^R + B^R = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
-    !           = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK_ij dK_kl }
-    !           = Real{ (34) }                 + Real{ (38) }
-    sumnond = d0
-    ij = ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 0
-        do l=1,ni
-          do k=l,ni
-            if(k==l) cycle
-            kl = kl + 1
-            do m = 1,nucdep
-              pij1 = pmat(i,j,3,m); pkl1 = pmat(k,l,1,m)
-              plj1 = pmat(l,j,3,m); pkj1 = pmat(k,j,3,m)
-              pli1 = pmat(l,i,3,m); pki1 = pmat(k,i,3,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = d4*pij1*pkl1
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pii - dhalf*(pjj+pll) ) * plj1
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp - d2 * ( pjj - dhalf*(pii+pkk) ) * pki1
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pjj - dhalf*(pii+pll) ) * pli1
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp - d2 * ( pii - dhalf*(pjj+pkk) ) * pkj1
-            enddo
-            sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^R + B^R = Real{ d^2 G / dK*_kk dK_ij } + Real{ d^2 G / dK*_kk dK*_ij }
-    !           = Real{ d^2 G / dK*_kk dK_ij } + Real{ d^2 G / dK_kk dK_ij }
-    !           = Real{ (41) }                 + Real{ (45) }
-    ij = 0
-    do j=1,ni
-      do i=j,ni
-        if(i==j) cycle
-        ij = ij + 1
-        kl = ni12 -ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij1 = pmat(i,j,3,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(kl,ij) = hmat(kl,ij) - pij1 * ( pii - pjj )
-            if(j==k) hmat(kl,ij) = hmat(kl,ij) + pij1 * ( pii - pjj )
-          enddo
-          sumnond = sumnond + d2*dabs( hmat(kl,ij) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bu'
-      do j=ni12-ni+1,2*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^R + B^R)_bu elements (non-diag): ',sumnond
-    endif
-    totnond = totnond + sumnond
-
-    ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
-    !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
-    !           = Imag{ (34) }                 - Imag{ (38) }
-    sumnond = d0
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 0
-        do l=1,ni
-          do k=l,ni
-            if(k==l) cycle
-            kl = kl + 1
-            do m = 1,nucdep
-              pij2 = pmat(i,j,4,m); pkl1 = pmat(k,l,1,m)
-              plj2 = pmat(l,j,4,m); pkj2 = pmat(k,j,4,m)
-              pli2 = pmat(l,i,4,m); pki2 = pmat(k,i,4,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = -d4*pij2*pkl1
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp - d2 * ( pii - dhalf*(pjj+pll) ) * plj2
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki2
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp - d2 * ( pjj - dhalf*(pii+pll) ) * pli2
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pii - dhalf*(pjj+pkk) ) * pkj2
-            enddo
-            sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^I + B^I =   Imag{ d^2 G / dK*_kk dK_ij } + Imag{ d^2 G / dK*_kk dK*_ij }
-    !           =   Imag{ d^2 G / dK*_kk dK_ij } - Imag{ d^2 G / dK_kk dK_ij }
-    !           = - Imag{ (41) }                 - Imag{ (45) }
-    ij = 0
-    do j=1,ni
-      do i=j,ni
-        if(i==j) cycle
-        ij = ij + 1
-        kl = 3*ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij2 = pmat(i,j,4,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
-            if(j==k) hmat(kl,ij) = hmat(kl,ij) - pij2 * ( pii - pjj )
-          enddo
-          sumnond = sumnond + d2*dabs( hmat(kl,ij) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_bu'
-      do j=3*ni12-ni+1,4*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^I + B^I)_bu elements (non-diag): ',sumnond
-    endif
-    totnond = totnond + sumnond
-
-    ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
-    !           = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK_ij dK_kl }
-    !           = Real{ (34) }                 - Real{ (38) }
-    sumnond = d0
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 2*ni12 - ni
-        do l=1,ni
-          do k=l,ni
-            kl = kl + 1
-            if(k==l) cycle
-            do m = 1,nucdep
-              pij2 = pmat(i,j,4,m); pkl2 = pmat(k,l,2,m)
-              plj1 = pmat(l,j,3,m); pkj1 = pmat(k,j,3,m)
-              pli1 = pmat(l,i,3,m); pki1 = pmat(k,i,3,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = d4*pij2*pkl2
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pii - dhalf*(pjj+pll) ) * plj1
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki1
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pjj - dhalf*(pii+pll) ) * pli1
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pii - dhalf*(pjj+pkk) ) * pkj1
-            enddo
-            sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK*_ij dK*_kk }
-    !           = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK_ij dK_kk }
-    !           = Real{ (42) }                 - Real{ (46) }
-    ! A^R - B^R = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK*_kk dK*_ij }
-    !           = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK_kk dK_ij }
-    !           = Real{ (41) }                 - Real{ (45) }
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 2*ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij1 = pmat(i,j,3,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
-            if(j==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
-          enddo
-          hmat(kl+ni12,ij-ni12) = - hmat(ij,kl)
-          sumnond = sumnond + d4*dabs( hmat(ij,kl) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bu'
-      do j=3*ni12-ni+1,4*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=2*ni12-ni+1,3*ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^R - B^R)_bu elements (non-diag): ',sumnond
-    endif
-    totnond = totnond + sumnond
-
-    !----------------------------------------------------------------------------!
-    !                   Bared-bared contribution to the hessian                  !
-    !----------------------------------------------------------------------------!
-    ! A^R + B^R = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
-    !           = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK_ij dK_kl }
-    !           = Real{ (35) }                 + Real{ (39) }
-    sumdiag = d0
-    sumnond = d0
-    ij = ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = ni12 - ni
-        do l=1,ni
-          do k=l,ni
-            kl = kl + 1
-            if(k==l) cycle
-            do m = 1,nucdep
-              pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-              pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
-              pki1 = pmat(k,i,1,m); pkj1 = pmat(k,j,1,m)
-              pli1 = pmat(l,i,1,m); plj1 = pmat(l,j,1,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = d2*(pij1*pkl1 + pij2*pkl2)
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pii - dhalf*(pjj+pll) ) * plj1
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki1
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pjj - dhalf*(pii+pll) ) * pli1
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pii - dhalf*(pjj+pkk) ) * pkj1
-            enddo
-          if(ij==kl)then
-            sumdiag = sumdiag + dabs( hmat(ij,kl) )
-          else
-            sumnond = sumnond + dabs( hmat(ij,kl) )
-          endif
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^R + B^R = Real{ d^2 G / dK*_ij dK_kk } + Real{ d^2 G / dK*_ij dK*_kk }
-    !           = Real{ d^2 G / dK*_ij dK_kk } + Real{ d^2 G / dK_ij dK_kk }
-    !           = Real{ (43) }                 + Real{ (47) }
-    ! A^R + B^R = Real{ d^2 G / dK*_kk dK_ij } + Real{ d^2 G / dK*_kk dK*_ij }
-    !           = Real{ d^2 G / dK*_kk dK_ij } + Real{ d^2 G / dK_kk dK_ij }
-    !           = Real{ (43) }                 + Real{ (47) }
-    ij = ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij1 = pmat(i,j,1,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
-            if(j==k) hmat(ij,kl) = hmat(ij,kl) - pij1 * ( pii - pjj )
-          enddo
-          hmat(kl,ij) = hmat(ij,kl)
-          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bb'
-      do j=ni12-ni+1,2*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=ni12-ni+1,2*ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^R + B^R)_bb elements (diag. vs. non-diag): ',sumdiag,sumnond
-    endif
-    totdiag = totdiag + sumdiag
-    totnond = totnond + sumnond
-
-    ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
-    !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
-    !           = Imag{ (35) }                 - Imag{ (39) }
-    sumnond = d0
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = ni12 - ni
-        do l=1,ni
-          do k=l,ni
-            kl = kl + 1
-            if(k==l) cycle
-            do m = 1,nucdep
-              pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-              pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
-              pki2 = pmat(k,i,2,m); pkj2 = pmat(k,j,2,m)
-              pli2 = pmat(l,i,2,m); plj2 = pmat(l,j,2,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = d2*(pij1*pkl2 - pij2*pkl1)
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pii - dhalf*(pjj+pll) ) * plj2
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki2
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pjj - dhalf*(pii+pll) ) * pli2
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pii - dhalf*(pjj+pkk) ) * pkj2
-            enddo
-          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^I + B^I =   Imag{ d^2 G / dK*_ij dK_kk } + Imag{ d^2 G / dK*_ij dK*_kk }
-    !           =   Imag{ d^2 G / dK*_ij dK_kk } - Imag{ d^2 G / dK_ij dK_kk }
-    !           =   Imag{ (43) }                 - Imag{ (47) }
-    ! A^I + B^I =   Imag{ d^2 G / dK*_kk dK_ij } + Imag{ d^2 G / dK*_kk dK*_ij }
-    !           =   Imag{ d^2 G / dK*_kk dK_ij } - Imag{ d^2 G / dK_kk dK_ij }
-    !           = - Imag{ (43) }                 - Imag{ (47) }
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij2 = pmat(i,j,2,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij2 * ( pii - pjj )
-            if(j==k) hmat(ij,kl) = hmat(ij,kl) + pij2 * ( pii - pjj )
-          enddo
-          hmat(kl+2*ni12,ij-2*ni12) = - hmat(ij,kl)
-          sumnond = sumnond + d4*dabs( hmat(ij,kl) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_bb'
-      do j=3*ni12-ni+1,4*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=ni12-ni+1,2*ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^I + B^I)_bb elements (non-diag): ',sumnond
-    endif
-    totnond = totnond + sumnond
-
-    ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
-    !           = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK_ij dK_kl }
-    !           = Real{ (35) }                 - Real{ (39) }
-    sumdiag = d0
-    sumnond = d0
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 3*ni12 - ni
-        do l=1,ni
-          do k=l,ni
-            kl = kl + 1
-            if(k==l) cycle
-            do m = 1,nucdep
-              pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-              pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
-              pki1 = pmat(k,i,1,m); pkj1 = pmat(k,j,1,m)
-              pli1 = pmat(l,i,1,m); plj1 = pmat(l,j,1,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = d2*(pij1*pkl1 + pij2*pkl2)
- 
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pii - dhalf*(pjj+pll) ) * plj1
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp + d2 * ( pjj - dhalf*(pii+pkk) ) * pki1
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pjj - dhalf*(pii+pll) ) * pli1
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp + d2 * ( pii - dhalf*(pjj+pkk) ) * pkj1
-            enddo
-          if(ij==kl)then
-            sumdiag = sumdiag + dabs( hmat(ij,kl) )
-          else
-            sumnond = sumnond + dabs( hmat(ij,kl) )
-          endif
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK*_ij dK*_kk }
-    !           = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK_ij dK_kk }
-    !           = Real{ (43) }                 - Real{ (47) }
-    ! A^R - B^R = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK*_kk dK*_ij }
-    !           = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK_kk dK_ij }
-    !           = Real{ (43) }                 - Real{ (47) }
-    ij = 3*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 3*ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij1 = pmat(i,j,1,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
-            if(j==k) hmat(ij,kl) = hmat(ij,kl) - pij1 * ( pii - pjj )
-          enddo
-          hmat(kl,ij) = hmat(ij,kl)
-          sumnond = sumnond+d2*dabs( hmat(ij,kl) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bb'
-      do j=3*ni12-ni+1,4*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=3*ni12-ni+1,4*ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^R - B^R)_bb elements (diag. vs. non-diag): ',sumdiag,sumnond
-    endif
-    totdiag = totdiag + sumdiag
-    totnond = totnond + sumnond
-
-    !----------------------------------------------------------------------------!
-    !                 Unbared-bared contribution to the hessian                  !
-    !----------------------------------------------------------------------------!
-    ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
-    !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
-    !           = Imag{ (33) }                 - Imag{ (37) }
-    sumnond = d0
-    ij = 2*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = ni12 - ni
-        do l=1,ni
-          do k=l,ni
-            kl = kl + 1
-            if(k==l) cycle
-            do m = 1,nucdep
-              pij2 = pmat(i,j,2,m); pkl1 = pmat(k,l,3,m)
-              pki2 = pmat(k,i,4,m); pkj2 = pmat(k,j,4,m)
-              pli2 = pmat(l,i,4,m); plj2 = pmat(l,j,4,m)
-              pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-              pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-              dtmp = - d4*pij2*pkl1
-
-              if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp - d2 * ( pii - dhalf*(pjj+pll) ) * plj2
-              if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp - d2 * ( pjj - dhalf*(pii+pkk) ) * pki2
-              if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp - d2 * ( pjj - dhalf*(pii+pll) ) * pli2
-              if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp - d2 * ( pii - dhalf*(pjj+pkk) ) * pkj2
-            enddo
-            sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! A^I + B^I =   Imag{ d^2 G / dK*_ij dK_kk } + Imag{ d^2 G / dK*_ij dK*_kk }
-    !           =   Imag{ d^2 G / dK*_ij dK_kk } - Imag{ d^2 G / dK_ij dK_kk }
-    !           =   Imag{ (41) }                 - Imag{ (45) }
-    ij = 2*ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij2 = pmat(i,j,4,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(ij,kl) = hmat(ij,kl) - pij2 * ( pii - pjj )
-            if(j==k) hmat(ij,kl) = hmat(ij,kl) - pij2 * ( pii - pjj )
-          enddo
-          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    ! A^I + B^I =   Imag{ d^2 G / dK*_kk dK_ij } + Imag{ d^2 G / dK*_kk dK*_ij }
-    !           =   Imag{ d^2 G / dK*_kk dK_ij } - Imag{ d^2 G / dK_kk dK_ij }
-    !           = - Imag{ (42) }                 - Imag{ (46) }
-    ij = ni12 - ni
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        kl = 2*ni12 - ni + 1
-        do k=1,ni
-          do m = 1,nucdep
-            pij2 = pmat(i,j,4,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-            if(i==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
-            if(j==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
-          enddo
-          sumnond = sumnond + d2*dabs( hmat(kl,ij) )
-          kl = kl + ni - (k-1)  ! diagonal
-        enddo
-      enddo
-    enddo
-
-    if(loc%iprloc.ge.3)then
-      write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_ub'
-      do j=2*ni12-ni+1,3*ni12-ni
-        write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=ni12-ni+1,2*ni12-ni)
-      enddo
-    endif
-    if(loc%iprloc.ge.1)then
-      write(lupri,'(a,2f10.5)') '(A^I + B^I)_ub elements (non-diag): ',sumnond
-    endif
-    totnond = totnond + sumnond
-
-    !----------------------------------------------------------------------------!
-    !                     Get the rest of the hessian matrix                     !
-    !----------------------------------------------------------------------------!
-    ! 2,1  -->  1,2
-    do i=1*ni12-ni+1,2*ni12-ni
-      do j=1,ni12-ni
-        hmat(j,i) = hmat(i,j)
-      enddo
-    enddo
-
-    ! 43  -->  34
-    do i=3*ni12-ni+1,4*ni12-ni
-      do j=2*ni12-ni+1,3*ni12-ni
-        hmat(j,i) = hmat(i,j)
-      enddo
-    enddo
-
-    ! 34,12  -->  12,34
-    do i=2*ni12-ni+1,4*ni12-ni
-      do j=1,2*ni12-ni
-        hmat(j,i) = hmat(i,j)
-      enddo
-    enddo
-
-  endif ! label 111
-
-  ! Calculate mean value
-  totdiag = totdiag / dfloat(ndimh)
-  totnond = totnond / dfloat(ndimh*ndimh-ndimh)
-
-  end subroutine get_hessian
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine get_gradient(pmat,gradient,dnrmg)
-  !******************************************************************************!
-  !                                                                              !
-  !                     Construction of the gradient                             !
-  !                                                                              ! 
-  !******************************************************************************!
-  implicit none
-
-  ! External variables
-  real*8, intent(out) :: dnrmg
-
-  real*8, intent(in ), dimension(:,:,:,:) ::  pmat
-  real*8, intent(out), dimension(:)       ::  gradient
-
-  ! Internal variables
-  integer :: i, j, k, ij, ij1, ij2, ij3, ij4
-  integer :: nucdep, ni, ndimg, ni12, lupri
-
-  real*8  :: dtmp, dnrm2
-
-  !------------------------------------------------------------------------------!
-  lupri = var%lupri
-  gradient(:) = d0
-
-  ! Get some dimensions
-  nucdep = size(pmat,4)
-  ni     = size(pmat,1)
-  ndimg  = size(gradient,1)
-  ni12   = (ndimg+ni) / 4
-
-  !------------------------------------------------------------------------------!
-  !               Calculate real representation of the gradient                  !
-  !------------------------------------------------------------------------------!
-  ! Do not calculate redundant parameters (diagonal real parameters of unbared kappa)
-  ij = 0; ij1 = 0
-  do j=1,ni
-    do i=j,ni
-      ij  = ij  + 1
-      ij2 = ij  + ni12-ni
-      ij3 = ij2 + ni12
-      ij4 = ij3 + ni12
-      if(i==j) cycle
-      ij1 = ij1 + 1
-      do k = 1,nucdep
-        dtmp = d2*(pmat(j,j,1,k) - pmat(i,i,1,k))
-        gradient(ij1) = gradient(ij1) + dtmp * pmat(i,j,1,k)
-        gradient(ij2) = gradient(ij2) + dtmp * pmat(i,j,3,k)
-        gradient(ij3) = gradient(ij3) - dtmp * pmat(i,j,2,k)
-        gradient(ij4) = gradient(ij4) - dtmp * pmat(i,j,4,k)
-      enddo
-    enddo
-  enddo
-
-  if(loc%iprloc.ge.2)then
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
-    write(lupri,'(9d12.4)') (gradient(j),j=1,ni12-ni)
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
-    write(lupri,'(9d12.4)') (gradient(j),j=1+2*ni12-ni,3*ni12-ni)
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
-    write(lupri,'(9d12.4)') (gradient(j),j=1+ni12-ni,2*ni12-ni)
-    write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
-    write(lupri,'(9d12.4)') (gradient(j),j=1+3*ni12-ni,4*ni12-ni)
-  endif
-
-  ! Norm of the gradient
-  dnrmg = dnrm2(ndimg,gradient,1)
-
-  end subroutine get_gradient
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine exp_func(pkappa,tgrad,eval,ni,dinvmq)
-  !******************************************************************************!
-  !                                                                              !
-  !       Calculate value of the quadratic approximation to the functional       !
-  !                                                                              !
-  !******************************************************************************!
-  implicit none
-
-  ! External variables
-  integer, intent(in ) :: ni
-  real*8,  intent(out) :: dinvmq
-
-  real*8,  intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
-
-  ! Internal variables
-  integer :: i
-
-  !------------------------------------------------------------------------------!
-  dinvmq = d0
-  do i=1,size(eval,1)
-    dinvmq = dinvmq + d2*pkappa(i)*tgrad(i) + pkappa(i)*eval(i)*pkappa(i)
-  enddo
-  dinvmq = dinvmq / dfloat(ni)
-
-  end subroutine exp_func
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmax,full)
+  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,iorig,nep,nem,nez,Iminmin,full)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
@@ -2383,7 +937,7 @@ contains
 
   ! External variables
   logical, intent(in ) :: full
-  logical, intent(out) :: Iminmax
+  logical, intent(out) :: Iminmin
   integer, intent(out) :: nep, nem, nez
   real*8,  intent(in ), dimension(:)   :: gradient
   real*8,  intent(out), dimension(:)   :: etmp
@@ -2399,7 +953,7 @@ contains
   real*8,  allocatable, dimension(:)   :: work
 
   !------------------------------------------------------------------------------!
-  lupri = var%lupri
+  lupri = var_%lupri
 
   ! Get some dimensions
   ndimh = size(hmat,1)
@@ -2423,8 +977,8 @@ contains
 
   else
   
-  if(associated(iorig)) call deallocp(iorig,id='iorig in hdiag')
-  call allocp(iorig,ndimh,id='tgrad in hdiag')
+    if(associated(iorig)) call deallocp(iorig,id='iorig in hdiag')
+    call allocp(iorig,ndimh,id='tgrad in hdiag')
 
     ! get eigenvalues (etmp)
     ! We use diagonal approximation so it will just sort the diagonal of the hessian
@@ -2501,12 +1055,19 @@ contains
       nez = nez + 1
     endif
   enddo
-  if(nep == 0)Iminmax = .true.  ! we reached the maximum of the function
-  if(nep /= 0)Iminmax = .false.
+  if(nem == 0)Iminmin = .true.  ! we have reached the minimum of the function
+  if(nem /= 0)Iminmin = .false.
 
   if(loc%iprloc.ge.1)then
     write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
     write(lupri,'(8d12.4)') (etmp(i),i=1,ndimh)
+  endif
+
+  if(loc%iprloc.ge.4)then
+    write(lupri,'(/a,3i4)')' Reduced eigenvalues of the hessian:'
+    write(lupri,'(8d12.4)') (eval(i),i=1,nred)
+    write(lupri,'(/a,3i4)')' Transformed gradient:'
+    write(lupri,'(8d12.4)') (tgrad(i),i=1,nred)
   endif
 
   end subroutine hdiag
@@ -2514,7 +1075,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_mu(eval,tgrad,tradius,shift,tpred)
+  subroutine get_mu(eval,tgrad,tradius,nref,shift,nstep,tpred)
   !******************************************************************************!
   !                                                                              !
   !                   Calculate level-shift parameter mu                         !
@@ -2525,8 +1086,10 @@ contains
   implicit none
 
   ! External variables
-  real*8, intent(in ) :: tradius
-  real*8, intent(out) :: shift, tpred
+  logical, intent(in ) :: nstep
+  integer, intent(in ) :: nref
+  real*8,  intent(in ) :: tradius
+  real*8,  intent(out) :: shift, tpred
 
   real*8, intent(in), pointer :: eval(:), tgrad(:)
 
@@ -2535,7 +1098,13 @@ contains
   real*8  :: tcurr, xcurr, cutoff, xmax, xmin, step
 
   !------------------------------------------------------------------------------!
-  lupri = var%lupri
+  lupri = var_%lupri
+
+  ! If we are not performing Newton step quit.
+  if(.not.nstep)then
+    tpred = tradius
+    return
+  endif
 
   ! Get some dimensions
   ndim = size(eval,1)
@@ -2544,24 +1113,24 @@ contains
   imax  = 10000
   cutoff= trsh_mu * tradius
   step  = 0.1d0
-  xmax  = eval(ndim) + step
-  xmin  = eval(ndim)
-  tcurr = f(xmax)
+  xmax  = eval(nref)
+  xmin  = eval(nref) - step
+  tcurr = f(xmin)
 
-  ! find upper boundary if necessary
+  ! find lower boundary if necessary
   i = 0
   if(tcurr > tradius)then
     do
       i = i + 1
       if(i > imax)then
         write(lupri,'(a)')' WARNING: Maximum number of iteration reached in get_mu(1)!!!'
-        write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmax) =',tcurr,' tradius =',tradius
+        write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmin) =',tcurr,' tradius =',tradius
         exit
       endif
       step = xmax - xmin
-      xmin = xmax
-      xmax = xmax + d2*step
-      tcurr = f(xmax)
+      xmax = xmin
+      xmin = xmin - d2*step
+      tcurr = f(xmin)
       if(tcurr < tradius)exit
     enddo
   endif 
@@ -2581,8 +1150,8 @@ contains
   xcurr = (xmax+xmin)/d2
   tcurr = f(xcurr)
 
-  if(tcurr > tradius) xmin = xcurr
-  if(tcurr < tradius) xmax = xcurr
+  if(tcurr > tradius) xmax = xcurr
+  if(tcurr < tradius) xmin = xcurr
 
   enddo
 
@@ -2601,7 +1170,9 @@ contains
 
     f = d0
     do ii=1,ndim
-      f = f + tgrad(ii) * tgrad(ii) / ((eval(ii) - x) * (eval(ii) - x))
+      if(dabs(tgrad(ii)) > thresh)then
+        f = f + tgrad(ii) * tgrad(ii) / ((eval(ii) - x) * (eval(ii) - x))
+      endif
     enddo
     f = dsqrt(f)
 
@@ -2612,7 +1183,8 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,full,itr,nep)
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
+                     pkappa,tgrad,eval,nref,dnrmg)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2621,116 +1193,251 @@ contains
   implicit none
 
   ! External variables
-  integer, intent(in   ) :: itr, nep
-  real*8,  intent(in   ) :: dnrmk, diffg, diffq
+  integer, intent(in ) :: itr, nem
+  integer, intent(out) :: nref
+  real*8,  intent(in   ) :: dnrmk, diffg, diffq, dnrmg
   real*8,  intent(inout) :: tradius
   logical, intent(in   ) :: full
-  logical, intent(inout) :: rejected, trdef, flat
+  logical, intent(inout) :: rejected, trdef, flat, nstep, restore
+
+  real*8,  intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
 
   ! Internal variables
   character*6 :: cond
-  integer :: lupri
+  integer :: i, lupri, nred
+  integer, save :: nrun  = 0
+
+  real*8            :: R, tradold, dmaxa, dmaxn
+  real*8, save      :: diffg1, diffg2
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
-  real*8 :: R, tradius_old
 
   !------------------------------------------------------------------------------!
-  lupri  = var%lupri
-  R = diffg / diffq
-  tradius_old = tradius
-  cond = '??????'
+  !                              Initialization                                  !
+  !------------------------------------------------------------------------------!
+  lupri   = var_%lupri
+  nred    = size(eval,1)
+  tradold = tradius
+  R       = diffg / diffq
 
-  if(rejected)then
-    cond = 'r     '
-    if(R < d0 ) cond = 'r  R<0'
-    if(R < d1q) cond = 'r  R<1'
-    if(R > d3q) cond = 'r  R>3'
-  else
-    if(dnrmk > tradius)then
+  !------------------------------------------------------------------------------!
+  !                            Trus-radius update                                !
+  !------------------------------------------------------------------------------!
+  if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
+    cond = '0     '
+    if(rejected)then
       if(diffq > d0)then
-        cond = 'TQ    '
-        if(R < d0 ) cond = 'TQ R<0'
-        if(R < d1q) cond = 'TQ R<1'
-        if(R > d5q) cond = 'TQ R>5'
+        cond = '0r q>0'
+        tradius  = tradius / 10.0d0
       else
-        cond = 'Tq    '
-        if(R > d0 ) cond = 'Tq R>0'
-        if((R < d1q).or.(R > d1+d3q)) cond = 'Tq R>7'
-        if((R > d3q).and.(R < d5q))   cond = 'Tq R<5'
-      endif
-    else
-      if(diffq > d0)then
-        cond = 'tQ     '
-        if(R < d0 ) cond = 'tQ R<0'
-        if(R < d1q) cond = 'tQ R<1'
-        if(R > d5q) cond = 'tQ R>5'
-      else 
-        cond = 'tq    '
-        if(R > d0 ) cond = 'tq R>0'
-        if((R < d1q).or.(R > d1+d3q)) cond = 'tq R>7'
-        if((R > d3q).and.(R < d5q))   cond = 'tq R<5'
+        cond = '0r    '
+        rejected = .false.
       endif
     endif
-  endif
-  if( (dabs(diffg)<thresh).and.(dabs(diffq)<thresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
-    cond(3:3) = '!'
-  endif
-
-  if(rejected)then
-    if(diffq < d0)then
-      write(lupri,'(a)')' STOP: The value of the quadratic approximation of the functional '
-      write(lupri,'(a)')'       decreased although the level-shifted Newton step was used '
-      stop
-    endif
-    rejected = .false.
-    if(R < d0 ) rejected = .true.
-    if(R < d1q) tradius  = d1q* tradius
-    if(R > d3q) tradius  = d2 * tradius
   else
-    if(dnrmk > tradius)then
+    if(rejected)then
       if(diffq > d0)then
-        tradius = dnrmk
+        cond = 'r  q>0'
+        tradius  = tradius / 10.0d0
+      else
+        cond = 'r     '
+        if(R < d0 ) cond = 'r  R<0'
+        if(R < d1q) cond = 'r  R<1'
+        if(R > d3q) cond = 'r  R>3'
+        rejected = .false.
         if(R < d0 ) rejected = .true.
-        if(R < d1q) tradius  = d1q*tradius
-        if(R > d5q) tradius  = d2*tradius
-      else 
-        tradius = dnrmk
-        if(R > d0 ) rejected = .true.
-        if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
-        if((R > d3q).and.(R < d5q))   tradius = d2*tradius
+        if(R < d1q) tradius  = d1q* tradius
+        if(R > d3q) tradius  = d2 * tradius
       endif
     else
-      if(diffq > d0)then
-        tradius = tradius_old
-        if(trdef) tradius = dnrmk
-        if(R < d0 ) rejected = .true.
-        if(R < d1q) tradius  = d1q * dnrmk
-        if(R > d5q) tradius  = max(d2*dnrmk,tradius_old)
-      else 
-        tradius = tradius_old
-        if(trdef) tradius = dnrmk
-        if(R > d0 ) rejected = .true.
-        if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
-        if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradius_old)
+      if(dnrmk > tradius)then
+        if(full)then
+          if(diffq < d0)then
+            cond = 'Tq    '
+            if(R < d0 ) cond = 'Tq R<0'
+            if(R < d1q) cond = 'Tq R<1'
+            if(R > d5q) cond = 'Tq R>5'
+            tradius = dnrmk
+            if(R < d0 ) rejected = .true.
+            if(R < d1q) tradius  = d1q*tradius
+            if(R > d5q) tradius  = d2*tradius
+          else 
+            cond = 'TQ    '
+            if(R > d0 ) cond = 'TQ R>0'
+            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
+            if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
+            tradius = dnrmk
+            if(R > d0 ) rejected = .true.
+            if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
+            if((R > d3q).and.(R < d5q))   tradius = d2*tradius
+          endif
+        else
+          cond = 'T  dia'
+          rejected = .true.
+        endif
+      else
+        if(diffq < d0)then
+          cond = 'tq     '
+          if(R < d0 ) cond = 'tq R<0'
+          if(R < d1q) cond = 'tq R<1'
+          if(R > d5q) cond = 'tq R>5'
+          tradius = tradold
+          if(trdef) tradius = dnrmk
+          if(R < d0 ) rejected = .true.
+          if(R < d1q) tradius  = d1q * dnrmk
+          if(R > d5q) tradius  = max(d2*dnrmk,tradold)
+        else 
+          cond = 'tQ    '
+          if(R > d0 ) cond = 'tQ R>0'
+          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
+          if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
+          tradius = tradold
+          if(trdef) tradius = dnrmk
+          if(R > d0 ) rejected = .true.
+          if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
+          if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradold)
+        endif
       endif
     endif
   endif
 
-  if( (dabs(diffg)<thresh).and.(dabs(diffq)<thresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
+  !------------------------------------------------------------------------------!
+  !                       Are we close to the minimum?                           !
+  !            If both dmaxa, dmaxn are small we are near minimum.               !
+  !------------------------------------------------------------------------------!
+  dmaxn = d0
+  do i=1,nred
+    if(eval(i) > d0) exit
+    dmaxn = dmaxn + dabs(d2*eval(i)*dnrmk)
+  enddo
+  if(nem == 0)then
+    dmaxn = d1
+  else
+    dmaxn = dmaxn / dfloat(nem)
+  endif
+  dmaxa = dnrmg*dnrmk
+  if(loc%iprloc.ge.2)then
+    write(lupri,'(a,i4,2d14.6)') ' itr,dmaxa,dmaxn: ',itr,dmaxa,dmaxn
+  endif
+
+  !------------------------------------------------------------------------------!
+  !         If all gradients in the direction of negative eigenvalues            !
+  !              are below threshold, choose the best step from                  !
+  !         (the purpose of this condition is to replace ineffective             !
+  !                   rejection of Newton step - get_mu )                        !
+  ! Newton step,                                        -->  rejected = false    !
+  ! step on the Trust-region                            -->  rejected = true     !
+  ! and step in the direction of positive eigenvalues.  -->  nstep    = false    !
+  !------------------------------------------------------------------------------!
+  nref = 0
+  do i=1,nred
+    if(dabs(tgrad(i)) > thresh)then
+      nref = i
+      exit
+    endif
+  enddo
+  if(nref == 0)then
+    if(nem == 0)then
+      write(lupri,'(a)')" WARNING: We are in minimum. Why I'm here??? "
+      write(lupri,'(a)')" WARNING:    ==>  STOP "
+      stop
+    else
+      nstep = .false.
+    endif
+  else
+    if((eval(nref) > d0).and.(nem/=0)) nstep = .false.
+    if( dmaxa<10.0d0*thresh .or. dmaxn<10.0d0*thresh ) nstep = .true.
+  endif
+
+  if( .not.nstep )then
+    cond(3:3) = '!'
+    if(restore)then          ! Newton step was restored
+      rejected = .false.
+      nstep    = .true.
+      restore  = .false.
+    elseif(nrun == 0)then    ! try side step
+      diffg1   = diffg
+      tradius  = tradold
+      rejected = .true.
+      nstep    = .false.
+      nrun     = 1
+    elseif( nrun == 1 .and. nref == 0 )then
+      if( diffg1<diffg )then  ! Newton step                           
+        tradius  = tradold                                                                    
+        rejected = .false.                                                                    
+        nstep    = .true.                                                                     
+        restore  = .true.                                                                     
+        nrun     = 0                                                                          
+      else                    ! side step                             
+        tradius  = tradold                                                                    
+        rejected = .true.                                                                     
+        nstep    = .false.                                                                    
+        nrun     = 3                                                                          
+      endif
+    elseif(nrun == 1)then    ! try step on the Trust-region
+      diffg2   = diffg
+      tradius  = tradold
+      rejected = .true.
+      nstep    = .true.
+      nrun     = 2
+    elseif(nrun == 2)then    ! choose the best step
+      if( diffg<d0 .or. diffg1<d0 .or. diffg2<d0 )then
+        if( diffg<diffg1 .and. diffg<diffg2 )then       ! step on the Trust-region
+          rejected = .false.
+          nstep    = .true.
+          nrun     = 0
+        elseif( diffg1<diffg .and. diffg1<diffg2 )then  ! Newton step
+          tradius  = tradold
+          rejected = .false.
+          nstep    = .true.
+          restore  = .true.
+          nrun     = 0
+        elseif( diffg2<diffg .and. diffg2<diffg1 )then  ! side step
+          tradius  = tradold
+          rejected = .true.
+          nstep    = .false.
+          nrun     = 3
+        endif
+      else
+        write(lupri,'(a)')" WARNING: Both regular Newton step and side step were rejected! "
+        write(lupri,'(a)')" WARNING:    ==>  STOP "
+        stop
+      endif
+    elseif(nrun == 3)then
+      rejected = .false.
+      nstep    = .true.
+      nrun     = 0
+    endif
+  endif
+
+  !------------------------------------------------------------------------------!
+  !                       Check if we are in the flat area                       !
+  !------------------------------------------------------------------------------!
+  if( dabs(diffg)<thresh .and. dabs(diffq)<thresh .and. nem/=0 .and. &
+      ( dmaxa>10.0d0*thresh .and. dmaxn>10.0d0*thresh ) .and. cond(3:3) /= '!' )then
     rejected = .true.
-    tradius  = tradius_old
     if(flat) tradius = 10.0d0*tradius
     flat     = .true.
+    cond(3:3) = '.'
   else
     flat     = .false.
   endif
 
-  if(full.and.(nep==0)) rejected = .false.
-  if(tradius /= tradius_old) trdef = .false.
+  !------------------------------------------------------------------------------!
+  !                Check if we are in the saddle point or maximum                !
+  !------------------------------------------------------------------------------!
+  if(dmaxa<thresh .and. nem/=0 .and. cond(3:3) /= '!')then
+    rejected  = .true.
+    if(cond(3:3) == ' ') cond(3:3) = 's'
+    if(cond(3:3) == '.') cond(3:3) = 'd'
+  endif
 
-  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
+  if(tradius /= tradold) trdef = .false.
+
+  write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
-  write(lupri,'(a,2x,i4,3d11.2,f11.5,a,l,a,2x,a,4d11.2)') &
-    '*T',itr,tradius_old,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
+  write(lupri,'(a,2x,i4,3d11.2,f11.5,3x,l1,3x,a,4d11.2)') &
+    '*T',itr+1,tradold,tradius,dnrmk,R,rejected,cond,diffg,diffq
+
 
   end subroutine updateT
 

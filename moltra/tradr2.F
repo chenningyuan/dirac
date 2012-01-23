@@ -29,6 +29,7 @@ C     Written by Luuk Visscher, Februari 1997
 C     Modifications: Jon K. Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -36,8 +37,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "aovec.h"
 C
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -153,24 +153,24 @@ C
 #if defined (MPE)
             CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
-            CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &           MPI_COMM_WORLD,ISTAT,IERR)
+            call interface_mpi_RECV(ITEST,1,df_MPI_ANY_SOURCE,20,
+     &           global_communicator,ISTAT)
 #if defined (MPE)
             CALL MPE_LOG_EVENT(4, 0, "end wait")
 #endif
 C     .. ITEST .eq. 0: code for "send me new task"
             IF (ITEST.NE.0) CALL QUIT(' Illegal ITEST in MPI_RECV')
-            NODE = ISTAT(MPI_SOURCE)
+            NODE = ISTAT(df_MPI_SOURCE)
             IF (IPRINT.GE.1) WRITE(LUPRI,'(3(A,I6))') 
      &           '* Sending to node:',NODE,
      &           '; IJTSK  =',IJTSK,', LENTSK =',LENTSK
 #if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
-            CALL MPI_SEND(IJTSK,1,my_MPI_INTEGER,NODE,30,
-     &           MPI_COMM_WORLD,IERR)
-            CALL MPI_SEND(LENTSK,1,my_MPI_INTEGER,NODE,30,
-     &           MPI_COMM_WORLD,IERR)
+            call interface_mpi_SEND(IJTSK,1,NODE,30,
+     &           global_communicator)
+            call interface_mpi_SEND(LENTSK,1,NODE,30,
+     &           global_communicator)
 #if defined (MPE)
             CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #endif
@@ -2561,13 +2561,13 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "maxorb.h"
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -2635,8 +2635,8 @@ C
      &        CALL MP2HDR(LUPRI,MAXTSK,NDSLST,NODES)
          IBTNFO(1) = IJBTCH
          IBTNFO(2) = LENTSK
-         CALL MPI_BCAST(IBTNFO,2,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         call interface_mpi_BCAST(IBTNFO,2,MPARID,
+     &                  global_communicator)
          IF (CMMNFO) WRITE(LUPRI,'(/A,I4,/A,I4)')
      &      ' <COMMINFO> Master broadcasted batch number: ', IBTNFO(1),
      &      ' <COMMINFO>             and length of batch: ', IBTNFO(2)
@@ -2659,14 +2659,14 @@ C
          CALL FLSHFO(LUPRI)
 #if defined (MPE)
          CALL MPE_LOG_EVENT(3, 0, "start wait")
-         CALL MPI_RECV(NODINT,1,my_MPI_INTEGER,MPI_ANY_SOURCE,90,
-     &        MPI_COMM_WORLD,ISTAT,IERR)
+         call interface_mpi_RECV(NODINT,1,df_MPI_ANY_SOURCE,90,
+     &        global_communicator,ISTAT)
          CALL MPE_LOG_EVENT(4, 0, "end wait")
 #else
-         CALL MPI_RECV(NODINT,1,my_MPI_INTEGER,MPI_ANY_SOURCE,90,
-     &        MPI_COMM_WORLD,ISTAT,IERR)
+         call interface_mpi_RECV(NODINT,1,df_MPI_ANY_SOURCE,90,
+     &        global_communicator,ISTAT)
 #endif
-         NODE = ISTAT(MPI_SOURCE)
+         NODE = ISTAT(df_MPI_SOURCE)
          IF (CMMNFO) WRITE(LUPRI,'(2(A,I4))')
      &        ' <COMMINFO> Master received ', NODINT,
      &        ' from node #', NODE
@@ -2681,12 +2681,12 @@ C
             END DO
 #if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
-            CALL MPI_SEND(IDSNFO,6,my_MPI_INTEGER,NODE,92,
-     &           MPI_COMM_WORLD,IERR)
+            call interface_mpi_SEND(IDSNFO,6,NODE,92,
+     &           global_communicator)
             CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #else
-            CALL MPI_SEND(IDSNFO,6,my_MPI_INTEGER,NODE,92,
-     &           MPI_COMM_WORLD,IERR)
+            call interface_mpi_SEND(IDSNFO,6,NODE,92,
+     &           global_communicator)
 #endif
             IF (CMMNFO) WRITE(LUPRI,*) '<COMMINFO> Master sent task ',
      &           ITSKSD, ' to node #', NODE
@@ -2695,8 +2695,8 @@ C     Slave is idle but there are no more tasks available:
 C        Release slave by sending negative shell number
 C
          ELSE IF ((NODINT .EQ. 0) .AND. (ITSKSD .GE. NDSLST)) THEN
-            CALL MPI_SEND(IRELEA,6,my_MPI_INTEGER,NODE,92,
-     &           MPI_COMM_WORLD,IERR)
+            call interface_mpi_SEND(IRELEA,6,NODE,92,
+     &           global_communicator)
             IF (CMMNFO) WRITE(LUPRI,'(A,I4)')
      &           ' <COMMINFO> Master released node #', NODE
             ISLVRL = ISLVRL + 1
@@ -2706,12 +2706,12 @@ C
          ELSE
 #if defined (MPE)
             CALL MPE_LOG_EVENT(7, 0, "start rcvint")
-            CALL MPI_RECV(WORK(K4QMAT),N4QMT,MPI_DOUBLE_PRECISION,
-     &           NODE,94,MPI_COMM_WORLD,ISTAT,IERR)
+            call interface_mpi_RECV(WORK(K4QMAT),N4QMT,
+     &           NODE,94,global_communicator)
             CALL MPE_LOG_EVENT(8, 0, "end rcvint")
 #else
-            CALL MPI_RECV(WORK(K4QMAT),N4QMT,MPI_DOUBLE_PRECISION,
-     &           NODE,94,MPI_COMM_WORLD,ISTAT,IERR)
+            call interface_mpi_RECV(WORK(K4QMAT),N4QMT,
+     &           NODE,94,global_communicator)
 #endif
             IF (CMMNFO) WRITE(LUPRI,'(2A,I4)')
      &           ' <COMMINFO> Master received ',
@@ -2817,7 +2817,8 @@ C     Slaves want to know if there are more batches
 C
          MP2FIN = .FALSE.
          IF (IJBTCH .EQ. MAXTSK) MP2FIN = .TRUE.
-         CALL MPI_BCAST(MP2FIN,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+         call interface_mpi_bcast_l0(MP2FIN,1,MPARID,
+     &                                   global_communicator)
          IF (CMMNFO) WRITE(LUPRI,'(A,L5)')
      &        ' <COMMINFO> Master broadcasted MP2FIN =', MP2FIN
       END DO
@@ -2834,13 +2835,12 @@ C
       CALL DZERO(WORK(KTIM),NTIM)
         CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
       DO INOD = 1,NODES
-         CALL MPI_RECV(WORK(KTIM+INOD*7),7,MPI_DOUBLE_PRECISION,
-     &        INOD,96,MPI_COMM_WORLD,ISTAT,IERR)
+         call interface_mpi_RECV(WORK(KTIM+INOD*7),7,
+     &        INOD,96,global_communicator)
          IF (CMMNFO) WRITE(LUPRI,*) '<COMMINFO> Master received '//
      &        'timing information from node #', INOD
-          NWHO = ISTAT(MPI_SOURCE)
-          CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
-     &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+          call interface_mpi_RECV(WORK(KBUF),8,
+     &          INOD,40,global_communicator)
           CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
       END DO
       CALL DIRAC_PARCTL( -1 )
@@ -2889,13 +2889,12 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "maxorb.h"
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -2922,7 +2921,7 @@ C     There's an outer loop over batches of occupied spinors,
 C     and an inner loop over tasks (shells) for a given IJ-batch
 C ======================================================================
  100  CONTINUE
-      CALL MPI_BCAST(IBTNFO,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      call interface_mpi_BCAST(IBTNFO,2,MPARID,global_communicator)
       IJBTCH = IBTNFO(1)
       LENTSK = IBTNFO(2)
       IF (CMMNFO) WRITE(LUPRI,'(3(A,I4),A)')
@@ -2980,17 +2979,17 @@ C
      &     ' <COMMINFO> Sending 0 from node #', MYTID
 #if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
-      CALL MPI_SEND(0,1,my_MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      call interface_mpi_SEND(0,1,MPARID,90,global_communicator)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
 C
       CALL MPE_LOG_EVENT(5, 0, "start rcvtsk")
-      CALL MPI_RECV(IDSNFO,6,my_MPI_INTEGER,MPARID,92,
-     &     MPI_COMM_WORLD,ISTAT,IERR)
+      call interface_mpi_RECV(IDSNFO,6,MPARID,92,
+     &     global_communicator)
       CALL MPE_LOG_EVENT(6, 0, "end rcvtsk")
 #else
-      CALL MPI_SEND(0,1,my_MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
-      CALL MPI_RECV(IDSNFO,6,my_MPI_INTEGER,MPARID,92,
-     &     MPI_COMM_WORLD,ISTAT,IERR)
+      call interface_mpi_SEND(0,1,MPARID,90,global_communicator)
+      call interface_mpi_RECV(IDSNFO,6,MPARID,92,
+     &     global_communicator)
 #endif
 C
 C     IDSNFO(1) < 0 signals no more available tasks --> exit inner loop
@@ -3056,26 +3055,27 @@ C
      &     INTGTH, ' from node #', MYTID
 #if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
-      CALL MPI_SEND(INTGTH,1,my_MPI_INTEGER,
-     &     MPARID,90,MPI_COMM_WORLD,IERR)
+      call interface_mpi_SEND(INTGTH,1,
+     &     MPARID,90,global_communicator)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
 C
       CALL MPE_LOG_EVENT(7, 0, "start sndint")
-      CALL MPI_SEND(WORK(K4QMAT),N4QMT,MPI_DOUBLE_PRECISION,
-     &     MPARID,94,MPI_COMM_WORLD,IERR)
+      call interface_mpi_SEND(WORK(K4QMAT),N4QMT,
+     &     MPARID,94,global_communicator)
       CALL MPE_LOG_EVENT(8, 0, "end sndint")
 #else
-      CALL MPI_SEND(INTGTH,1,my_MPI_INTEGER,
-     &     MPARID,90,MPI_COMM_WORLD,IERR)
-      CALL MPI_SEND(WORK(K4QMAT),N4QMT,MPI_DOUBLE_PRECISION,
-     &     MPARID,94,MPI_COMM_WORLD,IERR)
+      call interface_mpi_SEND(INTGTH,1,
+     &     MPARID,90,global_communicator)
+      call interface_mpi_SEND(WORK(K4QMAT),N4QMT,
+     &     MPARID,94,global_communicator)
 #endif
       IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,I4)') ' <COMMINFO> Node #',
      &     MYTID, ' sent fully transformed integrals for batch ', IJBTCH
 C
 C     If master sends MP2FIN = .TRUE., there are no more batches
 C
-      CALL MPI_BCAST(MP2FIN,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      call interface_mpi_bcast_l0(MP2FIN,1,MPARID,
+     &                                global_communicator)
       IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,L5,A)') ' <COMMINFO> Node #',
      &     MYTID, ' received MP2FIN =', MP2FIN, ' from master'
       IF (.NOT. MP2FIN) THEN
@@ -3091,10 +3091,10 @@ C     Send timing information when all batches are done, then exit
 C
       IF (CMMNFO) WRITE(LUPRI,*)
      &     '<COMMINFO> Sending timing information from node #', MYTID
-      CALL MPI_SEND(TIM1,7,MPI_DOUBLE_PRECISION,
-     &     MPARID,96,MPI_COMM_WORLD,IERR)
-      CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,
-     &          MPARID,40,MPI_COMM_WORLD,IERR)
+      call interface_mpi_SEND(TIM1,7,
+     &     MPARID,96,global_communicator)
+      call interface_mpi_SEND(DINTSKP,8,
+     &          MPARID,40,global_communicator)
       RETURN
 C     
  1002 FORMAT (/'Node #', I4, 
@@ -3116,13 +3116,12 @@ C
 C     Written by T.Saue Sep 17 1998
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "maxorb.h"
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -3153,20 +3152,20 @@ C
   100 CONTINUE
          CALL SLEEP(1)
          ITEST = 0
-         CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,MPARID,20,
-     &                 MPI_COMM_WORLD,IERR)
+         call interface_mpi_SEND(ITEST,1,MPARID,20,
+     &                 global_communicator)
 C        ITEST .eq. 0: code for "send me new task"
 #if defined (MPE)
          CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
-         CALL MPI_RECV(IJTSK,1,my_MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         call interface_mpi_RECV(IJTSK,1,MPARID,30,
+     &                 global_communicator)
 #if defined (MPE)
          CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #endif
          IF (IJTSK.EQ.-1) GOTO 200
-         CALL MPI_RECV(LENTSK,1,my_MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         call interface_mpi_RECV(LENTSK,1,MPARID,30,
+     &                 global_communicator)
          CALL UNPKIJ(IJTSK,ISPNR,JSPNR)
          CALL TSKARR(ISPNR,JSPNR,LENTSK,NSTRT,
      &               NSTR,NSTRIJ,ICMOQR,ICMOIJ,

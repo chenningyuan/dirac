@@ -23,6 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       PROGRAM RELCCSD
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description-----------------------------------------------
@@ -43,11 +44,7 @@ C
       PARAMETER (MAXCOR = 60 000 000)
 #include "files.inc"
 #include "ccpar.inc"
-#if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -67,9 +64,9 @@ C
 C
 C     MPI initialization
 C
-      CALL MPI_INIT(IERR)
-      CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYPROC,IERR)
-      CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NMPROC,IERR)
+      call interface_mpi_INIT()
+      call interface_mpi_COMM_RANK(global_communicator,MYPROC)
+      call interface_mpi_COMM_SIZE(global_communicator,NMPROC)
       MASTER = 0
 #else
       MASTER = 0
@@ -89,7 +86,7 @@ C
 C
 C     MPI finalization
 C
-      CALL MPI_FINALIZE(IERR)
+      call interface_mpi_FINALIZE()
 #endif
 C
  1000 FORMAT (//' CPU time (seconds) used in RELCCSD:',T50,F14.4/

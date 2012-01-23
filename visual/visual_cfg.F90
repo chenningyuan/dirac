@@ -62,6 +62,12 @@ module visual_cfg
    integer, public :: iq_ndipzdia = 25
    integer, public :: iq_esp      = 26
    integer, public :: iq_esprho   = 27
+   integer, public :: iq_kin      = 28
+   integer, public :: iq_kin_ls   = 29
+   integer, public :: iq_kin_sl   = 30
+   integer, public :: iq_kin_tau  = 31
+   integer, public :: iq_kin_lap  = 32
+   integer, public :: iq_kin_nr   = 33
 
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.

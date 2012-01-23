@@ -110,6 +110,9 @@ contains
                      case ('*CCFOPR')
                         call read_input_ccfopr(word, kw_section)
 
+                     case ('*CCSORT')
+                        call read_input_ccsort(word, kw_section)
+
                      case ('*CCFSPC')
                         call read_input_ccfspc(word, kw_section)
 
@@ -342,6 +345,30 @@ contains
 
       if (kw_matches(word, '.J     ')) then
          call read_input_visual_helper(iq_j)
+      end if
+
+      if (kw_matches(word, '.KIN   ')) then
+         call read_input_visual_helper(iq_kin)
+      end if
+
+      if (kw_matches(word, '.KINLS ')) then
+         call read_input_visual_helper(iq_kin_ls)
+      end if
+
+      if (kw_matches(word, '.KINSL ')) then
+         call read_input_visual_helper(iq_kin_sl)
+      end if
+
+      if (kw_matches(word, '.KINTAU')) then
+         call read_input_visual_helper(iq_kin_tau)
+      end if
+
+      if (kw_matches(word, '.KINLAP')) then
+         call read_input_visual_helper(iq_kin_lap)
+      end if
+
+      if (kw_matches(word, '.KINNR ')) then
+         call read_input_visual_helper(iq_kin_nr)
       end if
 
       if (kw_matches(word, '.DIVJ  ')) then
@@ -889,6 +916,31 @@ contains
 
       if (kw_matches(word, '.NTOL  ')) then
          read(unit_in,'(i5)') relcc_fopr_desired_convergence
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_ccsort(word, kw_section)
+
+      use relcc_cfg
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+!     ignore HF orbital energies 
+      if (kw_matches(word, '.IGNOE  ')) then
+         relcc_use_orbital_energies = .false.
+      end if
+
+!     do not re-compute orbital energies
+      if (kw_matches(word, '.NORCMP')) then
+         relcc_no_recompute   = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

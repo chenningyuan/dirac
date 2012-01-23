@@ -6323,10 +6323,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck CIMINP */
       SUBROUTINE CIMINP(WORK,LWORK)
 C***********************************************************************
+      implicit none
+      real(8) :: work
+      integer :: lwork
 C
 C     Dummy routine while the interface is being implemented
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TWOMEM */
@@ -7334,7 +7336,7 @@ C
       LGGRAD = .FALSE.
       LGCHCK = .FALSE.
       THFULL = 1.0D-13
-      THDIAG = 1.0D-13
+      THDIAG = 1.0D-05
       THGRAD = 1.0D-07
 C
 C     Process input from CBILOC

@@ -31,6 +31,8 @@ module fde_integrate
    type fde_omega_prefactor
       real(8), allocatable :: n(:)
       real(8), allocatable :: gn(:, :)
+      real(8), allocatable :: s(:, :)
+      real(8), allocatable :: gs(:, :, :)
    end type
 
    integer, parameter :: bllen = 1 !later more, now slowdft
@@ -490,6 +492,9 @@ endif
 
          allocate(u%n (      nr_fmat))
          allocate(u%gn(   3, nr_fmat))
+         allocate(u%s (   3, nr_fmat))
+         allocate(u%gs(3, 3, nr_fmat))
+
 
 !   check what functional derivatives do we need
 !   ============================================
@@ -554,6 +559,8 @@ endif
 
                u%n  = 0.0d0
                u%gn = 0.0d0
+               u%s  = 0.0d0
+               u%gs = 0.0d0
 
                w(1) = rw(ipoint)
 
@@ -687,8 +694,54 @@ endif
                 end if
              end if
 
+! spin-density stuff 
+
+             us_above_threshold = .false.
+             if (maxval((/dabs(u%s(1, im)), &
+                          dabs(u%s(2, im)), &
+                          dabs(u%s(3, im))/)) > tiny(0.0d0)) then
+                us_above_threshold = .true.
+             end if
+
+             ugs_above_threshold = .false.
+             if (maxval((/dabs(u%gs(1, 1, im)), &
+                          dabs(u%gs(1, 2, im)), &
+                          dabs(u%gs(1, 3, im)), &
+                          dabs(u%gs(2, 1, im)), &
+                          dabs(u%gs(2, 2, im)), &
+                          dabs(u%gs(2, 3, im)), &
+                          dabs(u%gs(3, 1, im)), &
+                          dabs(u%gs(3, 2, im)), &
+                          dabs(u%gs(3, 3, im))/)) > tiny(0.0d0)) then
+                ugs_above_threshold = .true.
+             end if
+
+             if (ugs_above_threshold) then
+!               F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q
+!                     + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
+                call nabla_omega_imag(fmat,                &
+                                      im,                  &
+                                      fmat_pg_sym(im) - 1, &
+                                      mat_dim,             &
+                                      nz,                  &
+                                      u%s(1, im),          &
+                                      u%gs(1, 1, im),      &
+                                      ao)
+             else
+                if (us_above_threshold) then
+!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
+                   call omega_imag(fmat,                &
+                                   im,                  &
+                                   fmat_pg_sym(im) - 1, &
+                                   mat_dim,             &
+                                   nz,                  &
+                                   u%s(1, im),          &
+                                   ao)
+                end if
+             end if
           end do
 
+! end spin-density stuff
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
       end if !if (n_0(1) > dft_cfg_small_density_threshold) then
@@ -848,6 +901,9 @@ endif
     real(8), intent(in)    :: derv(max_block_length, 0:n)
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
+    logical, save          :: have_triplet_contrib(100) = .false.
+    logical, save          :: have_triplet = .false.
+    logical, save          :: print_triplet_contrib = .true.
 
 
     real(8)                ::  r_b,     s_b(3)
@@ -876,7 +932,11 @@ endif
         calculate_qi = .true.
       end if
 
-      calculate_qi = .false.
+      if (dft_cfg_no_sdft) then
+        calculate_qi = .false.
+      end if
+
+      if (calculate_qi) have_triplet_contrib(im) = .true.
 
       im_off = mat_dim*mat_dim*nz*(im - 1)
 
@@ -926,7 +986,71 @@ endif
 
       end if !end of qr contribution
 
+!     antihermitian contribution (qi = quaternion imaginary)
+      if (calculate_qi) then
+
+
+        if (is_gga_qi) then
+          if (allow_nonhermitian) then
+            call get_gs_nonhermitian(s_b,                       &
+                                     gs_b,                       &
+                                     isym(im) - 1,               &
+                                     mat_dim,                    &
+                                     dmaterturbed(1 + im_off), &
+                                     buffer,                     &
+                                     ao)
+          else
+            call get_gs(s_b,                       &
+                        gs_b,                       &
+                        isym(im) - 1,               &
+                        mat_dim,                    &
+                        dmaterturbed(1 + im_off), &
+                        buffer,                     &
+                        ao)
+          end if
+        else
+        call get_s(s_b,                        &
+                   isym(im) - 1,               &
+                   mat_dim,                    &
+                   dmaterturbed(1 + im_off), &
+                   buffer,                     &
+                   ao)
+        end if
+
+        do k = k_start, 3
+           u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
+
+           if (is_gga_qi) then
+              y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
+                      + gn_0_pointwise(2)*gs_b(2, k) &
+                      + gn_0_pointwise(3)*gs_b(3, k)
+
+              u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
+
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k)*derv(1, d0101000) &
+                                                  +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
+                                                  + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
+           end if
+        end do
+
+      end if !end of qi contribution
+
     end do
+
+! now for some output
+    if (print_triplet_contrib) then
+       do im = 1, nr_mat
+          if (have_triplet_contrib(im)) have_triplet = .true.
+       end do
+
+       if (have_triplet) then
+          write(*,*) 'Triplet contributions to FDE kernel included'
+       else
+          write(*,*) 'Triplet contributions to FDE kernel neglected'
+       endif
+       print_triplet_contrib = .false.
+    endif
+!
 
   end subroutine
 

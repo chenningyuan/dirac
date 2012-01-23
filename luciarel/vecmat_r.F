@@ -643,11 +643,11 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 * Information about which block belongs to which node is stored in
 * IBLOCKD.
 *
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *.Input
@@ -656,7 +656,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
       DIMENSION VEC1(*)
       LOGICAL FOUND_ONE
 #if defined (VAR_MPI2)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
       DIMENSION LU1LIST(*)
 #endif
 C
@@ -737,8 +737,8 @@ CSK          WRITE(LUWRT,*) 'OFFSET',IOFF_SCR1
 CSK          WRITE(LUWRT,*) 'INT_IOFF1 is ',INT_IOFF1
 C
             LU1LIST( INT_IOFF1 ) = IONE
-            CALL MPI_FILE_WRITE_AT(ILU1,IOFF_SCR1,VEC1,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+            CALL interface_MPI_FILE_WRITE_AT_r(ILU1,IOFF_SCR1,VEC1,LBL,
+     &                             ISTAT)
 C
           END IF
 C

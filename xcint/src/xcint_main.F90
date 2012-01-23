@@ -140,6 +140,10 @@ module xcint_main
    logical :: do_london_lr
    logical :: do_overlap_diagnostic
 
+   integer, allocatable, target :: default_fmat_pg_sym(:)
+   integer, allocatable, target :: default_dmat_pg_sym(:)
+   integer, allocatable, target :: default_dmat_ih_sym(:)
+
 contains
 
    subroutine integrate_xc(xc_mat_dim,               &
@@ -207,9 +211,6 @@ contains
       integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
-      integer, parameter :: max_mat_number = 10
-      integer, target    :: default_pg_sym(max_mat_number)
-      integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
 
@@ -372,8 +373,16 @@ contains
          end if
       end if
 
-      default_pg_sym = 1
-      default_ih_sym = 0
+      if (nr_fmat > 0) then
+         allocate(default_fmat_pg_sym(nr_fmat))
+         default_fmat_pg_sym = 1
+      end if
+      if (nr_dmat > 0) then
+         allocate(default_dmat_pg_sym(nr_dmat))
+         allocate(default_dmat_ih_sym(nr_dmat))
+         default_dmat_pg_sym = 1
+         default_dmat_ih_sym = 0
+      end if
 
       nullify(fmat_pg_sym)
       nullify(dmat_pg_sym)
@@ -394,17 +403,17 @@ contains
          if (present(xc_fmat_pg_sym)) then
             fmat_pg_sym => xc_fmat_pg_sym
          else
-            fmat_pg_sym => default_pg_sym(1:nr_fmat)
+            fmat_pg_sym => default_fmat_pg_sym(1:nr_fmat)
          end if
          if (present(xc_dmat_pg_sym)) then
             dmat_pg_sym => xc_dmat_pg_sym
          else
-            dmat_pg_sym => default_pg_sym(1:nr_dmat)
+            dmat_pg_sym => default_dmat_pg_sym(1:nr_dmat)
          end if
          if (present(xc_dmat_ih_sym)) then
             dmat_ih_sym => xc_dmat_ih_sym
          else
-            dmat_ih_sym => default_ih_sym(1:nr_dmat)
+            dmat_ih_sym => default_dmat_ih_sym(1:nr_dmat)
          end if
       end if
 
@@ -750,6 +759,16 @@ contains
          end if
       end if
 
+      if (allocated(default_fmat_pg_sym)) then
+         deallocate(default_fmat_pg_sym)
+      end if
+      if (allocated(default_dmat_pg_sym)) then
+         deallocate(default_dmat_pg_sym)
+      end if
+      if (allocated(default_dmat_ih_sym)) then
+         deallocate(default_dmat_ih_sym)
+      end if
+
    end subroutine
 
    subroutine scale_density_matrices(f)
@@ -1037,7 +1056,7 @@ contains
 
 #ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(tau,     &
+            call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
                          dmat_0,  &
@@ -1273,26 +1292,26 @@ contains
 
 #ifdef MOD_OPENRSP
           if (response_order_ao > 0) then
-            call xc_response_contribution(response_order_ao,                 &
-                                          mat_dim,   &
-                                          nz,        &
-                                          fmat,      &
-                                          nr_dmat, &
-                                          dmat,    &
-                                          dmat_pg_sym,      &
-                                          dmat_ih_sym,      &
-                                          fmat_pg_sym,      &
-                                          use_gga,                           &
-                                          ao, &
-                                          n_0(1),                            &
-                                          gn_0_pointwise,                               &
-                                          rx(ipoint),                      &
-                                          ry(ipoint),                      &
-                                          rz(ipoint),                      &
-                                          w(1),                              &
-                                          buffer, &
-                                          derv_length,  &
-                                          derv)
+             call xc_response_contribution(response_order_ao, &
+                                           mat_dim,           &
+                                           nz,                &
+                                           fmat,              &
+                                           nr_dmat,           &
+                                           dmat,              &
+                                           dmat_pg_sym,       &
+                                           dmat_ih_sym,       &
+                                           fmat_pg_sym,       &
+                                           use_gga,           &
+                                           ao,                &
+                                           n_0(1),            &
+                                           gn_0_pointwise,    &
+                                           rx(ipoint),        &
+                                           ry(ipoint),        &
+                                           rz(ipoint),        &
+                                           w(1),              &
+                                           buffer,            &
+                                           derv_length,       &
+                                           derv)
           end if
 #endif
 
@@ -1890,7 +1909,7 @@ contains
 
 #ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(t_b,     &
+            call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
@@ -1984,7 +2003,7 @@ contains
         end if
 #ifdef MOD_UNRELEASED
         if (fun_is_tau_mgga(xc_fun)) then
-           call get_tau_imag(ts_b,     &
+           call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &

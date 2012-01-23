@@ -13,8 +13,11 @@
 # Purpose: Given one single input (consisting of a mol/xyz and a inp file)
 #          run Dirac once at a known place and bring back output and restart data to the (also known) starting directory.
 #          No more no less. 
+#
+##############################################################################################################################
 
 import os
+import re
 import sys
 import string
 import subprocess
@@ -280,7 +283,13 @@ class pam_enviroment:
         print "Current settings:"
         print "  Install directory   ", self.dirac_home
         print "  Basis directories   ",  self.basdir
-        print "  Scratch directory   ",  self.scratch_dir
+        disk= disk_space_find(self.scratch_dir)
+        if disk.available:
+            scratch_disk_usage="(avail=%10.3f[GB])"%(disk.available) 
+            scratch_disk_usage=scratch_disk_usage.replace(" ","")
+            print "  Scratch directory   ",  self.scratch_dir,scratch_disk_usage
+        else:
+            print 'scratch dir:', self.scratch_dir,' not found/not accessible !'
         print "  Relevant for parallel builds:"
         print "    mpi launcher         ",  self.mpirun
         print "    mpirun extra args    ",  self.mpiarg
@@ -355,7 +364,8 @@ class pam_enviroment:
         scratch_id=self.user_name+"@"+self.master_full+":"+self.scratch_dir
         sum_filesize_mb=0
         #print
-        print '  content of the (master) scratch directory ', scratch_id
+        print '  content of the (master) scratch directory:'
+        print scratch_id
         print '  ------------------------------------------------------------------------------'
         print '%25s %12s %s' % ('name', 'size (MB)', '   last accessed')
         print '  ------------------------------------------------------------------------------'
@@ -380,7 +390,7 @@ class pam_enviroment:
             sys.stdout.flush()
         print '  ------------------------------------------------------------------------------'
         print '      Total size of all files :  %10.3f  MB ' % sum_filesize_mb
-        disk = disk_space(self.scratch_dir)
+        disk = disk_space_find(self.scratch_dir)
         print '      Disk info:  used    available   capacity [GB]'
         print '             %10.3f %10.3f   %10.3f ' % (disk.used,disk.available,disk.capacity)
         print ''
@@ -889,11 +899,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.debug = True
 
         if options.dest_debugger:
-            if os.path.isfile(str(options.dest_debugger)):
-                self.debugger = options.dest_debugger
+            debugger_full_path=str(find_executable(options.dest_debugger))
+            if os.path.isfile(debugger_full_path):
+                self.debugger = debugger_full_path
             else:
-                print 'FYI: Debugger wrongly assigned. No debugging ;|'
-                self.debug = False
+                print 'debugger selected as pam flag: ',options.dest_debugger
+                print 'But no full path assigned: ',debugger_full_path
+                print_std_out_err('Debugger wrongly assigned.')
 
         if options.dest_vg:
             self.vg_debug = True
@@ -983,6 +995,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             else:
                 # no suffix, never mind
                 mol_file_stripped = self.input_file_molecule
+            # ... strip off from path
+            mol_file_stripped = os.path.split(mol_file_stripped)[1]
 
             if '.inp' in self.input_file_dirac:
                 inp_file_stripped = self.input_file_dirac.replace('.inp'
@@ -991,6 +1005,9 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 # no suffix, continuing..
                 print 'The dirac input file does not contain recommended suffix, never mind...'
                 inp_file_stripped = self.input_file_dirac
+            # ... strip off from path
+            inp_file_stripped = os.path.split(inp_file_stripped)[1]
+
             # set proper output file structure
             self.output_name = inp_file_stripped + '_' + mol_file_stripped
         elif self.full_restart:
@@ -1273,6 +1290,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if warnings != '':
                 print 'output lines containing warnings:'
                 print warnings
+                sys.stdout.flush()
 
     def execute_dirac(self):
         ''' 
@@ -1517,21 +1535,19 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 print_std_out_err('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
                 sys.exit(-1)
             for this_node in self.nodes:
-                sys.stdout.flush()
                 print 'content of the scratch_dir, slave node ', this_node, \
                     ':', self.scratch_dir
                 command = self.rsh + ' ' + this_node + ' "ls -l ' \
                     + self.scratch_dir + ' "'
                 os.system(command)
-                sys.stdout.flush()
                 print ' Total size of the slave node scratch directory:\c'
                 command = self.rsh + ' ' + this_node + ' "du -h -s ' \
                     + self.scratch_dir + ' "'
                 os.system(command)
-                sys.stdout.flush()
                 print '  Info on the disk space usage on the slave node:'
                 command = self.rsh + ' ' + this_node + ' "df -h  ."'
                 os.system(command)
+                sys.stdout.flush()
 
         # finally removing node content
 
@@ -1585,8 +1601,11 @@ Options are also read from the ~/.dirac and .diracrc files."""
         print
         if not self.silent:
             print '  user           :', self.user_name
-            print '  host           :', self.master,' (',self.master_full,')'
-            print '  ip             :', self.hostname_ip
+            if self.master != self.master_full:
+                print '  host           :', self.master,' (',self.master_full,')'
+            else:
+                print '  host           :', self.master
+            print '  ip             :', self.hostname_ip,'(# of CPUs:',determineNumberOfCPUs(),')'
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
             print '  pam command    :', self.pam_command
@@ -1594,14 +1613,20 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
                 print '  executable      :', self.dirac_exe
-            print '  scratch dir    :', self.scratch_dir
+            disk= disk_space_find(self.scratch_dir)
+            if disk.available:
+                scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available) 
+                scratch_disk_usage=scratch_disk_usage.replace(" ","")
+                print '  scratch dir    :', self.scratch_dir,scratch_disk_usage
+            else:
+                print 'scratch dir:', self.scratch_dir,' not found/not accessible !'
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run
             # print out more stuff regarding the parallel setting
             if self.parallel_run: 
-                print '  # of CPUs      :', self.nr_proc 
+                print '  # of used CPUs :', self.nr_proc 
                 print '  local disks    :', not self.global_scratch_disk
-                print '  rsh/rcp        :', self.rsh,' ',self.rcp
+                print '  rsh/rcp        :', self.rsh,'/',self.rcp
                 print '  machine file   :', self.machinefile
 
         if self.set_timeout_limit and not is_windows():
@@ -1764,8 +1789,11 @@ def get_ip():
                         0x8915,  # SIOCGIFADDR
                         struct.pack('256s', ifname[:15])
                 )[20:24])
-    # get IP-address
-    ip = socket.gethostbyname(socket.gethostname())
+    # get IP-address, but secure the command with try as it might not work on all machines
+    try:
+        ip = socket.gethostbyname(socket.gethostname())
+    except:
+        ip = "not found"
     if ip.startswith("127.") and os.name != "nt":
         interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
         for ifname in interfaces:
@@ -1791,11 +1819,9 @@ def get_full_hostname():
     """
     import socket
     try:
-	    this_host=str(socket.gethostbyaddr(get_ip())[0])
-        #this_host=str(host[0])
+        this_host=str(socket.gethostbyaddr(get_ip())[0])
     except:
         this_host="not found"
-        #this_host=str(get_ip()) 		
     return this_host
 
 def get_hostname_ip():
@@ -1812,19 +1838,48 @@ class disk_space:
     def __init__(self,path):
         """
         fill (initialize) wanted variables, no other info needed sofar
-        TODO: check the path
+        if entering variable path is not proper, returns None
         """
         import os
         gb_factor = float(1024*1024*1024)
+        # initialize
+        self.capacity=None
+        self.available=None
+        self.used=None
+        # if path not defined, return with None attributes
+        if not os.path.isdir(path): return
         if not is_windows():
             self.disk_info = os.statvfs(path)
             self.capacity = ( self.disk_info.f_bsize * self.disk_info.f_blocks ) / gb_factor
             self.available = ( self.disk_info.f_bsize * self.disk_info.f_bavail ) /  gb_factor
             self.used = ( self.disk_info.f_bsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
         else:
+            # TODO: define for Windows
             self.available = 0
             self.capacity = 0
             self.used = 0
+
+class disk_space_find:
+    """
+    extracts disk space data - capacity, available, used -  in GB
+    """
+    def __init__(self,path):
+        """
+        fill (initialize) wanted variables, no other info needed sofar
+        if entering variable path is not proper, returns None
+        """
+        import os
+        # initialize
+        self.capacity=disk_space(path).capacity
+        self.available=disk_space(path).available
+        self.used=disk_space(path).used
+        # cycle for finding existing path
+        this_path=path
+        while disk_space(this_path).used is None:
+            this_path=os.path.dirname(this_path)
+            self.capacity=disk_space(this_path).capacity
+            self.available=disk_space(this_path).available
+            self.used=disk_space(this_path).used
 
 class extract_path_file:
     """
@@ -1933,6 +1988,88 @@ def print_std_out_err(s):
         print  >> stream,s
         stream.flush()
 
+def  determineNumberOfCPUs():
+    """ Number of virtual or physical CPUs on this system, i.e.
+    user/real as output by time(1) when called with an optimally scaling
+    userspace-only program
+    http://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-in-python
+    """
+    # Python 2.6+
+    try:
+        import multiprocessing
+        return multiprocessing.cpu_count()
+    except (ImportError,NotImplementedError):
+        pass
+    # POSIX
+    try:
+        res = int(os.sysconf('SC_NPROCESSORS_ONLN'))
+        if res > 0:
+            return res
+    except (AttributeError,ValueError):
+        pass
+    # Windows
+    try:
+        res = int(os.environ['NUMBER_OF_PROCESSORS'])
+        if res > 0:
+            return res
+    except (KeyError, ValueError):
+        pass
+
+    # jython
+    try:
+        from java.lang import Runtime
+        runtime = Runtime.getRuntime()
+        res = runtime.availableProcessors()
+        if res > 0:
+            return res
+    except ImportError:
+        pass
+    # BSD
+    try:
+        sysctl = subprocess.Popen(['sysctl', '-n', 'hw.ncpu'],
+                                      stdout=subprocess.PIPE)
+        scStdout = sysctl.communicate()[0]
+        res = int(scStdout)
+
+        if res > 0:
+            return res
+    except (OSError, ValueError):
+        pass
+    # Linux
+    try:
+        res = open('/proc/cpuinfo').read().count('processor\t:')
+        if res > 0:
+            return res
+    except IOError:
+        pass
+    # Solaris
+    try:
+        pseudoDevices = os.listdir('/devices/pseudo/')
+        expr = re.compile('^cpuid@[0-9]+$')
+        res = 0
+        for pd in pseudoDevices:
+            if expr.match(pd) != None:
+                res += 1
+        if res > 0:
+            return res
+    except OSError:
+        pass
+    # Other UNIXes (heuristic)
+    try:
+        try:
+            dmesg = open('/var/run/dmesg.boot').read()
+        except IOError:
+            dmesgProcess = subprocess.Popen(['dmesg'], stdout=subprocess.PIPE)
+            dmesg = dmesgProcess.communicate()[0]
+        res = 0
+        while '\ncpu' + str(res) + ':' in dmesg:
+            res += 1
+        if res > 0:
+            return res
+    except OSError:
+        pass
+    # no success, can not determine number of CPUs ...  ;(
+    raise Exception('Can not determine number of CPUs on this system')
 
 #
 # at the very end, where everything if defined above, launch the script's main function

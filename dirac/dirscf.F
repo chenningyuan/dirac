@@ -198,7 +198,11 @@ C         .... prepare the DFCOEF file with staring MO's
 
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) THEN
+#if defined SYS_WINDOWS
+          CALL SYSTEM('del DFDIIS')
+#else
           CALL SYSTEM('/bin/rm DFDIIS')
+#endif
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
      &    'PSIDHF: DFDIIS file from previous SCF cycle was deleted.'
         ENDIF
@@ -1781,7 +1785,11 @@ c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
          write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
+#if defined SYS_WINDOWS
+         call system('copy DFCOEF DFCOEF.BEST')
+#else
          call system('cp DFCOEF DFCOEF.BEST')
+#endif
          besterg = dhferg
       endif
       CALL QEXIT('ERGCAL')
@@ -5195,7 +5203,9 @@ C.......add test fro NSYM
         CALL READT(LUATOM,NACMOQ,WORK(KCMO))
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
-        NDIM=MAX(NAORB,NBAS)
+!       NDIM=MAX(NAORB,NBAS)+1
+!       radovan i think the above should rather be:
+        NDIM=MAX(NAORB,NBAS)+1
         CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
         FAC = D0
         DO ISHELL = 1,NVECATOM(IATOM)

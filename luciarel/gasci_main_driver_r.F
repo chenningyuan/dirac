@@ -43,11 +43,12 @@
 *
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "ipoist8.inc"
@@ -99,9 +100,9 @@ C     memory pointer for C2 vector block
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
-      INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
+      INTEGER(KIND=df_MPI_OFFSET_KIND) ITEST_OFF
 #if defined VAR_SHMEM
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL
       POINTER (MY_TTPL_PTR, IT_TTPL(IDUMMY_BUFF_SZ))
       POINTER (MY_TTOL_PTR, IT_TTOL(IDUMMY_BUFF_SZ))
       POINTER (MY_T_PTR   , T_BUFF(IDUMMY_BUFF_SZ))
@@ -215,9 +216,9 @@ C       allocate T-block processor and offset list
 #if defined VAR_SHMEM
         MY_TTOL_LEN = NSPOBEX_TP * IRC
         CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
-     &                      MPI_INFO_NULL, .FALSE.)
+     &                      df_MPI_INFO_NULL, .FALSE.)
         CALL MPIXMEM_ALLOC( MY_TTOL_PTR, 3, MY_TTOL_LEN,
-     &                      MPI_INFO_NULL, .FALSE.)
+     &                      df_MPI_INFO_NULL, .FALSE.)
         CALL IMINO8(IT_TTOL,MY_TTOL_LEN)
 #else
         allocate(IT_TTPL(MY_TTPL_LEN))
@@ -282,8 +283,8 @@ C       zero arrays
 #endif
 C
         IF( SPLIT_IJKL ) THEN
-          CALL MPI_GATHER(MY_T_LEN,1,MPI_INTEGER8,IT_TTOL,1,
-     &                    MPI_INTEGER8,MASTER,MPI_COMM_WORLD,IERR)
+         call interface_MPI_GATHER(MY_T_LEN,1,IT_TTOL,1,MASTER,
+     &                             global_communicator)
         END IF
 C
         WRITE(LUWRT,'(/2X,A)')
@@ -511,8 +512,8 @@ C
           CALL GET_BLOCK_PROC(WORK(KNODELIST),IIBLK,IPROC)
           IF( MYPROC .eq. IPROC ) THEN
             CALL GET_BLOCK_LENGTH(WORK(KBLOCKLIST),IIBLK,ILEN)
-            CALL MPI_FILE_READ_AT(IDIA,ITEST_OFF,WORK(KVEC1),ILEN,
-     &                            MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_READ_AT(IDIA,ITEST_OFF,
+     &                            WORK(KVEC1),ILEN,ISTAT)
             WRITE(LUWRT,*) ' Diagonal elements',ILEN
             CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
             ITEST_OFF = ITEST_OFF + ILEN
@@ -655,7 +656,7 @@ C
             CALL COPVCD_PAR_BDRIV_REL(ILU2,LUHC,WORK(KVEC1),
      &                                WORK(KNODELIST),NUM_BLOCKS,
      &                                WORK(KBLOCKLIST),
-     &                                MPI_COMM_WORLD,LBLK,IIONE,
+     &                                global_communicator,LBLK,IIONE,
      &                                WORK(KILU2LIST),MY_LU2_OFF,IRC)
 C
 C
@@ -668,7 +669,7 @@ C             H is a hermitian matrix...
               CALL COPVCD_PAR_BDRIV_DIA_REL2(IDIA,LUDIA,WORK(KVEC1),
      &                                       WORK(KNODELIST),NUM_BLOCKS,
      &                                       WORK(KBLOCKLIST),
-     &                                       MPI_COMM_WORLD,LBLK,IIONE,
+     &                                       global_communicator,LBLK,IIONE,
      &                                       MY_DIA_OFF)
             END IF
 C           ^ CIRUN .eq. SIGMAD
@@ -738,7 +739,7 @@ C
               CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                                  WORK(KNODELIST),NUM_BLOCKS,
      &                                  WORK(KBLOCKLIST),
-     &                                  MPI_COMM_WORLD,LBLK,JROOT,
+     &                                  global_communicator,LBLK,JROOT,
      &                                  WORK(KILU1LIST),MY_LU1_OFF,IRC)
             END DO
             CALL SETUNITS_PAR_CLOSE_REL(CIRUN,2)
@@ -825,7 +826,7 @@ C
  888  CONTINUE 
 #if defined (VAR_MPI2)
 C     let the slaves wait... it is only a short way to go so why not?
-      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+      call interface_mpi_BARRIER(global_communicator)
 #endif
 C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1139,14 +1140,14 @@ C
 C           make sure each CPU gets here before starting T block 
 C           collection
 C
-            CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+            call interface_mpi_BARRIER(global_communicator)
 C
             IF( IT_SHL .eq. 0 )THEN
 C
                MY_XT_BUFF_LEN = NCALC_MAX_BLK(IRC)
 C
                CALL MPIXMEM_ALLOC(MY_XT_PTR,1,MY_XT_BUFF_LEN,
-     &                            MPI_INFO_NULL,.FALSE.)
+     &                            df_MPI_INFO_NULL,.FALSE.)
                CALL DZERO8(XT_BUFF,MY_XT_BUFF_LEN)
                CALL COLLECT_DENS_MAT_SM_LOC(T_BUFF,XT_BUFF,IT_TTPL,
      &                                      IT_TTOL,IRC,ISHARE_DENSM)
@@ -1198,10 +1199,9 @@ C
 C
             allocate(IT_DLIST_TMP(MY_DL_TMP_LEN))
             IT_DLIST_TMP = 0
-            CALL MPI_ALLGATHER(IT_TTPL,NSPOBEX_TP*IRC_SAVE,
-     &                         my_MPI_INTEGER,IT_DLIST_TMP,
-     &                         NSPOBEX_TP*IRC_SAVE,my_MPI_INTEGER,
-     &                         MPI_COMM_WORLD,IERR)
+            call interface_mpi_ALLGATHER(IT_TTPL,NSPOBEX_TP*IRC_SAVE,
+     &                         IT_DLIST_TMP,
+     &                         NSPOBEX_TP*IRC_SAVE,global_communicator)
 C
             CALL FIND_SENDER(IT_TTPL,IT_DLIST_TMP,NSPOBEX_TP)
 C
@@ -1304,7 +1304,7 @@ C        all slaves are waiting for the master who is transferring the
 C        densities...
 C
  919     CONTINUE
-         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+         call interface_mpi_BARRIER(global_communicator)
 #endif        
 C
       end if

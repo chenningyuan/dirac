@@ -1,8 +1,8 @@
-DIRAC pam run in /home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/openmpi_gfortran_gcc_atlas_ILP64_cdash/adm/trunk/test/cosci_energy
-DIRAC master    (pd) starts by allocating             64000000 words (           488 MB) of memory
-DIRAC master    (pd) has no limitations in place for the amount of dynamically allocated memory
+DIRAC pam run in /home/bast/dirac/master/test/cosci_energy
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
-Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
+Note: maximum allocatable memory for serial run can be set by pam --aw
  
  ******************************************************************************
  *                                                                            *
@@ -78,39 +78,48 @@ Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in
  *          Direct Iterative Relativistic All-electron Calculations           *
  *         =========================================================          *
  *                                                                            *
- *                      VERSION 10.00  10 October 2010                        *
- *                                                                            *
- ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
- *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions since the DIRAC08 release from:                  *
+ *    with contributions from:                                                *
  *                                                                            *
- *    Radovan Bast             University of Tromsø              Norway       *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
- *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
  *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
  *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
- *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
- *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linköping University              Sweden       *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
  *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas Thorvaldsen      University of Tromsø              Norway       *
- *    Jørn Thyssen             University of Southern Denmark    Denmark      *
- *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
@@ -127,59 +136,54 @@ Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC10 (2010),                                                 *
- *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
- *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
- *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
- *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
- *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
- *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
- *    (see http://dirac.chem.vu.nl).                                          *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
 
 
-Compilation settings
---------------------
+Compilation info
+----------------
 
-CMAKE_SYSTEM_NAME           : Linux 
-
-ENABLE_EXTERNAL_MATH        : ON 
-ENABLE_64BIT_INTEGERS       : ON 
-ENABLE_MPI                  : ON 
-ENABLE_XCFUN                : ON 
-ENABLE_LOCAL_DISKS          :  
-NO_SSH_ACCESS_TO_NODES      :  
-
-CMAKE_BUILD_TYPE            : Release 
-
-CMAKE_Fortran_COMPILER      : /home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpif90 
-FORTRAN_COMPILER_VERSION    : GNU Fortran (Debian 4.4.5-8) 4.4.5 
-CMAKE_Fortran_FLAGS         : -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -fno-range-check -fdefault-integer-8  
-CMAKE_Fortran_FLAGS_DEBUG   : -O0 -g 
-CMAKE_Fortran_FLAGS_RELEASE : -O3 -funroll-all-loops 
-
-CMAKE_C_COMPILER            : /home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpicc 
-C_COMPILER_VERSION          : gcc (Debian 4.4.5-8) 4.4.5 
-CMAKE_C_FLAGS               :   
-CMAKE_C_FLAGS_DEBUG         : -O0 -g3 
-CMAKE_C_FLAGS_RELEASE       : -g -O2 -Wno-unused 
-
-BLAS_LIBRARIES              :  
-LAPACK_LIBRARIES            :  
-
-SVN_REVISION                : 14258 
-GIT_REVISION                :  
-
-Compilation time            : Tue Jun 14 00:15:16 CEST 2011 
+ User (who compiled)      | bast@lpqlx131
+ System                   | Linux-2.6.32-5-amd64
+ Processor                | x86_64
+ Internal math            | OFF
+ 64-bit integers          | ON
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Debian 4.4.5-8) 4.4.5
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -fdefault-integer-8 -O3 -fu
+                          | nroll-all-loops
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
+ C flags                  | -g -O2 -Wno-unused
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
+                          | ilp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequent
+                          | ial.so;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_lapack95_ilp64.a;-Wl,--end-group
+ static libraries linking | OFF
+ Configuration time       | 2012-01-16 11:38:18.420985
+ Git revision             | 52a4bb87d533c7925b97708784ea80aaa7e72cec
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Jun 14 15:32:05 2011 
-     Host name              :                                         
+     Date and time (Linux)  : Mon Jan 16 14:57:50 2012 
+     Host name              : not found                               
 
 
 Contents of the input file
@@ -276,7 +280,7 @@ FINISH
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
- * running in two-component mode
+ * Running in two-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
  * Spherical transformation embedded in MO-transformation
@@ -295,12 +299,6 @@ FINISH
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
- Settings for FCK3 calculation:
- ------------------------------
-
-Dynamical threshold is not (yet) implemented in DIRAC
 
 
     *************************************************************************
@@ -414,6 +412,9 @@ Point group: D2h
     B3g  k
     Au   1
 
+  QM-QM nuclear repulsion energy :      0.000000000000
+
+
 
   Atoms and basis sets
   --------------------
@@ -433,9 +434,6 @@ Point group: D2h
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-
-  MNF.INP input file (for the AMFI stuff) is ready.
-  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
   References for the basis sets
@@ -576,7 +574,7 @@ F      0.0000000000   0.0000000000   0.0000000000
     "Implementation of an infinite-order two-component relativistic Hamiltonian 
     by a simple one-step transformation." 
     J. Chem. Phys., 126 (2007) 064102. 
- * running in two-component mode
+ * Running in two-component mode
  * Default integral flags passed to all modules
    - LL-integrals:     1
    - LS-integrals:     0
@@ -744,9 +742,9 @@ F      0.0000000000   0.0000000000   0.0000000000
 
   HANDLE_RKB: BSSMAT file -  EOFLABEL added.
 
-  GET_A_FAC: Average differences for A-factors (fsym 1/2) : 0.17263968D-14
+  GET_A_FAC: Average differences for A-factors (fsym 1/2) : 0.16431301D-14
 
-  GET_A_FAC: Average differences for A-factors (fsym 2/2) : 0.10791368D-14
+  GET_A_FAC: Average differences for A-factors (fsym 2/2) : 0.79936058D-15
 
 
            QJACOBI, selective diagonalization of the quaternion matrix.
@@ -763,9 +761,9 @@ F      0.0000000000   0.0000000000   0.0000000000
   The file #33 with name:QJACO.MTX has been open.
   ...entering matrix has been written to the file QJACO.MTX
   >>>> QJACOBI finished, # of iterations:    1234
-  last 2 sums of largets elements:  0.99378D-12 0.10012D-11
+  last 2 sums of largets elements:  0.98924D-12 0.10125D-11
   "zero" off-diag elem. threshold:  0.10000D-11
-  >>>> CPU/wall  time used in QJACOBI: 0.01600099s/ 0.00000000s
+  >>>> CPU/wall  time used in QJACOBI: 0.00400000s/ 0.00000000s
   The auxiliary file (lu=#,33) was closed, checking of A=P.Ad.P^H done
 
 
@@ -782,10 +780,10 @@ F      0.0000000000   0.0000000000   0.0000000000
   QJACOBI(TESTBLOCKS): The off-elements (indexes) to be diagonalized (zeroed) are OK:
   The file #33 with name:QJACO.MTX has been open.
   ...entering matrix has been written to the file QJACO.MTX
-  >>>> QJACOBI finished, # of iterations:    1586
-  last 2 sums of largets elements:  0.96728D-12 0.10175D-11
+  >>>> QJACOBI finished, # of iterations:    1589
+  last 2 sums of largets elements:  0.99455D-12 0.10106D-11
   "zero" off-diag elem. threshold:  0.10000D-11
-  >>>> CPU/wall  time used in QJACOBI: 0.02400202s/ 1.00000000s
+  >>>> CPU/wall  time used in QJACOBI: 0.00800100s/ 0.00000000s
   The auxiliary file (lu=#,33) was closed, checking of A=P.Ad.P^H done
 
   GET_HINF_BD: H1 ON RKB/"k" block-diagonalized matrix is  written to the BSSMAT file.
@@ -808,46 +806,46 @@ F      0.0000000000   0.0000000000   0.0000000000
 
         *** Fermion corep 1/2
 
-     -20        -63372.7773193803
-     -19        -44116.7327641465
-     -18        -39472.4572477240
-     -17        -38196.2447063595
-     -16        -37796.2950110289
-     -15        -37654.6084816320
-     -14        -37599.2583041997
-     -13        -37591.2658983686
-     -12        -37591.2658983685
+     -20        -63372.7773193802
+     -19        -44116.7327641466
+     -18        -39472.4572477241
+     -17        -38196.2447063593
+     -16        -37796.2950110291
+     -15        -37654.6084816313
+     -14        -37599.2583042015
+     -13        -37591.2658983687
+     -12        -37591.2658983686
      -11        -37582.0023135173
-     -10        -37582.0023135173
+     -10        -37582.0023135172
       -9        -37582.0023135172
-      -8        -37576.3323237331
+      -8        -37576.3323237308
       -7        -37570.0808064608
       -6        -37570.0808064607
-      -5        -37566.7045125492
-      -4        -37566.3255927325
-      -3        -37566.3255927325
+      -5        -37566.7045125480
+      -4        -37566.3255927326
+      -3        -37566.3255927326
       -2        -37566.3255927325
-      -1        -37562.0371432488
-       1           -40.5426330577           -40.5426330578    0.12804D-10
-       2           -10.1373250006           -10.1373250006   -0.56186D-11
-       3            -4.4857206277            -4.4857206277   -0.15039D-10
-       4            -4.4607825263            -4.4607825263   -0.13106D-10
-       5            -4.4607825263            -4.4607825263   -0.38449D-11
-       6            -4.4598092005            -4.4598092005   -0.11569D-10
-       7            -4.4598092005            -4.4598092005   -0.66596D-11
-       8            -4.4598092005            -4.4598092005    0.35172D-12
-       9            -1.9365170450            -1.9365170450   -0.79359D-11
-      10            -0.3932992552            -0.3932992552   -0.47662D-11
-      11            -0.3932992552            -0.3932992552    0.26080D-11
-      12            -0.3909600332            -0.3909600332   -0.10517D-10
-      13            -0.3909600332            -0.3909600332   -0.16664D-12
-      14            -0.3909600332            -0.3909600332    0.20739D-11
-      15            14.2996026617            14.2996026617   -0.51390D-11
-      16            91.6407017279            91.6407017279    0.22624D-10
-      17           370.6378095437           370.6378095438   -0.32969D-10
-      18          1390.3269434740          1390.3269434740   -0.14552D-10
-      19          5399.0208506069          5399.0208506069    0.32742D-10
-      20         22546.0183912981         22546.0183912981   -0.32742D-10
+      -1        -37562.0371433985
+       1           -40.5426330578           -40.5426330578    0.71054D-11
+       2           -10.1373250006           -10.1373250006    0.70042D-11
+       3            -4.4857206277            -4.4857206277    0.17737D-10
+       4            -4.4607825263            -4.4607825263    0.10072D-11
+       5            -4.4607825263            -4.4607825263    0.68443D-11
+       6            -4.4598092005            -4.4598092005   -0.39702D-11
+       7            -4.4598092005            -4.4598092005    0.19540D-12
+       8            -4.4598092005            -4.4598092005    0.33102D-11
+       9            -1.9365170450            -1.9365170450   -0.72173D-11
+      10            -0.3932992552            -0.3932992552   -0.42197D-11
+      11            -0.3932992552            -0.3932992552   -0.13465D-11
+      12            -0.3909600332            -0.3909600332   -0.14340D-11
+      13            -0.3909600332            -0.3909600332   -0.34844D-12
+      14            -0.3909600332            -0.3909600332    0.16145D-11
+      15            14.2996026617            14.2996026617   -0.28226D-11
+      16            91.6407017279            91.6407017279    0.20634D-10
+      17           370.6378095437           370.6378095438   -0.21487D-10
+      18          1390.3269434740          1390.3269434740    0.19782D-10
+      19          5399.0208506069          5399.0208506069    0.54570D-11
+      20         22546.0183912982         22546.0183912981    0.36380D-10
 
 
 
@@ -856,56 +854,56 @@ F      0.0000000000   0.0000000000   0.0000000000
 
         *** Fermion corep 2/2
 
-     -25        -38563.7321931608
+     -25        -38563.7321931610
      -24        -38395.6566152368
-     -23        -38395.6566152368
-     -22        -37794.4823275017
+     -23        -38395.6566152367
+     -22        -37794.4823275018
      -21        -37742.8831444752
      -20        -37742.8831444751
-     -19        -37635.9554002666
+     -19        -37635.9554002665
      -18        -37614.1431865135
      -17        -37614.1431865134
-     -16        -37589.4760560642
-     -15        -37579.4040628045
+     -16        -37589.4760560640
+     -15        -37579.4040628044
      -14        -37579.4040628043
-     -13        -37579.1478344572
+     -13        -37579.1478344570
      -12        -37579.1478344569
-     -11        -37579.1478344569
+     -11        -37579.1478344568
      -10        -37574.4354561758
       -9        -37574.4354561758
       -8        -37574.4354561757
-      -7        -37574.4354561757
-      -6        -37572.0437565431
-      -5        -37567.0163729920
-      -4        -37567.0163729910
-      -3        -37564.4011508616
-      -2        -37561.8065793583
-      -1        -37561.8065793577
-       1           -10.1310504175           -10.1310504175   -0.78870D-12
-       2           -10.1201529368           -10.1201529367   -0.41016D-11
-       3           -10.1201529367           -10.1201529367    0.10496D-10
-       4            -4.4762494524            -4.4762494524   -0.20002D-11
-       5            -4.4728548567            -4.4728548567    0.40412D-11
-       6            -4.4728548567            -4.4728548567    0.14137D-10
-       7            -2.4593333973            -2.4593333973    0.26015D-11
-       8            -2.4572167626            -2.4572167626    0.20162D-11
-       9            -2.4572167626            -2.4572167626    0.43188D-11
-      10            -0.4665748708            -0.4665748708   -0.20467D-12
-      11            -0.4665748708            -0.4665748708   -0.85709D-13
-      12            -0.4665748708            -0.4665748708    0.36821D-11
-      13            -0.4654930760            -0.4654930760   -0.49873D-11
-      14            -0.4654930760            -0.4654930760    0.12773D-11
-      15            -0.4654930760            -0.4654930760    0.30067D-11
-      16            -0.4654930760            -0.4654930760    0.14909D-10
-      17             6.9010167133             6.9010167133    0.55422D-12
-      18             6.9262214900             6.9262214900   -0.52633D-11
-      19             6.9262214900             6.9262214900    0.11555D-11
-      20            76.8154281466            76.8154281466    0.19043D-11
-      21            77.0250265527            77.0250265527    0.10800D-10
-      22            77.0250265527            77.0250265527    0.17707D-10
-      23           563.7334058448           563.7334058448    0.75033D-11
-      24           566.7414994438           566.7414994437    0.13529D-10
-      25           566.7414994438           566.7414994437    0.15575D-10
+      -7        -37574.4354561756
+      -6        -37572.0437565426
+      -5        -37567.0163729917
+      -4        -37567.0163729911
+      -3        -37564.4011508601
+      -2        -37561.8065793594
+      -1        -37561.8065793549
+       1           -10.1310504175           -10.1310504175    0.48246D-11
+       2           -10.1201529367           -10.1201529367    0.25633D-11
+       3           -10.1201529367           -10.1201529367    0.42899D-11
+       4            -4.4762494524            -4.4762494524    0.16591D-11
+       5            -4.4728548567            -4.4728548567   -0.35172D-11
+       6            -4.4728548567            -4.4728548567    0.18030D-12
+       7            -2.4593333973            -2.4593333973    0.57669D-11
+       8            -2.4572167626            -2.4572167626   -0.60973D-12
+       9            -2.4572167626            -2.4572167626    0.16013D-10
+      10            -0.4665748708            -0.4665748708   -0.54864D-11
+      11            -0.4665748708            -0.4665748708   -0.11868D-11
+      12            -0.4665748708            -0.4665748708   -0.46840D-12
+      13            -0.4654930761            -0.4654930760   -0.77615D-11
+      14            -0.4654930760            -0.4654930760   -0.28012D-11
+      15            -0.4654930760            -0.4654930760    0.63005D-13
+      16            -0.4654930760            -0.4654930760    0.11964D-11
+      17             6.9010167133             6.9010167133    0.20108D-11
+      18             6.9262214900             6.9262214900   -0.25970D-11
+      19             6.9262214900             6.9262214900    0.12014D-10
+      20            76.8154281465            76.8154281466   -0.87397D-11
+      21            77.0250265527            77.0250265527   -0.13529D-10
+      22            77.0250265527            77.0250265527    0.17621D-11
+      23           563.7334058448           563.7334058448    0.46612D-11
+      24           566.7414994437           566.7414994437   -0.89813D-11
+      25           566.7414994438           566.7414994437    0.40359D-10
 
 
      *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***
@@ -921,8 +919,7 @@ F      0.0000000000   0.0000000000   0.0000000000
                 F             -7.00           1.37
               -----------------------------------------
 
- >>> Time used in BNCORR is   0.02 seconds
- >>> Time used in mk_bss is   0.12 seconds
+ >>> Time used in BNCORR is   0.00 seconds
 
   PROP2BSS: 2comp. operator (indxpr=  1) P2C_0001->Overlap matrix   was written to the BSSMAT file in LL block.
   ...operator was NOT picture change transformed
@@ -939,7 +936,6 @@ F      0.0000000000   0.0000000000   0.0000000000
   PROP2BSS: EOFLABEL was renewed after saving all 2c operators into BSSMAT.
 
   MAKE_H2C: Two-component BSS mode - positronic shells deleted !
- >>> Time used in mk_h2c is   0.13 seconds
 
   Nuclear Gaussian exponent for atom of charge   9.000 :    5.3546911034D+08
 
@@ -979,7 +975,6 @@ F      0.0000000000   0.0000000000   0.0000000000
 No. of electronic orbitals (NESH):    20      25      45
 No. of positronic orbitals (NPSH):     0       0       0
 Total no. of orbitals      (NORB):    20      25      45
- >>> Time used in PAMSET is   0.17 seconds
 
 
  *******************************************************************************
@@ -993,126 +988,134 @@ Total no. of orbitals      (NORB):    20      25      45
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   1 ##########   Mon Jan 16 14:57:50 2012
 
-It.   1    -52.24548836057      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Jun 14
+It.    1    -52.24548828833      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Mon Jan 16
 
-########## START ITERATION NO.   2 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   2 ##########   Mon Jan 16 14:57:50 2012
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   35.15%    0.68%   12.87%   39.06%   0.02800202s
+SOfock:LL  1.00D-12   35.15%    0.68%   12.87%   39.06%   0.00800000s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04400301s
+>>> Total CPU-time : 0.02000100s
 
-########## END ITERATION NO.   2 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   2 ##########   Mon Jan 16 14:57:50 2012
 
-It.   2    -99.10656821745      4.69D+01  6.53D+00  2.52D+00               0.04400301s   LL             Tue Jun 14
+It.    2    -99.10656822690      4.69D+01  6.53D+00  2.52D+00               0.02000100s   LL             Mon Jan 16
 
-########## START ITERATION NO.   3 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   3 ##########   Mon Jan 16 14:57:50 2012
 
     3 *** Differential density matrix. DCOVLP     = 1.0202
-    3 *** Differential density matrix. DVOVLP( 1) = 0.9781
+    3 *** Differential density matrix. DVOVLP( 1) = 0.9770
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   12.87%   21.50%   12.24%   39.80%   0.03200203s
+SOfock:LL  1.00D-12   12.87%   21.51%   12.24%   39.80%   0.01200100s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04000199s
+>>> Total CPU-time : 0.01600200s
 
-########## END ITERATION NO.   3 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   3 ##########   Mon Jan 16 14:57:50 2012
 
-It.   3    -99.31683053439      2.10D-01 -5.66D-01  2.47D-01   DIIS   2    0.04000199s   LL             Tue Jun 14
+It.    3    -99.31642542927      2.10D-01 -5.74D-01  2.61D-01   DIIS   2    0.01600200s   LL             Mon Jan 16
 
-########## START ITERATION NO.   4 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   4 ##########   Mon Jan 16 14:57:50 2012
 
     4 *** Differential density matrix. DCOVLP     = 1.0156
-    4 *** Differential density matrix. DVOVLP( 1) = 0.9949
+    4 *** Differential density matrix. DVOVLP( 1) = 0.9939
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   15.79%   17.00%   12.08%   39.55%   0.03200197s
+SOfock:LL  1.00D-12   15.79%   16.90%   12.10%   39.43%   0.01200100s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03200197s
+>>> Total CPU-time : 0.01200100s
 
-########## END ITERATION NO.   4 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   4 ##########   Mon Jan 16 14:57:50 2012
 
-It.   4    -99.32441856943      7.59D-03  1.87D-01  8.47D-02   DIIS   3    0.03200197s   LL             Tue Jun 14
+It.    4    -99.32396487403      7.54D-03  2.07D-01  9.97D-02   DIIS   3    0.01200100s   LL             Mon Jan 16
 
-########## START ITERATION NO.   5 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   5 ##########   Mon Jan 16 14:57:50 2012
 
-    5 *** Differential density matrix. DCOVLP     = 1.0009
-    5 *** Differential density matrix. DVOVLP( 1) = 1.0014
+    5 *** Differential density matrix. DCOVLP     = 1.0006
+    5 *** Differential density matrix. DVOVLP( 1) = 1.0010
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   18.63%   15.63%   12.62%   39.14%   0.03200203s
+SOfock:LL  1.00D-12   18.63%   15.67%   12.61%   39.17%   0.00800000s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03600204s
+>>> Total CPU-time : 0.01200099s
 
-########## END ITERATION NO.   5 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   5 ##########   Mon Jan 16 14:57:50 2012
 
-It.   5    -99.32515216558      7.34D-04 -4.46D-02  4.34D-03   DIIS   4    0.03600204s   LL             Tue Jun 14
+It.    5    -99.32515173101      1.19D-03 -5.70D-02  4.77D-03   DIIS   4    0.01200099s   LL             Mon Jan 16
 
-########## START ITERATION NO.   6 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   6 ##########   Mon Jan 16 14:57:50 2012
 
-    6 *** Differential density matrix. DCOVLP     = 1.0006
-    6 *** Differential density matrix. DVOVLP( 1) = 1.0001
+    6 *** Differential density matrix. DCOVLP     = 1.0008
+    6 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   21.52%   13.99%   12.66%   39.37%   0.03200197s
+SOfock:LL  1.00D-12   18.63%   16.99%   12.68%   39.34%   0.01200001s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03600198s
+>>> Total CPU-time : 0.01600100s
 
-########## END ITERATION NO.   6 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   6 ##########   Mon Jan 16 14:57:50 2012
 
-It.   6    -99.32515482561      2.66D-06  2.19D-03  1.65D-04   DIIS   5    0.03600198s   LL             Tue Jun 14
+It.    6    -99.32515480492      3.07D-06  2.40D-03  3.85D-04   DIIS   5    0.01600100s   LL             Mon Jan 16
 
-########## START ITERATION NO.   7 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   7 ##########   Mon Jan 16 14:57:50 2012
 
-    7 *** Differential density matrix. DCOVLP     = 1.0000
+    7 *** Differential density matrix. DCOVLP     = 1.0001
     7 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   24.29%   15.67%   12.48%   38.57%   0.03200197s
+SOfock:LL  1.00D-12   22.62%   16.69%   12.56%   38.87%   0.01200001s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03200203s
+>>> Total CPU-time : 0.01200001s
 
-########## END ITERATION NO.   7 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   7 ##########   Mon Jan 16 14:57:50 2012
 
-It.   7    -99.32515483040      4.79D-09  5.11D-05  2.72D-05   DIIS   6    0.03200203s   LL             Tue Jun 14
+It.    7    -99.32515483031      2.54D-08  1.38D-04  3.97D-05   DIIS   6    0.01200001s   LL             Mon Jan 16
 
-########## START ITERATION NO.   8 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   8 ##########   Mon Jan 16 14:57:50 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   25.61%   16.84%   12.67%   37.97%   0.03200203s
+SOfock:LL  1.00D-12   31.25%   11.28%   12.85%   37.58%   0.00800100s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03200197s
+>>> Total CPU-time : 0.01200099s
 
-########## END ITERATION NO.   8 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   8 ##########   Mon Jan 16 14:57:50 2012
 
-It.   8    -99.32515483056      1.65D-10  4.33D-06  2.88D-06   DIIS   7    0.03200197s   LL             Tue Jun 14
+It.    8    -99.32515483056      2.55D-10  1.11D-05  1.93D-06   DIIS   7    0.01200099s   LL             Mon Jan 16
 
-########## START ITERATION NO.   9 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.   9 ##########   Mon Jan 16 14:57:50 2012
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   35.54%   11.23%   12.21%   35.63%   0.02400196s
+SOfock:LL  1.00D-12   35.54%   12.63%   12.33%   35.20%   0.01200101s
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03200197s
+>>> Total CPU-time : 0.01200101s
 
-########## END ITERATION NO.   9 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.   9 ##########   Mon Jan 16 14:57:50 2012
 
-It.   9    -99.32515483056      2.16D-12  1.07D-06  5.39D-07   DIIS   8    0.03200197s   LL             Tue Jun 14
+It.    9    -99.32515483056      1.48D-12  8.62D-07  1.82D-07   DIIS   8    0.01200101s   LL             Mon Jan 16
 
-########## START ITERATION NO.  10 ##########   Tue Jun 14 15:32:06 2011
+########## START ITERATION NO.  10 ##########   Mon Jan 16 14:57:50 2012
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   35.54%   13.89%   12.02%   34.80%   0.02800202s
+SOfock:LL  1.00D-12   34.00%   19.16%   11.88%   33.71%   0.00800000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.02800202s
+>>> Total CPU-time : 0.01200099s
 
-########## END ITERATION NO.  10 ##########   Tue Jun 14 15:32:06 2011
+########## END ITERATION NO.  10 ##########   Mon Jan 16 14:57:50 2012
 
-It.  10    -99.32515483056      2.42D-13 -7.78D-08  1.17D-08   DIIS   8    0.02800202s   LL             Tue Jun 14
+It.   10    -99.32515483056     -4.26D-14 -2.24D-08  1.88D-08   DIIS   8    0.01200099s   LL             Mon Jan 16
 
 
                                    SCF - CYCLE
@@ -1128,16 +1131,16 @@ It.  10    -99.32515483056      2.42D-13 -7.78D-08  1.17D-08   DIIS   8    0.028
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -52.24548836057      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Jun 14
-It.   2    -99.10656821745      4.69D+01  6.53D+00  2.52D+00               0.04400301s   LL             Tue Jun 14
-It.   3    -99.31683053439      2.10D-01 -5.66D-01  2.47D-01   DIIS   2    0.04000199s   LL             Tue Jun 14
-It.   4    -99.32441856943      7.59D-03  1.87D-01  8.47D-02   DIIS   3    0.03200197s   LL             Tue Jun 14
-It.   5    -99.32515216558      7.34D-04 -4.46D-02  4.34D-03   DIIS   4    0.03600204s   LL             Tue Jun 14
-It.   6    -99.32515482561      2.66D-06  2.19D-03  1.65D-04   DIIS   5    0.03600198s   LL             Tue Jun 14
-It.   7    -99.32515483040      4.79D-09  5.11D-05  2.72D-05   DIIS   6    0.03200203s   LL             Tue Jun 14
-It.   8    -99.32515483056      1.65D-10  4.33D-06  2.88D-06   DIIS   7    0.03200197s   LL             Tue Jun 14
-It.   9    -99.32515483056      2.16D-12  1.07D-06  5.39D-07   DIIS   8    0.03200197s   LL             Tue Jun 14
-It.  10    -99.32515483056      2.42D-13 -7.78D-08  1.17D-08   DIIS   8    0.02800202s   LL             Tue Jun 14
+It.    1    -52.24548828833      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Mon Jan 16
+It.    2    -99.10656822690      4.69D+01  6.53D+00  2.52D+00               0.02000100s   LL             Mon Jan 16
+It.    3    -99.31642542927      2.10D-01 -5.74D-01  2.61D-01   DIIS   2    0.01600200s   LL             Mon Jan 16
+It.    4    -99.32396487403      7.54D-03  2.07D-01  9.97D-02   DIIS   3    0.01200100s   LL             Mon Jan 16
+It.    5    -99.32515173101      1.19D-03 -5.70D-02  4.77D-03   DIIS   4    0.01200099s   LL             Mon Jan 16
+It.    6    -99.32515480492      3.07D-06  2.40D-03  3.85D-04   DIIS   5    0.01600100s   LL             Mon Jan 16
+It.    7    -99.32515483031      2.54D-08  1.38D-04  3.97D-05   DIIS   6    0.01200001s   LL             Mon Jan 16
+It.    8    -99.32515483056      2.55D-10  1.11D-05  1.93D-06   DIIS   7    0.01200099s   LL             Mon Jan 16
+It.    9    -99.32515483056      1.48D-12  8.62D-07  1.82D-07   DIIS   8    0.01200101s   LL             Mon Jan 16
+It.   10    -99.32515483056     -4.26D-14 -2.24D-08  1.88D-08   DIIS   8    0.01200099s   LL             Mon Jan 16
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
@@ -1148,13 +1151,13 @@ It.  10    -99.32515483056      2.42D-13 -7.78D-08  1.17D-08   DIIS   8    0.028
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -99.325154830563022
+   Electronic energy                        :    -99.325154830563307
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -99.325154830563022
+   Total energy                             :    -99.325154830563307
 
 
                                    Eigenvalues
@@ -1163,25 +1166,25 @@ It.  10    -99.32515483056      2.42D-13 -7.78D-08  1.17D-08   DIIS   8    0.028
 
 * Fermion symmetry E1g
   * Closed shell, f = 1.0000
-   -26.32217545381  ( 2)       -1.52823917591  ( 2)
+   -26.32217544663  ( 2)       -1.52823917217  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.98572189919  ( 2)        2.22078275313  ( 4)        2.22108282301  ( 6)        5.79391550162  ( 2)        8.77408655819  ( 4)
-     8.77728033060  ( 6)       27.27510525062  ( 2)      109.12826621966  ( 2)      391.91536177782  ( 2)     1414.61057647038  ( 2)
-  5425.05621529195  ( 2)    22572.86467434834  ( 2)
+     0.98572190112  ( 2)        2.22078275738  ( 4)        2.22108282596  ( 6)        5.79391550634  ( 2)        8.77408656166  ( 4)
+     8.77728033576  ( 6)       27.27510525718  ( 2)      109.12826622654  ( 2)      391.91536178441  ( 2)     1414.61057647660  ( 2)
+  5425.05621529804  ( 2)    22572.86467435416  ( 2)
 
 * Fermion symmetry E1u
   * Open shell #1, f = 0.8333
-    -0.72235336592  ( 2)       -0.71892899216  ( 4)
+    -0.58426873617  ( 2)       -0.58097564647  ( 4)
   * Virtual eigenvalues, f = 0.0000
-     0.91035943126  ( 2)        0.91206680478  ( 4)        4.61437421970  ( 2)        4.62079073189  ( 4)        7.32241787507  ( 6)
-     7.32351111432  ( 8)       19.25787619147  ( 2)       19.28596889545  ( 4)       94.59847735863  ( 2)       94.80909869779  ( 4)
-   586.73787042208  ( 2)      589.74910702708  ( 4)
+     0.91035943016  ( 2)        0.91206680733  ( 4)        4.61437422253  ( 2)        4.62079073768  ( 4)        7.32241787953  ( 6)
+     7.32351111908  ( 8)       19.25787619700  ( 2)       19.28596890232  ( 4)       94.59847736536  ( 2)       94.80909870487  ( 4)
+   586.73787042846  ( 2)      589.74910703348  ( 4)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.91035943 au (symmetry E1u)
-  - E(HOMO) :    -0.71892899 au (symmetry E1u)
+  - E(HOMO) :    -0.58097565 au (symmetry E1u)
   ------------------------------------------
-    gap     :     1.62928842 au
+    gap     :     1.49133508 au
 
 
 
@@ -1232,21 +1235,21 @@ It.  10    -99.32515483056      2.42D-13 -7.78D-08  1.17D-08   DIIS   8    0.028
        ********************************************************************
 
 
- Transformation started at : Tue Jun 14 15:32:06 2011
+ Transformation started at : Mon Jan 16 14:57:50 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -99.3251548305627807
-* Heading :Fluorine atom.                                    Tue Jun 14 15:32:06 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -99.3251548305633492
+* Heading :Fluorine atom.                                    Mon Jan 16 14:57:50 2012
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   54.61%   17.64%    0.43%   10.76%   0.02400208s
+SOfock:LL  1.00D-12   54.61%   17.64%    0.43%   10.76%   0.00800000s
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :Fluorine atom.                                    Tue Jun 14 15:32:06 2011
+* Heading :Fluorine atom.                                    Mon Jan 16 14:57:50 2012
 
 
- Core energy (includes nuclear repulsion) :            -87.4449764009
- - Electronic part :                                   -87.4449764009
-   - One-electron terms :                              -98.8800227578
-   - Two-electron terms :                               11.4350463569
+ Core energy (includes nuclear repulsion) :            -87.4449764007
+ - Electronic part :                                   -87.4449764007
+   - One-electron terms :                              -98.8800227570
+   - Two-electron terms :                               11.4350463563
 
 
  MOLFDIR file MRCONEE is written
@@ -1268,10 +1271,10 @@ SOfock:LL  1.00D-12   54.61%   17.64%    0.43%   10.76%   0.02400208s
      ************************************************************************
 
 
- Transformation started at : Tue Jun 14 15:32:06 2011
+ Transformation started at : Mon Jan 16 14:57:50 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -99.3251548305627807
-* Heading :Fluorine atom.                                    Tue Jun 14 15:32:06 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -99.3251548305633492
+* Heading :Fluorine atom.                                    Mon Jan 16 14:57:50 2012
  - Integral class 1 : (LL|??)
    - Beginning task   1 of   7 after      0. seconds and      0. CPU-seconds
    - Beginning task   2 of   7 after      0. seconds and      0. CPU-seconds
@@ -1289,16 +1292,15 @@ SOfock:LL  1.00D-12   54.61%   17.64%    0.43%   10.76%   0.02400208s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Computing+transform. i       0.040 seconds
-
------- End of timing report ------
-
+ Time in  Initializing MS4IND fi       0.004 seconds
+ Time in  Computing+transform. i       0.012 seconds
+ Time in  Symmetrizing MO integr       0.056 seconds
 
 
  Total wall time used in RESOLV : 0.00000000s
- Total CPU  time used in RESOLV : 0.04000199s
+ Total CPU  time used in RESOLV : 0.07200497s
 
- Transformation ended at : Tue Jun 14 15:32:06 2011
+ Transformation ended at : Mon Jan 16 14:57:50 2012
 GASRES: Set up the following information:
        1Eg  2Eg  1Eu  2Eu
     5    0    0    3    3
@@ -1307,8 +1309,8 @@ GASRES: Set up the following information:
 
  GOSCIP (Version 1.8)
 
- Today is :   14 Jun 11 
- The time is :  15:32:06
+ Today is :   16 Jan 12 
+ The time is :  14:57:50
 
 
 &GENERAL
@@ -1336,32 +1338,32 @@ GASRES: Set up the following information:
  Number of active orbitals :                     6
 
  Orbital Representation        Orbital energy
-     1     Eu 1Eu               -0.7223533659    
-     2     Eu 1Eu               -0.7189289922    
-     3     Eu 1Eu               -0.7189289921    
-     4     Eu 2Eu               -0.7223533659    
-     5     Eu 2Eu               -0.7189289922    
-     6     Eu 2Eu               -0.7189289921    
+     1     Eu 1Eu               -0.5842687362    
+     2     Eu 1Eu               -0.5809756465    
+     3     Eu 1Eu               -0.5809756465    
+     4     Eu 2Eu               -0.5842687362    
+     5     Eu 2Eu               -0.5809756465    
+     6     Eu 2Eu               -0.5809756465    
 Number of determinants:
    Symmetry  1Eg  :          0
    Symmetry  2Eg  :          0
    Symmetry  1Eu  :          3
    Symmetry  2Eu  :          3
 
- Coulomb integral file was generated at  14Jun11   15:32:06
+ Coulomb integral file was generated at  16Jan12   14:57:50
  Read     144 unique integrals
 
  Representation  1Eu;    3 vectors written to file  MDTRIV_ 1Eu
 
- Eigenvalues             -99.326033711408
-                         -99.326033711387
-                         -99.323397068897
+ Eigenvalues             -99.326033711364
+                         -99.326033711343
+                         -99.323397068983
 
  CPU time for this representation 
 
  Generation of determinants :      0.0000
  Building the CI matrix :          0.0000
- Diagonalization :                 0.3000
+ Diagonalization :                 0.0040
  Writing CI vectors :              0.0000
 
  Population analysis for representation  1Eu
@@ -1370,23 +1372,23 @@ Number of determinants:
        energy        det#  determinant                 norm      Re        Im
        ------        ----  -----------                 ----      --        --
      -99.32603371
-                        1  111110                      1.0000   -1.0000    0.0000
+                        1  111110                      1.0000    1.0000    0.0000
      -99.32603371
-                        2  111101                      1.0000   -1.0000    0.0000
+                        2  111101                      1.0000    1.0000    0.0000
      -99.32339707
                         3  111011                      1.0000    1.0000    0.0000
 
  Representation  2Eu;    3 vectors written to file  MDTRIV_ 2Eu
 
- Eigenvalues             -99.326033711408
-                         -99.326033711387
-                         -99.323397068897
+ Eigenvalues             -99.326033711364
+                         -99.326033711343
+                         -99.323397068983
 
  CPU time for this representation 
 
  Generation of determinants :      0.0000
  Building the CI matrix :          0.0000
- Diagonalization :                 0.2960
+ Diagonalization :                 0.0040
  Writing CI vectors :              0.0000
 
  Population analysis for representation  2Eu
@@ -1395,9 +1397,9 @@ Number of determinants:
        energy        det#  determinant                 norm      Re        Im
        ------        ----  -----------                 ----      --        --
      -99.32603371
-                        1  110111                      1.0000   -1.0000    0.0000
+                        1  110111                      1.0000    1.0000    0.0000
      -99.32603371
-                        2  101111                      1.0000   -1.0000    0.0000
+                        2  101111                      1.0000    1.0000    0.0000
      -99.32339707
                         3  011111                      1.0000    1.0000    0.0000
 
@@ -1408,8 +1410,8 @@ Number of determinants:
 
  Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
 
-    1   0.000000000011    -11.881057310542      -99.326033711397 (   4 * )
-    2   0.002636642511    -11.878420668041      -99.323397068897 (   2 * )
+    1     0.0000000000    -11.881057310667      -99.326033711353 (   4 * )
+    2     0.0026366424    -11.878420668297      -99.323397068983 (   2 * )
 
 
  Total average:       -99.3251548306
@@ -1420,10 +1422,10 @@ Number of determinants:
 
  Level  eigenvalue (eV)  Eigenvalue (cm-1)   1Eg 2Eg 1Eu 2Eu
     1        0.000000000          0.000002   0   0   2   2
-    2        0.071746690        578.676143   0   0   1   1
+    2        0.071746687        578.676114   0   0   1   1
 
 
-Total CPU time :                   0.6040
+Total CPU time :                   0.0240
 
         (NORMAL END OF PROGRAM)
 
@@ -1436,10 +1438,10 @@ Total CPU time :                   0.6040
 ===========================================================================
 
  
-     Date and time (Linux)  : Tue Jun 14 15:32:07 2011 
-     Host name              :                                         
->>>> Node 0, utime: 0, stime: 0, minflt: 253181, majflt: 0, nvcsw: 2, nivcsw: 17, maxrss: 760920
->>>> Total WALL time used in DIRAC: 2s
+     Date and time (Linux)  : Mon Jan 16 14:57:50 2012 
+     Host name              : not found                               
+>>>> Node 0, utime: 0, stime: 0, minflt: 7234, majflt: 0, nvcsw: 8, nivcsw: 29, maxrss: 13288
+>>>> Total WALL time used in DIRAC: 0s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
@@ -1450,19 +1452,19 @@ Total CPU time :                   0.6040
   
   Largest                   10  allocations
   
-      488.28 Mb at subroutine                                            for work array at main                        
-      244.14 Mb at subroutine                                            for unnamed variable                          
-      244.14 Mb at subroutine                                            for unnamed variable                          
-        0.98 Mb at subroutine                                            for unnamed variable                          
-        0.98 Mb at subroutine                                            for unnamed variable                          
-        0.98 Mb at subroutine                                            for unnamed variable                          
-        0.98 Mb at subroutine                                            for unnamed variable                          
-        0.98 Mb at subroutine                                            for unnamed variable                          
-        0.98 Mb at subroutine                                            for unnamed variable                          
-        0.22 Mb at subroutine                                            for unnamed variable                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
+      244.14 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+      244.14 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.98 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.98 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.98 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.98 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.98 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.98 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.22 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
   
   Peak memory usage    (Mb) :       734.00
-       reached at subroutine :                                           
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : unnamed variable                          
   
   Memory possibly left allocated! 
@@ -1474,38 +1476,38 @@ Total CPU time :                   0.6040
           var. name                   : unnamed variable                                                                                                                    
                kind                   :                     8
                tot.dim. (<1 if array) :                128000
-               was allocated at       :                                                                                                                                     
-               mem.addr. (as integer) :             248515568
+               was allocated at       : __allocator_track_if_MOD_allocator_registe                                                                                          
+               mem.addr. (as integer) :             258643200
       >>> (de)allocated data details <<<
           var. name                   : unnamed variable                                                                                                                    
                kind                   :                     8
                tot.dim. (<1 if array) :                128000
-               was allocated at       :                                                                                                                                     
-               mem.addr. (as integer) :             249539584
+               was allocated at       : __allocator_track_if_MOD_allocator_registe                                                                                          
+               mem.addr. (as integer) :             259667216
       >>> (de)allocated data details <<<
           var. name                   : unnamed variable                                                                                                                    
                kind                   :                     8
                tot.dim. (<1 if array) :                    32
-               was allocated at       :                                                                                                                                     
-               mem.addr. (as integer) :             248445776
+               was allocated at       : __allocator_track_if_MOD_allocator_registe                                                                                          
+               mem.addr. (as integer) :             258629488
       >>> (de)allocated data details <<<
           var. name                   : unnamed variable                                                                                                                    
                kind                   :                     8
                tot.dim. (<1 if array) :                128000
-               was allocated at       :                                                                                                                                     
-               mem.addr. (as integer) :             248515568
+               was allocated at       : __allocator_track_if_MOD_allocator_registe                                                                                          
+               mem.addr. (as integer) :             258643200
       >>> (de)allocated data details <<<
           var. name                   : unnamed variable                                                                                                                    
                kind                   :                     8
                tot.dim. (<1 if array) :                128000
-               was allocated at       :                                                                                                                                     
-               mem.addr. (as integer) :             249539584
+               was allocated at       : __allocator_track_if_MOD_allocator_registe                                                                                          
+               mem.addr. (as integer) :             259667216
       >>> (de)allocated data details <<<
           var. name                   : unnamed variable                                                                                                                    
                kind                   :                     8
                tot.dim. (<1 if array) :                    32
-               was allocated at       :                                                                                                                                     
-               mem.addr. (as integer) :             248445776
+               was allocated at       : __allocator_track_if_MOD_allocator_registe                                                                                          
+               mem.addr. (as integer) :             258629488
       >>> Done after                    6  el.
   
   There were                    49  allocations/                     43  deallocations

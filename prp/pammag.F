@@ -3024,9 +3024,6 @@ C******************************************************
         WRITE(LUPRI,'(A)') 'ICONVXYZ: and it has to be x/y/z...!!!'
         CALL QUIT('ICONVXYZ: Not x/y/z input!')
       ENDIF
-
-C       write(lupri,*) 'ICONVXYZ: C=',C,' ICONVXYZ=',ICONVXYZ
-
       RETURN
       END
 
