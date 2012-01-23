@@ -46,6 +46,7 @@ contains
   end subroutine determine_integer_model_in_mpi
 
 #else
+  implicit none
   integer         :: blabla_integer_model_in_mpi
 #endif
 end module integer_model_in_mpi
