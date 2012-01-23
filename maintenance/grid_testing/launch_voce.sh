@@ -24,13 +24,17 @@ echo -e "\n Job started at : \c"; date
 tar -xvf dirac_test_suite.tgz
 chmod  u+x build/dirac.x pam runtest
 
+echo -e "\n --- Launching pam --- \n "; 
+
+python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo
+
+#####################################################################
 echo -e "\n --- Launching runtest --- \n "; 
 
-#python ./pam --inp=fsccsd_IH.inp --mol=Mg.mol  --mw=92 --scratch=$PWD --outcmo
-#python ./runtest --verbose --tests=cosci_energy # works
+python ./runtest --verbose --tests=cosci_energy # works
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" # works
 #python ./runtest --verbose --quick # works
-python ./runtest --verbose --all
+#python ./runtest --verbose --all  # works
 
 ############################
 #  print out some info .. 

@@ -11,6 +11,10 @@ pamadm -a
 cd $DIRAC/build
 cmake ..
 make -j 2
+cd $DIRAC
+python ./runtest --verbose --tests="acmoin cosci_energy"
+
+echo "now packing... "
 
 cd $DIRAC/maintenance/grid_testing
 
@@ -18,7 +22,7 @@ cd $DIRAC/maintenance/grid_testing
 # make one tgz-file with all Dirac stuff for testing & running 
 #--------------------------------------------------------------
 
-# problems with "--exclude test/*/*.out"  - remove them
+# problems with "--exclude test/*/*.out"  - so remove them
 /bin/rm ../../test/*/*.out*
 
 # pack all necessary stuff

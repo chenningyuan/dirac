@@ -17,7 +17,7 @@ InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/maintenance/grid_
 # stdout,stderr output & other working files
 StdOutput = "DIRAC_tests_std.out";
 StdError = "DIRAC_tests_std.err";
-OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err"};
+OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "fsccsd_IH_Mg.out"};
 
 # assign your VO #
 #VirtualOrganisation="compchem";
@@ -25,7 +25,7 @@ VirtualOrganisation="voce";
 
 # other conditions
 Requirements =
- other.GlueCEPolicyMaxWallClockTime > 900;
+ other.GlueCEPolicyMaxWallClockTime > 1200;
 #  &&
 # RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
 # other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
