@@ -65,6 +65,13 @@ if(ENABLE_MPI)
                 endif()
             endif()
         endif()
+        if(ENABLE_32BIT_MPI_INTERFACE)
+            if(ENABLE_64BIT_INTEGERS)
+                message( "** BUILD INFO **: 32-bit integer MPI interface enabled"
+                       )
+                add_definitions(-DVAR_MPI_32bit_int)
+            endif()
+        endif()
 
         if(ENABLE_MPI2_DETECTION)
             # test whether MPI-2 is available

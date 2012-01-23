@@ -132,6 +132,13 @@ group.add_option('--nochecks',
                  dest='nochecks',
                  default=False,
                  help='disable compatibility checks [default: %default]')
+group.add_option('--int32_mpi',
+                 action='store_true',
+                 dest='int32_mpi',
+                 default=False,
+                 help='build with interface to 32bit integer MPI library \
+                       (if 64bit integers is set to default in the main program) \
+                       [default: %default]')
 group.add_option('--static',
                  action='store_true',
                  dest='static',
@@ -218,6 +225,8 @@ def gen_cmake_command():
     
     if options.int64:
         command += ' -DENABLE_64BIT_INTEGERS=ON'
+    if options.int32_mpi:
+        command += ' -DENABLE_32BIT_MPI_INTERFACE=ON'
     if options.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
     if options.coverage:
