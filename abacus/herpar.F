@@ -523,7 +523,7 @@ C........note that with icommsize COMMON blocks must be sent as integers...
          CAll interface_mpi_BCAST(I1_INFORB,NUMELM,MPARID,
      &                  global_communicator)
 C
-         CAll interface_mpi_bcast_l0_f77(UNCONT,1,MPARID,
+         CAll interface_mpi_bcast_l0(UNCONT,1,MPARID,
      &                  global_communicator)
          CAll interface_mpi_BCAST(MAXPRI,1,MPARID,
      &                  global_communicator)
@@ -545,7 +545,7 @@ C     Send Panas value and screening threshold
 C     Send SMLV1C and ONECAP,INTV1C
       LSEND(1) = SMLV1C
       LSEND(2) = ONECAP
-      CAll interface_mpi_bcast_l0_f77(LSEND,2,MPARID,
+      CAll interface_mpi_bcast_l0(LSEND,2,MPARID,
      &               global_communicator)
       CAll interface_mpi_BCAST(INTV1C,1,MPARID,
      &               global_communicator)
@@ -593,7 +593,7 @@ C
      &               global_communicator)
       CAll interface_mpi_BCAST(HFXMU,1,MPARID,
      &               global_communicator)
-      call interface_mpi_bcast_l0_f77(spinfr, 1, mparid,
+      call interface_mpi_bcast_l0(spinfr, 1, mparid,
      &               global_communicator)
 
 
@@ -1241,7 +1241,7 @@ C........inforb.h
          CAll interface_mpi_BCAST(I1_INFORB,NUMELM,MPARID,
      &                  global_communicator)
 C........
-         CAll interface_mpi_bcast_l0_f77(UNCONT,1,MPARID,
+         CAll interface_mpi_bcast_l0(UNCONT,1,MPARID,
      &                  global_communicator)
          CAll interface_mpi_BCAST(MAXPRI,1,MPARID,
      &                  global_communicator)
@@ -1258,7 +1258,7 @@ C     Receive PANAS and screening threshold
       SCREEN = DSEND(2)
 #if defined (PRG_DIRAC)
 C     Receive SMLV1C and ONECAP,INTV1C
-      CAll interface_mpi_bcast_l0_f77(LSEND,2,MPARID,
+      CAll interface_mpi_bcast_l0(LSEND,2,MPARID,
      &               global_communicator)
       SMLV1C = LSEND(1)
       ONECAP = LSEND(2)
@@ -1413,7 +1413,7 @@ C
       CAll interface_mpi_BCAST(HFXMU,1,MPARID,
      &               global_communicator)
 
-      call interface_mpi_bcast_l0_f77(spinfr, 1, mparid,
+      call interface_mpi_bcast_l0(spinfr, 1, mparid,
      &               global_communicator)
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
         CAll interface_mpi_BCAST(N2RED,1,MPARID,

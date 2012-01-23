@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 !
-! purpose: define integer size in MPI library and interface routines
+! purpose: store default integer size in Dirac and MPI library
 !
 module integer_kind_mpilib
 

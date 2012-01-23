@@ -2817,7 +2817,7 @@ C     Slaves want to know if there are more batches
 C
          MP2FIN = .FALSE.
          IF (IJBTCH .EQ. MAXTSK) MP2FIN = .TRUE.
-         call interface_mpi_bcast_l0_f77(MP2FIN,1,MPARID,
+         call interface_mpi_bcast_l0(MP2FIN,1,MPARID,
      &                                   global_communicator)
          IF (CMMNFO) WRITE(LUPRI,'(A,L5)')
      &        ' <COMMINFO> Master broadcasted MP2FIN =', MP2FIN
@@ -3074,7 +3074,7 @@ C
 C
 C     If master sends MP2FIN = .TRUE., there are no more batches
 C
-      call interface_mpi_bcast_l0_f77(MP2FIN,1,MPARID,
+      call interface_mpi_bcast_l0(MP2FIN,1,MPARID,
      &                                global_communicator)
       IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,L5,A)') ' <COMMINFO> Node #',
      &     MYTID, ' received MP2FIN =', MP2FIN, ' from master'

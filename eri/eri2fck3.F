@@ -1619,7 +1619,7 @@ c
       CAll interface_mpi_bcast(SAO,N2BASX,MASTER,global_communicator)
       CAll interface_mpi_bcast(ISYMDM,NDMT,MASTER,global_communicator)
       CAll interface_mpi_bcast(IFCTYP,NDMT,MASTER,global_communicator)
-      CAll interface_mpi_bcast_l0_f77(DOFMM,1,MASTER,
+      CAll interface_mpi_bcast_l0(DOFMM,1,MASTER,
      &                                global_communicator)
       IF(NEWBAS) CALL fck3sn2
       IF(NEWGEO) CALL fck3sn3
@@ -1702,7 +1702,7 @@ c     for SETAOS
       CAll interface_mpi_bcast(NHKT, KMAXX,MASTER,global_communicator)
       CAll interface_mpi_bcast(LCLASS,KMAXX,MASTER,global_communicator)
       CAll interface_mpi_bcast(NHTYP,1 ,  MASTER,global_communicator)
-      CAll interface_mpi_bcast_l0_f77(SPHNRM,1,MASTER,
+      CAll interface_mpi_bcast_l0(SPHNRM,1,MASTER,
      &                                global_communicator)
       CAll interface_mpi_bcast(CENT,MXSHEL*6,MASTER,global_communicator)
       CAll interface_mpi_bcast(CORD,MXCENT*3,MASTER,global_communicator)

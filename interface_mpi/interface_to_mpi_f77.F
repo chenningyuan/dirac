@@ -19,44 +19,18 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 !
-! purpose: interface to MPI library via f77 interface
+! purpose: provide some interface routines to the MPI library via a MPI-f77 interface
 !
-!#define VAR_MPI_32bit_int
+!          note: this is only for some notorious difficult cases, e.g.,
+!                - logical bcast
+!                - work-array data distribution which somehow does not work
+!                  properly with the "automatic interface" f90-detection
+!
+! written by s. knecht - Odense/Santiago de Chile 2011-2012.
+!
 #ifdef VAR_MPI
 
-      subroutine interface_mpi_bcast_l0(x,ndim,root_proc,
-     &                                  communicator)
-!-------------------------------------------------------------------------------
-      use integer_kind_mpilib
-      implicit none
-#include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
-      logical(kind=integer_kind) :: x
-      integer(kind=integer_kind) :: ndim
-      integer(kind=integer_kind) :: root_proc
-      integer(kind=integer_kind) :: communicator
-      integer(kind=integer_kind) :: ierr
-!-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
-      integer(kind=4)            :: ndim_i4
-      integer(kind=4)            :: root_proc_i4
-      integer(kind=4)            :: communicator_i4
-      integer(kind=4)            :: ierr_i4
-!-------------------------------------------------------------------------------
-      ndim_i4         = ndim
-      root_proc_i4    = root_proc
-      communicator_i4 = communicator
-      call mpi_bcast(x, ndim_i4, my_MPI_LOGICAL, root_proc_i4, 
-     &               communicator_i4, ierr_i4)
-#else
-      call mpi_bcast(x, ndim   , my_MPI_LOGICAL, root_proc   ,
-     &               communicator   , ierr   )
-#endif
-
-      end subroutine
-!-------------------------------------------------------------------------------
-      subroutine interface_mpi_bcast_l0_f77(x,ndim,root_proc,
-     &                                      communicator)
+      subroutine interface_mpi_bcast_l0(x,ndim,root_proc,communicator)
 !-------------------------------------------------------------------------------
       use integer_kind_mpilib
       implicit none
@@ -87,8 +61,7 @@
       end subroutine
 !-------------------------------------------------------------------------------
 
-      subroutine interface_mpi_bcast_l1_f77(x,ndim,root_proc,
-     &                                      communicator)
+      subroutine interface_mpi_bcast_l1(x,ndim,root_proc,communicator)
 !-------------------------------------------------------------------------------
       use integer_kind_mpilib
       implicit none
