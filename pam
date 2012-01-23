@@ -13,6 +13,8 @@
 # Purpose: Given one single input (consisting of a mol/xyz and a inp file)
 #          run Dirac once at a known place and bring back output and restart data to the (also known) starting directory.
 #          No more no less. 
+#
+##############################################################################################################################
 
 import os
 import re
@@ -993,6 +995,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             else:
                 # no suffix, never mind
                 mol_file_stripped = self.input_file_molecule
+            # ... strip off from path
+            mol_file_stripped = os.path.split(mol_file_stripped)[1]
 
             if '.inp' in self.input_file_dirac:
                 inp_file_stripped = self.input_file_dirac.replace('.inp'
@@ -1001,6 +1005,9 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 # no suffix, continuing..
                 print 'The dirac input file does not contain recommended suffix, never mind...'
                 inp_file_stripped = self.input_file_dirac
+            # ... strip off from path
+            inp_file_stripped = os.path.split(inp_file_stripped)[1]
+
             # set proper output file structure
             self.output_name = inp_file_stripped + '_' + mol_file_stripped
         elif self.full_restart:
