@@ -1,9 +1,7 @@
 #!/bin/bash
 
-export PATH=$PATH':/home/bast/openmpi/gfortran/bin'
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/gfortran/lib'
-
-export MATH_ROOT='/opt/intel/mkl'
+export PATH=$PATH':/home/bast/openmpi/gfortran-i4/bin'
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/gfortran-i4/lib'
 
 TMP_DIR=/scratch/scratch-nightly-compile
 SCRATCH_DIR=/scratch/scratch-nightly-run

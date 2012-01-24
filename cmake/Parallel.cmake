@@ -4,25 +4,6 @@ if(ENABLE_MPI)
         add_definitions(-DVAR_MPI)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
         include_directories(${MPI_INCLUDE_PATH})
-#miro: print out OpenMPI integer setting first, do sanity check aftewards
-        configure_file(
-            ${CMAKE_SOURCE_DIR}/cmake/ompi_integer_info.py.in
-            ${CMAKE_BINARY_DIR}/ompi_integer_info.py)
-        execute_process(
-            COMMAND python ${CMAKE_BINARY_DIR}/ompi_integer_info.py
-            TIMEOUT 1
-            OUTPUT_VARIABLE OMPI_INTEGER_INFO_OUTPUT
-            ERROR_VARIABLE  OMPI_INTEGER_INFO_STDERR
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-        if (VERBOSE_OUTPUT)
-            if (OMPI_INTEGER_INFO_OUTPUT)
-                message("-- Open MPI Fortran ${OMPI_INTEGER_INFO_OUTPUT}")
-            endif()
-            if (OMPI_INTEGER_INFO_STDERR)
-                message("stderr from ompi_integer_info.py.in:${OMPI_INTEGER_INFO_STDERR}")
-            endif()
-        endif()
 
         if(ENABLE_SANITY_CHECKS)
             # test whether MPI module is compatible with compiler
@@ -54,8 +35,7 @@ if(ENABLE_MPI)
                 )
             if(NOT MPI_ITYPE_MATCHES)
                 if(ENABLE_64BIT_INTEGERS)
-                    message( "** BUILD INFO **: 32-bit integer MPI interface enabled"
-                        )
+                    message("-- No 64-bit integer MPI interface found, will use 32-bit integer MPI interface")
                     add_definitions(-DVAR_MPI_32bit_int)
                 else()
                     message(
@@ -65,10 +45,10 @@ if(ENABLE_MPI)
                 endif()
             endif()
         endif()
+
         if(ENABLE_32BIT_MPI_INTERFACE)
             if(ENABLE_64BIT_INTEGERS)
-                message( "** BUILD INFO **: 32-bit integer MPI interface enabled"
-                       )
+                message("-- 32-bit integer MPI interface activated by the user")
                 add_definitions(-DVAR_MPI_32bit_int)
             endif()
         endif()
