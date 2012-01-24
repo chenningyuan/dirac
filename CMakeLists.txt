@@ -78,7 +78,7 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
     if (ENABLE_MPI OR ENABLE_OMP)
-        message("Static linking only works in sequential mode - you get nonworking executable !")
+        message("Static linking in parallel mode - experimental feature. ")
     endif()
 endif()
 
