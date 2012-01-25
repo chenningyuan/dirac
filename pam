@@ -289,7 +289,7 @@ class pam_enviroment:
             scratch_disk_usage=scratch_disk_usage.replace(" ","")
             print "  Scratch directory   ",  self.scratch_dir,scratch_disk_usage
         else:
-            print 'scratch dir:', self.scratch_dir,' not found/not accessible !'
+            print_std_out_err('scratch dir:'+self.scratch_dir+' not found/not accessible !')
         print "  Relevant for parallel builds:"
         print "    mpi launcher         ",  self.mpirun
         print "    mpirun extra args    ",  self.mpiarg
@@ -1158,7 +1158,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
         os.putenv('DIRMAX', str(int(self.max_memory_dynamic * 1000000)))
 
-
         if self.parallel_run:
             os.putenv('DIRPAR', '1')
             os.putenv('DIRNOD', str(int(self.max_memory_work_slave * 1000000)))
@@ -1175,7 +1174,12 @@ Options are also read from the ~/.dirac and .diracrc files."""
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
         this_dirac_exe = os.path.join(self.scratch_dir,self.dirac_exe_file)
-
+        if not os.path.isfile(this_dirac_exe):
+            print_std_err_out(this_dirac_exe+' not found!')
+            sys.exit(13)
+        else:
+            #print 'Ok with ',this_dirac_exe
+            pass			
         if self.parallel_run:
             if self.mpirun == None:
                 # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
@@ -1212,7 +1216,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 if self.debugger is None:
                     sys.exit("Though debugging wanted, no debugger assigned !")
                 if find_executable(self.debugger) is None:
-                    print 'no debugger found in the .diracrc file !'
+                    print 'no debugger found in the <diracrc> file !'
                     sys.exit()
                 # TODO: adapt it for Windows
                 self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
@@ -1221,7 +1225,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 # valgrind flags read from files ~/.valgrindrc and ./.valgrindrc
                 # -v --error-limit=no --leak-check=full  --show-reachable=yes
                 self.dirac_cmd = 'valgrind --log-fd=1 ' \
-                    + this_dirac_exe + ' | tee ' + self.output_file_full
+                    + this_dirac_exethis_dirac_exe + ' | tee ' + self.output_file_full
             else:
                 # no debug, plain run
                 self.dirac_cmd = this_dirac_exe
@@ -1435,7 +1439,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         self.write_info_output()
         
         # process the dirac.x (or mpi-wrapper) as the child subprocess
-        # stderr=None means flushing stderr output only into console (red color in trac-webpage)
+        # stderr=None means flushing stderr output only into console (red color in CDash-webpage)
         # radovan: with shell=True the pid does not necessarily match
         #          the dirac job, it matches the shell command that spawns the dirac job
         #          then timeout terminates the command but not the dirac.x run
@@ -1446,6 +1450,9 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE, preexec_fn=os.setsid)
         else:
+        # Windows: provide exec command with "" to fix =/+ characters in the full path
+            self.dirac_cmd='"'+self.dirac_cmd+'"'
+            #print self.dirac_cmd
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
         self.pgid = self.dirac_p.pid
@@ -1619,7 +1626,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 scratch_disk_usage=scratch_disk_usage.replace(" ","")
                 print '  scratch dir    :', self.scratch_dir,scratch_disk_usage
             else:
-                print 'scratch dir:', self.scratch_dir,' not found/not accessible !'
+                print_std_out_err('scratch dir:'+self.scratch_dir+' not found/not accessible !')
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run
             # print out more stuff regarding the parallel setting
@@ -1840,7 +1847,6 @@ class disk_space:
         fill (initialize) wanted variables, no other info needed sofar
         if entering variable path is not proper, returns None
         """
-        import os
         gb_factor = float(1024*1024*1024)
         # initialize
         self.capacity=None
@@ -1849,15 +1855,22 @@ class disk_space:
         # if path not defined, return with None attributes
         if not os.path.isdir(path): return
         if not is_windows():
+            # Unix/Linux stuff
             self.disk_info = os.statvfs(path)
             self.capacity = ( self.disk_info.f_bsize * self.disk_info.f_blocks ) / gb_factor
             self.available = ( self.disk_info.f_bsize * self.disk_info.f_bavail ) /  gb_factor
             self.used = ( self.disk_info.f_bsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
         else:
-            # TODO: define for Windows
-            self.available = 0
-            self.capacity = 0
-            self.used = 0
+            # Windows stuff
+            import ctypes
+            drive = ctypes.c_wchar_p(path)
+            freeuser = ctypes.c_int64() # or ctypes.c_ulonglong(0)
+            total = ctypes.c_int64()
+            free = ctypes.c_int64()
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(drive,ctypes.byref(freeuser),ctypes.byref(total),ctypes.byref(free))
+            self.capacity = total.value / gb_factor
+            self.available= freeuser.value / gb_factor
+            self.used = (total.value - freeuser.value) / gb_factor
 
 class disk_space_find:
     """

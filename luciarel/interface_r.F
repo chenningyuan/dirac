@@ -102,6 +102,10 @@
       integer, allocatable :: icheck_file(:)
       logical mcscf, ex, alloc_int, alloc_int_scr, fileopen, ex_mc
       logical int_file_is_master_file
+      integer, parameter   :: integral_comm_limit = 250000000 !approx.  2GB limit
+      integer              :: batch_ints_loops
+      integer              :: remaining_batch_ints
+      integer(8)           :: kloop_pointer
 *
 C
       INTIMP = 6
@@ -476,9 +480,29 @@ C
           XLENALL = REAL(LEN_ALL_INT)
           LEN_INT_BCAST = IGIVE_I_B(XLENALL)
 #endif
-          call interface_mpi_BCAST_r1_work_f77(WORK(KINTI12),
-     &                   LEN_INT_BCAST,
-     &                   MASTER,global_communicator)
+!         check for safeguard bcast limit
+          if(LEN_INT_BCAST > integral_comm_limit)then
+            batch_ints_loops     = LEN_INT_BCAST / integral_comm_limit
+            remaining_batch_ints = mod(LEN_INT_BCAST, 
+     &                                 integral_comm_limit)
+            kloop_pointer        = 0
+            do i = 1, batch_ints_loops 
+              call interface_mpi_BCAST_r1_work_f77(
+     &                       WORK(KINTI12+kloop_pointer),
+     &                       integral_comm_limit,
+     &                       MASTER,global_communicator)
+              kloop_pointer = kloop_pointer + integral_comm_limit
+            end do
+!           the rest
+              call interface_mpi_BCAST_r1_work_f77(
+     &                       WORK(KINTI12+kloop_pointer),
+     &                       remaining_batch_ints,
+     &                       MASTER,global_communicator)
+          else
+            call interface_mpi_BCAST_r1_work_f77(WORK(KINTI12),
+     &                     LEN_INT_BCAST,
+     &                     MASTER,global_communicator)
+          end if
         END IF
 #endif
 C
