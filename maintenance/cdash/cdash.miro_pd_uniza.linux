@@ -54,6 +54,10 @@ make Experimental
 ###
 ###   now run the Nightly test suite
 ###
+export PATH=/usr/local/openmpi_ilp64/bin:$PATH
+export MANPATH=/usr/local/openmpi_ilp64/share/man:$MANPATH
+export LD_LIBRARY_PATH=/usr/local/openmi_ilp64/lib:$LD_LIBRARY_PATH
+#
 TMP_DIR=/tmp/dirac_build
 mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
