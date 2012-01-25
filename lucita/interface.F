@@ -86,10 +86,6 @@
 #include "mxpdim.inc"
 #include "luci.inc"
 #include "units.inc"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "infpar.h"
 #include "parluci.h"
 *
@@ -3723,6 +3719,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 * only master read in MRCONEE and distributes the information 
 * to all nodes
 *
+      use interface_to_mpi
       Implicit Real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
@@ -3730,11 +3727,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "wrkspc.inc"
 #include "clunit.inc"
 #include "parluci.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 *
       character*6 WAFFCT
       character*8 FNIPH
@@ -3787,39 +3779,39 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-        CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,IDUMMY,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NCORE,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NDELE,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUMAR,MORB,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NBREPD,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        CALL interface_MPI_BCAST(MORB,1,MASTER,global_communicator)
+        CALL interface_mpi_bcast_l0(BREIT,1,MASTER,
+     &                                  global_communicator)
+        CALL interface_MPI_BCAST(ECORE_DIR,1,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(NFSYM,1,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(NZ,1,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(IDUMMY,1,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(IDUM2,IDUMMY,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(NSTR,NFSYM,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(IDUM2,NFSYM,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(NCORE,NFSYM,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(IDUM2,NFSYM,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(NDELE,NFSYM,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(IDUMAR,2*MORB,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(DUMAR,MORB,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(IDUMAR,MORB,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(IDUM2,NFSYM,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(NBREPD,1,MASTER,
+     &                 global_communicator)
       END IF
 #endif
 
@@ -4054,8 +4046,6 @@ C
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 
-      CALL LMEMCHK
-*
 *. : Pointers for symmetry blocks of integrals
 *
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
@@ -4141,8 +4131,6 @@ C     IF(NOINT.EQ.0)
 C    &CALL IJKK(WORK(KIJKK),1,WORK(KPNIJ),1,NSMOB,NTOOBS,
 C    &          IBSO,IREOST,NTOOB)
 C     WRITE(6,*) ' Memcheck after IJKK '
-C     CALL LMEMCHK
-C?    write(6,*) ' home from IJKK '
 *. Change one-electron integrals to inactive fock matrix
       IF(NOINT.EQ.0) THEN
 C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
@@ -4158,7 +4146,6 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       if (myproc.eq.master) then
         WRITE(6,*) 'Updated core energy ',ECORE
       end if
-      CALL LMEMCHK
 *
 C?    WRITE(6,*) ' IDMPIN ', IDMPIN
       IF (IDMPIN.EQ.1 ) THEN
@@ -4307,11 +4294,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       implicit real*8 (A-H,O-Z)
 *
 #include "units.inc"
-#if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "parluci.h"
 *
       logical MSCOMB
@@ -6489,7 +6472,6 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                 WORK(KKR),WORK(KIOFF12),WORK(KNUMINT),
      &                 WORK(KINDK),WORK(KINDL),NTEST)
 *
-CSK      call lmemchk
       IHAM12 = 2
       ISYDISUM2 = ISYDISUM*2
       call dist_ints_dirac2(WORK(KPICHE2),WORK(KDIONEE),
@@ -6505,7 +6487,6 @@ CSK      call lmemchk
 *
 !     NTEST = NTEST_save
 
-CSK      call lmemchk
       call memman(IDUM,IDUM,'FLUSM ',IDUM,'RDIRAC')
 *
       return
@@ -7287,22 +7268,18 @@ c     call XFLUSH(6)
 *  MPI adaption by Stefan Knecht, Feb. 2006
 *
 *  Master reads all the information in and braodcasts 
-*  everything to all nodes in MPI_COMM_WORLD
+*  everything to all nodes in global_communicator
 *
       subroutine rdone_dirac(ONEINT,LUONE,DIRACONE,MORB,NDIM,
      &                       NBAS,ISPINFREE,IBOSYM,IDUMAR,DUMAR,
      &                       NIRREP,NGSSH,NGAS,NSTR,
      &                       IPGTYP,INVERSM,NFSYM,IPRINT)
 *
+      use interface_to_mpi
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
 #include "parluci.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 *
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
@@ -7310,9 +7287,11 @@ c     call XFLUSH(6)
       character*14 DUMCHA(MXPIRR)
       logical BREIT
 *
-      dimension IBOSYM(*),IDUMAR(*),NBAS(NIRREP),ICT(MXPIRR),
-     &          NGSSH(MXPIRR,MXPNGAS),IORBF(2),NSTR(NFSYM)
-      dimension ONEINT((2*NDIM)**2),DUMAR(*)
+      dimension    NBAS(NIRREP),ICT(MXPIRR),
+     &             NGSSH(MXPIRR,MXPNGAS),IORBF(2),NSTR(NFSYM)
+      dimension    ONEINT((2*NDIM)**2) 
+      real(8)   :: DUMAR(*)
+      integer   :: IBOSYM(MORB), IDUMAR(*)
 *
       NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
@@ -7355,26 +7334,16 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,IDUMMY,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IBOSYM,MORB,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_BCAST(MORB,1,MASTER,global_communicator)
+         CALL interface_mpi_bcast_l0(BREIT,1,MASTER,
+     &                                   global_communicator)
+         CALL interface_MPI_BCAST(ECORE_DIR,1,MASTER,
+     &                            global_communicator)
+         CALL interface_MPI_BCAST(NSTR,NFSYM,MASTER,
+     &                            global_communicator)
+
+         CALL interface_mpi_bcast_i1_work_f77(IBOSYM,MORB,MASTER,
+     &                                        global_communicator)
       END IF
 #endif
 
@@ -7429,12 +7398,12 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(ONEINT,MORB*MORB,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(TDUM,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_BCAST(ONEINT,MORB*MORB,MASTER,
+     &                            global_communicator)
+         CALL interface_MPI_BCAST(TDUM,1,MASTER,
+     &                            global_communicator)
+         CALL interface_MPI_BCAST(ECORE_DIR,1,MASTER,
+     &                            global_communicator)
       END IF
 #endif
 *
@@ -7465,13 +7434,12 @@ C**********************************************************************
 *     Stefan Knecht, Dec 08
 *
 C**********************************************************************
+      use interface_to_mpi
       implicit real*8 (A-H,O-Z)
 *
 #include "parluci.h"
 #if defined (VAR_MPI)
-#include "mpif.h"
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "files.inc"
 *
@@ -7504,15 +7472,16 @@ C     check for integral file on local disks
       IF( EX ) IDIST_IJKL = -1
       IDIST_IJKL_A(MYPROC+1) = IDIST_IJKL
 #if defined (VAR_MPI)
-      CALL MPI_GATHER(IDIST_IJKL,1,my_MPI_INTEGER,IDIST_IJKL_A,1,
-     &                my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      call interface_mpi_gather(idist_ijkl,1,idist_ijkl_a,1,master,
+     &                          global_communicator)
       IF(MYPROC .eq. MASTER) THEN
         IDIST_IJKL_TEMP = IDIST_IJKL_A(MYPROC+1)
         DO I = 1, NMPROC
           IF( IDIST_IJKL_TEMP .ne. IDIST_IJKL_A(I)) IJKL_AV = .FALSE.
         END DO
       END IF
-      CALL MPI_BCAST(IJKL_AV,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_bcast_l0(IJKL_AV,1,MASTER,
+     &                                global_communicator)
 #endif
 C
 C     check for availability of integral file
@@ -7543,13 +7512,13 @@ C       Open file (using same logical unit for all files)
         end if
 #if defined (VAR_MPI)
         if( nmproc .gt. 1 .and. (.not. IJKL_AV)) then
-           call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
-     &                    mpi_comm_world,ierr)
+           call interface_mpi_bcast(nkr,1,master,
+     &                              global_communicator)
            do j = 1, nkr
-             call mpi_bcast(kr(-j),1,my_MPI_INTEGER,master,
-     &                      mpi_comm_world,ierr)
-             call mpi_bcast(kr(j),1,my_MPI_INTEGER,master,
-     &                      mpi_comm_world,ierr)
+             call interface_mpi_bcast(kr(-j),1,master,
+     &                                global_communicator)
+             call interface_mpi_bcast(kr(j),1,master,
+     &                                global_communicator)
            end do
         end if
 #endif
@@ -7597,19 +7566,19 @@ C
 C
 C     broadcast if file MDCINTxxx is not available on all local disks
       IF( NMPROC .gt. 1 .and. (.not. IJKL_AV ))THEN
-        CALL MPI_BCAST(IKR,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JKR,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        CALL interface_MPI_BCAST(IKR,1,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(JKR,1,MASTER,
+     &                 global_communicator)
+        CALL interface_MPI_BCAST(NZ,1,MASTER,
+     &                 global_communicator)
         DO J = 1, NZ, 1
-           CALL MPI_BCAST(INDK(J+ISYMOFF),1,my_MPI_INTEGER,MASTER,
-     &                    MPI_COMM_WORLD,IERR)
-           CALL MPI_BCAST(INDL(J+ISYMOFF),1,my_MPI_INTEGER,MASTER,
-     &                    MPI_COMM_WORLD,IERR)
-           CALL MPI_BCAST(RKLR(J+ISYMOFF),1,MPI_REAL8,MASTER,
-     &                    MPI_COMM_WORLD,IERR)
+           CALL interface_MPI_BCAST(INDK(J+ISYMOFF),1,MASTER,
+     &                    global_communicator)
+           CALL interface_MPI_BCAST(INDL(J+ISYMOFF),1,MASTER,
+     &                    global_communicator)
+           CALL interface_MPI_BCAST(RKLR(J+ISYMOFF),1,MASTER,
+     &                    global_communicator)
         END DO
       END IF
 #endif
@@ -7688,7 +7657,7 @@ C
 #endif
 *
 #if defined (VAR_MPI)
-      if( NMPROC .gt. 1) CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+      if( NMPROC .gt. 1) CALL interface_MPI_BARRIER(global_communicator)
 #endif
 *
       RETURN
@@ -7858,16 +7827,13 @@ c
      &                        NFSYM,NZ,MORB,IBOSYM,NSTR,NCORE,
      &                        NDELE,NACTELD,WAFFCT,IRETISH,IPRNT)
 *
+      use interface_to_mpi
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
 #include <dcbbas.h>
 #include <dcborb.h>
-#if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "parluci.h"
 *
       character*6 WAFFCT
@@ -7971,15 +7937,15 @@ C       this is necessary! - sk -
 C 
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-      CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NBSYM,1,
+     &                         MASTER,global_communicator)
       DO I = 1,NBSYM,1 
-      CALL MPI_BCAST(NISH_L(I),1,my_MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NASH_L(I),1,my_MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NSSH_L(I),1,my_MPI_INTEGER,
-     &  MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_MPI_BCAST(NISH_L(I),1,
+     &                         MASTER,global_communicator)
+      CALL interface_MPI_BCAST(NASH_L(I),1,
+     &                         MASTER,global_communicator)
+      CALL interface_MPI_BCAST(NSSH_L(I),1,
+     &                         MASTER,global_communicator)
       END DO
       END IF
 #endif

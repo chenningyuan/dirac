@@ -678,11 +678,11 @@ CMI  ... printout with symmetry classification ...real energies only...
  1005 FORMAT(//' Energy eigenvalues in atomic units'
      +            //' Level   Rel eigenvalue     ',
      +            'Abs eigenvalue      Total Energy    Degeneracy'/)
- 1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
+ 1010 FORMAT(I5,F17.10,F20.12,'  ',F20.12,' (',I4,' * )')
  1007 FORMAT(//' Energy eigenvalues in atomic units'
      & //' Level   Rel eigenvalue     Abs eigenvalue     ',
      & ' Total Energy       Total imag.ener.  Degeneracy'/)
- 1015 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' ',F20.15,' (',I4,' * )')
+ 1015 FORMAT(I5,F17.10,F20.12,'  ',F20.12,' ',F20.15,' (',I4,' * )')
  1020 FORMAT(//' Total average: ',F20.10)
  1025 FORMAT(//' Relative real eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
@@ -937,14 +937,12 @@ C                    TPRNTA=4 : Write contents of all timers to output
 C                    TINIT=-1 : Initialize all timers
 C         - NAME   : Name of the timer (max 30 characters)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
       CHARACTER*30 NAME,T_REPORT
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
 #include "priunit.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
 #include "infpar.h"
       REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
 C
@@ -995,8 +993,8 @@ C
          DO I = 1, MXTIMF
 C          Tell the slaves to look for timer I
            T_REPORT = CPUTT(I)
-           CALL MPI_BCAST (T_REPORT,30,MPI_CHARACTER,
-     &                     MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_BCAST(T_REPORT,30,
+     &                              MPARID,global_communicator)
 C          Find the timer (we do this code on master also for simplicity)
            TIMERN = -1
            DO J = 1, MXTIMF
@@ -1016,17 +1014,17 @@ C          Compute the average time spent by the slaves
            ELSE
               A = MY_T
            ENDIF
-           CALL MPI_REDUCE (A,CPU_AV,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_AV,1,op_MPI_SUM,MPARID,
+     &                               global_communicator)
            CPU_AV = (CPU_AV)/DBLE(NUMNOD)
 C          Compute the minimum time
            IF (MYTID.EQ.MPARID) A = 1.D8
-           CALL MPI_REDUCE (A,CPU_MI,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MIN,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MI,1,
+     &                      op_MPI_MIN,MPARID,global_communicator)
 C          Compute the maximum time
            IF (MYTID.EQ.MPARID) A = -1.D8
-           CALL MPI_REDUCE (A,CPU_MA,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MAX,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MA,1,
+     &                      op_MPI_MAX,MPARID,global_communicator)
 C
 C          Write the result to the output
 C
@@ -1041,8 +1039,8 @@ C
          DO I = 1, MXTIMF
            SPARTACUS = MPARID+1
            T_REPORT = CPUTT(I)
-           CALL MPI_BCAST (T_REPORT,30,MPI_CHARACTER,
-     &                     SPARTACUS,MPI_COMM_WORLD,IERR)
+           call interface_mpi_BCAST(T_REPORT,30,
+     &                     SPARTACUS,global_communicator)
            TIMERN = -1
            DO J = 1, MXTIMF
               IF (T_REPORT.EQ.CPUTT(J)) TIMERN = J
@@ -1059,17 +1057,17 @@ C             Timer not used, give zero values
               A = MY_T
            ENDIF
 C          Compute the average time spent by the slaves
-           CALL MPI_REDUCE (A,CPU_AV,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_AV,1,
+     &                      op_MPI_SUM,MPARID,global_communicator)
            CPU_AV = (CPU_AV)/DBLE(NUMNOD)
 C          Compute the minimum time
            IF (MYTID.EQ.MPARID) A = 1.D8
-           CALL MPI_REDUCE (A,CPU_MI,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MIN,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MI,1,
+     &                      op_MPI_MIN,MPARID,global_communicator)
 C          Compute the maximum time
            IF (MYTID.EQ.MPARID) A = -1.D8
-           CALL MPI_REDUCE (A,CPU_MA,1,MPI_DOUBLE_PRECISION,
-     &                      MPI_MAX,MPARID,MPI_COMM_WORLD,IERR)
+           call interface_mpi_REDUCE(A,CPU_MA,1,
+     &                      op_MPI_MAX,MPARID,global_communicator)
 C
 C          Write the result to the output
 C          The master has to have TIMERN -1, otherwise this timer
@@ -1266,12 +1264,10 @@ C     I_FILE   : Bucket sort indentifier (we may have more than one active)
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
       CHARACTER*10 NAME*5,FNODE,LFNAM
 C
 C     The record size needs to be NGBFSZ real + (2*NGBFSZ + 2) integer
@@ -1301,7 +1297,7 @@ C
 C
 #if defined (VAR_MPI)
       DO I = 1, MAX_SEND_BUFFERS
-         IREQ(I) = MPI_REQUEST_NULL
+         IREQ(I) = df_MPI_REQUEST_NULL
       ENDDO
 #endif
 C
@@ -1449,11 +1445,11 @@ C
 #if defined (VAR_MPI)
             IF (INODE.NE.MYTID) THEN
                 CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
-     &           IGBUF(1,1,IBUF),N,INODE)
+     &                                 IGBUF(1,1,IBUF),N,INODE)
             ELSE
 #endif
                 CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
-     &           IGBUF(1,1,IBUF),N)
+     &                                 IGBUF(1,1,IBUF),N)
 #if defined (VAR_MPI)
             ENDIF
 #endif
@@ -1518,17 +1514,16 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
-#include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL READY
+      integer :: status_array(df_mpi_status_size)
 C
       IFREE = 0
       READY = .FALSE.
       DO I = 1, MAX_SEND_BUFFERS
-         CALL MPI_TEST(IREQ(I), READY, ISTAT, IERR)
+         CALL interface_MPI_TEST(IREQ(I), READY, status_array)
          IF (READY) THEN
             IFREE = I
             RETURN
@@ -1554,13 +1549,14 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
 #include "infpar.h"
       REAL*8 RGBUF(NGBFSZ)
-      INTEGER*4 IGBUF(2,NGBFSZ)
+!     INTEGER*4 IGBUF(2,NGBFSZ) ! should be default int as far as i can see
+      INTEGER   IGBUF(2,NGBFSZ)
 C
 C     Loop until we find a free send buffer IFREE
     1 CONTINUE
@@ -1575,8 +1571,8 @@ C     Pack all data in the integer array ISGBUF
       ISGBUF(4,IFREE) = IFREE
       CALL ICOPY (2*N,IGBUF,1,ISGBUF(5,IFREE),1)
       CALL DCOPY (N,RGBUF,1,ISGBUF(5+2*N,IFREE),1)
-      CALL MPI_ISSEND(ISGBUF(1,IFREE),4*NGBFSZ+4,my_MPI_INTEGER,
-     &               INODE,95,MPI_COMM_WORLD,IREQ(IFREE),IERR)
+      call interface_mpi_issend_i2_work_f77(ISGBUF(1,IFREE),4*NGBFSZ+4,
+     &               INODE,95,global_communicator,IREQ(IFREE))
 C
       RETURN
       END
@@ -1590,25 +1586,25 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
 C
 C     Check whether there are any messages waiting
 C
-   1  CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
-     &                MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+   1  call interface_mpi_iprobe(df_MPI_ANY_SOURCE,95,NEWMAIL,
+     &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
-         INODE = ISTAT(MPI_SOURCE)
+         INODE = ISTAT(df_mpi_source)
 C        Receive the buffer
-         CALL MPI_RECV(IHBUF,4*NGBFSZ+4,my_MPI_INTEGER,INODE,95,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         call interface_mpi_RECV(IHBUF,4*NGBFSZ+4,INODE,95,
+     &                 global_communicator)
 C        Decode the information and determine where the buffer should go
          N      = IHBUF(1)
          IBUF   = IHBUF(2)
@@ -1634,13 +1630,13 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER ISTATS(MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTATS(df_MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL
       INTEGER IEND
       INTEGER IBUFMPI(5)
@@ -1664,18 +1660,19 @@ C
    1  CONTINUE
 C     Verify status of our own messages
       IF (.NOT.ALLRECV) THEN
-         CALL MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
-     &                    ISTATS, IERR)
+         CALL interface_MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
+     &                              ISTATS)
 C        Tell master in case all our messages were received
-         IF (ALLRECV) CALL MPI_ISEND(IEND,1,my_MPI_INTEGER,MPARID,98,
-     &               MPI_COMM_WORLD,IREQ(1),IERR)
+         IF (ALLRECV) CALL interface_MPI_ISEND(IEND,1,MPARID,98,
+     &               global_communicator,IREQ(1))
       ENDIF
 C     Check for end signal
-      CALL MPI_IPROBE(MPARID,99,MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+      call interface_mpi_iprobe(mparid,99,NEWMAIL,global_communicator,
+     &                          istat)
       IF (NEWMAIL) THEN
 C        Receive the end signal message and return
-         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,MPARID,99,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(IEND,1,MPARID,99,
+     &                           global_communicator)
          RETURN
       ELSE
 C        There are still buffers waiting out there, see if we get some
@@ -1693,28 +1690,28 @@ C
 C     Initially the slaves are still waiting for a new integral task,
 C     tell them that they should do something else
 C
-      CALL MPI_IPROBE (MPI_ANY_SOURCE,20,MPI_COMM_WORLD,NEWMAIL,
-     &                 ISTAT,IERR)
+      call interface_mpi_iprobe(df_mpi_any_source,20,NEWMAIL,
+     &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
-         INODE = ISTAT(MPI_SOURCE)
+         INODE = ISTAT(df_mpi_source)
 C        Receive this signal
-         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,20,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,INODE,30,
-     &                 MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_RECV(IEND,1,INODE,20,
+     &                           global_communicator)
+         CALL interface_MPI_SEND(IBUFMPI,5,INODE,30,
+     &                           global_communicator)
       ENDIF
 C
 C     Check for ready signals from the slaves
 C
-      CALL MPI_IPROBE (MPI_ANY_SOURCE,98,MPI_COMM_WORLD,NEWMAIL,
-     &                 ISTAT,IERR)
+      call interface_mpi_iprobe(df_mpi_any_source,98,NEWMAIL,
+     &                          global_communicator,istat)
       IF (NEWMAIL) THEN
 C        Find out who was sending this
-         INODE = ISTAT(MPI_SOURCE)
+         INODE = ISTAT(df_mpi_source)
 C        Receive this signal
-         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,98,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(IEND,1,INODE,98,
+     &                           global_communicator)
          NREADY = NREADY + 1
       ENDIF
 C
@@ -1722,8 +1719,8 @@ C     Send out end signal when all nodes are ready
 C
       IF (NREADY.EQ.NODES) THEN
          DO INODE = 1, NODES
-            CALL MPI_SEND(IEND,1,my_MPI_INTEGER,INODE,99,
-     &                    MPI_COMM_WORLD,IERR)
+            CALL interface_MPI_SEND(IEND,1,INODE,99,
+     &                              global_communicator)
          ENDDO
          RETURN
       ELSE

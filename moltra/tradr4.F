@@ -59,14 +59,14 @@ C     Written by Luuk Visscher, Februari 1997
 C     Screening added August 20 by T.Saue
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "maxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -171,10 +171,10 @@ C
               IBUFMPI(5) = IBEND
 C
               CALL XTIME(2,1,' Slave requesting task from master')
-              CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                      MPI_COMM_WORLD,ISTAT,IERR)
+              call interface_mpi_RECV(ITEST,1,df_MPI_ANY_SOURCE,20,
+     &                      global_communicator,ISTAT)
               CALL XTIME(2,2,' Slave requesting task from master')
-              NWHO = ISTAT(MPI_SOURCE)
+              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
 C             ... slave wants new set of A,B shells
               CALL GETTIM(CPUST,WALLST)
@@ -186,8 +186,8 @@ C             ... slave wants new set of A,B shells
                  CALL FLSHFO(LUPRI)
               END IF
               CALL XTIME(3,1,' Master and slave negotiating task')
-              CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
+              call interface_mpi_SEND(IBUFMPI,5,NWHO,30,
+     &                      global_communicator)
               CALL XTIME(3,2,' Master and slave negotiating task')
               ELSE IF (ABS(ITEST) .LE. 2) THEN
 C             ... slave wants to lock or free file
@@ -929,12 +929,10 @@ C     - Q4           Coefficients for index 4
 C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include "dcbgen.h"
 #include "infpar.h"
       INTEGER   NSTR3(2),NSTR4(2)
@@ -971,17 +969,16 @@ C
 C
 C         Sum up all contribution on the master node.
 C
-          CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),LHMAT,
-     &                    MPI_DOUBLE_PRECISION,MPI_SUM,MPARID,
-     &                    MPI_COMM_WORLD,IERR)
+          call interface_mpi_REDUCE(WORK(KHMAT),WORK(KHMATS),LHMAT,
+     &                              op_MPI_SUM,MPARID,
+     &                              global_communicator)
 C
 C         Put integrals on all nodes
 C
           IF (MDCSCAT) THEN
 C
-             CALL MPI_BCAST(WORK(KHMATS),LHMAT,
-     &                      MPI_DOUBLE_PRECISION,MPARID,
-     &                      MPI_COMM_WORLD,IERR)
+             call interface_mpi_BCAST(WORK(KHMATS),LHMAT,
+     &                                MPARID,global_communicator)
 C
           END IF
 C
@@ -1109,14 +1106,11 @@ C     Written by T.Saue Sep 17 1998
 C     Revised May 15 2001 jth/hjaaj
 C
 C***********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "maxorb.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -1148,10 +1142,10 @@ C
          ITEST = 0
 C        ... ask for new set of A,B shells
          CALL XTIME(2,1,' Slave requesting task from master')
-         CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,MPARID,20,
-     &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_RECV(IBUFMPI,5,my_MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         call interface_mpi_SEND(ITEST,1,MPARID,20,
+     &                 global_communicator)
+         call interface_mpi_RECV(IBUFMPI,5,MPARID,30,
+     &                 global_communicator)
          IC     = IBUFMPI(1)
          I2TYP  = IBUFMPI(2)
          ISHLA  = IBUFMPI(3)

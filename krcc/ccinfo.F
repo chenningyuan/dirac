@@ -3897,7 +3897,6 @@ C?    CALL IWRTMA(ISPOBEX_TP(1,1),4*NGAS,1,4*NGAS)
       END DO
 *     ^ End of loop over creation and annihilation operators
 C?    WRITE(6,*) ' Memchk after construction of spobex '
-C?    CALL LMEMCHK
 C?    WRITE(6,*) ' Memcheck passed '
 *
 C?    WRITE(6,*) ' First SPOBEX_TP'

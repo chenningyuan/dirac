@@ -643,8 +643,6 @@ C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *. Obtain MO-MO transformation matrix
 C             GET_CMOMO(CMOMO)
         CALL GET_CMOMO(WORK(KLCMOMO))
-        WRITE(6,*) ' Memcheck after GET_CMOMO'
-        CALL LMEMCHK
 *
 *. Transform CI vector : Input on LUHC, output on LUDIA (!)
         CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)

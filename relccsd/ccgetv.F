@@ -46,6 +46,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "ccpar.inc"
 #include "waio.h"
 C
 C---------------Local variables--------------------------------------

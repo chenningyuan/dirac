@@ -18,7 +18,6 @@ include/fortran_interface.h
 pamq.py
 test/*/*out
 test/*/compare
-test/LOGS
 test/list_of_tests
 diracrc
 .diracrc

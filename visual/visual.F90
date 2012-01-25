@@ -619,10 +619,10 @@ contains
                                        buffer,                    &
                                        q)
 
-            write(lupri, '(3e14.6, 4e18.10)') &
-               visual_cfg_xyz_list(i, 1),     &
-               visual_cfg_xyz_list(i, 2),     &
-               visual_cfg_xyz_list(i, 3),     &
+            write(lupri, '(3e14.6, 4f18.7)') &
+               visual_cfg_xyz_list(i, 1),    &
+               visual_cfg_xyz_list(i, 2),    &
+               visual_cfg_xyz_list(i, 3),    &
                q(0:3, 1)
          end do
 
