@@ -314,9 +314,10 @@ def extract_and_compare_floats(log_file,   \
     p  = re.compile(numeric_const_pattern, re.VERBOSE)
     pd = re.compile(r'[dD]')
 
-    f_l       = []
-    f_l_ref   = []
-    f_to_line = []
+    f_l           = []
+    f_l_ref       = []
+    f_to_line     = []
+    f_to_line_ref = []
     for x in line_l:
         for line in x:
             for w in output[line].split():
@@ -337,6 +338,8 @@ def extract_and_compare_floats(log_file,   \
                     for m in p.findall(w):
                          m = pd.sub('e', m)
                          f_l_ref.append(float(m))
+                         f_to_line_ref.append(line)
+
     if len(f_l) == len(f_l_ref):
         for i in range(len(f_l)):
             r     = f_l[i]
@@ -363,9 +366,12 @@ def extract_and_compare_floats(log_file,   \
                     log_file.write('desired precision=%19.16f\n' % precision)
     else:
         log_file.write('compare floats sizes do not match\n')
-        log_file.write('this means that output and reference yield different number of results\n')
-        log_file.write(str(line_l))
-        log_file.write(str(line_l_ref))
+        log_file.write('own gave %i floats:\n' % len(f_l))
+        for i in range(len(f_l)):
+            log_file.write('    %s' % output[f_to_line[i]])
+        log_file.write('reference gave %i floats:\n' % len(f_l_ref))
+        for i in range(len(f_l_ref)):
+            log_file.write('    %s' % output_ref[f_to_line_ref[i]])
 
 #-------------------------------------------------------------------------------
 
