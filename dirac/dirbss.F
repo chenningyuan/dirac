@@ -9163,6 +9163,11 @@ C       ... get SO integrals from AMFI
          SOXINT=-WORK(KSOX+IX)
          SOYINT=-WORK(KSOY+IX)
          SOZINT=-WORK(KSOZ+IX)
+!        if(IPTYPAO(IX+1) .gt. 25)then
+!          SOXINT = 0.0d0
+!          SOYINT = 0.0d0
+!          SOZINT = 0.0d0
+!        end if
 C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
