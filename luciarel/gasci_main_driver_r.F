@@ -919,6 +919,13 @@ C
 C
         END IF ! natural orbital occupation numbers
 C
+        if(is_ana_mcscf)then
+!         right hand-side vector to LUSC61
+          CALL COPVCDC(LUC,LUSC61,WORK(KVEC1),1,IRC,LBLK)
+!         left hand-side vector on LUSC62
+          CALL COPVCDC(LUC,LUSC62,WORK(KVEC1),1,IRC,LBLK)          
+        end if
+
 C       prepare vector files for pure dens. matrix calc. run (parallel)
 C       ---------------------------------------------------------------
 #if defined (VAR_MPI2)
