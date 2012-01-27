@@ -63,6 +63,7 @@ C
       DIMENSION WORK(*)
 C
       LOGICAL NATORB, MOISNO, EX, FILEOPEN, save_1pdens
+      LOGICAL FNDLAB, FND
 #if defined MCSCF_DEBUG
       real*8,  allocatable :: onedens(:,:,:)
       real*8,  allocatable :: cref_x(:)
@@ -348,29 +349,49 @@ C
 C
 C       write NOs and occupancies to file with label MCCINATO and 
 C       MCNATOCC, respectively.
+        CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
+        CALL IZERO(WORK(KMJVEC),NORBT)
         LUNI            = -1
         mypath_write_no = -1
         INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
-        IF(EX.and.FILEOPEN)THEN
-          CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
-          CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
-          mypath_write_no = 1
-        ELSE IF( EX.and.(.not. FILEOPEN))THEN
-          LUNI = 99
-          CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','RGETNO')
-          CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
-          CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
-          mypath_write_no = 2
-          CLOSE(LUNI,STATUS='KEEP')
+        IF(EX)THEN
+          IF(FILEOPEN)THEN
+            REWIND(LUNI)
+            mypath_write_no = 1
+          ELSE
+            LUNI = 99
+            CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','RGETNO')
+            REWIND(LUNI)
+            mypath_write_no = 2
+          END IF
+          if(spinfr_krmc)then
+            CALL IREAKRMC(LUNI,'IBEIG   ',WORK(KMJVEC),NORBT)
+          else if(LINEAR)THEN
+            CALL IREAKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
+          END IF
         ELSE IF(.NOT. EX)THEN
           LUNI = 99
           CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','RGETNO')
           CALL NEWLAB('*RGETNO ',LUNI,LUPRI)
-          CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
-          CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+          REWIND(LUNI)
           mypath_write_no = 3
-          CLOSE(LUNI,STATUS='KEEP')
         END IF
+        REWIND(LUNI)
+        FND = FNDLAB('SODLABEL',LUNI)
+        BACKSPACE LUNI
+        CALL NEWLAB('SODLABEL',LUNI,LUPRI)
+        REWIND(LUNI)
+
+        if(spinfr_krmc)then
+          CALL IWRTKRMC(LUNI,'IBEIG   ',WORK(KMJVEC),NORBT)
+        else if(linear)then
+          CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
+        end if
+        CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+        CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+
+        if(.not.FILEOPEN) CLOSE(LUNI,STATUS='KEEP')
+
         WRITE(LUPRI,'(/A,I2)')
      &  '  Natural orbitals saved with label MCCINATO on KRMCSCF'//
      &  '  -  path ',mypath_write_no
