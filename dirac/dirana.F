@@ -1697,7 +1697,7 @@ C
      &     '(',P(1),',',P(2),')','(',P(3),',',P(4),')'
    20   CONTINUE
         IF(NPRI.EQ.0) THEN
-          WRITE(LUPRI,'(A)') ' --> No contributions !'	
+          WRITE(LUPRI,'(A)') ' --> No contributions !'
           GOTO 10
         ENDIF
 C

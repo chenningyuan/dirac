@@ -348,16 +348,19 @@ C
 C
 C       write NOs and occupancies to file with label MCCINATO and 
 C       MCNATOCC, respectively.
-        LUNI = -1
+        LUNI            = -1
+        mypath_write_no = -1
         INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
         IF(EX.and.FILEOPEN)THEN
           CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
           CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+          mypath_write_no = 1
         ELSE IF( EX.and.(.not. FILEOPEN))THEN
           LUNI = 99
           CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','RGETNO')
           CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
           CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+          mypath_write_no = 2
           CLOSE(LUNI,STATUS='KEEP')
         ELSE IF(.NOT. EX)THEN
           LUNI = 99
@@ -365,10 +368,12 @@ C       MCNATOCC, respectively.
           CALL NEWLAB('*RGETNO ',LUNI,LUPRI)
           CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
           CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+          mypath_write_no = 3
           CLOSE(LUNI,STATUS='KEEP')
         END IF
-        WRITE(LUPRI,'(/A)')
-     &  '  Natural orbitals saved with label MCCINATO on KRMCSCF'
+        WRITE(LUPRI,'(/A,I2)')
+     &  '  Natural orbitals saved with label MCCINATO on KRMCSCF'\\
+     &  '  -  path ',mypath_write_no
 C
 C       copy back MO coefficients
         CALL DZERO(CMO,NCMOTQ)
