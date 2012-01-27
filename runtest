@@ -660,10 +660,10 @@ class run:
                                                filter_task.end_is_regex,   \
                                                filter_task.end_is_including)
 
-                 if line_l == []:
+                 if not (line_l == []):
                      # subtask did not filter anything
-                     log_file.write('ERROR: subtask did not filter anything\n')
-                 else:
+                     # this can happen since sometimes we use same filter
+                     # for very different outputs
                      for x in line_l:
                          for line in x:
                              own_result.write(output[line])
