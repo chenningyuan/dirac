@@ -372,7 +372,7 @@ C       MCNATOCC, respectively.
           CLOSE(LUNI,STATUS='KEEP')
         END IF
         WRITE(LUPRI,'(/A,I2)')
-     &  '  Natural orbitals saved with label MCCINATO on KRMCSCF'\\
+     &  '  Natural orbitals saved with label MCCINATO on KRMCSCF'//
      &  '  -  path ',mypath_write_no
 C
 C       copy back MO coefficients
