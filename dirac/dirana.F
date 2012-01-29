@@ -1697,7 +1697,7 @@ C
      &     '(',P(1),',',P(2),')','(',P(3),',',P(4),')'
    20   CONTINUE
         IF(NPRI.EQ.0) THEN
-          WRITE(LUPRI,'(A)') ' --> No contributions !'	
+          WRITE(LUPRI,'(A)') ' --> No contributions !'
           GOTO 10
         ENDIF
 C
@@ -2175,7 +2175,7 @@ C
                COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
                COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
                COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
-               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+               WRITE(FILNAM,'(A2,2(A3,I1))') 
      &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTB),IDEGB
                DO I = 1,10
                  IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
@@ -2196,7 +2196,7 @@ C
                COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
                COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
                COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
-               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+               WRITE(FILNAM,'(A2,2(A3,I1))') 
      &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTA),IDEGB
                DO I = 1,10
                  IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
@@ -3451,8 +3451,8 @@ c     projector is created in MO basis (given by cmo) -ulfek
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      integer icent, ncent, aomap, i, j, ifind,lwork, n
-      double precision P, tmp, cmo, work
+      integer icent, ncent, aomap, i, j, ifind, n
+      double precision P, tmp, cmo(*)
       double precision, allocatable :: Pao(:,:), Pso(:,:), vec(:,:),
      &     val(:)
       dimension P(norbt,norbt,nz), icent(ncent), aomap(ntbas(0))
