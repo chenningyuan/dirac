@@ -1,3 +1,6 @@
+!
+! FILE: include/nuclei.h
+!
       CHARACTER*4 NAMN(MXCENT)
       LOGICAL NOORBT(MXCENT), GAUNUC
       REAL*8 CHARGE(MXCENT), CORD(3, MXCENT), GNUEXP(MXCENT)
@@ -5,16 +8,17 @@
      &        ISTBNU(MXCENT), NUCIND, NUCDEP, NTRACO, ITRACO(3), NATOMS,&
      &        NFLOAT, NBASIS, NLARGE, NSMALL, NPBAS, NPLRG, NPSML,      &
      &        NUCNET, INCENT(MXCENT), INUNIQ(MXCENT), NDEGNM(MXCENT),   &
-     &        NAMFA, IAMFA(MXCENT),NONTYP,NONT(MXATOM),                 &
+     &        NAMFA, IAMFA(MXCENT),NONTYP,NONT(MXATOM),IATOMTYP(MXCENT),&
 !C density fitting basis info
      &                NBASISAUX, NPBASAUX, NAUX, NPAUX,                 &
      &        NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT, &
      &        NPSML_FIT
+
       COMMON /NUCLEI/ CHARGE, CORD, NOORBT, NUCPRE, NUCNUM, NUCDEG,     &
      &                ISTBNU, GNUEXP, NAMN, NUCIND, NUCDEP, NTRACO,     &
      &                ITRACO, NATOMS, NFLOAT, NBASIS, NLARGE, NSMALL,   &
      &                NPBAS, NPLRG, NPSML, NUCNET, INCENT, INUNIQ,      &
-     &                GAUNUC, NDEGNM, NAMFA, IAMFA,NONTYP,NONT,         &
+     &                GAUNUC, NDEGNM, NAMFA, IAMFA,NONTYP,NONT,IATOMTYP,&
 !C density fitting basis info
      &                NBASISAUX, NPBASAUX, NAUX, NPAUX,                 &
      &        NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT, &
@@ -22,3 +26,4 @@
 
       CHARACTER*6 NAMEX(MXCOOR), NAMDEP(MXCENT), NAMDPX(MXCOOR)
       COMMON /NUCLEC/ NAMEX, NAMDEP, NAMDPX
+! --- end of nuclei.h ---
