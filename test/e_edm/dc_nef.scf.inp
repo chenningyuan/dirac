@@ -23,7 +23,7 @@
 1 1 0
 .OPERATOR
  'nucl. el. field Mg'
- ZiBETAAL
+ DIAGONAL
  'NEF 001'
  COMFACTOR 0.0005
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
