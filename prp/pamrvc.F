@@ -3979,6 +3979,7 @@ C
 C
 C
       CALL QENTER('GMOLITX1')
+      IREP = JSYMOP - 1
 C
 C
 C     ************************
@@ -4123,7 +4124,6 @@ C
 C     FVT Fock matrices
 C     -----------------
 C
-      IREP = JSYMOP - 1
 !stefan & radovan: we decide to set jrep to zero
 !                  otherwise undefined
       JREP = 0
@@ -4796,21 +4796,24 @@ C
 !          rather do:
            if (SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) iopt_spinfree = 1
 #endif
-!          IF(IOPT.GT.0) THEN
-           IF(iopt_spinfree.GT.0) THEN
+          IF(IOPT.GT.0) THEN
+!           IF(iopt_spinfree.GT.0) THEN
              CALL QBTRANS(JREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
-     &           FMO(IS,II,iopt_spinfree),NORBT,NORBT,1,
-     &           IPQTOQ(iopt_spinfree,IREP),
+C     &           FMO(IS,II,iopt_spinfree),NORBT,NORBT,1,
+C     &           IPQTOQ(iopt_spinfree,IREP),
+     &           FMO(IS,II,iopt),NORBT,NORBT,1,
+     &           IPQTOQ(iopt,IREP),
      &           CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           IBEIG(IS),
      &           CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           IBEIG(II),
      &           WORK(KFREE),LFREE,IPRXRS)
              DO IZ = 1,NZ
-             IF(IZ.NE.iopt_spinfree) THEN
+CTROND             IF(IZ.NE.iopt_spinfree) THEN
+             IF(IZ.NE.iopt) THEN
                CALL DZERO(FMO(1,1,IZ),N2ORBX)
              ENDIF  
              ENDDO
