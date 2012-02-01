@@ -4,7 +4,7 @@ nlines 15:Atoms and basis sets
 $ERROR 1.E-10
 nlines 12:TOTAL ENERGY
 
-$ERROR 1.E-7
+$ERROR 1.E-6
 nlines 9:* Dipole moment
 
 
