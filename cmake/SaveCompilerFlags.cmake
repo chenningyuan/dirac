@@ -30,7 +30,7 @@ if (NOT DEFINED DEFAULT_${_lang}_COMPILER_FLAGS_SET)
 		"Flags used by the compiler during release builds." FORCE)
 
 	set (DEFAULT_${_lang}_COMPILER_FLAGS_SET ON
-		CACHE INTERNAL
+		CACHE BOOL
 		"Flag that the default ${_lang} compiler flags have been set.")
 endif()
 endmacro()
