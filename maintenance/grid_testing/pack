@@ -31,7 +31,7 @@ rm dirac_test_suite.tgz
 /bin/rm ../../test/*/*.out*
 
 # pack all necessary stuff
-tar cvzf dirac_test_suite.tgz diracrc ../../build  ../../pam  ../../runtest ../../test ../../basis ../../basis_dalton --exclude ../../test/*/compare
+tar cvzf dirac_test_suite.tgz diracrc_grid ../../build  ../../pam  ../../runtest ../../test ../../basis ../../basis_dalton --exclude ../../test/*/compare
 
 echo "package ready"
 

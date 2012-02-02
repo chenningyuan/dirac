@@ -3,7 +3,7 @@
 #
 
 #
-# store onto SE
+# store onto vo=voce SE
 # p=`pwd`;lcg-cr -v -d se.ui.savba.sk file://$p/dirac_test_suite.tgz  -l lfn://grid/voce/ilias/dirac_test_suite.tgz
 # list: lcg-ls lfn://grid/voce/ilias
 # delete: lcg-del -a lfn://grid/voce/ilias/dirac_test_suite.tgz
