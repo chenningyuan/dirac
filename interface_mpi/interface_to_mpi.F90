@@ -2314,7 +2314,7 @@ contains
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind)       :: file_handle
-    integer(kind=integer_kind)       :: buf
+    integer(kind=df_mpi_offset_kind) :: buf
     integer(kind=df_mpi_offset_kind) :: offset
     integer(kind=integer_kind)       :: length
     integer(kind=integer_kind)       :: byte_tp
@@ -2615,7 +2615,7 @@ contains
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind)       :: file_handle
-    integer(kind=integer_kind)       :: buf
+    integer(kind=df_mpi_offset_kind) :: buf
     integer(kind=df_mpi_offset_kind) :: offset
     integer(kind=integer_kind)       :: length
     integer(kind=integer_kind)       :: byte_tp
