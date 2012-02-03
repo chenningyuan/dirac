@@ -282,10 +282,15 @@ C       zero arrays
         T_BUFF_D =  0
 #endif
 C
+#ifdef INT_STAR8
         IF( SPLIT_IJKL ) THEN
          call interface_MPI_GATHER(MY_T_LEN,1,IT_TTOL,1,MASTER,
      &                             global_communicator)
         END IF
+#else
+        call quit('gasci main driver: the chosen integral split '//
+     &            'routine requires 64-bit integer in dirac')
+#endif
 C
         WRITE(LUWRT,'(/2X,A)')
      & '=============================================================='
