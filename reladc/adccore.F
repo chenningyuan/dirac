@@ -414,6 +414,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &               NSP,IREPSP,IREPSPI)
       ENDIF
 
+      write(*,*) 'MXCORR after allocated CCSETI:',MXCORR
+      write(*,*) 'We give the FULL memory to the ADC modules.'
+
+      LFREE = MAXCOR
+
       IF(DOSIPS) THEN
         CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
       ENDIF
@@ -953,19 +958,25 @@ C  We therefore test, if there is enough memspace for these buffers
 C  when it comes to a real allocation.
 C
       IF(ICALC.EQ.1) THEN
-        write(IW,*)  ' *** Overview memory pointers: ***'
-        write(IW,*)  ' *** words permanently needed for ADC buffers :',
-     &               KFREE
-        write(IW,*)  ' *** word temp. needed for integrals: ',IVMAX
-        write(IW,*)  ' *** words for temporary (large) buffers: ',LFREE
         MXCORR=KFREE+IVMAX
-        write(IW,*)  ' *** MXCORR:   ',MXCORR
-        VREMAIN = NDIMTV - IVMAX
-        write(IW,*)  ' *** VREMAIN:  ',VREMAIN
-        WRITE(IW,*) 'MWORDS to be allocated for the VVVV/VOVV class:',
-     &             IVMAX/(1024*1024)
-        WRITE(IW,*) 'MWORDS available for additional buffering:',
-     &             VREMAIN/(1024*1024)
+      ENDIF
+
+      WRITE(IW,*) '-------------------------------------------'
+      WRITE(IW,*) '-- ADC memory usage summary'
+      WRITE(IW,*) '-------------------------------------------'
+      WRITE(IW,*)
+      WRITE(IW,*) 'Allocation status:',ICALC
+      WRITE(IW,*) 'Static memory provided during calc:',MXCORR
+      WRITE(IW,*) 'Words requd. static+ integrals:',KFREE + IVMAX
+      WRITE(IW,*) 'Words available:',LFREE - IVMAX
+      VREMAIN = LFREE - IVMAX
+      WRITE(IW,*)  'Available for buffering with integrals:',VREMAIN
+      WRITE(IW,*)  'Available for buffering without integrals:',LFREE
+C     WRITE(IW,*) 'MWORDS to be allocated for the VVVV/VOVV class:',
+C    &             IVMAX/(1024*1024)
+C     WRITE(IW,*) 'MWORDS available for additional buffering:',
+C    &             VREMAIN/(1024*1024)
+      IF(ICALC.EQ.1) THEN
         RETURN
       ENDIF
 C
