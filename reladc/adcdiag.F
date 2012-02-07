@@ -31,7 +31,7 @@ C      ****  Diagonalization Routines for the RELADC package  ****
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAGEXE(CC,KFREE,LFREE,INFOHANDLE,IW)
+      SUBROUTINE DIAGEXE(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
       IMPLICIT INTEGER (A-Z)
 
       REAL*8 CC(*)
@@ -124,7 +124,14 @@ c
       CARITH=.FALSE.
       IF(RCW.EQ.2) CARITH=.TRUE.
 
-      CALL PST('    Interfacing iterative diagonalizer+')
+      CALL PST('    Initializing iterative diagonalizer+')
+      IF(DOINCORE) THEN
+        WRITE(IW,*) 'Try partial incore diagonalization'
+      ELSE
+        WRITE(IW,*) 'Out of core diagonalization'
+      ENDIF
+      WRITE(IW,*) 'Memory pointers:',KFREE,LFREE
+      WRITE(IW,*) 'Words available:',LFREE-KFREE
 
       WRITE(IW,*)
       WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP):      ',IONIZLEVEL
@@ -177,6 +184,21 @@ C
       CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
       CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
       CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
+      IF(DOINCORE) THEN
+        WRITE(IW,*) 'Available buffer for incore diag:'
+        WRITE(IW,*) (LFREE-1)/3,' words'
+        N=(LFREE - 1)/3
+        IF(N.lt.INTBUF) THEN
+          WRITE(IW,*) 'Buffer for inc. diag too small!'
+          WRITE(IW,*) 'Switching back to out-of-core diag.'
+          DOINCORE = .FALSE.
+        ELSE
+          CALL MEMOPT('REAL',WRK_IDR,N,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMOPT('INTE',WRK_IDI,N,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMOPT('INTE',WRK_IDJ,N,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMCHK('ICD',CC,KFRSAV)
+        ENDIF
+      ENDIF
 C
 C  enter real resp. complex Band Lanczos iterations
 C  for symmetric resp. Hermitian matrices

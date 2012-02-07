@@ -323,7 +323,7 @@ c  att: the additional, symmetry-specific memory is allocated
 c  within this loop and immediately released afterwards.
 c  att2: it was observed that the ADC2 matrices get very large and
 c  therefore a diagonalization is required immediately after the
-c  SAT block construction! No incore option is available anymore.
+c  SAT block construction!
 c      
       DO 300 DESREP = 1,NREP
         IF(NOOT(DESREP).EQ.0) GOTO 300
@@ -404,7 +404,7 @@ c
 c  call Lanczos diagonalizer.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAGEXE(CC,KFRSAV2,LFREE,ITAPADC,IW)
+        CALL DIAGEXE(CC,KFRSAV2,LFREE,ITAPADC,IW,DOINCORE)
         CLOSE(ITAPADC,STATUS='DELETE')
 c
 c  we do Mulliken-type ADC population analysis after diagonalization

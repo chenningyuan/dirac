@@ -251,10 +251,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       maxcor = nint((total_mem_new/8.0d0),kind(8))
       mword_limit = maxcor / (1024*1024)
 
-      WRITE(IW,*) 'Status variables from allocator:'
-      WRITE(IW,*) 'total_mem_new: ',total_mem_new
-      WRITE(IW,*) 'maxcor: ',maxcor
-      WRITE(IW,*) 'mword_limit: ',mword_limit
+!     WRITE(IW,*) 'Status variables from allocator:'
+!     WRITE(IW,*) 'total_mem_new: ',total_mem_new
+!     WRITE(IW,*) 'maxcor: ',maxcor
+!     WRITE(IW,*) 'mword_limit: ',mword_limit
 
       MXCORR = 0
 !
@@ -484,7 +484,8 @@ C
       NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
      &                 DOCONST,DOADCPOP,DOFULL,VCONV
-      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,SIPPRNT,DIPPRNT
+      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,
+     &                 SIPPRNT,DIPPRNT,DOINCORE
 c
 c  set input default values and read ADC input
 c  from ADC namelist input.
@@ -555,6 +556,7 @@ c
         SIPEIGV(J) = 0
         DIPEIGV(J) = 0
       ENDDO
+      DOINCORE = .FALSE.
       REWIND (5)
       CALL LOCATE('LANINP',5,ITEST)
       IF (ITEST.GT.0) THEN
@@ -1572,7 +1574,7 @@ c
 c  call diagonalizer.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW)
+        CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
         CLOSE(ITAPADC,STATUS='DELETE')
 c
         WRITE(IW,*)
