@@ -811,7 +811,7 @@ C
  15   CONTINUE
 
       NCKKS   = MXNO*MXNO
-      INTBUF = 65536  !output buffer is now enlarged to 64K
+      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 C
 C  allocate memory needed in all types of ADC calculations
 C

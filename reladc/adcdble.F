@@ -185,7 +185,7 @@ C |
 C |________________E_N_D______S_E_C_T_I_O_N__________________________
 C
 
-      INTBUF = 65536   !output buffer size
+      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 C
 C  __________________  BUILD 2H-2H BLOCK  ___________________________
 C |

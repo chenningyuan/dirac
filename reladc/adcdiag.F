@@ -116,7 +116,8 @@ c
 
 
 
-      INTBUF = 65536  !output buffer now enlarged to 64K
+      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
+
       KFREESAVE=KFREE
       ALLOC_ME=.TRUE.
       NP = NOCC
