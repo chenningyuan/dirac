@@ -2965,9 +2965,9 @@ contains
     extent          = extent_i4
 #else
     integer(kind=integer_kind)       :: ierr
-    print *, 'datatype ',datatype
+!   print *, 'datatype ',datatype
     call mpi_type_extent(datatype   , extent   , ierr   )
-    print *, 'extent ',extent
+!   print *, 'extent ',extent
 #endif
 
   end subroutine
