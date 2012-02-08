@@ -55,6 +55,7 @@ C                    input and start-up --> "modularize"
 C
 C***********************************************************************
       use symmetry_setup_krci
+      use krci_cfg
       use os_utils
 #include "implicit.h"
 #include "priunit.h"
@@ -90,7 +91,7 @@ C
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
-     &            '.THRPCI','.xxxxxx','.MIN MK','.MAX MK','.GASSH ',
+     &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
@@ -226,6 +227,9 @@ C     some scratch
 !       fall back to default: 0
         IDOPARIO_KRCI = 0
       end if
+
+!     krci_cfg
+      krci_cfg_max_vec_block = -1
  
 C
 C     Process input for *KRCICALC
@@ -536,7 +540,8 @@ C&&& THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRCI_THRPCI
                GO TO 100
    22          CONTINUE
-C&&& xxx
+C&&& max vector block length to allocate
+                  READ(LUCMD,*) krci_cfg_max_vec_block
                GO TO 100
    23          CONTINUE
 C&&& MIN MK2: minimum value of 2 * MK
