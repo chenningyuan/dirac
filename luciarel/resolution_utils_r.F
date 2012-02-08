@@ -352,11 +352,16 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
 !             with loop restrictions in MAP_EXSTR.
               if(lk.gt.0)then
                 IADR  = IBM(JOB_SM,KNSM,IOP) -1 + (JOB_REL-1)*LK+KNSTR
-                KNSTR = IM(IADR)
+                KNSTR = iabs(IM(IADR))
 !               WRITE(6,*) ' LK ==> ',LK
 !               WRITE(6,*) ' IADR, JOB_SM, KNSM, KNSTR, JOB_REL-1', 
 !     &                      IADR, JOB_SM, KNSM, KNSTR, JOB_REL-1
-                SIGN = SIGN*XM(IADR) 
+!               SIGN = SIGN*XM(IADR) 
+                if(iabs(IM(IADR)) > 0)then
+                  SIGN = SIGN*(IM(IADR)/iabs(IM(IADR)))
+                else
+                  sign = 0.0d0
+                end if
               else
                 KNSTR = 0
               end if
