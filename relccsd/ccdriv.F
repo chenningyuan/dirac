@@ -590,8 +590,8 @@ C
       CHARACTER*10 INTFCE
       integer :: verbose = 0
       integer(kind=klongint) :: maxcor
-      integer(kind=klongint) :: mxcor
-      integer(kind=klongint) :: mxcor1
+      integer(kind=klongint) :: mxcorr
+      integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
       real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0

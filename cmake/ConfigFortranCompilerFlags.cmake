@@ -1,4 +1,4 @@
-if(NOT DEFINED HAVE_Fortran_FLAGS)
+if(NOT DEFINED DEFAULT_Fortran_COMPILER_FLAGS_SET)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
@@ -57,21 +57,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
-
-    # individual compilation due to problems with parallel calcul. of twoel.London integrals
-#   # stefan --> miro: please fix it properly or create a ticket but this is NOT OK; i encountered on some platforms severe performance
-#   degradation in parallel runs other than twoel. London integrals...
-#   Jan 2012
-#   if(ENABLE_MPI)
-#       if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
-#           message("-- main/main.F90: ifort (in OpenMPI wrapper) - lowered optimization level by last flag overriding, -O0")
-#           message("--   ... fix of magnetizabilities MEMCHK error in the slave process of abacus/her2drv.F" )
-#           set_source_files_properties(
-#               main/main.F90
-#               PROPERTIES COMPILE_FLAGS "-O0")
-#       endif()
-#   endif()
-
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)

@@ -689,7 +689,11 @@ C       every MPI implementation (IBM?); anyway bcast should
 C       NOT be our first choice...
 C
 #if defined (VAR_MPI2)
-        call interface_mpi_BCAST(t_unsort,LEN_ALL_INT,MASTER,
+        LEN_ALL_INT_i4 = LEN_ALL_INT
+        if(LEN_ALL_INT_i4 /= LEN_ALL_INT) 
+     &  call quit('*** WRITE_IJKL_GAS: the chosen integral handling'//
+     &            ' type requires a 64-bit integer Dirac/MPI ***')
+        call interface_mpi_BCAST(t_unsort,LEN_ALL_INT_i4,MASTER,
      &                 IXCOMM)
 #endif
       END IF
@@ -871,6 +875,9 @@ C***********************************************************************
       INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
       INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TOFFW,IWRITE_ELM
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_T_IJKL, IOFF_ADD
+      INTEGER(KIND=df_MPI_OFFSET_KIND) NDIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N1DIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N2DIAINT_i8
 #if defined (INT_STAR8)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_BYTE
 #else
@@ -936,19 +943,22 @@ C     WRITE(LUWRT,*) ' NTEST_DIA',NTEST_DIA
       call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,NALLINT,
      &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
-      IWRITE_BYTE = ISIZE_my_int
+      IWRITE_BYTE = ISIZE_int8
+      NDIAINT_i8  = NDIAINT
 C     WRITE(LUWRT,*) ' NDIAINT',NDIAINT
-      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,NDIAINT,
+      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,NDIAINT_i8,
      &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
-      IWRITE_BYTE = ISIZE_my_int
+      IWRITE_BYTE = ISIZE_int8
+      N1DIAINT_i8 = N1DIAINT
 C     WRITE(LUWRT,*) ' N1DIAINT',N1DIAINT
-      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,N1DIAINT,
+      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,N1DIAINT_i8,
      &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
-      IWRITE_BYTE = ISIZE_my_int
+      IWRITE_BYTE = ISIZE_int8
+      N2DIAINT_i8 = N2DIAINT
 C     WRITE(LUWRT,*) ' N2DIAINT',N2DIAINT
-      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,N2DIAINT,
+      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,N2DIAINT_i8,
      &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
 C     T in SIGDEN ordered format
@@ -1057,6 +1067,9 @@ C***********************************************************************
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW
       INTEGER(KIND=df_MPI_OFFSET_KIND) IREAD_ELM,IOFF_ADD
+      INTEGER(KIND=df_MPI_OFFSET_KIND) NDIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N1DIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N2DIAINT_i8
 #if defined (INT_STAR8)
       INTEGER(KIND=df_MPI_OFFSET_KIND)  IREAD_BYTE
 #else
@@ -1122,21 +1135,24 @@ C
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: NALLINT ',NALLINT
       IOFFSET     = IOFFSET + IREAD_BYTE
-      IREAD_BYTE  = ISIZE_my_int
-      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,NDIAINT,
+      IREAD_BYTE  = ISIZE_int8
+      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,NDIAINT_i8,
      &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
+      NDIAINT     = NDIAINT_i8
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: NDIAINT ',NDIAINT
       IOFFSET     = IOFFSET + IREAD_BYTE
-      IREAD_BYTE  = ISIZE_my_int
-      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,N1DIAINT,
+      IREAD_BYTE  = ISIZE_int8
+      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,N1DIAINT_i8,
      &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
+      N1DIAINT    = N1DIAINT_i8
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: N1DIAINT',N1DIAINT
       IOFFSET     = IOFFSET + IREAD_BYTE
-      IREAD_BYTE  = ISIZE_my_int
-      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,N2DIAINT,
+      IREAD_BYTE  = ISIZE_int8
+      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,N2DIAINT_i8,
      &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
+      N2DIAINT    = N2DIAINT_i8
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: N2DIAINT',N2DIAINT
 C

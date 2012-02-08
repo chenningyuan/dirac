@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : hersym.F
 #include <single.h>
 C
 #ifdef OLD_LOG
@@ -231,12 +232,15 @@ C ::: If there's any Aangstroem mark, it's removed.    :::
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
-         DO 250 I = 1, NINT(ATMARR(1,0))
-            DO 260 J = 1, 3
-               CORD(J,I) = ATMARR(J,I)
- 260        CONTINUE
+
+         NUCIND = NINT(ATMARR(1,0))
+         IF (NUCIND .LE. 0) CALL QUIT ('No atoms defined')
+
+         DO 250 I = 1, NUCIND
+            CORD(1:3,I) = ATMARR(1:3,I)
             IOLD = NINT(ATMARR(5,I))
 C           ... IOLD .ge. I after CALL SRTOLD
+            IATOMTYP(I) = IATOMTYP(IOLD)
             CHARGE(I) = CHARGE(IOLD)
             GNUEXP(I) = GNUEXP(IOLD)
             NCLINE(I) = NCLINE(IOLD)
@@ -250,19 +254,16 @@ C           ... IOLD .ge. I after CALL SRTOLD
 #endif
  250     CONTINUE
 C ::: Then the different elements are counted, and arrays updated. :::
-         NONTYP = 1
-         CALL IZERO(NONT, KATOM)
+
+         NONT(1:KATOM) = 0
          NONTYP = 1
          NONT(NONTYP) = 1
-         DO 275 I = 2, NINT(ATMARR(1,0))
-            IF (NAMN(I) .NE. NAMN(I-1)) THEN
+         DO 275 I = 2, NUCIND
+            IF (IATOMTYP(I) .NE. IATOMTYP(I-1)) THEN
                NONTYP = NONTYP + 1
             END IF
             NONT(NONTYP) = NONT(NONTYP) + 1
  275     CONTINUE
-
-         NUCIND = NINT(ATMARR(1,0))
-         IF (NUCIND .LE. 0) CALL QUIT ('No atoms defined')
 
          DO 300 I = NUCIND + 1, KATOM
             NAMN(I) = '    '
@@ -282,7 +283,7 @@ C ::: We update the coordinates of the input file :::
            DO 400 I = 1, NUCIND
              NC = NCLINE(I)
              TMPLN = MLINE(NC)
-             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
+             WRITE(TMPLN( 5:24),'(F20.14)') CORD(1,I)
              WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
              WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
 #ifndef PRG_DIRAC
@@ -290,22 +291,17 @@ C ::: We update the coordinates of the input file :::
              IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
      &                             'Isotope=', NINT(QMASS)
 #endif
-CMI       ... fix for gfortran-4.3  - otherwise IPREAD get bad value...
              MLINE(NC) = TMPLN
  400       CONTINUE
 C ::: Finally the number of atoms are updated. :::
            I = 1
-           J = NINT(ATMARR(4,I))
            DO K = 1, NONTYP
               NC = NCLINE(I) - 1
               TMPLN = MLINE(NC)
               WRITE(TMPLN(12:15),'(I4)') NONT(K)
               MLINE(NC) = TMPLN
-              do while(j==nint(atmarr(4,i)))
-                i=i+1
-              end do
-              J = NINT(ATMARR(4,I))
-           end do
+              I = I + NONT(K)
+           END DO
          end if
 C        IF (SOLVNT .OR. DORLM) THEN
 C           NUCIND = NUCIND + 1

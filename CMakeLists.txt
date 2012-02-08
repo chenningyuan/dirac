@@ -31,6 +31,7 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 # check whether pamadm-generated files exist
 if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
+    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/IncludeFiles.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
 else()
     # they do not exist: run pamadm -a

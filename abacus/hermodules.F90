@@ -683,7 +683,7 @@
 
       INTEGER, INTENT(IN)             :: lupri
 
-      INTEGER :: ncent,natom
+      INTEGER :: ncent,natom,natom_type
       TYPE(atom), POINTER             :: mol
 
 #include "molinp.h"
@@ -707,6 +707,7 @@
       NUCIND=0
       mol=>firstatom
       natom=0
+      natom_type=1
 
       DO
 
@@ -742,6 +743,16 @@
           NAMEX(3*natom-2)=TRIM(mol%name)//' x'
           CHARGE(natom)=mol%charge
           GNUEXP(natom)=mol%nucexp
+          if (natom .gt. 1) then
+!            in .xyz input different basis sets are
+!            specified with .SPECIAL names,
+!            therefore we test on change in name rather
+!            than change in charge.
+             if ( NAMN(natom) .ne. NAMN(natom-1) ) then
+                natom_type = natom_type + 1
+             end if
+          end if
+          IATOMTYP(natom)=natom_type
 
           mol=>mol%next
         END IF

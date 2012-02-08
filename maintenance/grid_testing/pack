@@ -6,17 +6,22 @@ DIRAC=/home/ilias/qch_work/software/dirac_git/trunk
 ### update, compile & pack ###
 
 cd $DIRAC
+
 git pull
-pamadm -a
-cd $DIRAC/build
-cmake ..
-make -j 2
-cd $DIRAC
-python ./runtest --verbose --tests="acmoin cosci_energy"
+
+#pamadm -a
+#cd $DIRAC/build
+#cmake ..
+#make -j 2
+#cd $DIRAC
+#python ./runtest --verbose --tests="acmoin cosci_energy"
 
 echo "now packing... "
 
 cd $DIRAC/maintenance/grid_testing
+
+echo "removing old dirac_test_suite.tgz..."
+rm dirac_test_suite.tgz
 
 #--------------------------------------------------------------
 # make one tgz-file with all Dirac stuff for testing & running 
@@ -26,7 +31,7 @@ cd $DIRAC/maintenance/grid_testing
 /bin/rm ../../test/*/*.out*
 
 # pack all necessary stuff
-tar cvzf dirac_test_suite.tgz diracrc ../../build/dirac.x ../../pam ../../runtest ../../test ../../basis ../../basis_dalton --exclude ../../test/*/compare
+tar cvzf dirac_test_suite.tgz diracrc_grid ../../build  ../../pam  ../../runtest ../../test ../../basis ../../basis_dalton --exclude ../../test/*/compare
 
 echo "package ready"
 

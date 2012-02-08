@@ -7,9 +7,9 @@
 # for crontab&queue system you have to set up enviroment !
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-export PATH=/home/ilias/bin/ompi_ilp64_static/bin:$PATH
-export MANPATH=/home/ilias/bin/ompi_ilp64_static/share/man:$MANPATH
-export LD_LIBRARY_PATH=/home/ilias/bin/ompi_ilp64/lib:$LD_LIBRARY_PATH
+export PATH=/home/ilias/bin/ompi_i32lp64_static/bin:$PATH
+export MANPATH=/home/ilias/bin/ompi_i32lp64_static/share/man:$MANPATH
+export LD_LIBRARY_PATH=/home/ilias/bin/ompi_i32lp64/lib:$LD_LIBRARY_PATH
 
 echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
 
@@ -17,8 +17,7 @@ echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
 DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo
 
 # build dirs
-BUILD_OMPI_STATIC=build_openmpi_gfortran_gcc_ownmath_ilp64_STATIC
-BUILD_STATIC=build_gfortran_gcc_ilp64_static
+BUILD_OMPI_STATIC=build_ompi_static
 
 # go to the local DIRAC directory
 cd $DIRAC
@@ -28,43 +27,26 @@ git pull
 ./pamadm -a 
 /bin/rm -rf $BUILD_OMPI_STATIC
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=/home/ilias/bin/ompi_ilp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_ilp64_static/bin/mpicc --cpp=/home/ilias/bin/ompi_ilp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_STATIC" --internal-math --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_OMPI_STATIC/dirac.x --build=$BUILD_OMPI_STATIC
+./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cpp=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --internal-math --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_OMPI_STATIC/dirac.x --build=$BUILD_OMPI_STATIC
 cd $DIRAC/$BUILD_OMPI_STATIC
-#make dirac.x
-#make info_ext
-make Experimental
-
-#
-# run static version buildup
-#
-# go to the local DIRAC directory
-cd $DIRAC
-#git pull origin master
-#git pull --rebase
-git pull
-./pamadm -a 
-/bin/rm -rf $BUILD_STATIC
-# configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=gfortran -D BUILDNAME="miro_pd_uniza.linux.gfortran_gcc_STATIC.ilp64.opt"  --internal-math --int64 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --static -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x  --build=$BUILD_STATIC 
-cd $DIRAC/$BUILD_STATIC
-#make dirac.x
-#make info_ext
 make Experimental
 
 ###
 ###   now run the Nightly test suite
 ###
-TMP_DIR=/tmp/dirac_build
-mkdir -p $TMP_DIR
-git clone git@repo.ctcc.no:dirac.git $TMP_DIR
-cd $TMP_DIR
+#export PATH=/usr/local/openmpi_ilp64/bin:$PATH
+#export MANPATH=/usr/local/openmpi_ilp64/share/man:$MANPATH
+#export LD_LIBRARY_PATH=/usr/local/openmi_ilp64/lib:$LD_LIBRARY_PATH
+#
+#TMP_DIR=/tmp/dirac_build
+#mkdir -p $TMP_DIR
+#git clone git@repo.ctcc.no:dirac.git $TMP_DIR
+#cd $TMP_DIR
 #git checkout -b prepare-release-11 origin/prepare-release-11
-./pamadm -a
-./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999  -D VERBOSE_OUTPUT=ON
-cd $TMP_DIR/build
-#make dirac.x
-#make info_ext
-make Nightly
-rm -rf $TMP_DIR
+#./pamadm -a
+#./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999  -D VERBOSE_OUTPUT=ON
+#cd $TMP_DIR/build
+#make Nightly
+#rm -rf $TMP_DIR
 
 exit 0

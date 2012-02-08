@@ -1045,6 +1045,7 @@ C
               WRITE(LUPRI,'(3X,A,I5)') 'Number of symmetry '//
      &             'independent centres: ',NONT(I)
            ENDIF
+           IATOMTYP(NUCIND+1:NUCIND+NONT(I)) = I
            CALL CNTINP(LUINFO,NONT(I),Q,QEXP,ANG)
 C
 C

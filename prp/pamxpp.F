@@ -1293,11 +1293,11 @@ C
           DO I = 1,KEXCNV(ISYM)
              CALL PRSYMB(LUPRI,'-',80,0)
              IF(RCNV(I,ISYM).LT.THCPP) THEN
-               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,D9.2,A)')
+               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,E9.2,A)')
      &            ' Excitation no.',I,' excitation energy',
      &            OMEGA(I,ISYM),' a.u.',RCNV(I,ISYM),' (converged)'
              ELSE
-               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,D9.2,A)')
+               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,E9.2,A)')
      &            ' Excitation no.',I,' excitation energy',
      &            OMEGA(I,ISYM),' a.u.',
      &            RCNV(I,ISYM),' (**NOT** converged!)'
@@ -1393,7 +1393,7 @@ C
                IF (OSCIL .GE. 1.0D-3) THEN
                    PFMT = '(5X,A,F12.8)'
                 ELSE
-                   PFMT = '(5X,A,1P,D16.8)'
+                   PFMT = '(5X,A,1P,E16.8)'
                 END IF
                 WRITE(LUPRI,'()')
                 WRITE(LUPRI,PFMT)

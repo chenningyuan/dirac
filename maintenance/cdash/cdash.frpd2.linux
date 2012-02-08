@@ -7,26 +7,26 @@
 source ~/.bashrc
 
 export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
+export PATH=/home/ilias/bin/openmpi_i32lp64_static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib:$LD_LIBRARY_PATH
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/dirac-git-repo
 #BUILD=build_gfortran_gcc_ownlibs_ILP64_cdash
 #BUILD=build_g95_gcc_ownlibs_ILP64_cdash
-BUILD=build
+BUILD=build_ompi_static
 
 # go to the local DIRAC directory
 cd $DIRAC
 /bin/rm -rf $BUILD
 git pull 
-#git pull origin master
-#./pamadm -a --minus --openrsp
 ./pamadm -a 
-# configure step
-./setup  --fc=gfortran  -D BUILDNAME="linux.gfortran.gcc.ownmath.ilp64_STATIC" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD --static --internal-math --int64
+# setup...
+./setup  --fc=/home/ilias/bin/openmpi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_static/bin/mpicc --cpp=/home/ilias/bin/openmpi_i32lp64_static/bin/mpiCC  -D BUILDNAME="linux.OpenMPI_gfortran.gcc.ownmath.ilp64__full_STATIC" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD --static --internal-math --int64 -D RUNTEST_NR_PROC=2  -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x
 cd $DIRAC/$BUILD
 cmake ..
-make dirac.x
-make info_ext
+#make dirac.x
+#make info_ext
 make Experimental
 
 ###
