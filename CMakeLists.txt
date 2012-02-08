@@ -15,6 +15,7 @@ set(VERSION_PATCH 2)
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated
     )
 
 include(CheckFortranSourceCompiles)
@@ -29,10 +30,10 @@ include(ConfigSafeGuards)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # check whether pamadm-generated files exist
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
-    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
-    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/IncludeFiles.cmake"
-    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Sources.cmake"      AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Definitions.cmake"  AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFiles.cmake" AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Tests.cmake")
 else()
     # they do not exist: run pamadm -a
     execute_process(
@@ -176,6 +177,7 @@ set(LIBS
     )
 
 include(CompilationInfo)
+include(ConfigGitRevision)
 
 configure_file(
     ${PROJECT_SOURCE_DIR}/config.h.in
