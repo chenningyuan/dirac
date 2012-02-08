@@ -46,8 +46,8 @@ cat /proc/meminfo
 
 echo -e "\n ---- DIRAC unpacking ---- \n"
 tar --version
-tar -xvf dirac_test_suite.tgz
-chmod  u+x build/dirac.x build/mpirun  pam  runtest
+tar xvfz dirac_test_suite.tgz
+chmod  u+x build/dirac.x build/mpirun build/cmake build/ctest  pam  runtest
 
 # create diracrc file for paralle run on the grid
 echo -e "\n ---- diracrc created ---- \n"
@@ -67,12 +67,19 @@ python ./runtest --verbose --quick --mpi=2  # works
 #python ./runtest --verbose --all  # works
 
 #############################################################
+#
+# own cmake stuff
+# cd build
+# cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME=grid_test -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 ..
+# make ExperimentalStart
+# make ExperimentalTest
+# make ExperimentalSubmit
+#
 
 echo -e "\n --- Packing all wanted stuff from the grid CE  --- \n "; 
 ls -lt
 tar --version
 #tar --help
-
 echo " "
 tar cvzf dirac_test_suite_back.tgz test *.out *.tgz
 

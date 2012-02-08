@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# simple script for preparing Dirac tar-ball for grid computing
+#
+#
+#
 
 
 DIRAC=/home/ilias/qch_work/software/dirac_git/trunk
@@ -8,19 +13,17 @@ DIRAC=/home/ilias/qch_work/software/dirac_git/trunk
 cd $DIRAC
 
 git pull
+pamadm -a
 
-#pamadm -a
-#cd $DIRAC/build
-#cmake ..
-#make -j 2
-#cd $DIRAC
-#python ./runtest --verbose --tests="acmoin cosci_energy"
+cd $DIRAC/build
 
-echo "now packing... "
+echo -e "\n --- obtaining the fresh static MPI dirac.x executable from other server: ---"
+scp ilias@194.160.135.47:~/qch_work/qch_software/dirac_git/dirac-git-repo/build_ompi_static/dirac.x .
+#scp ilias@frpd2.utcpd.sk:~/Work/qch/qch_software/dirac/dirac-git-repo/build_ompi_static/dirac.x .
 
 cd $DIRAC/maintenance/grid_testing
 
-echo "removing old dirac_test_suite.tgz..."
+echo -e "\n removing old dirac_test_suite.tgz..."
 rm dirac_test_suite.tgz
 
 #--------------------------------------------------------------
@@ -29,10 +32,14 @@ rm dirac_test_suite.tgz
 
 # problems with "--exclude test/*/*.out"  - so remove them
 /bin/rm ../../test/*/*.out*
+/bin/rm -r ../../test/*/compare
+
+echo -e "\n now packing... "
 
 # pack all necessary stuff
-tar cvzf dirac_test_suite.tgz diracrc_grid ../../build  ../../pam  ../../runtest ../../test ../../basis ../../basis_dalton --exclude ../../test/*/compare
+tar cvzf dirac_test_suite.tgz diracrc_grid ../../CMakeLists.txt ../../CTestConfig.cmake ../../main/config.h ../../cmake  ../../build  ../../pam  ../../runtest ../../test ../../basis ../../basis_dalton 
 
-echo "package ready"
+echo "package dirac_test_suite.tgz ready"
+
 
 exit 0
