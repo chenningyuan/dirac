@@ -141,7 +141,6 @@ if(ENABLE_CUDA)
     endif()
 endif()
 
-if (EXISTS "${PROJECT_SOURCE_DIR}/include/fortran_interface.h")
 add_custom_command(
     OUTPUT
     ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
@@ -150,11 +149,11 @@ add_custom_command(
     COMMAND
     gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
     )
+
 add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
-endif()
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
@@ -170,22 +169,18 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-if(IS_DIRECTORY xcfun)
 add_subdirectory(xcfun)
 set(LIBS
     xcfun
     ${LIBS}
     )
-endif()
 
 include(CompilationInfo)
 
-if(EXISTS "${PROJECT_SOURCE_DIR}/config.h.in")
 configure_file(
     ${PROJECT_SOURCE_DIR}/config.h.in
     ${PROJECT_SOURCE_DIR}/main/config.h
     )
-endif()
 
 # copy pam to build dir as pam and pam-dirac
 configure_file(
@@ -199,11 +194,9 @@ configure_file(
     COPYONLY
     )
 
-if (EXISTS "${PROJECT_SOURCE_DIR}/include/fortran_interface.h")
 set(GENERATED_FILES
     ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
     )
-endif()
 add_custom_target(dirac_interfaces
     ALL
     DEPENDS
