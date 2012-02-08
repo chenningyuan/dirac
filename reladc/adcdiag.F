@@ -35,6 +35,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT INTEGER (A-Z)
 
       REAL*8 CC(*)
+      LOGICAL DOINCORE
       INTEGER KFREE,LFREE
       INTEGER INFOHANDLE
       INTEGER IW
