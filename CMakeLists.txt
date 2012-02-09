@@ -220,10 +220,10 @@ add_library(
     ${GENERATED_FILES} 
     )
 
-# get size of static allocations in dirac.x
+# get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/get_static_size.py dirac.x
     )
 
 # get size of static allocations in dirac.x and print sorted list of object 
