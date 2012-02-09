@@ -1,4 +1,18 @@
 execute_process(
+    COMMAND whoami
+    TIMEOUT 1
+    OUTPUT_VARIABLE USER_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+    COMMAND hostname
+    TIMEOUT 1
+    OUTPUT_VARIABLE HOST_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
     COMMAND python ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_compiler_version.py ${CMAKE_Fortran_COMPILER}
     TIMEOUT 1
     OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
