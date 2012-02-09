@@ -36,7 +36,7 @@ if(ENABLE_MPI)
             if(NOT MPI_ITYPE_MATCHES)
                 if(ENABLE_64BIT_INTEGERS)
                     message("-- No 64-bit integer MPI interface found, will use 32-bit integer MPI interface")
-                    add_definitions(-DVAR_MPI_32bit_int)
+                    add_definitions(-DVAR_MPI_32BIT_INT)
                 else()
                     message(
                         FATAL_ERROR
@@ -49,7 +49,7 @@ if(ENABLE_MPI)
         if(ENABLE_32BIT_MPI_INTERFACE)
             if(ENABLE_64BIT_INTEGERS)
                 message("-- 32-bit integer MPI interface activated by the user")
-                add_definitions(-DVAR_MPI_32bit_int)
+                add_definitions(-DVAR_MPI_32BIT_INT)
             endif()
         endif()
 
