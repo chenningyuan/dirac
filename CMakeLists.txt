@@ -16,6 +16,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated
+    ${CMAKE_SOURCE_DIR}/cmake/architecture
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     )
 
@@ -105,12 +106,12 @@ if(ENABLE_MATLAB_LOG)
     add_definitions(-DMOD_MATLAB_LOG)
 endif()
 
-include(Testing)
+include(ConfigTesting)
 include(Definitions)
-include(Archs)
+include(ConfigArchitecture)
 include(SaveCompilerFlags)
 include(ConfigCompilerFlags)
-include(ConfigureParallelEnvironment)
+include(ConfigParallelEnvironment)
 
 set(LIBS)
 
