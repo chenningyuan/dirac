@@ -226,12 +226,6 @@ add_custom_target(
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/get_static_size.py dirac.x
     )
 
-# get size of static allocations in dirac.x and print sorted list of object 
-add_custom_target(
-    info_ext
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
-)
-
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
     add_executable(
