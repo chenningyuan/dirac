@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated
     ${CMAKE_SOURCE_DIR}/cmake/architecture
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
+    ${CMAKE_SOURCE_DIR}/cmake/configuration-info
     )
 
 
@@ -85,10 +86,10 @@ if(ENABLE_STATIC_LINKING)
     endif()
 endif()
 
-option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
-option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
-mark_as_advanced(FORCE_DIRAC_BLAS)
-mark_as_advanced(FORCE_DIRAC_LAPACK)
+option(FORCE_OWN_BLAS   "Force use of DIRAC BLAS"   OFF)
+option(FORCE_OWN_LAPACK "Force use of DIRAC LAPACK" OFF)
+mark_as_advanced(FORCE_OWN_BLAS)
+mark_as_advanced(FORCE_OWN_LAPACK)
 
 # set work memory
 set(WORK_MEM_WORDS
@@ -116,11 +117,11 @@ include(ConfigParallelEnvironment)
 set(LIBS)
 
 include(Math)
-if(NOT BLAS_FOUND OR FORCE_DIRAC_BLAS)
+if(NOT BLAS_FOUND OR FORCE_OWN_BLAS)
     message("-- Using own BLAS library (slow)")
     add_definitions(-DUSE_DIRAC_BLAS)
 endif()
-if(NOT LAPACK_FOUND OR FORCE_DIRAC_LAPACK)
+if(NOT LAPACK_FOUND OR FORCE_OWN_LAPACK)
     message("-- Using own LAPACK library (slow)")
     add_definitions(-DUSE_DIRAC_DLAMCH)
     add_definitions(-DUSE_DIRAC_DLAPACK)
@@ -176,8 +177,8 @@ set(LIBS
     ${LIBS}
     )
 
-include(CompilationInfo)
 include(ConfigGitRevision)
+include(ConfigInfo)
 
 configure_file(
     ${PROJECT_SOURCE_DIR}/config.h.in
@@ -292,5 +293,4 @@ endif()
 
 include(Install)
 include(Release)
-include(Report)
 include(Documentation)
