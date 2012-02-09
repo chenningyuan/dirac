@@ -16,9 +16,9 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated
+    ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     )
 
-include(CheckFortranSourceCompiles)
 
 # for windows need substitute (type)
 set(cat_program cat)
@@ -110,7 +110,7 @@ include(Definitions)
 include(Archs)
 include(SaveCompilerFlags)
 include(ConfigCompilerFlags)
-include(Parallel)
+include(ConfigureParallelEnvironment)
 
 set(LIBS)
 

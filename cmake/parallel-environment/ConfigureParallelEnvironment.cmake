@@ -1,3 +1,5 @@
+include(CheckFortranSourceCompiles)
+
 if(ENABLE_MPI)
     find_package(MPI)
     if(MPI_FOUND)
@@ -9,7 +11,7 @@ if(ENABLE_MPI)
             # test whether MPI module is compatible with compiler
             exec_program(
                 ${cat_program}
-                ARGS ${CMAKE_SOURCE_DIR}/cmake/test-MPI-compiler-compatibility.F90
+                ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F90
                 OUTPUT_VARIABLE _source
                 )
             check_fortran_source_compiles(
@@ -26,7 +28,7 @@ if(ENABLE_MPI)
             # test whether MPI integer type matches
             exec_program(
                 ${cat_program}
-                ARGS ${CMAKE_SOURCE_DIR}/cmake/test-MPI-itype-compatibility.F90
+                ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F90
                 OUTPUT_VARIABLE _source
                 )
             check_fortran_source_compiles(
@@ -40,7 +42,7 @@ if(ENABLE_MPI)
                 else()
                     message(
                         FATAL_ERROR
-                        "ERROR: You want to compile DIRAC with 32bit integers but your MPI is built with 64bit integers (consult the manual; if you know what you are doing you can disable this check using ./setup --nochecks)"
+                        "ERROR: You want to compile with 32bit integers but your MPI is built with 64bit integers (consult the manual; if you know what you are doing you can disable this check using ./setup --nochecks)"
                         )
                 endif()
             endif()
@@ -57,7 +59,7 @@ if(ENABLE_MPI)
             # test whether MPI-2 is available
             exec_program(
                 ${cat_program}
-                ARGS ${CMAKE_SOURCE_DIR}/cmake/test-MPI-2-compatibility.F90
+                ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F90
                 OUTPUT_VARIABLE _source
                 )
             check_fortran_source_compiles(
