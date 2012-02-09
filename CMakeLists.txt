@@ -47,7 +47,7 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-#miro: extract username@hostname 
+#miro: extract username@hostname
 #FYI: $ENV{USER} is not working on all machines from crontab, prefered Linux command 'whoami`
 execute_process(
     COMMAND whoami
@@ -215,9 +215,9 @@ set(DIRAC_SOURCES
     )
 
 add_library(
-    dirac 
-    ${DIRAC_SOURCES} 
-    ${GENERATED_FILES} 
+    dirac
+    ${DIRAC_SOURCES}
+    ${GENERATED_FILES}
     )
 
 # get size of static allocations
@@ -285,6 +285,15 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-include(Install)
-include(Release)
-include(Documentation)
+include(ConfigPackaging)
+
+add_custom_target(
+    html
+    COMMAND sphinx-build -b html -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/html
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
+add_custom_target(
+    latex
+    COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/latex
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
