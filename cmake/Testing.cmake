@@ -7,7 +7,7 @@ set(BUILDNAME
 
 # set ctest's own timeout in secs
 #miro: "DART_TESTING_TIMEOUT" is uncorrectly terminating (not killing all process threads)
-# therefore I prefer huge value of this parameter, DART_TESTING_TIMEOUT=99999, 
+# therefore I prefer huge value of this parameter, DART_TESTING_TIMEOUT=99999,
 # and proper pam's initiated killing
 set(DART_TESTING_TIMEOUT
     "600"
