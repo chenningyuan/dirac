@@ -83,6 +83,7 @@ C     ***   = \sum_{u} D^V_{vu} F^C_{pu} + F^Q_{pv} *****
 C     ***************************************************
 C
 C
+!     IF (.NOT.NOFV) CALL DZERO(FPV,NORBT * NASHT * NZ)
       IF (.NOT.NOFV) CALL FGEN_PV(FC,FQX,DV,FPV,IPQ,IPRINT)
 C
  9000 FORMAT(' Orbital trial vector: ',L1)
@@ -261,6 +262,7 @@ C
          FAC = D0
       ELSE
          FAC = D1
+!        CALL DZERO(FQ,NORBT * NASHT * NZ)
          CALL DCOPY(NORBT * NASHT * NZ, FQ, 1, FGEN, 1)
       END IF
 C
