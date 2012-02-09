@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-#miro: to suppress Windows warning about policy...
+# suppress Windows warning about policy
 cmake_policy(SET CMP0010 OLD)
 
 project(DIRAC Fortran C)
 add_definitions(-DPRG_DIRAC)
-
 
 # set version
 set(VERSION_MAJOR 11)
@@ -21,14 +20,12 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/binary-info
     )
 
-
 # for windows need substitute (type)
 set(cat_program cat)
 
 include(ConfigSafeGuards)
 
 # do not rebuild if rules (compiler flags) change
-# this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # check whether pamadm-generated files exist
@@ -81,9 +78,6 @@ option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"             
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-    if (ENABLE_MPI OR ENABLE_OMP)
-        message("Static linking in parallel mode - experimental feature. ")
-    endif()
 endif()
 
 option(FORCE_OWN_BLAS   "Force use of DIRAC BLAS"   OFF)
@@ -265,9 +259,8 @@ foreach(
         )
 endforeach()
 
-#miro: fix of static buildup with gfortran+blas&lapack/ATLAS
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND NOT ENABLE_INTERNAL_MATH)
-    #miro: Only newer versions of GNU-linkers have this flag ! Check "ld --help"
+    # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
     message("-- static executable buildup with gfortran+usr-library: added --no-export-dynamic linking flag, not working for gfortran44")
     target_link_libraries(dirac.x -Wl,--no-export-dynamic)
