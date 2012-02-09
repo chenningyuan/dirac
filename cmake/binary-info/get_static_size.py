@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 
-import subprocess, sys
+import subprocess
+import sys
+import os
 
 binary = sys.argv[1]
+
+if not os.path.isfile(binary):
+    print('binary does not exist')
+    sys.exit()
 
 command = "size %s 2> /dev/null | grep dirac.x" % binary
 process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)

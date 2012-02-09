@@ -1,12 +1,12 @@
 execute_process(
-    COMMAND python ${CMAKE_SOURCE_DIR}/cmake/configuration-info/get_compiler_version.py ${CMAKE_Fortran_COMPILER}
+    COMMAND python ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_compiler_version.py ${CMAKE_Fortran_COMPILER}
     TIMEOUT 1
     OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 execute_process(
-    COMMAND python ${CMAKE_SOURCE_DIR}/cmake/configuration-info/get_compiler_version.py ${CMAKE_C_COMPILER}
+    COMMAND python ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_compiler_version.py ${CMAKE_C_COMPILER}
     TIMEOUT 1
     OUTPUT_VARIABLE C_COMPILER_VERSION
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -14,7 +14,7 @@ execute_process(
 )
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/configuration-info/compilation_info.py.in
+    ${CMAKE_SOURCE_DIR}/cmake/binary-info/compilation_info.py.in
     ${CMAKE_BINARY_DIR}/compilation_info.py
     )
 execute_process(

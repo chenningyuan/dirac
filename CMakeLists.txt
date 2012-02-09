@@ -18,7 +18,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated
     ${CMAKE_SOURCE_DIR}/cmake/architecture
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
-    ${CMAKE_SOURCE_DIR}/cmake/configuration-info
+    ${CMAKE_SOURCE_DIR}/cmake/binary-info
     )
 
 
@@ -223,7 +223,7 @@ add_library(
 # get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/get_static_size.py dirac.x
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dirac.x
     )
 
 set(LIST_OF_EXECUTABLES)
