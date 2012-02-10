@@ -1,3 +1,5 @@
+include(ConfigGitRevision)
+
 execute_process(
     COMMAND whoami
     TIMEOUT 1

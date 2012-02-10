@@ -155,7 +155,6 @@ set(LIBS
     ${LIBS}
     )
 
-include(ConfigGitRevision)
 include(ConfigInfo)
 
 # copy pam to build dir as pam and pam-dirac
