@@ -11,9 +11,7 @@ export PATH=/home/ilias/bin/openmpi_i32lp64_static/bin:$PATH
 export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib:$LD_LIBRARY_PATH
 
 # the directory where your DIRAC sits
-DIRAC=/home/ilias/Work/qch/qch_software/dirac/dirac-git-repo
-#BUILD=build_gfortran_gcc_ownlibs_ILP64_cdash
-#BUILD=build_g95_gcc_ownlibs_ILP64_cdash
+DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 BUILD=build_ompi_static
 
 # go to the local DIRAC directory
