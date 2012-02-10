@@ -7,7 +7,7 @@
 !
 ! $Id$
 !
-#ifdef USE_DIRAC_DLAPACK
+#ifdef USE_OWN_DLAPACK
       SUBROUTINE DBDSDC( UPLO, COMPQ, N, D, E, U, LDU, VT, LDVT, Q, IQ,
      $                   WORK, IWORK, INFO )
 *

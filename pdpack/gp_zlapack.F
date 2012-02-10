@@ -7,7 +7,7 @@
 !
 ! $Id$
 !
-#ifdef USE_DIRAC_ZLAPACK
+#ifdef USE_OWN_ZLAPACK
       SUBROUTINE ZBDSQR( UPLO, N, NCVT, NRU, NCC, D, E, VT, LDVT, U,
      $                   LDU, C, LDC, RWORK, INFO )
 *

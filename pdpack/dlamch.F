@@ -5,7 +5,7 @@ C     without optimization (ifort, gfortran and more),
 C     otherwise the function will hang forever for certain CMACH.
 C     ulfek June 2008 
 C
-#ifdef USE_DIRAC_DLAMCH
+#ifdef USE_OWN_DLAMCH
       DOUBLE PRECISION FUNCTION DLAMCH( CMACH )
 *
 *  -- LAPACK auxiliary routine (version 3.0) --
