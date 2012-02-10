@@ -30,13 +30,13 @@ execute_process(
 )
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/binary-info/compilation_info.py.in
-    ${CMAKE_BINARY_DIR}/compilation_info.py
+    ${CMAKE_SOURCE_DIR}/cmake/binary-info/binary_info.py.in
+    ${CMAKE_BINARY_DIR}/binary_info.py
     )
 execute_process(
-    COMMAND python ${CMAKE_BINARY_DIR}/compilation_info.py
+    COMMAND python ${CMAKE_BINARY_DIR}/binary_info.py
     TIMEOUT 1
-    OUTPUT_FILE ${CMAKE_SOURCE_DIR}/gp/compilation_info.F90
+    OUTPUT_FILE ${CMAKE_SOURCE_DIR}/gp/binary_info.F90
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -44,7 +44,7 @@ execute_process(
 if(VERBOSE_OUTPUT)
     # get compilation info to cmake output
     execute_process(
-        COMMAND python ${CMAKE_BINARY_DIR}/compilation_info.py
+        COMMAND python ${CMAKE_BINARY_DIR}/binary_info.py
         TIMEOUT 1
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         OUTPUT_STRIP_TRAILING_WHITESPACE

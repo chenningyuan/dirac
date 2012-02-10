@@ -140,11 +140,11 @@ program dirprg
 
      write(lupri, *)
      write(lupri, *)
-     write(lupri, '(a)') 'Compilation info'
-     write(lupri, '(a)') '----------------'
+     write(lupri, '(a)') 'Binary information'
+     write(lupri, '(a)') '------------------'
      write(lupri, *)
 
-     call print_compilation_info()
+     call print_binary_info()
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info

@@ -155,7 +155,7 @@ set(LIBS
     ${LIBS}
     )
 
-include(ConfigInfo)
+include(BinaryInfo)
 
 # copy pam to build dir as pam and pam-dirac
 configure_file(

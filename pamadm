@@ -511,10 +511,10 @@ for directory in directories_with_sources:
         # this is only important for "make release" it does not have to work on windows
         list_of_include_files.append(source)
 
-# add compilation_info.F90 unless
+# add binary_info.F90 unless
 # pamadm found them already
-if not 'gp/compilation_info.F90' in list_of_free_fortran_sources:
-    list_of_free_fortran_sources.append('gp/compilation_info.F90')
+if not 'gp/binary_info.F90' in list_of_free_fortran_sources:
+    list_of_free_fortran_sources.append('gp/binary_info.F90')
 
 list_of_c_sources = set(list_of_c_sources)
 list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))
