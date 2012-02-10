@@ -1542,6 +1542,31 @@ c        END IF
       END IF
 C
 C
+C   ------------- START TEST -------------
+C
+      CALL HEADER('Output from RADDFQ',-1)
+      WRITE(LUPRI,'(A,3I3)') ' NXY, IX, IY  = ',NXY,IX,IY
+      WRITE(LUPRI,'(A,3I3)') ' NORBT, NASHT = ',NORBT,NASHT
+      DO IZZ=1,NZ
+        DO I=1,3
+          WRITE(LUPRI,'(/A,I1,A,I1,$A)')' PV matrix(',IZZ,',',I,')'
+          CALL PMATTMP(LUPRI,PV(1,1,NXY,IZZ,I),NASHT,NASHT)
+        ENDDO
+      ENDDO
+      DO I=1,3
+        DO IZZ=1,NZ
+          WRITE(LUPRI,'(/A,I1,A,I1,$A)')' H2XY matrix(',IZZ,',',I,')'
+          CALL PMATTMP(LUPRI,H2XY(1,1,IZZ,I),NORBT,NASHT)
+        ENDDO
+      ENDDO
+!     DO IZZ=1,NZ
+!       WRITE(LUPRI,'(/A,I1,$A)')' FQ matrix(',IZZ,')'
+!       CALL PMATTMP(LUPRI,FQ(1,1,IZZ),NORBT,NASHT)
+!     ENDDO
+C
+C   ------------- END TEST -------------
+C
+C
 C     ***********************
 C     *** Real part of FQ ***
 C     ***********************
@@ -4432,3 +4457,57 @@ C
       RETURN
       END
 #endif
+C
+C &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+      SUBROUTINE PMATTMP(LUPRI,AMAT,NK,NL)
+      IMPLICIT NONE
+C
+      INTEGER, INTENT(IN) :: LUPRI, NK, NL
+      REAL*8,  INTENT(IN) :: AMAT(NK,NL)
+C
+      INTEGER :: K, L
+      REAL*8, ALLOCATABLE :: ATMP(:,:)
+      REAL*8 :: D0, THRTMP, DMAX
+C
+      D0 = 0.0D0
+      DMAX = D0
+      THRTMP = 1.0D-13
+      ALLOCATE(ATMP(NK,NL))
+C
+      
+      ! Check for zero
+      DO K=1,NK
+        DO L=1,NL
+          ATMP(K,L) = AMAT(K,L)
+          IF(DMAX < DABS(ATMP(K,L))) DMAX = DABS(ATMP(K,L))
+          IF(DABS(ATMP(K,L)) < THRTMP) ATMP(K,L) = D0
+        ENDDO
+      ENDDO
+      ! Print
+      IF(DMAX > THRTMP)THEN
+        ! First row
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,'($A)')'      '
+        DO L=1,NL
+          WRITE(LUPRI,'($A,I2,A)') '   Coulomn',L,'   '
+        ENDDO
+        WRITE(LUPRI,*)
+        ! Print matrix
+        DO K=1,NK
+          DMAX = D0
+          DO L=1,NL
+            IF(DMAX < DABS(ATMP(K,L))) DMAX = DABS(ATMP(K,L))
+          ENDDO
+          IF(DMAX > THRTMP)THEN
+             WRITE(LUPRI,'(3X,I2,6D15.7)')K,(ATMP(K,L),L=1,NL)
+          ENDIF
+        ENDDO
+      ELSE
+        WRITE(LUPRI,'(A)') ' --> Zero matrix.'
+      ENDIF
+C
+      DEALLOCATE(ATMP)
+C
+      END SUBROUTINE PMATTMP
