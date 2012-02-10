@@ -49,7 +49,7 @@ OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin
 cd $DIRAC
 # git checkout -b prepare-release-11 origin/prepare-release-11
 ./pamadm --release
-./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64-masterRELEASE" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
+./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC --mpi -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64-masterRELEASE" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build-dir=$BUILD
 cd $DIRAC/$BUILD
 #make dirac.x
 #make info_ext
