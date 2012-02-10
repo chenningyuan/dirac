@@ -3,6 +3,11 @@ set(MATH_LANG "Fortran")
 set(BLAS_FOUND   FALSE)
 set(LAPACK_FOUND FALSE)
 
+option(FORCE_OWN_BLAS   "Force use of own BLAS"   OFF)
+option(FORCE_OWN_LAPACK "Force use of own LAPACK" OFF)
+mark_as_advanced(FORCE_OWN_BLAS)
+mark_as_advanced(FORCE_OWN_LAPACK)
+
 if(NOT ENABLE_INTERNAL_MATH)
 
     # user sets
@@ -57,4 +62,15 @@ if(NOT ENABLE_INTERNAL_MATH)
             message("-- No external LAPACK library found")
         endif()
     endif()
+endif()
+
+if(NOT BLAS_FOUND OR FORCE_OWN_BLAS)
+    message("-- Using own BLAS library (slow)")
+    add_definitions(-DUSE_DIRAC_BLAS)
+endif()
+if(NOT LAPACK_FOUND OR FORCE_OWN_LAPACK)
+    message("-- Using own LAPACK library (slow)")
+    add_definitions(-DUSE_DIRAC_DLAMCH)
+    add_definitions(-DUSE_DIRAC_DLAPACK)
+    add_definitions(-DUSE_DIRAC_ZLAPACK)
 endif()

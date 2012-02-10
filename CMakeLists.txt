@@ -66,11 +66,6 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
-option(FORCE_OWN_BLAS   "Force use of DIRAC BLAS"   OFF)
-option(FORCE_OWN_LAPACK "Force use of DIRAC LAPACK" OFF)
-mark_as_advanced(FORCE_OWN_BLAS)
-mark_as_advanced(FORCE_OWN_LAPACK)
-
 # set work memory
 set(WORK_MEM_WORDS
     "64000000"
@@ -97,16 +92,6 @@ include(ConfigParallelEnvironment)
 set(LIBS)
 
 include(Math)
-if(NOT BLAS_FOUND OR FORCE_OWN_BLAS)
-    message("-- Using own BLAS library (slow)")
-    add_definitions(-DUSE_DIRAC_BLAS)
-endif()
-if(NOT LAPACK_FOUND OR FORCE_OWN_LAPACK)
-    message("-- Using own LAPACK library (slow)")
-    add_definitions(-DUSE_DIRAC_DLAMCH)
-    add_definitions(-DUSE_DIRAC_DLAPACK)
-    add_definitions(-DUSE_DIRAC_ZLAPACK)
-endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
