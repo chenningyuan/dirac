@@ -189,7 +189,7 @@ def gen_cmake_command():
         command += ' %s' % args.alternative_cmake
     else:
         command += ' cmake'
-    
+
     if args.int64:
         command += ' -DENABLE_64BIT_INTEGERS=ON'
 
@@ -372,4 +372,3 @@ configure_osx = configure_default_compilers
 
 if __name__ == '__main__':
     main()
-
