@@ -41,7 +41,7 @@ contains
 
   subroutine determine_integer_model_in_mpi
 
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
   integer_kind_in_mpi = 4
 #else
   integer_kind_in_mpi = sizeof(MPI_INTEGER)
