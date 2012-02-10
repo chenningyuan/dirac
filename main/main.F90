@@ -41,7 +41,6 @@ program dirprg
 #endif
 
   implicit none
-#include "config.h"
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
@@ -146,7 +145,6 @@ program dirprg
      write(lupri, *)
 
      call print_compilation_info()
-     print *, 'Git revision             | ', GIT_REVISION
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info

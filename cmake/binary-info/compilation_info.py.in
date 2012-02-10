@@ -26,11 +26,11 @@ if '@CMAKE_BUILD_TYPE@' == 'Debug':
 elif '@CMAKE_BUILD_TYPE@' == 'Release':
     s.append(['C flags', r'@CMAKE_C_FLAGS@ @CMAKE_C_FLAGS_RELEASE@'])
 
-s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
-s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
-s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
-
-s.append(['static libraries linking', r'@ENABLE_STATIC_LINKING@'      ])
+s.append(['BLAS'             , r'@BLAS_LIBRARIES@'       ])
+s.append(['LAPACK'           , r'@LAPACK_LIBRARIES@'     ])
+s.append(['User-defined math', r'@USERDEFINED_MATH@'     ])
+s.append(['Static linking'   , r'@ENABLE_STATIC_LINKING@'])
+s.append(['Last Git revision', r'@GIT_REVISION@'         ])
 
 output  = ''
 output += 'subroutine print_compilation_info()\n'

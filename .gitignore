@@ -6,7 +6,6 @@ maintenance/delete_flags
 DFCOEF
 PAMXVC
 gp/compilation_info.F90
-main/config.h
 basis_dalton/*\*
 build*/*
 cmake/Definitions.cmake
