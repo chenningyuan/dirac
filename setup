@@ -47,11 +47,11 @@ group.add_option('--cxx',
         default=None,
         help='set the C++ compiler [default: pick automatically or based on CXX=...]',
         metavar='STRING')
-group.add_option('--enable-mpi',
+group.add_option('--mpi',
         action='store_true',
         default=False,
         help='build using MPI parallelization [default: %default]')
-group.add_option('--enable-openmp',
+group.add_option('--openmp',
         action='store_true',
         default=False,
         help='enable OpenMP [default: %default]')
@@ -194,12 +194,12 @@ def gen_cmake_command():
     if args.fc and (os.path.basename(args.fc)[:2].lower() == 'mp'):
         # if fc starts with 'mp' turn on mpi
         # it is possible to call compilers with long paths
-            args.enable_mpi = True
+            args.mpi = True
 
-    if args.enable_mpi:
+    if args.mpi:
         command += ' -DENABLE_MPI=ON'
 
-    if args.enable_openmp:
+    if args.openmp:
         command += ' -DENABLE_OPENMP=ON'
 
     if args.internal_math:
@@ -351,7 +351,7 @@ def configure_default_compilers():
         args.cxx = 'g++'
     if not args.fc:
         args.fc = 'gfortran'
-    if args.enable_mpi:
+    if args.mpi:
         args.fc = 'mpif90'
         args.cc = 'mpicc'
         args.cxx = 'mpicxx'
