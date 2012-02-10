@@ -18,6 +18,8 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/architecture
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     ${CMAKE_SOURCE_DIR}/cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/cmake/packaging
+    ${CMAKE_SOURCE_DIR}/cmake/testing
     )
 
 # for windows need substitute (type)
