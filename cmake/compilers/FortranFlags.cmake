@@ -27,7 +27,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     endif()
     if(ENABLE_PROFILING)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -fprofile"
+            "${CMAKE_Fortran_FLAGS} -pg"
             )
     endif()
 endif()
