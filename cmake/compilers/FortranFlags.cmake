@@ -25,6 +25,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -ftest-coverage"
             )
     endif()
+    if(ENABLE_PROFILING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -fprofile"
+            )
+    endif()
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
@@ -48,6 +53,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -ftrapuv"
+            )
+    endif()
+    if(ENABLE_PROFILING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -p"
             )
     endif()
 
