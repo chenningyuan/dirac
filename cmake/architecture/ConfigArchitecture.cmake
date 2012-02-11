@@ -36,6 +36,5 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-     add_definitions(-DSYS_WINDOWS)
+    add_definitions(-DSYS_WINDOWS)
 endif()
-
