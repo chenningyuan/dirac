@@ -57,7 +57,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
     if(ENABLE_PROFILING)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -p"
+            "${CMAKE_Fortran_FLAGS} -pg"
             )
     endif()
 
