@@ -252,3 +252,10 @@ add_custom_target(
     COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/latex
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
+
+# run pamadm -a in source root
+add_custom_target(
+    adm
+    COMMAND python pamadm -a
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
