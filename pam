@@ -1502,9 +1502,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             p.wait()
             self.f.close()
         else:
-            print
-            print 'no gmon.out file found, no profiling..'
-            print
+            print_std_out_err('pam - self.profiling_file='+self.profiling_file)
+            print_std_out_err('pam - can not perform profiling, missing profiling core...did you set profiling flag ??? ')
 
     def save_files(self):
         "save files in various manners from the scratch directory"
@@ -1650,6 +1649,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 ' seconds. Killing afterwards.'
         elif self.set_timeout_limit and is_windows():
            print '--timeout not (yet) working for Windows !'
+
+        if self.profile:
+           print '  You want profiling - check that you have proper linking flag and assigned profiler.'
+           if not os.path.isfile(str(find_executable(self.profiler))):
+               print_std_out_err('You fool - your profiler not found:'+self.profiler)
+               sys.exit(19)
+
         print
 
         # add few consistency checks
