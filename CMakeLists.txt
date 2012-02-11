@@ -92,6 +92,13 @@ set(LIBS)
 
 include(Math)
 
+# refresh setting ENABLE_INTERNAL_MATH if both BLAS & LAPACK found/forced in generic
+# Math #
+if((NOT BLAS_FOUND OR FORCE_OWN_BLAS) AND (NOT LAPACK_FOUND OR
+FORCE_OWN_LAPACK))
+     set(ENABLE_INTERNAL_MATH ON)
+endif()
+
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
 endif()
