@@ -115,6 +115,10 @@ group.add_option('--coverage',
         action='store_true',
         default=False,
         help='enable code coverage [default: %default]')
+group.add_option('--profiling',
+        action='store_true',
+        default=False,
+        help='enable profiling [default: %default]')
 group.add_option('--nochecks',
         action='store_true',
         default=False,
@@ -222,6 +226,9 @@ def gen_cmake_command():
 
     if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
+
+    if args.profiling:
+        command += ' -DENABLE_PROFILING=ON'
 
     if args.nochecks:
         command += ' -DENABLE_SANITY_CHECKS=OFF'
