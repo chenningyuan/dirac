@@ -39,6 +39,8 @@ and testing the entire DIRAC suite.
 
 We give here few examples of the crontab prescrition of buildup on various servers.
 
-pd.uniza.sk:
-05 00 * * 1,2,3,4,5,6,7 DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup -DVERBOSE_OUTPUT=ON --int64 --debug; cd build; make Experimental
+05 00 * * 1,3,5,7  DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup -DVERBOSE_OUTPUT=ON --int64 -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:40:00" -D BUILDNAME="pd buildup"; cd build; make Experimental
+
+05 00 * * 2,4,6 export PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin:$PATH; export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/lib:$LD_LIBRARY_PATH; DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup -DVERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00"; cd build; make Experimental
+
 
