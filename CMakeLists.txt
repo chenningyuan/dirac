@@ -22,9 +22,6 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/testing
     )
 
-# for windows need substitute (type)
-set(cat_program cat)
-
 include(ConfigSafeGuards)
 
 # do not rebuild if rules (compiler flags) change

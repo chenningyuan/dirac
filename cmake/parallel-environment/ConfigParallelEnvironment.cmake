@@ -10,7 +10,7 @@ if(ENABLE_MPI)
         if(ENABLE_SANITY_CHECKS)
             # test whether MPI module is compatible with compiler
             exec_program(
-                ${cat_program}
+                cat
                 ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F90
                 OUTPUT_VARIABLE _source
                 )
@@ -27,7 +27,7 @@ if(ENABLE_MPI)
 
             # test whether MPI integer type matches
             exec_program(
-                ${cat_program}
+                cat
                 ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F90
                 OUTPUT_VARIABLE _source
                 )
@@ -58,7 +58,7 @@ if(ENABLE_MPI)
         if(ENABLE_MPI2_DETECTION)
             # test whether MPI-2 is available
             exec_program(
-                ${cat_program}
+                cat
                 ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F90
                 OUTPUT_VARIABLE _source
                 )
