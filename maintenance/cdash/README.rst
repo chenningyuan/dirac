@@ -29,3 +29,16 @@ you can regenerate the full cmake/Tests.cmake.
 
 Once "make Experimental" works you can create a script to run "make Nightly".
 To get inspired have a look at the cdash example recipes in the repository.
+
+
+  Setting effective automatic buildup and tests
+  ----------------------------------------------
+
+It is recommended to use "git clone" scheme for repetitive downloading, building up 
+and testing the entire DIRAC suite.
+
+We give here few examples of the crontab prescrition of buildup on various servers.
+
+pd.uniza.sk:
+05 00 * * 1,2,3,4,5,6,7 DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup -DVERBOSE_OUTPUT=ON --int64 --debug; cd build; make Experimental
+
