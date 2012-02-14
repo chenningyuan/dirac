@@ -58,7 +58,7 @@ SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
     )
 
 include(CPack)
-include(IncludeFiles)
+include(IncludeFilesList)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release

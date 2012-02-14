@@ -1,1 +1,4 @@
-*.cmake
+DefinitionsList.cmake
+IncludeFilesList.cmake
+SourcesList.cmake
+TestsList.cmake

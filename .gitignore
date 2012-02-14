@@ -8,10 +8,6 @@ PAMXVC
 gp/binary_info.F90
 basis_dalton/*\*
 build*/*
-cmake/Definitions.cmake
-cmake/Sources.cmake
-cmake/Tests.cmake
-cmake/IncludeFiles.cmake
 dirac.x
 include/fortran_interface.h
 pamq.py

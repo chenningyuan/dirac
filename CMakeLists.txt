@@ -28,10 +28,10 @@ include(ConfigSafeGuards)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # check whether pamadm-generated files exist
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Sources.cmake"      AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Definitions.cmake"  AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFiles.cmake" AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Tests.cmake")
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/SourcesList.cmake"      AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/DefinitionsList.cmake"  AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake")
 else()
     # they do not exist: run pamadm -a
     execute_process(
@@ -80,7 +80,7 @@ if(ENABLE_MATLAB_LOG)
 endif()
 
 include(ConfigTesting)
-include(Definitions)
+include(DefinitionsList)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigParallelEnvironment)
@@ -161,7 +161,7 @@ add_custom_target(dirac_interfaces
     ${GENERATED_FILES}
 )
 
-include(Sources)
+include(SourcesList)
 
 set(DIRAC_SOURCES
     ${C_SOURCES}
