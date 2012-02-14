@@ -7,6 +7,6 @@ CBS  the old DALTON Normalisation..
       parameter (Lmax_occ=3)   ! highest L-value for occupied orbitals                     
       parameter (MxprimL=35) ! max. of primitives per angular momentum
       parameter (MxcontL=35) ! max. of contracted functions per angular momentum
-      parameter (MxCart=320) ! max. number of contracted functions in the atom
+      parameter (MxCart=360) ! max. number of contracted functions in the atom
 
       parameter (ndfmx=4*Lmax+4) ! dimension of precomputed double factorials     
