@@ -138,16 +138,13 @@ program dirprg
      call printsubtitle
      call flush(lupri)
 
-!radovan: this solution is not portable
-!         there are machines where linking fails
-!         deactivate this until i understand the reason
-!    write(lupri, *)
-!    write(lupri, *)
-!    write(lupri, '(a)') 'Binary information'
-!    write(lupri, '(a)') '------------------'
-!    write(lupri, *)
+     write(lupri, *)
+     write(lupri, *)
+     write(lupri, '(a)') 'Binary information'
+     write(lupri, '(a)') '------------------'
+     write(lupri, *)
 
-!    call print_binary_info()
+     call print_binary_info()
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
