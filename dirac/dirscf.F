@@ -5180,7 +5180,6 @@ C.......Read atomic coefficients in C1 format
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
         READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
-C.......add test fro NSYM
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5198,21 +5197,23 @@ C.......add test fro NSYM
         NACMO  = NBAS*NAORB
         NACMOQ = NACMO*4
         NADEN  = NBAS*NBAS*4
+C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET('REAL',KADE,NADEN ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KCMO,NACMOQ,WORK,KFREE,LFREE)
         CALL READT(LUATOM,NACMOQ,WORK(KCMO))
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
-!       NDIM=MAX(NAORB,NBAS)+1
-!       radovan i think the above should rather be:
-        NDIM=MAX(NAORB,NBAS)+1
+        NDIM=MAX(NAORB+1,NBAS)
         CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
         FAC = D0
         DO ISHELL = 1,NVECATOM(IATOM)
+C.........starting from orbital string VECATOM return index array WORK(KVEC) of selected orbitals
           NSEL=1
           CALL NUMLS1(VECATOM(ISHELL,IATOM),WORK(KVEC),
      &        NAORB,-NNEG,NPOS,NSEL,WORK(KIBUF))
+C.........count number NPVEC and NEVEC of negative- and positive-energy orbitals, respectively
           CALL ORBCNT(WORK(KVEC),NSEL,NNEG,NPOS,NPVEC,NEVEC)
+C.........extract selected vectors from CMO and place in CBUF
           CALL MEMGET('REAL',KCBUF,NBAS*NSEL*4,WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
           CALL SELOWC(4,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
@@ -5222,15 +5223,18 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
             WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
      &                NZ,IPQTOQ(1,0),LUPRI)
-           WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
      &                NZ,IPQTOQ(1,0),LUPRI)
-         ENDIF
-         CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
+          ENDIF
+C.........Generate contribution to atomic density matrix from this shell
+          CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
      &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
-CTROND         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
-CTROND         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
-CTROND     &              4,IPQTOQ(1,0),LUPRI)
+          IF(IPRINT.GE.4) THEN
+            WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
+            CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
+     &                 4,IPQTOQ(1,0),LUPRI)
+          ENDIF
           FAC = D1
           CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO
@@ -5249,25 +5253,36 @@ C.......Release memory
 C
       IF(NBSYM.EQ.1) THEN
         CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
-        IF(IPRINT.GE.4) THEN
-          WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-          CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &               NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
       ELSE
+C.......transform atomic start to actual symmetry
         CALL DZERO(DMAT,NDMAT)
         IREP = 0
         IOFF = 0
         NOFF = NTBAS(0)*NTBAS(0)
         DO IZ = 1,4
            IREPD = IRQMAT(IZ,IREP)
-           IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+           IQ    = IQMULT(1,JQBAS(IREPD,1),IZ)
            IPQ   = IQTOPQ(IQ,IREP)
+CTROND
+           WRITE(6,*) 'TEST..',IREPD,IQ,IPQ
+           WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+           CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,0),LUPRI)
            CALL DTAOSO(WORK(KDBUF+IOFF),DMAT(1,1,IPQ),NTBAS(0),
      &                 IREPD,IPRINT)
            IOFF = IOFF + NOFF
         ENDDO
+        DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           CALL Q2BPHASE('D',IQ,1,DMAT(1,1,IZ))
+        ENDDO
       ENDIF
+CTROND      IF(IPRINT.GE.4) THEN
+        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,0),LUPRI)
+CTROND      ENDIF
+      CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
