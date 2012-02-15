@@ -25,6 +25,8 @@
 !  /* Deck oneprm */
       MODULE VC_GRID
 
+      implicit none
+
       PRIVATE
 
       public emb_vc
@@ -105,7 +107,6 @@
 !     Needed to make contact with F77.
 !     JHS DMAT is in MO basis. Transformations needed.
 
-      IMPLICIT NONE
 #include "priunit.h"
 #include "maxaqn.h"
 #include "ccom.h"
@@ -116,9 +117,6 @@
       REAL(KIND=8) :: DMAT(*)
       REAL(KIND=8) :: WORK(*)
       INTEGER :: LWORK
-
-!     JHS MAKE LATER OPTIONAL
-      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
       
       IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
 
@@ -133,7 +131,6 @@
       SUBROUTINE ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
 !     Driver routine that loops over the primitive orbitals and
 !     calls VC_PRIM.
-      IMPLICIT NONE
 
 #include "priunit.h"
 #include "pi.h"
@@ -163,7 +160,6 @@
       INTEGER :: ipoint, i,j,k,l
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
 
-!      REAL(KIND=8) :: CORA(3),CORB(3)
       REAL(KIND=8),ALLOCATABLE :: ADER(:,:,:)
 !     Contains the coulomb integrals for one set of primitive orbitals.
 
@@ -174,7 +170,6 @@
 
 #include "cbisol.h"
 #include "shells.h"
-!#include "inforb.h"
 #include "onecom.h"
 #include "primit.h"
 #include "symind.h"
@@ -293,13 +288,6 @@
              WRITE (LUPRI,'(A,2F12.6)') ' CORAZ    ', CORAZ, CORBZ
              WRITE (LUPRI,'(A,2I10)') ' IDEN   ',IDENA,IDENB           
          END IF
-!
-!        Initialization for nuclear attraction integrals
-!
-         JMAX = NHKTAB - 2
-         ISTEPU = JMAX + 1
-         ISTEPV = ISTEPU*ISTEPU
-         NAHGTF = ISTEPU*ISTEPV
 
          ALLOCATE(ADER(KCKTA,KCKTB,SIZE(points,2)))
 !        Contains ader for one gridpoint in SO basis.
@@ -385,7 +373,6 @@
 !     Routine for calcuating electrostatic potential from nuclei in points
 !     provided by array points
       USE VECTOR_FUN, ONLY: NORM
-      IMPLICIT NONE
 #include "priunit.h"
 #include "mxcent.h"
 !     PASSED variables
@@ -413,7 +400,6 @@
      &     LWORK)
 !     Calculates the contribution for one primitive orbital set.
       USE VECTOR_FUN, ONLY: NORM
-      IMPLICIT NONE
 
 #include "priunit.h"
 #include "pi.h"
@@ -562,7 +548,6 @@
 
       SUBROUTINE VNUC(AHGTF,JMAX,PVAL,CP,FACINT,IPRINT)
       USE VECTOR_FUN, ONLY: NORM
-      IMPLICIT NONE
 !
 !     This subroutine calculates the R integrals as defined by
 !     McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
@@ -656,7 +641,6 @@
       SUBROUTINE CART_VC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,             &
      &                 ADER,AHGTF,IPRINT)
 !     TUH
-      IMPLICIT NONE
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -717,17 +701,21 @@
 !                                          880407  PRT
 !     Modified tuh 880819
 !
-#include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      PARAMETER (LUTEMP = 48, IREPO = 0)
       REAL(KIND=8) :: AO(:,:),SO(:,:)
 #include "csym1.h"
 #include "symmet.h"
 #include "symind.h"
-#include "ibtfun.h"
+
+      real(8) :: HKAB,THRESH
+      integer :: kb, mula, mulb, nhkta,nhktb, khkta,khktb
+      integer :: IMAT0,IPRINT
+      integer :: irep, indoff, na, nb, inda, indb, ind, indm
+      real(8) :: fac, rint
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
          WRITE (LUPRI, '(A, I5)') ' KB ', KB
@@ -742,13 +730,13 @@
 !        Loop over AOs which are of symmetry IREP in stabilizer MULA
 !
          DO NA = 1, KHKTA
-         IF (IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+         IF (iand(MULA,ieor(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
             DO NB = 1,KHKTB
-            IF (IBTAND(MULB,IBTXOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (iand(MULB,ieor(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
 !
 !              Weight and parity factor
 !
-               FAC = HKAB*PT(IBTAND(KB,IBTXOR(IREP,ISYMAO(NHKTB,NB))))
+               FAC = HKAB*PT(iand(KB,ieor(IREP,ISYMAO(NHKTB,NB))))
 !
 !              Locate SO integrals to which AO's contribute
 !
