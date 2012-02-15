@@ -76,34 +76,30 @@
 !     --------------------------------------------------------------------------
       logical                       :: nuc_part
       logical                       :: el_part
-      real(8)                       :: r_p(3,1),work(10000),vc(1)
-      integer                       :: iprint
-      logical                       :: lbit
+      integer, parameter            :: lwork = 10000
+      real(8)                       :: r_p(3,1), work(lwork), vc(1)
 !     --------------------------------------------------------------------------
 
-      vc = 0.0d0
-      esp = 0.0d0
-      iprint = 0
-      r_p(1,1) = px
-      r_p(2,1) = py
-      r_p(3,1) = pz
+      r_p(1, 1) = px
+      r_p(2, 1) = py
+      r_p(3, 1) = pz
 
       nuc_part = .true.
       if (present(include_nuc_part)) nuc_part = include_nuc_part
       el_part = .true.
       if (present(include_el_part)) el_part = include_el_part
 
+      vc = 0.0d0
       if (nuc_part) then
-         CALL ESP_NUC(r_p,vc,IPRINT)
+         call esp_nuc(r_p, vc, 0)
       end if
-
       if (el_part) then
-         CALL ESP_EL(DMAT,r_p,vc,WORK,10000,IPRINT)
+         call esp_el(dmat, r_p, vc, work, lwork, 0)
       end if
 
-      esp=vc(1)
+      esp = vc(1)
 
-      end subroutine
+   end subroutine
 
       SUBROUTINE EMB_VC(DMAT,points,vc,IPRINT,WORK,LWORK)
 !     Interface for the user. Calles LOOP_PRIM
