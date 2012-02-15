@@ -53,22 +53,32 @@
 
       CONTAINS
 
-      subroutine get_esp(esp,iopt, &
-                         irep,     &
-                         mat_dim,  &
-                         dmat,     &
-                         px, py, pz)
+      subroutine get_esp(esp,              &
+                         irep,             &
+                         mat_dim,          &
+                         dmat,             &
+                         px,               &
+                         py,               &
+                         pz,               &
+                         include_nuc_part, &
+                         include_el_part)
 
 !     --------------------------------------------------------------------------
-      real(8), intent(out) :: esp
-      integer, intent(in)  :: irep,iopt
-      integer, intent(in)  :: mat_dim
-      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-      real(8), intent(in)  :: px,py,pz
+      real(8), intent(out)          :: esp
+      integer, intent(in)           :: irep
+      integer, intent(in)           :: mat_dim
+      real(8), intent(in)           :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)           :: px
+      real(8), intent(in)           :: py
+      real(8), intent(in)           :: pz
+      logical, intent(in), optional :: include_nuc_part
+      logical, intent(in), optional :: include_el_part
 !     --------------------------------------------------------------------------
-      real(8)              :: r_p(3,1),work(10000),vc(1)
-      integer              :: iprint
-      logical              :: lbit
+      logical                       :: nuc_part
+      logical                       :: el_part
+      real(8)                       :: r_p(3,1),work(10000),vc(1)
+      integer                       :: iprint
+      logical                       :: lbit
 !     --------------------------------------------------------------------------
 
       esp = 0.0d0
@@ -76,8 +86,20 @@
       r_p(1,1) = px
       r_p(2,1) = py
       r_p(3,1) = pz
-      IF(LBIT(IOPT,1))CALL ESP_EL(DMAT,r_p,vc,WORK,10000,IPRINT)
-      IF(LBIT(IOPT,2))CALL ESP_NUC(r_p,vc,IPRINT)
+
+      nuc_part = .true.
+      if (present(include_nuc_part)) nuc_part = include_nuc_part
+      el_part = .true.
+      if (present(include_el_part)) el_part = include_el_part
+
+      if (nuc_part) then
+         CALL ESP_NUC(r_p,vc,IPRINT)
+      end if
+
+      if (el_part) then
+         CALL ESP_EL(DMAT,r_p,vc,WORK,10000,IPRINT)
+      end if
+
       esp=vc(1)
 
       end subroutine

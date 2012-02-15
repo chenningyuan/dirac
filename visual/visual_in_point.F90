@@ -149,22 +149,28 @@ contains
             
 !           total electrostatic potential
             if (visual_cfg_property(imat) == iq_esp) then
-               call get_esp(esp,3,       &
-                          D(imat)%irep,  &
-                          D(imat)%nrow,  &
-                          D(imat)%elms,  &
-                          px,py,pz)
+               call get_esp(esp,          &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            px,           &
+                            py,           &
+                            pz)
                          
                result(0) = result(0) + esp
             end if
 
 !           density of Coulomb 2-electron contribution
             if (visual_cfg_property(imat) == iq_esprho) then
-               call get_esp(esp,1,       &
-                          D(imat)%irep,  &
-                          D(imat)%nrow,  &
-                          D(imat)%elms,  &
-                          px,py,pz)
+               call get_esp(esp,                      &
+                            D(imat)%irep,             &
+                            D(imat)%nrow,             &
+                            D(imat)%elms,             &
+                            px,                       &
+                            py,                       &
+                            pz,                       &
+                            include_nuc_part=.false., &
+                            include_el_part=.true.)
                call get_n(density,       &
                           D(imat)%irep,  &
                           D(imat)%nrow,  &
