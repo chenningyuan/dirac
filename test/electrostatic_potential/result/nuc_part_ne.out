@@ -178,7 +178,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Feb 15 20:53:47 2012 
+     Date and time (Linux)  : Wed Feb 15 21:39:31 2012 
      Host name              : not found                               
 
 
@@ -193,7 +193,7 @@ Contents of the input file
 **PROPERTIES                                                                                        
 *EXPECTATION                                                                                        
 .OPERATOR                                                                                           
- 'raboof'                                                                                           
+ 'molfield'                                                                                         
  DIAGONAL                                                                                           
  MOLFIELD                                                                                           
  COMFACTOR                                                                                          
@@ -216,7 +216,7 @@ INTGRL
 C   1                                                                                               
       10.     1                                                                                     
 Ne    0.0   0.0   0.0                                                                               
-LARGE BASIS cc-pVDZ                                                                                 
+LARGE BASIS STO-3G                                                                                  
 FINISH                                                                                              
 
 
@@ -402,13 +402,13 @@ Represented as: D2h
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  Ne          1      10      27      15      L  - [9s4p1d|3s2p1d]                                                
-                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
+  Ne          1      10      15       5      L  - [6s3p|2s1p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
   ----------------------------------------------------------------------
-                             27      15      L  - large components
-                             68      68      S  - small components
+                             15       5      L  - large components
+                             39      39      S  - small components
   ----------------------------------------------------------------------
-  total:      1      10      95      83
+  total:      1      10      54      44
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -418,16 +418,16 @@ Represented as: D2h
   -----------------------------
 
   Atom type   1
-   Elements                             References                                
-   --------                             ----------                                
-   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
-   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
-   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
-   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
-   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
-   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
-   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
-            J. Chem. Phys., 110, 7667 (1999)                                      
+   Elements      Contraction                       References                     
+   H - He: (3s)         -> [1s]       W.J. Hehre, R.F. Stewart and J.A. Pople,    
+   Li - Ne: (6s,3p)     -> [2s,1p]    J. Chem. Phys. 2657 (1969).                 
+   Na - Ar: (9s,6p)     -> [3s,2p]    W.J. Hehre, R. Ditchfield, R.F. Stewart,    
+                                      J.A. Pople, J. Chem. Phys.  2769 (1970).    
+   K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. 
+   Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980).      
+   Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
+   Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+  ***********************************************************************         
 
 
   Cartesian Coordinates
@@ -475,114 +475,80 @@ Ne     0.0000000000   0.0000000000   0.0000000000
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   10
-     1  L Ne  1 s        2  L Ne  1 px       3  L Ne  1 py       4  L Ne  1 pz       5  L Ne  1 dxx      6  L Ne  1 dxy 
-     7  L Ne  1 dxz      8  L Ne  1 dyy      9  L Ne  1 dyz     10  L Ne  1 dzz 
-   * Small components:   20
-    11  S Ne  1 s       12  S Ne  1 px      13  S Ne  1 py      14  S Ne  1 pz      15  S Ne  1 dxx     16  S Ne  1 dxy 
-    17  S Ne  1 dxz     18  S Ne  1 dyy     19  S Ne  1 dyz     20  S Ne  1 dzz     21  S Ne  1 fxxx    22  S Ne  1 fxxy
-    23  S Ne  1 fxxz    24  S Ne  1 fxyy    25  S Ne  1 fxyz    26  S Ne  1 fxzz    27  S Ne  1 fyyy    28  S Ne  1 fyyz
-    29  S Ne  1 fyzz    30  S Ne  1 fzzz
+   * Large components:    4
+     1  L Ne  1 s        2  L Ne  1 px       3  L Ne  1 py       4  L Ne  1 pz  
+   * Small components:   10
+     5  S Ne  1 s        6  S Ne  1 px       7  S Ne  1 py       8  S Ne  1 pz       9  S Ne  1 dxx     10  S Ne  1 dxy 
+    11  S Ne  1 dxz     12  S Ne  1 dyy     13  S Ne  1 dyz     14  S Ne  1 dzz 
 
 
                                 GETLAB: SO-labels
                                 -----------------
 
-   * Large components:   10
-     1  L Ag Ne s        2  L Ag Ne dxx      3  L Ag Ne dyy      4  L Ag Ne dzz      5  L B3uNe px       6  L B2uNe py  
-     7  L B1gNe dxy      8  L B1uNe pz       9  L B2gNe dxz     10  L B3gNe dyz 
-   * Small components:   20
-    11  S Ag Ne s       12  S Ag Ne dxx     13  S Ag Ne dyy     14  S Ag Ne dzz     15  S B3uNe px      16  S B3uNe fxxx
-    17  S B3uNe fxyy    18  S B3uNe fxzz    19  S B2uNe py      20  S B2uNe fxxy    21  S B2uNe fyyy    22  S B2uNe fyzz
-    23  S B1gNe dxy     24  S B1uNe pz      25  S B1uNe fxxz    26  S B1uNe fyyz    27  S B1uNe fzzz    28  S B2gNe dxz 
-    29  S B3gNe dyz     30  S Au Ne fxyz
+   * Large components:    4
+     1  L Ag Ne s        2  L B3uNe px       3  L B2uNe py       4  L B1uNe pz  
+   * Small components:   10
+     5  S Ag Ne s        6  S Ag Ne dxx      7  S Ag Ne dyy      8  S Ag Ne dzz      9  S B3uNe px      10  S B2uNe py  
+    11  S B1gNe dxy     12  S B1uNe pz      13  S B2gNe dxz     14  S B3gNe dyz 
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           22    15    15     5    15     5     5     1
-  Number of large orbitals in each symmetry:      6     2     2     1     2     1     1     0
-  Number of small orbitals in each symmetry:     16    13    13     4    13     4     4     1
+  Number of orbitals in each symmetry:           14     7     7     3     7     3     3     0
+  Number of large orbitals in each symmetry:      2     1     1     0     1     0     0     0
+  Number of small orbitals in each symmetry:     12     6     6     3     6     3     3     0
 
 * Large component functions
 
   Symmetry  Ag ( 1)
 
-        3 functions:    Ne s   
-        1 functions:    Ne dxx 
-        1 functions:    Ne dyy 
-        1 functions:    Ne dzz 
+        2 functions:    Ne s   
 
   Symmetry  B3u( 2)
 
-        2 functions:    Ne px  
+        1 functions:    Ne px  
 
   Symmetry  B2u( 3)
 
-        2 functions:    Ne py  
-
-  Symmetry  B1g( 4)
-
-        1 functions:    Ne dxy 
+        1 functions:    Ne py  
 
   Symmetry  B1u( 5)
 
-        2 functions:    Ne pz  
-
-  Symmetry  B2g( 6)
-
-        1 functions:    Ne dxz 
-
-  Symmetry  B3g( 7)
-
-        1 functions:    Ne dyz 
+        1 functions:    Ne pz  
 
 * Small component functions
 
   Symmetry  Ag ( 1)
 
-        4 functions:    Ne s   
-        4 functions:    Ne dxx 
-        4 functions:    Ne dyy 
-        4 functions:    Ne dzz 
+        3 functions:    Ne s   
+        3 functions:    Ne dxx 
+        3 functions:    Ne dyy 
+        3 functions:    Ne dzz 
 
   Symmetry  B3u( 2)
 
-       10 functions:    Ne px  
-        1 functions:    Ne fxxx
-        1 functions:    Ne fxyy
-        1 functions:    Ne fxzz
+        6 functions:    Ne px  
 
   Symmetry  B2u( 3)
 
-       10 functions:    Ne py  
-        1 functions:    Ne fxxy
-        1 functions:    Ne fyyy
-        1 functions:    Ne fyzz
+        6 functions:    Ne py  
 
   Symmetry  B1g( 4)
 
-        4 functions:    Ne dxy 
+        3 functions:    Ne dxy 
 
   Symmetry  B1u( 5)
 
-       10 functions:    Ne pz  
-        1 functions:    Ne fxxz
-        1 functions:    Ne fyyz
-        1 functions:    Ne fzzz
+        6 functions:    Ne pz  
 
   Symmetry  B2g( 6)
 
-        4 functions:    Ne dxz 
+        3 functions:    Ne dxz 
 
   Symmetry  B3g( 7)
 
-        4 functions:    Ne dyz 
-
-  Symmetry  Au ( 8)
-
-        1 functions:    Ne fxyz
+        3 functions:    Ne dyz 
 
 
    ***************************************************************************
@@ -625,14 +591,14 @@ Ne     0.0000000000   0.0000000000   0.0000000000
  * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * do NOT perform the picture change transformation of the four-component property operators
 
- XPRIND INFO: property operator named raboof          
+ XPRIND INFO: property operator named molfield        
    is already existing under the name Nuc. attraction 
-   previous operator renamed to       raboof          
+   previous operator renamed to       molfield        
 ===========================================================================
  EXPINP: Expectation values
 ===========================================================================
  * The following expectation values will be calculated:
-    1  raboof               Ag      T+
+    1  molfield             Ag      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
       Labels and factors     : MOLFIELD +00+     1.0000000000000 (real)     
@@ -703,18 +669,14 @@ Ne     0.0000000000   0.0000000000   0.0000000000
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   Ag    * Deleted:          1(Proj:          1, Lindep:          0)
-   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
-   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
-   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
-   S   B3u   * Deleted:          1(Proj:          1, Lindep:          0)
-   S   B2u   * Deleted:          1(Proj:          1, Lindep:          0)
-   S   B1u   * Deleted:          1(Proj:          1, Lindep:          0)
-   S   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   Ag    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
    L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
    L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
    L   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
-   S   Ag    * Deleted:          4(Proj:          4, Lindep:          0)
+   S   Ag    * Deleted:          3(Proj:          3, Lindep:          0)
    S   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
    S   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
    S   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
@@ -731,11 +693,9 @@ Ne     0.0000000000   0.0000000000   0.0000000000
 
 
  Parity   MJ  Functions(total) Functions(LC) Functions(SC)
-     1    1/2         10            5            5
-     1   -3/2          4            2            2
-     1    5/2          2            1            1
-    -1    1/2          8            4            4
-    -1   -3/2          4            2            2
+     1    1/2          4            2            2
+    -1    1/2          4            2            2
+    -1   -3/2          2            1            1
 
 
       **********************************************************************
@@ -743,9 +703,9 @@ Ne     0.0000000000   0.0000000000   0.0000000000
       **********************************************************************
 
                                    Irrep 1 Irrep 2   Sum
-No. of electronic orbitals (NESH):     8       6      14
-No. of positronic orbitals (NPSH):     8       6      14
-Total no. of orbitals      (NORB):    16      12      28
+No. of electronic orbitals (NESH):     2       3       5
+No. of positronic orbitals (NPSH):     2       3       5
+Total no. of orbitals      (NORB):     4       6      10
 
 
    ****************************************************************************
@@ -757,7 +717,7 @@ Total no. of orbitals      (NORB):    16      12      28
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Feb 15 20:53:47 2012
+########## START ITERATION NO.   1 ##########   Wed Feb 15 21:39:31 2012
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -765,106 +725,48 @@ Total no. of orbitals      (NORB):    16      12      28
  * Closed shell SCF calculation with   10 electrons in
        2 orbitals in Fermion irrep 1
        3 orbitals in Fermion irrep 2
-It.    1    -65.05161215489      1.00D+20  0.00D+00  0.00D+00               0.01000000s   Scr. nuclei    Wed Feb 15
+It.    1    -62.63175841133      1.00D+20  0.00D+00  0.00D+00               0.01000000s   Scr. nuclei    Wed Feb 15
 
-########## START ITERATION NO.   2 ##########   Wed Feb 15 20:53:47 2012
+########## START ITERATION NO.   2 ##########   Wed Feb 15 21:39:31 2012
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   15.35%    5.93%    3.60%   28.30%   0.00000000s
-SOfock:SL  1.00D-12    6.41%    2.42%    2.46%   31.91%   0.01000000s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   27.27%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    0.00%    0.00%   31.71%   0.00000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.06000000s
+>>> Total CPU-time : 0.02000000s
 
-########## END ITERATION NO.   2 ##########   Wed Feb 15 20:53:47 2012
+########## END ITERATION NO.   2 ##########   Wed Feb 15 21:39:31 2012
 
-It.    2    -128.6044881309      6.36D+01  4.54D+00  5.13D-01               0.06000000s   LL SL          Wed Feb 15
+It.    2    -126.7145055828      6.41D+01  4.98D+00  6.72D-02               0.02000000s   LL SL          Wed Feb 15
 
-########## START ITERATION NO.   3 ##########   Wed Feb 15 20:53:47 2012
+########## START ITERATION NO.   3 ##########   Wed Feb 15 21:39:31 2012
 
-    3 *** Differential density matrix. DCOVLP     = 0.9026
+    3 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   15.35%    5.93%    3.60%   28.30%   0.00000000s
-SOfock:SL  1.00D-12    6.41%    3.49%    2.46%   31.61%   0.01000000s
- cp DFCOEF DFCOEF.BEST
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   27.27%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    0.65%    0.00%   31.06%   0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.02999999s
+>>> Total CPU-time : 0.01000000s
 
-########## END ITERATION NO.   3 ##########   Wed Feb 15 20:53:47 2012
+########## END ITERATION NO.   3 ##########   Wed Feb 15 21:39:31 2012
 
-It.    3    -128.6263617174      2.19D-02 -3.73D-01  2.13D-01   DIIS   2    0.02999999s   LL SL          Wed Feb 15
+It.    3    -126.7145055228     -6.00D-08 -8.19D-07  2.63D-06   DIIS   2    0.01000000s   LL SL          Wed Feb 15
 
-########## START ITERATION NO.   4 ##########   Wed Feb 15 20:53:47 2012
+########## START ITERATION NO.   4 ##########   Wed Feb 15 21:39:31 2012
 
-    4 *** Differential density matrix. DCOVLP     = 1.0337
+    4 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    8.26%   13.44%    3.52%   26.31%   0.00000000s
-SOfock:SL  1.00D-12    6.06%    4.37%    1.85%   31.78%   0.01000001s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.05000001s
-
-########## END ITERATION NO.   4 ##########   Wed Feb 15 20:53:47 2012
-
-It.    4    -128.6317813495      5.42D-03  1.21D-01  9.77D-03   DIIS   3    0.05000001s   LL SL          Wed Feb 15
-
-########## START ITERATION NO.   5 ##########   Wed Feb 15 20:53:48 2012
-
-    5 *** Differential density matrix. DCOVLP     = 0.9990
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    8.26%   14.59%    3.53%   27.76%   0.00000000s
-SOfock:SL  1.00D-12    6.06%    7.55%    2.08%   30.91%   0.01000001s
- cp DFCOEF DFCOEF.BEST
+SOfock:LL  1.00D-12   72.73%   21.59%    0.00%   12.83%   0.00000000s
+SOfock:SL  1.00D-12   20.08%   47.03%   16.95%    5.45%   0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03999999s
+>>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   5 ##########   Wed Feb 15 20:53:48 2012
+########## END ITERATION NO.   4 ##########   Wed Feb 15 21:39:31 2012
 
-It.    5    -128.6317956241      1.43D-05 -5.20D-03  1.11D-03   DIIS   4    0.03999999s   LL SL          Wed Feb 15
-
-########## START ITERATION NO.   6 ##########   Wed Feb 15 20:53:48 2012
-
-    6 *** Differential density matrix. DCOVLP     = 1.0002
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    8.26%   13.90%    3.53%   26.33%   0.00000000s
-SOfock:SL  1.00D-12    6.06%    9.82%    1.67%   30.25%   0.01000001s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03000000s
-
-########## END ITERATION NO.   6 ##########   Wed Feb 15 20:53:48 2012
-
-It.    6    -128.6317957819      1.58D-07  2.93D-04  1.62D-05   DIIS   5    0.03000000s   LL SL          Wed Feb 15
-
-########## START ITERATION NO.   7 ##########   Wed Feb 15 20:53:48 2012
-
-    7 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   15.35%    5.93%    3.60%   28.30%   0.00000000s
-SOfock:SL  1.00D-12    6.41%   20.42%    1.88%   25.00%   0.00999999s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03000000s
-
-########## END ITERATION NO.   7 ##########   Wed Feb 15 20:53:48 2012
-
-It.    7    -128.6317957819      6.39D-11  2.92D-06  4.72D-06   DIIS   6    0.03000000s   LL SL          Wed Feb 15
-
-########## START ITERATION NO.   8 ##########   Wed Feb 15 20:53:48 2012
-
-    8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   15.35%    5.93%    3.60%   28.30%   0.00000000s
-SOfock:SL  1.00D-12    6.41%   24.99%    1.56%   22.89%   0.00999999s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.02000001s
-
-########## END ITERATION NO.   8 ##########   Wed Feb 15 20:53:48 2012
-
-It.    8    -128.6317957819      6.28D-12  7.16D-07  2.10D-09   DIIS   6    0.02000001s   LL SL          Wed Feb 15
+It.    4    -126.7145055228     -1.37D-11  4.83D-11  6.81D-11   DIIS   2    0.00000000s   LL SL          Wed Feb 15
 
 
                                    SCF - CYCLE
@@ -880,32 +782,28 @@ It.    8    -128.6317957819      6.28D-12  7.16D-07  2.10D-09   DIIS   6    0.02
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -65.05161215489      1.00D+20  0.00D+00  0.00D+00               0.01000000s   Scr. nuclei    Wed Feb 15
-It.    2    -128.6044881309      6.36D+01  4.54D+00  5.13D-01               0.06000000s   LL SL          Wed Feb 15
-It.    3    -128.6263617174      2.19D-02 -3.73D-01  2.13D-01   DIIS   2    0.02999999s   LL SL          Wed Feb 15
-It.    4    -128.6317813495      5.42D-03  1.21D-01  9.77D-03   DIIS   3    0.05000001s   LL SL          Wed Feb 15
-It.    5    -128.6317956241      1.43D-05 -5.20D-03  1.11D-03   DIIS   4    0.03999999s   LL SL          Wed Feb 15
-It.    6    -128.6317957819      1.58D-07  2.93D-04  1.62D-05   DIIS   5    0.03000000s   LL SL          Wed Feb 15
-It.    7    -128.6317957819      6.39D-11  2.92D-06  4.72D-06   DIIS   6    0.03000000s   LL SL          Wed Feb 15
-It.    8    -128.6317957819      6.28D-12  7.16D-07  2.10D-09   DIIS   6    0.02000001s   LL SL          Wed Feb 15
+It.    1    -62.63175841133      1.00D+20  0.00D+00  0.00D+00               0.01000000s   Scr. nuclei    Wed Feb 15
+It.    2    -126.7145055828      6.41D+01  4.98D+00  6.72D-02               0.02000000s   LL SL          Wed Feb 15
+It.    3    -126.7145055228     -6.00D-08 -8.19D-07  2.63D-06   DIIS   2    0.01000000s   LL SL          Wed Feb 15
+It.    4    -126.7145055228     -1.37D-11  4.83D-11  6.81D-11   DIIS   2    0.00000000s   LL SL          Wed Feb 15
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    8 iterations.
+* Convergence after    4 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL        :    0.14285714s
+      LL SL        :    0.00000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -128.63179578194845
+   Electronic energy                        :    -126.71450552280646
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
    SS Coulombic correction                  :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -128.63179578194845
+   Total energy                             :    -126.71450552280646
 
 
                                    Eigenvalues
@@ -914,59 +812,34 @@ It.    8    -128.6317957819      6.28D-12  7.16D-07  2.10D-09   DIIS   6    0.02
 
 * Block   1 in E1g:  Omega =  1/2
   * Closed shell, f = 1.0000
--32.81796496528679  ( 2)    -1.92411042336607  ( 2)
-  * Virtual eigenvalues, f = 0.0000
-  2.15590694007240  ( 2)     5.19643899632042  ( 2)     5.19758168350910  ( 2)
-
-* Block   2 in E1g:  Omega =  3/2
-  * Virtual eigenvalues, f = 0.0000
-  5.19643899632402  ( 2)     5.19758168352695  ( 2)
-
-* Block   3 in E1g:  Omega =  5/2
-  * Virtual eigenvalues, f = 0.0000
-  5.19758168350381  ( 2)
+-32.25732784710024  ( 2)    -1.71215607288468  ( 2)
 
 * Block   1 in E1u:  Omega =  1/2
   * Closed shell, f = 1.0000
- -0.83437808811088  ( 2)    -0.83026714947322  ( 2)
-  * Virtual eigenvalues, f = 0.0000
-  1.69051323532882  ( 2)     1.69503318629593  ( 2)
+ -0.54544855486507  ( 2)    -0.54331345474484  ( 2)
 
 * Block   2 in E1u:  Omega =  3/2
   * Closed shell, f = 1.0000
- -0.83026714948937  ( 2)
-  * Virtual eigenvalues, f = 0.0000
-  1.69503318628750  ( 2)
+ -0.54331345474202  ( 2)
 
 * Occupation in fermion symmetry E1g
   * Inactive orbitals
      1/2 1/2
-  * Virtual orbitals
-     1/2 1/2 3/2 5/2 1/2 3/2
 
 * Occupation in fermion symmetry E1u
   * Inactive orbitals
-     1/2 3/2 1/2
-  * Virtual orbitals
-     1/2 3/2 1/2
+     1/2 1/2 3/2
 
 * Occupation of subblocks
-                       E1g:  1/2  3/2  5/2                                                                  
-  closed shells (f=1.0000):    2    0    0
- virtual shells (f=0.0000):    3    2    1
-tot.num. of pos.erg shells:    5    2    1
+                       E1g:  1/2                                                                            
+  closed shells (f=1.0000):    2
+ virtual shells (f=0.0000):    0
+tot.num. of pos.erg shells:    2
                        E1u:  1/2  3/2                                                                       
   closed shells (f=1.0000):    2    1
- virtual shells (f=0.0000):    2    1
-tot.num. of pos.erg shells:    4    2
+ virtual shells (f=0.0000):    0    0
+tot.num. of pos.erg shells:    2    1
 
-
-* HOMO - LUMO gap:
-
-    E(LUMO) :     1.69051324 au (symmetry E1u)
-  - E(HOMO) :    -0.83026715 au (symmetry E1u)
-  ------------------------------------------
-    gap     :     2.52078038 au
 
 
 
@@ -1014,7 +887,7 @@ tot.num. of pos.erg shells:    4    2
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    raboof           :    -311.1952502087 a.u.      F   F
+    molfield         :    -307.6573460737 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1049,35 +922,35 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
 
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-Ne      1   0.462E-06   0.684E+01   0.117E+00     123    4464
+Ne      1   0.430E-05   0.569E+01   0.123E+00      98    3881
 
-   Number of grid points in quadrature:      4464 ( 15.5%)
+   Number of grid points in quadrature:      3881 ( 15.3%)
 
 
- >>>> Time used in DFTGRD:   0.05 seconds
+ >>>> Time used in DFTGRD:   0.04 seconds
 
 
       scalar              x-component         y-component         z-component
 
-   -0.3111952860E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
+   -0.3076573694E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:   0.16 seconds
+ >>>> time used in integration:   0.12 seconds
 
  
-     Date and time (Linux)  : Wed Feb 15 20:53:48 2012 
+     Date and time (Linux)  : Wed Feb 15 21:39:31 2012 
      Host name              : not found                               
->>>> Node 0, utime: 0, stime: 0, minflt: 6292, majflt: 0, nvcsw: 7, nivcsw: 51, maxrss: 10648
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 0, stime: 0, minflt: 2954, majflt: 0, nvcsw: 1, nivcsw: 23, maxrss: 9204
+>>>> Total WALL time used in DIRAC: 0s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        11.28
+  Mean allocation size (Mb) :        13.66
   
   Largest          10  allocations
   
@@ -1086,16 +959,16 @@ Ne      1   0.462E-06   0.684E+01   0.117E+00     123    4464
         7.63 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
         7.63 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
         7.63 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.05 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.05 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
         0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
         0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
         0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.01 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
   
   Peak memory usage    (Mb) :       519.00
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : unnamed variable                          
   
- MEMGET high-water mark:     1.56 MB
+ MEMGET high-water mark:     0.37 MB
 
 *****************************************************
