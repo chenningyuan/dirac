@@ -95,6 +95,7 @@ if(ENABLE_64BIT_INTEGERS)
 endif()
 
 if(ENABLE_PCMMOD)
+    add_definitions(-DPCM_MODULE)
     include(ExternalProject)
     add_custom_target(external)
                                                             
