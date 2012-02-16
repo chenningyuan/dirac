@@ -115,6 +115,7 @@ if(ENABLE_PCMMOD)
     BINARY_DIR ${PROJECT_SOURCE_DIR}/external/pcmsolver-build
     INSTALL_DIR ${PROJECT_SOURCE_DIR}/external
     CMAKE_ARGS ${ExternalProjectCMakeArgs}
+    GIT_REPOSITORY git@repo.ctcc.no:pcmsolver.git
     )
     add_dependencies(external pcmsolver)
 endif()
