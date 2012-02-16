@@ -220,7 +220,7 @@ foreach(
         )
 endforeach()
 
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_LIBRARIES AND LAPACK_LIBRARIES)
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
     target_link_libraries(dirac.x -Wl,--no-export-dynamic)
