@@ -13,6 +13,9 @@ import re
 import subprocess
 from optparse import OptionParser, OptionGroup
 
+sys.path.append('cmake')
+from argparse import ArgumentParser
+
 if sys.version < '2.4':
     print('requires python version >= 2.4')
     sys.exit(1)
