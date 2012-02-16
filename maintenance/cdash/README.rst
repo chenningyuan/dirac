@@ -37,7 +37,9 @@ To get inspired have a look at the cdash example recipes in the repository.
 It is recommended to use "git clone" scheme for repetitive downloading, building up 
 and testing the entire DIRAC suite.
 
-We give here few examples of the crontab prescrition of buildup on various servers.a
+We give here few examples of the crontab buildup prescriptions on various servers.
+
+Note: you have to have ~/.diracrc file ready with flags
 
 -- pd.uniza.sk --
 
@@ -47,8 +49,8 @@ We give here few examples of the crontab prescrition of buildup on various serve
 
 -- frpd2.utcpd.sk --
 
-10 14 * * 1,2,3,4,5,6,7 export PATH=/home/ilias/bin/openmpi_i32lp64_static/bin:$PATH; export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH; export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib:$LD_LIBRARY_PATH; DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup -DVERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="linux.OpenMPI_gfortran.gcc.ownmath.ilp64_full_STATIC" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --static --internal-math -D RUNTEST_NR_PROC=2; cd build; make Experimental > buildup.log
+05 00 * * 1,2,3,4,5,6,7  export PATH=/home/ilias/bin/openmpi_i32lp64_static/bin:$PATH; export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH; export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib:$LD_LIBRARY_PATH; DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="linux.OpenMPI_gfortran.gcc.ownmath.ilp64_full_STATIC" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON -D DART_TESTING_TIMEOUT=99999 --static --internal-math -D RUNTEST_NR_PROC=2; cd build; make Experimental
 
-15 00 * * 1,2,3,4,5,6,7 DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup -DVERBOSE_OUTPUT=ON --int64 -D BUILDNAME="linux.gfortran.gcc.usr64_libs.i32lp64" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999; cd build; make Nightly
+03 02 * * 1,2,3,4,5,6,7  DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk_cloned; if [ -d "$DIRAC" ]; then echo "Deleting old directory $DIRAC"; /bin/rm -rf $DIRAC; fi; git clone git@repo.ctcc.no:dirac.git $DIRAC; cd $DIRAC; ./setup --int64 -D BUILDNAME="linux.gfortran.gcc.usr64_libs.i32lp64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON -D DART_TESTING_TIMEOUT=99999; cd build; make Nightly
 
 
