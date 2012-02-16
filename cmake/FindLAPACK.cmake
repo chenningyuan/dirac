@@ -10,7 +10,6 @@
 #  LAPACK_LIBRARIES Libraries to link against to use LAPACK
 #  LAPACK_FOUND Defined if LAPACK is available
 #  HAVE_LAPACK To be used in #ifdefs
-#  HAVE_ATLAS_LAPACK To be used in #ifdefs
 #  LAPACK_H Name of LAPACK header file
 #
 # None of the above will be defined unless LAPACK can be found.
@@ -63,7 +62,9 @@ if (LAPACK_INCLUDE_DIRS AND LAPACK_LIBRARIES)
 endif ()
 
 if (NOT LAPACK_FIND_COMPONENTS)
-    if(ENABLE_64BIT_INTEGERS)
+    if (DEFINED LAPACK_TYPE)
+        set(LAPACK_FIND_COMPONENTS ${LAPACK_TYPE})
+    elseif(ENABLE_64BIT_INTEGERS)
         set(LAPACK_FIND_COMPONENTS MKL MKL_LAPACK95)
     else()
         set(LAPACK_FIND_COMPONENTS MKL MKL_LAPACK95 Atlas ACML default)
@@ -143,6 +144,9 @@ endmacro()
 find_lapack()
 
 if(LAPACK_LIBRARIES)
+   find_package_message(LAPACK "Found LAPACK: ${LAPACK_TYPE}"
+       "[${LAPACK_LIBRARIES}]"
+       )
    set(LAPACK_FOUND TRUE)
 endif()
 

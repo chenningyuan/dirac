@@ -1,0 +1,47 @@
+##############################################################
+#
+#
+#                 ***  gLite script  ***
+#
+#
+##############################################################
+
+#
+# delete: lcg-del -a lfn://grid/voce/ilias/dirac_test_suite.tgz
+
+# store onto vo=voce SE
+# p=`pwd`;lcg-cr -v -d se.ui.savba.sk file://$p/dirac_test_suite.tgz  -l lfn://grid/voce/ilias/dirac_test_suite.tgz
+# list: lcg-ls lfn://grid/voce/ilias
+#
+
+Executable = "launch_buildup_voce.sh";
+
+# files with full paths
+#InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/maintenance/grid_testing/launch_voce.sh"};
+InputSandbox = {"launch_buildup_voce.sh"};
+
+##############################################
+# stdout,stderr output & other working files
+##############################################
+StdOutput = "DIRAC_buildup_std.out";
+StdError = "DIRAC_buildup_std.err";
+OutputSandbox = {"DIRAC_buildup_std.out", "DIRAC_buildup_std.err"};
+#OutputSandbox = {"DIRAC_buildup_std.out", "DIRAC_buildup_std.err", "dirac_test_suite_back.tgz"};
+
+##################
+# assign your VO #
+##################
+#VirtualOrganisation="compchem";
+VirtualOrganisation="voce";
+
+#################
+# Demands on CE #
+#################
+Requirements =
+ other.GlueCEPolicyMaxWallClockTime > 1200;
+#  &&
+# RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
+# other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
+# other.GlueCEUniqueID == "ce3.ui.savba.sk:8443/cream-pbs-voce"
+#;
+#

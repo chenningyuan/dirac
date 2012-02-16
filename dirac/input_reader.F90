@@ -440,11 +440,24 @@ contains
       if (kw_matches(word, '.NDIPZD')) then
          call read_input_visual_helper2(iq_ndipzdia)
       end if
+
       if (kw_matches(word, '.ESP   ')) then
          call read_input_visual_helper(iq_esp)
       end if
+      if (kw_matches(word, '.ESPE  ')) then
+         call read_input_visual_helper(iq_espe)
+      end if
+      if (kw_matches(word, '.ESPN  ')) then
+         call read_input_visual_helper(iq_espn)
+      end if
       if (kw_matches(word, '.ESPRHO')) then
          call read_input_visual_helper(iq_esprho)
+      end if
+      if (kw_matches(word, '.ESPERH')) then
+         call read_input_visual_helper(iq_esperho)
+      end if
+      if (kw_matches(word, '.ESPNRH')) then
+         call read_input_visual_helper(iq_espnrho)
       end if
 
       if (kw_matches(word, '.GAUGE ')) then

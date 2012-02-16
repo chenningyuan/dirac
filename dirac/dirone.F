@@ -4613,9 +4613,14 @@ C     for the last two shells have been generated from a fit :
 C     (y = 0.28196 x^-1.5532)
       DATA STO1G /0.2709D0, 0.1012D0, 0.05297D0,0.03265D0,0.02217D0,
      &            0.01744D0,0.01373D0/
-      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.0D0, 4.2D0, 4.4D0/
+!     DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.0D0, 4.2D0, 4.4D0/
+      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.4D0, 5.1D0, 5.8D0/
 C     ... Slater's n_eff according to wikipedia for n=1:6,
-C         I extrapolated to n=7 /hjaaj Sep 2011
+C         I extrapolated to n=7 /hjaaj Sep 2011.
+C     ... Empirical modification Feb. 2012 hjaaj: XeF6 did not
+C         converge with the Sep 2011 values; on the other hand
+C         we had an example in Sep 2011 which benefitted from the
+C         n_eff values.
 C
 C     Table of s,p,d,f orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
