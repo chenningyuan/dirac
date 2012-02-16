@@ -57,6 +57,7 @@ option(ENABLE_UTILITIES       "Enable utitilites"                               
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
+option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      ON)
 
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
@@ -91,6 +92,30 @@ include(Math)
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
+endif()
+
+if(ENABLE_PCMMOD)
+    include(ExternalProject)
+    add_custom_target(external)
+                                                            
+    set (ExternalProjectCMakeArgs  
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCBLAS_ROOT=${CBLAS_ROOT}
+    -DEIGEN3_ROOT=${EIGEN3_ROOT}
+    )
+                                                            
+    ExternalProject_Add(pcmsolver
+    PREFIX ${PROJECT_SOURCE_DIR}/external
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/pcmsolver
+    BINARY_DIR ${PROJECT_SOURCE_DIR}/external/pcmsolver-build
+    INSTALL_DIR ${PROJECT_SOURCE_DIR}/external
+    CMAKE_ARGS ${ExternalProjectCMakeArgs}
+    )
+    add_dependencies(external pcmsolver)
 endif()
 
 if(ENABLE_CUDA)
