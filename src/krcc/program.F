@@ -606,7 +606,7 @@ C Now with automated restart. Lasse
 * ==========================================
 *
 *. New optimizer
-      CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),WORK(KDIA),
+      CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),
      &                   WORK(KVEC1),WORK(KVEC2),CCTYPE,ECC,
      &                   WORK,KFREE,LFREE)
       STOP 'CC ENERGY HAS BEEN OPTIMIZED'

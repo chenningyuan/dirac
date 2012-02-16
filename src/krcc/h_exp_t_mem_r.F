@@ -116,7 +116,7 @@ C     CALL MEMGET('REAL',KLTSCR3,LEN,WORK,KFREE,LFREE)
       print*,'LEN,LCCB',LEN,LCCB
 *
 *and for a batch of Hamiltonian
-      LOPSCR = LCCB*LCCB*LB
+      LOPSCR = LCCB*LCCB*LB*10
 *. The above is not correct as the excitation part of the 
 *. integrals are obtained as a single block. 
 *. The largest block of integrals (hp!hp) should therefore

@@ -17,11 +17,11 @@
 * but can "easily" be changed. These are in execution order without
 * scaling considerations.
 *
-* First H00
+* First H00 -- OK
 *
 * H00 -- 00 -- T 
 *
-* Second all single lines
+* Second all single lines -- OK
 *
 * H22 -- 22 -- T
 * H21 -- 21 -- T
@@ -30,9 +30,9 @@
 *
 * Third through M10
 *
+* H20 -- 10 -- M10 (multiply by 1/2)
 * H22 -- 12 -- M10
 * H21 -- 11 -- M10
-* H20 -- 10 -- M10 (multiply by 1/2)
 *
 * M10 + H10 -- 10 -- T
 *
@@ -40,6 +40,7 @@
 *
 * H22 -- 10 -- M12 (multiply by 1/2)
 * M12 + H12 -- 10 -- M02 
+* H22 -- 20 --  M02 
 * M02 + H02 -- 02 -- T (save M02 + H02)
 *
 * Fifth through M11
@@ -49,8 +50,8 @@
 *
 * Sixth through M01
 *
-* H22 -- 11 -- M11 (reuse the above M11)
-* H21 -- 10 -- M11
+* H21 -- 10 -- M11 (multiply by 1/2 on additional array(At the moment))
+* H22 -- 11 -- M11 (reuse the above M11, add to above)
 * M11 + H11 -- 10 -- M01
 * H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
 * H22 -- 21 -- M01
@@ -62,12 +63,14 @@
 *
 *      
       IMPLICIT REAL*8(A-H,O-Z)
-*.Input   
+*. Input   
       DIMENSION CC_AMP(*)
 *. Output   
       DIMENSION CC_VEC(*)
 *
       DIMENSION WORK(*)
+*. Temporary scratch
+C     DIMENSION DUMMY(1000)
 *.
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -95,7 +98,15 @@
       IZERO = 0
       ZERO = 0.0D0
       HALF = 0.5D0
-      IDOUBLE = 2.0D0
+      ONE = 1.0D0
+      DOUBLE = 2.0D0 !!! forgot it?
+* Debug
+      ISKIP = 2 ! from which commutator to skip
+*. Temporary scratch
+      print*,'KM11_EXTRA,LEN_M11_VEC_CC',KM11_EXTRA,LEN_M11_VEC_CC
+      print*,'KFREE,LFREE',KFREE,LFREE
+      CALL MEMGET('REAL',KM11_EXTRA,LEN_M11_VEC_CC,WORK,KFREE,LFREE)
+      print*,'KM11_EXTRA after',KM11_EXTRA
 *         
 * Real or complex algebra
       IF(IRECOM.EQ.1) THEN
@@ -125,6 +136,9 @@
       CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
       CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC)
       CALL SETVEC(WORK(KM12),ZERO,LEN_M12_VEC_CC)
+*. And some temporary arrays
+C     CALL SETVEC(DUMMY,ZERO,1000)
+      CALL SETVEC(WORK(KM11_EXTRA),ZERO,LEN_M11_VEC_CC)
 *
 * Start with zero commutators! (If first iteration and no restart this
 * should be the only one done!)
@@ -133,7 +147,8 @@
 * 
 * First H00
 *
-* H00 -- 00 -- T 
+* H00 -- 00 -- T
+      IF(ISKIP.GE.2) THEN 
       IHM = 1 !Still the Hamiltonian that is contracted from 
       IFHM = 1 !integrals are fetched
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IZERO,IHM,
@@ -149,12 +164,18 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
 ! First iteration with no restart only do H00
-      IF(IFORM.EQ.1.AND.ITER.EQ.1) RETURN
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMCHK('LL5',WORK,KM11_EXTRA)
+      IF(IFORM.EQ.1.AND.ITER.EQ.1) GO TO 22
+      CALL MEMCHK('LL6',WORK,KM11_EXTRA)
+      END IF
 *
 * Second all single lines
 *
 * H22 -- 22 -- T
 *
+      IF(ISKIP.GE.2) THEN
+      print*,'starting single contractions'
       IHM = 1
       IFHM = 1 !integrals are fetched
 *
@@ -169,6 +190,9 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      print*,'KLOOK',KLOOK
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMCHK('LL4',WORK,KM11_EXTRA)
 *
 * H21 -- 21 -- T
 *
@@ -206,6 +230,9 @@
 *
 * H20 -- 20 -- T
 *
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
+      print*,'single contraction'
       IHM = 1
       IFHM = 1 !integrals are fetched
 *
@@ -220,8 +247,37 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      END IF !ISKIP
+      CALL MEMCHK_KRCC(WORK)
 *
 * Third through M10
+*
+* H20 -- 10 -- M10 (multiply by 1/2) Should be done first!!!
+*
+      CALL MEMCHK('LL3',WORK,KM11_EXTRA)
+      IF(ISKIP.GE.2) THEN
+      print*,'to intermediate'
+      IHM = 1 !Still the Hamiltonian that is contracted from
+      IFHM = 1 !integrals are fetched
+*
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM10),IONE,IHM,
+     &     IFHM,WORK(KT_CC), 
+     &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     WORK(KLIBSOBEX_M10),WORK(KLLSOBEX_M10),NINTER10,
+     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
+     &     NH20,WORK(KNH20),
+     &     NH20TOM10,WORK(KNH20TOM10),WORK(KNH20T10),
+     &     WORK(KCOMBNH20TOM10),WORK(KPERMNH20TOM10),
+     &     WORK(KFACNH20TOM10),WORK(KCOMBFACNH20TOM10),
+     &     WORK(KINTM10),NINTER10,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+*
+* Multiply by 1/2
+*
+      CALL SCALVE(WORK(KM10),HALF,LEN_M10_VEC_CC)
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
 *
 * H22 -- 12 -- M10
 *
@@ -240,6 +296,9 @@
      &     WORK(KINTM10),NINTER10,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      END IF !ISKIP
+      CALL MEMCHK_KRCC(WORK)
+      IF(ISKIP.GE.2) THEN
 *
 * H21 -- 11 -- M10
 *
@@ -259,43 +318,26 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
 *
-* H20 -- 10 -- M10 (multiply by 1/2)
-*
-      IHM = 1 !Still the Hamiltonian that is contracted from
-      IFHM = 1 !integrals are fetched
-*
-      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM10),IONE,IHM,
-     &     IFHM,WORK(KT_CC), 
-     &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-     &     WORK(KLIBSOBEX_M10),WORK(KLLSOBEX_M10),NINTER10,
-     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
-     &     NH20,WORK(KNH20),
-     &     NH20TOM10,WORK(KNH20TOM10),WORK(KNH20T10),
-     &     WORK(KCOMBNH20TOM10),WORK(KPERMNH20TOM10),
-     &     WORK(KFACNH20TOM10),WORK(KCOMBFACNH20TOM10),
-     &     WORK(KINTM10),NINTER10,
-     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
-     &     WORK,KFREE,LFREE)
-*
-* Multiply by 1/2
-*
-      CALL ISCAVE(WORK(KM10),HALF,LEN_M10_VEC_CC)
-*
 * M10 + H10 -- 10 -- T
 *
 * Add amplitudes and integrals 
 ! Careful with signs since IHINDX may be different for the two!!!
 *
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
+      print*,' adding M10 and H10'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH10,WORK(KNH10),
      &                                   NINTER10,WORK(KINTM10),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
-     &                                   WORK(KM10),
+     &                                   WORK(KM10),WORK(KM10TOH10),
+     &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
 *
 * And now the contraction
 *
+      print*,'second contraction'
       IHM = 2
       IFHM = 2 !intermediates are fetched
 *
@@ -311,11 +353,13 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      END IF !ISKIP
 *
 * Fourth through M02
 *
 * H22 -- 10 -- M12 (multiply by 1/2)
 *
+      IF(ISKIP.GE.2) THEN
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
 *
@@ -334,7 +378,11 @@
 *
 * Multiply by 1/2
 *
-      CALL ISCAVE(WORK(KM12),HALF,LEN_M12_VEC_CC)
+      CALL SCALVE(WORK(KM12),HALF,LEN_M12_VEC_CC)
+      END IF !ISKIP
+      CALL MEMCHK('LL2',WORK,KM11_EXTRA)
+      CALL MEMCHK_KRCC(WORK)
+      IF(ISKIP.GE.2) THEN
 *
 * M12 + H12 -- 10 -- M02 
 *
@@ -345,7 +393,8 @@
      &                                   NINTER12,WORK(KINTM12),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
-     &                                   WORK(KM12),
+     &                                   WORK(KM12),WORK(KM12TOH12),
+     &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
 *
@@ -357,12 +406,33 @@
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM02),IONE,IHM,
      &     IFHM,WORK(KM12), 
      &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KLIBSOBEX_M02),WORK(KLLSOBEX_M02),NINTER02,
      &     NINTER12,WORK(KINTM12),WORK(KLIHIND),IHSM,
      &     NINTER12,WORK(KLLSOBEX_M12),
      &     NM12TOM02,WORK(KNM12TOM02),WORK(KNM12T02),
      &     WORK(KCOMBNM12TOM02),WORK(KPERMNM12TOM02),
      &     WORK(KFACNM12TOM02),WORK(KCOMBFACNM12TOM02),
+     &     WORK(KINTM02),NINTER02,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
+*
+* H22 -- 20 -- M02
+*
+      IHM = 1 !Still the Hamiltonian that is contracted from
+      IFHM = 1 !integrals are fetched
+*
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM02),IONE,IHM,
+     &     IFHM,WORK(KT_CC), 
+     &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     WORK(KLIBSOBEX_M02),WORK(KLLSOBEX_M02),NINTER02,
+     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
+     &     NH22,WORK(KNH22),
+     &     NH22TOM02,WORK(KNH22TOM02),WORK(KNH22T02),
+     &     WORK(KCOMBNH22TOM02),WORK(KPERMNH22TOM02),
+     &     WORK(KFACNH22TOM02),WORK(KCOMBFACNH22TOM02),
      &     WORK(KINTM02),NINTER02,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
@@ -372,11 +442,16 @@
 * Add amplitudes and integrals 
 ! Careful with signs since IHINDX may be different for the two!!!
 *
+      END IF !ISKIP
+      CALL MEMCHK_KRCC(WORK)
+      IF(ISKIP.GE.2) THEN
+      print*,' adding M02 and H02'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH02,WORK(KNH02),
      &                                   NINTER02,WORK(KINTM02),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
-     &                                   WORK(KM02),
+     &                                   WORK(KM02),WORK(KM02TOH02),
+     &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
 *
@@ -401,11 +476,13 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      END IF !ISKIP
 *
 * Fifth through M11
 *
 * H22 -- 11 -- M11 (multiply by 1/2)
 *
+      IF(ISKIP.GE.2) THEN
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
 *
@@ -428,18 +505,23 @@
 *
 * Multiply by 1/2
 *
-      CALL ISCAVE(WORK(KM11),HALF,LEN_M11_VEC_CC)
+      CALL SCALVE(WORK(KM11),HALF,LEN_M11_VEC_CC)
+      END IF !ISKIP
+      CALL MEMCHK_KRCC(WORK)
+      IF(ISKIP.GE.2) THEN
 *
 * M11 + H11 -- 11 -- T 
 *
 * Add amplitudes and integrals 
 ! Careful with signs since IHINDX may be different for the two!!!
 *
+      print*,' adding M11 and H11'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH11,WORK(KNH11),
      &                                   NINTER11,WORK(KINTM11),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
-     &                                   WORK(KM11),
+     &                                   WORK(KM11),WORK(KM11TOH11),
+     &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
 *
@@ -461,18 +543,22 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
 *
+* Zero M11
+*
+      CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
+      END IF !ISKIP
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMCHK('LL1',WORK,KM11_EXTRA)
+      IF(ISKIP.GE.2) THEN
+*
 * Sixth through M01
-*
-* H22 -- 11 -- M11 (reuse the above M11)
-*
-      CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC4)
 *
 * H21 -- 10 -- M11
 *
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
 *
-      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11),IONE,IHM,
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11_EXTRA),IONE,IHM,
      &     IFHM,WORK(KT_CC), 
      &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
      &     WORK(KLIBSOBEX_M11),WORK(KLLSOBEX_M11),NINTER11,
@@ -485,16 +571,34 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
 *
+* Multiply by 1/2
+*
+      CALL SCALVE(WORK(KM11_EXTRA),HALF,LEN_M11_VEC_CC)
+*
+* H22 -- 11 -- M11 (reuse the above M11)
+*
+      CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC4)
+*
+* Add the stored KM11 and KM11_EXTRA
+*
+      CALL VECSUM(WORK(KM11),WORK(KM11),WORK(KM11_EXTRA),
+     &            ONE,ONE,LEN_M11_VEC_CC)
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
+C     CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC) !only temp!!!!
+*
 * M11 + H11 -- 10 -- M01
 *
 * Add amplitudes and integrals 
 ! Careful with signs since IHINDX may be different for the two!!!
 *
+      print*,' adding M11 and H11 Second time'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH11,WORK(KNH11),
      &                                   NINTER11,WORK(KINTM11),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
-     &                                   WORK(KM11),
+     &                                   WORK(KM11),WORK(KM11TOH11),
+     &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
 *
@@ -502,19 +606,25 @@
 *
       IHM = 2
       IFHM = 2 !intermediates are fetched
+      print*,'does the 11 -- 10 -- M01 contraction'
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM01),IONE,IHM,
-     &     IFHM,WORK(KM12), 
+     &     IFHM,WORK(KM11), 
      &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
-     &     NINTER12,WORK(KINTM12),WORK(KLIHIND),IHSM,
-     &     NINTER12,WORK(KLLSOBEX_M12),
-     &     NM12TOM02,WORK(KNM12TOM02),WORK(KNM12T02),
-     &     WORK(KCOMBNM12TOM02),WORK(KPERMNM12TOM02),
-     &     WORK(KFACNM12TOM02),WORK(KCOMBFACNM12TOM02),
-     &     WORK(KINTM02),NINTER02,
+C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KLIBSOBEX_M01),WORK(KLLSOBEX_M01),NINTER01,
+     &     NINTER11,WORK(KINTM11),WORK(KLIHIND),IHSM,
+     &     NINTER11,WORK(KLLSOBEX_M11),
+     &     NM11TOM01,WORK(KNM11TOM01),WORK(KNM11T01),
+     &     WORK(KCOMBNM11TOM01),WORK(KPERMNM11TOM01),
+     &     WORK(KFACNM11TOM01),WORK(KCOMBFACNM11TOM01),
+     &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      print*,'writing out the M01 intermediate'
+      CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
 *
 * H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
 *
@@ -522,23 +632,31 @@
 *
 * Multiply by 1/2
 *
-      CALL ISCAVE(WORK(KM02),HALF,LEN_M02_VEC_CC)
+      CALL SCALVE(WORK(KM02),HALF,LEN_M02_VEC_CC)
+C     CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC) !only temp!!!!
+* 
+      IHM = 2
+      IFHM = 2 !intermediates are fetched
 *
-      IHM = 1 !Still the Hamiltonian that is contracted from
-      IFHM = 1 !integrals are fetched
-*
+      print*,'intermediate H02 is being fetched'
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM01),IONE,IHM,
-     &     IFHM,WORK(KT_CC), 
-     &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     IFHM,WORK(KM02), 
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLIBSOBEX_M01),WORK(KLLSOBEX_M01),NINTER01,
-     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
-     &     NH02,WORK(KNH02),
-     &     NH02TOM01,WORK(KNH02TOM01),WORK(KNH02T01),
-     &     WORK(KCOMBNH02TOM01),WORK(KPERMNH02TOM01),
-     &     WORK(KFACNH02TOM01),WORK(KCOMBFACNH02TOM01),
+     &     NINTER02,WORK(KINTM02),WORK(KLIHIND),IHSM,
+     &     NINTER02,WORK(KLLSOBEX_M02),
+     &     NM02TOM01,WORK(KNM02TOM01),WORK(KNM02T01),
+     &     WORK(KCOMBNM02TOM01),WORK(KPERMNM02TOM01),
+     &     WORK(KFACNM02TOM01),WORK(KCOMBFACNM02TOM01),
      &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      print*,'writing out the M01 intermediate'
+      CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
+      END IF !ISKIP
+      CALL MEMCHK_KRCC(WORK)
+      IF(ISKIP.GE.2) THEN
 *
 * H22 -- 21 -- M01
 *
@@ -557,6 +675,8 @@
      &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
 *
 * H21 -- 20 -- M01
 *
@@ -575,6 +695,8 @@
      &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      END IF !ISKIP
+      IF(ISKIP.GE.2) THEN
 *
 * H12 -- 11 -- M01
 *
@@ -599,16 +721,23 @@
 * Add amplitudes and integrals 
 ! Careful with signs since IHINDX may be different for the two!!!
 *
+      END IF !ISKIP
+      CALL MEMCHK_KRCC(WORK)
+      IF(ISKIP.GE.2) THEN
+      print*,' adding M01 and H01'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH01,WORK(KNH01),
      &                                   NINTER01,WORK(KINTM01),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
-     &                                   WORK(KM01),
+C    &                                   DUMMY,DUMMY,
+     &                                   WORK(KM01),WORK(KM01TOH01),
+     &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
 *
 * And now the contraction
 *
+      print*,'second contraction'
       IHM = 2
       IFHM = 2 !intermediates are fetched
 *
@@ -624,11 +753,14 @@
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      END IF !ISKIP
+22    CONTINUE
+      CALL MEMCHK_KRCC(WORK)
 * End of the line
-
 *
-      E_CC = CC_VEC(N_CC_AMP+1)
-      print*,CC_VEC(N_CC_AMP+1),CC_VEC(1)
+C     E_CC = CC_VEC(N_CC_AMP+1) IF IDENTITY WAS LAST BUT MINE IS FIRST
+      E_CC = CC_VEC(1)
+      print*,'CC_VEC(N_CC_AMP+1),CC_VEC(1)',CC_VEC(N_CC_AMP+1),CC_VEC(1)
 *
 *. Mission over, print 
 *
@@ -646,8 +778,13 @@
         CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE,
      &                   WORK,KFREE,LFREE)
       END IF
+*
+      CALL MEMCHK('LLL',WORK,KM11_EXTRA)
+      print*,'KM11_EXTRA',KM11_EXTRA
+      CALL MEMREL('MAPPNG',WORK,KM11_EXTRA,KM11_EXTRA,KFREE,LFREE)
+      print*,'after memory release'
 * 
-      STOP ' Enforced stop after CC_VEC_FNC'
+C     STOP ' Enforced stop after CC_VEC_FNC'
       RETURN
       END
 *

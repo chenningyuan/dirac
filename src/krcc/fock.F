@@ -132,7 +132,7 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
       INTEGER NGSOB(MXPOBS,*), NGSOB2(MXPOBS,*)
       INTEGER NGSOBT(*), NGSOBT2(*), IHPVGAS_AB(MXPNGAS,2)
 *
-      NTEST = 0
+      NTEST = 00
 C      print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
 C      print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
@@ -213,7 +213,7 @@ C              print*,'NGSSH,JSM,JGASS',NGSSH(JSM,JGASS),JSM,JGASS
           END DO
         end do
       end do
-      NTEST = 00
+*
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Printing entire one-electron inactive Fock-matrix '
         DO I = 1, ISIDE
@@ -222,7 +222,6 @@ C              print*,'NGSSH,JSM,JGASS',NGSSH(JSM,JGASS),JSM,JGASS
           END DO
         END DO
       END IF
-      NTEST = 00
 *
 *
 * 2-electron case. Now fetching all integrals in one loop.

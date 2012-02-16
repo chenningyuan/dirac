@@ -106,3 +106,17 @@
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TEST_ARRAY(ARRAY,NDIM)
+C
+#include "implicit.inc"
+C
+      DIMENSION ARRAY(NDIM)
+C
+      PRINT*,'NDIM',NDIM
+      DO I=1,NDIM
+       ARRAY(I) = I
+       PRINT*,'ARRAY,I',ARRAY(I),I
+      END DO
+C
+      RETURN
+      END

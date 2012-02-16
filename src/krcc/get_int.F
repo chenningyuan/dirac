@@ -286,7 +286,7 @@ C       END IF
         DO I = 1,4
           WRITE(6,*) 'I_INDX_TO_GAS(I) = ',I_INDX_TO_GAS(I)
         END DO
-        WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA = ',ISEA,JSEA,KSEA,LSEA
+C       WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA = ',ISEA,JSEA,KSEA,LSEA
         IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
           WRITE(6,*) 'ITYPE = ',ITYPE
         ELSE
@@ -303,7 +303,7 @@ C       END IF
         END IF
         WRITE(6,*) 'XOUT = ',XOUT
       END IF
-      WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA = ',ISEA,JSEA,KSEA,LSEA
+C     WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA = ',ISEA,JSEA,KSEA,LSEA
 *
       RETURN
       END

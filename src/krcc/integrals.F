@@ -510,16 +510,13 @@ C
             END IF
          END IF
         CALL MEMCHK_KRCC(WORK)
-      print*,'after DFCOEF read'
       CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
 C        CALL MEMCHK_KRCC(WORK)
 * Transformation 
       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
 C      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
-      print*,'after INISZT'
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KIBEIG),NORBT)
-      print*,'NORBT',NORBT
 C
       CALL RTRACTL(WORK(KCMO),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
 C      CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
@@ -549,13 +546,14 @@ C       a.k.a. FCAC.
 C
       MZ = MIN(NZ,2)
 c     N2ASHXQ = NASHT*NASHT* NZ
-      print*,'MZ,N_FCACM,N2ASHXQ,N2ORBXQ',MZ,N_FCACM,N2ASHXQ,N2ORBXQ
+C     print*,'MZ,N_FCACM,N2ASHXQ,N2ORBXQ',MZ,N_FCACM,N2ASHXQ,N2ORBXQ
       CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
       CALL rGETFC(CWRTFO_MAT,WORK(KCMO),WORK(KFC),ECORE,
      &            WORK(KFREE),LFREE)
 *
+      IPROPT = 000
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
 *
 c     NASH(1) = NASHT
@@ -576,7 +574,8 @@ C     orbital symmetry info array
 !     read integrals into WORK(KH2AC)
       call RGETH2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
      &            .true.,.true.,work(kfree),lfree)
-
+C      CALL RGETH21_KRCC(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
+C    &               WORK(KFREE),LFREE,IPROPT)
 *
       CALL QEXIT('KRCC_INT')
 *
@@ -647,7 +646,7 @@ C     orbital symmetry info array
 *
       NTESTL = 1
 C     NTEST = max(NTESTL,IPRNT)
-      NTEST = 1
+      NTEST = 2
 *
 * Constants
       IZERO = 0
@@ -1108,7 +1107,7 @@ C                           print*,'IRI,NZ',IRI,NZ
      &                                  WORK,KFREE,LFREE)
                             end if
 *
-C                        print*,'ICOUNT,YINT,YXINT',ICOUNT,YINT,YXINT
+C                       print*,'ICOUNT,YINT,YXINT',ICOUNT,YINT,YXINT
                             T(ICOUNT) = YINT - YXINT
 *
 * FIXME !! Uncommented sign here!! 
@@ -1702,3 +1701,283 @@ C         YINT = H2AC(IIN) * IRIFAC * IRIFAC2
       return
       end
 *
+      SUBROUTINE RGETH21_KRCC(DOFQ,DOH2AC,PV,FQ,H2AC,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Calculate FQ and H2AC.
+C
+C     Input:
+C        DOFQ  - calculate the auxiliary Fock matrix FQ
+C        DOH2AC - collect active two-electron integrals.
+C        PV - two-electron density matrix
+C
+C     Output:
+C        FQ - auxiliary Fock matrix
+C        (H2AC written to disk)
+C
+C     Written by J. Thyssen - Jul 21 2000
+C     Last revision : L. Visscher - Mar 15 2001
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+C
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "maxorb.h"
+#include "dcbidx.h"
+#include "dcbham.h"
+C
+      DIMENSION FQ(NORBT,NASHT,NZ)
+      DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
+      DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      DIMENSION WORK(*)
+      LOGICAL DOFQ, DOH2AC
+C     index arrays
+      DIMENSION NFPCK12(2), NFPCK34(2)
+      DIMENSION NSTR(2,0:2,4)
+      DIMENSION IKLB(2)
+C     strings
+      CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
+      logical fopen
+C
+#include "memint.h"
+C
+      CALL QENTER('RGETH21')
+C
+C     Read information from integral file
+C     -----------------------------------
+C
+      IPRINT = 10
+      LUINT = 1
+      OPEN (LUINT, FILE = '4INDINFO', STATUS = 'OLD',
+     &     FORM = 'UNFORMATTED' )
+C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A)') ' Reading from file : 4INDINFO '
+C
+C     Read time & date for creation
+C
+      READ (LUINT) DATEX, TIMEX
+C
+      IF ( IPRINT .GE. 5 ) WRITE(LUPRI,'(4A)')
+     &     ' (RGETH2) Time and date read from 4INDINFO: ',
+     &     TIMEX, ' ',DATEX
+C
+      READ (LUINT) NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NSTR
+C
+      CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
+C
+C     I and J indices
+      CALL READI(LUINT,NFPCK12T*2,WORK(KDXKR12))
+C     Boson irrep for IJ indices
+      CALL READI(LUINT,NFPCK12T*2,WORK(KDXB12))
+C     Boson irrep for KL indices
+      CALL READI(LUINT,NFPCK34T*2,WORK(KDXB34))
+C
+      CLOSE (LUINT, STATUS = 'KEEP')
+C
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+C
+C     Open integral files.
+C     --------------------
+C
+      IIKLB = 0
+      LUINT = 56
+C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
+      DO IREPIJ = 1, NFSYM
+         IKLB(IREPIJ) = IIKLB
+         IRECL = IRECLEN(NCLASS * NFPCK34 (IREPIJ), 0, 0)
+         IRECL = MAX(IRECL,IRECLEN(1,0,0))
+         WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
+         FNODE = LFNAM(FNAM)
+         WRITE(LUPRI,'(A,A)') ' Reading from file : ',FNODE
+         OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
+     &        ACCESS='DIRECT',RECL=IRECL)
+         IIKLB = IIKLB + NFPCK34 (IREPIJ)
+      END DO
+C
+C     Allocate memory for integrals (H2XY)
+C
+      CALL MEMGET('REAL',KHMAT,N2ORBX*NCLASS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KH2XY,N2ORBX*NCLASS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KH2YX,N2ORBX*NCLASS,WORK,KFREE,LFREE)
+c
+#ifdef MOD_DEBUG
+      write(6,*) '(RGETH2) IDXKR12'
+      do i = 1, nfpck12t
+         write(6,*) I,
+     &        IGETINT(WORK(KDXKR12),1+(I-1)*2),
+     &        IGETINT(WORK(KDXKR12),I*2)
+      end do
+#endif
+c
+C
+C     Read integrals (x>y)
+C     --------------------
+C
+C     zero arrays
+C
+      IF (DOFQ) CALL DZERO(FQ,NASHT*NORBT*NZ)
+      IF (DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
+C
+C     Loop over records in integrals files.
+C
+      NXY = 0
+      DO 10 IREPIJ = 1, NFSYM
+         IREC = 0
+         DO 20 IXY = 1, NFPCK12(IREPIJ)
+            NXY = NXY + 1
+            IREC = IREC + 1
+            CALL GTXY(NXY,IX,IY,IXU,IYU,WORK(KDXKR12))
+            IREPIJB = IGETINT(WORK(KDXB12),NXY*2-1)
+#ifdef MOD_DEBUG
+            write(6,*) 'x & y: ',ix,iy
+            write(6,*) 'ative : ',ixu,iyu
+            write(6,*) ' '
+#endif
+C           We only need active-active distributions.
+C
+            IF (IXU .LT. 0 .OR. IYU .LT. 0) GOTO 20
+C
+C           ...also skip if X<Y
+C
+            IF (IXU .LT. IYU) GOTO 20
+C
+            IUU = MAX(IXU,IYU) * ( MAX(IXU,IYU) - 1 ) / 2
+     &           + MIN(IXU,IYU)
+C
+C           Read integrals
+C
+            NKL = NFPCK34(IREPIJ)
+C
+            READ (LUINT + IREPIJ, REC=IREC,
+     &           ERR=8000, IOSTAT=IOSVAL)
+     &           (WORK(KH2XY+I-1),I=1,NKL*NCLASS)
+#ifdef MOD_DEBUG
+            ii = 0
+            do i = 1, 4 * nz
+               write(6,*) 'class ',i,' before transformation'
+               call output(work(kh2xy+ii),1,norbt,1,norbt,
+     &              norbt,norbt,1,lupri)
+               ii = ii + nkl
+            end do
+#endif
+C
+C           Reorder integrals to full matrix
+C           --------------------------------
+C
+            CALL DZERO(WORK(KH2YX),N2ORBX*NCLASS)
+C
+            IREPABR = 0
+            DO IREPAB = 0, NBSYM - 1
+               IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
+                  IREPABR = IREPABR + 1
+                  DO IZ2 = 1, NZ
+                     IQ2 = IPQTOQ(IZ2,IREPAB)
+C
+C                    Transform symmetry packed
+C                    integrals to full matrix.
+C                    (take care of diff. integral transformations etc.)
+C
+                     CALL INTB2X(WORK(KH2XY),IZ2,IREPABR,IREPAB,
+     &                    WORK(KH2YX),IREPIJ,NKL)
+C                    CALL INTB2X(HT,IZ2,IREPABR,IREPAB,HX,IREPIJ,NKL)
+C
+C                    Transform boson-symmetry array to
+C                    full
+C
+C                    (FIXME: write me)
+C
+                     IF (SPINFR) THEN
+                        write(6,*) 'SPINFR not implemented in RGETH2'
+                        CALL QUIT('SPINFR not implemented in RGETH2')
+                     END IF
+C
+                  END DO
+               END IF
+            END DO
+C
+C           Transform to Dirac (NZ,3) format
+C           --------------------------------
+C
+            CALL CL2NZ3(WORK(KH2YX),WORK(KHMAT),N2ORBX,IREPIJ,
+     &           IREPIJB,WORK(KDXB34),IKLB)
+C           CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+C
+C           Get (gu) and (ug) blocks + H2AC
+C           -------------------------------
+C
+            CALL X2GU(WORK(KHMAT),WORK(KH2XY),WORK(KH2YX),
+     &           H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
+C           CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
+C
+#ifdef MOD_DEBUG
+            do i = 1, 3 * nz
+               write(6,*) 'xy matrix no ',i
+               call output(work(kh2xy + (i-1)*norbt*nasht),
+     &              1,norbt,1,nasht,norbt,nasht,1,lupri)
+            end do
+            if ( ix .ne. iy) then
+               do i = 1, 3 * nz
+                  write(6,*) 'yx matrix no ',i
+                  call output(work(kh2yx + (i-1)*norbt*nasht),
+     &                 1,norbt,1,nasht,norbt,nasht,1,lupri)
+               end do
+            end if
+#endif
+C
+C           Do the gazillion matrix multiplies to construct
+C           the auxiliary Fock matrix FQ.
+C
+            IF (DOFQ) THEN
+               CALL RADDFQ(FQ,WORK(KH2XY),WORK(KH2YX),PV,
+     &              IUU,IXU,IYU,IREPIJ,IPRINT)
+            END IF
+C
+ 20      CONTINUE
+ 10   CONTINUE
+C
+C     Close integral files
+C     --------------------
+C
+      DO IFSYM = 1, NFSYM
+         CLOSE (LUINT + IFSYM, STATUS = 'KEEP')
+      END DO
+C
+      IF (IPRINT .GE. 10) THEN
+         IF (DOH2AC) THEN
+            WRITE(LUPRI,'(A)') ' (RGETH21) H2AC matrix'
+            CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+C
+         IF (DOFQ) THEN
+            WRITE(LUPRI,'(A)') ' (RGETH21) FQ matrix'
+            CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+      END IF
+C
+      CALL QEXIT('RGETH21')
+      RETURN
+C
+C     Read errors
+C
+ 8000 CONTINUE
+      WRITE(LUPRI,'(/A)')
+     &     '*** ERROR in RGETH2 *** Read error'
+ 8100 CONTINUE
+      WRITE(LUPRI,'(1X,A,I4)')
+     &     'IREPIJ = ',IREPIJ,
+     &     'IREC   = ',IREC,
+     &     'IOSTAT = ',IOSVAL,
+     &     'I      = ',I,
+     &     'IX     = ',IX,
+     &     'IY     = ',IY,
+     &     'NXY    = ',NXY
+      CALL QUIT('*** ERROR in RGTETH2 *** Error reading integral file')
+      END

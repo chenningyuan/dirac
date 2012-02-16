@@ -2767,7 +2767,7 @@
 *
 *
 * End of the line. Was this not long and tedious?
-* Should you find or know a longer subroutine then please write to me at
+* Should you find or know of a longer subroutine then please write to me at
 * lks@chem.au.dk and i will try to make this one longer.
 *
       RETURN
@@ -2803,55 +2803,67 @@
 *
       WRITE(6,*) ' Welcome to H and M '
 *
-* First find for every H-type the same M-type so they can be added later
+* First find for every M-type the same T-type so they can be added later
+*
+      IWAY = 1
 *
 * H12 + M12
 *
-* How do I want to store it??? Assume for now every H is included in M
-* and then check if that is true!
-* 
       print*,' matching 12'
       ISIMHT12 = NH12 !MIN(NINTER12,NH12)
       CALL MEMGET('INTE',KM12TOH12,ISIMHT12,WORK,KFREE,LFREE)
-      CALL OP_COMPARE(WORK(KNH12),NH12,WORK(KINTM12),NINTER12,
+      CALL OP_COMPARE(IWAY,WORK(KNH12),NH12,WORK(KINTM12),NINTER12,
      &     WORK(KINT12_IDXS),WORK(KINT12_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM12TOH12),WORK(KLSOBEX))
       CALL MEMCHK_KRCC(WORK)
+*
 * H11 + M11
+*
       print*,' matching 11 '
       ISIMHT11 = NH11 !MIN(NINTER11,NH11)
       CALL MEMGET('INTE',KM11TOH11,ISIMHT11,WORK,KFREE,LFREE)
-      CALL OP_COMPARE(WORK(KNH11),NH11,WORK(KINTM11),NINTER11,
+      CALL OP_COMPARE(IWAY,WORK(KNH11),NH11,WORK(KINTM11),NINTER11,
      &     WORK(KINT11_IDXS),WORK(KINT11_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM11TOH11),WORK(KLSOBEX))
+*
 * H02 + M02
+*
       print*,' matching 02'
       ISIMHT02 = NH02 !MIN(NINTER02,NH02)
       CALL MEMGET('INTE',KM02TOH02,ISIMHT02,WORK,KFREE,LFREE)
-      CALL OP_COMPARE(WORK(KNH02),NH02,WORK(KINTM02),NINTER02,
+      CALL OP_COMPARE(IWAY,WORK(KNH02),NH02,WORK(KINTM02),NINTER02,
      &     WORK(KINT02_IDXS),WORK(KINT02_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM02TOH02),WORK(KLSOBEX))
+*
 * H10 + M10
+*
       print*,' matching 10'
       ISIMHT10 = NH10 !MIN(NINTER10,NH10)
       CALL MEMGET('INTE',KM10TOH10,ISIMHT10,WORK,KFREE,LFREE)
-      CALL OP_COMPARE(WORK(KNH10),NH10,WORK(KINTM10),NINTER10,
+      CALL OP_COMPARE(IWAY,WORK(KNH10),NH10,WORK(KINTM10),NINTER10,
      &     WORK(KINT10_IDXS),WORK(KINT10_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM10TOH10),WORK(KLSOBEX))
+*
 * H01 + M01
+*
       print*,' matching 01'
       ISIMHT01 = NH01 !MIN(NINTER01,NH01)
       CALL MEMGET('INTE',KM01TOH01,ISIMHT01,WORK,KFREE,LFREE)
-      CALL OP_COMPARE(WORK(KNH01),NH01,WORK(KINTM01),NINTER01,
+      CALL OP_COMPARE(IWAY,WORK(KNH01),NH01,WORK(KINTM01),NINTER01,
      &     WORK(KINT01_IDXS),WORK(KINT01_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM01TOH01),WORK(KLSOBEX))
-* H00 + T
+*
+* H00 + T Special case
+*
+      IWAY = 2
       print*,' matching 00'
       ISIMHT00 = NH00 !MIN(NINTER00,NH00)
       CALL MEMGET('INTE',KM00TOH00,ISIMHT00,WORK,KFREE,LFREE)
-      CALL OP_COMPARE(WORK(KNH00),NH00,WORK(KLSOBEX_CC),NSPOBEX_TPE,
+      CALL OP_COMPARE(IWAY,WORK(KNH00),NH00,WORK(KLSOBEX_CC),
+     &     NSPOBEX_TPE,
      &     WORK(KT_IDXS),WORK(KT_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM00TOH00),WORK(KLSOBEX))
+*
       RETURN
       END
 *

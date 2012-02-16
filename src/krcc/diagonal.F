@@ -487,9 +487,9 @@ C          print*,'ARR(I)',ARR(I),I
 *
       DIMENSION WORK(*)
 *
-      NTEST = 00
+      NTEST = 000
       IT = 0
-C      print*,'NTSS_TP',NTSS_TP
+C     print*,'NTSS_TP',NTSS_TP
 C      II = 4*NGAS
 C      DO I =1, II
 C        DO J = 1, NTSS_TP
@@ -507,8 +507,8 @@ C      END DO
        NEL_CB = IELSUM(ITSS_TP(1+1*NGAS,ITSS),NGAS)
        NEL_AA = IELSUM(ITSS_TP(1+2*NGAS,ITSS),NGAS)
        NEL_AB = IELSUM(ITSS_TP(1+3*NGAS,ITSS),NGAS)
-       print*,'NEL_CA,NEL_CB,NEL_AA,NEL_AB',
-     &         NEL_CA,NEL_CB,NEL_AA,NEL_AB
+C      print*,'NEL_CA,NEL_CB,NEL_AA,NEL_AB',
+C    &         NEL_CA,NEL_CB,NEL_AA,NEL_AB
 *
 * find these in gnside_rel (LUCIAREL) in sigden_r.F
 *
@@ -517,16 +517,17 @@ C      END DO
      &                  ITSS_TP(1+1*NGAS,ITSS),
      &                  ITSS_TP(1+2*NGAS,ITSS),
      &                  ITSS_TP(1+3*NGAS,ITSS),NGAS,IDIAG)
-       IF(IDIAG.EQ.0) THEN
+C      IF(IDIAG.EQ.0) THEN
          IRESTRICT = 0
-       ELSE
-         IRESTRICT = 1
-       END IF
+C      ELSE
+C        IRESTRICT = 1
+C      END IF
        DO ISM_C = 1, NSMST
 Cori     ISM_A = MULTD2H(ISM,ISM_C)
 C         ISM_A = IDBGMULT(ISM_C,IADJSYM(ISM))
 C         ISM_A = IDBGMULT(ISM,IADJSYM(ISM))
 C         ISM_A = IDBGMULT(ISM,IADJSYM(ISM_C))
+C        ISM_A = IDBGMULT(ISM,INVELM(ISM_C))
          ISM_A = IDBGMULT(ISM,ISM_C)
 * ADJSYM(MULTD2H_DBG)
          DO ISM_CA = 1, NSMST
@@ -544,8 +545,8 @@ Cori        ISM_AB =  MULTD2H(ISM_A,ISM_AA)
             ELSE
              IRESTRICT_LOOP = 1
             END IF
-C?          WRITE(6,'(A,4I5)') ' ISM_CA, ISM_CB, ISM_AA, ISM_AB',
-C?   &                           ISM_CA, ISM_CB, ISM_AA, ISM_AB
+C           WRITE(6,'(A,4I5)') ' ISM_CA, ISM_CB, ISM_AA, ISM_AB',
+C    &                           ISM_CA, ISM_CB, ISM_AA, ISM_AB
 *. obtain strings IUB added
             IUB = 1
             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,ISM_CA,NEL_CA,
@@ -597,6 +598,7 @@ C    &               NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                  IT = IT + 1
                  CCDIA(IT) =
      &           E_CA(I_CA) + E_CB(I_CB) - E_AA(I_AA) - E_AB(I_AB)
+C                print*,'ITSS',ITSS
 C                print*,'E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)'
 C                print*, E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)
                  IF(IRECOM.NE.1) THEN

@@ -217,6 +217,13 @@ C               ICOUNT = 0
              print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
 * Should perhaps pass down only the part of the integrals needed?
                   IF(IFHM.EQ.1) THEN
+      NTEST = 1000
+      IF(NTEST.GE.1000) THEN
+        WRITE(6,*) ' Information from EMTHET_COM '
+        WRITE(6,*) '============================='
+        WRITE(6,*) ' Input T-amplitudes for Hamiltonian'
+        CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
+      END IF
               CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),1,NRANK,
      &             IFHM,INTEGRALS,
      &             ISPOBEX_TP(1,IT1),
@@ -225,6 +232,13 @@ C               ICOUNT = 0
      &             CC_VEC_FNC(IBSPOBEX_TO(IHCTP)),
      &             LCCFBLK,IRESOP(1,IHCTP),
      &             WORK,KFREE,LFREE)
+      NTEST = 1000
+      IF(NTEST.GE.1000) THEN
+        WRITE(6,*) ' Information from EMTHET_COM '
+        WRITE(6,*) '============================='
+        WRITE(6,*) ' Output T-amplitudes for Hamiltonians'
+        CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
+      END IF
               CALL MEMCHK_KRCC(WORK)
                   ELSE
 * Will now make an injective mapping of the cluster amplitudes to be
@@ -249,6 +263,7 @@ C               ICOUNT = 0
      &                            INTEGRALS(IOFF_M),
      &                            WORK,KFREE,LFREE)
 * Will now pass down WORK(KMTOEXDX) instead of integrals due to resort
+           print*,'IDIMEXDX,IOFF_M',IDIMEXDX,IOFF_M
       NTEST = 1000
       IF(NTEST.GE.1000) THEN
         WRITE(6,*) ' Information from EMTHET_COM '
@@ -256,8 +271,6 @@ C               ICOUNT = 0
         WRITE(6,*) ' Input T-amplitudes for intermediates'
         CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
       END IF
-              IGIT = 1
-              IF(IGIT.EQ.1) THEN
                print*,'entering HCT1234_REL for intermediate'
               CALL HCT1234_REL(IHTP(1,IHOP),IMINDEX,1,NRANK,
      &             IFHM,WORK(KMTOEXDX),
@@ -274,7 +287,6 @@ C               ICOUNT = 0
         WRITE(6,*) ' Output T-amplitudes for intermediates'
         CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
       END IF
-              END IF
               CALL MEMCHK_KRCC(WORK)
               CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
                   END IF
@@ -284,6 +296,17 @@ C               ICOUNT = 0
           ELSE
             IF(NTEST.GE.100) THEN
               WRITE(6,*) ' No possible contractions '
+            END IF
+* Stupid temp solution
+            IF(IFHM.EQ.2) THEN
+              print*,'Will dimension an unused array'
+              IDIMEXDX = 0
+              CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
+     &                              IHTP(1,IHOP),
+     &                              ITOP(1,IOPT(ICOUNT)),
+     &                              IRESOP(1,IOPRES(ICOUNT)),
+     &                              INTEGRALS,
+     &                              WORK,KFREE,LFREE)
             END IF
           END IF
         END IF
@@ -1159,8 +1182,10 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
             SIGNX = SP_D1K1*SIGN_D1K1
             SIGN_LK = SIGN_EXK1
             SIGNG = FLOAT(ISIGNG)
+            NTEST = 100
             IF(NTEST.GE.100) WRITE(6,*) ' SIGNX, SIGNG, SIGN_LK = ', 
      &                                    SIGNX, SIGNG, SIGN_LK
+            NTEST = 00
             NDUM = 1 !ID2_BATLEN*ID3_BATLEN*ID4_BATLEN !This or 0 Lasse
             IF(NTEST.GE.100) 
      &      WRITE(6,*) ' OP(d1,ex)*T1(I) => OPT(l1)'
@@ -3387,7 +3412,7 @@ C
 * Integrals or intermediates?
       IF(IFHM.EQ.1) THEN !Fetch integrals
       DO JEX = 1, LEX
-      WRITE(6,*) ' EX string : '
+C     WRITE(6,*) ' EX string : '
 *. Should be looked at for general operator. Is okay since the strings
 *. come from the outside
         CALL GET_CCSTR_FROM_LIST 
@@ -3397,7 +3422,7 @@ C
      &       IBOEX(1,4) )
         DO JD1 = 1, LD1
 *. Occupation of J1 string in JD1STR
-      WRITE(6,*) ' D1 string : '
+C     WRITE(6,*) ' D1 string : '
           CALL GET_CCSTR_FROM_LIST 
      &         (JD1STR,INM_CAAB_D1(1,JD1),ISM_CAAB_D1(1,JD1),
      &         NOP_D1_CAAB,ISTR_D1(1,1),ISTR_D1(1,2),ISTR_D1(1,3),
@@ -3770,7 +3795,7 @@ C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *  cluster type (Hamiltonian is only a two particle operator)
        CALL ANALYZE_OP(ISPOBEX_TP(1,ITSS),NGAS,N,MK,MUB)
        IF(N.GE.3) EXIT ! Three particle operator
-       IF(NTEST.GE.100) THEN
+       IF(NTEST.GE.1) THEN
         WRITE(6,*) ' Particle rank = ',N
         WRITE(6,*) ' Kramers flip = ',MK
         WRITE(6,*) ' MUB = ',MUB
@@ -3779,11 +3804,17 @@ C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *. Not because of integrals fetching but because of sign in addition of
 *. integrals and amplitudes.
        IHTYPE = IMTOH(ITSS)
+       print*,'IHTYPE',IHTYPE
        IF(IHTYPE.EQ.0) CYCLE
 *. Find the sign to bring the Hamiltonian operator to cluster operator
 *. order. Now go from order defined in GET_HX_RELA to cluster operator.
        ISIGN_DE = IPERM_PARITY(IHINDEX(1,IHTYPE),2*N)
-       print*,'ITSS,IHTP,ISIGN_DE',ITSS,IHTP,ISIGN_DE
+* Not sure if this sign is correct yet!!!
+       IF(ABS(MUB).EQ.2.OR.MK.GT.0) ISIGN_DE = - ISIGN_DE
+C      IF(ABS(MUB).EQ.2) ISIGN_DE = - ISIGN_DE
+       print*,'ITSS,IHTYPE,ISIGN_DE',ITSS,IHTYPE,ISIGN_DE
+       SIGN_DE = DFLOAT(ISIGN_DE) 
+C      SIGN_DE = 1.0D0
        CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHTYPE),1)
 *. Transform from occupations to groups
        CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+0*NGAS,ITSS),IGRP_CA,1)
@@ -3944,7 +3975,8 @@ C             OPSCR(INT) = WORK(KFI + IOFF)
      &                    ' to integral ',XOUT
               END IF
 * Now add integral and amplitude
-               T(IT) = T(IT) + XOUT
+               T(IT) = T(IT) + SIGN_DE*XOUT
+C              T(IT) = T(IT) + XOUT
              END DO
 *            ^ End of loop over alpha creation strings
             END DO

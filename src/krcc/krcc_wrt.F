@@ -93,25 +93,25 @@ C             print*,'LENGTH',LENGTH
 *
       DIMENSION WORK(*)
 *     
-      print*,' I need a fix for NSXE. This used to be on crun.inc'
-      STOP ' this routine does not work '
-      IF(CCTYPE(1:2).EQ.'CC') THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*) ' Single excitation part '
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*)
-        CALL WRT_SX_REL(CC,1,NSXE)
+C     print*,' I need a fix for NSXE. This used to be on crun.inc'
+C     STOP ' this routine does not work '
+C     IF(CCTYPE(1:2).EQ.'CC') THEN
+C       WRITE(6,*)
+C       WRITE(6,*) ' ====================== '
+C       WRITE(6,*) ' Single excitation part '
+C       WRITE(6,*) ' ====================== '
+C       WRITE(6,*)
+C       CALL WRT_SX_REL(CC,1,NSXE)
 *
-        WRITE(6,*)
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*) ' Double excitation part '
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*)
-        CALL WRT_DX_REL(CC(1+NSXE),1)
-      ELSE IF (CCTYPE(1:6).EQ.'GEN_CC') THEN
+C       WRITE(6,*)
+C       WRITE(6,*) ' ====================== '
+C       WRITE(6,*) ' Double excitation part '
+C       WRITE(6,*) ' ====================== '
+C       WRITE(6,*)
+C       CALL WRT_DX_REL(CC(1+NSXE),1)
+C     ELSE IF (CCTYPE(1:6).EQ.'GEN_CC') THEN
         CALL WRTBLKN_CC(CC,NSPOBEX_TP,WORK(KLLSOBEX))
-      END IF
+C     END IF
 *
       RETURN
       END

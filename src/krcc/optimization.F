@@ -1,4 +1,4 @@
-      SUBROUTINE OPTIM_CC2_KRCC(CC_AMP,CCVEC1,CCVEC2,VEC1,VEC2,
+      SUBROUTINE OPTIM_CC2_KRCC(CC_AMP,CCVEC1,VEC1,VEC2,
      &                         CCTYPE,ECC,WORK,KFREE,LFREE)
 *
 * Optimize CC wave function
@@ -27,7 +27,7 @@
 * ========
 *
 * VEC1, VEC2 : Two vectors for CI calculations (old CCVEC)
-* CCVEC1, CCVEC2 : Two complete CC vectors
+* CCVEC1 : Complete CC vector
 *
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
@@ -49,7 +49,7 @@
 C added
 #include "cicisp.inc"
 *. Scratch 
-      DIMENSION VEC1(*),VEC2(*), CCVEC1(*), CCVEC2(*)
+      DIMENSION VEC1(*),VEC2(*), CCVEC1(*)
 *. Input and output
       DIMENSION CC_AMP(*),WORK(*)
 * Test
@@ -122,7 +122,6 @@ C
      &      WORK,KFREE,LFREE)
 *
 *
-      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' OPTIM_CC : Diagonal '
         CALL WRTMAT(CCVEC1,1,2*N_CC_AMP,1,2*N_CC_AMP)
@@ -167,18 +166,12 @@ C       stop 'after CC_VEC_FNC_KRCC'
 C**************************************************************
 *. Save on LUHC
 C Save real and imagenary if complex algebra otherwise just real
-        CALL VEC_TO_DISC(CCVEC1,IMULTFAC*N_CC_AMP,1,LBLK,LUHC)
+        CALL VEC_TO_DISC(CCVEC1,IMULTFAC*(N_CC_AMP+1),1,LBLK,LUHC)
 C FIX FOR ECORE
         IF(ITER.EQ.1) THEN
-          CALL GET_ECORE(ECORE2,I_DO_NEWCCV)
-          print*,'ECC1',ECC1
+          CALL GET_ECC(ECORE2)
         END IF
-        IF(I_DO_NEWCCV.EQ.1) THEN
           ECC = ECC1 + ECORE2
-        ELSE
-          ECC = ECC1 + ECORE2
-*          ECC = ECC1
-        END IF
 C        print*,'ECC,ECC1,ECORE2,iter',ECC,ECC1,ECORE2,iter
 C        print*,'ECORE in optim',ECORE
 C Norm of real + imagenary
@@ -189,26 +182,22 @@ C Norm of real + imagenary
           print*,'CCVEC1',CCVEC1(i)
         end do
         print*
-        do i=1,N_CC_AMP
+        do i=1,N_CC_AMP +1
           print*,'CC_AMP',CC_AMP(i)
         end do
         print*
-        do i=1,N_CC_AMP
+        do i=1,N_CC_AMP+1
           print*,'VEC1',VEC1(i)
         end do
         print*
-        do i=1,N_CC_AMP
+        do i=1,N_CC_AMP+1
           print*,'VEC2',VEC2(i)
         end do
         print*
-        do i=1,N_CC_AMP
-          print*,'CCVEC2',CCVEC2(i)
-        end do
-
-
         END IF
-          XNORM = SQRT(INPROD(CCVEC1,CCVEC1,IMULTFAC*N_CC_AMP))
-C        print*,'after XNORM',XNORM
+C Notice the identety is now number one and not the last element!
+          XNORM = SQRT(INPROD(CCVEC1(2),CCVEC1(2),IMULTFAC*N_CC_AMP))
+         print*,'after XNORM',XNORM
          CALL MEMCHK_KRCC(WORK)
 ****************************************
 ****************************************
@@ -244,8 +233,9 @@ CDEBUG        CCCONV = 1.0D-13
 * 2 : Use Diagonal + the current set of CC vector functions to obtain 
 *     the improved guess 
 * Hardwirering
-        I_DO_SBSPJA = 1
+        I_DO_SBSPJA = 0
         IF(I_DO_SBSPJA.EQ.0) THEN
+        CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP+1,WORK,KFREE,LFREE)
 *
 * Simple perturbation update
 *. find change of CC coefficients as - Scaled(diag)-1 * CC_VEC_FNC on CCVEC1
@@ -254,23 +244,25 @@ CDEBUG        CCCONV = 1.0D-13
 C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
 C Both real and imagenary
 C          print*,'before VEC_FROM_DISC'
-          CALL VEC_FROM_DISC(CCVEC2,IMULTFAC*N_CC_AMP,1,LBLK,LUDIA)
-C          print*,'after VEC_FROM_DISC'
+         CALL VEC_FROM_DISC(WORK(KDIA),IMULTFAC*N_CC_AMP+1,1,LBLK,LUDIA)
+           print*,'after VEC_FROM_DISC'
           CALL MEMCHK_KRCC(WORK)
-C          print*,'after rmemchk'
+           print*,'after rmemchk'
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1,CCVEC2',CCVEC1(i),CCVEC2(i),i
 C          end do
-          CALL DIAVC2(CCVEC1,CCVEC1,CCVEC2,ZERO,IMULTFAC*N_CC_AMP)
-C          print*,'after DIAVC2'
+          CALL DIAVC2(CCVEC1(2),CCVEC1(2),WORK(KDIA+1),
+     &                ZERO,IMULTFAC*N_CC_AMP)
+           print*,'after DIAVC2'
+           CALL DUMDUM(N_CC_AMP,CCVEC1,WORK(KDIA))
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1',CCVEC1(i),CCVEC2(i),i
 C          end do
           CALL MEMCHK_KRCC(WORK)
-C          stop
-C          print*,'after 2'
+           print*,'after 2'
           ONEM = -1.0D0
           CALL SCALVE(CCVEC1,ONEM,IMULTFAC*N_CC_AMP)
+        CALL MEMREL('MAPPING',WORK,KDIA,KDIA,KFREE,LFREE)
         ELSE
 *
 * Use diagonal + subspace approximation 
@@ -444,7 +436,8 @@ C          CALL SCALVE(CCVEC1,ONEM,2*N_CC_AMP)
 *. Obtain new vector by adding correction to previous guess
           ONE = 1.0D0
 * REAL AND IMG STORED AFTER EACH OTHER so just 2*N_CC_AMP
-          CALL VECSUM(CC_AMP,CC_AMP,CCVEC1,ONE,ONE,IMULTFAC*N_CC_AMP)
+          CALL VECSUM(CC_AMP(2),CC_AMP(2),CCVEC1(2),
+     &                ONE,ONE,IMULTFAC*N_CC_AMP)
         ELSE IF(ICCSOLVE.EQ.2) THEN 
 *. DIIS
           IF(ITER.EQ.1) THEN
@@ -536,9 +529,6 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'CC_OPT')
 
 
 
-
-
-*
       SUBROUTINE GET_ECC(ECC)
 C FOR DIRTY FIX
 #include "implicit.inc"
@@ -548,32 +538,6 @@ C FOR DIRTY FIX
       RETURN
       END
 
-
-
-
-
-
-
-*
-      SUBROUTINE GET_ECORE(ECORE2,I_DO_NEWCCV)
-C FOR DIRTY FIX
-#include "implicit.inc"
-C#include "dcbdhf.h"
-C#include "dcbgen.h"
-C#include "frame.h"
-#include "cecore.inc"
-C      ECORE2 = DHFERG - ELERGY + ECORE
-      LOGICAL LOGI
-      CHARACTER TEXT*74
-      DIMENSION IDIM(3,2)
-      IF(I_DO_NEWCCV.EQ.0) THEN
-      ECORE2 = ECORE 
-      ELSE
-      ECORE2 = E_TEMP
-      END IF
-      print*,'ECORE2',ECORE2
-      RETURN
-      END
 *
       SUBROUTINE APRJAC_TV(NVEC,LUIN,LUOUT,LUVEC,LUJVEC,
      &           LUJDIA,VEC1,VEC2,SCR,N_CC_AMP,LUSCR,LUSCR2,
@@ -1249,3 +1213,12 @@ C?    CALL PRSYM(BMAT,NVECP1)
       print*,'you should call INVERT_BY_DIAG2 instead'
       stop 'you should call INVERT_BY_DIAG2 instead'
       END 
+*
+
+      SUBROUTINE DUMDUM(N_CC_AMP,CCVEC1,CCVEC2)
+#include "implicit.inc"
+      DIMENSION CCVEC1(*),CCVEC2(*)
+          do i=1,N_CC_AMP
+            print*,'CCVEC1',CCVEC1(i),CCVEC2(i),i
+          end do
+      END

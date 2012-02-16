@@ -2222,7 +2222,7 @@ C#include "memint.h"
       IFLAG = 1
       CALL GET_HX_RELA_FOR_NEWCCV(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
-     &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                 DUMMY,JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
 C     print*,'NSPOBEX_TP',NSPOBEX_TP
@@ -2230,6 +2230,7 @@ C     print*,'NSPOBEX_TP',NSPOBEX_TP
 *. and the actual spin-orbital excitations
       CALL MEMGET('INTE',KLSOBEX,4*NGAS*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLIHIND,4*NSPOBEX_TP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLIHINDOP,4*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSIGNNHX,NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLABEXTP,4*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLOP_REO,4*NSPOBEX_TP,WORK,KFREE,LFREE)
@@ -2238,9 +2239,12 @@ C     print*,'NSPOBEX_TP',NSPOBEX_TP
       IZERO = 0
       CALL ISETVC(WORK(KINC_HX),IZERO,NHX)
       IFLAG = 0
+* Notice KLIHINDOP becomes IHINDX and KLIHIND IHINDXOP
+* It is KLIHIND that is used later in the code!!!
       CALL GET_HX_RELA_FOR_NEWCCV(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
-     &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
+     &                 WORK(KLSOBEX),WORK(KLIHINDOP),WORK(KLIHIND),
+     &                 WORK(KSIGNNHX),
      &                 WORK(KLABEXTP),WORK(KLOP_REO),
      &                 WORK(KSIOPREO),WORK(KINC_HX),JCMBSPC,IPRNT)
 *
@@ -3162,7 +3166,8 @@ C     print*,'NHX at the end',NHX
       END
 *
       SUBROUTINE GET_HX_RELA_FOR_NEWCCV(IFLAG,IHTYPE,NOBPT,NHX,
-     &                       IFTONE,IFTTWO,ILTTWO,IHX_LOC,IHX,IHINDX,
+     &                       IFTONE,IFTTWO,ILTTWO,IHX_LOC,IHX,
+     &                       IHINDX,IHINDXOP,
      &                       SIGN_NHX,LABEL,IOP_REO,SIGN_OPREO,
      &                       INCLUDED_HX,JCMBSPC,IPRNT)
 *
@@ -3214,7 +3219,8 @@ C     print*,'NHX at the end',NHX
 *. input
       dimension NOBPT(NGAS)
 *. output
-      INTEGER IHX(NGAS,4,*),IHINDX(4,*),LABEL(4,*),IOP_REO(4,*)
+      INTEGER IHX(NGAS,4,*),IHINDX(4,*),IHINDXOP(4,*)
+      INTEGER LABEL(4,*),IOP_REO(4,*)
       INTEGER INCLUDED_HX(*)
       dimension SIGN_NHX(*),SIGN_OPREO(*)
 *. Local scratch
@@ -3274,6 +3280,10 @@ C              print*,'INSIDE if block.'
                   IHINDX(2,NHX) = 2
                   IHINDX(3,NHX) = 0
                   IHINDX(4,NHX) = 0
+                  IHINDXOP(1,NHX) = 1
+                  IHINDXOP(2,NHX) = 2
+                  IHINDXOP(3,NHX) = 0
+                  IHINDXOP(4,NHX) = 0
                   SIGN_NHX(NHX) = ONE
                   LABEL(IHINDX(1,NHX),NHX) = 1
                   LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3312,6 +3322,10 @@ C              print*,'INSIDE if block.'
                   IHINDX(2,NHX) = 2
                   IHINDX(3,NHX) = 0
                   IHINDX(4,NHX) = 0
+                  IHINDXOP(1,NHX) = 1
+                  IHINDXOP(2,NHX) = 2
+                  IHINDXOP(3,NHX) = 0
+                  IHINDXOP(4,NHX) = 0
                   SIGN_NHX(NHX) = ONE
                   LABEL(IHINDX(1,NHX),NHX) = -1
                   LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3385,6 +3399,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3423,6 +3441,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3486,6 +3508,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = -1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3516,6 +3542,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = -1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3563,6 +3593,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 4
+                    IHINDXOP(4,NHX) = 3
                     SIGN_NHX(NHX) = -1.D0 * ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3593,6 +3627,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 4
+                    IHINDXOP(4,NHX) = 3
                     SIGN_NHX(NHX) = -1.D0 * ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3832,6 +3870,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 4
                       IHINDX(4,NHX) = 2
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = 1
                       LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3862,6 +3904,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 4
                       IHINDX(4,NHX) = 2
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = 1
                       LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3925,6 +3971,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 2
                       IHINDX(4,NHX) = 4
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = -1
                       LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3955,6 +4005,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 2
                       IHINDX(4,NHX) = 4
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = -1
                       LABEL(IHINDX(2,NHX),NHX) = -1
