@@ -162,21 +162,21 @@ if(ENABLE_PCMMOD)
     CMAKE_ARGS ${ExternalProjectCMakeArgs}
     )                                                          
     add_dependencies(external pcmsolver)                       
-       link_directories(${CMAKE_SOURCE_DIR}/external/lib)
-       link_directories(${CMAKE_SOURCE_DIR}/external/pcmsolver/external/lib)
-	set(LIBS
-	    solver
-		green
-		cavity
-		metal
-		pedra
-		wem
-		wavcav
-		getkw
-	    ${LIBS}
-	    )
+    link_directories(${CMAKE_SOURCE_DIR}/external/lib)
+    link_directories(${CMAKE_SOURCE_DIR}/external/pcmsolver/external/lib)
+    set(LIBS
+	solver
+	green
+	cavity
+	metal
+	pedra
+	wem
+	wavcav
+	getkw
+	${LIBS}
+	)
 # We should configure appropriately the pam script to
-# read also PCMSolver input throught its separate
+# read also PCMSolver input through its separate
 # input parsing script.
 endif()
 
