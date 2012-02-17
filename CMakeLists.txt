@@ -247,6 +247,27 @@ foreach(
         )
 endforeach()
 
+add_dependencies(dirac.x external)
+
+if(ENABLE_PCMMOD)
+    #  link_directories(${CMAKE_SOURCE_DIR}/external/lib)
+    #  link_directories(${CMAKE_SOURCE_DIR}/external/pcmsolver/external/lib)
+set(LIBS
+    solver
+	green
+	cavity
+	metal
+	pedra
+	wem
+	wavcav
+	getkw
+    ${LIBS}
+    )
+# We should configure appropriately the pam script to
+# read also PCMSolver input throught its separate
+# input parsing script.
+endif()
+
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
