@@ -84,9 +84,6 @@ contains
 !                    case ('**METHO', '**WAVE ')
 !                       call read_input_method(word, kw_section)
 
-                     case ('**EXTPCM')
-                        call read_input_extpcm()
-
                      case ('*DFT   ')
                         call read_input_dft(word, kw_section)
 
@@ -158,12 +155,6 @@ contains
             return
          end if
       end do
-
-   end subroutine
-
-   subroutine read_input_extpcm()
-
-      dirac_cfg_pcm = .true.
 
    end subroutine
 
