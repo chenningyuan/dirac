@@ -87,7 +87,7 @@ include(ConfigParallelEnvironment)
 
 set(LIBS)
 
-include(Math)
+include(ConfigMath)
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
