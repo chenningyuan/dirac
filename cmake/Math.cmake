@@ -1,7 +1,7 @@
 set(MATH_LANG "Fortran")
 
-set(BLAS_LIBRARIES)
-set(LAPACK_LIBRARIES)
+set(BLAS_FOUND   FALSE)
+set(LAPACK_FOUND FALSE)
 
 option(FORCE_OWN_BLAS   "Force use of own BLAS"   OFF)
 option(FORCE_OWN_LAPACK "Force use of own LAPACK" OFF)
@@ -25,8 +25,8 @@ if(NOT ENABLE_INTERNAL_MATH)
             FORCE
             )
         message("-- User set math libraries: ${MATH_LIBS}")
-        set(BLAS_LIBRARIES   TRUE)
-        set(LAPACK_LIBRARIES TRUE)
+        set(BLAS_FOUND   TRUE)
+        set(LAPACK_FOUND TRUE)
         set(LIBS
             ${LIBS}
             ${MATH_LIBS}
@@ -35,40 +35,40 @@ if(NOT ENABLE_INTERNAL_MATH)
 
     # try to find the best libraries using environment variables
     if(NOT FORCE_OWN_BLAS)
-        if(NOT BLAS_LIBRARIES)
+        if(NOT BLAS_FOUND)
             find_package(BLAS)
-            if(BLAS_LIBRARIES)
+            if(BLAS_FOUND)
                 set(LIBS
                     ${LIBS}
                     ${BLAS_LIBRARIES}
                     )
             endif()
         endif()
-        if(NOT BLAS_LIBRARIES)
+        if(NOT BLAS_FOUND)
             message("-- No external BLAS library found")
         endif()
     endif()
     if(NOT FORCE_OWN_LAPACK)
-        if(NOT LAPACK_LIBRARIES)
+        if(NOT LAPACK_FOUND)
             find_package(LAPACK)
-            if(LAPACK_LIBRARIES)
+            if(LAPACK_FOUND)
                 set(LIBS
                     ${LAPACK_LIBRARIES}
                     ${LIBS}
                     )
             endif()
         endif()
-        if(NOT LAPACK_LIBRARIES)
+        if(NOT LAPACK_FOUND)
             message("-- No external LAPACK library found")
         endif()
     endif()
 endif()
 
-if(NOT BLAS_LIBRARIES OR FORCE_OWN_BLAS)
+if(NOT BLAS_FOUND OR FORCE_OWN_BLAS)
     message("-- Using own BLAS implementation (slow)")
     add_definitions(-DUSE_OWN_BLAS)
 endif()
-if(NOT LAPACK_LIBRARIES OR FORCE_OWN_LAPACK)
+if(NOT LAPACK_FOUND OR FORCE_OWN_LAPACK)
     message("-- Using own LAPACK implementation (slow)")
     add_definitions(-DUSE_OWN_DLAMCH)
     add_definitions(-DUSE_OWN_DLAPACK)
