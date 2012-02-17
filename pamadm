@@ -394,7 +394,7 @@ dirac_modules[this_module].take_out_of_release()
 
 this_module = 'pcm'
 dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model through PCMSolver')
-dirac_modules[this_module].add_cppflag('MOD_PCM')
+dirac_modules[this_module].add_cppflag('PCM_MODULE')
 dirac_modules[this_module].add_directory('pcm')
 #dirac_modules[this_module].add_test()
 dirac_modules[this_module].take_out_of_release()

@@ -76,6 +76,9 @@ contains
                case ('*')
 !                 section
                   kw_section = uppercase(word)
+               
+               case ('**EXTPCM')  
+                  call read_input_extpcm()
 
                case default
 !                 keyword
@@ -156,6 +159,12 @@ contains
          end if
       end do
 
+   end subroutine
+
+   subroutine read_input_extpcm()
+      
+      logical, public :: dirac_cfg_pcm = .true.
+      
    end subroutine
 
    subroutine read_input_grid(word, kw_section)
