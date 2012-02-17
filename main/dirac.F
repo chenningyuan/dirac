@@ -116,6 +116,7 @@ C***********************************************************************
 
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
+         call init_gepol_cavity 
          print *, 'calling pcm init'
       end if
 #endif
