@@ -76,9 +76,6 @@ contains
                case ('*')
 !                 section
                   kw_section = uppercase(word)
-               
-               case ('**EXTPCM')  
-                  call read_input_extpcm()
 
                case default
 !                 keyword
@@ -86,6 +83,9 @@ contains
 
 !                    case ('**METHO', '**WAVE ')
 !                       call read_input_method(word, kw_section)
+
+                     case ('**EXTPCM')
+                        call read_input_extpcm()
 
                      case ('*DFT   ')
                         call read_input_dft(word, kw_section)
@@ -162,9 +162,9 @@ contains
    end subroutine
 
    subroutine read_input_extpcm()
-      
-      logical, public :: dirac_cfg_pcm = .true.
-      
+
+      dirac_cfg_pcm = .true.
+
    end subroutine
 
    subroutine read_input_grid(word, kw_section)
@@ -955,7 +955,7 @@ contains
 
       call reset_available_kw_list()
 
-!     ignore HF orbital energies 
+!     ignore HF orbital energies
       if (kw_matches(word, '.IGNOE  ')) then
          relcc_use_orbital_energies = .false.
       end if

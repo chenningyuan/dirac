@@ -76,6 +76,7 @@ C  /* Deck dirctl */
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
+      use dirac_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -112,6 +113,13 @@ C***********************************************************************
 !     this is used in dft and visualization
       call interface_ao_write()
       call interface_mo_write()
+
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+         print *, 'calling pcm init'
+      end if
+#endif
+
 
 C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************
