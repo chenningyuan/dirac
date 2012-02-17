@@ -162,7 +162,24 @@ if(ENABLE_PCMMOD)
     CMAKE_ARGS ${ExternalProjectCMakeArgs}
     )                                                          
     add_dependencies(external pcmsolver)                       
+       link_directories(${CMAKE_SOURCE_DIR}/external/lib)
+       link_directories(${CMAKE_SOURCE_DIR}/external/pcmsolver/external/lib)
+	set(LIBS
+	    solver
+		green
+		cavity
+		metal
+		pedra
+		wem
+		wavcav
+		getkw
+	    ${LIBS}
+	    )
+# We should configure appropriately the pam script to
+# read also PCMSolver input throught its separate
+# input parsing script.
 endif()
+
 
 include(BinaryInfo)
 
@@ -237,7 +254,9 @@ foreach(
         SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
+      # SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
+      # radovan: for pcm, later find nicer way  
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E -lstdc++")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
@@ -247,25 +266,6 @@ foreach(
 endforeach()
 
 add_dependencies(dirac.x external)
-
-if(ENABLE_PCMMOD)
-    #  link_directories(${CMAKE_SOURCE_DIR}/external/lib)
-    #  link_directories(${CMAKE_SOURCE_DIR}/external/pcmsolver/external/lib)
-set(LIBS
-    solver
-	green
-	cavity
-	metal
-	pedra
-	wem
-	wavcav
-	getkw
-    ${LIBS}
-    )
-# We should configure appropriately the pam script to
-# read also PCMSolver input throught its separate
-# input parsing script.
-endif()
 
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
