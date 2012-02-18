@@ -13,7 +13,7 @@ mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 
 cd $TMP_DIR
-./setup --fc=mpif90 --cc=mpicc --enable-i8 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8_mpi" -D RUNTEST_NR_PROC=2
+./setup --fc=mpif90 --cc=mpicc --i8 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8_mpi" -D RUNTEST_NR_PROC=2
 cd build
 make Nightly
 
