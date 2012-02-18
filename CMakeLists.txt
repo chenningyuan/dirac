@@ -86,7 +86,7 @@ include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigParallelEnvironment)
 
-set(LIBS)
+set(LIBS "stdc++")
 
 include(Math)
 
@@ -254,9 +254,7 @@ foreach(
         SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-      # SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
-      # radovan: for pcm, later find nicer way  
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E -lstdc++")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
