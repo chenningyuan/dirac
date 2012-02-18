@@ -10,7 +10,7 @@ mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 
 cd $TMP_DIR
-./setup --fc=gfortran --cc=gcc --i8 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8"
+./setup --fc=gfortran --cc=gcc --int64 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8"
 cd build
 make Nightly
 
