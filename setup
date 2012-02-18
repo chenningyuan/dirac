@@ -50,28 +50,28 @@ group.add_argument('--cxx',
         default=None,
         help='set the C++ compiler [default: pick automatically or based on CXX=...]',
         metavar='STRING')
-group.add_argument('--enable-mpi',
+group.add_argument('--mpi',
         nargs='?',
         action='store',
         choices=('on','off'),
         default='off',
         const='on',
         help='enable MPI [default: %(default)s]')
-group.add_argument('--enable-openmp',
+group.add_argument('--openmp',
         nargs='?',
         action='store',
         choices=('on','off'),
         default='off',
         const='on',
         help='enable OpenMP [default: %(default)s]')
-group.add_argument('--enable-blas',
+group.add_argument('--blas',
         nargs='?',
         action='store',
         choices=('on','off'),
         default='on',
         const='on',
         help='enable BLAS [default: %(default)s]')
-group.add_argument('--enable-lapack',
+group.add_argument('--lapack',
         nargs='?',
         action='store',
         choices=('on','off'),
@@ -88,7 +88,7 @@ group.add_argument('--lapack-dir',
         default=None,
         help='directory containing LAPACK libraries [default: pick automatically based on LAPACK_ROOT (see INSTALL.rst)]',
         metavar='PATH')
-group.add_argument('--enable-i8',
+group.add_argument('--i8',
         nargs='?',
         action='store',
         choices=('on','off'),
@@ -131,7 +131,7 @@ group.add_argument('--release',
         action='store_false',
         dest='debug',
         help='build in release mode (full optimization) [default: %(default)s]')
-group.add_argument('--enable-tests',
+group.add_argument('--tests',
         nargs='?',
         action='store',
         choices=('on','off'),
@@ -223,14 +223,14 @@ def gen_cmake_command():
     if args.cc and (os.path.basename(args.cc)[:2].lower() == 'mp') or \
         args.cxx and (os.path.basename(args.cxx)[:2].lower() == 'mp') or \
         args.fc and (os.path.basename(args.fc)[:2].lower() == 'mp'):
-            args.enable_mpi = 'on'
+            args.mpi = 'on'
 
-    command += ' -DENABLE_MPI={0}'.format(args.enable_mpi.upper())
-    command += ' -DENABLE_OPENMP={0}'.format(args.enable_openmp.upper())
-    command += ' -DENABLE_BLAS={0}'.format(args.enable_blas.upper())
-    command += ' -DENABLE_LAPACK={0}'.format(args.enable_lapack.upper())
-    command += ' -DENABLE_TESTS={0}'.format(args.enable_tests.upper())
-    command += ' -DENABLE_64BIT_INTEGERS={0}'.format(args.enable_i8.upper())
+    command += ' -DENABLE_MPI={0}'.format(args.mpi.upper())
+    command += ' -DENABLE_OPENMP={0}'.format(args.openmp.upper())
+    command += ' -DENABLE_BLAS={0}'.format(args.blas.upper())
+    command += ' -DENABLE_LAPACK={0}'.format(args.lapack.upper())
+    command += ' -DENABLE_TESTS={0}'.format(args.tests.upper())
+    command += ' -DENABLE_64BIT_INTEGERS={0}'.format(args.i8.upper())
 
     if args.blas_dir:
         command += ' -DBLAS_ROOT={0}'.format(args.blas_dir)
@@ -268,7 +268,7 @@ def gen_cmake_command():
         for definition in args.define:
             command += ' -D%s' % definition
 
-    if args.enable_tests:
+    if args.tests:
         command += ' -DENABLE_TESTS=ON'
 
     if args.generator:
@@ -391,7 +391,7 @@ def configure_default_compilers():
         args.cxx = 'g++'
     if not args.fc:
         args.fc = 'gfortran'
-    if args.enable_mpi == 'on':
+    if args.mpi == 'on':
         args.fc = 'mpif90'
         args.cc = 'mpicc'
         args.cxx = 'mpicxx'
