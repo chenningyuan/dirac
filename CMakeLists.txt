@@ -22,19 +22,16 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/testing
     )
 
-# for windows need substitute (type)
-set(cat_program cat)
-
 include(ConfigSafeGuards)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # check whether pamadm-generated files exist
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Sources.cmake"      AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Definitions.cmake"  AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFiles.cmake" AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/Tests.cmake")
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/SourcesList.cmake"      AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/DefinitionsList.cmake"  AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake")
 else()
     # they do not exist: run pamadm -a
     execute_process(
@@ -83,14 +80,14 @@ if(ENABLE_MATLAB_LOG)
 endif()
 
 include(ConfigTesting)
-include(Definitions)
+include(DefinitionsList)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigParallelEnvironment)
 
 set(LIBS)
 
-include(Math)
+include(ConfigMath)
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
@@ -164,7 +161,7 @@ add_custom_target(dirac_interfaces
     ${GENERATED_FILES}
 )
 
-include(Sources)
+include(SourcesList)
 
 set(DIRAC_SOURCES
     ${C_SOURCES}
@@ -227,7 +224,7 @@ if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUN
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
     target_link_libraries(dirac.x -Wl,--no-export-dynamic)
-    if (BLAS_TYPE MATCHES ATLAS)
+    if (BLAS_TYPE MATCHES Atlas)
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
         target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)

@@ -22,7 +22,7 @@ type :: external_variales
   integer :: nfbas(2,0:2), n2bbasx, n2bbasxq
   integer :: nish(2), norb(2), npsh(2), nesh(2), norbt
   real*8  :: ssmtrc
-  logical :: twocompbss, levyle
+  logical :: occ_first
   integer :: nz, ipqtoq(4,0:7)
   integer :: nucdep
   real*8  :: thrzer
@@ -93,8 +93,6 @@ contains
   var_%norbt      = norbt
   ! dcbham.h
   var_%ssmtrc     = ssmtrc
-  var_%twocompbss = twocompbss
-  var_%levyle     = levyle
   ! dgroup.h
   var_%ipqtoq(:,:)= ipqtoq(:,:)
   var_%nz         = nz
@@ -108,6 +106,9 @@ contains
   var_%maxref     = min(maxref,15)
   var_%prothr     = prothr
   var_%ownbas     = ownbas
+
+  ! occupied MOs are written at the beginning of the DFCOEF file
+  var_%occ_first = twocomp .or. x2c .or. levyle
 
   if(maxref /= 15)then
     write(lupri,'(a)')' WARNING: The maxref dimension in localization module and Dirac differ'
@@ -672,7 +673,7 @@ contains
         DO J = 1,NI
           DO K = 1,4
             L = J + NO/2
-            IF (var_%LEVYLE) L = J
+            IF (VAR_%OCC_FIRST) L = J
             CMO(I,L,K) = SCOEF(I,J,K)
           ENDDO
         ENDDO

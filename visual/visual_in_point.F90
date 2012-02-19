@@ -146,33 +146,61 @@ contains
               
                result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
             end if
-            
-!           total electrostatic potential
-            if (visual_cfg_property(imat) == iq_esp) then
-               call get_esp(esp,3,       &
-                          D(imat)%irep,  &
-                          D(imat)%nrow,  &
-                          D(imat)%elms,  &
-                          px,py,pz)
-                         
-               result(0) = result(0) + esp
+           
+!           electrostatic potential - total
+            if ((visual_cfg_property(imat) == iq_esp) .or. &
+                (visual_cfg_property(imat) == iq_esprho)) then
+               call get_esp(esp,          &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            px,           &
+                            py,           &
+                            pz)
             end if
 
-!           density of Coulomb 2-electron contribution
-            if (visual_cfg_property(imat) == iq_esprho) then
-               call get_esp(esp,1,       &
-                          D(imat)%irep,  &
-                          D(imat)%nrow,  &
-                          D(imat)%elms,  &
-                          px,py,pz)
+!           electrostatic potential - electronic part
+            if ((visual_cfg_property(imat) == iq_espe) .or. &
+                (visual_cfg_property(imat) == iq_esperho)) then
+               call get_esp(esp,                      &
+                            D(imat)%irep,             &
+                            D(imat)%nrow,             &
+                            D(imat)%elms,             &
+                            px,                       &
+                            py,                       &
+                            pz,                       &
+                            include_nuc_part=.false., &
+                            include_el_part=.true.)
+            end if
+
+!           electrostatic potential - nuclear part
+            if ((visual_cfg_property(imat) == iq_espn) .or. &
+                (visual_cfg_property(imat) == iq_espnrho)) then
+               call get_esp(esp,                     &
+                            D(imat)%irep,            &
+                            D(imat)%nrow,            &
+                            D(imat)%elms,            &
+                            px,                      &
+                            py,                      &
+                            pz,                      &
+                            include_nuc_part=.true., &
+                            include_el_part=.false.)
+            end if
+
+            if ((visual_cfg_property(imat) == iq_esprho)  .or. &
+                (visual_cfg_property(imat) == iq_esperho) .or. &
+                (visual_cfg_property(imat) == iq_espnrho)) then
+!              multiply electrostatic potential with density
                call get_n(density,       &
                           D(imat)%irep,  &
                           D(imat)%nrow,  &
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
-               result(0) = result(0) + density*esp*0.5d0
-
+               result(0) = result(0) + density*esp
+            else
+!              just the electrostatic potential
+               result(0) = result(0) +         esp
             end if
 
             if (visual_cfg_property(imat) == iq_kin) then

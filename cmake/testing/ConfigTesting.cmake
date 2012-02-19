@@ -25,6 +25,6 @@ if(NOT "${RUNTEST_BINARY}" STREQUAL "")
     set(RUNTEST_FLAG_BINARY "--binary=${RUNTEST_BINARY}")
 endif()
 
-include(Tests)
+include(TestsList)
 include(CTest)
 enable_testing()

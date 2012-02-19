@@ -87,7 +87,7 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
   REAL(8), ALLOCATABLE :: values_stvc(:)    ! to be fixed
   INTEGER, ALLOCATABLE :: labels_stvc(:,:)  ! from labels(nipv,*)
 
-  INTEGER :: int_type     ! integral type 
+  INTEGER :: INT_TYPE     ! integral type 
   INTEGER :: ilfact = 1024
   INTEGER :: itypea, itypeb
   INTEGER :: lblop
@@ -138,7 +138,7 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
      itypea = itypan(nnam + lblop - 1)
      itypeb = itypbn(nnam + lblop - 1)
      call siftyp( itypea, itypeb, chrtyp )
-     call RECP_WRITE_TYPE(itypea, itypeb, int_type, lblop,PRINT_LEVEL)
+     call RECP_WRITE_TYPE(itypea, itypeb, INT_TYPE, lblop,PRINT_LEVEL)
 
     DO I = 1, N_INTEGRAL(lblop) 
 !      IF (lblop.EQ.1) READ(74,'(x,f20.16)') values_stvc(I)
@@ -160,10 +160,10 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
 !      value_index = value_index + 1
     ENDDO
 !   # write integral to file
-    call RECP_WRITE_ARRAY( nst,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc,array_so, &
-                            values_stvc,N_INTEGRAL,MN_INTEGRAL,lblop)
-    call RECP_WRITE_FILE( int_type, N_INTEGRAL, nbft,array_stvc, array_so,INT_AREP,MN_INTEGRAL, &
-                           LBLOP)
+    CALL RECP_WRITE_ARRAY( nst,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc, &
+                           array_so,values_stvc,N_INTEGRAL,MN_INTEGRAL,lblop)
+    CALL RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so,INT_AREP, &
+                         MN_INTEGRAL,LBLOP)
 
     IF(PRINT_LEVEL.GE. 5)  &
        WRITE (RECP_OUT1,'(4x,a,a)') chrtyp,' integrals were written in a file'
@@ -193,7 +193,7 @@ END SUBROUTINE RECP_WRITE_MAIN
 ! ------------------------------------------------
 
 
-SUBROUTINE RECP_WRITE_ARRAY(n_sym,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc,array_so, & 
+SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc,array_so, & 
                              values_stvc,N_INTEGRAL,MN_INTEGRAL,lblop)
 ! From cnvrt_stvz, Y.C. Park
   USE RECP_OUTPUT
@@ -201,7 +201,7 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array
 #include "inc_mxvalue.h"
 #include "inc_print.h"
   integer :: n_bfn_sym(mstup) ! nbpsy or nso : number of basis functions per symmetry block
-  integer :: int_type         ! integral type 
+  integer :: INT_TYPE         ! integral type 
   integer :: n_sym            ! nsym or nst : number of symmetry blocks
   integer :: nbft
   integer :: mpru
@@ -253,7 +253,7 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array
      enddo
   enddo
 
-  if (int_type .le. 4) then
+  if (INT_TYPE .le. 4) then
 ! # symmetric matrix, totally symmetric operator.
 !    #  initialize matrix element 
      array_stvc = 0
@@ -274,7 +274,7 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array
        endif
      enddo
 
-  elseif ( int_type .ge. 5 ) then
+  elseif ( INT_TYPE .ge. 5 ) then
 ! # antisymmetric matrix, nontotally symmetric operator.
 ! # initialize spin-orbit matrix element 
      array_so = 0
@@ -301,8 +301,7 @@ END SUBROUTINE RECP_WRITE_ARRAY
 
 ! ------------------------------------------------
 
-
-SUBROUTINE RECP_WRITE_FILE(int_type,N_INTEGRAL,nbft,array_stvc,array_so, &
+SUBROUTINE RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so, &
                             INT_AREP,MN_INTEGRAL,LBLOP)
 ! write ro file
   USE RECP_OUTPUT
@@ -310,7 +309,7 @@ SUBROUTINE RECP_WRITE_FILE(int_type,N_INTEGRAL,nbft,array_stvc,array_so, &
 #include "inc_print.h"
   INTEGER :: LBLOP
   integer :: i,j
-  integer :: int_type, INT_AREP
+  integer :: INT_TYPE, INT_AREP
   integer :: N_INTEGRAL(3), MN_INTEGRAL
   integer :: nbft
   real(8) :: array_stvc(:)  ! array_stvc(MN_INTEGRAL)
@@ -401,42 +400,42 @@ END SUBROUTINE RECP_WRITE_FILE
 ! ------------------------------------------------
 
 
-SUBROUTINE RECP_WRITE_TYPE(itypea, itypeb, int_type, lblop,PRINT_LEVEL)
+SUBROUTINE RECP_WRITE_TYPE(itypea, itypeb, INT_TYPE, lblop,PRINT_LEVEL)
 ! check integral type 
 ! Y. C. Park
   IMPLICIT NONE
 
   INTEGER :: PRINT_LEVEL
-  INTEGER :: itypea,  itypeb, int_type, lblop
+  INTEGER :: itypea,  itypeb, INT_TYPE, lblop
 
   IF(PRINT_LEVEL.GE.5)  PRINT *,' * ECPINT : entering... ARGOS_WRITE_TYPE * '
 
-! int_type = 1-4 : symmetric matrix, 
+! INT_TYPE = 1-4 : symmetric matrix, 
 !                  totally symmetric operator
-! int_type =     : symmetric matrix, 
+! INT_TYPE =     : symmetric matrix, 
 !                  nontotally symmetric operator
-! int_type = 5-7 : antisymmetric matrix, 
+! INT_TYPE = 5-7 : antisymmetric matrix, 
 !                  nontotally symmetric operator
   if (itypea.eq.0) then
      if     (itypeb.eq.0) then
-        int_type = 1        !   S
+        INT_TYPE = 1        !   S
      elseif (itypeb.eq.1) then
-        int_type = 2        !   T 
+        INT_TYPE = 2        !   T 
      elseif (itypeb.eq.2) then
-        int_type = 3        !   V
+        INT_TYPE = 3        !   V
      elseif (itypeb.eq.3) then
-        int_type = 4        !   Core or Veff
+        INT_TYPE = 4        !   Core or Veff
      endif
   elseif (itypea.eq.1) then
      print *, 'This integral type is not supported for the now'
      stop
   elseif (itypea.eq.2) then
      if     (lblop.eq.1) then
-        int_type = 5         !   SO(x)
+        INT_TYPE = 5         !   SO(x)
      elseif (lblop.eq.2) then
-        int_type = 6         !   SO(y)
+        INT_TYPE = 6         !   SO(y)
      elseif (lblop.eq.3) then
-        int_type = 7         !   SO(z)
+        INT_TYPE = 7         !   SO(z)
      endif
   endif
 
