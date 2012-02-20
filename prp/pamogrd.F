@@ -67,6 +67,7 @@ C
       DIMENSION FQX(NORBT,NASHT,NZ), FPV(NORBT,NASHT,NZ)
       DIMENSION GORB(NXOP,NZ), JXOP(2,*), DFAC(2), IPQ(*)
       LOGICAL   LORBTRI
+      REAL*8, ALLOCATABLE :: ATMP(:,:)
 C
       LOGICAL   NOFC, NOFV
 C
@@ -82,6 +83,32 @@ C     *** Calculate F_{pv}                          *****
 C     ***   = \sum_{u} D^V_{vu} F^C_{pu} + F^Q_{pv} *****
 C     ***************************************************
 C
+C
+C
+C   ------------- START TEST -------------
+C
+      CALL HEADER('Output from RORBGRD',-1)
+      WRITE(LUPRI,'(A,3I3)') ' NORBT, NASHT = ',NORBT,NASHT
+      DO IZZ=1,NZ
+        WRITE(LUPRI,'(/A,I1,$A)')' FC_pv matrix(',IZZ,')'
+        CALL PMATTMP(LUPRI,FC(1,2,IZZ),NORBT,NASHT)
+      ENDDO
+C
+      ALLOCATE(ATMP(NORBT,NASHT))
+      DO I=1,NORBT
+        DO J=1,NASHT
+          IF(NZ==1)THEN
+            ATMP(I,J) = FC(I,J+1,1)
+          ELSEIF(NZ==2)THEN
+            ATMP(I,J) = FC(I,J+1,1) + FC(I,J+1,2)
+          ENDIF
+        ENDDO
+      ENDDO
+      WRITE(LUPRI,'(/$A)')' SUM of FC_pv matrix'
+      CALL PMATTMP(LUPRI,ATMP,NORBT,NASHT)
+      DEALLOCATE(ATMP)
+C
+C   ------------- END TEST -------------
 C
 !     IF (.NOT.NOFV) CALL DZERO(FPV,NORBT * NASHT * NZ)
       IF (.NOT.NOFV) CALL FGEN_PV(FC,FQX,DV,FPV,IPQ,IPRINT)
@@ -266,6 +293,20 @@ C
 !        CALL DZERO(FQ,NORBT * NASHT * NZ)
          CALL DCOPY(NORBT * NASHT * NZ, FQ, 1, FGEN, 1)
       END IF
+C
+C   ------------- START TEST -------------
+C
+      WRITE(6,*) 'IASH  =',IASH
+      WRITE(6,*) 'IORB  =',IORB
+      WRITE(6,*) 'NPSH  =',NPSH
+      WRITE(6,*) 'NISH  =',NISH
+      WRITE(6,*) 'NASH  =',NASH
+      WRITE(6,*) 'NFSYM =',NFSYM
+      WRITE(6,*) 'NORBT =',NORBT
+      WRITE(6,*) 'NASHT =',NASHT
+C
+C   ------------- END TEST -------------
+C
 C
 C     ****************************
 C     *** DV * FC contribution ***
