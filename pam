@@ -160,9 +160,6 @@ class pam_enviroment:
             else:
                 self.dirac_exe = None
 
-        if self.is_pcm_calc:
-            self.full_path_to_pcmsolver = os.path.join(install_dir_default, "build", 'pcmsolver')
-
     # put/get files (flag controlled) #
         self.put_files = None
         self.get_files = None
@@ -198,9 +195,6 @@ class pam_enviroment:
         self.input_file_molecule = ''
         self.input_dirac = ''
         self.input_file_dirac = ''
-        self.input_pcm = ''
-        self.is_pcm_calc = False
-        self.full_path_to_pcmsolver = ''
 
     # output name created from *inp & *mol names
         self.output_name = ''
@@ -491,8 +485,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
         group.add_option('--mol', type='string', action='store',
                          dest='mol_file',
                          help='file containing the basis set and geometry specifications [*.mol or *.xyz]')
-        group.add_option('--pcm', type='string', action='store',
-                         dest='pcm_file', help='input file containing the PCM directives [*.pcm]')
         group.add_option(
             '--fullrestart',
             type='string',
@@ -948,9 +940,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 if not self.full_restart:
                     print_std_out_err("both --mol and --inp input parameters are required !")		
                     sys.exit(22)
-            if options.pcm_file:
-                self.input_pcm = options.pcm_file
-                self.is_pcm_calc = True
 
         self.set_output_name()
 
@@ -1063,9 +1052,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
     # copy dirac.x executable if wanted
         self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file),message=True)
 
-        if self.is_pcm_calc:
-            self.copy_file(self.full_path_to_pcmsolver, os.path.join(self.scratch_dir, 'pcmsolver'), message=True)
-
     # restarting stuff
         if self.full_restart:
             copy_single_file(self.archive_name, self.archive_name)
@@ -1095,9 +1081,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             for file_name in self.put_files:
                 for f in glob.glob(file_name):
                     copy_single_file(f,f)
-
-        if self.is_pcm_calc:
-            self.copy_file(self.input_pcm, os.path.join(self.scratch_dir, 'pcmsolver.inp'), message=True) 
 
     # copies files to scratch_dir
         if self.incmo:
@@ -1321,10 +1304,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 print 'output lines containing warnings:'
                 print warnings
                 sys.stdout.flush()
-
-    def execute_pcmsolver(self):
-        os.chdir(self.scratch_dir)
-        os.system('./pcmsolver --dryrun')
 
     def execute_dirac(self):
         ''' 
@@ -1612,9 +1591,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 if os.path.isfile(archfile):
                     existing_archive_files.append(archfile)
 
-        if self.is_pcm_calc:
-            existing_archive_files.append('cavity.off')
-
         print '  creating archive file ', archive_name
         print '  archived working files:',existing_archive_files 
 
@@ -1716,8 +1692,6 @@ class pam_run(pam_enviroment):
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_environment()
         self.pam_variables.set_dirac_cmd()
-        if self.is_pcm_calc:
-            self.pam_variables.execute_pcmsolver()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
