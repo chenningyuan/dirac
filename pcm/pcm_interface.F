@@ -1,7 +1,4 @@
 C PCMSolver Interface routines
-      subroutine foo()
-      write(*, *) 'DUMMY'
-      end subroutine
 
 C
 C Different Cavity Modes. Mode = Implicit
@@ -14,7 +11,7 @@ C
 #include <mxcent.h>
 #include <nuclei.h>
       
-      nuclei = nctot
+      nuclei = nucdep
 
       return
       end
@@ -34,7 +31,7 @@ C
       dimension centers(3,*)
       integer unit_flag
 
-      do i=1,nctot
+      do i=1,nucdep
          charges(i) = charge(i)
          do j=1,3
             centers(j,i) = cord(j,i)

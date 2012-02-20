@@ -265,16 +265,19 @@ foreach(
         ${EXECUTABLE}
         dirac
         ${LIBS}
+        dirac
         )
 endforeach()
 
 add_dependencies(dirac.x external)
 
-target_link_libraries(
-    dirac.x
-    dirac
-    ${LIBS}
+if(ENABLE_PCMMOD)
+configure_file(
+    ${CMAKE_SOURCE_DIR}/external/pcmsolver-build/src/solverlib/pcmsolver
+    ${CMAKE_BINARY_DIR}/pcmsolver
+    COPYONLY
     )
+endif()
 
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"

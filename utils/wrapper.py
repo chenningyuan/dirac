@@ -88,7 +88,7 @@ be deleted at the end of a run.
     W.tmppath = options.tmppath
     W.tmpbase = options.tmpbase
     W.keeptmp = options.keeptmp
-    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP']
+    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP','PEDRA.OUT','cavity.off']
 
     # Detect file types in args from the file names, set up job name
     molpath = None
@@ -428,6 +428,7 @@ class Wrapper:
     def run(self):
         try:
             os.chdir(self.tmppath)
+            os.system('./pcmsolver --dryrun')
             for cmd in self.cmdlines:
                 self.run_cmd(cmd)
         finally:
