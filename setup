@@ -268,9 +268,6 @@ def gen_cmake_command():
         for definition in args.define:
             command += ' -D%s' % definition
 
-    if args.tests:
-        command += ' -DENABLE_TESTS=ON'
-
     if args.generator:
         command += ' -Wno-dev -G "%s"' % args.generator
 
