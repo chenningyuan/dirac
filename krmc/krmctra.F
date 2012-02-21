@@ -1126,7 +1126,7 @@ C
 C     Calculate FQ and H2AC.
 C
 C     Input:
-C        DOFQ  - calculate the auxiliary Fock matrix FQ
+C        DOFQ   - calculate the auxiliary Fock matrix FQ
 C        DOH2AC - collect active two-electron integrals.
 C        PV - two-electron density matrix
 C
@@ -1420,7 +1420,7 @@ C
 #endif
 C
 C           Do the gazillion matrix multiplies to construct
-C           the auxiliary Fock matrix FQ.
+C           the auxiliary Fock matrix FQ: (B.40) - (B.43)
 C
             IF (DOFQ) THEN
                CALL RADDFQ(FQ,h2xy,h2yx,PV,
@@ -1485,11 +1485,14 @@ C
 C     For proper documentation see Ph.D. thesis of Joern Thyssen where
 C     all the formulae below should be documented :-)
 C
+C     Formulas (B.40) - (B.43)
+C
 C     Input:
 C        IREPIJ: symmetry of integrals (currently unused)
 C        H2XY, H2YX: (p,v) and (v,p)^T integrals for compound index XY
 C        NXY   : the XY compound index
 C        IX,IY : x and y
+C        PV    : 2-particle density matrix in (NZ,3) format, see appendix B3
 C
 C     Output:
 C        FQ    : the aux. Fock matrix
@@ -1520,26 +1523,24 @@ C
          WRITE(LUPRI,'(A,I3)') 'IREPIJ    = ',IREPIJ
          WRITE(LUPRI,'(/A)') ' FQ on entry'
          CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-c        IF (IX .EQ. 2 .AND. IY .EQ. 2) THEN
-            NPVCOL = NASHT * NNASHX
+         NPVCOL = NASHT * NNASHX
+         DO I = 1, 3
+            WRITE(LUPRI,'(A,I2,A)') ' PV density matrix',I,' of 3'
+            CALL PRQMAT(PV(1,1,NXY,1,I),NASHT,NASHT,NASHT,NPVCOL,
+     &           NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+         DO I = 1, 3
+            WRITE(LUPRI,'(A,I2,A)') ' H2XY matrix',I,' of 3'
+            CALL PRQMAT(H2XY(1,1,1,I),NORBT,NASHT,NORBT,NASHT,
+     &           NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+         IF (IX .NE. IY) THEN
             DO I = 1, 3
-               WRITE(LUPRI,'(A,I2,A)') ' PV density matrix',I,' of 3'
-               CALL PRQMAT(PV(1,1,NXY,1,I),NASHT,NASHT,NASHT,NPVCOL,
+               WRITE(LUPRI,'(A,I2,A)') ' H2YX matrix',I,' of 3'
+               CALL PRQMAT(H2YX(1,1,1,I),NORBT,NASHT,NORBT,NASHT,
      &              NZ,IPQTOQ(1,0),LUPRI)
             END DO
-            DO I = 1, 3
-               WRITE(LUPRI,'(A,I2,A)') ' H2XY matrix',I,' of 3'
-               CALL PRQMAT(H2XY(1,1,1,I),NORBT,NASHT,NORBT,NASHT,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-            END DO
-            IF (IX .NE. IY) THEN
-               DO I = 1, 3
-                  WRITE(LUPRI,'(A,I2,A)') ' H2YX matrix',I,' of 3'
-                  CALL PRQMAT(H2YX(1,1,1,I),NORBT,NASHT,NORBT,NASHT,
-     &                 NZ,IPQTOQ(1,0),LUPRI)
-               END DO
-            END IF
-c        END IF
+         END IF
       END IF
 C
 C
@@ -1632,11 +1633,10 @@ C
 C     ***********************
 C     *** Real part of FQ ***
 C     ***********************
-C
+C     (B.40): each "term" is a line of the formula
 C
 C     Term 1 (real part)
 C     ------------------
-C
 C
 C     \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;1,1}
 C
@@ -1859,7 +1859,7 @@ C
 C     *************************
 C     *** i-imag part of FQ ***
 C     *************************
-C
+C     (B.41)
 C
 C     Term 1 (i-imag part)
 C     --------------------

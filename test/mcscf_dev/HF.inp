@@ -7,8 +7,6 @@
 .ACMOUT
 **HAMILTONIAN
 .X2C
-**ANALYZE
-.PRIVEC
 **WAVE FUNCTION
 .SCF
 *SCF
@@ -17,6 +15,8 @@
 **ANALYZE
 .MULPOP
 *MULPOP
-1,2
+.VECPOP
+2
 1,2,3
+! print active orbitals
 **END OF
