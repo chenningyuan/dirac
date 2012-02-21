@@ -7,7 +7,7 @@
      &       nkcru,      nklsl,      nklsu,      nopir,      npair,
      &       nprir,      nrcr,       nt,         ntl,        ntu,
      &       x,          y,          z,          zcr,        zet,
-     &       n_bfn_sym,  INT_AREP,N1MAX,L1REC,mblu,mcxu,mcxu2 )
+     &       n_bfn_sym,  INT_AREP,N1MAX,L1REC )
 
       USE ARGOS_ONEINT_NUC
       USE RECP_IPT
@@ -35,7 +35,6 @@ c
      & mconsu, mru,   mcru, msfu, 
      & msfru,  mnru,   ngcs,  nu,   
      & lxyzir(3),      inam(5),     nnam, mdum(32)
-      integer mblu,mcxu,mcxu2
       real*8
      & dxij,   dyij,   dzij,   fnfct,  rr,     xij,    xijm,
      & yij,    yijm,   zij,    zijm
@@ -295,15 +294,6 @@ c       # computed together.
       CALL RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2, N1MAX,  L1REC,
      &        n_bfn_sym,N_INTEGRAL,MN_INTEGRAL,INT_AREP,nnam,
      &        mpru,nbft,nnbft,nst)
-
-      if ( nnam .eq. 5 ) then
-!       # all done with the antisymmetric coefficients.
-!       # release the workspace, and adjust mcxu and mblu.
-!       # this should probably be done in the higher-level
-!       # calling program, but for now it's done down here.
-!       mblu = mblu + mcxu - mcxu2
-!       mcxu = mcxu2
-      endif
 
       CALL OUTPUT_LOC('RECP_ONE_MAIN','X') 
       end

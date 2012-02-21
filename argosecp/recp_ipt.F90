@@ -120,7 +120,6 @@ SUBROUTINE RECP_IPTD_ONEINT
 END SUBROUTINE RECP_IPTD_ONEINT
 
 
-
 SUBROUTINE RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu)
 ! Allocate variables
   USE RECP_OUTPUT

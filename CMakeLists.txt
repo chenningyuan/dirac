@@ -88,7 +88,7 @@ include(ConfigParallelEnvironment)
 
 set(LIBS "stdc++")
 
-include(Math)
+include(ConfigMath)
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
@@ -283,7 +283,7 @@ if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUN
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
     target_link_libraries(dirac.x -Wl,--no-export-dynamic)
-    if (BLAS_TYPE MATCHES ATLAS)
+    if (BLAS_TYPE MATCHES Atlas)
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
         target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
