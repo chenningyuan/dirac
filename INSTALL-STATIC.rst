@@ -35,6 +35,10 @@ miro@opteron.tau.ac.il:~/qch_software/dirac_git/trunk_working/.
 ./setup  --debug  -D VERBOSE_OUTPUT=ON --build=build_static  --static --internal-math  --int64
 /opt/intel/fce/10.1.015/bin/ifort (ifort (IFORT) 10.1 20080312); /usr/bin/gcc - gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-51)
 
+ilias@194.160.34.207:~/Work/qch_software/dirac_git/trunk/build_ompi_ilp64_static/
+Linux-3.0.0-16-generic; GNU Fortran (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+both serial and parallel OpenMPI dirac.x are working 
+
 Based on these results we may say that GNU compilers produce proper static executable
 mostly not linked against GNU external static libraries (libblas-dev,liblapack-dev,libatlas).
 Likewise Ifort gives correct static executable.
