@@ -49,11 +49,15 @@ C
       dimension centers(3,*)
       integer unit_flag
 
-      do i=1,nucdep
-         charges(i) = charge(i)
-         do j=1,3
-            centers(j,i) = cord(j,i)
-         enddo
+C.....Get coordinates
+      CALL GETACORD(centers)
+C.....Get charges      
+      ii = 0
+      do i=1,nucind
+        do j = 1,nucdeg(i)
+          ii = ii + 1
+          charges(ii) = charge(i)
+        enddo
       enddo
       
 C If units is AU unit_flag = 0. If Angstrom unit_flag = 1.
