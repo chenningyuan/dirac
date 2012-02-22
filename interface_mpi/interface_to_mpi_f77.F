@@ -51,10 +51,10 @@
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      call mpi_bcast(x, ndim_i4, my_MPI_LOGICAL, root_proc_i4, 
+      call mpi_bcast(x, ndim_i4, MPI_LOGICAL, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
-      call mpi_bcast(x, ndim   , my_MPI_LOGICAL, root_proc   ,
+      call mpi_bcast(x, ndim   , MPI_LOGICAL, root_proc   ,
      &               communicator   , ierr   )
 #endif
 
@@ -82,10 +82,10 @@
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      call mpi_bcast(x, ndim_i4, my_MPI_LOGICAL, root_proc_i4, 
+      call mpi_bcast(x, ndim_i4, MPI_LOGICAL, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
-      call mpi_bcast(x, ndim   , my_MPI_LOGICAL, root_proc   , 
+      call mpi_bcast(x, ndim   , MPI_LOGICAL, root_proc   , 
      &               communicator   , ierr   )
 #endif
 
