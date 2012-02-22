@@ -27,7 +27,7 @@ git pull
 ./pamadm -a 
 /bin/rm -rf $BUILD_OMPI_STATIC
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --internal-math --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_OMPI_STATIC/dirac.x --build-dir=$BUILD_OMPI_STATIC
+./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_OMPI_STATIC/dirac.x $BUILD_OMPI_STATIC
 cd $DIRAC/$BUILD_OMPI_STATIC
 make Experimental
 
