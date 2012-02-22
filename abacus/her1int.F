@@ -461,7 +461,8 @@ C
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ. 203) THEN ! RM1H2
-         JMAXD  = 0
+         !JMAXD  = 0
+         JMAXD  = 2 ! mi fix of out-of-bounds later on in ODC(..,..,..,here,..)
          JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
@@ -486,7 +487,7 @@ C
          DONUC1= .FALSE.
          DOMOM1 = .TRUE. ! Moment to left - does not commute with d/dq
       ELSE IF (INTTYP .EQ. 208) THEN ! RM2H2
-CMI/march '03 ... obviously should be JMAXD=0, but is gives unzero XY component !
+!CMI/march '03 ... obviously should be JMAXD=0, but is gives unzero XY component !
          JMAXD = 2 ! Test...
          JMAXM = 2
          DONUC1 = .FALSE.

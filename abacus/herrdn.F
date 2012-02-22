@@ -2743,7 +2743,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      CHARACTER TSTRING*(6*MXAQN+3),SPDCAR*1
+      CHARACTER TSTRING*(6*MXQN+3),SPDCAR*1
       DIMENSION JCO(IQM),NRC(*),NUC(*)
 #include "ccom.h"
 #include "gencon.h"

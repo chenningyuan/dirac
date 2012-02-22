@@ -231,19 +231,6 @@ if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUN
     endif()
 endif()
 
-#  stefan --> miro: please fix it properly or create a ticket but this is NOT
-#  OK; i encountered on some platforms severe performance
-#  degradation in parallel runs other than twoel. London integrals...
-#  Jan 2012
-if (CMAKE_Fortran_COMPILER_ID MATCHES Intel AND CMAKE_BUILD_TYPE MATCHES Release AND ENABLE_MPI)
-#    message("CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE})
-#    message("CMAKE_Fortran_COMPILER_ID="${CMAKE_Fortran_COMPILER_ID})
-#    message("ENABLE_MPI=${ENABLE_MPI}")
-    message("-- main/main.F90: ifort (in OpenMPI wrapper) - lowered optimization level by last flag overriding, -O0")
-    message("--   ... fix of magnetizabilities MEMCHK error in the slave process of abacus/her2drv.F" )
-    set_source_files_properties(main/main.F90 PROPERTIES COMPILE_FLAGS "-O0")
-endif()
-
 # forward CPP directly to the code
 set(CPP)
 if(NOT "${CPP}" STREQUAL "")
