@@ -4374,4 +4374,51 @@ C
       DeAllocate (Buffer)
 
       End
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck getacord */
+      SUBROUTINE GETACORD(COORA)
+C*****************************************************************************
+C
+C    GETACORD : Make list atomic coordinates
+C
+C               Written oct.2001 by Jesper Kielberg Pedersen
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+      PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0 , D2 = 2.0D0)
+      DIMENSION COORA(3,*)
+      CALL QENTER('GETACORD')
+C
+C     Make the full matrix of cartisian coordinates from CORD(NUCIND)
+C
+      JATOM = 0
+      DO 100 ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         IF (MULT(MULCNT) .EQ. 1) THEN
+            JATOM = JATOM + 1
+            COORA(1,JATOM) = CORD(1,ICENT)
+            COORA(2,JATOM) = CORD(2,ICENT)
+            COORA(3,JATOM) = CORD(3,ICENT)
+         ELSE
+            DO 200 ISYMOP = 0, MAXOPR
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  JATOM = JATOM + 1
+                  COORA(1,JATOM) = 
+     &                 PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+                  COORA(2,JATOM) = 
+     &                 PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+                  COORA(3,JATOM) = 
+     &                 PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               END IF
+  200       CONTINUE
+         END IF
+  100 CONTINUE
+      CALL QEXIT('GETACORD')
+      RETURN
+      END
