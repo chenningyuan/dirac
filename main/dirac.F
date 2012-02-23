@@ -53,6 +53,10 @@ C     Set basis set directory
 C
       CALL GETBASDIR()
 C
+C     Initialize output units for gp/mempkg.F (MEMGET/MEMREL/MEMCH routines)
+C
+      CALL MEMINI(lupri,lupri)
+C
 C     Execute Dirac
 C
       write(lupri, '(//a)') 'Execution time and host'
