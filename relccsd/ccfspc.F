@@ -2521,7 +2521,6 @@ c
      &        - PROP(2,IND(1,J),IND(2,J))*EIGENVECTORS(1,JI)
            ELSE
 
-       print *,'EOPER,K=',EOPER,K
        TRANS_DIPOLE(EOPER,1,K) = TRANS_DIPOLE(EOPER,1,K)
      &       + PROP(1,IND(1,J),IND(2,J))*EIGENVECTORS(1,JI)
            ENDIF
