@@ -272,6 +272,8 @@ endforeach()
 add_dependencies(dirac.x external)
 
 if(ENABLE_PCMMOD)
+# radovan: this won't work unless pcmsolver is already there
+#          it doesn't work first time
 configure_file(
     ${CMAKE_SOURCE_DIR}/external/pcmsolver-build/src/solverlib/pcmsolver
     ${CMAKE_BINARY_DIR}/pcmsolver
