@@ -31,6 +31,8 @@
 
       public emb_vc
       public get_esp
+      public esp_nuc
+      public esp_el
       
 !     Module for calculating the coulomb potential on a grid.
 !     Contains:

@@ -24,7 +24,7 @@
 !
 
    subroutine collect_nctot(n)
-
+      implicit none
       integer, intent(out) :: n
 
 #include <mxcent.h>
@@ -36,6 +36,7 @@
       
       
    subroutine collect_atoms(charges, centers, unit_flag)
+      implicit none
 
 #include <mxcent.h>
 #include <nuclei.h>
@@ -73,18 +74,27 @@
 !   2. the electronic potential @grid points.      
 !
 
-      subroutine nuc_pot_pcm(tess_cent, nuc_pot)
+   subroutine nuc_pot_pcm(tess_cent, pot)
+      use vc_grid
       implicit none
+
+      real(8), intent(out) :: tess_cent(:, :)
+      real(8), intent(out) :: pot(:)
       
-      integer ntess
+      call esp_nuc(tess_cent, pot, 0)
 
-      call get_cavity_size(ntess)
+   end subroutine
 
-      real*8 grid_points(3,ntess)
-      real*8 nuc_pot(ntess)
+   subroutine el_pot_pcm(tess_cent, pot, dmat, work, lwork)
+      use vc_grid
+      implicit none
 
-      call get_esp(nuc_pot,D(imat)%irep,D(imat)%nrow,D(imat)%elms,
-     &             px,py,pz,
-     &             include_nuc_part=.true.,include_el_part=.false.)
+      real(8), intent(out) :: tess_cent(:, :)
+      real(8), intent(out) :: pot(:)
+      real(8), intent(in)  :: dmat(*)
+      real(8), intent(in)  :: work(*)
+      integer, intent(in)  :: lwork
+      
+      call esp_el(dmat, tess_cent, pot, work, lwork, 0)
 
-      end subroutine
+   end subroutine
