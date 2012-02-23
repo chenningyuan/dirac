@@ -1,73 +1,72 @@
 !     subroutine l2opxv(lmn,v,itl,itu,lmnv,eval,leig)
       subroutine l2opxv(lmn,itl,itu,lmnv,eval,leig,ics,igcs)
-c  compute the matrix vector product, (L^2) * v, in an unnormalized
-c  cartesian basis, and determine if v(*) is an eigenvector of the
-c  total angular momentum operator.
-c
-c  input:
-c  lmn = (l + m + n) where l, m, and n are the exponents of x, y, and z
-c        respectively.  lmn=0 for cartesian "s" functions, 1 for
-c        cartesian "p" functions, 2 for cartesian "d" functions, etc.
-c  v(1:xyzdim) = input vector.  the elements are coefficients of the
-c              cartesian basis functions (x**l * y**m * z**n).
-c              where xyzdim = ((lmn + 1) * (lmn + 2))/2
-c  lmnv(1:3,1:lmnvmx) = cartesian exponents of each basis function.
-c  scr(1:lenscr) = scratch work vector.  This must be at least as large
-c                  as the cartesian subspace dimension.
-c                  lenscr >= xyzdim
-c  output:
-c  eval = vector expectation value = <v| L^2 |v> / <v|v>
-c  leig = eigenvector return code.
-c       = -4 for vector norm error.
-c       = -3 for lmnv(*,*) inconsistency.
-c       = -1 if v(*) is not an eigenvector of L^2
-c       = principal quantum number if v(*) is an eigenvector.
-c         0 for s-type vectors, 1 for p-type vectors, etc.
-c         the eigenvalue is given by (leig*(leig+1)) to within numerical
-c         precision.
-c  28-oct-96 account for nonorthogonality of cartesian gaussians (rmp)
-c  11-jun-91 written by ron shepard with suggestions from r. m. pitzer.
+!  compute the matrix vector product, (L^2) * v, in an unnormalized
+!  cartesian basis, and determine if v(*) is an eigenvector of the
+!  total angular momentum operator.
+!
+!  input:
+!  lmn = (l + m + n) where l, m, and n are the exponents of x, y, and z
+!        respectively.  lmn=0 for cartesian "s" functions, 1 for
+!        cartesian "p" functions, 2 for cartesian "d" functions, etc.
+!  v(1:xyzdim) = input vector.  the elements are coefficients of the
+!              cartesian basis functions (x**l * y**m * z**n).
+!              where xyzdim = ((lmn + 1) * (lmn + 2))/2
+!  lmnv(1:3,1:lmnvmx) = cartesian exponents of each basis function.
+!  scr(1:lenscr) = scratch work vector.  This must be at least as large
+!                  as the cartesian subspace dimension.
+!                  lenscr >= xyzdim
+!  output:
+!  eval = vector expectation value = <v| L^2 |v> / <v|v>
+!  leig = eigenvector return code.
+!       = -4 for vector norm error.
+!       = -3 for lmnv(*,*) inconsistency.
+!       = -1 if v(*) is not an eigenvector of L^2
+!       = principal quantum number if v(*) is an eigenvector.
+!         0 for s-type vectors, 1 for p-type vectors, etc.
+!         the eigenvalue is given by (leig*(leig+1)) to within numerical
+!         precision.
+!  28-oct-96 account for nonorthogonality of cartesian gaussians (rmp)
+!  11-jun-91 written by ron shepard with suggestions from r. m. pitzer.
  
       USE RECP_IPT
+      USE RECP_FUNCTION
       implicit logical(a-z)
       integer itl, itu, lmn, leig, lmnv(3,*)
-!     real*8 eval, v(*)
       real*8 eval
       integer ics,igcs 
-c     # local:
+!     # local:
       integer l, m, n, i, j, it, jt, xyzdim, ll, mm, nn, p, q
       real*8 vi, rnorm, vnorm2
-c     # small is used to determine if a vector is close enough to be
-c     #       called an eigenvector.  this should be about 1000x the
-c     #       machine epsilon to avoid sqrt() precision problems.
+!     # small is used to determine if a vector is close enough to be
+!     #       called an eigenvector.  this should be about 1000x the
+!     #       machine epsilon to avoid sqrt() precision problems.
       real*8    zero,     one,     two,     fourth,        small
       parameter(zero=0d0, one=1d0, two=2d0, fourth=0.25d0, small=1d-10)
       integer  iodfac
       external iodfac
  
-c     # the [l,m,n] basis function is assigned the internal index:
-c     #  (lx*(lx+1))/2 + n + 1   with lx=(lmn-l)=(m+n)
-c     # this convention is inconsistent with the rest of this program,
-c     # but it is used anyway since it is convenient and since the
-c     # computed results are local.
+!     # the [l,m,n] basis function is assigned the internal index:
+!     #  (lx*(lx+1))/2 + n + 1   with lx=(lmn-l)=(m+n)
+!     # this convention is inconsistent with the rest of this program,
+!     # but it is used anyway since it is convenient and since the
+!     # computed results are local.
       integer llp1
       llp1(l) = (l * (l + 1)) / 2 + 1
  
       leig = -1
       eval = -one
  
-c     # check to make sure scr(*) is large enough.
+!     # check to make sure scr(*) is large enough.
       xyzdim = llp1( lmn) + lmn
+      IF(ALLOCATED(IPT_L2OPXV_SCR)) DEALLOCATE(IPT_L2OPXV_SCR)
       ALLOCATE(IPT_L2OPXV_SCR(xyzdim))
 
-c     # initialize the scratch vector.
-      do i = 1, xyzdim
-         IPT_L2OPXV_SCR(i) = 0.0d0
-      enddo 
+!     # initialize the scratch vector.
+      CALL RECP_SETZERO_R1(IPT_L2OPXV_SCR,xyzdim)
  
-c     # compute the matrix-vector product and the vector norm.
-c     # matrix elements of lop(*,*) are computed from the operator
-c     # definition in cartesian space.
+!     # compute the matrix-vector product and the vector norm.
+!     # matrix elements of lop(*,*) are computed from the operator
+!     # definition in cartesian space.
       vnorm2 = zero
       do 30 it = itl, itu
          i = it - (itl - 1)
@@ -84,12 +83,14 @@ c     # definition in cartesian space.
      &       iodfac(l,lmnv(1,jt),m,lmnv(2,jt),n,lmnv(3,jt))
 !           print *,'v(',i,')',vi,'v(',j,')',v(j)
          enddo
+
          vnorm2 = vnorm2 + vi * vi * iodfac(l,l,m,m,n,n)
- 
+!        print *,'vnorm2',vnorm2,'vi',vi,'iodfac',iodfac(l,l,m,m,n,n)
          if ( (l+m+n) .ne. lmn ) then
 !           # inconsistent exponents in the basis function.
             call bummer('l2opxv: (l+m+n-lmn)=', (l+m+n-lmn), 0 )
             leig = -3
+            IF(ALLOCATED(IPT_L2OPXV_SCR)) DEALLOCATE(IPT_L2OPXV_SCR)
             return
          endif
  
@@ -132,6 +133,7 @@ c     # definition in cartesian space.
       if ( vnorm2 .le. small ) then
          call bummer('l2mxv: small vector norm, lnm=', lmn, 0)
          leig = -4
+         IF(ALLOCATED(IPT_L2OPXV_SCR)) DEALLOCATE(IPT_L2OPXV_SCR)
          return
       endif
  
@@ -193,7 +195,7 @@ c     # definition in cartesian space.
 !        # next smaller integer value...
          leig = ( sqrt( eval + fourth ) )
       endif
-      DEALLOCATE(IPT_L2OPXV_SCR)
+      IF(ALLOCATED(IPT_L2OPXV_SCR)) DEALLOCATE(IPT_L2OPXV_SCR)
       return
       end
 

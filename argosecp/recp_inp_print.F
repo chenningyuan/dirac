@@ -40,15 +40,12 @@
       character*2  btype(bmin:bmax)
       real*8   sifsce
       external sifsce
-c     # map vector types.
+!     # map vector types.
       data imtype/ 3, 4 /
-c     # basis function types.
+!     # basis function types.
       data btype/ '??', '_s', '_p', '3s', '_d', '4p', '_f', '5s', '5d',
      &      '_g', '6p', '6f', '_h', '7s', '7d', '7g', '_i', '??' /
-c
-c     # this routine is a bit of a hack.  the sifs data should
-c     # be more intimately incorporated into argos. -rls
-c
+ 
       ALLOCATE(IPT_WTHEAD_MAP(nbft,2))
 
       if ( nbft .gt. nbfmx ) then
@@ -59,9 +56,9 @@ c
      &  1x,i4,' basis functions are exceed')
         CALL QUIT('Number of basis function are exceed.')
       endif
-c
-c     # set map(*,*) and create bfnlab(*) from the input arrays.
-c
+ 
+!     # set map(*,*) and create bfnlab(*) from the input arrays.
+ 
       do 20 i = 1, nbft
         IPT_WTHEAD_MAP(i,1) = ms(i)
         IPT_WTHEAD_MAP(i,2) = mnl(i)
@@ -69,38 +66,41 @@ c
         write( bfnlab(i), fmt='(i3,a3,a2)' )
      &   i, mtype(ms(i)), btype(clip)
         do 10 j = 4, 8
-c         # replace embedded spaces with a printing character to
-c         # avoid confusion when printing labels later.
+!         # replace embedded spaces with a printing character to
+!         # avoid confusion when printing labels later.
           if ( bfnlab(i)(j:j) .eq. ' ' ) then
             bfnlab(i)(j:j) = '_'
           endif
 10      continue
 20    continue
-c
-c     # create the output symmetry labels.
-c
+ 
+!     # create the output symmetry labels.
       do i = 1, nsym
         slabel(i)(1:1) = ' '
         slabel(i)(2:4) = ityp(i)
       enddo
 
       IF (PRINT_LEVEL .GE. 2) THEN
-c
-c     # write the headers.
-c
+ 
+!     # write the headers.
 
 !     write(nlist,6100)'RECP integral information:'
 !     write(nlist,6100)'output energy(*) values:'
+!6100 format(/1x,a,(1x,10i10))
 !     call sifpre( 6, nenrgy, energy, ietype )
 !     write(nlist,6200)'total core energy :',
 !    & sifsce( nenrgy, energy, ietype )
 !6200 format(/1x,a,(1x,1p4e20.12))
 
-      write(nlist,6041) nsym
+      write(nlist,'(/,a,2x,i2)') 'number of symmetry operator = ',nsym
       write(nlist,6042) nbft
+6042  format( 1x,'number of basis functions   = ',i4)
       write(nlist,6051) (i,i=1,nsym)
+6051  format(/1x,'symmetry number  = ',8i5)
       write(nlist,6052) (slabel(i),i=1,nsym)
+6052  format( 1x,'symmetry label   = ',1x,8(1x,a4))
       write(nlist,6053) (nbpsy(i),i=1,nsym)
+6053  format( 1x,'basis function   = ',8i5)
 
 !    # orbital labels
       write(nlist,'(/,a)') ' output orbital labels (i:bfnlab(i))'
@@ -118,19 +118,46 @@ c
 
       ENDIF
 
-6041  format(/1x,'number of symmetry operator = ',2x,i2)
-6042  format( 1x,'number of basis functions   = ',i4)
-6051  format(/1x,'symmetry number  = ',8i5)
-6052  format( 1x,'symmetry label   = ',1x,8(1x,a4))
-6053  format( 1x,'basis function   = ',8i5)
-6100  format(/1x,a,(1x,10i10))
-c
+ 
       DEALLOCATE(IPT_WTHEAD_MAP)
       return
       end
 
 
-      SUBROUTINE ARGOS_INPUT_INFO2(
+      SUBROUTINE RECP_INP_INFO1(
+     &           nlist,is,nc,mcu,msu,ica,ng,ngenp1,chg,x,y,z,mtype)
+      IMPLICIT NONE
+      INTEGER     nlist,is,nc(*),mcu,msu,ica(mcu,msu,*),ng,ngenp1
+      REAL*8      chg(*),x(mcu,*),y(mcu,*),z(mcu,*)
+      CHARACTER*3 mtype(*)
+!     local
+      INTEGER I,J
+
+      WRITE (nlist,'(/36X,A3,A)') mtype(is),' atoms'
+      WRITE (nlist,'(/30X,A,F7.2)') 'nuclear charge',chg(is)
+      WRITE (nlist,'(/11x,A,12X,A,15X,A,15X,A)') 'center','x','y','z'
+      WRITE (nlist,'(I14,7X,3F16.8)')
+     &        (I, x(I,is), y(I,is), z(I,is), I=1,nc(is))
+
+      IF ( nc(is) .GT. 1 ) THEN
+         WRITE (nlist,'(A,6X,A)') ' operator','center interchanges'
+         WRITE (nlist,'(A,6X,24I3)') 
+     &         '  1(id.)',(ica(I,is,1), I=1,nc(is))
+
+         DO J = 2,ngenp1
+            WRITE (nlist,'(I3,A,5X,24I3)')
+     &            J,'(gen.)',(ica(I,is,J), I=1,nc(is))
+         ENDDO
+
+         DO J = ngenp1+1,ng
+            WRITE(nlist,'(I3,11X,24I3)') J,(ica(I,is,J), I=1,nc(is))
+         ENDDO
+      ENDIF
+
+      END SUBROUTINE RECP_INP_INFO1
+
+
+      SUBROUTINE RECP_INP_INFO2(
      &           LMNP1, ICONS, IRCRU, ICONU, ZET, ETA, ICSU, IGCS,
      &           ISFR, IRU, LA, ND, LB, ITYP, ICU, ITL, ITU,
      &           LMNV, IAORDS)
@@ -171,7 +198,7 @@ c
 
       NLIST = 6
 
-      write (nlist,700)
+      write (nlist,'(/,10X,60A)') ('-', I=1,60)
 !     # orbital exponents  contraction coefficients for each orbital
       write (nlist,708) LMNP1(ICONS), lblsh(lmnp1(icons))
   708 format(/i21,a1,' orbitals'//
@@ -226,8 +253,8 @@ c
           ncol = ncol+1
           ltyp(ncol) = ityp(lai)
           lbla(ncol) = ia
-          if ( ncol .ne. 10 .and.
-     &      (ir .ne. iru .or. ia .ne. iau) ) go to 756
+          if ( ncol.ne.10 .and.
+     &      (ir.ne.iru .or. ia.ne.iau) ) go to 756
           write (nlist,740) (ltyp(icol),lbla(icol), icol=1,ncol)
   740     format(' ctr, ao',16(3x,a3,i1))
           ict = 0
@@ -246,8 +273,5 @@ c
 
       WRITE(NLIST,*)
       RETURN
-
-  700 FORMAT(/,10X,
-     & '-----------------------------------------------------------')
       END
 

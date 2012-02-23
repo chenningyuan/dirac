@@ -49,7 +49,8 @@ contains
               form   = 'unformatted', &
               access = 'sequential')
          rewind(interface_file_unit)
-         allocate(mo_eigenvalues(norbt))
+         !miro: increased array size as it's sometimes getting out of bounds: NORBT --> NORBT*2
+         allocate(mo_eigenvalues(norbt*2))
          mo_eigenvalues = 0.0d0
          allocate(mo_coef(n2bbasxq))
          mo_coef = 0.0d0
