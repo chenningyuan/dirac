@@ -1236,7 +1236,8 @@ C
       DIMENSION DVOVLP(MXOPEN)
 #define PCM_DEBUG
 #ifdef PCM_DEBUG
-      real(8), allocatable :: tess_cent(:, :), pot(:)
+      real(8), allocatable :: tess_cent(:, :), nuc_pot(:), el_pot(:)
+      integer :: robe
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1301,16 +1302,26 @@ C
 
 
 #ifdef PCM_DEBUG
-         nr_points = 1
+         call get_cavity_size(nr_points)
          allocate(tess_cent(3, nr_points))
-         allocate(pot(nr_points))
-
-         tess_cent = 0.5d0
-         call el_pot_pcm(nr_points, tess_cent, pot, dmat, work, lwork)
-         print *, 'raboof', pot
+         call get_tess_centers(tess_cent)
+         allocate(nuc_pot(nr_points))
+         allocate(el_pot(nr_points))
+        
+         call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
+         call el_pot_pcm(nr_points, tess_cent, el_pot, dmat,            &
+     & work, lwork)
+         
+         do robe=1,nr_points
+            print *, 'Nuclear potential at point', robe, nuc_pot(robe)
+         enddo
+         do robe=1,nr_points
+            print *, 'Electronic potential at point', robe, el_pot(robe)
+         enddo
 
          deallocate(tess_cent)
-         deallocate(pot)
+         deallocate(nuc_pot)
+         deallocate(el_pot)
 #endif
 
 
