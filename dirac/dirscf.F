@@ -1234,6 +1234,10 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
+!#define PCM_DEBUG
+#ifdef PCM_DEBUG
+      real(8), allocatable :: tess_cent(:, :), pot(:)
+#endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
@@ -1294,6 +1298,24 @@ C
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
+
+
+#ifdef PCM_DEBUG
+         nr_points = 1
+         allocate(tess_cent(3, nr_points))
+         allocate(pot(nr_points))
+
+         tess_cent(1:3, 1) = (/0.5d0, 0.5d0, 0.5d0/)
+         call el_pot_pcm(tess_cent, pot, dmat, work, lwork)
+         print *, 'raboof', pot
+
+         deallocate(tess_cent)
+         deallocate(pot)
+#endif
+
+
+
+
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
