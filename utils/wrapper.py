@@ -35,6 +35,8 @@ be deleted at the end of a run.
                      metavar='NAME=VALUE')
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
+    group.add_option('--backup', action='store_true', default=False,
+		     help="Backup output file before overwriting it [default: %default].")
 
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
@@ -132,8 +134,23 @@ be deleted at the end of a run.
             W.copyin.append([molpath,'MOLECULE.XYZ']+replacements)
     if inppath is not None:
         W.copyin.append([inppath,'DIRAC.INP']+replacements)
-    W.stdout = open(jobname+'.out','w')
+
+    stdout_file_name = jobname + '.out'
+    if options.backup:
+        if os.path.isfile(stdout_file_name):
+            # backup output file before writing to it
+            for i in range(8, -1, -1):
+                src = stdout_file_name + '_' + str(i)
+                dst = stdout_file_name + '_' + str(i+1)
+                if os.path.isfile(src):
+                    shutil.copy2(src, dst)
+            src = stdout_file_name
+            dst = stdout_file_name + '_0'
+            shutil.copy2(src, dst)
+
+    W.stdout = open(stdout_file_name,'w')
     W.stderr = open(jobname+'.err','w')
+
     W.stdin = None
     if not options.noarchive:
         W.archive = jobname+'.tgz'
