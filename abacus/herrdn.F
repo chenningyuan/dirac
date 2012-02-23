@@ -5072,6 +5072,8 @@ C.......................................................................
 C
       INUC = CHARGE+0.2D0
       A = CHARGE*FAC2
+!miro: please fix, getting 
+! "Fortran runtime error: Array reference out of bounds for array 'nucmass', lower bound of dimension 1 exceeded (0 < 1)"
       IF (INUC.LE.109) A = NUCMASS(INUC)
       A = A**DP3
       DELTA = (AF/(BF*A+CF))
