@@ -6,7 +6,7 @@ C   1. cavity-related routines;
 C   2. solver-related routines.
 C
 
-
+C
 C                   CAVITY-RELATED ROUTINES
 C
 C We shall provide the following data to the module:
@@ -50,7 +50,7 @@ C
       integer unit_flag
 
 C.....Get coordinates
-      CALL GETACORD(centers)
+      call getacord(centers)
 C.....Get charges      
       ii = 0
       do i=1,nucind
@@ -60,8 +60,36 @@ C.....Get charges
         enddo
       enddo
       
-C If units is AU unit_flag = 0. If Angstrom unit_flag = 1.
+C If Atomic Units unit_flag = 0. If Angstrom unit_flag = 1.
       unit_flag = 0
       
+      return
+      end
+
+C      
+C                   SOLVER-RELATED ROUTINES
+C
+C We shall provide the following data to DIRAC:
+C   1. grid points;
+C   2. apparent charges @grid points.      
+C We shall provide the following data to the module:
+C   1. the nuclear potential @grid points ;
+C   2. the electronic potential @grid points.      
+C
+
+      subroutine nuc_pot_pcm(tess_cent, nuc_pot)
+      implicit none
+      
+      integer ntess
+
+      call get_cavity_size(ntess)
+
+      real*8 grid_points(3,ntess)
+      real*8 nuc_pot(ntess)
+
+      call get_esp(nuc_pot,D(imat)%irep,D(imat)%nrow,D(imat)%elms,
+     &             px,py,pz,
+     &             include_nuc_part=.true.,include_el_part=.false.)
+
       return
       end
