@@ -49,6 +49,7 @@ contains
               form   = 'unformatted', &
               access = 'sequential')
          rewind(interface_file_unit)
+         !miro: increase array size, for linear symmetry getting out of bounds
          allocate(mo_eigenvalues(norbt))
          mo_eigenvalues = 0.0d0
          allocate(mo_coef(n2bbasxq))
@@ -150,6 +151,7 @@ contains
 
       if (mo_eigenvalues_available) then
          write(interface_file_unit, '(4x, a)') 'mo_eigenvalues'
+!miro: nr_mo is higher than upper bound of allocation, please fix
          do i = 1, nr_mo
             write(interface_file_unit, '(4x, i6, e26.16)') i, mo_eigenvalues(i)
          end do
