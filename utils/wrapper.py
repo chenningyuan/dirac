@@ -35,8 +35,8 @@ be deleted at the end of a run.
                      metavar='NAME=VALUE')
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
-    group.add_option('--backup', action='store_true', default=False,
-		     help="Backup output file before overwriting it [default: %default].")
+    group.add_option('--backup', type='int', default=1, dest='backup_level',
+		     help="Set backup level for output files [default: %default]. Set to 0 for no backup.")
 
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
@@ -136,14 +136,15 @@ be deleted at the end of a run.
         W.copyin.append([inppath,'DIRAC.INP']+replacements)
 
     stdout_file_name = jobname + '.out'
-    if options.backup:
+    if options.backup_level > 0:
+        # backup output file before writing to it
         if os.path.isfile(stdout_file_name):
-            # backup output file before writing to it
-            for i in range(8, -1, -1):
-                src = stdout_file_name + '_' + str(i)
-                dst = stdout_file_name + '_' + str(i+1)
-                if os.path.isfile(src):
-                    shutil.copy2(src, dst)
+            if options.backup_level > 1:
+                for i in range(options.backup_level-2, -1, -1):
+                    src = stdout_file_name + '_' + str(i)
+                    dst = stdout_file_name + '_' + str(i+1)
+                    if os.path.isfile(src):
+                        shutil.copy2(src, dst)
             src = stdout_file_name
             dst = stdout_file_name + '_0'
             shutil.copy2(src, dst)
