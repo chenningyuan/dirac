@@ -93,17 +93,17 @@
 
       vc = 0.0d0
       if (nuc_part) then
-         call esp_nuc(r_p, vc, 0)
+         call esp_nuc(1, r_p, vc, 0)
       end if
       if (el_part) then
-         call esp_el(dmat, r_p, vc, work, lwork, 0)
+         call esp_el(1, dmat, r_p, vc, work, lwork, 0)
       end if
 
       esp = vc(1)
 
    end subroutine
 
-      SUBROUTINE EMB_VC(DMAT,points,vc,IPRINT,WORK,LWORK)
+      SUBROUTINE EMB_VC(nr_points, DMAT,points,vc,IPRINT,WORK,LWORK)
 !     Interface for the user. Calles LOOP_PRIM
 !     calls VC_PRIM.
 !     Needed to make contact with F77.
@@ -114,7 +114,8 @@
 #include "ccom.h"
 
 !     PASSED variables
-      real(kind=8) :: points(:,:),vc(:)
+      integer, intent(in) :: nr_points
+      real(kind=8) :: points(3,*),vc(*)
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(*)
       REAL(KIND=8) :: WORK(*)
@@ -123,14 +124,14 @@
       IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
 
 !     Electrostatic potential: electronic contribution
-      CALL ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
+      CALL ESP_EL(nr_points, DMAT,points,vc,WORK,LWORK,IPRINT)
 
 !     Electrostatic potential: nuclear contribution
-      CALL ESP_NUC(points,vc,IPRINT)
+      CALL ESP_NUC(nr_points, points,vc,IPRINT)
 
       END SUBROUTINE
 
-      SUBROUTINE ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
+      SUBROUTINE ESP_EL(nr_points,DMAT,points,vc,WORK,LWORK,IPRINT)
 !     Driver routine that loops over the primitive orbitals and
 !     calls VC_PRIM.
 
@@ -149,7 +150,8 @@
 #include "dgroup.h"
 
 !     PASSED variables
-      real(kind=8) :: points(:,:),vc(:)
+      integer, intent(in) :: nr_points
+      real(kind=8) :: points(3,*),vc(*)
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),NZ)
       REAL(KIND=8) :: WORK(*)
@@ -291,7 +293,7 @@
              WRITE (LUPRI,'(A,2I10)') ' IDEN   ',IDENA,IDENB           
          END IF
 
-         ALLOCATE(ADER(KCKTA,KCKTB,SIZE(points,2)))
+         ALLOCATE(ADER(KCKTA,KCKTB,nr_points))
 !        Contains ader for one gridpoint in SO basis.
 
 
@@ -321,7 +323,7 @@
  
             IF (IPRINT>5) WRITE(LUPRI,*) 'JHS CORB',CORBX,CORBY,CORBZ
             
-            CALL VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,LWORK)
+            CALL VC_SHELL(nr_points, ADER,TOLOG,TOLS,points,IPRINT,WORK,LWORK)
             
 !     JHS Transform to SO basis?
 
@@ -342,7 +344,7 @@
      &           IDENB_TMP,NZ,SPHRA,SPHRB            
             END IF
 
-       DO ipoint=1,SIZE(vc)               
+       DO ipoint=1, nr_points
 !     Contract with the right symmetry part of the density matrix.
 !     This is given by INDFA and INDFB
 
@@ -371,14 +373,15 @@
 
       END SUBROUTINE
       
-      SUBROUTINE ESP_NUC(points,vc,IPRINT)
+      SUBROUTINE ESP_NUC(nr_points,points,vc,IPRINT)
 !     Routine for calcuating electrostatic potential from nuclei in points
 !     provided by array points
       USE VECTOR_FUN, ONLY: NORM
 #include "priunit.h"
 #include "mxcent.h"
 !     PASSED variables
-      real(kind=8) :: points(:,:),vc(:)
+      INTEGER, intent(in) :: nr_points
+      real(kind=8) :: points(3,*),vc(*)
       INTEGER :: IPRINT
 !     Local Variables
       INTEGER :: ipoint, i
@@ -386,7 +389,7 @@
 
 #include "nuclei.h"
 
-      DO ipoint=1,SIZE(vc)
+      DO ipoint=1, nr_points
         vc_tmp=0.0D0
         DO i=1,MXCENT          
           vc_tmp=vc_tmp-CHARGE(i)/(NORM(CORD(:,i)-                      &
@@ -398,7 +401,7 @@
       END SUBROUTINE
 
 
-      SUBROUTINE VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,           &
+      SUBROUTINE VC_SHELL(nr_points,ADER,TOLOG,TOLS,points,IPRINT,WORK,           &
      &     LWORK)
 !     Calculates the contribution for one primitive orbital set.
       USE VECTOR_FUN, ONLY: NORM
@@ -414,8 +417,9 @@
 #endif
 !     PASSED variables
       INTEGER :: IPRINT
-      real(kind=8) :: points(:,:)
-      REAL(KIND=8) :: ADER(KCKTA,KCKTB,SIZE(points,2))
+      integer, intent(in) :: nr_points
+      real(kind=8) :: points(3,*)
+      REAL(KIND=8) :: ADER(KCKTA,KCKTB,nr_points)
       REAL(KIND=8) :: WORK(*)
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
       INTEGER :: LWORK
@@ -521,7 +525,7 @@
 !
 !           Nuclear attraction integrals
 !
-            DO ipoint=1,SIZE(points,2)
+            DO ipoint=1, nr_points
               DIFCP(:) = points(1:3,ipoint) - CORP(:)
               CALL VNUC(AHGTF,JMAX,EXPP,DIFCP,FACTOR,IPRINT)
 !

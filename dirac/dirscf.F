@@ -1234,7 +1234,7 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-!#define PCM_DEBUG
+#define PCM_DEBUG
 #ifdef PCM_DEBUG
       real(8), allocatable :: tess_cent(:, :), pot(:)
 #endif
@@ -1305,8 +1305,8 @@ C
          allocate(tess_cent(3, nr_points))
          allocate(pot(nr_points))
 
-         tess_cent(1:3, 1) = (/0.5d0, 0.5d0, 0.5d0/)
-         call el_pot_pcm(tess_cent, pot, dmat, work, lwork)
+         tess_cent = 0.5d0
+         call el_pot_pcm(nr_points, tess_cent, pot, dmat, work, lwork)
          print *, 'raboof', pot
 
          deallocate(tess_cent)

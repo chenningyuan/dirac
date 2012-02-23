@@ -74,27 +74,29 @@
 !   2. the electronic potential @grid points.      
 !
 
-   subroutine nuc_pot_pcm(tess_cent, pot)
+   subroutine nuc_pot_pcm(nr_points, tess_cent, pot)
       use vc_grid
       implicit none
 
-      real(8), intent(out) :: tess_cent(:, :)
-      real(8), intent(out) :: pot(:)
+      integer, intent(in)  :: nr_points
+      real(8), intent(out) :: tess_cent(3, *)
+      real(8), intent(out) :: pot(*)
       
-      call esp_nuc(tess_cent, pot, 0)
+      call esp_nuc(nr_points, tess_cent, pot, 0)
 
    end subroutine
 
-   subroutine el_pot_pcm(tess_cent, pot, dmat, work, lwork)
+   subroutine el_pot_pcm(nr_points, tess_cent, pot, dmat, work, lwork)
       use vc_grid
       implicit none
 
-      real(8), intent(out) :: tess_cent(:, :)
-      real(8), intent(out) :: pot(:)
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: tess_cent(3, *)
+      real(8), intent(out) :: pot(*)
       real(8), intent(in)  :: dmat(*)
-      real(8), intent(in)  :: work(*)
-      integer, intent(in)  :: lwork
+      real(8)              :: work(*)
+      integer              :: lwork
       
-      call esp_el(dmat, tess_cent, pot, work, lwork, 0)
+      call esp_el(nr_points, dmat, tess_cent, pot, work, lwork, 0)
 
    end subroutine
