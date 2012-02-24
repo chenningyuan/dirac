@@ -1626,8 +1626,8 @@ C
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               INDX,INDXAB,GENCNT)
          LWTOT = LWTOT - KFREE + 1
-         !miro: crashing with paralell OpenMPI+ifort, 
-         ! if this MEMCHK deactivated, crash occurs in next MEMREL
+         !miro: crashing with paralell OpenMPI+ifort, now (24/2/2012) also after HJJ's fix of MEM-routines
+         ! if this MEMCHK deactivated, the crash occurs in next MEMREL
          CALL MEMCHK('TWOOD1 point AB',WORK,1) ! mi check
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2282,6 +2282,7 @@ C     ********************************
 C
   400 CONTINUE
 
+      !miro: can not place here, hurts SCF cycle !
       !CALL MEMCHK('SYMLOP sxskxy',WORK,1) ! mi check
 
       IF (.NOT. (EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. (INTS.OR.LAST)) THEN
@@ -2349,6 +2350,7 @@ C
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
       END IF
 
+      !miro: can not place here, hurts SCF cycle !
       !CALL MEMCHK('SYMLOP point axdsf',WORK,1) ! mi check
 
       CALL QEXIT('SYMLOP')
