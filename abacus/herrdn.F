@@ -3956,11 +3956,15 @@ C
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI
+!miro: out-of-bounds fixes: KBLOCK -> *
       DIMENSION IQM(KATOM),NBLCK(KATOM),
-     &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK),
+!    &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+     &          JCO(KANG,KATOM),NUC(*),NRC(*),
+!    &          CPRIMU(KPRIM,KPRIM,KBLOCK),
+     &          CPRIMU(KPRIM,KPRIM,*),
      &          ALPHA(KPRIM,KBLOCK),
-     &          SEG(KBLOCK)
+!    &          SEG(KBLOCK)
+     &          SEG(*)
       DIMENSION IPCON(KPRIM)
 C
 C     P R I M I T I V E S

@@ -2306,6 +2306,7 @@ C        B) Differentiated integrals
 C        ===========================
 C
          ELSE IF (PERTUR .OR. SPNORB) THEN
+            CALL MEMCHK('SYMLOP diff intgrls ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
@@ -2329,6 +2330,7 @@ C        D) Direct calculation of Fock matrices in SO basis
 C        ==================================================
 C
          ELSE IF (SOFOCK) THEN
+            !CALL MEMCHK('SYMLOP SOFOCK ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
@@ -2340,6 +2342,7 @@ C        E) Calculation of distributions
 C        ===============================
 C
          ELSE IF (DISTRI) THEN
+            CALL MEMCHK('SYMLOP DT2OUT ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL DT2OUT (SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT,INDX,INDXAB,GMAT)
