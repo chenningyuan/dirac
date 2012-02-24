@@ -1306,7 +1306,9 @@ C
          allocate(tess_cent(3, nr_points))
          call get_tess_centers(tess_cent)
          allocate(nuc_pot(nr_points))
+         nuc_pot = 0.0d0
          allocate(el_pot(nr_points))
+         el_pot = 0.0d0
         
          call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
          call el_pot_pcm(nr_points, tess_cent, el_pot, dmat,            &
