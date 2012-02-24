@@ -1237,7 +1237,7 @@ C
 #define PCM_DEBUG
 #ifdef PCM_DEBUG
       real(8), allocatable :: tess_cent(:, :), nuc_pot(:), el_pot(:)
-      integer :: robe
+      integer :: foo 
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1312,12 +1312,16 @@ C
          call el_pot_pcm(nr_points, tess_cent, el_pot, dmat,            &
      & work, lwork)
          
-         do robe=1,nr_points
-            print *, 'Nuclear potential at point', robe, nuc_pot(robe)
-         enddo
-         do robe=1,nr_points
-            print *, 'Electronic potential at point', robe, el_pot(robe)
-         enddo
+!         do foo=1,nr_points
+!             print *, "Coord", tess_cent(1,foo), tess_cent(2,foo),      &
+!     & tess_cent(3,foo)
+!         enddo    
+        do foo=1,nr_points
+           print *, 'Nuclear potential at point', foo, nuc_pot(foo)
+        enddo
+        do foo=1,nr_points
+           print *, 'Electronic potential at point', foo, el_pot(foo)
+        enddo
 
          deallocate(tess_cent)
          deallocate(nuc_pot)
