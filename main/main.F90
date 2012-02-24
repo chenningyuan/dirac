@@ -23,6 +23,7 @@
 
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 ! ... needed to get another Fortran executable 
+!     radovan: with configure perhaps but not with cmake
 subroutine dirprg
 #else
 ! default executable - dirac.x
