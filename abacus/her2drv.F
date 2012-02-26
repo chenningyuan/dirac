@@ -1626,8 +1626,6 @@ C
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               INDX,INDXAB,GENCNT)
          LWTOT = LWTOT - KFREE + 1
-         !miro: crashing with paralell OpenMPI+ifort, now (24/2/2012) also after HJJ's fix of MEM-routines
-         ! if this MEMCHK deactivated, the crash occurs in next MEMREL
          CALL MEMCHK('TWOOD1 point AB',WORK,1) ! mi check
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1714,8 +1712,6 @@ C
 #include "memint.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
 
-      !CALL MEMCHK('SYMLOP abxjdo ',WORK,1) ! mi check
-C
       IF (.NOT.(EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. NSOINT.EQ.0
      &                                      .AND. LAST) GOTO 400
 C
@@ -2282,9 +2278,6 @@ C     ********************************
 C
   400 CONTINUE
 
-      !miro: can not place here, hurts SCF cycle !
-      !CALL MEMCHK('SYMLOP sxskxy',WORK,1) ! mi check
-
       IF (.NOT. (EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. (INTS.OR.LAST)) THEN
 C
 C        A) Undifferentiated integrals
@@ -2330,7 +2323,6 @@ C        D) Direct calculation of Fock matrices in SO basis
 C        ==================================================
 C
          ELSE IF (SOFOCK) THEN
-            !CALL MEMCHK('SYMLOP SOFOCK ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
@@ -2342,8 +2334,6 @@ C        E) Calculation of distributions
 C        ===============================
 C
          ELSE IF (DISTRI) THEN
-            !miro: this check is causing failures of some test, to be examined
-            !CALL MEMCHK('SYMLOP DT2OUT ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL DT2OUT (SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT,INDX,INDXAB,GMAT)
@@ -2353,9 +2343,6 @@ C
       ELSE IF (EXPECT) THEN
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
       END IF
-
-      !miro: can not place here, hurts SCF cycle !
-      !CALL MEMCHK('SYMLOP point axdsf',WORK,1) ! mi check
 
       CALL QEXIT('SYMLOP')
       RETURN
