@@ -639,6 +639,10 @@ C     Memory and I/O setup section
 C     ----------------------------
 C
       call allocator_get_available_mem(total_mem_new)
+#if defined (VAR_MPI) && defined (VAR_IFORT)
+!mi: control printout because of "forrtl: error (65): floating invalid"
+      print *,'check: total_mem_new=',total_mem_new
+#endif
       maxcor = nint((total_mem_new/8.0d0),kind(8))
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0

@@ -1357,7 +1357,7 @@ C
 !radovan: these memgets are easily called 25 million times
 !         if somebody modifies the code
 !         please allocate buffers further upstream
-      CALL MEMGET('REAL',KPSO  ,NPMAT               ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPSO  ,NPMAT               ,WORK,KFREE,LFREE) ! 1
       CALL MEMGET('REAL',KPSA  ,NPMATA              ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNPCOA,2*NSETA*(NODCAB + 1),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNPCOB,2*NSETB*(NODCAB + 1),WORK,KFREE,LFREE)
@@ -1366,17 +1366,17 @@ C
       CALL MEMGET('INTE',KJSTRA,NSETA               ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KJSTRB,NSETB               ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KJSTRC,NSETC               ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJSTRD,NSETD               ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KJSTRD,NSETD               ,WORK,KFREE,LFREE) ! 10
 C
       LUUAB = NUCA*NUCB*NODCAB
       LUUCD = NUCC*NUCD*NODCCD
-      CALL MEMGET('REAL',KCORAB,9*LUUAB  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCORAB,9*LUUAB  ,WORK,KFREE,LFREE) ! 11
       CALL MEMGET('REAL',KCORCD,9*LUUCD  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEXPAB,3*LUUAB  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEXPCD,3*LUUCD  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFACAB,  LUUAB  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFACCD,  LUUCD  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KLMNVL,20*KCKMAX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLMNVL,20*KCKMAX,WORK,KFREE,LFREE) ! 17
 C
       IF (GENAB) THEN
          LCONTA = 2*NORBA*NUCA*NODCAB
@@ -1570,8 +1570,8 @@ C
       MXUCCD = IMXVEC(NUCTCD,NODCCD)
       LCOFAB = MXUCAB*(JMAXA+JMAXB+1)*(JMAXA+1)*(JMAXB+1)*3*NCFTYP
       LCOFCD = MXUCCD*(JMAXC+JMAXD+1)*(JMAXC+1)*(JMAXD+1)*3*NCFTYP
-      CALL MEMGET('REAL',KCOFAB,LCOFAB,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOFCD,LCOFCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','COFAB',KCOFAB,LCOFAB,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','COFCD',KCOFCD,LCOFCD,WORK,KFREE,LFREE)
 C
 C     Number of SO integrals
 C
@@ -1588,18 +1588,23 @@ C
       IF (EXPECT .OR. DIRFCK .OR. SUSCEP .OR. DDFOCK
      &           .OR. LAST .OR. (NSOINT .GT. 0)) THEN
 C
-         CALL MEMGET('REAL',KSOINT,NSOINT         ,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPNTAO,  NINTMX*NOPREP,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPNTOP,3*NINTMX*NOPREP,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPNTNO,4*NINTMX*NOPREP,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPNTRP,3*NINTMX*NOPREP,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPNTLG,3*NINTMX*NOPREP,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','SOINT',KSOINT,NSOINT,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','PNTAO',KPNTAO,  NINTMX*NOPREP,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','PNTOP',KPNTOP,3*NINTMX*NOPREP,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','PNTNO',KPNTNO,4*NINTMX*NOPREP,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','PNTRP',KPNTRP,3*NINTMX*NOPREP,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','PNTLG',KPNTLG,3*NINTMX*NOPREP,
+     &      WORK,KFREE,LFREE)
          IF(SOFOCK.OR.DIRFCK) THEN
            LDNSBF = 2*NDMAT
          ELSE
            LDNSBF = 0
          ENDIF
-         CALL MEMGET('REAL',KDNSBF,LDNSBF,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','DNSBUF',KDNSBF,LDNSBF,WORK,KFREE,LFREE)
 C
          MWFCAB = MAX(MWFCAB,LCOFAB)
          MWFCCD = MAX(MWFCCD,LCOFCD)
@@ -1626,8 +1631,8 @@ C
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               INDX,INDXAB,GENCNT)
          LWTOT = LWTOT - KFREE + 1
-         !miro: crashing with paralell OpenMPI+ifort, 
-         ! if this MEMCHK deactivated, crash occurs in next MEMREL
+         !miro: crashing with paralell OpenMPI+ifort, now (24/2/2012) also after HJJ's fix of MEM-routines
+         ! if this MEMCHK deactivated, the crash occurs in next MEMREL
          CALL MEMCHK('TWOOD1 point AB',WORK,1) ! mi check
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2282,6 +2287,7 @@ C     ********************************
 C
   400 CONTINUE
 
+      !miro: can not place here, hurts SCF cycle !
       !CALL MEMCHK('SYMLOP sxskxy',WORK,1) ! mi check
 
       IF (.NOT. (EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. (INTS.OR.LAST)) THEN
@@ -2305,6 +2311,7 @@ C        B) Differentiated integrals
 C        ===========================
 C
          ELSE IF (PERTUR .OR. SPNORB) THEN
+            CALL MEMCHK('SYMLOP diff intgrls ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
@@ -2328,6 +2335,7 @@ C        D) Direct calculation of Fock matrices in SO basis
 C        ==================================================
 C
          ELSE IF (SOFOCK) THEN
+            !CALL MEMCHK('SYMLOP SOFOCK ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
@@ -2339,6 +2347,8 @@ C        E) Calculation of distributions
 C        ===============================
 C
          ELSE IF (DISTRI) THEN
+            !miro: this check is causing failures of some test, to be examined
+            !CALL MEMCHK('SYMLOP DT2OUT ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL DT2OUT (SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT,INDX,INDXAB,GMAT)
@@ -2349,6 +2359,7 @@ C
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
       END IF
 
+      !miro: can not place here, hurts SCF cycle !
       !CALL MEMCHK('SYMLOP point axdsf',WORK,1) ! mi check
 
       CALL QEXIT('SYMLOP')
