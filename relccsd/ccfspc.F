@@ -2486,7 +2486,8 @@ c
       INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2)
       REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,4)),PROP(RCW,NSP,NSP)
 !output
-      REAL*8 TRANS_DIPOLE(NEOPER,RCW,NDT_TOT)
+      !REAL*8 TRANS_DIPOLE(NEOPER,RCW,NDT_TOT)
+      REAL*8 TRANS_DIPOLE(3,RCW,NDT_TOT) ! miro: out-of-bounds fix
 c
 c-------------------Local Variables--------------------------------------------------
 c

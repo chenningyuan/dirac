@@ -3412,6 +3412,7 @@ C             For MCSCF optimizations FREQ (EVALR) is the
 C             level shift. For LR it's zero.
 C
                 IF ( ABS(BVEC(IVAR,IZ,IP)) .GT. THRBVEC ) THEN
+!miro: throwing "forrtl: error (65): floating invalid" for ifort & VAR_MPI
                   IF ( ABS(HDIAG(IVAR)-FREQ*SDIAG(IVAR)) .GT. DLIM) THEN
                        BVEC(IVAR,IZ,IP) =
      &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ*SDIAG(IVAR))

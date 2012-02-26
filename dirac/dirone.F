@@ -4731,11 +4731,17 @@ c     ... special case for the (2-1) 1s electron
 c     ... Generel case. We are past H and He and have thus accounted 
 c         for two electrons.
 c     ... Find numbers of s,p,d,f-electrons for element (Z)
-      NST = NOCC((NINT(Z)-1)*4 + 1)
-      NPT = NOCC((NINT(Z)-1)*4 + 2)
-      NDT = NOCC((NINT(Z)-1)*4 + 3)
-      NFT = NOCC((NINT(Z)-1)*4 + 4)
-c
+         NST=0
+         NPT=0
+         NDT=0
+         NFT=0
+      IF (Z.GE.1.0D0) THEN ! miro: prevent NOCC of out-of-bounds 
+         NST = NOCC((NINT(Z)-1)*4 + 1)
+         NPT = NOCC((NINT(Z)-1)*4 + 2)
+         NDT = NOCC((NINT(Z)-1)*4 + 3)
+         NFT = NOCC((NINT(Z)-1)*4 + 4)
+      ENDIF
+C
 c     ... Now figure out the occupation used for the Slater rules (N >= 2) :
 c      [1s][2s2p][3s3p][3d][4s4p][4d][4f]...
 c
