@@ -23,14 +23,14 @@
 !      other spheres are created as in the Implicit mode.
 !
 
-   subroutine collect_nctot(n)
+   subroutine collect_nctot(nuclei)
       implicit none
-      integer, intent(out) :: n
+      integer, intent(out) :: nuclei
 
 #include <mxcent.h>
 #include <nuclei.h>
       
-      n = nucdep
+      nuclei = nucdep
 
    end subroutine
       
@@ -45,16 +45,16 @@
       real(8), intent(out) :: centers(3,*)
       integer, intent(out) :: unit_flag
 
-      integer :: i, j, ii
+      integer :: i, j, k 
 
 !.....Get coordinates
-      CALL GETACORD(centers)
+      call getacord(centers)
 !.....Get charges      
-      ii = 0
-      do i=1,nucind
-         do j = 1,nucdeg(i)
-            ii = ii + 1
-            charges(ii) = charge(i)
+      i = 0
+      do j=1,nucind
+         do k = 1,nucdeg(j)
+            i = i + 1
+            charges(i) = charge(j)
          enddo
       enddo
    
