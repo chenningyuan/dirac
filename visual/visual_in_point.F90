@@ -198,7 +198,9 @@ contains
                           buffer,        &
                           ao)
                result(0) = result(0) + density*esp
-            else
+            else if ((visual_cfg_property(imat) == iq_esp)  .or. &
+                     (visual_cfg_property(imat) == iq_espe) .or. &
+                     (visual_cfg_property(imat) == iq_espn)) then
 !              just the electrostatic potential
                result(0) = result(0) +         esp
             end if
