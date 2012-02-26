@@ -581,6 +581,12 @@ contains
 #endif
       end if
 
+!     pointer to the array is passed to blocked eval
+!     to avoid out of bounds compiler complaint
+!     allocate it with size 1
+      if (.not. allocated(dmat_saop_outer)) allocate(dmat_saop_outer(1))
+      if (.not. allocated(dmat_saop_resp))  allocate(dmat_saop_resp(1))
+
 #ifdef DEBUG_XC
       write(*, *) 'debug: XC potential matrix zeroed out prior to integration'
       fmat = 0.0d0
@@ -625,12 +631,8 @@ contains
 #endif
 
 !     deallocate saop density matrices
-      if (dft_cfg_saop) then
-        deallocate(dmat_saop_outer)
-        if (dft_cfg_saop_with_response_part) then
-          deallocate(dmat_saop_resp)
-        end if
-      end if
+      if (allocated(dmat_saop_outer)) deallocate(dmat_saop_outer)
+      if (allocated(dmat_saop_resp))  deallocate(dmat_saop_resp)
 
       if (xc_mpi_is_master()) then
 #ifdef PRG_DIRAC
