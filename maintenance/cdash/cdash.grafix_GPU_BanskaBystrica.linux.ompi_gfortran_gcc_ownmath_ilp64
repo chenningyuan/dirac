@@ -19,7 +19,7 @@ cd $DIRAC
 git pull
 ./pamadm -a 
 # configure step
-./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x  $BUILD 
+./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x -D ENABLE_BOUNDS_CHECK=ON $BUILD 
 cd $DIRAC/$BUILD
 make Experimental
 make info_ext

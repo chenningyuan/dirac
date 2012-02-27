@@ -1253,6 +1253,7 @@ C
       IPRNTB = 0
       IPRNTC = 0
       IPRNTD = 0
+      IPRSUM = 0
       RTNTWO = .FALSE.
       TKTIME = .FALSE.
       IF(RELCAL) THEN

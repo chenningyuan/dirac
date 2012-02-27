@@ -204,18 +204,22 @@ contains
     nzvarq  = nzxoptq
 
     call alloc(orbital_rotation_indices_pp, 2, length_pp)
-    call set_orbital_rotation_indices(RHS%irep,  &
-                                      length_pp, &
-                                      2,         &
-                                      3,         &
-                                      orbital_rotation_indices_pp)
+    if (length_pp > 0) then
+       call set_orbital_rotation_indices(RHS%irep,  &
+                                         length_pp, &
+                                         2,         &
+                                         3,         &
+                                         orbital_rotation_indices_pp)
+    end if
 
     call alloc(orbital_rotation_indices_pn, 2, length_pn)
-    call set_orbital_rotation_indices(RHS%irep,  &
-                                      length_pn, &
-                                      2,         &
-                                      1,         &
-                                      orbital_rotation_indices_pn)
+    if (length_pn > 0) then
+       call set_orbital_rotation_indices(RHS%irep,  &
+                                         length_pn, &
+                                         2,         &
+                                         1,         &
+                                         orbital_rotation_indices_pn)
+    end if
 
     if (openrsp_spinfree .and. (RHS%tr_sym == 1)) then
 

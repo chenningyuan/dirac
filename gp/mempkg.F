@@ -21,20 +21,15 @@
 
 C
 C
-#ifdef UNDEF
-/* Comdeck memlog */
-910110-hjaaj MEMREL: removed non-standard char. concat. in CALL MEMCHK
-901004-hjaaj: NWNMEM introduced, no final check on NWNMEM (yet)
-900420-hjaaj: MEMPKG.U: corrected errors for IRAT=1 (e.g. Cray)
-891208-hjaaj:
- MEMINI: new routine to define output units in MEM* routines
-         (makes MEM* routines indep. of sirius, uses LUWMEM not LUWSIR)
-891114-hjaaj:
- MEMREL: new routine to release memory
- MEMGET: warning if memid(2) .ne. 0 for work(kfree)
-890429-hjaaj-k10d
- corrected code error in MEMGET for KFREE=1
-#endif
+!/* Comdeck memlog */
+!060316-hjaaj: for DBG_LENID check memcb1.h
+!910110-hjaaj: MEMREL: removed non-standard char. concat. in CALL MEMCHK
+!901004-hjaaj: NWNMEM introduced, no final check on NWNMEM (yet)
+!900420-hjaaj: MEMPKG.U: corrected errors for IRAT=1 (e.g. Cray)
+!891208-hjaaj: MEMINI: new routine to define output units in MEM* routines
+!              (makes MEM* routines indep. of sirius, uses LUWMEM not LUWSIR)
+!891114-hjaaj: MEMREL: new routine to release memory
+
 C  /* Deck memini */
       SUBROUTINE MEMINI(LUWME1,LUEME1)
 C
@@ -43,19 +38,15 @@ C
 C     Define output units for memory allocation routines
 C     Initialize mempkg warning count NWNMEM to zero
 C
-C
-      EXTERNAL MEMBKD
+#include "implicit.h"
 #include "memcb1.h"
 C
       LUWMEM = LUWME1
       LUEMEM = LUEME1
       NWNMEM = 0
+      IDENT8 = '** KFREE'
+      READ (IDENT8,'(A8)') WIDENT_KFREE
       RETURN
-      END
-C  /* Deck membkd */
-      BLOCK DATA MEMBKD
-#include "memcb1.h"
-      DATA LUWMEM,LUEMEM /6,6/
       END
 C  /* Deck memget */
       SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
@@ -91,110 +82,144 @@ C
 !
 !-----------------------------------------------------------------------
 #include "implicit.h"
-#include "priunit.h"
       CHARACTER*(*) DATA_TYPE
+      DIMENSION     WORK(*)
+      CALL MEMGET2(DATA_TYPE,'-MEMGET-',KBASE,LENGTH,WORK,KFREE,LFREE)
+      RETURN
+      END
+C  /* Deck memget */
+      SUBROUTINE MEMGET2(DATA_TYPE,IDENT,KBASE,LENGTH,WORK,KFREE,LFREE)
+C
+C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
+C
+C l.r. 980824-hjaaj: QENTER/QEXIT calls use too much time because MEMGET
+C is called often. Now only call QENTER/QEXIT if warning or error.
+C Restructured code (e.g. changed errors from IF () THEN to IF () GO TO)
+C to get fewer logical tests and fewer jumps after logical tests.
+C
+C     Memory allocation
+C
+#include "implicit.h"
+      CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
 #include "iratdef.h"
 #include "memcb1.h"
 #include "logging.h"
 C
-      EXTERNAL MEMBKD
-C
-      PARAMETER ( LENID = 1/IRAT + 1)
-      DIMENSION     WMEMID(2), WMEMCK(2)
-      INTEGER       MEMID(2),  MEMCK(2)
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
-C
-Chj1  CALL QENTER('MEMGET  ')
-      IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
+Chj1  CALL QENTER('MEMGET2 ')
+      IF (DATA_TYPE(1:4) .EQ. 'REAL' .OR.
+     &    DATA_TYPE(1:4) .EQ. 'INT8') THEN
          LREAL = LENGTH
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'COMP') THEN
+         LREAL = 2*LENGTH
       ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
-      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT8') THEN
-         LREAL = LENGTH
-      ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
-         LREAL = (LENGTH-1)/LRAT + 1
       ELSE IF (DATA_TYPE(1:4) .EQ. 'INT4') THEN
          LREAL = (LENGTH-1)/2 + 1
       ELSE IF (DATA_TYPE(1:4) .EQ. 'INT2') THEN
-         LREAL = (LENGTH-1)/IRAT2 + 1
+         LREAL = (LENGTH-1)/4 + 1
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
+         LREAL = (LENGTH-1)/LRAT + 1
       ELSE IF (DATA_TYPE(1:4) .EQ. 'WORK') THEN
          LENGTH = LFREE - 2*LENID
 C                         ^- make sure OK for KFREE .eq. 1
          LREAL  = LENGTH
       ELSE
-         CALL QENTER('MEMGET  ')
-         WRITE (LUWMEM,'(/2A)')
-     *      ' MEMGET ERROR, illegal type :',DATA_TYPE
+         CALL QENTER('MEMGET2 ')
+         WRITE (LUWMEM,'(/2A/2A)')
+     *      ' MEMGET2 ERROR, illegal data type : ',DATA_TYPE,
+     *      ' MEMGET2 ERROR, for ident         : ',IDENT
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
-            WRITE (LUEMEM,'(/2A)')
-     *         ' MEMGET ERROR, illegal type :',DATA_TYPE
+            WRITE (LUEMEM,'(/2A/2A)')
+     *      ' MEMGET2 ERROR, illegal data type : ',DATA_TYPE,
+     *      ' MEMGET2 ERROR, for ident         : ',IDENT
             CALL QTRACE(LUEMEM)
          END IF
-         CALL QUIT('MEMGET ERROR, illegal type')
+         CALL QUIT('MEMGET2: programming ERROR, illegal data type')
       END IF
       IF (LOGMEMGET) THEN
          WRITE (LUPRI,'(/A,2I10)') '@memget:',LREAL,LFREE
       ENDIF
 C
+      IDENT8 = IDENT
 C
-      MEMID(2) = LREAL
       IF (KFREE .NE. 1) THEN
-C
-C        error and warning checks:
-C
-         WMEMCK(1) = WORK(KFREE-LENID)
-         IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
-C        error check:
+
+C        length error check:
          IF (LREAL+LENID .GT. LFREE) GO TO 8001
-         IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
-C        warning check:
-         IF (MEMCK(2) .NE. 0) GO TO 8003
-C        ... go issue warning and continue at 8013
-C
-         WORK(KFREE-LENID) = WMEMID(1)
-         IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
+
+C        Error check, memory check of WORK(KFREE) OK ? :
+
+         WMEMCK = WORK(KFREE-1)
+         IF (MEMCK .NE. MEMID) GO TO 8002
+C        ... comparing integers, to be sure no renormalization of float
+#if DBG_LENID
+         WMEMCK = WORK(KFREE-LENID+2)
+         IF (MEMCK .NE. MEMID) GO TO 8002
+#endif
+
+C        Warning check, is length of WORK(KFREE) .ne. 0 ? :
+
+         WMEMCK = WORK(KFREE-LENID+1)
+         IF (MEMCK .NE. LZERO) GO TO 8003
+C        ... go issue warning and continue at 7003
       ELSE
+C        KFREE = 1 case, initialize memory vector info:
          IF (LREAL+2*LENID .GT. LFREE) GO TO 8001
-         WORK(KFREE) = WMEMID(1)
-         IF (LENID .EQ. 2) WORK(KFREE+1) = WMEMID(2)
+#if DBG_LENID
+         do i = 3,lenid
+           WORK(i) = WMEMID
+         end do
+#else
+         WORK(3) = WMEMID
+#endif
          KFREE = KFREE + LENID
          LFREE = LFREE - LENID
       END IF
- 8013 KBASE  = KFREE
+
+C     save ident and length for new allocation
+
+ 7003 CONTINUE
+      READ (IDENT8,'(A8)') WORK(KFREE-LENID)
+      WORK(KFREE-LENID+1) = WLREAL
+
+      KBASE  = KFREE
       KFREE  = KBASE + (LREAL + LENID)
       LFREE  = LFREE - (LREAL + LENID)
-      MEMID(2) = 0
-      WORK(KFREE-LENID) = WMEMID(1)
-      call push_water_mark(work(kfree))
-      IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
-Chj1  CALL QEXIT('MEMGET  ')
+      WORK(KFREE-LENID)   = WIDENT_KFREE
+      WORK(KFREE-LENID+1) = WLZERO
+#ifdef DBG_LENID
+      do i = 2,lenid-1
+         WORK(KFREE-LENID+i) = WMEMID
+      end do
+#else
+      WORK(KFREE-1) = WMEMID
+#endif
+Chj1  CALL QEXIT('MEMGET2 ') ! too expensive as MEMGET is called many times
       RETURN
 C
 C     error branches:
 C
 C        error branch  IF (LREAL+LENIDS .GT. LFREE) :
 C
- 8001    CALL QENTER('MEMGET  ')
+ 8001    CALL QENTER('MEMGET2 ')
          IF (KFREE .GT. 1) THEN
             LENIDS = LENID
-            WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
+            WRITE (LUWMEM,1010) DATA_TYPE,LREAL+LENIDS,LFREE
 
             CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
             CALL MEMCHK('MEMGET ERROR (insuff. memory)',WORK,1)
 
          ELSE
             LENIDS = 2*LENID
-            WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
+            WRITE (LUWMEM,1010) DATA_TYPE,LREAL+LENIDS,LFREE
             CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
          END IF
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
-            WRITE (LUEMEM,1010) LREAL+LENIDS,LFREE
+            WRITE (LUEMEM,1010) DATA_TYPE,LREAL+LENIDS,LFREE
             CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
 
             CALL QTRACE(LUEMEM)
@@ -202,35 +227,33 @@ C
          END IF
          CALL QUIT('MEMGET ERROR, insufficient work space in memory')
  1010 FORMAT(
-     &   /' MEMGET ERROR, insufficient free space for next allocation',
-     &   /T16,'( Need:',I10,', available (LFREE):',I10,' )')
+     &/' MEMGET2 ERROR, insufficient free space for next allocation ',A,
+     &/T17,'( Need:',I10,', available (LFREE):',I10,' )')
 C
-C        error branch IF (MEMCK(1) .NE. MEMID(1)) :
+C        error branch for invalid MEMID for WORK(KFREE)
 C
- 8002    CALL QENTER('MEMGET  ')
-         WRITE (LUWMEM,'(/A/A,I10,2(/A,I25))')
-     *      ' MEMGET ERROR, not a valid memget id in work(kfree)',
-     *      ' KFREE =',KFREE,
-     *      ' found memory check :',MEMCK(1),
-     *      ' expected           :',MEMID(1)
-         CALL QTRACE(LUWMEM)
-         IF (LUEMEM.NE.LUWMEM) THEN
-            WRITE (LUEMEM,'(/A/A)')
-     *      ' MEMGET ERROR, not a valid memget id in work(kfree)',
-     *      ' ---> see output file'
-            CALL QTRACE(LUEMEM)
-         END IF
-         CALL QUIT('MEMGET ERROR, not a valid memget '//
+ 8002    CALL QENTER('MEMGET2 ')
+         WRITE (LUWMEM,'(/A/A,I12,2(/A,I25))')
+     &      ' MEMGET2 ERROR',
+     &      ' KFREE =',KFREE,
+     &      ' found memory checks:',MEMCK,
+     &      ' expected           :',MEMID
+         WRITE (LUWMEM,'(/2A/2A/A,I10)')
+     &      ' MEMGET2 INFO, type  : ',DATA_TYPE,
+     &      ' MEMGET2 INFO, ident : ',IDENT,
+     &      ' MEMGET2 INFO, length: ',LENGTH
+         CALL MEMCHK('MEMGET2 call of MEMCHK:',WORK,1)
+         CALL QUIT('MEMGET2 ERROR, not a valid memget '//
      &             'id in work(kfree)')
 C
-C        warning branch IF (MEMCK(2) .NE. 0) :
+C        warning branch for non-zero length for WORK(KFREE):
 C
  8003    NWNMEM = NWNMEM + 1
          WRITE (LUWMEM,'(/A/A,I10,/A,I25)')
      *      ' MEMGET WARNING, nonzero allocation work(kfree)',
      *      ' KFREE =',KFREE,
-     *      ' found memory allocation :',MEMCK(2)
-         CALL QENTER('MEMGET  ')
+     *      ' found memory allocation :',MEMCK
+         CALL QENTER('MEMGET2 ')
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
             WRITE (LUEMEM,'(/A/A)')
@@ -238,13 +261,11 @@ C
      *      ' ---> see output file'
             CALL QTRACE(LUEMEM)
          END IF
-         CALL QEXIT('MEMGET  ')
-C        Warning issued, do the assignment now and continue
-         WORK(KFREE-LENID) = WMEMID(1)
-         IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
-         GO TO 8013
+         CALL QEXIT('MEMGET2 ')
+C        Warning issued, continue and do the assignment now
+         GO TO 7003
 C
-C     end of MEMGET
+C     end of MEMGET2
 C
       END
 
@@ -311,17 +332,10 @@ C
 #include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
-#include "iratdef.h"
 C
 #include "memcb1.h"
 C
       CHARACTER     TMPTXT*71
-      PARAMETER ( LENID = 1/IRAT + 1)
-      DIMENSION     WMEMID(2), WMEMCK(2)
-      INTEGER       MEMID(2),  MEMCK(2)
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
 C
       CALL QENTER('MEMREL  ')
 C
@@ -342,14 +356,14 @@ C
       ELSE
          KFREE1 = 1 + LENID
       END IF
-      WMEMCK(1) = WORK(KFREE1-LENID)
-      IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
+
+      WMEMCK = WORK(KFREE1-1)
+      IF (MEMCK .NE. MEMID) GO TO 8002
 C
 C     release ...
 C
-      MEMID(2) = 0
-      WORK(KFREE1-LENID) = WMEMID(1)
-      IF (LENID .EQ. 2) WORK(KFREE1-1) = WMEMID(2)
+      WORK(KFREE1-LENID  ) = WIDENT_KFREE
+      WORK(KFREE1-LENID+1) = WLZERO
       LFREE = LFREE + (KFREE-KREL)
       KFREE = KREL
 C
@@ -371,22 +385,22 @@ C
          END IF
          CALL QUIT('MEMREL ERROR, krel .gt. kfree')
 C
-C     error branch IF (MEMCK(1) .NE. MEMID(1)) THEN
+C     error branch IF (MEMCK .NE. MEMID) THEN
 C
  8002    WRITE (LUWMEM,'(/A/2A/A,2I10,2(/A,I25))')
      *      ' MEMREL ERROR, not a valid memget id in work(krel)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KREL =',KFIRST,KREL,
-     *      ' found memory check :',MEMCK(1),
-     *      ' expected           :',MEMID(1)
+     *      ' found memory check at work(krel):',MEMCK,
+     *      ' expected                        :',MEMID
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
             WRITE (LUEMEM,'(/A/A)')
-     *      ' MEMREL ERROR, not a valid memget id in work(kfree)',
+     *      ' MEMREL ERROR, not a valid memget id in work(krel)',
      *      ' ---> see output file'
             CALL QTRACE(LUEMEM)
          END IF
-         CALL QUIT('MEMREL ERROR, not a valid memget id in work(kfree)')
+         CALL QUIT('MEMREL ERROR, not a valid memget id in work(krel)')
 C
 C     end of MEMREL
 C
@@ -402,75 +416,79 @@ C
 #include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
-#include "iratdef.h"
 C
 #include "memcb1.h"
 C
-      PARAMETER ( LENID = 1/IRAT + 1)
-      DIMENSION     WMEMID(2), WMEMCK(2)
-      INTEGER       MEMID(2),  MEMCK(2)
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
-C
 Chj1  CALL QENTER('MEMCHK  ')
 C
-      KFREE = KFIRST
-      IF (KFREE .EQ. 1) KFREE = 1 + LENID
+      KALLOC = KFIRST
+      IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
 C
       IALLOC = 0
   100 CONTINUE
          IALLOC = IALLOC + 1
-         WMEMCK(1) = WORK(KFREE-LENID)
-         IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
-         IF (MEMCK(1) .NE. MEMID(1)) GO TO 8001
-         LREAL = MEMCK(2)
-         IF (LREAL .LT. 0) GO TO 8002
-         IF (LREAL .GT. 0) THEN
-            KFREE = KFREE + LENID + LREAL
+#ifdef DBG_LENID
+         do i = 2,lenid-1
+            WMEMCK = WORK(KALLOC-LENID+i)
+            IF (MEMCK .NE. MEMID) GO TO 8001
+         end do
+#else
+         WMEMCK = WORK(KALLOC-1)
+         IF (MEMCK .NE. MEMID) GO TO 8001
+#endif
+         WLREAL = WORK(KALLOC-LENID+1)
+         IF (LREAL .GE. 0) THEN
+            KALLOC = KALLOC + LENID + LREAL
             GO TO 100
          END IF
+         IF (LREAL .NE. LZERO) GO TO 8002
 C
 Chj1  CALL QEXIT('MEMCHK  ')
       RETURN
 C
-C        error branch IF (MEMCK(1) .NE. MEMID(1)) THEN
+C        error branch IF (MEMCK .NE. MEMID) THEN
 C
  8001    WRITE (LUWMEM,'(/A/2A/A,3I10,2(/A,I25))')
-     *      ' MEMCHK ERROR, not a valid memget id in work(kfree-1)',
+     *      ' MEMCHK ERROR, not a valid memget id in work(kalloc-1)',
      *      ' Text from calling routine : ',TEXT,
-     *      ' KFIRST,KFREE,IALLOC =',KFIRST,KFREE,IALLOC,
-     *      ' found memory check :',MEMCK(1),
-     *      ' expected           :',MEMID(1)
+     *      ' KFIRST,KALLOC,IALLOC =',KFIRST,KALLOC,IALLOC,
+     *      ' found memory checks:',MEMCK,
+     *      ' expected           :',MEMID
          WRITE (LUWMEM,'(/A/A)')
      &      ' Dump of allocations before invalid memget id:',
-     &      ' IALLOC #    KBASE         Length'
-         KFREE = KFIRST
-         IF (KFREE .EQ. 1) KFREE = 1 + LENID
-         DO I = 1, IALLOC-1
-            WMEMCK(1) = WORK(KFREE-LENID)
-            IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
-            LREAL = MEMCK(2)
-            WRITE (LUWMEM,'(I5,2I15)') I,KFREE,LREAL
-            KFREE = KFREE + LENID + LREAL
+     &      ' IALLOC #    IDENT     KBASE         Length'
+         KALLOC = KFIRST
+         IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
+         DO I = 1, IALLOC
+            WRITE (IDENT8,'(A8)') WORK(KALLOC-LENID)
+            WLREAL = WORK(KALLOC-LENID+1)
+            WRITE (LUWMEM,'(I5,2X,A8,2I15)') I,IDENT8,KALLOC,LREAL
+            KALLOC = KALLOC + LENID + LREAL
          END DO
+#ifdef DBG_LENID
+         do i = 2,lenid-1
+            WMEMCK = WORK(KALLOC-LENID+i)
+            if (memck .ne. memid) write (luwmem,*)
+     &         'memchk error in debug element: ',i+1,memck
+         end do
+#endif
          CALL QENTER('MEMCHK  ')
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
             WRITE (LUEMEM,'(/A/A)')
-     *      ' MEMCHK ERROR, not a valid memget id in work(kfree-1)',
+     *      ' MEMCHK ERROR, not a valid memget id in work(kalloc-1)',
      *      ' ---> see output file'
             CALL QTRACE(LUEMEM)
          END IF
          CALL QUIT('MEMCHK ERROR, not a valid memget '//
-     &             'id in work(kfree-1)')
+     &             'id in work(kalloc-1)')
 C
 C        error branch IF (LREAL .LT. 0) THEN
 C
  8002    WRITE (LUWMEM,'(/A/2A/A,4I10)')
      *      ' MEMCHK ERROR, next allocation LENGTH is negative',
      *      ' Text from calling routine : ',TEXT,
-     *      ' KFIRST,KFREE,IALLOC,LENGTH =',KFIRST,KFREE,IALLOC,LREAL
+     *      ' KFIRST,KALLOC,IALLOC,LENGTH =',KFIRST,KALLOC,IALLOC,LREAL
          CALL QENTER('MEMCHK  ')
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
@@ -501,15 +519,6 @@ C
 #include "iratdef.h"
 #include "memcb1.h"
 C
-      EXTERNAL MEMBKD
-C
-      PARAMETER ( LENID = 1/IRAT + 1)
-      DIMENSION     WMEMID(2), WMEMCK(2)
-      INTEGER       MEMID(2),  MEMCK(2)
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
-C
       IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
          LREAL = LENGTH
       ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
@@ -535,25 +544,29 @@ C                         ^- make sure OK for KFREE .eq. 1
          CALL QUIT('MEMOPT ERROR, illegal type')
       END IF
 C
+      IDENT8 = '-MEMOPT-'
 C
       IF (ALLOC) THEN
-         MEMID(2) = LREAL
          IF (KFREE .NE. 1) THEN
-C
-C           error and warning checks:
-C
-            WMEMCK(1) = WORK(KFREE-LENID)
-            IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
+
+C           length error check:
             IF (LREAL+LENID .GT. LFREE) GO TO 8001
-            IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
-            IF (MEMCK(2) .NE. 0) GO TO 8003
-C
-            WORK(KFREE-LENID) = WMEMID(1)
-            IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
+
+C            Error check, memory check of WORK(KFREE) OK ? :
+
+            WMEMCK = WORK(KFREE-1)
+            IF (MEMCK .NE. MEMID) GO TO 8002
+C           ... comparing integers, to be sure no renormalization of float
+
+C           Warning check, is length of WORK(KFREE) .ne. 0 ? :
+
+            WMEMCK = WORK(KFREE-LENID+1)
+            IF (MEMCK .NE. LZERO) GO TO 8003
+C           ... go issue warning and continue at 8013
          ELSE
+C           KFREE = 1 case, initialize memory vector info:
             IF (LREAL+2*LENID .GT. LFREE) GO TO 8001
-            WORK(KFREE) = WMEMID(1)
-            IF (LENID .EQ. 2) WORK(KFREE+1) = WMEMID(2)
+            WORK(3) = WMEMID
             KFREE = KFREE + LENID
             LFREE = LFREE - LENID
          END IF
@@ -563,12 +576,24 @@ C
             LFREE = LFREE - LENID
          END IF
       END IF
- 8013 KBASE  = KFREE
+
+C     save ident and length for new allocation
+
+ 8013 CONTINUE
+      IF (ALLOC) THEN
+         READ (IDENT8,'(A8)') WORK(KFREE-LENID)
+         WORK(KFREE-LENID+1) = WLREAL
+      END IF
+
+      KBASE  = KFREE
       KFREE  = KBASE + (LREAL + LENID)
       LFREE  = LFREE - (LREAL + LENID)
-      MEMID(2) = 0
-      IF (ALLOC) WORK(KFREE-LENID) = WMEMID(1)
-      IF (LENID .EQ. 2 .AND. ALLOC) WORK(KFREE-1) = WMEMID(2)
+
+      IF (ALLOC) THEN
+         WORK(KFREE-LENID)   = WIDENT_KFREE
+         WORK(KFREE-LENID+1) = WLZERO
+         WORK(KFREE-1)       = WMEMID
+      END IF
       RETURN
 C
 C     error branches:
@@ -594,14 +619,14 @@ C
      &   /' MEMOPT ERROR, insufficient free space for next allocation',
      &   /T16,'( Need:',I10,', available (LFREE):',I10,' )')
 C
-C        error branch IF (MEMCK(1) .NE. MEMID(1)) :
+C        error branch IF (MEMCK .NE. MEMID) :
 C
  8002    CALL QENTER('MEMOPT  ')
          WRITE (LUWMEM,'(/A/A,I10,2(/A,I25))')
      *      ' MEMOPT ERROR, not a valid MEMOPT id in work(kfree)',
      *      ' KFREE =',KFREE,
-     *      ' found memory check :',MEMCK(1),
-     *      ' expected           :',MEMID(1)
+     *      ' found memory check :',MEMCK,
+     *      ' expected           :',MEMID
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
             WRITE (LUEMEM,'(/A/A)')
@@ -618,7 +643,7 @@ C
          WRITE (LUWMEM,'(/A/A,I10,/A,I25)')
      *      ' MEMOPT WARNING, nonzero allocation work(kfree)',
      *      ' KFREE =',KFREE,
-     *      ' found memory allocation :',MEMCK(2)
+     *      ' found memory allocation :',MEMCK
          CALL QENTER('MEMOPT  ')
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
@@ -628,11 +653,10 @@ C
             CALL QTRACE(LUEMEM)
          END IF
          CALL QEXIT('MEMOPT  ')
-C        Warning issued, do the assignment now and continue
-         WORK(KFREE-LENID) = WMEMID(1)
-         IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
+C        Warning issued, continue and do the assignment now
          GO TO 8013
 C
 C     end of MEMOPT
 C
       END
+C --- end of mempgk.F ---
