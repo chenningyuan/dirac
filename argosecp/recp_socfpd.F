@@ -1,4 +1,4 @@
-      subroutine recp_socfpd( mcxu,mcxu2,mblu,mgcsu,icxast,icxst,
+      subroutine recp_socfpd( mgcsu,icxast,icxst,
      &   icxsv1, icxsv2, idp,  iprst,  la,
      &   lb,     maords, mau,  mcons,      mgcs,   mics,
      &   mjcs,   nblpr,  nc,   nd,         nf,     nir,
@@ -68,7 +68,11 @@ c     # local:
       endif
  
       ea = inam(nu).eq.5
- 
+
+!     mcxu,mblu 
+      mblu   = 4500000  !temporary: total available workspace
+      mcxu = mblu
+
 !     # mcxu1 is the original mcxu offset.
       mcxu  = CX_TEMP 
       mcxu1 = mcxu

@@ -1,5 +1,5 @@
       SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0)
-!     Read ECP Input 
+!     Read ECP parameters
       USE RECP_NTR
       IMPLICIT NONE
 #include "priunit.h"
@@ -12,14 +12,22 @@
       INTEGER LUINFO,NUC1,NONT0
       REAL*8  Q,Q1
 !     local variables
-      INTEGER I,J,K,IOS,RECPIN1,LUBAS,INTQ0,ISTART
+      INTEGER I,J,K,IOS,RECPIN1,LUBAS,INTQ0,ISTART,ECPINDEX
       LOGICAL ECPLIB
       CHARACTER*3 ECPKEYWORD,SOREP_CHR
       CHARACTER*30 ECPNAM,ECPTMP
       CHARACTER*80 ELINE
 
       RECPIN1 = 51
-!     Check RECP
+
+!     Save NONT0 
+      ECPNONT(NUC1) = NONT0
+      ECPINDEX = 0
+
+!     print *,'Save ECPNONT(',NUC1,')',NONT0
+
+!     Check 'ECP' keyword
+!     ===================
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(BN,A3)',IOSTAT=IOS) ECPKEYWORD
       IF (IOS.NE.0) GOTO 8000
@@ -29,21 +37,23 @@
          NMLINE = NMLINE - 1
          GOTO 9000
       ENDIF
-
+      
 !     Set RECP_SET/ Open 'RECP_INPUT2' file
 !     =====================================
       IF (.NOT.ALLOCATED(RECP_SET)) THEN
-         ALLOCATE(RECP_SET(2))
+         ALLOCATE(RECP_SET(4))
          RECP_SET(1) = 0   ! Number of RECP 
-         
-!        Open file 'RECP_INPUT2'
-         OPEN (UNIT=RECPIN1,FILE='RECP_INPUT2',
-     &         FORM='FORMATTED',STATUS='NEW')
-         WRITE(RECPIN1,'(A)') '%RECP'
+         RECP_SET(3) = 0   ! lines of RECP read  
+         RECP_SET(4) = 0   ! last number of NUC1 for  
+!        Allocate variables for RECP parameters
+         CALL RECP_NTRA_READCP(MXCENT)
+         RECP_CORE = 0
+         AREP_ANG  = 0
+         SOREP_ANG = 0 
       ENDIF
 
-!     Allocate variables for RECP parameters
-      CALL RECP_NTRA_READCP(MXCENT)
+!     Check for the last RECP Nuc. center 
+      RECP_SET(4) = MAX(RECP_SET(4),NUC1)
 
 !     Check types of RECP read
 !     ========================
@@ -107,8 +117,8 @@
 
 !     Write RECP information into file
 !     ================================
-      WRITE (RECPIN1,'(4(I3))') 
-     &      RECP_CORE(NUC1),(AREP_ANG(NUC1)-1),SOREP_ANG(NUC1),NUC1
+!     WRITE (RECPIN1,'(4(I3))') 
+!    &      RECP_CORE(NUC1),(AREP_ANG(NUC1)-1),SOREP_ANG(NUC1),NUC1
 
       IF (.NOT.ALLOCATED(RECP_MCRS)) THEN 
          ALLOCATE(RECP_MCRS(NONTYP))
@@ -116,7 +126,14 @@
             RECP_MCRS(I) = 0
          ENDDO
       ENDIF
-      RECP_MCRS(NUC1) = RECP_SET(1)
+
+!     RECP_MCRS(NUC1) = RECP_SET(1)
+      DO I = 1, (NUC1-1)
+         ECPINDEX = ECPINDEX + ECPNONT(I)  
+      ENDDO
+      DO I = (ECPINDEX+1), (ECPINDEX+ECPNONT(NUC1))
+         RECP_MCRS(I) = RECP_SET(1) 
+      ENDDO
 !     ---------
 !     Read AREP
 !     ---------
@@ -131,21 +148,26 @@
             READ (MLINE(NMLINE),'(BN,I3)',IOSTAT=IOS) AREP_BLK(NUC1,I)
          ENDIF
          IF (IOS.NE.0) GOTO 8000
-         WRITE(RECPIN1,*) AREP_BLK(NUC1,I)
+!        WRITE(RECPIN1,*) AREP_BLK(NUC1,I)
 
 !        Read in each block 
          DO J = 1, AREP_BLK(NUC1,I)
+            RECP_SET(3) = RECP_SET(3) + 1
             IF (ECPLIB) THEN
                CALL RECP_LNK_RDECPLINE(ELINE,LUBAS)
                READ (ELINE,*,IOSTAT=IOS)
-     &              AREP_R(NUC1,I,J),AREP_E(NUC1,I,J),AREP_C(NUC1,I,J)
+!    &              AREP_R(NUC1,I,J),AREP_E(NUC1,I,J),AREP_C(NUC1,I,J)
+     &              RECPIN_R(RECP_SET(3)),RECPIN_E(RECP_SET(3)),
+     &              RECPIN_C(RECP_SET(3))
             ELSE
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),*,IOSTAT=IOS)
-     &              AREP_R(NUC1,I,J),AREP_E(NUC1,I,J),AREP_C(NUC1,I,J)
+!    &              AREP_R(NUC1,I,J),AREP_E(NUC1,I,J),AREP_C(NUC1,I,J)
+     &              RECPIN_R(RECP_SET(3)),RECPIN_E(RECP_SET(3)),
+     &              RECPIN_C(RECP_SET(3))
             ENDIF
-            WRITE(RECPIN1,*)
-     &           AREP_R(NUC1,I,J),AREP_E(NUC1,I,J),AREP_C(NUC1,I,J)
+!           WRITE(RECPIN1,*)
+!    &           AREP_R(NUC1,I,J),AREP_E(NUC1,I,J),AREP_C(NUC1,I,J)
             IF (IOS.NE.0) GOTO 8000
          ENDDO
       ENDDO
@@ -156,6 +178,7 @@
       IF (SOREP_ANG(NUC1).EQ.0) GOTO 9000 
       DO I = 1, SOREP_ANG(NUC1)
 !        Read in each block         
+         SOREP_BLK(NUC1,I) = -1     ! initial value
          IF (ECPLIB) THEN
             CALL RECP_LNK_RDECPLINE(ELINE,LUBAS)
             READ (ELINE,'(BN,I3)',IOSTAT=IOS) SOREP_BLK(NUC1,I)
@@ -164,21 +187,26 @@
             READ (MLINE(NMLINE),'(BN,I3)',IOSTAT=IOS) SOREP_BLK(NUC1,I)
          ENDIF
          IF (IOS.NE.0) GOTO 8000 
-         WRITE(RECPIN1,*) SOREP_BLK(NUC1,I)
+!        WRITE(RECPIN1,*) SOREP_BLK(NUC1,I)
 
 !        Read in each block         
          DO J = 1, SOREP_BLK(NUC1,I)
+            RECP_SET(3) = RECP_SET(3) + 1
             IF (ECPLIB) THEN
                CALL RECP_LNK_RDECPLINE(ELINE,LUBAS)
                READ (ELINE,*,IOSTAT=IOS)
-     &           SOREP_R(NUC1,I,J),SOREP_E(NUC1,I,J),SOREP_C(NUC1,I,J)
+!    &           SOREP_R(NUC1,I,J),SOREP_E(NUC1,I,J),SOREP_C(NUC1,I,J)
+     &              RECPIN_R(RECP_SET(3)),RECPIN_E(RECP_SET(3)),
+     &              RECPIN_C(RECP_SET(3))
             ELSE
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),*,IOSTAT=IOS)
-     &           SOREP_R(NUC1,I,J),SOREP_E(NUC1,I,J),SOREP_C(NUC1,I,J)
+!    &           SOREP_R(NUC1,I,J),SOREP_E(NUC1,I,J),SOREP_C(NUC1,I,J)
+     &              RECPIN_R(RECP_SET(3)),RECPIN_E(RECP_SET(3)),
+     &              RECPIN_C(RECP_SET(3))
             ENDIF
-            WRITE(RECPIN1,*)
-     &           SOREP_R(NUC1,I,J),SOREP_E(NUC1,I,J),SOREP_C(NUC1,I,J)
+!           WRITE(RECPIN1,*)
+!    &           SOREP_R(NUC1,I,J),SOREP_E(NUC1,I,J),SOREP_C(NUC1,I,J)
             IF (IOS.NE.0) GOTO 8000 
          ENDDO
       ENDDO
@@ -198,13 +226,7 @@
       WRITE(LUPRI,*) 'Number of core elecron : ',RECP_CORE(NUC1)
       CALL QUIT('Wrong charge or core-electron number')
  9000 CONTINUE
-      IF (ALLOCATED(RECP_SET)) THEN
-         IF (NUC1.EQ.NONTYP) THEN
-            WRITE(RECPIN1,'(A)') '%END RECP'
-            CALL RECP_NTRD_READCP  ! deallocate
-         ENDIF
-      ENDIF
-      END
+      END SUBROUTINE RECP_LNK_READCP
 
       SUBROUTINE RECP_LNK_CHECKMOL(DOCART)
       USE RECP_NTR
@@ -238,61 +260,54 @@
 
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
 
-      WRITE(RECPIN1,'(A)') '%IRREP'
-
-!     General options
-!     ===============
-!     WRITE(RECPIN1,'(6I3)') (ngenp),NUCIND,blk,(ncons),blk,(nmcrs) 
+      CALL RECP_NTRA_IRREP(MAXREP)
 
 !     Point group symmetry
 !     ====================
-      DO I = 0, MAXREP
-         ND(I) = 1
+      RECP_MAXREP(1) = (MAXREP+1)
+      DO I = 1, RECP_MAXREP(1)
+         RECP_ITYP(I) = itypag(I-1)
       ENDDO
-      WRITE(RECPIN1,1000) (MAXREP+1), (ND(I),itypag(I),I=0,MAXREP)
 
 !     P1 X P2 = P3
 !     ============
+      RECP_NDPT(1) = ndptag 
       DO I = 0, nstag-1
          DO J = 0, nstag-1
-            IF (itypag(I).EQ.IRTAB(IGRPAG*10 + J)) IRREP(J+1) = (I+1)
+            IF (itypag(I).EQ.IRTAB(IGRPAG*10 + J)) 
+     &         RECP_IRREP(J+1) = (I+1)
          ENDDO
       ENDDO
+ 
+!      IF (ndptag.EQ.0) THEN
+!!        --------------------
+!!        C1,Ci,Cs,C2 symmetry
+!!        --------------------
+!         WRITE(RECPIN1,1001) ndptag
+!
+!      ELSEIF (ndptag.EQ.1) THEN
+!!        -------------------
+!!        D2,C2v,C2h symmetry
+!!        -------------------
+!         WRITE(RECPIN1,1001) ndptag
+!         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4)
+!
+!      ELSEIF (ndptag.EQ.7) THEN
+!!        ------------
+!!        D2h symmetry
+!!        ------------
+!         WRITE(RECPIN1,1001) ndptag
+!         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4) !B1g*B2g=B3g 2*3=4
+!         WRITE(RECPIN1,1002) IRREP(2),IRREP(5),IRREP(6) !B1g*Au =B1u 2*5=6
+!         WRITE(RECPIN1,1002) IRREP(2),IRREP(7),IRREP(8) !B1g*B2u=B3u 2*7=8
+!         WRITE(RECPIN1,1002) IRREP(3),IRREP(5),IRREP(7) !B2g*Au =B2u 3*5=7
+!         WRITE(RECPIN1,1002) IRREP(3),IRREP(6),IRREP(8) !B2g*B1u=B3u 3*6=8
+!         WRITE(RECPIN1,1002) IRREP(4),IRREP(5),IRREP(8) !B3g*Au =B3u 4*5=8
+!         WRITE(RECPIN1,1002) IRREP(4),IRREP(6),IRREP(7) !B3g*B1u=B2u 4*6=7
+!      ENDIF
 
-      IF (ndptag.EQ.0) THEN
-!        --------------------
-!        C1,Ci,Cs,C2 symmetry
-!        --------------------
-         WRITE(RECPIN1,1001) ndptag
-
-      ELSEIF (ndptag.EQ.1) THEN
-!        -------------------
-!        D2,C2v,C2h symmetry
-!        -------------------
-         WRITE(RECPIN1,1001) ndptag
-         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4)
-
-      ELSEIF (ndptag.EQ.7) THEN
-!        ------------
-!        D2h symmetry
-!        ------------
-         WRITE(RECPIN1,1001) ndptag
-         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4) !B1g*B2g=B3g 2*3=4
-         WRITE(RECPIN1,1002) IRREP(2),IRREP(5),IRREP(6) !B1g*Au =B1u 2*5=6
-         WRITE(RECPIN1,1002) IRREP(2),IRREP(7),IRREP(8) !B1g*B2u=B3u 2*7=8
-         WRITE(RECPIN1,1002) IRREP(3),IRREP(5),IRREP(7) !B2g*Au =B2u 3*5=7
-         WRITE(RECPIN1,1002) IRREP(3),IRREP(6),IRREP(8) !B2g*B1u=B3u 3*6=8
-         WRITE(RECPIN1,1002) IRREP(4),IRREP(5),IRREP(8) !B3g*Au =B3u 4*5=8
-         WRITE(RECPIN1,1002) IRREP(4),IRREP(6),IRREP(7) !B3g*B1u=B2u 4*6=7
-      ENDIF
-
-!1000 FORMAT(I3,8(I2,1X,A3))
- 1000 FORMAT(I3,12(I3,A3))
- 1001 FORMAT(I3)
- 1002 FORMAT(3(2X,I1))
-      WRITE(RECPIN1,'(A)') '%END IRREP'
  9000 CONTINUE
-      END
+      END SUBROUTINE RECP_LNK_IRREP
 
       SUBROUTINE RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,
      &           IQM,JCO,KATOM,KANG)
@@ -302,14 +317,14 @@
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-!     INTEGER      KATOM,KANG
+      INTEGER      KATOM,KANG
       DIMENSION    IQM(KATOM),JCO(KANG,KATOM)
+!     INTEGER      IQM(KATOM),JCO(KANG,KATOM)
       CHARACTER*1  KASYM(3,3)
       CHARACTER*11 SYMTXT
       REAL*8       XYZ3(3,8,MXATOM,MXATOM)
       INTEGER      MJ2(MXATOM,MXATOM),ISEND(8,MXATOM,8,MXATOM),NFUNC
-      INTEGER      I,J,K,N,ICENT,RECPIN1,NSYMOP,IGENQ(3),NGENP,blk
-      RECPIN1 = 51
+      INTEGER      I,J,K,N,ICENT,NSYMOP,IGENQ(3),NGENP,blk,JBLOCK,KBLOCK
 
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
 
@@ -321,33 +336,33 @@
       CALL RECP_LNK_PATM(ISEND,XYZ3,MJ2,NSYMOP,KASYM)
       CALL RECP_LNK_PGEN(ISEND,NSYMOP,NGENP,MJ2)
 
-!     Write geometry data into 'RECPIN1' file
-!     ----------------------------------
-      WRITE(RECPIN1,'(A)') '%GEOMETRY'
-      ICENT = 1
-      IBLOCK = 0
-!     DO I = 1,NONTYP ! atomic type
-!        WRITE(RECPIN1,*) ICENT, NONT(I), CHARGE(ICENT)
-!        DO N = 1,NONT(I) ! symmetry-independent center
-!           WRITE(RECPIN1,*) NAMN(ICENT),(CORD(J,ICENT),J=1,3)
-!           ICENT = ICENT + 1
-!        ENDDO
-!     ENDDO
+
+!     Set geometry data
+!     =================
+      CALL RECP_NTRA_GEO(MXATOM,KATOM,KANG,NONTYP,NONT,
+     &                   MJ2,IQM,JCO,NGENP)
+      ICENT  = 0
+      JBLOCK = 0
+      KBLOCK = 0
       DO I = 1,NONTYP ! atomic type
-!        WRITE(RECPIN1,*) ICENT, NONT(I), CHARGE(ICENT)
          DO N = 1,NONT(I) ! symmetry-independent center
             NFUNC = 0
+            ICENT = ICENT + 1
             DO J = 1, IQM(I)
                NFUNC = NFUNC + JCO(J,I)
             ENDDO
-            WRITE(RECPIN1,'(A3,2I3,F14.10)') NAMN(ICENT),NFUNC,
-     &           (MJ2(I,N)-1),CHARGE(ICENT)
-            DO J = 1, MJ2(I,N)-1
-               WRITE(RECPIN1,'(A3,3F14.10)') 
-     &              NAMN(ICENT),(XYZ3(K,J,N,I),K=1,3)
-            ENDDO
 
-            ICENT = ICENT + 1
+            RECPIN_NAMN(ICENT)     = NAMN(ICENT)      ! Name of Nuc.center
+            RECPIN_BASISBLK(ICENT) = NFUNC
+            RECPIN_NUC2(ICENT)     = (MJ2(I,N)-1)
+            RECPIN_CHARGE(ICENT)   = CHARGE(ICENT)
+
+            DO J = 1, MJ2(I,N)-1
+!              RECPIN_NAMN(J,ICENT)= NAMN(ICENT)
+               RECPIN_GEO(1,J,ICENT) = XYZ3(1,J,N,I)  ! X
+               RECPIN_GEO(2,J,ICENT) = XYZ3(2,J,N,I)  ! Y
+               RECPIN_GEO(3,J,ICENT) = XYZ3(3,J,N,I)  ! Z
+            ENDDO
 
 !           Write interchange
             IGENQ(1)=2
@@ -355,39 +370,44 @@
             IGENQ(3)=5
             IF (MJ2(I,N).GT.2) THEN
                DO J=1,NGENP
-                  WRITE (RECPIN1,'(26I3)')
-     &            (ISEND(K,N,IGENQ(J),I),K=1,MJ2(I,N)-1)
+                  DO K = 1,(MJ2(I,N)-1)
+                     RECPIN_ICA(K,ICENT,J) = ISEND(K,N,IGENQ(J),I)
+                  ENDDO
                ENDDO
             ENDIF
 
 !           Match basis-block and AO2SO-matrix
             DO J = 1, IQM(I)
-               IBLOCK = IBLOCK + 1
+               JBLOCK = JBLOCK + 1
                DO K = 1, JCO(J,I)
-                  WRITE(RECPIN1,'(2(I3))') NCONS0(K,J,I),IBLOCK
+                  KBLOCK = KBLOCK + 1
+                  RECPIN_BLKMATCH(1,KBLOCK)= RECPIN_NCONS0(K,J,I) 
+                  RECPIN_BLKMATCH(2,KBLOCK)= JBLOCK 
+!                 print *, 'RECPIN_BLKMATCH',KBLOCK,
+!    &              RECPIN_BLKMATCH(1,KBLOCK),RECPIN_BLKMATCH(2,KBLOCK)
                ENDDO
             ENDDO
 
 !           Index for mcrs
-            WRITE(RECPIN1,'(I3)') RECP_MCRS(I)
+!           WRITE(RECPIN1,'(I3)') RECP_MCRS(I)
          ENDDO
       ENDDO
-      WRITE(RECPIN1,'(A)') '%END GEOMETRY'
-      IF (ALLOCATED(RECP_MCRS)) DEALLOCATE(RECP_MCRS)
-      DEALLOCATE ( NCONS0 ) 
+!     DEALLOCATE ( RECPIN_NCONS0 ) 
 
 !     General options
 !     ===============
-      WRITE(RECPIN1,'(A)') '%GENERAL'
-!     Number of RECP parameters : nmcrs
-!     Sum of all JCOs           : ncons
-!     WRITE(RECPIN1,'(6I3)') NGENP,NUCIND,blk,(ncons),blk,(nmcrs) 
-      WRITE(RECPIN1,'(6I3)') NGENP,NUCIND,blk,
-     &     RECP_SET(2),blk,RECP_SET(1)
-      WRITE(RECPIN1,'(A)') '%END GENERAL'
 
-      CLOSE(UNIT=RECPIN1)
+!     RECP_SET(1),RECP_SET(2)
+!     Number of RECP parameters : nmcrs - RECP_SET(1)
+!     Sum of all JCOs           : ncons - RECP_SET(2)
+
+      RECPIN_GENVAL(1) = NGENP 
+      RECPIN_GENVAL(2) = NUCIND
+      RECPIN_GENVAL(3) = blk 
       GOTO 9000
+
+!     Error message
+!     =============
  8000 CONTINUE
       WRITE(*,*) 'Maximum symmetry of RECP integral is D2h' 
       CALL QUIT('Error in geometry reading')
@@ -409,12 +429,6 @@
 
       tolsq=1.0d-12
 
-!     DO I = 1, 3
-!        DO J = 1, 3
-!           print *, 'KASYM',I,J,KASYM(J,I)
-!        ENDDO
-!     ENDDO
-      
 !     read rotation 
 !     -------------      
       DO I = 1, NSYMOP
@@ -602,51 +616,48 @@
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-!     INTEGER KATOM,KANG,KBLOCK,KPRIM
+#include "dcbgen.h"
+      INTEGER   KATOM,KANG,KBLOCK,KPRIM
       DIMENSION IQM(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-      INTEGER I,J,K,L,M,N,RECPIN1,KBCH,MXIQM,MXJCO
+      INTEGER I,J,K,L,M,N,RECPIN1,KBCH
+
 !     Skip if 'RECP_SET' is not setted
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
 
+!     Allocate variables
+!     ==================
+      CALL RECP_NTRA_BASIS(KATOM,KANG,KBLOCK,NONTYP,IQM,JCO,NUC,NRC)
 
-      RECPIN1 = 51
-
-!     For allocate NCONS0
-      MXIQM = 0
-      MXJCO = 0
-      DO I = 1,NONTYP
-         MXIQM = MAX(MXIQM,IQM(I)) 
-         DO J = 1,IQM(I)
-            MXJCO = MAX(MXJCO,JCO(J,I))
-         ENDDO
-      ENDDO
-      ALLOCATE ( NCONS0(MXJCO,MXIQM,NONTYP) ) 
-
-      WRITE(RECPIN1,'(A)') '%BASISSET'
-      WRITE(RECPIN1,'(A6,I3)') 'NONTYP',NONTYP
-
-      KBCH    = 0
-      KBCH3   = 0
+!     Set BASIS variables
+!     ===================
+      KBCH = 0
       RECP_SET(2) = 0
-!     print *,'RECP_LNK_RDORB'
-      DO I = 1,NONTYP             ! atomic type
-         WRITE(RECPIN1,'(A6,I3)') 'IQM   ',IQM(I)
+      
+      RECPIN_NONTYP(1) = NONTYP
+      DO I = 1,NONTYP          ! atomic type
+         RECPIN_IQM(I) = IQM(I)
          DO J = 1,IQM(I)       ! angular momentum value
-            WRITE(RECPIN1,'(A6,I3)') 'JCO   ',JCO(J,I)
-            KBCH3= KBCH3+ 1
+            RECPIN_JCO(J,I) = JCO(J,I)
+!           print *,'RECPIN_JCO(',J,',',I,')',RECPIN_JCO(J,I)
+
             DO K = 1, JCO(J,I) ! blocks of given atom and L-value
                KBCH = KBCH + 1
-               NCONS0(K,J,I) = KBCH
+               RECPIN_NCONS0(K,J,I) = KBCH
 !              ----------------------------------------------------
-               WRITE(RECPIN1,'(5I3)') NUC(KBCH),NRC(KBCH),J
+!              Set numbers to read in each block
+!              =================================
+               RECPIN_NUC(KBCH) = NUC(KBCH)
+               RECPIN_NRC(KBCH) = NRC(KBCH)
+               RECPIN_LMNP(KBCH)= J
 !              print *,NUC(KBCH), K, NRC(KBCH)
+
                DO L = 1, NUC(KBCH)
-                  WRITE(RECPIN1,*) ALPHA(L,KBCH)
+                  RECPIN_ALPHA(L,KBCH) = ALPHA(L,KBCH)
                   DO M = 1, NRC(KBCH)
-                     WRITE(RECPIN1,*) CPRIMU(L,M,KBCH)
+                     RECPIN_CPRIMU(L,M,KBCH) = CPRIMU(L,M,KBCH)
                   ENDDO
 !                 print*,ALPHA(L,KBCH),
 !    &                  (CPRIMU(L,M,KBCH),M=1,NRC(KBCH))
@@ -656,7 +667,6 @@
          ENDDO
       ENDDO
       RECP_SET(2) = KBCH
-      WRITE(RECPIN1,'(A)') '%END BASISSET'
 
  9000 CONTINUE
       END
@@ -680,39 +690,20 @@
 #include "cbirea.h"
 #include "argoscom.h"
 #include "argoscomch.h"
+!#include "dcbgen.h"
 ! be careful with the variables in 'ibtfun.h' 
 #include "ibtfun.h"
-      INTEGER soef, blk, I0,J0,K0,L0,BLKCNT,RECPIN1,NHKTA0,irowmax0
+      INTEGER blk, I0,J0,K0,L0,BLKCNT,AORDS1
 !
 !     Run over Nuclear Centres
 !
-      RECPIN1 = 51
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
 
-      NHKTA0   = 0
-      irowmax0 = 0
-      DO I0 = 1, NUCIND
-         DO J0 = 1, KMAX
-            NHKTA0 = MAX(NHKTA0,NHKT(J0))
-            irowmax0 = MAX (irowmax0, (nucdeg(I0)*KHKT(J0)) )
-         ENDDO
-      ENDDO
-
-!     print *,'alloc,CTRANARG',NUCIND,NHKTA0,irowmax0,irowmax0
-      ALLOCATE(CTRANARG(NUCIND,NHKTA0,irowmax0,irowmax0))
-      DO I0 = 1, NUCIND
-         DO J0 = 1, NHKTA0
-            DO K0 = 1, irowmax0
-               DO L0 = 1, irowmax0
-                  CTRANARG(I0,J0,K0,L0) = 0.0d0
-               ENDDO 
-            ENDDO 
-         ENDDO 
-      ENDDO 
+!     Allocate CTRANARG
+      CALL RECP_NTRA_AOTOSO1
 
       blk = 0
-      do 401 ICENT = 1, NUCIND   ! run over nuclear center
-         nucdega = nucdeg(ICENT)
+      DO 401 ICENT = 1, NUCIND   ! run over nuclear center
          DO 411 IA = 1, KMAX     ! run over shells
             ila = 0
             icol = 1
@@ -721,29 +712,23 @@
             KHKTA  = KHKT(IA)
             NUMCFA = NUMCF(IA)
             IC     = LCLASS(IA)
-            ncenta = NCENT(IA)
-            irowmax(icent,NHKTA) = nucdega * KHKTA
+!           Set irowmax
+            irowmax(ICENT,NHKTA) = nucdeg(ICENT) * KHKTA
+
 !YCP        IF (IA-1.GE.1) THEN ! arrays boundaries fix
-            if (ncenta .eq. ICENT) then
-               if ((ncenta.ne.NCENT(IA-1)) .or. 
+!           IF (IA-1.GE.1) THEN ! arrays boundaries fix !FIXME
+            IF (NCENT(IA).EQ.ICENT) THEN
+               IF ((NCENT(IA).NE.NCENT(IA-1)) .or. 
      &             (NHKTA.ne.NHKT(IA-1))  ) then
                   blk = blk +1
-                  IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1              
-                  IOFF = NAORBD
+!                 IF (NUMCFA.EQ.1) IBLOCK = IBLOCK + 1              
                   DO 421 NA = 1, KHKTA      ! run over components
                      ila = 0
                      DO 431 LA = 0, MAXREP  ! run over symmetry operator
                         IVARB = IBTXOR(LA,ISYMAO(NHKTA,NA))
-!
-!              If orbital contributes to this representation:
-!
-!                (IVARB is a bitstring of basic operations with
-!                1 in the positions where the basic operations
-!                has a different parity for the irrep and the
-!                AO(when centered in origo). These basic
-!                operations with different parities must then
-!                not be part of the stabilizer of the center
-!                for the AO).
+
+!                       If orbital contributes to this representation:
+!                       See IVARB in SYMPRO (herrdn.F)
                         IF (IBTAND(MULA,IVARB) .EQ. 0) THEN
                            ila = ila + 1
                            JKB = 0
@@ -751,16 +736,13 @@
 !                          loop over symmetry dependent centers
                            DO 441 KB = 0, MAXREP
                               IF (IBTAND(KB,MULA) .EQ. 0) THEN
-                                 JKB              = JKB + 1
+                                 JKB  = JKB+ 1
                                  irow = NA + KHKTA*(ila-1)
                                  icol = NA + KHKTA*(JKB-1)
                                  CTRANARG(icent,NHKTA,irow,icol) 
      &                            = PT(IBTAND(KB,IVARB))
-                           soef = nint(CTRANARG(ICENT,NHKTA,irow,icol))
                                  ireparg(icent,NHKTA,irow) = LA + 1
-!                                 write(lupri,'(a,i3,i3,i3,i3,a,i3)')
-!    &                   'CTRANARG(',icent,NHKTA,irow,icol,') = ',soef
-                              MAXANG(icent) = NHKTA
+                                 MAXANG(icent) = NHKTA
                               END IF
   441                      CONTINUE
                         ELSE
@@ -770,34 +752,36 @@
                endif
             endif
 !YCP        ENDIF
+!           ENDIF
   411    CONTINUE
   401 CONTINUE
 
 !     --------------------------------------
-!     Write AO to SO transformation matrices
+!     Set AO to SO transformation matrices
 !     --------------------------------------
-      
-      WRITE(RECPIN1,'(A)') '%AOTOSO'
+
+      CALL RECP_NTRA_AOTOSO(NUCIND,MAXANG,irowmax)
+
+      AORDS1 = 0
       DO I0 = 1, NUCIND
          DO J0 = 1, MAXANG(I0)
-            WRITE (RECPIN1,'(20i3)') irowmax(I0,J0),
-     &      (ireparg(I0,J0,K0),K0=1,irowmax(I0,J0))
+            AORDS1 = AORDS1 + 1
+!           Set list of irrep. in i-th AO reduction set
+            RECPIN_MXROW(AORDS1) = irowmax(I0,J0)
+            DO IRREP1 = 1,irowmax(I0,J0)
+               RECPIN_LA1(IRREP1,AORDS1) = ireparg(I0,J0,IRREP1)
+            ENDDO
+
+!           Set AO-SO matrices
+            DO K0 = 1, irowmax(I0,J0)
+               DO L0 = 1, irowmax(I0,J0)
+                  RECPIN_AO2SO(L0,K0,AORDS1) 
+     &                = nint(CTRANARG(I0,J0,K0,L0))
+               ENDDO
+            ENDDO
          ENDDO
       ENDDO
 
-      BLKCNT = 0
-      DO I0 = 1, NUCIND
-         DO J0 = 1, MAXANG(I0)
-            BLKCNT = BLKCNT + 1
-            WRITE(RECPIN1,'(20i3)')
-     &           irowmax(I0,J0),irowmax(I0,J0),BLKCNT
-            DO K0 = 1, irowmax(I0,J0)
-               WRITE(RECPIN1,'(20i3)')
-     &         (nint(CTRANARG(I0,J0,K0,L0)),L0=1,irowmax(I0,J0))
-            ENDDO
-         ENDDO   
-      ENDDO   
-      WRITE(RECPIN1,'(A)') '%END AOTOSO'
       DEALLOCATE (CTRANARG)
  9000 CONTINUE
       END

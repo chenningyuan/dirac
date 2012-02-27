@@ -3758,17 +3758,6 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       LSCR3 = MAXLEN_I1
 C?    print*,'MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS ',
 C?   &        MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS
-      call memmar(KI1  ,LSCR3,'ADDL  ',1,'I1    ')
-      call memmar(KXI1S,LSCR3,'ADDL  ',2,'XI1S  ')
-*
-      call memmar(KI2  ,LSCR3,'ADDL  ',1,'I2    ')
-      call memmar(KXI2S,LSCR3,'ADDL  ',2,'XI2S  ')
-*
-      call memmar(KI3  ,LSCR3,'ADDL  ',1,'I3    ')
-      call memmar(KXI3S,LSCR3,'ADDL  ',2,'XI3S  ')
-*
-      call memmar(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
-      call memmar(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
 *
 *. Arrays for storing occupations of T-operators
       call memmar(KTOCC1,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC1 ')
@@ -3819,8 +3808,6 @@ C?   &        MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS
      &     WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)),
      &     WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)),
      &     IASTP,IBSTP,IACTP,IBCTP,MXINKA,
-     &     WORK(KI1),WORK(KXI1S),WORK(KI2),WORK(KXI2S),
-     &     WORK(KI3),WORK(KXI3S),WORK(KI4),WORK(KXI4S),
      &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
      &     ISSM,ICSM,ISIGDEN,NCBATCH,IDIAG,IRIS,IRIC,
      &     NSPOBEX_TP,WORK(KLSOBEX),
@@ -3843,7 +3830,6 @@ C     release local memory
       SUBROUTINE FIND_IMAT_DRV3(NSBLOCK,ISBLOCK,
      &                          NSSOA_S,NSSOB_S,NSSOA_C,NSSOB_C,
      &                          IASTP,IBSTP,IACTP,IBCTP,MAXK,
-     &                          I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                          LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
      &                          ISSM,ICSM,ISIGDEN,NCBATCH,IDIAG,IRIS,
      &                          IRIC,NSPOBEX_TP,ITSPOBEX_TP,
@@ -3897,7 +3883,6 @@ C     release local memory
       INTEGER NSSOA_S(NSMST,*),NSSOB_S(NSMST,*)
       INTEGER NSSOA_C(NSMST,*),NSSOB_C(NSMST,*)
 *.Scratch
-      DIMENSION I1(*),I2(*),I3(*),I4(*),XI1S(*),XI2S(*),XI3S(*),XI4S(*)
       DIMENSION ISMDST(*)
 *. T-coefficients
       DIMENSION ITSPOBEX_TP(4*NGAS,*)
@@ -4038,7 +4023,6 @@ C
      &                NSSOA_S(1,IATP),NSSOB_S(1,IBTP),
      &                NSSOA_C(1,JATP),NSSOB_C(1,JBTP),
      &                ITTP,ISSM,ICSM,
-     &                I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                MAXK,TOCC1,TOCC2,TOCC3,TOCC4,
      &                NICA,NICB,NIAA,NIAB,NKA,NKB,
      &                IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
@@ -4073,7 +4057,6 @@ C
      &                          IAOC,IBOC,JAOC,JBOC,
      &                          NIA,NIB,NJA,NJB,
      &                          IXTP,ISSM,ICSM,
-     &                          I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                          MAXLB,ICA_STR,ICB_STR,IAA_STR,IAB_STR,
      &                          NICA,NICB,NIAA,NIAB,NKA,NKB,
      &                          IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
@@ -4124,8 +4107,6 @@ C
 
       INTEGER IB_C(MXNDGIRR),IB_S(MXNDGIRR)
 *. Scratch through input 
-      DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
-      DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
       DIMENSION ISMDST(*)
 *. ... Must hold excitations for all intermediate strings of given sym 
 *. and all orbitals of given type
@@ -4244,26 +4225,6 @@ C       number of strings in excitation ops
 C
 C      offset for symmetryblocks of T
        CALL Z_TCC_OFF_opt(IB_T,NICA,NICB,NIAA,NIAB,IOPSM)
-C
-C      creation path from C/S strings to K strings
-C      mappings from !I> to !K> are annihilations mappings 
-C      CA : KA => IA mappings in 1
-C      MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,ISMDST,IAB)
-       IAB_MAP = 1
-       CALL MAP_EXSTR(ICA_EXP,NCA_OP,IAOC,I1,XI1S,
-     &                NIKAINTM,IB_CA,ISMDST,IAB_MAP)
-C      CB : KB => IB     
-       IAB_MAP = 2
-       CALL MAP_EXSTR(ICB_EXP,NCB_OP,IBOC,I2,XI2S,
-     &                NIKBINTM,IB_CB,ISMDST,IAB_MAP)
-C      AA : KA => JA
-       IAB_MAP = 1
-       CALL MAP_EXSTR(IAA_EXP,NAA_OP,JAOC,I3,XI3S,
-     &                NJKAINTM,IB_AA,ISMDST,IAB_MAP)
-C      AB : KB => JB
-       IAB_MAP = 2
-       CALL MAP_EXSTR(IAB_EXP,NAB_OP,JBOC,I4,XI4S,
-     &                NJKBINTM,IB_AB,ISMDST,IAB_MAP)
 C
 C      loop over symmetry-blocks of C and sigma
 C      ________________________________________

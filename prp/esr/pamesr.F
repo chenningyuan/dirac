@@ -308,9 +308,13 @@ C
 !    &                     N_CIESR,MAX_CIESR_IT,NZCONF
       IF (N_CIESR .GE. 0) THEN
          !
+      IF (MULTIPESR .gt. NZCONF) THEN
+         CALL QUIT('.MULTIPESR specification > # determinants')
+      END IF
       IF (MAX_CIESR_IT .GT. 0) THEN
          ! Davidson iterations
-         N_CIESR = MIN(NZCONF, MULTIPESR + 1)
+!        N_CIESR = MIN(NZCONF, MULTIPESR + 1)
+         N_CIESR = MULTIPESR
 !      write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
       ELSE
          ! full CI (now primarily for debugging Davidson iterations code)

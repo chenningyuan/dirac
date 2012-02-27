@@ -6,15 +6,13 @@ module func_PipekMezey
 use memory_allocator
 implicit none
 
-public  :: initialize_func, get_func, exp_func, get_gradient, get_hessian
+public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLO1
+private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
 
 type :: PipekMezey_flags
-  integer :: iprloc, itrloc
-  real*8  :: thfull, thdiag, thgrad
-  logical :: prjloc, lgfull, lgdiag, lggrad, lgchck
-  character*4 :: hesloc
+  integer :: iprloc
+  logical :: prjloc
 end type PipekMezey_flags
 
 type :: PipekMezey_variales
@@ -22,7 +20,7 @@ type :: PipekMezey_variales
   integer :: nfbas(2,0:2), n2bbasx, n2bbasxq
   integer :: nish(2), norb(2), npsh(2), nesh(2), norbt
   real*8  :: ssmtrc
-  logical :: twocompbss, levyle
+  logical :: h2comp, levyle
   integer :: nz, ipqtoq(4,0:7)
   integer :: nucdep
   real*8  :: thrzer
@@ -32,19 +30,27 @@ type :: PipekMezey_variales
   logical :: ownbas
   character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
   character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
+  real*8  :: timstr
 end type PipekMezey_variales
 
-type( PipekMezey_flags     ), private :: loc
+type( PipekMezey_flags     ), private :: PM
 type( PipekMezey_variales  ), private :: var
 
 ! Some global parameters
 real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
+! functional value of our functional (stored for output)
+real*8, save :: dinvmg4out
+
+! Global arrays
+real*8,  allocatable, save, private :: pmat(:,:,:,:), smat(:), scoef(:), storec(:)
+integer, allocatable, save, private :: nfnuc(:)
+
 contains
 
-  subroutine initialize_func
+  subroutine init_func
   !==============================================================================!
-  !            Initialize func_PipekMezey module for Dirac program               !
+  !            Initialize module func_PipekMezey for Dirac program               !
   !==============================================================================!
   implicit none
 
@@ -61,21 +67,22 @@ contains
 #include "dcbprj.h"
 
   ! Internal variables
-  integer :: i
+  integer :: i, ifrp, idum
+  real*8  :: toterg, second
+
+  integer, allocatable, dimension(:) :: isel, indao, indaos, indnao
+  real*8,  allocatable, dimension(:) :: cmo
 
   !------------------------------------------------------------------------------!
+  ! Start localization of Molecular orbitals
+  call titler('Molecular orbital localization','*',122)
+
+  !------------------------------------------------------------------------------!
+  !                       Initialize global variables                            !
+  !------------------------------------------------------------------------------!
   ! dcbloc.h
-  loc%iprloc     = iprloc
-  loc%itrloc     = itrloc
-  loc%thfull     = thfull
-  loc%thdiag     = thdiag
-  loc%thgrad     = thgrad
-  loc%prjloc     = prjloc
-  loc%lgfull     = lgfull
-  loc%lgdiag     = lgdiag
-  loc%lggrad     = lggrad
-  loc%lgchck     = lgchck
-  loc%hesloc     = hesloc
+  PM%iprloc      = iprloc
+  PM%prjloc      = prjloc
   ! priunit.h
   var%lupri      = lupri
   ! dcbgen.h
@@ -92,7 +99,6 @@ contains
   var%norbt      = norbt
   ! dcbham.h
   var%ssmtrc     = ssmtrc
-  var%twocompbss = twocompbss
   var%levyle     = levyle
   ! dgroup.h
   var%ipqtoq(:,:)= ipqtoq(:,:)
@@ -108,6 +114,9 @@ contains
   var%prothr     = prothr
   var%ownbas     = ownbas
 
+  ! two component calculation
+  var%h2comp = twocomp .or. x2c
+
   if(maxref /= 15)then
     write(lupri,'(a)')' WARNING: The maxref dimension in localization module and Dirac differ'
     write(lupri,'(a)')'          See type external_variales in localization.f90 '
@@ -121,43 +130,249 @@ contains
     var%vecref(2,i) = vecref(2,i)
   enddo
 
-  end subroutine initialize_func
+  ! starting time
+  var%timstr = second()
+
+  !------------------------------------------------------------------------------!
+  !                             Print debug info                                 !
+  !------------------------------------------------------------------------------!
+  ifrp = 1
+  if(PM%iprloc.ge.4)then
+    write(lupri,*) 'lupri =',lupri
+    write(lupri,*) 'nish  =',nish(ifrp)
+    write(lupri,*) 'norb  =',norb(ifrp)
+    write(lupri,*) 'nucdep=',nucdep
+    write(lupri,*) 'maxref=',var%maxref
+    write(lupri,*) 'thrzer=',thrzer
+  endif
+
+  !------------------------------------------------------------------------------!
+  !                              Allocate arrays                                 !
+  !------------------------------------------------------------------------------!
+  ! allocate global arrays
+  call alloc(scoef ,var%nish(ifrp)*var%nfbas(ifrp,0)*4,        id='scoef  in init_func')
+  call alloc(storec,var%nish(ifrp)*var%nfbas(ifrp,0)*4,        id='storec in init_func')
+  call alloc(pmat  ,var%nish(ifrp),var%nish(ifrp),4,var%nucdep,id='pmat   in init_func')
+  call alloc(smat  ,var%n2bbasx,                               id='smat   in init_func')
+  call alloc(nfnuc ,2*var%nucdep,                              id='nfnuc  in init_func')
+  scoef = d0; storec = d0; pmat = d0; smat = d0; nfnuc = 0
+
+  ! allocate local arrays
+  call alloc(cmo   ,var%n2bbasxq,       id='cmo    in init_func')
+
+  call alloc(isel  ,var%nish(ifrp),     id='isel   in init_func')
+  call alloc(indao ,var%nfbas(ifrp,0),  id='indao  in init_func')
+  call alloc(indaos,var%nfbas(ifrp,0),  id='indaos in init_func')
+  call alloc(indnao,2*var%nucdep+2,     id='indnao in init_func')
+  cmo = d0; indao = 0; indaos = 0; indnao = 0
+
+  !------------------------------------------------------------------------------!
+  !                      Precalculate some global arrays                         !
+  !------------------------------------------------------------------------------!
+  ! -- nfnuc -- Get the number of functions per center
+  call indaoc(indao,indaos,indnao)
+  call orblo4(indnao,var%nucdep)
+
+  ! -- smat -- Get overlap matrix
+  call gtovlx(smat,var%ssmtrc)
+  if(PM%iprloc.ge.6)then
+    write(lupri,'(/a)') '* orbloc: Overlap matrix' 
+    call prqmat(smat,var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0), &
+                1,ipqtoq(1,0),lupri)
+  endif
+
+  ! Read coefficients
+  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
+  close(var%lucoef,status='keep')
+
+  ! -- scoef -- Occupied electronic orbital coeffients selection
+  call occupy(isel,var%nish(ifrp))
+  call selcfs(cmo,ifrp,scoef,var%nish(ifrp),isel,d0, &
+              var%nish(ifrp),var%nfbas(ifrp,0),var%norb(ifrp))
+  if(PM%iprloc.ge.5)then
+    write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
+    call prqmat(scoef,var%nfbas(ifrp,0),var%nish(ifrp),var%nfbas(ifrp,0), &
+                var%nish(ifrp),4,ipqtoq(1,0),lupri)
+  endif
+
+  !------------------------------------------------------------------------------!
+  !                         Deallocate local arrays                              !
+  !------------------------------------------------------------------------------!
+  call dealloc(cmo   ,id='cmo    in init_func')
+
+  call dealloc(isel  ,id='isel   in init_func')
+  call dealloc(indao ,id='indao  in init_func')
+  call dealloc(indaos,id='indaos in init_func')
+  call dealloc(indnao,id='indnao in init_func')
+
+  end subroutine init_func
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_func(smat,scoef,pmat,nfnuc,dinvmg)
+  subroutine mv2point(restore,rejected,xtmp)
+  !==============================================================================!
+  !                    Move to the new expansion point                           !
+  !                      --> get new MO coefficients                             !
+  !                                                                              !
+  !   Note:  Deffinition of kappa matrix in rotcmo_mod is different as in        !
+  !          calculation of gradient and hessian in get_gradient and get_hessian !
+  !          --> Indexes are exchanged and j quaterion is with minus sign        !
+  !              Qkappa_lk = kappa_kl - bar{kappa}_kl^* j                        !
+  !              It follows from definition of bared unitary matrix:             !
+  !              tilde{Psi_i} = U_ij Psi_j + bar{U}_ij Psi_j                     !
+  !==============================================================================!
+  implicit none
+
+  ! Global variables
+  ! real*8,  intent(inout) :: scoef(*), storec(*)
+  ! real*8,  intent(  out) :: pmat(nish,nish,4,nucdep)
+
+  ! External variables
+  logical, intent(in) :: restore, rejected
+  real*8,  intent(in) :: xtmp(:)
+
+  ! Internal variables
+  integer :: i, j, ij1, ij2, ij3, ij4, iz, nish, ni12, ifrp
+
+  real*8, allocatable :: xkappa(:,:,:)
+
+  !------------------------------------------------------------------------------!
+  ifrp = 1
+  nish = size(pmat,1)
+  ni12 = size(xtmp,1) / 4
+
+  ! allocate local variable
+  call alloc(xkappa,nish,nish,4,id='xkappa in mv2point')
+
+  ! Unpack X to kappa matrix
+  xkappa(:,:,:) = d0
+  ij1 = 0
+  do j = 1,nish
+    do i = j+1,nish
+      ij1 = ij1 + 1                                                                             
+      ij2 = ij1 + ni12
+      ij3 = ij2 + ni12                                                                          
+      ij4 = ij3 + ni12
+      xkappa(j,i,1) =   xtmp(ij1)
+      xkappa(i,j,1) = - xkappa(j,i,1)
+
+      xkappa(j,i,2) =   xtmp(ij3)
+      xkappa(i,j,2) =   xkappa(j,i,2)
+
+      xkappa(j,i,3) = - xtmp(ij2)
+      xkappa(i,j,3) =   xkappa(j,i,3)
+
+      xkappa(j,i,4) =   xtmp(ij4)
+      xkappa(i,j,4) =   xkappa(j,i,4)
+    enddo
+  enddo
+
+  if(PM%iprloc.ge.2)then
+    do iz=1,4
+      write(var%lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
+      do i=1,nish
+        write(var%lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,nish)
+      enddo
+    enddo
+  endif
+
+  ! get new MO coefficients(scoef)
+  if(restore)then
+    scoef(:) = storec(:)  ! restore MO coefficients
+  elseif(rejected)then
+    scoef(:) = storec(:)  ! restore MO coefficients; the step was rejected
+  elseif(.not.rejected)then
+    storec(:) = scoef(:)  ! store MO coefficients
+  endif
+  call rotcmo_mod(var%nfbas(ifrp,0),nish,4,xkappa,nish,var%ipqtoq(ifrp,0))
+
+  ! deallocate local variable
+  call dealloc(xkappa,id='xkappa in mv2point')
+
+  !------------------------------------------------------------------------------!
+  end subroutine mv2point
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  real*8 function get_func()
   !==============================================================================!
   !                       Get value of your functional                           !
   !==============================================================================!
   implicit none
 
-  ! External variables
-  integer, intent(in )   :: nfnuc(*)
+  ! Global variables
+  ! real*8,  intent(inout) :: smat(*)
+  ! real*8,  intent(  out) :: pmat(nish,nish,4,nucdep)
 
-  real*8,  intent(  out) :: dinvmg
-  real*8,  intent(in   ) :: scoef(*)
-  real*8,  intent(inout) :: smat(*)
-  real*8,  intent(  out) :: pmat(var%nish(1),var%nish(1),4,var%nucdep)
+  ! Internal variables
+  integer :: nish, nucdep
+  real*8  :: dinvmg
 
   !------------------------------------------------------------------------------!
-  if(loc%prjloc)then ! localization with projection analysis
+  nish   = size(pmat,1)
+  nucdep = size(pmat,4)
+
+  if(PM%prjloc)then ! localization with projection analysis
     call gtovlx(smat,var%ssmtrc)
-    call orblp1(smat,scoef,pmat,var%nfbas(1,1),var%nfbas(1,2),var%nish(1), &
-                var%nucdep,var%maxref,dinvmg)
+    call orblp1(var%nfbas(1,1),var%nfbas(1,2),nish,nucdep,var%maxref,dinvmg)
   else               ! localization with Mulliken analysis
-    call orblo1(smat,scoef,pmat,var%nfbas(1,1),var%nfbas(1,2),var%nish(1), &
-                var%nucdep,nfnuc,dinvmg)
+    call orblo1(var%nfbas(1,1),var%nfbas(1,2),nish,nucdep,dinvmg)
   endif
+  dinvmg4out = dinvmg   ! global variable
+  get_func   = dinvmg
 
   !------------------------------------------------------------------------------!
-  end subroutine get_func
+  end function get_func
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_hessian(pmat,hmat,full,totdiag,totnond)
-  !******************************************************************************!
+  subroutine quit_func(hmat)
+  !==============================================================================!
+  !                  Uninitialize module func_PipekMezey                         !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  real*8,  intent(inout), pointer :: hmat(:,:)
+
+  ! Internal variables
+  character :: resst*50
+  integer   :: ifrp
+  real*8    :: timend, second
+
+  ifrp = 1
+  ! Put the localised coefficients in DFCOEF (scoef)
+  call orblo5(var%nfbas(ifrp,0),var%nish(ifrp),var%norb(ifrp))
+
+  ! deallocate global arrays
+  call dealloc(storec,id='storec in quit_func')
+  call dealloc(scoef ,id='scoef  in quit_func')
+  call dealloc(pmat  ,id='pmat   in quit_func')
+  call dealloc(smat  ,id='smat   in quit_func')
+  call dealloc(nfnuc ,id='nfnuc  in quit_func')
+
+  ! deallocate pointers
+  call deallocp(hmat ,id='hmat   in quit_func')
+
+  ! print final functional value
+  write(resst,'(a,f21.15)') 'Inverse mean delocalization =',dinvmg4out
+  call titler(resst,'*',104)
+
+  ! calculate time spend on localization
+  timend = second()
+  call timtxt('          --- Time used in localization is :',timend-var%timstr,var%lupri)
+
+  end subroutine quit_func
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine get_hessian(hmat,full,totdiag,totnond)
+  !==============================================================================!
   !                                                                              !
   !  Construction of full hessian                                                !
   !                                                                              ! 
@@ -165,14 +380,16 @@ contains
   !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbared) \ !
   !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
   !                                                                              ! 
-  !******************************************************************************!
+  !==============================================================================!
   implicit none
+
+  ! Global variables
+  ! real*8, intent(in) :: pmat(nish,nish,4,nucdep)
 
   ! External variables
   logical, intent(in ) :: full
   real*8,  intent(out) :: totdiag, totnond
 
-  real*8,  intent(in ), dimension(:,:,:,:) :: pmat
   real*8,  intent(out), pointer :: hmat(:,:)
 
   ! Internal variables
@@ -259,11 +476,11 @@ contains
     enddo
 
     do i=1,ndimh
+      hmat(i,1) = - hmat(i,1) / dfloat(ni) ! minus sign --> we are looking for the minimum
       totdiag = totdiag + dabs( hmat(i,1) )
-      hmat(i,1) = - hmat(i,1)  ! we are looking for the minimum
     enddo
 
-    if(loc%iprloc.ge.3)then
+    if(PM%iprloc.ge.3)then
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_uu'
       write(lupri,'(8d12.4)') (hmat(i,1),i=1,ni12)
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_bb'
@@ -591,12 +808,12 @@ contains
     !----------------------------------------------------------------------------!
     do j=1,ndimh
       do i=1,j
+        hmat(i,j) = - hmat(i,j) / dfloat(ni)  ! minus sign --> we are looking for the minimum
         if(i==j)then
           totdiag = totdiag + dabs( hmat(i,j) )
         else
           totnond = totnond + dabs( hmat(i,j) )
         endif
-        hmat(i,j) = - hmat(i,j)   ! we are looking for the minimum
       enddo
     enddo
     totnond = d2*totnond
@@ -604,7 +821,7 @@ contains
     !----------------------------------------------------------------------------!
     !                              PRINT section                                 !
     !----------------------------------------------------------------------------!
-    if(loc%iprloc.ge.3)then
+    if(PM%iprloc.ge.3)then
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
       do i=1,ni12
         write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=1,ni12)
@@ -677,19 +894,19 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_gradient(pmat,gradient,dnrmg)
-  !******************************************************************************!
-  !                                                                              !
+  subroutine get_gradient(gradient,dnrmg)
+  !==============================================================================!
   !                     Construction of the gradient                             !
-  !                                                                              ! 
-  !******************************************************************************!
+  !==============================================================================!
   implicit none
+
+  ! Global variables
+  ! real*8, intent(in) :: pmat(nish,nish,4,nucdep)
 
   ! External variables
   real*8, intent(out) :: dnrmg
 
-  real*8, intent(in ), dimension(:,:,:,:) ::  pmat
-  real*8, intent(out), dimension(:)       ::  gradient
+  real*8, intent(out), dimension(:) :: gradient
 
   ! Internal variables
   integer :: i, j, k, ij1, ij2, ij3, ij4
@@ -728,10 +945,10 @@ contains
   enddo
 
   do i=1,ndimg
-    gradient(i) = - gradient(i)  ! we are looking for the minimum
+    gradient(i) = - gradient(i) / dfloat(ni)  ! minus sign --> we are looking for the minimum
   enddo
 
-  if(loc%iprloc.ge.2)then
+  if(PM%iprloc.ge.2)then
     write(lupri,'(/a,2f10.5)') 'Print gradient^R_u'
     write(lupri,'(8d12.4)') (gradient(i),i=1,ni12)
     write(lupri,'(/a,2f10.5)') 'Print gradient^R_b}'
@@ -750,36 +967,17 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine exp_func(pkappa,tgrad,eval,ni,dinvmq)
-  !******************************************************************************!
-  !                                                                              !
-  !       Calculate value of the quadratic approximation to the functional       !
-  !                                                                              !
-  !******************************************************************************!
+  subroutine get_date(daytid)
   implicit none
+  character, intent(out) :: daytid*24
 
-  ! External variables
-  integer, intent(in ) :: ni
-  real*8,  intent(out) :: dinvmq
+  call gtinfo(daytid)
 
-  real*8,  intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
-
-  ! Internal variables
-  integer :: i
-
-  !------------------------------------------------------------------------------!
-  dinvmq = d0
-  do i=1,size(eval,1)
-    dinvmq = dinvmq + d2*pkappa(i)*tgrad(i) + pkappa(i)*eval(i)*pkappa(i)
-  enddo
-  dinvmq = dinvmq / dfloat(ni)
-
-  end subroutine exp_func
-
+  end subroutine get_date
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLP1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,MAXREF,DINVM)
+  SUBROUTINE ORBLP1(NBL,NBS,NI,NUCDEP,MAXREF,DINVM)
 !***********************************************************************
 !
 !     Based on T.Saue March 26 1999 : SUBROUTINE ANAPRJ
@@ -789,13 +987,12 @@ contains
       USE SELECT_COEFF_OWN_BAS
       IMPLICIT NONE
 
+      ! Global variables
+      ! REAL*8,  INTENT(  OUT) :: PMAT(NI,NI,4,NUCDEP)
+
       ! External variables
       INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP, MAXREF
       REAL*8,  INTENT(OUT) :: DINVM
-
-      REAL*8,  INTENT(IN   ) :: SCOEF(*)
-      REAL*8,  INTENT(INOUT) :: SMAT(*)
-      REAL*8,  INTENT(  OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
@@ -886,7 +1083,7 @@ contains
                I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
                NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
                NSTR(1,0,I))
-          IF(LOC%IPRLOC.GE.5)THEN
+          IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
             CALL PRQMAT(RCOEF(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
@@ -929,7 +1126,7 @@ contains
         CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
         IVEC = IVEC + NSTR(IFRP,0,I)
       ENDDO
-      CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,NVECS(IFRP,1),BV,NSTR,IPIV,MAXREF)
+      CALL ORBLP2(RCOEF,AMAT,NB,NI,NVECS(IFRP,1),BV,NSTR,IPIV,MAXREF)
 
 ! Memory allocation for the matrix W = Ac
 
@@ -937,7 +1134,7 @@ contains
 
 ! Construction of W = Ac
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
         WRITE(LUPRI,'(/A)') '* Matrice BV'
         CALL PRQMAT(BV,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
         WRITE(LUPRI,'(/A)') '* Matrice AMAT'
@@ -948,7 +1145,7 @@ contains
            'N','N',IPQTOQ(1,0),BV,NREF,NI,4,     &
            D0,IPQTOQ(1,0),WMAT,NREF,NI,4)
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
         WRITE(LUPRI,'(/A)') '* Matrice W'
         CALL PRQMAT(WMAT,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -984,7 +1181,7 @@ contains
         ENDDO
       ENDDO
 
-      IF(LOC%IPRLOC.GE.2)THEN
+      IF(PM%IPRLOC.GE.2)THEN
         DO IZ=1,4
           WRITE(LUPRI,*)
           WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
@@ -998,7 +1195,7 @@ contains
         ENDDO
       ENDIF
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
         DO I = 1,NUCDEP
           WRITE(LUPRI,'(/A,I3)') '* ORBLP1: Matrice P  Atom ', I
           WRITE(LUPRI,'(A)') '  ============================'
@@ -1044,7 +1241,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
- SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,NSTR,IPIVOT,MAXREF)
+  SUBROUTINE ORBLP2(RCOEF,AMAT,NB,NMOL,NREF,BVEC,NSTR,IPIVOT,MAXREF)
 !***********************************************************************
 !
 !     Projection analysis for fermion ircop IFRP
@@ -1054,13 +1251,16 @@ contains
 !***********************************************************************
       IMPLICIT NONE
 
+      ! Global variables
+      ! REAL*8,  INTENT(IN   ) :: SCOEF(*)
+      ! REAL*8,  INTENT(INOUT) :: SMAT(*)
+
       ! External variables
       INTEGER, INTENT(IN ) :: NB, NMOL, NREF, MAXREF
       INTEGER, INTENT(IN ) :: NSTR(2,0:2,0:MAXREF)
       INTEGER, INTENT(OUT) :: IPIVOT(*)
 
-      REAL*8,  INTENT(IN   ) :: SCOEF(*), RCOEF(*)
-      REAL*8,  INTENT(INOUT) :: SMAT(*)
+      REAL*8,  INTENT(IN   ) :: RCOEF(*)
       REAL*8,  INTENT(  OUT) :: AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4)
 
       ! Internal variables
@@ -1104,7 +1304,7 @@ contains
 
 !       Print overlaps
 
-        IF(LOC%IPRLOC.GE.5)THEN
+        IF(PM%IPRLOC.GE.5)THEN
            JOFF = 1
            DO J = 1,NREFS
               KOFF = 1
@@ -1143,7 +1343,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,NFNUC,DINVM)
+  SUBROUTINE ORBLO1(NBL,NBS,NI,NUCDEP,DINVM)
 !***********************************************************************
 !
 !     Written by S.Dubillard Jan 21 2004
@@ -1156,13 +1356,14 @@ contains
 !***********************************************************************
       IMPLICIT NONE
 
+      ! Global variables
+      ! REAL*8,  INTENT(IN ) :: SMAT(*), SCOEF(*)
+      ! REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
+      ! INTEGER, INTENT(IN ) :: NFNUC(*)
+
       ! External variables
       INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
       REAL*8,  INTENT(OUT) :: DINVM
-
-      INTEGER, INTENT(IN ) :: NFNUC(*)
-      REAL*8,  INTENT(IN ) :: SMAT(*), SCOEF(*)
-      REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
       INTEGER :: I, J, K, IZ, NB, IOFFL, IOFFS, LUPRI
@@ -1188,17 +1389,17 @@ contains
            'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,  &
            'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4, &
            D0,IPQTOQ(1,0),WLMAT,NBL,NI,4)
-      IF(.NOT.VAR%TWOCOMPBSS) THEN
+      IF(.NOT.VAR%H2COMP) THEN
          CALL QGEMM(NBS,NI,NBS,D1,                            &
               'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1, &
               'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,       &
               D0,IPQTOQ(1,0),WSMAT,NBS,NI,4)
       ENDIF
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
          WRITE(LUPRI,'(/A)') '* WL matrix :'
          CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
-         IF(.NOT.VAR%TWOCOMPBSS) THEN
+         IF(.NOT.VAR%H2COMP) THEN
             WRITE(LUPRI,'(/A)') '* WS matrix :'
             CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
          ENDIF
@@ -1213,7 +1414,7 @@ contains
               'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,  &
               'N','N',IPQTOQ(1,0),WLMAT(1+IOFFL),NBL,NI,4, &
               D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-         IF(.NOT.VAR%TWOCOMPBSS) THEN
+         IF(.NOT.VAR%H2COMP) THEN
             CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                 &
                  'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4, &
                  'N','N',IPQTOQ(1,0),WSMAT(1+IOFFS),NBS,NI,4,    &
@@ -1232,32 +1433,33 @@ contains
          ENDDO
       ENDDO
 
-! Multiply pmat with 1/2 just to avoid confusion in the code below                                
-      DO IZ=1,4                                                                                   
-        DO I=1,NI                                                                                 
-          DO J=1,NI                                                                               
-            DO K=1,NUCDEP                                                                         
-              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2                                                
-            ENDDO                                                                                 
-          ENDDO                                                                                   
-        ENDDO                                                                                     
+! Multiply pmat with 1/2 just to avoid confusion in the code below
+
+      DO IZ=1,4
+        DO I=1,NI
+          DO J=1,NI
+            DO K=1,NUCDEP
+              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2
+            ENDDO
+          ENDDO
+        ENDDO
       ENDDO
 
-      IF(LOC%IPRLOC.GE.2)THEN                                                                     
-        DO IZ=1,4                                                                                 
-          WRITE(LUPRI,*)                                                                          
-          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ                                    
-          DO I=1, NUCDEP                                                                          
-            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I                                                  
-            DO J=1,NI                                                                             
-              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)                               
-            ENDDO                                                                                 
-            WRITE(LUPRI,*)                                                                        
-          ENDDO                                                                                   
-        ENDDO                                                                                     
+      IF(PM%IPRLOC.GE.2)THEN
+        DO IZ=1,4
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
+          DO I=1, NUCDEP
+            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I
+            DO J=1,NI
+              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
+            ENDDO
+            WRITE(LUPRI,*)
+          ENDDO
+        ENDDO
       ENDIF
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
          DO I = 1,NUCDEP
             WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
             WRITE(LUPRI,'(A)') '  ============================'
@@ -1290,5 +1492,341 @@ contains
     CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
 
   END SUBROUTINE ORBLO1
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE ORBLO4(INDNAO,NUCDEP)
+!***********************************************************************
+!
+!     Written by S.Dubillard Jan 21 2004
+!     Last revision:
+!
+!     Construction of the array NFNUC which contains the number of
+!     large components basis functions for each center and then the 
+!     number of small components basis functions for each center
+!
+!***********************************************************************
+      IMPLICIT NONE
+
+      ! Global variables
+      ! INTEGER, INTENT(OUT) :: NFNUC(2*NUCDEP)
+
+      ! External variables
+      INTEGER, INTENT(IN ) :: NUCDEP
+      INTEGER, INTENT(IN ) :: INDNAO(2,*)
+
+      ! Internal variables
+      INTEGER :: IFRP, I
+
+  !------------------------------------------------------------------------------!
+      IFRP = 1
+      DO I = 1,NUCDEP-1
+         NFNUC(I)=INDNAO(1,I+1)-INDNAO(1,I)
+      ENDDO
+      NFNUC(NUCDEP)=INDNAO(2,1)-INDNAO(1,NUCDEP)
+      DO I = 1,NUCDEP-1
+         NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
+      ENDDO
+      NFNUC(2*NUCDEP)=VAR%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
+
+  END SUBROUTINE ORBLO4
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE ORBLO5(NB,NI,NO)
+!***********************************************************************
+!
+!     Written by S.Dubillard Apr 13 2004
+!     Last revision:
+!
+!     Put the localised coefficients into the DFCOEF file (1/2)
+!
+!***********************************************************************
+      IMPLICIT NONE
+
+      ! Global variables
+      ! REAL*8  :: SCOEF(*) ! SCOEF(NB,NI,4)
+
+      ! External variables
+      INTEGER :: NB, NI, NO
+
+      ! Internal variables
+      INTEGER :: I, J, IZ, L, IJK
+      REAL*8  :: TOTERG
+
+      INTEGER, ALLOCATABLE :: IBEIG(:)
+      REAL*8,  ALLOCATABLE :: CMO(:,:,:), EIG(:)
+
+  !------------------------------------------------------------------------------!
+      ! allocate arrays
+      CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
+      CALL ALLOC(EIG  ,VAR%NORBT  ,ID='EIG   IN ORBLO5')
+      CALL ALLOC(IBEIG,VAR%NORBT  ,ID='IBEIG IN ORBLO5')
+
+      ! open DFCOEF file and read EIG, IBEIG and TOTERG
+      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+
+      ! reorganize MO
+      DO IZ = 1,4
+        DO J = 1,NI
+          L = J + NO/2
+          IF (VAR%H2COMP .OR. VAR%LEVYLE) L = J
+          DO I = 1,NB
+            IJK = NB*NI*(IZ-1) + NB*(J-1) + I
+            CMO(I,L,IZ) = SCOEF(IJK)
+          ENDDO
+        ENDDO
+      ENDDO
+      IF (PM%IPRLOC.GE.5)THEN
+         WRITE(VAR%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
+         CALL PRQMAT(CMO,NB,NO,NB,NO,4,VAR%IPQTOQ(1,0),VAR%LUPRI)
+      ENDIF
+
+      ! write MO to file and close him
+      CALL WRICMO(VAR%LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CLOSE(VAR%LUCOEF,STATUS='KEEP')
+
+      ! deallocate arrays
+      CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
+      CALL DEALLOC(EIG  ,ID='EIG   IN ORBLO5')
+      CALL DEALLOC(IBEIG,ID='IBEIG IN ORBLO5')
+
+  END SUBROUTINE ORBLO5
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE ROTCMO_MOD(NBASI,NORBI,NZ,XKAPPA,NORBT,IP)
+!***********************************************************************
+!
+!     Rotate coefficients
+!
+!     SCOEF_{new} = SCOEF_{old} exp( -\kappa )
+!     We use a trick a la Sostrup notes, chapter 3.1.5
+!
+!     Input:
+!        SCOEF   - old coefficients
+!        XKAPPA  - Kappa matrix (Kappa is overwritten with junk)
+!        IPRINT  - print level
+!
+!     Output:
+!        SCOEF   - new coefficients
+!
+!     Written by J. Thyssen - Nov 24 1998
+!
+!***********************************************************************
+      IMPLICIT NONE
+
+      ! Global variables
+      ! REAL*8,  INTENT(INOUT) :: SCOEF(*)  ! SCOEF(NBASI,NORBI,NZ)
+
+      ! External variables
+      INTEGER, INTENT(IN   ) :: NBASI, NORBI, NZ, NORBT, IP(4)
+      REAL*8,  INTENT(IN   ) :: XKAPPA(NORBT,NORBT,NZ)
+
+      ! Internal variables
+      REAL*8, PARAMETER :: DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00
+      REAL*8, PARAMETER :: D1P5 = 1.5D00, THREQL = 1.0D-12, DM1 = -D1
+
+      CHARACTER SECTID*12,CPUTID*12,WALLTID*12
+
+      INTEGER :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX, LUPRI
+      REAL*8  :: CPU1, WALL1, CPU2, WALL2, CPU3, WALL3, CPU4, WALL4, EIG, SQEIG, D_MAX
+      REAL*8  :: ABS, SQRT, COS, SIN
+
+      REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
+
+  !------------------------------------------------------------------------------!
+      LUPRI  = VAR%LUPRI
+
+      CALL GETTIM(CPU1,WALL1)
+      IF (PM%IPRLOC.GE.5) CALL HEADER('Output from ROTCMO_MOD',-1)
+
+      NORBXQ = NORBI*NORBI*NZ
+      CALL ALLOC(REIG,NORBI ,ID='REIG IN ROTCMO_MOD')
+      CALL ALLOC(RSIN,NORBXQ,ID='RSIN IN ROTCMO_MOD')
+      CALL ALLOC(RV  ,NORBXQ,ID='KV   IN ROTCMO_MOD')
+      CALL ALLOC(RTMP,NORBXQ,ID='RTMP IN ROTCMO_MOD')
+
+      CALL ALLOC(RCOS,NORBI*NBASI*NZ,ID='RCOS IN ROTCMO_MOD')
+
+!     Calculate -\kappa^2 = \kappa^{\dagger} \kappa
+!     (use RCOS as temporary array)
+!     ---------------------------------------------
+
+      CALL QGEMM(NORBI,NORBI,NORBI,D1,             &
+                 'H','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 D0,IP,RCOS,NORBI,NORBI,NZ)
+
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: -kappa^2',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Diagonalize -\kappa^2
+!     ---------------------------------------------
+
+      CALL QDIAG90(NZ,NORBI,RCOS,NORBI,NORBI, &
+                   REIG,1,RV,NORBI,NORBI,IERR)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: V matrix (eigenvector)',-1)
+         CALL PRQMAT(RV,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: eigenvalues',-1)
+         CALL PRQMAT(REIG,1,NORBI,1,NORBI,1,IP,LUPRI)
+      END IF
+
+!     Make cos(d) and sin(d)/d ; d = sqrt(eigenvalues)
+!     ------------------------------------------------
+
+      CALL GETTIM(CPU2,WALL2)
+      RCOS(1:NORBXQ) = D0
+      RSIN(1:NORBXQ) = D0
+      DO I = 1,NORBI
+         IADDR = (I-1) + (I-1)*NORBI
+         EIG = REIG(I)
+         IF (EIG .LT. D0) THEN
+            IF (PM%IPRLOC.GE.3 .AND. ABS(EIG).GT.VAR%THRZER) WRITE(LUPRI,9010) EIG
+            EIG = D0
+            REIG(I)   = D0
+         END IF
+         IF (EIG .LT. DTHRS) THEN
+
+!           Use Taylor expansion to avoid division by zero and/or
+!           to speed up evaluation (avoid call to sin/cos/sqrt).
+!           For EIG < 1.0D-8 the 3. order Taylor expansion is correct
+!             to machine precision.
+
+            RCOS(1+IADDR) = D1-DP5*EIG
+            RSIN(1+IADDR) = D1-DSIXTH*EIG
+         ELSE
+            SQEIG = SQRT(EIG)
+            RCOS(1+IADDR) = COS(SQEIG)
+            RSIN(1+IADDR) = SIN(SQEIG)/SQEIG
+         END IF
+      END DO
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: sin(d)/d',-1)
+         CALL PRQMAT(RSIN,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: cos(d)',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+      CALL GETTIM(CPU3,WALL3)
+ 9010 FORMAT('WARNING from ROTCMO_MOD: Negative eigenvalue ',1P,D15.6)
+
+!     Make V cos(d) V^{\dagger}
+!     (use KTMP as temporatory storage)
+!     ------------------------------------
+
+      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                    RTMP,NORBI,NORBI,NZ,IP,                &
+                    RCOS,NORBI,NORBI,NZ,IP,                &
+                    RV,NORBI,NORBI,NZ,IP,                  &
+                    RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: V cos(d) V^{dagger}',-1)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Make V sin(d)/d V^{\dagger}
+!     (use RCOS as temporatory storage)
+!     ------------------------------------
+
+      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                    RCOS,NORBI,NORBI,NZ,IP,                &
+                    RSIN,NORBI,NORBI,NZ,IP,                &
+                    RV,NORBI,NORBI,NZ,IP,                  &
+                    RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: V sin(d)/d V^{dagger}',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Make V cos(d) V^{\dagger} - V sin(d)/d V^{\dagger} \kappa
+!     ---------------------------------------------------------
+
+      CALL QGEMM(NORBI,NORBI,NORBI,DM1,            &
+                 'N','N',IP,RCOS,NORBI,NORBI,NZ,   &
+                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 D1,IP,RTMP,NORBI,NORBI,NZ)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: exp(-kappa)',-1)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Check if unitary
+
+      CALL QGEMM(NORBI,NORBI,NORBI,D1,           &
+                 'N','N',IP,RTMP,NORBI,NORBI,NZ, &
+                 'H','N',IP,RTMP,NORBI,NORBI,NZ, &
+                 D0,IP,RCOS,NORBI,NORBI,NZ)
+      IOFF = 0
+      I_MAX = 0
+      J_MAX = 0
+      D_MAX = d0
+      DO I = 1,NORBI
+      DO J = 1,NORBI
+         IF (I.EQ.J) THEN
+            IF (ABS(RCOS(1+IOFF)-D1).GT.D_MAX) THEN
+               I_MAX = I
+               J_MAX = J
+               D_MAX = ABS(RCOS(1+IOFF)-D1)
+            END IF
+         ELSE
+            IF (RCOS(1+IOFF).GT.D_MAX) THEN
+               I_MAX = I
+               J_MAX = J
+               D_MAX = ABS(RCOS(1+IOFF))
+            END IF
+         END IF
+         IOFF = IOFF + 1
+      END DO
+      END DO
+      IF(PM%IPRLOC.GE.1)THEN
+        IF(D_MAX.GT.VAR%THRZER)THEN
+           WRITE(LUPRI,'(/A)')' WARNING: ROTCMO_MOD: maximum deviation from unitary matrix'
+           WRITE(LUPRI,*)'WARNING: Element ',J_MAX,I_MAX,' value :',D_MAX
+        ENDIF
+      ENDIF
+
+!     Calculate new orbitals: SCOEF_{old} exp(-kappa)
+!     ---------------------------------------------
+
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: old orbitals',-1)
+         CALL PRQMAT(SCOEF,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
+      END IF
+!SK   CALL DZERO(RCOS,NORBXQ)
+      CALL QGEMM(NBASI,NORBI,NORBI,D1,             &
+                 'N','N',IP,SCOEF,NBASI,NORBI,NZ,  &
+                 'N','N',IP,RTMP,NORBI,NORBI,NZ,   &
+                 D0,IP,RCOS,NBASI,NORBI,NZ)
+      CALL DCOPY(NBASI*NORBI*NZ,RCOS,1,SCOEF,1)
+      IF (PM%IPRLOC.GE.5)THEN
+         CALL HEADER('ROTCMO_MOD: new orbitals',-1)
+         CALL PRQMAT(SCOEF,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
+      END IF
+      CALL GETTIM(CPU4,WALL4)
+      IF (PM%IPRLOC.GE.2)THEN
+         CPUTID = SECTID(CPU4-CPU1)
+         WALLTID = SECTID(WALL4-WALL1)
+         WRITE(LUPRI,9020) CPUTID,WALLTID
+         CPUTID = SECTID(CPU3-CPU2)
+         WALLTID = SECTID(WALL3-WALL2)
+         WRITE(LUPRI,9021) CPUTID,WALLTID
+      END IF
+ 9020 FORMAT(/'ROTCMO_MOD: total CPU (WALL) time       : ',A12,' (',A12,')')
+ 9021 FORMAT( 'ROTCMO_MOD: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
+
+      CALL DEALLOC(REIG,ID='REIG IN ROTCMO_MOD')
+      CALL DEALLOC(RSIN,ID='RSIN IN ROTCMO_MOD')
+      CALL DEALLOC(RCOS,ID='RCOS IN ROTCMO_MOD')
+      CALL DEALLOC(RV  ,ID='KV   IN ROTCMO_MOD')
+      CALL DEALLOC(RTMP,ID='RTMP IN ROTCMO_MOD')
+
+  END SUBROUTINE ROTCMO_MOD
 
 end module func_PipekMezey

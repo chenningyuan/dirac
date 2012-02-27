@@ -7312,7 +7312,7 @@ C
          WRITE(LUHES,*)
          DO 100 J = 1, 3*NUCDEP
             DO 110 I = 1, 3*NUCDEP
-               WRITE(LUHES,'(F20.16)') TMPMT4(I,J)
+               WRITE(LUHES,'(F25.16)') TMPMT4(I,J)
  110        CONTINUE
             WRITE(LUHES,*)
  100     CONTINUE

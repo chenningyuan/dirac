@@ -31,10 +31,11 @@ C      ****  Diagonalization Routines for the RELADC package  ****
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAGEXE(CC,KFREE,LFREE,INFOHANDLE,IW)
+      SUBROUTINE DIAGEXE(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
       IMPLICIT INTEGER (A-Z)
 
       REAL*8 CC(*)
+      LOGICAL DOINCORE
       INTEGER KFREE,LFREE
       INTEGER INFOHANDLE
       INTEGER IW
@@ -73,7 +74,7 @@ c *** for infofile
       REAL*8 EVLLIM
 c
 c *** others
-      LOGICAL ALLOC,LFLAG,CARITH
+      LOGICAL ALLOC_ME,LFLAG,CARITH
       COMPLEX*16 CDUMMY
       REAL*8 RDUMMY
 C
@@ -116,14 +117,22 @@ c
 
 
 
-      INTBUF = 65536  !output buffer now enlarged to 64K
+      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
+
       KFREESAVE=KFREE
-      ALLOC=.TRUE.
+      ALLOC_ME=.TRUE.
       NP = NOCC
       CARITH=.FALSE.
       IF(RCW.EQ.2) CARITH=.TRUE.
 
-      CALL PST('    Interfacing iterative diagonalizer+')
+      CALL PST('    Initializing iterative diagonalizer+')
+      IF(DOINCORE) THEN
+        WRITE(IW,*) 'Try partial incore diagonalization'
+      ELSE
+        WRITE(IW,*) 'Out of core diagonalization'
+      ENDIF
+      WRITE(IW,*) 'Memory pointers:',KFREE,LFREE
+      WRITE(IW,*) 'Words available:',LFREE-KFREE
 
       WRITE(IW,*)
       WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP):      ',IONIZLEVEL
@@ -162,20 +171,35 @@ C
       ITAP6=INFOHANDLE+6    ! free handle
 
       N=2*NP+1
-      CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC_ME)
       N=(2*NP+1)*LADC*RCW
-      CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC_ME)
       N=(NP+1)*NITER*RCW
-      CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC_ME)
       N=LADC*RCW
-      CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC_ME)
       N=INTBUF*RCW
-      CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC_ME)
       N=INTBUF
-      CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
       CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
+      IF(DOINCORE) THEN
+        WRITE(IW,*) 'Available buffer for incore diag:'
+        WRITE(IW,*) (LFREE-1)/3,' words'
+        N=(LFREE - 1)/3
+        IF(N.lt.INTBUF) THEN
+          WRITE(IW,*) 'Buffer for inc. diag too small!'
+          WRITE(IW,*) 'Switching back to out-of-core diag.'
+          DOINCORE = .FALSE.
+        ELSE
+          CALL MEMOPT('REAL',WRK_IDR,N,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMOPT('INTE',WRK_IDI,N,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMOPT('INTE',WRK_IDJ,N,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMCHK('ICD',CC,KFRSAV)
+        ENDIF
+      ENDIF
 C
 C  enter real resp. complex Band Lanczos iterations
 C  for symmetric resp. Hermitian matrices
@@ -216,13 +240,13 @@ C  It is only used locally and reusable after finishing RBANDDIA/ZBANDDIA
 C  This file handle is used for storing the T eigenvector matrix
 C
       N=NITER
-      CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC_ME)
       N=NITER*NITER*RCW
-      CALL MEMOPT('REAL',WRK_ZEV,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_ZEV,N,CC,KFREE,LFREE,ALLOC_ME)
       N=4*NITER*RCW
-      CALL MEMOPT('REAL',WRK_WORK1,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_WORK1,N,CC,KFREE,LFREE,ALLOC_ME)
       N=6*NITER
-      CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC_ME)
 
       IF(CARITH) THEN
         CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
@@ -242,11 +266,11 @@ c
      &     ACCESS='DIRECT',RECL=IRECL,STATUS='UNKNOWN')
 
       N=2*NP*NITER*RCW
-      CALL MEMOPT('REAL',WRK_Z,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',WRK_Z,N,CC,KFREE,LFREE,ALLOC_ME)
       N=NITER
-      CALL MEMOPT('INTE',WRK_IND,N,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',WRK_MLT,N,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',WRK_LSP,N,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('INTE',WRK_IND,N,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('INTE',WRK_MLT,N,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('INTE',WRK_LSP,N,CC,KFREE,LFREE,ALLOC_ME)
 
       IF(CARITH) THEN
          CALL ZBLANA(IW,KREP,niter,np,nocc,ionizlevel,
@@ -279,9 +303,9 @@ c
       IF(NEIGENV.GT.0) THEN
 
         N=LADC*NEIGENV*RCW
-        CALL MEMOPT('REAL',WRK_AEV,N,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('REAL',WRK_AEV,N,CC,KFREE,LFREE,ALLOC_ME)
         N=LADC*RCW
-        CALL MEMOPT('REAL',WRK_OEV,N,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('REAL',WRK_OEV,N,CC,KFREE,LFREE,ALLOC_ME)
 c
 c  next redo Lanczos now with the FULL eigenvectors of T and create
 c  the LONG eigenvectors for the TOTAL ADC matrix

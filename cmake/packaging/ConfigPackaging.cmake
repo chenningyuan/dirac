@@ -1,3 +1,41 @@
+foreach(
+    EXECUTABLE
+    ${LIST_OF_EXECUTABLES}
+    )
+    install(
+        TARGETS ${EXECUTABLE}
+        DESTINATION share/dirac
+        PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ             GROUP_EXECUTE
+        WORLD_READ             WORLD_EXECUTE
+        )
+endforeach()
+
+install(
+    FILES ${PROJECT_BINARY_DIR}/pam-dirac
+    DESTINATION bin
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ             GROUP_EXECUTE
+    WORLD_READ             WORLD_EXECUTE
+    )
+
+install(
+    FILES ${PROJECT_SOURCE_DIR}/utils/wrapper.py
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+    )
+
+install(
+    DIRECTORY ${PROJECT_SOURCE_DIR}/basis ${PROJECT_SOURCE_DIR}/basis_dalton
+    DESTINATION share/dirac
+    PATTERN .git EXCLUDE
+    )
+
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_SOURCE_GENERATOR "TGZ")
@@ -20,7 +58,7 @@ SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
     )
 
 include(CPack)
-include(IncludeFiles)
+include(IncludeFilesList)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release
@@ -38,7 +76,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/test                         ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_tests ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/xcint/xcfun                  ${EXPORT_DIR}/xcint
+        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/xcfun                        ${EXPORT_DIR}
         COMMAND cp -rL ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}

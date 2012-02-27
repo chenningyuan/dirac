@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-#miro: to suppress Windows warning about policy...
+# suppress Windows warning about policy
 cmake_policy(SET CMP0010 OLD)
 
 project(DIRAC Fortran C)
 add_definitions(-DPRG_DIRAC)
-
 
 # set version
 set(VERSION_MAJOR 11)
@@ -15,24 +14,24 @@ set(VERSION_PATCH 2)
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated
+    ${CMAKE_SOURCE_DIR}/cmake/architecture
+    ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
+    ${CMAKE_SOURCE_DIR}/cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/cmake/packaging
+    ${CMAKE_SOURCE_DIR}/cmake/testing
     )
-
-include(CheckFortranSourceCompiles)
-
-# for windows need substitute (type)
-set(cat_program cat)
 
 include(ConfigSafeGuards)
 
 # do not rebuild if rules (compiler flags) change
-# this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # check whether pamadm-generated files exist
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
-    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
-    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/IncludeFiles.cmake"
-    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/SourcesList.cmake"      AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/DefinitionsList.cmake"  AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
+   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake")
 else()
     # they do not exist: run pamadm -a
     execute_process(
@@ -44,25 +43,10 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-#miro: extract username@hostname 
-#FYI: $ENV{USER} is not working on all machines from crontab, prefered Linux command 'whoami`
-execute_process(
-    COMMAND whoami
-    TIMEOUT 1
-    OUTPUT_VARIABLE USER_NAME
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-#FYI: $ENV{HOSTNAME} is not working on all machines from crontab, prefered Linux command 'hostname`
-execute_process(
-    COMMAND hostname
-    TIMEOUT 1
-    OUTPUT_VARIABLE HOST_NAME
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
+option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
@@ -70,7 +54,7 @@ option(ENABLE_PROFILING       "Enable profiling"                                
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
-option(ENABLE_UTILITIES       "Enable utitilites"                                         OFF)
+option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
@@ -78,15 +62,7 @@ option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"             
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-    if (ENABLE_MPI OR ENABLE_OMP)
-        message("Static linking in parallel mode - experimental feature. ")
-    endif()
 endif()
-
-option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
-option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
-mark_as_advanced(FORCE_DIRAC_BLAS)
-mark_as_advanced(FORCE_DIRAC_LAPACK)
 
 # set work memory
 set(WORK_MEM_WORDS
@@ -104,27 +80,15 @@ if(ENABLE_MATLAB_LOG)
     add_definitions(-DMOD_MATLAB_LOG)
 endif()
 
-include(Testing)
-include(Definitions)
-include(Archs)
-include(SaveCompilerFlags)
-include(ConfigFortranCompilerFlags)
-include(ConfigCCompilerFlags)
-include(Parallel)
+include(ConfigTesting)
+include(DefinitionsList)
+include(ConfigArchitecture)
+include(ConfigCompilerFlags)
+include(ConfigParallelEnvironment)
 
 set(LIBS)
 
-include(Math)
-if(NOT BLAS_FOUND OR FORCE_DIRAC_BLAS)
-    message("-- Using own BLAS library (slow)")
-    add_definitions(-DUSE_DIRAC_BLAS)
-endif()
-if(NOT LAPACK_FOUND OR FORCE_DIRAC_LAPACK)
-    message("-- Using own LAPACK library (slow)")
-    add_definitions(-DUSE_DIRAC_DLAMCH)
-    add_definitions(-DUSE_DIRAC_DLAPACK)
-    add_definitions(-DUSE_DIRAC_ZLAPACK)
-endif()
+include(ConfigMath)
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
@@ -175,12 +139,7 @@ set(LIBS
     ${LIBS}
     )
 
-include(CompilationInfo)
-
-configure_file(
-    ${PROJECT_SOURCE_DIR}/config.h.in
-    ${PROJECT_SOURCE_DIR}/main/config.h
-    )
+include(BinaryInfo)
 
 # copy pam to build dir as pam and pam-dirac
 configure_file(
@@ -203,7 +162,7 @@ add_custom_target(dirac_interfaces
     ${GENERATED_FILES}
 )
 
-include(Sources)
+include(SourcesList)
 
 set(DIRAC_SOURCES
     ${C_SOURCES}
@@ -212,22 +171,16 @@ set(DIRAC_SOURCES
     )
 
 add_library(
-    dirac 
-    ${DIRAC_SOURCES} 
-    ${GENERATED_FILES} 
+    dirac
+    ${DIRAC_SOURCES}
+    ${GENERATED_FILES}
     )
 
-# get size of static allocations in dirac.x
+# get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dirac.x
     )
-
-# get size of static allocations in dirac.x and print sorted list of object 
-add_custom_target(
-    info_ext
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
-)
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
@@ -268,16 +221,13 @@ foreach(
         )
 endforeach()
 
-#miro: fix of static buildup with gfortran+blas&lapack/ATLAS
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND NOT ENABLE_INTERNAL_MATH)
-    #miro: Only newer versions of GNU-linkers have this flag ! Check "ld --help"
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
+    # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
-    message("-- static executable buildup with gfortran+usr-library: added --no-export-dynamic linking flag, not working for gfortran44")
     target_link_libraries(dirac.x -Wl,--no-export-dynamic)
-    if (DETECTED_MATH_VENDOR MATCHES ATLAS)
+    if (BLAS_TYPE MATCHES Atlas)
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
-        message("-- static executable buildup with gfortran+ATLAS: added workaround linking against libpthread")
         target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
     endif()
 endif()
@@ -288,7 +238,22 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-include(Install)
-include(Release)
-include(Report)
-include(Documentation)
+include(ConfigPackaging)
+
+add_custom_target(
+    html
+    COMMAND sphinx-build -b html -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/html
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
+add_custom_target(
+    latex
+    COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/latex
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
+
+# run pamadm -a in source root
+add_custom_target(
+    adm
+    COMMAND python pamadm -a
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
