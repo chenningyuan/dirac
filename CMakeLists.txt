@@ -43,7 +43,6 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
