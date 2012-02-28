@@ -294,6 +294,7 @@
          END IF
 
          ALLOCATE(ADER(KCKTA,KCKTB,nr_points))
+         ader = 0.0d0
 !        Contains ader for one gridpoint in SO basis.
 
 
@@ -428,7 +429,7 @@
 !     Local variables
       REAL(KIND=8),PARAMETER :: D0=0.0D0, D1=1.00D00, D3=3.00D00,       &
      &                          THIRD=D1/D3, GNUTHR=1.D-4,D1P5=1.5D0
-      REAL(KIND=8)::AHGTF(0:JMAX,0:JMAX,0:JMAX)
+      REAL(KIND=8),ALLOCATABLE::ahgtf(:)
       REAL(KIND=8),ALLOCATABLE::ODC(:,:,:,:,:,:)
 
       LOGICAL :: KINODC
@@ -439,6 +440,8 @@
       INTEGER :: JMAXA,JMAXB,JMAXD,JMAXT,JMAXM,ipoint,                  &
      &           IPRIMA,IPRIMB,JPRIMA,JPRIMB
       INTEGER :: IDUMMY
+      real(8) :: cpx, cpy, cpz, facint, pval
+      integer :: iadr, nrtuv, jm, iblub
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
@@ -527,14 +530,28 @@
 !
             DO ipoint=1, nr_points
               DIFCP(:) = points(1:3,ipoint) - CORP(:)
-              CALL VNUC(AHGTF,JMAX,EXPP,DIFCP,FACTOR,IPRINT)
+!             CALL VNUC(AHGTF,JMAX,EXPP,DIFCP,FACTOR,IPRINT)
+              jm = jmaxa + jmaxb
+              cpx = DIFCP(1)
+              cpy = DIFCP(2)
+              cpz = DIFCP(3)
+              facint = factor
+              istepu = jm + 1
+              istepv = istepu*istepu
+              nrtuv = (jm + 1)**3
+              pval = expp
+              iblub = 1
+              ALLOCATE(AHGTF(istepu*istepv*(SIZE(points,2) + 1)))
+              call HERNAI(AHGTF,jm,PVAL,CPX,CPY,CPZ,FACINT,iblub, &
+     &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
 !
 !           **********************************************
 !           ***** Calculation of Cartesian integrals *****
 !           **********************************************
 !             
               CALL CART_VC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,           &
-     &             ADER(1:KCKTA,1:KCKTB,ipoint:ipoint),AHGTF,IPRINT)
+     &             ADER(1,1,ipoint),AHGTF,IPRINT)
+              DEALLOCATE(AHGTF)
             END DO
          END DO
       END DO
@@ -651,14 +668,14 @@
 #include "maxaqn.h"
 #include "mxcent.h"
 !     Variables passed to CART_VC
-      REAL(KIND=8) :: AHGTF(0:,0:,0:), ADER(KCKTA,KCKTB),               &
+      REAL(KIND=8) :: AHGTF(*), ADER(*),               &
      &                ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       INTEGER :: JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT
 
 !     Local variables
       REAL(KIND=8) :: AINT,EV,EE,EEE
       INTEGER :: ICOMPA,LVALA,MVALA,NVALA,ICOMPB,LVALB,MVALB,NVALB,     &
-     &           IV,IU,IT
+     &           IV,IU,IT, i, j
 
 #include "onecom.h"
 #include "lmns.h"
@@ -677,17 +694,19 @@
 !     **************************************************
 !      
       AINT = 0.0
+      i = 0
       DO IV = 0, NVALA + NVALB
          EV = ODC(NVALA,NVALB,IV,0,0,3)
          DO IU = 0, MVALA + MVALB
             EE = ODC(MVALA,MVALB,IU,0,0,2)*EV
             DO IT = 0, LVALA + LVALB
                EEE = ODC(LVALA,LVALB,IT,0,0,1)*EE
-               AINT = AINT + EEE*AHGTF(IT,IU,IV)
+               i = i + 1
+               AINT = AINT + EEE*AHGTF(i)
             END DO
          END DO
       END DO
-      ADER(ICOMPA,ICOMPB) = ADER(ICOMPA,ICOMPB) + AINT
+      ader(icompa + (icompb-1)*kckta) = ader(icompa + (icompb-1)*kckta) + aint
 
       END DO
       END DO

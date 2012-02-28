@@ -1,2 +1,4 @@
-nuc_part.inp he.mol
-el_part.inp  he.mol
+nuc_part.inp   he.mol
+el_part_he.inp he.mol
+nuc_part.inp   ne.mol
+el_part_ne.inp ne.mol
