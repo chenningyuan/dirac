@@ -148,6 +148,7 @@
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbham.h"
 
 !     PASSED variables
       integer, intent(in) :: nr_points
@@ -161,7 +162,7 @@
       INTEGER :: ISHELA,ISHELB,ICA,ICB,NA,IREP,NB
       INTEGER :: MULTA,MULTB,NHKTAB,KAB,IDENB_TMP
       INTEGER :: ISYM
-      INTEGER :: ipoint, i,j,k,l
+      INTEGER :: ipoint, i,j,k,l, idxmax
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
 
       REAL(KIND=8),ALLOCATABLE :: ADER(:,:,:)
@@ -188,7 +189,12 @@
 
 !     Loop over shells.
       IDENA=0
-      DO ISHELA = 1,KMAX
+      if (MC==1) then 
+          idxmax=nlrgsh
+      else 
+          idxmax=kmax
+      end if    
+      DO ISHELA = 1,idxmax
         NHKTA = NHKT(ISHELA)
         KHKTA = KHKT(ISHELA)
         KCKTA = KCKT(ISHELA)
@@ -541,7 +547,7 @@
               nrtuv = (jm + 1)**3
               pval = expp
               iblub = 1
-              ALLOCATE(AHGTF(istepu*istepv*(SIZE(points,2) + 1)))
+              ALLOCATE(AHGTF(istepu*istepv*(nr_points + 1)))
               call HERNAI(AHGTF,jm,PVAL,CPX,CPY,CPZ,FACINT,iblub, &
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
 !
