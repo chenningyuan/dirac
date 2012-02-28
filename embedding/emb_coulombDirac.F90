@@ -164,7 +164,8 @@
       INTEGER :: ISYM
       INTEGER :: ipoint, i,j,k,l, idxmax
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
-
+!CTROND
+      INTEGER :: I1,I2,J1,J2,NADER
       REAL(KIND=8),ALLOCATABLE :: ADER(:,:,:)
 !     Contains the coulomb integrals for one set of primitive orbitals.
 
@@ -275,7 +276,8 @@
          ELSE IF (ICA==1.OR.ICB==1 ) THEN; INTCLASS=1
          ELSE; INTCLASS=0
          END IF
-
+!CTROND
+         IF(ICA.NE.ICB) GOTO 137         
          IF (IPRINT>5)                                                  &
      &        WRITE(LUPRI,*) 'JHS ICA,ICB,INTCLASS', ICA,ICB,INTCLASS
 
@@ -301,6 +303,7 @@
 
          ALLOCATE(ADER(KCKTA,KCKTB,nr_points))
          ader = 0.0d0
+         NADER=KCKTA*KCKTB*nr_points
 !        Contains ader for one gridpoint in SO basis.
 
 
@@ -350,11 +353,20 @@
                  WRITE(LUPRI,*) ISHELA,ISHELB,KCKTA,KCKTB,IDENA,        &
      &           IDENB_TMP,NZ,SPHRA,SPHRB            
             END IF
-
+!CTROND
+      WRITE(6,*) '* Nucatt for shells :', ISHELA, ISHELB
+      CALL OUTPUT(ADER,1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
+      WRITE(6,*) '* Denmat for shells :', ISHELA, ISHELB
+      I1=IDENA+1
+      I2=IDENA+KCKTA
+      J1=IDENB+1
+      J2=IDENB+KCKTB
+      CALL OUTPUT(DMAT,I1,I2,J1,J2,NTBAS(0),NTBAS(0),1,LUPRI)
        DO ipoint=1, nr_points
 !     Contract with the right symmetry part of the density matrix.
 !     This is given by INDFA and INDFB
-
+!CTROND: STUPID fix!!!
+      IF(ISHELA.NE.ISHELB) CALL DSCAL(NADER,2.0D0,ADER,1)
 
 !     No contraction over the non-real quaternionic part. Use index matrices of quaternions
                vc(ipoint)=vc(ipoint)+SUM(                               &
@@ -368,11 +380,10 @@
             CORBX=CORBX/SIGNBX
             CORBY=CORBY/SIGNBY
             CORBZ=CORBZ/SIGNBZ
+!        closing  DO ISYM=0,MAXOPR
          END DO
-
          DEALLOCATE(ADER)
-
-
+  137    CONTINUE
          IDENB = IDENB + KHKTB*MULTB
        END DO
        IDENA = IDENA + KHKTA*MULTA
