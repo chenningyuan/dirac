@@ -1209,14 +1209,16 @@ C         Write identification of the blocks. At the moment we have only
 C         the spinfree or the linear symmetry case.
 C
             ID = ID_SUB_BL(ISUB,IFSYM)
-            IF (SPINFR) THEN
-              WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
+            IF (ID.GE.0) THEN
+              IF (SPINFR) THEN
+                WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
                    NAME_SUB(ID) = REP(ID)
-            ELSE
-              WRITE(LUPRI,'(/A,I4,3A,I2,A)')
+              ELSE
+                WRITE(LUPRI,'(/A,I4,3A,I2,A)')
      &            '* Block',ISUB,' in ',FREP(IFSYM),
      &            ':  Omega = ',ABS(ID),'/2'
-              WRITE (NAME_SUB(ID),'(I2,"/2")') ABS(ID)
+                WRITE (NAME_SUB(ID),'(I2,"/2")') ABS(ID)
+              ENDIF
             ENDIF
 C
             NTOT = 0
@@ -1330,12 +1332,14 @@ C
           ILOW = ILOW+1
           IT = 6
           DO ISUB = ILOW, ITOP
-            ID = ID_SUB_BL(ISUB,IFSYM)
-            IF (SPINFR) THEN
-              WRITE(TLINE(IT:),'(1X,A)') REP(ID)
-            ELSE
-              WRITE(TLINE(IT:),'(I2,A)') ABS(ID),'/2 '
-            ENDIF  
+            IF (ID.GE.0) THEN
+              ID = ID_SUB_BL(ISUB,IFSYM)
+              IF (SPINFR) THEN
+                WRITE(TLINE(IT:),'(1X,A)') REP(ID)
+              ELSE
+                WRITE(TLINE(IT:),'(I2,A)') ABS(ID),'/2 '
+              ENDIF  
+            ENDIF
             IT = IT + 5
           ENDDO
           WRITE (LUPRI,'(23X,A)') TLINE
