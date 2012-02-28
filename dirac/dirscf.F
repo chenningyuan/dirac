@@ -1234,11 +1234,15 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-#define PCM_DEBUG
+!#define PCM_DEBUG
 #ifdef PCM_DEBUG
       real(8), allocatable :: tess_cent(:, :), nuc_pot(:), el_pot(:)
       integer :: foo 
 #endif
+#define ESP_DEBUG
+#ifdef ESP_DEBUG
+      real(8) :: origin(3), nuc_pot, el_pot
+#endif ESP_DEBUG
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
@@ -1329,7 +1333,15 @@ C
          deallocate(nuc_pot)
          deallocate(el_pot)
 #endif
-
+#ifdef ESP_DEBUG
+         origin = 0.0d0
+         nuc_pot = 0.0d0
+         el_pot = 0.0d0
+         call nuc_pot_pcm(1, origin, nuc_pot)
+         print *, 'Nuclear potential at origin', nuc_pot
+         call el_pot_pcm(1, origin, el_pot, dmat, work, lwork)
+         print *, 'Electronic potential at origin', el_pot
+#endif
 
 
 
