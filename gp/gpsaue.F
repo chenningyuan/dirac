@@ -6211,8 +6211,10 @@ C
       PARAMETER(D2=2.0D0,D4=4.0D0)
       DE = OMEGA*OMEGA/WXE/D4
       WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
-      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
-      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTKAYS, ' cm-1'
+      WRITE(LUPRI,'(A,2X,E10.4,A)')
+     &  '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
+      WRITE(LUPRI,'(A,2X,E10.4,A)')
+     & '* Estimated D_e:',DE*XTKAYS, ' cm-1'
       WRITE(ILOGG,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV, ' eV'
       D0 = DE-(OMEGA/D2)+WXE/D4
       WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated dissociation energy:',
