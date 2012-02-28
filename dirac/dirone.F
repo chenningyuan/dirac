@@ -2112,13 +2112,7 @@ C
         DO JSYM = 1,NBRP
           NBORB(JSYM,IFRP,IC) = 0
           IREP = JFSYM(JSYM,IP) - 1
-!fix: irep can be < 0 in NONREL runs
-          IF (IREP.GE.0) THEN
-             NBBAS_IREP_IC=NBBAS(IREP,IC)
-          ELSE
-             NBBAS_IREP_IC = 0
-          ENDIF
-          IF(NBBAS_IREP_IC.GT.0) THEN
+          IF(NBBAS(IREP,IC).GT.0) THEN
             IF(LBIT(ISPHTR,IC)) THEN
               CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
      &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
@@ -2158,13 +2152,7 @@ C
         DO JSYM = 1,NBRP
           NBORB(JSYM,IFRP,IC) = 0
           IREP = JFSYM(JSYM,IP) - 1
-!fix: irep can be < 0 in NONREL runs
-          IF (IREP.GE.0) THEN
-             NBBAS_IREP_IC=NBBAS(IREP,IC)
-          ELSE
-             NBBAS_IREP_IC = 0
-          ENDIF
-          IF(NBBAS_IREP_IC.GT.0) THEN
+          IF(NBBAS(IREP,IC).GT.0) THEN
             IF(LBIT(ISPHTR,IC)) THEN
               CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
      &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
@@ -3658,13 +3646,8 @@ C
           DO JSYM = 1,NBRP
             ISYM           = JFSYM(JSYM,IP)
             IREP           = ISYM - 1
-!fix: irep can be < 0 in NONREL runs
-            IF (IREP.GE.0) THEN
-               NBBAS_IREP_IC=NBBAS(IREP,IC)
-            ELSE
-               NBBAS_IREP_IC = 0
-            ENDIF
-            IF(NBBAS_IREP_IC.GT.0) THEN
+!fixme irep can be < 0 in NONREL runs
+            IF(NBBAS(IREP,IC).GT.0) THEN
               ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
               IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
               DO J = 1,NBBAS(IREP,IC)
