@@ -446,7 +446,7 @@
 !     Local variables
       REAL(KIND=8),PARAMETER :: D0=0.0D0, D1=1.00D00, D3=3.00D00,       &
      &                          THIRD=D1/D3, GNUTHR=1.D-4,D1P5=1.5D0
-      REAL(KIND=8),ALLOCATABLE::ahgtf(:)
+      REAL(KIND=8),ALLOCATABLE::ahgtf(:, :, :)
       REAL(KIND=8),ALLOCATABLE::ODC(:,:,:,:,:,:)
 
       LOGICAL :: KINODC
@@ -547,11 +547,10 @@
 !
             DO ipoint=1, nr_points
               DIFCP(:) = points(1:3,ipoint) - CORP(:)
-             !ALLOCATE(AHGTF(istepu*istepv*(nr_points + 1)))
-              ALLOCATE(AHGTF(((jmax+1)**3)))
+              ALLOCATE(AHGTF(0:jmax, 0:jmax, 0:jmax))
               AHGTF = 0.0d0
               jm = jmaxa + jmaxb
-              CALL VNUC(AHGTF,jm,EXPP,DIFCP,FACTOR,IPRINT)
+              CALL VNUC(AHGTF,jmax,EXPP,DIFCP,FACTOR,IPRINT)
 !             cpx = DIFCP(1)
 !             cpy = DIFCP(2)
 !             cpz = DIFCP(3)
@@ -604,13 +603,15 @@
 #include "maxaqn.h"
 
 !     Arguments passed
-      REAL(KIND=8) :: AHGTF(*),CP(3)
+      integer :: jmax
+      real(8) :: AHGTF(0:jmax, 0:jmax, 0:jmax)
+      REAL(KIND=8) :: CP(3)
       REAL(KIND=8) :: PVAL,FACINT
-      INTEGER :: JMAX,IPRINT
+      INTEGER :: IPRINT
 
 !     Local Variables
       REAL(KIND=8), allocatable :: RJ(:, :, :, :)
-      REAL(KIND=8) :: FACTOR
+      REAL(KIND=8) :: FACTOR, t
       INTEGER :: JVAL,IT,IU,IV, i, j, k, l
 
 !     Temporary variables
@@ -649,34 +650,28 @@
       END DO
 
 !     Contraction scheme of Davidson. 
-!     Slicing is not possible as we need to perform the calculations in order.
       DO JVAL = JMAX, 1, -1
-         RJ(0,0,1,JVAL-1)= -CP(3)*RJ(0,0,0,JVAL)
-         DO IV=1,JMAX-JVAL
-!           Having one loop and using array slices is a tiny bit slower.
-            RJ(0,0,IV+1,JVAL-1)= -CP(3)*RJ(0,0,IV,JVAL)+                &
-     &                             IV*RJ(0,0,IV-1,JVAL)
-!     RJ(0,1,v) etc. is moved outside the loop for efficiency
-            RJ(0,1,IV,JVAL-1)= -CP(2)*RJ(0,0,IV,JVAL)
-            DO IU=1,JMAX-JVAL-IV
-               RJ(0,IU+1,IV,JVAL-1)= -CP(2)*RJ(0,IU,IV,JVAL)+           &
-     &                                 IU*RJ(0,IU-1,IV,JVAL)
-               RJ(1,IU,IV,JVAL-1)= -CP(1)*RJ(0,IU,IV,JVAL)
-               DO IT=1,JMAX-JVAL-IU-IV
-!     USE TRANSFER(IT,real_8) etc. if this is platform dependend.
-                  RJ(IT+1,IU,IV,JVAL-1)= -CP(1)*RJ(IT,IU,IV,JVAL)+      &
-     &                                     IT*RJ(IT-1,IU,IV,JVAL)
+         DO IV = 0, JMAX - JVAL
+            t = -CP(3)*RJ(0,0,IV,JVAL)
+            if (iv > 0) t = t + IV*RJ(0,0,IV-1,JVAL)
+            RJ(0,0,IV+1,JVAL-1) = t
+            DO IU=0,JMAX-JVAL-IV
+               t = -CP(2)*RJ(0,IU,IV,JVAL)
+               if (iu > 0) t = t + IU*RJ(0,IU-1,IV,JVAL)
+               RJ(0,IU+1,IV,JVAL-1) = t
+               DO IT=0,JMAX-JVAL-IU-IV
+                  t = -CP(1)*RJ(IT,IU,IV,JVAL)
+                  if (it > 0) t = t + IT*RJ(IT-1,IU,IV,JVAL)
+                  RJ(IT+1,IU,IV,JVAL-1) = t
                END DO
             END DO
          END DO
       END DO
 
-      l = 0
       do i = 0, jmax
          do j = 0, jmax
             do k = 0, jmax
-               l = l + 1
-               ahgtf(l)=rj(k, j, i, 0)
+               ahgtf(i, j, k) = rj(i, j, k, 0)
             end do
          end do
       end do
@@ -692,7 +687,8 @@
 #include "maxaqn.h"
 #include "mxcent.h"
 !     Variables passed to CART_VC
-      REAL(KIND=8) :: AHGTF(*), ADER(*),               &
+      real(8) :: AHGTF(0:jmax, 0:jmax, 0:jmax)
+      REAL(KIND=8) :: ADER(*),               &
      &                ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       INTEGER :: JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT
 
@@ -718,15 +714,13 @@
 !     **************************************************
 !      
       AINT = 0.0
-      i = 0
       DO IV = 0, NVALA + NVALB
          EV = ODC(NVALA,NVALB,IV,0,0,3)
          DO IU = 0, MVALA + MVALB
             EE = ODC(MVALA,MVALB,IU,0,0,2)*EV
             DO IT = 0, LVALA + LVALB
                EEE = ODC(LVALA,LVALB,IT,0,0,1)*EE
-               i = i + 1
-               AINT = AINT + EEE*AHGTF(i)
+               AINT = AINT + EEE*AHGTF(IT,IU,IV)
             END DO
          END DO
       END DO
