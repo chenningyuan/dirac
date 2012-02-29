@@ -272,16 +272,6 @@ endforeach()
 
 add_dependencies(dirac.x external)
 
-if(ENABLE_PCMMOD)
-# radovan: this won't work unless pcmsolver is already there
-#          it doesn't work first time
-configure_file(
-    ${CMAKE_SOURCE_DIR}/external/pcmsolver-build/src/solverlib/pcmsolver
-    ${CMAKE_BINARY_DIR}/pcmsolver
-    COPYONLY
-    )
-endif()
-
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
