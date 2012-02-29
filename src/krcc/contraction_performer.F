@@ -10,9 +10,7 @@
       SUBROUTINE EMTHET_COM_KRCC(T,ITSM,CC_VEC_FNC,NCOMMU,IHM,
      &           IFHM,INTEGRALS,
      &           NSPOBEX,ISPOBEX_TP,IBSPOBEX,
-C next two lines needs to be checked
      &           IBSPOBEX_TO,LSPOBEX_TO,NSPOBEX_TO,
-C end the check
      &           NHTP,IHTP,IHINDEX,IHSM,
 ! Info on contractions
      &           NOP,IOP,
@@ -98,12 +96,9 @@ C     INTEGER IBSOX_FOR_OX(*),NSOX_FOR_OX(*),ISOX_FOR_OX(*)
         CALL WRTMAT(T,1,N_CC_AMP,1,N_CC_AMP)
         print*,'N_CC_AMP',N_CC_AMP
       END IF
-      DO I =1,NSPOBEX
-        print*,'LSPOBEX_TO,I',LSPOBEX_TO(I),I
-      END DO
-C     IUNIOP = NSPOBEX+1
-C     IBUNIOP = IBSPOBEX(IUNIOP)
+*
 *. Set index ordering array for intermediate
+* Should be set to max excitation level
       DO I=1,40
         IMINDEX(I) = I
       END DO
@@ -239,7 +234,6 @@ C               ICOUNT = 0
         WRITE(6,*) ' Output T-amplitudes for Hamiltonians'
         CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
       END IF
-              CALL MEMCHK_KRCC(WORK)
                   ELSE
 * Will now make an injective mapping of the cluster amplitudes to be
 * fetched to the EX,DX format where there is no restrictions on indices
@@ -287,7 +281,6 @@ C               ICOUNT = 0
         WRITE(6,*) ' Output T-amplitudes for intermediates'
         CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
       END IF
-              CALL MEMCHK_KRCC(WORK)
               CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
                   END IF
                 END DO
@@ -322,6 +315,7 @@ C               ICOUNT = 0
         WRITE(6,*) '============================='
         WRITE(6,*) ' Output T-amplitudes '
         CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
+        CALL MEMCHK_KRCC(WORK)
       END IF
 *
       RETURN
@@ -748,7 +742,7 @@ C
      &           OT1234,
      &           IT1SM,
      &           IOPSM,
-     &           LCCBD12,LCCB,     
+     &           LCCB,     
      &    WORK(KIX1_CA),WORK(KSX1_CA),WORK(KIX1_CB),WORK(KSX1_CB),
      &    WORK(KIX1_AA),WORK(KSX1_AA),WORK(KIX1_AB),WORK(KSX1_AB),
      &    WORK(KIX2_CA),WORK(KSX2_CA),WORK(KIX2_CB),WORK(KSX2_CB),
@@ -776,7 +770,7 @@ C
      &           OT1234,
      &           IT1SM,
      &           IOPSM,
-     &           LDB,LB,
+     &           LB,
      &           IX1_CA,SX1_CA,IX1_CB,SX1_CB,
      &           IX1_AA,SX1_AA,IX1_AB,SX1_AB,
      &           IX2_CA,SX2_CA,IX2_CB,SX2_CB,
@@ -802,8 +796,8 @@ C
 * Operator O is defined by an operator part IOEX, and 
 * deexcitation parts IO1DX,IO2DX,IO3DX,IO4DX.
 *
-* LDB : Batch size for D1, D2, D3, D4
-* LB2   : Batch size for for remaining expansions
+* LB   : Batch size for D1 and EX at the moment. 
+*        May have to do this dynamic
 *
 * Jeppe Olsen, May 2000, Finished March 2003 ( Well it became July 2003)
 *                        and even November 2004
@@ -901,7 +895,6 @@ C
 * - That's all she wrote
 *
 *
-      CALL MEMCHK_KRCC(WORK)
       ZERO = 0.0D0
       ONE = 1.0D0
       IOFFM = 1
@@ -917,6 +910,7 @@ C
         WRITE(6,*) 
         WRITE(6,*) ' Form of T1 T2 T3 T4'
         CALL WRT_SPOX_TP_CC_KRCC(IT1,1)
+        CALL MEMCHK_KRCC(WORK)
 *
       END IF
       SIGNG = DFLOAT(ISIGNG)
@@ -931,7 +925,6 @@ C correct multiplication. Still to be named IL4SM? No IL1SM
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' Symmetry of OT1234 = ', IL1SM
       END IF
-      CALL MEMCHK_KRCC(WORK)
 *
 * =================================================
 * Occupation of the various gas spaces for strings 
@@ -948,7 +941,6 @@ C correct multiplication. Still to be named IL4SM? No IL1SM
         WRITE(6,*) ' Occupation of L1, L2, L3, L4 '
         CALL WRT_SPOX_TP_CC_KRCC(IOC_L1,1)
       END IF
-      CALL MEMCHK_KRCC(WORK)
 *
 * =============================================================
 *. Obtain symmetry-dimensions and -offsets for various strings
@@ -1033,9 +1025,10 @@ C check with nst_spgrp_dbg from sigden.
       CALL STR_CAAB_REL(IOEX,ISTR_EX,
      &                  WORK,KFREE,LFREE)
 *. Batch length : Should allow to vary 
-      LD1_BAT = LDB
-      LEX_BAT = LDB
-      LKL_BAT = LDB 
+      LD1_BAT = LB
+      LEX_BAT = LB
+      LKL_BAT = LB 
+      print*,'LB',LB
 *. Calculate length of TSCR4, TSCR5 and TSCR6. Memory saving by Lasse
 *. Do not allocate more than what is needed
 *. Assumes at the moment static batching. 
@@ -1117,6 +1110,8 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
      &         NO1DX(1,4),ID1SM,NSMST)
         IF(ND1_TOT.GT.0.AND.NEX_TOT.GT.0.AND.NK1_TOT.GT.0) THEN
 *. Number of batches of excitation part of O
+          print*,'ND1_TOT,NEX_TOT',ND1_TOT,NEX_TOT
+          IF(ND1_TOT.GE.LB.OR.NEX_TOT.GE.LB) STOP 'larger batch'
           NEX_BAT = NEX_TOT/LEX_BAT
           IF(NEX_BAT*LEX_BAT.LT.NEX_TOT) NEX_BAT = NEX_BAT + 1
 *. Number of D1 batches
@@ -1127,6 +1122,7 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
           IF(NTEST.GE.100) WRITE(6,*) 'ND1_TOT, ND1_BAT ', 
      &                                 ND1_TOT, ND1_BAT
           DO ID1_BAT = 1, ND1_BAT
+            NTEST = 100
             IF(NTEST.GE.100) WRITE(6,*) ' ID1_BAT = ', ID1_BAT
             ID1_START = (ID1_BAT-1)*LD1_BAT + 1
             ID1_STOP  = MIN(ND1_TOT,ID1_START+LD1_BAT-1)
@@ -1134,6 +1130,7 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
             IF(NTEST.GE.100) 
      &      WRITE(6,*) ' ID1_STOP, ID1_START, ID1_BATLEN ',
      &                   ID1_STOP, ID1_START, ID1_BATLEN
+            NTEST = 000
 *. Generate ID1 strings for given sym and batch
             CALL ISMNM_FOR_TCC_BAT_REL(NO1DX,ISM_CAAB_D1,INM_CAAB_D1,
      &           ID1SM,ID1_BATLEN,ID1SM_NEW,
@@ -1226,6 +1223,7 @@ C         END IF
         WRITE(6,*) ' Updated OT1234 block ,IL1SM',IL1SM
         CALL WRT_TCC_BLK_CC_REL(OT1234,IL1SM,NL1(1,1),NL1(1,2),NL1(1,3),
      &       NL1(1,4),NSMST)
+        CALL MEMCHK_KRCC(WORK)
       END IF
 *
 C     CALL MEMREL('SCRATCH4',WORK,KLTSCR4,KLTSCR4,KFREE,LFREE)
@@ -3355,7 +3353,6 @@ C
 *. Output
       DIMENSION OPSCR(*)
 *
-      CALL MEMCHK_KRCC(WORK)
       NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) '  GET_OPINT speaking : '
@@ -3365,6 +3362,7 @@ C
         CALL WRT_SPOX_TP_CC_KRCC(IOEX,1)
         CALL WRT_SPOX_TP_CC_KRCC(IOD1X,1)
         WRITE(6,*)
+        CALL MEMCHK_KRCC(WORK)
       END IF
 *
 *. Number of C/A A/B indeces 
@@ -3501,8 +3499,8 @@ C     WRITE(6,*) ' D1 string : '
          WRITE(6,*) ' ============================================= '
          WRITE(6,*)
          CALL WRTMAT(OPSCR,LEX,LD1,LEX,LD1)
+         CALL MEMCHK_KRCC(WORK)
       END IF
-      CALL MEMCHK_KRCC(WORK)
 *
       RETURN
       END 
@@ -3810,8 +3808,8 @@ C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *. order. Now go from order defined in GET_HX_RELA to cluster operator.
        ISIGN_DE = IPERM_PARITY(IHINDEX(1,IHTYPE),2*N)
 * Not sure if this sign is correct yet!!!
-       IF(ABS(MUB).EQ.2.OR.MK.GT.0) ISIGN_DE = - ISIGN_DE
-C      IF(ABS(MUB).EQ.2) ISIGN_DE = - ISIGN_DE
+C      IF(ABS(MUB).EQ.2.OR.MK.GT.0) ISIGN_DE = - ISIGN_DE
+       IF(ABS(MUB).EQ.2) ISIGN_DE = - ISIGN_DE
        print*,'ITSS,IHTYPE,ISIGN_DE',ITSS,IHTYPE,ISIGN_DE
        SIGN_DE = DFLOAT(ISIGN_DE) 
 C      SIGN_DE = 1.0D0
@@ -3871,7 +3869,6 @@ C         print*,'ISM_AB,NEL_AB',ISM_AB,NEL_AB
            WRITE(6,*) ' The number of strings '
            WRITE(6,*) 'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
      &                 NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
-           CALL MEMCHK_KRCC(WORK)
           END IF
           ISTRTOT = NSTR_AB * NSTR_AA * NSTR_CB * NSTR_CA
           IF(ISTRTOT.EQ.0) CYCLE

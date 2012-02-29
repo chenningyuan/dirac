@@ -87,6 +87,7 @@ C     DIMENSION DUMMY(1000)
       COMMON/CMXCJ/MXCJ
 *. Local scratch 
       INTEGER ISX(2*MXPNGAS*MXPNGAS)
+      DIMENSION M11_EXTRA(LEN_M11_VEC_CC)
 *
       REAL*8 INPRDD, INPROD
 *
@@ -102,11 +103,6 @@ C     DIMENSION DUMMY(1000)
       DOUBLE = 2.0D0 !!! forgot it?
 * Debug
       ISKIP = 2 ! from which commutator to skip
-*. Temporary scratch
-      print*,'KM11_EXTRA,LEN_M11_VEC_CC',KM11_EXTRA,LEN_M11_VEC_CC
-      print*,'KFREE,LFREE',KFREE,LFREE
-      CALL MEMGET('REAL',KM11_EXTRA,LEN_M11_VEC_CC,WORK,KFREE,LFREE)
-      print*,'KM11_EXTRA after',KM11_EXTRA
 *         
 * Real or complex algebra
       IF(IRECOM.EQ.1) THEN
@@ -124,8 +120,9 @@ C     DIMENSION DUMMY(1000)
       IHSM = 1
       ITSM = 1
 *      
-*      May want to allocate some arrays
+*      May want to allocate some temporary arrays
 *
+      CALL MEMGET('REAL',KM11_EXTRA,LEN_M11_VEC_CC,WORK,KFREE,LFREE)
       CALL EXP_MT_H_EXP_TC_MEM_KRCC(WORK,KFREE,LFREE)
 *
 *. Start by zeroing the CC-vector function and the intermediates
@@ -136,6 +133,7 @@ C     DIMENSION DUMMY(1000)
       CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
       CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC)
       CALL SETVEC(WORK(KM12),ZERO,LEN_M12_VEC_CC)
+      print*,'LEN_M10_VEC_CC',LEN_M10_VEC_CC
 *. And some temporary arrays
 C     CALL SETVEC(DUMMY,ZERO,1000)
       CALL SETVEC(WORK(KM11_EXTRA),ZERO,LEN_M11_VEC_CC)
@@ -165,9 +163,7 @@ C     CALL SETVEC(DUMMY,ZERO,1000)
      &     WORK,KFREE,LFREE)
 ! First iteration with no restart only do H00
       CALL MEMCHK_KRCC(WORK)
-      CALL MEMCHK('LL5',WORK,KM11_EXTRA)
       IF(IFORM.EQ.1.AND.ITER.EQ.1) GO TO 22
-      CALL MEMCHK('LL6',WORK,KM11_EXTRA)
       END IF
 *
 * Second all single lines
@@ -190,9 +186,6 @@ C     CALL SETVEC(DUMMY,ZERO,1000)
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-      print*,'KLOOK',KLOOK
-      CALL MEMCHK_KRCC(WORK)
-      CALL MEMCHK('LL4',WORK,KM11_EXTRA)
 *
 * H21 -- 21 -- T
 *
@@ -254,7 +247,6 @@ C     CALL SETVEC(DUMMY,ZERO,1000)
 *
 * H20 -- 10 -- M10 (multiply by 1/2) Should be done first!!!
 *
-      CALL MEMCHK('LL3',WORK,KM11_EXTRA)
       IF(ISKIP.GE.2) THEN
       print*,'to intermediate'
       IHM = 1 !Still the Hamiltonian that is contracted from
@@ -337,7 +329,9 @@ C     CALL SETVEC(DUMMY,ZERO,1000)
 *
 * And now the contraction
 *
+      DO MMM= 1,1000
       print*,'second contraction'
+      end do
       IHM = 2
       IFHM = 2 !intermediates are fetched
 *
@@ -380,7 +374,6 @@ C     CALL SETVEC(DUMMY,ZERO,1000)
 *
       CALL SCALVE(WORK(KM12),HALF,LEN_M12_VEC_CC)
       END IF !ISKIP
-      CALL MEMCHK('LL2',WORK,KM11_EXTRA)
       CALL MEMCHK_KRCC(WORK)
       IF(ISKIP.GE.2) THEN
 *
@@ -548,7 +541,6 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
       CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
-      CALL MEMCHK('LL1',WORK,KM11_EXTRA)
       IF(ISKIP.GE.2) THEN
 *
 * Sixth through M01
@@ -559,6 +551,7 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
       IFHM = 1 !integrals are fetched
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11_EXTRA),IONE,IHM,
+C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,M11_EXTRA,IONE,IHM,
      &     IFHM,WORK(KT_CC), 
      &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
      &     WORK(KLIBSOBEX_M11),WORK(KLLSOBEX_M11),NINTER11,
@@ -574,6 +567,7 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
 * Multiply by 1/2
 *
       CALL SCALVE(WORK(KM11_EXTRA),HALF,LEN_M11_VEC_CC)
+C     CALL SCALVE(M11_EXTRA,HALF,LEN_M11_VEC_CC)
 *
 * H22 -- 11 -- M11 (reuse the above M11)
 *
@@ -582,6 +576,7 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
 * Add the stored KM11 and KM11_EXTRA
 *
       CALL VECSUM(WORK(KM11),WORK(KM11),WORK(KM11_EXTRA),
+C     CALL VECSUM(WORK(KM11),WORK(KM11),M11_EXTRA,
      &            ONE,ONE,LEN_M11_VEC_CC)
       END IF !ISKIP
       IF(ISKIP.GE.2) THEN
@@ -779,10 +774,7 @@ C     E_CC = CC_VEC(N_CC_AMP+1) IF IDENTITY WAS LAST BUT MINE IS FIRST
      &                   WORK,KFREE,LFREE)
       END IF
 *
-      CALL MEMCHK('LLL',WORK,KM11_EXTRA)
-      print*,'KM11_EXTRA',KM11_EXTRA
       CALL MEMREL('MAPPNG',WORK,KM11_EXTRA,KM11_EXTRA,KFREE,LFREE)
-      print*,'after memory release'
 * 
 C     STOP ' Enforced stop after CC_VEC_FNC'
       RETURN

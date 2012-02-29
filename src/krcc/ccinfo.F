@@ -6472,10 +6472,6 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
         ZERO = 0.0D0
         CALL SETVEC(CC,ZERO,IMULTFAC*N_CC_AMP)
         WRITE(6,*) ' Initial set of amplitudes set to zero '
-C       DO I=1,N_CC_AMP
-C         CC(I) = I
-C         print*,'CC,I',CC(I),I
-C       END DO
 *
       ELSE IF(IFORM.EQ.2) THEN
         ZERO = 0.0D0

@@ -1209,12 +1209,13 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       RETURN
       END
 *
-      SUBROUTINE IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+      SUBROUTINE IDIM_EX_DX_PRETTY(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
      &                      ISM,OUTT,IDIMEXDX,T,
      &                      WORK,KFREE,LFREE)
 *
 * Do as the routine name says. Dimension EX and DX.
 * Based on ANA_GENCCS_CC_KRCC just with more loops.
+* Original and pretty version (slow and not in use)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -1391,6 +1392,313 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
      &            ISM_AB,NEL_AB,NSTR_AB,
      &            IOCC_AB, NORB,0,IDUM,IDUM,
      &            WORK,KFREE,LFREE)
+*. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
+             NSTR_TOTE = NSTR_ABE*NSTR_AAE*NSTR_CBE*NSTR_CAE
+             NSTR_TOTD = NSTR_ABD*NSTR_AAD*NSTR_CBD*NSTR_CAD
+             NSTR_TOT  = NSTR_AB *NSTR_AA *NSTR_CB *NSTR_CA 
+             NTOT = NSTR_TOTE*NSTR_TOTD*NSTR_TOT
+             IF(NTOT.GE.1) THEN
+* Find dimensions 
+               IDIMEXDX = NSTR_TOTE * NSTR_TOTD
+               I_ORI_DIM_M = NSTR_TOT
+*
+C             print*,'NSTR_TOTE,NSTR_TOTD,NSTR_TOT',
+C    &                NSTR_TOTE,NSTR_TOTD,NSTR_TOT
+C             print*,'NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE',
+C    &                NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE
+C             print*,'NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD',
+C    &                NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD
+C             print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
+              IF(IWAY.EQ.1) THEN
+              IF(IMAP.EQ.1) THEN
+               CALL SORT_1(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
+     &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
+     &                     NSTR_TOT,T,OUTT)
+              ELSE IF(IMAP.EQ.2) THEN
+               CALL REDUCE_OP(IEX,IDX,IFREEOP,NGAS,3)
+               STOP ' Not yet implemented '
+              ELSE IF(IMAP.EQ.3) THEN
+               CALL REDUCE_OP(IEX,IDX,IFREEOP,NGAS,4)
+               STOP ' Not yet implemented '
+              ELSE IF(IMAP.EQ.4) THEN
+* Strategy: First reduce the EX operator to only the free index
+               CALL REDUCE_OP(IEX,IDX,IFREEOP,NGAS,1)
+* Find the number of strings for IFREEOP with IDX symmetry
+               CALL OCC_TO_GRP_CC_KRCC(IFREEOP(1+0*NGAS),IGRP_FREE,1)
+               IUB = 1
+               CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_FREE,NGAS,
+     &              ISM_CAD,NEL_CAD,NSTR_FREE,
+     &              IOCC_FREE, NORB,0,IDUM,IDUM,
+     &              WORK,KFREE,LFREE)
+               IF(NSTR_FREE.EQ.0) STOP ' something is wrong '
+               print*,'NSTR_FREE',NSTR_FREE
+               CALL SORT_4(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
+     &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
+     &                     NSTR_FREE,NSTR_TOT,T,OUTT)
+              ELSE IF(IMAP.EQ.5) THEN
+* Strategy: First reduce the EX operator to only the free index
+               CALL REDUCE_OP(IEX,IDX,IFREEOP,NGAS,2)
+* Find the number of strings for IFREEOP with IDX symmetry
+               CALL OCC_TO_GRP_CC_KRCC(IFREEOP(1+1*NGAS),IGRP_FREE,1)
+               IUB = 2
+               CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_FREE,NGAS,
+     &              ISM_CBD,NEL_CBD,NSTR_FREE,
+     &              IOCC_FREE, NORB,0,IDUM,IDUM,
+     &              WORK,KFREE,LFREE)
+               IF(NSTR_FREE.EQ.0) STOP ' something is wrong '
+               print*,'NSTR_FREE',NSTR_FREE
+               CALL SORT_5(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
+     &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
+     &                     NSTR_FREE,NSTR_TOT,T,OUTT)
+              ELSE IF(IMAP.EQ.6) THEN
+               CALL SORT_6(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
+     &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
+     &                     NSTR_TOT,T,OUTT)
+              ELSE IF(IMAP.EQ.7) THEN
+               CALL SORT_7(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
+     &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
+     &                     NSTR_TOT,T,OUTT)
+              ELSE IF(IMAP.EQ.8) THEN
+              ELSE IF(IMAP.EQ.9) THEN
+              ELSE 
+               STOP ' IMAP not set in IDIM_EX_DX'
+              END IF
+              END IF
+             END IF
+*
+            END DO
+           END DO
+          END DO
+         END DO
+        END DO
+       END DO
+      END DO
+*     ^ End of loop over symmetry blocks
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Number of elements in EX,DX form: ',IDIMEXDX
+        WRITE(6,*) ' Number of elements in original form: ',I_ORI_DIM_M
+        IF(IDIMEXDX.EQ.I_ORI_DIM_M) THEN
+          WRITE(6,*) ' We have a bijective mapping '
+        ELSE
+          WRITE(6,*) ' We have an injective mapping '
+        END IF 
+        IF(IWAY.NE.0) THEN
+          WRITE(6,*) ' The original order (elements only) '
+          CALL WRTMAT(T,1,I_ORI_DIM_M,1,I_ORI_DIM_M)
+          WRITE(6,*) ' The new EX,DX order '
+          CALL WRTMAT(OUTT,1,IDIMEXDX,1,IDIMEXDX)
+        END IF
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+     &                      ISM,OUTT,IDIMEXDX,T,
+     &                      WORK,KFREE,LFREE)
+*
+* Do as the routine name says. Dimension EX and DX.
+* Based on ANA_GENCCS_CC_KRCC just with more loops.
+* Moved GETSTR2_TOTSM_SPGP_KRCC into loop structure for speed up and
+* added a lot of IF statements. Not so pretty but faster.
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "orbinp.inc"
+#include "symm.inc"
+#include "ctcc.inc"
+*
+      INTEGER IEX(4*NGAS),IDX(4*NGAS),MTYPE(4*NGAS)
+      DIMENSION OUTT(IDIMEXDX),T(*),WORK(*)
+* Local scratch 
+      INTEGER IOCC_CAE(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_CBE(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AAE(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_ABE(NRANK*MX_ST_TSOSO_BLK_MX)
+*
+      INTEGER IOCC_CAD(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_CBD(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AAD(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_ABD(NRANK*MX_ST_TSOSO_BLK_MX)
+*
+      INTEGER IOCC_CA(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_CB(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AA(NRANK*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AB(NRANK*MX_ST_TSOSO_BLK_MX)
+*
+      INTEGER IGRP_CAE(MXPNGAS),IGRP_CBE(MXPNGAS)
+      INTEGER IGRP_AAE(MXPNGAS),IGRP_ABE(MXPNGAS)
+*
+      INTEGER IGRP_CAD(MXPNGAS),IGRP_CBD(MXPNGAS)
+      INTEGER IGRP_AAD(MXPNGAS),IGRP_ABD(MXPNGAS)
+*
+      INTEGER IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS)
+      INTEGER IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
+*
+      INTEGER IFREEOP(4*NGAS),IGRP_FREE(MXPNGAS)
+      INTEGER IOCC_FREE(MX_ST_TSOSO_BLK_MX)
+*
+      NTEST = 00
+*
+      IZERO = 0
+      NORB = 0 !not needed
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Rank of EX+DX ',NRANK
+        WRITE(6,*) ' Excitation operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IEX,1)
+        WRITE(6,*) ' De-excitation operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IDX,1)
+        WRITE(6,*) ' Original operator '
+        CALL WRT_SPOX_TP_CC_KRCC(MTYPE,1)
+        IF(IWAY.EQ.0) THEN
+          WRITE(6,*) ' Will dimension the array '
+        ELSE
+          WRITE(6,*) ' Will copy from original to EX,DX format '
+        END IF
+      END IF
+*
+      CALL ISETVC(IFREEOP,IZERO,4*NGAS)
+*. Transform from occupations to groups for EX 
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+0*NGAS),IGRP_CAE,1)
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+1*NGAS),IGRP_CBE,1)
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+2*NGAS),IGRP_AAE,1)
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+3*NGAS),IGRP_ABE,1)
+*. Transform from occupations to groups for DX 
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+0*NGAS),IGRP_CAD,1)
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+1*NGAS),IGRP_CBD,1)
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+2*NGAS),IGRP_AAD,1)
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+3*NGAS),IGRP_ABD,1)
+*. Transform from occupations to groups for MTYPE
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+0*NGAS),IGRP_CA,1)
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+1*NGAS),IGRP_CB,1)
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+2*NGAS),IGRP_AA,1)
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+3*NGAS),IGRP_AB,1)
+*
+      NEL_CAE = IELSUM(IEX(1+0*NGAS),NGAS)
+      NEL_CBE = IELSUM(IEX(1+1*NGAS),NGAS)
+      NEL_AAE = IELSUM(IEX(1+2*NGAS),NGAS)
+      NEL_ABE = IELSUM(IEX(1+3*NGAS),NGAS)
+*
+      NEL_CAD = IELSUM(IDX(1+0*NGAS),NGAS)
+      NEL_CBD = IELSUM(IDX(1+1*NGAS),NGAS)
+      NEL_AAD = IELSUM(IDX(1+2*NGAS),NGAS)
+      NEL_ABD = IELSUM(IDX(1+3*NGAS),NGAS)
+*
+      NEL_CA  = IELSUM(MTYPE(1+0*NGAS),NGAS)
+      NEL_CB  = IELSUM(MTYPE(1+1*NGAS),NGAS)
+      NEL_AA  = IELSUM(MTYPE(1+2*NGAS),NGAS)
+      NEL_AB  = IELSUM(MTYPE(1+3*NGAS),NGAS)
+*
+      DO ISM_C = 1, NSMST
+       ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
+       ISM_A = IADJSYM(ISM_A)
+* We now have the symmetry of both C and A for EX and DX since their
+* total sym is ISM
+       DO ISM_CA = 1, NSMST
+*. obtain strings for MTYPE CA
+        IUB = 1
+        CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
+     &       ISM_CA,NEL_CA,NSTR_CA,
+     &       IOCC_CA, NORB,0,IDUM,IDUM,
+     &       WORK,KFREE,LFREE)
+        IF(NSTR_CA.EQ.0) CYCLE
+        ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
+*. obtain strings for MTYPE CB
+        IUB = 2
+        CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CB,NGAS,
+     &       ISM_CB,NEL_CB,NSTR_CB,
+     &       IOCC_CB, NORB,0,IDUM,IDUM,
+     &       WORK,KFREE,LFREE)
+        IF(NSTR_CB.EQ.0) CYCLE
+        DO ISM_CAE = 1, NSMST
+*. obtain strings for EX CAE
+         IUB = 1
+         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CAE,NGAS,
+     &         ISM_CAE,NEL_CAE,NSTR_CAE,
+     &         IOCC_CAE, NORB,0,IDUM,IDUM,
+     &         WORK,KFREE,LFREE)
+         IF(NSTR_CAE.EQ.0) CYCLE
+         ISM_CAD = IDBGMULT(ISM_CA,INVELM(ISM_CAE))
+*. obtain strings for DX CAD
+         IUB = 1
+         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CAD,NGAS,
+     &        ISM_CAD,NEL_CAD,NSTR_CAD,
+     &        IOCC_CAD, NORB,0,IDUM,IDUM,
+     &        WORK,KFREE,LFREE)
+         IF(NSTR_CAD.EQ.0) CYCLE
+*
+         DO ISM_CBE =1, NSMST
+*. obtain strings for EX CBE
+          IUB = 2
+          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CBE,NGAS,
+     &         ISM_CBE,NEL_CBE,NSTR_CBE,
+     &         IOCC_CBE, NORB,0,IDUM,IDUM,
+     &         WORK,KFREE,LFREE)
+          IF(NSTR_CBE.EQ.0) CYCLE
+          ISM_CBD = IDBGMULT(ISM_CB,INVELM(ISM_CBE))
+*. obtain strings for DX CBD
+          IUB = 2
+          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CBD,NGAS,
+     &         ISM_CBD,NEL_CBD,NSTR_CBD,
+     &         IOCC_CBD, NORB,0,IDUM,IDUM,
+     &         WORK,KFREE,LFREE)
+          IF(NSTR_CBD.EQ.0) CYCLE
+*
+          DO ISM_AAA = 1, NSMST
+           ISM_AA = IADJSYM(ISM_AAA)
+*. obtain strings for MTYPE AA
+           IUB = 1
+           CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AA,NGAS,
+     &          ISM_AA,NEL_AA,NSTR_AA,
+     &          IOCC_AA, NORB,0,IDUM,IDUM,
+     &          WORK,KFREE,LFREE)
+           IF(NSTR_AA.EQ.0) CYCLE
+           ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
+*. obtain strings for MTYPE 
+           IUB = 2
+           CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AB,NGAS,
+     &          ISM_AB,NEL_AB,NSTR_AB,
+     &          IOCC_AB, NORB,0,IDUM,IDUM,
+     &          WORK,KFREE,LFREE)
+           IF(NSTR_AB.EQ.0) CYCLE
+           DO ISM_AAE = 1, NSMST
+*. obtain strings for EX AAE
+            IUB = 1
+            CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AAE,NGAS,
+     &           ISM_AAE,NEL_AAE,NSTR_AAE,
+     &           IOCC_AAE, NORB,0,IDUM,IDUM,
+     &           WORK,KFREE,LFREE)
+            IF(NSTR_AAE.EQ.0) CYCLE
+            ISM_AAD = IDBGMULT(ISM_AA,INVELM(ISM_AAE))
+*. obtain strings for DX 
+            IUB = 1
+            CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AAD,NGAS,
+     &           ISM_AAD,NEL_AAD,NSTR_AAD,
+     &           IOCC_AAD, NORB,0,IDUM,IDUM,
+     &           WORK,KFREE,LFREE)
+            IF(NSTR_AAD.EQ.0) CYCLE
+            DO ISM_ABE = 1, NSMST
+*. obtain strings for EX 
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_ABE,NGAS,
+     &            ISM_ABE,NEL_ABE,NSTR_ABE,
+     &            IOCC_ABE, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IF(NSTR_ABE.EQ.0) CYCLE
+             ISM_ABD = IDBGMULT(ISM_AB,INVELM(ISM_ABE))
+*. obtain strings for DX 
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_ABD,NGAS,
+     &            ISM_ABD,NEL_ABD,NSTR_ABD,
+     &            IOCC_ABD, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IF(NSTR_ABD.EQ.0) CYCLE
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
              NSTR_TOTE = NSTR_ABE*NSTR_AAE*NSTR_CBE*NSTR_CAE
              NSTR_TOTD = NSTR_ABD*NSTR_AAD*NSTR_CBD*NSTR_CAD

@@ -23,7 +23,7 @@
 * Setting a default batch length. Increase or decrease according to
 * memory available and speed
 *
-      LCCB = 35
+      LCCB = 15000
       WRITE(6,*) ' Batch lenght LCCB ',LCCB
 *
 *.1 : KCCF : Intermediate F-vectors for needed out of space 
@@ -134,6 +134,7 @@ C Lasse
 *. MXTSOB_P is largest number of particle orbitals of given type, ALL SYM!
 C     LEN = 4*MXTSOB_P**2 * MXTSOB_H**2
       LEN = 4*LB
+      print*,'LEN',LEN
       CALL MEMGET('INTE',KLSMD1,LEN,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLNMD1,LEN,WORK,KFREE,LFREE)
 *

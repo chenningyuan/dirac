@@ -39,6 +39,7 @@ C
 * First make an entry on memory to look for
       IONE = 1
       CALL MEMGET('INTE',KLOOK,IONE,WORK,KFREE,LFREE)
+      KCC1 = KLOOK
 * First do transformation and get integrals from DIRAC
       CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
 *. Assign diskunits 
@@ -242,7 +243,6 @@ C Hardwirering of optimizer
         LSBSPJA = 0
       END IF
       CALL MEMGET('REAL',KSBSPJA,LSBSPJA,WORK,KFREE,LFREE)
-      CALL MEMCHK_KRCC(WORK)
 *
 *
 *. Will now choose a reference determinant based on input!

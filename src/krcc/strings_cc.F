@@ -609,7 +609,6 @@ C     SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
 **.3 : Static memory for string information
 *
       CALL MEMSTR_GAS_KRCC(WORK,KFREE,LFREE)
-      print*,'after MEMSTR_GAS_KRCC'
 *
 ** 4 : Info about group of strings
 *
@@ -636,8 +635,7 @@ C     KFREEL2=KFREEL!+2
         write(6,*)
         write(6,*) '======================================='
       end if
-C     print*,'before it all'
-      CALL MEMCHK_KRCC(WORK)
+*
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
@@ -1161,6 +1159,7 @@ C
       DO IGRP = 1, NGRP
         NSTRIN = NSTFGP(IGRP)
         LSTRIN = NSTRIN*NELFGP(IGRP)
+        print*,'NSTRIN,LSTRIN',NSTRIN,LSTRIN
         CALL MEMGET('INTE',KOCSTR(IGRP),LSTRIN,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KSTREO(IGRP),NSTRIN,WORK,KFREE,LFREE)
         IF(PNTGRP.GE.5) THEN
@@ -1269,7 +1268,7 @@ C
      &WRITE(6,*) ' Last word with string information',KSTINE-1
       IF( NTEST .NE. 0 ) THEN
         WRITE(6,*) ' R*8 words used for storing Strinformation ',
-     &               KSTINE - KSTINF
+     &               KSTINE - KSTINF - 1
       END IF
 *
       RETURN
@@ -4473,7 +4472,6 @@ CTI  Set following stuff to zero in such cases.
           CALL IWRTMA(IZ,NORBT,NEL,NORBT,NEL)
         END IF
       END IF
-      call memchk_KRCC(WORK)
 *. Absolut number of this supergroup
 *. Occupation per gasspace
 *. Largest occupied space

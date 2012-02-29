@@ -441,6 +441,7 @@ C#include "inforb.h"
 #include "ctcc.inc"
 #include "ctccp.inc"
 #include "cgas.inc"
+#include "glbbas.inc"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE, EX
       CHARACTER SZTRA(2,4)*80
@@ -463,6 +464,7 @@ C
       CALL SETDCBIDX()
       CALL RSETWOP(WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
+
 C
 C From KRCI_CALC_1
 C
@@ -509,9 +511,7 @@ C
      &              ' file DFCOEF'
             END IF
          END IF
-        CALL MEMCHK_KRCC(WORK)
       CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
-C        CALL MEMCHK_KRCC(WORK)
 * Transformation 
       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
 C      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
@@ -520,8 +520,9 @@ C      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
 C
       CALL RTRACTL(WORK(KCMO),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
 C      CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
-      CALL RCIST(WORK(KCMO),WORK(KCREF),WORK,KFREE,LFREE)
+C no need for these calls. Lasse 2012
+C     CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
+C     CALL RCIST(WORK(KCMO),WORK(KCREF),WORK,KFREE,LFREE)
       CALL MEMCHK('cemory2',WORK,KCMO)
 *
 *
@@ -578,6 +579,7 @@ C      CALL RGETH21_KRCC(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
 C    &               WORK(KFREE),LFREE,IPROPT)
 *
       CALL QEXIT('KRCC_INT')
+      print*,'exit KRCC_INT'
 *
       RETURN
       END
@@ -1744,7 +1746,7 @@ C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
 C
-#include "memint.h"
+include "memint.h"
 C
       CALL QENTER('RGETH21')
 C

@@ -151,7 +151,8 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 *
       SUBROUTINE FI_HS_DIA_KRCC(T,ECC,IOBSM,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &                   NGAS,NGSSH,IHPVGAS_AB,
-     &                   LOBSM,NORBT,IDOH2,
+C    &                   LOBSM,NORBT,IDOH2,
+     &                   NTOOBS,NORBT,IDOH2,
      &                   ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
      &                   NTOOB,FI_AL,FI_BE,NELEC)
 *
@@ -201,7 +202,8 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 *. Output
       DIMENSION FI_AL(*), FI_BE(*)
 *. Input
-      INTEGER IOBSM(*),LOBSM(*)
+C     INTEGER IOBSM(*),LOBSM(*)
+      INTEGER IOBSM(*),NTOOBS(*)
       INTEGER NGSSH(MXPIRR,NGAS), NELEC(*)
       INTEGER ITPFSO(*), ITPFSO2(*), IPHGAS(*), IKPERM(4)
       INTEGER NGSOB(MXPOBS,*), NGSOB2(MXPOBS,*)
@@ -214,8 +216,8 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
       CALL SETVEC(FI_AL,ZERO,NORBT)
       CALL SETVEC(FI_BE,ZERO,NORBT)
 *
-      NTEST = 00
-      print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
+      NTEST = 100
+      print*,'ISYMPACK,NSMOB',ISYMPACK,NSMOB
       print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' FI_HS : Initial 1 e integral list '
@@ -250,6 +252,8 @@ C IINT is dimension of FI, ISIDE is square root of IINT
       END DO
 *
 * GAS-SYMM ordering (GAS is outer loop!)
+      ICOUNT = 1
+*
       do IGAS=1,NGAS,1
         do ISMOB=1,NSMOB/2,1
           ISTART = 0
@@ -268,7 +272,8 @@ C IINT is dimension of FI, ISIDE is square root of IINT
             write(6,*) 'ININT,NGSSH(ISMOB,IGAS)',
      &                  ININT,NGSSH(ISMOB,IGAS)
           end if
-          ICOUNT = ITPFSO(ISTART)
+C         ICOUNT = ITPFSO(ISTART)
+          print*,'ICOUNT',ICOUNT
           IUB = 1
           IF(ININT.GE.1) THEN
             IUB = 1
@@ -276,6 +281,7 @@ C IINT is dimension of FI, ISIDE is square root of IINT
             IUB = 2
             CALL ONE_ELEC_DIA(IUB,FI_BE(ICOUNT),T,ISTART,IEND,ISIDE)
           END IF
+          ICOUNT = ICOUNT + IEND - ISTART + 1
         END DO
       end do
       NTEST = 100
@@ -289,6 +295,7 @@ C IINT is dimension of FI, ISIDE is square root of IINT
           WRITE(6,*) FI_BE(I),I
         END DO
       END IF
+      print*,'grep for this'
 *
 *
 * 2-electron case. Now fetching all integrals in one loop.
@@ -324,8 +331,11 @@ C IINT is dimension of FI, ISIDE is square root of IINT
 C
                 IF(IHPVGAS_AB(ITPFSO(IOFF+1),1).EQ.1) THEN
 C
+                print*,'IOFF,,NI,JOFF,NJ',IOFF,NI,JOFF,NJ
                 do I = 1+IOFF,NI+IOFF,1
+                 print*,'I',I
                   do J = 1+JOFF,NJ+JOFF,1
+                   print*,'J',J
 C
 C Assuming a bottom up occupation of electrons
 C IUB loop to only count occpied contributions for IAB
@@ -348,10 +358,11 @@ C                     IABB = IAB
 C
 C Check if integral for nalpha = 0 or 4 is present and fetch it.
 C
-                      DO II=1,100
+                      DO III=1,100
                         print*,'Lasse is not sure if this is right'
                         print*,'please debug completely'
                       END DO
+                      print*,'II,JJ',II,JJ
                       IF(IHPVGAS_AB(ITPFSO(JOFF+1),1).EQ.1) THEN
                       INOINT = 0
                       NALPHA = 4
@@ -372,8 +383,10 @@ C                     print*,'XOUT',XOUT
                       JJ = J
                       IABA = IAB
                       IABB = IAB
+                      print*,'II,JJ',II,JJ
                       CALL GET_INT2(XOUT2,T,II,II,JJ,JJ,NALPHA)
                       IF(II.NE.JJ) THEN
+                      print*,'II,JJ',II,JJ
                         CALL GET_INT2(XOUT3,T,JJ,JJ,II,II,NALPHA)
                         CALL GET_INT2(XOUT4,T,II,JJ,JJ,II,NALPHA)
                         XOUT2 = XOUT2 + XOUT3 - XOUT4
@@ -665,8 +678,12 @@ C
       DIMENSION XINT(*),XOUT(ISIDE**2)
       INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
 *
-      NTESTL = 100
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = 100
+      IF(NTEST.EQ.100) THEN
+        WRITE(6,*) ' Start index = ',ISTART
+        WRITE(6,*) ' End index = ',IEND
+        WRITE(6,*) ' Dimension of side = ',ISIDE
+      END IF
 *
       IPOS = 0
       IORBCOUNT = 0

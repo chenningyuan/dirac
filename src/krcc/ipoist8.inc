@@ -188,4 +188,4 @@
      & KWCPMT_OX, 
      & KWCPMT_SOX, 
      & KOCSTR_ADD,
-     & KMUB,KM11_EXTRA
+     & KMUB
