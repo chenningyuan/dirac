@@ -547,20 +547,22 @@
 !
             DO ipoint=1, nr_points
               DIFCP(:) = points(1:3,ipoint) - CORP(:)
-!             CALL VNUC(AHGTF,JMAX,EXPP,DIFCP,FACTOR,IPRINT)
+             !ALLOCATE(AHGTF(istepu*istepv*(nr_points + 1)))
+              ALLOCATE(AHGTF(((jmax+1)**3)))
+              AHGTF = 0.0d0
               jm = jmaxa + jmaxb
-              cpx = DIFCP(1)
-              cpy = DIFCP(2)
-              cpz = DIFCP(3)
-              facint = factor
-              istepu = jm + 1
-              istepv = istepu*istepu
-              nrtuv = (jm + 1)**3
-              pval = expp
-              iblub = 1
-              ALLOCATE(AHGTF(istepu*istepv*(nr_points + 1)))
-              call HERNAI(AHGTF,jm,PVAL,CPX,CPY,CPZ,FACINT,iblub, &
-     &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
+              CALL VNUC(AHGTF,jm,EXPP,DIFCP,FACTOR,IPRINT)
+!             cpx = DIFCP(1)
+!             cpy = DIFCP(2)
+!             cpz = DIFCP(3)
+!             facint = factor
+!             istepu = jm + 1
+!             istepv = istepu*istepu
+!             nrtuv = (jm + 1)**3
+!             pval = expp
+!             iblub = 1
+!             call HERNAI(AHGTF,jm,PVAL,CPX,CPY,CPZ,FACINT,iblub, &
+!    &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
 !
 !           **********************************************
 !           ***** Calculation of Cartesian integrals *****
@@ -602,19 +604,20 @@
 #include "maxaqn.h"
 
 !     Arguments passed
-      REAL(KIND=8) :: AHGTF(0:,0:,0:),CP(3)
+      REAL(KIND=8) :: AHGTF(*),CP(3)
       REAL(KIND=8) :: PVAL,FACINT
       INTEGER :: JMAX,IPRINT
 
 !     Local Variables
-      REAL(KIND=8) :: RJ(0:JMAX,0:JMAX,0:JMAX,0:JMAX)
+      REAL(KIND=8), allocatable :: RJ(:, :, :, :)
       REAL(KIND=8) :: FACTOR
-      INTEGER :: JVAL,IT,IU,IV
+      INTEGER :: JVAL,IT,IU,IV, i, j, k, l
 
 !     Temporary variables
 #include "gamcom.h"
 
 !     Initialisation:
+      allocate(RJ(0:jmax, 0:jmax, 0:jmax, 0:jmax))
       RJ=0.0
 
       IF (IPRINT>10) THEN
@@ -668,12 +671,16 @@
          END DO
       END DO
 
-      IF (IPRINT .GT. 20) THEN
-         CALL HEADER ('Hermite integrals in HERNAI',-1)
-         WRITE (LUPRI,'(6F12.6)') AHGTF(:,:,:)
-      END IF
-      
-      AHGTF(:,:,:)=RJ(0:,0:,0:,0)
+      l = 0
+      do i = 0, jmax
+         do j = 0, jmax
+            do k = 0, jmax
+               l = l + 1
+               ahgtf(l)=rj(k, j, i, 0)
+            end do
+         end do
+      end do
+      deallocate(rj)
 
       END SUBROUTINE
 
