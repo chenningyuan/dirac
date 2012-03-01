@@ -354,14 +354,14 @@
      &           IDENB_TMP,NZ,SPHRA,SPHRB            
             END IF
 !CTROND
-      WRITE(6,*) '* Nucatt for shells :', ISHELA, ISHELB
-      CALL OUTPUT(ADER,1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
-      WRITE(6,*) '* Denmat for shells :', ISHELA, ISHELB
-      I1=IDENA+1
-      I2=IDENA+KCKTA
-      J1=IDENB+1
-      J2=IDENB+KCKTB
-      CALL OUTPUT(DMAT,I1,I2,J1,J2,NTBAS(0),NTBAS(0),1,LUPRI)
+!     WRITE(6,*) '* Nucatt for shells :', ISHELA, ISHELB
+!     CALL OUTPUT(ADER,1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
+!     WRITE(6,*) '* Denmat for shells :', ISHELA, ISHELB
+!     I1=IDENA+1
+!     I2=IDENA+KCKTA
+!     J1=IDENB+1
+!     J2=IDENB+KCKTB
+!     CALL OUTPUT(DMAT,I1,I2,J1,J2,NTBAS(0),NTBAS(0),1,LUPRI)
        DO ipoint=1, nr_points
 !     Contract with the right symmetry part of the density matrix.
 !     This is given by INDFA and INDFB

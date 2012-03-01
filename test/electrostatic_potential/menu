@@ -6,17 +6,32 @@
 #pisa.inp be_D.mol
 #el_esp_nonrel_be.inp be_D.mol
 
-el_esp_levy_kr.inp kr-nosymm.mol
-el_esp_levy_kr.inp kr.mol
+#el_esp_levy_kr.inp kr-nosymm.mol
+#el_esp_levy_kr.inp kr.mol
 
-el_esp_nonrel.inp kr-nosymm.mol
-el_esp_nonrel.inp kr.mol 
+#el_esp_nonrel.inp kr-nosymm.mol
+#el_esp_nonrel.inp kr.mol 
 
-el_esp_x2c_kr.inp kr-nosymm.mol
-el_esp_x2c_kr.inp kr.mol
+#el_esp_x2c_kr.inp kr-nosymm.mol
+#el_esp_x2c_kr.inp kr.mol
 
-el_esp_x2c4_kr.inp kr-nosymm.mol
-el_esp_x2c4_kr.inp kr.mol
+#el_esp_x2c4_kr.inp kr-nosymm.mol
+#el_esp_x2c4_kr.inp kr.mol
 
-el_esp_kr.inp kr-nosymm.mol
-el_esp_kr.inp kr.mol
+#el_esp_kr.inp kr-nosymm.mol
+#el_esp_kr.inp kr.mol
+
+el_esp_levy_nosymm.inp h2o-nosymm.mol
+el_esp_levy.inp h2o.mol
+
+el_esp_nonrel.inp h2o-nosymm.mol
+el_esp_nonrel.inp h2o.mol 
+
+#el_esp_x2c.inp h20-nosymm.mol
+#el_esp_x2c.inp h20.mol
+
+#el_esp_x2c4.inp h20-nosymm.mol
+#el_esp_x2c4.inp h20.mol
+
+el_esp_nosymm.inp h2o-nosymm.mol
+el_esp.inp h2o.mol
