@@ -3,4 +3,20 @@
 #nuc_part.inp   ne.mol
 #el_part_ne.inp ne.mol
 
-pisa.inp be_D.mol
+#pisa.inp be_D.mol
+#el_esp_nonrel_be.inp be_D.mol
+
+el_esp_levy_kr.inp kr-nosymm.mol
+el_esp_levy_kr.inp kr.mol
+
+el_esp_nonrel.inp kr-nosymm.mol
+el_esp_nonrel.inp kr.mol 
+
+el_esp_x2c_kr.inp kr-nosymm.mol
+el_esp_x2c_kr.inp kr.mol
+
+el_esp_x2c4_kr.inp kr-nosymm.mol
+el_esp_x2c4_kr.inp kr.mol
+
+el_esp_kr.inp kr-nosymm.mol
+el_esp_kr.inp kr.mol
