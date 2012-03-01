@@ -167,6 +167,7 @@
 !CTROND
       INTEGER :: I1,I2,J1,J2,NADER
       REAL(KIND=8),ALLOCATABLE :: ADER(:,:,:)
+      REAL(KIND=8),ALLOCATABLE :: ADER_so(:,:,:)
 !     Contains the coulomb integrals for one set of primitive orbitals.
 
 !     JHS TMP STUFF FOR DEBUGGING
@@ -182,6 +183,10 @@
 #include "symmet.h"
 #include "lmns.h"
 #include "nuclei.h"
+
+      if (nbsym > 1) then
+         call quit('el stat pot not correct with symmetry')
+      end if
 
 !     Initialization
       ISOFRA(:)=0
@@ -306,14 +311,10 @@
          NADER=KCKTA*KCKTB*nr_points
 !        Contains ader for one gridpoint in SO basis.
 
-
-         IF (IPRINT>5) WRITE(LUPRI,*) 'JHS SYMMETRY,SYMOP',MAXOPR
-!     JHS Now loop over symmetry dependend stuff.
-
 !     JHS Maybe IDENB needs to be corrected by -KHKTB
          IDENB_TMP=IDENB-KHKTB
 !     JHS IDENB_TMP variable necessary?
-         DO ISYM=0,MAXOPR
+         DO ISYM=0,nbsym-1 !radovan: isym should be renamed to irep
             IF (IAND(ISYM,MAB)/=0) THEN
               IF (IAND(ISYM,MULB)==0) IDENB_TMP=IDENB+KHKTB
               CYCLE
@@ -335,7 +336,22 @@
             
             CALL VC_SHELL(nr_points, ADER,TOLOG,TOLS,points,IPRINT,WORK,LWORK)
             
-!     JHS Transform to SO basis?
+            if (nbsym > 1) then
+               allocate(ader_so(kckta, kcktb, nr_points))
+               ader_so = 0.0d0
+               do ipoint = 1, nr_points
+              !call sym1s(ader(1, 1, ipoint),ader_so(1, 1, ipoint), &
+              !           isym+1,mula,mulb,nhkta,nhktb, &
+              !           khkta,khktb,hkab,ldiag,.true.,dummy,idummy, &
+              !           iprint)
+               call SYM_CONTRACT(ader(1, 1, ipoint),ader_so(1, 1, ipoint), &
+                          isym+1,mula,mulb,nhkta,nhktb, &
+                          khkta,khktb,hkab,dummy,idummy, &
+                          iprint)
+               ader(:, :, ipoint) = ader_so(:, :, ipoint)
+               end do
+               deallocate(ader_so)
+            end if
 
             IF (IPRINT>5) WRITE(LUPRI,*) 'JHS ADER(VC_SHELL)',ADER
 
@@ -354,14 +370,14 @@
      &           IDENB_TMP,NZ,SPHRA,SPHRB            
             END IF
 !CTROND
-      WRITE(6,*) '* Nucatt for shells :', ISHELA, ISHELB
-      CALL OUTPUT(ADER,1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
-      WRITE(6,*) '* Denmat for shells :', ISHELA, ISHELB
-      I1=IDENA+1
-      I2=IDENA+KCKTA
-      J1=IDENB+1
-      J2=IDENB+KCKTB
-      CALL OUTPUT(DMAT,I1,I2,J1,J2,NTBAS(0),NTBAS(0),1,LUPRI)
+!     WRITE(6,*) '* Nucatt for shells :', ISHELA, ISHELB
+!     CALL OUTPUT(ADER,1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
+!     WRITE(6,*) '* Denmat for shells :', ISHELA, ISHELB
+!     I1=IDENA+1
+!     I2=IDENA+KCKTA
+!     J1=IDENB+1
+!     J2=IDENB+KCKTB
+!     CALL OUTPUT(DMAT,I1,I2,J1,J2,NTBAS(0),NTBAS(0),1,LUPRI)
        DO ipoint=1, nr_points
 !     Contract with the right symmetry part of the density matrix.
 !     This is given by INDFA and INDFB
@@ -380,7 +396,7 @@
             CORBX=CORBX/SIGNBX
             CORBY=CORBY/SIGNBY
             CORBZ=CORBZ/SIGNBZ
-!        closing  DO ISYM=0,MAXOPR
+!        closing  DO ISYM=0,nbsym-1
          END DO
          DEALLOCATE(ADER)
   137    CONTINUE
@@ -748,7 +764,7 @@
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      REAL(KIND=8) :: AO(:,:),SO(:,:)
+      REAL(KIND=8) :: AO(*),SO(*)
 #include "csym1.h"
 #include "symmet.h"
 #include "symind.h"
@@ -786,9 +802,9 @@
                INDA = INDFA(IREP + 1,NA)
                INDB = INDFB(IREP + 1,NB)
                INDM = MAX(INDA,INDB)
-               RINT = FAC*AO(NA,NB)
+               RINT = FAC*AO(NA + (NB-1)*KHKTA)
                IND  = INDOFF + (INDM*(INDM - 3))/2 + INDA + INDB
-               SO(INDA,INDB) = SO(INDA,INDB) + RINT
+               SO(INDA + (INDB-1)*KHKTA) = SO(INDA + (INDB-1)*KHKTA) + RINT
             END IF
             END DO
          END IF
