@@ -438,7 +438,6 @@
       SUBROUTINE VC_SHELL(nr_points,ADER,TOLOG,TOLS,points,IPRINT,WORK,           &
      &     LWORK)
 !     Calculates the contribution for one primitive orbital set.
-      USE VECTOR_FUN, ONLY: NORM
 
 #include "priunit.h"
 #include "pi.h"
@@ -500,7 +499,7 @@
       CORB(3)=CORBZ
 
       DIFAB(:) = CORA(:) - CORB(:)
-      DISTAB=NORM(DIFAB)
+      DISTAB = difab(1)*difab(1) + difab(2)*difab(2) + difab(3)*difab(3)
 
 !
 !     ****************************************
@@ -604,7 +603,6 @@
 
 
       SUBROUTINE VNUC(AHGTF,JMAX,PVAL,CP,FACINT,IPRINT)
-      USE VECTOR_FUN, ONLY: NORM
 !
 !     This subroutine calculates the R integrals as defined by
 !     McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
@@ -649,7 +647,7 @@
 !     ***** Incomplete Gamma Function *****
 !     *************************************
 !
-      WVAL = PVAL*NORM(CP)**2
+      WVAL = PVAL*(cp(1)*cp(1) + cp(2)*cp(2) + cp(3)*cp(3))
       JMAX0 = JMAX
       CALL GAMFUN
       IF (IPRINT==20) THEN
