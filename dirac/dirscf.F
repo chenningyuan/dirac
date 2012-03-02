@@ -1239,7 +1239,7 @@ C
       real(8), allocatable :: tess_cent(:, :), nuc_pot(:), el_pot(:)
       integer :: foo 
 #endif
-#define ESP_DEBUG
+!#define ESP_DEBUG
 #ifdef ESP_DEBUG
       real(8) :: origin(3), nuc_pot, el_pot
 #endif ESP_DEBUG
