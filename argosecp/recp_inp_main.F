@@ -10,6 +10,7 @@
 !  geometry, etc.
       USE RECP_INP_READ
       USE RECP_INP_ORBITAL 
+      USE RECP_INP_PRINT
       USE RECP_IPT
       USE RECP_NTR
       USE RECP_OUTPUT
@@ -19,19 +20,15 @@
 #include "inc_print.h" 
 !     # /bufout/ holds some output integral file parameters.
       integer
-     & ifmt1,   ifmt2,   itypea,  itypeb,
-     & ibuf,     numout,  nrec,    ntape
+     & ifmt1,ifmt2,itypea,itypeb,ibuf,numout,nrec,ntape
       common /bufout/
-     & ifmt1,   ifmt2,   itypea,  itypeb,
-     & ibuf,     numout,  nrec,    ntape
+     & ifmt1,ifmt2,itypea,itypeb,ibuf,numout,nrec,ntape
       real*8         tol
       common /parmr/ tol
       integer
-     & mccu, mconu, mcu,   mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   ng,   ns,   nst
+     & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       common /parmi/
-     & mccu, mconu, mcu,   mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   ng,   ns,   nst
+     & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       integer
      & mconsu, mru,  mcru, msfu, 
      & msfru,  mnru, ngcs, nu,   
@@ -53,20 +50,15 @@
      & a(*),ccr(*),chg(*),eta(mrcru,mconu,*),x(mcu,*),y(mcu,*),z(mcu,*),
      & zcr(*),zet(mconu,*)
       character*3 ityp(*), mtype(*)
- 
 !     # local:
-      integer I,J,K, itol, inrm, ncrs, l1rec,
-     & ngen, ncons, naords, ist, 
-     & iaords, iru, ir, igcs, icsu, ics, ic, icons, iconu,
-     & ircru, icon, ircr, 
-     & l, ngenp1, isf, isfr, is, icu, ig, if, ilmnp1, lai,
-     & itl, itu, jcts, it, jct, jt, ixyz, i2, i3,
-     & js, ngp1, iso, n1max, n2max, iau, ia, leig, lmn, 
-     & lmnvmx,lmnvmx2,lmnvmx3 
+      integer I,J,K,itol,inrm,ncrs,l1rec,ngen,ncons,naords,ist, 
+     & iaords,iru,ir,igcs,icsu,ics,ic,icons,iconu,ircru,icon,ircr, 
+     & l,isf,isfr,is,icu,ig,if,ilmnp1,lai,
+     & itl,itu,jcts,it,jct,jt,ixyz,i2,i3,
+     & js,ngp1,iso,n1max,n2max,iau,ia,leig,lmn,lmnvmx,lmnvmx2,lmnvmx3 
       integer ixyzir(3), lblso(16),CX_TEMP
       real*8  t, eval
       character*1 ibl, ipc, isk, lblsh(21)
-      INTEGER  ECP_INPUT,RECPIN1,nlist
       integer  iodfac
       external iodfac
       LOGICAL  OLDINP
@@ -75,10 +67,6 @@
 
       CALL OUTPUT_LOC('RECP_INP_MAIN','E')
 
-!     assign the default unit numbers and filenames.
-      ECP_INPUT = 5  ! RECP_INPUT :argos input file
-      RECPIN1   = 51 ! RECP_INPUT :argos input file
-      nlist     = 6  ! DIRAC output file 
 !     intitalize some input variables.
       itol   = 20
       tol    = 2.30258d0 * itol   ! ln10 *itol
@@ -87,27 +75,26 @@
       CALL OUTPUT_DBG_TITLE('INP_MAIN : start process input data')
 
 !     # read general information 
-      CALL RECP_INP2_READGEN(RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs)
+      CALL RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
 
 !     # Number of distinct products of irrep 
-      CALL RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
+      CALL RECP_INP2_READIRREP(idp,nd,ityp)
 
 !     # Read AO to SO transformation matrices 
       CALL RECP_INP2_READAO2SO
-     &    (RECPIN1,naords,ngcs,maords,la,nir,CX_TEMP)
+     &    (naords,ngcs,maords,la,nir,CX_TEMP)
 
 !     # read in exponents and contraction coefficients.
-      CALL RECP_INP2_READORB(RECPIN1,zet,eta,lmnp1,nrcr,ncon)
+      CALL RECP_INP2_READORB(zet,eta,lmnp1,nrcr,ncon)
 
 !     read in expansions for core and spin-orbit potentials.
-      CALL RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,
+      CALL RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,
      &     nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
 
-      ngenp1 = ngen + 1
-      ng     = ngenp1
+      ng     = ngen + 1
 
 !     read in atomic labels, charges, coordinates
-      CALL RECP_INP2_READGEO(RECPIN1,ns,ng,mcu,msu,
+      CALL RECP_INP2_READGEO(ns,ng,mcu,msu,
      &     nf,nc,ica,X,Y,Z,chg,mtype,
      &     nst,nso,nbft,mcons,mgcs,nt,ntl,ntu,la,lb,nrcr,nir,lmn1u,
      &     lmnp1,maords,ncrs,mcrs)
@@ -156,45 +143,39 @@
       endif
 
       IF (PRINT_LEVEL .GE. 2) THEN
-         write (nlist,'(a,a,i2,a)')
+         write (RECP_OUT,'(a,a,i2,a)')
      &         ' * primitive ao integrals neglected',
      &         'if exponential factor below 10**(-',itol,')'
       ENDIF 
 
-      isf = 0
-      isfr = 0
-
       CALL OUTPUT_DBG_TITLE('INP_MAIN : start print input info')
       CALL RECP_SETZERO_I1(ixyzir,3)
+
+      isf = 0
+      isfr = 0
 
       do 840 is = 1,ns
         icu = nc(is)
 
-        IF (PRINT_LEVEL.GE.2) THEN        
-           CALL RECP_INP_INFO1(
-     &          nlist,is,nc,mcu,msu,ica,ng,ngenp1,chg,x,y,z,mtype)
-        ENDIF
+        CALL RECP_INP_INFO1(is,nc,mcu,msu,ica,ng,ngen,chg,x,y,z,mtype)
 
         do 796 if = 1,nf(is)
-          isf = isf+1
-          itl = ntl(isf)
-          itu = ntu(isf)
-          igcs = mgcs(isf)
-          iaords = maords(igcs)
-          iru = nir(iaords)
-          icons = mcons(isf)
-          ircru = nrcr(icons)
-          iconu = ncon(icons)
-          icsu = 0
-          do ir = 1,iru
-            icsu = icsu + nd(la(ir,iaords))
-          enddo
+           isf = isf+1
+           itl = ntl(isf)
+           itu = ntu(isf)
+           igcs = mgcs(isf)
+           iaords = maords(igcs)
+           iru = nir(iaords)
+           icons = mcons(isf)
+           ircru = nrcr(icons)
+           iconu = ncon(icons)
+           icsu = 0
+           do ir = 1,iru
+              icsu = icsu + nd(la(ir,iaords))
+           enddo
 
-          IF (PRINT_LEVEL.GE.2) THEN        
-             CALL RECP_INP_INFO2(
-     &            lmnp1,icons,ircru,iconu,zet,eta,icsu,igcs,
-     &            isfr,iru,la,nd,lb,ityp,icu,itl,itu,IPT_LMNV,iaords)
-          ENDIF
+          CALL RECP_INP_INFO2(lmnp1,icons,ircru,iconu,zet,eta,icsu,igcs,
+     &         isfr,iru,la,nd,lb,ityp,icu,itl,itu,IPT_LMNV,iaords)
 
           do 792 ircr = 1,ircru
             ics = 0
@@ -212,7 +193,7 @@
 !             # not an eigenvalue. print a warning.
               if ( leig .lt. 0 ) then
                 IF (PRINT_LEVEL .GE. 2) THEN 
-                   write(nlist,'(3x,a,i3,a3,a,a,f12.8)') 
+                   write(RECP_OUT,'(3x,a,i3,a3,a,a,f12.8)') 
      &               's.o. basis function',iso,ityp(lai),
      &               ' is not an L^2 eigenvector. : ',
      &               '<v|L^2|v>/<v|v> =', eval
@@ -238,11 +219,9 @@
   792     continue
   796   continue
  
-        IF (PRINT_LEVEL.GE.2) THEN        
-           CALL RECP_INP_PRINTCSO
-     &        ( is,mcrs,lcr,nkcrl,nkcru,NLIST,ncr,nklsl,nklsu,lls,
-     &          zcr, ccr, mtype, lblsh )
-        ENDIF
+        CALL RECP_INP_PRINTCSO
+     &     ( is,mcrs,lcr,nkcrl,nkcru,ncr,nklsl,nklsu,lls,
+     &       zcr,ccr,mtype,lblsh )
 
   840 continue
 
@@ -261,7 +240,7 @@
   860   continue
 
         IF (PRINT_LEVEL.GE.5) THEN
-           write (nlist,864) (ityp(lxyzir(ixyz)), ixyz=1,3)
+           write (RECP_OUT,864) (ityp(lxyzir(ixyz)), ixyz=1,3)
   864      format(/'lx: ',a3,10x,'ly: ',a3,10x,'lz: ',a3)
         ENDIF
       endif
@@ -274,7 +253,7 @@
       endif
  
 !     # write out the header information
-      call wthead(nst,ns,isfr,ityp,nso,mtype,ms,mnl,nlist)
+      call wthead(nst,ns,isfr,ityp,nso,mtype,ms,mnl)
  
 !     # multiply normalization constants into contraction coefficients.
       do icons = 1,ncons
@@ -291,7 +270,7 @@
       enddo   
 
       IF (PRINT_LEVEL.GE.2) THEN
-         write (nlist,880) isfr, (ityp(ist), nso(ist), ist=1,nst)
+         write (RECP_OUT,880) isfr, (ityp(ist), nso(ist), ist=1,nst)
   880    format(//i9,' symmetry orbitals,',3x,4(3x,a3,':',i4),
      &                                   (/31x,4(3x,a3,':',i4)))
       ENDIF

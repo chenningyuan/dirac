@@ -28,7 +28,7 @@ SUBROUTINE OUTPUT_LOC(RECP_LOC,RECP_STATUS)
 
 !  FIXIT : Count number of RECP_LOC and print RECP_LOC(1:#RECP_LOC)
 
-   IF (RECP_DBG.GE.10) THEN
+   IF (RECP_DBG.GE.5) THEN
       IF(RECP_STATUS .EQ. 'E') WRITE(RECP_OUT,*) ' - RECP : Entering.... ', RECP_LOC
       IF(RECP_STATUS .EQ. 'X') WRITE(RECP_OUT,*) ' - RECP : Exiting..... ', RECP_LOC
       IF(RECP_STATUS .EQ. 'H') WRITE(RECP_OUT,*) ' - RECP : Here we are, ', RECP_LOC
