@@ -691,82 +691,73 @@
 #include "cbirea.h"
 #include "argoscom.h"
 #include "argoscomch.h"
-!#include "dcbgen.h"
-! be careful with the variables in 'ibtfun.h' 
 #include "ibtfun.h"
       INTEGER blk
-
+!     Skip if RECP is not set
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
-
 !     Allocate CTRANARG
       CALL RECP_NTRA_AOTOSO1
 
       blk = 0
-      DO 401 ICENT = 1, NUCIND   ! run over nuclear center
-         DO 411 IA = 1, KMAX     ! run over shells
-            ila = 0
-            icol = 1
+      DO ICENT = 1, NUCIND   ! run over nuclear center
+         DO IA = 1, KMAX     ! run over shells
 !           Set irowmax
             irowmax(ICENT,NHKT(IA)) = nucdeg(ICENT) * KHKT(IA)
-
-!           IF (IA-1.GE.1) THEN ! arrays boundaries fix !FIXME
-            print *,'youngc-test:ia',ia,NCENT(IA),ICENT
             IF (NCENT(IA).EQ.ICENT) THEN
-               WRITE(LUPRI,'(A,2(A,2I4))')'enter1',
-     &              '  NCENT',NCENT(IA),NCENT(IA-1),
-     &              '  NHKT',NHKT(IA),NHKT(IA-1)
-!              (IA-1) is bigger than 0 
-               IF ((IA-1).EQ.0) GOTO 442 
-
-               IF ((NCENT(IA).NE.NCENT(IA-1)) .OR. 
-     &             (NHKT(IA) .NE.NHKT(IA-1) )) THEN
-  442             CONTINUE
-                  print *,'youngc-test:enter2'
-                  blk = blk +1
-!                 IF (NUMCF(IA).EQ.1) IBLOCK = IBLOCK + 1              
-
-                  DO NA = 1, KHKT(IA)   ! run over components
-                     ila = 0
-                     DO LA = 0, MAXREP  ! run over symmetry operator
-                        IVARB = IBTXOR(LA,ISYMAO(NHKT(IA),NA))
-
-!                       If orbital contributes to this representation:
-!                       See IVARB in SYMPRO (herrdn.F)
-                        IF (IBTAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
-                           ila = ila + 1
-                           JKB = 0
- 
-!                          loop over symmetry dependent centers
-                           DO KB = 0, MAXREP
-                              IF (IBTAND(KB,ISTBAO(IA)) .EQ. 0) THEN
-                                 JKB  = JKB+ 1
-                                 irow = NA + KHKT(IA)*(ila-1)
-                                 icol = NA + KHKT(IA)*(JKB-1)
-                                 CTRANARG(icent,NHKT(IA),irow,icol) 
-     &                            = PT(IBTAND(KB,IVARB))
-                                 ireparg(icent,NHKT(IA),irow) = LA + 1
-                                 MAXANG(icent) = NHKT(IA)
-                              END IF
-                           ENDDO
-                        END IF
-                     ENDDO
-                  ENDDO   
-
+               IF ((IA-1).EQ.0) THEN  !(IA-1) is bigger than 0
+                  CALL RECP_LNK_CTRAN1(ICENT,IA,blk)
+               ELSEIF (NCENT(IA).NE.NCENT(IA-1)) THEN
+                  CALL RECP_LNK_CTRAN1(ICENT,IA,blk)
+               ELSEIF (NHKT(IA).NE.NHKT(IA-1)) THEN
+                  CALL RECP_LNK_CTRAN1(ICENT,IA,blk)
                ENDIF
             ENDIF
-!           ENDIF
-  411    CONTINUE
-  401 CONTINUE
-
+         ENDDO
+      ENDDO   
 !     Set AO to SO transformation matrices
       CALL RECP_LNK_CTRAN2
       DEALLOCATE (CTRANARG)
-
  9000 CONTINUE
       END 
 
 
-
+      SUBROUTINE RECP_LNK_CTRAN1(ICENT,IA,blk)
+      USE RECP_NTR
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "symmet.h"
+#include "argoscom.h"
+#include "ibtfun.h"
+      INTEGER ICENT,IA,blk,ila,NA,LA,IVARB,JKB,KB,irow,icol
+      blk = blk +1
+      DO NA = 1, KHKT(IA)   ! run over components
+         ila = 0
+         DO LA = 0, MAXREP  ! run over symmetry operator
+            IVARB = IBTXOR(LA,ISYMAO(NHKT(IA),NA))
+!           If orbital contributes to this representation:
+!           See IVARB in SYMPRO (herrdn.F)
+            IF (IBTAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
+               ila = ila + 1
+               JKB = 0
+!              loop over symmetry dependent centers
+               DO KB = 0, MAXREP
+                  IF (IBTAND(KB,ISTBAO(IA)) .EQ. 0) THEN
+                     JKB  = JKB+ 1
+                     irow = NA + KHKT(IA)*(ila-1)
+                     icol = NA + KHKT(IA)*(JKB-1)
+                     CTRANARG(ICENT,NHKT(IA),irow,icol)
+     &                = PT(IBTAND(KB,IVARB))
+                     ireparg(ICENT,NHKT(IA),irow) = LA + 1
+                     MAXANG(ICENT) = NHKT(IA)
+                  END IF
+               ENDDO
+            END IF
+         ENDDO
+      ENDDO
+      END SUBROUTINE RECP_LNK_CTRAN1
 
       SUBROUTINE RECP_LNK_CTRAN2
 !     Set AO to SO transformation matrices
@@ -776,20 +767,16 @@
 #include "nuclei.h"
 #include "argoscom.h"
       INTEGER I,J,K,L,AORDS1,IRREP1
-
       CALL RECP_NTRA_AOTOSO(NUCIND,MAXANG,irowmax)
-
       AORDS1 = 0
       DO I = 1, NUCIND
          DO J = 1, MAXANG(I)
             AORDS1 = AORDS1 + 1
-
 !           Set list of irrep. in i-th AO reduction set
             RECPIN_MXROW(AORDS1) = irowmax(I,J)
             DO IRREP1 = 1,irowmax(I,J)
                RECPIN_LA1(IRREP1,AORDS1) = ireparg(I,J,IRREP1)
             ENDDO
-
 !           Set AO-SO matrices
             DO K = 1, irowmax(I,J)
                DO L = 1, irowmax(I,J)
