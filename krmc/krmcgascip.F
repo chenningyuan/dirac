@@ -321,6 +321,36 @@ C
          END DO
 #endif
 C
+      ELSE
+         CALL QUIT(
+     &   'GASCIP module called, but number of GAS spaces is zero!')
+      END IF
+
+      IF (IPRINT .GE. 0) THEN
+         CALL PRSYMB(LUPRI,'=',75,0)
+         WRITE(LUPRI,'(A)')
+     &   '   Specification of GAS spaces in GASCIP calculation'
+         CALL PRSYMB(LUPRI,'=',75,0)
+         WRITE(LUPRI,'(A,2I4)')
+     &     ' * Inactive orbitals     : ',(NISH(I),I=1,NFSYM)
+         WRITE(LUPRI,'(A,2I4)')
+     &     ' * Active orbitals       : ',(NASH(I),I=1,NFSYM)
+         WRITE(LUPRI,'(A,I4)')
+     &     ' * Active electrons      : ',NAELEC
+         WRITE(LUPRI,'(A,I3,A)')
+     &     ' * GAS space setup for the ',NGAS_DC,' GAS space(s) :'
+         DO I = 1, NGAS_DC
+            WRITE(LUPRI,'(A,I3,A,2I4)')
+     &           '   - GAS space ',I,'       : ',
+     &           (NGSH(J,I),J=1,NFSYM)
+            WRITE(LUPRI,'(A,I3,A1,I3,A)')
+     &      '    (constraints: min/max active electrons after space : ',
+     &           NGSP(1,I),'/',NGSP(2,I),')'
+         END DO
+         IF (NGSP(2,NGAS_DC) .NE. NAELEC) THEN
+            CALL QUIT('*** ERROR in GASCIP_GENDET *** ' //
+     &      'Inconsistency between GAS specification and NAELEC')
+         END IF
       END IF
 C
 C     Find min and max number of a & b electrons
@@ -408,24 +438,27 @@ C
 C
 C     Write statistics about determinants
 C
-      WRITE(LUPRI,9100)
-      DO MK2 = MINMK2, MAXMK2
-         IF (NMK2(MK2) .GT. 0) THEN
-            IF (MOD(MK2,2) .EQ. 0) THEN
-               WRITE(LUPRI,9101) MK2/2,NMK2(MK2)
-            ELSE
-               WRITE(LUPRI,9102) MK2,  NMK2(MK2)
+      IF (IPRINT .GE. 0) THEN
+         WRITE(LUPRI,9100)
+         DO MK2 = MINMK2, MAXMK2
+            IF (NMK2(MK2) .GT. 0) THEN
+               IF (MOD(MK2,2) .EQ. 0) THEN
+                  WRITE(LUPRI,9101) MK2/2,NMK2(MK2)
+               ELSE
+                  WRITE(LUPRI,9102) MK2,  NMK2(MK2)
+               END IF
             END IF
-         END IF
-      END DO
-      WRITE(LUPRI,9103) NDET
- 9100 FORMAT(//' Distribution of determinants wrt. MK'
-     &        /6X,'MK',T28,'#dets'/1X,38('-'))
+         END DO
+         WRITE(LUPRI,9103) NDET
+         CALL PRSYMB(LUPRI,'=',75,0)
+         CALL FLSHFO(LUPRI)
+      END IF
+ 9100 FORMAT(//'   Distribution of determinants wrt. MK'
+     &        /6X,'MK',T28,'#dets'/3X,36('-'))
  9101 FORMAT(I8,T23,I10)
  9102 FORMAT(I6,'/2',T23,I10)
- 9103 FORMAT(1X,38('-') / 5X,'all',T23,I10)
+ 9103 FORMAT(3X,36('-') / 5X,'all',T23,I10)
 C
-      CALL FLSHFO(LUPRI)
 C
       IF (IPRINT .GE. 20 .OR. NDET .LE. 50) THEN
          WRITE(LUPRI,9001)
@@ -455,17 +488,19 @@ C
                      NB(J)=0
                   END IF
                END DO
-               WRITE(LUPRI,9002) I+IMK2(MK2),(NA(J),J=NASHT,1)
-               WRITE(LUPRI,9003)             (NB(J),J=NASHT,1)
+               WRITE(LUPRI,9002) I+IMK2(MK2),(NA(J),J=1,NASHT)
+               WRITE(LUPRI,9003)             (NB(J),J=1,NASHT)
             END DO
          END DO
+         WRITE(LUPRI,9006)
          CALL FLSHFO(LUPRI)
       END IF
- 9001 FORMAT(//' Determinant',T20,'Strings'/1X,79('-'))
+ 9001 FORMAT(//1X,79('=')/' Determinant',T15,'Strings'/1X,79('='))
  9002 FORMAT(I10,T15,100I1)
  9003 FORMAT(    T15,100I1)
- 9004 FORMAT('**',I8,' determinants with MK =',I3,' :')
- 9005 FORMAT('**',I8,' determinants with MK =',I3,'/2 :')
+ 9004 FORMAT(I10,' determinants with MK =',I3,' :'/1X,39('-'))
+ 9005 FORMAT(I10,' determinants with MK =',I3,'/2 :'/1X,41('-'))
+ 9006 FORMAT(1X,79('='))
 C
 C
       RETURN
@@ -2221,7 +2256,7 @@ C
       N_CRED = 0
 C     GASCIP screening, a calculation in C2 symmetry showed that
 C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
-      THRSCR = RTHRCI**2 * 0.01D0
+      THRSCR = MIN(1.0D-6, RTHRCI**2 * 0.01D0)
 C
 C     **********************************
 C     *** Start micro iteration loop ***
@@ -2349,7 +2384,7 @@ C        Check for inconsistencies:
 C
 chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
 C        THRDAS = 1.0D-10
-         THRDAS = MAX(1.0D-10,THRSCR*10.0D0)
+         THRDAS = MAX(1.0D-10,THRSCR*100.0D0)
          DASR = 0.0D0
          DASI = 0.0D0
          DO I = 1, N_CRED
@@ -4248,7 +4283,7 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A)') ' KRMCINP: Set-up for GASCIP calculation'
+      WRITE(LUPRI,'(A)') ' Set-up for *GASCIP calculation'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRGASCIP
       WRITE(LUPRI,'(A,2I4)')
@@ -4269,7 +4304,7 @@ C
      &           IGASCIP_NGSP(1,I),'/',IGASCIP_NGSP(2,I),')'
          END DO
          IF (IGASCIP_NGSP(2,IGASCIP_NGAS) .NE. IGASCIP_NAELEC)
-     &        CALL QUIT('*** ERROR in GOCSCI_INP *** ' //
+     &        CALL QUIT('*** ERROR in GASCIP_INP *** ' //
      &        'Inconsistency between .GASSP and .CASSCF')
       END IF
 C

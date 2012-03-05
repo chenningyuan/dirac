@@ -987,14 +987,14 @@ C                 (kL|Ij) = - (kL|Ji) = - (Lk|iJ)^*
 C
                   IF (II .NE. JJ) THEN
 C
-                     VMUUUU(L,K,J,I,1) = VDUUUU(KK,LL,IJ,1,1)
+                     VMUUUU(L,K,J,I,1)     = VDUUUU(KK,LL,IJ,1,1)
                      VMUUUU(LTR,K,JTR,I,1) = VDUUUU(KK,LL,IJ,1,2)
                      VMUUUU(L,KTR,JTR,I,1) = VDUUUU(KK,LL,IJ,1,3)
 C
                      VMUUUU(L,KTR,J,ITR,1) = - VDUUUU(LL,KK,IJ,1,2)
-                     VMUUUU(LTR,KTR,J,I,1) = VDUUUU(LL,KK,IJ,1,1)
+                     VMUUUU(LTR,KTR,J,I,1) =   VDUUUU(LL,KK,IJ,1,1)
                      VMUUUU(LTR,KTR,JTR,ITR,1) = VDUUUU(KK,LL,IJ,1,1)
-                     VMUUUU(L,K,JTR,ITR,1) = VDUUUU(LL,KK,IJ,1,1)
+                     VMUUUU(L,K,JTR,ITR,1) =   VDUUUU(LL,KK,IJ,1,1)
                      VMUUUU(LTR,K,J,ITR,1) = - VDUUUU(LL,KK,IJ,1,3)
                   END IF
 C
@@ -1004,7 +1004,7 @@ C
 C                    Canonical integrals (I>=J)
 C                    (kl|ij), (kL|iJ), (Kl|iJ)
 C
-                     VMUUUU(K,L,I,J,2) = VDUUUU(KK,LL,IJ,2,1)
+                     VMUUUU(K,L,I,J,2)     = VDUUUU(KK,LL,IJ,2,1)
                      VMUUUU(K,LTR,I,JTR,2) = VDUUUU(KK,LL,IJ,2,2)
                      VMUUUU(KTR,L,I,JTR,2) = VDUUUU(KK,LL,IJ,2,3)
 C
@@ -1024,14 +1024,14 @@ C
                      IF (II .NE. JJ) THEN
 C
 C                       (lk|ji) = (kl|ij)^*
-                        VMUUUU(L,K,J,I,2) = - VDUUUU(KK,LL,IJ,2,1)
+                        VMUUUU(L,K,J,I,2)     = - VDUUUU(KK,LL,IJ,2,1)
 C                       (Lk|Ji) = (kL|iJ)^*
                         VMUUUU(LTR,K,JTR,I,2) = - VDUUUU(KK,LL,IJ,2,2)
 C                       (lK|Ji) = (Kl|iJ)^*
                         VMUUUU(L,KTR,JTR,I,2) = - VDUUUU(KK,LL,IJ,2,3)
 C
 C                       (lK|jI) = (kL|iJ)
-                        VMUUUU(L,KTR,J,ITR,2) = VDUUUU(KK,LL,IJ,2,2)
+                        VMUUUU(L,KTR,J,ITR,2) =   VDUUUU(KK,LL,IJ,2,2)
 C                       (LK|ji) = (kl|ji) = (lk|ij)^*
                         VMUUUU(LTR,KTR,J,I,2) = - VDUUUU(LL,KK,IJ,2,1)
 C                       (LK|JI) = (kl|ij)
@@ -1052,7 +1052,7 @@ C
                      VMUUUU(KTR,L,I,J,2) = VDUUUU(KK,LL,IJ,4,3)
                      IF (II .NE. JJ) THEN
 C                       (lK|ji) = (Kl|ij)^*
-                        VMUUUU(L,KTR,J,I,1) = VDUUUU(KK,LL,IJ,3,3)
+                        VMUUUU(L,KTR,J,I,1) =   VDUUUU(KK,LL,IJ,3,3)
                         VMUUUU(L,KTR,J,I,2) = - VDUUUU(KK,LL,IJ,4,3)
                      END IF
 C
@@ -1062,14 +1062,14 @@ C
                      VMUUUU(K,LTR,I,J,2) = VDUUUU(KK,LL,IJ,4,2)
                      IF (II .NE. JJ) THEN
 C                       (Lk|ji) = (kL|ij)^*
-                        VMUUUU(L,KTR,J,I,1) = VDUUUU(KK,LL,IJ,3,2)
+                        VMUUUU(L,KTR,J,I,1) =   VDUUUU(KK,LL,IJ,3,2)
                         VMUUUU(L,KTR,J,I,2) = - VDUUUU(KK,LL,IJ,4,2)
                      END IF
 C
 C                    (kl|Ij) = - (kl|Ji) = - (lk|iJ)^*
 C
                      VMUUUU(K,L,ITR,J,1) = - VDUUUU(LL,KK,IJ,3,2)
-                     VMUUUU(K,L,ITR,J,2) = VDUUUU(LL,KK,IJ,4,2)
+                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(LL,KK,IJ,4,2)
                      IF (II .NE. JJ) THEN
 C                       (lk|jI) = - (lk|iJ)
                         VMUUUU(L,KTR,J,I,1) = - VDUUUU(KK,LL,IJ,3,2)
@@ -1082,7 +1082,7 @@ C
                      VMUUUU(K,L,I,JTR,2) = VDUUUU(KK,LL,IJ,4,1)
                      IF (II .NE. JJ) THEN
 C                       (lk|Ji) = (kl|iJ)^*
-                        VMUUUU(L,K,JTR,I,1) = VDUUUU(KK,LL,IJ,3,1)
+                        VMUUUU(L,K,JTR,I,1) =   VDUUUU(KK,LL,IJ,3,1)
                         VMUUUU(L,K,JTR,I,2) = - VDUUUU(KK,LL,IJ,4,1)
                      END IF
 C
@@ -1091,7 +1091,7 @@ C                    (3 bars)
 C
 C                    (kL|IJ) = (kL|ji) = (Lk|ij)^*
 C
-                     VMUUUU(K,LTR,ITR,JTR,1) = VDUUUU(LL,KK,IJ,3,3)
+                     VMUUUU(K,LTR,ITR,JTR,1) =   VDUUUU(LL,KK,IJ,3,3)
                      VMUUUU(K,LTR,ITR,JTR,2) = - VDUUUU(LL,KK,IJ,4,3)
                      IF (II .NE. JJ) THEN
 C                       (Lk|JI) = (Lk|ij)
@@ -1101,7 +1101,7 @@ C                       (Lk|JI) = (Lk|ij)
 C
 C                    (Kl|IJ) = (Kl|ji) = (lK|ij)^*
 C
-                     VMUUUU(KTR,L,ITR,JTR,1) = VDUUUU(LL,KK,IJ,3,2)
+                     VMUUUU(KTR,L,ITR,JTR,1) =   VDUUUU(LL,KK,IJ,3,2)
                      VMUUUU(KTR,L,ITR,JTR,2) = - VDUUUU(LL,KK,IJ,4,2)
                      IF (II .NE. JJ) THEN
 C                       (lK|JI) = (lK|ij)
@@ -1115,14 +1115,14 @@ C
                      VMUUUU(K,L,ITR,J,2) = VDUUUU(KK,LL,IJ,4,1)
                      IF (II .NE. JJ) THEN
 C                       (LK|Ji) = (kl|Ji) = (lk|iJ)^*
-                        VMUUUU(L,KTR,J,I,1) = VDUUUU(LL,KK,IJ,3,1)
+                        VMUUUU(L,KTR,J,I,1) =   VDUUUU(LL,KK,IJ,3,1)
                         VMUUUU(L,KTR,J,I,2) = - VDUUUU(LL,KK,IJ,4,1)
                      END IF
 C
 C                    (KL|Ij) = - (lk|Ji) = - (kl|iJ)^*
 C
                      VMUUUU(K,L,ITR,J,1) = - VDUUUU(KK,LL,IJ,3,1)
-                     VMUUUU(K,L,ITR,J,2) = VDUUUU(KK,LL,IJ,4,1)
+                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(KK,LL,IJ,4,1)
                      IF (II .NE. JJ) THEN
 C                       (LK|jI) = - (kl|iJ)
                         VMUUUU(L,K,JTR,I,1) = - VDUUUU(KK,LL,IJ,3,1)
@@ -1149,7 +1149,7 @@ C
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
                      IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
-     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. THROUT)
+     &                    ABS(VMUUUU(I,J,K,L,NZ_in_CI)) .GT. THROUT)
      &                    WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
                   END DO
@@ -1418,7 +1418,7 @@ C
                   INDK(NUMINTT) = K
                   INDL(NUMINTT) = L
                   VMUUUU(NUMINTT,1) = VDUUUU(KK,LL,IJ,1,1)
-                  IF (NZ .GE. 2) VMUUUU(NUMINTT,2) = VDUUUU(KK,LL,IJ,2,1)
+                  IF (NZ.GE.2) VMUUUU(NUMINTT,2) = VDUUUU(KK,LL,IJ,2,1)
                END DO
             END DO
 
@@ -1431,7 +1431,7 @@ C
 C                 Canonical integrals (I>=J)
 C                 (kl|ij), (kL|iJ), (Kl|iJ)
 C
-                  VMUUUU(K,L,I,J,1) = VDUUUU(KK,LL,IJ,1,1)
+                  VMUUUU(K,L,I,J,1)     = VDUUUU(KK,LL,IJ,1,1)
                   VMUUUU(K,LTR,I,JTR,1) = VDUUUU(KK,LL,IJ,1,2)
                   VMUUUU(KTR,L,I,JTR,1) = VDUUUU(KK,LL,IJ,1,3)
 C
@@ -1440,24 +1440,24 @@ C
 C                 (Kl|Ij) = - (Kl|Ji) = - (lK|iJ)^*
                   VMUUUU(KTR,L,ITR,J,1) = - VDUUUU(LL,KK,IJ,1,2)
 C                 (KL|ij) = (lk|ij)
-                  VMUUUU(KTR,LTR,I,J,1) = VDUUUU(LL,KK,IJ,1,1)
+                  VMUUUU(KTR,LTR,I,J,1) =   VDUUUU(LL,KK,IJ,1,1)
 C                 (KL|IJ) = (lk|ji) = (kl|ij)^*
                   VMUUUU(KTR,LTR,ITR,JTR,1) = VDUUUU(KK,LL,IJ,1,1)
 C                 (kl|IJ) = (kl|ji) = (lk|ij)
-                  VMUUUU(K,L,ITR,JTR,1) = VDUUUU(LL,KK,IJ,1,1)
+                  VMUUUU(K,L,ITR,JTR,1) =   VDUUUU(LL,KK,IJ,1,1)
 C                 (kL|Ij) = - (kL|Ji) = - (Lk|iJ)^*
                   VMUUUU(K,LTR,ITR,J,1) = - VDUUUU(LL,KK,IJ,1,3)
 C
                   IF (II .NE. JJ) THEN
 C
-                     VMUUUU(L,K,J,I,1) = VDUUUU(KK,LL,IJ,1,1)
+                     VMUUUU(L,K,J,I,1)     = VDUUUU(KK,LL,IJ,1,1)
                      VMUUUU(LTR,K,JTR,I,1) = VDUUUU(KK,LL,IJ,1,2)
                      VMUUUU(L,KTR,JTR,I,1) = VDUUUU(KK,LL,IJ,1,3)
 C
                      VMUUUU(L,KTR,J,ITR,1) = - VDUUUU(LL,KK,IJ,1,2)
-                     VMUUUU(LTR,KTR,J,I,1) = VDUUUU(LL,KK,IJ,1,1)
+                     VMUUUU(LTR,KTR,J,I,1) =   VDUUUU(LL,KK,IJ,1,1)
                      VMUUUU(LTR,KTR,JTR,ITR,1) = VDUUUU(KK,LL,IJ,1,1)
-                     VMUUUU(L,K,JTR,ITR,1) = VDUUUU(LL,KK,IJ,1,1)
+                     VMUUUU(L,K,JTR,ITR,1) =   VDUUUU(LL,KK,IJ,1,1)
                      VMUUUU(LTR,K,J,ITR,1) = - VDUUUU(LL,KK,IJ,1,3)
                   END IF
 C
@@ -1467,7 +1467,7 @@ C
 C                    Canonical integrals (I>=J)
 C                    (kl|ij), (kL|iJ), (Kl|iJ)
 C
-                     VMUUUU(K,L,I,J,2) = VDUUUU(KK,LL,IJ,2,1)
+                     VMUUUU(K,L,I,J,2)     = VDUUUU(KK,LL,IJ,2,1)
                      VMUUUU(K,LTR,I,JTR,2) = VDUUUU(KK,LL,IJ,2,2)
                      VMUUUU(KTR,L,I,JTR,2) = VDUUUU(KK,LL,IJ,2,3)
 C
