@@ -197,7 +197,7 @@ contains
 
   ! -- scoef -- Occupied electronic orbital coeffients selection
   call occupy(isel,var%nish(ifrp))
-  call selcfs(cmo,ifrp,scoef,var%nish(ifrp),isel,d0, &
+  call selcfs(cmo,ifrp,scoef,var%nish(ifrp),isel,0, &
               var%nish(ifrp),var%nfbas(ifrp,0),var%norb(ifrp))
   if(PM%iprloc.ge.5)then
     write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
