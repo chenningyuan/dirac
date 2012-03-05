@@ -1,13 +1,13 @@
 MODULE RECP_INP_READ
 CONTAINS
 
-SUBROUTINE RECP_INP2_READGEN(RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs)
+SUBROUTINE RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
 ! Read general information, Y. C. Park
   USE RECP_NTR
   USE RECP_OUTPUT
   IMPLICIT NONE
 #include "inc_print.h"
-  INTEGER I,RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs
+  INTEGER I,ngen,ns,naords,ncons,ngcs,ncrs
 
   CALL OUTPUT_DBG_TITLE('INP_READGEN : Input parameter')
 
@@ -36,14 +36,14 @@ SUBROUTINE RECP_INP2_READGEN(RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs)
 ! endif
 END SUBROUTINE RECP_INP2_READGEN
 
-SUBROUTINE RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
+SUBROUTINE RECP_INP2_READIRREP(idp,nd,ityp)
   USE RECP_NTR
   IMPLICIT NONE
 #include "inc_print.h"
   INTEGER        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   COMMON /PARMI/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   INTEGER idp(mstu,mstu,*),nd(*),DPT1,IPRD
-  INTEGER I,J,K,RECPIN1,IOS
+  INTEGER I,J,K,IOS
   CHARACTER*3 ityp(*)
   CHARACTER*80 INPLINE
   INTEGER DPT_TABLE(21)
@@ -100,7 +100,7 @@ SUBROUTINE RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
   CALL RECP_NTRD_IRREP
 END SUBROUTINE RECP_INP2_READIRREP
 
-SUBROUTINE RECP_INP2_READAO2SO(RECPIN1,naords,ngcs,maords,la,nir,CX_TEMP)
+SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX_TEMP)
 ! Read in AO to SO transformation matrices 
   USE RECP_IPT
   USE RECP_NTR
@@ -110,7 +110,7 @@ SUBROUTINE RECP_INP2_READAO2SO(RECPIN1,naords,ngcs,maords,la,nir,CX_TEMP)
   INTEGER naords, ngcs, maords(*),la(mrup,*),nir(*)
   INTEGER AORDS1 ! ith-AO reduction set
   INTEGER IRREP1,IRREP_MAX
-  INTEGER SO1,AO1,AO2,CX_TEMP,RECPIN1
+  INTEGER SO1,AO1,AO2,CX_TEMP
   REAL*8  AO2SO_TEMP1, AO2SO_TEMP2
 
 ! Read number(nir) and list(la) of irrep in ith-AO reduction set 
@@ -170,13 +170,13 @@ SUBROUTINE RECP_INP2_READAO2SO(RECPIN1,naords,ngcs,maords,la,nir,CX_TEMP)
 
 END SUBROUTINE RECP_INP2_READAO2SO
 
-SUBROUTINE RECP_INP2_READORB(RECPIN1,zet,eta,lmnp1,nrcr,ncon)
+SUBROUTINE RECP_INP2_READORB(zet,eta,lmnp1,nrcr,ncon)
   USE RECP_NTR
   IMPLICIT NONE
 #include "inc_mxvalue.h"
 #include "inc_print.h"
   REAL*8  zet(mconup,*), eta(mrcrup,mconup,*)
-  INTEGER lmnp1(*),nrcr(*),ncon(*),RECPIN1
+  INTEGER lmnp1(*),nrcr(*),ncon(*)
 ! local variables
   INTEGER NONTYP0,NONT0,IQM0,JCO0
   INTEGER I,J,K,L,M1,M2,N,BLOCK1,EXP1,COEFF1
@@ -249,7 +249,7 @@ SUBROUTINE RECP_INP2_READORB(RECPIN1,zet,eta,lmnp1,nrcr,ncon)
 END SUBROUTINE RECP_INP2_READORB
 
 
-SUBROUTINE RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,  &
+SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
            nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
   USE RECP_NTR
   USE RECP_OUTPUT
@@ -260,7 +260,7 @@ SUBROUTINE RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,  &
 #include "recpval.h"
 #include "argoscom.h"
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
-  INTEGER ncrs,ncru,lproju,ns,RECPIN1
+  INTEGER ncrs,ncru,lproju,ns
   REAL*8  zcr(*),ccr(*)
   INTEGER I1,I,J,K,INDEX1,RECPCORE
   INTEGER AREP2,SOREP2,kcru,kcrl
@@ -302,6 +302,10 @@ SUBROUTINE RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,  &
      IF (SOREP2.GT.4) GOTO 8120
      lcr(I1) = AREP2
      lls(I1) = SOREP2
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3,A,I3)')  &
+        ' * Number of AREP BLOCK-1 : lcr(',I1,') = ', lcr(I1)
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3,A,I3)')  &
+        ' * Number of SOREP BLOCK : lls(',I1,') = ', lls(I1)
 
 !    ---------
 !    Read AREP 
@@ -376,7 +380,7 @@ SUBROUTINE RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,  &
   9000 CONTINUE
 END SUBROUTINE RECP_INP2_READCSO
 
-SUBROUTINE RECP_INP2_READGEO(RECPIN1,ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
+SUBROUTINE RECP_INP2_READGEO(ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
            nst,nso,nbft,mcons,mgcs,nt,ntl,ntu,la,lb,nrcr,nir,lmn1u,lmnp1,  &
            maords,ncrs,mcrs)
   USE RECP_NTR
@@ -385,7 +389,7 @@ SUBROUTINE RECP_INP2_READGEO(RECPIN1,ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NU
   IMPLICIT NONE
 #include "inc_mxvalue.h"
 #include "inc_print.h"
-  INTEGER RECPIN1,ns,ng,mcu,msu,NBASIS(*),NUC2(*),ica(mcup,msup,*) 
+  INTEGER ns,ng,mcu,msu,NBASIS(*),NUC2(*),ica(mcup,msup,*) 
   REAL*8  X(mcup,*),Y(mcup,*),Z(mcup,*),CHG1(*)
   CHARACTER*3 NUCNAME(*)
   INTEGER nst,nso(*),nbft,mcons(*),mgcs(*),nt(*),ntl(*),ntu(*),la(mrup,*),lb(*)
