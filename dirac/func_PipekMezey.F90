@@ -1,5 +1,7 @@
 module func_PipekMezey
 !================================================================================!
+!!! This is not a true module. It depends on external subroutines and .h files !!!
+!                                                                                !
 !                  This module is used in optimization module                    !
 !           it will provide information about Pipek-Mezey functional             !
 !                                                                                !
@@ -54,7 +56,7 @@ integer, allocatable, save, private :: nfnuc(:)
 
 contains
 
-  subroutine init_func
+  subroutine init_func(ndim)
   !==============================================================================!
   !            Initialize module func_PipekMezey for Dirac program               !
   !==============================================================================!
@@ -72,7 +74,11 @@ contains
 #include "thrzer.h"
 #include "dcbprj.h"
 
+  ! External variables
+  integer :: ndim
+
   ! Internal variables
+  logical :: tobe
   integer :: i, ifrp, idum
   real*8  :: toterg, second
 
@@ -139,10 +145,13 @@ contains
   ! starting time
   var%timstr = second()
 
+  ! dimension of your space
+  ifrp = 1
+  ndim = 4 * ( nish(ifrp)*nish(ifrp) - nish(ifrp) ) / 2
+
   !------------------------------------------------------------------------------!
   !                             Print debug info                                 !
   !------------------------------------------------------------------------------!
-  ifrp = 1
   if(PM%iprloc.ge.4)then
     write(lupri,*) 'lupri    =',lupri
     write(lupri,*) 'nish     =',nish(ifrp)
@@ -178,11 +187,15 @@ contains
   !------------------------------------------------------------------------------!
   !                      Precalculate some global arrays                         !
   !------------------------------------------------------------------------------!
-  ! -- nfnuc -- Get the number of functions per center
+  !----------------------------------------------------!
+  ! -- nfnuc -- Get the number of functions per center !
+  !----------------------------------------------------!
   call indaoc(indao,indaos,indnao)
   call orblo4(indnao,var%nucdep)
 
-  ! -- smat -- Get overlap matrix
+  !-------------------------------!
+  ! -- smat -- Get overlap matrix !
+  !-------------------------------!
   call gtovlx(smat,var%ssmtrc)
   if(PM%iprloc.ge.6)then
     write(lupri,'(/a)') '* orbloc: Overlap matrix' 
@@ -190,12 +203,22 @@ contains
                 1,ipqtoq(1,0),lupri)
   endif
 
+  !-----------------------------------------------------!
+  ! -- scoef -- Electronic orbital coeffients selection !
+  !-----------------------------------------------------!
+  ! Check if coefficients are on file
+  inquire(file='DFCOEF',exist=tobe)
+  if(.not.tobe)then
+    write(lupri,'(a)') 'init_func: Coefficient file not found !'
+    call quit('init_func: Coefficients not found !')
+  endif
+
   ! Read coefficients
   call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
   call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
   close(var%lucoef,status='keep')
 
-  ! -- scoef -- Occupied electronic orbital coeffients selection
+  ! select orbitals
   call occupy(isel,var%nish(ifrp))
   call selcfs(cmo,ifrp,scoef,var%nish(ifrp),isel,0, &
               var%nish(ifrp),var%nfbas(ifrp,0),var%norb(ifrp))

@@ -58,10 +58,6 @@ contains
 
 #include "dcbloc.h"
 #include "priunit.h"
-#include "dcborb.h"
-
-  ! Internal variables
-  logical :: tobe
 
   !------------------------------------------------------------------------------!
   ! dcbloc.h
@@ -77,18 +73,10 @@ contains
   mnf%heskey = hesloc
   ! priunit.h
   mnf%l      = lupri
-  ! dcborb.h
-  mnf%ndim   = 4 * ( nish(1)*nish(1) - nish(1) ) / 2  ! dimension of your space
 
   ! initialize module func_PipekMezey
-  call init_func
-
-  ! Check if coefficients are on file
-  inquire(file='DFCOEF',exist=tobe)
-  if(.not.tobe)then
-    write(mnf%l,'(a)') 'init_minimization: Coefficient file not found !'
-    call quit('init_minimization: Coefficients not found !')
-  endif
+  ! mnf%ndim  -->  dimension of your space
+  call init_func(mnf%ndim)
 
   end subroutine init_minimization
 
