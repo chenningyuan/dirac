@@ -308,7 +308,6 @@
 
          ALLOCATE(ADER(KCKTA,KCKTB,nr_points))
          ader = 0.0d0
-         NADER=KCKTA*KCKTB*nr_points
 !        Contains ader for one gridpoint in SO basis.
 
 !     JHS Maybe IDENB needs to be corrected by -KHKTB
@@ -335,6 +334,8 @@
             IF (IPRINT>5) WRITE(LUPRI,*) 'JHS CORB',CORBX,CORBY,CORBZ
             
             CALL VC_SHELL(nr_points, ADER,TOLOG,TOLS,points,IPRINT,WORK,LWORK)
+!CTROND: STUPID fix!!!
+            if (ishela /= ishelb) ader = 2.0d0*ader
             
             if (nbsym > 1) then
                allocate(ader_so(kckta, kcktb, nr_points))
@@ -378,11 +379,11 @@
 !     J1=IDENB+1
 !     J2=IDENB+KCKTB
 !     CALL OUTPUT(DMAT,I1,I2,J1,J2,NTBAS(0),NTBAS(0),1,LUPRI)
-       DO ipoint=1, nr_points
 !     Contract with the right symmetry part of the density matrix.
 !     This is given by INDFA and INDFB
-!CTROND: STUPID fix!!!
-      IF(ISHELA.NE.ISHELB) CALL DSCAL(NADER,2.0D0,ADER,1)
+
+
+       DO ipoint=1, nr_points
 
 !     No contraction over the non-real quaternionic part. Use index matrices of quaternions
                vc(ipoint)=vc(ipoint)+SUM(                               &
