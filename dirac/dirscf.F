@@ -1234,7 +1234,7 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-!#define PCM_DEBUG
+#define PCM_DEBUG
 #ifdef PCM_DEBUG
       real(8), allocatable :: tess_cent(:, :), nuc_pot(:), el_pot(:)
       integer :: foo 
