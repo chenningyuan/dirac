@@ -2,13 +2,19 @@ module func_PipekMezey
 !================================================================================!
 !                  This module is used in optimization module                    !
 !           it will provide information about Pipek-Mezey functional             !
+!                                                                                !
+!   Two forms of the Pipek-Mezey functional are available:                       !
+!   1) based on Mulliken population analysis  -->  orblo1                        !
+!   2) based on projection analysis           -->  ORBLP1                        !
+!                                                                                !
+!   [1] S. Dubillard, J.-B. Rota, and T. Saue, J.Chem.Phys. 124, 154307 (2006)   !
 !================================================================================!
 use memory_allocator
 implicit none
 
 public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, ORBLO5, ROTCMO_MOD
 
 type :: PipekMezey_flags
   integer :: iprloc
@@ -138,12 +144,15 @@ contains
   !------------------------------------------------------------------------------!
   ifrp = 1
   if(PM%iprloc.ge.4)then
-    write(lupri,*) 'lupri =',lupri
-    write(lupri,*) 'nish  =',nish(ifrp)
-    write(lupri,*) 'norb  =',norb(ifrp)
-    write(lupri,*) 'nucdep=',nucdep
-    write(lupri,*) 'maxref=',var%maxref
-    write(lupri,*) 'thrzer=',thrzer
+    write(lupri,*) 'lupri    =',lupri
+    write(lupri,*) 'nish     =',nish(ifrp)
+    write(lupri,*) 'norb     =',norb(ifrp)
+    write(lupri,*) 'nucdep   =',nucdep
+    write(lupri,*) 'maxref   =',var%maxref
+    write(lupri,*) 'thrzer   =',thrzer
+    write(lupri,*) 'nfbas(0) =',nfbas(ifrp,0)
+    write(lupri,*) 'nfbas(1) =',nfbas(ifrp,1)
+    write(lupri,*) 'nfbas(2) =',nfbas(ifrp,2)
   endif
 
   !------------------------------------------------------------------------------!
@@ -1343,155 +1352,147 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLO1(NBL,NBS,NI,NUCDEP,DINVM)
-!***********************************************************************
-!
-!     Written by S.Dubillard Jan 21 2004
-!     Last revision:
-!
-!     Construction of the matrices P_A=c_A^+Sc from Mulliken analysis
-!
-!     Calculation of the localisation criteria DINV
-!
-!***********************************************************************
-      IMPLICIT NONE
+  subroutine orblo1(nbl,nbs,ni,nucdep,dinvm)
+  !==============================================================================!
+  !                                                                              !
+  !    Construction of Q^A_i matrices from Mulliken analysis (eq. 3 in [1])      !
+  !                         Q^A_i == PMAT(i,i,4,A) =                             !
+  !     = 1/2 ( SUM_{nu=A} SUM_{mu} C_{nu,i}^* S_{nu,mu} C_{mu,i} + c.c. )       !
+  !                                                                              !
+  !              Calculation of the inverse mean delocalization                  !
+  !                  DINVM = 1/M  SUM_i^M SUM_A ( Q^A_i )^2                      !
+  !==============================================================================!
+  implicit none
 
-      ! Global variables
-      ! REAL*8,  INTENT(IN ) :: SMAT(*), SCOEF(*)
-      ! REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
-      ! INTEGER, INTENT(IN ) :: NFNUC(*)
+  ! Global variables
+  ! real*8,  intent(in ) :: smat(*), scoef(*)
+  ! real*8,  intent(out) :: pmat(ni,ni,4,nucdep)
+  ! integer, intent(in ) :: nfnuc(*)
 
-      ! External variables
-      INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
-      REAL*8,  INTENT(OUT) :: DINVM
+  ! External variables
+  integer, intent(in ) :: nbl, nbs, ni, nucdep
+  real*8,  intent(out) :: dinvm
 
-      ! Internal variables
-      INTEGER :: I, J, K, IZ, NB, IOFFL, IOFFS, LUPRI
-      INTEGER :: IPQTOQ(4,0:7)
-      REAL*8  :: DINV, QLOC2, DLOC
+  ! Internal variables
+  integer :: i, j, k, iz, nb, ioffl, ioffs, lupri
+  integer :: ipqtoq(4,0:7)
+  real*8  :: dinv, qloc2, dloc
 
-      REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
+  real*8, allocatable, dimension(:) :: wlmat, wsmat
 
   !------------------------------------------------------------------------------!
-      NB = NBL + NBS
+  nb = nbl + nbs
 
-      LUPRI       = VAR%LUPRI
-      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
+  lupri       = var%lupri
+  ipqtoq(:,:) = var%ipqtoq(:,:)
 
-! Memory allocation for the matrix W = Sc
+  ! Memory allocation for the matrix W = Sc
+  call alloc(wlmat,nbl*ni*4,id='wlmat in orblo1')
+  call alloc(wsmat,nbs*ni*4,id='wsmat in orblo1')
 
-      CALL ALLOC(WLMAT,NBL*NI*4,ID='WLMAT IN ORBLO1')
-      CALL ALLOC(WSMAT,NBS*NI*4,ID='WSMAT IN ORBLO1')
+  ! Construction of W = Sc (large and small components)
+  call qgemm(nbl,ni,nbl,d1,                     &
+             'N','N',ipqtoq(1,0),smat,nb,nb,1,  &
+             'N','N',ipqtoq(1,0),scoef,nb,ni,4, &
+              d0,ipqtoq(1,0),wlmat,nbl,ni,4)
+  if(.not.var%h2comp)then
+    call qgemm(nbs,ni,nbs,d1,                                  &
+               'N','N',ipqtoq(1,0),smat(1+nb*nbl+nbl),nb,nb,1, &
+               'N','N',ipqtoq(1,0),scoef(1+nbl),nb,ni,4,       &
+                d0,ipqtoq(1,0),wsmat,nbs,ni,4)
+  endif
 
-! Construction of W = Sc (large and small components)
+  if(pm%iprloc.ge.5)then
+    write(lupri,'(/a)') '* WL matrix :'
+    call prqmat(wlmat,nbl,ni,nbl,ni,4,ipqtoq(1,0),lupri)
+    if(.not.var%h2comp)then
+      write(lupri,'(/a)') '* WS matrix :'
+      call prqmat(wsmat,nbs,ni,nbs,ni,4,ipqtoq(1,0),lupri)
+    endif
+  endif
 
-      CALL QGEMM(NBL,NI,NBL,D1,               &
-           'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,  &
-           'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4, &
-           D0,IPQTOQ(1,0),WLMAT,NBL,NI,4)
-      IF(.NOT.VAR%H2COMP) THEN
-         CALL QGEMM(NBS,NI,NBS,D1,                            &
-              'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1, &
-              'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,       &
-              D0,IPQTOQ(1,0),WSMAT,NBS,NI,4)
-      ENDIF
+  ! Construct P_A for each center A
+  ioffl = 0
+  ioffs = 0
+  do i = 1,nucdep
+    call qgemm(ni,ni,nfnuc(i),d1,                           &
+               'H','N',ipqtoq(1,0),scoef(1+ioffl),nb,ni,4,  &
+               'N','N',ipqtoq(1,0),wlmat(1+ioffl),nbl,ni,4, &
+                d0,ipqtoq(1,0),pmat(1,1,1,i),ni,ni,4)
+    if(.not.var%h2comp)then
+      call qgemm(ni,ni,nfnuc(i+nucdep),d1,                       &
+                 'H','N',ipqtoq(1,0),scoef(1+nbl+ioffs),nb,ni,4, &
+                 'N','N',ipqtoq(1,0),wsmat(1+ioffs),nbs,ni,4,    &
+                 d1,ipqtoq(1,0),pmat(1,1,1,i),ni,ni,4)
+      ioffs = ioffs + nfnuc(nucdep+i)
+    endif
+    ioffl = ioffl + nfnuc(i)
+  enddo
 
-      IF(PM%IPRLOC.GE.5)THEN
-         WRITE(LUPRI,'(/A)') '* WL matrix :'
-         CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
-         IF(.NOT.VAR%H2COMP) THEN
-            WRITE(LUPRI,'(/A)') '* WS matrix :'
-            CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
-         ENDIF
-      ENDIF
+  ! P_A matrices symetrisation
+  do i = 1,nucdep
+    call fulmat('S',ni,ni,pmat(1,1,1,i))
+    do iz = 2,4
+      call fulmat('A',ni,ni,pmat(1,1,iz,i))
+    enddo
+  enddo
 
-! Construct P_A for each center A
+  ! Multiply pmat with 1/2 just to avoid confusion in the code below
+  do iz=1,4
+    do i=1,ni
+      do j=1,ni
+        do k=1,nucdep
+          pmat(i,j,iz,k) = pmat(i,j,iz,k) / d2
+        enddo
+      enddo
+    enddo
+  enddo
 
-      IOFFL = 0
-      IOFFS = 0
-      DO I = 1,NUCDEP
-         CALL QGEMM(NI,NI,NFNUC(I),D1,                     &
-              'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,  &
-              'N','N',IPQTOQ(1,0),WLMAT(1+IOFFL),NBL,NI,4, &
-              D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-         IF(.NOT.VAR%H2COMP) THEN
-            CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                 &
-                 'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4, &
-                 'N','N',IPQTOQ(1,0),WSMAT(1+IOFFS),NBS,NI,4,    &
-                 D1,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-            IOFFS = IOFFS + NFNUC(NUCDEP+I)
-         ENDIF
-         IOFFL = IOFFL + NFNUC(I)
-      ENDDO
+  if(pm%iprloc.ge.2)then
+    do iz=1,4
+      write(lupri,'(/a,i3)') 'Print Q^A matrices, IZ = ',iz
+      do i=1,nucdep
+        write(lupri,'(a,i4)') ' Nucleus #',i
+        do j=1,ni
+          write(lupri,'(i4,10es9.1)') j,(pmat(j,k,iz,i),k=1,ni)
+        enddo
+        write(lupri,*)
+      enddo
+    enddo
+  endif
 
-! P_A matrices symetrisation
+  if(pm%iprloc.ge.5)then
+     do i = 1,nucdep
+        write(lupri,'(/a,i3)') '* ORBLO1: Matrice P  Atom ',i
+        write(lupri,'(a)') '  ============================'
+        call prqmat(pmat(1,1,1,i),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
+     enddo
+  endif
 
-      DO I = 1,NUCDEP
-         CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
-         DO IZ = 2,4
-            CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
-         ENDDO
-      ENDDO
-
-! Multiply pmat with 1/2 just to avoid confusion in the code below
-
-      DO IZ=1,4
-        DO I=1,NI
-          DO J=1,NI
-            DO K=1,NUCDEP
-              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
-
-      IF(PM%IPRLOC.GE.2)THEN
-        DO IZ=1,4
-          WRITE(LUPRI,*)
-          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
-          DO I=1, NUCDEP
-            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I
-            DO J=1,NI
-              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
-            ENDDO
-            WRITE(LUPRI,*)
-          ENDDO
-        ENDDO
-      ENDIF
-
-      IF(PM%IPRLOC.GE.5)THEN
-         DO I = 1,NUCDEP
-            WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
-            WRITE(LUPRI,'(A)') '  ============================'
-            CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
-         ENDDO
-      ENDIF
-
-! Calculation and print of the localisation criterion
-
-    WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-    WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-    DINV = D0
-    DO I = 1,NI
-      QLOC2 = D0
-      DO J = 1,NUCDEP
-         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
-      ENDDO
-      DLOC = D1/QLOC2
-      DINV = DINV + QLOC2
-      WRITE(LUPRI,'(11X,A,I4,A,F7.4)')' Orbital',I,' Pipek-Mezey localization measure d = ',DLOC
-    ENDDO
-    DINVM = DINV/DFLOAT(NI)
-    WRITE(LUPRI,'(/11X,A,F21.15)')' Inverse mean delocalization = ',DINVM
-    DINVM = - DINVM  ! we are looking for the minimum
+  ! Calculation and print of the localisation criterion
+  write(lupri,'(/20x,a)') '** Pipek-Mezey localization criteria **' 
+  write(lupri,'(20x,a)')  '  ===================================  '
+  dinv = d0
+  do i = 1,ni
+    qloc2 = d0
+    do j = 1,nucdep
+       qloc2 = qloc2 + pmat(i,i,1,j)*pmat(i,i,1,j)
+    enddo
+    dloc = d1/qloc2
+    dinv = dinv + qloc2
+    write(lupri,'(11x,a,i4,a,f7.4)')' Orbital',i,' Pipek-Mezey localization measure d = ',dloc
+  enddo
+  dinvm = dinv/dfloat(ni)
+  write(lupri,'(/11x,a,f21.15)')' Inverse mean delocalization = ',dinvm
+  dinvm = - dinvm  ! we are looking for the minimum
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-    CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
-    CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
+  call dealloc(wlmat,id='wlmat in orblo1')
+  call dealloc(wsmat,id='wsmat in orblo1')
 
-  END SUBROUTINE ORBLO1
+  end subroutine orblo1
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1561,9 +1562,9 @@ contains
 
   !------------------------------------------------------------------------------!
       ! allocate arrays
-      CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
-      CALL ALLOC(EIG  ,VAR%NORBT  ,ID='EIG   IN ORBLO5')
-      CALL ALLOC(IBEIG,VAR%NORBT  ,ID='IBEIG IN ORBLO5')
+      CALL ALLOC(CMO  ,NB,NO,4  ,ID='CMO   IN ORBLO5')
+      CALL ALLOC(EIG  ,VAR%NORBT,ID='EIG   IN ORBLO5')
+      CALL ALLOC(IBEIG,VAR%NORBT,ID='IBEIG IN ORBLO5')
 
       ! open DFCOEF file and read EIG, IBEIG and TOTERG
       CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
