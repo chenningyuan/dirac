@@ -3,33 +3,71 @@ module second_order_minimization
 use func_PipekMezey
 implicit none
 
-!=========================================================================================!
-! func_PipekMezey:                                                                        !
-!   module for calculation of Dirac Pipek-Mezey localization functional                   !
-!   based either on Mulliken population or projection analysis                            !
-!   --> S. Dubillard, J.-B. Rota, and T. Saue, J.Chem.Phys. 124, 154307 (2006)            !
-!   --> http://jcp.aip.org/resource/1/jcpsa6/v124/i15/p154307_s1                          !
-!                                                                                         !
-!   This subroutines (functions) must be provided by some module in this case             !
-!   it is func_PipekMezey:                                                                !
-!   init_func    --> constructor                                                          !
-!   quit_func    --> destructor                                                           !
-!   mv2point     --> Move to the new expansion point                                      !
-!                --> IN: rejected --> the step was rejected, go to the previous point     !
-!                --> IN: restore  --> restore previous point                              !
-!                --> IN: xvec     --> new point in the examined space                     !
-!   get_func     --> function: Get value of your functional in current point              !
-!   get_gradient --> Get gradient of your functional in current point                     !
-!                --> OUT: gradient                                                        !
-!                --> OUT: dnrmg --> norm of the gradient                                  !
-!   get_hessian  --> Get Hessian of your functional in the current point                  !
-!                --> IN : full --> True : calculate full hessian                          !
-!                              --> False: calculate diagonal approximation of the Hessian !
-!                --> OUT: hmat --> Hessian or diagonal approximation of the Hessian       !
-!                --> OUT: totdiag --> sum of absolute values of diagonal elements         !
-!                --> OUT: totnond --> sum of absolute values of non-diagonal elements     !
-!   get_date     --> Get date                                                             !
-!=========================================================================================!
+!=============================================================================================!
+! func_PipekMezey:                                                                            !
+!   module for calculation of Dirac Pipek-Mezey localization functional                       !
+!   based either on Mulliken population or projection analysis                                !
+!   --> S. Dubillard, J.-B. Rota, and T. Saue, J.Chem.Phys. 124, 154307 (2006)                !
+!   --> http://jcp.aip.org/resource/1/jcpsa6/v124/i15/p154307_s1                              !
+!                                                                                             !
+!   This subroutines (functions) must be provided by some module, in this case                !
+!   it is func_PipekMezey:                                                                    !
+!   init_func    --> constructor                                                              !
+!   quit_func    --> destructor                                                               !
+!   mv2point     --> Move to the new expansion point                                          !
+!                --> IN: rejected --> the step was rejected, go to the previous point         !
+!                --> IN: restore  --> restore previous point                                  !
+!                --> IN: xvec     --> new point in the examined space                         !
+!   get_func     --> function: Get value of your functional in current point                  !
+!   get_gradient --> Get gradient of your functional in current point                         !
+!                --> OUT: gradient                                                            !
+!                --> OUT: dnrmg --> norm of the gradient                                      !
+!   get_hessian  --> Get Hessian of your functional in the current point                      !
+!                --> IN : full --> True : calculate full hessian                              !
+!                              --> False: calculate diagonal approximation of the Hessian     !
+!                --> OUT: hmat --> Hessian or diagonal approximation of the Hessian           !
+!                --> OUT: totdiag --> sum of absolute values of diagonal elements             !
+!                --> OUT: totnond --> sum of absolute values of non-diagonal elements         !
+!   get_date     --> Get date                                                                 !
+!=============================================================================================!
+! Input variables of the second_order_minimization module:                                    !
+!                                                                                             !
+!   ndim    - dimension of the examined space                                                 !
+!   iprint  - print level (no prints =0)                                                      !
+!   maxitr  - maximum number of iterations                                                    !
+!   l       - print unit (usually =6)                                                         !
+!                                                                                             !
+!   ---- Convergence keywords ----                                                            !
+!                                                                                             !
+!   heskey = 'DIAG' - diagonal approximation of the hessian is used                           !
+!          = 'FULL' - calculation of the full hessian is used                                 !
+!          = 'COMB' - there are two stages:                                                   !
+!               1: in the first stage only diagonal approximation of the hessian is used      !
+!               2: in the second stage the calculation of the full hessian is used            !
+!   lgfull - it is used when heskey = FULL or in the second stage of the heskey = COMB option !
+!            True  - converge when the difference between the functional value                !
+!                    of two subsequent iterations is lower than threshold (thfull)            !
+!            False - the gradient criterion or criterion of the number                        !
+!                    of negative eigenvalues equals zero will be used                         !
+!   thfull - threshold; see lgfull for the explanation                                        !
+!   lggrad - it is used when heskey = FULL or heskey = DIAG or                                !
+!            in the second stage of the heskey = COMB option                                  !
+!            True  - converge when the difference between the functional value                !
+!                    of two subsequent iterations is lower than threshold (thgrad)            !
+!            False - the functional value criterion or criterion of the number                !
+!                    of negative eigenvalues equals zero will be used                         !
+!   thgrad - threshold; see lggrad for the explanation                                        !
+!   lgdiag - if heskey = DIAG it have the the same purpose as lgfull;                         !
+!            for threshold is used thdiag variable                                            !
+!          - if heskey = COMB it is used to switch from the first to the second               !
+!            stage of the convergence; it will switch                                         !
+!            True  - when the difference between the functional value                         !
+!                    of two subsequent iterations is lower than threshold (thdiag)            !
+!            False - if the number of negative eigenvalues equals zero                        !
+!   thdiag - threshold; see lgdiag for the explanation                                        !
+!   lgchck - works with heskey = COMB option                                                  !
+!            True  - only one calculation of the full hessian will be performed               !
+!=============================================================================================!
 
 public  :: init_minimization, minimization_drv
 

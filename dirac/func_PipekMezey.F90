@@ -11,6 +11,15 @@ module func_PipekMezey
 !                                                                                !
 !   [1] S. Dubillard, J.-B. Rota, and T. Saue, J.Chem.Phys. 124, 154307 (2006)   !
 !================================================================================!
+! Input variables of the func_PipekMezey module:                                 !
+!                                                                                !
+!   prjloc - localization based on:                                              !
+!            True  - projection analysis                                         !
+!            False - Mulliken analysis                                           !
+!   iprloc - print level (no prints =0)                                          !
+!   isel   - integer array which contains numbers of MOs that will be localized  !
+!   ... ( not finished yet )                                                     !
+!================================================================================!
 use memory_allocator
 implicit none
 
