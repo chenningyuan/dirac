@@ -250,9 +250,6 @@
 
       tols=thrs**2
       tolog=2*log(thrs)
-
-! Loop over shells. 
-      idena = 0
 ! mc is the number of components, as defined in include/dcbham.h
 ! Decide whether we loop on LL block only or not
       if (mc == 1) then 
@@ -262,6 +259,7 @@
       end if
 
 ! Loop over bras <mu|      
+      idena = 0
       do ishela = 1, idxmax
         ica   = lclass(ishela)
         nhkta = nhkt(ishela)
@@ -336,8 +334,11 @@
 
       subroutine vc_shell(nr_points, ader, tolog, tols,                 &
      &                    points, iprint, work, lwork)
-!     calculates the contribution for one primitive orbital set.
-
+!      
+! Calculates the contribution for one primitive orbital set.
+!
+! RDR 090312 Clean-up.      
+!
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
@@ -347,40 +348,32 @@
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
-!     passed variables
-      integer :: iprint
-      integer, intent(in) :: nr_points
-      real(kind=8) :: points(3,*)
-      real(kind=8) :: ader(kckta,kcktb,nr_points)
-      real(kind=8) :: work(*)
-      real(kind=8) :: tolog, tols,factor=1.0
-      integer :: lwork
-
-
-!     local variables
-      real(kind=8),parameter :: d0=0.0d0, d1=1.00d00, d3=3.00d00,       &
-     &                          third=d1/d3, gnuthr=1.d-4,d1p5=1.5d0
-      real(kind=8),allocatable::ahgtf(:, :, :)
-      real(kind=8),allocatable::odc(:,:,:,:,:,:)
-
-      logical :: kinodc
-      real(kind=8) :: difab(3),difcp(3),corp(3),origin(3),              &
-     &     cora(3),corb(3)
-      real(kind=8) :: distab,conta,expa,contb,expb,expp,exppi,          &
-     &                expabq,saab, asaab,saab13, expapi,expbpi
-      integer :: jmaxa,jmaxb,jmaxd,jmaxt,jmaxm,ipoint,                  &
-     &           iprima,iprimb,jprima,jprimb
-      integer :: idummy
-      real(8) :: cpx, cpy, cpz, facint, pval
-      integer :: iadr, nrtuv, jm, iblub
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
 #include "primit.h"
-      
-      if (iprint .ge. 5) call titler('output from vc_shell','*',103)
 
-!     allocation
+!     Passed variables
+      integer, intent(in) :: nr_points, iprint, lwork
+      real(8) :: points(3, nr_points), ader(kckta, kcktb, nr_points)
+      real(8) :: work(*)
+      real(8) :: tolog, tols,factor=1.0
+
+!     Local variables
+      real(8), allocatable :: ahgtf(:, :, :), odc(:, :, :, :, :, :)
+      logical :: kinodc
+      real(8) :: difab(3), difcp(3), corp(3), origin(3),                &
+     &           cora(3), corb(3)
+      real(8) :: distab, conta, expa, contb, expb, expp, exppi,         &
+     &           expabq, saab, asaab, saab13, expapi, expbpi
+      integer :: jmaxa, jmaxb, jmaxd, jmaxt, jmaxm, ipoint,             &
+     &           iprima, iprimb, jprima, jprimb
+      integer :: idummy
+      real(8) :: cpx, cpy, cpz, facint, pval
+      integer :: iadr, nrtuv, jm, iblub
+      
+
+!     Allocation
       jmaxd = 2
       jmaxa = nhkta - 1
       jmaxb = nhktb - 1
@@ -388,258 +381,204 @@
       jmaxm = 0
       allocate(odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3))
 
-!     initialization
-      ader(:,:,:)=0.0
-      cora(1)=corax
-      cora(2)=coray
-      cora(3)=coraz
-      corb(1)=corbx
-      corb(2)=corby
-      corb(3)=corbz
+!     Initialization
+      ader(:, :, :) = 0.0d0
+      cora(1) = corax
+      cora(2) = coray
+      cora(3) = coraz
+      corb(1) = corbx
+      corb(2) = corby
+      corb(3) = corbz
 
       difab(:) = cora(:) - corb(:)
       distab = difab(1)*difab(1) + difab(2)*difab(2) + difab(3)*difab(3)
 
-!
-!     ****************************************
-!     ***** loop over primitive orbitals *****
-!     ****************************************
-!
-      if (iprint>10)                                                    &
-     &     write(lupri,*) 'jhs start looping over prim orbitals'
-      do iprima = 1,nuca
-         jprima = jsta + iprima
-         conta = priccf(jprima,numcfa)
-         expa = priexp(jprima)
-         do iprimb = 1,nucb
-            jprimb = jstb + iprimb
-            contb = priccf(jprimb,numcfb)
-            expb = priexp(jprimb)
-            expp = expa + expb
-            exppi = d1/expp
-!
-!           calculate and test square root factor
-!     jhs saab are the contraction coefficients from the primitive orbitals to the basisfunctions.
-            expabq = expa*expb*distab*exppi
-            saab = conta*contb*exp(-expabq)
-            asaab = abs(saab)
-            if (iprint>20) write(lupri,*) 'jhs intscreening',           &
-     &           'expabq=',expabq,'tolog=',tolog,                       &
-     &           'asaab=',asaab,'tols=',tols
-            if (expabq<tolog) cycle
-            if (asaab<tols) cycle
-            saab13 = sign(asaab**third,saab)
-!
-!           calculate coordinates of product gaussian p
-!
-            expapi = expa*exppi
-            expbpi = expb*exppi
-            corp(:)=expapi*cora(:) + expbpi*corb(:)
-!
-!           *********************************************
-!           ***** overlap distribution coefficients *****
-!           *********************************************
-!
-!           expansion coefficients for undifferentiated orbitals
-!
+! Loop over primitive orbitals
+      do iprima = 1, nuca
+        jprima = jsta + iprima
+        conta = priccf(jprima, numcfa)
+        expa = priexp(jprima)
+        do iprimb = 1, nucb
+          jprimb = jstb + iprimb
+          contb = priccf(jprimb, numcfb)
+          expb = priexp(jprimb)
+          expp = expa + expb
+          exppi = 1.0d0 / expp
+! JHS saab are the contraction coefficients from the primitive orbitals to the basis functions.
+          expabq = expa * expb * distab * exppi
+          saab = conta * contb * exp(-expabq)
+          asaab = abs(saab)
+          if (expabq < tolog) then 
+                cycle
+          end if
+          if (asaab < tols) then 
+                cycle
+          end if
+          saab13 = sign(asaab**(1.0d0/3.0d0), saab)
+! Calculate coordinates of product gaussian P
+          expapi  = expa * exppi
+          expbpi  = expb * exppi
+          corp(:) = expapi * cora(:) + expbpi * corb(:)
+! Calculate the Overlap Distribution Coefficients
 #ifdef prg_dirac
-!           jth: removed kinodc = .not.propty
-            kinodc = .false.
+          kinodc = .false.
 #else
-            kinodc = .true.
+          kinodc = .true.
 #endif 
-            idummy = 0
-            call getodc(odc,jmaxa,jmaxb,jmaxt,jmaxd,jmaxm,.false.,      &
-     &           kinodc,onecen,expa,expb,iprint,saab13,exppi,work,lwork,&
-     &           corp(1),corp(2),corp(3),.true.,.false.,origin,idummy)
-!
-!           **********************************************
-!           ***** calculation of hermitian integrals *****
-!           **********************************************
-!
-!           nuclear attraction integrals
-!
-            do ipoint=1, nr_points
-              difcp(:) = points(1:3,ipoint) - corp(:)
-              allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
-              ahgtf = 0.0d0
-              jm = jmaxa + jmaxb
-              call vnuc(ahgtf,jmax,expp,difcp,factor,iprint)
-!             cpx = difcp(1)
-!             cpy = difcp(2)
-!             cpz = difcp(3)
-!             facint = factor
-!             istepu = jm + 1
-!             istepv = istepu*istepu
-!             nrtuv = (jm + 1)**3
-!             pval = expp
-!             iblub = 1
-!             call hernai(ahgtf,jm,pval,cpx,cpy,cpz,facint,iblub, &
-!    &                  istepu,istepv,nrtuv,iprint)
-!
-!           **********************************************
-!           ***** calculation of cartesian integrals *****
-!           **********************************************
-!             
-              call cart_vc(odc,jmaxa,jmaxb,jmaxt,jmaxd,jmaxm,           &
-     &             ader(1,1,ipoint),ahgtf,iprint)
-              deallocate(ahgtf)
-            end do
-         end do
-      end do
-
+          idummy = 0
+          call getodc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, .false.,  &
+     &           kinodc, onecen, expa, expb, iprint, saab13, exppi,     &
+     &           work, lwork, corp(1), corp(2), corp(3),                &
+     &           .true.,.false.,origin,idummy)
+! Calculate integrals over Hermite gaussians 
+          do ipoint = 1, nr_points
+            difcp(:) = points(1:3,ipoint) - corp(:)
+            allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
+            ahgtf = 0.0d0
+            jm = jmaxa + jmaxb
+            call vnuc(ahgtf, jmax, expp, difcp, factor, iprint)
+! Calculate integrals over Cartesian gaussians 
+            call cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
+     &            ader(1, 1, ipoint), ahgtf, iprint)
+            deallocate(ahgtf)
+          end do ! Close loop over grid points
+        end do ! Close loop over second shell
+      end do ! Close loop over first shell
       deallocate(odc)
-
-!
-!     print
-!
-      
       return
+
       end subroutine
-!  /* deck hernai */
 
-
-
-
-      subroutine vnuc(ahgtf,jmax,pval,cp,facint,iprint)
+      subroutine vnuc(ahgtf, jmax, pval, cp, facint, iprint)
 !
-!     this subroutine calculates the r integrals as defined by
-!     mcmurchie and davidson in j. comp. phys. 26 (1978) 218.
-!     the recursion formulas (4.6) - (4.8) are used.
+! This subroutine calculates the R integrals as defined by
+! McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
+! The recursion formulas (4.6) - (4.8) are used.
 !
-!     only slightly slower than the implementation hernai in abacus/her1car.f of tuh 
-!
-!     jhs 26-03-08
+! JHS 260308 Only slightly slower than the implementation hernai 
+!            in abacus/her1car.f of TUH
+! RDR 090312 Clean-up.      
 !     
 #include "priunit.h"
 #include "pi.h"
 #include "maxaqn.h"
-
-!     arguments passed
-      integer :: jmax
-      real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax)
-      real(kind=8) :: cp(3)
-      real(kind=8) :: pval,facint
-      integer :: iprint
-
-!     local variables
-      real(kind=8), allocatable :: rj(:, :, :, :)
-      real(kind=8) :: factor, t
-      integer :: jval,it,iu,iv, i, j, k, l
-
-!     temporary variables
 #include "gamcom.h"
+!     Passed variables
+      real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax), cp(3)
+      real(8) :: pval, facint
+      integer :: jmax, iprint
 
-!     initialisation:
-      allocate(rj(0:jmax, 0:jmax, 0:jmax, 0:jmax))
-      rj=0.0
+!     Local variables
+      real(8), allocatable :: r(:, :, :, :)
+      real(8) :: factor, prod
+      integer :: jval, t, u, v
 
-      if (iprint>10) then
-         write (lupri,'(/a/)') ' <<<<< output from vc >>>>> '
-         write (lupri,'(a,i10)')   ' jmax   ', jmax
-         write (lupri,'(a,f12.6)') ' pval   ', pval
-         write (lupri,'(a,f12.6)') ' facint ', facint
-         write (lupri,'(a,3f12.6)') ' cp ', cp
-      end if
+!     Initialization
+      allocate(r(0:jmax, 0:jmax, 0:jmax, 0:jmax))
+      r = 0.0d0
+
 !
 !     *************************************
-!     ***** incomplete gamma function *****
+!     ***** Incomplete gamma function *****
 !     *************************************
 !
-      wval = pval*(cp(1)*cp(1) + cp(2)*cp(2) + cp(3)*cp(3))
+      wval = pval * (cp(1) * cp(1) + cp(2) * cp(2) + cp(3) * cp(3))
       jmax0 = jmax
       call gamfun
-      if (iprint==20) then
-         call header ('fjw after gamfun',-1)
-         write (lupri,'(6f12.6)') (fjw(jval), jval = 0, jmax)
-      end if
       
-!     rj(0,0,0)
-      factor = facint*2.0*pi/pval
+! Calculate r(0, 0, 0, jval)
+      factor = (facint * 2.0d0 * pi) / pval
       do jval = 0, jmax
-         fjw(jval)      =   factor*fjw(jval)
-         factor         = - 2*pval*factor
-         rj(0,0,0,jval) =   fjw(jval)
+         fjw(jval)         =   factor * fjw(jval)
+         factor            = - 2.0d0 * pval * factor
+         r(0, 0, 0, jval) =   fjw(jval)
       end do
 
-!     contraction scheme of davidson. 
+! Calculate r(t, u, v, jval) 
       do jval = jmax, 1, -1
-         do iv = 0, jmax - jval
-            t = -cp(3)*rj(0,0,iv,jval)
-            if (iv > 0) t = t + iv*rj(0,0,iv-1,jval)
-            rj(0,0,iv+1,jval-1) = t
-            do iu=0,jmax-jval-iv
-               t = -cp(2)*rj(0,iu,iv,jval)
-               if (iu > 0) t = t + iu*rj(0,iu-1,iv,jval)
-               rj(0,iu+1,iv,jval-1) = t
-               do it=0,jmax-jval-iu-iv
-                  t = -cp(1)*rj(it,iu,iv,jval)
-                  if (it > 0) t = t + it*rj(it-1,iu,iv,jval)
-                  rj(it+1,iu,iv,jval-1) = t
+         do v = 0, jmax - jval
+            prod = -cp(3) * r(0, 0, v, jval)
+            if (v > 0) then 
+                prod = prod + v * r(0, 0, v - 1, jval)
+            end if    
+            r(0, 0, v + 1, jval - 1) = prod
+            do u = 0, jmax - jval - v
+               prod = -cp(2) * r(0, u, v, jval)
+               if (u > 0) then 
+                   prod = prod + u * r(0, u - 1, v, jval)
+               end if    
+               r(0, u + 1, v, jval - 1) = prod
+               do t = 0, jmax - jval - u - v
+                  prod = -cp(1) * r(t, u, v, jval)
+                  if (t > 0) then 
+                      prod = prod + t * r(t - 1, u, v, jval)
+                  end if
+                  r(t + 1, u, v, jval - 1) = prod
                end do
             end do
          end do
       end do
-
-      do i = 0, jmax
-         do j = 0, jmax
-            do k = 0, jmax
-               ahgtf(i, j, k) = rj(i, j, k, 0)
+! The nuclear attraction integrals are given as r(t, u, v, 0)
+      do t = 0, jmax
+         do u = 0, jmax
+            do v = 0, jmax
+               ahgtf(t, u, v) = r(t, u, v, 0)
             end do
          end do
       end do
-      deallocate(rj)
+      deallocate(r)
 
       end subroutine
 
-!  /* deck cint0 */
-      subroutine cart_vc(odc,jmaxa,jmaxb,jmaxt,jmaxd,jmaxm,             &
-     &                 ader,ahgtf,iprint)
-!     tuh
+      subroutine cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
+     &                 ader, ahgtf, iprint)
+!      
+! Originally written by JHS.
+!      
+! RDR 060312 Clean-up.
+!
+
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-!     variables passed to cart_vc
-      real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax)
-      real(kind=8) :: ader(*),               &
-     &                odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3)
-      integer :: jmaxa,jmaxb,jmaxt,jmaxd,jmaxm,iprint
-
-!     local variables
-      real(kind=8) :: aint,ev,ee,eee
-      integer :: icompa,lvala,mvala,nvala,icompb,lvalb,mvalb,nvalb,     &
-     &           iv,iu,it, i, j
-
 #include "onecom.h"
 #include "lmns.h"
 
-      do icompa = 1,kckta
-         lvala = lvalua(icompa)
-         mvala = mvalua(icompa)
-         nvala = nvalua(icompa)
-      do icompb = 1,kcktb
-         lvalb = lvalub(icompb)
-         mvalb = mvalub(icompb)
-         nvalb = nvalub(icompb)
-!
-!     **************************************************
-!     ***** calculate nuclear attraction integrals *****
-!     **************************************************
-!      
-      aint = 0.0
-      do iv = 0, nvala + nvalb
-         ev = odc(nvala,nvalb,iv,0,0,3)
-         do iu = 0, mvala + mvalb
-            ee = odc(mvala,mvalb,iu,0,0,2)*ev
-            do it = 0, lvala + lvalb
-               eee = odc(lvala,lvalb,it,0,0,1)*ee
-               aint = aint + eee*ahgtf(it,iu,iv)
-            end do
-         end do
-      end do
-      ader(icompa + (icompb-1)*kckta) = ader(icompa + (icompb-1)*kckta) + aint
+!     Passed variables
+      real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax)
+      real(8) :: ader(*),                                               &
+     &           odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)
+      integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, iprint
 
-      end do
+!     Local variables
+      real(8) :: naint, ev, ee, eee
+      integer :: icompa, lvala, mvala, nvala,                           &
+     &           icompb, lvalb, mvalb, nvalb,                           &
+     &           t, u, v
+
+
+      do icompa = 1,kckta
+        lvala = lvalua(icompa)
+        mvala = mvalua(icompa)
+        nvala = nvalua(icompa)
+        do icompb = 1,kcktb
+          lvalb = lvalub(icompb)
+          mvalb = mvalub(icompb)
+          nvalb = nvalub(icompb)
+          naint = 0.0d0
+          do v = 0, nvala + nvalb
+            ev = odc(nvala,nvalb,v,0,0,3)
+            do u = 0, mvala + mvalb
+              ee = odc(mvala,mvalb,u,0,0,2)*ev
+              do t = 0, lvala + lvalb
+                eee = odc(lvala,lvalb,t,0,0,1)*ee
+                naint = naint + eee*ahgtf(t,u,v)
+              end do
+            end do
+          end do
+          ader(icompa + (icompb-1)*kckta) =                             &
+     &                          ader(icompa + (icompb-1)*kckta) + naint
+        end do
       end do
 
 
