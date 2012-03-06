@@ -44,6 +44,7 @@ C
       LOGICAL   LSAVE(3)
 #include "ccom.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -108,7 +109,12 @@ C
      &        ' not implemented for DFT with symmetry')
             end if
          end if
-C
+
+         if (bss .or. x2c) then
+            call quit('error in molecular gradient:' // 
+     &      ' not implemented for X2C')
+         end if
+
          CALL SETDHF(IPRGRD)
 C
 C        Density and Fock matrices for (Dirac-)Hartree-Fock
