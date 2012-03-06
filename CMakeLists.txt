@@ -103,6 +103,7 @@ add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
+add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include

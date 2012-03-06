@@ -21,4 +21,10 @@ execute_process(
     OUTPUT_QUIET
 )
 
+add_custom_target(
+    run_pamadm
+    COMMAND python pamadm ${PAMADM_FLAGS}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+
 message("-- Packaging sources and tests using pamadm ${PAMADM_FLAGS}")
