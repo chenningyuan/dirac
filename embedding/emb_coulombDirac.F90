@@ -464,9 +464,9 @@
 #include "maxaqn.h"
 #include "gamcom.h"
 !     Passed variables
+      integer :: jmax, iprint
       real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax), cp(3)
       real(8) :: pval, facint
-      integer :: jmax, iprint
 
 !     Local variables
       real(8), allocatable :: r(:, :, :, :)
