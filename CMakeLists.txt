@@ -27,21 +27,7 @@ include(ConfigSafeGuards)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# check whether pamadm-generated files exist
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/SourcesList.cmake"      AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/DefinitionsList.cmake"  AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake")
-else()
-    # they do not exist: run pamadm -a
-    execute_process(
-        COMMAND python pamadm -a
-        TIMEOUT 1
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_QUIET
-    )
-    message("-- You are lazy. Running pamadm -a for you ...")
-endif()
+include(ConfigPamadm)
 
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
@@ -248,11 +234,4 @@ add_custom_target(
     latex
     COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/latex
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    )
-
-# run pamadm -a in source root
-add_custom_target(
-    adm
-    COMMAND python pamadm -a
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )

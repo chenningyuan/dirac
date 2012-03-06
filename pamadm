@@ -585,6 +585,11 @@ for test in list_of_tests:
     f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} ${RUNTEST_FLAG_BINARY} --tests=%s)\n' % (test, test))
 f.close()
 
+# write pamadm flags to file
+f = open('cmake/pamadm-generated/pamadm-flags', 'w')
+f.write(string.join(sys.argv[1:]))
+f.close()
+
 # generate *-provided basis set files
 
 if sys.platform != "win32": provide_star_basisfile_names()
