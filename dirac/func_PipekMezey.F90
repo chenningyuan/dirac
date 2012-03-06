@@ -80,10 +80,10 @@ contains
 
   ! Internal variables
   logical :: tobe
-  integer :: i, ifrp, idum, ier, nloc
+  integer :: i, ifrp, idum, ier, nloc, nmax
   real*8  :: toterg, second
 
-  integer, allocatable, dimension(:) :: isel, indao, indaos, indnao
+  integer, allocatable, dimension(:) :: isel, itmp, indao, indaos, indnao
   real*8,  allocatable, dimension(:) :: cmo
 
   !------------------------------------------------------------------------------!
@@ -146,10 +146,23 @@ contains
   ! starting time
   var%timstr = second()
 
-  ! set dimensions
+  !----------------!
+  ! set dimensions !
+  !----------------!
   ifrp = 1
-  nloc = var%nish(ifrp)                ! number of localized orbitals
-  ndim = 4 * ( nloc*nloc - nloc ) / 2  ! dimension of your space
+  ! set limits on possible localized orbitals
+  ! when selmos == 'allocc' subroutine numlst will select 0..nmax MOs
+  nmax = nesh(ifrp)
+  if(selmos == 'allocc') nmax = nish(ifrp)
+  ! set maximum possible number of localized orbitals
+  nloc = norb(ifrp)
+  ! alocate temporary array; the data will be later moved to isel
+  call alloc(itmp,nloc,id='itmp in init_func')
+  itmp = 0; idum = 1
+  ! read string selmos
+  call numlst(selmos,itmp,nloc,0,nmax,ifrp,idum)
+  nloc = idum                          ! set number of localized orbitals
+  ndim = 4 * ( nloc*nloc - nloc ) / 2  ! set dimension of your space
 
   !------------------------------------------------------------------------------!
   !                             Print debug info                                 !
@@ -164,6 +177,7 @@ contains
     write(lupri,*) 'nfbas(0) =',nfbas(ifrp,0)
     write(lupri,*) 'nfbas(1) =',nfbas(ifrp,1)
     write(lupri,*) 'nfbas(2) =',nfbas(ifrp,2)
+    write(lupri,*) 'selmos   =',selmos
   endif
 
   !------------------------------------------------------------------------------!
@@ -221,7 +235,7 @@ contains
   close(var%lucoef,status='keep')
 
   ! select orbitals
-  call occupy(isel,nloc)
+  isel(1:nloc) = itmp(1:nloc)
   call selcfs(cmo,ifrp,scoef,nloc,isel,0,nloc,var%nfbas(ifrp,0),var%norb(ifrp))
   if(PM%iprloc.ge.5)then
     write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
@@ -234,6 +248,7 @@ contains
   call dealloc(cmo   ,id='cmo    in init_func')
 
   call dealloc(isel  ,id='isel   in init_func')
+  call dealloc(itmp  ,id='itmp   in init_func')
   call dealloc(indao ,id='indao  in init_func')
   call dealloc(indaos,id='indaos in init_func')
   call dealloc(indnao,id='indnao in init_func')
