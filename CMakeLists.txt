@@ -141,51 +141,33 @@ set(LIBS
     ${LIBS}
     )
 
-add_custom_command(
-	OUTPUT ${PROJECT_SOURCE_DIR}/external/git-submodule-done
-	COMMAND ${CMAKE_COMMAND} -E touch 
-     	${PROJECT_SOURCE_DIR}/external/git-submodule-done
-	COMMAND git submodule init
-	COMMAND git submodule update
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-	)
-
-add_custom_target(git_submodules ALL
-	DEPENDS ${PROJECT_SOURCE_DIR}/external/git-submodule-done
-	)
+include(ConfigExternal)
 
 if(ENABLE_PCMMOD)
-  include(ExternalProject)
-  add_custom_target(external)
-  
-  set (ExternalProjectCMakeArgs  
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
-    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCBLAS_ROOT=${CBLAS_ROOT}
-    -DEIGEN3_ROOT=${EIGEN3_ROOT}
-    )
-  
-  ExternalProject_Add(pcmsolver
-	DOWNLOAD_COMMAND git submodule update
-	DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
-    PREFIX ${PROJECT_SOURCE_DIR}/external
-    SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/pcmsolver
-    BINARY_DIR ${PROJECT_SOURCE_DIR}/external/pcmsolver-build
-    INSTALL_DIR ${PROJECT_SOURCE_DIR}/external
-    CMAKE_ARGS ${ExternalProjectCMakeArgs}
-    )                                                          
-  add_dependencies(external pcmsolver)                       
-  link_directories(${CMAKE_SOURCE_DIR}/external/lib)
-  link_directories(${CMAKE_SOURCE_DIR}/external/pcmsolver/external/lib)
-  set(LIBS solver green cavity metal pedra wem wavcav getkw ${LIBS})
-# We should configure appropriately the pam script to
-# read also PCMSolver input through its separate
-# input parsing script.
-endif()
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCBLAS_ROOT=${CBLAS_ROOT}
+        -DEIGEN3_ROOT=${EIGEN3_ROOT}
+        )
+ 
+    add_external(pcmsolver)
 
+    set(LIBS
+        solver
+        green
+        cavity
+        metal
+        pedra
+        wem
+        wavcav
+        getkw
+        ${LIBS}
+        )
+endif()
 
 include(BinaryInfo)
 
@@ -268,9 +250,10 @@ foreach(
         ${LIBS}
         dirac
         )
+    if(ENABLE_PCMMOD)
+        add_dependencies(${EXECUTABLE} pcmsolver)
+    endif()
 endforeach()
-
-add_dependencies(dirac.x external)
 
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
