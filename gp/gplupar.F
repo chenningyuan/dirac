@@ -1638,6 +1638,23 @@ C
       MYNEW_ID = 0
       call interface_mpi_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC)
       call interface_mpi_COMM_RANK(MYNEW_COMM,MYNEW_ID)
+
+      IF(ITEST .ge. 10)THEN
+        WRITE(luwrt,*) ' processor-color-list (input for grouping) '
+        call iwrtmamn(IPROCLIST,1,nmproc,1,nmproc,1,luwrt)
+        WRITE(6,*) ' intra-node communicator (for co-worker)    :',
+     &               MYNEW_COMM,' (',MYPROC,')' 
+        WRITE(6,*) ' size of communicator (for co-worker group) :',
+     &               NEWCOMM_PROC,' (',ICOLOR,')'
+        WRITE(6,*) ' myproc and color       :',MYPROC,ICOLOR
+      END IF
+
+      if(NEWCOMM_PROC <= 0)then
+        write(luwrt,*) '*** error in GROUP_CONSTRUCTOR_REL*** '// 
+     &                 'impossible group size: ',NEWCOMM_PROC
+        call quit('*** error in GROUP_CONSTRUCTOR_REL*** impossible'//
+     &            ' group size <= 0.')
+      end if
 C
 C     T-communicator MYNEW_COMM_SM ( 1st "shared memory" communicator)
 C
