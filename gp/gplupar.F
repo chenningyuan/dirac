@@ -1644,8 +1644,8 @@ C
 C     collect useful information about each group,
 C     store on common block
 C
-      NEWCOMM_PROC = 0
-      MYNEW_ID = 0
+      NEWCOMM_PROC = -1
+      MYNEW_ID     = -1
 #ifdef DEBUG_MPI_KRCI
       call mpi_comm_size(MYNEW_COMM,NEWCOMM_PROC,ierr)
 #else
