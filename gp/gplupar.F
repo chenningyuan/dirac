@@ -1601,6 +1601,12 @@ csk      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
 csk      CALL IWRTMAMN(LUOUTLIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C
       END
+      subroutine blubb_blubb(communicator)
+      implicit none
+      integer, intent(inout) :: communicator
+      integer                :: bla
+      bla = communicator
+      end 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -1624,6 +1630,7 @@ C
       DIMENSION IPROCLIST_SM(NMPROC)
       INTEGER IKEY, ICOLOR, JKEY, JCOLOR, KCOLOR, KKEY
       INTEGER LCOLOR, LKEY
+      integer test_size_glb
       ITEST = 00
 C     ITEST = 10
 C
@@ -1640,6 +1647,18 @@ C
       call interface_mpi_COMM_SPLIT(global_communicator,ICOLOR,IKEY,
      &                              MYNEW_COMM)
 #endif
+      call blubb_blubb(MYNEW_COMM)
+      IF(ITEST .ge. 10)THEN
+        test_size_glb = -1
+        call interface_mpi_COMM_SIZE(global_communicator,test_size_glb)
+        write(6,*) ' global_communicator: size == ',test_size_glb
+        write(6,*) ' global_communicator, MYNEW_COMM, nmproc, myproc',
+     &               global_communicator, MYNEW_COMM, nmproc, myproc
+        do i = 1, nmproc
+          write(6,*) 'IPROCLIST(i) for myproc ==> ',
+     &                IPROCLIST(i), myproc
+        end do
+      END IF
 C
 C     collect useful information about each group,
 C     store on common block
@@ -1661,6 +1680,8 @@ C
      &               MYNEW_COMM,' (',MYPROC,')' 
         WRITE(6,*) ' size of communicator (for co-worker group) :',
      &               NEWCOMM_PROC,' (',ICOLOR,')'
+        WRITE(6,*) ' my ID in new communicator (for co-worker)  :',
+     &               MYNEW_ID,' (',MYPROC,')'
         WRITE(6,*) ' myproc, color and key       :',MYPROC,ICOLOR,IKEY
       END IF
 
