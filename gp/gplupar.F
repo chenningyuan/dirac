@@ -1615,6 +1615,10 @@ C
 C
 #include "infpar.h"
 #include "parluci.h"
+!#define DEBUG_MPI_KRCI
+#ifdef DEBUG_MPI_KRCI
+#include "mpif.h"
+#endif
 C
       DIMENSION IPROCLIST(NMPROC),IGROUPLIST(NMPROC)
       DIMENSION IPROCLIST_SM(NMPROC)
@@ -1625,18 +1629,29 @@ C     ITEST = 10
 C
 C     'intra-node' communicator MYNEW_COMM ( I/O communicator )
 C
-      IKEY = MYPROC
-      ICOLOR = IPROCLIST(MYPROC+1)
+      IKEY       = MYPROC
+      ICOLOR     = IPROCLIST(MYPROC+1)
+      MYNEW_COMM = -1
 C
+#ifdef DEBUG_MPI_KRCI
+      call mpi_comm_split(global_communicator,ICOLOR,IKEY,MYNEW_COMM,
+     &                    ierr)
+#else
       call interface_mpi_COMM_SPLIT(global_communicator,ICOLOR,IKEY,
      &                              MYNEW_COMM)
+#endif
 C
 C     collect useful information about each group,
 C     store on common block
 C
       NEWCOMM_PROC = 0
       MYNEW_ID = 0
+#ifdef DEBUG_MPI_KRCI
+      call mpi_comm_size(MYNEW_COMM,NEWCOMM_PROC,ierr)
+#else
       call interface_mpi_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC)
+#endif
+      
       call interface_mpi_COMM_RANK(MYNEW_COMM,MYNEW_ID)
 
       IF(ITEST .ge. 10)THEN
@@ -1646,7 +1661,7 @@ C
      &               MYNEW_COMM,' (',MYPROC,')' 
         WRITE(6,*) ' size of communicator (for co-worker group) :',
      &               NEWCOMM_PROC,' (',ICOLOR,')'
-        WRITE(6,*) ' myproc and color       :',MYPROC,ICOLOR
+        WRITE(6,*) ' myproc, color and key       :',MYPROC,ICOLOR,IKEY
       END IF
 
       if(NEWCOMM_PROC <= 0)then
