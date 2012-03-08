@@ -137,7 +137,7 @@ contains
 
   ! Internal variables
   character :: daytid*24, hessian*4, chstart*23, resst*50
-  logical   :: full, rejected, Iminmin, trdef, flat, nstep, restore
+  logical   :: full, rejected, Iminmin, trdef, nstep, restore
 
   integer :: itr, ist, ier, nep, nem, nez, nref
 
@@ -174,7 +174,6 @@ contains
 
   tradius = 10.0d0
   trdef   = .true.
-  flat    = .false.
   nstep   = .true.
   restore = .false.
 
@@ -259,7 +258,7 @@ contains
     ! Update Trust-radius
     diffg = funcg - funco
     diffq = funcq
-    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,nstep,restore,full,itr,nem,&
                  gradt,eval,nref,dnrmg)
 
     ! Move to the new point if the step was not rejected or old step is going to be restored
@@ -786,7 +785,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,nstep,restore,full,itr,nem,&
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,nstep,restore,full,itr,nem,&
                      gradt,eval,nref,dnrmg)
   !******************************************************************************!
   !                                                                              !
@@ -801,16 +800,18 @@ contains
   real*8,  intent(in   ) :: dnrmk, diffg, diffq, dnrmg
   real*8,  intent(inout) :: tradius
   logical, intent(in   ) :: full
-  logical, intent(inout) :: rejected, trdef, flat, nstep, restore
+  logical, intent(inout) :: rejected, trdef, nstep, restore
 
   real*8,  intent(in), pointer :: gradt(:), eval(:)
 
   ! Internal variables
-  character*6 :: cond
-  integer :: i, nred
+  logical       :: flat
+  logical, save :: was_flat = .false.
+  character*6   :: cond
+  integer       :: i, nred, ncount(4)
   integer, save :: nrun  = 0
 
-  real*8            :: R, tradold, dmaxa, dmaxn
+  real*8            :: R, tradold, dmaxa, dmaxn, pow
   real*8, save      :: diffg1, diffg2
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
 
@@ -1013,15 +1014,37 @@ contains
 
   !------------------------------------------------------------------------------!
   !                       Check if we are in the flat area                       !
+  !                                                                              !
+  !          reject the step if diffg and diffq are both negative and            !
+  !               lower than 1.0d-11 three and more times in row                 !
+  !               lower than 1.0d-10 four  and more times in row                 !
+  !               lower than 1.0d-09 five  and more times in row                 !
+  !               lower than 1.0d-08 six   and more times in row                 !
   !------------------------------------------------------------------------------!
-  if( dabs(diffg)<thresh .and. dabs(diffq)<thresh .and. nem/=0 .and. &
-      ( dmaxa>10.0d0*thresh .and. dmaxn>10.0d0*thresh ) .and. cond(3:3) /= '!' )then
-    rejected = .true.
-    if(flat) tradius = 10.0d0*tradius
-    flat     = .true.
+  flat = .false.
+  if( diffg<d0 .and. diffq<d0 .and. .not.rejected .and. cond(3:3) /= '!' )then
+    pow = 100.d0
+    do i=1,size(ncount,1)
+      if( dabs(diffg)<pow*thresh .and. dabs(diffq)<pow*thresh )then
+        ncount(i) = ncount(i) + 1
+      else
+        ncount(i) = 0
+      endif
+      pow = pow * 10.d0
+      if( ncount(i) > i+1 ) flat = .true.
+    enddo
+  else
+    ncount = 0
+  endif
+
+  ! reject the step if flat and enlarge radius if we are still in the flat area
+  if( flat )then
+    if(was_flat) tradius = 10.0d0*tradius
+    rejected  = .true.
+    was_flat  = .true.
     cond(3:3) = '.'
   else
-    flat     = .false.
+    was_flat  = .false.
   endif
 
   !------------------------------------------------------------------------------!
