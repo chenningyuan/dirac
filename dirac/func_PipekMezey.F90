@@ -25,7 +25,7 @@ implicit none
 
 public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLP2, orblo1, ORBLO4, ORBLO5, ROTCMO_MOD, errall
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, ROTCMO_MOD, errall
 
 type :: PipekMezey_flags
   integer :: iprloc
@@ -62,7 +62,7 @@ real*8, save :: dinvmg4out
 ! Global arrays
 real*8,  allocatable, save, private :: pmat(:,:,:,:), smat(:)
 real*8,  allocatable, save, private :: scoef(:,:,:), storec(:,:,:)
-integer, allocatable, save, private :: nfnuc(:)
+integer, allocatable, save, private :: nfnuc(:), isel(:)
 
 contains
 
@@ -92,7 +92,7 @@ contains
   integer :: i, ifrp, idum, ier, nloc, nmax
   real*8  :: toterg, second
 
-  integer, allocatable, dimension(:) :: isel, itmp, indao, indaos, indnao
+  integer, allocatable, dimension(:) :: itmp, indao, indaos, indnao
   real*8,  allocatable, dimension(:) :: cmo
 
   !------------------------------------------------------------------------------!
@@ -170,7 +170,7 @@ contains
   itmp = 0; idum = 1
   ! read string selmos
   call numlst(selmos,itmp,nloc,0,nmax,ifrp,idum)
-  nloc = idum                          ! set number of localized orbitals
+  nloc = idum                          ! set number of orbitals for localization
   ndim = 4 * ( nloc*nloc - nloc ) / 2  ! set dimension of your space
 
   !------------------------------------------------------------------------------!
@@ -198,12 +198,11 @@ contains
   call alloc(pmat  ,nloc,nloc,4,var%nucdep,id='pmat   in init_func')
   call alloc(smat  ,var%n2bbasx,           id='smat   in init_func')
   call alloc(nfnuc ,2*var%nucdep,          id='nfnuc  in init_func')
+  call alloc(isel  ,nloc,                  id='isel   in init_func')
   scoef = d0; storec = d0; pmat = d0; smat = d0; nfnuc = 0
 
   ! allocate local arrays
   call alloc(cmo   ,var%n2bbasxq,     id='cmo    in init_func')
-
-  call alloc(isel  ,nloc,             id='isel   in init_func')
   call alloc(indao ,var%nfbas(ifrp,0),id='indao  in init_func')
   call alloc(indaos,var%nfbas(ifrp,0),id='indaos in init_func')
   call alloc(indnao,2*var%nucdep+2,   id='indnao in init_func')
@@ -255,14 +254,52 @@ contains
   !                         Deallocate local arrays                              !
   !------------------------------------------------------------------------------!
   call dealloc(cmo   ,id='cmo    in init_func')
-
-  call dealloc(isel  ,id='isel   in init_func')
   call dealloc(itmp  ,id='itmp   in init_func')
   call dealloc(indao ,id='indao  in init_func')
   call dealloc(indaos,id='indaos in init_func')
   call dealloc(indnao,id='indnao in init_func')
 
   end subroutine init_func
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine quit_func(hmat)
+  !==============================================================================!
+  !                  Uninitialize module func_PipekMezey                         !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  real*8,  intent(inout), pointer :: hmat(:,:)
+
+  ! Internal variables
+  character :: resst*50
+  real*8    :: timend, second
+
+  ! Put the localised coefficients in DFCOEF (scoef)
+  call wcmo2file
+
+  ! deallocate global arrays
+  deallocate( storec )
+  deallocate( scoef  )
+  call dealloc(pmat  ,id='pmat   in quit_func')
+  call dealloc(smat  ,id='smat   in quit_func')
+  call dealloc(nfnuc ,id='nfnuc  in quit_func')
+  call dealloc(isel  ,id='isel   in quit_func')
+
+  ! deallocate pointers
+  call deallocp(hmat ,id='hmat   in quit_func')
+
+  ! print final functional value
+  write(resst,'(a,f21.15)') 'Inverse mean delocalization =',dinvmg4out
+  call titler(resst,'*',104)
+
+  ! calculate time spend on localization
+  timend = second()
+  call timtxt('          --- Time used in localization is :',timend-var%timstr,var%lupri)
+
+  end subroutine quit_func
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -382,47 +419,6 @@ contains
 
   !------------------------------------------------------------------------------!
   end function get_func
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine quit_func(hmat)
-  !==============================================================================!
-  !                  Uninitialize module func_PipekMezey                         !
-  !==============================================================================!
-  implicit none
-
-  ! External variables
-  real*8,  intent(inout), pointer :: hmat(:,:)
-
-  ! Internal variables
-  character :: resst*50
-  integer   :: ifrp
-  real*8    :: timend, second
-
-  ifrp = 1
-  ! Put the localised coefficients in DFCOEF (scoef)
-  call orblo5(var%norb(ifrp))
-
-  ! deallocate global arrays
-  deallocate( storec )
-  deallocate( scoef  )
-  call dealloc(pmat  ,id='pmat   in quit_func')
-  call dealloc(smat  ,id='smat   in quit_func')
-  call dealloc(nfnuc ,id='nfnuc  in quit_func')
-
-  ! deallocate pointers
-  call deallocp(hmat ,id='hmat   in quit_func')
-
-  ! print final functional value
-  write(resst,'(a,f21.15)') 'Inverse mean delocalization =',dinvmg4out
-  call titler(resst,'*',104)
-
-  ! calculate time spend on localization
-  timend = second()
-  call timtxt('          --- Time used in localization is :',timend-var%timstr,var%lupri)
-
-  end subroutine quit_func
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1583,68 +1579,65 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLO5(NO)
-!***********************************************************************
-!
-!     Written by S.Dubillard Apr 13 2004
-!     Last revision:
-!
-!     Put the localised coefficients into the DFCOEF file (1/2)
-!
-!***********************************************************************
-      IMPLICIT NONE
+  subroutine wcmo2file
+  !==============================================================================!
+  !                                                                              !
+  !          Write the localised MO coefficients to the DFCOEF file              !
+  !                                                                              !
+  !==============================================================================!
+   implicit none
 
-      ! Global variables
-      ! REAL*8  :: SCOEF(:,:,:) ! SCOEF(NB,NLOC,4)
+   ! Global variables
+   ! integer :: isel(:)      ! isel(nloc)
+   ! real*8  :: scoef(:,:,:) ! scoef(nb,nloc,4)
 
-      ! External variables
-      INTEGER :: NO
+   ! Internal variables
+   integer :: i, j, iz, l, nb, nloc, no, ifrp
+   real*8  :: toterg
 
-      ! Internal variables
-      INTEGER :: I, J, IZ, L, NB, NLOC
-      REAL*8  :: TOTERG
-
-      INTEGER, ALLOCATABLE :: IBEIG(:)
-      REAL*8,  ALLOCATABLE :: CMO(:,:,:), EIG(:)
+   integer, allocatable :: ibeig(:)
+   real*8,  allocatable :: cmo(:,:,:), eig(:)
 
   !------------------------------------------------------------------------------!
-      NB   = SIZE(SCOEF,1)
-      NLOC = SIZE(SCOEF,2)
+  ifrp = 1
+  no   = var%norb(ifrp)
+  nb   = size(scoef,1)
+  nloc = size(scoef,2)
 
-      ! allocate arrays
-      CALL ALLOC(CMO  ,NB,NO,4  ,ID='CMO   IN ORBLO5')
-      CALL ALLOC(EIG  ,VAR%NORBT,ID='EIG   IN ORBLO5')
-      CALL ALLOC(IBEIG,VAR%NORBT,ID='IBEIG IN ORBLO5')
+  ! allocate arrays
+  call alloc(cmo  ,nb,no,4  ,id='cmo   in wcmo2file')
+  call alloc(eig  ,var%norbt,id='eig   in wcmo2file')
+  call alloc(ibeig,var%norbt,id='ibeig in wcmo2file')
 
-      ! open DFCOEF file and read EIG, IBEIG and TOTERG
-      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+  ! open DFCOEF file and read EIG, IBEIG and TOTERG
+  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,14)
 
-      ! reorganize MO
-      DO IZ = 1,4
-        DO J = 1,NLOC
-          L = J + NO/2
-          IF (VAR%H2COMP .OR. VAR%LEVYLE) L = J
-          DO I = 1,NB
-            CMO(I,L,IZ) = SCOEF(I,J,IZ)
-          ENDDO
-        ENDDO
-      ENDDO
-      IF (PM%IPRLOC.GE.5)THEN
-         WRITE(VAR%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
-         CALL PRQMAT(CMO,NB,NO,NB,NO,4,VAR%IPQTOQ(1,0),VAR%LUPRI)
-      ENDIF
+  ! reorganize MO
+  do iz = 1,4
+    do j = 1,nloc
+      l = j + no/2
+      if (var%h2comp .or. var%levyle) l = j
+      do i = 1,nb
+        cmo(i,l,iz) = scoef(i,j,iz)
+      enddo
+    enddo
+  enddo
+  if (pm%iprloc.ge.5)then
+    write(var%lupri,'(/a)') '*wcmo2file : New CMO matrix'
+    call prqmat(cmo,nb,no,nb,no,4,var%ipqtoq(1,0),var%lupri)
+  endif
 
-      ! write MO to file and close him
-      CALL WRICMO(VAR%LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(VAR%LUCOEF,STATUS='KEEP')
+  ! write MO to file and close him
+  call wricmo(var%lucoef,cmo,eig,ibeig,toterg)
+  close(var%lucoef,status='keep')
 
-      ! deallocate arrays
-      CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
-      CALL DEALLOC(EIG  ,ID='EIG   IN ORBLO5')
-      CALL DEALLOC(IBEIG,ID='IBEIG IN ORBLO5')
+  ! deallocate arrays
+  call dealloc(cmo  ,id='cmo   in wcmo2file')
+  call dealloc(eig  ,id='eig   in wcmo2file')
+  call dealloc(ibeig,id='ibeig in wcmo2file')
 
-  END SUBROUTINE ORBLO5
+  end subroutine wcmo2file
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1671,11 +1664,11 @@ contains
       IMPLICIT NONE
 
       ! Global variables
-      ! REAL*8,  INTENT(INOUT) :: SCOEF(:,:,:)  ! SCOEF(NBASI,NORBI,NZ)
+      ! REAL*8, INTENT(INOUT) :: SCOEF(:,:,:)  ! SCOEF(NBASI,NORBI,NZ)
 
       ! External variables
-      INTEGER, INTENT(IN   ) :: NBASI, NORBI, NZ, NORBT, IP(4)
-      REAL*8,  INTENT(IN   ) :: XKAPPA(NORBT,NORBT,NZ)
+      INTEGER, INTENT(IN) :: NBASI, NORBI, NZ, NORBT, IP(4)
+      REAL*8,  INTENT(IN) :: XKAPPA(NORBT,NORBT,NZ)
 
       ! Internal variables
       REAL*8, PARAMETER :: DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00
