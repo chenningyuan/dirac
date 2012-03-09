@@ -1,6 +1,6 @@
 module func_PipekMezey
 !================================================================================!
-!!! This is not a true module. It depends on external subroutines and .h files !!!
+!!! This is not a true module, because it still depends on external subroutines!!!
 !                                                                                !
 !                  This module is used in optimization module                    !
 !           it will provide information about Pipek-Mezey functional             !
@@ -1592,7 +1592,8 @@ contains
    ! real*8  :: scoef(:,:,:) ! scoef(nb,nloc,4)
 
    ! Internal variables
-   integer :: i, j, iz, l, nb, nloc, no, ifrp
+   integer :: ifrp, nz, no, nb, nloc
+   integer :: i, ii, iz, ioff
    real*8  :: toterg
 
    integer, allocatable :: ibeig(:)
@@ -1600,8 +1601,9 @@ contains
 
   !------------------------------------------------------------------------------!
   ifrp = 1
+  nz   = 4
   no   = var%norb(ifrp)
-  nb   = size(scoef,1)
+  nb   = size(scoef,1)    ! nfbas(ifrp,0)
   nloc = size(scoef,2)
 
   ! allocate arrays
@@ -1614,13 +1616,12 @@ contains
   call reacmo_no_work(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,14)
 
   ! reorganize MO
-  do iz = 1,4
-    do j = 1,nloc
-      l = j + no/2
-      if (var%h2comp .or. var%levyle) l = j
-      do i = 1,nb
-        cmo(i,l,iz) = scoef(i,j,iz)
-      enddo
+  ioff = var%npsh(ifrp)
+  if(var%h2comp .or. var%levyle) ioff = 0
+  do iz = 1,nz
+    do i = 1,nloc
+      ii = ioff + isel(i)
+      call dcopy(nb,scoef(1,i,iz),1,cmo(1,ii,iz),1)
     enddo
   enddo
   if (pm%iprloc.ge.5)then
