@@ -82,11 +82,18 @@ endif()
 if(ENABLE_CUDA)
     find_package(CUDA)
     if(CUDA_FOUND)
+        #miro: typical location of cuda 
+        add_library(fortran_cuda  "/usr/local/cuda/src/fortran.c")
+        LINK_DIRECTORIES ( /usr/local/cuda/lib64 )
+        #INCLUDE_DIRECTORIES( /usr/local/cuda/include )   
         set(LIBS
             ${LIBS}
             ${CUDA_CUBLAS_LIBRARIES}
             )
         add_definitions(-DUSE_CUBLAS)
+        #GPU testing code -- needs own library fortran_cuda
+        add_executable(gpu_test.x   utils/gpu_test.F90)
+        target_link_libraries(gpu_test.x  fortran_cuda cublas  blas)
     endif()
 endif()
 
