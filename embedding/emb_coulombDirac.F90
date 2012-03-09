@@ -230,13 +230,13 @@
 #include "lmns.h"
 #include "nuclei.h"
 
-!     Passed variables
+! Passed variables
       integer, intent(in) :: nr_points
       real(8) :: dmat(ntbas(0), ntbas(0), nz)
       real(8) :: points(3, nr_points), vc(nr_points), work(*)
       integer :: iprint, lwork
 
-!     Local variables
+! Local variables
       real(8), allocatable :: ader(:, :, :)
       real(8) :: tolog, tols, factor = 1.0d0
       integer :: ishela, ishelb, ica, icb
@@ -247,9 +247,13 @@
          call quit('Electrostatic potential calculation cannot          &
      &         handle symmetry!')
       end if
-
-      tols=thrs**2
-      tolog=2*log(thrs)
+      if (BSS.or.x2c) then
+         call quit('Electrostatic potential calculation not working     &
+     &         with X2C Hamiltonian!')
+      end if
+      
+      tols = thrs**2
+      tolog = 2 * log(thrs)
 ! mc is the number of components, as defined in include/dcbham.h
 ! Decide whether we loop on LL block only or not
       if (mc == 1) then 
@@ -257,7 +261,6 @@
       else 
           idxmax = kmax
       end if
-
 ! Loop over bras <mu|      
       idena = 0
       do ishela = 1, idxmax
@@ -353,103 +356,93 @@
 #include "ader.h"
 #include "primit.h"
 
-!     Passed variables
+! Passed variables
       integer, intent(in) :: nr_points, iprint, lwork
       real(8) :: points(3, nr_points), ader(kckta, kcktb, nr_points)
       real(8) :: work(*)
-      real(8) :: tolog, tols,factor=1.0
+      real(8) :: tolog, tols, factor=1.0
 
-!     Local variables
+! Local variables
       real(8), allocatable :: ahgtf(:, :, :), odc(:, :, :, :, :, :)
-      logical :: kinodc
       real(8) :: difab(3), difcp(3), corp(3), origin(3),                &
      &           cora(3), corb(3)
       real(8) :: distab, conta, expa, contb, expb, expp, exppi,         &
      &           expabq, saab, asaab, saab13, expapi, expbpi
-      integer :: jmaxa, jmaxb, jmaxd, jmaxt, jmaxm, ipoint,             &
-     &           iprima, iprimb, jprima, jprimb
+      integer :: jmaxa, jmaxb, jmaxd, jmaxt, jmaxm,               &
+     &           ipoint, iprima, iprimb, jprima, jprimb
       integer :: idummy
-      real(8) :: cpx, cpy, cpz, facint, pval
-      integer :: iadr, nrtuv, jm, iblub
+      real(8) :: pval
       
 
-!     Allocation
+! Allocation
       jmaxd = 2
       jmaxa = nhkta - 1
       jmaxb = nhktb - 1
       jmaxt = jmaxa + jmaxb + jmaxd
       jmaxm = 0
+      jmax = jmaxa + jmaxb
       allocate(odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3))
-
-!     Initialization
       ader(:, :, :) = 0.0d0
+
       cora(1) = corax
       cora(2) = coray
       cora(3) = coraz
       corb(1) = corbx
       corb(2) = corby
       corb(3) = corbz
-
       difab(:) = cora(:) - corb(:)
       distab = difab(1)*difab(1) + difab(2)*difab(2) + difab(3)*difab(3)
 
 ! Loop over primitive orbitals
+! Shell a       
       do iprima = 1, nuca
         jprima = jsta + iprima
         conta = priccf(jprima, numcfa)
         expa = priexp(jprima)
+! Shell b        
         do iprimb = 1, nucb
           jprimb = jstb + iprimb
           contb = priccf(jprimb, numcfb)
           expb = priexp(jprimb)
           expp = expa + expb
           exppi = 1.0d0 / expp
-! JHS saab are the contraction coefficients from the primitive orbitals to the basis functions.
-          expabq = expa * expb * distab * exppi
-          saab = conta * contb * exp(-expabq)
+          expabq = expa * expb * exppi 
+          saab = conta * contb * exp(-expabq * distab) 
           asaab = abs(saab)
-          if (expabq < tolog) then 
+          if (expabq * distab < tolog) then 
                 cycle
           end if
           if (asaab < tols) then 
                 cycle
           end if
           saab13 = sign(asaab**(1.0d0/3.0d0), saab)
-! Calculate coordinates of product gaussian P
           expapi  = expa * exppi
           expbpi  = expb * exppi
           corp(:) = expapi * cora(:) + expbpi * corb(:)
 ! Calculate the Overlap Distribution Coefficients
-#ifdef prg_dirac
-          kinodc = .false.
-#else
-          kinodc = .true.
-#endif 
           idummy = 0
           call getodc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, .false.,  &
-     &           kinodc, onecen, expa, expb, iprint, saab13, exppi,     &
+     &           .false., onecen, expa, expb, iprint, saab13, exppi,    &
      &           work, lwork, corp(1), corp(2), corp(3),                &
      &           .true.,.false.,origin,idummy)
-! Calculate integrals over Hermite gaussians 
           do ipoint = 1, nr_points
             difcp(:) = points(1:3,ipoint) - corp(:)
             allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
             ahgtf = 0.0d0
-            jm = jmaxa + jmaxb
-            call vnuc(ahgtf, jmax, expp, difcp, factor, iprint)
-! Calculate integrals over Cartesian gaussians 
+            call vnuc(ahgtf, jmax, expp, difcp, iprint)
             call cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
-     &            ader(1, 1, ipoint), ahgtf, iprint)
+     &            ader(:, :, ipoint), ahgtf, iprint)
             deallocate(ahgtf)
           end do ! Close loop over grid points
         end do ! Close loop over second shell
       end do ! Close loop over first shell
       deallocate(odc)
+
       return
 
       end subroutine
 
-      subroutine vnuc(ahgtf, jmax, pval, cp, facint, iprint)
+      subroutine vnuc(ahgtf, jmax, pval, cp, iprint)
 !
 ! This subroutine calculates the R integrals as defined by
 ! McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
@@ -463,31 +456,27 @@
 #include "pi.h"
 #include "maxaqn.h"
 #include "gamcom.h"
-!     Passed variables
+! Passed variables
       integer :: jmax, iprint
       real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax), cp(3)
-      real(8) :: pval, facint
+      real(8) :: pval
 
-!     Local variables
+! Local variables
       real(8), allocatable :: r(:, :, :, :)
       real(8) :: factor, prod
       integer :: jval, t, u, v
 
-!     Initialization
+! Initialization
       allocate(r(0:jmax, 0:jmax, 0:jmax, 0:jmax))
       r = 0.0d0
 
-!
-!     *************************************
-!     ***** Incomplete gamma function *****
-!     *************************************
-!
+! Incomplete gamma function *****
       wval = pval * (cp(1) * cp(1) + cp(2) * cp(2) + cp(3) * cp(3))
       jmax0 = jmax
       call gamfun
       
 ! Calculate r(0, 0, 0, jval)
-      factor = (facint * 2.0d0 * pi) / pval
+      factor = (2.0d0 * pi) / pval
       do jval = 0, jmax
          fjw(jval)         =   factor * fjw(jval)
          factor            = - 2.0d0 * pval * factor
@@ -544,13 +533,13 @@
 #include "onecom.h"
 #include "lmns.h"
 
-!     Passed variables
+! Passed variables
       real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax)
-      real(8) :: ader(*),                                               &
+      real(8) :: ader(kckta, kcktb, 1),                                 &
      &           odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)
       integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, iprint
 
-!     Local variables
+! Local variables
       real(8) :: naint, ev, ee, eee
       integer :: icompa, lvala, mvala, nvala,                           &
      &           icompb, lvalb, mvalb, nvalb,                           &
@@ -576,11 +565,9 @@
               end do
             end do
           end do
-          ader(icompa + (icompb-1)*kckta) =                             &
-     &                          ader(icompa + (icompb-1)*kckta) + naint
+          ader(icompa, icompb, 1) = ader(icompa, icompb, 1) + naint
         end do
       end do
-
 
       return
       end subroutine
