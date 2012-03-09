@@ -10,10 +10,12 @@ integer, parameter :: size_of_real=4
 integer, parameter :: size_of_double=8
 integer :: AllocateStatus, stat, ios
 
-external :: cublas_init, cublas_set_matrix, cublas_get_matrix,cublas_set_vector,cublas_get_vector
-external :: cublas_shutdown, cublas_alloc
-external :: cublas_sgemm
-integer :: cublas_alloc, cublas_set_matrix, cublas_get_matrix, cublas_set_vector, cublas_get_vector, cublas_sgemm
+external ::  cublas_init, cublas_free, cublas_set_matrix
+external ::  cublas_get_matrix,cublas_set_vector,cublas_get_vector
+external ::  cublas_shutdown, cublas_alloc
+external ::  cublas_sgemm, cublas_sgemv
+integer ::   cublas_alloc, cublas_set_matrix, cublas_get_matrix, cublas_free
+integer ::  cublas_set_vector, cublas_get_vector, cublas_sgemm, cublas_sgemv
 external :: snrm2
 real(kind=size_of_real) :: snrm2
 
@@ -21,17 +23,15 @@ CHARACTER*100  BUFFER
 character*10   method
 
 integer :: n
-
 integer :: i,j
-
 integer :: c1,c2,cr,cm
 
-real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:)
-real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:)
+real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:),x_r(:),y_r(:)
+real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:),x_d(:),y_d(:)
 
 !#if ARCH_64
 ! 8-byte pointer on 64-bit architectures
-integer*8:: devPtrA, devPtrB, devPtrC
+integer*8 :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
 !#else
 !integer:: devPtrA, devPtrB, devPtrC
 !#endif
@@ -74,7 +74,6 @@ do j=1,n
 enddo
 enddo
 
-
 call system_clock( c1, cr, cm )
 call cublas_init
 stat= cublas_Alloc(n*n,size_of_real, devPtrA)
@@ -98,7 +97,7 @@ endif
 
 stat=cublas_Set_Matrix(n,n,size_of_real,A_r,n,devPtrA,n)
 if (stat .NE. 0) then
-call cublas_free (devPtrA)
+  stat=cublas_free (devPtrA)
 write(*,*) "data upload mtx Ar(CPU) -> devPtrA(GPU) failed"
 call cublas_shutdown
 stop
@@ -107,7 +106,7 @@ write(*,*) "data upload mtx Ar(CPU) -> devPtrA(GPU) : OK"
 endif
 stat=cublas_Set_Matrix(n,n,size_of_real,B_r,n,devPtrB,n)
 if (stat .NE. 0) then
-call cublas_free (devPtrB)
+ stat=cublas_free (devPtrB)
 write(*,*) "data upload mtx Br(CPU) -> devPtrA(GPU) failed"
 call cublas_shutdown
 stop
@@ -116,7 +115,7 @@ write(*,*) "data upload mtx Br(CPU) -> devPtrB(GPU) : OK"
 endif
 stat=cublas_Set_Matrix(n,n,size_of_real,C_r,n,devPtrC,n)
 if (stat .NE. 0) then
-call cublas_free (devPtrC)
+  stat=cublas_free (devPtrC)
 write(*,*) "data upload mtx Cr(CPU) -> devPtrC(GPU) failed"
 call cublas_shutdown
 stop
@@ -131,7 +130,7 @@ endif
 
 stat=cublas_Get_Matrix(n,n,size_of_real,devPtrC,n,C_r,n)
 if (stat .NE. 0) then
-call cublas_free (devPtrC)
+  stat=cublas_free (devPtrC)
 write(*,*) "data upload failed"
 call cublas_shutdown
 stop
@@ -141,9 +140,9 @@ call system_clock( count=c2 )
 print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
 call mtx_check(C_r)
 
-call cublas_Free(devPtrA)
-call cublas_Free(devPtrB)
-call cublas_Free(devPtrC)
+stat=cublas_free(devPtrA)
+stat=cublas_free(devPtrB)
+stat=cublas_free(devPtrC)
 call cublas_shutdown
 
 ! now CPU sgemm...
@@ -157,6 +156,99 @@ call mtx_check(C_r)
 
 call cublas_shutdown
 end subroutine sgemm_test
+
+subroutine sgemv_test
+allocate (A_r(n,n),x_r(n),y_r(n),STAT=AllocateStatus)
+if (AllocateStatus.ne.0) then
+   stop "error in allocations !"
+else
+   print *,"A_r,x_r,y_r objects allocated in CPU memory"
+endif
+! fill allocated objects
+do i=1,n
+do j=1,n
+ if (i.eq.j) then
+   A_r(i,j)=1.0e0
+ else
+   A_r(i,j)=0.0e0
+ endif
+ x_r(i)=float(1)
+ y_r(i)=0.0e0
+enddo
+enddo
+
+
+call system_clock( c1, cr, cm )
+call cublas_init
+stat= cublas_Alloc(n*n,size_of_real, devPtrA)
+if (stat .NE. 0) then
+write(*,*) "device memory allocation of devPtrA failed"
+call cublas_shutdown
+stop
+endif
+stat= cublas_Alloc(n,size_of_real,devPtrx)
+if (stat .NE. 0) then
+write(*,*) "device memory allocation of devPtrx failed"
+call cublas_shutdown
+stop
+endif
+stat=cublas_Alloc(n,size_of_real,devPtry)
+if (stat .NE. 0) then
+write(*,*) "device memory allocation of devPtry failed"
+call cublas_shutdown
+stop
+endif
+stat=cublas_Set_Matrix(n,n,size_of_real,A_r,n,devPtrA,n)
+if (stat .NE. 0) then
+ stat=cublas_free (devPtrA)
+write(*,*) "data upload mtx A_r(CPU) -> devPtrA(GPU) failed"
+call cublas_shutdown
+stop
+else
+write(*,*) "data upload mtx A_r(CPU) -> devPtrA(GPU) : OK"
+endif
+stat=cublas_set_vector(n,size_of_real,x_r,1,devPtrx,1)
+if (stat .NE. 0) then
+  stat=cublas_free (devPtrx)
+write(*,*) "data upload vector x_r(CPU) -> devPtrx(GPU) failed"
+call cublas_shutdown
+stop
+else
+write(*,*) "data upload vector x_r(CPU) -> devPtrx(GPU) : OK"
+endif
+stat=cublas_set_vector(n,size_of_real,y_r,1,devPtry,1)
+if (stat .NE. 0) then
+  stat=cublas_free (devPtry)
+write(*,*) "data upload vector y_r(CPU) -> devPtry(GPU) failed"
+call cublas_shutdown
+stop
+else
+write(*,*) "data upload vector y_r(CPU) -> devPtry(GPU) : OK"
+endif
+!y = beta*y+alpha*A*x
+stat=cublas_sgemv('n',n,n,1.0e0,devPtrA,n,devPtrx,1,0.0e0,devPtry,1)
+if (stat .NE. 0) then
+ stop "cublas_sgemv failed!"
+endif
+! get the vector from GPU into y_r...
+stat=cublas_get_vector(n,size_of_real,devPtry,1,y_r,1)
+
+call system_clock( count=c2 )
+print *, 'GPU cublas_sgemv runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
+
+stat=cublas_free(devPtrA)
+stat=cublas_free(devPtrx)
+stat=cublas_free(devPtry)
+
+call system_clock( c1, cr, cm )
+!CPU routine:  y = beta*y+alpha*A*x
+call sgemv('n',n,n,-2.0e0,A_r,n,x_r,1,1.0e0,y_r,1)
+call system_clock( count=c2 )
+print *, 'CPU sgemv runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
+
+end subroutine sgemv_test
 
 subroutine mtx_check(Mtx)
 real*4, intent(in) :: Mtx(n,n)
@@ -182,20 +274,17 @@ end subroutine mtx_check
 end module gpu_stuff
 
 Program GPU_math_tests
- 
   use gpu_stuff
 
-  print *,'hello'
   call read_arguments
-
   select case (method)
     case("sgemm")
       call sgemm_test
+    case("sgemv")
+      call sgemv_test
     case default
       write(*,*) 'no method for GPU math testing selected'
   end select
 
 End Program GPU_math_tests
-
-
 
