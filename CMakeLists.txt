@@ -93,7 +93,7 @@ if(ENABLE_CUDA)
             )
         add_definitions(-DUSE_CUBLAS)
         add_executable(gpu_test.x utils/gpu_test.F90)
-        target_link_libraries(gpu_test.x fortran_cuda ${LIBS})
+        target_link_libraries(gpu_test.x fortran_cuda ${LIBS} blas)
     endif()
 endif()
 
