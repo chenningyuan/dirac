@@ -1,5 +1,8 @@
 !----------------------------------------------
+!
 !  simple test of Fortran GPU CUDA libraries
+! in the DIRAC enviroment
+!
 !----------------------------------------------
 
 module gpu_stuff
@@ -29,12 +32,12 @@ integer :: c1,c2,cr,cm
 real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:),x_r(:),y_r(:)
 real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:),x_d(:),y_d(:)
 
-!#if ARCH_64
-! 8-byte pointer on 64-bit architectures
+#if ARCH_64
+! 8-byte pointers on 64-bit architectures
 integer*8 :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
-!#else
-!integer:: devPtrA, devPtrB, devPtrC
-!#endif
+#else
+integer   :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
+#endif
 
 contains
 

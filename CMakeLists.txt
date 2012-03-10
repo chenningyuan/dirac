@@ -81,19 +81,26 @@ endif()
 
 if(ENABLE_CUDA)
     find_package(CUDA)
-    if(CUDA_FOUND AND NOT ENABLE_64BIT_INTEGERS) # this works only for non-integer*8 !
-        # radovan: do not use hardcoded locations, use variables
-        # set and returned by FindCUDA.cmake
-        # miro: so far I haven't found variable for ...fortran.c, seeking continue
-        add_library(fortran_cuda "/usr/local/cuda/src/fortran.c")
-        INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
-        set(LIBS
-            ${LIBS}
-            ${CUDA_CUBLAS_LIBRARIES}
-            )
-        add_definitions(-DUSE_CUBLAS)
-        add_executable(gpu_test.x utils/gpu_test.F90)
-        target_link_libraries(gpu_test.x fortran_cuda ${LIBS} blas)
+    if(CUDA_FOUND) 
+        if(NOT ENABLE_64BIT_INTEGERS)
+            # radovan: do not use hardcoded locations, use variables
+            # set and returned by FindCUDA.cmake
+            # miro: so far I haven't found variable for ...fortran.c, seeking continue
+            add_library(fortran_cuda "/usr/local/cuda/src/fortran.c")
+            INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
+            set(LIBS
+                ${LIBS}
+                ${CUDA_CUBLAS_LIBRARIES}
+                )
+            add_definitions(-DUSE_CUBLAS)
+            if (CUDA_64_BIT_DEVICE_CODE) 
+                add_definitions(-DARCH_64)
+            endif()
+            add_executable(gpu_test.x utils/gpu_test.F90)
+            target_link_libraries(gpu_test.x fortran_cuda ${LIBS} blas)
+        else()
+            message("-- CUDA library found, but can not be used with 64-bit integers!")
+        endif()
     endif()
 endif()
 
