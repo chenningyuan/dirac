@@ -38,15 +38,21 @@ integer*8 :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
 
 contains
 
+subroutine usage
+write(*,*) 'usage: gpu_test.x  <sgemm/sgemv>  <n>'
+end subroutine usage
+
 subroutine read_arguments
 CALL GETARG(1,BUFFER); READ(BUFFER,*,IOSTAT=IOS) method
 IF (IOS.NE.0) THEN
+    call usage
     stop "error in reading online argument !"
 ELSE
     print *,'online argument read ... method=',method
 ENDIF
 CALL GETARG(2,BUFFER); READ(BUFFER,*,IOSTAT=IOS) n
 IF (IOS.NE.0) THEN
+    call usage
     stop "error in reading online argument !"
 ELSE
     print *,'online argument read in ...n=',n

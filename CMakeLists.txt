@@ -84,16 +84,16 @@ if(ENABLE_CUDA)
     if(CUDA_FOUND)
         # radovan: do not use hardcoded locations, use variables
         # set and returned by FindCUDA.cmake
+        # miro: so far I haven't found variable for ...fortran.c, seeking continue
         add_library(fortran_cuda "/usr/local/cuda/src/fortran.c")
-        # radovan: same here ...
-        LINK_DIRECTORIES ( /usr/local/cuda/lib64 )
+        INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
         set(LIBS
             ${LIBS}
             ${CUDA_CUBLAS_LIBRARIES}
             )
         add_definitions(-DUSE_CUBLAS)
         add_executable(gpu_test.x utils/gpu_test.F90)
-        target_link_libraries(gpu_test.x fortran_cuda cublas blas)
+        target_link_libraries(gpu_test.x fortran_cuda ${LIBS})
     endif()
 endif()
 
