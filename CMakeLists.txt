@@ -85,7 +85,6 @@ if(ENABLE_CUDA)
         #miro: typical location of cuda 
         add_library(fortran_cuda  "/usr/local/cuda/src/fortran.c")
         LINK_DIRECTORIES ( /usr/local/cuda/lib64 )
-        #INCLUDE_DIRECTORIES( /usr/local/cuda/include )   
         set(LIBS
             ${LIBS}
             ${CUDA_CUBLAS_LIBRARIES}
