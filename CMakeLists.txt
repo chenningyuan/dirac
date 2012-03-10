@@ -81,7 +81,7 @@ endif()
 
 if(ENABLE_CUDA)
     find_package(CUDA)
-    if(CUDA_FOUND)
+    if(CUDA_FOUND AND NOT ENABLE_64BIT_INTEGERS) # this works only for non-integer*8 !
         # radovan: do not use hardcoded locations, use variables
         # set and returned by FindCUDA.cmake
         # miro: so far I haven't found variable for ...fortran.c, seeking continue
