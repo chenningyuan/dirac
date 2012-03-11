@@ -322,6 +322,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          DOCCSETI=.TRUE.
          DOSORT  =.TRUE.
       ENDIF
+!
+!  initialize USEOE=T default also for RELADC
+!  because it relies on CCSETI and needs the orbital
+!  energies from the original HF calculation
+!  This allow for the use of X2Cmmf
+!  The NORECMP parameter is irrelevant
+!
+      USEOE = .TRUE.
 
       WRITE (IW,*) '       *** GENERAL JOB SPECIFICATION ***'
       WRITE (IW,1006) DOSIPS,DODIPS,DOSORT,USEOE,NORECMP

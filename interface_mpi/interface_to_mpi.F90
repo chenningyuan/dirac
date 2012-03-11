@@ -276,7 +276,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -302,7 +302,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -328,7 +328,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -354,7 +354,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -380,7 +380,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -406,7 +406,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -432,7 +432,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -458,7 +458,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -484,7 +484,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -510,7 +510,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -536,7 +536,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -562,7 +562,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
@@ -588,7 +588,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: message_id_i4
     integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
     integer(kind=4)            :: communicator_i4
@@ -622,7 +622,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     logical(kind=4)            :: x_l4
     integer(kind=4)            :: message_id_i4
     integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
@@ -656,7 +656,7 @@ contains
     integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE)
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     logical(kind=4)            :: x_l4
     integer(kind=4)            :: request_i4
     integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
@@ -687,7 +687,7 @@ contains
     integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE,ndim)
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     logical(kind=4)            :: x_l4
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: request_i4(ndim)
@@ -722,7 +722,7 @@ contains
     integer(kind=integer_kind) :: status_container(MPI_STATUS_SIZE)
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: request_i4
     integer(kind=4)            :: status_container_i4(MPI_STATUS_SIZE)
     integer(kind=4)            :: ierr_i4
@@ -756,7 +756,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: receiver_i4
     integer(kind=4)            :: message_id_i4
@@ -785,7 +785,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: receiver_i4
     integer(kind=4)            :: message_id_i4
@@ -814,7 +814,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: receiver_i4
     integer(kind=4)            :: message_id_i4
@@ -843,7 +843,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: receiver_i4
     integer(kind=4)            :: message_id_i4
@@ -872,7 +872,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: receiver_i4
     integer(kind=4)            :: message_id_i4
@@ -901,7 +901,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: receiver_i4
     integer(kind=4)            :: message_id_i4
@@ -931,7 +931,7 @@ contains
     integer(kind=integer_kind) :: request
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: receiver_i4
     integer(kind=4)            :: message_id_i4
@@ -966,7 +966,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -999,7 +999,7 @@ contains
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1033,7 +1033,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1065,7 +1065,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1097,7 +1097,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1130,7 +1130,7 @@ contains
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1164,7 +1164,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1196,7 +1196,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1229,7 +1229,7 @@ contains
     integer(kind=integer_kind) :: request
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: sender_i4
     integer(kind=4)            :: message_id_i4
@@ -1267,7 +1267,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: receiver_i4
@@ -1298,7 +1298,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: receiver_i4
@@ -1329,7 +1329,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: receiver_i4
@@ -1360,7 +1360,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: receiver_i4
@@ -1391,7 +1391,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: receiver_i4
@@ -1422,7 +1422,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: receiver_i4
@@ -1452,7 +1452,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: communicator_i4
@@ -1480,7 +1480,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: communicator_i4
@@ -1509,7 +1509,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: communicator_i4
@@ -1538,7 +1538,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: communicator_i4
@@ -1566,7 +1566,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: communicator_i4
@@ -1594,7 +1594,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: operation_i4
     integer(kind=4)            :: communicator_i4
@@ -1623,7 +1623,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim1_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: root_proc_i4
@@ -1658,7 +1658,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: disp_i4
     integer(kind=4)            :: root_proc_i4
@@ -1688,7 +1688,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: disp_i4
     integer(kind=4)            :: root_proc_i4
@@ -1717,7 +1717,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: communicator_i4
@@ -1743,7 +1743,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: communicator_i4
@@ -1770,7 +1770,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: communicator_i4
@@ -1798,7 +1798,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
     integer(kind=4)            :: rank_i4
@@ -1820,7 +1820,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
     integer(kind=4)            :: is_size_i4
@@ -1844,7 +1844,7 @@ contains
     integer(kind=integer_kind) :: key
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: old_communicator_i4
     integer(kind=4)            :: new_communicator_i4
     integer(kind=4)            :: color_i4
@@ -1869,7 +1869,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
@@ -1889,7 +1889,7 @@ contains
     integer(kind=integer_kind) :: communicator
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
@@ -1909,7 +1909,7 @@ contains
     integer(kind=integer_kind) :: ndim
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
@@ -1927,7 +1927,7 @@ contains
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     call mpi_init(ierr_i4)
@@ -1943,7 +1943,7 @@ contains
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     call mpi_finalize(ierr_i4)
@@ -1961,7 +1961,7 @@ contains
     integer(kind=integer_kind) :: error_code
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: error_code_i4
     integer(kind=4)            :: ierr_i4
@@ -1986,7 +1986,7 @@ contains
     character*(*)                    :: fname
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: info_i4
     integer(kind=4)            :: amode_i4
@@ -2011,7 +2011,7 @@ contains
     integer(kind=integer_kind)       :: file_handle
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
@@ -2035,7 +2035,7 @@ contains
     integer(kind=df_mpi_offset_kind) :: disp
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: info_i4
     integer(kind=4)            :: etype_i4
@@ -2062,7 +2062,7 @@ contains
     integer(kind=integer_kind)       :: whence
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: whence_i4
     integer(kind=4)            :: ierr_i4
@@ -2086,7 +2086,7 @@ contains
     integer(kind=integer_kind)       :: request
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: request_i4
@@ -2113,7 +2113,7 @@ contains
     integer(kind=integer_kind)       :: request
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: request_i4
@@ -2140,7 +2140,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2170,7 +2170,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2200,7 +2200,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2230,7 +2230,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2260,7 +2260,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2290,7 +2290,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2321,7 +2321,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2352,7 +2352,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2381,7 +2381,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2411,7 +2411,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2441,7 +2441,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2471,7 +2471,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2501,7 +2501,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2531,7 +2531,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2561,7 +2561,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2591,7 +2591,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2622,7 +2622,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2653,7 +2653,7 @@ contains
     integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: file_handle_i4
     integer(kind=4)            :: length_i4
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
@@ -2679,7 +2679,7 @@ contains
     integer(kind=integer_kind)       :: info_object
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)                  :: info_object_i4
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
@@ -2699,7 +2699,7 @@ contains
     integer(kind=integer_kind)       :: info_object
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)                  :: info_object_i4
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
@@ -2720,7 +2720,7 @@ contains
     character*(*)                    :: key
     character*(*)                    :: value
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)                  :: info_object_i4
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
@@ -2746,7 +2746,7 @@ contains
     integer(kind=integer_kind)       :: communicator
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim1_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: pos_i4
@@ -2777,7 +2777,7 @@ contains
     integer(kind=integer_kind)       :: communicator
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim1_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: pos_i4
@@ -2808,7 +2808,7 @@ contains
     integer(kind=integer_kind)       :: communicator
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim1_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: pos_i4
@@ -2839,7 +2839,7 @@ contains
     integer(kind=integer_kind)       :: communicator
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim1_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: pos_i4
@@ -2870,7 +2870,7 @@ contains
     integer(kind=integer_kind)       :: communicator
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim1_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: pos_i4
@@ -2901,7 +2901,7 @@ contains
     integer(kind=integer_kind)       :: communicator
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim1_i4
     integer(kind=4)            :: ndim2_i4
     integer(kind=4)            :: pos_i4
@@ -2929,7 +2929,7 @@ contains
     integer(kind=integer_kind)       :: elements
     integer(kind=integer_kind)       :: ierr
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
     integer(kind=4)            :: datatype_i4
     integer(kind=4)            :: elements_i4
@@ -2955,7 +2955,7 @@ contains
     integer(kind=integer_kind)       :: datatype
     integer(kind=integer_kind)       :: extent
 !-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32bit_int
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: datatype_i4
     integer(kind=4)            :: extent_i4
     integer(kind=4)            :: ierr_i4

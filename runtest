@@ -373,12 +373,20 @@ def extract_and_compare_floats(log_file,   \
                     log_file.write('desired precision=%19.16f\n' % precision)
     else:
         log_file.write('compare floats sizes do not match\n')
+
         log_file.write('own gave %i floats:\n' % len(f_l))
+        last_line_printed = -1
         for i in range(len(f_l)):
-            log_file.write('    %s' % output[f_to_line[i]])
-        log_file.write('reference gave %i floats:\n' % len(f_l_ref))
+            if (f_to_line[i] != last_line_printed):
+               log_file.write('    %s' % output[f_to_line[i]])
+               last_line_printed = f_to_line[i]
+
+        log_file.write('refence gave %i floats:\n' % len(f_l_ref))
+        last_line_printed = -1
         for i in range(len(f_l_ref)):
-            log_file.write('    %s' % output_ref[f_to_line_ref[i]])
+            if (f_to_line_ref[i] != last_line_printed):
+               log_file.write('    %s' % output_ref[f_to_line_ref[i]])
+               last_line_printed = f_to_line_ref[i]
 
 #-------------------------------------------------------------------------------
 

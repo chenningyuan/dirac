@@ -1,20 +1,35 @@
 module func_PipekMezey
 !================================================================================!
+!!! This is not a true module, because it still depends on external subroutines!!!
+!                                                                                !
 !                  This module is used in optimization module                    !
 !           it will provide information about Pipek-Mezey functional             !
+!                                                                                !
+!   Two forms of the Pipek-Mezey functional are available:                       !
+!   1) based on Mulliken population analysis  -->  orblo1                        !
+!   2) based on projection analysis           -->  ORBLP1                        !
+!                                                                                !
+!   [1] S. Dubillard, J.-B. Rota, and T. Saue, J.Chem.Phys. 124, 154307 (2006)   !
+!================================================================================!
+! Input variables of the func_PipekMezey module:                                 !
+!                                                                                !
+!   prjloc - localization based on:                                              !
+!            True  - projection analysis                                         !
+!            False - Mulliken analysis                                           !
+!   iprloc - print level (no prints =0)                                          !
+!   isel   - integer array which contains numbers of MOs that will be localized  !
+!   ... ( not finished yet )                                                     !
 !================================================================================!
 use memory_allocator
 implicit none
 
-public  :: initialize_func, get_func, exp_func, get_gradient, get_hessian
+public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLO1
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, ROTCMO_MOD, errall
 
 type :: PipekMezey_flags
-  integer :: iprloc, itrloc
-  real*8  :: thfull, thdiag, thgrad
-  logical :: prjloc, lgfull, lgdiag, lggrad, lgchck
-  character*4 :: hesloc
+  integer :: iprloc
+  logical :: prjloc
 end type PipekMezey_flags
 
 type :: PipekMezey_variales
@@ -22,7 +37,7 @@ type :: PipekMezey_variales
   integer :: nfbas(2,0:2), n2bbasx, n2bbasxq
   integer :: nish(2), norb(2), npsh(2), nesh(2), norbt
   real*8  :: ssmtrc
-  logical :: twocompbss, levyle
+  logical :: h2comp, levyle
   integer :: nz, ipqtoq(4,0:7)
   integer :: nucdep
   real*8  :: thrzer
@@ -32,19 +47,28 @@ type :: PipekMezey_variales
   logical :: ownbas
   character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
   character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
+  real*8  :: timstr
 end type PipekMezey_variales
 
-type( PipekMezey_flags     ), private :: loc
+type( PipekMezey_flags     ), private :: PM
 type( PipekMezey_variales  ), private :: var
 
 ! Some global parameters
 real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
+! functional value of our functional (stored for output)
+real*8, save :: dinvmg4out
+
+! Global arrays
+real*8,  allocatable, save, private :: pmat(:,:,:,:), smat(:)
+real*8,  allocatable, save, private :: scoef(:,:,:), storec(:,:,:)
+integer, allocatable, save, private :: nfnuc(:), isel(:)
+
 contains
 
-  subroutine initialize_func
+  subroutine init_func(ndim)
   !==============================================================================!
-  !            Initialize func_PipekMezey module for Dirac program               !
+  !            Initialize module func_PipekMezey for Dirac program               !
   !==============================================================================!
   implicit none
 
@@ -60,22 +84,27 @@ contains
 #include "thrzer.h"
 #include "dcbprj.h"
 
+  ! External variables
+  integer :: ndim
+
   ! Internal variables
-  integer :: i
+  logical :: tobe
+  integer :: i, ifrp, idum, ier, nloc, nmax
+  real*8  :: toterg, second
+
+  integer, allocatable, dimension(:) :: itmp, indao, indaos, indnao
+  real*8,  allocatable, dimension(:) :: cmo
 
   !------------------------------------------------------------------------------!
+  ! Start localization of Molecular orbitals
+  call titler('Molecular orbital localization','*',122)
+
+  !------------------------------------------------------------------------------!
+  !                       Initialize global variables                            !
+  !------------------------------------------------------------------------------!
   ! dcbloc.h
-  loc%iprloc     = iprloc
-  loc%itrloc     = itrloc
-  loc%thfull     = thfull
-  loc%thdiag     = thdiag
-  loc%thgrad     = thgrad
-  loc%prjloc     = prjloc
-  loc%lgfull     = lgfull
-  loc%lgdiag     = lgdiag
-  loc%lggrad     = lggrad
-  loc%lgchck     = lgchck
-  loc%hesloc     = hesloc
+  PM%iprloc      = iprloc
+  PM%prjloc      = prjloc
   ! priunit.h
   var%lupri      = lupri
   ! dcbgen.h
@@ -92,7 +121,6 @@ contains
   var%norbt      = norbt
   ! dcbham.h
   var%ssmtrc     = ssmtrc
-  var%twocompbss = twocompbss
   var%levyle     = levyle
   ! dgroup.h
   var%ipqtoq(:,:)= ipqtoq(:,:)
@@ -108,6 +136,9 @@ contains
   var%prothr     = prothr
   var%ownbas     = ownbas
 
+  ! two component calculation
+  var%h2comp = twocomp .or. x2c
+
   if(maxref /= 15)then
     write(lupri,'(a)')' WARNING: The maxref dimension in localization module and Dirac differ'
     write(lupri,'(a)')'          See type external_variales in localization.f90 '
@@ -121,43 +152,279 @@ contains
     var%vecref(2,i) = vecref(2,i)
   enddo
 
-  end subroutine initialize_func
+  ! starting time
+  var%timstr = second()
+
+  !----------------!
+  ! set dimensions !
+  !----------------!
+  ifrp = 1
+  ! set limits on possible localized orbitals
+  ! when selmos == 'allocc' subroutine numlst will select 0..nmax MOs
+  nmax = nesh(ifrp)
+  if(selmos == 'allocc') nmax = nish(ifrp)
+  ! set maximum possible number of localized orbitals
+  nloc = norb(ifrp)
+  ! alocate temporary array; the data will be later moved to isel
+  call alloc(itmp,nloc,id='itmp in init_func')
+  itmp = 0; idum = 1
+  ! read string selmos
+  call numlst(selmos,itmp,nloc,0,nmax,ifrp,idum)
+  nloc = idum                          ! set number of orbitals for localization
+  ndim = 4 * ( nloc*nloc - nloc ) / 2  ! set dimension of your space
+
+  !------------------------------------------------------------------------------!
+  !                             Print debug info                                 !
+  !------------------------------------------------------------------------------!
+  if(PM%iprloc.ge.4)then
+    write(lupri,*) 'lupri    =',lupri
+    write(lupri,*) 'nish     =',nish(ifrp)
+    write(lupri,*) 'norb     =',norb(ifrp)
+    write(lupri,*) 'nucdep   =',nucdep
+    write(lupri,*) 'maxref   =',var%maxref
+    write(lupri,*) 'thrzer   =',thrzer
+    write(lupri,*) 'nfbas(0) =',nfbas(ifrp,0)
+    write(lupri,*) 'nfbas(1) =',nfbas(ifrp,1)
+    write(lupri,*) 'nfbas(2) =',nfbas(ifrp,2)
+    write(lupri,*) 'selmos   =',selmos
+  endif
+
+  !------------------------------------------------------------------------------!
+  !                              Allocate arrays                                 !
+  !------------------------------------------------------------------------------!
+  ! allocate global arrays
+  allocate( scoef (var%nfbas(ifrp,0),nloc,4), stat=ier ); call errall(ier,'init_func','scoef ')
+  allocate( storec(var%nfbas(ifrp,0),nloc,4), stat=ier ); call errall(ier,'init_func','storec')
+  call alloc(pmat  ,nloc,nloc,4,var%nucdep,id='pmat   in init_func')
+  call alloc(smat  ,var%n2bbasx,           id='smat   in init_func')
+  call alloc(nfnuc ,2*var%nucdep,          id='nfnuc  in init_func')
+  call alloc(isel  ,nloc,                  id='isel   in init_func')
+  scoef = d0; storec = d0; pmat = d0; smat = d0; nfnuc = 0
+
+  ! allocate local arrays
+  call alloc(cmo   ,var%n2bbasxq,     id='cmo    in init_func')
+  call alloc(indao ,var%nfbas(ifrp,0),id='indao  in init_func')
+  call alloc(indaos,var%nfbas(ifrp,0),id='indaos in init_func')
+  call alloc(indnao,2*var%nucdep+2,   id='indnao in init_func')
+  cmo = d0; indao = 0; indaos = 0; indnao = 0
+
+  !------------------------------------------------------------------------------!
+  !                      Precalculate some global arrays                         !
+  !------------------------------------------------------------------------------!
+  !----------------------------------------------------!
+  ! -- nfnuc -- Get the number of functions per center !
+  !----------------------------------------------------!
+  call indaoc(indao,indaos,indnao)
+  call orblo4(indnao,var%nucdep)
+
+  !-------------------------------!
+  ! -- smat -- Get overlap matrix !
+  !-------------------------------!
+  call gtovlx(smat,var%ssmtrc)
+  if(PM%iprloc.ge.6)then
+    write(lupri,'(/a)') '* orbloc: Overlap matrix' 
+    call prqmat(smat,var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0), &
+                1,ipqtoq(1,0),lupri)
+  endif
+
+  !-----------------------------------------------------!
+  ! -- scoef -- Electronic orbital coeffients selection !
+  !-----------------------------------------------------!
+  ! Check if coefficients are on file
+  inquire(file='DFCOEF',exist=tobe)
+  if(.not.tobe)then
+    write(lupri,'(a)') 'init_func: Coefficient file not found !'
+    call quit('init_func: Coefficients not found !')
+  endif
+
+  ! Read coefficients
+  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
+  close(var%lucoef,status='keep')
+
+  ! select orbitals
+  isel(1:nloc) = itmp(1:nloc)
+  call selcfs(cmo,ifrp,scoef,nloc,isel,0,nloc,var%nfbas(ifrp,0),var%norb(ifrp))
+  if(PM%iprloc.ge.5)then
+    write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
+    call prqmat(scoef,var%nfbas(ifrp,0),nloc,var%nfbas(ifrp,0),nloc,4,ipqtoq(1,0),lupri)
+  endif
+
+  !------------------------------------------------------------------------------!
+  !                         Deallocate local arrays                              !
+  !------------------------------------------------------------------------------!
+  call dealloc(cmo   ,id='cmo    in init_func')
+  call dealloc(itmp  ,id='itmp   in init_func')
+  call dealloc(indao ,id='indao  in init_func')
+  call dealloc(indaos,id='indaos in init_func')
+  call dealloc(indnao,id='indnao in init_func')
+
+  end subroutine init_func
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_func(smat,scoef,pmat,nfnuc,dinvmg)
+  subroutine quit_func(hmat)
+  !==============================================================================!
+  !                  Uninitialize module func_PipekMezey                         !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  real*8,  intent(inout), pointer :: hmat(:,:)
+
+  ! Internal variables
+  character :: resst*50
+  real*8    :: timend, second
+
+  ! Put the localised coefficients in DFCOEF (scoef)
+  call wcmo2file
+
+  ! deallocate global arrays
+  deallocate( storec )
+  deallocate( scoef  )
+  call dealloc(pmat  ,id='pmat   in quit_func')
+  call dealloc(smat  ,id='smat   in quit_func')
+  call dealloc(nfnuc ,id='nfnuc  in quit_func')
+  call dealloc(isel  ,id='isel   in quit_func')
+
+  ! deallocate pointers
+  call deallocp(hmat ,id='hmat   in quit_func')
+
+  ! print final functional value
+  write(resst,'(a,f21.15)') 'Inverse mean delocalization =',dinvmg4out
+  call titler(resst,'*',104)
+
+  ! calculate time spend on localization
+  timend = second()
+  call timtxt('          --- Time used in localization is :',timend-var%timstr,var%lupri)
+
+  end subroutine quit_func
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine mv2point(restore,rejected,xtmp)
+  !==============================================================================!
+  !                    Move to the new expansion point                           !
+  !                      --> get new MO coefficients                             !
+  !                                                                              !
+  !   Note:  Deffinition of kappa matrix in rotcmo_mod is different as in        !
+  !          calculation of gradient and hessian in get_gradient and get_hessian !
+  !          --> Indexes are exchanged and j quaterion is with minus sign        !
+  !              Qkappa_lk = kappa_kl - bar{kappa}_kl^* j                        !
+  !              It follows from definition of bared unitary matrix:             !
+  !              tilde{Psi_i} = U_ij Psi_j + bar{U}_ij Psi_j                     !
+  !==============================================================================!
+  implicit none
+
+  ! Global variables
+  ! real*8,  intent(inout) :: scoef(:,:,:), storec(*)
+  ! real*8,  intent(  out) :: pmat(nloc,nloc,4,nucdep)
+
+  ! External variables
+  logical, intent(in) :: restore, rejected
+  real*8,  intent(in) :: xtmp(:)
+
+  ! Internal variables
+  integer :: i, j, ij1, ij2, ij3, ij4, iz, nloc, nloc12, ifrp
+
+  real*8, allocatable :: xkappa(:,:,:)
+
+  !------------------------------------------------------------------------------!
+  ifrp = 1
+  nloc = size(pmat,1)
+  nloc12 = size(xtmp,1) / 4
+
+  ! allocate local variable
+  call alloc(xkappa,nloc,nloc,4,id='xkappa in mv2point')
+
+  ! Unpack X to kappa matrix
+  xkappa(:,:,:) = d0
+  ij1 = 0
+  do j = 1,nloc
+    do i = j+1,nloc
+      ij1 = ij1 + 1
+      ij2 = ij1 + nloc12
+      ij3 = ij2 + nloc12
+      ij4 = ij3 + nloc12
+      xkappa(j,i,1) =   xtmp(ij1)
+      xkappa(i,j,1) = - xkappa(j,i,1)
+
+      xkappa(j,i,2) =   xtmp(ij3)
+      xkappa(i,j,2) =   xkappa(j,i,2)
+
+      xkappa(j,i,3) = - xtmp(ij2)
+      xkappa(i,j,3) =   xkappa(j,i,3)
+
+      xkappa(j,i,4) =   xtmp(ij4)
+      xkappa(i,j,4) =   xkappa(j,i,4)
+    enddo
+  enddo
+
+  if(PM%iprloc.ge.2)then
+    do iz=1,4
+      write(var%lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
+      do i=1,nloc
+        write(var%lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,nloc)
+      enddo
+    enddo
+  endif
+
+  ! get new MO coefficients(scoef)
+  if(restore)then
+    scoef(:,:,:) = storec(:,:,:)  ! restore MO coefficients
+  elseif(rejected)then
+    scoef(:,:,:) = storec(:,:,:)  ! restore MO coefficients; the step was rejected
+  elseif(.not.rejected)then
+    storec(:,:,:) = scoef(:,:,:)  ! store MO coefficients
+  endif
+  call rotcmo_mod(var%nfbas(ifrp,0),nloc,4,xkappa,nloc,var%ipqtoq(ifrp,0))
+
+  ! deallocate local variable
+  call dealloc(xkappa,id='xkappa in mv2point')
+
+  !------------------------------------------------------------------------------!
+  end subroutine mv2point
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  real*8 function get_func()
   !==============================================================================!
   !                       Get value of your functional                           !
   !==============================================================================!
   implicit none
 
-  ! External variables
-  integer, intent(in )   :: nfnuc(*)
+  ! Global variables
+  ! real*8,  intent(inout) :: smat(*)
+  ! real*8,  intent(  out) :: pmat(nloc,nloc,4,nucdep)
 
-  real*8,  intent(  out) :: dinvmg
-  real*8,  intent(in   ) :: scoef(*)
-  real*8,  intent(inout) :: smat(*)
-  real*8,  intent(  out) :: pmat(var%nish(1),var%nish(1),4,var%nucdep)
+  ! Internal variables
+  integer :: nloc, nucdep
+  real*8  :: dinvmg
 
   !------------------------------------------------------------------------------!
-  if(loc%prjloc)then ! localization with projection analysis
+  nloc   = size(pmat,1)
+  nucdep = size(pmat,4)
+
+  if(PM%prjloc)then ! localization with projection analysis
     call gtovlx(smat,var%ssmtrc)
-    call orblp1(smat,scoef,pmat,var%nfbas(1,1),var%nfbas(1,2),var%nish(1), &
-                var%nucdep,var%maxref,dinvmg)
+    call orblp1(var%nfbas(1,1),var%nfbas(1,2),nloc,nucdep,var%maxref,dinvmg)
   else               ! localization with Mulliken analysis
-    call orblo1(smat,scoef,pmat,var%nfbas(1,1),var%nfbas(1,2),var%nish(1), &
-                var%nucdep,nfnuc,dinvmg)
+    call orblo1(var%nfbas(1,1),var%nfbas(1,2),nloc,nucdep,dinvmg)
   endif
+  dinvmg4out = dinvmg   ! global variable
+  get_func   = dinvmg
 
   !------------------------------------------------------------------------------!
-  end subroutine get_func
+  end function get_func
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_hessian(pmat,hmat,full,totdiag,totnond)
-  !******************************************************************************!
+  subroutine get_hessian(hmat,full,totdiag,totnond)
+  !==============================================================================!
   !                                                                              !
   !  Construction of full hessian                                                !
   !                                                                              ! 
@@ -165,19 +432,21 @@ contains
   !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbared) \ !
   !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
   !                                                                              ! 
-  !******************************************************************************!
+  !==============================================================================!
   implicit none
+
+  ! Global variables
+  ! real*8, intent(in) :: pmat(nloc,nloc,4,nucdep)
 
   ! External variables
   logical, intent(in ) :: full
   real*8,  intent(out) :: totdiag, totnond
 
-  real*8,  intent(in ), dimension(:,:,:,:) :: pmat
   real*8,  intent(out), pointer :: hmat(:,:)
 
   ! Internal variables
   integer :: i, j, k, l, m, n, ij, kl
-  integer :: nucdep, ni, ndimh, ni12, lupri
+  integer :: nucdep, nloc, ndimh, nloc12, lupri
   real*8  :: pij1, pij2, pkml, p2kml, p2lmk, buf, buf1, buf2
 
   integer, allocatable :: ijn(:,:), iju(:), ijl(:)
@@ -190,9 +459,9 @@ contains
 
   ! Get some dimensions
   nucdep = size(pmat,4)
-  ni     = size(pmat,1)
-  ni12   = ( ni*ni - ni ) / 2
-  ndimh  = 4*ni12
+  nloc   = size(pmat,1)
+  nloc12 = ( nloc*nloc - nloc ) / 2
+  ndimh  = 4*nloc12
 
   !------------------------------------------------------------------------------!
   ! Calculate real representation of hessian and get the diagonal dominance info !
@@ -209,8 +478,8 @@ contains
     ! unbared-unbared A^R + B^R contribution
     do m = 1,nucdep
       ij = 0
-      do j=1,ni
-        do i=j+1,ni
+      do j=1,nloc
+        do i=j+1,nloc
           ij = ij + 1
           pij1 = pmat(i,j,1,m)
           buf  = pmat(i,i,1,m) - pmat(j,j,1,m)
@@ -221,9 +490,9 @@ contains
 
     ! bared-bared A^R + B^R contribution
     do m = 1,nucdep
-      ij = ni12
-      do j=1,ni
-        do i=j+1,ni
+      ij = nloc12
+      do j=1,nloc
+        do i=j+1,nloc
           ij = ij + 1
           pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
           buf  = pmat(i,i,1,m) - pmat(j,j,1,m)
@@ -234,9 +503,9 @@ contains
 
     ! unbared-unbared A^R - B^R contribution
     do m = 1,nucdep
-      ij = 2*ni12
-      do j=1,ni
-        do i=j+1,ni
+      ij = 2*nloc12
+      do j=1,nloc
+        do i=j+1,nloc
           ij = ij + 1
           pij2 = pmat(i,j,2,m)
           buf  = pmat(i,i,1,m) - pmat(j,j,1,m)
@@ -247,9 +516,9 @@ contains
 
     ! bared-bared A^R + B^R contribution
     do m = 1,nucdep
-      ij = 3*ni12
-      do j=1,ni
-        do i=j+1,ni
+      ij = 3*nloc12
+      do j=1,nloc
+        do i=j+1,nloc
           ij = ij + 1
           pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
           buf  = pmat(i,i,1,m) - pmat(j,j,1,m)
@@ -259,19 +528,19 @@ contains
     enddo
 
     do i=1,ndimh
+      hmat(i,1) = - hmat(i,1) / dfloat(nloc) ! minus sign --> we are looking for the minimum
       totdiag = totdiag + dabs( hmat(i,1) )
-      hmat(i,1) = - hmat(i,1)  ! we are looking for the minimum
     enddo
 
-    if(loc%iprloc.ge.3)then
+    if(PM%iprloc.ge.3)then
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_uu'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=1,ni12)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=1,nloc12)
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R + B^R)_bb'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=ni12+1,2*ni12)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=nloc12+1,2*nloc12)
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R - B^R)_uu'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=2*ni12+1,3*ni12)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=2*nloc12+1,3*nloc12)
       write(lupri,'(/a,2f10.5)') 'Print diagonal (A^R - B^R)_bb'
-      write(lupri,'(8d12.4)') (hmat(i,1),i=3*ni12+1,4*ni12)
+      write(lupri,'(8d12.4)') (hmat(i,1),i=3*nloc12+1,4*nloc12)
     endif
 
 
@@ -281,20 +550,20 @@ contains
     call allocp(hmat,ndimh,ndimh,id='hmat in get_hessian')
     hmat(:,:) = d0
 
-    call alloc(ijn,ni,ni,      id='ijn in get_hessian')
-    call alloc(iju,ni,         id='iju in get_hessian')
-    call alloc(ijl,ni,         id='ijl in get_hessian')
-    call alloc(pd,ni,nucdep,   id='pd  in get_hessian')
-    call alloc(p1,ni,ni,nucdep,id='p1  in get_hessian')
-    call alloc(p2,ni,ni,nucdep,id='p2  in get_hessian')
-    call alloc(p3,ni,ni,nucdep,id='p3  in get_hessian')
-    call alloc(p4,ni,ni,nucdep,id='p4  in get_hessian')
+    call alloc(ijn,nloc,nloc,      id='ijn in get_hessian')
+    call alloc(iju,nloc,           id='iju in get_hessian')
+    call alloc(ijl,nloc,           id='ijl in get_hessian')
+    call alloc(pd,nloc,nucdep,     id='pd  in get_hessian')
+    call alloc(p1,nloc,nloc,nucdep,id='p1  in get_hessian')
+    call alloc(p2,nloc,nloc,nucdep,id='p2  in get_hessian')
+    call alloc(p3,nloc,nloc,nucdep,id='p3  in get_hessian')
+    call alloc(p4,nloc,nloc,nucdep,id='p4  in get_hessian')
 
     ! prepare some arrays for effective construction of the hessian
     do m=1,nucdep
-      do i=1,ni
+      do i=1,nloc
         pd(i,m) = pmat(i,i,1,m)
-        do j=1,ni
+        do j=1,nloc
           p1(j,i,m) = pmat(j,i,1,m)
           p2(j,i,m) = pmat(j,i,2,m)
           p3(j,i,m) = pmat(j,i,3,m)
@@ -305,8 +574,8 @@ contains
 
     ijn(:,:) = 0
     kl = 0
-    do l=1,ni
-      do k=l+1,ni
+    do l=1,nloc
+      do k=l+1,nloc
         kl = kl + 1
         ijn(k,l) = kl
         ijn(l,k) = ijn(k,l)
@@ -318,12 +587,12 @@ contains
     !----------------------------------------------------------------------------!
     !                       Construction of the HESSIAN                          !
     !----------------------------------------------------------------------------!
-    !                            kl = < 1 , ni12 >                               !
+    !                           kl = < 1 , nloc12 >                              !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
       kl = 0
-      do l=1,ni
-        do k=l+1,ni
+      do l=1,nloc
+        do k=l+1,nloc
           kl = kl + 1
           buf  = d4*p1(k,l,m)
           p2kml= d2*pd(k,m) - pd(l,m)
@@ -331,19 +600,19 @@ contains
  
           ! (A^R + B^R)_uu = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (32) }                 + Real{ (36) }
-          do j=1,iju(k)   ! i==k
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k),kl) = hmat(ijn(j,k),kl) + buf*p1(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) + buf*p1(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) - buf*p1(j,l,m) - (p2lmk-pd(j,m))*p1(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k),kl) = hmat(ijn(i,k),kl) - buf*p1(i,k,m) - (p2kml-pd(i,m))*p1(i,l,m)
           enddo
 
@@ -352,12 +621,12 @@ contains
     enddo
 
     !----------------------------------------------------------------------------!
-    !                       kl = < ni12 + 1 , 2*ni12 >                           !
+    !                     kl = < nloc12 + 1 , 2*nloc12 >                         !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
-      kl = ni12
-      do l=1,ni
-        do k=l+1,ni
+      kl = nloc12
+      do l=1,nloc
+        do k=l+1,nloc
           kl = kl + 1
           buf1 = d2*p3(k,l,m)
           buf2 = d2*p4(k,l,m)
@@ -368,41 +637,41 @@ contains
 
           ! (A^R + B^R)_ub = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (33) }                 + Real{ (37) }
-          do j=1,iju(k)   ! i==k
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k),kl) = hmat(ijn(j,k),kl) + buf*p1(j,k,m) + (p2kml-pd(j,m))*p3(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) + buf*p1(i,l,m) - (p2lmk-pd(i,m))*p3(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) - buf*p1(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k),kl) = hmat(ijn(i,k),kl) - buf*p1(i,k,m) - (p2kml-pd(i,m))*p3(i,l,m)
           enddo
 
           ! (A^R + B^R)_bb = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (35) }                 + Real{ (39) }
-          n = ni12
-          do j=1,iju(k)   ! i==k
+          n = nloc12
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
                                - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
                                + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
                                + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
                                - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
           enddo
@@ -412,12 +681,12 @@ contains
     enddo
 
     !----------------------------------------------------------------------------!
-    !                       kl = < 2*ni12 + 1 , 3*ni12 >                         !
+    !                     kl = < 2*nloc12 + 1 , 3*nloc12 >                       !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
-      kl = 2*ni12
-      do l=1,ni
-        do k=l+1,ni
+      kl = 2*nloc12
+      do l=1,nloc
+        do k=l+1,nloc
           kl = kl + 1
           buf  = d4*p2(k,l,m)
           pkml =    pd(k,m) - pd(l,m)
@@ -426,57 +695,57 @@ contains
 
           ! (B^I - A^I)_uu = Imag{ d^2 G / dK*_ij dK*_kl } - Imag{ d^2 G / dK*_ij dK_kl }
           !                = - Imag{ (36) }                - Imag{ (32) }
-          do j=1,iju(k)   ! i==k
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k),kl) = hmat(ijn(j,k),kl) - buf*p1(j,k,m) - (p2kml-pd(j,m))*p2(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) - buf*p1(i,l,m) + (p2lmk-pd(i,m))*p2(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) + buf*p1(j,l,m) - (p2lmk-pd(j,m))*p2(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k),kl) = hmat(ijn(i,k),kl) + buf*p1(i,k,m) + (p2kml-pd(i,m))*p2(i,l,m)
           enddo
 
           ! (B^I - A^I)_bu = Imag{ d^2 G / dK*_ij dK*_kl } - Imag{ d^2 G / dK*_ij dK_kl }
           !                = - Imag{ (38) }                - Imag{ (34) }
-          n = ni12
-          do j=1,iju(k)   ! i==k
+          n = nloc12
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) + buf*p3(j,k,m) - (p2kml-pd(j,m))*p4(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) - buf*p3(i,l,m) - (p2lmk-pd(i,m))*p4(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) - buf*p3(j,l,m) - (p2lmk-pd(j,m))*p4(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) + buf*p3(i,k,m) - (p2kml-pd(i,m))*p4(i,l,m)
           enddo
 
           ! (A^R - B^R)_uu = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (32) }                 - Real{ (36) }
-          n = 2*ni12
-          do j=1,iju(k)   ! i==k
+          n = 2*nloc12
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) - buf*p2(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) - buf*p2(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
           enddo
 
@@ -485,12 +754,12 @@ contains
     enddo
 
     !----------------------------------------------------------------------------!
-    !                    kl = < 3*ni12 + 1 , 4*ni12 >                            !
+    !                  kl = < 3*nloc12 + 1 , 4*nloc12 >                          !
     !----------------------------------------------------------------------------!
     do m = 1,nucdep
-      kl = 3*ni12
-      do l=1,ni
-        do k=l+1,ni
+      kl = 3*nloc12
+      do l=1,nloc
+        do k=l+1,nloc
           kl = kl + 1
           buf1 = d2*p3(k,l,m)
           buf2 = d2*p4(k,l,m)
@@ -501,83 +770,83 @@ contains
 
           ! (B^I - A^I)_ub = Imag{ d^2 G / dK*_ij dK*_kl } - Imag{ d^2 G / dK*_ij dK_kl }
           !                = - Imag{ (37) }                - Imag{ (33) }
-          do j=1,iju(k)   ! i==k
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k),kl) = hmat(ijn(j,k),kl) - buf*p1(j,k,m) - (p2kml-pd(j,m))*p4(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) - buf*p1(i,l,m) + (p2lmk-pd(i,m))*p4(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) + buf*p1(j,l,m) - (p2lmk-pd(j,m))*p4(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k),kl) = hmat(ijn(i,k),kl) + buf*p1(i,k,m) + (p2kml-pd(i,m))*p4(i,l,m)
           enddo
 
           ! (B^I - A^I)_bb = Imag{ d^2 G / dK*_ij dK*_kl } - Imag{ d^2 G / dK*_ij dK_kl }
           !                = - Imag{ (39) }                - Imag{ (35) }
-          n = ni12
-          do j=1,iju(k)   ! i==k
+          n = nloc12
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
                                - buf1*p4(j,k,m) + buf2*p3(j,k,m) + (p2kml-pd(j,m))*p2(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
                                + buf1*p4(i,l,m) - buf2*p3(i,l,m) + (p2lmk-pd(i,m))*p2(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
                                + buf1*p4(j,l,m) - buf2*p3(j,l,m) + (p2lmk-pd(j,m))*p2(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
                                - buf1*p4(i,k,m) + buf2*p3(i,k,m) + (p2kml-pd(i,m))*p2(i,l,m)
           enddo
 
           ! (A^R - B^R)_ub = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (33) }                 - Real{ (37) }
-          n = 2*ni12
-          do j=1,iju(k)   ! i==k
+          n = 2*nloc12
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) - buf*p2(j,k,m) + (p2kml-pd(j,m))*p3(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p3(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) - buf*p2(i,k,m) + (p2kml-pd(i,m))*p3(i,l,m)
           enddo
 
           ! (A^R - B^R)_bb = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (35) }                 - Real{ (39) }
-          n = 3*ni12
-          do j=1,iju(k)   ! i==k
+          n = 3*nloc12
+          do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
                                - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
-          do i=ijl(l),ni  ! j==l
+          do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
                                + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
-          do j=1,iju(l)   ! i==l
+          do j=1,iju(l)     ! i==l
            hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
                                + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
           enddo
 
-          do i=ijl(k),ni  ! j==k
+          do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
                                - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
           enddo
@@ -591,12 +860,12 @@ contains
     !----------------------------------------------------------------------------!
     do j=1,ndimh
       do i=1,j
+        hmat(i,j) = - hmat(i,j) / dfloat(nloc)  ! minus sign --> we are looking for the minimum
         if(i==j)then
           totdiag = totdiag + dabs( hmat(i,j) )
         else
           totnond = totnond + dabs( hmat(i,j) )
         endif
-        hmat(i,j) = - hmat(i,j)   ! we are looking for the minimum
       enddo
     enddo
     totnond = d2*totnond
@@ -604,55 +873,55 @@ contains
     !----------------------------------------------------------------------------!
     !                              PRINT section                                 !
     !----------------------------------------------------------------------------!
-    if(loc%iprloc.ge.3)then
+    if(PM%iprloc.ge.3)then
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
-      do i=1,ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=1,ni12)
+      do i=1,nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=1,nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_uu'
-      do i=1,ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12+1,3*ni12)
+      do i=1,nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*nloc12+1,3*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_uu'
-      do i=2*ni12+1,3*ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12+1,3*ni12)
+      do i=2*nloc12+1,3*nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*nloc12+1,3*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_ub'
-      do i=1,ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=ni12+1,2*ni12)
+      do i=1,nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=nloc12+1,2*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_ub'
-      do i=1,ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
+      do i=1,nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*nloc12+1,4*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_ub'
-      do i=2*ni12+1,3*ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
+      do i=2*nloc12+1,3*nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*nloc12+1,4*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bb'
-      do i=ni12+1,2*ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=ni12+1,2*ni12)
+      do i=nloc12+1,2*nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=nloc12+1,2*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bb'
-      do i=ni12+1,2*ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
+      do i=nloc12+1,2*nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*nloc12+1,4*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bb'
-      do i=3*ni12+1,4*ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*ni12+1,4*ni12)
+      do i=3*nloc12+1,4*nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=3*nloc12+1,4*nloc12)
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bu'
-      do i=ni12+1,2*ni12
-        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*ni12+1,3*ni12)
+      do i=nloc12+1,2*nloc12
+        write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*nloc12+1,3*nloc12)
       enddo
     endif
 
@@ -677,23 +946,23 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_gradient(pmat,gradient,dnrmg)
-  !******************************************************************************!
-  !                                                                              !
+  subroutine get_gradient(gradient,dnrmg)
+  !==============================================================================!
   !                     Construction of the gradient                             !
-  !                                                                              ! 
-  !******************************************************************************!
+  !==============================================================================!
   implicit none
+
+  ! Global variables
+  ! real*8, intent(in) :: pmat(nloc,nloc,4,nucdep)
 
   ! External variables
   real*8, intent(out) :: dnrmg
 
-  real*8, intent(in ), dimension(:,:,:,:) ::  pmat
-  real*8, intent(out), dimension(:)       ::  gradient
+  real*8, intent(out), dimension(:) :: gradient
 
   ! Internal variables
   integer :: i, j, k, ij1, ij2, ij3, ij4
-  integer :: nucdep, ni, ndimg, ni12, lupri
+  integer :: nucdep, nloc, ndimg, nloc12, lupri
 
   real*8  :: dtmp, dnrm2
 
@@ -703,21 +972,21 @@ contains
 
   ! Get some dimensions
   nucdep = size(pmat,4)
-  ni     = size(pmat,1)
+  nloc   = size(pmat,1)
   ndimg  = size(gradient,1)
-  ni12   = ndimg / 4
+  nloc12 = ndimg / 4
 
   !------------------------------------------------------------------------------!
   !               Calculate real representation of the gradient                  !
   !------------------------------------------------------------------------------!
   do k = 1,nucdep
     ij1 = 0
-    do j=1,ni
-      do i=j+1,ni
+    do j=1,nloc
+      do i=j+1,nloc
         ij1 = ij1 + 1
-        ij2 = ij1 + ni12
-        ij3 = ij2 + ni12
-        ij4 = ij3 + ni12
+        ij2 = ij1 + nloc12
+        ij3 = ij2 + nloc12
+        ij4 = ij3 + nloc12
         dtmp = d2*(pmat(j,j,1,k) - pmat(i,i,1,k))
         gradient(ij1) = gradient(ij1) + dtmp * pmat(i,j,1,k)
         gradient(ij2) = gradient(ij2) + dtmp * pmat(i,j,3,k)
@@ -728,18 +997,18 @@ contains
   enddo
 
   do i=1,ndimg
-    gradient(i) = - gradient(i)  ! we are looking for the minimum
+    gradient(i) = - gradient(i) / dfloat(nloc)  ! minus sign --> we are looking for the minimum
   enddo
 
-  if(loc%iprloc.ge.2)then
+  if(PM%iprloc.ge.2)then
     write(lupri,'(/a,2f10.5)') 'Print gradient^R_u'
-    write(lupri,'(8d12.4)') (gradient(i),i=1,ni12)
+    write(lupri,'(8d12.4)') (gradient(i),i=1,nloc12)
     write(lupri,'(/a,2f10.5)') 'Print gradient^R_b}'
-    write(lupri,'(8d12.4)') (gradient(i),i=1+ni12,2*ni12)
+    write(lupri,'(8d12.4)') (gradient(i),i=1+nloc12,2*nloc12)
     write(lupri,'(/a,2f10.5)') 'Print gradient^I_u'
-    write(lupri,'(8d12.4)') (gradient(i),i=1+2*ni12,3*ni12)
+    write(lupri,'(8d12.4)') (gradient(i),i=1+2*nloc12,3*nloc12)
     write(lupri,'(/a,2f10.5)') 'Print gradient^I_b'
-    write(lupri,'(8d12.4)') (gradient(i),i=1+3*ni12,4*ni12)
+    write(lupri,'(8d12.4)') (gradient(i),i=1+3*nloc12,4*nloc12)
   endif
 
   ! Norm of the gradient
@@ -750,36 +1019,17 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine exp_func(pkappa,tgrad,eval,ni,dinvmq)
-  !******************************************************************************!
-  !                                                                              !
-  !       Calculate value of the quadratic approximation to the functional       !
-  !                                                                              !
-  !******************************************************************************!
+  subroutine get_date(daytid)
   implicit none
+  character, intent(out) :: daytid*24
 
-  ! External variables
-  integer, intent(in ) :: ni
-  real*8,  intent(out) :: dinvmq
+  call gtinfo(daytid)
 
-  real*8,  intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
-
-  ! Internal variables
-  integer :: i
-
-  !------------------------------------------------------------------------------!
-  dinvmq = d0
-  do i=1,size(eval,1)
-    dinvmq = dinvmq + d2*pkappa(i)*tgrad(i) + pkappa(i)*eval(i)*pkappa(i)
-  enddo
-  dinvmq = dinvmq / dfloat(ni)
-
-  end subroutine exp_func
-
+  end subroutine get_date
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLP1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,MAXREF,DINVM)
+  SUBROUTINE ORBLP1(NBL,NBS,NLOC,NUCDEP,MAXREF,DINVM)
 !***********************************************************************
 !
 !     Based on T.Saue March 26 1999 : SUBROUTINE ANAPRJ
@@ -789,13 +1039,12 @@ contains
       USE SELECT_COEFF_OWN_BAS
       IMPLICIT NONE
 
-      ! External variables
-      INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP, MAXREF
-      REAL*8,  INTENT(OUT) :: DINVM
+      ! Global variables
+      ! REAL*8,  INTENT(  OUT) :: PMAT(NLOC,NLOC,4,NUCDEP)
 
-      REAL*8,  INTENT(IN   ) :: SCOEF(*)
-      REAL*8,  INTENT(INOUT) :: SMAT(*)
-      REAL*8,  INTENT(  OUT) :: PMAT(NI,NI,4,NUCDEP)
+      ! External variables
+      INTEGER, INTENT(IN ) :: NBL, NBS, NLOC, NUCDEP, MAXREF
+      REAL*8,  INTENT(OUT) :: DINVM
 
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
@@ -886,7 +1135,7 @@ contains
                I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
                NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
                NSTR(1,0,I))
-          IF(LOC%IPRLOC.GE.5)THEN
+          IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
             CALL PRQMAT(RCOEF(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
@@ -912,12 +1161,12 @@ contains
 
 !     NBDIM = 0
 !     DO IFRP = 1,NFSYM
-        NBDIM = NVECS(IFRP,1)*NI*4
+        NBDIM = NVECS(IFRP,1)*NLOC*4
 !     ENDDO
       CALL ALLOC(BV,NBDIM,ID="BV in ORBLP1")
 !     DO IFRP = 1,NFSYM
 !     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
-      NMOL   = NI
+      NMOL   = NLOC
       NREF   = NVECS(IFRP,1)
       N2REF  = NREF*NREF
       CALL ALLOC(GVEC,(NREF+1)*2,ID="GVEC in ORBLP1")
@@ -929,54 +1178,54 @@ contains
         CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
         IVEC = IVEC + NSTR(IFRP,0,I)
       ENDDO
-      CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,NVECS(IFRP,1),BV,NSTR,IPIV,MAXREF)
+      CALL ORBLP2(RCOEF,AMAT,NB,NLOC,NVECS(IFRP,1),BV,NSTR,IPIV,MAXREF)
 
 ! Memory allocation for the matrix W = Ac
 
-      CALL ALLOC(WMAT,NREF*NI*4,ID="WMAT in ORBLP1")
+      CALL ALLOC(WMAT,NREF*NLOC*4,ID="WMAT in ORBLP1")
 
 ! Construction of W = Ac
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
         WRITE(LUPRI,'(/A)') '* Matrice BV'
-        CALL PRQMAT(BV,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(BV,NREF,NLOC,NREF,NLOC,4,IPQTOQ(1,0),LUPRI)
         WRITE(LUPRI,'(/A)') '* Matrice AMAT'
-        CALL PRQMAT(AMAT,NREF,NREF,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(AMAT,NREF,NREF,NREF,NLOC,4,IPQTOQ(1,0),LUPRI)
       ENDIF
-      CALL QGEMM(NREF,NI,NREF,D1,                &
+      CALL QGEMM(NREF,NLOC,NREF,D1,              &
            'N','N',IPQTOQ(1,0),AMAT,NREF,NREF,4, &
-           'N','N',IPQTOQ(1,0),BV,NREF,NI,4,     &
-           D0,IPQTOQ(1,0),WMAT,NREF,NI,4)
+           'N','N',IPQTOQ(1,0),BV,NREF,NLOC,4,   &
+           D0,IPQTOQ(1,0),WMAT,NREF,NLOC,4)
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
         WRITE(LUPRI,'(/A)') '* Matrice W'
-        CALL PRQMAT(WMAT,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(WMAT,NREF,NLOC,NREF,NLOC,4,IPQTOQ(1,0),LUPRI)
       ENDIF
 
 ! Construct P_A for each center A
 
       JOFF = 0
       DO I = 1,NUCDEP
-        CALL QGEMM(NI,NI,NSTR(IFRP,0,I),D1,                    &
-                   'H','N',IPQTOQ(1,0),BV(JOFF+1),NREF,NI,4,   &
-                   'N','N',IPQTOQ(1,0),WMAT(JOFF+1),NREF,NI,4, &
-                   D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
+        CALL QGEMM(NLOC,NLOC,NSTR(IFRP,0,I),D1,                  &
+                   'H','N',IPQTOQ(1,0),BV(JOFF+1),NREF,NLOC,4,   &
+                   'N','N',IPQTOQ(1,0),WMAT(JOFF+1),NREF,NLOC,4, &
+                   D0,IPQTOQ(1,0),PMAT(1,1,1,I),NLOC,NLOC,4)
         JOFF = JOFF + NSTR(IFRP,0,I)
       ENDDO
 
 ! P_A matrices symmetrization
 
       DO I = 1,NUCDEP
-        CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
+        CALL FULMAT('S',NLOC,NLOC,PMAT(1,1,1,I))
         DO IZ = 2,4
-          CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
+          CALL FULMAT('A',NLOC,NLOC,PMAT(1,1,IZ,I))
         ENDDO
       ENDDO
 
 ! Multiply pmat with 1/2 just to avoid confusion in the code below
       DO IZ=1,4
-        DO I=1,NI
-          DO J=1,NI
+        DO I=1,NLOC
+          DO J=1,NLOC
             DO K=1,NUCDEP
               PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2
             ENDDO
@@ -984,25 +1233,25 @@ contains
         ENDDO
       ENDDO
 
-      IF(LOC%IPRLOC.GE.2)THEN
+      IF(PM%IPRLOC.GE.2)THEN
         DO IZ=1,4
           WRITE(LUPRI,*)
           WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
           DO I=1, NUCDEP
             WRITE(LUPRI,'(A,I4)') ' Nucleus #',I
-            DO J=1,NI
-              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
+            DO J=1,NLOC
+              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NLOC)
             ENDDO
             WRITE(LUPRI,*)
           ENDDO
         ENDDO
       ENDIF
 
-      IF(LOC%IPRLOC.GE.5)THEN
+      IF(PM%IPRLOC.GE.5)THEN
         DO I = 1,NUCDEP
           WRITE(LUPRI,'(/A,I3)') '* ORBLP1: Matrice P  Atom ', I
           WRITE(LUPRI,'(A)') '  ============================'
-          CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
+          CALL PRQMAT(PMAT(1,1,1,I),NLOC,NLOC,NLOC,NLOC,4,IPQTOQ(1,0),LUPRI)
         ENDDO
       ENDIF
 
@@ -1011,7 +1260,7 @@ contains
     WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
     WRITE(LUPRI,'(20X,A)')  '  ===================================  '
     DINV = D0
-    DO I = 1,NI
+    DO I = 1,NLOC
       QLOC2 = D0
       DO J = 1,NUCDEP
          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
@@ -1020,7 +1269,7 @@ contains
       DINV = DINV + QLOC2
       WRITE(LUPRI,'(11X,A,I4,A,F7.4)')' Orbital',I,' Pipek-Mezey localization measure d = ',DLOC
     ENDDO
-    DINVM = DINV/DFLOAT(NI)
+    DINVM = DINV/DFLOAT(NLOC)
     WRITE(LUPRI,'(/11X,A,F21.15)')' Inverse mean delocalization = ',DINVM
     DINVM = - DINVM  ! we are looking for the minimum
 
@@ -1044,7 +1293,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
- SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,NSTR,IPIVOT,MAXREF)
+  SUBROUTINE ORBLP2(RCOEF,AMAT,NB,NMOL,NREF,BVEC,NSTR,IPIVOT,MAXREF)
 !***********************************************************************
 !
 !     Projection analysis for fermion ircop IFRP
@@ -1054,13 +1303,16 @@ contains
 !***********************************************************************
       IMPLICIT NONE
 
+      ! Global variables
+      ! REAL*8,  INTENT(IN   ) :: SCOEF(:,:,:)
+      ! REAL*8,  INTENT(INOUT) :: SMAT(*)
+
       ! External variables
       INTEGER, INTENT(IN ) :: NB, NMOL, NREF, MAXREF
       INTEGER, INTENT(IN ) :: NSTR(2,0:2,0:MAXREF)
       INTEGER, INTENT(OUT) :: IPIVOT(*)
 
-      REAL*8,  INTENT(IN   ) :: SCOEF(*), RCOEF(*)
-      REAL*8,  INTENT(INOUT) :: SMAT(*)
+      REAL*8,  INTENT(IN   ) :: RCOEF(*)
       REAL*8,  INTENT(  OUT) :: AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4)
 
       ! Internal variables
@@ -1104,7 +1356,7 @@ contains
 
 !       Print overlaps
 
-        IF(LOC%IPRLOC.GE.5)THEN
+        IF(PM%IPRLOC.GE.5)THEN
            JOFF = 1
            DO J = 1,NREFS
               KOFF = 1
@@ -1143,152 +1395,500 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,NFNUC,DINVM)
+  subroutine orblo1(nbl,nbs,nloc,nucdep,dinvm)
+  !==============================================================================!
+  !                                                                              !
+  !    Construction of Q^A_i matrices from Mulliken analysis (eq. 3 in [1])      !
+  !                         Q^A_i == PMAT(i,i,4,A) =                             !
+  !     = 1/2 ( SUM_{nu=A} SUM_{mu} C_{nu,i}^* S_{nu,mu} C_{mu,i} + c.c. )       !
+  !                                                                              !
+  !              Calculation of the inverse mean delocalization                  !
+  !                  DINVM = 1/M  SUM_i^M SUM_A ( Q^A_i )^2                      !
+  !==============================================================================!
+  implicit none
+
+  ! Global variables
+  ! real*8,  intent(in ) :: smat(*), scoef(:,:,:)
+  ! real*8,  intent(out) :: pmat(nloc,nloc,4,nucdep)
+  ! integer, intent(in ) :: nfnuc(*)
+
+  ! External variables
+  integer, intent(in ) :: nbl, nbs, nloc, nucdep
+  real*8,  intent(out) :: dinvm
+
+  ! Internal variables
+  integer :: i, j, k, iz, nb, ioffl, ioffs, lupri
+  integer :: ipqtoq(4,0:7)
+  real*8  :: dinv, qloc2, dloc
+
+  real*8, allocatable, dimension(:) :: wlmat, wsmat
+
+  !------------------------------------------------------------------------------!
+  nb = nbl + nbs
+
+  lupri       = var%lupri
+  ipqtoq(:,:) = var%ipqtoq(:,:)
+
+  ! Memory allocation for the matrix W = Sc
+  call alloc(wlmat,nbl*nloc*4,id='wlmat in orblo1')
+  call alloc(wsmat,nbs*nloc*4,id='wsmat in orblo1')
+
+  ! Construction of W = Sc (large and small components)
+  call qgemm(nbl,nloc,nbl,d1,                     &
+             'N','N',ipqtoq(1,0),smat,nb,nb,1,    &
+             'N','N',ipqtoq(1,0),scoef,nb,nloc,4, &
+              d0,ipqtoq(1,0),wlmat,nbl,nloc,4)
+  if(.not.var%h2comp)then
+    call qgemm(nbs,nloc,nbs,d1,                                &
+               'N','N',ipqtoq(1,0),smat(1+nb*nbl+nbl),nb,nb,1, &
+               'N','N',ipqtoq(1,0),scoef(1+nbl,1,1),nb,nloc,4, &
+                d0,ipqtoq(1,0),wsmat,nbs,nloc,4)
+  endif
+
+  if(pm%iprloc.ge.5)then
+    write(lupri,'(/a)') '* WL matrix :'
+    call prqmat(wlmat,nbl,nloc,nbl,nloc,4,ipqtoq(1,0),lupri)
+    if(.not.var%h2comp)then
+      write(lupri,'(/a)') '* WS matrix :'
+      call prqmat(wsmat,nbs,nloc,nbs,nloc,4,ipqtoq(1,0),lupri)
+    endif
+  endif
+
+  ! Construct P_A for each center A
+  ioffl = 0
+  ioffs = 0
+  do i = 1,nucdep
+    call qgemm(nloc,nloc,nfnuc(i),d1,                            &
+               'H','N',ipqtoq(1,0),scoef(1+ioffl,1,1),nb,nloc,4, &
+               'N','N',ipqtoq(1,0),wlmat(1+ioffl),nbl,nloc,4,    &
+                d0,ipqtoq(1,0),pmat(1,1,1,i),nloc,nloc,4)
+    if(.not.var%h2comp)then
+      call qgemm(nloc,nloc,nfnuc(i+nucdep),d1,                         &
+                 'H','N',ipqtoq(1,0),scoef(1+nbl+ioffs,1,1),nb,nloc,4, &
+                 'N','N',ipqtoq(1,0),wsmat(1+ioffs),nbs,nloc,4,        &
+                 d1,ipqtoq(1,0),pmat(1,1,1,i),nloc,nloc,4)
+      ioffs = ioffs + nfnuc(nucdep+i)
+    endif
+    ioffl = ioffl + nfnuc(i)
+  enddo
+
+  ! P_A matrices symetrisation
+  do i = 1,nucdep
+    call fulmat('S',nloc,nloc,pmat(1,1,1,i))
+    do iz = 2,4
+      call fulmat('A',nloc,nloc,pmat(1,1,iz,i))
+    enddo
+  enddo
+
+  ! Multiply pmat with 1/2 just to avoid confusion in the code below
+  do iz=1,4
+    do i=1,nloc
+      do j=1,nloc
+        do k=1,nucdep
+          pmat(i,j,iz,k) = pmat(i,j,iz,k) / d2
+        enddo
+      enddo
+    enddo
+  enddo
+
+  if(pm%iprloc.ge.2)then
+    do iz=1,4
+      write(lupri,'(/a,i3)') 'Print Q^A matrices, IZ = ',iz
+      do i=1,nucdep
+        write(lupri,'(a,i4)') ' Nucleus #',i
+        do j=1,nloc
+          write(lupri,'(i4,10es9.1)') j,(pmat(j,k,iz,i),k=1,nloc)
+        enddo
+        write(lupri,*)
+      enddo
+    enddo
+  endif
+
+  if(pm%iprloc.ge.5)then
+     do i = 1,nucdep
+        write(lupri,'(/a,i3)') '* ORBLO1: Matrice P  Atom ',i
+        write(lupri,'(a)') '  ============================'
+        call prqmat(pmat(1,1,1,i),nloc,nloc,nloc,nloc,4,ipqtoq(1,0),lupri)
+     enddo
+  endif
+
+  ! Calculation and print of the localisation criterion
+  write(lupri,'(/20x,a)') '** Pipek-Mezey localization criteria **' 
+  write(lupri,'(20x,a)')  '  ===================================  '
+  dinv = d0
+  do i = 1,nloc
+    qloc2 = d0
+    do j = 1,nucdep
+       qloc2 = qloc2 + pmat(i,i,1,j)*pmat(i,i,1,j)
+    enddo
+    dloc = d1/qloc2
+    dinv = dinv + qloc2
+    write(lupri,'(11x,a,i4,a,f7.4)')' Orbital',i,' Pipek-Mezey localization measure d = ',dloc
+  enddo
+  dinvm = dinv/dfloat(nloc)
+  write(lupri,'(/11x,a,f21.15)')' Inverse mean delocalization = ',dinvm
+  dinvm = - dinvm  ! we are looking for the minimum
+
+  !------------------------------------------------------------------------------!
+  !                             Deallocate arrays                                !
+  !------------------------------------------------------------------------------!
+  call dealloc(wlmat,id='wlmat in orblo1')
+  call dealloc(wsmat,id='wsmat in orblo1')
+
+  end subroutine orblo1
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE ORBLO4(INDNAO,NUCDEP)
 !***********************************************************************
 !
 !     Written by S.Dubillard Jan 21 2004
 !     Last revision:
 !
-!     Construction of the matrices P_A=c_A^+Sc from Mulliken analysis
-!
-!     Calculation of the localisation criteria DINV
+!     Construction of the array NFNUC which contains the number of
+!     large components basis functions for each center and then the 
+!     number of small components basis functions for each center
 !
 !***********************************************************************
       IMPLICIT NONE
 
-      ! External variables
-      INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
-      REAL*8,  INTENT(OUT) :: DINVM
+      ! Global variables
+      ! INTEGER, INTENT(OUT) :: NFNUC(2*NUCDEP)
 
-      INTEGER, INTENT(IN ) :: NFNUC(*)
-      REAL*8,  INTENT(IN ) :: SMAT(*), SCOEF(*)
-      REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
+      ! External variables
+      INTEGER, INTENT(IN ) :: NUCDEP
+      INTEGER, INTENT(IN ) :: INDNAO(2,*)
 
       ! Internal variables
-      INTEGER :: I, J, K, IZ, NB, IOFFL, IOFFS, LUPRI
-      INTEGER :: IPQTOQ(4,0:7)
-      REAL*8  :: DINV, QLOC2, DLOC
-
-      REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
+      INTEGER :: IFRP, I
 
   !------------------------------------------------------------------------------!
-      NB = NBL + NBS
-
-      LUPRI       = VAR%LUPRI
-      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
-
-! Memory allocation for the matrix W = Sc
-
-      CALL ALLOC(WLMAT,NBL*NI*4,ID='WLMAT IN ORBLO1')
-      CALL ALLOC(WSMAT,NBS*NI*4,ID='WSMAT IN ORBLO1')
-
-! Construction of W = Sc (large and small components)
-
-      CALL QGEMM(NBL,NI,NBL,D1,               &
-           'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,  &
-           'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4, &
-           D0,IPQTOQ(1,0),WLMAT,NBL,NI,4)
-      IF(.NOT.VAR%TWOCOMPBSS) THEN
-         CALL QGEMM(NBS,NI,NBS,D1,                            &
-              'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1, &
-              'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,       &
-              D0,IPQTOQ(1,0),WSMAT,NBS,NI,4)
-      ENDIF
-
-      IF(LOC%IPRLOC.GE.5)THEN
-         WRITE(LUPRI,'(/A)') '* WL matrix :'
-         CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
-         IF(.NOT.VAR%TWOCOMPBSS) THEN
-            WRITE(LUPRI,'(/A)') '* WS matrix :'
-            CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
-         ENDIF
-      ENDIF
-
-! Construct P_A for each center A
-
-      IOFFL = 0
-      IOFFS = 0
-      DO I = 1,NUCDEP
-         CALL QGEMM(NI,NI,NFNUC(I),D1,                     &
-              'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,  &
-              'N','N',IPQTOQ(1,0),WLMAT(1+IOFFL),NBL,NI,4, &
-              D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-         IF(.NOT.VAR%TWOCOMPBSS) THEN
-            CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                 &
-                 'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4, &
-                 'N','N',IPQTOQ(1,0),WSMAT(1+IOFFS),NBS,NI,4,    &
-                 D1,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-            IOFFS = IOFFS + NFNUC(NUCDEP+I)
-         ENDIF
-         IOFFL = IOFFL + NFNUC(I)
+      IFRP = 1
+      DO I = 1,NUCDEP-1
+         NFNUC(I)=INDNAO(1,I+1)-INDNAO(1,I)
       ENDDO
-
-! P_A matrices symetrisation
-
-      DO I = 1,NUCDEP
-         CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
-         DO IZ = 2,4
-            CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
-         ENDDO
+      NFNUC(NUCDEP)=INDNAO(2,1)-INDNAO(1,NUCDEP)
+      DO I = 1,NUCDEP-1
+         NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
       ENDDO
+      NFNUC(2*NUCDEP)=VAR%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
 
-! Multiply pmat with 1/2 just to avoid confusion in the code below                                
-      DO IZ=1,4                                                                                   
-        DO I=1,NI                                                                                 
-          DO J=1,NI                                                                               
-            DO K=1,NUCDEP                                                                         
-              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2                                                
-            ENDDO                                                                                 
-          ENDDO                                                                                   
-        ENDDO                                                                                     
-      ENDDO
+  END SUBROUTINE ORBLO4
 
-      IF(LOC%IPRLOC.GE.2)THEN                                                                     
-        DO IZ=1,4                                                                                 
-          WRITE(LUPRI,*)                                                                          
-          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ                                    
-          DO I=1, NUCDEP                                                                          
-            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I                                                  
-            DO J=1,NI                                                                             
-              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)                               
-            ENDDO                                                                                 
-            WRITE(LUPRI,*)                                                                        
-          ENDDO                                                                                   
-        ENDDO                                                                                     
-      ENDIF
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-      IF(LOC%IPRLOC.GE.5)THEN
-         DO I = 1,NUCDEP
-            WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
-            WRITE(LUPRI,'(A)') '  ============================'
-            CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
-         ENDDO
-      ENDIF
+  subroutine wcmo2file
+  !==============================================================================!
+  !                                                                              !
+  !          Write the localised MO coefficients to the DFCOEF file              !
+  !                                                                              !
+  !==============================================================================!
+   implicit none
 
-! Calculation and print of the localisation criterion
+   ! Global variables
+   ! integer :: isel(:)      ! isel(nloc)
+   ! real*8  :: scoef(:,:,:) ! scoef(nb,nloc,4)
 
-    WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
-    WRITE(LUPRI,'(20X,A)')  '  ===================================  '
-    DINV = D0
-    DO I = 1,NI
-      QLOC2 = D0
-      DO J = 1,NUCDEP
-         QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
-      ENDDO
-      DLOC = D1/QLOC2
-      DINV = DINV + QLOC2
-      WRITE(LUPRI,'(11X,A,I4,A,F7.4)')' Orbital',I,' Pipek-Mezey localization measure d = ',DLOC
-    ENDDO
-    DINVM = DINV/DFLOAT(NI)
-    WRITE(LUPRI,'(/11X,A,F21.15)')' Inverse mean delocalization = ',DINVM
-    DINVM = - DINVM  ! we are looking for the minimum
+   ! Internal variables
+   integer :: ifrp, nz, no, nb, nloc
+   integer :: i, ii, iz, ioff
+   real*8  :: toterg
+
+   integer, allocatable :: ibeig(:)
+   real*8,  allocatable :: cmo(:,:,:), eig(:)
 
   !------------------------------------------------------------------------------!
-  !                             Deallocate arrays                                !
-  !------------------------------------------------------------------------------!
-    CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
-    CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
+  ifrp = 1
+  nz   = 4
+  no   = var%norb(ifrp)
+  nb   = size(scoef,1)    ! nfbas(ifrp,0)
+  nloc = size(scoef,2)
 
-  END SUBROUTINE ORBLO1
+  ! allocate arrays
+  call alloc(cmo  ,nb,no,4  ,id='cmo   in wcmo2file')
+  call alloc(eig  ,var%norbt,id='eig   in wcmo2file')
+  call alloc(ibeig,var%norbt,id='ibeig in wcmo2file')
+
+  ! open DFCOEF file and read EIG, IBEIG and TOTERG
+  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,14)
+
+  ! reorganize MO
+  ioff = var%npsh(ifrp)
+  if(var%h2comp .or. var%levyle) ioff = 0
+  do iz = 1,nz
+    do i = 1,nloc
+      ii = ioff + isel(i)
+      call dcopy(nb,scoef(1,i,iz),1,cmo(1,ii,iz),1)
+    enddo
+  enddo
+  if (pm%iprloc.ge.5)then
+    write(var%lupri,'(/a)') '*wcmo2file : New CMO matrix'
+    call prqmat(cmo,nb,no,nb,no,4,var%ipqtoq(1,0),var%lupri)
+  endif
+
+  ! write MO to file and close him
+  call wricmo(var%lucoef,cmo,eig,ibeig,toterg)
+  close(var%lucoef,status='keep')
+
+  ! deallocate arrays
+  call dealloc(cmo  ,id='cmo   in wcmo2file')
+  call dealloc(eig  ,id='eig   in wcmo2file')
+  call dealloc(ibeig,id='ibeig in wcmo2file')
+
+  end subroutine wcmo2file
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE ROTCMO_MOD(NBASI,NORBI,NZ,XKAPPA,NORBT,IP)
+!***********************************************************************
+!
+!     Rotate coefficients
+!
+!     SCOEF_{new} = SCOEF_{old} exp( -\kappa )
+!     We use a trick a la Sostrup notes, chapter 3.1.5
+!
+!     Input:
+!        SCOEF   - old coefficients
+!        XKAPPA  - Kappa matrix (Kappa is overwritten with junk)
+!        IPRINT  - print level
+!
+!     Output:
+!        SCOEF   - new coefficients
+!
+!     Written by J. Thyssen - Nov 24 1998
+!
+!***********************************************************************
+      IMPLICIT NONE
+
+      ! Global variables
+      ! REAL*8, INTENT(INOUT) :: SCOEF(:,:,:)  ! SCOEF(NBASI,NORBI,NZ)
+
+      ! External variables
+      INTEGER, INTENT(IN) :: NBASI, NORBI, NZ, NORBT, IP(4)
+      REAL*8,  INTENT(IN) :: XKAPPA(NORBT,NORBT,NZ)
+
+      ! Internal variables
+      REAL*8, PARAMETER :: DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00
+      REAL*8, PARAMETER :: D1P5 = 1.5D00, THREQL = 1.0D-12, DM1 = -D1
+
+      CHARACTER SECTID*12,CPUTID*12,WALLTID*12
+
+      INTEGER :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX, LUPRI
+      REAL*8  :: CPU1, WALL1, CPU2, WALL2, CPU3, WALL3, CPU4, WALL4, EIG, SQEIG, D_MAX
+      REAL*8  :: ABS, SQRT, COS, SIN
+
+      REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
+
+  !------------------------------------------------------------------------------!
+      LUPRI  = VAR%LUPRI
+
+      CALL GETTIM(CPU1,WALL1)
+      IF (PM%IPRLOC.GE.5) CALL HEADER('Output from ROTCMO_MOD',-1)
+
+      NORBXQ = NORBI*NORBI*NZ
+      CALL ALLOC(REIG,NORBI ,ID='REIG IN ROTCMO_MOD')
+      CALL ALLOC(RSIN,NORBXQ,ID='RSIN IN ROTCMO_MOD')
+      CALL ALLOC(RV  ,NORBXQ,ID='KV   IN ROTCMO_MOD')
+      CALL ALLOC(RTMP,NORBXQ,ID='RTMP IN ROTCMO_MOD')
+
+      CALL ALLOC(RCOS,NORBI*NBASI*NZ,ID='RCOS IN ROTCMO_MOD')
+
+!     Calculate -\kappa^2 = \kappa^{\dagger} \kappa
+!     (use RCOS as temporary array)
+!     ---------------------------------------------
+
+      CALL QGEMM(NORBI,NORBI,NORBI,D1,             &
+                 'H','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 D0,IP,RCOS,NORBI,NORBI,NZ)
+
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: -kappa^2',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Diagonalize -\kappa^2
+!     ---------------------------------------------
+
+      CALL QDIAG90(NZ,NORBI,RCOS,NORBI,NORBI, &
+                   REIG,1,RV,NORBI,NORBI,IERR)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: V matrix (eigenvector)',-1)
+         CALL PRQMAT(RV,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: eigenvalues',-1)
+         CALL PRQMAT(REIG,1,NORBI,1,NORBI,1,IP,LUPRI)
+      END IF
+
+!     Make cos(d) and sin(d)/d ; d = sqrt(eigenvalues)
+!     ------------------------------------------------
+
+      CALL GETTIM(CPU2,WALL2)
+      RCOS(1:NORBXQ) = D0
+      RSIN(1:NORBXQ) = D0
+      DO I = 1,NORBI
+         IADDR = (I-1) + (I-1)*NORBI
+         EIG = REIG(I)
+         IF (EIG .LT. D0) THEN
+            IF (PM%IPRLOC.GE.3 .AND. ABS(EIG).GT.VAR%THRZER) WRITE(LUPRI,9010) EIG
+            EIG = D0
+            REIG(I)   = D0
+         END IF
+         IF (EIG .LT. DTHRS) THEN
+
+!           Use Taylor expansion to avoid division by zero and/or
+!           to speed up evaluation (avoid call to sin/cos/sqrt).
+!           For EIG < 1.0D-8 the 3. order Taylor expansion is correct
+!             to machine precision.
+
+            RCOS(1+IADDR) = D1-DP5*EIG
+            RSIN(1+IADDR) = D1-DSIXTH*EIG
+         ELSE
+            SQEIG = SQRT(EIG)
+            RCOS(1+IADDR) = COS(SQEIG)
+            RSIN(1+IADDR) = SIN(SQEIG)/SQEIG
+         END IF
+      END DO
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: sin(d)/d',-1)
+         CALL PRQMAT(RSIN,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: cos(d)',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+      CALL GETTIM(CPU3,WALL3)
+ 9010 FORMAT('WARNING from ROTCMO_MOD: Negative eigenvalue ',1P,D15.6)
+
+!     Make V cos(d) V^{\dagger}
+!     (use KTMP as temporatory storage)
+!     ------------------------------------
+
+      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                    RTMP,NORBI,NORBI,NZ,IP,                &
+                    RCOS,NORBI,NORBI,NZ,IP,                &
+                    RV,NORBI,NORBI,NZ,IP,                  &
+                    RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: V cos(d) V^{dagger}',-1)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Make V sin(d)/d V^{\dagger}
+!     (use RCOS as temporatory storage)
+!     ------------------------------------
+
+      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                    RCOS,NORBI,NORBI,NZ,IP,                &
+                    RSIN,NORBI,NORBI,NZ,IP,                &
+                    RV,NORBI,NORBI,NZ,IP,                  &
+                    RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: V sin(d)/d V^{dagger}',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Make V cos(d) V^{\dagger} - V sin(d)/d V^{\dagger} \kappa
+!     ---------------------------------------------------------
+
+      CALL QGEMM(NORBI,NORBI,NORBI,DM1,            &
+                 'N','N',IP,RCOS,NORBI,NORBI,NZ,   &
+                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 D1,IP,RTMP,NORBI,NORBI,NZ)
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: exp(-kappa)',-1)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Check if unitary
+
+      CALL QGEMM(NORBI,NORBI,NORBI,D1,           &
+                 'N','N',IP,RTMP,NORBI,NORBI,NZ, &
+                 'H','N',IP,RTMP,NORBI,NORBI,NZ, &
+                 D0,IP,RCOS,NORBI,NORBI,NZ)
+      IOFF = 0
+      I_MAX = 0
+      J_MAX = 0
+      D_MAX = d0
+      DO I = 1,NORBI
+      DO J = 1,NORBI
+         IF (I.EQ.J) THEN
+            IF (ABS(RCOS(1+IOFF)-D1).GT.D_MAX) THEN
+               I_MAX = I
+               J_MAX = J
+               D_MAX = ABS(RCOS(1+IOFF)-D1)
+            END IF
+         ELSE
+            IF (RCOS(1+IOFF).GT.D_MAX) THEN
+               I_MAX = I
+               J_MAX = J
+               D_MAX = ABS(RCOS(1+IOFF))
+            END IF
+         END IF
+         IOFF = IOFF + 1
+      END DO
+      END DO
+      IF(PM%IPRLOC.GE.1)THEN
+        IF(D_MAX.GT.VAR%THRZER)THEN
+           WRITE(LUPRI,'(/A)')' WARNING: ROTCMO_MOD: maximum deviation from unitary matrix'
+           WRITE(LUPRI,*)'WARNING: Element ',J_MAX,I_MAX,' value :',D_MAX
+        ENDIF
+      ENDIF
+
+!     Calculate new orbitals: SCOEF_{old} exp(-kappa)
+!     ---------------------------------------------
+
+      IF (PM%IPRLOC.GE.10)THEN
+         CALL HEADER('ROTCMO_MOD: old orbitals',-1)
+         CALL PRQMAT(SCOEF,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
+      END IF
+!SK   CALL DZERO(RCOS,NORBXQ)
+      CALL QGEMM(NBASI,NORBI,NORBI,D1,             &
+                 'N','N',IP,SCOEF,NBASI,NORBI,NZ,  &
+                 'N','N',IP,RTMP,NORBI,NORBI,NZ,   &
+                 D0,IP,RCOS,NBASI,NORBI,NZ)
+      CALL DCOPY(NBASI*NORBI*NZ,RCOS,1,SCOEF,1)
+      IF (PM%IPRLOC.GE.5)THEN
+         CALL HEADER('ROTCMO_MOD: new orbitals',-1)
+         CALL PRQMAT(SCOEF,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
+      END IF
+      CALL GETTIM(CPU4,WALL4)
+      IF (PM%IPRLOC.GE.2)THEN
+         CPUTID = SECTID(CPU4-CPU1)
+         WALLTID = SECTID(WALL4-WALL1)
+         WRITE(LUPRI,9020) CPUTID,WALLTID
+         CPUTID = SECTID(CPU3-CPU2)
+         WALLTID = SECTID(WALL3-WALL2)
+         WRITE(LUPRI,9021) CPUTID,WALLTID
+      END IF
+ 9020 FORMAT(/'ROTCMO_MOD: total CPU (WALL) time       : ',A12,' (',A12,')')
+ 9021 FORMAT( 'ROTCMO_MOD: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
+
+      CALL DEALLOC(REIG,ID='REIG IN ROTCMO_MOD')
+      CALL DEALLOC(RSIN,ID='RSIN IN ROTCMO_MOD')
+      CALL DEALLOC(RCOS,ID='RCOS IN ROTCMO_MOD')
+      CALL DEALLOC(RV  ,ID='KV   IN ROTCMO_MOD')
+      CALL DEALLOC(RTMP,ID='RTMP IN ROTCMO_MOD')
+
+  END SUBROUTINE ROTCMO_MOD
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine errall(ier,chsub,charr)
+  implicit none
+
+  integer      :: ier
+  character(*) :: chsub, charr
+
+  if(ier /= 0)then
+    write(6,*)
+    write(6,'(a,a,a,a)')' Error in allocation of ',charr,' in subroutine ',chsub
+    write(6,'(a,i4)'   )' iostat =',ier
+    stop 'ERROR in allocation (see output form more information)'
+  endif
+
+  end subroutine
 
 end module func_PipekMezey

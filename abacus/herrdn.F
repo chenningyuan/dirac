@@ -2743,7 +2743,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      CHARACTER TSTRING*(6*MXAQN+3),SPDCAR*1
+      CHARACTER TSTRING*(6*MXQN+3),SPDCAR*1
       DIMENSION JCO(IQM),NRC(*),NUC(*)
 #include "ccom.h"
 #include "gencon.h"
@@ -3956,11 +3956,15 @@ C
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI
+!miro: out-of-bounds fixes: KBLOCK -> *
       DIMENSION IQM(KATOM),NBLCK(KATOM),
-     &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK),
+!    &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+     &          JCO(KANG,KATOM),NUC(*),NRC(*),
+!    &          CPRIMU(KPRIM,KPRIM,KBLOCK),
+     &          CPRIMU(KPRIM,KPRIM,*),
      &          ALPHA(KPRIM,KBLOCK),
-     &          SEG(KBLOCK)
+!    &          SEG(KBLOCK)
+     &          SEG(*)
       DIMENSION IPCON(KPRIM)
 C
 C     P R I M I T I V E S
@@ -5072,7 +5076,7 @@ C.......................................................................
 C
       INUC = CHARGE+0.2D0
       A = CHARGE*FAC2
-      IF (INUC.LE.109) A = NUCMASS(INUC)
+      IF (INUC.LE.109.AND.INUC.GT.0) A = NUCMASS(INUC)
       A = A**DP3
       DELTA = (AF/(BF*A+CF))
       DELTA = FAC*DELTA*DELTA

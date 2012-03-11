@@ -3,7 +3,9 @@
 #
 # scratch dir
 --scratch=$PWD
-# parallel run
+# parallel run - global scratch disk
 --global-scratch-disk
-# mpirun - specified in $PATH !
+#
+# mpirun - is specified in $PATH !
+#
 #--mpirun=$PWD/build/mpirun

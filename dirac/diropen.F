@@ -184,11 +184,8 @@ C..........negative energy solutions are occupied
          ENDIF
 C........also include contribution to active-active block !
 C........add factor half since this is a diagonal block
-C        hjaaj Aug 2011: including this term will give a wrong setup of BMAT 
-C        and leads to bad convergens. 
-         ! FAC = GAMMA*DP5
-         ! CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
-C .. end HJAaJ
+         FAC = GAMMA*DP5
+         CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
 C
          IOFFTDINV = 1
          DO 20 I = 1,NFSYM

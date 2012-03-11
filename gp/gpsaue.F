@@ -6127,13 +6127,9 @@ C
 C
       DIMENSION C(NP)
 C
+      V2 = POLNDER(NORDER,C,XOPT,2)
       V3 = POLNDER(NORDER,C,XOPT,3)
       V4 = POLNDER(NORDER,C,XOPT,4)
-
-!     radovan: v2 is never set, set it to zero and stop code
-!              until this is fixed
-      v2 = 0.0d0
-      stop 'v2 is used but never set'
 
       TEMP = 7.0D0*V3*V3/V2/9.0D0
       T2 = 100.0D0*(TEMP - V4)/V4
@@ -6214,16 +6210,18 @@ C***********************************************************************
 C
       PARAMETER(D2=2.0D0,D4=4.0D0)
       DE = OMEGA*OMEGA/WXE/D4
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
-      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated D_e:',DE*XTKAYS, ' cm-1'
-      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, ' eV'
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
+      WRITE(LUPRI,'(A,2X,E10.4,A)')
+     &  '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
+      WRITE(LUPRI,'(A,2X,E10.4,A)')
+     & '* Estimated D_e:',DE*XTKAYS, ' cm-1'
+      WRITE(ILOGG,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV, ' eV'
       D0 = DE-(OMEGA/D2)+WXE/D4
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated dissociation energy:',
      &       D0*XTEV, ' eV'
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated dissociation energy:',
      &       D0*XKJMOL, ' kJ/mol'
-      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated dissociation energy:',
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated dissociation energy:',
      &       D0*XTKAYS  , ' cm-1'
       RETURN
       END

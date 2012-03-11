@@ -418,7 +418,7 @@ C
 C       number of groups sharing a file ( = NFLGRPS ) is determined
 C       in the subroutine above. If there is only one group
 C       than we can simulate a shared filesystem.
-        IF( NFLGRPS .eq. 1 ) THEN 
+        IF( NFLGRPS_REL .eq. 1 ) THEN 
           CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
         END IF
       else

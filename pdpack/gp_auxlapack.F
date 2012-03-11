@@ -2,7 +2,7 @@
 !
 ! lapack real (single and double precision) routines, taken from the netlib site on 20080612
 !
-#if defined (USE_DIRAC_DLAPACK)||(USE_DIRAC_ZLAPACK) 
+#ifdef USE_OWN_LAPACK
       SUBROUTINE ZDROT( N, CX, INCX, CY, INCY, C, S )
 *
 *     .. Scalar Arguments ..

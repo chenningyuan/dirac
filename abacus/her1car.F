@@ -594,8 +594,10 @@ C
             CALL HEADER ('Output from CINT0',-1)
             WRITE (LUPRI,'(//,A,2I5)') ' ICOMPA, ICOMPB ', ICOMPA,ICOMPB
             WRITE (LUPRI,'(/,A,2F12.6)') ' SFAC, TFAC ', SFAC, TFAC
-            WRITE (LUPRI,'(/,A,3F12.6)') ' SINT, TINT, AINT ',
+            IF (DOST) THEN
+              WRITE (LUPRI,'(/,A,3F12.6)') ' SINT, TINT, AINT ',
      *        SFAC*X0*Y0*Z0, TFAC*(X2*Y0*Z0 + X0*Y2*Z0 + X0*Y0*Z2), AINT
+            ENDIF
          END IF
   100 CONTINUE
       RETURN
