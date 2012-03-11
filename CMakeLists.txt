@@ -86,7 +86,7 @@ if(ENABLE_CUDA)
             # radovan: do not use hardcoded locations, use variables
             # set and returned by FindCUDA.cmake
             # miro: so far I haven't found variable for ...fortran.c, seeking continue
-            add_library(fortran_cuda "/usr/local/cuda/src/fortran.c")
+            add_library(fortran_cuda "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.c")
             INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
             set(LIBS
                 ${LIBS}
