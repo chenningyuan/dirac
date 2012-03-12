@@ -1143,7 +1143,6 @@ contains
           WRITE(LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
           CALL QUIT('PRJANA: No reference coefficients !')
         ENDIF
-        CALL OPNFIL(VAR%LUCOEF,REFFIL(I),'OLD','PRJANA')
         IF(VAR%OWNBAS)THEN
           CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,               &
                I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
@@ -1162,7 +1161,6 @@ contains
           WRITE(0,*) 'Current version work only with .OWNBAS option'
           STOP
         ENDIF
-        CLOSE(VAR%LUCOEF,STATUS='KEEP')
       ENDDO
 
 !     Throw away the full coefficients and eigenvalues
