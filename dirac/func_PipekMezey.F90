@@ -25,7 +25,7 @@ implicit none
 
 public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, REACMO_MOD, ROTCMO_MOD, errall
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod, ROTCMO_MOD, errall
 
 type :: PipekMezey_flags
   integer :: iprloc
@@ -247,7 +247,7 @@ contains
 
   ! Read coefficients
   call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_mod(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,2)
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
   close(var%lucoef,status='keep')
 
   ! select orbitals
@@ -1623,7 +1623,7 @@ contains
 
   ! open DFCOEF file and read EIG, IBEIG and TOTERG
   call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_mod(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,14)
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -1693,195 +1693,95 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-      SUBROUTINE REACMO_MOD(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
-!***********************************************************************
-!
-!     Read DHF-coefficients and eigenvalues from unformatted file
-!     Read option is provided from bit-packed IOPT:
-!       0001 - give restart info
-!       0010 - read coefficients
-!       0100 - read eigenvalues
-!       1000 - read boson irrep identification
-!
-!     IDIM(1,IFRP) - number of positronic solutions
-!     IDIM(2,IFRP) - number of electronic solutions
-!     IDIM(3,IFRP) - number of AO-basis functions
-!
-!     Based on REACMO_no_work routine from the main Dirac code
-!
-!***********************************************************************
-      IMPLICIT NONE
+  subroutine reacmo_mod(iunit,cmo,eig,ibeig,toterg,iopt)
+  !==============================================================================!
+  !                                                                              !
+  !     Read DHF-coefficients and eigenvalues from unformatted file              !
+  !                                                                              !
+  !     IOPT = 1  -->  read only MO coefficients                                 !
+  !     IOPT > 1  -->  read all information                                      !
+  !                                                                              !
+  !     IDIM(1,IFRP) - number of positronic solutions                            !
+  !     IDIM(2,IFRP) - number of electronic solutions                            !
+  !     IDIM(3,IFRP) - number of AO-basis functions                              !
+  !                                                                              !
+  !     Based on REACMO_no_work routine from the main Dirac code                 !
+  !                                                                              !
+  !==============================================================================!
+  implicit none
 
-      ! External variables
-      CHARACTER, INTENT( IN) :: CMOFIL*6
-      INTEGER,   INTENT( IN) :: IUNIT, IOPT
-      INTEGER,   INTENT(OUT) :: IBEIG(:)
-      REAL*8,    INTENT(OUT) :: CMO(VAR%NCMOTQ), EIG(:)
+  ! External variables
+  integer,   intent( in) :: iunit, iopt
+  integer,   intent(out) :: ibeig(:)
+  real*8,    intent(out) :: cmo(var%ncmotq), eig(:)
 
-      ! Internal variables
-      CHARACTER :: TEXT*74, FMT*6, MXFORM*6
-      LOGICAL   :: INFO, LBIT, TEST
-      INTEGER   :: I, J, JO, JC, NO, NC, IFRP, IERR
-      INTEGER   :: NSYM, NFSYM, LUPRI, NZ
-      INTEGER   :: IDIM(3,2)
-      REAL*8    :: TOTERG
-
-      real(8), allocatable :: kc(:)
-      real(8), allocatable :: ko(:)
-      integer, allocatable :: ki(:)
+  ! Internal variables
+  character :: text*74
+  logical   :: info
+  integer   :: i, j, ifrp, ierr, ioer
+  integer   :: nsym, nfsym, lupri
+  integer   :: idim(3,2)
+  real*8    :: toterg
 
   !------------------------------------------------------------------------------!
-      ! set some parameters
-      NFSYM = VAR%NFSYM
-      LUPRI = VAR%LUPRI
-      NZ    = VAR%NZ
+  ! set some parameters
+  nfsym = var%nfsym
+  lupri = var%lupri
 
-      IF(IOPT.EQ.0) RETURN
-      REWIND IUNIT
+  rewind iunit
 
-!     Read title line
-!     ===============
+  ! Read title line
+  ! ===============
 
-      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+  read (iunit,iostat=ioer) text,nsym,((idim(i,j),i = 1,3),j=1,nsym),toterg
+  if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading TEXT')
+  if(ioer /=  0) call quit('REACMO_MOD: ERROR reading TEXT')
 
-      IF(IOPT.EQ.-1) RETURN
+  ! Compatibility check for NFSYM and NFBAS
+  ! =======================================
 
-!     Compatibility check for NFSYM and NFBAS
-!     =======================================
+  ierr = 0
+  if(nsym .ne. nfsym) then
+     ierr = ierr + 1
+     info = .true.
+     write(lupri,'(/a/a,2i5)') &
+        'REACMO FATAL ERROR: Incompatible number of fermion ircops', &
+        ' from file and in this run:',nsym,nfsym
+  else
+     do ifrp = 1,nfsym
+       if(idim(3,ifrp).ne.var%nfbas(ifrp,0)) ierr = ierr + 1
+     end do
+     if (ierr.gt.0) then
+       info = .true.
+       write(lupri,'(/a/a,2(/a,i2,2i5))') &
+       'REACMO FATAL ERROR. Incompatible number of basis functions', &
+       ' from file and in this run:', (' Fermion ircop no.',ifrp,    &
+       idim(3,ifrp),var%nfbas(ifrp,0),ifrp=1,nfsym)
+     end if
+  end if
 
-      IERR = 0
-      IF(NSYM .NE. NFSYM) THEN
-         IERR = IERR + 1
-         INFO = .TRUE.
-         WRITE(LUPRI,'(/A/A,2I5)') &
-            'REACMO FATAL ERROR: Incompatible number of fermion ircops', &
-            ' from file and in this run:',NSYM,NFSYM
-      ELSE
-         DO IFRP = 1,NFSYM
-           IF(IDIM(3,IFRP).NE.VAR%NFBAS(IFRP,0)) IERR = IERR + 1
-         END DO
-         IF (IERR.GT.0) THEN
-           INFO = .TRUE.
-           WRITE(LUPRI,'(/A/A,2(/A,I2,2I5))') &
-           'REACMO FATAL ERROR. Incompatible number of basis functions', &
-           ' from file and in this run:', (' Fermion ircop no.',IFRP,    &
-           IDIM(3,IFRP),VAR%NFBAS(IFRP,0),IFRP=1,NFSYM)
-         END IF
-      END IF
+  if (ierr.gt.0) call quit('REACMO: old DFCOEF file is not consistent with this calculation')
 
-!     File info
-!     =========
+  ! Read coefficients
+  ! =================
+ 
+  read (iunit,iostat=ioer) cmo
+  if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading coefficients')
+  if(ioer /=  0) call quit('REACMO_MOD: ERROR reading coefficients')
 
-      IF(LBIT(IOPT,1)) THEN
-        FMT = MXFORM(TOTERG,20)
-        WRITE(LUPRI,'(/3A,'//FMT//')') &
-         '* REACMO: Coefficients read from file ',CMOFIL,' - Total energy: ',TOTERG
-        WRITE(LUPRI,'(2A)') '* Heading :',TEXT
-      ENDIF
+  ! Read eigenvalues and single group irrep (spinfree and Levy-Leblond calcs)
+  ! =========================================================================
 
-      IF (IERR.GT.0) &
-        CALL QUIT('REACMO: old DFCOEF file is not consistent with this calculation')
+  if(iopt > 1)then
+    read (iunit,iostat=ioer) eig
+    if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading eigenvalues')
+    if(ioer /=  0) call quit('REACMO_MOD: ERROR reading eigenvalues')
+    read (iunit,iostat=ioer) ibeig
+    if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading irrep identification')
+    if(ioer /=  0) call quit('REACMO_MOD: ERROR reading irrep identification')
+  endif
 
-      IF(IOPT.LT.2) RETURN
-
-!     Compatibility tests for number of orbitals
-!     ==========================================
-
-      TEST = .FALSE.
-      NC = 0
-      NO = 0
-      DO IFRP = 1,NFSYM
-        IDIM(3,IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
-        IF(IDIM(3,IFRP).NE.VAR%NORB(IFRP)) TEST=.TRUE.
-        NC = NC + IDIM(3,IFRP)*VAR%NFBAS(IFRP,0)*NZ
-        NO = NO + IDIM(3,IFRP)
-      ENDDO
-
-!     Read coefficients
-!     =================
-
-      IF(LBIT(IOPT,2)) THEN
-        IF(TEST) THEN
-          call alloc(kc, nc)
-          CALL READT(IUNIT,NC, kc)
-          JC = 1
-          DO IFRP = 1,NFSYM
-            CALL ADACMO(VAR%NFBAS(IFRP,0),NZ,                                       &
-               CMO(VAR%ICMOQ(IFRP)+1),VAR%NORB(IFRP),VAR%NPSH(IFRP),VAR%NESH(IFRP), &
-               kc(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JC = JC + IDIM(3,IFRP)*VAR%NFBAS(IFRP,0)*NZ
-          ENDDO
-          call dealloc(kc)
-        ELSE
-          READ (IUNIT,END=30,ERR=40) CMO
-        ENDIF
-        IF(IOPT.LT.4) RETURN
-      ELSE
-        READ(IUNIT)
-      ENDIF
-
-!     Read eigenvalues
-!     ================
-
-      IF(LBIT(IOPT,3)) THEN
-        IF(TEST) THEN
-          call alloc(ko, no)
-          CALL READT(IUNIT,NO,ko)
-          JO = 1
-          DO IFRP = 1,NFSYM
-            CALL ADAEIG(                                                           &
-               EIG(VAR%IORB(IFRP)+1),VAR%NORB(IFRP),VAR%NPSH(IFRP),VAR%NESH(IFRP), &
-               ko(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
-          ENDDO
-          call dealloc(ko)
-        ELSE
-          READ (IUNIT,END=50,ERR=60) EIG
-        ENDIF
-        IF(IOPT.LT.8) RETURN
-      ELSE
-        READ(IUNIT)
-      ENDIF
-
-!     Read single group irrep (spinfree and Levy-Leblond calcs)
-!     =========================================================
-
-      IF(LBIT(IOPT,4)) THEN
-        IF(TEST) THEN
-          call alloc(ki, no)
-          CALL READI(IUNIT,NO,ki)
-          CALL ADAIBP(IBEIG,ki,IDIM)
-          call dealloc(ki)
-        ELSE
-          READ (IUNIT,END=70,ERR=80) IBEIG
-        ENDIF
-        IF(IOPT.LT.16) RETURN
-      ELSE
-        READ(IUNIT)
-      ENDIF
-
-      RETURN
-
-!     Error messages
-
- 10   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading TEXT')
- 20   CONTINUE
-      CALL QUIT('REACMO: ERROR reading TEXT')
- 30   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading coefficients')
- 40   CONTINUE
-      CALL QUIT('REACMO: ERROR reading coefficients')
- 50   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading eigenvalues')
- 60   CONTINUE
-      CALL QUIT('REACMO: ERROR reading eigenvalues')
- 70   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading irrep identification')
- 80   CONTINUE
-      CALL QUIT('REACMO: ERROR reading irrep identification')
-      RETURN
-      END SUBROUTINE REACMO_MOD
+  end subroutine reacmo_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
