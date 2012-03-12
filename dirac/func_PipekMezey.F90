@@ -58,7 +58,8 @@ type( PipekMezey_variales  ), private :: var
 real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
 ! functional value of our functional (stored for output)
-real*8, save :: dinvmg4out
+integer, save :: keyform
+real*8,  save :: dinvmg4out
 
 ! Global arrays
 real*8,  allocatable, save, private :: pmat(:,:,:,:), smat(:)
@@ -239,14 +240,19 @@ contains
   ! -- scoef -- Electronic orbital coeffients selection !
   !-----------------------------------------------------!
   ! Check if coefficients are on file
+  keyform = 0
   inquire(file='DFCOEF',exist=tobe)
-  if(.not.tobe)then
-    write(lupri,'(a)') 'init_func: Coefficient file not found !'
+  if(tobe) keyform = 1
+  inquire(file='DFPCMO',exist=tobe)
+  if(tobe) keyform = 2
+  if(keyform == 0)then
+    write(lupri,'(a)') 'init_func: Coefficient file not found!'
+    write(lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
     call quit('init_func: Coefficients not found !')
   endif
 
   ! Read coefficients
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1,1)
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
 
   ! select orbitals
   isel(1:nloc) = itmp(1:nloc)
@@ -1620,7 +1626,7 @@ contains
   call alloc(ibeig,var%norbt,id='ibeig in wcmo2file')
 
   ! read EIG, IBEIG and TOTERG
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2,1)
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -1637,7 +1643,7 @@ contains
   endif
 
   ! write MO to file and close him
-  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
+  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
 
   ! deallocate arrays
   call dealloc(cmo  ,id='cmo   in wcmo2file')
@@ -1649,14 +1655,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine wricmo_mod(iunit,cmo,eig,ibeig,toterg,keyform)
+  subroutine wricmo_mod(iunit,cmo,eig,ibeig,toterg)
   !==============================================================================!
   !                                                                              !
   !        Write DHF-coefficients and eigenvalues to (un)formatted file          !
   !             (based on wricmo routine from the main Dirac code)               !
-  !                                                                              !
-  !        keyform == 1  -->  unformatted output                                 !
-  !        keyform == 2  -->  formatted output                                   !
   !                                                                              !
   !        idim(1,j) - number of positronic solutions                            !
   !        idim(2,j) - number of electronic solutions                            !
@@ -1666,7 +1669,7 @@ contains
   implicit none
 
   ! External variables
-  integer, intent(in) :: iunit, keyform, ibeig(:)
+  integer, intent(in) :: iunit, ibeig(:)
   real*8,  intent(in) :: toterg, eig(:), cmo(:,:,:)
 
   ! Internal variables
@@ -1675,14 +1678,7 @@ contains
 
   !------------------------------------------------------------------------------!
   ! Open file
-  if(keyform == 1)then
-    open(iunit,file='DFCOEF',status='unknown',form='unformatted',access='sequential',iostat=ier)
-  elseif(keyform == 2)then
-    open(iunit,file='DFCOEF',status='unknown',form='formatted',access='sequential',iostat=ier)
-  else
-    write(var%lupri,'(a)') ' ERROR: wrong keyform keyword in wricmo_mod'
-    stop
-  endif
+  open(iunit,file='DFCOEF',status='unknown',form='unformatted',access='sequential',iostat=ier)
 
   if(ier /= 0) call quit('WRICMO_MOD: ERROR while creating new DFCOEF file')
   rewind iunit
@@ -1696,18 +1692,10 @@ contains
   text(1:50) = var%title
   call gtinfo(text(51:74))
   rewind iunit
-  if(keyform == 1)then
-    write(iunit) text,var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
-    write(iunit) cmo
-    write(iunit) eig
-    write(iunit) ibeig
-  elseif(keyform == 2)then
-    write(iunit,'(a74)') text
-    write(iunit,*) var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
-    write(iunit,*) cmo
-    write(iunit,*) eig
-    write(iunit,*) ibeig
-  endif
+  write(iunit) text,var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
+  write(iunit) cmo
+  write(iunit) eig
+  write(iunit) ibeig
 
   ! Close file
   close(iunit,status='keep')
@@ -1717,11 +1705,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine reacmo_mod(iunit,cmo,eig,ibeig,toterg,iopt,keyform)
+  subroutine reacmo_mod(iunit,cmo,eig,ibeig,toterg,iopt)
   !==============================================================================!
   !                                                                              !
   !     Read DHF-coefficients and eigenvalues from unformatted file              !
   !                                                                              !
+  !     Global variable:                                                         !
   !     keyform == 1  -->  unformatted input                                     !
   !     keyform == 2  -->  formatted input                                       !
   !                                                                              !
@@ -1738,7 +1727,7 @@ contains
   implicit none
 
   ! External variables
-  integer,   intent( in) :: iunit, iopt, keyform
+  integer,   intent( in) :: iunit, iopt
   integer,   intent(out) :: ibeig(:)
   real*8,    intent(out) :: cmo(var%ncmotq), eig(:)
 
@@ -1760,13 +1749,13 @@ contains
   if(keyform == 1)then
     open(iunit,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
   elseif(keyform == 2)then
-    open(iunit,file='DFCOEF',status='old',form='formatted',access='sequential',iostat=ioer)
+    open(iunit,file='DFPCMO',status='old',form='formatted',access='sequential',iostat=ioer)
   else
     write(var%lupri,'(a)') ' ERROR: wrong keyform keyword in reacmo_mod'
     stop
   endif
 
-  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF')
+  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
   rewind iunit
 
   ! Read title line
@@ -1776,7 +1765,8 @@ contains
     read(iunit,iostat=ioer) text,nsym,((idim(i,j),i = 1,3),j=1,nsym),toterg
   elseif(keyform == 2)then
     read(iunit,'(a74)',iostat=ioer) text
-    read(iunit,*,iostat=ioer) nsym,((idim(i,j),i = 1,3),j=1,nsym),toterg
+    read(iunit,*,iostat=ioer) nsym,((idim(i,j),i = 1,3),j=1,nsym)
+    read(iunit,*,iostat=ioer) toterg
   endif
   if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading TEXT')
   if(ioer /=  0) call quit('REACMO_MOD: ERROR reading TEXT')
@@ -1786,22 +1776,22 @@ contains
 
   ierr = 0
   if(nsym .ne. nfsym) then
-     ierr = ierr + 1
-     info = .true.
-     write(lupri,'(/a/a,2i5)') &
-        'REACMO FATAL ERROR: Incompatible number of fermion ircops', &
-        ' from file and in this run:',nsym,nfsym
+    ierr = ierr + 1
+    info = .true.
+    write(lupri,'(/a/a,2i5)') &
+       'REACMO FATAL ERROR: Incompatible number of fermion ircops', &
+       ' from file and in this run:',nsym,nfsym
   else
-     do ifrp = 1,nfsym
-       if(idim(3,ifrp).ne.var%nfbas(ifrp,0)) ierr = ierr + 1
-     end do
-     if (ierr.gt.0) then
-       info = .true.
-       write(lupri,'(/a/a,2(/a,i2,2i5))') &
-       'REACMO FATAL ERROR. Incompatible number of basis functions', &
-       ' from file and in this run:', (' Fermion ircop no.',ifrp,    &
-       idim(3,ifrp),var%nfbas(ifrp,0),ifrp=1,nfsym)
-     end if
+    do ifrp = 1,nfsym
+      if(idim(3,ifrp).ne.var%nfbas(ifrp,0)) ierr = ierr + 1
+    end do
+    if (ierr.gt.0) then
+      info = .true.
+      write(lupri,'(/a/a,2(/a,i2,2i5))') &
+      'REACMO FATAL ERROR. Incompatible number of basis functions', &
+      ' from file and in this run:', (' Fermion ircop no.',ifrp,    &
+      idim(3,ifrp),var%nfbas(ifrp,0),ifrp=1,nfsym)
+    end if
   end if
 
   if (ierr.gt.0) call quit('REACMO: old DFCOEF file is not consistent with this calculation')
