@@ -35,7 +35,7 @@ end type PipekMezey_flags
 type :: PipekMezey_variales
   integer :: lupri, lucoef
   integer :: nfbas(2,0:2), n2bbasx, n2bbasxq
-  integer :: nish(2), norb(2), npsh(2), nesh(2), norbt
+  integer :: nish(2), norb(2), npsh(2), nesh(2), iorb(2), icmoq(2), norbt, ncmotq
   real*8  :: ssmtrc
   logical :: h2comp, levyle
   integer :: nfsym, nz, ipqtoq(4,0:7)
@@ -120,7 +120,10 @@ contains
   var%norb(:)    = norb(:)
   var%npsh(:)    = npsh(:)
   var%nesh(:)    = nesh(:)
+  var%iorb(:)    = iorb(:)
+  var%icmoq(:)   = icmoq(:)
   var%norbt      = norbt
+  var%ncmotq     = ncmotq
   ! dcbham.h
   var%ssmtrc     = ssmtrc
   var%levyle     = levyle
@@ -1707,21 +1710,19 @@ contains
 !     Based on REACMO_no_work routine from the main Dirac code
 !
 !***********************************************************************
-#include "priunit.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
+      IMPLICIT NONE
 
       ! External variables
       CHARACTER, INTENT( IN) :: CMOFIL*6
       INTEGER,   INTENT( IN) :: IUNIT, IOPT
-      INTEGER,   INTENT(OUT) :: IBEIG(NORBT)
-      REAL*8,    INTENT(OUT) :: CMO(NCMOTQ), EIG(NORBT)
+      INTEGER,   INTENT(OUT) :: IBEIG(:)
+      REAL*8,    INTENT(OUT) :: CMO(VAR%NCMOTQ), EIG(:)
 
       ! Internal variables
       CHARACTER :: TEXT*74, FMT*6, MXFORM*6
-      LOGICAL   :: INFO,LBIT,TEST
-      INTEGER   :: I, J, JO, JC, NO, NC, IFRP, IERR, NSYM
+      LOGICAL   :: INFO, LBIT, TEST
+      INTEGER   :: I, J, JO, JC, NO, NC, IFRP, IERR
+      INTEGER   :: NSYM, NFSYM, LUPRI, NZ
       INTEGER   :: IDIM(3,2)
       REAL*8    :: TOTERG
 
@@ -1730,6 +1731,11 @@ contains
       integer, allocatable :: ki(:)
 
   !------------------------------------------------------------------------------!
+      ! set some parameters
+      NFSYM = VAR%NFSYM
+      LUPRI = VAR%LUPRI
+      NZ    = VAR%NZ
+
       IF(IOPT.EQ.0) RETURN
       REWIND IUNIT
 
@@ -1752,14 +1758,14 @@ contains
             ' from file and in this run:',NSYM,NFSYM
       ELSE
          DO IFRP = 1,NFSYM
-           IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) IERR = IERR + 1
+           IF(IDIM(3,IFRP).NE.VAR%NFBAS(IFRP,0)) IERR = IERR + 1
          END DO
          IF (IERR.GT.0) THEN
            INFO = .TRUE.
            WRITE(LUPRI,'(/A/A,2(/A,I2,2I5))') &
            'REACMO FATAL ERROR. Incompatible number of basis functions', &
            ' from file and in this run:', (' Fermion ircop no.',IFRP,    &
-           IDIM(3,IFRP),NFBAS(IFRP,0),IFRP=1,NFSYM)
+           IDIM(3,IFRP),VAR%NFBAS(IFRP,0),IFRP=1,NFSYM)
          END IF
       END IF
 
@@ -1786,8 +1792,8 @@ contains
       NO = 0
       DO IFRP = 1,NFSYM
         IDIM(3,IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
-        IF(IDIM(3,IFRP).NE.NORB(IFRP)) TEST=.TRUE.
-        NC = NC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+        IF(IDIM(3,IFRP).NE.VAR%NORB(IFRP)) TEST=.TRUE.
+        NC = NC + IDIM(3,IFRP)*VAR%NFBAS(IFRP,0)*NZ
         NO = NO + IDIM(3,IFRP)
       ENDDO
 
@@ -1800,10 +1806,10 @@ contains
           CALL READT(IUNIT,NC, kc)
           JC = 1
           DO IFRP = 1,NFSYM
-            CALL ADACMO(NFBAS(IFRP,0),NZ,                           &
-               CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP), &
+            CALL ADACMO(VAR%NFBAS(IFRP,0),NZ,                                       &
+               CMO(VAR%ICMOQ(IFRP)+1),VAR%NORB(IFRP),VAR%NPSH(IFRP),VAR%NESH(IFRP), &
                kc(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+            JC = JC + IDIM(3,IFRP)*VAR%NFBAS(IFRP,0)*NZ
           ENDDO
           call dealloc(kc)
         ELSE
@@ -1823,8 +1829,8 @@ contains
           CALL READT(IUNIT,NO,ko)
           JO = 1
           DO IFRP = 1,NFSYM
-            CALL ADAEIG(                                           &
-               EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP), &
+            CALL ADAEIG(                                                           &
+               EIG(VAR%IORB(IFRP)+1),VAR%NORB(IFRP),VAR%NPSH(IFRP),VAR%NESH(IFRP), &
                ko(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
             JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
           ENDDO
