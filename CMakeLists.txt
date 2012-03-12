@@ -83,10 +83,8 @@ if(ENABLE_CUDA)
     find_package(CUDA)
     if(CUDA_FOUND) 
         if(NOT ENABLE_64BIT_INTEGERS)
-            # radovan: do not use hardcoded locations, use variables
-            # set and returned by FindCUDA.cmake
-            # miro: so far I haven't found variable for ...fortran.c, seeking continue
-            add_library(fortran_cuda "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.c")
+            # employing variables set and returned by FindCUDA.cmake
+            add_library(fortran_cuda "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.c" "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.h")
             INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
             set(LIBS
                 ${LIBS}
