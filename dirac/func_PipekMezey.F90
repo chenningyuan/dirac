@@ -25,7 +25,7 @@ implicit none
 
 public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, ROTCMO_MOD, errall
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, WRICMO_MOD, ROTCMO_MOD, errall
 
 type :: PipekMezey_flags
   integer :: iprloc
@@ -38,7 +38,7 @@ type :: PipekMezey_variales
   integer :: nish(2), norb(2), npsh(2), nesh(2), norbt
   real*8  :: ssmtrc
   logical :: h2comp, levyle
-  integer :: nz, ipqtoq(4,0:7)
+  integer :: nfsym, nz, ipqtoq(4,0:7)
   integer :: nucdep
   real*8  :: thrzer
   integer :: nrefs, iprprj
@@ -47,6 +47,7 @@ type :: PipekMezey_variales
   logical :: ownbas
   character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
   character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
+  character*50 :: title
   real*8  :: timstr
 end type PipekMezey_variales
 
@@ -109,6 +110,7 @@ contains
   var%lupri      = lupri
   ! dcbgen.h
   var%lucoef     = lucoef
+  var%title      = title
   ! dcbbas.h
   var%nfbas(:,:) = nfbas(:,:)
   var%n2bbasx    = n2bbasx
@@ -123,8 +125,9 @@ contains
   var%ssmtrc     = ssmtrc
   var%levyle     = levyle
   ! dgroup.h
-  var%ipqtoq(:,:)= ipqtoq(:,:)
+  var%nfsym      = nfsym
   var%nz         = nz
+  var%ipqtoq(:,:)= ipqtoq(:,:)
   ! nuclei.h
   var%nucdep     = nucdep
   ! thrzer.h
@@ -1630,7 +1633,7 @@ contains
   endif
 
   ! write MO to file and close him
-  call wricmo(var%lucoef,cmo,eig,ibeig,toterg)
+  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
   close(var%lucoef,status='keep')
 
   ! deallocate arrays
@@ -1639,6 +1642,46 @@ contains
   call dealloc(ibeig,id='ibeig in wcmo2file')
 
   end subroutine wcmo2file
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine wricmo_mod(iunit,cmo,eig,ibeig,toterg)
+  !==============================================================================!
+  !                                                                              !
+  !        Write DHF-coefficients and eigenvalues to (un)formatted file          !
+  !               (based on wricmo routine from main Dirac code)                 !
+  !                                                                              !
+  !        idim(1,j) - number of positronic solutions                            !
+  !        idim(2,j) - number of electronic solutions                            !
+  !        idim(3,j) - number of AO-basis functions                              !
+  !                                                                              !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  integer, intent(in) :: iunit, ibeig(:)
+  real*8,  intent(in) :: toterg, eig(:), cmo(:,:,:)
+
+  ! Internal variables
+  character :: text*74
+  integer   :: i, j, idim(3,2)
+
+  !------------------------------------------------------------------------------!
+  do i = 1,var%nfsym
+    idim(1,i) = var%npsh(i)
+    idim(2,i) = var%nesh(i)
+    idim(3,i) = var%nfbas(i,0)
+  enddo
+  text(1:50) = var%title
+  call gtinfo(text(51:74))
+  rewind iunit
+  write(iunit) text,var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
+  write(iunit) cmo
+  write(iunit) eig
+  write(iunit) ibeig
+
+  end subroutine wricmo_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
