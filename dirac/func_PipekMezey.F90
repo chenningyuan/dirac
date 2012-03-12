@@ -246,9 +246,7 @@ contains
   endif
 
   ! Read coefficients
-  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
-  close(var%lucoef,status='keep')
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1,1)
 
   ! select orbitals
   isel(1:nloc) = itmp(1:nloc)
@@ -1621,9 +1619,8 @@ contains
   call alloc(eig  ,var%norbt,id='eig   in wcmo2file')
   call alloc(ibeig,var%norbt,id='ibeig in wcmo2file')
 
-  ! open DFCOEF file and read EIG, IBEIG and TOTERG
-  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
+  ! read EIG, IBEIG and TOTERG
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2,1)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -1640,8 +1637,7 @@ contains
   endif
 
   ! write MO to file and close him
-  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
-  close(var%lucoef,status='keep')
+  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
 
   ! deallocate arrays
   call dealloc(cmo  ,id='cmo   in wcmo2file')
@@ -1653,11 +1649,14 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine wricmo_mod(iunit,cmo,eig,ibeig,toterg)
+  subroutine wricmo_mod(iunit,cmo,eig,ibeig,toterg,keyform)
   !==============================================================================!
   !                                                                              !
   !        Write DHF-coefficients and eigenvalues to (un)formatted file          !
   !             (based on wricmo routine from the main Dirac code)               !
+  !                                                                              !
+  !        keyform == 1  -->  unformatted output                                 !
+  !        keyform == 2  -->  formatted output                                   !
   !                                                                              !
   !        idim(1,j) - number of positronic solutions                            !
   !        idim(2,j) - number of electronic solutions                            !
@@ -1667,14 +1666,28 @@ contains
   implicit none
 
   ! External variables
-  integer, intent(in) :: iunit, ibeig(:)
+  integer, intent(in) :: iunit, keyform, ibeig(:)
   real*8,  intent(in) :: toterg, eig(:), cmo(:,:,:)
 
   ! Internal variables
   character :: text*74
-  integer   :: i, j, idim(3,2)
+  integer   :: i, j, ier, idim(3,2)
 
   !------------------------------------------------------------------------------!
+  ! Open file
+  if(keyform == 1)then
+    open(iunit,file='DFCOEF',status='unknown',form='unformatted',access='sequential',iostat=ier)
+  elseif(keyform == 2)then
+    open(iunit,file='DFCOEF',status='unknown',form='formatted',access='sequential',iostat=ier)
+  else
+    write(var%lupri,'(a)') ' ERROR: wrong keyform keyword in wricmo_mod'
+    stop
+  endif
+
+  if(ier /= 0) call quit('WRICMO_MOD: ERROR while creating new DFCOEF file')
+  rewind iunit
+
+  ! write cmo, eig and ibeig to file
   do i = 1,var%nfsym
     idim(1,i) = var%npsh(i)
     idim(2,i) = var%nesh(i)
@@ -1683,20 +1696,34 @@ contains
   text(1:50) = var%title
   call gtinfo(text(51:74))
   rewind iunit
-  write(iunit) text,var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
-  write(iunit) cmo
-  write(iunit) eig
-  write(iunit) ibeig
+  if(keyform == 1)then
+    write(iunit) text,var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
+    write(iunit) cmo
+    write(iunit) eig
+    write(iunit) ibeig
+  elseif(keyform == 2)then
+    write(iunit,'(a74)') text
+    write(iunit,*) var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
+    write(iunit,*) cmo
+    write(iunit,*) eig
+    write(iunit,*) ibeig
+  endif
+
+  ! Close file
+  close(iunit,status='keep')
 
   end subroutine wricmo_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine reacmo_mod(iunit,cmo,eig,ibeig,toterg,iopt)
+  subroutine reacmo_mod(iunit,cmo,eig,ibeig,toterg,iopt,keyform)
   !==============================================================================!
   !                                                                              !
   !     Read DHF-coefficients and eigenvalues from unformatted file              !
+  !                                                                              !
+  !     keyform == 1  -->  unformatted input                                     !
+  !     keyform == 2  -->  formatted input                                       !
   !                                                                              !
   !     IOPT = 1  -->  read only MO coefficients                                 !
   !     IOPT > 1  -->  read all information                                      !
@@ -1711,7 +1738,7 @@ contains
   implicit none
 
   ! External variables
-  integer,   intent( in) :: iunit, iopt
+  integer,   intent( in) :: iunit, iopt, keyform
   integer,   intent(out) :: ibeig(:)
   real*8,    intent(out) :: cmo(var%ncmotq), eig(:)
 
@@ -1728,12 +1755,29 @@ contains
   nfsym = var%nfsym
   lupri = var%lupri
 
+  ! Open file
+  ! =========
+  if(keyform == 1)then
+    open(iunit,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
+  elseif(keyform == 2)then
+    open(iunit,file='DFCOEF',status='old',form='formatted',access='sequential',iostat=ioer)
+  else
+    write(var%lupri,'(a)') ' ERROR: wrong keyform keyword in reacmo_mod'
+    stop
+  endif
+
+  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF')
   rewind iunit
 
   ! Read title line
   ! ===============
 
-  read (iunit,iostat=ioer) text,nsym,((idim(i,j),i = 1,3),j=1,nsym),toterg
+  if(keyform == 1)then
+    read(iunit,iostat=ioer) text,nsym,((idim(i,j),i = 1,3),j=1,nsym),toterg
+  elseif(keyform == 2)then
+    read(iunit,'(a74)',iostat=ioer) text
+    read(iunit,*,iostat=ioer) nsym,((idim(i,j),i = 1,3),j=1,nsym),toterg
+  endif
   if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading TEXT')
   if(ioer /=  0) call quit('REACMO_MOD: ERROR reading TEXT')
 
@@ -1765,7 +1809,9 @@ contains
   ! Read coefficients
   ! =================
  
-  read (iunit,iostat=ioer) cmo
+  if(keyform == 1) read(iunit,iostat=ioer) cmo
+  if(keyform == 2) read(iunit,*,iostat=ioer) cmo
+
   if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading coefficients')
   if(ioer /=  0) call quit('REACMO_MOD: ERROR reading coefficients')
 
@@ -1773,13 +1819,20 @@ contains
   ! =========================================================================
 
   if(iopt > 1)then
-    read (iunit,iostat=ioer) eig
+    if(keyform == 1) read(iunit,iostat=ioer) eig
+    if(keyform == 2) read(iunit,*,iostat=ioer) eig
     if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading eigenvalues')
     if(ioer /=  0) call quit('REACMO_MOD: ERROR reading eigenvalues')
-    read (iunit,iostat=ioer) ibeig
+
+    if(keyform == 1) read(iunit,iostat=ioer) ibeig
+    if(keyform == 2) read(iunit,*,iostat=ioer) ibeig
     if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading irrep identification')
     if(ioer /=  0) call quit('REACMO_MOD: ERROR reading irrep identification')
   endif
+
+  ! Close file
+  ! ==========
+  close(iunit,status='keep')
 
   end subroutine reacmo_mod
 
