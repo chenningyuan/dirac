@@ -205,6 +205,12 @@ C        Hermite conjugate of the coupling operator, we must multiply
 C        with a factor half to avoid double counting
          FAC = GAMMA*DP5
          CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
+C        Note that there is freedom in the choice of diagonal blocks
+C        of the Fock matrix. The choice for active-active diagonal
+C        blocks of (3.40) allows identification of the resulting 
+C        orbital eigenvalues as ionization energies, by extension
+C        of Koopmans theorem to the average-of-configuration case.
+C
 C        We now have the complete right-hand projector of the first
 C        term of (3.42) for shell U contained in DTEMP1
 C
