@@ -1,5 +1,5 @@
-DIRAC pam run in /home/uachstno/repo/build/Dirac-ST-Localization-release/test/localization
-DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC pam run in /home/uachstno/APPL/Dirac/Localization/H2O_sym
+DIRAC serial starts by allocating 65536000 words (500 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
 Note: maximum allocatable memory for serial run can be set by pam --aw
@@ -150,12 +150,12 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  ******************************************************************************
  
  
-Compilation info
-----------------
+Binary information
+------------------
  
- System                   | Linux-3.0.0-13-generic
+ Who compiled             | uachstno@Bassilus
+ System                   | Linux-3.0.0-16-generic
  Processor                | x86_64
- Internal math            | OFF
  64-bit integers          | OFF
  MPI                      | OFF
  Fortran compiler         | /opt/intel/composerxe-2011.4.191/bin/intel64/ifort
@@ -169,22 +169,26 @@ Compilation info
                           | /mkl/lib/intel64/libmkl_core.so;/opt/intel/compose
                           | rxe-2011.4.191/mkl/lib/intel64/libmkl_intel_lp64.s
                           | o;/opt/intel/composerxe-2011.4.191/mkl/lib/intel64
-                          | /libmkl_sequential.so;-Wl,--end-group
+                          | /libmkl_sequential.so;/usr/lib/x86_64-linux-gnu/li
+                          | bpthread.so;/usr/lib/x86_64-linux-gnu/libm.so;-Wl,
+                          | --end-group
  LAPACK                   | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
-                          | /mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-
-                          | group
- static libraries linking | OFF
- Configuration time       | 2011-12-01 18:21:25.901521
- Last commit revision     | 0f672c530f44fbbdc666c04ce5a1aead252108af
- Last commit author       | Stano 
- Last commit time         | Thu Dec 1 18:02:46 2011 +0100
+                          | /mkl/lib/intel64/libmkl_core.so;/opt/intel/compose
+                          | rxe-2011.4.191/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o;/opt/intel/composerxe-2011.4.191/mkl/lib/intel64
+                          | /libmkl_sequential.so;/usr/lib/x86_64-linux-gnu/li
+                          | bpthread.so;/usr/lib/x86_64-linux-gnu/libm.so;-Wl,
+                          | --end-group
+ Static linking           | OFF
+ Last Git revision        | e7cc5cc
+ Configuration time       | 2012-03-12 19:47:31.911562
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Dec  1 18:32:01 2011
+     Date and time (Linux)  : Tue Mar 13 10:15:29 2012
      Host name              : not found                               
  
  
@@ -204,22 +208,22 @@ Pipek-Mezey localization based on atomic charges from projection analysis
 .MULPOP                                                                                             
 .LOCALIZE                                                                                           
 *LOCALIZE                                                                                           
-.THGRAD                                                                                             
-1.0D-09                                                                                             
 .PRJLOC                                                                                             
+.HESLOC                                                                                             
+DIAGONAL                                                                                            
+.THDIAG                                                                                             
+1.0D-13                                                                                             
 .OWNBAS                                                                                             
 .VECREF                                                                                             
-5                                                                                                   
-DFC1AT                                                                                              
-1..5                                                                                                
+3                                                                                                   
+DFO1AT                                                                                              
+1..6                                                                                                
 DFH1AT                                                                                              
 1                                                                                                   
 DFH2AT                                                                                              
 1                                                                                                   
-DFH3AT                                                                                              
-1                                                                                                   
-DFH4AT                                                                                              
-1                                                                                                   
+**GENERAL                                                                                           
+.PCMOIN                                                                                             
 *END OF                                                                                             
  
  
@@ -227,17 +231,15 @@ Contents of the molecule file
 -----------------------------
  
 INTGRL                                                                                              
-Projection CH4 pour différentes bases :                                                             
+Localization of H2O                                                                                 
 DunningDZ                                                                                           
 C   2    0                                                                                          
-        6.    1                                                                                     
-C     0.00000000          0.00000000          0.00000000                                            
+        8.    1                                                                                     
+O      .0000000000        0.0000000000        -.2249058930                                          
 LARGE BASIS DZ(Dunning)                                                                             
-        1.    4                                                                                     
-H1     1.18486272          1.18486272         -1.18486272                                           
-H2     1.18486272         -1.18486272          1.18486272                                           
-H3    -1.18486272          1.18486272          1.18486272                                           
-H4    -1.18486272         -1.18486272         -1.18486272                                           
+        1.    2                                                                                     
+H1    1.4523499293         .0000000000         .8996235720                                          
+H2   -1.4523499293         .0000000000         .8996235720                                          
 LARGE BASIS DZ(Dunning)                                                                             
 FINISH                                                                                              
 
@@ -271,6 +273,7 @@ FINISH
  * Thresholds for linear dependence:
    Large components:   1.00D-06
    Small components:   1.00D-08
+ * MO-coefficients read from formatted file  DFPCMO and written to DFCOEF
  DFPCMO: IBEIG read in I2 format.
  * General print level   :   0
 
@@ -290,10 +293,10 @@ FINISH
   Title Cards
   -----------
 
-  Projection CH4 pour différentes bases :                                 
+  Localization of H2O                                                     
   DunningDZ                                                               
 
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
 
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
 
@@ -344,7 +347,7 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :     13.484875956018
+  QM-QM nuclear repulsion energy :      9.055003146800
 
 
 
@@ -352,19 +355,19 @@ Point group: C1
   --------------------
 
   Number of atom types:     2
-  Total number of atoms:    5
+  Total number of atoms:    3
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  C           1       6      24      10      L  - [9s5p|4s2p]                                                    
+  O           1       8      24      10      L  - [9s5p|4s2p]                                                    
                              62      62      S  - [5s9p5d|5s9p5d]                                                
-  H4          4       1       4       2      L  - [4s|2s]                                                        
+  H2          2       1       4       2      L  - [4s|2s]                                                        
                              12      12      S  - [4p|4p]                                                        
   ----------------------------------------------------------------------
-                             40      18      L  - large components
-                            110     110      S  - small components
+                             32      14      L  - large components
+                             86      86      S  - small components
   ----------------------------------------------------------------------
-  total:      5      10     150     128
+  total:      3      10     118     100
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -383,53 +386,41 @@ Point group: C1
   Cartesian Coordinates
   ---------------------
 
-  Total number of coordinates: 15
+  Total number of coordinates:  9
 
 
-   1   C        x      0.0000000000
+   1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z      0.0000000000
+   3            z     -0.2249058930
 
-   4   H1       x      1.1848627200
-   5            y      1.1848627200
-   6            z     -1.1848627200
+   4   H1       x      1.4523499293
+   5            y      0.0000000000
+   6            z      0.8996235720
 
-   7   H2       x      1.1848627200
-   8            y     -1.1848627200
-   9            z      1.1848627200
-
-  10   H3       x     -1.1848627200
-  11            y      1.1848627200
-  12            z      1.1848627200
-
-  13   H4       x     -1.1848627200
-  14            y     -1.1848627200
-  15            z     -1.1848627200
+   7   H2       x     -1.4523499293
+   8            y      0.0000000000
+   9            z      0.8996235720
 
 
 
   Cartesian coordinates xyz format (angstrom)
   -------------------------------------------
 
-    5
+    3
  
-C      0.0000000000   0.0000000000   0.0000000000
-H1     0.6270023464   0.6270023464  -0.6270023464
-H2     0.6270023464  -0.6270023464   0.6270023464
-H3    -0.6270023464   0.6270023464   0.6270023464
-H4    -0.6270023464  -0.6270023464  -0.6270023464
+O      0.0000000000   0.0000000000  -0.1190150726
+H1     0.7685504811   0.0000000000   0.4760602904
+H2    -0.7685504811   0.0000000000   0.4760602904
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            C           H1          H2          H3          H4  
+            O           H1          H2  
 
-   C       0.000000
-   H1      1.086000    0.000000
-   H2      1.086000    1.773430    0.000000
-   H3      1.086000    1.773430    1.773430    0.000000
-   H4      1.086000    1.773430    1.773430    1.773430    0.000000
+   O       0.000000
+   H1      0.972000    0.000000
+   H2      0.972000    1.537101    0.000000
 
 
 
@@ -439,10 +430,8 @@ H4    -0.6270023464  -0.6270023464  -0.6270023464
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    H1         C                              1.086000
-  bond distance:    H2         C                              1.086000
-  bond distance:    H3         C                              1.086000
-  bond distance:    H4         C                              1.086000
+  bond distance:    H1         O                              0.972000
+  bond distance:    H2         O                              0.972000
 
 
   Bond angles (degrees):
@@ -450,76 +439,61 @@ H4    -0.6270023464  -0.6270023464  -0.6270023464
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       H2         C          H1                   109.471
-  bond angle:       H3         C          H1                   109.471
-  bond angle:       H3         C          H2                   109.471
-  bond angle:       H4         C          H1                   109.471
-  bond angle:       H4         C          H2                   109.471
-  bond angle:       H4         C          H3                   109.471
+  bond angle:       H2         O          H1                   104.500
 
 
-  Nuclear repulsion energy :   13.484875956018
+  Nuclear repulsion energy :    9.055003146800
 
 
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:    8
-     1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L H1  1 s        6  L H2  1 s   
-     7  L H3  1 s        8  L H4  1 s   
-   * Small components:   22
-     9  S C   1 s       10  S C   1 px      11  S C   1 py      12  S C   1 pz      13  S C   1 dxx     14  S C   1 dxy 
-    15  S C   1 dxz     16  S C   1 dyy     17  S C   1 dyz     18  S C   1 dzz     19  S H1  1 px      20  S H1  1 py  
-    21  S H1  1 pz      22  S H2  1 px      23  S H2  1 py      24  S H2  1 pz      25  S H3  1 px      26  S H3  1 py  
-    27  S H3  1 pz      28  S H4  1 px      29  S H4  1 py      30  S H4  1 pz  
+   * Large components:    6
+     1  L O   1 s        2  L O   1 px       3  L O   1 py       4  L O   1 pz       5  L H1  1 s        6  L H2  1 s   
+   * Small components:   16
+     7  S O   1 s        8  S O   1 px       9  S O   1 py      10  S O   1 pz      11  S O   1 dxx     12  S O   1 dxy 
+    13  S O   1 dxz     14  S O   1 dyy     15  S O   1 dyz     16  S O   1 dzz     17  S H1  1 px      18  S H1  1 py  
+    19  S H1  1 pz      20  S H2  1 px      21  S H2  1 py      22  S H2  1 pz  
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          128
-  Number of large orbitals in each symmetry:     18
-  Number of small orbitals in each symmetry:    110
+  Number of orbitals in each symmetry:          100
+  Number of large orbitals in each symmetry:     14
+  Number of small orbitals in each symmetry:     86
 
 * Large component functions
 
   Symmetry  A  ( 1)
 
-        4 functions:    C  s   
-        2 functions:    C  px  
-        2 functions:    C  py  
-        2 functions:    C  pz  
+        4 functions:    O  s   
+        2 functions:    O  px  
+        2 functions:    O  py  
+        2 functions:    O  pz  
         2 functions:    H1 s   
         2 functions:    H2 s   
-        2 functions:    H3 s   
-        2 functions:    H4 s   
 
 * Small component functions
 
   Symmetry  A  ( 1)
 
-        5 functions:    C  s   
-        9 functions:    C  px  
-        9 functions:    C  py  
-        9 functions:    C  pz  
-        5 functions:    C  dxx 
-        5 functions:    C  dxy 
-        5 functions:    C  dxz 
-        5 functions:    C  dyy 
-        5 functions:    C  dyz 
-        5 functions:    C  dzz 
+        5 functions:    O  s   
+        9 functions:    O  px  
+        9 functions:    O  py  
+        9 functions:    O  pz  
+        5 functions:    O  dxx 
+        5 functions:    O  dxy 
+        5 functions:    O  dxz 
+        5 functions:    O  dyy 
+        5 functions:    O  dyz 
+        5 functions:    O  dzz 
         4 functions:    H1 px  
         4 functions:    H1 py  
         4 functions:    H1 pz  
         4 functions:    H2 px  
         4 functions:    H2 py  
         4 functions:    H2 pz  
-        4 functions:    H3 px  
-        4 functions:    H3 py  
-        4 functions:    H3 pz  
-        4 functions:    H4 px  
-        4 functions:    H4 py  
-        4 functions:    H4 pz  
 
 
    ***************************************************************************
@@ -597,29 +571,25 @@ H4    -0.6270023464  -0.6270023464  -0.6270023464
  LOCINP: Molecular orbital localization (Pipek-Mezey criterion)
 ===========================================================================
  * Molecular orbital localization from projection analysis
- * Full hessian will be used
+ * The diagonal approximation of the hessian will be used
  * Convergence criteria of the localization process :
    - If the maximum is reached (= there are no positive eigenvalues)
-   - If the norm of the gradient is below threshold:  0.10D-08
+     and the change of the functional is below threshold:  0.10D-12
+     (functional = inverse mean delocalization)
  * Maximum number of iterations :   100
  * Print level :    0
+ * Only occupied MOs will be localized
  * Fragments are calculated in their individual bases !
      The indexing of fragment spinor sets is assumed 
      to follow list of symmetry independent nuclei.
- * Fragment spinor set   1 --> C     
-  - read from file DFC1AT
-    - Orbitals in fermion ircop E1  :1..5                                                                    
+ * Fragment spinor set   1 --> O     
+  - read from file DFO1AT
+    - Orbitals in fermion ircop E1  :1..6                                                                    
  * Fragment spinor set   2 --> H1    
   - read from file DFH1AT
     - Orbitals in fermion ircop E1  :1                                                                       
  * Fragment spinor set   3 --> H2    
   - read from file DFH2AT
-    - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   4 --> H3    
-  - read from file DFH3AT
-    - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   5 --> H4    
-  - read from file DFH4AT
     - Orbitals in fermion ircop E1  :1                                                                       
  * Localised MO are written in file DFCOEF !!!
 ===========================================================================
@@ -673,9 +643,14 @@ H4    -0.6270023464  -0.6270023464  -0.6270023464
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    18
-No. of negative energy orbitals (NPSH):    18
-Total no. of orbitals           (NORB):    36
+No. of positive energy orbitals (NESH):    14
+No. of negative energy orbitals (NPSH):    14
+Total no. of orbitals           (NORB):    28
+  Reading formatted DFPCMO file...Done.
+===========================================================================
+* PCMOIN: Coefficients read from formatted DFPCMO 
+          and written to unformatted DFCOEF
+===========================================================================
 
 
     **************************************************************************
@@ -687,76 +662,71 @@ Total no. of orbitals           (NORB):    36
                          Output from GETPLB: Group labels
                          --------------------------------
 
-* Total number :    13
-     1  L A  C  s        2  L A  C  px       3  L A  C  py       4  L A  C  pz       5  L A  H1 s        6  L A  H2 s   
-     7  L A  H3 s        8  L A  H4 s        9  A  C  _small    10  A  H1 _small    11  A  H2 _small    12  A  H3 _small
-    13  A  H4 _small
+* Total number :     9
+     1  L A  O  s        2  L A  O  px       3  L A  O  py       4  L A  O  pz       5  L A  H1 s        6  L A  H2 s   
+     7  A  O  _small     8  A  H1 _small     9  A  H2 _small
 
 
                                  Fermion ircop E1
                                  ----------------
 
 
-* Electronic eigenvalue no.  1: -11.212473333736       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  1: -20.579617035600       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  s      A  C  _small
+Gross     Total   |    L A  O  s      A  O  _small
 -----------------------------------------------------
- alpha    0.9997  |      0.9994         0.0001
- beta     0.0003  |      0.0000         0.0003
+ alpha    0.9995  |      0.9992         0.0003
+ beta     0.0005  |      0.0000         0.0005
 
-* Electronic eigenvalue no.  2: -0.9469953777753       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  2: -1.3557241328100       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  s      L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
---------------------------------------------------------------------------------------------------
- alpha    1.0000  |      0.7315         0.0671         0.0671         0.0671         0.0671
- beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000
+Gross     Total   |    L A  O  s      L A  O  pz     L A  H1 s      L A  H2 s   
+-----------------------------------------------------------------------------------
+ alpha    1.0000  |      0.8302         0.0313         0.0692         0.0692
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no.  3: -0.5438894449877       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  3: -0.7086954578130       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
---------------------------------------------------------------------------------------------------------------------------------
- alpha    0.3333  |      0.0000         0.0000         0.1842         0.0373         0.0373         0.0373         0.0373
- beta     0.6667  |      0.1842         0.1842         0.0000         0.0746         0.0746         0.0746         0.0746
+Gross     Total   |    L A  O  px     L A  H1 s      L A  H2 s   
+--------------------------------------------------------------------
+ alpha    0.0000  |      0.0000         0.0000         0.0000
+ beta     1.0000  |      0.6300         0.1850         0.1850
 
-* Electronic eigenvalue no.  4: -0.5436979581884       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  4: -0.5645993674800       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  px     L A  C  py     L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
------------------------------------------------------------------------------------------------------------------
- alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
- beta     1.0000  |      0.2753         0.2770         0.1119         0.1119         0.1119         0.1119
+Gross     Total   |    L A  O  s      L A  O  pz     L A  H1 s      L A  H2 s   
+-----------------------------------------------------------------------------------
+ alpha    0.9999  |      0.1011         0.7950         0.0519         0.0519
+ beta     0.0001  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no.  5: -0.5436979581809       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  5: -0.5051353048030       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
---------------------------------------------------------------------------------------------------------------------------------
- alpha    0.6667  |      0.0000         0.0000         0.3682         0.0746         0.0746         0.0746         0.0746
- beta     0.3333  |      0.0929         0.0912         0.0000         0.0373         0.0373         0.0373         0.0373
+Gross     Total   |    L A  O  py  
+--------------------------------------
+ alpha    0.0001  |      0.0000
+ beta     0.9999  |      0.9999
 
 
 *** Total gross population ***
 
-Gross      Total    |    L A  C  s      L A  C  px     L A  C  py     L A  C  pz     L A  H1 s      L A  H2 s      L A  H3 s   
+Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz     L A  H1 s      L A  H2 s      A  O  _small
 --------------------------------------------------------------------------------------------------------------------------------
- total    10.00000  |      3.46186        1.10475        1.10475        1.10475        0.80571        0.80571        0.80571
-
-Gross  | L A  H4 s      A  C  _small
---------------------------------------
- total |   0.80571        0.00101
+ total    10.00000  |      3.86122        1.26001        1.99988        1.65272        0.61208        0.61208        0.00200
 
 
    ****************************************************************************
@@ -765,25 +735,25 @@ Gross  | L A  H4 s      A  C  _small
 
 
 
-          ==============================================================
-          ======================  REFERENCE POINT ======================
-          ==============================================================
+         ===============================================================
+         ======================  REFERENCE POINT  ======================
+         ===============================================================
 
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9997
-            Orbital   2 Pipek-Mezey localization measure d =  2.0136
-            Orbital   3 Pipek-Mezey localization measure d =  2.7002
-            Orbital   4 Pipek-Mezey localization measure d =  2.7022
-            Orbital   5 Pipek-Mezey localization measure d =  2.7022
+            Orbital   1 Pipek-Mezey localization measure d =  0.9999
+            Orbital   2 Pipek-Mezey localization measure d =  1.3311
+            Orbital   3 Pipek-Mezey localization measure d =  2.0821
+            Orbital   4 Pipek-Mezey localization measure d =  1.1711
+            Orbital   5 Pipek-Mezey localization measure d =  1.0045
 
-            Inverse mean delocalization =     0.521478480524124
+            Inverse mean delocalization =     0.816204942213209
 
 *T   ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
 
 *C   ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     0   0.00D+00   0.15D-01   0.00D+00   0.00567   26  13   1   FULL   0.00D+00   0.00D+00
+*C     0   0.00D+00   0.52D-02   0.00D+00   0.00000   37   3   0   DIAG   0.00D+00   0.00D+00
 
 
       =====================================================================
@@ -791,62 +761,49 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:01 2011
+      --- Tue Mar 13 10:15:29 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9972
-            Orbital   2 Pipek-Mezey localization measure d =  2.0200
-            Orbital   3 Pipek-Mezey localization measure d =  2.7002
-            Orbital   4 Pipek-Mezey localization measure d =  2.7022
-            Orbital   5 Pipek-Mezey localization measure d =  2.7022
+            Orbital   1 Pipek-Mezey localization measure d =  1.0056
+            Orbital   2 Pipek-Mezey localization measure d =  1.2362
+            Orbital   3 Pipek-Mezey localization measure d =  2.0831
+            Orbital   4 Pipek-Mezey localization measure d =  1.2555
+            Orbital   5 Pipek-Mezey localization measure d =  1.0018
 
-            Inverse mean delocalization =     0.521677806383698
+            Inverse mean delocalization =     0.815628863474971
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     1   0.10D+02   0.10D+02   0.66D-01    0.98250   T   tq!     -0.20D-03  -0.20D-03
+*T     1   0.10D+02   0.15D+01   0.15D+01    1.74223   T   tQ R>0   0.58D-03   0.33D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  1.0012
-            Orbital   2 Pipek-Mezey localization measure d =  2.4405
-            Orbital   3 Pipek-Mezey localization measure d =  2.3329
-            Orbital   4 Pipek-Mezey localization measure d =  2.5793
-            Orbital   5 Pipek-Mezey localization measure d =  2.3960
+            Orbital   1 Pipek-Mezey localization measure d =  0.9993
+            Orbital   2 Pipek-Mezey localization measure d =  1.2417
+            Orbital   3 Pipek-Mezey localization measure d =  2.0839
+            Orbital   4 Pipek-Mezey localization measure d =  1.2553
+            Orbital   5 Pipek-Mezey localization measure d =  1.0037
 
-            Inverse mean delocalization =     0.528446856685100
+            Inverse mean delocalization =     0.815765474942332
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     1   0.10D+02   0.10D+02   0.10D+02    0.00165   T   r !R<1  -0.70D-02  -0.42D+01
+*T     1   0.15D+01   0.37D+00   0.15D+01   -0.00489   T   r  R<1   0.44D-03  -0.90D-01
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9981
-            Orbital   2 Pipek-Mezey localization measure d =  2.1980
-            Orbital   3 Pipek-Mezey localization measure d =  2.7002
-            Orbital   4 Pipek-Mezey localization measure d =  2.4756
-            Orbital   5 Pipek-Mezey localization measure d =  2.7021
+            Orbital   1 Pipek-Mezey localization measure d =  0.9993
+            Orbital   2 Pipek-Mezey localization measure d =  1.5760
+            Orbital   3 Pipek-Mezey localization measure d =  2.0839
+            Orbital   4 Pipek-Mezey localization measure d =  0.9985
+            Orbital   5 Pipek-Mezey localization measure d =  1.0037
 
-            Inverse mean delocalization =     0.520250713753996
-
-     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     1   0.10D+02   0.10D+02   0.10D+02    0.00189   T   r !q>0   0.12D-02   0.65D+00
-
-                    ** Pipek-Mezey localization criteria **
-                      ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  1.0012
-            Orbital   2 Pipek-Mezey localization measure d =  2.4405
-            Orbital   3 Pipek-Mezey localization measure d =  2.3329
-            Orbital   4 Pipek-Mezey localization measure d =  2.5793
-            Orbital   5 Pipek-Mezey localization measure d =  2.3960
-
-            Inverse mean delocalization =     0.528446856685100
+            Inverse mean delocalization =     0.822560230661290
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     1   0.10D+02   0.25D+01   0.10D+02    0.00165   F   r !R<1  -0.70D-02  -0.42D+01
+*T     1   0.37D+00   0.73D+00   0.37D+00    0.77528   F   r  R>3  -0.64D-02  -0.82D-02
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     1   0.70D-02   0.80D-01   0.10D+02   0.04216   29  11   0   FULL  -0.70D-02  -0.42D+01
+*C     1   0.64D-02   0.95D-02   0.37D+00   0.00000   37   3   0   DIAG  -0.64D-02  -0.82D-02
 
 
       =====================================================================
@@ -854,36 +811,49 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:29 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  1.0014
-            Orbital   2 Pipek-Mezey localization measure d =  2.4432
-            Orbital   3 Pipek-Mezey localization measure d =  2.4413
-            Orbital   4 Pipek-Mezey localization measure d =  2.5258
-            Orbital   5 Pipek-Mezey localization measure d =  2.3537
+            Orbital   1 Pipek-Mezey localization measure d =  0.9979
+            Orbital   2 Pipek-Mezey localization measure d =  1.5524
+            Orbital   3 Pipek-Mezey localization measure d =  2.0844
+            Orbital   4 Pipek-Mezey localization measure d =  1.0154
+            Orbital   5 Pipek-Mezey localization measure d =  1.0027
 
-            Inverse mean delocalization =     0.527669443706585
+            Inverse mean delocalization =     0.821635939887177
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     2   0.25D+01   0.83D+01   0.33D+02   -0.01622   T   Tq R<1   0.78D-03  -0.48D-01
+*T     2   0.73D+00   0.73D+00   0.84D+00   -0.14799   T   T  dia   0.92D-03  -0.62D-02
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9986
-            Orbital   2 Pipek-Mezey localization measure d =  2.0752
-            Orbital   3 Pipek-Mezey localization measure d =  2.4241
-            Orbital   4 Pipek-Mezey localization measure d =  2.2325
-            Orbital   5 Pipek-Mezey localization measure d =  2.0744
+            Orbital   1 Pipek-Mezey localization measure d =  0.9989
+            Orbital   2 Pipek-Mezey localization measure d =  1.5484
+            Orbital   3 Pipek-Mezey localization measure d =  2.0844
+            Orbital   4 Pipek-Mezey localization measure d =  1.0162
+            Orbital   5 Pipek-Mezey localization measure d =  1.0034
 
-            Inverse mean delocalization =     0.565160172600017
+            Inverse mean delocalization =     0.821484997584750
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     2   0.83D+01   0.21D+01   0.83D+01    0.00698   F   r  R<1  -0.37D-01  -0.53D+01
+*T     2   0.73D+00   0.18D+00   0.73D+00   -0.17174   T   r  R<1   0.11D-02  -0.63D-02
+
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+            Orbital   1 Pipek-Mezey localization measure d =  0.9990
+            Orbital   2 Pipek-Mezey localization measure d =  1.6468
+            Orbital   3 Pipek-Mezey localization measure d =  2.0842
+            Orbital   4 Pipek-Mezey localization measure d =  0.9599
+            Orbital   5 Pipek-Mezey localization measure d =  1.0034
+
+            Inverse mean delocalization =     0.825286692829724
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T     2   0.18D+00   0.37D+00   0.18D+00    0.91105   F   r  R>3  -0.27D-02  -0.30D-02
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     2   0.37D-01   0.26D+00   0.83D+01   0.01836   39   1   0   FULL  -0.37D-01  -0.53D+01
+*C     2   0.27D-02   0.47D-02   0.18D+00   0.00000   38   2   0   DIAG  -0.27D-02  -0.30D-02
 
 
       =====================================================================
@@ -891,36 +861,62 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:29 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  1.0046
-            Orbital   2 Pipek-Mezey localization measure d =  2.3246
-            Orbital   3 Pipek-Mezey localization measure d =  2.2995
-            Orbital   4 Pipek-Mezey localization measure d =  2.5029
-            Orbital   5 Pipek-Mezey localization measure d =  2.1439
+            Orbital   1 Pipek-Mezey localization measure d =  0.9996
+            Orbital   2 Pipek-Mezey localization measure d =  1.6613
+            Orbital   3 Pipek-Mezey localization measure d =  2.0844
+            Orbital   4 Pipek-Mezey localization measure d =  0.9518
+            Orbital   5 Pipek-Mezey localization measure d =  1.0034
 
-            Inverse mean delocalization =     0.545292154507237
+            Inverse mean delocalization =     0.825873999713156
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     3   0.21D+01   0.13D+01   0.53D+01   -0.18081   T   Tq R<1   0.20D-01  -0.11D+00
+*T     3   0.37D+00   0.37D+00   0.43D+00    0.90396   T   T !dia  -0.59D-03  -0.65D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9975
-            Orbital   2 Pipek-Mezey localization measure d =  1.9754
-            Orbital   3 Pipek-Mezey localization measure d =  2.1949
-            Orbital   4 Pipek-Mezey localization measure d =  2.1593
-            Orbital   5 Pipek-Mezey localization measure d =  1.9791
+            Orbital   1 Pipek-Mezey localization measure d =  0.9990
+            Orbital   2 Pipek-Mezey localization measure d =  1.6673
+            Orbital   3 Pipek-Mezey localization measure d =  1.9800
+            Orbital   4 Pipek-Mezey localization measure d =  0.9599
+            Orbital   5 Pipek-Mezey localization measure d =  1.0034
 
-            Inverse mean delocalization =     0.586537510500255
+            Inverse mean delocalization =     0.828840410426441
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     3   0.13D+01   0.33D+00   0.13D+01    0.10788   F   r  R<1  -0.21D-01  -0.20D+00
+*T     3   0.37D+00   0.37D+00   0.37D+00    0.83322   T   r !R>3  -0.36D-02  -0.43D-02
+
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+            Orbital   1 Pipek-Mezey localization measure d =  0.9995
+            Orbital   2 Pipek-Mezey localization measure d =  1.6613
+            Orbital   3 Pipek-Mezey localization measure d =  2.0844
+            Orbital   4 Pipek-Mezey localization measure d =  0.9518
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
+
+            Inverse mean delocalization =     0.825872984731958
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T     3   0.37D+00   0.37D+00   0.37D+00    0.90242   T   r !R>3  -0.59D-03  -0.65D-03
+
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+            Orbital   1 Pipek-Mezey localization measure d =  0.9990
+            Orbital   2 Pipek-Mezey localization measure d =  1.6673
+            Orbital   3 Pipek-Mezey localization measure d =  1.9800
+            Orbital   4 Pipek-Mezey localization measure d =  0.9599
+            Orbital   5 Pipek-Mezey localization measure d =  1.0034
+
+            Inverse mean delocalization =     0.828840410426441
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T     3   0.37D+00   0.73D+00   0.37D+00    0.83322   F   r !R>3  -0.36D-02  -0.43D-02
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     3   0.21D-01   0.20D+00   0.13D+01   0.00899   39   1   0   FULL  -0.21D-01  -0.20D+00
+*C     3   0.36D-02   0.16D-01   0.37D+00   0.00000   38   2   0   DIAG  -0.36D-02  -0.43D-02
 
 
       =====================================================================
@@ -928,23 +924,36 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:29 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9973
-            Orbital   2 Pipek-Mezey localization measure d =  1.9000
-            Orbital   3 Pipek-Mezey localization measure d =  2.1896
-            Orbital   4 Pipek-Mezey localization measure d =  2.2317
-            Orbital   5 Pipek-Mezey localization measure d =  1.8933
+            Orbital   1 Pipek-Mezey localization measure d =  1.0002
+            Orbital   2 Pipek-Mezey localization measure d =  1.9228
+            Orbital   3 Pipek-Mezey localization measure d =  1.6670
+            Orbital   4 Pipek-Mezey localization measure d =  0.9544
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
 
-            Inverse mean delocalization =     0.592384918386187
+            Inverse mean delocalization =     0.832822809865825
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     4   0.33D+00   0.14D+00   0.55D+00   -1.84788   F   TQ R>7  -0.58D-02   0.32D-02
+*T     4   0.73D+00   0.73D+00   0.15D+01   -0.18476   T   T  dia  -0.40D-02   0.22D-01
+
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+            Orbital   1 Pipek-Mezey localization measure d =  0.9989
+            Orbital   2 Pipek-Mezey localization measure d =  1.7794
+            Orbital   3 Pipek-Mezey localization measure d =  1.6786
+            Orbital   4 Pipek-Mezey localization measure d =  0.9551
+            Orbital   5 Pipek-Mezey localization measure d =  1.0034
+
+            Inverse mean delocalization =     0.840504252375780
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T     4   0.73D+00   0.73D+00   0.73D+00    0.41394   F   r       -0.12D-01  -0.28D-01
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     4   0.58D-02   0.12D+00   0.55D+00   0.00503   39   1   0   FULL  -0.58D-02   0.32D-02
+*C     4   0.12D-01   0.13D-01   0.73D+00   0.00000   40   0   0   DIAG  -0.12D-01  -0.28D-01
 
 
       =====================================================================
@@ -952,36 +961,23 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:30 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9973
-            Orbital   2 Pipek-Mezey localization measure d =  1.8976
-            Orbital   3 Pipek-Mezey localization measure d =  2.2472
-            Orbital   4 Pipek-Mezey localization measure d =  2.2835
-            Orbital   5 Pipek-Mezey localization measure d =  1.8971
+            Orbital   1 Pipek-Mezey localization measure d =  1.0000
+            Orbital   2 Pipek-Mezey localization measure d =  1.7037
+            Orbital   3 Pipek-Mezey localization measure d =  1.7160
+            Orbital   4 Pipek-Mezey localization measure d =  0.9525
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
 
-            Inverse mean delocalization =     0.587938889422748
-
-     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     5   0.14D+00   0.26D+00   0.26D+00    0.74009   T   TQ R>0   0.44D-02   0.60D-02
-
-                    ** Pipek-Mezey localization criteria **
-                      ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9974
-            Orbital   2 Pipek-Mezey localization measure d =  1.8997
-            Orbital   3 Pipek-Mezey localization measure d =  2.0147
-            Orbital   4 Pipek-Mezey localization measure d =  2.0409
-            Orbital   5 Pipek-Mezey localization measure d =  1.8958
-
-            Inverse mean delocalization =     0.608575390926729
+            Inverse mean delocalization =     0.843220087459366
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     5   0.26D+00   0.51D+00   0.26D+00    0.86558   F   r  R>3  -0.16D-01  -0.19D-01
+*T     5   0.73D+00   0.73D+00   0.39D+00    0.86132   F   tq      -0.27D-02  -0.32D-02
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     5   0.16D-01   0.17D+00   0.26D+00   0.00401   40   0   0   FULL  -0.16D-01  -0.19D-01
+*C     5   0.27D-02   0.29D-02   0.39D+00   0.00000   40   0   0   DIAG  -0.27D-02  -0.32D-02
 
 
       =====================================================================
@@ -989,36 +985,23 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:30 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9977
-            Orbital   2 Pipek-Mezey localization measure d =  1.9015
-            Orbital   3 Pipek-Mezey localization measure d =  2.2611
-            Orbital   4 Pipek-Mezey localization measure d =  2.2188
-            Orbital   5 Pipek-Mezey localization measure d =  1.9028
+            Orbital   1 Pipek-Mezey localization measure d =  1.0001
+            Orbital   2 Pipek-Mezey localization measure d =  1.7092
+            Orbital   3 Pipek-Mezey localization measure d =  1.7088
+            Orbital   4 Pipek-Mezey localization measure d =  0.9524
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
 
-            Inverse mean delocalization =     0.589338998341312
-
-     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     6   0.51D+00   0.25D+00   0.10D+01   -0.58097   T   Tq R<1   0.19D-01  -0.33D-01
-
-                    ** Pipek-Mezey localization criteria **
-                      ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9974
-            Orbital   2 Pipek-Mezey localization measure d =  1.8999
-            Orbital   3 Pipek-Mezey localization measure d =  1.9054
-            Orbital   4 Pipek-Mezey localization measure d =  1.9129
-            Orbital   5 Pipek-Mezey localization measure d =  1.8984
-
-            Inverse mean delocalization =     0.620659187925772
+            Inverse mean delocalization =     0.843328950170264
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     6   0.25D+00   0.50D+00   0.25D+00    0.83385   F   r  R>3  -0.12D-01  -0.14D-01
+*T     6   0.73D+00   0.73D+00   0.14D+00    0.93034   F   tq      -0.11D-03  -0.12D-03
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     6   0.12D-01   0.56D-01   0.25D+00   0.00330   40   0   0   FULL  -0.12D-01  -0.14D-01
+*C     6   0.11D-03   0.27D-03   0.14D+00   0.00000   40   0   0   DIAG  -0.11D-03  -0.12D-03
 
 
       =====================================================================
@@ -1026,23 +1009,23 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:30 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9975
-            Orbital   2 Pipek-Mezey localization measure d =  1.8999
-            Orbital   3 Pipek-Mezey localization measure d =  1.8999
-            Orbital   4 Pipek-Mezey localization measure d =  1.8997
-            Orbital   5 Pipek-Mezey localization measure d =  1.8999
+            Orbital   1 Pipek-Mezey localization measure d =  1.0001
+            Orbital   2 Pipek-Mezey localization measure d =  1.7089
+            Orbital   3 Pipek-Mezey localization measure d =  1.7090
+            Orbital   4 Pipek-Mezey localization measure d =  0.9524
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
 
-            Inverse mean delocalization =     0.621599725619976
+            Inverse mean delocalization =     0.843329876764125
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     7   0.50D+00   0.50D+00   0.87D-01    0.97063   F   tq      -0.94D-03  -0.97D-03
+*T     7   0.73D+00   0.73D+00   0.14D-01    0.91635   F   tq      -0.93D-06  -0.10D-05
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     7   0.94D-03   0.22D-02   0.87D-01   0.00324   40   0   0   FULL  -0.94D-03  -0.97D-03
+*C     7   0.93D-06   0.31D-04   0.14D-01   0.00000   40   0   0   DIAG  -0.93D-06  -0.10D-05
 
 
       =====================================================================
@@ -1050,23 +1033,23 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:30 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9975
-            Orbital   2 Pipek-Mezey localization measure d =  1.8998
-            Orbital   3 Pipek-Mezey localization measure d =  1.8998
-            Orbital   4 Pipek-Mezey localization measure d =  1.8998
-            Orbital   5 Pipek-Mezey localization measure d =  1.8998
+            Orbital   1 Pipek-Mezey localization measure d =  1.0001
+            Orbital   2 Pipek-Mezey localization measure d =  1.7090
+            Orbital   3 Pipek-Mezey localization measure d =  1.7089
+            Orbital   4 Pipek-Mezey localization measure d =  0.9524
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
 
-            Inverse mean delocalization =     0.621601138603729
+            Inverse mean delocalization =     0.843329888691328
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     8   0.50D+00   0.50D+00   0.32D-02    0.99926   F   tq      -0.14D-05  -0.14D-05
+*T     8   0.73D+00   0.73D+00   0.89D-03    0.90413   F   tq      -0.12D-07  -0.13D-07
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     8   0.14D-05   0.63D-05   0.32D-02   0.00324   40   0   0   FULL  -0.14D-05  -0.14D-05
+*C     8   0.12D-07   0.41D-05   0.89D-03   0.00000   40   0   0   DIAG  -0.12D-07  -0.13D-07
 
 
       =====================================================================
@@ -1074,23 +1057,23 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:30 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9975
-            Orbital   2 Pipek-Mezey localization measure d =  1.8998
-            Orbital   3 Pipek-Mezey localization measure d =  1.8998
-            Orbital   4 Pipek-Mezey localization measure d =  1.8998
-            Orbital   5 Pipek-Mezey localization measure d =  1.8998
+            Orbital   1 Pipek-Mezey localization measure d =  1.0001
+            Orbital   2 Pipek-Mezey localization measure d =  1.7089
+            Orbital   3 Pipek-Mezey localization measure d =  1.7089
+            Orbital   4 Pipek-Mezey localization measure d =  0.9524
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
 
-            Inverse mean delocalization =     0.621601138615438
+            Inverse mean delocalization =     0.843329888896633
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T     9   0.50D+00   0.50D+00   0.93D-05    0.99262   F   tq      -0.12D-10  -0.12D-10
+*T     9   0.73D+00   0.73D+00   0.17D-03    0.90055   F   tq      -0.21D-09  -0.23D-09
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     9   0.12D-10   0.58D-07   0.93D-05   0.00324   40   0   0   FULL  -0.12D-10  -0.12D-10
+*C     9   0.21D-09   0.56D-06   0.17D-03   0.00000   40   0   0   DIAG  -0.21D-09  -0.23D-09
 
 
       =====================================================================
@@ -1098,35 +1081,63 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Dec  1 18:32:02 2011
+      --- Tue Mar 13 10:15:30 2012
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
-            Orbital   1 Pipek-Mezey localization measure d =  0.9975
-            Orbital   2 Pipek-Mezey localization measure d =  1.8998
-            Orbital   3 Pipek-Mezey localization measure d =  1.8998
-            Orbital   4 Pipek-Mezey localization measure d =  1.8998
-            Orbital   5 Pipek-Mezey localization measure d =  1.8998
+            Orbital   1 Pipek-Mezey localization measure d =  1.0001
+            Orbital   2 Pipek-Mezey localization measure d =  1.7089
+            Orbital   3 Pipek-Mezey localization measure d =  1.7089
+            Orbital   4 Pipek-Mezey localization measure d =  0.9524
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
 
-            Inverse mean delocalization =     0.621601138615441
+            Inverse mean delocalization =     0.843329888900501
 
      ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
-*T    10   0.50D+00   0.50D+00   0.85D-07    2.90016   F   0       -0.29D-14  -0.10D-14
+*T    10   0.73D+00   0.73D+00   0.20D-04    0.90204   F   tq      -0.39D-11  -0.43D-11
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    10   0.29D-14   0.57D-09   0.85D-07   0.00324   40   0   0   FULL  -0.29D-14  -0.10D-14
+*C    10   0.39D-11   0.78D-07   0.20D-04   0.00000   40   0   0   DIAG  -0.39D-11  -0.43D-11
+
+
+      =====================================================================
+      ====================== START ITERATION NO.  11 ======================
+      =====================================================================
+
+
+      --- Tue Mar 13 10:15:30 2012
+
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+            Orbital   1 Pipek-Mezey localization measure d =  1.0001
+            Orbital   2 Pipek-Mezey localization measure d =  1.7089
+            Orbital   3 Pipek-Mezey localization measure d =  1.7089
+            Orbital   4 Pipek-Mezey localization measure d =  0.9524
+            Orbital   5 Pipek-Mezey localization measure d =  1.0035
+
+            Inverse mean delocalization =     0.843329888900573
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T    11   0.73D+00   0.73D+00   0.34D-05    0.86862   F   0       -0.72D-13  -0.82D-13
+
+     ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
+*C    11   0.72D-13   0.11D-07   0.34D-05   0.00000   40   0   0   DIAG  -0.72D-13  -0.82D-13
 
 
            ************************************************************
-           **** MAXIMUM reached after  10 iterations and  17 steps ****
-           **** Inverse mean delocalization =   -0.621601138615441 ****
+           **** MAXIMUM reached after  11 iterations and  19 steps ****
            ************************************************************
 
 
-           --- Time used in localization is :   0.75 seconds
+
+           ************************************************************
+           **** Inverse mean delocalization =   -0.843329888900573 ****
+           ************************************************************
+
+           --- Time used in localization is :   0.59 seconds
 
  
-     Date and time (Linux)  : Thu Dec  1 18:32:02 2011
+     Date and time (Linux)  : Tue Mar 13 10:15:30 2012
      Host name              : not found                               
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1134,27 +1145,27 @@ Gross  | L A  H4 s      A  C  _small
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         0.60
+  Mean allocation size (Mb) :         0.78
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine MAIN__+0x55d                               for work array at main                        
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
-        0.50 Mb at subroutine localization_mp_orblp1_+0x125b             for CMO in ORBLP1                             
+      500.00 Mb at subroutine MAIN__+0x55d                               for work array at main                        
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
+        0.31 Mb at subroutine func_pipekmezey_mp_orblp1_+0x11d5          for CMO in ORBLP1                             
   
-  Peak memory usage    (Mb) :       490.00
-       reached at subroutine : select_coeff_own_bas_mp_selown_drv_+0x532 
-              for variable   : KBAS in SELOWN_mod                        
+  Peak memory usage    (Mb) :       500.00
+       reached at subroutine : butobs_no_work_+0xf8                      
+              for variable   : buf in butobs                             
   
- MEMGET high-water mark:     2.32 MB
+ MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 3865, majflt: 0, nvcsw: 0, nivcsw: 94, maxrss: 14596
+>>>> Node 0, utime: 0, stime: 0, minflt: 3435, majflt: 0, nvcsw: 0, nivcsw: 60, maxrss: 13084
 >>>> Total WALL time used in DIRAC: 1s
