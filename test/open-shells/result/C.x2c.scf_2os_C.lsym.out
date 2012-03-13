@@ -178,7 +178,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Mar 13 07:48:08 2012 
+     Date and time (Linux)  : Tue Mar 13 10:21:51 2012 
      Host name              : not found                               
 
 
@@ -211,9 +211,10 @@ Contents of the input file
 #2                                                                                                  
 #2 0                                                                                                
 #1 0                                                                                                
-#1 1                                                                                                
+#1 0                                                                                                
 .OLEVEL                                                                                             
-0.01 0.02                                                                                           
+0.20 0.30                                                                                           
+#0.01 0.02                                                                                          
 .EVCCNV                                                                                             
 1.0D-9  1.0D-7                                                                                      
 .PRINT                                                                                              
@@ -626,8 +627,8 @@ C      0.0000000000   0.0000000000   0.0000000000
    - Maximum size of B-matrix:   10
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
- * Level shift for open-shell  1 activated :    0.010
- * Level shift for open-shell  2 activated :    0.020
+ * Level shift for open-shell  1 activated :    0.200
+ * Level shift for open-shell  2 activated :    0.300
  * Maximum number of SCF iterations  :   50
  * No quadratic convergent Hartree-Fock
  * Contributions from 2-electron integrals to Fock matrix:
@@ -864,85 +865,85 @@ Total no. of orbitals      (NORB):     4       6      10
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.   1 ##########   Tue Mar 13 10:21:51 2012
 
 It.    1    -19.82161964952      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Mar 13
 
-########## START ITERATION NO.   2 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.   2 ##########   Tue Mar 13 10:21:51 2012
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.01000002s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00999999s
-
-########## END ITERATION NO.   2 ##########   Tue Mar 13 07:48:08 2012
-
-It.    2    -36.17450858837      1.64D+01  1.50D+00  4.98D-01               0.00999999s   LL             Tue Mar 13
-
-########## START ITERATION NO.   3 ##########   Tue Mar 13 07:48:08 2012
-
-    3 *** Differential density matrix. DCOVLP     = 1.0353
-    3 *** Differential density matrix. DVOVLP( 1) = 1.0251
-    3 *** Differential density matrix. DVOVLP( 2) = 1.0250
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.   3 ##########   Tue Mar 13 07:48:08 2012
-
-It.    3    -36.19804645693      2.35D-02 -1.30D-01  2.06D-02   DIIS   2    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.   4 ##########   Tue Mar 13 07:48:08 2012
-
-    4 *** Differential density matrix. DCOVLP     = 1.0022
-    4 *** Differential density matrix. DVOVLP( 1) = 1.0011
-    4 *** Differential density matrix. DVOVLP( 2) = 1.0012
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.01000002s
 
-########## END ITERATION NO.   4 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.   2 ##########   Tue Mar 13 10:21:51 2012
 
-It.    4    -36.19809251208      4.61D-05 -4.20D-03  1.24D-03   DIIS   3    0.01000002s   LL             Tue Mar 13
+It.    2    -36.17450858837      1.64D+01  1.50D+00  4.98D-01               0.01000002s   LL             Tue Mar 13
 
-########## START ITERATION NO.   5 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.   3 ##########   Tue Mar 13 10:21:51 2012
 
-    5 *** Differential density matrix. DCOVLP     = 1.0001
-    5 *** Differential density matrix. DVOVLP( 1) = 1.0000
-    5 *** Differential density matrix. DVOVLP( 2) = 1.0000
+    3 *** Differential density matrix. DCOVLP     = 1.0353
+    3 *** Differential density matrix. DVOVLP( 1) = 1.0277
+    3 *** Differential density matrix. DVOVLP( 2) = 1.0291
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   5 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.   3 ##########   Tue Mar 13 10:21:51 2012
 
-It.    5    -36.19809263815      1.26D-07 -9.75D-05  5.63D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
+It.    3    -36.19800116598      2.35D-02 -1.37D-01  2.08D-02   DIIS   2    0.00000000s   LL             Tue Mar 13
 
-########## START ITERATION NO.   6 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.   4 ##########   Tue Mar 13 10:21:51 2012
 
-    6 *** Differential density matrix. DCOVLP     = 1.0000
+    4 *** Differential density matrix. DCOVLP     = 1.0017
+    4 *** Differential density matrix. DVOVLP( 1) = 0.9976
+    4 *** Differential density matrix. DVOVLP( 2) = 0.9959
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00999999s
+
+########## END ITERATION NO.   4 ##########   Tue Mar 13 10:21:51 2012
+
+It.    4    -36.19808970123      8.85D-05  3.49D-03  3.06D-03   DIIS   3    0.00999999s   LL             Tue Mar 13
+
+########## START ITERATION NO.   5 ##########   Tue Mar 13 10:21:51 2012
+
+    5 *** Differential density matrix. DCOVLP     = 1.0005
+    5 *** Differential density matrix. DVOVLP( 1) = 0.9997
+    5 *** Differential density matrix. DVOVLP( 2) = 0.9993
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   5 ##########   Tue Mar 13 10:21:51 2012
+
+It.    5    -36.19809260153      2.90D-06 -5.33D-04  3.97D-04   DIIS   4    0.00000000s   LL             Tue Mar 13
+
+########## START ITERATION NO.   6 ##########   Tue Mar 13 10:21:51 2012
+
+    6 *** Differential density matrix. DCOVLP     = 1.0001
     6 *** Differential density matrix. DVOVLP( 1) = 1.0000
-    6 *** Differential density matrix. DVOVLP( 2) = 1.0000
+    6 *** Differential density matrix. DVOVLP( 2) = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   6 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.   6 ##########   Tue Mar 13 10:21:51 2012
 
-It.    6    -36.19809263978      1.63D-09  1.18D-05  1.20D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
+It.    6    -36.19809263897      3.74D-08 -7.47D-05  2.55D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
 
-########## START ITERATION NO.   7 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.   7 ##########   Tue Mar 13 10:21:51 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
     7 *** Differential density matrix. DVOVLP( 1) = 1.0000
@@ -953,11 +954,11 @@ SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   7 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.   7 ##########   Tue Mar 13 10:21:51 2012
 
-It.    7    -36.19809263985      6.77D-11  1.95D-06  4.62D-07   DIIS   6    0.00000000s   LL             Tue Mar 13
+It.    7    -36.19809263984      8.65D-10 -1.68D-05  4.60D-06   DIIS   6    0.00000000s   LL             Tue Mar 13
 
-########## START ITERATION NO.   8 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.   8 ##########   Tue Mar 13 10:21:51 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
@@ -968,622 +969,69 @@ SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   8 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.   8 ##########   Tue Mar 13 10:21:51 2012
 
-It.    8    -36.19809263985      2.49D-13  2.78D-07  1.48D-08   DIIS   7    0.00000000s   LL             Tue Mar 13
+It.    8    -36.19809263985      7.91D-12  1.92D-06  6.98D-07   DIIS   7    0.00000000s   LL             Tue Mar 13
 
-########## START ITERATION NO.   9 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.   9 ##########   Tue Mar 13 10:21:51 2012
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 1.0000
     9 *** Differential density matrix. DVOVLP( 2) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
-
- DIIS aborted because of the last two iterations
- the lowest energy has the largest gradient and DIIS minimizes gradient !!!
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
+>>> Total CPU-time : 0.00999999s
 
-########## END ITERATION NO.   9 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.   9 ##########   Tue Mar 13 10:21:51 2012
 
-It.    9    -36.19809263985     -7.11D-15  8.23D-09  1.96D-09   DAMP0.25    0.00000000s   LL             Tue Mar 13
+It.    9    -36.19809263985      5.68D-13  4.46D-07  1.05D-07   DIIS   7    0.00999999s   LL             Tue Mar 13
 
-########## START ITERATION NO.  10 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.  10 ##########   Tue Mar 13 10:21:51 2012
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
    10 *** Differential density matrix. DVOVLP( 2) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.30%   15.55%   46.04%   0.00000000s
+SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00999999s
+>>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.  10 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.  10 ##########   Tue Mar 13 10:21:51 2012
 
-It.   10    -36.19809263985      4.26D-14 -1.30D-08  8.78D-09   DAMP0.25    0.00999999s   LL             Tue Mar 13
+It.   10    -36.19809263985      2.13D-14 -7.34D-08  1.82D-08   DIIS   4    0.00000000s   LL             Tue Mar 13
 
-########## START ITERATION NO.  11 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.  11 ##########   Tue Mar 13 10:21:51 2012
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
    11 *** Differential density matrix. DVOVLP( 2) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.30%   15.55%   46.04%   0.00000000s
+SOfock:LL  1.00D-12    0.00%    2.74%   13.92%   55.39%   0.00000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.  11 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.  11 ##########   Tue Mar 13 10:21:51 2012
 
-It.   11    -36.19809263985      8.53D-14 -5.97D-08  3.91D-08   DIIS   2    0.00000000s   LL             Tue Mar 13
+It.   11    -36.19809263985      6.61D-13  1.23D-08  3.35D-09   DIIS   2    0.00000000s   LL             Tue Mar 13
 
-########## START ITERATION NO.  12 ##########   Tue Mar 13 07:48:08 2012
+########## START ITERATION NO.  12 ##########   Tue Mar 13 10:21:51 2012
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
    12 *** Differential density matrix. DVOVLP( 2) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.62%   10.67%   52.13%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  12 ##########   Tue Mar 13 07:48:08 2012
-
-It.   12    -36.19809263985     -3.48D-13  1.25D-09  3.86D-08   DAMP0.25    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  13 ##########   Tue Mar 13 07:48:08 2012
-
-   13 *** Differential density matrix. DCOVLP     = 1.0000
-   13 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   13 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.88%   12.50%   53.96%   0.00000000s
+SOfock:LL  1.00D-12    0.00%    0.91%   15.75%   46.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.  13 ##########   Tue Mar 13 07:48:08 2012
+########## END ITERATION NO.  12 ##########   Tue Mar 13 10:21:51 2012
 
-It.   13    -36.19809263985      3.45D-12 -3.28D-07  2.06D-07   DIIS   2    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  14 ##########   Tue Mar 13 07:48:08 2012
-
-   14 *** Differential density matrix. DCOVLP     = 1.0000
-   14 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   14 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   15.55%   14.53%   46.85%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  14 ##########   Tue Mar 13 07:48:08 2012
-
-It.   14    -36.19809263985     -1.32D-12  9.49D-09  2.02D-07   DAMP0.25    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  15 ##########   Tue Mar 13 07:48:08 2012
-
-   15 *** Differential density matrix. DCOVLP     = 1.0000
-   15 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   15 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    8.23%   10.26%   51.73%   0.00000000s
- cp DFCOEF DFCOEF.BEST
-
- DIIS aborted because of the last two iterations
- the lowest energy has the largest gradient and DIIS minimizes gradient !!!
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  15 ##########   Tue Mar 13 07:48:08 2012
-
-It.   15    -36.19809263990      5.08D-11 -1.72D-06  1.08D-06   DAMP0.25    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  16 ##########   Tue Mar 13 07:48:08 2012
-
-   16 *** Differential density matrix. DCOVLP     = 1.0000
-   16 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   16 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.88%   12.50%   53.96%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.01000002s
-
-########## END ITERATION NO.  16 ##########   Tue Mar 13 07:48:08 2012
-
-It.   16    -36.19809264086      9.65D-10 -7.29D-06  4.79D-06   DAMP0.25    0.01000002s   LL             Tue Mar 13
-
-########## START ITERATION NO.  17 ##########   Tue Mar 13 07:48:08 2012
-
-   17 *** Differential density matrix. DCOVLP     = 1.0000
-   17 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   17 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    6.70%    0.00%   15.38%   51.60%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  17 ##########   Tue Mar 13 07:48:08 2012
-
-It.   17    -36.19809266037      1.95D-08 -3.28D-05  2.15D-05   DIIS   2    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  18 ##########   Tue Mar 13 07:48:08 2012
-
-   18 *** Differential density matrix. DCOVLP     = 1.0000
-   18 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   18 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   14.94%   14.94%   47.26%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  18 ##########   Tue Mar 13 07:48:08 2012
-
-It.   18    -36.19809265955     -8.25D-10  8.53D-07  2.11D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  19 ##########   Tue Mar 13 07:48:08 2012
-
-   19 *** Differential density matrix. DCOVLP     = 1.0000
-   19 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   19 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    6.70%    0.00%   15.38%   51.60%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  19 ##########   Tue Mar 13 07:48:08 2012
-
-It.   19    -36.19809265876     -7.87D-10  8.32D-07  2.07D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  20 ##########   Tue Mar 13 07:48:08 2012
-
-   20 *** Differential density matrix. DCOVLP     = 1.0000
-   20 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   20 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  20 ##########   Tue Mar 13 07:48:08 2012
-
-It.   20    -36.19809265805     -7.13D-10  7.72D-07  2.03D-05   DIIS   2    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  21 ##########   Tue Mar 13 07:48:08 2012
-
-   21 *** Differential density matrix. DCOVLP     = 1.0000
-   21 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   21 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  21 ##########   Tue Mar 13 07:48:08 2012
-
-It.   21    -36.19809265752     -5.28D-10  6.24D-07  2.00D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  22 ##########   Tue Mar 13 07:48:08 2012
-
-   22 *** Differential density matrix. DCOVLP     = 1.0000
-   22 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   22 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  22 ##########   Tue Mar 13 07:48:08 2012
-
-It.   22    -36.19809265686     -6.63D-10  6.91D-07  1.96D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  23 ##########   Tue Mar 13 07:48:08 2012
-
-   23 *** Differential density matrix. DCOVLP     = 1.0000
-   23 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   23 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  23 ##########   Tue Mar 13 07:48:08 2012
-
-It.   23    -36.19809265616     -6.97D-10  7.81D-07  1.92D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  24 ##########   Tue Mar 13 07:48:08 2012
-
-   24 *** Differential density matrix. DCOVLP     = 1.0000
-   24 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   24 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  24 ##########   Tue Mar 13 07:48:08 2012
-
-It.   24    -36.19809265555     -6.14D-10  7.25D-07  1.89D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  25 ##########   Tue Mar 13 07:48:08 2012
-
-   25 *** Differential density matrix. DCOVLP     = 1.0000
-   25 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   25 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  25 ##########   Tue Mar 13 07:48:08 2012
-
-It.   25    -36.19809265500     -5.45D-10  6.54D-07  1.85D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  26 ##########   Tue Mar 13 07:48:08 2012
-
-   26 *** Differential density matrix. DCOVLP     = 1.0000
-   26 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   26 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  26 ##########   Tue Mar 13 07:48:08 2012
-
-It.   26    -36.19809265446     -5.40D-10  6.46D-07  1.82D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  27 ##########   Tue Mar 13 07:48:08 2012
-
-   27 *** Differential density matrix. DCOVLP     = 1.0000
-   27 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   27 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  27 ##########   Tue Mar 13 07:48:08 2012
-
-It.   27    -36.19809265407     -3.96D-10  4.87D-07  1.80D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  28 ##########   Tue Mar 13 07:48:08 2012
-
-   28 *** Differential density matrix. DCOVLP     = 1.0000
-   28 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   28 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00999999s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00999999s
-
-########## END ITERATION NO.  28 ##########   Tue Mar 13 07:48:08 2012
-
-It.   28    -36.19809265356     -5.06D-10  6.32D-07  1.76D-05   DIIS   4    0.00999999s   LL             Tue Mar 13
-
-########## START ITERATION NO.  29 ##########   Tue Mar 13 07:48:08 2012
-
-   29 *** Differential density matrix. DCOVLP     = 1.0000
-   29 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   29 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  29 ##########   Tue Mar 13 07:48:08 2012
-
-It.   29    -36.19809265332     -2.38D-10  3.41D-07  1.75D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  30 ##########   Tue Mar 13 07:48:08 2012
-
-   30 *** Differential density matrix. DCOVLP     = 1.0000
-   30 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   30 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  30 ##########   Tue Mar 13 07:48:08 2012
-
-It.   30    -36.19809265282     -5.05D-10  5.98D-07  1.72D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  31 ##########   Tue Mar 13 07:48:08 2012
-
-   31 *** Differential density matrix. DCOVLP     = 1.0000
-   31 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   31 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  31 ##########   Tue Mar 13 07:48:08 2012
-
-It.   31    -36.19809265272     -9.42D-11 -1.65D-07  1.71D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  32 ##########   Tue Mar 13 07:48:08 2012
-
-   32 *** Differential density matrix. DCOVLP     = 1.0000
-   32 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   32 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  32 ##########   Tue Mar 13 07:48:08 2012
-
-It.   32    -36.19809265238     -3.42D-10  5.32D-07  1.69D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  33 ##########   Tue Mar 13 07:48:08 2012
-
-   33 *** Differential density matrix. DCOVLP     = 1.0000
-   33 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   33 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  33 ##########   Tue Mar 13 07:48:08 2012
-
-It.   33    -36.19809265218     -2.00D-10  2.48D-07  1.67D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  34 ##########   Tue Mar 13 07:48:08 2012
-
-   34 *** Differential density matrix. DCOVLP     = 1.0000
-   34 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   34 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
-
- DIIS aborted because of the last two iterations
- the lowest energy has the largest gradient and DIIS minimizes gradient !!!
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  34 ##########   Tue Mar 13 07:48:08 2012
-
-It.   34    -36.19809265323      1.05D-09 -1.39D-06  1.74D-05   DAMP0.25    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  35 ##########   Tue Mar 13 07:48:08 2012
-
-   35 *** Differential density matrix. DCOVLP     = 1.0000
-   35 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   35 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00999999s
-
-########## END ITERATION NO.  35 ##########   Tue Mar 13 07:48:08 2012
-
-It.   35    -36.19809301414      3.61D-07 -1.45D-04  9.16D-05   DAMP0.25    0.00999999s   LL             Tue Mar 13
-
-########## START ITERATION NO.  36 ##########   Tue Mar 13 07:48:08 2012
-
-   36 *** Differential density matrix. DCOVLP     = 1.0000
-   36 *** Differential density matrix. DVOVLP( 1) = 0.9998
-   36 *** Differential density matrix. DVOVLP( 2) = 0.9999
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  36 ##########   Tue Mar 13 07:48:08 2012
-
-It.   36    -36.19809998889      6.97D-06 -6.05D-04  4.02D-04   DIIS   2    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  37 ##########   Tue Mar 13 07:48:08 2012
-
-   37 *** Differential density matrix. DCOVLP     = 1.0000
-   37 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   37 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  37 ##########   Tue Mar 13 07:48:08 2012
-
-It.   37    -36.19809977863     -2.10D-07  1.11D-05  3.97D-04   DIIS   3    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  38 ##########   Tue Mar 13 07:48:08 2012
-
-   38 *** Differential density matrix. DCOVLP     = 1.0000
-   38 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   38 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  38 ##########   Tue Mar 13 07:48:08 2012
-
-It.   38    -36.19809957352     -2.05D-07  1.10D-05  3.92D-04   DIIS   4    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  39 ##########   Tue Mar 13 07:48:08 2012
-
-   39 *** Differential density matrix. DCOVLP     = 1.0000
-   39 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   39 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.01000002s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00999999s
-
-########## END ITERATION NO.  39 ##########   Tue Mar 13 07:48:08 2012
-
-It.   39    -36.19809932887     -2.45D-07  1.33D-05  3.85D-04   DIIS   4    0.00999999s   LL             Tue Mar 13
-
-########## START ITERATION NO.  40 ##########   Tue Mar 13 07:48:08 2012
-
-   40 *** Differential density matrix. DCOVLP     = 1.0000
-   40 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   40 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
-
- DIIS aborted because of the last two iterations
- the lowest energy has the largest gradient and DIIS minimizes gradient !!!
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  40 ##########   Tue Mar 13 07:48:08 2012
-
-It.   40    -36.19809944766      1.19D-07 -6.38D-06  3.88D-04   DAMP0.25    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  41 ##########   Tue Mar 13 07:48:08 2012
-
-   41 *** Differential density matrix. DCOVLP     = 1.0000
-   41 *** Differential density matrix. DVOVLP( 1) = 0.9942
-   41 *** Differential density matrix. DVOVLP( 2) = 0.9971
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  41 ##########   Tue Mar 13 07:48:08 2012
-
-It.   41    -36.19827339607      1.74D-04 -2.76D-03  1.85D-03   DAMP0.25    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  42 ##########   Tue Mar 13 07:48:08 2012
-
-   42 *** Differential density matrix. DCOVLP     = 1.0000
-   42 *** Differential density matrix. DVOVLP( 1) = 0.9186
-   42 *** Differential density matrix. DVOVLP( 2) = 0.9593
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  42 ##########   Tue Mar 13 07:48:08 2012
-
-It.   42    -36.20004716798      1.77D-03 -7.49D-03  3.23D-03   DIIS   2    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  43 ##########   Tue Mar 13 07:48:08 2012
-
-   43 *** Differential density matrix. DCOVLP     = 1.0000
-   43 *** Differential density matrix. DVOVLP( 1) = 1.0001
-   43 *** Differential density matrix. DVOVLP( 2) = 1.0001
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.01000002s
-
-########## END ITERATION NO.  43 ##########   Tue Mar 13 07:48:08 2012
-
-It.   43    -36.20010215862      5.50D-05 -4.21D-04  3.43D-03   DIIS   3    0.01000002s   LL             Tue Mar 13
-
-########## START ITERATION NO.  44 ##########   Tue Mar 13 07:48:08 2012
-
-   44 *** Differential density matrix. DCOVLP     = 1.0000
-   44 *** Differential density matrix. DVOVLP( 1) = 0.9994
-   44 *** Differential density matrix. DVOVLP( 2) = 0.9997
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  44 ##########   Tue Mar 13 07:48:08 2012
-
-It.   44    -36.19993408393     -1.68D-04  1.12D-03  3.71D-03   DIIS   4    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  45 ##########   Tue Mar 13 07:48:08 2012
-
-   45 *** Differential density matrix. DCOVLP     = 1.0000
-   45 *** Differential density matrix. DVOVLP( 1) = 0.9995
-   45 *** Differential density matrix. DVOVLP( 2) = 0.9997
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  45 ##########   Tue Mar 13 07:48:08 2012
-
-It.   45    -36.19980247434     -1.32D-04  7.93D-04  3.70D-03   DIIS   5    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  46 ##########   Tue Mar 13 07:48:08 2012
-
-   46 *** Differential density matrix. DCOVLP     = 1.0000
-   46 *** Differential density matrix. DVOVLP( 1) = 0.9976
-   46 *** Differential density matrix. DVOVLP( 2) = 0.9988
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  46 ##########   Tue Mar 13 07:48:08 2012
-
-It.   46    -36.19947842948     -3.24D-04  1.83D-03  3.63D-03   DIIS   6    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  47 ##########   Tue Mar 13 07:48:08 2012
-
-   47 *** Differential density matrix. DCOVLP     = 1.0000
-   47 *** Differential density matrix. DVOVLP( 1) = 0.9995
-   47 *** Differential density matrix. DVOVLP( 2) = 0.9997
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  47 ##########   Tue Mar 13 07:48:08 2012
-
-It.   47    -36.19932028136     -1.58D-04  8.41D-04  3.62D-03   DIIS   7    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  48 ##########   Tue Mar 13 07:48:08 2012
-
-   48 *** Differential density matrix. DCOVLP     = 1.0000
-   48 *** Differential density matrix. DVOVLP( 1) = 0.9986
-   48 *** Differential density matrix. DVOVLP( 2) = 0.9993
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00999999s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00999999s
-
-########## END ITERATION NO.  48 ##########   Tue Mar 13 07:48:08 2012
-
-It.   48    -36.19906580919     -2.54D-04  1.20D-03  3.46D-03   DIIS   8    0.00999999s   LL             Tue Mar 13
-
-########## START ITERATION NO.  49 ##########   Tue Mar 13 07:48:08 2012
-
-   49 *** Differential density matrix. DCOVLP     = 1.0000
-   49 *** Differential density matrix. DVOVLP( 1) = 0.9984
-   49 *** Differential density matrix. DVOVLP( 2) = 0.9992
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  49 ##########   Tue Mar 13 07:48:08 2012
-
-It.   49    -36.19880993288     -2.56D-04  1.02D-03  3.19D-03   DIIS   9    0.00000000s   LL             Tue Mar 13
-
-########## START ITERATION NO.  50 ##########   Tue Mar 13 07:48:08 2012
-
-   50 *** Differential density matrix. DCOVLP     = 1.0000
-   50 *** Differential density matrix. DVOVLP( 1) = 1.0000
-   50 *** Differential density matrix. DVOVLP( 2) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%   15.75%   46.24%   0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.  50 ##########   Tue Mar 13 07:48:08 2012
-
-It.   50    -36.19879854238     -1.14D-05 -6.74D-05  3.20D-03   DIIS   9    0.00000000s   LL             Tue Mar 13
-
- ** Exit SCF because maximum number of iterations reached.
+It.   12    -36.19809263985      4.97D-14 -2.15D-09  6.61D-10   DIIS   2    0.00000000s   LL             Tue Mar 13
 
 
                                    SCF - CYCLE
@@ -1600,57 +1048,19 @@ It.   50    -36.19879854238     -1.14D-05 -6.74D-05  3.20D-03   DIIS   9    0.00
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
 It.    1    -19.82161964952      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Mar 13
-It.    2    -36.17450858837      1.64D+01  1.50D+00  4.98D-01               0.00999999s   LL             Tue Mar 13
-It.    3    -36.19804645693      2.35D-02 -1.30D-01  2.06D-02   DIIS   2    0.00000000s   LL             Tue Mar 13
-It.    4    -36.19809251208      4.61D-05 -4.20D-03  1.24D-03   DIIS   3    0.01000002s   LL             Tue Mar 13
-It.    5    -36.19809263815      1.26D-07 -9.75D-05  5.63D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-It.    6    -36.19809263978      1.63D-09  1.18D-05  1.20D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.    7    -36.19809263985      6.77D-11  1.95D-06  4.62D-07   DIIS   6    0.00000000s   LL             Tue Mar 13
-It.    8    -36.19809263985      2.49D-13  2.78D-07  1.48D-08   DIIS   7    0.00000000s   LL             Tue Mar 13
-It.    9    -36.19809263985     -7.11D-15  8.23D-09  1.96D-09   DAMP0.25    0.00000000s   LL             Tue Mar 13
-It.   10    -36.19809263985      4.26D-14 -1.30D-08  8.78D-09   DAMP0.25    0.00999999s   LL             Tue Mar 13
-It.   11    -36.19809263985      8.53D-14 -5.97D-08  3.91D-08   DIIS   2    0.00000000s   LL             Tue Mar 13
-It.   12    -36.19809263985     -3.48D-13  1.25D-09  3.86D-08   DAMP0.25    0.00000000s   LL             Tue Mar 13
-It.   13    -36.19809263985      3.45D-12 -3.28D-07  2.06D-07   DIIS   2    0.00000000s   LL             Tue Mar 13
-It.   14    -36.19809263985     -1.32D-12  9.49D-09  2.02D-07   DAMP0.25    0.00000000s   LL             Tue Mar 13
-It.   15    -36.19809263990      5.08D-11 -1.72D-06  1.08D-06   DAMP0.25    0.00000000s   LL             Tue Mar 13
-It.   16    -36.19809264086      9.65D-10 -7.29D-06  4.79D-06   DAMP0.25    0.01000002s   LL             Tue Mar 13
-It.   17    -36.19809266037      1.95D-08 -3.28D-05  2.15D-05   DIIS   2    0.00000000s   LL             Tue Mar 13
-It.   18    -36.19809265955     -8.25D-10  8.53D-07  2.11D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-It.   19    -36.19809265876     -7.87D-10  8.32D-07  2.07D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-It.   20    -36.19809265805     -7.13D-10  7.72D-07  2.03D-05   DIIS   2    0.00000000s   LL             Tue Mar 13
-It.   21    -36.19809265752     -5.28D-10  6.24D-07  2.00D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-It.   22    -36.19809265686     -6.63D-10  6.91D-07  1.96D-05   DIIS   3    0.00000000s   LL             Tue Mar 13
-It.   23    -36.19809265616     -6.97D-10  7.81D-07  1.92D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-It.   24    -36.19809265555     -6.14D-10  7.25D-07  1.89D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-It.   25    -36.19809265500     -5.45D-10  6.54D-07  1.85D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.   26    -36.19809265446     -5.40D-10  6.46D-07  1.82D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-It.   27    -36.19809265407     -3.96D-10  4.87D-07  1.80D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.   28    -36.19809265356     -5.06D-10  6.32D-07  1.76D-05   DIIS   4    0.00999999s   LL             Tue Mar 13
-It.   29    -36.19809265332     -2.38D-10  3.41D-07  1.75D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.   30    -36.19809265282     -5.05D-10  5.98D-07  1.72D-05   DIIS   4    0.00000000s   LL             Tue Mar 13
-It.   31    -36.19809265272     -9.42D-11 -1.65D-07  1.71D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.   32    -36.19809265238     -3.42D-10  5.32D-07  1.69D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.   33    -36.19809265218     -2.00D-10  2.48D-07  1.67D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.   34    -36.19809265323      1.05D-09 -1.39D-06  1.74D-05   DAMP0.25    0.00000000s   LL             Tue Mar 13
-It.   35    -36.19809301414      3.61D-07 -1.45D-04  9.16D-05   DAMP0.25    0.00999999s   LL             Tue Mar 13
-It.   36    -36.19809998889      6.97D-06 -6.05D-04  4.02D-04   DIIS   2    0.00000000s   LL             Tue Mar 13
-It.   37    -36.19809977863     -2.10D-07  1.11D-05  3.97D-04   DIIS   3    0.00000000s   LL             Tue Mar 13
-It.   38    -36.19809957352     -2.05D-07  1.10D-05  3.92D-04   DIIS   4    0.00000000s   LL             Tue Mar 13
-It.   39    -36.19809932887     -2.45D-07  1.33D-05  3.85D-04   DIIS   4    0.00999999s   LL             Tue Mar 13
-It.   40    -36.19809944766      1.19D-07 -6.38D-06  3.88D-04   DAMP0.25    0.00000000s   LL             Tue Mar 13
-It.   41    -36.19827339607      1.74D-04 -2.76D-03  1.85D-03   DAMP0.25    0.00000000s   LL             Tue Mar 13
-It.   42    -36.20004716798      1.77D-03 -7.49D-03  3.23D-03   DIIS   2    0.00000000s   LL             Tue Mar 13
-It.   43    -36.20010215862      5.50D-05 -4.21D-04  3.43D-03   DIIS   3    0.01000002s   LL             Tue Mar 13
-It.   44    -36.19993408393     -1.68D-04  1.12D-03  3.71D-03   DIIS   4    0.00000000s   LL             Tue Mar 13
-It.   45    -36.19980247434     -1.32D-04  7.93D-04  3.70D-03   DIIS   5    0.00000000s   LL             Tue Mar 13
-It.   46    -36.19947842948     -3.24D-04  1.83D-03  3.63D-03   DIIS   6    0.00000000s   LL             Tue Mar 13
-It.   47    -36.19932028136     -1.58D-04  8.41D-04  3.62D-03   DIIS   7    0.00000000s   LL             Tue Mar 13
-It.   48    -36.19906580919     -2.54D-04  1.20D-03  3.46D-03   DIIS   8    0.00999999s   LL             Tue Mar 13
-It.   49    -36.19880993288     -2.56D-04  1.02D-03  3.19D-03   DIIS   9    0.00000000s   LL             Tue Mar 13
-It.   50    -36.19879854238     -1.14D-05 -6.74D-05  3.20D-03   DIIS   9    0.00000000s   LL             Tue Mar 13
+It.    2    -36.17450858837      1.64D+01  1.50D+00  4.98D-01               0.01000002s   LL             Tue Mar 13
+It.    3    -36.19800116598      2.35D-02 -1.37D-01  2.08D-02   DIIS   2    0.00000000s   LL             Tue Mar 13
+It.    4    -36.19808970123      8.85D-05  3.49D-03  3.06D-03   DIIS   3    0.00999999s   LL             Tue Mar 13
+It.    5    -36.19809260153      2.90D-06 -5.33D-04  3.97D-04   DIIS   4    0.00000000s   LL             Tue Mar 13
+It.    6    -36.19809263897      3.74D-08 -7.47D-05  2.55D-05   DIIS   5    0.00000000s   LL             Tue Mar 13
+It.    7    -36.19809263984      8.65D-10 -1.68D-05  4.60D-06   DIIS   6    0.00000000s   LL             Tue Mar 13
+It.    8    -36.19809263985      7.91D-12  1.92D-06  6.98D-07   DIIS   7    0.00000000s   LL             Tue Mar 13
+It.    9    -36.19809263985      5.68D-13  4.46D-07  1.05D-07   DIIS   7    0.00999999s   LL             Tue Mar 13
+It.   10    -36.19809263985      2.13D-14 -7.34D-08  1.82D-08   DIIS   4    0.00000000s   LL             Tue Mar 13
+It.   11    -36.19809263985      6.61D-13  1.23D-08  3.35D-09   DIIS   2    0.00000000s   LL             Tue Mar 13
+It.   12    -36.19809263985      4.97D-14 -2.15D-09  6.61D-10   DIIS   2    0.00000000s   LL             Tue Mar 13
 --------------------------------------------------------------------------------------------------------------------------------
-* Desired convergence limit not reached after   50 iterations but the current convergence is acceptable.
+* Convergence after   12 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
       LL           :    0.00000000s
@@ -1659,13 +1069,13 @@ It.   50    -36.19879854238     -1.14D-05 -6.74D-05  3.20D-03   DIIS   9    0.00
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -36.198798542383742
+   Electronic energy                        :    -36.198092639847324
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -36.198798542383742
+   Total energy                             :    -36.198092639847324
 
 
                                    Eigenvalues
@@ -1674,23 +1084,21 @@ It.   50    -36.19879854238     -1.14D-05 -6.74D-05  3.20D-03   DIIS   9    0.00
 
 * Block   1 in E1g:  Omega =  1/2
   * Closed shell, f = 1.0000
--10.79138902173050  ( 2)    -0.64210045396841  ( 2)
+-10.79120882057423  ( 2)    -0.64203271797975  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  2.24363299875924  ( 2)    25.42703007845232  ( 2)
+  2.24373094324145  ( 2)    25.42720297282382  ( 2)
 
 * Block   1 in E1u:  Omega =  1/2
   * Open shell #1, f = 0.5000
- -0.32579317249333  ( 2)
+ -0.32142768053416  ( 2)
   * Open shell #2, f = 0.2500
- -0.31210576694504  ( 2)
+ -0.32121845353637  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  1.55978845633785  ( 2)     1.58040843034142  ( 2)
+  1.56076967395971  ( 2)     1.57880070603291  ( 2)
 
 * Block   2 in E1u:  Omega =  3/2
-  * Open shell #2, f = 0.2500
- -0.32223522330880  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  1.57805898803521  ( 2)
+  1.57880070603313  ( 2)
 
 * Occupation in fermion symmetry E1g
   * Inactive orbitals
@@ -1700,9 +1108,9 @@ It.   50    -36.19879854238     -1.14D-05 -6.74D-05  3.20D-03   DIIS   9    0.00
 
 * Occupation in fermion symmetry E1u
   * Active orbitals
-     1/2 3/2 1/2
+     1/2 1/2 3/2
   * Virtual orbitals
-     1/2 3/2 1/2
+     1/2 1/2 3/2
 
 * Occupation of subblocks
                        E1g:  1/2                                                                            
@@ -1714,17 +1122,19 @@ tot.num. of pos.erg shells:    4
                        E1u:  1/2  3/2                                                                       
   closed shells (f=1.0000):    0    0
   open shell #1 (f=0.5000):    1    0
-  open shell #2 (f=0.2500):    1    1
+  open shell #2 (f=0.2500):    1    0
  virtual shells (f=0.0000):    2    1
 tot.num. of pos.erg shells:    4    2
 
 
+  WARNING! Inconsistency for ifsym=E1u and  mj_id= -3
+ISUM=   1<> NORB_SUB(ISUB,IFSYM,0)=   2
 * HOMO - LUMO gap:
 
-    E(LUMO) :     1.55978846 au (symmetry E1u)
-  - E(HOMO) :    -0.31210577 au (symmetry E1u)
+    E(LUMO) :     1.56076967 au (symmetry E1u)
+  - E(HOMO) :    -0.32121845 au (symmetry E1u)
   ------------------------------------------
-    gap     :     1.87189422 au
+    gap     :     1.88198813 au
 
 
 
@@ -1745,7 +1155,7 @@ tot.num. of pos.erg shells:    4    2
                                 -----------------
 
 
-* Electronic eigenvalue no.  1: -10.791389021730       (Occupation : f = 1.0000)  m_j=  1/2
+* Electronic eigenvalue no.  1: -10.791208820574       (Occupation : f = 1.0000)  m_j=  1/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1755,7 +1165,7 @@ Gross     Total   |    L Ag C  s
  alpha    1.0000  |      1.0000
  beta     0.0000  |      0.0000
 
-* Electronic eigenvalue no.  2: -0.6421004539684       (Occupation : f = 1.0000)  m_j=  1/2
+* Electronic eigenvalue no.  2: -0.6420327179798       (Occupation : f = 1.0000)  m_j=  1/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1765,7 +1175,7 @@ Gross     Total   |    L Ag C  s
  alpha    1.0000  |      1.0000
  beta     0.0000  |      0.0000
 
-* Electronic eigenvalue no.  3:  2.2436329987592       (Occupation : f = 0.0000)  m_j=  1/2
+* Electronic eigenvalue no.  3:  2.2437309432414       (Occupation : f = 0.0000)  m_j=  1/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1775,7 +1185,7 @@ Gross     Total   |    L Ag C  s
  alpha    1.0000  |      1.0000
  beta     0.0000  |      0.0000
 
-* Electronic eigenvalue no.  4:  25.427030078452       (Occupation : f = 0.0000)  m_j=  1/2
+* Electronic eigenvalue no.  4:  25.427202972824       (Occupation : f = 0.0000)  m_j=  1/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1797,17 +1207,27 @@ Gross      Total    |    L Ag C  s
                                 -----------------
 
 
-* Electronic eigenvalue no.  1: -0.3257931724933       (Occupation : f = 0.5000)  m_j=  1/2
+* Electronic eigenvalue no.  1: -0.3214276805342       (Occupation : f = 0.5000)  m_j=  1/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L B3uC  px     L B2uC  py     L B1uC  pz  
 --------------------------------------------------------------------
- alpha    0.1441  |      0.0000         0.0000         0.1441
- beta     0.8559  |      0.4280         0.4280         0.0000
+ alpha    0.3333  |      0.0000         0.0000         0.3333
+ beta     0.6667  |      0.3333         0.3333         0.0000
 
-* Electronic eigenvalue no.  2: -0.3222352233088       (Occupation : f = 0.2500)  m_j= -3/2
+* Electronic eigenvalue no.  2: -0.3212184535364       (Occupation : f = 0.2500)  m_j=  1/2
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uC  px     L B2uC  py     L B1uC  pz  
+--------------------------------------------------------------------
+ alpha    0.6667  |      0.0000         0.0000         0.6667
+ beta     0.3333  |      0.1667         0.1667         0.0000
+
+* Electronic eigenvalue no.  3: -0.3212184535360       (Occupation : f = 0.2500)  m_j= -3/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1817,27 +1237,27 @@ Gross     Total   |    L B3uC  px     L B2uC  py
  alpha    0.0000  |      0.0000         0.0000
  beta     1.0000  |      0.5000         0.5000
 
-* Electronic eigenvalue no.  3: -0.3121057669450       (Occupation : f = 0.2500)  m_j=  1/2
+* Electronic eigenvalue no.  4:  1.5607696739597       (Occupation : f = 0.0000)  m_j=  1/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L B3uC  px     L B2uC  py     L B1uC  pz  
 --------------------------------------------------------------------
- alpha    0.8559  |      0.0000         0.0000         0.8559
- beta     0.1441  |      0.0720         0.0720         0.0000
+ alpha    0.3333  |      0.0000         0.0000         0.3333
+ beta     0.6667  |      0.3333         0.3333         0.0000
 
-* Electronic eigenvalue no.  4:  1.5597884563379       (Occupation : f = 0.0000)  m_j=  1/2
+* Electronic eigenvalue no.  5:  1.5788007060329       (Occupation : f = 0.0000)  m_j=  1/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L B3uC  px     L B2uC  py     L B1uC  pz  
 --------------------------------------------------------------------
- alpha    0.3573  |      0.0000         0.0000         0.3573
- beta     0.6427  |      0.3214         0.3214         0.0000
+ alpha    0.6667  |      0.0000         0.0000         0.6667
+ beta     0.3333  |      0.1667         0.1667         0.0000
 
-* Electronic eigenvalue no.  5:  1.5780589880352       (Occupation : f = 0.0000)  m_j= -3/2
+* Electronic eigenvalue no.  6:  1.5788007060331       (Occupation : f = 0.0000)  m_j= -3/2
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1846,35 +1266,25 @@ Gross     Total   |    L B3uC  px     L B2uC  py
 -----------------------------------------------------
  alpha    0.0000  |      0.0000         0.0000
  beta     1.0000  |      0.5000         0.5000
-
-* Electronic eigenvalue no.  6:  1.5804084303414       (Occupation : f = 0.0000)  m_j=  1/2
-==========================================================================================
-
-* Gross populations greater than 0.00010
-
-Gross     Total   |    L B3uC  px     L B2uC  py     L B1uC  pz  
---------------------------------------------------------------------
- alpha    0.6427  |      0.0000         0.0000         0.6427
- beta     0.3573  |      0.1786         0.1786         0.0000
 
 
 ** Total gross population of fermion ircop E1u **
 
 Gross      Total    |    L B3uC  px     L B2uC  py     L B1uC  pz  
 --------------------------------------------------------------------
- total     2.00000  |      0.71399        0.71399        0.57203
+ total     2.00000  |      0.66667        0.66667        0.66667
 
 
 *** Total gross population ***
 
 Gross      Total    |    L Ag C  s      L B3uC  px     L B2uC  py     L B1uC  pz  
 -----------------------------------------------------------------------------------
- total     6.00000  |      4.00000        0.71399        0.71399        0.57203
+ total     6.00000  |      4.00000        0.66667        0.66667        0.66667
 
  
-     Date and time (Linux)  : Tue Mar 13 07:48:08 2012 
+     Date and time (Linux)  : Tue Mar 13 10:21:51 2012 
      Host name              : not found                               
->>>> Node 0, utime: 0, stime: 0, minflt: 5699, majflt: 0, nvcsw: 18, nivcsw: 10, maxrss: 17328
+>>>> Node 0, utime: 0, stime: 0, minflt: 5221, majflt: 0, nvcsw: 11, nivcsw: 3, maxrss: 17328
 >>>> Total WALL time used in DIRAC: 0s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
