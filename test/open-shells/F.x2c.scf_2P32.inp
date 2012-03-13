@@ -22,9 +22,9 @@
 .OPEN SHELL
 1
 3/0,4
-# necessary keyword to achieve the convergence 
+# Shift 2p+ slightly upwards since it is almost degenerate with closed-shell 2p-
 .OLEVEL
-0.2
+0.1
 .EVCCNV
 1.0D-9  1.0D-7
 .PRINT 

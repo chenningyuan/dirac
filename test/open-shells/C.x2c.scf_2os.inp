@@ -20,18 +20,11 @@
 2
 1/0,2
 1/0,4
-#.MJSELECTION
-#2
-#2 0
-#1 0
-#1 0
+# Shift 2p+ upwards since it is almost degenerate with 2p-
 .OLEVEL
-0.20 0.30
-#0.01 0.02
+0.0 0.1
 .EVCCNV
 1.0D-9  1.0D-7
-.PRINT
-0
 **ANALYZE
 .MULPOP
 *MULPOP
@@ -39,6 +32,4 @@
 .VECPOP
  all
  all
-.PRINT
-0
 *END OF

@@ -8,7 +8,6 @@
 .UNCONTRACTED
 **HAMILTONIAN
 .X2C
-#.SPINFREE
 .PRINT
 1
 **WAVE FUNCTIONS
@@ -21,11 +20,9 @@
 .OPEN SHELL
 1
 2/0,4
-#.MJSELECTION
-#2
-#2 1
-#0 2
 # Activate level shift for open-shell orbitals to achieve convergence
+# This is to increase the gap between the closed-shell 2p- and open-shell 2p+
+# orbitals, which are almost degenerate
 .OLEVEL
 0.1 
 .EVCCNV
