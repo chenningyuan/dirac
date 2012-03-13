@@ -25,7 +25,7 @@ implicit none
 
 public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, ROTCMO_MOD, errall
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod, ROTCMO_MOD, errall
 
 type :: PipekMezey_flags
   integer :: iprloc
@@ -35,10 +35,10 @@ end type PipekMezey_flags
 type :: PipekMezey_variales
   integer :: lupri, lucoef
   integer :: nfbas(2,0:2), n2bbasx, n2bbasxq
-  integer :: nish(2), norb(2), npsh(2), nesh(2), norbt
+  integer :: nish(2), norb(2), npsh(2), nesh(2), iorb(2), icmoq(2), norbt, ncmotq
   real*8  :: ssmtrc
   logical :: h2comp, levyle
-  integer :: nz, ipqtoq(4,0:7)
+  integer :: nfsym, nz, ipqtoq(4,0:7)
   integer :: nucdep
   real*8  :: thrzer
   integer :: nrefs, iprprj
@@ -47,6 +47,7 @@ type :: PipekMezey_variales
   logical :: ownbas
   character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
   character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
+  character*50 :: title
   real*8  :: timstr
 end type PipekMezey_variales
 
@@ -57,7 +58,8 @@ type( PipekMezey_variales  ), private :: var
 real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
 ! functional value of our functional (stored for output)
-real*8, save :: dinvmg4out
+integer, save :: keyform
+real*8,  save :: dinvmg4out
 
 ! Global arrays
 real*8,  allocatable, save, private :: pmat(:,:,:,:), smat(:)
@@ -92,8 +94,8 @@ contains
   integer :: i, ifrp, idum, ier, nloc, nmax
   real*8  :: toterg, second
 
-  integer, allocatable, dimension(:) :: itmp, indao, indaos, indnao
-  real*8,  allocatable, dimension(:) :: cmo
+  integer, allocatable, dimension(:) :: itmp, indao, indaos, indnao, ibeig
+  real*8,  allocatable, dimension(:) :: cmo, eig
 
   !------------------------------------------------------------------------------!
   ! Start localization of Molecular orbitals
@@ -109,6 +111,7 @@ contains
   var%lupri      = lupri
   ! dcbgen.h
   var%lucoef     = lucoef
+  var%title      = title
   ! dcbbas.h
   var%nfbas(:,:) = nfbas(:,:)
   var%n2bbasx    = n2bbasx
@@ -118,13 +121,17 @@ contains
   var%norb(:)    = norb(:)
   var%npsh(:)    = npsh(:)
   var%nesh(:)    = nesh(:)
+  var%iorb(:)    = iorb(:)
+  var%icmoq(:)   = icmoq(:)
   var%norbt      = norbt
+  var%ncmotq     = ncmotq
   ! dcbham.h
   var%ssmtrc     = ssmtrc
   var%levyle     = levyle
   ! dgroup.h
-  var%ipqtoq(:,:)= ipqtoq(:,:)
+  var%nfsym      = nfsym
   var%nz         = nz
+  var%ipqtoq(:,:)= ipqtoq(:,:)
   ! nuclei.h
   var%nucdep     = nucdep
   ! thrzer.h
@@ -203,6 +210,8 @@ contains
 
   ! allocate local arrays
   call alloc(cmo   ,var%n2bbasxq,     id='cmo    in init_func')
+  call alloc(eig   ,var%norbt,        id='eig    in init_func')
+  call alloc(ibeig ,var%norbt,        id='ibeig  in init_func')
   call alloc(indao ,var%nfbas(ifrp,0),id='indao  in init_func')
   call alloc(indaos,var%nfbas(ifrp,0),id='indaos in init_func')
   call alloc(indnao,2*var%nucdep+2,   id='indnao in init_func')
@@ -231,16 +240,19 @@ contains
   ! -- scoef -- Electronic orbital coeffients selection !
   !-----------------------------------------------------!
   ! Check if coefficients are on file
+  keyform = 0
   inquire(file='DFCOEF',exist=tobe)
-  if(.not.tobe)then
-    write(lupri,'(a)') 'init_func: Coefficient file not found !'
+  if(tobe) keyform = 1
+  inquire(file='DFPCMO',exist=tobe)
+  if(tobe) keyform = 2
+  if(keyform == 0)then
+    write(lupri,'(a)') 'init_func: Coefficient file not found!'
+    write(lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
     call quit('init_func: Coefficients not found !')
   endif
 
   ! Read coefficients
-  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
-  close(var%lucoef,status='keep')
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
 
   ! select orbitals
   isel(1:nloc) = itmp(1:nloc)
@@ -254,6 +266,8 @@ contains
   !                         Deallocate local arrays                              !
   !------------------------------------------------------------------------------!
   call dealloc(cmo   ,id='cmo    in init_func')
+  call dealloc(eig   ,id='eig    in init_func')
+  call dealloc(ibeig ,id='ibeig  in init_func')
   call dealloc(itmp  ,id='itmp   in init_func')
   call dealloc(indao ,id='indao  in init_func')
   call dealloc(indaos,id='indaos in init_func')
@@ -1129,7 +1143,6 @@ contains
           WRITE(LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
           CALL QUIT('PRJANA: No reference coefficients !')
         ENDIF
-        CALL OPNFIL(VAR%LUCOEF,REFFIL(I),'OLD','PRJANA')
         IF(VAR%OWNBAS)THEN
           CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,               &
                I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
@@ -1148,7 +1161,6 @@ contains
           WRITE(0,*) 'Current version work only with .OWNBAS option'
           STOP
         ENDIF
-        CLOSE(VAR%LUCOEF,STATUS='KEEP')
       ENDDO
 
 !     Throw away the full coefficients and eigenvalues
@@ -1611,9 +1623,8 @@ contains
   call alloc(eig  ,var%norbt,id='eig   in wcmo2file')
   call alloc(ibeig,var%norbt,id='ibeig in wcmo2file')
 
-  ! open DFCOEF file and read EIG, IBEIG and TOTERG
-  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
-  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,14)
+  ! read EIG, IBEIG and TOTERG
+  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -1630,8 +1641,7 @@ contains
   endif
 
   ! write MO to file and close him
-  call wricmo(var%lucoef,cmo,eig,ibeig,toterg)
-  close(var%lucoef,status='keep')
+  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
 
   ! deallocate arrays
   call dealloc(cmo  ,id='cmo   in wcmo2file')
@@ -1639,6 +1649,180 @@ contains
   call dealloc(ibeig,id='ibeig in wcmo2file')
 
   end subroutine wcmo2file
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine wricmo_mod(iunit,cmo,eig,ibeig,toterg)
+  !==============================================================================!
+  !                                                                              !
+  !        Write DHF-coefficients and eigenvalues to (un)formatted file          !
+  !             (based on wricmo routine from the main Dirac code)               !
+  !                                                                              !
+  !        idim(1,j) - number of positronic solutions                            !
+  !        idim(2,j) - number of electronic solutions                            !
+  !        idim(3,j) - number of AO-basis functions                              !
+  !                                                                              !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  integer, intent(in) :: iunit, ibeig(:)
+  real*8,  intent(in) :: toterg, eig(:), cmo(:,:,:)
+
+  ! Internal variables
+  character :: text*74
+  integer   :: i, j, ier, idim(3,2)
+
+  !------------------------------------------------------------------------------!
+  ! Open file
+  open(iunit,file='DFCOEF',status='unknown',form='unformatted',access='sequential',iostat=ier)
+
+  if(ier /= 0) call quit('WRICMO_MOD: ERROR while creating new DFCOEF file')
+  rewind iunit
+
+  ! write cmo, eig and ibeig to file
+  do i = 1,var%nfsym
+    idim(1,i) = var%npsh(i)
+    idim(2,i) = var%nesh(i)
+    idim(3,i) = var%nfbas(i,0)
+  enddo
+  text(1:50) = var%title
+  call gtinfo(text(51:74))
+  rewind iunit
+  write(iunit) text,var%nfsym,((idim(i,j),i = 1,3),j=1,var%nfsym),toterg
+  write(iunit) cmo
+  write(iunit) eig
+  write(iunit) ibeig
+
+  ! Close file
+  close(iunit,status='keep')
+
+  end subroutine wricmo_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine reacmo_mod(iunit,cmo,eig,ibeig,toterg,iopt)
+  !==============================================================================!
+  !                                                                              !
+  !     Read DHF-coefficients and eigenvalues from unformatted file              !
+  !                                                                              !
+  !     Global variable:                                                         !
+  !     keyform == 1  -->  unformatted input                                     !
+  !     keyform == 2  -->  formatted input                                       !
+  !                                                                              !
+  !     IOPT = 1  -->  read only MO coefficients                                 !
+  !     IOPT > 1  -->  read all information                                      !
+  !                                                                              !
+  !     IDIM(1,IFRP) - number of positronic solutions                            !
+  !     IDIM(2,IFRP) - number of electronic solutions                            !
+  !     IDIM(3,IFRP) - number of AO-basis functions                              !
+  !                                                                              !
+  !     Based on REACMO_no_work routine from the main Dirac code                 !
+  !                                                                              !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  integer,   intent( in) :: iunit, iopt
+  integer,   intent(out) :: ibeig(:)
+  real*8,    intent(out) :: cmo(var%ncmotq), eig(:)
+
+  ! Internal variables
+  character :: text*74
+  logical   :: info
+  integer   :: i, j, ifrp, ierr, ioer
+  integer   :: nsym, nfsym, lupri
+  integer   :: idim(3,2)
+  real*8    :: toterg
+
+  !------------------------------------------------------------------------------!
+  ! set some parameters
+  nfsym = var%nfsym
+  lupri = var%lupri
+
+  ! Open file
+  ! =========
+  if(keyform == 1)then
+    open(iunit,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
+  elseif(keyform == 2)then
+    open(iunit,file='DFPCMO',status='old',form='formatted',access='sequential',iostat=ioer)
+  else
+    write(var%lupri,'(a)') ' ERROR: wrong keyform keyword in reacmo_mod'
+    stop
+  endif
+
+  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
+  rewind iunit
+
+  ! Read title line
+  ! ===============
+
+  if(keyform == 1)then
+    read(iunit,iostat=ioer) text,nsym,((idim(i,j),i = 1,3),j=1,nsym),toterg
+  elseif(keyform == 2)then
+    read(iunit,'(a74)',iostat=ioer) text
+    read(iunit,*,iostat=ioer) nsym,((idim(i,j),i = 1,3),j=1,nsym)
+    read(iunit,*,iostat=ioer) toterg
+  endif
+  if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading TEXT')
+  if(ioer /=  0) call quit('REACMO_MOD: ERROR reading TEXT')
+
+  ! Compatibility check for NFSYM and NFBAS
+  ! =======================================
+
+  ierr = 0
+  if(nsym .ne. nfsym) then
+    ierr = ierr + 1
+    info = .true.
+    write(lupri,'(/a/a,2i5)') &
+       'REACMO FATAL ERROR: Incompatible number of fermion ircops', &
+       ' from file and in this run:',nsym,nfsym
+  else
+    do ifrp = 1,nfsym
+      if(idim(3,ifrp).ne.var%nfbas(ifrp,0)) ierr = ierr + 1
+    end do
+    if (ierr.gt.0) then
+      info = .true.
+      write(lupri,'(/a/a,2(/a,i2,2i5))') &
+      'REACMO FATAL ERROR. Incompatible number of basis functions', &
+      ' from file and in this run:', (' Fermion ircop no.',ifrp,    &
+      idim(3,ifrp),var%nfbas(ifrp,0),ifrp=1,nfsym)
+    end if
+  end if
+
+  if (ierr.gt.0) call quit('REACMO: old DFCOEF file is not consistent with this calculation')
+
+  ! Read coefficients
+  ! =================
+ 
+  if(keyform == 1) read(iunit,iostat=ioer) cmo
+  if(keyform == 2) read(iunit,*,iostat=ioer) cmo
+
+  if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading coefficients')
+  if(ioer /=  0) call quit('REACMO_MOD: ERROR reading coefficients')
+
+  ! Read eigenvalues and single group irrep (spinfree and Levy-Leblond calcs)
+  ! =========================================================================
+
+  if(iopt > 1)then
+    if(keyform == 1) read(iunit,iostat=ioer) eig
+    if(keyform == 2) read(iunit,*,iostat=ioer) eig
+    if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading eigenvalues')
+    if(ioer /=  0) call quit('REACMO_MOD: ERROR reading eigenvalues')
+
+    if(keyform == 1) read(iunit,iostat=ioer) ibeig
+    if(keyform == 2) read(iunit,*,iostat=ioer) ibeig
+    if(ioer == -1) call quit('REACMO_MOD: END OF FILE reading irrep identification')
+    if(ioer /=  0) call quit('REACMO_MOD: ERROR reading irrep identification')
+  endif
+
+  ! Close file
+  ! ==========
+  close(iunit,status='keep')
+
+  end subroutine reacmo_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!

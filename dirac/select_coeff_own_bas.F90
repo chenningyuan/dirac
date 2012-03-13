@@ -9,7 +9,7 @@ implicit none
 
 public :: selown_drv
 
-private :: SELOWN_mod, SELOWC_mod, SELOWE_mod, SELOWB_mod, SELOWI_mod
+private :: SELOWN_mod, READT_MOD, READI_MOD, SELOWC_mod, SELOWE_mod, SELOWB_mod, SELOWI_mod
 
 contains
 
@@ -90,13 +90,36 @@ contains
 !     flag for MCSCF coefficients on file CMOFIL
       CMCSCF_MAGIC = 137.0D0
 !
+!     Check if the file is in formatted or unformatted form
+!     =====================================================
+!
+      KEYFORM = 2
+      OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
+      READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
+      READ(IUNIT,*,IOSTAT=IER) IDUM
+!
+      IF(IER /= 0)THEN
+        CLOSE(IUNIT,STATUS='KEEP')
+        OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='UNFORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
+        IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while opening file')
+        KEYFORM = 1
+      ENDIF
+!
       REWIND IUNIT
 !
 !     Read title line
 !     ===============
 !
-      READ (IUNIT,END=10,ERR=20) TEXT,NSYM, &
-             ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      IF(KEYFORM == 1)THEN
+        READ(IUNIT,END=10,ERR=20) TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      ELSEIF(KEYFORM == 2)THEN
+        READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
+        IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while reading TEXT')
+        READ(IUNIT,*,IOSTAT=IER) NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM)
+        IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while reading NSYM')
+        READ(IUNIT,*,IOSTAT=IER) TOTERG
+        IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while reading TOTERG')
+      ENDIF
 !
 !     set local IOPT_TMP
       IOPT_TMP = IOPT
@@ -138,27 +161,30 @@ contains
 !     =================
 !    
       IF(LBIT(IOPT_TMP,2)) THEN
-        CALL READT(IUNIT,NCDIM,CMO)
+        CALL READT_MOD(IUNIT,NCDIM,CMO,KEYFORM)
       ELSE
-        READ(IUNIT)
+        IF(KEYFORM == 1) READ(IUNIT)
+        IF(KEYFORM == 2) READ(IUNIT,*)
       ENDIF
 !
 !     Read eigenvalues
 !     ================
 !
       IF(LBIT(IOPT_TMP,3)) THEN
-        CALL READT(IUNIT,NEDIM,EIG)
+        CALL READT_MOD(IUNIT,NEDIM,EIG,KEYFORM)
       ELSE
-        READ(IUNIT)
+        IF(KEYFORM == 1) READ(IUNIT)
+        IF(KEYFORM == 2) READ(IUNIT,*)
       ENDIF
 !
 !     Read boson irrep info
 !     =====================
 !
       IF(LBIT(IOPT_TMP,4)) THEN
-        CALL READI(IUNIT,NEDIM,IBEIG)
+        CALL READI_MOD(IUNIT,NEDIM,IBEIG,KEYFORM)
       ELSE
-        READ(IUNIT)
+        IF(KEYFORM == 1) READ(IUNIT)
+        IF(KEYFORM == 2) READ(IUNIT,*)
       ENDIF
 !
 !     Select and adjust format to molecular basis
@@ -214,6 +240,10 @@ contains
         IEOFF = IEOFF + NVECS(IFRP)
       ENDIF
       ENDDO
+
+!     Close file
+      CLOSE(IUNIT,STATUS='KEEP')
+
       RETURN
  10   CONTINUE
       CALL QUIT('SELOWN: END reading TEXT')
@@ -221,6 +251,42 @@ contains
       CALL QUIT('SELOWN: ERROR reading TEXT')
 
   END SUBROUTINE SELOWN_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE READT_MOD(IT,N,X,KEYFORM)
+  IMPLICIT NONE
+  INTEGER :: IER, IT, N, KEYFORM
+  REAL*8  :: X(N)
+
+  IF(KEYFORM == 1)THEN
+    READ (IT,IOSTAT=IER) X
+    IF(IER /= 0) CALL QUIT('READT_MOD: ERROR while reading real array in unformatted file')
+  ELSEIF(KEYFORM == 2)THEN
+    READ (IT,*,IOSTAT=IER) X
+    IF(IER /= 0) CALL QUIT('READT_MOD: ERROR while reading real array in formatted file')
+  ENDIF
+
+  END SUBROUTINE READT_MOD
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE READI_MOD(IT,N,INTX,KEYFORM)
+  IMPLICIT NONE
+  INTEGER :: IER, IT, N, KEYFORM
+  INTEGER :: INTX(N)
+
+  IF(KEYFORM == 1)THEN
+    READ (IT,IOSTAT=IER) INTX
+    IF(IER /= 0) CALL QUIT('READT_MOD: ERROR while reading integer array in unformatted file')
+  ELSEIF(KEYFORM == 2)THEN
+    READ (IT,*,IOSTAT=IER) INTX
+    IF(IER /= 0) CALL QUIT('READT_MOD: ERROR while reading integer array in formatted file')
+  ENDIF
+
+  END SUBROUTINE READI_MOD
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
