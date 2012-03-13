@@ -25,6 +25,9 @@
 #2
 #2 1
 #0 2
+# Activate level shift for open-shell orbitals to achieve convergence
+.OLEVEL
+0.1 0.1
 .EVCCNV
 1.0D-9  1.0D-7
 .PRINT

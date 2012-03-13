@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
- B atom
+ B atom, X ^2P_12 ground state
 .WAVE F
 .ANALYZE
 **INTEGRALS
@@ -15,8 +15,10 @@
 **WAVE FUNCTIONS
 .SCF
 *SCF
+# 1s(2) 2s(2)
 .CLOSED SHELL
 4 0
+# 2p12(1)
 .OPEN S
 1
 1/0,2

@@ -1,15 +1,16 @@
 quick
-B.x2c.scf_mj_2P12.inp         B.lsym.mol 
-B.x2c.scf_mj_2P32.inp         B.lsym.mol 
+B.x2c.scf_2P12.inp            B.lsym.mol  --outcmo
+B.x2c.scf_2P32_reord.inp      B.lsym.mol  --incmo
+C.x2c.scf_2os.inp             C.lsym.mol
 CH.x2c.scf_mj.2Pi12.inp       CH.lsym.mol
 CH.x2c.scf_mj.2Pi32.inp       CH.lsym.mol
 
 regular
-B.x2c.scf_2P12.inp            B.lsym.mol  --outcmo
-B.x2c.scf_2P32_reord.inp      B.lsym.mol  --incmo
 sh rm DFCOEF 
 N.x2c.scf_mj_2os_aver.inp     N.lsym.mol
 O.x2c.scf_2os.inp             O.lsym.mol
+F.x2c.scf_2P32.inp            F.lsym.mol   --outcmo
+F.x2c.scf_2P12_reord.inp      F.lsym.mol   --incmo
 CH.x2c.scf.2Pi12.inp          CH.lsym.mol  --outcmo
 CH.x2c.scf.2Pi32_reord.inp    CH.lsym.mol  --incmo
 sh rm DFCOEF 
