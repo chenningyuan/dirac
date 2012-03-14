@@ -88,6 +88,9 @@ c
       integer n_bfn_sym(mstup)  ! (nbpsy or nso)
       integer N_INTEGRAL(3), MN_INTEGRAL
 
+      CHARACTER(11) FILEFORM(2)
+      DATA FILEFORM /'UNFORMATTED','FORMATTED  '/
+
       CALL OUTPUT_LOC('RECP_ONE_MAIN','E') 
 !     --------------------------------------
 !     # operator symmetry
@@ -119,19 +122,19 @@ c       # computed together.
         iapt(1) = 0
         iapt(2) = 0
         iapt(3) = 0
-        OPEN (UNIT=64,FILE='RECP_ISA1') 
-        OPEN (UNIT=65,FILE='RECP_ISA2')
-        OPEN (UNIT=66,FILE='RECP_ISA3')
-        OPEN (UNIT=67,FILE='RECP_ISB1')
-        OPEN (UNIT=68,FILE='RECP_ISB2')
-        OPEN (UNIT=69,FILE='RECP_ISB3')
+        CALL RECP_WRITE_FILEOPEN(64,'RECP_ISA1','REPLACE')
+        CALL RECP_WRITE_FILEOPEN(65,'RECP_ISA2','REPLACE')
+        CALL RECP_WRITE_FILEOPEN(66,'RECP_ISA3','REPLACE')
+        CALL RECP_WRITE_FILEOPEN(67,'RECP_ISB1','REPLACE')
+        CALL RECP_WRITE_FILEOPEN(68,'RECP_ISB2','REPLACE')
+        CALL RECP_WRITE_FILEOPEN(69,'RECP_ISB3','REPLACE')
       else
         nopir(1)   = 1
         ilxyz(1,1) = 1
         nop        = 1
         iapt(1)    = 0
-        OPEN (UNIT=64,FILE='RECP_ISA0')
-        OPEN (UNIT=67,FILE='RECP_ISB0')
+        CALL RECP_WRITE_FILEOPEN(64,'RECP_ISA0','REPLACE')
+        CALL RECP_WRITE_FILEOPEN(67,'RECP_ISB0','REPLACE')
       endif
  
       ijsf = 0
@@ -148,7 +151,6 @@ c       # computed together.
       es = is.eq.js
       ic=icu
       ncc = 0
-
 
 !     --------------------------------------
 !     center combinations for is=js or is>js
@@ -226,7 +228,6 @@ c       # computed together.
 
       ipr=iprst(ijsf)
  
- 
       jgu=ncon(jcons)
       jtl=ntl(jsf)
       jtu=ntu(jsf)
@@ -279,6 +280,8 @@ c       # computed together.
 708   continue
 712   continue
       IF (nnam.EQ.5) THEN
+         IF (RECP_DBG.GE.1)
+     &      WRITE(RECP_OUT,'(A)')'*End writing ISA(1/2/3),ISB(1/2/3)' 
          CLOSE (UNIT=64)
          CLOSE (UNIT=65)
          CLOSE (UNIT=66)
@@ -286,6 +289,8 @@ c       # computed together.
          CLOSE (UNIT=68)
          CLOSE (UNIT=69)
       ELSE
+         IF (RECP_DBG.GE.1)
+     &      WRITE(RECP_OUT,'(A)')'*End writing ISA0,ISB0' 
          CLOSE (UNIT=64)
          CLOSE (UNIT=67)
       ENDIF

@@ -10,6 +10,7 @@ SUBROUTINE RECP_WRITE_ISA(ircru,jrcru,nst,mstu,nprir,ijsf,nopir,ilxyz,iapt, &
 ! # put integrals and labels into the intermediate storage arrays.
   USE RECP_IPT
   IMPLICIT NONE
+#include "inc_print.h"
 ! global variables
   INTEGER :: ircru,jrcru,nst,mstu,nprir(2,mstu,*),ijsf,nopir(*),ilxyz(3,*),iapt(3)
   INTEGER :: mpru,ipr
@@ -40,13 +41,21 @@ SUBROUTINE RECP_WRITE_ISA(ircru,jrcru,nst,mstu,nprir,ijsf,nopir,ilxyz,iapt, &
             do IPAIR = 1, NPAIR
               INDEX1 = INDEX1 + 1
               iapt(INT_TYPE) = iapt(INT_TYPE) + 1
-              IF (INT_TYPE.EQ.1) WRITE(64,'(x,f20.16)') h2(INDEX1)
-              IF (INT_TYPE.EQ.2) WRITE(65,'(x,f20.16)') h2(INDEX1)
-              IF (INT_TYPE.EQ.3) WRITE(66,'(x,f20.16)') h2(INDEX1)
-              IF (INT_TYPE.EQ.1) WRITE(67,'(x,i10)') (ipr+IPAIR) 
-              IF (INT_TYPE.EQ.2) WRITE(68,'(x,i10)') (ipr+IPAIR)
-              IF (INT_TYPE.EQ.3) WRITE(69,'(x,i10)') (ipr+IPAIR)
-
+              IF (RECP_DBG.GE.1) THEN
+                 IF (INT_TYPE.EQ.1) WRITE(64,'(x,f30.16)') h2(INDEX1)
+                 IF (INT_TYPE.EQ.2) WRITE(65,'(x,f30.16)') h2(INDEX1)
+                 IF (INT_TYPE.EQ.3) WRITE(66,'(x,f30.16)') h2(INDEX1)
+                 IF (INT_TYPE.EQ.1) WRITE(67,'(x,i10)') (ipr+IPAIR) 
+                 IF (INT_TYPE.EQ.2) WRITE(68,'(x,i10)') (ipr+IPAIR)
+                 IF (INT_TYPE.EQ.3) WRITE(69,'(x,i10)') (ipr+IPAIR)
+              ELSE
+                 IF (INT_TYPE.EQ.1) WRITE(64,*) h2(INDEX1)
+                 IF (INT_TYPE.EQ.2) WRITE(65,*) h2(INDEX1)
+                 IF (INT_TYPE.EQ.3) WRITE(66,*) h2(INDEX1)
+                 IF (INT_TYPE.EQ.1) WRITE(67,*) (ipr+IPAIR) 
+                 IF (INT_TYPE.EQ.2) WRITE(68,*) (ipr+IPAIR)
+                 IF (INT_TYPE.EQ.3) WRITE(69,*) (ipr+IPAIR)
+              ENDIF
               N_INTEGRAL(INT_TYPE) = N_INTEGRAL(INT_TYPE) + 1
             enddo
           enddo
@@ -92,25 +101,27 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
   INTEGER :: itypea, itypeb
   INTEGER :: lblop
   INTEGER :: n_bfn_sym(mstup)  ! (nbpsy or nso)
-  INTEGER :: num, I,value_temp,value_index,RECP_OUT1
+  INTEGER :: num, I,value_temp,DBG1
   CHARACTER(8) :: chrtyp
-
+  CHARACTER(11) :: FILEFORM(2)
+  DATA FILEFORM /'UNFORMATTED','FORMATTED  '/
+  
   INTEGER :: itypan(7), itypbn(7)
 ! #             s    t    v  veff so:x so:y so:z
   data itypan / 0,   0,   0,   0,   2,   2,   2 /
   data itypbn / 0,   1,   2,   3,   0,   1,   2 /
 
   CALL OUTPUT_LOC('RECP_WRITE_MAIN','E')
-
-  RECP_OUT1 = 6  !DIRAC OUTPUT
+  DBG1=1
+  IF (RECP_DBG.GE.1) DBG1=2
 
   IF (nnam.EQ.5) THEN
-     OPEN (UNIT=74,FILE='RECP_ISA1')
-     OPEN (UNIT=75,FILE='RECP_ISA2')
-     OPEN (UNIT=76,FILE='RECP_ISA3')
-     OPEN (UNIT=77,FILE='RECP_ISB1')
-     OPEN (UNIT=78,FILE='RECP_ISB2')
-     OPEN (UNIT=79,FILE='RECP_ISB3')
+     CALL RECP_WRITE_FILEOPEN(74,'RECP_ISA1','OLD')
+     CALL RECP_WRITE_FILEOPEN(75,'RECP_ISA2','OLD')
+     CALL RECP_WRITE_FILEOPEN(76,'RECP_ISA3','OLD')
+     CALL RECP_WRITE_FILEOPEN(77,'RECP_ISB1','OLD')
+     CALL RECP_WRITE_FILEOPEN(78,'RECP_ISB2','OLD')
+     CALL RECP_WRITE_FILEOPEN(79,'RECP_ISB3','OLD')
      REWIND(74)
      REWIND(75)
      REWIND(76)
@@ -118,8 +129,8 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
      REWIND(78)
      REWIND(79)
   ELSE
-     OPEN (UNIT=74,FILE='RECP_ISA0')
-     OPEN (UNIT=77,FILE='RECP_ISB0') 
+     CALL RECP_WRITE_FILEOPEN(74,'RECP_ISA0','OLD')
+     CALL RECP_WRITE_FILEOPEN(77,'RECP_ISB0','OLD')
      REWIND(74)
      REWIND(77)
   ENDIF
@@ -129,10 +140,9 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
   ALLOCATE( values_stvc(MN_INTEGRAL) )
   ALLOCATE( labels_stvc(2,MN_INTEGRAL) )
 
-  IF (PRINT_LEVEL.GE.5) PRINT *,' nop :',nop
+  IF (PRINT_LEVEL.GE.5) WRITE (RECP_OUT,'(A,I3)'),' nop :',nop
 ! # write out the components of the operator arrays.
-! value_index = 1
-  do lblop = 1, nop
+  DO lblop = 1, nop
 
 !    # check integral type
      itypea = itypan(nnam + lblop - 1)
@@ -141,23 +151,24 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
      call RECP_WRITE_TYPE(itypea, itypeb, INT_TYPE, lblop,PRINT_LEVEL)
 
     DO I = 1, N_INTEGRAL(lblop) 
-!      IF (lblop.EQ.1) READ(74,'(x,f20.16)') values_stvc(I)
-!      IF (lblop.EQ.2) READ(75,'(x,f20.16)') values_stvc(I)
-!      IF (lblop.EQ.3) READ(76,'(x,f20.16)') values_stvc(I)
-!      IF (lblop.EQ.1) READ(77,'(x,i10)') value_temp 
-!      IF (lblop.EQ.2) READ(78,'(x,i10)') value_temp 
-!      IF (lblop.EQ.3) READ(79,'(x,i10)') value_temp
-       IF (lblop.EQ.1) READ(74,*) values_stvc(I)
-       IF (lblop.EQ.2) READ(75,*) values_stvc(I)
-       IF (lblop.EQ.3) READ(76,*) values_stvc(I)
-       IF (lblop.EQ.1) READ(77,*) value_temp 
-       IF (lblop.EQ.2) READ(78,*) value_temp 
-       IF (lblop.EQ.3) READ(79,*) value_temp
-!       print *,'values_stvc(',I,')', values_stvc(I), value_temp
+       IF (RECP_DBG.GE.1) THEN
+          IF (lblop.EQ.1) READ(74,'(x,f30.16)') values_stvc(I)
+          IF (lblop.EQ.2) READ(75,'(x,f30.16)') values_stvc(I)
+          IF (lblop.EQ.3) READ(76,'(x,f30.16)') values_stvc(I)
+          IF (lblop.EQ.1) READ(77,'(x,i10)') value_temp 
+          IF (lblop.EQ.2) READ(78,'(x,i10)') value_temp 
+          IF (lblop.EQ.3) READ(79,'(x,i10)') value_temp
+       ELSE
+          IF (lblop.EQ.1) READ(74,*) values_stvc(I)
+          IF (lblop.EQ.2) READ(75,*) values_stvc(I)
+          IF (lblop.EQ.3) READ(76,*) values_stvc(I)
+          IF (lblop.EQ.1) READ(77,*) value_temp 
+          IF (lblop.EQ.2) READ(78,*) value_temp 
+          IF (lblop.EQ.3) READ(79,*) value_temp
+       ENDIF
        labels_stvc(1,I) =     IPT_IL(value_temp)/ilfact
        labels_stvc(2,I) = mod(IPT_IL(value_temp),ilfact)
 !      print *,'labels',lblop,labels_stvc(1,I),labels_stvc(2,I),I
-!      value_index = value_index + 1
     ENDDO
 !   # write integral to file
     CALL RECP_WRITE_ARRAY( nst,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc, &
@@ -166,10 +177,10 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
                          MN_INTEGRAL,LBLOP)
 
     IF(PRINT_LEVEL.GE. 5)  &
-       WRITE (RECP_OUT1,'(4x,a,a)') chrtyp,' integrals were written in a file'
+       WRITE (RECP_OUT,'(4x,a,a)') chrtyp,' integrals were written in a file'
     IF(PRINT_LEVEL.GE.10) PRINT *,'   N_INTEGRAL(',LBLOP,')',N_INTEGRAL(LBLOP)
 
-  enddo
+  ENDDO
 
   DEALLOCATE( array_stvc )
   DEALLOCATE( array_so )
@@ -177,15 +188,29 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
   DEALLOCATE( labels_stvc )
 
   IF (nnam.EQ.5) THEN
-     CLOSE (UNIT=74,STATUS='DELETE')
-     CLOSE (UNIT=75,STATUS='DELETE')
-     CLOSE (UNIT=76,STATUS='DELETE')
-     CLOSE (UNIT=77,STATUS='DELETE')
-     CLOSE (UNIT=78,STATUS='DELETE')
-     CLOSE (UNIT=79,STATUS='DELETE')
+     IF (RECP_DBG.GE.1) THEN
+        CLOSE (UNIT=74)
+        CLOSE (UNIT=75)
+        CLOSE (UNIT=76)
+        CLOSE (UNIT=77)
+        CLOSE (UNIT=78)
+        CLOSE (UNIT=79)
+     ELSE
+        CLOSE (UNIT=74,STATUS='DELETE')
+        CLOSE (UNIT=75,STATUS='DELETE')
+        CLOSE (UNIT=76,STATUS='DELETE')
+        CLOSE (UNIT=77,STATUS='DELETE')
+        CLOSE (UNIT=78,STATUS='DELETE')
+        CLOSE (UNIT=79,STATUS='DELETE')
+     ENDIF
   ELSE
-     CLOSE (UNIT=74,STATUS='DELETE')
-     CLOSE (UNIT=77,STATUS='DELETE')
+     IF (RECP_DBG.GE.1) THEN
+        CLOSE (UNIT=74)
+        CLOSE (UNIT=77)
+     ELSE
+        CLOSE (UNIT=74,STATUS='DELETE')
+        CLOSE (UNIT=77,STATUS='DELETE')
+     ENDIF
   ENDIF
   CALL OUTPUT_LOC('RECP_WRITE_MAIN','X')
 END SUBROUTINE RECP_WRITE_MAIN
@@ -217,10 +242,8 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array
   integer :: n_n_tot      ! n! of n_total
   integer :: n_skp(8)     ! n_skip
   integer :: n_n_skp(8)   ! n! of n_skip
-
   integer :: i_lab, j_lab
   integer :: SYM1, SYM2, SYM_12   ! isym, jsym, ijsym
-
   integer :: nbfmx=100000     ! FIXME 
   integer, ALLOCATABLE :: sym_bfn(:) ! symb(1:nbft) symmetry index of each basis function 'n_bfn_sym' is needed
 
@@ -401,21 +424,14 @@ END SUBROUTINE RECP_WRITE_FILE
 
 
 SUBROUTINE RECP_WRITE_TYPE(itypea, itypeb, INT_TYPE, lblop,PRINT_LEVEL)
-! check integral type 
-! Y. C. Park
+! Check integral type 
+! INT_TYPE = 1-4 : symmetric matrix, totally symmetric operator 
+! INT_TYPE =     : symmetric matrix, nontotally symmetric operator 
+! INT_TYPE = 5-7 : antisymmetric matrix, nontotally symmetric operator 
   IMPLICIT NONE
-
   INTEGER :: PRINT_LEVEL
   INTEGER :: itypea,  itypeb, INT_TYPE, lblop
 
-  IF(PRINT_LEVEL.GE.5)  PRINT *,' * ECPINT : entering... ARGOS_WRITE_TYPE * '
-
-! INT_TYPE = 1-4 : symmetric matrix, 
-!                  totally symmetric operator
-! INT_TYPE =     : symmetric matrix, 
-!                  nontotally symmetric operator
-! INT_TYPE = 5-7 : antisymmetric matrix, 
-!                  nontotally symmetric operator
   if (itypea.eq.0) then
      if     (itypeb.eq.0) then
         INT_TYPE = 1        !   S
@@ -438,9 +454,30 @@ SUBROUTINE RECP_WRITE_TYPE(itypea, itypeb, INT_TYPE, lblop,PRINT_LEVEL)
         INT_TYPE = 7         !   SO(z)
      endif
   endif
-
-  IF (PRINT_LEVEL.GE.5)  PRINT *,' * ECPINT : exiting...  ARGOS_WRITE_TYPE * '
-
 END SUBROUTINE RECP_WRITE_TYPE
+
+
+! ------------------------------------------------
+
+
+SUBROUTINE RECP_WRITE_FILEOPEN(UNIT0,FILE0,STAT0)
+  USE RECP_OUTPUT
+  IMPLICIT NONE
+#include "inc_print.h"
+  INTEGER :: UNIT0,IOS0
+  CHARACTER(LEN=*) :: FILE0 
+  CHARACTER(LEN=*) :: STAT0 
+  IF (RECP_DBG.GE.1) THEN
+     OPEN (UNIT=UNIT0,FILE=FILE0,IOSTAT=IOS0,STATUS=STAT0,FORM='FORMATTED')
+     WRITE(RECP_OUT,'(A,A,A)') ' * File (',FILE0,') is opened.'  
+  ELSE
+     OPEN (UNIT=UNIT0,FILE=FILE0,IOSTAT=IOS0,STATUS=STAT0)
+  ENDIF
+! Error message
+  IF (IOS0.NE.0) THEN
+     WRITE(RECP_OUT,'(/,A,A)') ' * Error in opening ',FILE0
+     CALL QUIT('Error in opening a file')
+  ENDIF
+END SUBROUTINE RECP_WRITE_FILEOPEN
 
 END MODULE RECP_WRITE

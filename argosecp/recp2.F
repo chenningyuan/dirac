@@ -1,4 +1,3 @@
-!     subroutine l2opxv(lmn,v,itl,itu,lmnv,eval,leig)
       subroutine l2opxv(lmn,itl,itu,lmnv,eval,leig,ics,igcs)
 !  compute the matrix vector product, (L^2) * v, in an unnormalized
 !  cartesian basis, and determine if v(*) is an eigenvector of the
@@ -201,23 +200,23 @@
 
 
 
-*deck hermit
       subroutine hermit(nn,x,a,eps)
-c          calculates the zeros  x(i)  of the nn-th order
-c        hermite polynomial.  the largest zero will be
-c        stored in x(1).  also calculates the corresponding
-c        coefficients  a(i)  of the nn-th order gauss-hermite
-c        quadrature formula of degree 2*nn-1.  the factor of
-c        sqrt(pi) has been removed from the a(i).
+c    calculates the zeros  x(i)  of the nn-th order
+c  hermite polynomial.  the largest zero will be
+c  stored in x(1).  also calculates the corresponding
+c  coefficients  a(i)  of the nn-th order gauss-hermite
+c  quadrature formula of degree 2*nn-1.  the factor of
+c  sqrt(pi) has been removed from the a(i).
 c
 c  a. h. stroud & d. secrest, gaussian quadrature formulas,
 c  prentice-hall, 1966
-c
+      USE RECP_OUTPUT 
       implicit real*8 (a-h,o-z)
+#include "inc_print.h"
       parameter (sixth = 1.0d0/6.0d0)
       dimension x(*), a(*)
 
-      IF (PRINT_LEVEL .GE. 5) PRINT *,' * ECPINT : HERMIT ENTER * '
+      CALL OUTPUT_LOC('HERMIT','E')
 c
       fn = (nn)
       n1 = nn - 1
@@ -255,9 +254,7 @@ c       write (6,'(2i4,2d25.17)') nn, i, xt, a(i)
         x(ni) = -xt
         a(ni) = a(i)
    30 continue
-
-      IF (PRINT_LEVEL .GE. 5) PRINT *,' * ECPINT : HERMIT EXIT  * '
-
+      CALL OUTPUT_LOC('HERMIT','X')
       return
       end
 *deck hroot
@@ -309,6 +306,7 @@ c
 c     # tables for core potential and spin-orbit integrals.
       USE RECP_IPT
       implicit real*8 (a-h,o-z)
+#include "inc_print.h"
       parameter (a0=0.0d0, a1s2=0.5d0, a1=1.0d0, a2=2.0d0, a3=3.0d0)
 
 c     # compute gauss-hermite points and weights for c, z integrals.

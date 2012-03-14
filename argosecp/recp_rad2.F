@@ -173,7 +173,7 @@ c               # lama recursion
       do 24 lambp=2,lmbphi
         IPT_P23_BPREF(lambp)=fctb*IPT_P23_BPREF(lambp-1)
    24 continue
-      IPT_P23_APWR(1)=a1
+      IPT_P23_APWR(1)=1.0d0
 !     FIXME : 1
       if (ljt.eq.1) then
          IPT_P23_ATERM1(1)=fct
@@ -184,7 +184,7 @@ c               # lama recursion
         IPT_P23_APWR(lambp)=fct*IPT_P23_APWR(lambp-1)
    28 continue
       fct=rkb*fctb
-      IPT_P23_BPWR(1)=a1
+      IPT_P23_BPWR(1)=1.0d0
 !     FIXME : 2
       if (lit.eq.1) then
          IPT_P23_BTERM1(1)=fct
