@@ -74,25 +74,20 @@ contains
   !==============================================================================!
   implicit none
 
-#include "dcbloc.h"
-#include "priunit.h"
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "mxcent.h"
-#include "nuclei.h"
-#include "thrzer.h"
-#include "dcbprj.h"
-
   ! External variables
   integer :: ndim
 
   ! Internal variables
-  logical :: tobe
-  integer :: i, ifrp, idum, ier, nloc, nmax
+
+  ! this parameter must match dimension of reffil and vecref in type PipekMezey_variales
+  real*8, parameter :: maxref = 15
+
+  logical :: tobe, twocomp, x2c
+  integer :: i, ifrp, idum, ier, nloc, nmax, iunit
   real*8  :: toterg, second
+  character*6  :: reffil(maxref)
+  character*8  :: chdum
+  character*72 :: vecref(2,maxref), selmos
 
   integer, allocatable, dimension(:) :: itmp, indao, indaos, indnao, ibeig
   real*8,  allocatable, dimension(:) :: cmo, eig
@@ -104,54 +99,78 @@ contains
   !------------------------------------------------------------------------------!
   !                       Initialize global variables                            !
   !------------------------------------------------------------------------------!
-  ! dcbloc.h
-  PM%iprloc      = iprloc
-  PM%prjloc      = prjloc
-  ! priunit.h
-  var%lupri      = lupri
+  iunit = 61
+
+  ! open file
+  open(iunit,file='FUNC_PM.INP',status='old',form='formatted',access='sequential',iostat=ier)
+
+  if(ier /= 0)then
+    write(6,*) 'init_func: ERROR while opening FUNC_PM.INP file'
+    stop
+  endif
+
+  rewind iunit
+
+  ! dcbloc.h, priunit.h
+  read(iunit,*) chdum,PM%iprloc
+  read(iunit,*) chdum,PM%prjloc
+  read(iunit,*) chdum,var%lupri
+  read(iunit,*) selmos
   ! dcbgen.h
-  var%lucoef     = lucoef
-  var%title      = title
+  read(iunit,*) var%title
+  read(iunit,*) chdum,var%lucoef
   ! dcbbas.h
-  var%nfbas(:,:) = nfbas(:,:)
-  var%n2bbasx    = n2bbasx
-  var%n2bbasxq   = n2bbasxq
+  read(iunit,*) chdum,var%n2bbasx
+  read(iunit,*) chdum,var%n2bbasxq
+  read(iunit,*) chdum
+  read(iunit,*) var%nfbas(:,:)
   ! dcborb.h
-  var%nish(:)    = nish(:)
-  var%norb(:)    = norb(:)
-  var%npsh(:)    = npsh(:)
-  var%nesh(:)    = nesh(:)
-  var%iorb(:)    = iorb(:)
-  var%icmoq(:)   = icmoq(:)
-  var%norbt      = norbt
-  var%ncmotq     = ncmotq
+  read(iunit,*) chdum,var%norbt
+  read(iunit,*) chdum,var%ncmotq
+  read(iunit,*) chdum,var%nish(:)
+  read(iunit,*) chdum,var%norb(:)
+  read(iunit,*) chdum,var%npsh(:)
+  read(iunit,*) chdum,var%nesh(:)
+  read(iunit,*) chdum,var%iorb(:)
+  read(iunit,*) chdum,var%icmoq(:)
   ! dcbham.h
-  var%ssmtrc     = ssmtrc
-  var%levyle     = levyle
+  read(iunit,*) chdum,var%ssmtrc
+  read(iunit,*) chdum,var%levyle
   ! dgroup.h
-  var%nfsym      = nfsym
-  var%nz         = nz
-  var%ipqtoq(:,:)= ipqtoq(:,:)
+  read(iunit,*) chdum,var%nfsym
+  read(iunit,*) chdum,var%nz
+  read(iunit,*) chdum
+  read(iunit,*) var%ipqtoq(:,:)
   ! nuclei.h
-  var%nucdep     = nucdep
+  read(iunit,*) chdum,var%nucdep
   ! thrzer.h
-  var%thrzer     = thrzer
+  read(iunit,*) chdum,var%thrzer
   ! dcbprj.h
-  var%nrefs      = nrefs
-  var%iprprj     = iprprj
-  var%maxref     = min(maxref,15)
-  var%prothr     = prothr
-  var%ownbas     = ownbas
+  read(iunit,*) chdum,var%nrefs
+  read(iunit,*) chdum,var%iprprj
+  read(iunit,*) chdum,var%prothr
+  read(iunit,*) chdum,var%ownbas
+  read(iunit,*) chdum,var%maxref
+  read(iunit,*) chdum,twocomp
+  read(iunit,*) chdum,x2c
+
+  if(var%maxref /= maxref)then
+    write(var%lupri,'(a)')' WARNING: The maxref dimension in func_PipekMezey module and Dirac differ'
+    write(var%lupri,'(a,I4)')' maxref(Dirac) =',var%maxref
+    write(var%lupri,'(a,I4)')' maxref(func_PipekMezey module) =',maxref
+    stop
+  endif
+
+  do i=1,var%nrefs
+    read(iunit,*) reffil(i)
+    read(iunit,*) vecref(1,i)
+  enddo
+
+  ! close file
+  close(iunit,status='keep')
 
   ! two component calculation
   var%h2comp = twocomp .or. x2c
-
-  if(maxref /= 15)then
-    write(lupri,'(a)')' WARNING: The maxref dimension in localization module and Dirac differ'
-    write(lupri,'(a)')'          See type external_variales in localization.f90 '
-    write(lupri,'(a,I4)')' maxref(Dirac) =',maxref
-    write(lupri,'(a,I4)')' maxref(Localization module) = 15'
-  endif
 
   do i=1,var%maxref
     var%reffil(i)   = reffil(i)
@@ -168,10 +187,10 @@ contains
   ifrp = 1
   ! set limits on possible localized orbitals
   ! when selmos == 'allocc' subroutine numlst will select 0..nmax MOs
-  nmax = nesh(ifrp)
-  if(selmos == 'allocc') nmax = nish(ifrp)
+  nmax = var%nesh(ifrp)
+  if(selmos == 'allocc') nmax = var%nish(ifrp)
   ! set maximum possible number of localized orbitals
-  nloc = norb(ifrp)
+  nloc = var%norb(ifrp)
   ! alocate temporary array; the data will be later moved to isel
   call alloc(itmp,nloc,id='itmp in init_func')
   itmp = 0; idum = 1
@@ -184,16 +203,16 @@ contains
   !                             Print debug info                                 !
   !------------------------------------------------------------------------------!
   if(PM%iprloc.ge.4)then
-    write(lupri,*) 'lupri    =',lupri
-    write(lupri,*) 'nish     =',nish(ifrp)
-    write(lupri,*) 'norb     =',norb(ifrp)
-    write(lupri,*) 'nucdep   =',nucdep
-    write(lupri,*) 'maxref   =',var%maxref
-    write(lupri,*) 'thrzer   =',thrzer
-    write(lupri,*) 'nfbas(0) =',nfbas(ifrp,0)
-    write(lupri,*) 'nfbas(1) =',nfbas(ifrp,1)
-    write(lupri,*) 'nfbas(2) =',nfbas(ifrp,2)
-    write(lupri,*) 'selmos   =',selmos
+    write(var%lupri,*) 'lupri    =',var%lupri
+    write(var%lupri,*) 'nish     =',var%nish(ifrp)
+    write(var%lupri,*) 'norb     =',var%norb(ifrp)
+    write(var%lupri,*) 'nucdep   =',var%nucdep
+    write(var%lupri,*) 'maxref   =',var%maxref
+    write(var%lupri,*) 'thrzer   =',var%thrzer
+    write(var%lupri,*) 'nfbas(0) =',var%nfbas(ifrp,0)
+    write(var%lupri,*) 'nfbas(1) =',var%nfbas(ifrp,1)
+    write(var%lupri,*) 'nfbas(2) =',var%nfbas(ifrp,2)
+    write(var%lupri,*) 'selmos   =',selmos
   endif
 
   !------------------------------------------------------------------------------!
@@ -231,9 +250,9 @@ contains
   !-------------------------------!
   call gtovlx(smat,var%ssmtrc)
   if(PM%iprloc.ge.6)then
-    write(lupri,'(/a)') '* orbloc: Overlap matrix' 
+    write(var%lupri,'(/a)') '* orbloc: Overlap matrix' 
     call prqmat(smat,var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0), &
-                1,ipqtoq(1,0),lupri)
+                1,var%ipqtoq(1,0),var%lupri)
   endif
 
   !-----------------------------------------------------!
@@ -246,8 +265,8 @@ contains
   inquire(file='DFPCMO',exist=tobe)
   if(tobe) keyform = 2
   if(keyform == 0)then
-    write(lupri,'(a)') 'init_func: Coefficient file not found!'
-    write(lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
+    write(var%lupri,'(a)') 'init_func: Coefficient file not found!'
+    write(var%lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
     call quit('init_func: Coefficients not found !')
   endif
 
@@ -258,8 +277,8 @@ contains
   isel(1:nloc) = itmp(1:nloc)
   call selcfs(cmo,ifrp,scoef,nloc,isel,0,nloc,var%nfbas(ifrp,0),var%norb(ifrp))
   if(PM%iprloc.ge.5)then
-    write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
-    call prqmat(scoef,var%nfbas(ifrp,0),nloc,var%nfbas(ifrp,0),nloc,4,ipqtoq(1,0),lupri)
+    write(var%lupri,'(/a)') '* orblo1: Selected molecular coefficients'
+    call prqmat(scoef,var%nfbas(ifrp,0),nloc,var%nfbas(ifrp,0),nloc,4,var%ipqtoq(1,0),var%lupri)
   endif
 
   !------------------------------------------------------------------------------!
