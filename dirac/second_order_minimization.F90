@@ -808,8 +808,8 @@ contains
   logical       :: flat
   logical, save :: was_flat = .false.
   character*6   :: cond
-  integer       :: i, nred, ncount(4)
-  integer, save :: nrun  = 0
+  integer       :: i, nred
+  integer, save :: nrun  = 0, ncount(4) = 0
 
   real*8            :: R, tradold, dmaxa, dmaxn, pow
   real*8, save      :: diffg1, diffg2

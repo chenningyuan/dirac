@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
- B  atom.
+ B atom, 1st excited state ^2P_3/2
 .WAVE F
 .ANALYZE
 **INTEGRALS
@@ -18,13 +18,15 @@
 
 2,3,1 
 *SCF
+# 1s(2) 2s(2)
 .CLOSED SHELL
 4 0
+# 2p32(1)
 .OPEN S
 1
 1/0,4
 .MAXITR
-45
+40
 .OVLSEL
 .NODYNSEL
 .EVCCNV

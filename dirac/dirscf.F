@@ -402,7 +402,7 @@ C
 #include "dcborb.h"
 #include "dcbreo.h"
       type(fde_import) :: itmp
-      LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
+      LOGICAL DOSEL,DOLEV,DSCFON,BARNUC,AOCBUF
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -457,14 +457,17 @@ C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
       DOSEL = .FALSE.
-      TOBE  = .TRUE.
-CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
+C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
-
 C
 C     1) - atomic start
 C     -------------------------
       IF(ATOMST) THEN
+C.......In the open-shell case use fractional occupation in first iteration; reset at the end
+        AOCBUF   = AOC
+        AOC      = .FALSE.
+        NFMATBUF = NFMAT
+        NFMAT    = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
@@ -696,6 +699,10 @@ C
       ENDIF
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,DOLEV,WORK(KFREE),LFREE)
+      IF(ATOMST) THEN
+        AOC      = AOCBUF
+        NFMAT    = NFMATBUF
+      ENDIF
 C
 C     Add vacuum polarisation in case of ONESYS
 C
