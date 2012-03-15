@@ -6867,14 +6867,18 @@ CMI           .... segmentation of L blocks ...not desirable for AMFI...
                   IF (NNUC .EQ. 0) GO TO 200
                 IF (N.EQ.1) THEN
                  IF (JCO(J,I).EQ.1) THEN
-                  WRITE (LUTMP2,*) NNUC,NNRC
-!                 WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
-!    &                '  -> NNUC,NNRC:',NNUC,NNRC
+                   if(j .lt. 6)then ! up to g functions
+                     WRITE (LUTMP2,*) NNUC,NNRC
+                   end if
+!                   WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
+!    &                  '  -> NNUC,NNRC:',NNUC,NNRC
                  ELSE
                   IF (K.EQ.1) THEN
-                    WRITE (LUTMP2,*) NNUCT,NNRCT
-!                   WRITE (lupri,*) 
-!    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    if(j .lt. 6)then ! up to g functions
+                      WRITE (LUTMP2,*) NNUCT,NNRCT
+!                     WRITE (lupri,*) 
+!    &                 '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    end if
                   ENDIF
                  ENDIF
                 ENDIF
