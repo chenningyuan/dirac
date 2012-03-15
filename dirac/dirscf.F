@@ -605,7 +605,6 @@ C
            CALL SOLFCK(FOCK,DMAT,1,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
         ENDIF
-
       ENDIF
 C
 C     2) - using old 2-electron Fock matrix
@@ -1234,15 +1233,9 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-#define PCM_DEBUG
-#ifdef PCM_DEBUG
-      real(8), allocatable :: tess_cent(:, :), nuc_pot(:), el_pot(:)
-      integer :: foo 
+#ifdef PCM_MODULE
+      integer :: printlevel
 #endif
-!#define ESP_DEBUG
-#ifdef ESP_DEBUG
-      real(8) :: origin(3), nuc_pot, el_pot
-#endif ESP_DEBUG
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
@@ -1304,46 +1297,12 @@ C
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
 
-
-#ifdef PCM_DEBUG
-         call get_cavity_size(nr_points)
-         allocate(tess_cent(3, nr_points))
-         call get_tess_centers(tess_cent)
-         allocate(nuc_pot(nr_points))
-         nuc_pot = 0.0d0
-         allocate(el_pot(nr_points))
-         el_pot = 0.0d0
-        
-         call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
-         call el_pot_pcm(nr_points, tess_cent, el_pot, dmat,            &
-     & work, lwork)
-         
-!         do foo=1,nr_points
-!             print *, "Coord", tess_cent(1,foo), tess_cent(2,foo),      &
-!     & tess_cent(3,foo)
-!         enddo    
-        do foo=1,nr_points
-           print *, 'Nuclear potential at point', foo, nuc_pot(foo)
-        enddo
-        do foo=1,nr_points
-           print *, 'Electronic potential at point', foo, el_pot(foo)
-        enddo
-
-         deallocate(tess_cent)
-         deallocate(nuc_pot)
-         deallocate(el_pot)
-#endif
-#ifdef ESP_DEBUG
-         origin = 0.0d0
-         nuc_pot = 0.0d0
-         el_pot = 0.0d0
-         call nuc_pot_pcm(1, origin, nuc_pot)
-         print *, 'Nuclear potential at origin', nuc_pot
-         call el_pot_pcm(1, origin, el_pot, dmat, work, lwork)
-         print *, 'Electronic potential at origin', el_pot
-#endif
-
-
+#ifdef PCM_MODULE
+       if (dirac_cfg_pcm) then
+          printlevel = 0
+          call pcm_driver(dmat, work, lwork, printlevel) 
+       endif 
+#endif        
 
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
