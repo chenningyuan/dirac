@@ -402,7 +402,7 @@ C
 #include "dcborb.h"
 #include "dcbreo.h"
       type(fde_import) :: itmp
-      LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
+      LOGICAL DOSEL,DOLEV,DSCFON,BARNUC,AOCBUF
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -457,14 +457,17 @@ C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
       DOSEL = .FALSE.
-      TOBE  = .TRUE.
-CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
+C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
-
 C
 C     1) - atomic start
 C     -------------------------
       IF(ATOMST) THEN
+C.......In the open-shell case use fractional occupation in first iteration; reset at the end
+        AOCBUF   = AOC
+        AOC      = .FALSE.
+        NFMATBUF = NFMAT
+        NFMAT    = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
@@ -695,6 +698,10 @@ C
       ENDIF
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,DOLEV,WORK(KFREE),LFREE)
+      IF(ATOMST) THEN
+        AOC      = AOCBUF
+        NFMAT    = NFMATBUF
+      ENDIF
 C
 C     Add vacuum polarisation in case of ONESYS
 C
@@ -5169,7 +5176,7 @@ C.....Say hello
       ENDIF
 C.....Initialize buffer density matrix
       NDMAT=NTBAS(0)*NTBAS(0)*NZ
-      NDBUF=NTBAS(0)*NTBAS(0)*4
+      NDBUF=NTBAS(0)*NTBAS(0)*NZC1
       CALL MEMGET('REAL',KDBUF,NDBUF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KDBUF),NDBUF)
 C.....Loop over atomic types
@@ -5190,7 +5197,6 @@ C.......Read atomic coefficients in C1 format
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
         READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
-C.......add test fro NSYM
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5206,41 +5212,46 @@ C.......add test fro NSYM
         ENDIF
         NAORB  = NNEG+NPOS
         NACMO  = NBAS*NAORB
-        NACMOQ = NACMO*4
-        NADEN  = NBAS*NBAS*4
+        NACMOQ = NACMO*NZC1
+        NADEN  = NBAS*NBAS*NZC1
+C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET('REAL',KADE,NADEN ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KCMO,NACMOQ,WORK,KFREE,LFREE)
         CALL READT(LUATOM,NACMOQ,WORK(KCMO))
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
-!       NDIM=MAX(NAORB,NBAS)+1
-!       radovan i think the above should rather be:
-        NDIM=MAX(NAORB,NBAS)+1
+        NDIM=MAX(NAORB+1,NBAS)
         CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
         FAC = D0
         DO ISHELL = 1,NVECATOM(IATOM)
+C.........starting from orbital string VECATOM return index array WORK(KVEC) of selected orbitals
           NSEL=1
           CALL NUMLS1(VECATOM(ISHELL,IATOM),WORK(KVEC),
      &        NAORB,-NNEG,NPOS,NSEL,WORK(KIBUF))
+C.........count number NPVEC and NEVEC of negative- and positive-energy orbitals, respectively
           CALL ORBCNT(WORK(KVEC),NSEL,NNEG,NPOS,NPVEC,NEVEC)
-          CALL MEMGET('REAL',KCBUF,NBAS*NSEL*4,WORK,KFREE,LFREE)
+C.........extract selected vectors from CMO and place in CBUF
+          CALL MEMGET('REAL',KCBUF,NBAS*NSEL*NZC1,WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
-          CALL SELOWC(4,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
+          CALL SELOWC(NZC1,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
           IF(IPRINT.GE.4) THEN
             WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
      &                NZ,IPQTOQ(1,0),LUPRI)
-           WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
      &                NZ,IPQTOQ(1,0),LUPRI)
-         ENDIF
-         CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
-     &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
-CTROND         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
-CTROND         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
-CTROND     &              4,IPQTOQ(1,0),LUPRI)
+          ENDIF
+C.........Generate contribution to atomic density matrix from this shell
+          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,OCCATOM(ISHELL,IATOM),
+     &                FAC,WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
+          IF(IPRINT.GE.4) THEN
+            WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
+            CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
+     &                 NZC1,IPQTOQ(1,0),LUPRI)
+          ENDIF
           FAC = D1
           CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO
@@ -5248,7 +5259,7 @@ C.......Now we have the atomic density matrix.
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
         CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
-     &                   NUCDEG(ICENT),
+     &                   NUCDEG(ICENT),NZC1,
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
      &                   WORK,KFREE,LFREE)
 C.......Release memory        
@@ -5259,29 +5270,46 @@ C.......Release memory
 C
       IF(NBSYM.EQ.1) THEN
         CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
-        IF(IPRINT.GE.4) THEN
-          WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-          CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &               NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
       ELSE
+C.......transform atomic start to actual symmetry
+        IF(IPRINT.GE.5) THEN 
+          WRITE(LUPRI,'(A)') '* C1 Density matrix from atomic guess'
+          CALL PRQMAT(WORK(KDBUF),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZC1,IQDEF,LUPRI)
+        ENDIF
         CALL DZERO(DMAT,NDMAT)
         IREP = 0
         IOFF = 0
         NOFF = NTBAS(0)*NTBAS(0)
-        DO IZ = 1,4
+        DO IZ = 1,NZC1
            IREPD = IRQMAT(IZ,IREP)
-           IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+           IQ    = IQMULT(1,JQBAS(IREPD,1),IZ)
            IPQ   = IQTOPQ(IQ,IREP)
            CALL DTAOSO(WORK(KDBUF+IOFF),DMAT(1,1,IPQ),NTBAS(0),
      &                 IREPD,IPRINT)
            IOFF = IOFF + NOFF
         ENDDO
+        CALL BUTOBS(DMAT,NZ,WORK(KDBUF),NDBUF)
+        DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           CALL Q2BPHASE('D',IQ,1,DMAT(1,1,IZ))
+        ENDDO
       ENDIF
+      IF(IPRINT.GE.4) THEN
+        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(/A,A3)')
+     &      '* Fermion ircop ',FREP(IFRP)
+          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1,1,1),
+     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+        ENDDO
+      ENDIF
+      CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,
+      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,NZC1,
      &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
      &                       WORK,KFREE,LFREE)
 C***********************************************************************
@@ -5302,7 +5330,7 @@ C     Written by T. Saue March 31 2011
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION AMOL(NBAS,NBAS,4),ATOM(LR,LC,4),NDEG(*),
+      DIMENSION AMOL(NBAS,NBAS,NZC1),ATOM(LR,LC,NZC1),NDEG(*),
      &          WORK(*)
       KFRSAV=KFREE
       ICENT=INUC
@@ -5334,7 +5362,7 @@ C.........Create pointer mol->atom for rows
           ENDIF
 C.........Create reverse pointer atom->mol
           CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
      &                 WORK(KIBUF),WORK(KJBUF))
           ENDDO

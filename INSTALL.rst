@@ -5,7 +5,6 @@ Installation
 
 DIRAC is configured using CMake, typically via the setup script,
 and subsequently compiled using make or gmake.
-Alternatively we provide pre-compiled packages.
 
 
 Dependencies
@@ -56,9 +55,9 @@ CMake with appropriate environment variables and flags::
   $ cd build
   $ make
 
-Call setup without flags to see all available options::
+To see all available options::
 
-  $ ./setup
+  $ ./setup --help
 
 You can see the CMake command using::
 
@@ -106,11 +105,11 @@ releases.  This strategy offers several advantages. One obvious advantage is
 that you can now build several binaries with the same source::
 
   $ cd /sourcepath
-  $ ./setup --fc=gfortran --cc=gcc --build=/gfortran-buildpath
+  $ ./setup --fc=gfortran --cc=gcc /gfortran-buildpath
   $ cd /gfortran-buildpath
   $ make
   $ cd /sourcepath
-  $ ./setup --fc=ifort --cc=icc --build=/ifort-buildpath
+  $ ./setup --fc=ifort --cc=icc /ifort-buildpath
   $ cd /ifort-buildpath
   $ make
 
@@ -144,6 +143,9 @@ Using setup::
   $ ./setup --fc=mpif90 --cc=mpicc
   $ cd build
   $ make
+
+If the compiler contains "mpi", then you can omit the flag --mpi, setup will set
+it in this case automatically.
 
 Please note that the defaults for performance optimization are different for
 setup and direct CMake: by default setup configures for optimization, whereas
@@ -188,14 +190,10 @@ Alternatively::
   $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
   $ make
 
-Exporting MATH_ROOT is equivalent to calling setup with --math-dir::
-
-  $ ./setup --math-dir=/opt/intel/mkl
-
 If automatic detection of math libraries fails for whatever reason, you can
 always call the libraries explicitly like here::
 
-  $ ./setup --math="-L/path -lfoo -lbar"
+  $ ./setup --explicit-libs="-L/path -lfoo -lbar"
 
 
 Running CMake using GUI
@@ -229,7 +227,7 @@ Make install
 Make install is very useful to make DIRAC available to other users on the same
 machine::
 
-  $ ./setup [--flags] --install=/path
+  $ ./setup [--flags] --prefix=/path
   $ cd build
   $ make
   $ make install
@@ -240,28 +238,13 @@ Where should $PATH point to? Source directory or build directory?
 
 We recommend to let $PATH point to the install directory::
 
-  $ ./setup [--flags] --install=/install/path
+  $ ./setup [--flags] --prefix=/install/path
   $ cd build
   $ make
   $ make install
 
 This way everything (binary, scripts, basis sets) will be at the right place
 under /install/path and $PATH should contain /install/path.
-
-
-Building utilities
-------------------
-
-First configure DIRAC using setup or directly using CMake. Then::
-
-  $ cd /buildpath
-  $ ccmake /sourcepath
-
-Inside ccmake activate ENABLE_UTILITIES to ON, then compile::
-
-  $ make
-
-Voila! You can do these steps also after you have compiled the DIRAC binary.
 
 
 How can I compile DIRAC for large molecules?

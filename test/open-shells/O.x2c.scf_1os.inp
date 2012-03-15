@@ -1,0 +1,41 @@
+**DIRAC
+.TITLE
+ O atom
+.WAVE F
+.ANALYZE
+**INTEGRALS
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.X2C
+.PRINT
+1
+**WAVE FUNCTIONS
+.SCF
+*SCF
+# 1s(2) 2s(2) 2p_12(2)
+.CLOSED SHELL
+4 2
+# 2p_32(2)
+.OPEN SHELL
+1
+2/0,4
+# Activate level shift for open-shell orbitals to achieve convergence
+# This is to increase the gap between the closed-shell 2p- and open-shell 2p+
+# orbitals, which are almost degenerate
+.OLEVEL
+0.1 
+.EVCCNV
+1.0D-9  1.0D-7
+.PRINT
+0
+**ANALYZE
+.MULPOP
+*MULPOP
+# 2 fermion symmetries
+.VECPOP
+ all
+ all
+.PRINT
+0
+*END OF

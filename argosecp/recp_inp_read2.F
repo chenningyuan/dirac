@@ -61,10 +61,9 @@
       END
 
       SUBROUTINE RECP_INP_PRINTCSO
-     &         ( is, mcrs, lcr,nkcrl, nkcru,
-     &           NLIST, ncr,nklsl, nklsu, lls,
-     &           zcr, ccr, mtype, lblsh )
-
+     &  (is,mcrs,lcr,nkcrl,nkcru,ncr,nklsl,nklsu,lls,
+     &   zcr,ccr,mtype,lblsh)
+#include "inc_print.h"
 !     Global variables 
       INTEGER is, mcrs(*), lcr(*),nkcrl(6,*), nkcru(6,*),
      &        NLIST, ncr(*),nklsl(4,*), nklsu(4,*), lls(*)
@@ -73,6 +72,8 @@
       character*1 lblsh(21)
 !     Local variables 
       INTEGER icrs,kcrl,kcru,kcr,AREP1,AREP2,SOREP1,SOREP2 
+
+      IF (PRINT_LEVEL.LE.1) RETURN
 
       icrs = mcrs(is)
       if ( icrs .eq. 0 ) goto 1000

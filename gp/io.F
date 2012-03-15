@@ -140,7 +140,7 @@ C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLD_DX
       PARAMETER (MAX_LRECL_DX = 10000000) ! 10 000 000
-#include <priunit.h>
+#include "priunit.h"
       integer NBUF_DX, LRECL_DX
       COMMON /CB_DX/ NBUF_DX(99), LRECL_DX(99)
 C
