@@ -2,7 +2,7 @@ C
 C /* extra routines only needed for standalone version of MM code */
 C
       SUBROUTINE GPOPEN(LUNIT,FILEIN,STATIN,ACCEIN,FORMIN,NELEM,OLDDX)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER(*) FILEIN, STATIN, ACCEIN, FORMIN
       INTEGER LUNIT, NELEM, PREV
       LOGICAL OLDDX
@@ -14,7 +14,7 @@ C
       END
 C
       SUBROUTINE GPCLOSE(LUNIT,STATIN)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER(*) STATIN
       CLOSE(LUNIT,STATUS='KEEP')
       END
@@ -23,7 +23,7 @@ C
 C
 C TIMTXT based on TIMER by TUH //900709-hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER(*) TEXT
       CHARACTER AHOUR*6, ASEC*8, AMIN*8
 C

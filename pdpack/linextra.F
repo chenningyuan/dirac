@@ -71,13 +71,13 @@ C Purpose: Transform from AP format to GE format, that is:
 C          unpack antisymmetric,   packed (lower triangle) matrix AAP
 C              to antisymmetric, unpacked matrix AGE.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AAP(*), AGE(N,*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include <nosync.h>
+#include "nosync.h"
          DO 100 I = 1,J-1
             AGE(I,J) = - AAP(JOFF+I)
             AGE(J,I) =   AAP(JOFF+I)
@@ -96,13 +96,13 @@ C
 C Purpose: unpack antisymmetric,   packed (lower triangle) matrix AAP
 C              to antisymmetric, unpacked matrix and add to AGE.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AAP(*), AGE(N,*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include <nosync.h>
+#include "nosync.h"
          DO 100 I = 1,J-1
             AGE(I,J) = AGE(I,J) - AAP(JOFF+I)
             AGE(J,I) = AGE(J,I) + AAP(JOFF+I)
@@ -123,16 +123,16 @@ C Purpose: Transform from SP format to SI format, that is:
 C          unpack symmetric,   packed matrix ASP
 C              to symmetric, unpacked matrix ASI.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASP(*), ASI(N,*)
 C
       ENTRY      DSPTGE(N,ASP,ASI)
 C     ... equivalent subroutine name
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include <nosync.h>
+#include "nosync.h"
          DO 100 I = 1,J-1
             ASI(I,J) = ASP(JOFF+I)
             ASI(J,I) = ASP(JOFF+I)
@@ -150,16 +150,16 @@ C
 C Purpose: unpack symmetric,   packed matrix ASP
 C              to symmetric, unpacked matrix and add to ASI.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASP(*), ASI(N,*)
 C
       ENTRY      DSPPGE(N,ASP,ASI)
 C     ... equivalent subroutine name
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include <nosync.h>
+#include "nosync.h"
          DO 100 I = 1,J-1
             ASI(I,J) = ASI(I,J) + ASP(JOFF+I)
             ASI(J,I) = ASI(J,I) + ASP(JOFF+I)
@@ -179,11 +179,11 @@ C          extract antisymmetric part of general matrix AGE
 C          to antisymmetric, packed matrix AAP (lower
 C          triangle saved).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), AAP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -202,11 +202,11 @@ C Purpose: Transform from GE format to SP format, that is:
 C          extract symmetric part of general matrix AGE
 C          to symmetric, packed matrix ASP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -224,10 +224,10 @@ C
 C Purpose: Fold from GE format to SP format, that is:
 C          ASP(ij) = AGE(I,J) + (1 - DELTAij) AGE(J,I)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -247,11 +247,11 @@ C Purpose: Transform from GE format to SP format, that is:
 C          extract symmetric part of general matrix AGE
 C          to symmetric, packed matrix ASP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -269,11 +269,11 @@ C
 C Purpose: Unfold from SP format to GE format, that is:
 C          AGE(I,J) = AGE(J,I) = ASP(ij)/(2.D0 - Delta(I,J))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -295,10 +295,10 @@ C Purpose: Transform from SI format to SP format, that is:
 C          copy UPPER triangle of symmetric matrix ASI
 C          to symmetric, packed matrix ASP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -341,11 +341,11 @@ C Purpose: Fold from SI format to SP format, that is:
 C          ASP(ij) = ASI(I,J) + (1 - DELTAij) ASI(J,I)
 C                  = (2 - DELTAij) * ASI(I,J)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
       PARAMETER (D2 = 2.0D0)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -366,7 +366,7 @@ C when virtual memory
 C
 C Replace AGE by AGE(transposed)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(NRDIMA,*)
       PARAMETER (NBLK = 128)
       DO 400 JBLK = 1,NROWA,NBLK
@@ -851,7 +851,7 @@ C 900319-hjaaj
 C
 C Return number of elements with absolute value .gt. A
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DX(N)
       IF (A .LT. 0.0D0) THEN
          NUM = N
@@ -887,7 +887,7 @@ C   was loaded instead of this one).
 C
 C Replace AGE by AGE(transposed)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(NRDIMA,*)
       PARAMETER (NBLK = 128)
       DO 400 JBLK = 1,NROWA,NBLK

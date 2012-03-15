@@ -659,7 +659,7 @@ CMI ... copied from pdpack/arhpack.F due to linking problems
 CMI    with DIRAC gp/ routines 
 CMI    in ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),VIN(*),VOUT(*)
       PARAMETER (D0 = 0.0D0)
 C

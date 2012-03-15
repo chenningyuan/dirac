@@ -7114,19 +7114,19 @@ C
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NCENTC(NATOMC),INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       FULMAT = .TRUE.
 C
@@ -7202,17 +7202,17 @@ C
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       FULMAT = .TRUE.
 C
@@ -7266,13 +7266,13 @@ C  /* Deck dpgint */
 C
 C     K.Ruud, July-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7315,13 +7315,13 @@ C  /* Deck qugint */
 C
 C     K.Ruud, October/November-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7377,19 +7377,19 @@ C
 C  /* Deck dpgtra */
       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -7454,19 +7454,19 @@ C    &                          *PT(IBTAND(IREP,ISYMOP))
 C  /* Deck qugtra */
       SUBROUTINE QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X, C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
       DO 100 X = 1, 3

@@ -69,9 +69,9 @@ implicit none
 !            True  - only one calculation of the full hessian will be performed               !
 !=============================================================================================!
 
-public  :: init_minimization, minimization_drv
+public  :: minimization_drv
 
-private :: titler, exp_func, get_X, hdiag, get_mu, updateT
+private :: init_minimization, titler, exp_func, get_X, hdiag, get_mu, updateT
 
 type :: minimization_flags
   character*4 :: heskey
@@ -94,25 +94,36 @@ contains
   !==============================================================================!
   implicit none
 
-#include "dcbloc.h"
-#include "priunit.h"
+  ! Internal variables
+  integer :: ier, iunit
 
   !------------------------------------------------------------------------------!
-  ! dcbloc.h
-  mnf%iprint = iprloc
-  mnf%maxitr = itrloc
-  mnf%thfull = thfull
-  mnf%thdiag = thdiag
-  mnf%thgrad = thgrad
-  mnf%lgfull = lgfull
-  mnf%lgdiag = lgdiag
-  mnf%lggrad = lggrad
-  mnf%lgchck = lgchck
-  mnf%heskey = hesloc
-  ! priunit.h
-  mnf%l      = lupri
+  !-----------------------------!
+  ! Read inp data from the file !
+  !-----------------------------!
+  iunit = 60
 
-  ! initialize module func_PipekMezey
+  ! open file
+  open(iunit,file='OPTIM.INP',status='old',form='formatted',access='sequential',iostat=ier)
+
+  if(ier /= 0)then
+    write(6,*) 'init_minimization: ERROR while opening OPTIM.INP file'
+    stop
+  endif
+
+  rewind 60
+
+  read(iunit,*) mnf%iprint, mnf%maxitr, mnf%l
+  read(iunit,*) mnf%thfull, mnf%thdiag, mnf%thgrad
+  read(iunit,*) mnf%lgfull, mnf%lgdiag, mnf%lggrad, mnf%lgchck
+  read(iunit,*) mnf%heskey
+
+  ! close file
+  close(iunit,status='keep')
+
+  !-----------------------------------!
+  ! initialize module func_PipekMezey !
+  !-----------------------------------!
   ! mnf%ndim  -->  dimension of your space
   call init_func(mnf%ndim)
 
@@ -150,6 +161,9 @@ contains
   real*8,  pointer :: xvect(:), gradt(:), eval(:), hmat(:,:)
 
   !------------------------------------------------------------------------------!
+  ! initialaze minimization module
+  call init_minimization
+
   ! Check thresholds
   if(mnf%thdiag < thresh)then
     write(6,'(/a)')      ' WARNING: The threshold (THDIAG) from the input is too small '

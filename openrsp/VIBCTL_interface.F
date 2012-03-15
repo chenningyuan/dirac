@@ -2,12 +2,12 @@
      &                      dALPHAdR,dGPRIMEdR,dTHETAdR,wrk,lwrk)
       !ajt jan09 Reduced from nw to 1 frequency (thus several calls instead)
       !          Removed negative signs on all the tensors
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbilnr.h>
-#include <cbivib.h>
-#include <abainf.h>
-#include <moldip.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbilnr.h"
+#include "cbivib.h"
+#include "abainf.h"
+#include "moldip.h"
       dimension ALPHA(3,3),GPRIME(3,3),THETA(3,6)
       dimension DIPGRAD(3,nc),dALPHAdR(3,3,nc)
       dimension dGPRIMEdR(3,3,nc),dTHETAdR(3,6,nc),wrk(lwrk)
@@ -57,12 +57,12 @@ C * change lunit to -1
 
 
       subroutine HBTinterface(nc,DIPGRAD,wrk,lwrk)
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbilnr.h>
-#include <cbivib.h>
-#include <abainf.h>
-#include <moldip.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbilnr.h"
+#include "cbivib.h"
+#include "abainf.h"
+#include "moldip.h"
       dimension DIPGRAD(3,nc)
       dimension wrk(*)
 
@@ -82,8 +82,8 @@ C      DIPDER = .true.
 
       subroutine NUCLEI_ifc(n,Z,IS,G)
       !ajt Used in prop_contribs.f90
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       integer n,IS(n); real*8 Z(n),G(3,n)
       if (n/=NATOMS) stop 'NUCLEI_ifc: n/=NATOMS'
       Z = CHARGE(1:n)
@@ -100,8 +100,8 @@ C      DIPDER = .true.
 
       subroutine DIPNUC_ifc(n,F,FG)
       !ajt Used in prop_contribs.f90
-#include <mxcent.h>
-#include <dipole.h>
+#include "mxcent.h"
+#include "dipole.h"
       integer :: n
       real(8) :: F(3),FG(3,3*n)
       call DIPNUC((/0d0/),(/0d0/),0,.true.)
@@ -113,10 +113,10 @@ C      DIPDER = .true.
 #ifndef PRG_DIRAC
       subroutine QDRNUC_ifc(Q)
       !ajt Used in prop_contribs.f90
-#include <mxcent.h>
-#include <nuclei.h>
-#include <quadru.h>
-#include <priunit.h>
+#include "mxcent.h"
+#include "nuclei.h"
+#include "quadru.h"
+#include "priunit.h"
       real(8) :: Q(6)
       call NUCQDR(CORD(:,1:NUCDEP),(/0d0,0d0,0d0/),LUPRI,0)
       Q = (/QDRNUC(1,1),QDRNUC(1:2,2),QDRNUC(1:3,3)/)
@@ -126,12 +126,12 @@ C      DIPDER = .true.
 
       subroutine GRADNN_ifc(n,G)
       !ajt Used in prop_contribs.f90
-#include <mxcent.h>
+#include "mxcent.h"
 #ifndef PRG_DIRAC
-#include <cbinuc.h>
+#include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */
-#include <energy.h>
-#include <priunit.h>
+#include "energy.h"
+#include "priunit.h"
       integer n
       real(8) G(3*n)
       IPRINT = 0; MAXDIF = 1
@@ -142,12 +142,12 @@ C      DIPDER = .true.
 
       subroutine HESSNN_ifc(na,H)
 C     ajt aug09 Used in prop_integrals.f90
-#include <mxcent.h>
+#include "mxcent.h"
 #ifndef PRG_DIRAC
-#include <cbinuc.h>
+#include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */
-#include <energy.h>
-#include <priunit.h>
+#include "energy.h"
+#include "priunit.h"
       integer na, i, j
       real(8) H(3*na,3*na),HESSNN(MXCOOR,MXCOOR)
       IPRINT = 0
@@ -164,7 +164,7 @@ C     ajt This might come out with halved diagonal
 
 
       subroutine WRITE_HOTFCHT_SPECTRA(STRING,NATOMS)
-#include <hotfccom.h>
+#include "hotfccom.h"
       CHARACTER STRING*(*)
       LOGICAL OptionA,ANGSTROM
       INTEGER IDUMMY,LUINFO,IPOS,IPOS2,numbertypes,atomtypes,J
@@ -272,7 +272,7 @@ C     ajt This might come out with halved diagonal
       END SUBROUTINE
 
       SUBROUTINE WRITE_HBT_DIPOL(X,Y,Z)
-#include <hotfccom.h>
+#include "hotfccom.h"
       DOUBLE PRECISION X,Y,Z,AC !AngstromConvert
       WRITE(IHOTFC,'(A)')' '
       WRITE(IHOTFC,'(A)')'ElectronicTransitionDipoleMoment ='      

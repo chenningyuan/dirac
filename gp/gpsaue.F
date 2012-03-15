@@ -1342,7 +1342,7 @@ C     Written by H.J.Aa. Jensen, June 2002
 C     (based on DIFMMH)
 C
 C***********************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0, DP5=0.5D0)
       DIMENSION AMAT(LRA,LCA,NZ)
 C
@@ -1383,7 +1383,7 @@ C     Written by Miro Ilias, July 2003
 C     (based on QGETHE)
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C  Generate A(dagger), where A(dagger)ij = Aji^*
@@ -1412,7 +1412,7 @@ C
 C   Written by Miro Ilias, August 2005
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C  Generate -A(dagger), where A(dagger)ij = Aji^*
@@ -1454,7 +1454,7 @@ C
 C     Written by MI, september 2003, Prievidza, Slovakia.
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(LRA,LCA,NZ),IQSYM(4)
 C
 C     Generate A - A(dagger)

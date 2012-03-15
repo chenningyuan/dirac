@@ -2496,11 +2496,11 @@ C      for making the dirac output of magnetizabilities
 C      the same as is in the older brother dalton
 
        use codata
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C#include <debye.h>
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
@@ -2508,11 +2508,11 @@ C#include <debye.h>
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
 #include "inirep.h"
-#include <abainf.h>
-#include <inftap.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "abainf.h"
+#include "inftap.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "chrxyz.h"
       DATA CHRABC /'A','B','C'/
 C
       INERT = INDEX(SPC,'PRI') .NE. 0

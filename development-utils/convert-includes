@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# this will change #include <foo.h> to #include "foo.h" in all fortran files
+
+perl -pi -e '/^#include/ and s,<(.*?)>,"$1",g' `find . -name '*.F90' -o -name '*.f90' -o -name '*.F' -o -name '*.f'`
+
+exit 0
