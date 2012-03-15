@@ -876,8 +876,8 @@ C
 C     S. Reine feb 2007
 C     Expansion-coefficients for Hermite-basis
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.00 D00, D2 = 2.00 D00)
       INTEGER T, X
       CHARACTER WORD*4
@@ -886,7 +886,7 @@ C
       DIMENSION ETIJ(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     ****************************
 C     ********** AB > 0 **********
