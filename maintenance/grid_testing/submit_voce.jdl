@@ -1,9 +1,13 @@
+##############################################################
 #
-#   ***  gLite script  ***
 #
+#                 ***  gLite script  ***
+#
+#
+##############################################################
 
 #
-# store onto SE
+# store onto vo=voce SE
 # p=`pwd`;lcg-cr -v -d se.ui.savba.sk file://$p/dirac_test_suite.tgz  -l lfn://grid/voce/ilias/dirac_test_suite.tgz
 # list: lcg-ls lfn://grid/voce/ilias
 # delete: lcg-del -a lfn://grid/voce/ilias/dirac_test_suite.tgz
@@ -14,16 +18,22 @@ Executable = "launch_voce.sh";
 # files with full paths
 InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/maintenance/grid_testing/launch_voce.sh"};
 
+##############################################
 # stdout,stderr output & other working files
+##############################################
 StdOutput = "DIRAC_tests_std.out";
 StdError = "DIRAC_tests_std.err";
-OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "fsccsd_IH_Mg.out"};
+OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "dirac_test_suite_back.tgz"};
 
+##################
 # assign your VO #
+##################
 #VirtualOrganisation="compchem";
 VirtualOrganisation="voce";
 
-# other conditions
+#################
+# Demands on CE #
+#################
 Requirements =
  other.GlueCEPolicyMaxWallClockTime > 1200;
 #  &&

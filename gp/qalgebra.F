@@ -460,7 +460,7 @@ CMI ...  I have to initialize it for intel mkl-lapack
             IERR = 0
             CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
      &           M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
-            LLWORK = WORKDUM
+            LLWORK = NINT(WORKDUM)
             LILWORK = IWORKDUM
             CALL MEMGET('REAL',KLWORK, LLWORK, WORK, KFREE, LFREE)
             CALL MEMGET('INTE',KLIWORK, LILWORK, WORK, KFREE, LFREE)
@@ -552,22 +552,23 @@ C     Like QDIAG but uses f90 memory allocation internally.
 #include "implicit.h"
       real(8), allocatable :: work(:)
 
-      lwork = 8 + 2*N
+      lenid = 3 ! lenid used in MEMGET in QDIAG
+      lwork = 4*lenid + 2*N
       if(nz.gt.1) lwork = lwork + N*NZ
 
 #ifdef LAPACK_QDIAG
       if(matz.eq.1)then
         DDUM = 0.0D0
         IDUM = 0
-        WORKDUM = 0.0D0
+        WORKDUM  = 0.0D0
         IWORKDUM = 0
 c       first let lapack estimate memory use
         INFO = 0
         CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
      &              M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
-        LLWORK = WORKDUM
+        LLWORK  = NINT(WORKDUM)
         LILWORK = IWORKDUM
-        lwork = LLWORK + LILWORK + 2*N +8
+        lwork = LLWORK + LILWORK + 2*N + 6*lenid
       end if
 #endif
       if(lwork.le.0)then

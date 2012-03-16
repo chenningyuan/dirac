@@ -7600,15 +7600,15 @@ CMI Added from dalton-2.0, May 2006, Strasbourg
 C
 C calling in DALTON:  IF (MOLGFA) CALL NUCMGF(WORK(KGEOM),GAGORG,LUPRI,IPRDEF)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
-#include <symmet.h>
-#include <molgfa.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "molgfa.h"
+#include "ibtfun.h"
 C
 
       IF (IPRINT.GE.5) THEN
@@ -7669,12 +7669,12 @@ C
 C
       SUBROUTINE MGFRES(GEOM,AMASS,KATOM,IPRINT)
       use codata
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 C#include <mxorb.h>
-#include <maxorb.h>
+#include "maxorb.h"
 C#include <pmass.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5)
@@ -7684,15 +7684,15 @@ CC    DIMENSION ANGMOM(3), TINERT(9), OMEGA(3,3), WORK(LWORK),
      &          EIGVAL(3), EIGVEC(3,3),
      &          GTRAN1(3,3), GTRAN2(3,3), GTRAN3(3,3), GEOM(KATOM,3),
      &          AMASS(KATOM)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
 C#include <suscpt.h>
 #include "dcbsusc.h"
 C#include "cbiher.h"
-#include <molgfa.h>
-#include <orgcom.h>
-#include <ibtfun.h>
+#include "molgfa.h"
+#include "orgcom.h"
+#include "ibtfun.h"
 C
 
       CALL QENTER('MGFRES')

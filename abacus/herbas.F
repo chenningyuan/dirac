@@ -24,7 +24,7 @@ C
 C
 C FILE : herbas.F
 C
-#include <single.h>
+#include "single.h"
 C
 C*************************************************************
 C* This is the procedures that controls the reading from     *
@@ -254,6 +254,10 @@ C for backward compatibility the old notation is retained
             BASTMP(1:5) = BASNAM(1:5)
             ISTART = 6
             !ISTART = 1
+         ELSE IF (BASNAM(1:7) .EQ. 'ANO-RCC') THEN
+            ANO = .TRUE.
+            BASTMP(1:7) = BASNAM(1:7)
+            ISTART = 8
          ELSE IF (BASNAM(1:6) .EQ. 'sadlej') THEN
             SADLEJ = .TRUE.
             BASTMP = 'sadlej'
@@ -285,12 +289,12 @@ C
       IF (IPREAD.GE.10) THEN
         CALL HEADER('Output from BASLIB',-1)
         WRITE(LUPRI,*) 'ISTART=',ISTART
-        WRITE(LUPRI,'(A,A)') 'BASTMP=',BASTMP
+        WRITE(LUPRI,'(2A)') ' BASTMP=',BASTMP
         WRITE(LUPRI,*) 'IPOLST=',IPOLST
         WRITE(LUPRI,*) 'POLFUN=',POLFUN
-        WRITE(LUPRI,*) 'ANO=',ANO
+        WRITE(LUPRI,*) 'ANO   =',ANO
         WRITE(LUPRI,*) 'SADLEJ=',SADLEJ
-        WRITE(LUPRI,*) 'NQVD=',NQVD
+        WRITE(LUPRI,*) 'NQVD  =',NQVD
       ENDIF
 C      
 C Finds the right element in the file. 
@@ -1658,3 +1662,4 @@ C
       end do
 
       END
+C  -- end of herbas.F --

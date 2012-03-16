@@ -1601,6 +1601,12 @@ csk      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
 csk      CALL IWRTMAMN(LUOUTLIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C
       END
+      subroutine blubb_blubb(communicator)
+      implicit none
+      integer, intent(inout) :: communicator
+      integer                :: bla
+      bla = communicator
+      end 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -1615,29 +1621,76 @@ C
 C
 #include "infpar.h"
 #include "parluci.h"
+!#define DEBUG_MPI_KRCI
+#ifdef DEBUG_MPI_KRCI
+#include "mpif.h"
+#endif
 C
       DIMENSION IPROCLIST(NMPROC),IGROUPLIST(NMPROC)
       DIMENSION IPROCLIST_SM(NMPROC)
       INTEGER IKEY, ICOLOR, JKEY, JCOLOR, KCOLOR, KKEY
       INTEGER LCOLOR, LKEY
+      integer test_size_glb
       ITEST = 00
 C     ITEST = 10
 C
 C     'intra-node' communicator MYNEW_COMM ( I/O communicator )
 C
-      IKEY = MYPROC
-      ICOLOR = IPROCLIST(MYPROC+1)
+      IKEY       = MYPROC
+      ICOLOR     = IPROCLIST(MYPROC+1)
+      MYNEW_COMM = -1
 C
+#ifdef DEBUG_MPI_KRCI
+      call mpi_comm_split(global_communicator,ICOLOR,IKEY,MYNEW_COMM,
+     &                    ierr)
+#else
       call interface_mpi_COMM_SPLIT(global_communicator,ICOLOR,IKEY,
      &                              MYNEW_COMM)
+#endif
+      call blubb_blubb(MYNEW_COMM)
+      IF(ITEST .ge. 10)THEN
+        test_size_glb = -1
+        call interface_mpi_COMM_SIZE(global_communicator,test_size_glb)
+        write(6,*) ' global_communicator: size == ',test_size_glb
+        write(6,*) ' global_communicator, MYNEW_COMM, nmproc, myproc',
+     &               global_communicator, MYNEW_COMM, nmproc, myproc
+        do i = 1, nmproc
+          write(6,*) 'IPROCLIST(i) for myproc ==> ',
+     &                IPROCLIST(i), myproc
+        end do
+      END IF
 C
 C     collect useful information about each group,
 C     store on common block
 C
-      NEWCOMM_PROC = 0
-      MYNEW_ID = 0
+      NEWCOMM_PROC = -1
+      MYNEW_ID     = -1
+#ifdef DEBUG_MPI_KRCI
+      call mpi_comm_size(MYNEW_COMM,NEWCOMM_PROC,ierr)
+#else
       call interface_mpi_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC)
+#endif
+      
       call interface_mpi_COMM_RANK(MYNEW_COMM,MYNEW_ID)
+
+      IF(ITEST .ge. 10)THEN
+        WRITE(luwrt,*) ' processor-color-list (input for grouping) '
+        call iwrtmamn(IPROCLIST,1,nmproc,1,nmproc,1,luwrt)
+        WRITE(6,*) ' intra-node communicator (for co-worker)    :',
+     &               MYNEW_COMM,' (',MYPROC,')' 
+        WRITE(6,*) ' size of communicator (for co-worker group) :',
+     &               NEWCOMM_PROC,' (',ICOLOR,')'
+        WRITE(6,*) ' my ID in new communicator (for co-worker)  :',
+     &               MYNEW_ID,' (',MYPROC,')'
+        WRITE(6,*) ' myproc, color and key       :',MYPROC,ICOLOR,IKEY
+      END IF
+
+      if(NEWCOMM_PROC <= 0)then
+        write(luwrt,*) '*** error in GROUP_CONSTRUCTOR_REL*** '// 
+     &                 'impossible group size: ',NEWCOMM_PROC
+        call quit('*** error in GROUP_CONSTRUCTOR_REL*** impossible'//
+     &            ' group size <= 0.')
+      end if
 C
 C     T-communicator MYNEW_COMM_SM ( 1st "shared memory" communicator)
 C

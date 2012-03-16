@@ -33,7 +33,7 @@ C
 C***********************************************************************
 
       use dirac_cfg
-      use localization
+      use second_order_minimization
 
 #include "implicit.h"
 #include "priunit.h"
@@ -103,8 +103,8 @@ C*************  O R B I T A L   L O C A L I S A T I O N  ***************
 C***********************************************************************
 C
       IF(DOLOC)THEN
-        CALL INITIALIZE_LOCALIZATION
-        CALL ORBLOC
+        CALL LOCALIZATION_INTERFACE
+        CALL MINIMIZATION_DRV
       ENDIF
 C
 C***********************************************************************

@@ -534,6 +534,7 @@ contains
      integer                        :: nz_lowdin = 1
      integer                        :: fh = 99
      integer                        :: nborb_dim(4,2,0:2)
+     integer                        :: nlwdmat
      logical                        :: fndlab12
      character (len=12)             :: flabel
      character (len=74)             :: info_text
@@ -555,9 +556,15 @@ contains
        end do
 
 !      b. 2c-Lowdin transformation matrix
+       nlwdmat = 0
+       do i = 1, nfsym
+         if(naosh_all(i) > 0)then
+           nlwdmat = nlwdmat + naosh_all(i)*nesh_dim(i)
+         end if
+       end do
        write(flabel,'(a7,i4,i1)') '2cLWAOg',1,0
        if(linear_sym) write(flabel,'(a7,i4,i1)') '2cLWAOl',1,0
-       call x2c_read(flabel,scratch3,(naosh_all(1)*nesh_dim(1)+naosh_all(2)*nesh_dim(2)),x2c_file_glb)
+       call x2c_read(flabel,scratch3,nlwdmat,x2c_file_glb)
 
 !      debug print
        if(print_lvl > 2)then

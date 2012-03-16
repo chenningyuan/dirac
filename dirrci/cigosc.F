@@ -507,7 +507,7 @@ C
 #include "cosbit.h"
 !.q
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       HMR = 0.0D0
       HMI = 0.0D0
@@ -808,7 +808,7 @@ C     =====================
 C
 #include "goscom.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       P = 1.0D0
       DO 10 K = I + 1, NSPACT
@@ -839,7 +839,7 @@ CSK   INTEGER IRPS(N2*N5),INDX(N2*N5),IND(N5)
 C
       NAMELIST/POPAN/THRESH,DEGEN,SELPOP
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       THRESH=1.0D-3
 !.s/sya,2007.0929/
 !#    SELPOP=1.0D2
@@ -1623,7 +1623,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H, O-Z)
 #include "goscom.h"
       INTEGER N(N2)
-#include <ibtfun.h>
+#include "ibtfun.h"
       DO I=1,NSPACT
         N(I)=0
         IF (IBTAND (IIDET,IBTSHL (1,I-1)).NE.0)  N(I)=1

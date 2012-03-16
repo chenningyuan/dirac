@@ -35,8 +35,8 @@ C     Written by A.Noerager - Mar 2000
 C     Last revision: 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -308,9 +308,13 @@ C
 !    &                     N_CIESR,MAX_CIESR_IT,NZCONF
       IF (N_CIESR .GE. 0) THEN
          !
+      IF (MULTIPESR .gt. NZCONF) THEN
+         CALL QUIT('.MULTIPESR specification > # determinants')
+      END IF
       IF (MAX_CIESR_IT .GT. 0) THEN
          ! Davidson iterations
-         N_CIESR = MIN(NZCONF, MULTIPESR + 1)
+!        N_CIESR = MIN(NZCONF, MULTIPESR + 1)
+         N_CIESR = MULTIPESR
 !      write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
       ELSE
          ! full CI (now primarily for debugging Davidson iterations code)
@@ -705,9 +709,9 @@ C     --- Find state vectors diagonalizing S_z (for a "standard" S_eff basis)
 C         Modify phases acc. to convention so <M_S + 1 | Sx | M_S > .gt. 0
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -728,15 +732,15 @@ C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C
-#include <dcbgen.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbesr.h>
-#include <dcbxpr.h>
-#include <dcbprp.h>
-#include <dcbdhf.h>
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbesr.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
@@ -1190,9 +1194,9 @@ C
 C     Based on PRPESR1
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -1212,15 +1216,15 @@ C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C
-#include <dcbgen.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbesr.h>
-#include <dcbxpr.h>
-#include <dcbprp.h>
-#include <dcbdhf.h>
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbesr.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('ESRTRANS')
       KFRSAV = KFREE
@@ -1504,9 +1508,9 @@ C***********************************************************************
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <dcbesr.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dcbesr.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       DIMENSION ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
       LOGICAL   REAL_PMLF
@@ -1889,7 +1893,7 @@ C                factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
       CHARACTER NAME*6, NAMEX(3)*6
       DIMENSION TMAT(3,3), TMATNY(3,3), IATINF(3), RATINF(3,*),
      &          TMATX(3,3)
-#include <chrxyz.h>
+#include "chrxyz.h"
 C
 C     Multiply with FACTOR
 C

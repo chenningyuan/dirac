@@ -14,7 +14,7 @@ C
 C  AP is A in packed format.
 C  KPVT is a scratch array of length N.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),B(N,*),KPVT(*)
 C
 #if !defined (VAR_SBLAS)
@@ -48,7 +48,7 @@ C
 C  AP is A in packed format.
 C  KPVT is a scratch array of length N.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),B(N,*),KPVT(*),DET(2),INERT(3)
 C
 #if !defined (VAR_SBLAS)

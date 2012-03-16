@@ -29,8 +29,8 @@ C     Written by Luuk Visscher, december 1996
 C     Removed by Luuk Visscher, july 2002
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -994,8 +994,8 @@ C       F(NBAS,NBAS,NZ) --->  F(NORB,NORB,NZ)
 C
 C     Written by L.Visscher : July 2002
 C****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
       DIMENSION FAO(LRAO,LCAO,*),IQAO(*),

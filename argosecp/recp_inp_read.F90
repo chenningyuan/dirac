@@ -1,13 +1,29 @@
 MODULE RECP_INP_READ
 CONTAINS
 
-SUBROUTINE RECP_INP2_READGEN(RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs)
+SUBROUTINE RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
 ! Read general information, Y. C. Park
+  USE RECP_NTR
+  USE RECP_OUTPUT
   IMPLICIT NONE
-  INTEGER RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs
+#include "inc_print.h"
+  INTEGER I,ngen,ns,naords,ncons,ngcs,ncrs
 
-  CALL RECP_INP_READMENU(RECPIN1,'%GENERAL')
-  READ (RECPIN1,*) ngen, ns, naords, ncons, ngcs, ncrs
+  CALL OUTPUT_DBG_TITLE('INP_READGEN : Input parameter')
+
+  ngen  = RECPIN_GENVAL(1)
+  ns    = RECPIN_GENVAL(2)
+  naords= RECPIN_GENVAL(3)
+  ngcs  = RECPIN_GENVAL(3) !naords=ngcs
+  ncrs  = RECP_SET(1) ! Number of RECP parameters
+  ncons = RECP_SET(2) ! Sum of all JCOs
+
+  CALL OUTPUT_DBG_IVAL('ngen',ngen,'I3',2)
+  CALL OUTPUT_DBG_IVAL('ns',ns,'I3',2)
+  CALL OUTPUT_DBG_IVAL('naords',naords,'I3',2)
+  CALL OUTPUT_DBG_IVAL('Number of RECP parameters (ncrs)',ncrs,'I3',2)
+  CALL OUTPUT_DBG_IVAL('Number of basis block (ncons)',ncons,'I3',2)
+! DEALLOCATE ( RECP_SET )
 
 ! if ( ns .gt. msu ) then
 !   call bummer('change msup (two places) to ',ns,2)
@@ -20,15 +36,18 @@ SUBROUTINE RECP_INP2_READGEN(RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs)
 ! endif
 END SUBROUTINE RECP_INP2_READGEN
 
-SUBROUTINE RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
+SUBROUTINE RECP_INP2_READIRREP(idp,nd,ityp)
+  USE RECP_NTR
   IMPLICIT NONE
+#include "inc_print.h"
   INTEGER        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   COMMON /PARMI/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
-  INTEGER idp(mstu,mstu,*),nd(*),NDPT,DPT1,IPRD
-  INTEGER I,J,K,RECPIN1,IOS
+  INTEGER idp(mstu,mstu,*),nd(*),DPT1,IPRD
+  INTEGER I,J,K,IOS
   CHARACTER*3 ityp(*)
   CHARACTER*80 INPLINE
-  CALL RECP_INP_READMENU(RECPIN1,'%IRREP')
+  INTEGER DPT_TABLE(21)
+  DATA DPT_TABLE / 2,3,4, 2,5,6, 2,7,8, 3,5,7, 3,6,8, 4,5,8, 4,6,7 /
 
 ! Set idp = 0
   IF (nst.GT.mstu) THEN
@@ -43,14 +62,16 @@ SUBROUTINE RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
      ENDDO
   ENDDO
 
-! Read number of irreps, degeneracy, and character labels.
-! READ (RECPIN1,'(I3,8(I2,1X,A3))') nst,(nd(I),ityp(I),I=1,nst)
-  CALL RECP_INP_READLINE(RECPIN1,INPLINE)
-  READ (INPLINE,'(I3,12(I3,A3))',IOSTAT=IOS) nst,(nd(I),ityp(I),I=1,nst)
-  IF (IOS.NE.0) THEN
-     WRITE(*,'(A80)') INPLINE
-     CALL QUIT('Error in reading line') 
-  ENDIF
+! Set number of irreps, degeneracy, and character labels.
+  nst = RECP_MAXREP(1)
+  DO I = 1, RECP_MAXREP(1)
+     nd(I)   = 1
+     ityp(I) = RECP_ITYP(I)
+  ENDDO 
+
+  IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A)') ' * Irreps and Character tables'
+  IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(I2,8A3)') nst,(ityp(I),I=1,nst)
+
 ! Assign the totally symmetric irrep binary products.
   DO I = 1,nst
     idp(I,I,1) = 1
@@ -59,11 +80,16 @@ SUBROUTINE RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
   ENDDO
 
 ! Read the number of product triples.
-  READ(RECPIN1,'(I3)') NDPT
+  IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3)') ' * NDPT : ',RECP_NDPT(1)
+! NDPT = RECP_NDPT(1)
 
 ! read in the totally symmetric irrep product triples
-  DO DPT1 = 1, NDPT
-     READ (RECPIN1,'(3(2X,I1))') I, J, K
+  DO DPT1 = 1, RECP_NDPT(1)
+     I = RECP_IRREP( DPT_TABLE( 3*(DPT1-1)+1 ) )
+     J = RECP_IRREP( DPT_TABLE( 3*(DPT1-1)+2 ) )
+     K = RECP_IRREP( DPT_TABLE( 3*(DPT1-1)+3 ) )
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(I3,A,3I3)') DPT1,':',I,J,K
+
      idp(I,J,K) = 1
      idp(I,K,J) = 1
      idp(J,I,K) = 1
@@ -71,33 +97,39 @@ SUBROUTINE RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
      idp(K,I,J) = 1
      idp(K,J,I) = 1
   ENDDO
+  CALL RECP_NTRD_IRREP
 END SUBROUTINE RECP_INP2_READIRREP
 
-SUBROUTINE RECP_INP2_READAO2SO(RECPIN1,naords,ngcs,maords,la,nir,CX_TEMP)
+SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX_TEMP)
 ! Read in AO to SO transformation matrices 
   USE RECP_IPT
+  USE RECP_NTR
   IMPLICIT NONE
 #include "inc_mxvalue.h"
+#include "inc_print.h"
   INTEGER naords, ngcs, maords(*),la(mrup,*),nir(*)
   INTEGER AORDS1 ! ith-AO reduction set
-  INTEGER IRREP1,IRREP2,IRREP_MAX
-  INTEGER SO1,SO2,AO1,AO2,CX_TEMP,RECPIN1
-  INTEGER, ALLOCATABLE :: TMP_AO2SO(:)
+  INTEGER IRREP1,IRREP_MAX
+  INTEGER SO1,AO1,AO2,CX_TEMP
   REAL*8  AO2SO_TEMP1, AO2SO_TEMP2
-  CALL RECP_INP_READMENU(RECPIN1,'%AOTOSO')
 
-! Read number(IRREP2) and list(la) of irrep in ith-AO reduction set 
+! Read number(nir) and list(la) of irrep in ith-AO reduction set 
+! ==============================================================
   IRREP_MAX = 0
   DO AORDS1 = 1, naords
-    READ (RECPIN1,'(20i3)') IRREP2,(la(IRREP1,AORDS1), IRREP1=1,IRREP2)
-    IF (IRREP2.GT.mrup) THEN
-      WRITE (*,*) 'Size of la is small'
-      WRITE (*,*) 'change mrup (one place) to ',IRREP2
-      CALL QUIT('Size of la is small')
-    ENDIF
+!    Save to nir,la     
+     nir(AORDS1) = RECPIN_MXROW(AORDS1)
+     DO IRREP1 = 1,RECPIN_MXROW(AORDS1)
+        la(IRREP1,AORDS1) = RECPIN_LA1(IRREP1,AORDS1)
+     ENDDO
+     
+     IF (RECPIN_MXROW(AORDS1).GT.mrup) THEN
+        WRITE (*,*) 'Size of la is small'
+        WRITE (*,*) 'change mrup (one place) to ',RECPIN_MXROW(AORDS1)
+        CALL QUIT('Size of la is small')
+     ENDIF
 
-    IF (IRREP2.GE.IRREP_MAX)  IRREP_MAX=IRREP2
-    nir(AORDS1) = IRREP2
+     IF (RECPIN_MXROW(AORDS1).GE.IRREP_MAX) IRREP_MAX=RECPIN_MXROW(AORDS1)
   ENDDO
 
 ! Allocate 
@@ -105,167 +137,228 @@ SUBROUTINE RECP_INP2_READAO2SO(RECPIN1,naords,ngcs,maords,la,nir,CX_TEMP)
   CX_TEMP = CX_TEMP*CX_TEMP
   ALLOCATE( IPT_CX_TEMP(CX_TEMP) )
   ALLOCATE( IPT_AO2SO(IRREP_MAX,IRREP_MAX,naords) )
-  ALLOCATE( TMP_AO2SO(IRREP_MAX) )
+
 ! ngcs : Number of transformation matrices relating AOs to SOs to be read in.
 !        Usually this will be the same as the number of AO reduction sets.
   DO AORDS1 = 1,ngcs
-     READ (RECPIN1,'(20I3)') SO2, AO2, maords(AORDS1)
-!    if ( SO2 .gt. mcsup ) then
-!       call bummer('change mcsup (one place) to ',SO2,2)
-!    elseif ( AO2 .gt. mctup ) then
-!       call bummer('change mctup (one place) to ',AO2,2)
-!    endif
-
-     DO SO1 = 1,SO2
-!       READ (RECPIN1,'(20I3)') (IPT_AO2SO(AO1,SO1,AORDS1), AO1=1,AO2)
-        READ (RECPIN1,'(20I3)') (TMP_AO2SO(AO1), AO1=1,AO2)
-        DO AO1 = 1, AO2
-           IPT_AO2SO(AO1,SO1,AORDS1) = TMP_AO2SO(AO1)*1.0d0
+     maords(AORDS1) = AORDS1
+     DO SO1 = 1,RECPIN_MXROW(AORDS1)
+        DO AO1 = 1,RECPIN_MXROW(AORDS1)
+           IPT_AO2SO(AO1,SO1,AORDS1) = RECPIN_AO2SO(AO1,SO1,AORDS1)*1.0d0
         ENDDO
  
-        DO AO1 = 1,AO2
+        DO AO1 = 1,RECPIN_MXROW(AORDS1)
            AO2SO_TEMP1 = IPT_AO2SO(AO1,SO1,AORDS1)
            AO2SO_TEMP2 = ABS(AO2SO_TEMP1)
            IF (AO2SO_TEMP2.NE.0.0d0 .AND. AO2SO_TEMP2.NE.1.0d0 )  &
               IPT_AO2SO(AO1,SO1,AORDS1) = SIGN(SQRT(AO2SO_TEMP2),AO2SO_TEMP1)
-!          PRINT *,'IPT_AO2SO(',AO1,SO1,AORDS1,')',IPT_AO2SO(AO1,SO1,AORDS1)
         ENDDO
      ENDDO
+
+     IF (RECP_DBG.GE.2) THEN 
+        WRITE(RECP_OUT,'(A,A,I3)') & 
+           ' * AO to SO matrix saved (IPT_AO2SO)',' #',AORDS1 
+        
+        DO SO1 = 1,RECPIN_MXROW(AORDS1)
+           WRITE(RECP_OUT,'(3X,50(F5.1))')  &
+              (IPT_AO2SO(AO1,SO1,AORDS1), AO1=1,RECPIN_MXROW(AORDS1))
+        ENDDO
+     ENDIF
   ENDDO
-  DEALLOCATE( TMP_AO2SO )
+
+  CALL RECP_NTRD_AOTOSO
+
 END SUBROUTINE RECP_INP2_READAO2SO
 
-SUBROUTINE RECP_INP2_READORB(RECPIN1,zet,eta,lmnp1,nrcr,ncon)
+SUBROUTINE RECP_INP2_READORB(zet,eta,lmnp1,nrcr,ncon)
+  USE RECP_NTR
   IMPLICIT NONE
 #include "inc_mxvalue.h"
+#include "inc_print.h"
   REAL*8  zet(mconup,*), eta(mrcrup,mconup,*)
-  INTEGER lmnp1(*),nrcr(*),ncon(*),RECPIN1
+  INTEGER lmnp1(*),nrcr(*),ncon(*)
 ! local variables
   INTEGER NONTYP0,NONT0,IQM0,JCO0
-  INTEGER I,J,K,L,M1,M2,N,BLOCK1,EXP1,COEFF1,EXP2,COEFF2
-
-! Find starting point to read
-  CALL RECP_INP_READMENU(RECPIN1,'%BASISSET')
+  INTEGER I,J,K,L,M1,M2,N,BLOCK1,EXP1,COEFF1
 
   BLOCK1 = 0
-  READ (RECPIN1,'(BN,6X,I3)') NONTYP0 
-  DO I = 1, NONTYP0
-!    READ (RECPIN1,'(BN,6X,I3)') NONT0
-!    DO N = 1,NONT0 
-        READ (RECPIN1,'(BN,6X,I3)') IQM0
-        DO J = 1,IQM0
-           READ (RECPIN1,'(BN,6X,I3)') JCO0
-           DO K = 1, JCO0
-              BLOCK1 = BLOCK1 + 1
+  IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(/,A)') ' * Basis-set read'
 
-!             Read numbers to read in each block
-!             ==================================
-              READ (RECPIN1,'(3I3)') EXP2,COEFF2,lmnp1(BLOCK1)
-              IF (COEFF2.EQ.0) COEFF2 = 1
+  DO I = 1, RECPIN_NONTYP(1)
+     DO J = 1,RECPIN_IQM(I)
+        DO K = 1, RECPIN_JCO(J,I)
+!          Read numbers to read in each block
+!          ==================================
+           BLOCK1 = BLOCK1 + 1
+           IF (RECPIN_NRC(BLOCK1).EQ.0) RECPIN_NRC(BLOCK1) = 1
 
-!             Check maximum value
-              IF (EXP2  .GT.mconup) GOTO 8110 
-              IF (COEFF2.GT.mrcrup) GOTO 8120
+!          Check maximum value
+           IF (RECPIN_NUC(BLOCK1).GT.mconup) GOTO 8110 
+           IF (RECPIN_NRC(BLOCK1).GT.mrcrup) GOTO 8120
 
-!             Save to global variables
-              nrcr(BLOCK1) = COEFF2
-              ncon(BLOCK1) = EXP2
+!          Save to global variables
+           ncon(BLOCK1) = RECPIN_NUC(BLOCK1)  ! EXP2 
+           nrcr(BLOCK1) = RECPIN_NRC(BLOCK1)  ! COEFF2
+           lmnp1(BLOCK1)= RECPIN_LMNP(BLOCK1)
+           IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,3I3)') ' ncon, nrcr, lmnp1 : ',&
+              ncon(BLOCK1),nrcr(BLOCK1),lmnp1(BLOCK1)
 
-!             Read exponent and coefficient in each block
-!             ===========================================
-              DO EXP1 = 1,EXP2
-                 READ (RECPIN1,*) zet(EXP1,BLOCK1) 
-                 DO COEFF1=1,COEFF2
-                    READ (RECPIN1,*) eta(COEFF1,EXP1,BLOCK1)
-                 ENDDO
-              ENDDO 
+!          Read exponent and coefficient in each block
+!          ===========================================
+           DO EXP1 = 1,RECPIN_NUC(BLOCK1)
+              zet(EXP1,BLOCK1) = RECPIN_ALPHA(EXP1,BLOCK1)
+              DO COEFF1=1,RECPIN_NRC(BLOCK1)
+                 eta(COEFF1,EXP1,BLOCK1) = RECPIN_CPRIMU(EXP1,COEFF1,BLOCK1) 
+              ENDDO
+!             Print
+              IF (RECP_DBG.GE.2) THEN
+                 IF (RECPIN_NRC(BLOCK1).LE.3) THEN
+                    WRITE(RECP_OUT,'(4F15.7)') zet(EXP1,BLOCK1), &
+                         (eta(COEFF1,EXP1,BLOCK1),COEFF1=1,RECPIN_NRC(BLOCK1)) 
+                 ELSEIF (RECPIN_NRC(BLOCK1).LE.6) THEN
+                    WRITE(RECP_OUT,'(4F15.7)') zet(EXP1,BLOCK1), &
+                         (eta(COEFF1,EXP1,BLOCK1),COEFF1=1,3) 
+                    WRITE(RECP_OUT,'(15X,3F15.7)') &
+                         (eta(COEFF1,EXP1,BLOCK1),COEFF1=4,RECPIN_NRC(BLOCK1)) 
+                 ELSE
+                    WRITE(RECP_OUT,'(4F15.7)') zet(EXP1,BLOCK1), &
+                         (eta(COEFF1,EXP1,BLOCK1),COEFF1=1,3) 
+                    WRITE(RECP_OUT,'(15X,3F15.7)') &
+                         (eta(COEFF1,EXP1,BLOCK1),COEFF1=4,6) 
+                    WRITE(RECP_OUT,'(A)') ' Only 6 coefficients were shown.' 
+                 ENDIF 
+              ENDIF
            ENDDO 
-        ENDDO
-!    ENDDO
+
+        ENDDO 
+     ENDDO
   ENDDO
 
+  CALL RECP_NTRD_BASIS
   GOTO 9000
 
 ! Error message
 ! -------------
   8110 CONTINUE
-        WRITE(*,*) 'Number of exp. is exceed mconup',EXP2
+        WRITE(*,*) 'Number of exp. is exceed mconup',RECPIN_NUC(BLOCK1)
         CALL QUIT('Increase mconup')
   8120 CONTINUE
-        WRITE(*,*) 'Number of coeff. is exceed mrcrup',COEFF2
+        WRITE(*,*) 'Number of coeff. is exceed mrcrup',RECPIN_NRC(BLOCK1)
         CALL QUIT('Increase mrcrup')
   9000 CONTINUE
 END SUBROUTINE RECP_INP2_READORB
 
-SUBROUTINE RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,  &
-           nklsu,ncr,ncrs,ncru,lproju,ns,mcrs,zcr,ccr)
+
+SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
+           nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
+  USE RECP_NTR
+  USE RECP_OUTPUT
   IMPLICIT NONE
+#include "mxcent.h"
 #include "inc_mxvalue.h"
+#include "inc_print.h"
+#include "recpval.h"
+#include "argoscom.h"
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
-  INTEGER ncrs,ncru,lproju,ns,mcrs(*),RECPIN1
+  INTEGER ncrs,ncru,lproju,ns
   REAL*8  zcr(*),ccr(*)
-  INTEGER I,J,K,RECPCORE
-  INTEGER AREP2,SOREP2,BLOCK1,kcru,kcrl,MCRS1
+  INTEGER I1,I,J,K,INDEX1,RECPCORE
+  INTEGER AREP2,SOREP2,kcru,kcrl
+
 ! Skip if there is no RECP
   IF (ncrs.EQ.0) GOTO 9000
-  CALL RECP_INP_READMENU(RECPIN1,'%RECP')
 
+  CALL OUTPUT_DBG_TITLE('INP_READCSO : RECP parameter')
   ncru   = -2
   lproju = 0
   kcru   = 0 
 
-! DO I = 1, ns
-!    mcrs(I) = 0
-! ENDDO
+  I1 = 1
+  DO I = 1, ns
 
-  DO I = 1, ncrs
-!    
-     READ (RECPIN1,'(4(I3))')RECPCORE,AREP2,SOREP2,MCRS1
-     lproju = max(lproju, AREP2-1, SOREP2)
+     RECPCORE = RECP_CORE(I)
+     AREP2    = (AREP_ANG(I)-1)
+     SOREP2   = SOREP_ANG(I)
+
+!    'ns' is sum of NONT(I)
+     IF (ECPNONT(I).EQ.0) GOTO 1000
+
+!    Print information
+     IF (RECP_DBG.GE.2) THEN
+        WRITE (RECP_OUT,'(/,3X,5(A,I3,X))') 'No.',I, 'NONT',ECPNONT(I), & 
+           'Core',RECPCORE,'AREP block',(AREP2+1),'SOREP block',SOREP2
+     ENDIF
+
+!    If Atom doesn't have the RECP parameter
+     IF (AREP_ANG(I).EQ.0) THEN
+        IF (RECP_DBG.GE.2) & 
+           WRITE (RECP_OUT,'(3X,A)') 'This nuclear center has no core potential'
+        GOTO 1000 
+     ENDIF
+
+     lproju = max(lproju, (AREP2-1), SOREP2)
 
      IF (AREP2 .GT.6) GOTO 8110
      IF (SOREP2.GT.4) GOTO 8120
-     lcr(I) = AREP2
-     lls(I) = SOREP2
+     lcr(I1) = AREP2
+     lls(I1) = SOREP2
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3,A,I3)')  &
+        ' * Number of AREP BLOCK-1 : lcr(',I1,') = ', lcr(I1)
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3,A,I3)')  &
+        ' * Number of SOREP BLOCK : lls(',I1,') = ', lls(I1)
 
-!    Match Geometry and RECP
-!    mcrs(MCRS1) = I
-
+!    ---------
 !    Read AREP 
 !    ---------
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(/,A)') ' * AREP parts'
      DO J = 1,(AREP2+1)
-!    DO J = 1,AREP2
-        READ (RECPIN1,*) BLOCK1
+        IF (RECP_DBG.GE.2) WRITE(RECP_OUT,*) AREP_BLK(I,J) 
         kcrl = kcru + 1
-        kcru = kcru + BLOCK1
-        nkcrl(J,I) = kcrl
-        nkcru(J,I) = kcru
+        kcru = kcru + AREP_BLK(I,J)
+        nkcrl(J,I1) = kcrl
+        nkcru(J,I1) = kcru
 
         DO K = kcrl,kcru
-           READ (RECPIN1,*) ncr(K), zcr(K), ccr(K)
+           ncr(K) = RECPIN_R(K)
+           zcr(K) = RECPIN_E(K)
+           ccr(K) = RECPIN_C(K)
+           IF (RECP_DBG.GE.2) &
+              WRITE(RECP_OUT,'(I3,A,I2,2F14.7)') K,':',ncr(K),zcr(K),ccr(K)
            IF (ncr(K).LT.0) GOTO 8410
            ncru = max(ncru,ncr(K))
+
         ENDDO
      ENDDO
 
+!    ----------
 !    Read SOREP 
 !    ----------
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(/,A)') ' * SO parts'
      DO J = 1,SOREP2
-        READ (RECPIN1,*) BLOCK1
+        IF (RECP_DBG.GE.2) WRITE(RECP_OUT,*) SOREP_BLK(I,J)
         kcrl = kcru + 1
-        kcru = kcru + BLOCK1
-        nklsl(J,I) = kcrl
-        nklsu(J,I) = kcru
+        kcru = kcru + SOREP_BLK(I,J) 
+        nklsl(J,I1) = kcrl
+        nklsu(J,I1) = kcru
 
         DO K = kcrl,kcru
-           READ (RECPIN1,*) ncr(K), zcr(K), ccr(K)
+           ncr(K) = RECPIN_R(K)
+           zcr(K) = RECPIN_E(K)
+           ccr(K) = RECPIN_C(K)
+           IF (RECP_DBG.GE.2) &
+              WRITE(RECP_OUT,'(I3,A,I2,2F14.7)') K,':',ncr(K),zcr(K),ccr(K)
            ccr(K)=ccr(K)*0.5
            IF (ncr(K).LT.-2) GOTO 8510
            ncru = max(ncru,ncr(K))
         ENDDO
      ENDDO
+     I1 = I1 + 1
+
+     1000 CONTINUE
+
   ENDDO
 
+  CALL RECP_NTRD_READCP  ! deallocate
   IF (kcru.GT.mcrup) GOTO 8900
   GOTO 9000
 
@@ -287,61 +380,92 @@ SUBROUTINE RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,  &
   9000 CONTINUE
 END SUBROUTINE RECP_INP2_READCSO
 
-SUBROUTINE RECP_INP2_READGEO(RECPIN1,ns,ng,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
+SUBROUTINE RECP_INP2_READGEO(ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
            nst,nso,nbft,mcons,mgcs,nt,ntl,ntu,la,lb,nrcr,nir,lmn1u,lmnp1,  &
            maords,ncrs,mcrs)
+  USE RECP_NTR
+  USE RECP_FUNCTION
+  USE RECP_OUTPUT
   IMPLICIT NONE
 #include "inc_mxvalue.h"
-  INTEGER RECPIN1,ns,ng,NBASIS(*),NUC2(*),ica(mcup,msup,*) 
+#include "inc_print.h"
+  INTEGER ns,ng,mcu,msu,NBASIS(*),NUC2(*),ica(mcup,msup,*) 
   REAL*8  X(mcup,*),Y(mcup,*),Z(mcup,*),CHG1(*)
   CHARACTER*3 NUCNAME(*)
   INTEGER nst,nso(*),nbft,mcons(*),mgcs(*),nt(*),ntl(*),ntu(*),la(mrup,*),lb(*)
   INTEGER nrcr(*),nir(*),lmn1u,lmnp1(*),maords(*),ncrs,mcrs(*)
 ! local variables
-  INTEGER I,J,J2,K,M1,M2,BASIS1,AO2SO1,la2
-  CHARACTER*3 NUCNAME0
+  INTEGER I,J,J2,K,M1,M2,BASIS1,la2
 
-  CALL RECP_INP_READMENU(RECPIN1,'%GEOMETRY')
-  DO I = 1, nst
-     nso(i) = 0
-  ENDDO
-
-  DO I = 1, ns
-     mcrs(I) = 0
-  ENDDO
+  CALL OUTPUT_LOC('RECP_INP2_READGEO','E')
+  CALL RECP_SETZERO_I1(nso,nst)
+  CALL RECP_SETZERO_I1(mcrs,ns)
 
   J2   = 0
   nbft = 0 ! total number of symmetry orbital basis functions
   lmn1u= 0
-
+  CALL OUTPUT_DBG_TITLE('INP_READGEO : nuclear information')
   DO I = 1, ns
 !    Read nuclear information
 !    ========================
-!                     mtype      nf        nc      chg
-     READ (RECPIN1,'(A3,2I3,F14.10)') NUCNAME(I),NBASIS(I),NUC2(I),CHG1(I) 
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(/,A,I2,A,I2,A)') &
+        ' * Read nuclear information (ns :',I,' of ',ns,')'
+
+     NUCNAME(I) = RECPIN_NAMN(I)     ! mtype
+     NBASIS(I)  = RECPIN_BASISBLK(I) ! nf
+     NUC2(I)    = RECPIN_NUC2(I)     ! nc
+     CHG1(I)    = RECPIN_CHARGE(I)   ! chg
+
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,A4)') &
+        ' * Atom name : ',NUCNAME(I)
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3)') &
+        ' * Number of basis-set for this atom : ',NBASIS(I)
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3)') &
+        ' * Number of atoms for this type (duplication included) : ',NUC2(I)
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,F15.7)') &
+        ' * Actual Charge of this atom : ',CHG1(I)
 
 !    Error if the number of nuclear is more than mcu
      IF (NUC2(I).GT.mcup) GOTO 8100
 
 !    Read nuclear geometry
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A)') &
+        ' * Read Nuclear Geometry'
      DO J = 1,NUC2(I)
-       READ (RECPIN1,'(A3,3F14.10)') NUCNAME0, X(J,I), Y(J,I), Z(J,I)
+!      NUCNAME0 =  
+       X(J,I)   = RECPIN_GEO(1,J,I)
+       Y(J,I)   = RECPIN_GEO(2,J,I)
+       Z(J,I)   = RECPIN_GEO(3,J,I)
+       IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(3X,A,I3,A,3F15.7)') &
+          'No.',J,' Cord: ',X(J,I),Y(J,I),Z(J,I)
      ENDDO
-!    Read 
+!    Read interchange 
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A)') &
+        ' * Read duplication from nuclear symmetry (nuc1, nuc2, ...)'
      IF (NUC2(I).GT.1) THEN
         DO J = 2, ng
-           READ (RECPIN1,*) (ica(K,I,J),K=1,NUC2(I) )
+           DO K = 1, NUC2(I)
+!             ica(K,I,J) = RECPIN_ICA(K,I,J)  FIXME??
+              ica(K,I,J) = RECPIN_ICA(K,I,J-1)
+           ENDDO
+           IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(3X,10I3)') (ica(K,I,J),K=1,NUC2(I) )
         ENDDO
-      ENDIF
+     ENDIF
 
 !    Match basis-set block to l-quantum number 
 !    =========================================
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A)') &
+        ' * Match basis function and Angular Momentum number'
+
      DO J = 1, NBASIS(I)
-        READ (RECPIN1,'(2(I3))') BASIS1,AO2SO1
 !       Save to global variables
         J2 = J2 + 1
+        BASIS1   = RECPIN_BLKMATCH(1,J2)
         mcons(J2)= BASIS1
-        mgcs(J2) = AO2SO1
+        mgcs(J2) = RECPIN_BLKMATCH(2,J2) !==J2
+        IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(3X,3(A,I3))') &
+           'J2',J2,' Basis block ',mcons(J2),' L-value',mgcs(J2) 
+            
 
 !       lmn1u   : maximum value of lmnp1
         lmn1u   = max(lmn1u,lmnp1(BASIS1))
@@ -351,17 +475,23 @@ SUBROUTINE RECP_INP2_READGEO(RECPIN1,ns,ng,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
         ntl(J2) = ntu(J2)-nt(J2)+1
 
         DO M1 = 1,nrcr(BASIS1)
-           DO M2 = 1,nir(maords(AO2SO1))
+           DO M2 = 1,nir( maords(mgcs(J2)) )
               nbft = nbft+1
-              la2  = la(M2,maords(AO2SO1))
+              la2  = la( M2,maords(mgcs(J2)) )
               nso(la2) = nso(la2)+1
               lb(nbft) = nso(la2)
            ENDDO
         ENDDO
      ENDDO
-!    Read
-     IF (ncrs.GT.0) READ (RECPIN1,'(I3)') mcrs(I)
+!    Read ECP number
+     IF (ncrs.GT.0) mcrs(I) = RECP_MCRS(I)
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I3)') & 
+        ' * RECP No. to read :',RECP_MCRS(I)
   ENDDO
+
+
+  IF (ALLOCATED(RECP_MCRS)) DEALLOCATE(RECP_MCRS)
+  CALL RECP_NTRD_GEO
 
   IF (J2.GT.msfup) GOTO 8510
   IF (nbft.GT.msfrup) GOTO 8520

@@ -2940,9 +2940,15 @@ CTF
             DO JSMSPGP = 1, NSMST
 
 !             print *, 'JSMOB,JGAS,NGAS',JSMOB,JGAS,NGAS
+#ifdef BLABLUBB
               CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
      &                           IX(IOFF),SSX(IOFF),NKSTR,IEND,
      &                           IFRST,KFRST,KACT,1.0d0,2,ISMDST,IAB)
+#else
+              CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
+     &                           IX(IOFF),xdummy,NKSTR,IEND,
+     &                           IFRST,KFRST,KACT,1.0d0,2,ISMDST,IAB)
+#endif
 C             ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
 C    &                      I1,XI1S,NKSTR,IEND,
 C    &                      IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
@@ -4280,16 +4286,16 @@ C     non-local scratch - used in called subroutines
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'SIGD3Y')
 C
       call memmar(KI1  ,LSCR3,'ADDL  ',1,'I1    ')
-      call memmar(KXI1S,LSCR3,'ADDL  ',2,'XI1S  ')
+      call memmar(KXI1S,0    ,'ADDL  ',2,'XI1S  ')
 C
       call memmar(KI2  ,LSCR3,'ADDL  ',1,'I2    ')
-      call memmar(KXI2S,LSCR3,'ADDL  ',2,'XI2S  ')
+      call memmar(KXI2S,0    ,'ADDL  ',2,'XI2S  ')
 C
       call memmar(KI3  ,LSCR3,'ADDL  ',1,'I3    ')
-      call memmar(KXI3S,LSCR3,'ADDL  ',2,'XI3S  ')
+      call memmar(KXI3S,0    ,'ADDL  ',2,'XI3S  ')
 C
       call memmar(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
-      call memmar(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
+      call memmar(KXI4S,0    ,'ADDL  ',2,'XI4S  ')
 C
       call izero(work(KI1), LSCR3)
       call izero(work(KI2), LSCR3)

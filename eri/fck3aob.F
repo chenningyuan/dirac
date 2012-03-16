@@ -1000,11 +1000,11 @@ C     For debugging
       END
 C  /* Deck pick_act_batch */
       SUBROUTINE ACT_ALL_BATCHES
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <fck3aob.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "fck3aob.h"
 C aspg, 2006-07-25
 C putting outer do loop in line with dalton
 C     DO I = 1, MXSHEL

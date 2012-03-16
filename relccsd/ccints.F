@@ -148,7 +148,7 @@ C
      &                  MASTER,global_communicator)
       END IF
 #endif
-      IF (2*NKR.NE.NSP) 
+      IF (2*NKR.NE.NSP)
      &   CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
       ITRSGN = 1
 C

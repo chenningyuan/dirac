@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #
 # Python replacement of the previous bash pam script
 #
@@ -126,8 +126,6 @@ class pam_enviroment:
 
     # master name,IP
         self.master = get_hostname()  # short hostname
-        self.master_full = get_full_hostname()  # full hostname
-        self.hostname_ip = get_hostname_ip()
 
     #  user login name
         self.user_name=get_username()
@@ -248,6 +246,10 @@ class pam_enviroment:
         self.set_timeout_limit = False
         self.timeout = ''
 
+    # total spent time for pam script + job execution 
+        self.start_time=time.time()
+        self.elapsed_time=0.0
+
     # pam script sitting in the installation directory (TODO: better specification)
         self.pam_command = os.path.join(install_dir,"pam")
 
@@ -315,7 +317,6 @@ class pam_enviroment:
                 os.chdir(self.scratch_dir)
                 self.list_scratch_dir()
                 os.chdir(self.input_directory)
-                #print os.listdir(self.scratch_dir)
             else:
                 print '  The scratch directory already exists and is empty'
 
@@ -361,11 +362,8 @@ class pam_enviroment:
         lists the content of the master scratch directory;
         see  http://www.daniweb.com/code/snippet216798.html
         '''
-        scratch_id=self.user_name+"@"+self.master_full+":"+self.scratch_dir
         sum_filesize_mb=0
-        #print
-        print '  content of the (master) scratch directory:'
-        print scratch_id
+        print '  content of the (master) scratch directory'
         print '  ------------------------------------------------------------------------------'
         print '%25s %12s %s' % ('name', 'size (MB)', '   last accessed')
         print '  ------------------------------------------------------------------------------'
@@ -406,11 +404,11 @@ class pam_enviroment:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory) 
                 if not self.silent:
-                    print '  deleting the scratch directory'
+                    print '  deleting the scratch directory \n'
                 try:
                     shutil.rmtree(self.scratch_dir)
                 except:
-                    print 'can not delete due to system reasons'
+                    print_std_out_err('can not delete scratch directory due to system reasons !')
             else:
                 if not self.silent:
                     print '  keeping the scratch directory'
@@ -418,7 +416,10 @@ class pam_enviroment:
 
     def exit_function(self):
         '''prints message on the DIRAC executable exit according to the input parameter'''
+        self.elapsed_time=(time.time() - self.start_time)
+        elapsed_time_str = time.strftime('%Hh%Mm%Ss', time.gmtime(self.elapsed_time))
         print '  exit date      :', datetime.datetime.now()
+        print '  elapsed time   :', elapsed_time_str
         print '  exit code      :', self.returncode
         if self.returncode == 0:
             print '  exit           : normal'
@@ -825,6 +826,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
         if options.dest_mpirun:
             self.mpirun = options.dest_mpirun
+            if not os.path.isfile(options.dest_mpirun):
+                print_std_out_err('pam: you are assigning non existing mpi-launcher:'+options.dest_mpirun+'!')
 
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
@@ -922,8 +925,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
 #   if yes, assign output file name
 
         if not self.just_show_settings:
-            if options.mol_file is not None and options.inp_file \
-                is not None:
+            if options.mol_file and options.inp_file:
                 self.input_molecule = options.mol_file
                 self.input_dirac = options.inp_file
                 self.assign_mol_inp_files()
@@ -1068,7 +1070,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         else:
             print '  No input file provided, assuming it is obtained from the restart file.'
 
-        if self.put_files is not None:
+        if self.put_files:
             for file_name in self.put_files:
                 for f in glob.glob(file_name):
                     copy_single_file(f,f)
@@ -1178,14 +1180,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print_std_err_out(this_dirac_exe+' not found!')
             sys.exit(13)
         else:
-            #print 'Ok with ',this_dirac_exe
             pass			
         if self.parallel_run:
             if self.mpirun == None:
                 # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                 #          then self.mpirun is None and we have to stop here otherwise pam calls
                 #          None -np N /paht/to(dirac.x
-                sys.exit('pam did not find mpirun, check your $PATH !')
+                sys.exit('pam did not find mpirun, check your $PATH, or assign as parameter ! ')
 
             if self.argument_to_pass_scratch_dir_to_slaves:
                 self.dirac_cmd = self.mpirun + ' -np ' \
@@ -1225,7 +1226,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 # valgrind flags read from files ~/.valgrindrc and ./.valgrindrc
                 # -v --error-limit=no --leak-check=full  --show-reachable=yes
                 self.dirac_cmd = 'valgrind --log-fd=1 ' \
-                    + this_dirac_exethis_dirac_exe + ' | tee ' + self.output_file_full
+                    + this_dirac_exe + ' | tee ' + self.output_file_full
             else:
                 # no debug, plain run
                 self.dirac_cmd = this_dirac_exe
@@ -1359,7 +1360,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 return str(num)
         signum_kill=2 # for killing, prepare the strongest ammo
         # interrupt dirac run
-        if self.pgid is not None:
+        if self.pgid:
             if signum != signum_kill:
                 interrupt_message="\npam: Caught signal #"+str(signum)+"("+signal_numtoname(signum)+")"\
                 " but dirac.x process group is going to be terminated"+\
@@ -1374,11 +1375,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 os.killpg(self.pgid,signum_kill)
             else:
                 kill_win(self.pgid)
-            #radovan: don't want to get my screen filled
-            #         with ps info after 5 seconds - annoying
-            # time.sleep(5)  # wait first that all processes die (or not), then prints 
-            #radovan: the next one does not seem to work on my computer
-            # self.print_all_processes()
 
             # stamp the  general  interruption message into the output file
             self.f.write(interrupt_message+"\n") # 
@@ -1452,7 +1448,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
         else:
         # Windows: provide exec command with "" to fix =/+ characters in the full path
             self.dirac_cmd='"'+self.dirac_cmd+'"'
-            #print self.dirac_cmd
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
         self.pgid = self.dirac_p.pid
@@ -1493,9 +1488,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             p.wait()
             self.f.close()
         else:
-            print
-            print 'no gmon.out file found, no profiling..'
-            print
+            print_std_out_err('pam - self.profiling_file='+self.profiling_file)
+            print_std_out_err('pam - can not perform profiling, missing profiling core...did you set profiling flag ??? ')
 
     def save_files(self):
         "save files in various manners from the scratch directory"
@@ -1520,7 +1514,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
     # take care of the rest - get files from scratch_dir to home dir
 
-        if self.get_files is not None:
+        if self.get_files:
             for p in self.get_files.split():
                 for f in glob.glob(p):
                     save_single_file(f)
@@ -1608,18 +1602,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
         print
         if not self.silent:
             print '  user           :', self.user_name
-            if self.master != self.master_full:
-                print '  host           :', self.master,' (',self.master_full,')'
-            else:
-                print '  host           :', self.master
-            print '  ip             :', self.hostname_ip,'(# of CPUs:',determineNumberOfCPUs(),')'
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
             print '  pam command    :', self.pam_command
             # we have all args here, therefore canceled printout of input file & molecule file 
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
-                print '  executable      :', self.dirac_exe
+                print '  executable     :', self.dirac_exe
             disk= disk_space_find(self.scratch_dir)
             if disk.available:
                 scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available) 
@@ -1641,6 +1630,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 ' seconds. Killing afterwards.'
         elif self.set_timeout_limit and is_windows():
            print '--timeout not (yet) working for Windows !'
+
+        if self.profile:
+           print '  You want profiling - check that you have proper linking flag and assigned profiler.'
+           if not os.path.isfile(str(find_executable(self.profiler))):
+               print_std_out_err('You fool - your profiler not found:'+self.profiler)
+               sys.exit(19)
+
         print
 
         # add few consistency checks
@@ -1775,42 +1771,6 @@ def get_username():
     import getpass
     return getpass.getuser()
 
-def get_ip():
-    """
-    module for getting the LAN IP-address of the computer
-    from  http://stackoverflow.com/questions/166506/finding-local-ip-addresses-in-python
-	slightly modified for Windows 7
-    """
-    import os
-    import socket
-    import struct
-    def get_interface_ip(ifname):
-        """
-        not for Windows due to the fcntl module
-        """
-        if not is_windows():
-            import fcntl
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(
-                        s.fileno(),
-                        0x8915,  # SIOCGIFADDR
-                        struct.pack('256s', ifname[:15])
-                )[20:24])
-    # get IP-address, but secure the command with try as it might not work on all machines
-    try:
-        ip = socket.gethostbyname(socket.gethostname())
-    except:
-        ip = "not found"
-    if ip.startswith("127.") and os.name != "nt":
-        interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
-        for ifname in interfaces:
-                try:
-                        ip = get_interface_ip(ifname)
-                        break;
-                except IOError:
-                        pass
-    return ip
-
 def get_hostname():
     """
     get the server's short hostname 
@@ -1819,23 +1779,6 @@ def get_hostname():
     """
     import socket
     return socket.gethostname()
-
-def get_full_hostname():
-    """
-    get the server's full hostname using its IP-address
-    """
-    import socket
-    try:
-        this_host=str(socket.gethostbyaddr(get_ip())[0])
-    except:
-        this_host="not found"
-    return this_host
-
-def get_hostname_ip():
-    """
-    get the hostname's ip-adress; use own function get_ip
-    """
-    return get_ip()
 
 class disk_space:
     """
@@ -2001,93 +1944,5 @@ def print_std_out_err(s):
         print  >> stream,s
         stream.flush()
 
-def  determineNumberOfCPUs():
-    """ Number of virtual or physical CPUs on this system, i.e.
-    user/real as output by time(1) when called with an optimally scaling
-    userspace-only program
-    http://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-in-python
-    """
-    # Python 2.6+
-    try:
-        import multiprocessing
-        return multiprocessing.cpu_count()
-    except (ImportError,NotImplementedError):
-        pass
-    # POSIX
-    try:
-        res = int(os.sysconf('SC_NPROCESSORS_ONLN'))
-        if res > 0:
-            return res
-    except (AttributeError,ValueError):
-        pass
-    # Windows
-    try:
-        res = int(os.environ['NUMBER_OF_PROCESSORS'])
-        if res > 0:
-            return res
-    except (KeyError, ValueError):
-        pass
-
-    # jython
-    try:
-        from java.lang import Runtime
-        runtime = Runtime.getRuntime()
-        res = runtime.availableProcessors()
-        if res > 0:
-            return res
-    except ImportError:
-        pass
-    # BSD
-    try:
-        sysctl = subprocess.Popen(['sysctl', '-n', 'hw.ncpu'],
-                                      stdout=subprocess.PIPE)
-        scStdout = sysctl.communicate()[0]
-        res = int(scStdout)
-
-        if res > 0:
-            return res
-    except (OSError, ValueError):
-        pass
-    # Linux
-    try:
-        res = open('/proc/cpuinfo').read().count('processor\t:')
-        if res > 0:
-            return res
-    except IOError:
-        pass
-    # Solaris
-    try:
-        pseudoDevices = os.listdir('/devices/pseudo/')
-        expr = re.compile('^cpuid@[0-9]+$')
-        res = 0
-        for pd in pseudoDevices:
-            if expr.match(pd) != None:
-                res += 1
-        if res > 0:
-            return res
-    except OSError:
-        pass
-    # Other UNIXes (heuristic)
-    try:
-        try:
-            dmesg = open('/var/run/dmesg.boot').read()
-        except IOError:
-            dmesgProcess = subprocess.Popen(['dmesg'], stdout=subprocess.PIPE)
-            dmesg = dmesgProcess.communicate()[0]
-        res = 0
-        while '\ncpu' + str(res) + ':' in dmesg:
-            res += 1
-        if res > 0:
-            return res
-    except OSError:
-        pass
-    # no success, can not determine number of CPUs ...  ;(
-    raise Exception('Can not determine number of CPUs on this system')
-
-#
-# at the very end, where everything if defined above, launch the script's main function
-#
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
-
-

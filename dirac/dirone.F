@@ -4613,9 +4613,14 @@ C     for the last two shells have been generated from a fit :
 C     (y = 0.28196 x^-1.5532)
       DATA STO1G /0.2709D0, 0.1012D0, 0.05297D0,0.03265D0,0.02217D0,
      &            0.01744D0,0.01373D0/
-      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.0D0, 4.2D0, 4.4D0/
+!     DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.0D0, 4.2D0, 4.4D0/
+      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.4D0, 5.1D0, 5.8D0/
 C     ... Slater's n_eff according to wikipedia for n=1:6,
-C         I extrapolated to n=7 /hjaaj Sep 2011
+C         I extrapolated to n=7 /hjaaj Sep 2011.
+C     ... Empirical modification Feb. 2012 hjaaj: XeF6 did not
+C         converge with the Sep 2011 values; on the other hand
+C         we had an example in Sep 2011 which benefitted from the
+C         n_eff values.
 C
 C     Table of s,p,d,f orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
@@ -4726,11 +4731,17 @@ c     ... special case for the (2-1) 1s electron
 c     ... Generel case. We are past H and He and have thus accounted 
 c         for two electrons.
 c     ... Find numbers of s,p,d,f-electrons for element (Z)
-      NST = NOCC((NINT(Z)-1)*4 + 1)
-      NPT = NOCC((NINT(Z)-1)*4 + 2)
-      NDT = NOCC((NINT(Z)-1)*4 + 3)
-      NFT = NOCC((NINT(Z)-1)*4 + 4)
-c
+         NST=0
+         NPT=0
+         NDT=0
+         NFT=0
+      IF (Z.GE.1.0D0) THEN ! miro: prevent NOCC of out-of-bounds 
+         NST = NOCC((NINT(Z)-1)*4 + 1)
+         NPT = NOCC((NINT(Z)-1)*4 + 2)
+         NDT = NOCC((NINT(Z)-1)*4 + 3)
+         NFT = NOCC((NINT(Z)-1)*4 + 4)
+      ENDIF
+C
 c     ... Now figure out the occupation used for the Slater rules (N >= 2) :
 c      [1s][2s2p][3s3p][3d][4s4p][4d][4f]...
 c
@@ -5817,18 +5828,18 @@ C     Written by L. Visscher october/november 2003
 C     Modified by T. Saue Jan 12 2007
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <cbihr1.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "cbihr1.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GLINSM')
 
-#include <memint.h>
+#include "memint.h"
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -5887,8 +5898,8 @@ C     Last changes: M.Ilias, Strasbourg, 2005
 C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
 C
 C Used from COMMON blocks
@@ -5896,12 +5907,12 @@ C  CBIPAM:
 C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <cbihr1.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "cbihr1.h"
 #include "dummy.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
@@ -5909,7 +5920,7 @@ C
 
       CALL QENTER('LINSYM')
 
-#include <memint.h>
+#include "memint.h"
 C
 !     iprham_save = iprham
 !     iprham      = 15
@@ -6332,16 +6343,16 @@ C
 C     Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <cbihr1.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('AMJMAT')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -6372,13 +6383,13 @@ C
 C  Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbham.h"
 C
       PARAMETER (HALF=0.5D0, D1=1.0D0)
       LOGICAL FIRST
