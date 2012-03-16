@@ -591,15 +591,11 @@ C
 C        ... do CI for ESR spin-polarization /hjaaj nov 2002
 C            (Cxx are preparation for RESOLVE instead of FULLCI
 C             in the DHF open shells)
-         NGAS_DC  = NOPEN + 2
-         THR_CVEC = THR_CVEC_ESR
-         IF (NOPEN .NE. 1) THEN
-            write (lupri,*) 'NOPEN is not 1, it is: ',NOPEN
-            call quit ('NOPEN is not 1')
-         END IF
 
 C        ... set CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
+C
+         THR_CVEC = THR_CVEC_ESR
 C
 C        set up core and virtual spaces
 C
@@ -609,48 +605,69 @@ C
            IF (NCESR(I) .LT. 0) THEN
               NCESR(I) = NISH(I)
            END IF
-           NISH(I) = NISH(I) - NCESR(I)
+           NISH(I)  = NISH(I)  - NCESR(I)
            NELEC(I) = NELEC(I) - 2*NCESR(I)
-           NCESRT = NCESRT + NCESR(I)
+           NCESRT   = NCESRT   + NCESR(I)
            IF (NVESR(I) .LT. 0) THEN
               NVESR(I) = NSSH(I)
            END IF
            NSSH(I) = NSSH(I) - NVESR(I)
-           NVESRT = NVESRT + NVESR(I)
+           NVESRT  = NVESRT  + NVESR(I)
          END DO
          NAELEC = NAELEC + 2*NCESRT
 C
-C        initialize min and max accumlated no. of electrons in each gas space
+C        initialize min and max accumulated no. of electrons in each gas space
 C
-Cxx      XELEC = D2*NCESRT
-         NGSP(1,1) = MAX(0,2*NCESRT-LVL_CIESR)
-         NGSP(2,1) = 2*NCESRT
-         DO J = 2, NGAS_DC - 1
-Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
-Cxx         NGSP(1,J) = NINT(XELEC)
-Cxx         NGSP(2,J) = NINT(XELEC)
-            NGSP(1,J) = MAX(0,NAELEC-LVL_CIESR)
-            NGSP(2,J) = NAELEC
-         END DO
-         NGSP(1,NGAS_DC) = NAELEC
-         NGSP(2,NGAS_DC) = NAELEC
-
          CALL IZERO(NGSHT,MXMCGAS)
-         DO J = 2, NGAS_DC-1
+         NGAS_DC = 0
+         IF (NCESRT .GT. 0) THEN
+            NGAS_DC = NGAS_DC + 1
+            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR)
+            NGSP(2,NGAS_DC) = 2*NCESRT
             DO I = 1,NFSYM
-Cxx            NGSH(I,J) = NACSH(I,J)
-               NGSH(I,J) = NASH(I)
-               NGSHT(J)  = NGSHT(J) + NGSH(I,J)
+               NGSH(I,NGAS_DC) = NCESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+            END DO
+         END IF
+
+Cxx      XELEC = D2*NCESRT
+         IF (NOPEN .NE. 1) THEN
+            write (lupri,*) 'ESRCI: NOPEN is not 1, it is: ',NOPEN
+            call quit ('ESRCI: sorry, NOPEN is not 1')
+         END IF
+         DO J = 1, NOPEN
+            NGAS_DC = NGAS_DC + 1
+Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
+Cxx         NGSP(1,NGAS_DC) = NINT(XELEC)
+Cxx         NGSP(2,NGAS_DC) = NINT(XELEC)
+            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR)
+            NGSP(2,NGAS_DC) = NAELEC
+            DO I = 1,NFSYM
+Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
+               NGSH(I,NGAS_DC) = NASH(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             END DO
          END DO
-C        do core (gas 1) and virtual (gas NGAS_DC) and update NASH(*)
+         IF (NVESRT .GT. 0) THEN
+            NGAS_DC = NGAS_DC + 1
+            NGSP(1,NGAS_DC) = NAELEC
+            NGSP(2,NGAS_DC) = NAELEC
+            DO I = 1,NFSYM
+               NGSH(I,NGAS_DC) = NVESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+            END DO
+         ELSE
+            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NALEL-LVL_CIESR if not virt gas space
+         END IF
+C
+C        reset number of active orbitals
          DO I = 1,NFSYM
-            NGSH(I,1)    = NCESR(I)
-            NGSH(I,NGAS_DC) = NVESR(I)
-            NGSHT(1)     = NGSHT(1)    + NGSH(I,1)
-            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
-            NASH(I)      = NASH(I) + NCESR(I) + NVESR(I)
+            NASH(I) = 0
+            DO J = 1,NGAS_DC
+               NASH(I) = NASH(I) + NGSH(I,J)
+            END DO
          END DO
+
       ELSE
          CALL QUIT('Invalid CISELECT parameter')
       END IF
@@ -692,7 +709,7 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV(1))
       END IF
-      THRPCI = 1.0D-2 ! threshold for print of CI vector elements
+      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
 C
 C     Set common block DCLOPT
 C

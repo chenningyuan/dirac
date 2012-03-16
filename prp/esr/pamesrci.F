@@ -21,7 +21,7 @@
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck esr_init */
-      SUBROUTINE ESR_INIT(WF,IPRINT,N_CIESR,SPINPOLESR,WORK,KFREE,LFREE)
+      SUBROUTINE ESR_INIT(WF,IPRINT,N_CIESR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Initialize ESR calculation: find out what to do
@@ -44,7 +44,6 @@ C
 C
       DIMENSION WORK(*)
       CHARACTER WF*4
-      LOGICAL   SPINPOLESR
 C
       CALL QENTER('ESR_INIT')
 C
@@ -66,10 +65,8 @@ C
 C     Include spin polarization in CI ?? If yes redefine GAS spaces
 C     NASH(:), NASHT, NACTEL, NAELEC etc. are all reset in THDFORB
 C
-      IF (SPINPOLESR) THEN
-         CALL TDHFORB('ESRCI')
-         CALL SETDC2(0)
-      END IF
+      CALL TDHFORB('ESRCI')
+      CALL SETDC2(0)
 
 C
 C     Define dcbidx.h
