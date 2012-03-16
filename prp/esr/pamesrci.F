@@ -33,14 +33,14 @@ C
 C     Author: Hans Joergen Aa. Jensen
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(*)
       CHARACTER WF*4
@@ -145,15 +145,15 @@ C     Author: Hans Joergen Aa. Jensen
 C     (Based on GASCIP_STARTVEC by Joern Thyssen June 2000)
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0)
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 !#include <krmcluci_inf.h>
 C
       DIMENSION CMO(*), WORK(*)

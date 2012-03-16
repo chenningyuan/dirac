@@ -2597,15 +2597,15 @@ C     Get total density matrix in SO basis (used for SCDENS & LCDENS)
 C
 C     31-July-2001 HJAaJ
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DSO(*), WORK(LWORK)
 C
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcbdhf.h>
-#include <dcborb.h>
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2642,15 +2642,15 @@ C     Transform molecular gradient and print calculate the norm -
 C     for printing norm of gradient in single-point calculations.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)
 C
 C     Transform gradient to Cartesian coordinates

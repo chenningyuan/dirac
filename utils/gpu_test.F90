@@ -76,7 +76,7 @@ end subroutine read_arguments
 subroutine sgemm_test
 allocate (A_r(n,n),B_r(n,n),C_r(n,n),STAT=AllocateStatus)
 if (AllocateStatus.ne.0) then
-  stop "error in main matrix allocations !"
+  stop "error in matrix allocations !"
 else
   if (verb.ge.1) then
     write(*,*) "A_r,B_r,C_r matrixes allocated in CPU memory"
@@ -94,7 +94,7 @@ do j=1,n
   C_r(i,j)=0.0e0
 enddo
 enddo
-call system_clock( c1, cr, cm )
+!call system_clock( c1, cr, cm )
 call cublas_init
 stat= cublas_Alloc(n*n,size_of_real, devPtrA)
 if (stat .NE. 0) then
@@ -126,12 +126,14 @@ else
     write(*,*) "device memory allocation of devPtrC OK"
   endif
 endif
+! ... start the time measurement
+call system_clock( c1, cr, cm )
 stat=cublas_Set_Matrix(n,n,size_of_real,A_r,n,devPtrA,n)
 if (stat .NE. 0) then
   stat=cublas_free (devPtrA)
   write(*,*) "data upload mtx A_r(CPU) -> devPtrA(GPU) failed"
   call cublas_shutdown
-stop
+  stop
 else
   if (verb.ge.1) then
     write(*,*) "data upload mtx A_r(CPU) -> devPtrA(GPU) : OK"
@@ -201,16 +203,16 @@ else
 endif
 do i=1,n
 do j=1,n
- if (i.eq.j) then
+ if (i.eq.j) then ! A_d is unit matrix
    A_d(i,j)=1.0e0
  else
    A_d(i,j)=0.0e0
  endif
- B_d(i,j)=dfloat(i+j) ! same jednotky...
+ B_d(i,j)=dfloat(i+j) ! B_d is symmetric matrix
  C_d(i,j)=0.0e0
 enddo
 enddo
-call system_clock( c1, cr, cm )
+!call system_clock( c1, cr, cm )
 call cublas_init
 stat= cublas_Alloc(n*n,size_of_double, devPtrA)
 if (stat .NE. 0) then
@@ -242,12 +244,14 @@ else
     write(*,*) "device memory allocation of devPtrC done"
   endif
 endif
+! start the time measurement
+call system_clock( c1, cr, cm )
 stat=cublas_Set_Matrix(n,n,size_of_double,A_d,n,devPtrA,n)
 if (stat .NE. 0) then
   stat=cublas_free (devPtrA)
   write(*,*) "data upload mtx A_d(CPU) -> devPtrA(GPU) failed"
   call cublas_shutdown
-stop
+  stop
 else
   if (verb.ge.1) then
     write(*,*) "data upload mtx A_d(CPU) -> devPtrA(GPU) : OK"
@@ -331,7 +335,7 @@ do j=1,n
  y_r(i)=0.0e0
 enddo
 enddo
-call system_clock( c1, cr, cm )
+!call system_clock( c1, cr, cm )
 call cublas_init
 stat=cublas_Alloc(n*n,size_of_real, devPtrA)
 if (stat .NE. 0) then
@@ -363,6 +367,8 @@ else
     write(*,*) "GPU device memory allocation of devPtry OK"
   endif
 endif
+! start the time measurement
+call system_clock( c1, cr, cm )
 stat=cublas_Set_Matrix(n,n,size_of_real,A_r,n,devPtrA,n)
 if (stat .NE. 0) then
   stat=cublas_free (devPtrA)
@@ -468,6 +474,7 @@ Program GPU_math_tests
       call sgemv_test
     case default
       write(*,*) 'no method for GPU math testing selected'
+      call usage
       stop
   end select
 End Program GPU_math_tests

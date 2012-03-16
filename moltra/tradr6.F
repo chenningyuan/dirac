@@ -92,7 +92,7 @@ C
       CALL QENTER('TRDR6T')
       KFRSAV = KFREE
 C     Initialize the timing
-      CALL XTIME(0,-1,'                             ')
+      CALL XTIME(0,-1,'                              ')
 C
 C     Define the packing of the 4-index transformed integrals
 C
@@ -158,9 +158,13 @@ C
 
       CALL MKINDXKR (NSTR,.FALSE.,INDXKR12)
  
+!     FIXME: out-of-bounds access possible when no inversion symmetry present
+!    &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
       CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
      &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
      &              .FALSE.,INDXB12)
+!     FIXME: out-of-bounds access possible when no inversion symmetry present
+!    &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
       CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
      &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
      &              .FALSE.,INDXB34)

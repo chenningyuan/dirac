@@ -80,7 +80,7 @@
 *
       implicit real*8 (A-H,O-Z)
 *
-#include <luctinp.h>
+#include "luctinp.h"
 *
 #include "clunit.inc"
 #include "mxpdim.inc"
@@ -1088,8 +1088,8 @@ C        .. we do not accept user input of less than 100 000 !
 *
       implicit real*8 (A-H,O-Z)
 *
-#include<dcbbas.h>
-#include<dcborb.h>
+#include"dcbbas.h"
+#include"dcborb.h"
 *
       dimension OTRINT(*),ONEINTR(ITOTDIM2,ITOTDIM2)
       dimension IREO(IMXDIM,NIRREP),INVREO(ITOTDIM),IBOSYM(ITOTDIM2)
@@ -7831,8 +7831,8 @@ c
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcbbas.h"
+#include "dcborb.h"
 #include "infpar.h"
 #include "parluci.h"
 *

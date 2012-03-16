@@ -125,6 +125,7 @@ vital_directories.append('cmake')
 vital_directories.append('xcfun')
 vital_directories.append('xcfun/fortran')
 vital_directories.append('interface_mpi')
+vital_directories.append('localization')
 
 # these tests are always packaged
 

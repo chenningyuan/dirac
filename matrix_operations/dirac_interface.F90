@@ -99,9 +99,9 @@ contains
   !> \note modified on linsca/linears/VIBCTL_interface.F
   subroutine DPGNUC_ifc( na, DGN )
     ! uses MXCOOR
-#include <mxcent.h>
+#include "mxcent.h"
     ! uses DDIPN
-#include <dipole.h>
+#include "dipole.h"
     integer, intent(in) :: na
     real(8), intent(out) :: DGN( 3*na, 3 )
     real(8), parameter :: zero = 0.0D+00
