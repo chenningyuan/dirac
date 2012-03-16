@@ -103,7 +103,7 @@ C*************  O R B I T A L   L O C A L I S A T I O N  ***************
 C***********************************************************************
 C
       IF(DOLOC)THEN
-        CALL INIT_MINIMIZATION
+        CALL LOCALIZATION_INTERFACE
         CALL MINIMIZATION_DRV
       ENDIF
 C

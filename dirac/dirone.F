@@ -5828,18 +5828,18 @@ C     Written by L. Visscher october/november 2003
 C     Modified by T. Saue Jan 12 2007
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <cbihr1.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "cbihr1.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GLINSM')
 
-#include <memint.h>
+#include "memint.h"
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -5898,8 +5898,8 @@ C     Last changes: M.Ilias, Strasbourg, 2005
 C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
 C
 C Used from COMMON blocks
@@ -5907,12 +5907,12 @@ C  CBIPAM:
 C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <cbihr1.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "cbihr1.h"
 #include "dummy.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
@@ -5920,7 +5920,7 @@ C
 
       CALL QENTER('LINSYM')
 
-#include <memint.h>
+#include "memint.h"
 C
 !     iprham_save = iprham
 !     iprham      = 15
@@ -6343,16 +6343,16 @@ C
 C     Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <cbihr1.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('AMJMAT')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -6383,13 +6383,13 @@ C
 C  Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbham.h"
 C
       PARAMETER (HALF=0.5D0, D1=1.0D0)
       LOGICAL FIRST

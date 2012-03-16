@@ -1070,23 +1070,23 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dcbdhf.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
       DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
 C
-#include <memint.h>
+#include "memint.h"
       CALL DZERO(QLC,NUCIND)
       CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KSMAT),SSMTRC)
@@ -1121,22 +1121,22 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <frame.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "frame.h"
 C
-#include <dcblab.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "dcblab.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,*),DMAT(NBAST,*)
@@ -1144,7 +1144,7 @@ C
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
-#include <dcbibt.h>
+#include "dcbibt.h"
 
 C
 C     Get array ICLAB which maps large component basis functions onto
@@ -1200,20 +1200,20 @@ C
 C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dgroup.h>
-#include <dcbham.h>
-#include <dcbgen.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcbgen.h"
       DIMENSION QMAT(NUCDEP,NUCDEP,2,NMPOLOP),DMAT(*),WORK(LWORK)
       DIMENSION INDDIP(3)
       LOGICAL   DIPDONE
@@ -1225,7 +1225,7 @@ C
       SAVE DIPDONE
       DATA DIPDONE /.FALSE./
 C
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('LSQMAT')
       CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMPOLOP .NE. 1 .AND. NMPOLOP .NE. 4) THEN
@@ -1396,25 +1396,25 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <frame.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "frame.h"
 C
-#include <dcblab.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "dcblab.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
       DIMENSION ICLAB(*)
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
 C     Get array ICLAB which maps AO basis functions (large and small)
 C     onto atomic centers.
@@ -1453,14 +1453,14 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbbas.h"
       PARAMETER(D2=2.0D0)
-#include <nuclei.h>
+#include "nuclei.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION RLMMAT(NBAST,*),DMAT(NBAST,*)
@@ -1468,7 +1468,7 @@ C***********************************************************************
       DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
 C     Calculate the population of each large and small component basis
 C     function and add to appropiate element of QMAT(NUCDEP,NUCDEP,IC).

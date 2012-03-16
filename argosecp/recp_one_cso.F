@@ -31,6 +31,8 @@ c
      2  mcrs(*),nc(*),ncr(*),nkcrl(6,*),nkcru(6,*),x(mcu,*),
      3  y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
       integer i 
+
+      CALL OUTPUT_LOC('cint','E')
       do i=1,3
         IPT_CZ_CRDA(1,i)=a1
         IPT_CZ_CRDB(1,i)=a1
@@ -185,6 +187,7 @@ c
         endif
   470 continue
   490 continue
+      CALL OUTPUT_LOC('cint','X')
       return
       end
 

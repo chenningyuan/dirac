@@ -7323,7 +7323,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
-     &            '.THDIAG','.THGRAD','.CHECK ','.XXXXXX'/
+     &            '.THDIAG','.THGRAD','.CHECK ','.SELECT'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -7351,6 +7351,7 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
+      SELMOS = 'allocc'
 C
 C     Process input from CBILOC
 C     =========================
@@ -7368,7 +7369,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
  200                        CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -7438,6 +7439,10 @@ C   Set convergence criterion - norm of the gradient
  11                      CONTINUE
 C   After last iteration using diagonal approximation calculate one step using full hessian
                LGCHCK = .TRUE.
+               GO TO 100
+ 12                      CONTINUE
+C   SELMOS: Select MOs for localization
+               READ(LUCMD,'(A72)') SELMOS
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -7584,6 +7589,12 @@ C
         WRITE(LUPRI,'(1X,A,A)') 
      &   '* After the diagonal approximation will converge',
      &   ' calculate one step using full hessian'
+      ENDIF
+      IF(SELMOS == 'allocc')THEN
+        WRITE(LUPRI,'(1X,A)') '* Only occupied MOs will be localized'
+      ELSE
+        WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
+        WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis

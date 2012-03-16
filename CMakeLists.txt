@@ -27,23 +27,8 @@ include(ConfigSafeGuards)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# check whether pamadm-generated files exist
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/SourcesList.cmake"      AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/DefinitionsList.cmake"  AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake")
-else()
-    # they do not exist: run pamadm -a
-    execute_process(
-        COMMAND python pamadm -a
-        TIMEOUT 1
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_QUIET
-    )
-    message("-- You are lazy. Running pamadm -a for you ...")
-endif()
+include(ConfigPamadm)
 
-option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
@@ -98,12 +83,24 @@ endif()
 
 if(ENABLE_CUDA)
     find_package(CUDA)
-    if(CUDA_FOUND)
-        set(LIBS
-            ${LIBS}
-            ${CUDA_CUBLAS_LIBRARIES}
-            )
-        add_definitions(-DUSE_CUBLAS)
+    if(CUDA_FOUND) 
+        if(NOT ENABLE_64BIT_INTEGERS)
+            # employing variables set and returned by FindCUDA.cmake
+            add_library(fortran_cuda "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.c" "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.h")
+            INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
+            set(LIBS
+                ${LIBS}
+                ${CUDA_CUBLAS_LIBRARIES}
+                )
+            add_definitions(-DUSE_CUBLAS)
+            if (CUDA_64_BIT_DEVICE_CODE) 
+                add_definitions(-DARCH_64)
+            endif()
+            add_executable(gpu_test.x utils/gpu_test.F90)
+            target_link_libraries(gpu_test.x fortran_cuda ${LIBS} blas)
+        else()
+            message("-- CUDA library found, but can not be used with 64-bit integers!")
+        endif()
     endif()
 endif()
 
@@ -120,6 +117,7 @@ add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
+add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
@@ -283,11 +281,4 @@ add_custom_target(
     latex
     COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/latex
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    )
-
-# run pamadm -a in source root
-add_custom_target(
-    adm
-    COMMAND python pamadm -a
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
