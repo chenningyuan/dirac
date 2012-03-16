@@ -925,8 +925,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
 #   if yes, assign output file name
 
         if not self.just_show_settings:
-            if options.mol_file is not None and options.inp_file \
-                is not None:
+            if options.mol_file and options.inp_file:
                 self.input_molecule = options.mol_file
                 self.input_dirac = options.inp_file
                 self.assign_mol_inp_files()
@@ -1071,7 +1070,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         else:
             print '  No input file provided, assuming it is obtained from the restart file.'
 
-        if self.put_files is not None:
+        if self.put_files:
             for file_name in self.put_files:
                 for f in glob.glob(file_name):
                     copy_single_file(f,f)
@@ -1361,7 +1360,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 return str(num)
         signum_kill=2 # for killing, prepare the strongest ammo
         # interrupt dirac run
-        if self.pgid is not None:
+        if self.pgid:
             if signum != signum_kill:
                 interrupt_message="\npam: Caught signal #"+str(signum)+"("+signal_numtoname(signum)+")"\
                 " but dirac.x process group is going to be terminated"+\
@@ -1515,7 +1514,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
     # take care of the rest - get files from scratch_dir to home dir
 
-        if self.get_files is not None:
+        if self.get_files:
             for p in self.get_files.split():
                 for f in glob.glob(p):
                     save_single_file(f)
@@ -1609,7 +1608,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # we have all args here, therefore canceled printout of input file & molecule file 
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
-                print '  executable      :', self.dirac_exe
+                print '  executable     :', self.dirac_exe
             disk= disk_space_find(self.scratch_dir)
             if disk.available:
                 scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available) 
