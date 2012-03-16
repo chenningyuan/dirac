@@ -3942,6 +3942,7 @@ C.......loop over symmetries associated with fermion ircop and component
           NBB   = NBBAS(IBRP,IC)
           DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IBRQ)
+            IQ = IQMAP(IQ)
             CALL DCOPY(NBB,CBU(IU,IVU,IQ),1,CBS(IS,IVS,IZ),1)
           ENDDO
         ENDDO

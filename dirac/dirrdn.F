@@ -122,10 +122,10 @@ C
  2    continue
       close(file_unit, status = 'keep')
 
+#ifdef DO_KEYWORD_SCAN
 
-
-
-
+! hjaaj Mar 2012: discovered that the NUMBER_OF_KEYWORDS is not used
+!    for anything currently, thus I disabled the code.
 
       OPEN(LUCMD,FILE = 'DIRAC.INP',IOSTAT=IOS)
       IF (IOS.NE.0) THEN
@@ -135,10 +135,15 @@ C
       CALL KEYWORD_SCAN (.TRUE.,.TRUE.,.TRUE.,.TRUE.,
      &                   .FALSE.,NUMBER_OF_KEYWORDS,WORK)
       CLOSE(LUCMD)
+#endif
 C
 C     Specify job
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP',IOSTAT=IOS)
+      IF (IOS.NE.0) THEN
+        WRITE(LUPRI,*) 'Error in opening DIRAC.INP!'
+        CALL QUIT('Error in opening DIRAC.INP!')
+      ENDIF
       CALL JOBINP
       CLOSE(LUCMD)
 
@@ -3590,7 +3595,7 @@ C
         CALL POPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     3 CONTINUE
-        CALL PRJINP(WORD,.FALSE.,WORK,LWORK)
+        CALL PRJINP(WORD,.FALSE.)
         GO TO 200
     4 CONTINUE
         CALL VECINP(WORD,.FALSE.,WORK,LWORK)
@@ -3623,7 +3628,7 @@ C
 C
     1 CONTINUE
       IF(DOPOP) CALL POPINP(WORD,.TRUE.,WORK,LWORK)
-      IF(DOPRJ) CALL PRJINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOPRJ) CALL PRJINP(WORD,.TRUE.)
       IF(DOVEC) CALL VECINP(WORD,.TRUE.,WORK,LWORK)
       IF(DO1RHO) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
       IF(DO3RHO) CALL DENSIN(WORD,.TRUE.,WORK,LWORK)
@@ -3813,7 +3818,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjinp */
-      SUBROUTINE PRJINP(WORD,RESET,WORK,LWORK)
+      SUBROUTINE PRJINP(WORD,RESET)
 C***********************************************************************
 C
 C     Input section for module for wavefunction projection
@@ -3897,9 +3902,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in PRJINP.'
+     *            '" not recognized under *PROJEC.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in PRJINP.')
+               CALL QUIT('Illegal keyword under *PROJEC.')
     1          CONTINUE
 C&&&& PRINT: Print level for projections
                  READ(LUCMD,*) IPRPRJ
@@ -3920,7 +3925,7 @@ C&&&& VECREF: Fragment vectors
                     WRITE(LUPRI,'(A,I5)')
      &         '* Number of fragment specified:',NREFS,
      &         '* Current maximum             :',MAXREF
-                    CALL QUIT('PRJINP:Too many fragments !')
+                    CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
                     READ(LUCMD,'(A6)') REFFIL(J)
@@ -3966,9 +3971,9 @@ C&&& REMREF: Project out reference orbitals from polarized orbitals
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in PRJINP.'
+     *            '" not recognized under *PROJEC.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in PRJINP.')
+               CALL QUIT('Illegal prompt under *PROJEC.')
             END IF
       END IF
   300 CONTINUE
@@ -3993,7 +3998,7 @@ C     =============
 C
       IF(.NOT.DOPRJ) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 'PRJINP: Projection onto another solution'
+      WRITE(LUPRI,'(1X,A)') '*PROJECT: Projection onto another solution'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,1P,D9.2)')
      &       '* Threshold for printing projection coefficients:',PROTHR
@@ -6324,8 +6329,8 @@ C  /* Deck CIMINP */
       SUBROUTINE CIMINP(WORK,LWORK)
 C***********************************************************************
       implicit none
-      real(8) :: work
       integer :: lwork
+      real(8) :: work(lwork)
 C
 C     Dummy routine while the interface is being implemented
 C
@@ -7364,9 +7369,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     &            '" not recognized in ANWINP.'
+     &            '" not recognized under *LOCALI.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in POPINP.')
+               CALL QUIT('Illegal keyword under *LOCALI.')
  1                       CONTINUE
 C   Print level
                   READ(LUCMD,*) IPRLOC
@@ -7395,7 +7400,7 @@ C   VECREF: Fragment vectors
                     WRITE(LUPRI,'(A,I5)')
      &         '* Number of fragments specified:',NREFS,
      &         '* Current maximum              :',MAXREF
-                    CALL QUIT('PRJINP:Too many fragments !')
+                    CALL QUIT('*LOCALI: Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
                     READ(LUCMD,'(A6)') REFFIL(J)
@@ -7435,9 +7440,9 @@ C   SELMOS: Select MOs for localization
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     &            '" not recognized in ANWINP.'
+     &            '" not recognized under *LOCALI.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in ANWINP.')
+               CALL QUIT('Illegal prompt under *LOCALI.')
             END IF
       END IF
  300   CONTINUE
@@ -7449,7 +7454,7 @@ C
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)')
-     & 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
+     & '*LOCALI: Molecular orbital localization (Pipek-Mezey criterion)'
       CALL PRSYMB(LUPRI,'=',75,0)
 C     -----------------------------------------------------------------
 C     Localization method
