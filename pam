@@ -126,8 +126,6 @@ class pam_enviroment:
 
     # master name,IP
         self.master = get_hostname()  # short hostname
-        self.master_full = get_full_hostname()  # full hostname
-        self.hostname_ip = get_hostname_ip()
 
     #  user login name
         self.user_name=get_username()
@@ -364,10 +362,8 @@ class pam_enviroment:
         lists the content of the master scratch directory;
         see  http://www.daniweb.com/code/snippet216798.html
         '''
-        scratch_id=self.user_name+"@"+self.master_full+":"+self.scratch_dir
         sum_filesize_mb=0
-        print '  content of the (master) scratch directory:'
-        print scratch_id
+        print '  content of the (master) scratch directory'
         print '  ------------------------------------------------------------------------------'
         print '%25s %12s %s' % ('name', 'size (MB)', '   last accessed')
         print '  ------------------------------------------------------------------------------'
@@ -1607,11 +1603,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
         print
         if not self.silent:
             print '  user           :', self.user_name
-            if self.master != self.master_full:
-                print '  host           :', self.master,' (',self.master_full,')'
-            else:
-                print '  host           :', self.master
-            print '  ip             :', self.hostname_ip,'(# of CPUs:',determineNumberOfCPUs(),')'
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
             print '  pam command    :', self.pam_command
@@ -1781,42 +1772,6 @@ def get_username():
     import getpass
     return getpass.getuser()
 
-def get_ip():
-    """
-    module for getting the LAN IP-address of the computer
-    from  http://stackoverflow.com/questions/166506/finding-local-ip-addresses-in-python
-	slightly modified for Windows 7
-    """
-    import os
-    import socket
-    import struct
-    def get_interface_ip(ifname):
-        """
-        not for Windows due to the fcntl module
-        """
-        if not is_windows():
-            import fcntl
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(
-                        s.fileno(),
-                        0x8915,  # SIOCGIFADDR
-                        struct.pack('256s', ifname[:15])
-                )[20:24])
-    # get IP-address, but secure the command with try as it might not work on all machines
-    try:
-        ip = socket.gethostbyname(socket.gethostname())
-    except:
-        ip = "not found"
-    if ip.startswith("127.") and os.name != "nt":
-        interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
-        for ifname in interfaces:
-                try:
-                        ip = get_interface_ip(ifname)
-                        break;
-                except IOError:
-                        pass
-    return ip
-
 def get_hostname():
     """
     get the server's short hostname 
@@ -1825,23 +1780,6 @@ def get_hostname():
     """
     import socket
     return socket.gethostname()
-
-def get_full_hostname():
-    """
-    get the server's full hostname using its IP-address
-    """
-    import socket
-    try:
-        this_host=str(socket.gethostbyaddr(get_ip())[0])
-    except:
-        this_host="not found"
-    return this_host
-
-def get_hostname_ip():
-    """
-    get the hostname's ip-adress; use own function get_ip
-    """
-    return get_ip()
 
 class disk_space:
     """
@@ -2007,93 +1945,5 @@ def print_std_out_err(s):
         print  >> stream,s
         stream.flush()
 
-def  determineNumberOfCPUs():
-    """ Number of virtual or physical CPUs on this system, i.e.
-    user/real as output by time(1) when called with an optimally scaling
-    userspace-only program
-    http://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-in-python
-    """
-    # Python 2.6+
-    try:
-        import multiprocessing
-        return multiprocessing.cpu_count()
-    except (ImportError,NotImplementedError):
-        pass
-    # POSIX
-    try:
-        res = int(os.sysconf('SC_NPROCESSORS_ONLN'))
-        if res > 0:
-            return res
-    except (AttributeError,ValueError):
-        pass
-    # Windows
-    try:
-        res = int(os.environ['NUMBER_OF_PROCESSORS'])
-        if res > 0:
-            return res
-    except (KeyError, ValueError):
-        pass
-
-    # jython
-    try:
-        from java.lang import Runtime
-        runtime = Runtime.getRuntime()
-        res = runtime.availableProcessors()
-        if res > 0:
-            return res
-    except ImportError:
-        pass
-    # BSD
-    try:
-        sysctl = subprocess.Popen(['sysctl', '-n', 'hw.ncpu'],
-                                      stdout=subprocess.PIPE)
-        scStdout = sysctl.communicate()[0]
-        res = int(scStdout)
-
-        if res > 0:
-            return res
-    except (OSError, ValueError):
-        pass
-    # Linux
-    try:
-        res = open('/proc/cpuinfo').read().count('processor\t:')
-        if res > 0:
-            return res
-    except IOError:
-        pass
-    # Solaris
-    try:
-        pseudoDevices = os.listdir('/devices/pseudo/')
-        expr = re.compile('^cpuid@[0-9]+$')
-        res = 0
-        for pd in pseudoDevices:
-            if expr.match(pd) != None:
-                res += 1
-        if res > 0:
-            return res
-    except OSError:
-        pass
-    # Other UNIXes (heuristic)
-    try:
-        try:
-            dmesg = open('/var/run/dmesg.boot').read()
-        except IOError:
-            dmesgProcess = subprocess.Popen(['dmesg'], stdout=subprocess.PIPE)
-            dmesg = dmesgProcess.communicate()[0]
-        res = 0
-        while '\ncpu' + str(res) + ':' in dmesg:
-            res += 1
-        if res > 0:
-            return res
-    except OSError:
-        pass
-    # no success, can not determine number of CPUs ...  ;(
-    raise Exception('Can not determine number of CPUs on this system')
-
-#
-# at the very end, where everything if defined above, launch the script's main function
-#
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
-
-
