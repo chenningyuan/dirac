@@ -30,11 +30,15 @@
       call get_tess_centers(tess_cent)
 
 ! Compute nuclear and electronic MEP @tesserae centers      
+      nuc_pot = 0.0d0
       call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
+      ele_pot = 0.0d0
       call ele_pot_pcm(nr_points, tess_cent, ele_pot, dmat, work, lwork)
-
-! Compute nuclear and electronic polarization charges @tesserae centers      
+      
+! Compute nuclear and electronic polarization charges @tesserae centers
+      nuc_pol_chg = 0.0d0
       call comp_charge(nuc_pot, nuc_pol_chg)
+      ele_pol_chg = 0.0d0
       call comp_charge(ele_pot, ele_pol_chg)
       
 ! Print some information
@@ -50,15 +54,7 @@
       end if
 
 ! Gauss' Theorem Test
-      tot_nuc_pol = 0
-      tot_ele_pol = 0
-      do i = 1, nr_points
-        tot_nuc_pol = tot_nuc_pol + nuc_pol_chg(i)
-        tot_ele_pol = tot_ele_pol + ele_pol_chg(i)
-      end do
-      print *, "Total Nuclear Polarization:", tot_nuc_pol
-      print *, "Total Electronic Polarization:", tot_ele_pol
-
+      call gauss_test(nr_points, nuc_pol_chg, ele_pol_chg)
    end subroutine
 
 
@@ -89,8 +85,8 @@
       implicit none
       integer, intent(out) :: nuclei
 
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       
       nuclei = nucdep
 
@@ -100,8 +96,8 @@
    subroutine collect_atoms(charges, centers, unit_flag)
       implicit none
 
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       
       real(8), intent(out) :: charges(*)
       real(8), intent(out) :: centers(3,*)
@@ -109,18 +105,18 @@
 
       integer :: i, j, k 
 
-!.....Get coordinates
+! Get coordinates
       call getacord(centers)
-!.....Get charges      
+! Get charges      
       i = 0
-      do j=1,nucind
-         do k = 1,nucdeg(j)
+      do j = 1, nucind
+         do k = 1, nucdeg(j)
             i = i + 1
             charges(i) = charge(j)
          enddo
       enddo
    
-      ! If units is AU unit_flag = 0. If Angstrom unit_flag = 1.
+! If units is AU unit_flag = 0. If Angstrom unit_flag = 1.
       unit_flag = 0
    
    end subroutine
@@ -160,5 +156,75 @@
       integer              :: lwork
       
       call esp_el(nr_points, dmat, tess_cent, pot, work, lwork, 0)
+
+   end subroutine
+
+   subroutine gauss_test(nr_points, nuc_pol_chg, ele_pol_chg)
+      implicit none
+
+#include "dcbgen.h"
+
+! Passed variables   
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: nuc_pol_chg(nr_points), ele_pol_chg(nr_points)
+
+! Local variables
+      integer :: i
+      real(8) :: eps, factor
+      real(8) :: nuc_pol_tot, ele_pol_tot 
+      real(8) :: nuc_tot_chg, ele_tot_chg, theo_nuc_pol, theo_ele_pol
+      real(8) :: calc_diff, theo_diff
+
+! Obtain total nuclear and electronic polarization charges
+      nuc_pol_tot = 0.0d0
+      ele_pol_tot = 0.0d0
+      do i = 1, nr_points
+        nuc_pol_tot = nuc_pol_tot + nuc_pol_chg(i)
+        ele_pol_tot = ele_pol_tot + ele_pol_chg(i)
+      end do
+
+! Obtain total nuclear and electronic charges
+      nuc_tot_chg = 0.0d0
+      call get_nuclear_charge(nuc_tot_chg) 
+      ele_tot_chg = kcharg - nuc_tot_chg
+
+! Obtain solvent static permittivity
+      call get_epsilon_static(eps)
+       
+! Perform test   
+      factor = (eps - 1)/eps
+      theo_nuc_pol = - factor * nuc_tot_chg
+      theo_ele_pol = - factor * ele_tot_chg
+      
+      calc_diff = ele_pol_tot + nuc_pol_tot
+      theo_diff = theo_ele_pol + theo_nuc_pol
+
+! Print
+      print *, "Calculated Nuclear Polarization = ", nuc_pol_tot
+      print *, "Gauss's Law Nuclear Polarization = ", theo_nuc_pol
+   
+      print *, "Calculated Electronic Polarization = ", ele_pol_tot
+      print *, "Gauss's Law Electronic Polarization = ", theo_ele_pol
+
+      print *, "(EP + NP)_calc - (EP + NP)_Gauss", calc_diff - theo_diff 
+
+   end subroutine
+
+   subroutine get_nuclear_charge(nuc_tot_chg)
+      implicit none
+   
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h" 
+      
+      integer :: i
+      real(8) :: nuc_tot_chg
+
+! Obtain total nuclear charge of the molecule
+      do i = 1, nucind
+        nuc_tot_chg = nuc_tot_chg + fmult(istbnu(i)) * charge(i)
+      end do
 
    end subroutine
