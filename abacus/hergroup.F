@@ -547,6 +547,13 @@ C         Non-zero coefficients of X1: (jCz + kCx) = k(Cx + iCz) (k shifted over
           IZQ = 4
         ENDIF
       ENDIF
+C     
+C     Set up an array that points back to the default assignment of quaternion units
+C
+      IQMAP(1)   = 1
+      IQMAP(IZQ) = 2
+      IQMAP(IYQ) = 3
+      IQMAP(IXQ) = 4
 C
 C
 C     Set up direct product table for fermion ircops
