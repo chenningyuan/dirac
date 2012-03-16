@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #
 # Python replacement of the previous bash pam script
 #
@@ -319,7 +319,6 @@ class pam_enviroment:
                 os.chdir(self.scratch_dir)
                 self.list_scratch_dir()
                 os.chdir(self.input_directory)
-                #print os.listdir(self.scratch_dir)
             else:
                 print '  The scratch directory already exists and is empty'
 
@@ -367,7 +366,6 @@ class pam_enviroment:
         '''
         scratch_id=self.user_name+"@"+self.master_full+":"+self.scratch_dir
         sum_filesize_mb=0
-        #print
         print '  content of the (master) scratch directory:'
         print scratch_id
         print '  ------------------------------------------------------------------------------'
@@ -1187,7 +1185,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print_std_err_out(this_dirac_exe+' not found!')
             sys.exit(13)
         else:
-            #print 'Ok with ',this_dirac_exe
             pass			
         if self.parallel_run:
             if self.mpirun == None:
@@ -1383,11 +1380,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 os.killpg(self.pgid,signum_kill)
             else:
                 kill_win(self.pgid)
-            #radovan: don't want to get my screen filled
-            #         with ps info after 5 seconds - annoying
-            # time.sleep(5)  # wait first that all processes die (or not), then prints 
-            #radovan: the next one does not seem to work on my computer
-            # self.print_all_processes()
 
             # stamp the  general  interruption message into the output file
             self.f.write(interrupt_message+"\n") # 
@@ -1461,7 +1453,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
         else:
         # Windows: provide exec command with "" to fix =/+ characters in the full path
             self.dirac_cmd='"'+self.dirac_cmd+'"'
-            #print self.dirac_cmd
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
         self.pgid = self.dirac_p.pid
