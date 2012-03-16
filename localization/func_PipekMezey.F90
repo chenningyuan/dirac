@@ -79,8 +79,8 @@ contains
 
   ! Internal variables
 
-  ! this parameter must match dimension of reffil and vecref in type PipekMezey_variales
-  real*8, parameter :: maxref = 15
+  ! this parameter must match dimension of reffil and vecref in type PipekMezey_variables
+  integer, parameter :: maxref = 15
 
   logical :: tobe, twocomp, x2c
   integer :: i, ifrp, idum, ier, nloc, nmax, iunit
