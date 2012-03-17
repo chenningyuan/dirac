@@ -7,7 +7,6 @@
 #
 #######################################################################################################
 
-
 echo -e "\n --- Hostname: \c"; hostname -f; echo
 echo -e " ---------  I am here: ---------  $PWD "
 echo -e "---  My space: "; df -h .
@@ -15,21 +14,27 @@ echo -e "---  My space: "; df -h .
 echo -e  "\n files on my voce space lfn://grid/voce/ilias:"
 lcg-ls -l lfn://grid/voce/ilias
 
+echo " "
+
 #####################################
 ###  copy files to the current CE ###
 #####################################
 export rundir=`pwd`
-lcg-cp lfn://grid/voce/ilias/dirac_test_suite.tgz  file://$rundir/dirac_test_suite.tgz  ||  { echo "Exiting...no dirac_test_suite.tgz found..." ; exit 3; }
+#lcg-cp lfn://grid/voce/ilias/dirac_test_suite.tgz  file://$rundir/dirac_test_suite.tgz  ||  { echo "Exiting...no dirac_test_suite.tgz found..." ; exit 3; }
+lcg-cp lfn://grid/voce/ilias/dirac_current.tgz  file://$rundir/dirac_current.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
 
 ##########################################
 ##  make it executable and finally launch
 ##########################################
 echo -e "\n Job started at : \c"; date
 
- export OPAL_PREFIX=$PWD/build
+ # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
+ export BUILD=build_imported_static
+
+ export OPAL_PREFIX=$PWD/$BUILD
  echo -e "OPAL_PREFIX=$OPAL_PREFIX"
  
- export PATH=$PWD/build:$PATH
+ export PATH=$PWD/$BUILD:$PATH
  echo -e "PATH=$PATH"
  echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
@@ -47,7 +52,7 @@ cat /proc/meminfo
 echo -e "\n ---- DIRAC unpacking ---- \n"
 tar --version
 tar xvfz dirac_test_suite.tgz
-chmod  u+x build/dirac.x build/mpirun build/cmake build/ctest  pam  runtest
+chmod  u+x $BUILD/dirac.x  $BUILD/mpirun $BUILD/cmake $BUILD/ctest pam runtest
 
 # create diracrc file for paralle run on the grid
 echo -e "\n ---- diracrc created ---- \n"
@@ -67,15 +72,15 @@ python ./runtest --verbose --quick --mpi=2  # works
 #python ./runtest --verbose --all  # works
 
 #############################################################
-#
 # own cmake stuff
-# cd build
-# cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME=grid_test -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 ..
-# make ExperimentalStart
-# make ExperimentalTest
-# make ExperimentalSubmit
-#
+#############################################################
+ cd $BUILD
+ cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME=grid_test -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 ..
+ make ExperimentalStart
+ make ExperimentalTest
+ make ExperimentalSubmit
 
+# ------------
 echo -e "\n --- Packing all wanted stuff from the grid CE  --- \n "; 
 ls -lt
 tar --version
