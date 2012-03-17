@@ -383,7 +383,7 @@ C
 C  /* Deck rmolchr */
       SUBROUTINE RMOLCHR(ICHRG)
 C
-C     Calculates total charge of molecule
+C     Calculates sum of all nuclear charges
 C
 #include "implicit.h"
 #include "maxaqn.h"

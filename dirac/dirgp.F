@@ -3543,7 +3543,7 @@ C     Memory allocation
       CALL MEMGET('INTE',KIBG1,NORBT     ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBG2,NORBT     ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINUC,NTBAS(0)  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,NTBAS(0)*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,NTBAS(0)  ,WORK,KFREE,LFREE)
 C
       CALL ACMOI1(WORK(KCMO1),WORK(KEIG1),WORK(KIBG1),
      &            WORK(KCMO2),WORK(KEIG2),WORK(KIBG2),
@@ -3756,7 +3756,7 @@ C
 #include "pgroup.h"
 #include "symmet.h"
 #include "dcbham.h"
-      DIMENSION CMO(NB,NO,4),IBUF(NO,2)
+      DIMENSION CMO(NB,NO,4),IBUF(NO)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
 #include "dcbibt.h"
 C
@@ -3832,7 +3832,7 @@ C
 C       Decide parity of MO
 C
         IF(TMP(1).GT.TMP(2)) THEN
-          IBUF(JORB,1) = 1
+          IBUF(JORB) = 1
           NBF(1) = NBF(1) + 1
           IF(TMP(2).GT.DTOL) THEN
             WRITE(LUPRI,'(A,I5,3X,E7.2)')
@@ -3840,7 +3840,7 @@ C
      &        JORB,TMP(2)
           ENDIF
         ELSE
-          IBUF(JORB,1) = 2
+          IBUF(JORB) = 2
           NBF(2) = NBF(2) + 1
           IF(TMP(1).GT.DTOL) THEN
             WRITE(LUPRI,'(A,I5,3X,E7.2)')
@@ -3848,21 +3848,6 @@ C
      &        JORB,TMP(1)
           ENDIF
         ENDIF
-C
-C       Check if a quaternion phase transformation (IQ) is necessary
-C
-        CALL INDEXX(64,WB,IB)
-C
-C       For now only consider largest contribution;
-C       a consistency check can be included later
-C       by scanning through more contributions
-C
-        II   = IB(64,1)
-        IQ   = IB(II,2)
-        IREP = IB(II,3)
-        IC   = IB(II,4)
-        IBRQ = IBTXOR(IREP,III(IC))        
-        IBUF(JORB,2) = IQMULT(IQ,IPQTOQ(1,IBRQ),1)
       ENDDO ! End loop over coefficients
 C
       RETURN
@@ -3893,14 +3878,13 @@ C
 #include "dcborb.h"
 C
       DIMENSION CBU(*),EIGU(*),IBEIGU(*),
-     &          CBS(NCMOTQ),EIGS(*),IBEIGS(*),IBUF(NORBT,2),NBF(2)
+     &          CBS(NCMOTQ),EIGS(*),IBEIGS(*),IBUF(NORBT),NBF(2)
 C
       CALL DZERO(CBS,NCMOTQ)
       NBF(1) = 0
       NBF(2) = 0
       DO JU = 1,NORBT
-        IFRP = IBUF(JU,1)
-        JQ   = IBUF(JU,2)
+        IFRP = IBUF(JU)
         NBS = NFBAS(IFRP,0)
         NOS = NORB(IFRP)
         NBF(IFRP) = NBF(IFRP)+1
@@ -3908,7 +3892,7 @@ C
         EIGS(JS) = EIGU(JU)
         IBEIGS(JS) = IBEIGU(JU)
         IOFF = ICMOQ(IFRP)+1
-        CALL MKQCMO1(CBU,NTBAS(0),NORBT,JU,IFRP,JQ,
+        CALL MKQCMO1(CBU,NTBAS(0),NORBT,JU,IFRP,
      &               CBS(IOFF),NBS,NOS,NBF(IFRP))
       ENDDO
 C
@@ -3916,13 +3900,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mkqcmo1 */
-      SUBROUTINE MKQCMO1(CBU,NBU,NOU,IVU,IFRP,JQ,CBS,NBS,NOS,IVS)
+      SUBROUTINE MKQCMO1(CBU,NBU,NOU,IVU,IFRP,CBS,NBS,NOS,IVS)
 C***********************************************************************
 C
 C     Starting from quaternion MO-coefficient CBU(IVU) in unsorted basis
 C     make compressed coefficient CBS(IVS) in sorted basis.
-C
-C     JQ is a quaternion unit used for phase transformation if needed.
 C
 C     Written by T.Saue Mar 4 2008
 C
@@ -3946,9 +3928,10 @@ C.....III is the totally symmetric irrep for the large components
       III(1) = 0
 C.....III is the symmety of XYZ for the small components
       III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C
       NBRP = 4/NZ
+C.....loop over cmoponents
       DO IC = 1,MC
+C.......loop over symmetries associated with fermion ircop and component
         DO ISYM = 1,NBRP
           IP    = MOD(IFRP+IC,2) + 1
           IBSYM = JFSYM(ISYM,IP)
@@ -3959,10 +3942,8 @@ C
           NBB   = NBBAS(IBRP,IC)
           DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IBRQ)
-            KQ = IQMULT(IQ,JQ,1)
-            CALL DCOPY(NBB,CBU(IU,IVU,KQ),1,CBS(IS,IVS,IZ),1)
-            IFAC = IQPHASE(IQ,JQ,1)
-            IF(IFAC.EQ.-1) CALL DSCAL(NBB,DM1,CBS(IS,IVS,IZ),1)
+            IQ = IQMAP(IQ)
+            CALL DCOPY(NBB,CBU(IU,IVU,IQ),1,CBS(IS,IVS,IZ),1)
           ENDDO
         ENDDO
       ENDDO
