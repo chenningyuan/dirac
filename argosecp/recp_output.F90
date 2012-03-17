@@ -10,10 +10,11 @@ SUBROUTINE OUTPUT_TITLE
 #include "inc_print.h"
 
    IF (PRINT_LEVEL.GE.1) THEN
-      WRITE(RECP_OUT,*) '   Relativistic Effective Core Potential Integral routine'
-      WRITE(RECP_OUT,*) '   This routine is based on ARGOS integral'
-      WRITE(RECP_OUT,*) '   with the permission of R. M. Pitzer (Ohio State University)'
-      WRITE(RECP_OUT,*) '   and maintained by Y. C. Park (KAIST, youngc@kaist.ac.kr)'
+      WRITE(RECP_OUT,'(3X,A)')'Relativistic Effective Core Potential Integral routine'
+      WRITE(RECP_OUT,'(3X,A)')'This routine is based on ARGOS integral'
+      WRITE(RECP_OUT,'(3X,A)')'with the permission of R. M. Pitzer (Ohio State University)'
+      WRITE(RECP_OUT,'(3X,A)')'and maintained by Y. C. Park (KAIST, youngc@kaist.ac.kr)'
+      WRITE(RECP_OUT,'(/)')
    ENDIF
 END SUBROUTINE OUTPUT_TITLE
 
@@ -25,13 +26,10 @@ SUBROUTINE OUTPUT_LOC(RECP_LOC,RECP_STATUS)
 #include "inc_print.h"
    CHARACTER(LEN=*) :: RECP_LOC
    CHARACTER*1  :: RECP_STATUS
-
-!  FIXIT : Count number of RECP_LOC and print RECP_LOC(1:#RECP_LOC)
-
    IF (RECP_DBG.GE.5) THEN
       IF(RECP_STATUS .EQ. 'E') WRITE(RECP_OUT,*) ' - RECP : Entering.... ', RECP_LOC
       IF(RECP_STATUS .EQ. 'X') WRITE(RECP_OUT,*) ' - RECP : Exiting..... ', RECP_LOC
-      IF(RECP_STATUS .EQ. 'H') WRITE(RECP_OUT,*) ' - RECP : Here we are, ', RECP_LOC
+      IF(RECP_STATUS .EQ. 'H') WRITE(RECP_OUT,*) ' - RECP : Here........ ', RECP_LOC
    ENDIF
 END SUBROUTINE OUTPUT_LOC
 
@@ -48,6 +46,7 @@ SUBROUTINE OUTPUT_ERROR(RECP_LOC,ERR_MESSAGE,ERR_VALUE,ERR_TYPE)
   ENDIF
 END SUBROUTINE OUTPUT_ERROR
 
+! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_TITLE(DBG_TITLE)
   IMPLICIT NONE
@@ -59,6 +58,20 @@ SUBROUTINE OUTPUT_DBG_TITLE(DBG_TITLE)
      WRITE(RECP_OUT,'(3X,100A)') ('-',I=1,LEN(DBG_TITLE))      
   ENDIF
 END SUBROUTINE OUTPUT_DBG_TITLE
+
+! ---------------------------------------------------------------
+
+SUBROUTINE OUTPUT_DBG_CHAR1(TITLE0,DBG_LEVEL)
+  IMPLICIT NONE
+#include "inc_print.h"
+  CHARACTER(LEN=*) TITLE0
+  INTEGER  DBG_LEVEL
+  IF (RECP_DBG.GE.DBG_LEVEL) THEN
+     WRITE(RECP_OUT,'(/,A,A)') ' * ',TITLE0
+  ENDIF
+END SUBROUTINE OUTPUT_DBG_CHAR1
+
+! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_IVAL(DBG_TITLE,VAL,VAL_TYPE,DBG_LEVEL)
   IMPLICIT NONE
@@ -75,6 +88,8 @@ SUBROUTINE OUTPUT_DBG_IVAL(DBG_TITLE,VAL,VAL_TYPE,DBG_LEVEL)
   ENDIF 
 END SUBROUTINE OUTPUT_DBG_IVAL
 
+! ---------------------------------------------------------------
+
 SUBROUTINE RECP_EXIT_IPT(RECP_LOC)
    IMPLICIT NONE
 #include "inc_print.h"
@@ -83,4 +98,5 @@ SUBROUTINE RECP_EXIT_IPT(RECP_LOC)
    STOP
 END SUBROUTINE RECP_EXIT_IPT
 
+! ---------------------------------------------------------------
 END MODULE RECP_OUTPUT

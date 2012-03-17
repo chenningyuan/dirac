@@ -10,18 +10,23 @@
       SUBROUTINE RECP
 
       USE RECP_OUTPUT
-#include "implicit.h"
+      USE RECP_INP_READ
+      IMPLICIT NONE
+#include "priunit.h"
+#include "argoscom.h"
 #include "inc_print.h"
 
 !     Enter ECPINT
       CALL QENTER('ECPINT')
       CALL TITLER('RECP integral start','*',126)
-      CALL OUTPUT_TITLE   
 
-!     Basis setup
-      PRINT_LEVEL = 1 !10 
-      RECP_DBG    = 0
-      RECP_OUT    = 6 ! DIRAC output
+!     Parameters from menu (RECP_LNK_RDMENU)
+      PRINT_LEVEL = ECPINT_PRINT ! .PRINT
+      RECP_DBG    = ECPINT_DEBUG ! .DEBUG
+      RECP_OUT    = LUPRI        ! DIRAC output
+
+!     Print title
+      CALL OUTPUT_TITLE   
 
 !     Main part
       CALL RECP_ONE
@@ -174,5 +179,5 @@
         inam(i) = i
       enddo
 !     nnam,mdum
-
       END SUBROUTINE RECP_SETPARM
+
