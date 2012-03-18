@@ -9,6 +9,10 @@
 #
 --global-scratch-disk
 #
-# mpirun - is specified in $PATH !
+# dirac executable - in build_imported_static/
+#--dirac=$PWD/build_imported_static/dirac.x
+#
+#
+# mpirun - is specified in $PATH 
 #
 #--mpirun=$PWD/build_imported_static/mpirun

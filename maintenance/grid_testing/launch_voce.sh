@@ -28,20 +28,25 @@ lcg-cp lfn://grid/voce/ilias/dirac_current.tgz  file://$rundir/dirac_current.tgz
 ##########################################
 echo -e "\n Job started at : \c"; date
 
+echo -e "\n server Python version \c"; python -V
+
+echo -e "\n"
+
  # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
- export BUILD=build_imported_static
+ export BUILD_EXECS=build_imported_static
+ export BUILD=build
 
  export OPAL_PREFIX=$PWD/$BUILD
  echo -e "OPAL_PREFIX=$OPAL_PREFIX"
  
  export PATH=$PWD/$BUILD:$PATH
- echo -e "PATH=$PATH"
+ echo -e "modified PATH=$PATH"
  echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
-echo -e "\n ---- server environment ----"
+echo -e "\n ---- server environment ---- set :"
 set
 
-echo -e "\n ---- server CPU equipment ----"
+echo -e "\n ---- server CPU equipment, /proc/cpuinfo ----"
 cat /proc/cpuinfo
 
 echo -e "\n Number of CPUs :\c";cat /proc/cpuinfo | grep processor | wc -l
@@ -51,12 +56,14 @@ cat /proc/meminfo
 
 echo -e "\n ---- DIRAC unpacking ---- \n"
 tar --version
-tar xvfz dirac_test_suite.tgz
-chmod  u+x $BUILD/dirac.x  $BUILD/mpirun $BUILD/cmake $BUILD/ctest pam runtest
+tar xvfz dirac_current.tgz
+/bin/rm -rf $BUILD
+mv $BUILD_EXECS  $BUILD
+chmod  u+x  $BUILD/dirac.x  $BUILD/mpirun  $BUILD/cmake  $BUILD/ctest  pam  runtest
 
-# create diracrc file for paralle run on the grid
+# create diracrc file for paralle run on the grid CE
+cp maintenance/grid_testing/diracrc_grid  diracrc
 echo -e "\n ---- diracrc created ---- \n"
-cp diracrc_grid diracrc
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 
@@ -64,21 +71,24 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scr
 
 #####################################################################
 
-echo -e "\n --- Launching runtest --- \n "; 
+echo -e "\n --- Launching quick runtest --- \n "; 
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-python ./runtest --verbose --quick --mpi=2  # works
+python ./runtest --verbose --quick --mpi=2  #  works
 #python ./runtest --verbose --all  # works
 
 #############################################################
-# own cmake stuff
+#               check own static cmake stuff
 #############################################################
+ python pamadm -a
  cd $BUILD
- cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME=grid_test -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME=$HOSTNAME_grid_test_ompi_static -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 ..
  make ExperimentalStart
  make ExperimentalTest
  make ExperimentalSubmit
+## return back into main directory
+ cd ..
 
 # ------------
 echo -e "\n --- Packing all wanted stuff from the grid CE  --- \n "; 
@@ -86,7 +96,7 @@ ls -lt
 tar --version
 #tar --help
 echo " "
-tar cvzf dirac_test_suite_back.tgz test *.out *.tgz
+tar cvzf dirac_suite_back.tgz test *.out *.tgz
 
 ############################
 #  print out some info .. 
