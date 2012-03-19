@@ -33,7 +33,7 @@ enable_testing()
 macro(add_unit_test _path _dir _name)
     add_custom_target(
         ${_dir}_${_name}_files_copied
-        COMMAND cp ${_path}/${_dir}/${_name}/* ${PROJECT_BINARY_DIR}/test_${_dir}_${_name}
+        COMMAND cp ${_path}/${_dir}/${_name}/* ${PROJECT_BINARY_DIR}/unit-tests/${_dir}_${_name}
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         )
     add_executable(
@@ -44,7 +44,7 @@ macro(add_unit_test _path _dir _name)
         ${_dir}_${_name}.x
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY
-        "test_${_dir}_${_name}"
+        "unit-tests/${_dir}_${_name}"
         )
     target_link_libraries(
         ${_dir}_${_name}.x

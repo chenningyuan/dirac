@@ -87,6 +87,7 @@ contains
      write(0,*) 'compare_files: ERROR while opening file ',file1
      stop 1
    endif
+   rewind iu1
 
    ! open file2
    open(iu2,file=file2,status='old',form='formatted',access='sequential',iostat=ier)
@@ -95,16 +96,18 @@ contains
      write(0,*) 'compare_files: ERROR while opening file ',file2
      stop 1
    endif
+   rewind iu2
 
    ! compare two files
    dmax = 0.0d0
    do
-     read(iu1,iostat=ier1) dnum1
-     read(iu2,iostat=ier2) dnum2
+     read(iu1,*,iostat=ier1) dnum1
+     read(iu2,*,iostat=ier2) dnum2
      if( (ier1 == -1) .or. (ier2 == -1) ) exit
      if( (ier1 /=  0) .or. (ier2 /=  0) )then
-       write(6,*) 'compare_files: ERROR reading one of the files ',file1,file2
-       write(0,*) 'compare_files: ERROR reading one of the files ',file1,file2
+       write(6,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
+       write(0,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
+       write(6,*) 'ier1, ier2: ',ier1, ier2
        stop 1
      endif
 

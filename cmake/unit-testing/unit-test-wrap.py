@@ -16,7 +16,7 @@ parser.add_option('--name',
                   default=None)
 (options, args) = parser.parse_args()
 
-command = 'cd %s/test_%s; ./%s.x' % (options.build_dir, options.name, options.name)
+command = 'cd %s/unit-tests/%s; ./%s.x' % (options.build_dir, options.name, options.name)
 
 p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (out, err) = p.communicate()

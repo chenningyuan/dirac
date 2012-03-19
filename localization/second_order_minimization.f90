@@ -220,7 +220,7 @@ contains
   allocate( xvec(mnf%ndim), stat=ier ); call errall(ier,'minimization_drv','xvec')
   grad = d0; etmp = d0; xvec = d0
 
-  ! nullify pointers for later allocation using memory_allocator module
+  ! nullify pointers for later allocation of pointers
   nullify(iorig); nullify(gradt); nullify(eval); nullify(xvect); nullify(hmat)
 
   !------------------------------------------------------------------------------!
@@ -365,7 +365,7 @@ contains
   !------------------------------------------------------------------------------!
   if(present(unit_test))then
     ! open file
-    open(60,file='OPTIM.OUT',status='new',form='formatted',access='sequential',iostat=ier)
+    open(60,file='OPTIM.OUT',status='unknown',form='formatted',access='sequential',iostat=ier)
     if(ier /= 0)then
       write(6,*) 'minimization_drv: ERROR while creating new OPTIM.OUT file'
       write(0,*) 'minimization_drv: ERROR while creating new OPTIM.OUT file'
