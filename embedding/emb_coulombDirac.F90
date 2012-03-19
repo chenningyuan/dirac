@@ -33,6 +33,7 @@
       public get_esp
       public esp_nuc
       public esp_el
+      public esp_nai
       
 !     module for calculating the coulomb potential on a grid.
 !     contains:
@@ -135,7 +136,7 @@
 !      
 ! Routine for the calculation of the nuclear part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
-!     phi_nuc(r_i) = sum_K Z_K/|R_K - r_i| 
+!     V_nuc(r_i) = sum_K Z_K/|R_K - r_i| 
 ! 
 !  array vc(r_i) contains the nuclear MEP at point r_i.
 ! 
@@ -187,14 +188,15 @@
                                                                  
       end subroutine
 
-      subroutine esp_el(nr_points, dmat, points, vc, work, lwork, iprint)
+      subroutine esp_el(nr_points, dmat, points, vc, work, lwork,       &
+     &                  iprint)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
-!     phi_el(r_i) = -tr(DV^i)
+!     V_el(r_i) = tr(DV_i)
 ! tr is the trace operator, D is the density matrix, V^i is the matrix of the 
 ! "nuclear attraction" integrals calculated at point r_i of the grid:
-!     V^i_mu,nu = <mu|1/|r-r_i||nu>
+!     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
 ! 
 !  array ADER(mu, nu, r_i) contains these integrals.
 !  array vc(r_i) contains the electronic MEP at point r_i.
@@ -245,11 +247,11 @@
 
       if (nbsym > 1) then
          call quit('Electrostatic potential calculation cannot          &
-     &         handle symmetry!')
+     & handle symmetry!')
       end if
       if (BSS.or.x2c) then
          call quit('Electrostatic potential calculation not working     &
-     &         with X2C Hamiltonian!')
+     & with X2C Hamiltonian!')
       end if
       
       tols = thrs**2
@@ -303,8 +305,9 @@
           mab    = ior(mula, mulb)
           kab    = iand(mula ,mulb)
           hkab   = fmult(kab)
-! Calculate <mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i,
-! then contract with the density matrix.
+! Calculate -<mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i,
+! then contract with the density matrix. The minus sign accounts for the
+! charge of the electron.
           if (ica == icb) then 
               allocate(ader(kckta, kcktb, nr_points))
               ader = 0.0d0
@@ -313,10 +316,9 @@
               if (ishela /= ishelb) then 
                   ader = 2.0d0*ader
               end if
-! We multiply by -2.0d0. The D matrix refers to the alpha part only and
-! the electron has a negative charge.              
+! We multiply by +2.0d0. The D matrix refers to the alpha part only.
               do ipoint = 1, nr_points              
-                vc(ipoint) = vc(ipoint) - 2.0d0                       * &
+                vc(ipoint) = vc(ipoint) + 2.0d0                       * &
                 sum(dmat(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
      &                     ader(1:kckta, 1:kcktb, ipoint))
               end do 
@@ -470,7 +472,7 @@
       allocate(r(0:jmax, 0:jmax, 0:jmax, 0:jmax))
       r = 0.0d0
 
-! Incomplete gamma function *****
+! Incomplete gamma function
       wval = pval * (cp(1) * cp(1) + cp(2) * cp(2) + cp(3) * cp(3))
       jmax0 = jmax
       call gamfun
@@ -511,7 +513,7 @@
       do t = 0, jmax
          do u = 0, jmax
             do v = 0, jmax
-               ahgtf(t, u, v) = r(t, u, v, 0)
+               ahgtf(t, u, v) = - r(t, u, v, 0)
             end do
          end do
       end do
@@ -570,6 +572,136 @@
       end do
 
       return
+      end subroutine
+
+      subroutine esp_nai(nr_points, points, pseudo_nai, work, lwork)
+!      
+! Calculation of the V_mu,nu,i pseudo nuclear attraction integrals
+! matrix:
+!     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
+! 
+!  array ADER(mu, nu, r_i) contains these integrals.
+!
+! This routine is essential for the Polarizable Continuum Model.
+! Fock matrix formation needs both V_i and V_mu,nu,i
+!
+! RDR 190312 CANNOT yet handle symmetry. This is unimportant at the moment
+!            since also PCMSolver cannot handle symmetry.
+!
+
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#ifdef prg_dirac
+#include "dcbgrd.h"
+#endif
+#include "ccom.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "cbisol.h"
+#include "shells.h"
+#include "onecom.h"
+#include "primit.h"
+#include "symind.h"
+#include "symmet.h"
+#include "lmns.h"
+#include "nuclei.h"
+
+! Passed variables
+      integer, intent(in) :: nr_points
+      real(8)             :: points(3, nr_points), work(*)
+      real(8)             :: pseudo_nai(ntbas(0), ntbas(0), nr_points)
+      integer             :: lwork
+
+! Local variables
+      real(8) :: tolog, tols, factor = 1.0d0
+      real(8), allocatable :: ader(:, :, :)
+      integer :: ishela, ishelb, ica, icb
+      integer :: multa, multb, nhktab, kab
+      integer :: ipoint, idxmax, iprint
+
+      if (nbsym > 1) then
+         call quit('Electrostatic potential calculation cannot          &
+     & handle symmetry!')
+      end if
+      if (BSS.or.x2c) then
+         call quit('Electrostatic potential calculation not working     &
+     & with X2C Hamiltonian!')
+      end if
+      
+      tols = thrs**2
+      tolog = 2 * log(thrs)
+      iprint = 0
+! mc is the number of components, as defined in include/dcbham.h
+! Decide whether we loop on LL block only or not
+      if (mc == 1) then 
+          idxmax = nlrgsh
+      else 
+          idxmax = kmax
+      end if
+! Loop over bras <mu|      
+      idena = 0
+      do ishela = 1, idxmax
+        ica   = lclass(ishela)
+        nhkta = nhkt(ishela)
+        khkta = khkt(ishela)
+        kckta = kckt(ishela)
+        call lmnval(nhkta, kckta, lvalua, mvalua, nvalua)
+        ncenta = ncent(ishela)
+        icenta = nucnum(ncenta, 1)
+        mula   = istbao(ishela)
+        multa  = mult(mula)
+        nuca   = nuco(ishela)
+        numcfa = numcf(ishela)
+        jsta   = jstrt(ishela)
+        corax  = cent(ishela, 1, 1)
+        coray  = cent(ishela, 2, 1)
+        coraz  = cent(ishela, 3, 1)
+! Loop over kets |nu>
+        idenb = 0        
+        do ishelb = 1, ishela
+          icb   = lclass(ishelb)
+          ldiag = ishela .eq. ishelb
+          nhktb = nhkt(ishelb)
+          khktb = khkt(ishelb)
+          kcktb = kckt(ishelb)
+          call lmnval(nhktb, kcktb, lvalub, mvalub, nvalub)
+          ncentb = ncent(ishelb)
+          nhktab = nhkta + nhktb
+          mulb   = istbao(ishelb)
+          multb  = mult(mulb)
+          nucb   = nuco(ishelb)
+          numcfb = numcf(ishelb)
+          jstb   = jstrt(ishelb)
+          corbx  = cent(ishelb, 1, 1)
+          corby  = cent(ishelb, 2, 1)
+          corbz  = cent(ishelb, 3, 1)
+          khktab = khkta * khktb
+          kcktab = kckta * kcktb
+          mab    = ior(mula, mulb)
+          kab    = iand(mula ,mulb)
+          hkab   = fmult(kab)
+! Calculate -<mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i.
+! The minus sign accounts for the charge of the electron.
+          if (ica == icb) then 
+              allocate(ader(kckta, kcktb, nr_points))
+              ader = 0.0d0
+              call vc_shell(nr_points, ader, tolog, tols,               &
+     &               points, iprint, work, lwork)
+              if (ishela /= ishelb) then 
+                  ader = 2.0d0*ader
+              end if
+          end if  
+        idenb = idenb + khktb * multb
+       end do
+       idena = idena + khkta * multa
+      end do
+
       end subroutine
 
       end module

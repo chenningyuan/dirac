@@ -1,8 +1,36 @@
 ! DIRAC-side interface routines for the Polarizable Continuum Model
-
-! Driver routine for the Polarizable Continuum Model
+! RDR 2012
+!
+   
    subroutine pcm_driver(dmat, work, lwork, printlevel)
       implicit none
+!
+! Driver routine for the Polarizable Continuum Model.
+!
+! RDR 190312 If X2C or using symmetry quits. 
+!
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#ifdef prg_dirac
+#include "dcbgrd.h"
+#endif
+#include "ccom.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "cbisol.h"
+#include "shells.h"
+#include "onecom.h"
+#include "primit.h"
+#include "symind.h"
+#include "symmet.h"
+#include "lmns.h"
+#include "nuclei.h"
 ! Passed variables
       real(8)              :: dmat(*)
       real(8)              :: work(*)
@@ -15,6 +43,20 @@
       real(8)              :: tot_nuc_pol, tot_ele_pol
       real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
       real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
+! V_mu,nu,i integrals and q_mu,nu,i corresponding charges [eqs. (1.3) and (2.2)]
+! Dimensions: # of AOs, # of AOs, # of points
+      real(8), allocatable :: pot_munui(:, :, :), chg_munui(:, :, :) 
+      real(8)              :: ene_pol
+
+! Quit if symmetry or X2C are requested.
+      if (nbsym > 1) then
+         call quit('Polarizable Continuum Model calculation cannot      &
+     & handle symmetry!')
+      end if
+      if (bss.or.x2c) then
+         call quit('Polarizable Continuum Model calculation not working &
+     & with X2C Hamiltonian!')
+      end if
 
 ! Get cavity size, i.e. the number of tesserae      
       call get_cavity_size(nr_points)
@@ -25,6 +67,8 @@
       allocate(nuc_pol_chg(nr_points))
       allocate(ele_pot(nr_points))
       allocate(ele_pol_chg(nr_points))
+      allocate(pot_munui(ntbas(0), ntbas(0), nr_points))
+      allocate(chg_munui(ntbas(0), ntbas(0), nr_points))
 
 ! Get tesserae centers      
       call get_tess_centers(tess_cent)
@@ -33,13 +77,16 @@
       nuc_pot = 0.0d0
       call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
       ele_pot = 0.0d0
+! Here we are calculating: tr(DV_i) [eq. (1.2)]
       call ele_pot_pcm(nr_points, tess_cent, ele_pot, dmat, work, lwork)
-      
+
 ! Compute nuclear and electronic polarization charges @tesserae centers
       nuc_pol_chg = 0.0d0
-      call comp_charge(nuc_pot, nuc_pol_chg)
+! Store potentials and charges in the Cavity object?
+! 0 -> no; 1 -> nuclear; 2 -> electronic; 3-> nuclear + electronic
+      call comp_charge(nuc_pot, nuc_pol_chg, 1)
       ele_pol_chg = 0.0d0
-      call comp_charge(ele_pot, ele_pol_chg)
+      call comp_charge(ele_pot, ele_pol_chg, 2)
       
 ! Print some information
       if (printlevel > 5) then
@@ -55,6 +102,10 @@
 
 ! Gauss' Theorem Test
       call gauss_test(nr_points, nuc_pol_chg, ele_pol_chg)
+
+! Polarization energy: U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
+      call comp_pol_ene_pcm(ene_pol)
+      print *, "U_pol =", ene_pol
    end subroutine
 
 
@@ -157,6 +208,22 @@
       
       call esp_el(nr_points, dmat, tess_cent, pot, work, lwork, 0)
 
+   end subroutine
+  
+   subroutine nai_pot_pcm(nr_points, tess_cent, pot_munui, work, lwork)
+      use vc_grid
+      implicit none
+
+#include "dcbbas.h"
+
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: tess_cent(3, nr_points)
+      real(8), intent(out) :: pot_munui(ntbas(0), ntbas(0), nr_points)
+      real(8)              :: work(*)
+      integer              :: lwork
+
+      call esp_nai(nr_points, tess_cent, pot_munui, work, lwork)
+      
    end subroutine
 
    subroutine gauss_test(nr_points, nuc_pol_chg, ele_pol_chg)
