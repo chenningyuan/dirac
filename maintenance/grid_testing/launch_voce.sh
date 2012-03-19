@@ -84,6 +84,7 @@ python ./runtest --verbose --quick --mpi=2  #  works
  python pamadm -a
  cd $BUILD
  ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF ..
+ make ExperimentalConfigure
  make ExperimentalStart
  make ExperimentalTest
  make ExperimentalSubmit
