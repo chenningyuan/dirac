@@ -140,7 +140,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine minimization_drv
+  subroutine minimization_drv(unit_test)
   !==============================================================================!
   !                                                                              !
   !                  Driver for second-order minimization                        !
@@ -153,6 +153,9 @@ contains
   !                                                                              !
   !==============================================================================!
   implicit none
+
+  ! External variables
+  logical, optional :: unit_test
 
   ! Internal variables
   character :: daytid*24, hessian*4, chstart*23, resst*50
@@ -356,6 +359,25 @@ contains
     write(resst,'(a,i4,a,i4,a)') 'No convergence after',itr,' iterations and',ist,' steps '
   endif
   call titler(resst,'*',104)
+
+  !------------------------------------------------------------------------------!
+  !                Write information for unit test to the disk                   !
+  !------------------------------------------------------------------------------!
+  if(present(unit_test))then
+    ! open file
+    open(60,file='OPTIM.OUT',status='new',form='formatted',access='sequential',iostat=ier)
+    if(ier /= 0)then
+      write(6,*) 'minimization_drv: ERROR while creating new OPTIM.OUT file'
+      write(0,*) 'minimization_drv: ERROR while creating new OPTIM.OUT file'
+      stop 1
+    endif
+    rewind 60
+
+    write(60,*) funcg
+
+    ! close file
+    close(60,status='keep')
+  endif
 
   !------------------------------------------------------------------------------!
   !                        Deallocate arrays or pointers                         !

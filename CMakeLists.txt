@@ -252,6 +252,7 @@ add_custom_target(
     )
 
 set(UNIT_TEST_LIBS
+   dirac
    ${LIBS}
    )
 

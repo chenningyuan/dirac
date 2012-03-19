@@ -3,6 +3,7 @@ module unit_testing
    implicit none
 
    public compare_matrix
+   public compare_files
    public matrix_to_file
    public matrix_from_file
 
@@ -61,6 +62,64 @@ contains
       if (max_diff > tolerance) then
          stop 1
       end if
+
+   end subroutine
+
+   subroutine compare_files(iunit, file1, file2, thresh)
+   implicit none
+
+   ! External variables
+   character(*), intent(in) :: file1, file2
+   integer,      intent(in) :: iunit
+   real*8,       intent(in) :: thresh
+
+   ! Internal variables
+   integer :: iu1, iu2, ier, ier1, ier2
+   real*8  :: dnum1, dnum2, dmax
+
+   iu1 = iunit
+   iu2 = iunit + 1
+
+   ! open file1
+   open(iu1,file=file1,status='old',form='formatted',access='sequential',iostat=ier)
+   if(ier /= 0)then
+     write(6,*) 'compare_files: ERROR while opening file ',file1
+     write(0,*) 'compare_files: ERROR while opening file ',file1
+     stop 1
+   endif
+
+   ! open file2
+   open(iu2,file=file2,status='old',form='formatted',access='sequential',iostat=ier)
+   if(ier /= 0)then
+     write(6,*) 'compare_files: ERROR while opening file ',file2
+     write(0,*) 'compare_files: ERROR while opening file ',file2
+     stop 1
+   endif
+
+   ! compare two files
+   dmax = 0.0d0
+   do
+     read(iu1,iostat=ier1) dnum1
+     read(iu2,iostat=ier2) dnum2
+     if( (ier1 == -1) .or. (ier2 == -1) ) exit
+     if( (ier1 /=  0) .or. (ier2 /=  0) )then
+       write(6,*) 'compare_files: ERROR reading one of the files ',file1,file2
+       write(0,*) 'compare_files: ERROR reading one of the files ',file1,file2
+       stop 1
+     endif
+
+     if( (dabs(dnum1-dnum2)) > dmax ) dmax = dabs(dnum1-dnum2)
+
+   enddo
+
+   ! close file1
+   close(iu1,status='keep')
+
+   ! close file2
+   close(iu2,status='keep')
+
+   ! check result
+   if(dmax > thresh) stop 1
 
    end subroutine
 
