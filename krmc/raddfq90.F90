@@ -1,5 +1,5 @@
   subroutine raddfq90(fq,h2xy,h2yx,pv,nxy,ix,iy,irepij,iprint, &
-                      nz,ipqtoq,lupri,norbt,nasht,nnashx)
+                      nz,ipqtoq,lupri,norbt,nasht,nnashx,key_unit_test)
   !***********************************************************************
   !
   !     Add up the infinite number of terms that constitutes the FQ fock
@@ -23,9 +23,10 @@
   !     Written by J. Thyssen - Nov 16 2000
   !
   !***********************************************************************
-  IMPLICIT NONE
+  implicit none
 
   ! External variables
+  integer, intent( in), optional :: key_unit_test
   integer, intent( in) :: nxy, ix, iy, irepij, iprint
   integer, intent( in) :: nz, ipqtoq(4,0:7), lupri, norbt, nasht, nnashx
   real*8,  intent( in) :: h2xy(norbt,nasht,nz,3), h2yx(norbt,nasht,nz,3)
@@ -38,6 +39,45 @@
   real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
   real*8, allocatable :: tmpmat(:,:,:)
 
+  !------------------------------------------------------------------------------!
+  !           Write to the file input information for unit testing               !
+  !------------------------------------------------------------------------------!
+  if( key_unit_test == 2 )then
+    ! open file
+    open(60,file='raddfq90.uinp',status='unknown',form='formatted',access='sequential',iostat=ier)
+    if(ier /= 0)then
+      write(6,*) 'raddfq90: ERROR while creating raddfq90.uinp file'
+      stop
+    endif
+
+    rewind 60
+
+    ! write input data to the file
+    write(60,*) 'nxy   ',nxy
+    write(60,*) 'ix    ',ix
+    write(60,*) 'iy    ',iy
+    write(60,*) 'irepij',irepij
+    write(60,*) 'iprint',iprint
+    write(60,*) 'nz    ',nz
+    write(60,*) 'lupri ',lupri
+    write(60,*) 'norbt ',norbt
+    write(60,*) 'nasht ',nasht
+    write(60,*) 'nnashx',nnashx
+    write(60,*) 'ipqtoq'
+    write(60,*)  ipqtoq
+    write(60,*)  'h2xy'
+    write(60,*)   h2xy
+    write(60,*)  'h2yx'
+    write(60,*)   h2yx
+    write(60,*)  'pv'
+    write(60,*)   pv
+
+    ! close file
+    close(60,status='keep')
+  endif
+
+  !------------------------------------------------------------------------------!
+  !                               Print section                                  !
   !------------------------------------------------------------------------------!
   if(iprint .ge. 20)then
     call header('Output from raddfq90',-1)
@@ -577,5 +617,31 @@
     write(lupri,'(a)') 'fq on exit'
     call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   end if
+
+  !------------------------------------------------------------------------------!
+  !           Write to the file ouput information for unit testing               !
+  !------------------------------------------------------------------------------!
+  if( key_unit_test > 0 )then
+    ! open file
+    open(60,file='raddfq90.uout',status='unknown',form='formatted',access='sequential',iostat=ier)
+    if(ier /= 0)then
+      write(6,*) 'raddfq90: ERROR while creating raddfq90.uout file'
+      stop
+    endif
+
+    rewind 60
+
+    ! write output data to the file
+    do i=1,nz
+    do j=1,nasht
+    do k=1,norbt
+    write(60,*) fq(k,j,i)
+    enddo
+    enddo
+    enddo
+
+    ! close file
+    close(60,status='keep')
+  endif
 
   end subroutine raddfq90
