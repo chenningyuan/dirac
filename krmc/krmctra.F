@@ -1503,7 +1503,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER ( D1 = 1.0D00 )
+      PARAMETER ( D1 = 1.0D00 , DM1 = -1.0D00 )
 C
 #include "dgroup.h"
 #include "dcborb.h"
