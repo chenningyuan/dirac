@@ -9,8 +9,6 @@
 !
 ! RDR 190312 If X2C or using symmetry quits. 
 !
-#include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -23,14 +21,12 @@
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "cbisol.h"
 #include "shells.h"
 #include "onecom.h"
 #include "primit.h"
 #include "symind.h"
 #include "symmet.h"
 #include "lmns.h"
-#include "nuclei.h"
 ! Passed variables
       real(8)              :: dmat(*)
       real(8)              :: work(*)
@@ -43,9 +39,9 @@
       real(8)              :: tot_nuc_pol, tot_ele_pol
       real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
       real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
-! V_mu,nu,i integrals and q_mu,nu,i corresponding charges [eqs. (1.3) and (2.2)]
+! V_mu,nu,i integrals [eq. (1.3)]
 ! Dimensions: # of AOs, # of AOs, # of points
-      real(8), allocatable :: pot_munui(:, :, :), chg_munui(:, :, :) 
+      real(8), allocatable :: pot_munui(:, :, :) 
       real(8)              :: ene_pol
 
 ! Quit if symmetry or X2C are requested.
@@ -68,7 +64,6 @@
       allocate(ele_pot(nr_points))
       allocate(ele_pol_chg(nr_points))
       allocate(pot_munui(ntbas(0), ntbas(0), nr_points))
-      allocate(chg_munui(ntbas(0), ntbas(0), nr_points))
 
 ! Get tesserae centers      
       call get_tess_centers(tess_cent)
