@@ -1423,8 +1423,9 @@ C           Do the gazillion matrix multiplies to construct
 C           the auxiliary Fock matrix FQ: (B.40) - (B.43)
 C
             IF (DOFQ) THEN
-               CALL RADDFQ(FQ,h2xy,h2yx,PV,
-     &              IUU,IXU,IYU,IREPIJ,IPRINT)
+               CALL RADDFQ90(FQ,H2XY,H2YX,PV,
+     &              IUU,IXU,IYU,IREPIJ,IPRINT,
+     &              NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
             END IF
 C
  20      CONTINUE
@@ -1503,7 +1504,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER ( D1 = 1.0D00 )
+      PARAMETER ( D1 = 1.0D00 , DM1 = -1.0D00 )
 C
 #include "dgroup.h"
 #include "dcborb.h"
