@@ -2,20 +2,21 @@ module test_generator
 
 implicit none
 
+public :: add_inp_int_array, add_inp_real_array, add_out_int_array, add_out_real_array
 public :: set_driver_routine, add_input_file, add_output_file
-public :: add_inp_int_array, add_inp_real_array, add_out_real_array, generate_test
 public :: print_input_files, print_output_files, print_variable_info
+public :: generate_test
 
 public :: add_inp_variable
 
 interface add_inp_variable
-  module procedure add_inp_integer_2d_array
   module procedure add_inp_integer_variable
+  module procedure add_inp_integer_1d_array
+  module procedure add_inp_integer_2d_array
   module procedure add_inp_real_variable
 end interface add_inp_variable
 
-private :: init_string, add_string
-private :: errall, erropen, get_name, i2c, csize
+private :: init_string, add_string, errall, erropen, get_name, i2c, csize
 
 private
 
@@ -65,7 +66,8 @@ contains
   deallocate(itmp)
   ! --/--
 
-  ! add name, type and dimension of the variable to the list
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('integer, allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
@@ -110,7 +112,8 @@ contains
   deallocate(dtmp)
   ! --/--
 
-  ! add name, type and dimension of the variable to the list
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
@@ -119,6 +122,48 @@ contains
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_int_array(vname,vsize,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, vsize
+  integer, intent(in), optional :: idrv
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('integer,  allocatable, dimension(:)',var_type)
+  call add_string(vsize,var_dim)
+  call add_string('output',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_out_int_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_real_array(vname,vsize,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, vsize
+  integer, intent(in), optional :: idrv
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:)',var_type)
+  call add_string(vsize,var_dim)
+  call add_string('output',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_out_real_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -148,7 +193,8 @@ contains
   close(iunit,status='keep')
   ! --/--
 
-  ! add name, type and dimension of the variable to the list
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('integer',var_type)
   call add_string('0',var_dim)
@@ -157,6 +203,46 @@ contains
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_integer_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_integer_1d_array(ivar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ivar(:)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, n1, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write 2d array to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) ivar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('integer, allocatable, dimension(:)',var_type)
+  n1 = size(ivar,1)
+  call add_string( '(' // i2c(n1) // ')' , var_dim )
+  call add_string('input',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_integer_1d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -186,7 +272,8 @@ contains
   close(iunit,status='keep')
   ! --/--
 
-  ! add name, type and dimension of the variable to the list
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('integer, allocatable, dimension(:,:)',var_type)
   n1 = size(ivar,1)
@@ -226,7 +313,8 @@ contains
   close(iunit,status='keep')
   ! --/--
 
-  ! add name, type and dimension of the variable to the list
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8',var_type)
   call add_string('0',var_dim)
@@ -235,36 +323,6 @@ contains
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_variable
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine add_out_real_array(dvar,vname,ndim,vsize,nfile,idrv)
-  implicit none
-
-  ! External variables
-  character(*), intent(in) :: vname, vsize
-  integer,      intent(in) :: ndim
-  real*8,       intent(in) :: dvar(*)
-  integer, intent(in), optional :: nfile, idrv
-
-  ! Internal variables
-  integer   :: n, ier
-  character :: namef*(nchar)
-  real*8, allocatable :: dtmp(:)
-
-  ! get name of the output file
-  call get_name(namef,n,output_files,nfile)
-
-  ! add name, type and dimension of the variable to the list
-  call add_string(vname,var_name)
-  call add_string('real*8,  allocatable, dimension(:)',var_type)
-  call add_string(vsize,var_dim)
-  call add_string('output',var_info)
-  var_name(size(var_name))%idrv = 0
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
-
-  end subroutine add_out_real_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -516,6 +574,23 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+  function i2c(i) result(c)
+  implicit none
+  integer, intent(in) :: i
+  character(len=csize(i)) :: c
+  write(c,'(i0)')i
+  end function i2c
+
+  pure function csize(i) result(is)
+  implicit none
+  integer, intent(in) :: i
+  integer :: is
+  is = floor(log10(real(i,kind(1.0d0)))) + 1
+  end function csize
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
   subroutine generate_test
   implicit none
 
@@ -645,22 +720,5 @@ contains
   close(iunit,status='keep')
 
   end subroutine generate_test
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  function i2c(i) result(c)
-  implicit none
-  integer, intent(in) :: i
-  character(len=csize(i)) :: c
-  write(c,'(i0)')i
-  end function i2c
-
-  pure function csize(i) result(is)
-  implicit none
-  integer, intent(in) :: i
-  integer :: is
-  is = floor(log10(real(i,kind(1.0d0)))) + 1
-  end function csize
 
 end module test_generator
