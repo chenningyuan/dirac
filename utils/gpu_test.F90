@@ -29,7 +29,8 @@ integer :: verb=0 ! default verbosity level
 
 integer :: n
 integer :: i,j
-integer :: c1,c2,cr,cm
+integer(kind=8) :: c1,c2
+integer(kind=8) :: cr,cm ! accuracy in nanoseconds
 
 real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:),x_r(:),y_r(:)
 real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:),x_d(:),y_d(:)
@@ -48,10 +49,11 @@ write(*,*) 'usage: gpu_test.x  <sgemm/sgemv/dgemm>  <n> <verbosity level>'
 end subroutine usage
 
 subroutine  print_time(message)
+! http://gcc.gnu.org/onlinedocs/gfortran/SYSTEM_005fCLOCK.html
 ! print spent time in routine ...
 character(*), intent(in) :: message
 !!print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
-write(*,'(2x,a,a,a,f12.6,a)') 'Routine <',message,'> spent runtime:', real(c2-c1) / real(cr), ' seconds.'
+write(*,'(2x,a,a,a,f13.8,a)') 'Routine <',message,'> spent runtime:', float(c2-c1) / float(cr), ' seconds.'
 end subroutine  print_time
 
 subroutine read_arguments
