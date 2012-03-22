@@ -1306,8 +1306,8 @@ C
 
 #ifdef PCM_MODULE
        if (dirac_cfg_pcm) then
-          printlevel = 0 
-          call pcm_driver(dmat, work, lwork, printlevel) 
+          printlevel = 0
+          call pcm_driver(dmat, fock, work, lwork, printlevel)
        endif 
 #endif        
 

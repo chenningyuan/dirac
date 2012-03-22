@@ -2,7 +2,7 @@
 ! RDR 2012
 !
    
-   subroutine pcm_driver(dmat, work, lwork, printlevel)
+   subroutine pcm_driver(dmat, fock, work, lwork, printlevel)
       implicit none
 !
 ! Driver routine for the Polarizable Continuum Model.
@@ -28,7 +28,7 @@
 #include "symmet.h"
 #include "lmns.h"
 ! Passed variables
-      real(8)              :: dmat(*)
+      real(8)              :: dmat(*), fock(*)
       real(8)              :: work(*)
       integer              :: lwork
       integer              :: printlevel
@@ -39,9 +39,8 @@
       real(8)              :: tot_nuc_pol, tot_ele_pol
       real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
       real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
-! V_mu,nu,i integrals [eq. (1.3)]
-! Dimensions: # of AOs, # of AOs, # of points
-      real(8), allocatable :: pot_munui(:, :, :) 
+      real(8), allocatable :: charges(:)
+      real(8), allocatable :: fock_pcm(:, :, :)
       real(8)              :: ene_pol
 
 ! Quit if symmetry or X2C are requested.
@@ -63,7 +62,10 @@
       allocate(nuc_pol_chg(nr_points))
       allocate(ele_pot(nr_points))
       allocate(ele_pol_chg(nr_points))
-      allocate(pot_munui(ntbas(0), ntbas(0), nr_points))
+! Allocate total charges and PCM contribution to Fock matrix      
+      allocate(charges(nr_points))
+      allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+      fock_pcm = 0.0d0
 
 ! Get tesserae centers      
       call get_tess_centers(tess_cent)
@@ -74,7 +76,6 @@
       ele_pot = 0.0d0
 ! Here we are calculating: tr(DV_i) [eq. (1.2)]
       call ele_pot_pcm(nr_points, tess_cent, ele_pot, dmat, work, lwork)
-
 ! Compute nuclear and electronic polarization charges @tesserae centers
       nuc_pol_chg = 0.0d0
 ! Store potentials and charges in the Cavity object?
@@ -82,7 +83,15 @@
       call comp_charge(nuc_pot, nuc_pol_chg, 1)
       ele_pol_chg = 0.0d0
       call comp_charge(ele_pot, ele_pol_chg, 2)
-      
+
+! Fock matrix contribution     
+      charges = nuc_pol_chg + ele_pol_chg
+      call pcm_fock(nr_points, tess_cent, charges, fock_pcm, work, lwork)
+      call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                       nz, ipqtoq(1,0), 6)
+! Add fock_pcm to Fock matrix
+      call daxpy(n2bbasx, 1, fock_pcm, 1, fock, 1)
+
 ! Print some information
       if (printlevel > 5) then
           do i = 1, nr_points
@@ -102,7 +111,6 @@
       call comp_pol_ene_pcm(ene_pol)
       print *, "U_pol =", ene_pol
    end subroutine
-
 
 !
 ! We divide the interface routines into:
@@ -201,23 +209,39 @@
       real(8)              :: work(*)
       integer              :: lwork
       
-      call esp_el(nr_points, dmat, tess_cent, pot, work, lwork, 0)
+      call esp_el(nr_points, dmat, tess_cent, pot, work, lwork, 0, .false.)
 
    end subroutine
   
-   subroutine nai_pot_pcm(nr_points, tess_cent, pot_munui, work, lwork)
+   subroutine pcm_fock(nr_points, tess_cent, charges, fock_pcm, work, lwork)
       use vc_grid
       implicit none
 
 #include "dcbbas.h"
+#include "dgroup.h"
 
+! Passed variables
       integer, intent(in)  :: nr_points
       real(8), intent(in)  :: tess_cent(3, nr_points)
-      real(8), intent(out) :: pot_munui(ntbas(0), ntbas(0), nr_points)
+      real(8), intent(in)  :: charges(nr_points)
+      real(8), intent(out) :: fock_pcm(ntbas(0), ntbas(0), nz)
       real(8)              :: work(*)
       integer              :: lwork
 
-      call esp_nai(nr_points, tess_cent, pot_munui, work, lwork)
+! Local variables
+      real(8) :: average
+      integer :: i, j
+
+      call esp_el(nr_points, fock_pcm, tess_cent, charges, work, lwork, 0, .true.)
+     
+! Symmetrize Fock matrix contribution       
+      do i = 1, ntbas(0)
+        do j = 1, i
+          average = (fock_pcm(i, j, 1) + fock_pcm(j, i, 1)) / 2.0d0
+          fock_pcm(i, j, 1) = average    
+          fock_pcm(j, i, 1) = average 
+        end do
+      end do
       
    end subroutine
 

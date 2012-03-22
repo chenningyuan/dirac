@@ -33,7 +33,6 @@
       public get_esp
       public esp_nuc
       public esp_el
-      public esp_nai
       
 !     module for calculating the coulomb potential on a grid.
 !     contains:
@@ -97,7 +96,7 @@
          call esp_nuc(1, r_p, vc, 0)
       end if
       if (el_part) then
-         call esp_el(1, dmat, r_p, vc, work, lwork, 0)
+         call esp_el(1, dmat, r_p, vc, work, lwork, 0, .false.)
       end if
 
       esp = vc(1)
@@ -125,7 +124,8 @@
       if (iprint .ge. 5) call titler('output from emb_vc','*',103)
 
 !     electrostatic potential: electronic contribution
-      call esp_el(nr_points, dmat,points,vc,work,lwork,iprint)
+      call esp_el(nr_points, dmat, points, vc, work, & 
+                  lwork, iprint, .false.)
 
 !     electrostatic potential: nuclear contribution
       call esp_nuc(nr_points, points,vc,iprint)
@@ -188,8 +188,8 @@
                                                                  
       end subroutine
 
-      subroutine esp_el(nr_points, dmat, points, vc, work, lwork,       &
-     &                  iprint)
+      subroutine esp_el(nr_points, fock_or_dmat, points, pot_or_chg,    &
+                        work, lwork, iprint, get_fock)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
@@ -207,7 +207,15 @@
 ! 
 ! RDR 050312 CANNOT yet handle symmetry. This is unimportant at the moment
 !            since also PCMSolver cannot handle symmetry.
-!
+! RDR 220312 This routine will be used to form both potentials and Fock
+!            matrix contribution for PCM.
+!            fock_or_dmat is Fock or density matrix, pot_or_chg is potentials 
+!            or charges vector.
+!            get_fock logical is present and TRUE:
+!            charges vector as input, Fock matrix contribution as output.
+!            get_fock logical is absent or is present and FALSE:
+!            density matrix as input, potentials vector as output.                        
+!                        
 
 #include "priunit.h"
 #include "pi.h"
@@ -234,26 +242,39 @@
 
 ! Passed variables
       integer, intent(in) :: nr_points
-      real(8) :: dmat(ntbas(0), ntbas(0), nz)
-      real(8) :: points(3, nr_points), vc(nr_points), work(*)
-      integer :: iprint, lwork
+      real(8)             :: fock_or_dmat(ntbas(0), ntbas(0), nz)
+! Triggers whether we want PCM Fock matrix contribution or just the
+! potential.      
+      logical, optional   :: get_fock 
+      real(8)             :: pot_or_chg(nr_points)
+      real(8)             :: points(3, nr_points), work(*)
+      integer             :: iprint, lwork
 
 ! Local variables
       real(8), allocatable :: ader(:, :, :)
       real(8) :: tolog, tols, factor = 1.0d0
-      integer :: ishela, ishelb, ica, icb
+      integer :: ishela, ishelb, ica, icb, ia, ib
       integer :: multa, multb, nhktab, kab
       integer :: ipoint, idxmax
+      logical :: do_fock
 
       if (nbsym > 1) then
          call quit('Electrostatic potential calculation cannot          &
-     & handle symmetry!')
+      handle symmetry!')
       end if
       if (BSS.or.x2c) then
          call quit('Electrostatic potential calculation not working     &
-     & with X2C Hamiltonian!')
+      with X2C Hamiltonian!')
       end if
-      
+
+! Fock matrix contribution or potential calculation?      
+      do_fock = .false. 
+      if (present(get_fock)) then
+        if (get_fock == .true.) then
+            do_fock = .true.
+        end if
+      end if
+                
       tols = thrs**2
       tolog = 2 * log(thrs)
 ! mc is the number of components, as defined in include/dcbham.h
@@ -312,15 +333,24 @@
               allocate(ader(kckta, kcktb, nr_points))
               ader = 0.0d0
               call vc_shell(nr_points, ader, tolog, tols,               &
-     &               points, iprint, work, lwork)
+                    points, iprint, work, lwork)
               if (ishela /= ishelb) then 
                   ader = 2.0d0*ader
               end if
 ! We multiply by +2.0d0. The D matrix refers to the alpha part only.
-              do ipoint = 1, nr_points              
-                vc(ipoint) = vc(ipoint) + 2.0d0                       * &
-                sum(dmat(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
-     &                     ader(1:kckta, 1:kcktb, ipoint))
+              do ipoint = 1, nr_points
+              if (do_fock) then
+                 do ib = 1, kcktb
+                   do ia = 1, kckta 
+               fock_or_dmat(idena+ia,idenb+ib, 1) = fock_or_dmat(idena+ia,idenb+ib, 1) &
+                    - ader(ia, ib, ipoint) * pot_or_chg(ipoint)
+                   end do
+                 end do
+               else
+               pot_or_chg(ipoint) = pot_or_chg(ipoint) + 2.0d0                    * &
+                    sum(fock_or_dmat(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
+                            ader(1:kckta, 1:kcktb, ipoint))
+                end if
               end do 
               deallocate(ader)
           end if  
@@ -331,7 +361,7 @@
 
       if (iprint > 5) then
           do ipoint = 1, nr_points
-            print *, "Electronic ESP @point", ipoint, vc(ipoint)
+            print *, "Electronic ESP @point", ipoint, pot_or_chg(ipoint)
           end do
       end if
 
@@ -572,136 +602,6 @@
       end do
 
       return
-      end subroutine
-
-      subroutine esp_nai(nr_points, points, pseudo_nai, work, lwork)
-!      
-! Calculation of the V_mu,nu,i pseudo nuclear attraction integrals
-! matrix:
-!     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
-! 
-!  array ADER(mu, nu, r_i) contains these integrals.
-!
-! This routine is essential for the Polarizable Continuum Model.
-! Fock matrix formation needs both V_i and V_mu,nu,i
-!
-! RDR 190312 CANNOT yet handle symmetry. This is unimportant at the moment
-!            since also PCMSolver cannot handle symmetry.
-!
-
-#include "priunit.h"
-#include "pi.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
-#ifdef prg_dirac
-#include "dcbgrd.h"
-#endif
-#include "ccom.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "cbisol.h"
-#include "shells.h"
-#include "onecom.h"
-#include "primit.h"
-#include "symind.h"
-#include "symmet.h"
-#include "lmns.h"
-#include "nuclei.h"
-
-! Passed variables
-      integer, intent(in) :: nr_points
-      real(8)             :: points(3, nr_points), work(*)
-      real(8)             :: pseudo_nai(ntbas(0), ntbas(0), nr_points)
-      integer             :: lwork
-
-! Local variables
-      real(8) :: tolog, tols, factor = 1.0d0
-      real(8), allocatable :: ader(:, :, :)
-      integer :: ishela, ishelb, ica, icb
-      integer :: multa, multb, nhktab, kab
-      integer :: ipoint, idxmax, iprint
-
-      if (nbsym > 1) then
-         call quit('Electrostatic potential calculation cannot          &
-     & handle symmetry!')
-      end if
-      if (BSS.or.x2c) then
-         call quit('Electrostatic potential calculation not working     &
-     & with X2C Hamiltonian!')
-      end if
-      
-      tols = thrs**2
-      tolog = 2 * log(thrs)
-      iprint = 0
-! mc is the number of components, as defined in include/dcbham.h
-! Decide whether we loop on LL block only or not
-      if (mc == 1) then 
-          idxmax = nlrgsh
-      else 
-          idxmax = kmax
-      end if
-! Loop over bras <mu|      
-      idena = 0
-      do ishela = 1, idxmax
-        ica   = lclass(ishela)
-        nhkta = nhkt(ishela)
-        khkta = khkt(ishela)
-        kckta = kckt(ishela)
-        call lmnval(nhkta, kckta, lvalua, mvalua, nvalua)
-        ncenta = ncent(ishela)
-        icenta = nucnum(ncenta, 1)
-        mula   = istbao(ishela)
-        multa  = mult(mula)
-        nuca   = nuco(ishela)
-        numcfa = numcf(ishela)
-        jsta   = jstrt(ishela)
-        corax  = cent(ishela, 1, 1)
-        coray  = cent(ishela, 2, 1)
-        coraz  = cent(ishela, 3, 1)
-! Loop over kets |nu>
-        idenb = 0        
-        do ishelb = 1, ishela
-          icb   = lclass(ishelb)
-          ldiag = ishela .eq. ishelb
-          nhktb = nhkt(ishelb)
-          khktb = khkt(ishelb)
-          kcktb = kckt(ishelb)
-          call lmnval(nhktb, kcktb, lvalub, mvalub, nvalub)
-          ncentb = ncent(ishelb)
-          nhktab = nhkta + nhktb
-          mulb   = istbao(ishelb)
-          multb  = mult(mulb)
-          nucb   = nuco(ishelb)
-          numcfb = numcf(ishelb)
-          jstb   = jstrt(ishelb)
-          corbx  = cent(ishelb, 1, 1)
-          corby  = cent(ishelb, 2, 1)
-          corbz  = cent(ishelb, 3, 1)
-          khktab = khkta * khktb
-          kcktab = kckta * kcktb
-          mab    = ior(mula, mulb)
-          kab    = iand(mula ,mulb)
-          hkab   = fmult(kab)
-! Calculate -<mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i.
-! The minus sign accounts for the charge of the electron.
-          if (ica == icb) then 
-              allocate(ader(kckta, kcktb, nr_points))
-              ader = 0.0d0
-              call vc_shell(nr_points, ader, tolog, tols,               &
-     &               points, iprint, work, lwork)
-              if (ishela /= ishelb) then 
-                  ader = 2.0d0*ader
-              end if
-          end if  
-        idenb = idenb + khktb * multb
-       end do
-       idena = idena + khkta * multa
-      end do
-
       end subroutine
 
       end module
