@@ -23,6 +23,7 @@
   !     Written by J. Thyssen - Nov 16 2000
   !
   !***********************************************************************
+  use test_generator
   implicit none
 
   ! External variables
@@ -43,37 +44,32 @@
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
   if( key_unit_test == 2 )then
-    ! open file
-    open(60,file='raddfq90.uinp',status='unknown',form='formatted',access='sequential',iostat=ier)
-    if(ier /= 0)then
-      write(6,*) 'raddfq90: ERROR while creating raddfq90.uinp file'
-      stop
-    endif
 
-    rewind 60
+    call add_input_file('raddfq90.inp')
+    call add_output_file('raddfq90.out')
+    call set_driver_routine('raddfq90')
 
-    ! write input data to the file
-    write(60,*) 'nxy   ',nxy
-    write(60,*) 'ix    ',ix
-    write(60,*) 'iy    ',iy
-    write(60,*) 'irepij',irepij
-    write(60,*) 'iprint',iprint
-    write(60,*) 'nz    ',nz
-    write(60,*) 'lupri ',lupri
-    write(60,*) 'norbt ',norbt
-    write(60,*) 'nasht ',nasht
-    write(60,*) 'nnashx',nnashx
-    write(60,*) 'ipqtoq'
-    write(60,*)  ipqtoq
-    write(60,*)  'h2xy'
-    write(60,*)   h2xy
-    write(60,*)  'h2yx'
-    write(60,*)   h2yx
-    write(60,*)  'pv'
-    write(60,*)   pv
+    call add_inp_variable(nxy   ,'nxy   ',idrv=5)
+    call add_inp_variable(ix    ,'ix    ',idrv=6)
+    call add_inp_variable(iy    ,'iy    ',idrv=7)
+    call add_inp_variable(irepij,'irepij',idrv=8)
+    call add_inp_variable(iprint,'iprint',idrv=9)
+    call add_inp_variable(nz    ,'nz    ',idrv=10)
+    call add_inp_variable(lupri ,'lupri ',idrv=12)
+    call add_inp_variable(norbt ,'norbt ',idrv=13)
+    call add_inp_variable(nasht ,'nasht ',idrv=14)
+    call add_inp_variable(nnashx,'nnashx',idrv=15)
+    call add_inp_variable(ipqtoq,'ipqtoq',idrv=11)
 
-    ! close file
-    close(60,status='keep')
+    call add_out_real_array(fq  ,'fq    ',norbt*nasht*nz  ,'(norbt*nasht*nz)'  ,idrv=1)
+    call add_inp_real_array(h2xy,'h2xy  ',norbt*nasht*nz*3,'(norbt*nasht*nz*3)',idrv=2)
+    call add_inp_real_array(h2yx,'h2yx  ',norbt*nasht*nz*3,'(norbt*nasht*nz*3)',idrv=3)
+    call add_inp_real_array(pv  ,'pv    ',nasht*nasht*nnashx*nz*3,'(nasht*nasht*nnashx*nz*3)',idrv=4)
+
+    call print_variable_info
+
+    call generate_test
+
   endif
 
   !------------------------------------------------------------------------------!
@@ -623,7 +619,7 @@
   !------------------------------------------------------------------------------!
   if( key_unit_test > 0 )then
     ! open file
-    open(60,file='raddfq90.uout',status='unknown',form='formatted',access='sequential',iostat=ier)
+    open(60,file='raddfq90.out',status='unknown',form='formatted',access='sequential',iostat=ier)
     if(ier /= 0)then
       write(6,*) 'raddfq90: ERROR while creating raddfq90.uout file'
       stop

@@ -1423,9 +1423,10 @@ C           Do the gazillion matrix multiplies to construct
 C           the auxiliary Fock matrix FQ: (B.40) - (B.43)
 C
             IF (DOFQ) THEN
+               KEYUNITTEST = 2
                CALL RADDFQ90(FQ,H2XY,H2YX,PV,
      &              IUU,IXU,IYU,IREPIJ,IPRINT,
-     &              NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
+     &              NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX,KEYUNITTEST)
             END IF
 C
  20      CONTINUE

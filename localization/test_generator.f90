@@ -2,20 +2,283 @@ module test_generator
 
 implicit none
 
-public  :: add_input_file, add_output_file, print_input_files, print_output_files
+public :: set_driver_routine, add_input_file, add_output_file
+public :: add_inp_int_array, add_inp_real_array, add_out_real_array, generate_test
+public :: print_input_files, print_output_files, print_variable_info
+
+public :: add_inp_variable
+
+interface add_inp_variable
+  module procedure add_inp_integer_2d_array
+  module procedure add_inp_integer_variable
+  module procedure add_inp_real_variable
+end interface add_inp_variable
 
 private :: init_string, add_string
-private :: errall
+private :: errall, erropen, get_name, i2c, csize
 
 private
 
 type :: string
+  integer :: idrv
   character, pointer :: str(:)
 end type string
 
-type ( string ), pointer, save :: input_files(:), output_files(:)
+type ( string ), pointer, save :: input_files(:), output_files(:), driver(:)
+type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:), var_info(:)
+
+integer, parameter :: iunit = 60, nchar = 100
 
 contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_int_array(ivar,vname,ndim,vsize,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, vsize
+  integer,      intent(in) :: ndim, ivar(*)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, ier
+  character :: namef*(nchar)
+  integer, allocatable :: itmp(:)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write array to the file
+  allocate( itmp(ndim), stat=ier ); call errall(ier,'add_inp_int_array','itmp')
+  itmp(1:ndim) = ivar(1:ndim)
+
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) itmp
+
+  close(iunit,status='keep')
+
+  deallocate(itmp)
+  ! --/--
+
+  ! add name, type and dimension of the variable to the list
+  call add_string(vname,var_name)
+  call add_string('integer, allocatable, dimension(:)',var_type)
+  call add_string(vsize,var_dim)
+  call add_string('input',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_int_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_real_array(dvar,vname,ndim,vsize,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, vsize
+  integer,      intent(in) :: ndim
+  real*8,       intent(in) :: dvar(*)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, ier
+  character :: namef*(nchar)
+  real*8, allocatable :: dtmp(:)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write array to the file
+  allocate( dtmp(ndim), stat=ier ); call errall(ier,'add_inp_real_array','dtmp')
+  dtmp(1:ndim) = dvar(1:ndim)
+
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) dtmp
+
+  close(iunit,status='keep')
+
+  deallocate(dtmp)
+  ! --/--
+
+  ! add name, type and dimension of the variable to the list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:)',var_type)
+  call add_string(vsize,var_dim)
+  call add_string('input',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_real_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_integer_variable(ivar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ivar
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write variable to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) ivar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type and dimension of the variable to the list
+  call add_string(vname,var_name)
+  call add_string('integer',var_type)
+  call add_string('0',var_dim)
+  call add_string('input',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_integer_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_integer_2d_array(ivar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ivar(:,:)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, n1, n2, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write 2d array to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) ivar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type and dimension of the variable to the list
+  call add_string(vname,var_name)
+  call add_string('integer, allocatable, dimension(:,:)',var_type)
+  n1 = size(ivar,1)
+  n2 = size(ivar,2)
+  call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
+  call add_string('input',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_integer_2d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_real_variable(dvar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write variable to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) dvar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type and dimension of the variable to the list
+  call add_string(vname,var_name)
+  call add_string('real*8',var_type)
+  call add_string('0',var_dim)
+  call add_string('input',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_real_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_real_array(dvar,vname,ndim,vsize,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, vsize
+  integer,      intent(in) :: ndim
+  real*8,       intent(in) :: dvar(*)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, ier
+  character :: namef*(nchar)
+  real*8, allocatable :: dtmp(:)
+
+  ! get name of the output file
+  call get_name(namef,n,output_files,nfile)
+
+  ! add name, type and dimension of the variable to the list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:)',var_type)
+  call add_string(vsize,var_dim)
+  call add_string('output',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_out_real_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine set_driver_routine(drv_name)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: drv_name
+
+  ! add name of driver routine to the list
+  call add_string(drv_name,driver)
+
+  end subroutine set_driver_routine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -78,6 +341,25 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+  subroutine print_variable_info
+  implicit none
+  integer :: i
+
+  write(6,'(/a)') ' VARIABLE INFO:'
+  do i=1,size(var_name)
+    write(6,'(a,i2)') ' Variable #',i
+    write(6,*) '  name     : ',var_name(i)%str
+    write(6,*) '  dimension: ',var_dim(i)%str
+    write(6,*) '  type     : ',var_type(i)%str
+    write(6,*) '  info     : ',var_info(i)%str
+    write(6,*) '  idrv     : ',var_name(i)%idrv
+  enddo
+
+  end subroutine print_variable_info
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
   subroutine init_string(type_string,ndim)
   !==============================================================================!
   !     allocate unnamed array "type_string" with dimension of the pointer       !
@@ -135,11 +417,18 @@ contains
   if(ndim > 0)then
     do i=1,ndim
       type_string(i)%str => tmp_list(i)%str
+      type_string(i)%idrv = tmp_list(i)%idrv
     enddo
   endif
 
   ! allocate unnamed array str character array
   nstr = len(string_name)
+  if(nstr > 70)then
+    write(6,*)
+    write(6,*) 'ERROR: Input string is too long. It would cause problems in test.F90 generation.'
+    write(6,*) string_name
+    stop
+  endif
   allocate( type_string(ndim+1)%str( nstr ), stat = ier )
   call errall(ier,'add_string','type_string()%str')
 
@@ -166,9 +455,212 @@ contains
     write(6,*)
     write(6,'(a,a,a,a)')' Error in allocation of ',charr,' in subroutine ',chsub
     write(6,'(a,i4)'   )' iostat =',ier
-    stop 'ERROR in allocation (see output form more information)'
+    stop 'ERROR in allocation (see output for more information)'
   endif
 
   end subroutine errall
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine erropen(ier,chsub,chfile)
+  implicit none
+
+  integer      :: ier
+  character(*) :: chsub, chfile
+
+  if(ier /= 0)then
+    write(6,*)
+    write(6,'(a,a,a,a)')' ERROR while opening ',chfile,' in subroutine ',chsub
+    write(6,'(a,i4)'   )' iostat =',ier
+    stop 'ERROR in opening file (see output for more information)'
+  endif
+
+  end subroutine erropen
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine get_name(namef,n,type_string,nfile)
+  implicit none
+
+  ! External variables
+  character, intent(out) :: namef*(nchar)
+  integer,   intent(out) :: n
+  integer,   intent( in), optional :: nfile
+  type ( string ), pointer, intent(in) :: type_string(:)
+  
+  ! Internal variables
+  integer :: i, ifile
+
+  ifile = 1
+  if(present(nfile)) ifile = nfile
+
+  n = size(type_string(ifile)%str)
+
+  if(n > nchar)then
+    write(6,*)
+    write(6,*) 'ERROR in test_generator module (get_name routine)'
+    write(6,*) '  the size of the name of some file is too big; enlarge nchar'
+    write(6,*) 'Problematic file:'
+    write(6,*) type_string(ifile)%str
+    stop
+  endif
+
+  do i=1,n
+    namef(i:i) = type_string(ifile)%str(i)
+  enddo
+
+  end subroutine get_name
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine generate_test
+  implicit none
+
+  ! Internal variables
+  character :: coma*1
+  integer   :: i, j, k, ier, nn, nt, nd
+
+  open(iunit,file='test.F90',status='new',form='formatted',access='sequential',&
+       iostat=ier); call erropen(ier,'add_inp_int_array','test.F90')
+
+  ! header
+  write(iunit,'(a)')'program test'
+  write(iunit,'(a)')
+  write(iunit,'(a)')'  use unit_testing'
+  write(iunit,'(a)')'  implicit none'
+  write(iunit,'(a)')
+  write(iunit,'(a)')'  integer :: ier'
+  write(iunit,'(a)')'  integer :: key'
+  ! declaration of variables
+  do i=1,size(var_name)
+    nt = size(var_type(i)%str)
+    nn = size(var_name(i)%str)
+    write(iunit,'(2x,70a,a,70a)') (var_type(i)%str(j),j=1,nt),' :: ',(var_name(i)%str(j),j=1,nn)
+  enddo
+  ! open input file
+  if(size(input_files) > 1)then
+    write(6,*) 'ERROR: For now the program works only with one input file.'
+    stop
+  endif
+  write(iunit,'(a)')
+  nn = size(input_files(1)%str)
+  write(iunit,'(a,70a,a)') "  open(60,file='" , (input_files(1)%str(j),j=1,nn)  , &
+                             "',status='old',form='formatted',access='sequential',iostat=ier)"
+  write(iunit,'(a)')       '  if(ier /= 0)then'
+  write(iunit,'(a,70a,a)') "    write(6,*) 'test: ERROR while creating " , &
+                             (input_files(1)%str(j),j=1,nn) , " file'"
+  write(iunit,'(a)')       '    stop'
+  write(iunit,'(a)')       '  endif'
+  ! first read dimensions and parameters
+  write(iunit,'(a)')
+  do i=1,size(var_name)
+    if( var_info(i)%str(1) == 'i')then ! input variables
+      if( var_dim(i)%str(1) == '0')then
+        nn = size(var_name(i)%str)
+        write(iunit,'(a)')     '  read(60,*)'
+        write(iunit,'(a,70a)') '  read(60,*) ' , (var_name(i)%str(j),j=1,nn)
+      endif
+    endif
+  enddo
+  ! allocation
+  write(iunit,'(a)')
+  do i=1,size(var_name)
+    if( var_dim(i)%str(1) /= '0')then
+      nn = size(var_name(i)%str)
+      nd = size(var_dim(i)%str)
+      write(iunit,'(a,70a,70a,a,70a,a)') &
+            '  allocate( ' , (var_name(i)%str(j),j=1,nn) , (var_dim(i)%str(j),j=1,nd) , &
+            " , stat=ier ); call errall(ier,'test','" , (var_name(i)%str(j),j=1,nn) ,"')"
+    endif
+  enddo
+  ! read arrays
+  write(iunit,'(a)')
+  do i=1,size(var_name)
+    if( var_info(i)%str(1) == 'i')then ! input variables
+      if( var_dim(i)%str(1) /= '0')then
+        nn = size(var_name(i)%str)
+        write(iunit,'(a)')    '  read(60,*)'
+        write(iunit,'(a,70a)')'  read(60,*) ' , (var_name(i)%str(j),j=1,nn)
+      endif
+    endif
+  enddo
+  ! close input file
+  write(iunit,'(a)')
+  write(iunit,'(a)')"  close(60,status='keep')"
+  ! call driver routine
+  write(iunit,'(a)')
+  write(iunit,'(a)') '  key = 1'
+  write(iunit,'(a,70a,a)')"  call ", (driver(1)%str(j),j=1,size(driver(1)%str)) , '( &'
+  coma = ' '
+  do k=1,size(var_name)
+    do i=1,size(var_name)
+      if(var_name(i)%idrv == k)then
+        write(iunit,'(9x,a,70a,a)') coma,(var_name(i)%str(j),j=1,size(var_name(i)%str)) , ' &'
+        coma = ','
+      endif
+    enddo
+  enddo
+  write(iunit,'(9x,a)') ',key    &'
+  write(iunit,'(9x,a)') ')'
+  ! compare results
+  write(iunit,'(a)')
+  do i=1,size(output_files)
+    write(iunit,'(a,70a,a,70a,a,a)')"  call compare_files(60,'", &
+                (output_files(i)%str(j),j=1,size(output_files(i)%str)) , "','",   &
+                (output_files(i)%str(j),j=1,size(output_files(i)%str)) , "_ref'", &
+                ",1.0d-14)"
+  enddo
+  ! deallocation
+  write(iunit,'(a)')
+  do i=1,size(var_name)
+    if( var_dim(i)%str(1) /= '0')then
+      nn = size(var_name(i)%str)
+      write(iunit,'(a,70a,a)')"  deallocate( " , (var_name(i)%str(j),j=1,nn) , " )"
+    endif
+  enddo
+  ! write error routine
+  write(iunit,'(a)')
+  write(iunit,'(a)')"contains"
+  write(iunit,'(a)')
+  write(iunit,'(a)')"  subroutine errall(ier,chsub,charr)"
+  write(iunit,'(a)')"  implicit none"
+  write(iunit,'(a)')
+  write(iunit,'(a)')"  integer      :: ier"
+  write(iunit,'(a)')"  character(*) :: chsub, charr"
+  write(iunit,'(a)')
+  write(iunit,'(a)')"  if(ier /= 0)then"
+  write(iunit,'(a)')"    write(6,*)"
+  write(iunit,'(a)')"    write(6,'(a,a,a,a)')' Error in allocation of ',charr,' in subroutine ',chsub"
+  write(iunit,'(a)')"    write(6,'(a,i4)'   )' iostat =',ier"
+  write(iunit,'(a)')"    stop 'ERROR in allocation (see output form more information)'"
+  write(iunit,'(a)')"  endif"
+  write(iunit,'(a)')
+  write(iunit,'(a)')"  end subroutine"
+  write(iunit,'(a)')
+  write(iunit,'(a)')"end program"
+
+  close(iunit,status='keep')
+
+  end subroutine generate_test
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  function i2c(i) result(c)
+  implicit none
+  integer, intent(in) :: i
+  character(len=csize(i)) :: c
+  write(c,'(i0)')i
+  end function i2c
+
+  pure function csize(i) result(is)
+  implicit none
+  integer, intent(in) :: i
+  integer :: is
+  is = floor(log10(real(i,kind(1.0d0)))) + 1
+  end function csize
 
 end module test_generator
