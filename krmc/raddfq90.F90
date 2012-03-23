@@ -1,5 +1,5 @@
   subroutine raddfq90(fq,h2xy,h2yx,pv,nxy,ix,iy,irepij,iprint, &
-                      nz,ipqtoq,lupri,norbt,nasht,nnashx,key_unit_test)
+                      nz,ipqtoq,lupri,norbt,nasht,nnashx,key)
   !***********************************************************************
   !
   !     Add up the infinite number of terms that constitutes the FQ fock
@@ -23,10 +23,13 @@
   !     Written by J. Thyssen - Nov 16 2000
   !
   !***********************************************************************
+  use test_generator
   implicit none
 
+#include "unit-test.h"
+
   ! External variables
-  integer, intent( in), optional :: key_unit_test
+  integer, intent( in), optional :: key
   integer, intent( in) :: nxy, ix, iy, irepij, iprint
   integer, intent( in) :: nz, ipqtoq(4,0:7), lupri, norbt, nasht, nnashx
   real*8,  intent( in) :: h2xy(norbt,nasht,nz,3), h2yx(norbt,nasht,nz,3)
@@ -35,6 +38,7 @@
 
   ! Internal variables
   integer :: i, j, k, izz, npvcol, ier
+  character :: output_file*12
 
   real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
   real*8, allocatable :: tmpmat(:,:,:)
@@ -42,39 +46,36 @@
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( key_unit_test == 2 )then
-    ! open file
-    open(60,file='raddfq90.uinp',status='unknown',form='formatted',access='sequential',iostat=ier)
-    if(ier /= 0)then
-      write(6,*) 'raddfq90: ERROR while creating raddfq90.uinp file'
-      stop
-    endif
+  output_file = 'raddfq90.out'
 
-    rewind 60
+#ifdef CREATE_UNIT_TESTS
+   if( nxy==1 .and. ix==1 .and. iy==1 )then
+    call add_input_file('raddfq90.inp')
+    call add_output_file(output_file)
+    call set_driver_routine('raddfq90')
 
-    ! write input data to the file
-    write(60,*) 'nxy   ',nxy
-    write(60,*) 'ix    ',ix
-    write(60,*) 'iy    ',iy
-    write(60,*) 'irepij',irepij
-    write(60,*) 'iprint',iprint
-    write(60,*) 'nz    ',nz
-    write(60,*) 'lupri ',lupri
-    write(60,*) 'norbt ',norbt
-    write(60,*) 'nasht ',nasht
-    write(60,*) 'nnashx',nnashx
-    write(60,*) 'ipqtoq'
-    write(60,*)  ipqtoq
-    write(60,*)  'h2xy'
-    write(60,*)   h2xy
-    write(60,*)  'h2yx'
-    write(60,*)   h2yx
-    write(60,*)  'pv'
-    write(60,*)   pv
+    call add_inp_variable(nxy   ,'nxy   ',idrv=5)
+    call add_inp_variable(ix    ,'ix    ',idrv=6)
+    call add_inp_variable(iy    ,'iy    ',idrv=7)
+    call add_inp_variable(irepij,'irepij',idrv=8)
+    call add_inp_variable(iprint,'iprint',idrv=9)
+    call add_inp_variable(nz    ,'nz    ',idrv=10)
+    call add_inp_variable(lupri ,'lupri ',idrv=12)
+    call add_inp_variable(norbt ,'norbt ',idrv=13)
+    call add_inp_variable(nasht ,'nasht ',idrv=14)
+    call add_inp_variable(nnashx,'nnashx',idrv=15)
+    call add_inp_variable(ipqtoq,'ipqtoq',idrv=11)
+    call add_inp_variable(h2xy  ,'h2xy  ',idrv=2)
+    call add_inp_variable(h2yx  ,'h2yx  ',idrv=3)
+    call add_inp_variable(pv    ,'pv    ',idrv=4)
 
-    ! close file
-    close(60,status='keep')
-  endif
+    call add_out_real_array('fq    ','(norbt*nasht*nz)',idrv=1)
+
+!   call print_variable_info
+
+    call generate_test
+   endif
+#endif
 
   !------------------------------------------------------------------------------!
   !                               Print section                                  !
@@ -621,9 +622,9 @@
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( key_unit_test > 0 )then
+  if(present(key))then
     ! open file
-    open(60,file='raddfq90.uout',status='unknown',form='formatted',access='sequential',iostat=ier)
+    open(60,file=output_file,status='unknown',form='formatted',access='sequential',iostat=ier)
     if(ier /= 0)then
       write(6,*) 'raddfq90: ERROR while creating raddfq90.uout file'
       stop

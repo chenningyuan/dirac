@@ -142,7 +142,7 @@ group.add_argument('--tests',
         nargs='?',
         action='store',
         choices=('on','off'),
-        default='on',
+        default='off',
         const='on',
         help='build test suite [default: %(default)s]')
 group.add_argument('--check',
