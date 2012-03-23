@@ -1,11 +1,44 @@
 !----------------------------------------------
 !
-!  simple test of Fortran GPU CUDA libraries
-! in the DIRAC enviroment
+!
+! Simple test of Fortran GPU CUDA libraries
+! in the DIRAC environment. Comparison between
+!
+! Written by Miro Ilias, Banska Bystrica
+!
 !
 !----------------------------------------------
 
+module fortran_timing
+! http://software.intel.com/sites/products/documentation/hpc/compilerpro/en-us/fortran/lin/compiler_f/lref_for/source_files/rfsystmc.htm
+! If the type is INTEGER(2), count_rate is 1000. If the type is INTEGER(4), count_rate is 10000. If the type is INTEGER(8), count_rate is 1000000.
+!integer(kind=8) :: cr=1000000,cm ! accuracy in nanoseconds
+
+integer(kind=8) :: c1,c2,cr,cm ! accuracy in nanoseconds
+!integer(kind=4) :: c1,c2,cr,cm ! accuracy in nanoseconds
+
+contains
+
+subroutine print_time_info
+call system_clock( count_rate=cr, count_max=cm )
+write(*,'(2x,a,i8,a,i20)') "* system_clock timing routine:  COUNT_RATE=",cr," COUNT_MAX=",cm
+end subroutine print_time_info
+
+subroutine  print_time(message)
+! print spent time in routine between c1 and c2 
+! http://gcc.gnu.org/onlinedocs/gfortran/SYSTEM_005fCLOCK.html
+! print spent time in routine ...
+character(*), intent(in) :: message
+!!print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+!!print *,c1,c2,cr,cm
+write(*,'(2x,a,a,a,f13.8,a)') 'Routine <',message,'> spent runtime:', (dfloat(c2-c1) / dfloat(cr)), ' seconds.'
+end subroutine  print_time
+
+end module fortran_timing
+
 module gpu_stuff
+
+  use fortran_timing
 
 implicit none
 
@@ -29,8 +62,6 @@ integer :: verb=0 ! default verbosity level
 
 integer :: n
 integer :: i,j
-integer(kind=8) :: c1,c2
-integer(kind=8) :: cr,cm ! accuracy in nanoseconds
 
 real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:),x_r(:),y_r(:)
 real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:),x_d(:),y_d(:)
@@ -47,14 +78,6 @@ contains
 subroutine usage
 write(*,*) 'usage: gpu_test.x  <sgemm/sgemv/dgemm>  <n> <verbosity level>'
 end subroutine usage
-
-subroutine  print_time(message)
-! http://gcc.gnu.org/onlinedocs/gfortran/SYSTEM_005fCLOCK.html
-! print spent time in routine ...
-character(*), intent(in) :: message
-!!print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
-write(*,'(2x,a,a,a,f13.8,a)') 'Routine <',message,'> spent runtime:', float(c2-c1) / float(cr), ' seconds.'
-end subroutine  print_time
 
 subroutine read_arguments
 CALL GETARG(1,BUFFER); READ(BUFFER,*,IOSTAT=IOS) method
@@ -470,6 +493,10 @@ end module gpu_stuff
 
 Program GPU_math_tests
   use gpu_stuff
+  use fortran_timing
+
+  call print_time_info
+
   call read_arguments
   select case (method)
     case("sgemm")
