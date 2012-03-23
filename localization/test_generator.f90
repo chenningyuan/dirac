@@ -14,6 +14,7 @@ interface add_inp_variable
   module procedure add_inp_integer_1d_array
   module procedure add_inp_integer_2d_array
   module procedure add_inp_real_variable
+  module procedure add_inp_real_1d_array
 end interface add_inp_variable
 
 private :: init_string, add_string, errall, erropen, get_name, i2c, csize
@@ -102,7 +103,7 @@ contains
   dtmp(1:ndim) = dvar(1:ndim)
 
   open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+       position='append',iostat=ier); call erropen(ier,'add_inp_real_array',namef(1:n))
 
   write(iunit,*) vname
   write(iunit,*) dtmp
@@ -185,7 +186,7 @@ contains
 
   ! --\-- write variable to the input file
   open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+       position='append',iostat=ier); call erropen(ier,'add_inp_integer_variable',namef(1:n))
 
   write(iunit,*) vname
   write(iunit,*) ivar
@@ -224,7 +225,7 @@ contains
 
   ! --\-- write 2d array to the input file
   open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+       position='append',iostat=ier); call erropen(ier,'add_inp_integer_1d_array',namef(1:n))
 
   write(iunit,*) vname
   write(iunit,*) ivar
@@ -264,7 +265,7 @@ contains
 
   ! --\-- write 2d array to the input file
   open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+       position='append',iostat=ier); call erropen(ier,'add_inp_integer_2d_array',namef(1:n))
 
   write(iunit,*) vname
   write(iunit,*) ivar
@@ -305,7 +306,7 @@ contains
 
   ! --\-- write variable to the input file
   open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+       position='append',iostat=ier); call erropen(ier,'add_inp_real_variable',namef(1:n))
 
   write(iunit,*) vname
   write(iunit,*) dvar
@@ -323,6 +324,46 @@ contains
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_real_1d_array(dvar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, n1, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write 2d array to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_real_1d_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) dvar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8, allocatable, dimension(:)',var_type)
+  n1 = size(dvar,1)
+  call add_string( '(' // i2c(n1) // ')' , var_dim )
+  call add_string('input',var_info)
+  var_name(size(var_name))%idrv = 0
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_real_1d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -599,7 +640,7 @@ contains
   integer   :: i, j, k, ier, nn, nt, nd
 
   open(iunit,file='test.F90',status='new',form='formatted',access='sequential',&
-       iostat=ier); call erropen(ier,'add_inp_int_array','test.F90')
+       iostat=ier); call erropen(ier,'generate_test','test.F90')
 
   ! header
   write(iunit,'(a)')'program test'
