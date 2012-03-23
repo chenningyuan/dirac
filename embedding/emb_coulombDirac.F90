@@ -120,6 +120,8 @@
       
       IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
 
+      vc = 0.0d0
+
 !     Electrostatic potential: electronic contribution
       CALL ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
 
