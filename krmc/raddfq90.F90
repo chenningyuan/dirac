@@ -45,6 +45,7 @@
   !------------------------------------------------------------------------------!
   if( key_unit_test == 2 )then
 
+   if( nxy==1 .and. ix==1 .and. iy==1 )then
     call add_input_file('raddfq90.inp')
     call add_output_file('raddfq90.out')
     call set_driver_routine('raddfq90')
@@ -66,9 +67,10 @@
     call add_inp_real_array(h2yx,'h2yx  ',norbt*nasht*nz*3,'(norbt*nasht*nz*3)',idrv=3)
     call add_inp_real_array(pv  ,'pv    ',nasht*nasht*nnashx*nz*3,'(nasht*nasht*nnashx*nz*3)',idrv=4)
 
-    call print_variable_info
+!   call print_variable_info
 
     call generate_test
+   endif
 
   endif
 
