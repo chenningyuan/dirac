@@ -1,5 +1,5 @@
   subroutine raddfq90(fq,h2xy,h2yx,pv,nxy,ix,iy,irepij,iprint, &
-                      nz,ipqtoq,lupri,norbt,nasht,nnashx,key_unit_test)
+                      nz,ipqtoq,lupri,norbt,nasht,nnashx,key)
   !***********************************************************************
   !
   !     Add up the infinite number of terms that constitutes the FQ fock
@@ -27,7 +27,7 @@
   implicit none
 
   ! External variables
-  integer, intent( in), optional :: key_unit_test
+  integer, intent( in), optional :: key
   integer, intent( in) :: nxy, ix, iy, irepij, iprint
   integer, intent( in) :: nz, ipqtoq(4,0:7), lupri, norbt, nasht, nnashx
   real*8,  intent( in) :: h2xy(norbt,nasht,nz,3), h2yx(norbt,nasht,nz,3)
@@ -43,7 +43,7 @@
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( key_unit_test == 2 )then
+  if( key == 2 )then
 
    if( nxy==1 .and. ix==1 .and. iy==1 )then
     call add_input_file('raddfq90.inp')
@@ -619,7 +619,7 @@
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( key_unit_test > 0 )then
+  if( key > 0 )then
     ! open file
     open(60,file='raddfq90.out',status='unknown',form='formatted',access='sequential',iostat=ier)
     if(ier /= 0)then

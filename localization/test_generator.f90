@@ -17,7 +17,7 @@ interface add_inp_variable
   module procedure add_inp_real_1d_array
 end interface add_inp_variable
 
-private :: init_string, add_string, errall, erropen, get_name, i2c, csize
+private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize, check_idrv
 
 private
 
@@ -73,7 +73,6 @@ contains
   call add_string('integer, allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('input',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_int_array
@@ -119,7 +118,6 @@ contains
   call add_string('real*8,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('input',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_array
@@ -140,7 +138,6 @@ contains
   call add_string('integer,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('output',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_out_int_array
@@ -161,7 +158,6 @@ contains
   call add_string('real*8,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('output',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_out_real_array
@@ -200,7 +196,6 @@ contains
   call add_string('integer',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_integer_variable
@@ -240,7 +235,6 @@ contains
   n1 = size(ivar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_integer_1d_array
@@ -281,7 +275,6 @@ contains
   n2 = size(ivar,2)
   call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
   call add_string('input',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_integer_2d_array
@@ -320,7 +313,6 @@ contains
   call add_string('real*8',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_variable
@@ -360,7 +352,6 @@ contains
   n1 = size(dvar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
-  var_name(size(var_name))%idrv = 0
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_1d_array
@@ -534,6 +525,7 @@ contains
   ! copy string_name to newly allocated str array
   do i=1,nstr
     type_string(ndim+1)%str(i) = string_name(i:i)
+    type_string(ndim+1)%idrv   = 0
   enddo
 
   ! nullify tmp_list
@@ -639,6 +631,16 @@ contains
   is = floor(log10(real(i,kind(1.0d0)))) + 1
   end function csize
 
+  function check_idrv result(lg)
+  implicit none
+  logical :: lg
+  integer :: i
+  lg = .false.
+  do i=1,size(var_name)
+    if(var_name(i)%idrv /= 0) lg = .true.
+  enddo
+  end function check_idrv
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
@@ -714,15 +716,23 @@ contains
   write(iunit,'(a)') '  key = 1'
   write(iunit,'(a,70a,a)')"  call ", gets(driver(1)%str) , '( &'
   coma = ' '
-  do k=1,size(var_name)
-    do i=1,size(var_name)
-      if(var_name(i)%idrv == k)then
-        write(iunit,'(9x,a,70a,a)') coma,gets(var_name(i)%str) , ' &'
-        coma = ','
-      endif
+  if(check_idrv())then
+    do k=1,size(var_name)
+      do i=1,size(var_name)
+        if(var_name(i)%idrv == k)then
+          write(iunit,'(9x,a,70a,a)') coma,gets(var_name(i)%str) , ' &'
+          coma = ','
+        endif
+      enddo
     enddo
-  enddo
-  write(iunit,'(9x,a)') ',key    &'
+    write(iunit,'(9x,a)') ',key    &'
+  else
+    do i=1,size(var_name)
+      write(iunit,'(9x,a,70a,a)')coma,gets(var_name(i)%str),' = ',gets(var_name(i)%str),' &'
+      coma = ','
+    enddo
+    write(iunit,'(9x,a)') ',key    = key    &'
+  endif
   write(iunit,'(9x,a)') ')'
   ! compare results
   write(iunit,'(a)')
