@@ -948,7 +948,7 @@ contains
   do i=1,size(output_files)
     write(iunit,'(a,70a,a,70a,a,a)')"  call compare_files(60,'",       &
                                     gets(output_files(i)%str) , "','", &
-                                    gets(output_files(i)%str) , "_ref'", ",1.0d-14)"
+                                    gets(output_files(i)%str) , "_ref'", ",1.0d-15)"
   enddo
   ! deallocation
   write(iunit,'(a)')
