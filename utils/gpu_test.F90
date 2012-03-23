@@ -17,11 +17,15 @@ module fortran_timing
 integer(kind=8) :: c1,c2,cr,cm ! accuracy in nanoseconds
 !integer(kind=4) :: c1,c2,cr,cm ! accuracy in nanoseconds
 
+integer, parameter :: count_rate_kind4=1000, count_rate_kind8=1000000
 contains
 
 subroutine print_time_info
 call system_clock( count_rate=cr, count_max=cm )
 write(*,'(2x,a,i8,a,i20)') "* system_clock timing routine:  COUNT_RATE=",cr," COUNT_MAX=",cm
+if (cr.ne.count_rate_kind8) then
+  write(*,'(2x,a,i7)') 'wrong system value of COUNT_MAX parameter, must be (kind=8) ',count_rate_kind8
+endif
 end subroutine print_time_info
 
 subroutine  print_time(message)
