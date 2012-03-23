@@ -10,11 +10,16 @@ public :: generate_test
 public :: add_inp_variable
 
 interface add_inp_variable
+  module procedure add_inp_logical_variable
   module procedure add_inp_integer_variable
   module procedure add_inp_integer_1d_array
   module procedure add_inp_integer_2d_array
   module procedure add_inp_real_variable
   module procedure add_inp_real_1d_array
+  module procedure add_inp_real_2d_array
+  module procedure add_inp_real_3d_array
+  module procedure add_inp_real_4d_array
+  module procedure add_inp_real_5d_array
 end interface add_inp_variable
 
 private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize, check_idrv
@@ -161,6 +166,44 @@ contains
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_out_real_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_logical_variable(lvar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  logical,      intent(in) :: lvar
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write variable to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_logical_variable',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) lvar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('logical',var_type)
+  call add_string('0',var_dim)
+  call add_string('input',var_info)
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_logical_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -348,13 +391,179 @@ contains
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
-  call add_string('real*8, allocatable, dimension(:)',var_type)
+  call add_string('real*8,  allocatable, dimension(:)',var_type)
   n1 = size(dvar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
   if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_1d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_real_2d_array(dvar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, n1, n2, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write 2d array to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_real_2d_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) dvar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
+  call add_string('input',var_info)
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_real_2d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_real_3d_array(dvar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:,:)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, n1, n2, n3, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write 2d array to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_real_3d_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) dvar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
+  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
+  call add_string('input',var_info)
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_real_3d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_real_4d_array(dvar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:,:,:)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, n1, n2, n3, n4, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write 2d array to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_real_4d_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) dvar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:,:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
+  n4 = size(dvar,4)
+  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//')',var_dim)
+  call add_string('input',var_info)
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_real_4d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_real_5d_array(dvar,vname,nfile,idrv)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:,:,:,:)
+  integer, intent(in), optional :: nfile, idrv
+
+  ! Internal variables
+  integer   :: n, n1, n2, n3, n4, n5, ier
+  character :: namef*(nchar)
+
+  ! get name of the input file
+  call get_name(namef,n,input_files,nfile)
+
+  ! --\-- write 2d array to the input file
+  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
+       position='append',iostat=ier); call erropen(ier,'add_inp_real_5d_array',namef(1:n))
+
+  write(iunit,*) vname
+  write(iunit,*) dvar
+
+  close(iunit,status='keep')
+  ! --/--
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:,:,:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
+  n4 = size(dvar,4)
+  n5 = size(dvar,5)
+  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//','//i2c(n5)//')',var_dim)
+  call add_string('input',var_info)
+  if(present(idrv)) var_name(size(var_name))%idrv = idrv
+
+  end subroutine add_inp_real_5d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!

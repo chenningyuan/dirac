@@ -61,11 +61,11 @@
     call add_inp_variable(nasht ,'nasht ',idrv=14)
     call add_inp_variable(nnashx,'nnashx',idrv=15)
     call add_inp_variable(ipqtoq,'ipqtoq',idrv=11)
+    call add_inp_variable(h2xy  ,'h2xy  ',idrv=2)
+    call add_inp_variable(h2yx  ,'h2yx  ',idrv=3)
+    call add_inp_variable(pv    ,'pv    ',idrv=4)
 
     call add_out_real_array('fq    ','(norbt*nasht*nz)',idrv=1)
-    call add_inp_real_array(h2xy,'h2xy  ',norbt*nasht*nz*3,'(norbt*nasht*nz*3)',idrv=2)
-    call add_inp_real_array(h2yx,'h2yx  ',norbt*nasht*nz*3,'(norbt*nasht*nz*3)',idrv=3)
-    call add_inp_real_array(pv  ,'pv    ',nasht*nasht*nnashx*nz*3,'(nasht*nasht*nnashx*nz*3)',idrv=4)
 
 !   call print_variable_info
 

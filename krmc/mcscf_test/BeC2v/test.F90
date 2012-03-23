@@ -16,10 +16,10 @@ program test
   integer :: nasht 
   integer :: nnashx
   integer, allocatable, dimension(:,:) :: ipqtoq
+  real*8,  allocatable, dimension(:,:,:,:) :: h2xy  
+  real*8,  allocatable, dimension(:,:,:,:) :: h2yx  
+  real*8,  allocatable, dimension(:,:,:,:,:) :: pv    
   real*8,  allocatable, dimension(:) :: fq    
-  real*8,  allocatable, dimension(:) :: h2xy  
-  real*8,  allocatable, dimension(:) :: h2yx  
-  real*8,  allocatable, dimension(:) :: pv    
 
   open(60,file='raddfq90.inp',status='old',form='formatted',access='sequential',iostat=ier)
   if(ier /= 0)then
@@ -49,10 +49,10 @@ program test
   read(60,*) nnashx
 
   allocate( ipqtoq(4,8) , stat=ier ); call errall(ier,'test','ipqtoq')
+  allocate( h2xy  (37,4,1,3) , stat=ier ); call errall(ier,'test','h2xy  ')
+  allocate( h2yx  (37,4,1,3) , stat=ier ); call errall(ier,'test','h2yx  ')
+  allocate( pv    (4,4,10,1,3) , stat=ier ); call errall(ier,'test','pv    ')
   allocate( fq    (norbt*nasht*nz) , stat=ier ); call errall(ier,'test','fq    ')
-  allocate( h2xy  (norbt*nasht*nz*3) , stat=ier ); call errall(ier,'test','h2xy  ')
-  allocate( h2yx  (norbt*nasht*nz*3) , stat=ier ); call errall(ier,'test','h2yx  ')
-  allocate( pv    (nasht*nasht*nnashx*nz*3) , stat=ier ); call errall(ier,'test','pv    ')
 
   read(60,*)
   read(60,*) ipqtoq
@@ -88,10 +88,10 @@ program test
   call compare_files(60,'raddfq90.out','raddfq90.out_ref',1.0d-14)
 
   deallocate( ipqtoq )
-  deallocate( fq     )
   deallocate( h2xy   )
   deallocate( h2yx   )
   deallocate( pv     )
+  deallocate( fq     )
 
 contains
 
