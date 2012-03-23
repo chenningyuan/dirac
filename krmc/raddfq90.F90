@@ -26,6 +26,8 @@
   use test_generator
   implicit none
 
+#include "unit-test.h"
+
   ! External variables
   integer, intent( in), optional :: key
   integer, intent( in) :: nxy, ix, iy, irepij, iprint
@@ -36,6 +38,7 @@
 
   ! Internal variables
   integer :: i, j, k, izz, npvcol, ier
+  character :: output_file*12
 
   real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
   real*8, allocatable :: tmpmat(:,:,:)
@@ -43,11 +46,12 @@
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( key == 2 )then
+  output_file = 'raddfq90.out'
 
+#ifdef CREATE_UNIT_TESTS
    if( nxy==1 .and. ix==1 .and. iy==1 )then
     call add_input_file('raddfq90.inp')
-    call add_output_file('raddfq90.out')
+    call add_output_file(output_file)
     call set_driver_routine('raddfq90')
 
     call add_inp_variable(nxy   ,'nxy   ',idrv=5)
@@ -71,8 +75,7 @@
 
     call generate_test
    endif
-
-  endif
+#endif
 
   !------------------------------------------------------------------------------!
   !                               Print section                                  !
@@ -619,9 +622,9 @@
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( key > 0 )then
+  if(present(key))then
     ! open file
-    open(60,file='raddfq90.out',status='unknown',form='formatted',access='sequential',iostat=ier)
+    open(60,file=output_file,status='unknown',form='formatted',access='sequential',iostat=ier)
     if(ier /= 0)then
       write(6,*) 'raddfq90: ERROR while creating raddfq90.uout file'
       stop
