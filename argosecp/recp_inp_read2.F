@@ -1,8 +1,9 @@
       SUBROUTINE RECP_INP_NUCREP
-     &         ( ic, nc, chg, NLIST, PRINT_LEVEL, x, y, z )
+     &         ( ic,nc,chg,x,y,z )
 
 !     # calculate the nuclear repulsion energy.
 #include "inc_mxvalue.h"
+#include "inc_print.h"
 
 !     Global variables ------------------------------------
       integer
@@ -13,7 +14,6 @@
      & mrcru, mstu, msu,   ng,   ns,   nst
 
       INTEGER ic, nc(*), chg(*)  !ic->I_CENT
-      INTEGER NLIST, PRINT_LEVEL 
       REAL*8  x(mcu,*), y(mcu,*), z(mcu,*)
 
 !     Local variables -------------------------------------
@@ -56,7 +56,7 @@
         ENDDO
       ENDDO
 
-      IF (PRINT_LEVEL.GE.2) WRITE (NLIST,'(/,a,f14.8)')
+      IF (PRINT_LEVEL.GE.2) WRITE (RECP_OUT,'(/,a,f14.8)')
      &         ' * nuclear repulsion energy', NUCREP
       END
 
@@ -66,7 +66,7 @@
 #include "inc_print.h"
 !     Global variables 
       INTEGER is, mcrs(*), lcr(*),nkcrl(6,*), nkcru(6,*),
-     &        NLIST, ncr(*),nklsl(4,*), nklsu(4,*), lls(*)
+     &        ncr(*),nklsl(4,*), nklsu(4,*), lls(*)
       REAL*8  zcr(*), ccr(*)
       character*3 mtype(*)
       character*1 lblsh(21)
@@ -82,17 +82,17 @@
       kcrl = nkcrl(1,icrs)
       kcru = nkcru(1,icrs)
 
-      WRITE (NLIST,'(/,10X,60A)') ('-', I=1,60)
+      WRITE (RECP_OUT,'(/,10X,60A)') ('-', I=1,60)
 
 !     RECP : r^(-ncr) * exp( zcr * ccr ) 
 
 !     Print AREP information (highest angular momentum)
 !     -------------------------------------------------
-      WRITE (NLIST,'(/,31X,A3,A)') mtype(is),' core potential'
-      WRITE (NLIST,'(/,35X,A1,A)') lblsh(AREP2+1),' potential'
-      WRITE (NLIST,'(19X,A,6X,A,4X,A)') 
+      WRITE (RECP_OUT,'(/,31X,A3,A)') mtype(is),' core potential'
+      WRITE (RECP_OUT,'(/,35X,A1,A)') lblsh(AREP2+1),' potential'
+      WRITE (RECP_OUT,'(19X,A,6X,A,4X,A)') 
      &      'powers','exponentials','coefficients'
-      WRITE (NLIST,'(50(I22,4X,2(F16.7),/))') 
+      WRITE (RECP_OUT,'(50(I22,4X,2(F16.7),/))') 
      &      (ncr(kcr), zcr(kcr), ccr(kcr), kcr=kcrl,kcru)
 
 !     Print AREP information
@@ -100,11 +100,11 @@
       do AREP1 = 1,AREP2
          kcrl = nkcrl(AREP1+1,icrs)
          kcru = nkcru(AREP1+1,icrs)
-         WRITE (NLIST,'(33X,A1,A,A1,A)')
+         WRITE (RECP_OUT,'(33X,A1,A,A1,A)')
      &         lblsh(AREP1),' - ',lblsh(AREP2+1),' potential'
-         WRITE (NLIST,'(19X,A,6X,A,4X,A)')
+         WRITE (RECP_OUT,'(19X,A,6X,A,4X,A)')
      &         'powers','exponentials','coefficients'
-         WRITE (NLIST,'(50(I22,4X,2(F16.7),/))')
+         WRITE (RECP_OUT,'(50(I22,4X,2(F16.7),/))')
      &         (ncr(kcr), zcr(kcr), ccr(kcr), kcr=kcrl,kcru)
       enddo
 
@@ -112,15 +112,15 @@
 !     -----------------------
       SOREP2 = lls(icrs)
       if ( SOREP2 .le. 0 ) goto 1000
-      write (nlist,820) mtype(is)
+      write (RECP_OUT,820) mtype(is)
   820 format(//28x,a3,' spin-orbit potential')
       do SOREP1 = 1,SOREP2
          kcrl = nklsl(SOREP1,icrs)
          kcru = nklsu(SOREP1,icrs)
-         WRITE (NLIST,'(35X,A1,A)') lblsh(SOREP1+1),' potential'
-         WRITE (NLIST,'(19X,A,6X,A,4X,A)')
+         WRITE (RECP_OUT,'(35X,A1,A)') lblsh(SOREP1+1),' potential'
+         WRITE (RECP_OUT,'(19X,A,6X,A,4X,A)')
      &         'powers','exponentials','coefficients'
-         WRITE (NLIST,'(50(I22,4X,2(F16.7),/))')
+         WRITE (RECP_OUT,'(50(I22,4X,2(F16.7),/))')
      &         (ncr(kcr), zcr(kcr), ccr(kcr), kcr=kcrl,kcru)
 
       enddo

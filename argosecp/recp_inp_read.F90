@@ -522,6 +522,8 @@ SUBROUTINE RECP_INP_READMENU(RECPINP,MENUNAME)
   IF (INPLINE(1:MENUSIZE).NE.MENUNAME) GOTO 1000
 END SUBROUTINE RECP_INP_READMENU
 
+
+
 SUBROUTINE RECP_INP_READLINE(RECPINP,INPLINE)
   IMPLICIT NONE
   CHARACTER*80 INPLINE
@@ -533,5 +535,91 @@ SUBROUTINE RECP_INP_READLINE(RECPINP,INPLINE)
      CALL QUIT('Error in reading line')
   ENDIF
 END SUBROUTINE RECP_INP_READLINE
+
+
+
+SUBROUTINE RECP_INP_MENU
+! Read menu file
+  USE RECP_OUTPUT
+  IMPLICIT NONE
+#include "priunit.h"
+#include "inc_print.h"
+  INTEGER I,IOS,NTABLE
+  PARAMETER (NTABLE=2)
+  CHARACTER WORD0*7,WORD1*7,TABLE(NTABLE)*7
+  DATA WORD0 /'*ECP   '/
+  DATA TABLE /'.PRINT ','.DEBUG '/
+
+! Original parameter
+  PRINT_LEVEL = 1
+  RECP_DBG    = 0
+  RECP_OUT    = 6 ! DIRAC output
+  
+! Read MENU file (*ECP)
+! ---------------------
+  REWIND (LUCMD,IOSTAT=IOS)
+  1000 CONTINUE
+  READ (LUCMD,'(A7)',END=9900,ERR=9000) WORD1
+  IF (WORD1.EQ.WORD0) THEN
+     GOTO 2000
+  ELSE
+     GOTO 1000
+  ENDIF
+  CALL OUTPUT_DBG_CHAR1('No *ECP is detected in MENU file',1) 
+  GOTO 9900 
+
+! Check options in *ECP
+! ---------------------
+  2000 CONTINUE
+  READ (LUCMD,'(A7)',END=9900,ERR=9000) WORD1 
+  IF (WORD1(1:1).EQ.'!') GOTO 2000
+  IF (WORD1(1:1).EQ.'#') GOTO 2000
+  IF (WORD1(1:1).EQ.'*') GOTO 9900
+  IF (WORD1(1:1).EQ.'.') THEN
+     DO I = 1, NTABLE
+        IF (WORD1.EQ.TABLE(I)) THEN
+           GOTO(3010,3020),I
+        ENDIF
+     ENDDO
+  ENDIF
+  GOTO 9100
+
+! Reading vaues : .PRINT  
+! ----------------------
+  3010 CONTINUE 
+  READ (LUCMD,'(A7)',ERR=9000) WORD1
+  IF (WORD1(1:1).EQ.'!') GOTO 3010
+  IF (WORD1(1:1).EQ.'#') GOTO 3010
+  READ (WORD1,*,ERR=3011) PRINT_LEVEL 
+  WRITE (RECP_OUT,'(/,A)') ' * Print level for RECP : ',PRINT_LEVEL
+  GOTO 2000
+! Error message
+  3011 CONTINUE
+  WRITE(RECP_OUT,'(/,A,I7)') ' .PRINT value error : ',PRINT_LEVEL
+  GOTO 9000
+
+! Reading vaues : .DEBUG 
+! ----------------------
+  3020 CONTINUE
+  READ (LUCMD,'(A7)',ERR=9000) WORD1
+  IF (WORD1(1:1).EQ.'!') GOTO 3020
+  IF (WORD1(1:1).EQ.'#') GOTO 3020
+  READ (WORD1,*,ERR=3021) RECP_DBG
+  GOTO 2000
+! Error message
+  3021 CONTINUE
+  WRITE(RECP_OUT,'(/,A,I7)') ' .DEBUG value error : ',RECP_DBG
+  GOTO 9000
+
+! Error message
+! -------------
+  9000 CONTINUE 
+     WRITE(RECP_OUT,'(/,2A)') ' Error in reading menu file : ',WORD1
+     CALL QUIT('Error in reading line')
+  9100 CONTINUE
+     WRITE(RECP_OUT,'(/,3A)') ' Keyword ',WORD1,' is not recognized in ECP'
+     CALL QUIT('Wrong input')
+  9900 CONTINUE 
+END SUBROUTINE RECP_INP_MENU
 
 END MODULE RECP_INP_READ

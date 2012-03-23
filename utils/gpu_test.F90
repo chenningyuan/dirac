@@ -29,7 +29,8 @@ integer :: verb=0 ! default verbosity level
 
 integer :: n
 integer :: i,j
-integer :: c1,c2,cr,cm
+integer(kind=8) :: c1,c2
+integer(kind=8) :: cr,cm ! accuracy in nanoseconds
 
 real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:),x_r(:),y_r(:)
 real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:),x_d(:),y_d(:)
@@ -46,6 +47,14 @@ contains
 subroutine usage
 write(*,*) 'usage: gpu_test.x  <sgemm/sgemv/dgemm>  <n> <verbosity level>'
 end subroutine usage
+
+subroutine  print_time(message)
+! http://gcc.gnu.org/onlinedocs/gfortran/SYSTEM_005fCLOCK.html
+! print spent time in routine ...
+character(*), intent(in) :: message
+!!print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+write(*,'(2x,a,a,a,f13.8,a)') 'Routine <',message,'> spent runtime:', float(c2-c1) / float(cr), ' seconds.'
+end subroutine  print_time
 
 subroutine read_arguments
 CALL GETARG(1,BUFFER); READ(BUFFER,*,IOSTAT=IOS) method
@@ -177,7 +186,7 @@ call cublas_shutdown
 stop
 endif
 call system_clock( count=c2 )
-print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("GPU sgemm")
 call mtx_check(C_r)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrB)
@@ -187,7 +196,7 @@ call cublas_shutdown
 call system_clock( c1, cr, cm )
 call sgemm('n','n',n,n,n,1.0e0,A_r,n,B_r,n,-2.0e0,C_r,n)
 call system_clock( count=c2 )
-print *, ' CPU sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("CPU sgemm")
 call mtx_check(C_r)
 call cublas_shutdown
 end subroutine sgemm_test
@@ -299,7 +308,7 @@ else
   endif
 endif
 call system_clock( count=c2 )
-print *, 'GPU cblas_dgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("GPU dgemm")
 call mtx_check_d(C_d)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrB)
@@ -309,7 +318,7 @@ call cublas_shutdown
 call system_clock( c1, cr, cm )
 call dgemm('n','n',n,n,n,1.0d0,A_d,n,B_d,n,-2.0e0,C_d,n)
 call system_clock( count=c2 )
-print *, ' CPU sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("CPU dgemm")
 call mtx_check_d(C_d)
 call cublas_shutdown
 end subroutine dgemm_test
@@ -414,7 +423,7 @@ endif
 ! get the vector from GPU into y_r...
 stat=cublas_get_vector(n,size_of_real,devPtry,1,y_r,1)
 call system_clock( count=c2 )
-print *, 'GPU cublas_sgemv runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("GPU sgemv")
 write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrx)
@@ -423,7 +432,7 @@ call system_clock( c1, cr, cm )
 !now perform CPU lib routine:  y = beta*y+alpha*A*x
 call sgemv('n',n,n,-2.0e0,A_r,n,x_r,1,1.0e0,y_r,1)
 call system_clock( count=c2 )
-print *, 'CPU sgemv runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("CPU sgemv")
 write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
 end subroutine sgemv_test
 

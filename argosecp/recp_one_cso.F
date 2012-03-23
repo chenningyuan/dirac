@@ -1,5 +1,6 @@
       subroutine cints(a,ccr,etai,etaj,g2,lcr,lambu, 
-     &           ltot1,mcrs,mproju,nc,ncr,nkcrl,nkcru,x,y,z,zcr,zet )
+     &           ltot1,mcrs,mproju,nc,ncr,nkcrl,nkcru,x,y,z,zcr,zet,
+     &           tmp_ic0,tmp_ic1)
 !  lcru is the max l value + 1 for the potential.
 !  ncr contains the value of n for each term.
 !  zcr contains the value of alpha for each term.
@@ -31,7 +32,7 @@ c
      2  mcrs(*),nc(*),ncr(*),nkcrl(6,*),nkcru(6,*),x(mcu,*),
      3  y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
       integer i 
-
+      integer tmp_ic0,tmp_ic1
       CALL OUTPUT_LOC('cint','E')
       do i=1,3
         IPT_CZ_CRDA(1,i)=a1
@@ -49,7 +50,7 @@ c  i primitive
 c
       do 490 ig=1,igu
       if(.not.igueq1) then
-        do i = 1, nc1
+        do i = 1, tmp_ic0  !YCP, nc1->tmp_ic0
            IPT_CZ_G1(i) = 0.0d0
         enddo
       endif
@@ -166,11 +167,21 @@ c
           do 440 jrcr=1,ircr
             do 430 i=1,iu
               i1n=i1+i
-              do 420 j=1,iu
+              do j=1,iu
+!               if ((j1+j).gt.tmp_ic0) print *,'G1 exceed:1.1',
+!    &             IPT_CZ_G1(j1+j)           
+!               if ((i1n).gt.tmp_ic0) print *,'G1 exceed:1.2',
+!    &             IPT_CZ_G1(i1n) 
+!               if ((ij2+j).gt.tmp_ic1) print *,'G2 exceed:1(1)',
+!    &             g2(ij2+j)
+                IF(tmp_ic0.NE.0) THEN
                 g2(ij2+j)=g2(ij2+j)+IPT_CZ_G1(j1+j)*etai(ircr,ig)+
      1                              IPT_CZ_G1(i1n)*etai(jrcr,ig)
+                ENDIF
+!               if ((ij2+j).gt.tmp_ic1) print *,'G2 exceed:1(2)',
+!    &             g2(ij2+j)
                 i1n=i1n+iu
-  420         continue
+              enddo   
               ij2=ij2+iu
               j1=j1+iu
   430       continue
@@ -179,7 +190,15 @@ c
         else
           do 460 jrcr=1,jrcru
             do 450 i=1,ij
+!             if ((j1+i).gt.tmp_ic0) print *,'G1 exceed:2',
+!    &           IPT_CZ_G1(j1+i)
+!             if ((ij2+i).gt.tmp_ic1) print *,'G2 exceed:2(1)',
+!    &           g2(ij2+i)
+              IF(tmp_ic0.NE.0) THEN
               g2(ij2+i)=g2(ij2+i)+IPT_CZ_G1(j1+i)*etai(ircr,ig)
+              ENDIF
+!             if ((ij2+i).gt.tmp_ic1) print *,'G2 exceed:2(2)',
+!    &           g2(ij2+i)
   450       continue
             ij2=ij2+ij
             j1=j1+ij
@@ -193,7 +212,8 @@ c
 
 
       subroutine lsints( a,ccr,etai,etaj,g2,lls,lambu,ltot1,mcrs,
-     &                   mproju,nc,ncr,nklsl,nklsu,x,y,z,zcr,zet )
+     &                   mproju,nc,ncr,nklsl,nklsu,x,y,z,zcr,zet,
+     &                   tmp_ic0,tmp_ic1 )
 c
 c  lcru is the max l value + 1 for the potential.
 c  ncr contains the value of n for each term.
@@ -227,6 +247,7 @@ c
      2  mcrs(*),nc(*),ncr(*),nklsl(4,*),nklsu(4,*),x(mcu,*),
      3  y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
       integer i
+      integer tmp_ic0,tmp_ic1
       CALL OUTPUT_LOC('LSINTS','E') 
       do 120 i=1,3
         IPT_CZ_CRDA(1,i)=a1
@@ -243,7 +264,7 @@ c  i primitive
 c
       do 490 ig=1,igu
       if(.not.igueq1) then
-        do i = 1, nc1
+        do i = 1, tmp_ic0  !YCP, nc1->tmp_ic0
            IPT_CZ_G1(i) = 0.0d0
         enddo
       endif
@@ -326,9 +347,9 @@ c
 c
       j1=0
       do 380 jrcr=1,jrcru
-        do 370 i=1,ij
+        do i=1,ij
           IPT_CZ_G1(j1+i)=IPT_CZ_G1(j1+i)+IPT_CZ_GOUT(i)*etaj(jrcr,jg)
-  370   continue
+        enddo   
         j1=j1+ij
   380 continue
   390 continue
@@ -336,40 +357,45 @@ c
 c
 c  i transformation
 c
-c 400 if(igueq1) return
       if(igueq1) return
 c
       if(esfc) i1=0
       ij2=0
       do 470 ircr=1,ircru
         j1=0
+
         if(esfc) then
           do 440 jrcr=1,ircr
             i1m=i1
             do 430 i=1,iu
               i1n=i1m
-              do 420 j=1,iu
-                do 410 k=1,3
-                  g2(ij2+k)=g2(ij2+k)+IPT_CZ_G1(j1+k)*etai(ircr,ig)-
-     &                                IPT_CZ_G1(i1n+k)*etai(jrcr,ig)
-  410           continue
+              do j=1,iu
+                do k=1,3
+                  IF(tmp_ic0.NE.0) THEN
+                  g2(ij2+k)=g2(ij2+k) + IPT_CZ_G1(j1+k) *etai(ircr,ig)
+     &                                - IPT_CZ_G1(i1n+k)*etai(jrcr,ig)
+                  ENDIF
+                enddo   
                 ij2=ij2+3
                 j1=j1+3
                 i1n=i1n+(3*iu)
-  420         continue
+              enddo   
               i1m=i1m+3
   430       continue
   440     continue
           i1=i1+ij
         else
-          do 460 jrcr=1,jrcru
-            do 450 i=1,ij
+          do jrcr=1,jrcru
+            do i=1,ij
+              IF(tmp_ic0.NE.0) THEN
               g2(ij2+i)=g2(ij2+i)+IPT_CZ_G1(j1+i)*etai(ircr,ig)
-  450       continue
+              ENDIF
+            enddo   
             ij2=ij2+ij
             j1=j1+ij
-  460     continue
+          enddo   
         endif
+
   470 continue
   490 continue
       CALL OUTPUT_LOC('LSINTS','X') 

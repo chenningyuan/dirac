@@ -14,16 +14,14 @@
 #
 
 Executable = "launch_voce.sh";
-
 # files with full paths
-InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/maintenance/grid_testing/launch_voce.sh"};
-
+InputSandbox = {"launch_voce.sh"};
 ##############################################
 # stdout,stderr output & other working files
 ##############################################
 StdOutput = "DIRAC_tests_std.out";
 StdError = "DIRAC_tests_std.err";
-OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "dirac_test_suite_back.tgz"};
+OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "dirac_suite_back.tgz"};
 
 ##################
 # assign your VO #

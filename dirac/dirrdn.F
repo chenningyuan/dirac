@@ -4431,7 +4431,7 @@ C
 C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
-     &             '*FDE   ','*AMFI  ','*X2C   ','XXXXXXX'/
+     &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   '/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -6110,7 +6110,10 @@ CMI  ... reading input routine for AMFI+RELSCF
 !       this is needed until the old input scheme is replaced
         call move_to_next_star(word)
         GO TO 200
+
+!       *ECP
     8 CONTINUE
+        CALL RECP_LNK_RDMENU(WORD)
         GO TO 200
 C
     1 CONTINUE

@@ -2,10 +2,17 @@
 #  universal diracrc file for grid computing elements 
 #
 # scratch dir
+#
 --scratch=$PWD
+#
 # parallel run - global scratch disk
+#
 --global-scratch-disk
 #
-# mpirun - is specified in $PATH !
+# dirac executable - in build_imported_static/
+#--dirac=$PWD/build_imported_static/dirac.x
 #
-#--mpirun=$PWD/build/mpirun
+#
+# mpirun - is specified in $PATH 
+#
+#--mpirun=$PWD/build_imported_static/mpirun
