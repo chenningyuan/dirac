@@ -622,6 +622,16 @@ contains
   write(c,'(i0)')i
   end function i2c
 
+  function gets(str) result(c)
+  implicit none
+  character, pointer, intent(in) :: str(:)
+  character(len=size(str)) :: c
+  integer :: i
+  do i=1,size(str)
+    c(i:i)=str(i)
+  enddo
+  end function gets
+
   pure function csize(i) result(is)
   implicit none
   integer, intent(in) :: i
@@ -637,7 +647,7 @@ contains
 
   ! Internal variables
   character :: coma*1
-  integer   :: i, j, k, ier, nn, nt, nd
+  integer   :: i, j, k, ier
 
   open(iunit,file='test.F90',status='new',form='formatted',access='sequential',&
        iostat=ier); call erropen(ier,'generate_test','test.F90')
@@ -652,9 +662,7 @@ contains
   write(iunit,'(a)')'  integer :: key'
   ! declaration of variables
   do i=1,size(var_name)
-    nt = size(var_type(i)%str)
-    nn = size(var_name(i)%str)
-    write(iunit,'(2x,70a,a,70a)') (var_type(i)%str(j),j=1,nt),' :: ',(var_name(i)%str(j),j=1,nn)
+    write(iunit,'(2x,70a,a,70a)') gets(var_type(i)%str),' :: ',gets(var_name(i)%str)
   enddo
   ! open input file
   if(size(input_files) > 1)then
@@ -662,12 +670,11 @@ contains
     stop
   endif
   write(iunit,'(a)')
-  nn = size(input_files(1)%str)
-  write(iunit,'(a,70a,a)') "  open(60,file='" , (input_files(1)%str(j),j=1,nn)  , &
+  write(iunit,'(a,70a,a)') "  open(60,file='" , gets(input_files(1)%str)  , &
                              "',status='old',form='formatted',access='sequential',iostat=ier)"
   write(iunit,'(a)')       '  if(ier /= 0)then'
   write(iunit,'(a,70a,a)') "    write(6,*) 'test: ERROR while creating " , &
-                             (input_files(1)%str(j),j=1,nn) , " file'"
+                             gets(input_files(1)%str) , " file'"
   write(iunit,'(a)')       '    stop'
   write(iunit,'(a)')       '  endif'
   ! first read dimensions and parameters
@@ -675,9 +682,8 @@ contains
   do i=1,size(var_name)
     if( var_info(i)%str(1) == 'i')then ! input variables
       if( var_dim(i)%str(1) == '0')then
-        nn = size(var_name(i)%str)
         write(iunit,'(a)')     '  read(60,*)'
-        write(iunit,'(a,70a)') '  read(60,*) ' , (var_name(i)%str(j),j=1,nn)
+        write(iunit,'(a,70a)') '  read(60,*) ' , gets(var_name(i)%str)
       endif
     endif
   enddo
@@ -685,11 +691,9 @@ contains
   write(iunit,'(a)')
   do i=1,size(var_name)
     if( var_dim(i)%str(1) /= '0')then
-      nn = size(var_name(i)%str)
-      nd = size(var_dim(i)%str)
       write(iunit,'(a,70a,70a,a,70a,a)') &
-            '  allocate( ' , (var_name(i)%str(j),j=1,nn) , (var_dim(i)%str(j),j=1,nd) , &
-            " , stat=ier ); call errall(ier,'test','" , (var_name(i)%str(j),j=1,nn) ,"')"
+            '  allocate( ' , gets(var_name(i)%str) , gets(var_dim(i)%str) , &
+            " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
     endif
   enddo
   ! read arrays
@@ -697,9 +701,8 @@ contains
   do i=1,size(var_name)
     if( var_info(i)%str(1) == 'i')then ! input variables
       if( var_dim(i)%str(1) /= '0')then
-        nn = size(var_name(i)%str)
         write(iunit,'(a)')    '  read(60,*)'
-        write(iunit,'(a,70a)')'  read(60,*) ' , (var_name(i)%str(j),j=1,nn)
+        write(iunit,'(a,70a)')'  read(60,*) ' , gets(var_name(i)%str)
       endif
     endif
   enddo
@@ -709,12 +712,12 @@ contains
   ! call driver routine
   write(iunit,'(a)')
   write(iunit,'(a)') '  key = 1'
-  write(iunit,'(a,70a,a)')"  call ", (driver(1)%str(j),j=1,size(driver(1)%str)) , '( &'
+  write(iunit,'(a,70a,a)')"  call ", gets(driver(1)%str) , '( &'
   coma = ' '
   do k=1,size(var_name)
     do i=1,size(var_name)
       if(var_name(i)%idrv == k)then
-        write(iunit,'(9x,a,70a,a)') coma,(var_name(i)%str(j),j=1,size(var_name(i)%str)) , ' &'
+        write(iunit,'(9x,a,70a,a)') coma,gets(var_name(i)%str) , ' &'
         coma = ','
       endif
     enddo
@@ -724,17 +727,15 @@ contains
   ! compare results
   write(iunit,'(a)')
   do i=1,size(output_files)
-    write(iunit,'(a,70a,a,70a,a,a)')"  call compare_files(60,'", &
-                (output_files(i)%str(j),j=1,size(output_files(i)%str)) , "','",   &
-                (output_files(i)%str(j),j=1,size(output_files(i)%str)) , "_ref'", &
-                ",1.0d-14)"
+    write(iunit,'(a,70a,a,70a,a,a)')"  call compare_files(60,'",       &
+                                    gets(output_files(i)%str) , "','", &
+                                    gets(output_files(i)%str) , "_ref'", ",1.0d-14)"
   enddo
   ! deallocation
   write(iunit,'(a)')
   do i=1,size(var_name)
     if( var_dim(i)%str(1) /= '0')then
-      nn = size(var_name(i)%str)
-      write(iunit,'(a,70a,a)')"  deallocate( " , (var_name(i)%str(j),j=1,nn) , " )"
+      write(iunit,'(a,70a,a)')"  deallocate( " , gets(var_name(i)%str) , " )"
     endif
   enddo
   ! write error routine
