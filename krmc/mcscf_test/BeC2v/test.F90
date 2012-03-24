@@ -68,22 +68,22 @@ program test
 
   key = 1
   call raddfq90( &
-          fq     &
-         ,h2xy   &
-         ,h2yx   &
-         ,pv     &
-         ,nxy    &
-         ,ix     &
-         ,iy     &
-         ,irepij &
-         ,iprint &
-         ,nz     &
-         ,ipqtoq &
-         ,lupri  &
-         ,norbt  &
-         ,nasht  &
-         ,nnashx &
-         ,key    &
+          nxy    = nxy    &
+         ,ix     = ix     &
+         ,iy     = iy     &
+         ,irepij = irepij &
+         ,iprint = iprint &
+         ,nz     = nz     &
+         ,lupri  = lupri  &
+         ,norbt  = norbt  &
+         ,nasht  = nasht  &
+         ,nnashx = nnashx &
+         ,ipqtoq = ipqtoq &
+         ,h2xy   = h2xy   &
+         ,h2yx   = h2yx   &
+         ,pv     = pv     &
+         ,fq     = fq     &
+         ,key    = key    &
          )
 
   call compare_files(60,'raddfq90.out','raddfq90.out_ref',1.0d-15)

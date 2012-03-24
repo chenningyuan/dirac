@@ -3,7 +3,7 @@ module test_generator
 implicit none
 
 public :: add_inp_int_array, add_inp_real_array, add_out_int_array, add_out_real_array
-public :: set_driver_routine, add_input_file, add_output_file, add_module
+public :: set_driver_routine, add_input_file, add_output_file, add_module, set_keys
 public :: print_input_files, print_output_files, print_variable_info
 public :: generate_test
 
@@ -22,18 +22,24 @@ interface add_inp_variable
   module procedure add_inp_real_5d_array
 end interface add_inp_variable
 
-private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize, check_idrv
+private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize
 
 private
 
 type :: string
-  integer :: idrv
+  integer :: key
   character, pointer :: str(:)
 end type string
 
 type ( string ), pointer, save :: input_files(:), output_files(:), driver(:)
 type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:), var_info(:)
 type ( string ), pointer, save :: modules(:)
+
+type :: keys
+  logical :: mod_call = .true.
+end type keys
+
+type ( keys ), save :: key
 
 integer, parameter :: iunit = 60, nchar = 100
 
@@ -42,13 +48,13 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_int_array(ivar,vname,ndim,vsize,nfile,idrv)
+  subroutine add_inp_int_array(ivar,vname,ndim,vsize,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname, vsize
   integer,      intent(in) :: ndim, ivar(*)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, ier
@@ -79,21 +85,20 @@ contains
   call add_string('integer, allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_int_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_array(dvar,vname,ndim,vsize,nfile,idrv)
+  subroutine add_inp_real_array(dvar,vname,ndim,vsize,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname, vsize
   integer,      intent(in) :: ndim
   real*8,       intent(in) :: dvar(*)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, ier
@@ -124,19 +129,17 @@ contains
   call add_string('real*8,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_int_array(vname,vsize,idrv)
+  subroutine add_out_int_array(vname,vsize)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname, vsize
-  integer, intent(in), optional :: idrv
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -144,19 +147,17 @@ contains
   call add_string('integer,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('output',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_out_int_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_array(vname,vsize,idrv)
+  subroutine add_out_real_array(vname,vsize)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname, vsize
-  integer, intent(in), optional :: idrv
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -164,20 +165,19 @@ contains
   call add_string('real*8,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('output',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_out_real_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_logical_variable(lvar,vname,nfile,idrv)
+  subroutine add_inp_logical_variable(lvar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   logical,      intent(in) :: lvar
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, ier
@@ -202,20 +202,19 @@ contains
   call add_string('logical',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_logical_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_integer_variable(ivar,vname,nfile,idrv)
+  subroutine add_inp_integer_variable(ivar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, ier
@@ -240,20 +239,19 @@ contains
   call add_string('integer',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_integer_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_integer_1d_array(ivar,vname,nfile,idrv)
+  subroutine add_inp_integer_1d_array(ivar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, n1, ier
@@ -279,20 +277,19 @@ contains
   n1 = size(ivar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_integer_1d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_integer_2d_array(ivar,vname,nfile,idrv)
+  subroutine add_inp_integer_2d_array(ivar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:,:)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, n1, n2, ier
@@ -319,20 +316,19 @@ contains
   n2 = size(ivar,2)
   call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_integer_2d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_variable(dvar,vname,nfile,idrv)
+  subroutine add_inp_real_variable(dvar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, ier
@@ -357,20 +353,19 @@ contains
   call add_string('real*8',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_1d_array(dvar,vname,nfile,idrv)
+  subroutine add_inp_real_1d_array(dvar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, n1, ier
@@ -396,20 +391,19 @@ contains
   n1 = size(dvar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_1d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_2d_array(dvar,vname,nfile,idrv)
+  subroutine add_inp_real_2d_array(dvar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, n1, n2, ier
@@ -436,20 +430,19 @@ contains
   n2 = size(dvar,2)
   call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_2d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_3d_array(dvar,vname,nfile,idrv)
+  subroutine add_inp_real_3d_array(dvar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, n1, n2, n3, ier
@@ -477,20 +470,19 @@ contains
   n3 = size(dvar,3)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_3d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_4d_array(dvar,vname,nfile,idrv)
+  subroutine add_inp_real_4d_array(dvar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, n1, n2, n3, n4, ier
@@ -519,20 +511,19 @@ contains
   n4 = size(dvar,4)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//')',var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_4d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_5d_array(dvar,vname,nfile,idrv)
+  subroutine add_inp_real_5d_array(dvar,vname,nfile)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:,:)
-  integer, intent(in), optional :: nfile, idrv
+  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer   :: n, n1, n2, n3, n4, n5, ier
@@ -562,7 +553,6 @@ contains
   n5 = size(dvar,5)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//','//i2c(n5)//')',var_dim)
   call add_string('input',var_info)
-  if(present(idrv)) var_name(size(var_name))%idrv = idrv
 
   end subroutine add_inp_real_5d_array
 
@@ -625,6 +615,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+  subroutine set_keys(mod_call)
+  implicit none
+
+  ! External variables
+  logical, intent(in), optional :: mod_call
+
+  ! set keys
+  key%mod_call = mod_call
+
+  end subroutine set_keys
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
   subroutine print_input_files
   implicit none
   integer :: i
@@ -666,7 +670,7 @@ contains
     write(6,*) '  dimension: ',var_dim(i)%str
     write(6,*) '  type     : ',var_type(i)%str
     write(6,*) '  info     : ',var_info(i)%str
-    write(6,*) '  idrv     : ',var_name(i)%idrv
+    write(6,*) '  key      : ',var_name(i)%key
   enddo
 
   end subroutine print_variable_info
@@ -731,7 +735,7 @@ contains
   if(ndim > 0)then
     do i=1,ndim
       type_string(i)%str => tmp_list(i)%str
-      type_string(i)%idrv = tmp_list(i)%idrv
+      type_string(i)%key =  tmp_list(i)%key
     enddo
   endif
 
@@ -749,7 +753,7 @@ contains
   ! copy string_name to newly allocated str array
   do i=1,nstr
     type_string(ndim+1)%str(i) = string_name(i:i)
-    type_string(ndim+1)%idrv   = 0
+    type_string(ndim+1)%key    = 0
   enddo
 
   ! nullify tmp_list
@@ -855,16 +859,6 @@ contains
   is = floor(log10(real(i,kind(1.0d0)))) + 1
   end function csize
 
-  function check_idrv() result(lg)
-  implicit none
-  logical :: lg
-  integer :: i
-  lg = .false.
-  do i=1,size(var_name)
-    if(var_name(i)%idrv /= 0) lg = .true.
-  enddo
-  end function check_idrv
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
@@ -873,7 +867,7 @@ contains
 
   ! Internal variables
   character :: coma*1
-  integer   :: i, j, k, ier
+  integer   :: i, ier
 
   open(iunit,file='test.F90',status='new',form='formatted',access='sequential',&
        iostat=ier); call erropen(ier,'generate_test','test.F90')
@@ -943,22 +937,18 @@ contains
   write(iunit,'(a)') '  key = 1'
   write(iunit,'(a,70a,a)')"  call ", gets(driver(1)%str) , '( &'
   coma = ' '
-  if(check_idrv())then
-    do k=1,size(var_name)
-      do i=1,size(var_name)
-        if(var_name(i)%idrv == k)then
-          write(iunit,'(9x,a,70a,a)') coma,gets(var_name(i)%str) , ' &'
-          coma = ','
-        endif
-      enddo
-    enddo
-    write(iunit,'(9x,a)') ',key    &'
-  else
+  if(key%mod_call)then
     do i=1,size(var_name)
       write(iunit,'(9x,a,70a,a)')coma,gets(var_name(i)%str),' = ',gets(var_name(i)%str),' &'
       coma = ','
     enddo
     write(iunit,'(9x,a)') ',key    = key    &'
+  else
+    do i=1,size(var_name)
+      write(iunit,'(9x,a,70a,a)')coma,gets(var_name(i)%str),' &'
+      coma = ','
+    enddo
+    write(iunit,'(9x,a)') ',key    &'
   endif
   write(iunit,'(9x,a)') ')'
   ! compare results
