@@ -840,7 +840,7 @@ contains
   is = floor(log10(real(i,kind(1.0d0)))) + 1
   end function csize
 
-  function check_idrv result(lg)
+  function check_idrv() result(lg)
   implicit none
   logical :: lg
   integer :: i
