@@ -28,6 +28,11 @@ C
 C     Output module for DIRAC
 C
 C***********************************************************************
+      use dirac_cfg
+#ifdef PCM_MODULE
+      use pcm_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -142,6 +147,12 @@ C            leave this to authors of this part) Done, hjaaj.
           WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Solvation energy                         :   ',ERGSOL
         ENDIF
+#ifdef PCM_MODULE
+        if (dirac_cfg_pcm) then
+          write(lupri,'(3X,A,'//FMT//')')
+     +  'Solvation energy                         :   ',get_pcm_energy()
+        ENDIF
+#endif
 C       A one-center approximation may be used that gives a correction 
 C       to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN

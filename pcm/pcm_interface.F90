@@ -1,124 +1,17 @@
+!
 ! DIRAC-side interface routines for the Polarizable Continuum Model
-! RDR 2012
-!
-   
-   subroutine pcm_driver(dmat, fock, work, lwork, printlevel)
-      implicit none
-!
-! Driver routine for the Polarizable Continuum Model.
-!
-! RDR 190312 If X2C or using symmetry quits. 
-!
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
-#ifdef prg_dirac
-#include "dcbgrd.h"
-#endif
-#include "ccom.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "shells.h"
-#include "onecom.h"
-#include "primit.h"
-#include "symind.h"
-#include "symmet.h"
-#include "lmns.h"
-! Passed variables
-      real(8)              :: dmat(*), fock(*)
-      real(8)              :: work(*)
-      integer              :: lwork
-      integer              :: printlevel
-
-! Local variables      
-      integer :: i, nr_points
-      real(8), allocatable :: tess_cent(:, :)
-      real(8)              :: tot_nuc_pol, tot_ele_pol
-      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
-      real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
-      real(8), allocatable :: charges(:)
-      real(8), allocatable :: fock_pcm(:, :, :)
-      real(8)              :: ene_pol
-
-! Quit if symmetry or X2C are requested.
-      if (nbsym > 1) then
-         call quit('Polarizable Continuum Model calculation cannot      &
-     & handle symmetry!')
-      end if
-      if (bss.or.x2c) then
-         call quit('Polarizable Continuum Model calculation not working &
-     & with X2C Hamiltonian!')
-      end if
-
-! Get cavity size, i.e. the number of tesserae      
-      call get_cavity_size(nr_points)
-
-! Allocate tesserae centers matrix, potential and polarization charges vectors
-      allocate(tess_cent(3, nr_points))
-      allocate(nuc_pot(nr_points))
-      allocate(nuc_pol_chg(nr_points))
-      allocate(ele_pot(nr_points))
-      allocate(ele_pol_chg(nr_points))
-! Allocate total charges and PCM contribution to Fock matrix      
-      allocate(charges(nr_points))
-      allocate(fock_pcm(ntbas(0), ntbas(0), nz))
-      fock_pcm = 0.0d0
-
-! Get tesserae centers      
-      call get_tess_centers(tess_cent)
-
-! Compute nuclear and electronic MEP @tesserae centers      
-      nuc_pot = 0.0d0
-      call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
-      ele_pot = 0.0d0
-! Here we are calculating: tr(DV_i) [eq. (1.2)]
-      call ele_pot_pcm(nr_points, tess_cent, ele_pot, dmat, work, lwork)
-! Compute nuclear and electronic polarization charges @tesserae centers
-      nuc_pol_chg = 0.0d0
-! Store potentials and charges in the Cavity object?
-! 0 -> no; 1 -> nuclear; 2 -> electronic; 3-> nuclear + electronic
-      call comp_charge(nuc_pot, nuc_pol_chg, 1)
-      ele_pol_chg = 0.0d0
-      call comp_charge(ele_pot, ele_pol_chg, 2)
-
-! Fock matrix contribution     
-      charges = nuc_pol_chg + ele_pol_chg
-      call pcm_fock(nr_points, tess_cent, charges, fock_pcm, work, lwork)
-      call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
-                       nz, ipqtoq(1,0), 6)
-! Add fock_pcm to Fock matrix
-      call daxpy(n2bbasx, 1, fock_pcm, 1, fock, 1)
-
-! Print some information
-      if (printlevel > 5) then
-          do i = 1, nr_points
-            print *, "NMEP @point", i, nuc_pot(i)
-            print *, "EMEP @point", i, ele_pot(i)
-            if (printlevel > 10) then
-                print *, "NPC @point", i, nuc_pol_chg(i)
-                print *, "EPC @point", i, ele_pol_chg(i)
-            end if
-          end do
-      end if
-
-! Gauss' Theorem Test
-      call gauss_test(nr_points, nuc_pol_chg, ele_pol_chg)
-
-! Polarization energy: U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      call comp_pol_ene_pcm(ene_pol)
-      print *, "U_pol =", ene_pol
-   end subroutine
-
+! Roberto Di Remigio 2012
 !
 ! We divide the interface routines into:
 !   1. cavity-related routines;
 !   2. solver-related routines.
+! 
+! The driver routine and the solver-related routines will be provided
+! through a FORTRAN90 module. The cavity-related routines are called 
+! by C++. Thus we put them outside the module.
 !
 
-
+!
 !                   CAVITY-RELATED ROUTINES
 !
 ! We shall provide the following data to the module:
@@ -135,14 +28,14 @@
 !      other spheres are created as in the Implicit mode.
 !
 
-   subroutine collect_nctot(nuclei)
+   subroutine collect_nctot(nctot)
       implicit none
-      integer, intent(out) :: nuclei
+      integer, intent(out) :: nctot
 
 #include "mxcent.h"
 #include "nuclei.h"
       
-      nuclei = nucdep
+      nctot = nucdep
 
    end subroutine
       
@@ -175,6 +68,91 @@
    
    end subroutine
 
+   module pcm_interface
+
+   implicit none 
+      
+   public pcm_driver
+   public get_pcm_energy
+
+   private
+      
+   contains 
+
+   subroutine pcm_driver(dmat, fock, work, lwork, printlevel)
+!
+! Driver routine for the Polarizable Continuum Model.
+!
+! RDR 190312 Quits if X2C or symmetry requested. 
+!
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#ifdef prg_dirac
+#include "dcbgrd.h"
+#endif
+#include "ccom.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "shells.h"
+#include "onecom.h"
+#include "primit.h"
+#include "symind.h"
+#include "symmet.h"
+#include "lmns.h"
+! Passed variables
+      real(8)              :: dmat(*), fock(*)
+      real(8)              :: work(*)
+      integer              :: lwork
+      integer              :: printlevel
+
+! Local variables      
+      integer :: nr_points
+      real(8), allocatable :: charges(:)
+
+! Quit if symmetry or X2C are requested.
+      if (nbsym > 1) then
+         call quit('Polarizable Continuum Model calculation cannot      &
+     & handle symmetry!')
+      end if
+      if (bss.or.x2c) then
+         call quit('Polarizable Continuum Model calculation not working &
+     & with X2C Hamiltonian!')
+      end if
+
+! Get cavity size, i.e. the number of tesserae      
+      call get_cavity_size(nr_points)
+
+! Allocate total polarization charges vectors      
+      allocate(charges(nr_points))
+      charges = 0.0d0
+
+! Compute total polarization charges
+      call pcm_charges(nr_points, charges, dmat, work, lwork, printlevel)
+! Update Fock matrix with PCM contribution 
+      call pcm_fock(nr_points, charges, fock, work, lwork)
+
+      deallocate(charges)
+
+   end subroutine
+
+   function get_pcm_energy()
+      
+      real(8) get_pcm_energy
+
+      real(8) :: pcm_energy
+
+! Polarization energy: U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
+      call comp_pol_ene_pcm(pcm_energy)
+      print *, "U_pol =", pcm_energy
+
+      get_pcm_energy = pcm_energy
+
+   end function
+
 !      
 !                   SOLVER-RELATED ROUTINES
 !
@@ -186,9 +164,74 @@
 !   2. the electronic potential @grid points.      
 !
 
+   subroutine pcm_charges(nr_points, charges, dmat, work, lwork, printlevel)
+      
+! Passed variables
+      integer, intent(in)  :: nr_points, printlevel
+      real(8), intent(out) :: charges(nr_points)
+      real(8), intent(in)  :: dmat(*)
+      real(8)              :: work(*)
+      integer              :: lwork
+
+! Local variables
+      real(8), allocatable :: tess_cent(:, :)
+      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
+      real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
+      integer              :: i
+
+! Allocation
+      allocate(tess_cent(3, nr_points))
+      tess_cent = 0.0d0
+      allocate(nuc_pot(nr_points))
+      nuc_pot = 0.0d0
+      allocate(nuc_pol_chg(nr_points))
+      nuc_pol_chg = 0.0d0
+      allocate(ele_pot(nr_points))
+      ele_pot = 0.0d0
+      allocate(ele_pol_chg(nr_points))
+      ele_pol_chg = 0.0d0
+      
+! Get tesserae centers      
+      call get_tess_centers(tess_cent)
+! Compute nuclear and electronic MEP @tesserae centers      
+      call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
+      call ele_pot_pcm(nr_points, tess_cent, ele_pot, dmat, work, lwork)
+! Compute nuclear and electronic polarization charges @tesserae centers
+! Store potentials and charges in the Cavity object?
+! 0 -> no; 1 -> nuclear; 2 -> electronic; 3-> nuclear + electronic
+      call comp_charge(nuc_pot, nuc_pol_chg, 1)
+      call comp_charge(ele_pot, ele_pol_chg, 2)
+
+! Print some information
+      if (printlevel > 5) then
+          do i = 1, nr_points
+            print *, "NMEP @point", i, nuc_pot(i)
+            print *, "EMEP @point", i, ele_pot(i)
+            if (printlevel > 10) then
+                print *, "NPC @point", i, nuc_pol_chg(i)
+                print *, "EPC @point", i, ele_pol_chg(i)
+            end if
+          end do
+      end if
+
+! Gauss' Theorem Test
+      if (printlevel > 4 ) then 
+          call gauss_test(nr_points, nuc_pol_chg, ele_pol_chg)
+      end if
+
+      call get_total_surface_charge(charges)
+  
+      deallocate(tess_cent)
+      deallocate(nuc_pot)
+      deallocate(nuc_pol_chg)
+      deallocate(ele_pot)
+      deallocate(ele_pol_chg)
+
+   end subroutine
+
+
    subroutine nuc_pot_pcm(nr_points, tess_cent, pot)
       use vc_grid
-      implicit none
 
       integer, intent(in)  :: nr_points
       real(8), intent(out) :: tess_cent(3, nr_points)
@@ -200,7 +243,6 @@
 
    subroutine ele_pot_pcm(nr_points, tess_cent, pot, dmat, work, lwork)
       use vc_grid
-      implicit none
 
       integer, intent(in)  :: nr_points
       real(8), intent(in)  :: tess_cent(3, nr_points)
@@ -213,40 +255,54 @@
 
    end subroutine
   
-   subroutine pcm_fock(nr_points, tess_cent, charges, fock_pcm, work, lwork)
+   subroutine pcm_fock(nr_points, charges, fock, work, lwork)
       use vc_grid
-      implicit none
 
 #include "dcbbas.h"
 #include "dgroup.h"
 
 ! Passed variables
       integer, intent(in)  :: nr_points
-      real(8), intent(in)  :: tess_cent(3, nr_points)
       real(8), intent(in)  :: charges(nr_points)
-      real(8), intent(out) :: fock_pcm(ntbas(0), ntbas(0), nz)
+      real(8), intent(out) :: fock(*)
       real(8)              :: work(*)
       integer              :: lwork
 
 ! Local variables
-      real(8) :: average
-      integer :: i, j
+      real(8), allocatable :: tess_cent(:, :), fock_pcm(:, :, :)
+      real(8)              :: average
+      integer              :: i, j
+
+! Allocation
+      allocate(tess_cent(3, nr_points))
+      tess_cent = 0.0d0
+      allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+      fock_pcm = 0.0d0
+
+      call get_tess_centers(tess_cent)
 
       call esp_el(nr_points, fock_pcm, tess_cent, charges, work, lwork, 0, .true.)
      
 ! Symmetrize Fock matrix contribution       
       do i = 1, ntbas(0)
-        do j = 1, i
+        do j = 1, i 
           average = (fock_pcm(i, j, 1) + fock_pcm(j, i, 1)) / 2.0d0
           fock_pcm(i, j, 1) = average    
           fock_pcm(j, i, 1) = average 
         end do
       end do
+       
+      call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                       nz, ipqtoq(1,0), 6)
+! Add fock_pcm to Fock matrix
+      call daxpy(n2bbasx, 1, fock_pcm, 1, fock, 1)
       
+      deallocate(tess_cent)
+      deallocate(fock_pcm)
+
    end subroutine
 
    subroutine gauss_test(nr_points, nuc_pol_chg, ele_pol_chg)
-      implicit none
 
 #include "dcbgen.h"
 
@@ -297,7 +353,6 @@
    end subroutine
 
    subroutine get_nuclear_charge(nuc_tot_chg)
-      implicit none
    
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -314,3 +369,5 @@
       end do
 
    end subroutine
+
+   end module

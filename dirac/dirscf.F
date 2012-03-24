@@ -1216,6 +1216,9 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use xmlout
+#ifdef PCM_MODULE
+      use pcm_interface
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1307,7 +1310,7 @@ C
 #ifdef PCM_MODULE
        if (dirac_cfg_pcm) then
           printlevel = 0
-          call pcm_driver(dmat, fock, work, lwork, printlevel)
+        call pcm_driver(dmat, fock, work, lwork, printlevel)
        endif 
 #endif        
 
@@ -1734,7 +1737,6 @@ C
 !     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
 !        write (*,*) 'FDE energy: ',fde_energy
 !     endif
-
 
       DHFERG = DHFERG + ELERGY
 C
