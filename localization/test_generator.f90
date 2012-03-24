@@ -3,7 +3,7 @@ module test_generator
 implicit none
 
 public :: add_inp_int_array, add_inp_real_array, add_out_int_array, add_out_real_array
-public :: set_driver_routine, add_input_file, add_output_file
+public :: set_driver_routine, add_input_file, add_output_file, add_module
 public :: print_input_files, print_output_files, print_variable_info
 public :: generate_test
 
@@ -33,6 +33,7 @@ end type string
 
 type ( string ), pointer, save :: input_files(:), output_files(:), driver(:)
 type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:), var_info(:)
+type ( string ), pointer, save :: modules(:)
 
 integer, parameter :: iunit = 60, nchar = 100
 
@@ -610,6 +611,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+  subroutine add_module(string)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: string
+
+  ! add module to the test
+  call add_string(string,modules)
+
+  end subroutine add_module
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
   subroutine print_input_files
   implicit none
   integer :: i
@@ -867,6 +882,9 @@ contains
   write(iunit,'(a)')'program test'
   write(iunit,'(a)')
   write(iunit,'(a)')'  use unit_testing'
+  do i=1,size(modules)
+    write(iunit,'(a,100a)')'  use ' , gets(modules(i)%str)
+  enddo
   write(iunit,'(a)')'  implicit none'
   write(iunit,'(a)')
   write(iunit,'(a)')'  integer :: ier'

@@ -1,3 +1,9 @@
+module mcscf_routines
+
+public raddfq90
+
+contains
+
   subroutine raddfq90(fq,h2xy,h2yx,pv,nxy,ix,iy,irepij,iprint, &
                       nz,ipqtoq,lupri,norbt,nasht,nnashx,key)
   !***********************************************************************
@@ -53,6 +59,7 @@
     call add_input_file('raddfq90.inp')
     call add_output_file(output_file)
     call set_driver_routine('raddfq90')
+    call add_module('mcscf_routines')
 
     call add_inp_variable(nxy   ,'nxy   ',idrv=5)
     call add_inp_variable(ix    ,'ix    ',idrv=6)
@@ -646,3 +653,5 @@
   endif
 
   end subroutine raddfq90
+
+end module mcscf_routines

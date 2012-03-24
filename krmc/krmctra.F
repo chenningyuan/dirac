@@ -1139,6 +1139,7 @@ C     Last revision : L. Visscher - Mar 15 2001
 C                     S. Knecht   - Aug 14 2010
 C
 C***********************************************************************
+      use mcscf_routines
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"

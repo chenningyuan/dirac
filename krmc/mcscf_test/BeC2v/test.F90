@@ -1,6 +1,7 @@
 program test
 
   use unit_testing
+  use mcscf_routines
   implicit none
 
   integer :: ier
