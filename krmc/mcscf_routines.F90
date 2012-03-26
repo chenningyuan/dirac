@@ -61,6 +61,7 @@ contains
     call set_driver_routine('raddfq90')
     call add_module('mcscf_routines')
 
+    call add_opt_variable('key   ','1','integer')
     call add_inp_variable(nxy   ,'nxy   ')
     call add_inp_variable(ix    ,'ix    ')
     call add_inp_variable(iy    ,'iy    ')

@@ -5,7 +5,7 @@ program test
   implicit none
 
   integer :: ier
-  integer :: key
+  integer :: key   
   integer :: nxy   
   integer :: ix    
   integer :: iy    
@@ -50,25 +50,29 @@ program test
   read(60,*) nnashx
 
   allocate( ipqtoq(4,8) , stat=ier ); call errall(ier,'test','ipqtoq')
-  allocate( h2xy  (37,4,2,3) , stat=ier ); call errall(ier,'test','h2xy  ')
-  allocate( h2yx  (37,4,2,3) , stat=ier ); call errall(ier,'test','h2yx  ')
-  allocate( pv    (4,4,10,2,3) , stat=ier ); call errall(ier,'test','pv    ')
-  allocate( fq    (37,4,2) , stat=ier ); call errall(ier,'test','fq    ')
-
   read(60,*)
   read(60,*) ipqtoq
+
+  allocate( h2xy  (37,4,2,3) , stat=ier ); call errall(ier,'test','h2xy  ')
   read(60,*)
   read(60,*) h2xy  
+
+  allocate( h2yx  (37,4,2,3) , stat=ier ); call errall(ier,'test','h2yx  ')
   read(60,*)
   read(60,*) h2yx  
+
+  allocate( pv    (4,4,10,2,3) , stat=ier ); call errall(ier,'test','pv    ')
   read(60,*)
   read(60,*) pv    
 
+  allocate( fq    (37,4,2) , stat=ier ); call errall(ier,'test','fq    ')
+
   close(60,status='keep')
 
-  key = 1
+  key    = 1
   call raddfq90( &
-          nxy    = nxy    &
+          key    = key    &
+         ,nxy    = nxy    &
          ,ix     = ix     &
          ,iy     = iy     &
          ,irepij = irepij &
@@ -83,7 +87,6 @@ program test
          ,h2yx   = h2yx   &
          ,pv     = pv     &
          ,fq     = fq     &
-         ,key    = key    &
          )
 
   call compare_files(60,'raddfq90.out','raddfq90.out_ref',1.0d-15)

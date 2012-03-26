@@ -7,7 +7,7 @@ public :: set_driver_routine, add_input_file, add_output_file, add_module, set_k
 public :: print_input_files, print_output_files, print_variable_info
 public :: generate_test
 
-public :: add_inp_variable, add_out_variable
+public :: add_inp_variable, add_out_variable, add_opt_variable
 
 interface add_inp_variable
   module procedure add_inp_logical_variable
@@ -42,7 +42,8 @@ type :: string
 end type string
 
 type ( string ), pointer, save :: input_files(:), output_files(:), driver(:)
-type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:), var_info(:)
+type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:)
+type ( string ), pointer, save :: var_info(:), var_value(:)
 type ( string ), pointer, save :: modules(:)
 
 type :: keys
@@ -95,6 +96,7 @@ contains
   call add_string('integer, allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_int_array
 
@@ -139,6 +141,7 @@ contains
   call add_string('real*8,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_real_array
 
@@ -157,6 +160,7 @@ contains
   call add_string('integer,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_int_array
 
@@ -175,6 +179,7 @@ contains
   call add_string('real*8,  allocatable, dimension(:)',var_type)
   call add_string(vsize,var_dim)
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_real_array
 
@@ -212,6 +217,7 @@ contains
   call add_string('logical',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_logical_variable
 
@@ -249,6 +255,7 @@ contains
   call add_string('integer',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_integer_variable
 
@@ -287,6 +294,7 @@ contains
   n1 = size(ivar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_integer_1d_array
 
@@ -326,6 +334,7 @@ contains
   n2 = size(ivar,2)
   call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_integer_2d_array
 
@@ -363,6 +372,7 @@ contains
   call add_string('real*8',var_type)
   call add_string('0',var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_real_variable
 
@@ -401,6 +411,7 @@ contains
   n1 = size(dvar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_real_1d_array
 
@@ -440,6 +451,7 @@ contains
   n2 = size(dvar,2)
   call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_real_2d_array
 
@@ -480,6 +492,7 @@ contains
   n3 = size(dvar,3)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_real_3d_array
 
@@ -521,6 +534,7 @@ contains
   n4 = size(dvar,4)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//')',var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_real_4d_array
 
@@ -563,6 +577,7 @@ contains
   n5 = size(dvar,5)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//','//i2c(n5)//')',var_dim)
   call add_string('input',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_inp_real_5d_array
 
@@ -583,6 +598,7 @@ contains
   call add_string('integer',var_type)
   call add_string('0',var_dim)
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_integer_variable
 
@@ -607,6 +623,7 @@ contains
   n1 = size(ivar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_integer_1d_array
 
@@ -632,6 +649,7 @@ contains
   n2 = size(ivar,2)
   call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_integer_2d_array
 
@@ -652,6 +670,7 @@ contains
   call add_string('real*8',var_type)
   call add_string('0',var_dim)
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_real_variable
 
@@ -676,6 +695,7 @@ contains
   n1 = size(dvar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_real_1d_array
 
@@ -701,6 +721,7 @@ contains
   n2 = size(dvar,2)
   call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_real_2d_array
 
@@ -727,8 +748,28 @@ contains
   n3 = size(dvar,3)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
   call add_string('output',var_info)
+  call add_string('own_name',var_value)
 
   end subroutine add_out_real_3d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_opt_variable(vname,vvalue,vtype)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, vvalue, vtype
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string(vtype,var_type)
+  call add_string('0',var_dim)
+  call add_string('optional',var_info)
+  call add_string(vvalue,var_value)
+
+  end subroutine add_opt_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1056,7 +1097,6 @@ contains
   write(iunit,'(a)')'  implicit none'
   write(iunit,'(a)')
   write(iunit,'(a)')'  integer :: ier'
-  write(iunit,'(a)')'  integer :: key'
   ! declaration of variables
   do i=1,size(var_name)
     write(iunit,'(2x,70a,a,70a)') gets(var_type(i)%str),' :: ',gets(var_name(i)%str)
@@ -1074,41 +1114,40 @@ contains
                              gets(input_files(1)%str) , " file'"
   write(iunit,'(a)')       '    stop'
   write(iunit,'(a)')       '  endif'
-  ! first read dimensions and parameters
+  ! read input variables
   write(iunit,'(a)')
   do i=1,size(var_name)
-    if( var_info(i)%str(1) == 'i')then ! input variables
-      if( var_dim(i)%str(1) == '0')then
-        write(iunit,'(a)')     '  read(60,*)'
-        write(iunit,'(a,70a)') '  read(60,*) ' , gets(var_name(i)%str)
+    if( gets(var_info(i)%str) == 'input')then ! input variables
+      if( var_dim(i)%str(1) /= '0')then       ! if we are reading array first allocate it
+        write(iunit,'(a)')
+        write(iunit,'(a,70a,70a,a,70a,a)') &
+              '  allocate( ' , gets(var_name(i)%str) , gets(var_dim(i)%str) , &
+              " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
       endif
+      write(iunit,'(a)')     '  read(60,*)'
+      write(iunit,'(a,70a)') '  read(60,*) ' , gets(var_name(i)%str)
     endif
   enddo
-  ! allocation
+  ! allocate output arrays
   write(iunit,'(a)')
   do i=1,size(var_name)
-    if( var_dim(i)%str(1) /= '0')then
+    if( gets(var_info(i)%str) == 'output' .and. var_dim(i)%str(1) /= '0')then
       write(iunit,'(a,70a,70a,a,70a,a)') &
             '  allocate( ' , gets(var_name(i)%str) , gets(var_dim(i)%str) , &
             " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
     endif
   enddo
-  ! read arrays
-  write(iunit,'(a)')
-  do i=1,size(var_name)
-    if( var_info(i)%str(1) == 'i')then ! input variables
-      if( var_dim(i)%str(1) /= '0')then
-        write(iunit,'(a)')    '  read(60,*)'
-        write(iunit,'(a,70a)')'  read(60,*) ' , gets(var_name(i)%str)
-      endif
-    endif
-  enddo
   ! close input file
   write(iunit,'(a)')
   write(iunit,'(a)')"  close(60,status='keep')"
-  ! call driver routine
+  ! set optional parameters
   write(iunit,'(a)')
-  write(iunit,'(a)') '  key = 1'
+  do i=1,size(var_name)
+    if( gets(var_info(i)%str) == 'optional' )then
+      write(iunit,'(2x,70a)') gets(var_name(i)%str), ' = ', gets(var_value(i)%str)
+    endif
+  enddo
+  ! call driver routine
   write(iunit,'(a,70a,a)')"  call ", gets(driver(1)%str) , '( &'
   coma = ' '
   if(key%mod_call)then
@@ -1116,13 +1155,11 @@ contains
       write(iunit,'(9x,a,70a,a)')coma,gets(var_name(i)%str),' = ',gets(var_name(i)%str),' &'
       coma = ','
     enddo
-    write(iunit,'(9x,a)') ',key    = key    &'
   else
     do i=1,size(var_name)
       write(iunit,'(9x,a,70a,a)')coma,gets(var_name(i)%str),' &'
       coma = ','
     enddo
-    write(iunit,'(9x,a)') ',key    &'
   endif
   write(iunit,'(9x,a)') ')'
   ! compare results
