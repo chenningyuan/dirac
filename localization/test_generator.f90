@@ -7,7 +7,7 @@ public :: set_driver_routine, add_input_file, add_output_file, add_module, set_k
 public :: print_input_files, print_output_files, print_variable_info
 public :: generate_test
 
-public :: add_inp_variable
+public :: add_inp_variable, add_out_variable
 
 interface add_inp_variable
   module procedure add_inp_logical_variable
@@ -21,6 +21,16 @@ interface add_inp_variable
   module procedure add_inp_real_4d_array
   module procedure add_inp_real_5d_array
 end interface add_inp_variable
+
+interface add_out_variable
+  module procedure add_out_integer_variable
+  module procedure add_out_integer_1d_array
+  module procedure add_out_integer_2d_array
+  module procedure add_out_real_variable
+  module procedure add_out_real_1d_array
+  module procedure add_out_real_2d_array
+  module procedure add_out_real_3d_array
+end interface add_out_variable
 
 private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize
 
@@ -555,6 +565,170 @@ contains
   call add_string('input',var_info)
 
   end subroutine add_inp_real_5d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_integer_variable(ivar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ivar
+  integer, intent(in), optional :: nfile
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('integer',var_type)
+  call add_string('0',var_dim)
+  call add_string('output',var_info)
+
+  end subroutine add_out_integer_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_integer_1d_array(ivar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ivar(:)
+  integer, intent(in), optional :: nfile
+
+  ! Internal variables
+  integer :: n1
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('integer, allocatable, dimension(:)',var_type)
+  n1 = size(ivar,1)
+  call add_string( '(' // i2c(n1) // ')' , var_dim )
+  call add_string('output',var_info)
+
+  end subroutine add_out_integer_1d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_integer_2d_array(ivar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ivar(:,:)
+  integer, intent(in), optional :: nfile
+
+  ! Internal variables
+  integer :: n1, n2
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('integer, allocatable, dimension(:,:)',var_type)
+  n1 = size(ivar,1)
+  n2 = size(ivar,2)
+  call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
+  call add_string('output',var_info)
+
+  end subroutine add_out_integer_2d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_real_variable(dvar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar
+  integer, intent(in), optional :: nfile
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8',var_type)
+  call add_string('0',var_dim)
+  call add_string('output',var_info)
+
+  end subroutine add_out_real_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_real_1d_array(dvar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:)
+  integer, intent(in), optional :: nfile
+
+  ! Internal variables
+  integer :: n1
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:)',var_type)
+  n1 = size(dvar,1)
+  call add_string( '(' // i2c(n1) // ')' , var_dim )
+  call add_string('output',var_info)
+
+  end subroutine add_out_real_1d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_real_2d_array(dvar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:)
+  integer, intent(in), optional :: nfile
+
+  ! Internal variables
+  integer :: n1, n2
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
+  call add_string('output',var_info)
+
+  end subroutine add_out_real_2d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_real_3d_array(dvar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:,:)
+  integer, intent(in), optional :: nfile
+
+  ! Internal variables
+  integer :: n1, n2, n3
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
+  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
+  call add_string('output',var_info)
+
+  end subroutine add_out_real_3d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!

@@ -76,7 +76,7 @@ contains
     call add_inp_variable(h2yx  ,'h2yx  ')
     call add_inp_variable(pv    ,'pv    ')
 
-    call add_out_real_array('fq    ','(norbt*nasht*nz)')
+    call add_out_variable(fq    ,'fq    ')
 
 !   call print_variable_info
 

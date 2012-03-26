@@ -20,7 +20,7 @@ program test
   real*8,  allocatable, dimension(:,:,:,:) :: h2xy  
   real*8,  allocatable, dimension(:,:,:,:) :: h2yx  
   real*8,  allocatable, dimension(:,:,:,:,:) :: pv    
-  real*8,  allocatable, dimension(:) :: fq    
+  real*8,  allocatable, dimension(:,:,:) :: fq    
 
   open(60,file='raddfq90.inp',status='old',form='formatted',access='sequential',iostat=ier)
   if(ier /= 0)then
@@ -53,7 +53,7 @@ program test
   allocate( h2xy  (37,4,1,3) , stat=ier ); call errall(ier,'test','h2xy  ')
   allocate( h2yx  (37,4,1,3) , stat=ier ); call errall(ier,'test','h2yx  ')
   allocate( pv    (4,4,10,1,3) , stat=ier ); call errall(ier,'test','pv    ')
-  allocate( fq    (norbt*nasht*nz) , stat=ier ); call errall(ier,'test','fq    ')
+  allocate( fq    (37,4,1) , stat=ier ); call errall(ier,'test','fq    ')
 
   read(60,*)
   read(60,*) ipqtoq
