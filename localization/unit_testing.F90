@@ -103,7 +103,12 @@ contains
    do
      read(iu1,*,iostat=ier1) dnum1
      read(iu2,*,iostat=ier2) dnum2
-     if( (ier1 == -1) .or. (ier2 == -1) ) exit
+     if( (ier1 == -1) .and. (ier2 == -1) ) exit
+     if( (ier1 == -1) .or.  (ier2 == -1) )then
+       write(6,*) ' ERROR: Examined files have different length '
+       write(0,*) ' ERROR: Examined files have different length '
+       stop 1
+     endif
      if( (ier1 /=  0) .or. (ier2 /=  0) )then
        write(6,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
        write(0,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
@@ -122,7 +127,12 @@ contains
    close(iu2,status='keep')
 
    ! check result
-   if(dmax > thresh) stop 1
+   if(dmax > thresh)then
+     write(6,*) ' ERROR: Examined files differ; thresh = ',thresh
+     write(6,*) ' dmax = ',dmax
+     write(0,*) ' ERROR: Examined files differ; thresh = ',thresh
+     stop 1
+   endif
 
    end subroutine
 
