@@ -1,8 +1,8 @@
 #set header for unit testing
 if(ENABLE_TESTS)
-  execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/unit-testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${CMAKE_SOURCE_DIR} --enable)
+  execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/unit-testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
 else()
-  execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/unit-testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${CMAKE_SOURCE_DIR})
+  execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/unit-testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR})
 endif()
 
 add_custom_command(
