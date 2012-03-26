@@ -4,6 +4,7 @@ implicit none
 
 public :: add_inp_int_array, add_inp_real_array, add_out_int_array, add_out_real_array
 public :: set_driver_routine, add_input_file, add_output_file, add_module, set_keys
+public :: redefine_variable
 public :: print_input_files, print_output_files, print_variable_info
 public :: generate_test
 
@@ -32,7 +33,7 @@ interface add_out_variable
   module procedure add_out_real_3d_array
 end interface add_out_variable
 
-private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize
+private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize, change_string
 
 private
 
@@ -844,6 +845,29 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+  subroutine redefine_variable(variable_type,variable_size,nvar)
+  implicit none
+
+  ! External variables
+  character(*), intent(in), optional :: variable_type, variable_size
+  integer,      intent(in), optional :: nvar
+
+  ! Internal variables
+  integer :: i
+
+  ! position of the string
+  i = size(var_name)
+  if(present(nvar)) i = nvar
+
+  ! reset
+  if(present(variable_type)) call change_string(var_type,variable_type,i)
+  if(present(variable_size)) call change_string(var_dim, variable_size,i)
+
+  end subroutine redefine_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
   subroutine print_input_files
   implicit none
   integer :: i
@@ -1073,6 +1097,37 @@ contains
   integer :: is
   is = floor(log10(real(i,kind(1.0d0)))) + 1
   end function csize
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine change_string(type_string,new_string,npos)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: new_string
+  integer,      intent(in) :: npos
+  type ( string ), pointer, intent(inout) :: type_string(:)
+
+  ! Internal variables
+  integer :: i, ier, nstr
+
+  ! get length of new string
+  nstr = len(new_string)
+
+  ! nullify old string
+  nullify( type_string(npos)%str )
+
+  ! allocate string array with new length
+  allocate( type_string(npos)%str( nstr ), stat = ier )
+  call errall(ier,'change_string','type_string(npos)%str')
+
+  ! reset
+  do i=1,nstr
+    type_string(npos)%str(i) = new_string(i:i)
+  enddo
+
+  end subroutine change_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
