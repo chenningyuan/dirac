@@ -45,7 +45,7 @@
      4  y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
 
       integer ic0,ic1,ltot1,mproju,lproju,lamau,lambu,i,IPQ_TEMP 
-
+      integer tmp_ic0,tmp_ic1
       CALL OUTPUT_LOC('ARGOS_STVCZ','E')
 
       lijt = lit*ljt
@@ -119,11 +119,8 @@
 !     Allocate variables
       CALL RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,
      &     lamau,lambu)
-!!     do i = 1, nc2
-!     do i = 1, ic1
-!        IPT_CZ_G2(i) = 0.0d0
-!     enddo
-
+      tmp_ic0 = ic0
+      tmp_ic1 = ic1
 !     ------------------
 !     Calculate integral 
 !     ------------------
@@ -136,11 +133,11 @@
       elseif (nnam.eq.4) then
             call cints( a,ccr,eta(1,1,icons),eta(1,1,jcons),IPT_CZ_G2,
      &                  lcr,lambu,ltot1,mcrs,mproju,nc,ncr,nkcrl,
-     &                  nkcru,x,y,z,zcr,zet )
+     &                  nkcru,x,y,z,zcr,zet,tmp_ic0,tmp_ic1 )
       elseif (nnam.eq.5) then
             call lsints( a,ccr,eta(1,1,icons),eta(1,1,jcons),IPT_CZ_G2, 
      &                   lls,lambu,ltot1,mcrs,mproju,nc,ncr,nklsl,
-     &                   nklsu,x,y,z,zcr,zet )
+     &                   nklsu,x,y,z,zcr,zet,tmp_ic0,tmp_ic1 )
       endif
 
 !     -------------------------------
@@ -216,13 +213,11 @@ c          if(npr.eq.0) go to 84
 !              print *,'g2-2',val
             ENDIF
             if(chsign) val=-val
-c      print *, 'fnfct = ',fnfct
             val=fnfct*val
 
             do 76 ibl=1,npr
               IPT_ONE_H2(ndxb+ibl)=IPT_ONE_H2(ndxb+ibl)
      &                             +IPT_CX(icx+ibl)*val
-c      print *, 'h2(',ndxb,'+',ibl,')=',h2(ndxb+ibl)
    76       continue
    78       ndxb=ndxb+npr
    80     continue

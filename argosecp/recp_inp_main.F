@@ -133,7 +133,7 @@
 
 !     # calculate the nuclear repulsion energy.
 !     CALL RECP_INP_NUCREP
-!    &   (ic,nc,chg,NLIST,PRINT_LEVEL,x,y,z)
+!    &   (ic,nc,chg,x,y,z)
 
       call gcentr( ica, nc )
  

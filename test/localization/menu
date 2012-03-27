@@ -22,5 +22,4 @@ H2Olocprj_comb.inp H2O.mol --copy="DFPCMO DFO1AT DFH1AT DFH2AT"
 H2Olocprj_diag.inp H2O.mol --copy="DFPCMO DFO1AT DFH1AT DFH2AT"
 
 # Clean after yourself
-sh tar czf cf.tgz cf.H cf.C cf.O cf.CH4 cf.H2O
 sh rm -f cf.C cf.H cf.O cf.CH4 cf.H2O DFC1AT DFO1AT DFH1AT DFH2AT DFH3AT DFH4AT DFPCMO

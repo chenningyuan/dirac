@@ -95,7 +95,8 @@ contains
   implicit none
 
   ! Internal variables
-  integer :: ier, iunit
+  integer     :: ier, iunit
+  character*8 :: chdum
 
   !------------------------------------------------------------------------------!
   !-----------------------------!
@@ -113,10 +114,17 @@ contains
 
   rewind 60
 
-  read(iunit,*) mnf%iprint, mnf%maxitr, mnf%l
-  read(iunit,*) mnf%thfull, mnf%thdiag, mnf%thgrad
-  read(iunit,*) mnf%lgfull, mnf%lgdiag, mnf%lggrad, mnf%lgchck
-  read(iunit,*) mnf%heskey
+  read(iunit,*) chdum,mnf%iprint
+  read(iunit,*) chdum,mnf%maxitr
+  read(iunit,*) chdum,mnf%l
+  read(iunit,*) chdum,mnf%thfull
+  read(iunit,*) chdum,mnf%thdiag
+  read(iunit,*) chdum,mnf%thgrad
+  read(iunit,*) chdum,mnf%lgfull
+  read(iunit,*) chdum,mnf%lgdiag
+  read(iunit,*) chdum,mnf%lggrad
+  read(iunit,*) chdum,mnf%lgchck
+  read(iunit,*) chdum,mnf%heskey
 
   ! close file
   close(iunit,status='keep')

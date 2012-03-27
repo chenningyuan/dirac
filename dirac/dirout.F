@@ -492,9 +492,8 @@ C.....III is the symmety of XYZ for the small components
           IOFF = IBBAS(IBRP,IC) - IBAS(IFRP)
           IBRQ  = IBTXOR(IBRP,III(IC))
           DO IZ = 1,NZ
-Ctsaue: Used to be IQ = IPQTOQ(IZ,IBRP), but this is
-Ctsaue: true only for the large components
             IQ = IPQTOQ(IZ,IBRQ)
+            IQ = IQMAP(IQ)
             DO I = 1,NBBAS(IBRP,IC)
               CALL DCOPY(NVEC,CMO (I+IOFF,1,IZ),NFBAS(IFRP,0),
      &                        CBUF(I+IOFF,1,IQ),NFBAS(IFRP,0))

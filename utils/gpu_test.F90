@@ -1,11 +1,51 @@
 !----------------------------------------------
 !
-!  simple test of Fortran GPU CUDA libraries
-! in the DIRAC enviroment
+! Simple test of Fortran GPU CUDA libraries
+! in the DIRAC environment. 
+!
+! Comparison between few CPU BLAS and GPU CUBLAS
+! mathematical routines.
+!
+! Written by Miro Ilias, Banska Bystrica, March 2012
 !
 !----------------------------------------------
 
+module fortran_timing
+! http://software.intel.com/sites/products/documentation/hpc/compilerpro/en-us/fortran/lin/compiler_f/lref_for/source_files/rfsystmc.htm
+! If the type is INTEGER(2), count_rate is 1000. If the type is INTEGER(4), count_rate is 10000. If the type is INTEGER(8), count_rate is 1000000.
+! but gfortran 4.8.0 ([trunk revision 185723]) has COUNT_RATE=1000000000 for INTEGER(8)...
+
+integer(kind=8) :: c1,c2,cr,cm ! accuracy in nanoseconds
+!integer(kind=4) :: c1,c2,cr,cm ! accuracy in miliseconds
+
+! default control values - these differ from compiler to compiler !
+integer, parameter :: count_rate_kind4=1000, count_rate_kind8=1000000
+contains
+
+subroutine print_time_info
+call system_clock( count_rate=cr, count_max=cm )
+write(*,'(2x,a,i10,a,i20)') "* system_clock timing routine:  COUNT_RATE=",cr," COUNT_MAX=",cm
+!if (cr.ne.count_rate_kind8) then
+!  write(*,'(2x,a,i7)') 'wrong system value of system COUNT_RATE parameter, must be (kind=8) ',count_rate_kind8
+  !write(*,'(2x,a,i7)') 'wrong system value of system COUNT_RATE parameter, must be (kind=4) ',count_rate_kind4
+!endif
+end subroutine print_time_info
+
+subroutine  print_time(message)
+! print spent time in routine between c1 and c2 
+! http://gcc.gnu.org/onlinedocs/gfortran/SYSTEM_005fCLOCK.html
+! print spent time in routine ...
+character(*), intent(in) :: message
+!!print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+!!print *,c1,c2,cr,cm
+write(*,'(2x,a,a,a,f13.8,a)') 'Routine <',message,'> spent runtime:', (dfloat(c2-c1) / dfloat(cr)), ' seconds.'
+end subroutine  print_time
+
+end module fortran_timing
+
 module gpu_stuff
+
+  use fortran_timing
 
 implicit none
 
@@ -29,7 +69,6 @@ integer :: verb=0 ! default verbosity level
 
 integer :: n
 integer :: i,j
-integer :: c1,c2,cr,cm
 
 real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:),x_r(:),y_r(:)
 real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:),x_d(:),y_d(:)
@@ -177,7 +216,7 @@ call cublas_shutdown
 stop
 endif
 call system_clock( count=c2 )
-print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("GPU sgemm")
 call mtx_check(C_r)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrB)
@@ -187,7 +226,7 @@ call cublas_shutdown
 call system_clock( c1, cr, cm )
 call sgemm('n','n',n,n,n,1.0e0,A_r,n,B_r,n,-2.0e0,C_r,n)
 call system_clock( count=c2 )
-print *, ' CPU sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("CPU sgemm")
 call mtx_check(C_r)
 call cublas_shutdown
 end subroutine sgemm_test
@@ -299,7 +338,7 @@ else
   endif
 endif
 call system_clock( count=c2 )
-print *, 'GPU cblas_dgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("GPU dgemm")
 call mtx_check_d(C_d)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrB)
@@ -309,7 +348,7 @@ call cublas_shutdown
 call system_clock( c1, cr, cm )
 call dgemm('n','n',n,n,n,1.0d0,A_d,n,B_d,n,-2.0e0,C_d,n)
 call system_clock( count=c2 )
-print *, ' CPU sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("CPU dgemm")
 call mtx_check_d(C_d)
 call cublas_shutdown
 end subroutine dgemm_test
@@ -414,7 +453,7 @@ endif
 ! get the vector from GPU into y_r...
 stat=cublas_get_vector(n,size_of_real,devPtry,1,y_r,1)
 call system_clock( count=c2 )
-print *, 'GPU cublas_sgemv runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("GPU sgemv")
 write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrx)
@@ -423,7 +462,7 @@ call system_clock( c1, cr, cm )
 !now perform CPU lib routine:  y = beta*y+alpha*A*x
 call sgemv('n',n,n,-2.0e0,A_r,n,x_r,1,1.0e0,y_r,1)
 call system_clock( count=c2 )
-print *, 'CPU sgemv runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
+call print_time("CPU sgemv")
 write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
 end subroutine sgemv_test
 
@@ -461,6 +500,10 @@ end module gpu_stuff
 
 Program GPU_math_tests
   use gpu_stuff
+  use fortran_timing
+
+  call print_time_info
+
   call read_arguments
   select case (method)
     case("sgemm")
@@ -478,4 +521,3 @@ Program GPU_math_tests
       stop
   end select
 End Program GPU_math_tests
-

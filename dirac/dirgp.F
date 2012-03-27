@@ -3679,7 +3679,7 @@ C
      &      '* ACMOIN : final SO coefficients.',
      &      ' Fermion ircop ',IFRP
           CALL PRQMAT(CMO1,NTBAS(0),NORBT,
-     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+     &                NTBAS(0),NORBT,NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
       ENDIF
 C
@@ -3791,12 +3791,17 @@ C
             IFRP = JBTOF(IREP,IC)
             IBB  = ICOS (ISYM,IC)
             NBB  = NBBAS(IREP,IC)
-            IBRQ = IBTXOR(IREP,III(IC))
             IF(NBB.GT.0) THEN
-              DO IQ = 1,4
-                WB(IQ,ISYM,IC) = DDOT(NBB,CMO(IBB+1,JORB,IQ),1,
+C....Carefully note that the assignment of the quaternion units (i,j,k) with
+C....respect to axes (x,y,z) may change; 
+C....This is the case of complex groups with totally symmetric x- or y-rotation
+C....and is the reason why the array IQMAP is used. It refers to the default
+C....assigment used for the C1 coefficients.
+              DO IQQ = 1,4
+                IQ=IQMAP(IQQ)
+                WB(IQQ,ISYM,IC) = DDOT(NBB,CMO(IBB+1,JORB,IQ),1,
      &                   CMO(IBB+1,JORB,IQ),1)
-                TMP(IFRP) = TMP(IFRP) + WB(IQ,ISYM,IC)
+                TMP(IFRP) = TMP(IFRP) + WB(IQQ,ISYM,IC)
               ENDDO
 C
 C             Order contributions
@@ -3858,11 +3863,16 @@ C       a consistency check can be included later
 C       by scanning through more contributions
 C
         II   = IB(64,1)
-        IQ   = IB(II,2)
         IREP = IB(II,3)
         IC   = IB(II,4)
-        IBRQ = IBTXOR(IREP,III(IC))        
-        IBUF(JORB,2) = IQMULT(IQ,IPQTOQ(1,IBRQ),1)
+C.......IQ is the position where the contribution from (IREP,IC) was found
+        IQ   = IB(II,2)
+C.......KQ is the position where this contribution would be expected
+C.......(note that for complex/quaternion groups there are two/four possibilities, though)
+        KQ   = JQBAS(IREP,IC)
+C.......IBUF(JORB,2) indicates the quaternion phase transformation necessary to bring the
+C.......contribution to the desired position
+        IBUF(JORB,2) = IQMULT(IQ,KQ,1)
       ENDDO ! End loop over coefficients
 C
       RETURN
@@ -3946,9 +3956,10 @@ C.....III is the totally symmetric irrep for the large components
       III(1) = 0
 C.....III is the symmety of XYZ for the small components
       III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C
       NBRP = 4/NZ
+C.....loop over components
       DO IC = 1,MC
+C.......loop over symmetries associated with fermion ircop and component
         DO ISYM = 1,NBRP
           IP    = MOD(IFRP+IC,2) + 1
           IBSYM = JFSYM(ISYM,IP)
@@ -3957,9 +3968,11 @@ C
           IU    = ICOS(IBSYM,IC) + 1 
           IBRQ  = IBTXOR(IBRP,III(IC))
           NBB   = NBBAS(IBRP,IC)
+C.........Note the use of IQMAP referring to the default asignment of
+C.........quaternion units vectors to coordinate axes (x,y,z)
           DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IBRQ)
-            KQ = IQMULT(IQ,JQ,1)
+            KQ = IQMAP(IQMULT(IQ,JQ,1))
             CALL DCOPY(NBB,CBU(IU,IVU,KQ),1,CBS(IS,IVS,IZ),1)
             IFAC = IQPHASE(IQ,JQ,1)
             IF(IFAC.EQ.-1) CALL DSCAL(NBB,DM1,CBS(IS,IVS,IZ),1)

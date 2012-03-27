@@ -1011,3 +1011,82 @@ C
       CALL QUIT('Incomplete ECP file')
  9000 CONTINUE
       END
+
+
+      SUBROUTINE RECP_LNK_RDMENU(WORD0)
+! Read menu file
+      USE RECP_OUTPUT
+      IMPLICIT NONE
+#include "priunit.h"
+#include "argoscom.h"
+      INTEGER I,IOS,NTABLE
+      PARAMETER (NTABLE=3)
+      CHARACTER WORD0*7,WORD*7,PROMPT*1,TABLE(NTABLE)*7
+      DATA TABLE /'.PRINT ','.DEBUG ','XXXXXXX'/
+
+! Original parameter
+      ECPINT_PRINT = 1
+      ECPINT_DEBUG = 0
+
+! Check options in *ECP
+! ---------------------
+ 2000 CONTINUE
+      READ (LUCMD,'(A7)',END=9900,ERR=9000) WORD
+      IF (WORD(1:1) .EQ. '!') THEN
+         GOTO 2000
+      ELSEIF (WORD(1:1) .EQ. '#') THEN
+         GOTO 2000
+      ELSEIF (WORD(1:1) .EQ. '*') THEN
+         WORD0 = WORD
+         GOTO 9900
+      ELSEIF (WORD(1:1) .EQ. '.') THEN
+         DO I = 1, NTABLE
+            IF (WORD.EQ.TABLE(I)) THEN
+               GOTO(3010,3020,9100),I
+            ENDIF
+         ENDDO
+      ELSE
+         GOTO 9100
+      ENDIF
+
+! Reading vaues : .PRINT  
+! ----------------------
+ 3010 CONTINUE
+      READ (LUCMD,'(A7)',ERR=9000) WORD
+      IF (WORD(1:1).EQ.'!') GOTO 3010
+      IF (WORD(1:1).EQ.'#') GOTO 3010
+      READ (WORD,*,ERR=3011) ECPINT_PRINT
+      WRITE (LUPRI,'(/,A,I4)') ' * Print level in ECP : ',ECPINT_PRINT
+      GOTO 2000
+!     Error message
+ 3011 CONTINUE
+      WRITE(LUPRI,'(/,A,I7)') ' .PRINT value error : ',ECPINT_PRINT
+      GOTO 9000
+
+! Reading vaues : .DEBUG 
+! ----------------------
+ 3020 CONTINUE
+      READ (LUCMD,'(A7)',ERR=9000) WORD
+      IF (WORD(1:1).EQ.'!') GOTO 3020
+      IF (WORD(1:1).EQ.'#') GOTO 3020
+      READ (WORD,*,ERR=3021) ECPINT_DEBUG
+      WRITE (LUPRI,'(/,A)') ' * Debug level in ECP : ',ECPINT_PRINT
+      GOTO 2000
+!     Error message
+ 3021 CONTINUE
+      WRITE(LUPRI,'(/,A,I7)') ' .DEBUG value error : ',ECPINT_DEBUG
+      GOTO 9000
+     a
+! Error message
+! -------------
+ 9000 CONTINUE
+      WRITE(LUPRI,'(/,2A)') ' Error in reading menu file : ',WORD
+      CALL QUIT('Error in reading line')
+ 9100 CONTINUE
+      WRITE (LUPRI,'(/,3A)') ' Keyword ',WORD,
+     &      ' is not recognized in ECP'
+      CALL QUIT('Wrong input')
+ 9900 CONTINUE
+      RETURN
+      END
+
