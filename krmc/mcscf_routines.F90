@@ -35,16 +35,16 @@ contains
 #include "unit-test.h"
 
   ! External variables
-  integer, intent( in), optional :: key
-  integer, intent( in) :: nxy, ix, iy, irepij, iprint
-  integer, intent( in) :: nz, ipqtoq(4,0:7), lupri, norbt, nasht, nnashx
-  real*8,  intent( in) :: h2xy(norbt,nasht,nz,3), h2yx(norbt,nasht,nz,3)
-  real*8,  intent( in) :: pv(nasht,nasht,nnashx,nz,3)
-  real*8,  intent(out) :: fq(norbt,nasht,nz)
+  integer, intent(in), optional :: key
+  integer, intent(in) :: nxy, ix, iy, irepij, iprint
+  integer, intent(in) :: nz, ipqtoq(4,0:7), lupri, norbt, nasht, nnashx
+  real*8,  intent(in) :: h2xy(norbt,nasht,nz,3), h2yx(norbt,nasht,nz,3)
+  real*8,  intent(in) :: pv(nasht,nasht,nnashx,nz,3)
+  real*8,  intent(inout) :: fq(norbt,nasht,nz)
 
   ! Internal variables
+  logical :: create_outputs
   integer :: i, j, k, izz, npvcol, ier
-  character :: output_file*12
 
   real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
   real*8, allocatable :: tmpmat(:,:,:)
@@ -52,37 +52,38 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
-  output_file = 'raddfq90.out'
+  create_outputs = .false.
 
 #ifdef CREATE_UNIT_TESTS
-   if( nxy==1 .and. ix==1 .and. iy==1 )then
-    call add_input_file('raddfq90.inp')
-    call add_output_file(output_file)
-    call set_driver_routine('raddfq90')
-    call add_module('mcscf_routines')
+  call add_input_file ('raddfq90.inp_' // i2c(nxy) //'_'// i2c(ix) //'_'// i2c(iy) )
+  call add_output_file('raddfq90.out_' // i2c(nxy) //'_'// i2c(ix) //'_'// i2c(iy) )
+  call set_driver_routine('raddfq90')
+  call add_module('mcscf_routines')
+  call set_test_name(nxy)
+  call set_test_name(ix)
+  call set_test_name(iy)
 
-    call add_opt_variable('key   ','1','integer')
-    call add_inp_variable(nxy   ,'nxy   ')
-    call add_inp_variable(ix    ,'ix    ')
-    call add_inp_variable(iy    ,'iy    ')
-    call add_inp_variable(irepij,'irepij')
-    call add_inp_variable(iprint,'iprint')
-    call add_inp_variable(nz    ,'nz    ')
-    call add_inp_variable(lupri ,'lupri ')
-    call add_inp_variable(norbt ,'norbt ')
-    call add_inp_variable(nasht ,'nasht ')
-    call add_inp_variable(nnashx,'nnashx')
-    call add_inp_variable(ipqtoq,'ipqtoq')
-    call add_inp_variable(h2xy  ,'h2xy  ')
-    call add_inp_variable(h2yx  ,'h2yx  ')
-    call add_inp_variable(pv    ,'pv    ')
+  call add_opt_variable('key   ','1','integer')
 
-    call add_out_variable(fq    ,'fq    ')
+  call add_inp_variable(nxy   ,'nxy   ')
+  call add_inp_variable(ix    ,'ix    ')
+  call add_inp_variable(iy    ,'iy    ')
+  call add_inp_variable(irepij,'irepij')
+  call add_inp_variable(iprint,'iprint')
+  call add_inp_variable(nz    ,'nz    ')
+  call add_inp_variable(lupri ,'lupri ')
+  call add_inp_variable(norbt ,'norbt ')
+  call add_inp_variable(nasht ,'nasht ')
+  call add_inp_variable(nnashx,'nnashx')
+  call add_inp_variable(ipqtoq,'ipqtoq')
+  call add_inp_variable(h2xy  ,'h2xy  ')
+  call add_inp_variable(h2yx  ,'h2yx  ')
+  call add_inp_variable(pv    ,'pv    ')
 
-!   call print_variable_info
+  call add_inp_variable(fq    ,'fq    ')
 
-    call generate_test
-   endif
+  call generate_test
+  create_outputs = .true.
 #endif
 
   !------------------------------------------------------------------------------!
@@ -630,9 +631,10 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-  if(present(key))then
+  if( present(key) .or. create_outputs )then
     ! open file
-    open(60,file=output_file,status='unknown',form='formatted',access='sequential',iostat=ier)
+    open(60,file='raddfq90.out_' // i2c(nxy) //'_'// i2c(ix) //'_'// i2c(iy), &
+         status='unknown',form='formatted',access='sequential',iostat=ier)
     if(ier /= 0)then
       write(6,*) 'raddfq90: ERROR while creating raddfq90.uout file'
       stop

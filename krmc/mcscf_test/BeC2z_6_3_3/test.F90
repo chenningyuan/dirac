@@ -22,9 +22,9 @@ program test
   real*8,  allocatable, dimension(:,:,:,:,:) :: pv    
   real*8,  allocatable, dimension(:,:,:) :: fq    
 
-  open(60,file='raddfq90.inp',status='old',form='formatted',access='sequential',iostat=ier)
+  open(60,file='raddfq90.inp_6_3_3',status='old',form='formatted',access='sequential',iostat=ier)
   if(ier /= 0)then
-    write(6,*) 'test: ERROR while creating raddfq90.inp file'
+    write(6,*) 'test: ERROR while creating raddfq90.inp_6_3_3 file'
     stop
   endif
 
@@ -66,6 +66,9 @@ program test
   read(60,*) pv    
 
   allocate( fq    (37,4,2) , stat=ier ); call errall(ier,'test','fq    ')
+  read(60,*)
+  read(60,*) fq    
+
 
   close(60,status='keep')
 
@@ -89,7 +92,7 @@ program test
          ,fq     = fq     &
          )
 
-  call compare_files(60,'raddfq90.out','raddfq90.out_ref',1.0d-15)
+  call compare_files(60,'raddfq90.out_6_3_3','raddfq90.out_6_3_3_ref',1.0d-15)
 
   deallocate( ipqtoq )
   deallocate( h2xy   )

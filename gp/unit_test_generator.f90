@@ -6,7 +6,7 @@ public :: add_inp_int_array, add_inp_real_array, add_out_int_array, add_out_real
 public :: set_driver_routine, add_input_file, add_output_file, add_module, set_keys
 public :: redefine_variable, set_test_name
 public :: print_input_files, print_output_files, print_variable_info
-public :: generate_test
+public :: generate_test, i2c
 
 public :: add_inp_variable, add_out_variable, add_opt_variable
 
@@ -38,7 +38,7 @@ interface set_test_name
   module procedure set_test_name_integer
 end interface set_test_name
 
-private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize, change_string
+private :: init_string, add_string, errall, erropen, get_name, gets, csize, change_string
 
 private
 
@@ -1188,7 +1188,7 @@ contains
   endif
 
   open(iunit,file=gets(test_name(1)%str),status='new',form='formatted',access='sequential',&
-       iostat=ier); call erropen(ier,'generate_test','test.F90')
+       iostat=ier); call erropen(ier,'generate_test',gets(test_name(1)%str))
 
   ! header
   write(iunit,'(a)')'program test'
@@ -1301,6 +1301,13 @@ contains
   write(iunit,'(a)')"end program"
 
   close(iunit,status='keep')
+
+  ! clean all information about just generated source
+  ! so in one run can be generated multiple files
+  nullify( input_files ); nullify( output_files ); nullify( driver ); nullify( test_name )
+  nullify( var_name ); nullify( var_type ); nullify( var_dim )
+  nullify( var_info ); nullify( var_value )
+  nullify( modules )
 
   end subroutine generate_test
 
