@@ -1722,9 +1722,9 @@ C
       DIMENSION TBSUB(*), T_SCR_CC(*)
       DIMENSION ISMDST(*)
       INTEGER    KJA(MAXLB), KJB(MAXLB), KIA(MAXLB), KIB(MAXLB)
-      DIMENSION XKJA(MAXLB),XKJB(MAXLB),XKIA(MAXLB),XKIB(MAXLB)
+      DIMENSION XKJA(*),XKJB(*),XKIA(*),XKIB(*)
       INTEGER    KJAD(MAXLB), KJBD(MAXLB), KIAD(MAXLB), KIBD(MAXLB)
-      DIMENSION XKJAD(MAXLB),XKJBD(MAXLB),XKIAD(MAXLB),XKIBD(MAXLB)
+      DIMENSION XKJAD(*),XKJBD(*),XKIAD(*),XKIBD(*)
 
       INTEGER NICA(MXNDGIRR),NICB(MXNDGIRR)
       INTEGER NIAA(MXNDGIRR),NIAB(MXNDGIRR)
@@ -4316,28 +4316,28 @@ C
 C     arrays for storing NEL consecutive annihilations/creations
       LSCR4 = MXINKA*MXINKA*MXINKA
       call memmar(KI1G  ,LSCR4,'ADDL  ',1,'I1G   ')
-      call memmar(KXI1G,LSCR4,'ADDL  ',2,'XIG   ')
+      call memmar(KXI1G,     0,'ADDL  ',2,'XIG   ')
 C
       call memmar(KI2G  ,LSCR4,'ADDL  ',1,'I2G   ')
-      call memmar(KXI2G,LSCR4,'ADDL  ',2,'XI2G  ')
+      call memmar(KXI2G,     0,'ADDL  ',2,'XI2G  ')
 C
       call memmar(KI3G  ,LSCR4,'ADDL  ',1,'I3G   ')
-      call memmar(KXI3G,LSCR4,'ADDL  ',2,'XI3G  ')
+      call memmar(KXI3G,     0,'ADDL  ',2,'XI3G  ')
 C
       call memmar(KI4G  ,LSCR4,'ADDL  ',1,'I4G   ')
-      call memmar(KXI4G,LSCR4,'ADDL  ',2,'XI4G  ')
+      call memmar(KXI4G,     0,'ADDL  ',2,'XI4G  ')
 C
       call memmar(KI1GE  ,LSCR4,'ADDL  ',1,'I1GE  ')
-      call memmar(KXI1GE,LSCR4,'ADDL  ',2,'XIGE  ')
+      call memmar(KXI1GE,     0,'ADDL  ',2,'XIGE  ')
 C
       call memmar(KI2GE  ,LSCR4,'ADDL  ',1,'I2GE  ')
-      call memmar(KXI2GE,LSCR4,'ADDL  ',2,'XI2GE ')
+      call memmar(KXI2GE,     0,'ADDL  ',2,'XI2GE ')
 C
       call memmar(KI3GE  ,LSCR4,'ADDL  ',1,'I3GE  ')
-      call memmar(KXI3GE,LSCR4,'ADDL  ',2,'XI3GE ')
+      call memmar(KXI3GE,     0,'ADDL  ',2,'XI3GE ')
 C
       call memmar(KI4GE  ,LSCR4,'ADDL  ',1,'I4GE  ')
-      call memmar(KXI4GE,LSCR4,'ADDL  ',2,'XI4GE ')
+      call memmar(KXI4GE,     0,'ADDL  ',2,'XI4GE ')
 C     TTS arrays for partitioning of vector 
       NTTS = MXNTTS
       call memmar(KLLBT ,NTTS  ,'ADDL  ',1,'LBTC  ')
