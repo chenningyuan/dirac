@@ -108,7 +108,7 @@ contains
       write(lupri,'(a,i2,a)') ' h2xy matrix',i,' of 3'
       call prqmat(h2xy(1,1,1,i),norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
     end do
-    if (ix .ne. iy) then
+    if (ix /= iy) then
       do i = 1, 3
         write(lupri,'(a,i2,a)') ' h2yx matrix',i,' of 3'
         call prqmat(h2yx(1,1,1,i),norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
@@ -203,10 +203,10 @@ contains
 !   ------------- END TEST -------------
 !
 
-! ***********************
-! *** Real part of FQ ***
-! ***********************
-! (B.40): each "term" is a line of the formula
+  !------------------------------------------------------------------------------!
+  !                          *** Real part of FQ ***                             !
+  !------------------------------------------------------------------------------!
+  ! (B.40): each "term" is a line of the formula
 
   !--------------------!
   ! Term 1 (real part) !
@@ -344,219 +344,154 @@ contains
 
   endif
 
-! Skip remaining 36 terms if NZ = 1.
+  ! Skip remaining 36 terms if NZ = 1.
+  if(nz > 1)then ! goto 100
 
-  if (nz .eq. 1) goto 100
+  !------------------------------------------------------------------------------!
+  !                         *** i-imag part of FQ ***                            !
+  !------------------------------------------------------------------------------!
+  ! (B.41)
 
-! *************************
-! *** i-imag part of FQ ***
-! *************************
-! (B.41)
+  !----------------------!
+  ! Term 1 (i-imag part) !
+  !----------------------!
 
-! --------------------
-! Term 1 (i-imag part)
-! --------------------
+  ! \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;2,1}
+  call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,2,2,1)
 
-! \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;2,1}
+  if(ix /= iy)then
 
-  call dgemm('n','t',norbt,nasht,nasht,d1, &
-       h2xy(1,1,1,1),norbt,                &
-       pv(1,1,nxy,2,1),nasht,              &
-       d1,fq(1,1,2),norbt)
+    ! - \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;2,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,1,2,2,1)
 
-  if (ix .ne. iy) then
+  endif
 
-!    - \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;2,1}
+  !----------------------!
+  ! Term 2 (i-imag part) !
+  !----------------------!
 
-     call dgemm('n','n',norbt,nasht,nasht,dm1, &
-          h2yx(1,1,1,1),norbt,                 &
-          pv(1,1,nxy,2,1),nasht,               &
-          d1,fq(1,1,2),norbt)
+  ! + \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;1,1}
+  call get_fq('n','t',h2xy,pv,fq,nxy,d1,2,1,2,1)
 
-  end if
+  if(ix /= iy)then
 
-! --------------------
-! Term 2 (i-imag part)
-! --------------------
+    ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;1,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,2,1,2,1)
 
+  endif
 
-! + \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;1,1}
+  !----------------------------!
+  ! Term 3 and 4 (i-imag part) !
+  !----------------------------!
 
-  call dgemm('n','t',norbt,nasht,nasht,d1, &
-       h2xy(1,1,2,1),norbt,                &
-       pv(1,1,nxy,1,1),nasht,              &
-       d1,fq(1,1,2),norbt)
+  if(nz >= 4 .and. ix /= iy)then
 
-  if (ix .ne. iy) then
+    ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;4,1}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,4,2,1)
 
-!    - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;1,1}
+    ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;3,1}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,4,3,2,1)
 
-     call dgemm('n','n',norbt,nasht,nasht,dm1, &
-          h2yx(1,1,2,1),norbt,                 &
-          pv(1,1,nxy,1,1),nasht,               &
-          d1,fq(1,1,2),norbt)
+  endif
 
-  end if
+  if(ix /= iy)then
 
-! --------------------------
-! Term 3 and 4 (i-imag part)
-! --------------------------
+  !----------------------!
+  ! Term 5 (i-imag part) !
+  !----------------------!
 
-  if (nz .ge. 4 .and. ix .ne. iy) then
+    ! \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;2,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,2,2,2)
 
-!    \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;4,1}
+  !----------------------!
+  ! Term 6 (i-imag part) !
+  !----------------------!
 
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,3,1),norbt,                &
-          pv(1,1,nxy,4,1),nasht,              &
-          d1,fq(1,1,2),norbt)
+    ! \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;1,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,2,1,2,2)
 
-!    \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;3,1}
+  endif
 
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,4,1),norbt,                &
-          pv(1,1,nxy,3,1),nasht,              &
-          d1,fq(1,1,2),norbt)
+  if(nz >= 4)then
 
-  end if
+  !----------------------!
+  ! Term 7 (i-imag part) !
+  !----------------------!
 
-  if (ix .ne. iy) then
+    ! \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;4,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,4,2,2)
 
-!    ------------------
-!    Term 5 (i-imag part)
-!    ------------------
+    if(ix /= iy)then
 
-!    \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;2,2}
+      ! - \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;4,3}
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,3,4,2,3)
 
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,1,2),norbt,                &
-          pv(1,1,nxy,2,2),nasht,              &
-          d1,fq(1,1,2),norbt)
+    endif
 
-!    --------------------
-!    Term 6 (i-imag part)
-!    --------------------
+  !----------------------!
+  ! Term 8 (i-imag part) !
+  !----------------------!
 
-!    \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;1,2}
+    ! \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;3,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,4,3,2,2)
 
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,2,2),norbt,                &
-          pv(1,1,nxy,1,2),nasht,              &
-          d1,fq(1,1,2),norbt)
+    if(ix /= iy)then
 
-  end if
+      ! - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;3,3}
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,3,2,3)
 
-  if (nz .ge. 4) then
+    endif
 
-!    --------------------
-!    Term 7 (i-imag part)
-!    --------------------
+  endif
 
-!    \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;4,2}
+  if(ix /= iy)then
 
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,3,2),norbt,                &
-          pv(1,1,nxy,4,2),nasht,              &
-          d1,fq(1,1,2),norbt)
+  !----------------------!
+  ! Term 9 (i-imag part) !
+  !----------------------!
 
-     if (ix .ne. iy) then
+    ! - \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;2,3}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,1,2,2,3)
 
-!       - \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;4,3}
+  !-----------------------!
+  ! Term 10 (i-imag part) !
+  !-----------------------!
 
-        call dgemm('n','n',norbt,nasht,nasht,dm1, &
-             h2yx(1,1,3,3),norbt,                 &
-             pv(1,1,nxy,4,3),nasht,               &
-             d1,fq(1,1,2),norbt)
+    ! - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;1,3}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,1,2,3)
 
-     end if
+  endif
 
-!    --------------------
-!    Term 8 (i-imag part)
-!    --------------------
+  if(nz >= 4 .and. ix /= iy)then
 
-!    \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;3,2}
+  !-----------------------!
+  ! Term 11 (i-imag part) !
+  !-----------------------!
 
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,4,2),norbt,                &
-          pv(1,1,nxy,3,2),nasht,              &
-          d1,fq(1,1,2),norbt)
+    ! \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;4,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,4,2,1)
 
-     if (ix .ne. iy) then
+  !-----------------------!
+  ! Term 12 (i-imag part) !
+  !-----------------------!
 
-!       - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;3,3}
+    ! - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,1} P_{vq,xy;3,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,3,2,1)
 
-        call dgemm('n','n',norbt,nasht,nasht,dm1, &
-             h2yx(1,1,4,3),norbt,                 &
-             pv(1,1,nxy,3,3),nasht,               &
-             d1,fq(1,1,2),norbt)
+  endif
 
-     end if
-
-  end if
-
-  if (ix .ne. iy) then
-
-!    --------------------
-!    Term 9 (i-imag part)
-!    --------------------
-
-!    - \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;2,3}
-
-     call dgemm('n','t',norbt,nasht,nasht,dm1, &
-          h2xy(1,1,1,3),norbt,                 &
-          pv(1,1,nxy,2,3),nasht,               &
-          d1,fq(1,1,2),norbt)
-
-!    ---------------------
-!    Term 10 (i-imag part)
-!    ---------------------
-
-!    - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;1,3}
-
-     call dgemm('n','t',norbt,nasht,nasht,dm1, &
-          h2xy(1,1,2,3),norbt,                 &
-          pv(1,1,nxy,1,3),nasht,               &
-          d1,fq(1,1,2),norbt)
-
-  end if
-
-  if (nz .ge. 4 .and. ix .ne. iy) then
-
-!    ---------------------
-!    Term 11 (i-imag part)
-!    ---------------------
-
-!    \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;4,1}
-
-     call dgemm('n','n',norbt,nasht,nasht,d1, &
-          h2yx(1,1,3,1),norbt,                &
-          pv(1,1,nxy,4,1),nasht,              &
-          d1,fq(1,1,2),norbt)
-
-!    ---------------------
-!    Term 12 (i-imag part)
-!    ---------------------
-
-!    - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,1} P_{vq,xy;3,1}
-
-     call dgemm('n','n',norbt,nasht,nasht,dm1, &
-          h2yx(1,1,4,1),norbt,                 &
-          pv(1,1,nxy,3,1),nasht,               &
-          d1,fq(1,1,2),norbt)
-
-  end if
-
-! Skip remaining 24 terms if NZ = 2.
-
-  if (nz .eq. 2) goto 100
+  ! Skip remaining 24 terms if NZ = 2.
+  if(nz > 2)then ! goto 101
 
   call quit('*** ERROR in raddfq90 *** nz = 4 not implemented')
 
-! --------------
-! Output section
-! --------------
+  endif ! 101
+  endif ! 100
 
- 100  continue
+  !----------------!
+  ! Output section !
+  !----------------!
+
   if (iprint .ge. 20) then
     write(lupri,'(a)') 'fq on exit'
     call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
