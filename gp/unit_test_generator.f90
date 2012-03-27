@@ -4,7 +4,7 @@ implicit none
 
 public :: add_inp_int_array, add_inp_real_array, add_out_int_array, add_out_real_array
 public :: set_driver_routine, add_input_file, add_output_file, add_module, set_keys
-public :: redefine_variable
+public :: redefine_variable, set_test_name
 public :: print_input_files, print_output_files, print_variable_info
 public :: generate_test
 
@@ -33,6 +33,11 @@ interface add_out_variable
   module procedure add_out_real_3d_array
 end interface add_out_variable
 
+interface set_test_name
+  module procedure set_test_name_string
+  module procedure set_test_name_integer
+end interface set_test_name
+
 private :: init_string, add_string, errall, erropen, get_name, i2c, gets, csize, change_string
 
 private
@@ -42,7 +47,7 @@ type :: string
   character, pointer :: str(:)
 end type string
 
-type ( string ), pointer, save :: input_files(:), output_files(:), driver(:)
+type ( string ), pointer, save :: input_files(:), output_files(:), driver(:), test_name(:)
 type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:)
 type ( string ), pointer, save :: var_info(:), var_value(:)
 type ( string ), pointer, save :: modules(:)
@@ -868,6 +873,42 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+  subroutine set_test_name_string(string)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: string
+
+  ! add string to the name of the test source file
+  if(associated(test_name))then
+    call change_string(test_name, gets(test_name(1)%str) // '_' // string, 1)
+  else
+    call add_string(string, test_name)
+  endif
+
+  end subroutine set_test_name_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine set_test_name_integer(ivar)
+  implicit none
+
+  ! External variables
+  integer, intent(in) :: ivar
+
+  ! add integer to the name of the test source file
+  if(associated(test_name))then
+    call change_string(test_name, gets(test_name(1)%str) // '_' // i2c(ivar), 1)
+  else
+    call add_string(i2c(ivar), test_name)
+  endif
+
+  end subroutine set_test_name_integer
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
   subroutine print_input_files
   implicit none
   integer :: i
@@ -1139,7 +1180,14 @@ contains
   character :: coma*1
   integer   :: i, ier
 
-  open(iunit,file='test.F90',status='new',form='formatted',access='sequential',&
+  ! set name of the test source file
+  if(associated(test_name))then
+    call change_string(test_name, 'test.F90_' // gets(test_name(1)%str), 1)
+  else
+    call add_string('test.F90', test_name)
+  endif
+
+  open(iunit,file=gets(test_name(1)%str),status='new',form='formatted',access='sequential',&
        iostat=ier); call erropen(ier,'generate_test','test.F90')
 
   ! header
