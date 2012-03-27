@@ -1,6 +1,8 @@
 module mcscf_routines
 
-public raddfq90
+public :: raddfq90
+
+private :: get_fq
 
 contains
 
@@ -206,209 +208,141 @@ contains
 ! ***********************
 ! (B.40): each "term" is a line of the formula
 
-! ------------------
-! Term 1 (real part)
-! ------------------
+  !--------------------!
+  ! Term 1 (real part) !
+  !--------------------!
 
-! \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;1,1}
+  ! \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;1,1}
+  call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,1,1)
 
-  call dgemm('n','t',norbt,nasht,nasht,d1, &
-       h2xy(1,1,1,1),norbt,                &
-       pv(1,1,nxy,1,1),nasht,              &
-       d1,fq(1,1,1),norbt)
+  if(ix /= iy)then
+    ! \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;1,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,d1,1,1,1,1)
+  endif
 
-  if (ix .ne. iy) then
+  !--------------------!
+  ! Term 2 (real part) !
+  !--------------------!
 
-!    \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;1,1}
+  if(nz >= 2)then
 
-     call dgemm('n','n',norbt,nasht,nasht,d1,&
-          h2yx(1,1,1,1),norbt,&
-          pv(1,1,nxy,1,1),nasht,&
-          d1,fq(1,1,1),norbt)
+    ! - \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;2,1}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,1,1)
 
-  end if
+    if(ix /= iy)then
+      ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;2,1}
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,2,2,1,1)
+    endif
 
-! ------------------
-! Term 2 (real part)
-! ------------------
+  endif
 
-  if (nz .ge. 2) then
+  !--------------------------!
+  ! Term 3 and 4 (real part) !
+  !--------------------------!
 
-!    - \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;2,1}
+  if(nz >= 4 .and. ix /= iy)then
 
-     call dgemm('n','t',norbt,nasht,nasht,dm1,&
-          h2xy(1,1,2,1),norbt,&
-          pv(1,1,nxy,2,1),nasht,&
-          d1,fq(1,1,1),norbt)
+    ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;3,1}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,3,1,1)
 
-     if (ix .ne. iy) then
+    ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;4,1}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,4,1,1)
 
-!       - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;2,1}
+  endif
 
-        call dgemm('n','n',norbt,nasht,nasht,dm1,&
-             h2yx(1,1,2,1),norbt,&
-             pv(1,1,nxy,2,1),nasht,&
-             d1,fq(1,1,1),norbt)
+  !--------------------!
+  ! Term 5 (real part) !
+  !--------------------!
 
-     end if
+  if(ix /= iy)then
 
-  end if
+    ! \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;1,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,1,2)
 
-! ------------------------
-! Term 3 and 4 (real part)
-! ------------------------
+  endif
 
-  if (nz .ge. 4 .and. ix .ne. iy) then
+  !--------------------!
+  ! Term 6 (real part) !
+  !--------------------!
 
-!    \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;3,1}
+  if(nz >= 2 .and. ix /= iy)then
 
-     call dgemm('n','t',norbt,nasht,nasht,d1,&
-          h2xy(1,1,3,1),norbt,&
-          pv(1,1,nxy,3,1),nasht,&
-          d1,fq(1,1,1),norbt)
+    ! - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;2,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,1,2)
 
-!    - \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;4,1}
+  endif
 
-     call dgemm('n','t',norbt,nasht,nasht,dm1,&
-          h2xy(1,1,4,1),norbt,&
-          pv(1,1,nxy,4,1),nasht,&
-          d1,fq(1,1,1),norbt)
+  if(nz >= 4)then
 
-  end if
+  !--------------------!
+  ! Term 7 (real part) !
+  !--------------------!
 
-! ------------------
-! Term 5 (real part)
-! ------------------
+    ! \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;3,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,3,1,2)
 
-  if (ix .ne. iy) then
+    if(ix /= iy)then
 
-!    \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;1,2}
+      ! \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;3,3}
+      call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,3,1,3)
 
-     call dgemm('n','t',norbt,nasht,nasht,d1,&
-          h2xy(1,1,1,2),norbt,&
-          pv(1,1,nxy,1,2),nasht,&
-          d1,fq(1,1,1),norbt)
+    endif
 
-  end if
+  !--------------------!
+  ! Term 8 (real part) !
+  !--------------------!
 
-! ------------------
-! Term 6 (real part)
-! ------------------
+    ! - \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;4,2}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,4,1,2)
 
-  if (nz .ge. 2 .and. ix .ne. iy) then
+    if(ix /= iy)then
 
-!    - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;2,2}
+      ! - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;4,3}
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,4,1,3)
 
-     call dgemm('n','t',norbt,nasht,nasht,dm1, &
-          h2xy(1,1,2,2),norbt,                 &
-          pv(1,1,nxy,2,2),nasht,               &
-          d1,fq(1,1,1),norbt)
+    endif
 
-  end if
+  endif
 
-  if (nz .ge. 4) then
+  !--------------------!
+  ! Term 9 (real part) !
+  !--------------------!
 
-!    ------------------
-!    Term 7 (real part)
-!    ------------------
+  if(ix /= iy)then
 
-!    \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;3,2}
+    ! \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;1,3}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,1,3)
 
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,3,2),norbt,                &
-          pv(1,1,nxy,3,2),nasht,              &
-          d1,fq(1,1,1),norbt)
+  endif
 
-     if (ix .ne. iy) then
+  !---------------------!
+  ! Term 10 (real part) !
+  !---------------------!
 
-!       \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;3,3}
+  if(nz >= 2 .and. ix /= iy)then
 
-        call dgemm('n','n',norbt,nasht,nasht,d1, &
-             h2yx(1,1,3,3),norbt,                &
-             pv(1,1,nxy,3,3),nasht,              &
-             d1,fq(1,1,1),norbt)
+    ! - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;2,3}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,1,3)
 
-     end if
+  endif
 
-!    ------------------
-!    Term 8 (real part)
-!    ------------------
+  if(nz >= 4 .and. ix /= iy)then
 
-!    - \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;4,2}
+  !---------------------!
+  ! Term 11 (real part) !
+  !---------------------!
 
-     call dgemm('n','t',norbt,nasht,nasht,dm1, &
-          h2xy(1,1,4,2),norbt,                 &
-          pv(1,1,nxy,4,2),nasht,               &
-          d1,fq(1,1,1),norbt)
+    ! \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;3,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,3,1,1)
 
-     if (ix .ne. iy) then
+  !---------------------!
+  ! Term 12 (real part) !
+  !---------------------!
 
-!       - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;4,3}
+    ! - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,1} P_{vq,xy;4,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,4,1,1)
 
-        call dgemm('n','n',norbt,nasht,nasht,dm1, &
-             h2yx(1,1,4,3),norbt,                 &
-             pv(1,1,nxy,4,3),nasht,               &
-             d1,fq(1,1,1),norbt)
-
-     end if
-
-  end if
-
-! ------------------
-! Term 9 (real part)
-! ------------------
-
-  if (ix .ne. iy) then
-
-!    \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;1,3}
-
-     call dgemm('n','t',norbt,nasht,nasht,d1, &
-          h2xy(1,1,1,3),norbt,                &
-          pv(1,1,nxy,1,3),nasht,              &
-          d1,fq(1,1,1),norbt)
-
-  end if
-
-! ------------------
-! Term 10 (real part)
-! ------------------
-
-  if (nz .ge. 2 .and. ix .ne. iy) then
-
-!    - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;2,3}
-
-     call dgemm('n','t',norbt,nasht,nasht,dm1, &
-          h2xy(1,1,2,3),norbt,                 &
-          pv(1,1,nxy,2,3),nasht,               &
-          d1,fq(1,1,1),norbt)
-
-  end if
-
-  if (nz .ge. 4 .and. ix .ne. iy) then
-
-!    ------------------
-!    Term 11 (real part)
-!    ------------------
-
-!    \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;3,1}
-
-     call dgemm('n','n',norbt,nasht,nasht,d1, &
-          h2yx(1,1,3,1),norbt,                &
-          pv(1,1,nxy,3,1),nasht,              &
-          d1,fq(1,1,1),norbt)
-
-!    ------------------
-!    Term 12 (real part)
-!    ------------------
-
-!    - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,1} P_{vq,xy;4,1}
-
-     call dgemm('n','n',norbt,nasht,nasht,dm1, &
-          h2yx(1,1,4,1),norbt,                 &
-          pv(1,1,nxy,4,1),nasht,               &
-          d1,fq(1,1,1),norbt)
-
-  end if
+  endif
 
 ! Skip remaining 36 terms if NZ = 1.
 
@@ -656,5 +590,31 @@ contains
   endif
 
   end subroutine raddfq90
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine get_fq(ch1,ch2,h2,pv,fq,nxy,alpha,izh,izp,izf,iclass)
+  implicit none
+
+  ! External variables
+  character, intent( in) :: ch1*1, ch2*1
+  integer,   intent( in) :: nxy, izh, izp, izf, iclass
+  real*8,    intent( in) :: alpha
+  real*8,    intent( in) :: h2(:,:,:,:), pv(:,:,:,:,:)
+  real*8,    intent(out) :: fq(:,:,:)
+
+  ! Internal variables
+  integer :: norbt, nasht
+
+  norbt = size(h2,1)
+  nasht = size(h2,2)
+
+  call dgemm(ch1,ch2,norbt,nasht,nasht,alpha, &
+       h2(1,1,izh,iclass),norbt,              &
+       pv(1,1,nxy,izp,iclass),nasht,          &
+       1.0d0,fq(1,1,izf),norbt)
+
+  end subroutine get_fq
 
 end module mcscf_routines
