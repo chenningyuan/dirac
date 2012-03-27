@@ -80,29 +80,11 @@
    contains 
 
    subroutine pcm_driver(dmat, fock, work, lwork, printlevel)
+#include "dcbdhf.h"
 !
 ! Driver routine for the Polarizable Continuum Model.
 !
-! RDR 190312 Quits if X2C or symmetry requested. 
-!
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
-#ifdef prg_dirac
-#include "dcbgrd.h"
-#endif
-#include "ccom.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "shells.h"
-#include "onecom.h"
-#include "primit.h"
-#include "symind.h"
-#include "symmet.h"
-#include "lmns.h"
+
 ! Passed variables
       real(8)              :: dmat(*), fock(*)
       real(8)              :: work(*)
@@ -113,16 +95,6 @@
       integer :: nr_points
       real(8), allocatable :: charges(:)
 
-! Quit if symmetry or X2C are requested.
-      if (nbsym > 1) then
-         call quit('Polarizable Continuum Model calculation cannot      &
-     & handle symmetry!')
-      end if
-      if (bss.or.x2c) then
-         call quit('Polarizable Continuum Model calculation not working &
-     & with X2C Hamiltonian!')
-      end if
-
 ! Get cavity size, i.e. the number of tesserae      
       call get_cavity_size(nr_points)
 
@@ -132,7 +104,8 @@
 
 ! Compute total polarization charges
       call pcm_charges(nr_points, charges, dmat, work, lwork, printlevel)
-! Update Fock matrix with PCM contribution 
+
+! Update Fock matrix with PCM contribution
       call pcm_fock(nr_points, charges, fock, work, lwork)
 
       deallocate(charges)
@@ -145,9 +118,9 @@
 
       real(8) :: pcm_energy
 
-! Polarization energy: U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      call comp_pol_ene_pcm(pcm_energy)
-      print *, "U_pol =", pcm_energy
+! pcm_energy is the polarization energy:
+! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
+      call comp_pol_ene_pcm(pcm_energy, 0)
 
       get_pcm_energy = pcm_energy
 
@@ -197,7 +170,7 @@
       call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
       call ele_pot_pcm(nr_points, tess_cent, ele_pot, dmat, work, lwork)
 ! Compute nuclear and electronic polarization charges @tesserae centers
-! Store potentials and charges in the Cavity object?
+! Store potentials and charges in the Cavity object?  TO BE REVISED SOON
 ! 0 -> no; 1 -> nuclear; 2 -> electronic; 3-> nuclear + electronic
       call comp_charge(nuc_pot, nuc_pol_chg, 1)
       call comp_charge(ele_pot, ele_pol_chg, 2)
@@ -240,7 +213,7 @@
       call esp_nuc(nr_points, tess_cent, pot, 0)
       
    end subroutine
-
+   
    subroutine ele_pot_pcm(nr_points, tess_cent, pot, dmat, work, lwork)
       use vc_grid
 
@@ -283,21 +256,23 @@
 
       call esp_el(nr_points, fock_pcm, tess_cent, charges, work, lwork, 0, .true.)
      
+      deallocate(tess_cent)
+
 ! Symmetrize Fock matrix contribution       
       do i = 1, ntbas(0)
-        do j = 1, i 
-          average = (fock_pcm(i, j, 1) + fock_pcm(j, i, 1)) / 2.0d0
+        do j = 1, i
+          average = 0.5d0 * (fock_pcm(i, j, 1) + fock_pcm(j, i, 1))
           fock_pcm(i, j, 1) = average    
-          fock_pcm(j, i, 1) = average 
+          fock_pcm(j, i, 1) = average
         end do
       end do
        
+      print *, "FOCK_PCM"
       call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
                        nz, ipqtoq(1,0), 6)
 ! Add fock_pcm to Fock matrix
-      call daxpy(n2bbasx, 1, fock_pcm, 1, fock, 1)
-      
-      deallocate(tess_cent)
+      call daxpy(n2bbasx, 1.0d0, fock_pcm, 1, fock, 1)
+
       deallocate(fock_pcm)
 
    end subroutine

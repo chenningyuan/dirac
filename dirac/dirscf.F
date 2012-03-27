@@ -1307,12 +1307,6 @@ C
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
 
-#ifdef PCM_MODULE
-       if (dirac_cfg_pcm) then
-          printlevel = 0
-        call pcm_driver(dmat, fock, work, lwork, printlevel)
-       endif 
-#endif        
 
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
@@ -1441,11 +1435,14 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
+
+ 
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
+
 C        
 C        Calculate correction according to the One-center app. models 
 C        ============================================================
@@ -1459,11 +1456,32 @@ C        Calculate total energy
 C        ======================
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
+
+#ifdef PCM_MODULE
+         if (dirac_cfg_pcm) then
+! Quit if symmetry or X2C are requested.
+           if (nbsym > 1) then
+             call quit('Polarizable Continuum Model calculation cannot  &
+     & handle symmetry!')
+           end if
+           if (bss.or.x2c) then
+             call quit('Polarizable Continuum Model calculation not     &
+     & working with X2C Hamiltonian!')
+           end if
+
+           write(lupri,'(a)') '* Calling pcm_driver'
+           printlevel = 0
+! fock is the 2-el Fock matrix
+           call pcm_driver(dmat, fock, work, lwork, printlevel)
+       endif 
+#endif       
+
 C
 C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
          CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
+
 C
 C        Add active two-electron Fock matrices
 C
@@ -1613,6 +1631,7 @@ C*****************************************************************************
 
       use dirac_cfg
       use fde_mod
+      use pcm_interface
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1717,6 +1736,12 @@ C
         ERGSOL = ESOLVE + ESOLVN
         DHFERG = DHFERG + ERGSOL
       ENDIF
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+! Add polarization energy to dhferg 
+         dhferg = dhferg + get_pcm_energy()
+      endif 
+#endif       
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
