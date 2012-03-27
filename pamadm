@@ -29,6 +29,16 @@ import string
 import datetime
 import glob
 
+# this is a hack to "sanitize" input from cmake
+# example: ./pamadm "--adm --hsfsdyn --auto"
+# sys.argv contains: ['./pamadm', '--adm --hsfsdyn --auto']
+l = []
+for x in sys.argv:
+    for y in x.split():
+        l.append(y)
+sys.argv = l[:]
+# sys.argv now contains: ['./pamadm', '--adm', '--hsfsdyn', '--auto']
+
 class dirac_module:
      def __init__(self, flag, message):
          self.flag            = flag

@@ -4,33 +4,21 @@
 #
 ##############################################################
 
-#
-# store onto vo=voce SE
-# p=`pwd`;lcg-cr -v -d se.ui.savba.sk file://$p/dirac_test_suite.tgz  -l lfn://grid/voce/ilias/dirac_test_suite.tgz
-# list: lcg-ls lfn://grid/voce/ilias
-# delete: lcg-del -a lfn://grid/voce/ilias/dirac_test_suite.tgz
-#
-
-Executable = "launch_voce.py";
-
-# files with full paths
-#InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk/maintenance/grid_testing/launch_voce.sh"};
-#InputSandbox = {"/home/ilias/qch_work/software/dirac_git/trunk_current/maintenance/grid_testing/launch_voce.py"};
-
-InputSandbox = {"launch_voce.py"};
-
-##############################################
-# stdout,stderr output & other working files
-##############################################
-StdOutput = "DIRAC_tests_std.out";
-StdError = "DIRAC_tests_std.err";
-OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err"};
-
 ##################
 # assign your VO #
 ##################
 #VirtualOrganisation="compchem";
 VirtualOrganisation="voce";
+
+Executable = "launch.py --vo=voce";
+InputSandbox = {"launch_voce.py"};
+
+##############################################
+# stdout,stderr output & other working files
+##############################################
+StdOutput = "DIRAC_Grid_run_std.out";
+StdError = "DIRAC_Grid_run_std.err";
+OutputSandbox = {"DIRAC_Grid_run_std.out","DIRAC_Grid_run_std.err","DIRAC_Grid_package_out.tgz"};
 
 #################
 # Demands on CE #

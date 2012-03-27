@@ -120,6 +120,8 @@
       
       IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
 
+      vc = 0.0d0
+
 !     Electrostatic potential: electronic contribution
       CALL ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
 
@@ -241,6 +243,8 @@
           MAB    = IOR(MULA,MULB)
           KAB    = IAND(MULA,MULB)
           HKAB   = FMULT(KAB)
+
+          JMAX = NHKTAB - 2
 !
           SPHRAB = SPHRA .OR. SPHRB
 !     JHS Note that if SPHRAB is true we should correct the densitymatrix for this.
@@ -351,7 +355,7 @@
      &              ADER(1:KCKTA,1:KCKTB,ipoint))
 
        END DO 
-           
+
 
 !     JHS Transform back to the original B coordinate.
             CORBX=CORBX/SIGNBX
@@ -449,7 +453,7 @@
       ALLOCATE(ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3))
 
 !     Initialization
-      ADER(:,:,:)=0.0
+      ADER(:,:,:)=0.0D0
       CORA(1)=CORAX
       CORA(2)=CORAY
       CORA(3)=CORAZ
@@ -575,7 +579,7 @@
 #include "gamcom.h"
 
 !     Initialisation:
-      RJ=0.0
+      RJ = 0.0d0
 
       IF (IPRINT>10) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from VC >>>>> '
@@ -628,12 +632,12 @@
          END DO
       END DO
 
+      AHGTF(:,:,:)=RJ(0:,0:,0:,0)
+
       IF (IPRINT .GT. 20) THEN
          CALL HEADER ('Hermite integrals in HERNAI',-1)
          WRITE (LUPRI,'(6F12.6)') AHGTF(:,:,:)
       END IF
-      
-      AHGTF(:,:,:)=RJ(0:,0:,0:,0)
 
       END SUBROUTINE
 
@@ -670,7 +674,7 @@
 !     ***** CALCULATE NUCLEAR ATTRACTION INTEGRALS *****
 !     **************************************************
 !      
-      AINT = 0.0
+      AINT = 0.0d0
       DO IV = 0, NVALA + NVALB
          EV = ODC(NVALA,NVALB,IV,0,0,3)
          DO IU = 0, MVALA + MVALB
