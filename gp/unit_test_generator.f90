@@ -1,4 +1,4 @@
-module test_generator
+module unit_test_generator
 
 implicit none
 
@@ -1256,4 +1256,4 @@ contains
 
   end subroutine generate_test
 
-end module test_generator
+end module unit_test_generator

@@ -29,7 +29,7 @@ contains
   !     Written by J. Thyssen - Nov 16 2000
   !
   !***********************************************************************
-  use test_generator
+  use unit_test_generator
   implicit none
 
 #include "unit-test.h"
