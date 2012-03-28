@@ -381,6 +381,9 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use xmlout
+#ifdef PCM_MODULE
+      use pcm_interface
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -652,6 +655,14 @@ C
            END IF 
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
+
+#ifdef PCM_MODULE
+         if (dirac_cfg_pcm) then
+           write(lupri,'(a)') '* Calling pcm_fock_driver'
+! fock is the 2-el Fock matrix
+           call pcm_fock_driver(fock, work, lwork)
+       endif 
+#endif       
 
 CMI      ... add 1-electron Fock matrix into the total Fock matrix ...
         CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
@@ -1459,20 +1470,9 @@ C
 
 #ifdef PCM_MODULE
          if (dirac_cfg_pcm) then
-! Quit if symmetry or X2C are requested.
-           if (nbsym > 1) then
-             call quit('Polarizable Continuum Model calculation cannot  &
-     & handle symmetry!')
-           end if
-           if (bss.or.x2c) then
-             call quit('Polarizable Continuum Model calculation not     &
-     & working with X2C Hamiltonian!')
-           end if
-
-           write(lupri,'(a)') '* Calling pcm_driver'
-           printlevel = 0
+           write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
-           call pcm_driver(dmat, fock, work, lwork, printlevel)
+           call pcm_fock_driver(fock, work, lwork)
        endif 
 #endif       
 
@@ -1661,6 +1661,9 @@ c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
       real(kind=8) :: fde_energy
+#ifdef PCM_MODULE
+      real(8)      :: pcm_energy
+#endif
       data besterg /1.0D100/
       save besterg
 C
@@ -1739,7 +1742,8 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-         dhferg = dhferg + get_pcm_energy()
+         call pcm_energy_driver(pcm_energy, dmat, work, lwork)
+         dhferg = dhferg + pcm_energy
       endif 
 #endif       
       IF(LVCON) THEN
@@ -1798,6 +1802,10 @@ CMI      ... print out matrixes ...
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Solvent energy                     :  ',ERGSOL
+#ifdef PCM_MODULE
+         IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
+     +       'Polarization energy                :  ',get_pcm_energy()
+#endif
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN
