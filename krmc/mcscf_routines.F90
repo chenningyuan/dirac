@@ -483,6 +483,127 @@ contains
   ! Skip remaining 24 terms if NZ = 2.
   if(nz > 2)then ! goto 101
 
+  !------------------------------------------------------------------------------!
+  !                         *** j-imag part of FQ ***                            !
+  !------------------------------------------------------------------------------!
+  ! (B.42)
+
+  !----------------------!
+  ! Term 1 (j-imag part) !
+  !----------------------!
+
+  ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;3,3}
+  call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,3,3,3)
+
+  if(ix /= iy)then
+
+    ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;3,2}
+    call get_fq('n','n',h2yx,pv,fq,nxy,d1,1,1,3,2,3)
+
+  endif
+
+  !----------------------!
+  ! Term 2 (j-imag part) !
+  !----------------------!
+
+  ! - \sum_{x >= y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;4,3}
+  call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,1,4,3,3)
+
+  if(ix /= iy)then
+
+    ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;4,2}
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,2,1,4,2,3)
+
+  endif
+
+  !----------------------!
+  ! Term 3 (j-imag part) !
+  !----------------------!
+
+  ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{3,2} P_{vq,xy;1,1}
+  call get_fq('n','n',h2xy,pv,fq,nxy,d1,3,2,1,1,3)
+
+  if(ix /= iy)then
+
+    ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,3} P_{qv,xy;1,1}
+    call get_fq('n','t',h2yx,pv,fq,nxy,d1,3,3,1,1,3)
+
+  endif
+
+  !----------------------!
+  ! Term 4 (j-imag part) !
+  !----------------------!
+
+  ! - \sum_{x >= y} \sum_v \Twoint{pv|xy}_{4,2} P_{vq,xy;2,1}
+  call get_fq('n','n',h2xy,pv,fq,nxy,dm1,4,2,2,1,3)
+
+  if(ix /= iy)then
+
+    ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{4,3} P_{qv,xy;2,1}
+    call get_fq('n','t',h2yx,pv,fq,nxy,dm1,4,3,2,1,3)
+
+  endif
+
+  if(ix /= iy)then
+
+  !----------------------!
+  ! Term 5 (j-imag part) !
+  !----------------------!
+
+    ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;3,1}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,1,3,3,1,3)
+
+  !----------------------!
+  ! Term 6 (j-imag part) !
+  !----------------------!
+
+    ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;4,1}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,2,3,4,1,3)
+
+  !----------------------!
+  ! Term 7 (j-imag part) !
+  !----------------------!
+
+    ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{1,2} P_{vq,xy;3,1}
+    call get_fq('n','n',h2xy,pv,fq,nxy,d1,1,2,3,1,3)
+
+  !----------------------!
+  ! Term 8 (j-imag part) !
+  !----------------------!
+
+    ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{2,2} P_{vq,xy;4,1}
+    call get_fq('n','n',h2xy,pv,fq,nxy,dm1,2,2,4,1,3)
+
+  !----------------------!
+  ! Term 9 (j-imag part) !
+  !----------------------!
+
+    ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,1} P_{qv,xy;1,2}
+    call get_fq('n','t',h2yx,pv,fq,nxy,dm1,3,1,1,2,3)
+
+  !-----------------------!
+  ! Term 10 (j-imag part) !
+  !-----------------------!
+
+    ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{4,1} P_{qv,xy;2,2}
+    call get_fq('n','t',h2yx,pv,fq,nxy,d1,4,1,2,2,3)
+
+  !-----------------------!
+  ! Term 11 (j-imag part) !
+  !-----------------------!
+
+    ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;1,3}
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,1,1,3,3)
+
+  !-----------------------!
+  ! Term 12 (j-imag part) !
+  !-----------------------!
+
+    ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;2,3}
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,1,2,3,3)
+
+  endif
+
   call quit('*** ERROR in raddfq90 *** nz = 4 not implemented')
 
   endif ! 101
