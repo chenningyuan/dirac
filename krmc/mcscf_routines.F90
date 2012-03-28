@@ -213,11 +213,11 @@ contains
   !--------------------!
 
   ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;1,1}
-  call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,1,1)
+  call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,1,1,1)
 
   if(ix /= iy)then
     ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;1,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,d1,1,1,1,1)
+    call get_fq('n','n',h2yx,pv,fq,nxy,d1,1,1,1,1,1)
   endif
 
   !--------------------!
@@ -227,11 +227,11 @@ contains
   if(nz >= 2)then
 
     ! - \sum_{x >= y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;2,1}
-    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,1,1)
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,1,2,1,1)
 
     if(ix /= iy)then
       ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;2,1}
-      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,2,2,1,1)
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,2,1,2,1,1)
     endif
 
   endif
@@ -243,10 +243,10 @@ contains
   if(nz == 4 .and. ix /= iy)then
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;3,1}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,3,1,1)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,1,3,1,1)
 
     ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;4,1}
-    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,4,1,1)
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,1,4,1,1)
 
   endif
 
@@ -257,7 +257,7 @@ contains
   if(ix /= iy)then
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;1,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,1,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,2,1,2,1)
 
   endif
 
@@ -268,7 +268,7 @@ contains
   if(nz >= 2 .and. ix /= iy)then
 
     ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;2,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,1,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,2,2,1)
 
   endif
 
@@ -279,12 +279,12 @@ contains
   !--------------------!
 
     ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;3,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,3,1,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,2,3,2,1)
 
     if(ix /= iy)then
 
       ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;3,3}
-      call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,3,1,3)
+      call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,3,3,3,1)
 
     endif
 
@@ -293,12 +293,12 @@ contains
   !--------------------!
 
     ! - \sum_{x >= y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;4,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,4,1,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,2,4,2,1)
 
     if(ix /= iy)then
 
       ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;4,3}
-      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,4,1,3)
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,3,4,3,1)
 
     endif
 
@@ -311,7 +311,7 @@ contains
   if(ix /= iy)then
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;1,3}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,1,3)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,3,1,3,1)
 
   endif
 
@@ -322,7 +322,7 @@ contains
   if(nz >= 2 .and. ix /= iy)then
 
     ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;2,3}
-    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,1,3)
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,3,2,3,1)
 
   endif
 
@@ -333,14 +333,14 @@ contains
   !---------------------!
 
     ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;3,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,3,1,1)
+    call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,1,3,1,1)
 
   !---------------------!
   ! Term 12 (real part) !
   !---------------------!
 
     ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{4,1} P_{vq,xy;4,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,4,1,1)
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,1,4,1,1)
 
   endif
 
@@ -357,12 +357,12 @@ contains
   !----------------------!
 
   ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;2,1}
-  call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,2,2,1)
+  call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,1,2,1,2)
 
   if(ix /= iy)then
 
     ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;2,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,1,2,2,1)
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,1,1,2,1,2)
 
   endif
 
@@ -371,12 +371,12 @@ contains
   !----------------------!
 
   ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;1,1}
-  call get_fq('n','t',h2xy,pv,fq,nxy,d1,2,1,2,1)
+  call get_fq('n','t',h2xy,pv,fq,nxy,d1,2,1,1,1,2)
 
   if(ix /= iy)then
 
     ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;1,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,2,1,2,1)
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,2,1,1,1,2)
 
   endif
 
@@ -387,10 +387,10 @@ contains
   if(nz == 4 .and. ix /= iy)then
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;4,1}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,4,2,1)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,1,4,1,2)
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;3,1}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,4,3,2,1)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,4,1,3,1,2)
 
   endif
 
@@ -401,14 +401,14 @@ contains
   !----------------------!
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;2,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,2,2,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,2,2,2,2)
 
   !----------------------!
   ! Term 6 (i-imag part) !
   !----------------------!
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;1,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,2,1,2,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,2,2,1,2,2)
 
   endif
 
@@ -419,12 +419,12 @@ contains
   !----------------------!
 
     ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;4,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,4,2,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,2,4,2,2)
 
     if(ix /= iy)then
 
       ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;4,3}
-      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,3,4,2,3)
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,3,3,4,3,2)
 
     endif
 
@@ -433,12 +433,12 @@ contains
   !----------------------!
 
     ! \sum_{x >= y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;3,2}
-    call get_fq('n','t',h2xy,pv,fq,nxy,d1,4,3,2,2)
+    call get_fq('n','t',h2xy,pv,fq,nxy,d1,4,2,3,2,2)
 
     if(ix /= iy)then
 
       ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;3,3}
-      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,3,2,3)
+      call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,3,3,3,2)
 
     endif
 
@@ -451,14 +451,14 @@ contains
   !----------------------!
 
     ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;2,3}
-    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,1,2,2,3)
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,1,3,2,3,2)
 
   !-----------------------!
   ! Term 10 (i-imag part) !
   !-----------------------!
 
     ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;1,3}
-    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,1,2,3)
+    call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,3,1,3,2)
 
   endif
 
@@ -469,14 +469,14 @@ contains
   !-----------------------!
 
     ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;4,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,3,4,2,1)
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,3,1,4,1,2)
 
   !-----------------------!
   ! Term 12 (i-imag part) !
   !-----------------------!
 
     ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{4,1} P_{vq,xy;3,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,3,2,1)
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,1,3,1,2)
 
   endif
 
@@ -529,12 +529,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_fq(ch1,ch2,h2,pv,fq,nxy,alpha,izh,izp,izf,iclass)
+  subroutine get_fq(ch1,ch2,h2,pv,fq,nxy,alpha,izh,ich,izp,icp,izf)
   implicit none
 
   ! External variables
   character, intent( in) :: ch1*1, ch2*1
-  integer,   intent( in) :: nxy, izh, izp, izf, iclass
+  integer,   intent( in) :: nxy, izh, ich, izp, icp, izf
   real*8,    intent( in) :: alpha
   real*8,    intent( in) :: h2(:,:,:,:), pv(:,:,:,:,:)
   real*8,    intent(out) :: fq(:,:,:)
@@ -546,8 +546,8 @@ contains
   nasht = size(h2,2)
 
   call dgemm(ch1,ch2,norbt,nasht,nasht,alpha, &
-       h2(1,1,izh,iclass),norbt,              &
-       pv(1,1,nxy,izp,iclass),nasht,          &
+       h2(1,1,izh,ich),norbt,                 &
+       pv(1,1,nxy,izp,icp),nasht,             &
        1.0d0,fq(1,1,izf),norbt)
 
   end subroutine get_fq
