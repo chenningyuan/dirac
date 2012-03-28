@@ -468,8 +468,8 @@ contains
   ! Term 11 (i-imag part) !
   !-----------------------!
 
-    ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;4,1}
-    call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,4,2,1)
+    ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;4,1}
+    call get_fq('n','n',h2yx,pv,fq,nxy,dm1,3,4,2,1)
 
   !-----------------------!
   ! Term 12 (i-imag part) !
