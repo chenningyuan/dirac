@@ -216,7 +216,7 @@ C     ===============================================
 C
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL .GT. D0) THEN
+        IF (ITDIIS .GE. 8 .AND. EVCDIF*ERGVAL .GT. D0) THEN
 C          ... often wild oscillations in the beginning,
 C              which may settle down reasonably.
            WRITE(LUPRI,'(/A/A)')
