@@ -467,7 +467,8 @@ endif
          integer :: k
          real(8) :: VT(3)
          integer              :: derv_length, im, i
-         real(8), allocatable :: derv(:, :)
+         real(8), allocatable :: derv_active(:, :)
+         real(8), allocatable :: derv_total(:, :)
 
          logical :: print_data_at_point
 
@@ -509,10 +510,12 @@ endif
          end if
 
          derv_length = nr_nonzero_derv
-         allocate(derv(max_block_length, 0:derv_length))
+         allocate(derv_active(max_block_length, 0:derv_length))
+         allocate(derv_total(max_block_length, 0:derv_length))
 
 !  better safe than sorry
-         derv      = 0.0d0
+         derv_active = 0.0d0
+         derv_total  = 0.0d0
 
 !  set it to zero, otherwise it is undefined with lda
          gnn_0 = 0.0d0
@@ -569,7 +572,7 @@ endif
                fde_active_gn(2,ipoint) = gn_0_pointwise(2)
                fde_active_gn(3,ipoint) = gn_0_pointwise(3)
 
-               if ( fde_frozen_n(ipoint) > (dft_cfg_tinydens/10000D0) ) then
+               if ( fde_frozen_n(ipoint) > 0.0d0 ) then
                   n_0_t(1) = fde_active_n(ipoint)    + fde_frozen_n(ipoint)
                   z0tt(1)  = fde_active_gn(1,ipoint) + fde_frozen_gn(1,ipoint)
                   z0tt(2)  = fde_active_gn(2,ipoint) + fde_frozen_gn(2,ipoint)
@@ -590,20 +593,22 @@ endif
 !       contributions. this is not desired, but we have to overcome xcfun's limitation
 !       on using only up to 5 functionals...
 !
-               call get_fde_nadd_fun_derv(max_fun_derv, &
-                                          bllen,        &
-                                          w,            &
-                                          n_0,          &
-                                          n_0_t,        &
-                                          gnn_0,        &
-                                          gnn_0_t,      &
-                                          derv)
+               call get_xcke_fun_derv(max_fun_derv, & 
+                                      bllen,        &
+                                      w,            &
+                                      n_0_t,        &
+                                      gnn_0_t,      &
+                                      derv_total)
 
-
-               derv(1, d1000000) = derv(1, d1000000) &
-                                 + w(1)*fde_frozen_elpot(ipoint)
+               call get_xcke_fun_derv(max_fun_derv, & 
+                                      bllen,        &
+                                      w,            &
+                                      n_0,          &
+                                      gnn_0,        &
+                                      derv_active)
 
                time_derv = time_derv + second() - time_derv_start
+
 
                time_matrix_dist_start = second()
 
@@ -617,13 +622,14 @@ endif
 !         outside of the integration loop  
 !           fde_energy = fde_energy + derv(1, d0000000)
 
-           u%n(1) = derv(1, d1000000) 
+           u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*fde_frozen_elpot(ipoint) 
+
            if (use_gga) then
 !           this factor has nothing to do
 !           with symmetrization later
 !           it comes from the fact that derivative of z
 !           yields two identical terms (one left, one right)
-              u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
+              u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
            end if
 
          end if !exchange-correlation potential
@@ -643,14 +649,19 @@ endif
                    .false.,        &
                    ao,             &
                    n_0,            &
+                   n_0_t,          &
                    gn_0_pointwise, &
+                   z0tt,           &
                    gnn_0,          &
+                   gnn_0_t,        &
                    w,              &
                    use_gga_qr,     &
                    use_gga_qi,     &
                    buffer,         &
                    derv_length,    &
-                   derv, u)
+                   derv_active,    &
+                   derv_total,     &
+                   u)
         endif
 
 !         distribute over fock matrices
@@ -749,7 +760,8 @@ endif
 
     deallocate(ao)
     deallocate(buffer)
-    deallocate(derv)
+    deallocate(derv_total)
+    deallocate(derv_active)
 
     deallocate(u%n)
     deallocate(u%gn)
@@ -778,23 +790,12 @@ endif
             'number of electrons from numerical integration = ', &
             nr_electrons_integrated
 
-      if (abs(error_nr_electrons) > 1.0d-3) then
-         write(file_unit, '(3x, a, i9)')                            &
-               'number of electrons from orbital occupations   = ', &
-               nr_electrons
+      if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
-               'WARNING: error in the number of electrons      = ', &
-               error_nr_electrons
-         write(file_unit, '(12x, a, f15.6)')                        &
-               'is larger than 1.0d-3'
-         write(file_unit, '(12x, a)')                              &
-               'this can happen when starting from coefficients'
-         write(file_unit, '(12x, a)')                              &
-               'from a different geometry'
-         write(file_unit, '(12x, a)')                               &
-               'or it can mean that the quadrature '//              &
-               'grid is inappropriate'
+               'FDE "energy":               = ', &
+               fde_mat_energy
       end if
+
       write(file_unit, *)
 
 !     timing
@@ -872,14 +873,19 @@ endif
                     allow_nonhermitian, &
                     ao,                 &
                     n_0,                &
+                    n_0_t,              &
                     gn_0_pointwise,     &
+                    gn_0_t_pointwise,   &
                     gnn_0,              &
+                    gnn_0_t,            &
                     w,                  &
                     is_gga_qr,          &
                     is_gga_qi,          &
                     buffer,             &
                     n,                  &
-                    derv, u)
+                    derv_active,        &
+                    derv_total,         &
+                    u)
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: block_length
     integer, intent(in)    :: mat_dim
@@ -891,14 +897,18 @@ endif
     logical, intent(in)    :: allow_nonhermitian
     real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
+    real(8), intent(in)    :: n_0_t(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: gn_0_t_pointwise(*)
     real(8), intent(in)    :: gnn_0(*)
+    real(8), intent(in)    :: gnn_0_t(*)
     real(8), intent(in)    :: w(*)
     logical, intent(in)    :: is_gga_qr
     logical, intent(in)    :: is_gga_qi
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
-    real(8), intent(in)    :: derv(max_block_length, 0:n)
+    real(8), intent(in)    :: derv_active(max_block_length, 0:n)
+    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
     logical, save          :: have_triplet_contrib(100) = .false.
@@ -911,7 +921,9 @@ endif
     real(8)                ::  t_b, ts_b(3)
 
     real(8)                :: z_b
+    real(8)                :: z_b_t
     real(8)                :: y_b(3)
+    real(8)                :: y_b_t(3)
 
     integer                :: k_start, k, im, im_off, j
     type(fde_omega_prefactor) :: u
@@ -970,18 +982,25 @@ endif
                        ao)
          end if
 
-        u%n(im) = u%n(im) + derv(1, d2000000)*r_b
+        u%n(im) = u%n(im) + (derv_total(1, d2000000) - derv_active(1, d2000000))*r_b
 
         if (is_gga_qr) then
            z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
                       + gn_0_pointwise(2)*gr_b(2) &
                       + gn_0_pointwise(3)*gr_b(3))
 
-           u%n(im) = u%n(im) + derv(1, d1010000)*z_b
+           z_b_t = 2.0d0*(gn_0_t_pointwise(1)*gr_b(1) &
+                        + gn_0_t_pointwise(2)*gr_b(2) &
+                        + gn_0_t_pointwise(3)*gr_b(3))
 
-           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*r_b*derv(1, d1010000) &
-                                         + 2.0d0*gn_0_pointwise(1:3)*z_b*derv(1, d0020000) &
-                                         + 2.0d0*gr_b(1:3)*derv(1, d0010000)
+           u%n(im) = u%n(im) + (derv_total(1, d1010000)*z_b_t - derv_active(1, d1010000)*z_b)
+
+           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_t_pointwise(1:3)*r_b*derv_total(1, d1010000)   &
+                                         + 2.0d0*gn_0_t_pointwise(1:3)*z_b_t*derv_total(1, d0020000) &
+                                         + 2.0d0*gr_b(1:3)*derv_total(1, d0010000)                   &
+                                         - 2.0d0*gn_0_pointwise(1:3)*r_b*derv_active(1, d1010000)    &
+                                         - 2.0d0*gn_0_pointwise(1:3)*z_b*derv_active(1, d0020000)    &
+                                         - 2.0d0*gr_b(1:3)*derv_active(1, d0010000)
         end if
 
       end if !end of qr contribution
@@ -1018,18 +1037,25 @@ endif
         end if
 
         do k = k_start, 3
-           u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
+           u%s(k, im) = u%s(k, im) + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b(k)
 
            if (is_gga_qi) then
               y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
                       + gn_0_pointwise(2)*gs_b(2, k) &
                       + gn_0_pointwise(3)*gs_b(3, k)
 
-              u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
+              y_b_t(k) = gn_0_t_pointwise(1)*gs_b(1, k) &
+                       + gn_0_t_pointwise(2)*gs_b(2, k) &
+                       + gn_0_t_pointwise(3)*gs_b(3, k)
 
-              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k)*derv(1, d0101000) &
-                                                  +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
-                                                  + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
+              u%s(k, im) = u%s(k, im) + (derv_total(1, d0101000)*y_b_t(k) - derv_active(1, d0101000)*y_b(k))
+
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_t_pointwise(1:3)*s_b(k)*derv_total(1, d0101000)   &
+                                                  +       gn_0_t_pointwise(1:3)*y_b_t(k)*derv_total(1, d0002000) &
+                                                  + 2.0d0*gs_b(1:3, k)*derv_total(1, d0000100)                   &
+                                                  -       gn_0_pointwise(1:3)*s_b(k)*derv_active(1, d0101000)    &
+                                                  -       gn_0_pointwise(1:3)*y_b(k)*derv_active(1, d0002000)    &
+                                                  - 2.0d0*gs_b(1:3, k)*derv_active(1, d0000100)
            end if
         end do
 
