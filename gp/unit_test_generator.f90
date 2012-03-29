@@ -4,9 +4,9 @@ implicit none
 
 public :: add_inp_int_array, add_inp_real_array, add_out_int_array, add_out_real_array
 public :: set_driver_routine, add_input_file, add_output_file, add_module, set_keys
-public :: redefine_variable, set_test_name
+public :: redefine_variable, set_suffix, get_output_name
 public :: print_input_files, print_output_files, print_variable_info
-public :: generate_test, i2c
+public :: generate_test, unit_test_generator_destructor
 
 public :: add_inp_variable, add_out_variable, add_opt_variable
 
@@ -31,14 +31,17 @@ interface add_out_variable
   module procedure add_out_real_1d_array
   module procedure add_out_real_2d_array
   module procedure add_out_real_3d_array
+  module procedure add_out_real_4d_array
+  module procedure add_out_real_5d_array
 end interface add_out_variable
 
-interface set_test_name
-  module procedure set_test_name_string
-  module procedure set_test_name_integer
-end interface set_test_name
+interface set_suffix
+  module procedure set_suffix_string
+  module procedure set_suffix_integer
+  module procedure set_suffix_logical
+end interface set_suffix
 
-private :: init_string, add_string, errall, erropen, get_name, gets, csize, change_string
+private :: init_string, add_string, errall, erropen, get_name, gets, i2c, l2c, csize, change_string
 
 private
 
@@ -50,7 +53,7 @@ end type string
 type ( string ), pointer, save :: input_files(:), output_files(:), driver(:), test_name(:)
 type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:)
 type ( string ), pointer, save :: var_info(:), var_value(:)
-type ( string ), pointer, save :: modules(:)
+type ( string ), pointer, save :: modules(:), suffix(:)
 
 type :: keys
   logical :: mod_call = .true.
@@ -761,10 +764,65 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_opt_variable(vname,vvalue,vtype)
+  subroutine add_out_real_4d_array(dvar,vname,nfile)
   implicit none
 
   ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:,:,:)
+  integer, intent(in), optional :: nfile
+
+  ! Internal variables
+  integer :: n1, n2, n3, n4
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:,:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
+  n4 = size(dvar,4)
+  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//')',var_dim)
+  call add_string('output',var_info)
+  call add_string('own_name',var_value)
+
+  end subroutine add_out_real_4d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_real_5d_array(dvar,vname,nfile)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar(:,:,:,:,:)
+  integer, intent(in), optional :: nfile
+
+  ! Internal variables
+  integer :: n1, n2, n3, n4, n5
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:,:,:,:)',var_type)
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
+  n4 = size(dvar,4)
+  n5 = size(dvar,5)
+  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//','//i2c(n5)//')',var_dim)
+  call add_string('output',var_info)
+  call add_string('own_name',var_value)
+
+  end subroutine add_out_real_5d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_opt_variable(vname,vvalue,vtype)
+  implicit none
   character(*), intent(in) :: vname, vvalue, vtype
 
   ! add name, type, dimension, info and order in driver call
@@ -782,8 +840,6 @@ contains
 
   subroutine set_driver_routine(drv_name)
   implicit none
-
-  ! External variables
   character(*), intent(in) :: drv_name
 
   ! add name of driver routine to the list
@@ -796,12 +852,14 @@ contains
 
   subroutine add_input_file(file_name)
   implicit none
-
-  ! External variables
   character(*), intent(in) :: file_name
 
-  ! add file_name to the list of input files (input_files)
-  call add_string(file_name,input_files)
+  ! add file_name (with suffix) to the list of input files (input_files)
+  if(associated(suffix))then
+    call add_string(file_name // '_' // gets(suffix(1)%str), input_files)
+  else
+    call add_string(file_name, input_files)
+  endif
 
   end subroutine add_input_file
 
@@ -810,12 +868,14 @@ contains
 
   subroutine add_output_file(file_name)
   implicit none
-
-  ! External variables
   character(*), intent(in) :: file_name
 
-  ! add file_name to the list of output files (output_files)
-  call add_string(file_name,output_files)
+  ! add file_name (with suffix) to the list of output files (output_files)
+  if(associated(suffix))then
+    call add_string(file_name // '_' // gets(suffix(1)%str), output_files)
+  else
+    call add_string(file_name, output_files)
+  endif
 
   end subroutine add_output_file
 
@@ -824,8 +884,6 @@ contains
 
   subroutine add_module(string)
   implicit none
-
-  ! External variables
   character(*), intent(in) :: string
 
   ! add module to the test
@@ -838,8 +896,6 @@ contains
 
   subroutine set_keys(mod_call)
   implicit none
-
-  ! External variables
   logical, intent(in), optional :: mod_call
 
   ! set keys
@@ -873,38 +929,65 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine set_test_name_string(string)
+  subroutine set_suffix_string(string)
   implicit none
-
-  ! External variables
   character(*), intent(in) :: string
 
   ! add string to the name of the test source file
-  if(associated(test_name))then
-    call change_string(test_name, gets(test_name(1)%str) // '_' // string, 1)
+  if(associated(suffix))then
+    call change_string(suffix, gets(suffix(1)%str) // '_' // string, 1)
   else
-    call add_string(string, test_name)
+    call add_string(string, suffix)
   endif
 
-  end subroutine set_test_name_string
+  end subroutine set_suffix_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine set_test_name_integer(ivar)
+  subroutine set_suffix_integer(ivar)
   implicit none
-
-  ! External variables
   integer, intent(in) :: ivar
 
   ! add integer to the name of the test source file
-  if(associated(test_name))then
-    call change_string(test_name, gets(test_name(1)%str) // '_' // i2c(ivar), 1)
+  if(associated(suffix))then
+    call change_string(suffix, gets(suffix(1)%str) // '_' // i2c(ivar), 1)
   else
-    call add_string(i2c(ivar), test_name)
+    call add_string(i2c(ivar), suffix)
   endif
 
-  end subroutine set_test_name_integer
+  end subroutine set_suffix_integer
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine set_suffix_logical(lvar)
+  implicit none
+  logical, intent(in) :: lvar
+
+  ! add integer to the name of the test source file
+  if(associated(suffix))then
+    call change_string(suffix, gets(suffix(1)%str) // '_' // l2c(lvar), 1)
+  else
+    call add_string(l2c(lvar), suffix)
+  endif
+
+  end subroutine set_suffix_logical
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  function get_output_name(nout) result(out_name)
+  implicit none
+  integer, intent(in) :: nout
+  character(len=size(output_files(nout)%str)) :: out_name
+  integer :: i
+
+  do i=1,size(output_files(nout)%str)
+    out_name(i:i)=output_files(nout)%str(i)
+  enddo
+
+  end function get_output_name
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1122,6 +1205,14 @@ contains
   write(c,'(i0)')i
   end function i2c
 
+  function l2c(l) result(c)
+  implicit none
+  logical, intent(in) :: l
+  character(len=1) :: c
+  if(l) c='T'
+  if(.not.l) c='F'
+  end function l2c
+
   function gets(str) result(c)
   implicit none
   character, pointer, intent(in) :: str(:)
@@ -1181,8 +1272,8 @@ contains
   integer   :: i, ier
 
   ! set name of the test source file
-  if(associated(test_name))then
-    call change_string(test_name, 'test.F90_' // gets(test_name(1)%str), 1)
+  if(associated(suffix))then
+    call add_string('test.F90_' // gets(suffix(1)%str), test_name)
   else
     call add_string('test.F90', test_name)
   endif
@@ -1302,13 +1393,20 @@ contains
 
   close(iunit,status='keep')
 
+  call unit_test_generator_destructor
+
+  end subroutine generate_test
+
+  subroutine unit_test_generator_destructor
+  implicit none
+
   ! clean all information about just generated source
   ! so in one run can be generated multiple files
   nullify( input_files ); nullify( output_files ); nullify( driver ); nullify( test_name )
   nullify( var_name ); nullify( var_type ); nullify( var_dim )
   nullify( var_info ); nullify( var_value )
-  nullify( modules )
+  nullify( modules ); nullify( suffix )
 
-  end subroutine generate_test
+  end subroutine unit_test_generator_destructor
 
 end module unit_test_generator

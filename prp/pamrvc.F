@@ -3781,8 +3781,9 @@ C        Two-electron density matrix
 C
          CALL DZERO(PV,NASHT**4 * MIN(2,NZ))
 !
+         NM5 = MIN(2,NZ)
          CALL M2DNZ390(TSYMM,.TRUE.,.TRUE.,WORK(KPVMOLF),PV,IPRXRS,
-     &                 IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,
+     &                 IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
      &                 NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
 C        CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PV,IPRINT)
 C
