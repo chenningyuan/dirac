@@ -1446,7 +1446,6 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
-
  
 C
 C        Read one-electron Fock matrix from file into CMO
@@ -1473,9 +1472,9 @@ C
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
            call pcm_fock_driver(fock, work, lwork)
-       endif 
-#endif       
-
+         endif 
+#endif     
+ 
 C
 C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
@@ -1742,8 +1741,8 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-         call pcm_energy_driver(pcm_energy, dmat, work, lwork)
-         dhferg = dhferg + pcm_energy
+        call pcm_energy_driver(pcm_energy, dmat, work, lwork)
+        dhferg = dhferg + pcm_energy
       endif 
 #endif       
       IF(LVCON) THEN

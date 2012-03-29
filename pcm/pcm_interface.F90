@@ -297,7 +297,7 @@
       call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
                        nz, ipqtoq(1,0), 6)
 ! Add fock_pcm to Fock matrix
-      call daxpy(n2bbasx, 1.0d0, fock_pcm, 1, fock, 1)
+      call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
 
       deallocate(fock_pcm)
 

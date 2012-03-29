@@ -441,12 +441,12 @@
           expabq = expa * expb * exppi 
           saab = conta * contb * exp(-expabq * distab) 
           asaab = abs(saab)
-          if (expabq * distab < tolog) then 
-                cycle
-          end if
-          if (asaab < tols) then 
-                cycle
-          end if
+!          if (expabq * distab < tolog) then 
+!                cycle
+!          end if
+!          if (asaab < tols) then 
+!                cycle
+!          end if
           saab13 = sign(asaab**(1.0d0/3.0d0), saab)
           expapi  = expa * exppi
           expbpi  = expb * exppi
