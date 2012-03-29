@@ -1,6 +1,6 @@
 module mcscf_routines
 
-public :: raddfq90
+public :: raddfq90, m2dnz390
 
 private :: get_fq
 
@@ -791,5 +791,558 @@ contains
        1.0d0,fq(1,1,izf),norbt)
 
   end subroutine get_fq
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  SUBROUTINE M2DNZ390(TSYMM,KSYMM,PSYMM,VMUUUU,VDUUUU,IPRINT, &
+                      IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
+!***********************************************************************
+!
+!     Transform a UUUU matrix in Molfdir format to a UUUU matrix
+!     in Dirac (NZ,3) format.
+!
+!     Input:
+!        TSYMM: transition density matrix symmetrization:
+!           do <0|...|B> + <B|...0> symmetrization
+!        KSYMM: do Kramers symmetrization (i.e., calculate P++)
+!        PSYMM: particle symmetrization: pqrs + rspq
+!
+!     Written by J. Thyssen - Jul 21 2000
+!     Last revision :
+!
+!***********************************************************************
+      IMPLICIT NONE
+
+      LOGICAL, INTENT( IN) :: PSYMM, KSYMM, TSYMM, SPINFR, LEVYLE
+      INTEGER, INTENT( IN) :: NASHT, NNASHX, NZ, NZ_in_CI, NBSYM, NFSYM, IPRINT, LUPRI
+      INTEGER, INTENT( IN) :: NASH(2), IPQTOQ(4,0:7)
+
+      REAL*8,  INTENT( IN) :: VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
+      REAL*8,  INTENT(OUT) :: VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
+
+      INTEGER :: I, J, K, L, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
+      INTEGER :: NCLASS, IFSYM, IZ, KR(-300:300)
+      REAL*8  :: THR_PRINT
+
+  !------------------------------------------------------------------------------!
+      WRITE(6,*) 'M2DNZ3: ',PSYMM, KSYMM, TSYMM
+
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+      CALL DZERO(VDUUUU,NASHT * NASHT * NNASHX * NZ * 3)
+
+      II = 0
+      JJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+      ENDDO
+
+ 9001 FORMAT(4I5,5X,2F20.10)
+
+      IF (IPRINT .GE. 30) THEN
+         THR_PRINT = 1.0D-12
+         WRITE(LUPRI,'(/A,3(1X,L1)//A)') &
+              ' (M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM, &
+              ' (M2DNZ3) Input VUUUU matrix in Molfdir format'
+         DO L = 1,2*NASHT
+            DO K = 1,2*NASHT
+               DO J = 1,2*NASHT
+                  DO I = 1,2*NASHT
+                     IF ( (ABS(VMUUUU(I,J,K,L,1)) .GT. THR_PRINT   &
+                      .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. THR_PRINT)) &
+                          WRITE(LUPRI,9001) &
+                          I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END IF
+
+
+      IJ = 0
+      DO II = 1, NASHT
+         DO JJ = 1, II
+            IJ = IJ + 1
+            DO LL = 1, NASHT
+               DO KK = 1, NASHT
+                  I = KR(II)
+                  J = KR(JJ)
+                  K = KR(KK)
+                  L = KR(LL)
+                  ITR = KR(-II)
+                  JTR = KR(-JJ)
+                  KTR = KR(-KK)
+                  LTR = KR(-LL)
+
+!                 Calculate integral classes.
+
+                  IF (TSYMM) THEN
+                     IF (PSYMM) THEN
+                        IF (KSYMM) THEN
+
+!                          (1) Symm. transition density matrix
+!                          (2) Do particle symmetrization
+!                          (3) Do Kramer's symmetrization
+
+                           VDUUUU(KK,LL,IJ,1,1) = &
+                                VMUUUU(K,L,I,J,1) + VMUUUU(L,K,J,I,1) &
+                                + VMUUUU(I,J,K,L,1) + VMUUUU(J,I,L,K,1) &
+                                + VMUUUU(LTR,KTR,I,J,1) &
+                                + VMUUUU(KTR,LTR,J,I,1) &
+                                + VMUUUU(I,J,LTR,KTR,1) &
+                                + VMUUUU(J,I,KTR,LTR,1) &
+                                + VMUUUU(K,L,JTR,ITR,1) &
+                                + VMUUUU(L,K,ITR,JTR,1) &
+                                + VMUUUU(JTR,ITR,K,L,1) &
+                                + VMUUUU(ITR,JTR,L,K,1) &
+                                + VMUUUU(LTR,KTR,JTR,ITR,1) &
+                                + VMUUUU(KTR,LTR,ITR,JTR,1) &
+                                + VMUUUU(JTR,ITR,LTR,KTR,1) &
+                                + VMUUUU(ITR,JTR,KTR,LTR,1)
+                           VDUUUU(KK,LL,IJ,1,2) = &
+                                VMUUUU(K,LTR,I,JTR,1) &
+                                + VMUUUU(I,JTR,K,LTR,1) &
+                                + VMUUUU(LTR,K,JTR,I,1) &
+                                + VMUUUU(JTR,I,LTR,K,1) &
+                                - VMUUUU(L,KTR,I,JTR,1) &
+                                - VMUUUU(I,JTR,L,KTR,1) &
+                                - VMUUUU(KTR,L,JTR,I,1) &
+                                - VMUUUU(JTR,I,KTR,L,1) &
+                                - VMUUUU(K,LTR,J,ITR,1) &
+                                - VMUUUU(J,ITR,K,LTR,1) &
+                                - VMUUUU(LTR,K,ITR,J,1) &
+                                - VMUUUU(ITR,J,LTR,K,1) &
+                                + VMUUUU(L,KTR,J,ITR,1) &
+                                + VMUUUU(J,ITR,L,KTR,1) &
+                                + VMUUUU(KTR,L,ITR,J,1) &
+                                + VMUUUU(ITR,J,KTR,L,1)
+                           VDUUUU(KK,LL,IJ,1,3) = &
+                                VMUUUU(KTR,L,I,JTR,1) &
+                                + VMUUUU(I,JTR,KTR,L,1) &
+                                + VMUUUU(L,KTR,JTR,I,1) &
+                                + VMUUUU(JTR,I,L,KTR,1) &
+                                - VMUUUU(LTR,K,I,JTR,1) &
+                                - VMUUUU(I,JTR,LTR,K,1) &
+                                - VMUUUU(K,LTR,JTR,I,1) &
+                                - VMUUUU(JTR,I,K,LTR,1) &
+                                - VMUUUU(KTR,L,J,ITR,1) &
+                                - VMUUUU(J,ITR,KTR,L,1) &
+                                - VMUUUU(L,KTR,ITR,J,1) &
+                                - VMUUUU(ITR,J,L,KTR,1) &
+                                + VMUUUU(LTR,K,J,ITR,1) &
+                                + VMUUUU(J,ITR,LTR,K,1) &
+                                + VMUUUU(K,LTR,ITR,J,1) &
+                                + VMUUUU(ITR,J,K,LTR,1)
+                        ELSE
+
+!                          (1) Symm. transition density matrix
+!                          (2) Do particle symmetrization
+
+                           VDUUUU(KK,LL,IJ,1,1) = &
+                                VMUUUU(K,L,I,J,1) + VMUUUU(L,K,J,I,1) &
+                                + VMUUUU(I,J,K,L,1) + VMUUUU(J,I,L,K,1)
+                           VDUUUU(KK,LL,IJ,1,2) = &
+                                VMUUUU(K,LTR,I,JTR,1) &
+                                + VMUUUU(LTR,K,JTR,I,1) &
+                                + VMUUUU(I,JTR,K,LTR,1) &
+                                + VMUUUU(JTR,I,LTR,K,1)
+                           VDUUUU(KK,LL,IJ,1,3) = &
+                                VMUUUU(KTR,L,I,JTR,1) &
+                                + VMUUUU(L,KTR,JTR,I,1) &
+                                + VMUUUU(I,JTR,KTR,L,1) &
+                                + VMUUUU(JTR,I,L,KTR,1)
+                        END IF
+                     ELSE
+                        IF (KSYMM) THEN
+
+!                          (1) Symm. transition density matrix
+!                          (2) Kramers symmetrization
+
+                           VDUUUU(KK,LL,IJ,1,1) = &
+                                VMUUUU(K,L,I,J,1) &
+                                + VMUUUU(L,K,J,I,1) &
+                                + VMUUUU(LTR,KTR,I,J,1) &
+                                + VMUUUU(KTR,LTR,J,I,1) &
+                                + VMUUUU(K,L,JTR,ITR,1) &
+                                + VMUUUU(L,K,ITR,JTR,1) &
+                                + VMUUUU(LTR,KTR,JTR,ITR,1) &
+                                + VMUUUU(KTR,LTR,ITR,JTR,1)
+                           VDUUUU(KK,LL,IJ,1,2) = &
+                                VMUUUU(K,LTR,I,JTR,1) &
+                                + VMUUUU(LTR,K,JTR,I,1) &
+                                - VMUUUU(L,KTR,I,JTR,1) &
+                                - VMUUUU(KTR,L,JTR,I,1) &
+                                - VMUUUU(K,LTR,J,ITR,1) &
+                                - VMUUUU(LTR,K,ITR,J,1) &
+                                + VMUUUU(L,KTR,J,ITR,1) &
+                                + VMUUUU(KTR,L,ITR,J,1)
+                           VDUUUU(KK,LL,IJ,1,3) = &
+                                VMUUUU(KTR,L,I,JTR,1) &
+                                + VMUUUU(L,KTR,JTR,I,1) &
+                                - VMUUUU(LTR,K,I,JTR,1) &
+                                - VMUUUU(K,LTR,JTR,I,1) &
+                                - VMUUUU(KTR,L,J,ITR,1) &
+                                - VMUUUU(L,KTR,ITR,J,1) &
+                                + VMUUUU(LTR,K,J,ITR,1) &
+                                + VMUUUU(K,LTR,ITR,J,1)
+                        ELSE
+
+!                          (1) Symm. transition density matrix
+
+                           VDUUUU(KK,LL,IJ,1,1) = &
+                                VMUUUU(K,L,I,J,1) + VMUUUU(L,K,J,I,1)
+                           VDUUUU(KK,LL,IJ,1,2) = &
+                                VMUUUU(K,LTR,I,JTR,1) &
+                                + VMUUUU(LTR,K,JTR,I,1)
+                           VDUUUU(KK,LL,IJ,1,3) = &
+                                VMUUUU(KTR,L,I,JTR,1) &
+                                + VMUUUU(L,KTR,JTR,I,1)
+                        END IF
+                     END IF
+                  ELSE
+                     IF (PSYMM) THEN
+                        IF (KSYMM) THEN
+
+!                          (1) Particle symmetrization
+!                          (2) Kramers symmetrization
+
+                           VDUUUU(KK,LL,IJ,1,1) = &
+                                VMUUUU(K,L,I,J,1) &
+                                + VMUUUU(I,J,K,L,1) &
+                                + VMUUUU(LTR,KTR,I,J,1) &
+                                + VMUUUU(I,J,LTR,KTR,1) &
+                                + VMUUUU(K,L,JTR,ITR,1) &
+                                + VMUUUU(JTR,ITR,K,L,1) &
+                                + VMUUUU(LTR,KTR,JTR,ITR,1) &
+                                + VMUUUU(JTR,ITR,LTR,KTR,1)
+                           VDUUUU(KK,LL,IJ,1,2) = &
+                                VMUUUU(K,LTR,I,JTR,1) &
+                                + VMUUUU(I,JTR,K,LTR,1) &
+                                - VMUUUU(L,KTR,I,JTR,1) &
+                                - VMUUUU(I,JTR,L,KTR,1) &
+                                - VMUUUU(K,LTR,J,ITR,1) &
+                                - VMUUUU(J,ITR,K,LTR,1) &
+                                + VMUUUU(L,KTR,J,ITR,1) &
+                                + VMUUUU(J,ITR,L,KTR,1)
+                           VDUUUU(KK,LL,IJ,1,3) = &
+                                VMUUUU(KTR,L,I,JTR,1) &
+                                + VMUUUU(I,JTR,KTR,L,1) &
+                                - VMUUUU(LTR,K,I,JTR,1) &
+                                - VMUUUU(I,JTR,LTR,K,1) &
+                                - VMUUUU(KTR,L,J,ITR,1) &
+                                - VMUUUU(J,ITR,KTR,L,1) &
+                                + VMUUUU(LTR,K,J,ITR,1) &
+                                + VMUUUU(J,ITR,LTR,K,1)
+                        ELSE
+
+!                          (1) Particle symmetrization
+
+                           VDUUUU(KK,LL,IJ,1,1) = &
+                                VMUUUU(K,L,I,J,1) &
+                                + VMUUUU(I,J,K,L,1)
+                           VDUUUU(KK,LL,IJ,1,2) = &
+                                VMUUUU(K,LTR,I,JTR,1) &
+                                + VMUUUU(I,JTR,K,LTR,1)
+                           VDUUUU(KK,LL,IJ,1,3) = &
+                                VMUUUU(KTR,L,I,JTR,1) &
+                                + VMUUUU(I,JTR,KTR,L,1)
+                        END IF
+                     ELSE
+                        IF (KSYMM) THEN
+
+!                          (1) Kramers symmetrization
+
+                           VDUUUU(KK,LL,IJ,1,1) = &
+                                VMUUUU(K,L,I,J,1) &
+                                + VMUUUU(LTR,KTR,I,J,1) &
+                                + VMUUUU(K,L,JTR,ITR,1) &
+                                + VMUUUU(LTR,KTR,JTR,ITR,1)
+                           VDUUUU(KK,LL,IJ,1,2) = &
+                                VMUUUU(K,LTR,I,JTR,1) &
+                                - VMUUUU(L,KTR,I,JTR,1) &
+                                - VMUUUU(K,LTR,J,ITR,1) &
+                                + VMUUUU(L,KTR,J,ITR,1)
+                           VDUUUU(KK,LL,IJ,1,3) = &
+                                VMUUUU(KTR,L,I,JTR,1) &
+                                - VMUUUU(LTR,K,I,JTR,1) &
+                                - VMUUUU(KTR,L,J,ITR,1) &
+                                + VMUUUU(LTR,K,J,ITR,1)
+                        ELSE
+
+!                          No symmetrization
+
+                           VDUUUU(KK,LL,IJ,1,1) = VMUUUU(K,L,I,J,1)
+                           VDUUUU(KK,LL,IJ,1,2) = VMUUUU(K,LTR,I,JTR,1)
+                           VDUUUU(KK,LL,IJ,1,3) = VMUUUU(KTR,L,I,JTR,1)
+                        END IF
+                     END IF
+                  END IF
+
+!                 Complex point groups
+!                 --------------------
+
+                  IF (NZ .GE. 2) THEN
+                     IF (TSYMM) THEN
+                        IF (PSYMM) THEN
+                           IF (KSYMM) THEN
+
+!                             (1) Symm. transition density matrix
+!                             (2) Do particle symmetrization
+!                             (3) Do Kramer's symmetrization
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2) &
+                                   + VMUUUU(I,J,K,L,2) &
+                                   - VMUUUU(L,K,J,I,2) &
+                                   - VMUUUU(J,I,L,K,2) &
+                                   + VMUUUU(LTR,KTR,I,J,2) &
+                                   + VMUUUU(I,J,LTR,KTR,2) &
+                                   - VMUUUU(KTR,LTR,J,I,2) &
+                                   - VMUUUU(J,I,KTR,LTR,2) &
+                                   + VMUUUU(K,L,JTR,ITR,2) &
+                                   + VMUUUU(JTR,ITR,K,L,2) &
+                                   - VMUUUU(L,K,ITR,JTR,2) &
+                                   - VMUUUU(ITR,JTR,L,K,2) &
+                                   + VMUUUU(LTR,KTR,JTR,ITR,2) &
+                                   + VMUUUU(JTR,ITR,LTR,KTR,2) &
+                                   - VMUUUU(KTR,LTR,ITR,JTR,2) &
+                                   - VMUUUU(ITR,JTR,KTR,LTR,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2) &
+                                   + VMUUUU(I,JTR,K,LTR,2) &
+                                   - VMUUUU(LTR,K,JTR,I,2) &
+                                   - VMUUUU(JTR,I,LTR,K,2) &
+                                   - VMUUUU(L,KTR,I,JTR,2) &
+                                   - VMUUUU(I,JTR,L,KTR,2) &
+                                   + VMUUUU(KTR,L,JTR,I,2) &
+                                   + VMUUUU(JTR,I,KTR,L,2) &
+                                   - VMUUUU(K,LTR,J,ITR,2) &
+                                   - VMUUUU(J,ITR,K,LTR,2) &
+                                   + VMUUUU(LTR,K,ITR,J,2) &
+                                   + VMUUUU(ITR,J,LTR,K,2) &
+                                   + VMUUUU(L,KTR,J,ITR,2) &
+                                   + VMUUUU(J,ITR,L,KTR,2) &
+                                   - VMUUUU(KTR,L,ITR,J,2) &
+                                   - VMUUUU(ITR,J,KTR,L,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2) &
+                                   + VMUUUU(I,JTR,KTR,L,2) &
+                                   - VMUUUU(L,KTR,JTR,I,2) &
+                                   - VMUUUU(JTR,I,L,KTR,2) &
+                                   - VMUUUU(LTR,K,I,JTR,2) &
+                                   - VMUUUU(I,JTR,LTR,K,2) &
+                                   + VMUUUU(K,LTR,JTR,I,2) &
+                                   + VMUUUU(JTR,I,K,LTR,2) &
+                                   - VMUUUU(KTR,L,J,ITR,2) &
+                                   - VMUUUU(J,ITR,KTR,L,2) &
+                                   + VMUUUU(L,KTR,ITR,J,2) &
+                                   + VMUUUU(ITR,J,L,KTR,2) &
+                                   + VMUUUU(LTR,K,J,ITR,2) &
+                                   + VMUUUU(J,ITR,LTR,K,2) &
+                                   - VMUUUU(K,LTR,ITR,J,2) &
+                                   - VMUUUU(ITR,J,K,LTR,2)
+                           ELSE
+
+!                            (1) Symm. transition density matrix
+!                            (2) Do particle symmetrization
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2) &
+                                   - VMUUUU(L,K,J,I,2) &
+                                   + VMUUUU(I,J,K,L,2) &
+                                   - VMUUUU(J,I,L,K,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2) &
+                                   - VMUUUU(LTR,K,JTR,I,2) &
+                                   + VMUUUU(I,JTR,K,LTR,2) &
+                                   - VMUUUU(JTR,I,LTR,K,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2) &
+                                   - VMUUUU(L,KTR,JTR,I,2) &
+                                   + VMUUUU(I,JTR,KTR,L,2) &
+                                   - VMUUUU(JTR,I,L,KTR,2)
+                           END IF
+                        ELSE
+                           IF (KSYMM) THEN
+
+!                            (1) Symm. transition density matrix
+!                            (2) Kramers symmetrization
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2) &
+                                   - VMUUUU(L,K,J,I,2) &
+                                   + VMUUUU(LTR,KTR,I,J,2) &
+                                   - VMUUUU(KTR,LTR,J,I,2) &
+                                   + VMUUUU(K,L,JTR,ITR,2) &
+                                   - VMUUUU(L,K,ITR,JTR,2) &
+                                   + VMUUUU(LTR,KTR,JTR,ITR,2) &
+                                   - VMUUUU(KTR,LTR,ITR,JTR,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2) &
+                                   - VMUUUU(LTR,K,JTR,I,2) &
+                                   - VMUUUU(L,KTR,I,JTR,2) &
+                                   + VMUUUU(KTR,L,JTR,I,2) &
+                                   - VMUUUU(K,LTR,J,ITR,2) &
+                                   + VMUUUU(LTR,K,ITR,J,2) &
+                                   + VMUUUU(L,KTR,J,ITR,2) &
+                                   - VMUUUU(KTR,L,ITR,J,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2) &
+                                   - VMUUUU(L,KTR,JTR,I,2) &
+                                   - VMUUUU(LTR,K,I,JTR,2) &
+                                   + VMUUUU(K,LTR,JTR,I,2) &
+                                   - VMUUUU(KTR,L,J,ITR,2) &
+                                   + VMUUUU(L,KTR,ITR,J,2) &
+                                   + VMUUUU(LTR,K,J,ITR,2) &
+                                   - VMUUUU(K,LTR,ITR,J,2)
+                           ELSE
+
+!                            (1) Symm. transition density matrix
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2) &
+                                   - VMUUUU(L,K,J,I,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2) &
+                                   - VMUUUU(LTR,K,JTR,I,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2) &
+                                   - VMUUUU(L,KTR,JTR,I,2)
+                           END IF
+                        END IF
+                     ELSE
+                        IF (PSYMM) THEN
+                           IF (KSYMM) THEN
+
+!                            (1) Particle symmetrization
+!                            (2) Kramers symmetrization
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2) &
+                                   + VMUUUU(I,J,K,L,2) &
+                                   + VMUUUU(LTR,KTR,I,J,2) &
+                                   + VMUUUU(I,J,LTR,KTR,2) &
+                                   + VMUUUU(K,L,JTR,ITR,2) &
+                                   + VMUUUU(JTR,ITR,K,L,2) &
+                                   + VMUUUU(LTR,KTR,JTR,ITR,2) &
+                                   + VMUUUU(JTR,ITR,LTR,KTR,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2) &
+                                   + VMUUUU(I,JTR,K,LTR,2) &
+                                   - VMUUUU(L,KTR,I,JTR,2) &
+                                   - VMUUUU(I,JTR,L,KTR,2) &
+                                   - VMUUUU(K,LTR,J,ITR,2) &
+                                   - VMUUUU(J,ITR,K,LTR,2) &
+                                   + VMUUUU(L,KTR,J,ITR,2) &
+                                   + VMUUUU(J,ITR,L,KTR,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2) &
+                                   + VMUUUU(I,JTR,KTR,L,2) &
+                                   - VMUUUU(LTR,K,I,JTR,2) &
+                                   - VMUUUU(I,JTR,LTR,K,2) &
+                                   - VMUUUU(KTR,L,J,ITR,2) &
+                                   - VMUUUU(J,ITR,KTR,L,2) &
+                                   + VMUUUU(LTR,K,J,ITR,2) &
+                                   + VMUUUU(J,ITR,LTR,K,2)
+                           ELSE
+
+!                            (1) Particle symmetrization
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2) &
+                                   + VMUUUU(I,J,K,L,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2) &
+                                   + VMUUUU(I,JTR,K,LTR,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2) &
+                                   + VMUUUU(I,JTR,KTR,L,2)
+                           END IF
+                        ELSE
+                           IF (KSYMM) THEN
+
+!                            (1) Kramers symmetrization
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2) &
+                                   + VMUUUU(LTR,KTR,I,J,2) &
+                                   + VMUUUU(K,L,JTR,ITR,2) &
+                                   + VMUUUU(LTR,KTR,JTR,ITR,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2) &
+                                   - VMUUUU(L,KTR,I,JTR,2) &
+                                   - VMUUUU(K,LTR,J,ITR,2) &
+                                   + VMUUUU(L,KTR,J,ITR,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2) &
+                                   - VMUUUU(LTR,K,I,JTR,2) &
+                                   - VMUUUU(KTR,L,J,ITR,2) &
+                                   + VMUUUU(LTR,K,J,ITR,2)
+                           ELSE
+
+!                             No symmetrization
+
+                              VDUUUU(KK,LL,IJ,2,1) = &
+                                   VMUUUU(K,L,I,J,2)
+                              VDUUUU(KK,LL,IJ,2,2) = &
+                                   VMUUUU(K,LTR,I,JTR,2)
+                              VDUUUU(KK,LL,IJ,2,3) = &
+                                   VMUUUU(KTR,L,I,JTR,2)
+                           END IF
+                        END IF
+                     END IF
+                  END IF
+
+                  IF (NZ .EQ. 4) THEN
+                     CALL QUIT('*** ERROR in M2DNZ3 ***' &
+                          //' NZ=4 not implemented - '   &
+                          //'we are seeking volunteers!')
+                     IF (TSYMM) THEN
+                        VDUUUU(KK,LL,IJ,3,1) = &
+                             VMUUUU(K,L,I,JTR,1) + VMUUUU(L,K,JTR,I,1)
+                        VDUUUU(KK,LL,IJ,4,1) = &
+                             VMUUUU(K,L,I,JTR,2) - VMUUUU(L,K,JTR,I,2)
+                        VDUUUU(KK,LL,IJ,3,2) = &
+                             VMUUUU(K,LTR,I,J,1) + VMUUUU(LTR,K,J,I,1)
+                        VDUUUU(KK,LL,IJ,4,2) = &
+                             VMUUUU(K,LTR,I,J,2) - VMUUUU(LTR,K,J,I,2)
+                        VDUUUU(KK,LL,IJ,3,3) = &
+                             VMUUUU(KTR,L,I,J,1) + VMUUUU(L,KTR,J,I,1)
+                        VDUUUU(KK,LL,IJ,4,3) = &
+                             VMUUUU(KTR,L,I,J,2) - VMUUUU(L,KTR,J,I,2)
+                     ELSE
+                        VDUUUU(KK,LL,IJ,3,1) = VMUUUU(K,L,I,JTR,1)
+                        VDUUUU(KK,LL,IJ,4,1) = VMUUUU(K,L,I,JTR,2)
+                        VDUUUU(KK,LL,IJ,3,2) = VMUUUU(K,LTR,I,J,1)
+                        VDUUUU(KK,LL,IJ,4,2) = VMUUUU(K,LTR,I,J,2)
+                        VDUUUU(KK,LL,IJ,3,3) = VMUUUU(KTR,L,I,J,1)
+                        VDUUUU(KK,LL,IJ,4,3) = VMUUUU(KTR,L,I,J,2)
+                     ENDIF
+                  END IF
+               END DO
+            END DO
+         END DO
+      END DO
+
+!     remove integrals that should be zero in spinfree calculations but
+!     are not due to numerical noise
+      if(spinfr.or.levyle)then
+        do i = 2,3
+          call dzero(VDUUUU(1,1,1,1,i),NASHT*NASHT*NNASHX*NZ)
+        end do
+      end if
+
+      IF (IPRINT .GE. 30) THEN
+         CALL HEADER('VUUUU matrix in Dirac (NZ,3) format',-1)
+         CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+
+      END SUBROUTINE
 
 end module mcscf_routines
