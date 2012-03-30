@@ -33,6 +33,8 @@ if os.path.isfile(file):
 
 # write new header
 if write_header:
+  dir = options.build + '/unit-tests'
+  if not os.path.isdir(dir): os.makedirs(dir)
   f = open(file,'w')
   f.write('%s' % add_line)
   f.close()
