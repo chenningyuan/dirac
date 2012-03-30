@@ -41,7 +41,7 @@ interface set_suffix
   module procedure set_suffix_logical
 end interface set_suffix
 
-private :: init_string, add_string, errall, erropen, get_name, gets, i2c, l2c, csize, change_string
+private :: init_string, add_string, errall, erropen, gets, i2c, l2c, csize, change_string
 
 private
 
@@ -62,35 +62,31 @@ end type keys
 
 type ( keys ), save :: key
 
-integer, parameter :: iunit = 60, nchar = 100
+integer, parameter :: iunit = 60
 
 contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_int_array(ivar,vname,ndim,vsize,nfile)
+  subroutine add_inp_int_array(ivar,vname,ndim,vsize)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname, vsize
   integer,      intent(in) :: ndim, ivar(*)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, ier
-  character :: namef*(nchar)
+  integer :: ier
   integer, allocatable :: itmp(:)
-
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
 
   ! --\-- write array to the file
   allocate( itmp(ndim), stat=ier ); call errall(ier,'add_inp_int_array','itmp')
   itmp(1:ndim) = ivar(1:ndim)
 
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_int_array',namef(1:n))
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_int_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) itmp
@@ -113,29 +109,25 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_array(dvar,vname,ndim,vsize,nfile)
+  subroutine add_inp_real_array(dvar,vname,ndim,vsize)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname, vsize
   integer,      intent(in) :: ndim
   real*8,       intent(in) :: dvar(*)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, ier
-  character :: namef*(nchar)
+  integer :: ier
   real*8, allocatable :: dtmp(:)
-
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
 
   ! --\-- write array to the file
   allocate( dtmp(ndim), stat=ier ); call errall(ier,'add_inp_real_array','dtmp')
   dtmp(1:ndim) = dvar(1:ndim)
 
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_real_array',namef(1:n))
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_real_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) dtmp
@@ -196,24 +188,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_logical_variable(lvar,vname,nfile)
+  subroutine add_inp_logical_variable(lvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   logical,      intent(in) :: lvar
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, ier
-  character :: namef*(nchar)
-
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
+  integer :: ier
 
   ! --\-- write variable to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_logical_variable',namef(1:n))
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_logical_variable',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) lvar
@@ -234,24 +222,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_integer_variable(ivar,vname,nfile)
+  subroutine add_inp_integer_variable(ivar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, ier
-  character :: namef*(nchar)
-
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
+  integer :: ier
 
   ! --\-- write variable to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_integer_variable',namef(1:n))
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_integer_variable',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) ivar
@@ -272,24 +256,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_integer_1d_array(ivar,vname,nfile)
+  subroutine add_inp_integer_1d_array(ivar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, n1, ier
-  character :: namef*(nchar)
+  integer :: n1, ier
 
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
-
-  ! --\-- write 2d array to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_integer_1d_array',namef(1:n))
+  ! --\-- write 1d array to the input file
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_integer_1d_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) ivar
@@ -311,24 +291,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_integer_2d_array(ivar,vname,nfile)
+  subroutine add_inp_integer_2d_array(ivar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, n1, n2, ier
-  character :: namef*(nchar)
-
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
+  integer :: n1, n2, ier
 
   ! --\-- write 2d array to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_integer_2d_array',namef(1:n))
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_integer_2d_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) ivar
@@ -351,24 +327,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_variable(dvar,vname,nfile)
+  subroutine add_inp_real_variable(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, ier
-  character :: namef*(nchar)
-
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
+  integer :: ier
 
   ! --\-- write variable to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_real_variable',namef(1:n))
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_real_variable',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) dvar
@@ -389,24 +361,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_1d_array(dvar,vname,nfile)
+  subroutine add_inp_real_1d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, n1, ier
-  character :: namef*(nchar)
+  integer :: n1, ier
 
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
-
-  ! --\-- write 2d array to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_real_1d_array',namef(1:n))
+  ! --\-- write 1d array to the input file
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_real_1d_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) dvar
@@ -428,24 +396,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_2d_array(dvar,vname,nfile)
+  subroutine add_inp_real_2d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, n1, n2, ier
-  character :: namef*(nchar)
-
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
+  integer :: n1, n2, ier
 
   ! --\-- write 2d array to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_real_2d_array',namef(1:n))
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_real_2d_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) dvar
@@ -468,24 +432,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_3d_array(dvar,vname,nfile)
+  subroutine add_inp_real_3d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, n1, n2, n3, ier
-  character :: namef*(nchar)
+  integer :: n1, n2, n3, ier
 
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
-
-  ! --\-- write 2d array to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_real_3d_array',namef(1:n))
+  ! --\-- write 3d array to the input file
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_real_3d_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) dvar
@@ -509,24 +469,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_4d_array(dvar,vname,nfile)
+  subroutine add_inp_real_4d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, n1, n2, n3, n4, ier
-  character :: namef*(nchar)
+  integer :: n1, n2, n3, n4, ier
 
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
-
-  ! --\-- write 2d array to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_real_4d_array',namef(1:n))
+  ! --\-- write 4d array to the input file
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_real_4d_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) dvar
@@ -551,24 +507,20 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_5d_array(dvar,vname,nfile)
+  subroutine add_inp_real_5d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
-  integer   :: n, n1, n2, n3, n4, n5, ier
-  character :: namef*(nchar)
+  integer :: n1, n2, n3, n4, n5, ier
 
-  ! get name of the input file
-  call get_name(namef,n,input_files,nfile)
-
-  ! --\-- write 2d array to the input file
-  open(iunit,file=namef(1:n),status='unknown',form='formatted',access='sequential',&
-       position='append',iostat=ier); call erropen(ier,'add_inp_real_5d_array',namef(1:n))
+  ! --\-- write 5d array to the input file
+  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+       access='sequential',position='append',iostat=ier)
+  call erropen(ier,'add_inp_real_5d_array',gets(input_files(1)%str))
 
   write(iunit,*) vname
   write(iunit,*) dvar
@@ -594,13 +546,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_integer_variable(ivar,vname,nfile)
+  subroutine add_out_integer_variable(ivar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar
-  integer, intent(in), optional :: nfile
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -615,13 +566,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_integer_1d_array(ivar,vname,nfile)
+  subroutine add_out_integer_1d_array(ivar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer :: n1
@@ -640,13 +590,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_integer_2d_array(ivar,vname,nfile)
+  subroutine add_out_integer_2d_array(ivar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer :: n1, n2
@@ -666,13 +615,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_variable(dvar,vname,nfile)
+  subroutine add_out_real_variable(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar
-  integer, intent(in), optional :: nfile
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -687,13 +635,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_1d_array(dvar,vname,nfile)
+  subroutine add_out_real_1d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer :: n1
@@ -712,13 +659,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_2d_array(dvar,vname,nfile)
+  subroutine add_out_real_2d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer :: n1, n2
@@ -738,13 +684,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_3d_array(dvar,vname,nfile)
+  subroutine add_out_real_3d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer :: n1, n2, n3
@@ -765,13 +710,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_4d_array(dvar,vname,nfile)
+  subroutine add_out_real_4d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer :: n1, n2, n3, n4
@@ -793,13 +737,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_5d_array(dvar,vname,nfile)
+  subroutine add_out_real_5d_array(dvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:,:)
-  integer, intent(in), optional :: nfile
 
   ! Internal variables
   integer :: n1, n2, n3, n4, n5
@@ -1175,41 +1118,6 @@ contains
   endif
 
   end subroutine erropen
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine get_name(namef,n,type_string,nfile)
-  implicit none
-
-  ! External variables
-  character, intent(out) :: namef*(nchar)
-  integer,   intent(out) :: n
-  integer,   intent( in), optional :: nfile
-  type ( string ), pointer, intent(in) :: type_string(:)
-  
-  ! Internal variables
-  integer :: i, ifile
-
-  ifile = 1
-  if(present(nfile)) ifile = nfile
-
-  n = size(type_string(ifile)%str)
-
-  if(n > nchar)then
-    write(6,*)
-    write(6,*) 'ERROR in test_generator module (get_name routine)'
-    write(6,*) '  the size of the name of some file is too big; enlarge nchar'
-    write(6,*) 'Problematic file:'
-    write(6,*) type_string(ifile)%str
-    stop
-  endif
-
-  do i=1,n
-    namef(i:i) = type_string(ifile)%str(i)
-  enddo
-
-  end subroutine get_name
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
