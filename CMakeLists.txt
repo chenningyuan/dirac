@@ -45,7 +45,8 @@ option(ENABLE_UTILITIES       "Enable utilities"                                
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
-option(ENABLE_TESTS           "Enable creation of unit tests"                             OFF)
+option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
+option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
@@ -253,12 +254,22 @@ add_custom_target(
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
 
-# set unit test libs
-set(UNIT_TEST_LIBS
-   dirac
-   ${LIBS}
-   )
+# build unit tests
+if(ENABLE_TESTS)
+  # set unit test libs
+  set(UNIT_TEST_LIBS
+     dirac
+     ${LIBS}
+     )
+  
+  # configure unit testing
+  include(ConfigUnitTesting)
+endif()
 
-# configure unit testing
-include(ConfigUnitTesting)
+#create unit tests (set header for unit testing)
+if(ENABLE_UNIT_TESTS)
+  execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/unit-testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
+else()
+  execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/unit-testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR})
+endif()
 
