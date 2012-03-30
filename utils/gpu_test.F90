@@ -3,21 +3,75 @@
 ! Simple test of Fortran GPU CUDA & CULA libraries
 ! in the DIRAC environment. 
 !
-! Program does time measurements of performance of few CPU BLAS/LAPACK and GPU CUBLAS/CULA
+! This program measures performance of few CPU BLAS/LAPACK and GPU CUBLAS/CULA
 ! mathematical routines.
 !
-! Written by Miro Ilias, Banska Bystrica, March 2012
+! Written by Miro Ilias, Banska Bystrica, March/April 2012
 !
 !-----------------------------------------------------------------------------------------------
+
+subroutine compiler_info
+write(*,'(1X,A,$)') '--- Fortran compiler info: '
+#if defined VAR_GFORTRAN
+! http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+write(*,'(A,3(I1,A))') 'GNU, gfortran, version  ',__GNUC__,'.',__GNUC_MINOR__,'.',__GNUC_PATCHLEVEL__
+#endif
+#if defined VAR_IFORT
+write(*,'(A)') 'Intel, ifort, version :'
+#endif
+end subroutine compiler_info
+
+subroutine CulaAbouts
+implicit none
+#if defined USE_CULA
+! get info about CULA ...
+! see  nm -D /usr/local/cula/lib64/libcula_fortran.so | less
+! int cudaMinimumVersion = culaGetCudaMinimumVersion();
+external :: CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDARUNTIMEVERSION 
+external :: CULA_GETDEVICEINFO,CULA_GETCUDAMINIMUMVERSION, CULA_GETCUDADRIVERVERSION
+integer ::  CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDADRIVERVERSION
+integer :: CULA_GETCUDARUNTIMEVERSION, CULA_GETDEVICEINFO, CULA_GETCUDAMINIMUMVERSION
+! int cudaRuntimeVersion = culaGetCudaRuntimeVersion();
+! int cudaDriverVersion = culaGetCudaDriverVersion();
+! int cublasMinimumVersion = culaGetCublasMinimumVersion();
+! int cublasRuntimeVersion = culaGetCublasRuntimeVersion();
+!write(*,'(1X,A)') 'CULA & CUDA info :'
+  write(*,'(2X,A,I5)') 'CULA version=',CULA_GETVERSION()
+  write(*,'(2X,A,I5)') 'CUBLAS runtime version=',CULA_GETCUBLASRUNTIMEVERSION()
+  write(*,'(2X,A,I5)') 'CUDA runtime version=',CULA_GETCUDARUNTIMEVERSION()
+ ! write(*,*) ' CULA_GETCUDAMINIMUMVERSION=',CULA_GETCUDAMINIMUMVERSION()
+  write(*,'(2X,A,I5)') 'CUDA driver version', CULA_GETCUDADRIVERVERSION()
+ !  write(*,*) '  cublasRuntimeVersion',cula_GetCublasRuntimeVersion()
+ if (CULA_GETCUDARUNTIMEVERSION().LT.CULA_GETCUDAMINIMUMVERSION()) then
+   write(*,*) "CUDA runtime version < cuda minumum required version !"
+ endif
+ if (CULA_GETCUBLASRUNTIMEVERSION().LT.CULA_GETCUDAMINIMUMVERSION()) then
+   write(*,*) "CUBLAS runtime version < cuda minumum required version !"
+ endif
+ if (CULA_GETCUDADRIVERVERSION() .LT.CULA_GETCUDAMINIMUMVERSION()) then
+   write(*,*) "CUDA driver version < cuda minumum required version !"
+ endif
+#endif
+end subroutine CulaAbouts
+
+subroutine CudaAbouts
+! see less /usr/local/cuda/src/fortran.c
+! None fortran function about version, obtainable only from CULA
+implicit none
+!external :: cudaDriverGetVersion, cudaRuntimeGetVersion
+!integer :: cudaDriverGetVersion,  cudaRuntimeGetVersion
+!write(*,'(1X,A)') 'CUDA info :'
+!write(*,*) 'cudaDriverGetVersion',cudaDriverGetVersion()
+!write(*,*) 'cudaRuntimeGetVersion',cudaRuntimeGetVersion()
+end subroutine CudaAbouts
 
 module fortran_timing
 ! http://software.intel.com/sites/products/documentation/hpc/compilerpro/en-us/fortran/lin/compiler_f/lref_for/source_files/rfsystmc.htm
 ! If the type is INTEGER(2), count_rate is 1000. If the type is INTEGER(4), count_rate is 10000. If the type is INTEGER(8), count_rate is 1000000.
 ! but gfortran 4.8.0 ([trunk revision 185723]) has COUNT_RATE=1000000000 for INTEGER(8)...
-
+implicit none
 integer(kind=8) :: c1,c2,cr,cm ! accuracy in nanoseconds
 !integer(kind=4) :: c1,c2,cr,cm ! accuracy in miliseconds
-
 ! default control values - these differ from compiler to compiler !
 integer, parameter :: count_rate_kind4=1000, count_rate_kind8=1000000
 contains
@@ -36,8 +90,6 @@ subroutine  print_time(message)
 ! http://gcc.gnu.org/onlinedocs/gfortran/SYSTEM_005fCLOCK.html
 ! print spent time in routine ...
 character(*), intent(in) :: message
-!!print *, 'GPU cblas_sgemm  runtime:', 1.e3*real(c2-c1) / real(cr), 'ms'
-!!print *,c1,c2,cr,cm
 write(*,'(2x,a,a,a,f13.8,a)') 'Routine <',message,'> spent runtime:', (dfloat(c2-c1) / dfloat(cr)), ' seconds.'
 end subroutine  print_time
 
@@ -65,9 +117,10 @@ integer ::   cublas_set_vector, cublas_get_vector, cublas_sgemm, cublas_sgemv,cu
 
 ! CULA specific library objects 
 #if USE_CULA
-external :: cula_initialize, cula_shutdown
-external :: CULA_SGEQRF, cula_sgesv
-integer ::  cula_initialize, cula_SGEQRF, cula_shutdown, cula_sgesv
+external :: cula_initialize, cula_shutdown,cula_sgemv
+external :: CULA_SGEQRF, cula_sgesv, cula_sgemm
+integer ::  cula_initialize, cula_SGEQRF, cula_shutdown
+integer ::  cula_sgesv,cula_sgemm,cula_sgemv
 #endif
 
 external :: snrm2 ! for checking  the norm of a vector ...
@@ -99,9 +152,9 @@ contains
 
 subroutine usage
 #if USE_CULA
-write(*,*) 'usage: gpu_test.x  <sgemm/sgemv/dgemm/sgesv/sgeqrf>  <n> <verbosity level>'
+write(*,*) 'usage: gpu_test.x  <sgemm_cuda/sgemm_cula/sgemv_cuda/sgemv_cula/dgemm_cuda/sgesv/sgeqrf>  <n> <verbosity level>'
 #else
-write(*,*) 'usage: gpu_test.x  <sgemm/sgemv/dgemm>  <n> <verbosity level>'
+write(*,*) 'usage: gpu_test.x  <sgemm_cuda/sgemv_cuda/dgemm_cuda>  <n> <verbosity level>'
 #endif
 end subroutine usage
 
@@ -131,7 +184,8 @@ ELSE
 ENDIF
 end subroutine read_arguments
 
-subroutine sgemm_test
+subroutine sgemm_cuda_test
+write(*,'(2x,a)') 'cuda_sgemm GPU vs CPU test'
 allocate (A_r(n,n),B_r(n,n),C_r(n,n),STAT=AllocateStatus)
 if (AllocateStatus.ne.0) then
   stop "error in matrix allocations !"
@@ -140,7 +194,6 @@ else
     write(*,*) "A_r,B_r,C_r matrixes allocated in CPU memory"
   endif
 endif
-
 do i=1,n
 do j=1,n
   if (i.eq.j) then
@@ -235,7 +288,7 @@ call cublas_shutdown
 stop
 endif
 call system_clock( count=c2 )
-call print_time("GPU sgemm")
+call print_time("GPU CUDA SGEMM")
 call mtx_check(C_r)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrB)
@@ -245,12 +298,55 @@ call cublas_shutdown
 call system_clock( c1, cr, cm )
 call sgemm('n','n',n,n,n,1.0e0,A_r,n,B_r,n,-2.0e0,C_r,n)
 call system_clock( count=c2 )
-call print_time("CPU sgemm")
+call print_time("CPU BLAS SGEMM")
 call mtx_check(C_r)
 call cublas_shutdown
-end subroutine sgemm_test
+end subroutine sgemm_cuda_test
 
-subroutine dgemm_test
+subroutine sgemm_cula_test
+#if defined USE_CULA
+write(*,'(2x,a)') 'cula_sgemm GPU vs CPU test'
+allocate (A_r(n,n),B_r(n,n),C_r(n,n),STAT=AllocateStatus)
+if (AllocateStatus.ne.0) then
+   stop "error in main matrix allocations !"
+else
+   if (verb.ge.1) then
+     write(*,*) "A_d,B_d,C_d matrixes allocated in CPU memory"
+   endif
+endif
+do i=1,n
+do j=1,n
+ if (i.eq.j) then ! A_d is unit matrix
+   A_r(i,j)=1.0e0
+ else
+   A_r(i,j)=0.0e0
+ endif
+ B_r(i,j)=dfloat(i+j) ! B_d is symmetric matrix
+ C_r(i,j)=0.0e0
+enddo
+enddo
+! start the time measurement
+call system_clock( c1, cr, cm )
+stat = CULA_INITIALIZE(); call check_cula_status(stat)
+stat = CULA_SGEMM('n','n',n,n,n,1.0e0,A_r,n,B_r,n,1.0e0,C_r,n); call check_cula_status(stat)
+call system_clock( count=c2 )
+call print_time("GPU CULA_SGEMM")
+stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+! ---
+call mtx_check(C_r)
+! now CPU sgemm...
+call system_clock( c1, cr, cm )
+call sgemm('n','n',n,n,n,1.0e0,A_r,n,B_r,n,-2.0e0,C_r,n)
+call system_clock( count=c2 )
+call print_time("CPU BLAS SGEMM")
+call mtx_check(C_r)
+#else
+  print *,'CULA libraty not active !'
+#endif
+end subroutine sgemm_cula_test
+
+subroutine dgemm_cuda_test
+write(*,'(2x,a)') 'cuda_dgemm GPU vs CPU test'
 allocate (A_d(n,n),B_d(n,n),C_d(n,n),STAT=AllocateStatus)
 if (AllocateStatus.ne.0) then
    stop "error in main matrix allocations !"
@@ -357,7 +453,7 @@ else
   endif
 endif
 call system_clock( count=c2 )
-call print_time("GPU dgemm")
+call print_time("GPU CUDA DGEMM")
 call mtx_check_d(C_d)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrB)
@@ -367,12 +463,13 @@ call cublas_shutdown
 call system_clock( c1, cr, cm )
 call dgemm('n','n',n,n,n,1.0d0,A_d,n,B_d,n,-2.0e0,C_d,n)
 call system_clock( count=c2 )
-call print_time("CPU dgemm")
+call print_time("CPU BLAS DGEMM")
 call mtx_check_d(C_d)
 call cublas_shutdown
-end subroutine dgemm_test
+end subroutine dgemm_cuda_test
 
-subroutine sgemv_test
+subroutine sgemv_cuda_test
+write(*,'(2x,a)') 'cuda_sgemv GPU vs CPU test'
 allocate (A_r(n,n),x_r(n),y_r(n),STAT=AllocateStatus)
 if (AllocateStatus.ne.0) then
   stop "error in allocations !"
@@ -469,11 +566,11 @@ else
     write(*,*) 'cublas_sgemv done'
   endif
 endif
-! get the vector from GPU into y_r...
+! get the vector from GPU (devPtry) into y_r...
 stat=cublas_get_vector(n,size_of_real,devPtry,1,y_r,1)
 call system_clock( count=c2 )
 call print_time("GPU sgemv")
-write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
+write(*,*) 'GPU cublas_sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
 stat=cublas_free(devPtrA)
 stat=cublas_free(devPtrx)
 stat=cublas_free(devPtry)
@@ -483,10 +580,53 @@ call sgemv('n',n,n,-2.0e0,A_r,n,x_r,1,1.0e0,y_r,1)
 call system_clock( count=c2 )
 call print_time("CPU sgemv")
 write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
-end subroutine sgemv_test
+end subroutine sgemv_cuda_test
 
-#if USE_CULA
+subroutine sgemv_cula_test
+#if defined USE_CULA
+write(*,'(2x,a)') 'cula_sgemv GPU vs CPU test'
+allocate (A_r(n,n),x_r(n),y_r(n),STAT=AllocateStatus)
+if (AllocateStatus.ne.0) then
+  stop "error in allocations !"
+else
+  if (verb.ge.1) then
+    write(*,*) "A_r,x_r,y_r objects allocated in CPU memory"
+  endif
+endif
+! fill allocated objects
+do i=1,n
+do j=1,n
+ if (i.eq.j) then
+   A_r(i,j)=1.0e0
+ else
+   A_r(i,j)=0.0e0
+ endif
+ x_r(i)=float(1)
+ y_r(i)=0.0e0
+enddo
+enddo
+
+call system_clock( c1, cr, cm )
+stat = CULA_INITIALIZE(); call check_cula_status(stat)
+stat=cula_sgemv('n',n,n,1.0e0,A_r,n,x_r,1,0.0e0,y_r,1)
+call system_clock( count=c2 )
+call print_time("GPU CULA SGEMV")
+stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+write(*,*) 'GPU cula_sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
+! ---
+call system_clock( c1, cr, cm )
+!now perform CPU lib routine:  y = beta*y+alpha*A*x
+call sgemv('n',n,n,-2.0e0,A_r,n,x_r,1,1.0e0,y_r,1)
+call system_clock( count=c2 )
+call print_time("CPU BLAS SGEMV")
+write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
+#else
+ print *,'sorry, CULA library is not active'
+#endif
+end subroutine sgemv_cula_test
+
 subroutine sgeqrf_test
+#if defined USE_CULA
 ! test on matrix QR decomposition ....
   real(kind=size_of_real) :: diffs = 0.0e0
   write(*,'(2x,a)') 'cula_sgeqrf GPU vs lapack CPU test'
@@ -556,9 +696,13 @@ call print_time("CPU LAPACK SGEQRF")
     endif
   enddo
   write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged diffs are ',diffs/float(n*n)
+#else
+ print *,'sorry, CULA library is not active'
+#endif
 end subroutine sgeqrf_test
 
 subroutine sgesv_test
+#if defined USE_CULA
   real(kind=size_of_real) :: diffs = 0.0e0
   write(*,'(2x,a)') 'cula_sgesv GPU vs lapack CPU test'
   allocate (A_r(n,n),B_r(n,n),STAT=AllocateStatus)
@@ -620,9 +764,12 @@ subroutine sgesv_test
     endif
   enddo
   write(*,*) 'control of results - CULA_SGESV vs lapack SGESV averaged diffs are ',diffs/float(n)
-
+#else
+ print *,'sorry, CULA library is not active'
+#endif
 end subroutine sgesv_test
 
+#if defined USE_CULA
 SUBROUTINE check_cula_status(STATUS)
 ! TOOD: make it more general wrt cula&lapack routines exit codes
          INTEGER, intent(in) :: STATUS
@@ -651,48 +798,16 @@ SUBROUTINE check_cula_status(STATUS)
             STOP 1
          END IF
 END subroutine check_cula_status
-
-subroutine CulaAbouts
-! get info about CULA ...
-! see  nm -D /usr/local/cula/lib64/libcula_fortran.so | less
-! int cudaMinimumVersion = culaGetCudaMinimumVersion();
-external :: CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDARUNTIMEVERSION 
-external :: CULA_GETDEVICEINFO,CULA_GETCUDAMINIMUMVERSION,  CULA_GETCUDADRIVERVERSION
-integer ::  CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, cula_version ,  CULA_GETCUDADRIVERVERSION
-integer :: CULA_GETCUDARUNTIMEVERSION, CULA_GETDEVICEINFO, CULA_GETCUDAMINIMUMVERSION
-! int cudaRuntimeVersion = culaGetCudaRuntimeVersion();
-! int cudaDriverVersion = culaGetCudaDriverVersion();
-! int cublasMinimumVersion = culaGetCublasMinimumVersion();
-! int cublasRuntimeVersion = culaGetCublasRuntimeVersion();
-
-  cula_version = CULA_GETVERSION()
-  write(*,*) 'cula version=',cula_version
-  write(*,*) 'cublas runtime version=',CULA_GETCUBLASRUNTIMEVERSION()
-  write(*,*) 'cula cuda runtime version=',CULA_GETCUDARUNTIMEVERSION()
-  write(*,*) ' CULA_GETCUDAMINIMUMVERSION=',CULA_GETCUDAMINIMUMVERSION()
-  write(*,*) ' CULA_GETCUDADRIVERVERSION', CULA_GETCUDADRIVERVERSION()
- !! write(*,*) 'cula get device info=',CULA_GETDEVICEINFO()
-! if(cudaRuntimeVersion < cudaMinimumVersion)
-! if(cudaDriverVersion < cudaMinimumVersion)
-! if(cublasRuntimeVersion < cublasMinimumVersion)
-
-end subroutine CulaAbouts
-
 #endif
 
 subroutine mtx_check(Mtx)
 real*4, intent(in) :: Mtx(n,n)
-real*4 ::  diag,offdiag
-diag=0.0e0; offdiag=0.0e0
+real*4 ::  diag
+diag=0.0e0;
 do i=1,n
   diag = diag + Mtx(i,i)
-  do j=1,i
-    if (j.ne.i) then
-      offdiag = offdiag + (Mtx(i,j)+Mtx(j,i))
-    endif
-  enddo
 enddo
-write(*,*)  'sum of diag ',diag,'sum of offdiag:',offdiag,'1,n:',Mtx(1,n),'n,1:',Mtx(n,1)
+write(*,*)  'aver. sum of diag:',diag/float(n),'1,1:',Mtx(1,1),'1,n:',Mtx(1,n),'n,1:',Mtx(n,1),'n,n',Mtx(n,n)
 end subroutine mtx_check
 
 subroutine mtx_check_d(Mtx)
@@ -717,28 +832,28 @@ Program GPU_math_tests
   use gpu_stuff
   use fortran_timing
 
-  call print_time_info
-#if USE_CULA
+  call compiler_info
   call CulaAbouts
-#endif
+  call CudaAbouts
+
+  call print_time_info
 
   call read_arguments
   select case (method)
-    case("sgemm")
-      write(*,'(2x,a)') 'cula_sgemm GPU vs CPU test'
-      call sgemm_test
-    case("dgemm")
-      write(*,'(2x,a)') 'cula_dgemm GPU vs CPU test'
-      call dgemm_test
-    case("sgemv")
-      write(*,'(2x,a)') 'cula_sgemv GPU vs CPU test'
-      call sgemv_test
-#if USE_CULA
+    case("sgemm_cuda")
+      call sgemm_cuda_test
+    case("sgemm_cula")
+      call sgemm_cula_test
+    case("dgemm_cuda")
+      call dgemm_cuda_test
+    case("sgemv_cuda")
+      call sgemv_cuda_test
+    case("sgemv_cula")
+      call sgemv_cula_test
     case("sgeqrf")
       call sgeqrf_test
     case("sgesv")
       call sgesv_test
-#endif
     case default
       write(*,*) 'no method for GPU math testing selected'
       call usage
