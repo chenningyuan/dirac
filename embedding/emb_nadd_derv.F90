@@ -101,6 +101,7 @@ module fde_nadd_derv
          real(kind=8) :: z_0(1)
          real(kind=8) :: w(1)
          
+         dervtmp = 0.0d0
          w(1) = 1.0d0
          
          do i = 1, gf%npoints
@@ -393,6 +394,8 @@ module fde_nadd_derv
          real(8)                       :: dervtmp(max_block_length, 0:derv_length)
          integer :: i, j
 
+         dervtmp = 0.0d0
+
          call get_functional_derv(f,          &
                                f_alda,        &
                                f_xalda,       &
@@ -452,7 +455,9 @@ module fde_nadd_derv
          real(8)                       :: dervtmp(max_block_length, 0:derv_length)
 
          derv = 0.0d0
+         dervtmp = 0.0d0
 
+         if (.not.skip_xc_contribution) then 
          call get_functional_derv(fde_xcf,       &
                                   fde_xcf_alda,  &
                                   fde_xcf_alda,  &
@@ -471,7 +476,9 @@ module fde_nadd_derv
                derv(i,j) = derv(i,j) + dervtmp(i,j)
             enddo
          enddo
+         endif
 
+         if (.not.skip_kin_contribution) then
          call get_functional_derv(fde_kef,       &
                                   fde_kef_alda,  &
                                   fde_kef_alda,  &
@@ -491,6 +498,7 @@ module fde_nadd_derv
                derv(i,j) = derv(i,j) + dervtmp(i,j)
             enddo
          enddo
+         endif
          
      end subroutine get_xcke_fun_derv
 
