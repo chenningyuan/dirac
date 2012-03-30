@@ -4,6 +4,7 @@ module unit_testing
 
    public compare_matrix
    public compare_files
+   public compare_vector
    public matrix_to_file
    public matrix_from_file
 
@@ -62,6 +63,62 @@ contains
       if (max_diff > tolerance) then
          stop 1
       end if
+
+   end subroutine
+
+   subroutine compare_vector(iunit, file_name, vector, thresh)
+   implicit none
+
+   ! External variables
+   character(*), intent(in) :: file_name
+   integer,      intent(in) :: iunit
+   real*8,       intent(in) :: thresh, vector(*)
+
+   ! Internal variables
+   integer :: ier, ic, icmax
+   real*8  :: dnum, dmax
+
+   ! open file_name
+   open(iunit,file=file_name,status='old',form='formatted',access='sequential',iostat=ier)
+   if(ier /= 0)then
+     write(6,*) 'compare_vector: ERROR while opening file ',file_name
+     write(0,*) 'compare_vector: ERROR while opening file ',file_name
+     stop 1
+   endif
+   rewind iunit
+
+   ! compare data from file and vector
+   dmax = 0.0d0; ic = 0
+   do
+     ic = ic + 1
+     read(iunit,*,iostat=ier) dnum
+     if(ier == -1)exit
+     if(ier /=  0)then
+       write(6,*) 'compare_vector: ERROR reading file ',file_name
+       write(0,*) 'compare_vector: ERROR reading file ',file_name
+       write(6,*) 'ier: ',ier
+       stop 1
+     endif
+
+     if( (dabs(dnum-vector(ic))) > dmax )then
+       dmax = dabs(dnum-vector(ic))
+       icmax = ic
+     endif
+
+   enddo
+
+   ! close file_name
+   close(iunit,status='keep')
+
+   ! check result
+   if(dmax > thresh)then
+     write(6,*) ' ERROR in compare_vector routine: Examined file and vector differ'
+     write(6,*) ' thresh = ',thresh
+     write(6,*) ' dmax   = ',dmax
+     write(6,*) ' imax   = ',icmax
+     write(0,*) ' ERROR in compare_vector routine: Examined file and vector differ'
+     stop 1
+   endif
 
    end subroutine
 

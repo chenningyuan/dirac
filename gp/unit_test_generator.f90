@@ -54,6 +54,7 @@ type ( string ), pointer, save :: input_files(:), output_files(:), driver(:), te
 type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:)
 type ( string ), pointer, save :: var_info(:), var_value(:)
 type ( string ), pointer, save :: modules(:), suffix(:)
+type ( string ), pointer, save :: compare_technique(:), thresholds(:), compare_array(:)
 
 type :: keys
   logical :: mod_call = .true.
@@ -866,15 +867,30 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_output_file(file_name)
+  subroutine add_output_file(file_name,threshold,array)
   implicit none
   character(*), intent(in) :: file_name
+  character(*), intent(in), optional :: threshold, array
 
   ! add file_name (with suffix) to the list of output files (output_files)
   if(associated(suffix))then
     call add_string(file_name // '_' // gets(suffix(1)%str), output_files)
   else
     call add_string(file_name, output_files)
+  endif
+
+  if(present(threshold))then
+    call add_string(threshold, thresholds)
+  else
+    call add_string('1.0d-15', thresholds)
+  endif
+
+  if(present(array))then
+    call add_string('  call compare_vector', compare_technique)
+    call add_string(array, compare_array)
+  else
+    call add_string('  call compare_files', compare_technique)
+    call add_string('0', compare_array)
   endif
 
   end subroutine add_output_file
@@ -1358,10 +1374,16 @@ contains
   write(iunit,'(9x,a)') ')'
   ! compare results
   write(iunit,'(a)')
-  do i=1,size(output_files)
-    write(iunit,'(a,70a,a,70a,a,a)')"  call compare_files(60,'",       &
-                                    gets(output_files(i)%str) , "','", &
-                                    gets(output_files(i)%str) , "_ref'", ",1.0d-15)"
+  do i=1,size(compare_technique)
+    if(compare_array(i)%str(1) == '0')then
+      write(iunit,'(70a,a,70a,a,70a,a,70a,a)') &
+           gets(compare_technique(i)%str), "(60,'", gets(output_files(i)%str), "','", &
+           gets(output_files(i)%str), "_ref',", gets(thresholds(i)%str), ')'
+    else
+      write(iunit,'(70a,a,70a,a,70a,a,70a,a)') &
+           gets(compare_technique(i)%str), "(60,'", gets(output_files(i)%str), "',", &
+           gets(compare_array(i)%str), ",", gets(thresholds(i)%str), ')'
+    endif
   enddo
   ! deallocation
   write(iunit,'(a)')
@@ -1393,8 +1415,6 @@ contains
 
   close(iunit,status='keep')
 
-  call unit_test_generator_destructor
-
   end subroutine generate_test
 
   subroutine unit_test_generator_destructor
@@ -1406,6 +1426,7 @@ contains
   nullify( var_name ); nullify( var_type ); nullify( var_dim )
   nullify( var_info ); nullify( var_value )
   nullify( modules ); nullify( suffix )
+  nullify( compare_technique ); nullify( thresholds ); nullify( compare_array )
 
   end subroutine unit_test_generator_destructor
 

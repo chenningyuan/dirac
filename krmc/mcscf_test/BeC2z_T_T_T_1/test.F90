@@ -5,7 +5,6 @@ program test
   implicit none
 
   integer :: ier
-  integer :: key   
   logical :: psymm 
   logical :: ksymm 
   logical :: tsymm 
@@ -76,10 +75,8 @@ program test
 
   close(60,status='keep')
 
-  key    = 1
   call m2dnz390( &
-          key    = key    &
-         ,psymm  = psymm  &
+          psymm  = psymm  &
          ,ksymm  = ksymm  &
          ,tsymm  = tsymm  &
          ,spinfr = spinfr &
@@ -99,7 +96,7 @@ program test
          ,vduuuu = vduuuu &
          )
 
-  call compare_files(60,'m2dnz390.out_T_T_T_1','m2dnz390.out_T_T_T_1_ref',1.0d-15)
+  call compare_vector(60,'m2dnz390.out_T_T_T_1',vduuuu,1.0d-15)
 
   deallocate( nash   )
   deallocate( ipqtoq )

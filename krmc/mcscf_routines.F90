@@ -85,6 +85,7 @@ contains
   call add_inp_variable(fq    ,'fq    ')
 
   call generate_test
+  call unit_test_generator_destructor
   create_outputs = .true.
 #endif
 
@@ -805,7 +806,7 @@ contains
 
   SUBROUTINE M2DNZ390(TSYMM,KSYMM,PSYMM,VMUUUU,VDUUUU,IPRINT, &
                       IPQTOQ,NASH,NASHT,NNASHX,NZ,NZINCI,NM5, &
-                      NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE,KEY)
+                      NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
 !***********************************************************************
 !
 !     Transform a UUUU matrix in Molfdir format to a UUUU matrix
@@ -829,13 +830,11 @@ contains
       LOGICAL, INTENT( IN) :: PSYMM, KSYMM, TSYMM, SPINFR, LEVYLE
       INTEGER, INTENT( IN) :: NASHT, NNASHX, NZ, NZINCI, NM5, NBSYM, NFSYM, IPRINT, LUPRI
       INTEGER, INTENT( IN) :: NASH(2), IPQTOQ(4,0:7)
-      INTEGER, INTENT( IN), OPTIONAL :: KEY
 
       REAL*8,  INTENT( IN) :: VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,NM5)
       REAL*8,  INTENT(OUT) :: VDUUUU(NASHT,NASHT,NNASHX,NZ,3)
 
-      LOGICAL :: CREATE_OUTPUTS
-      INTEGER :: I, J, K, L, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
+      INTEGER :: I, J, K, L, M, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
       INTEGER :: IER, NCLASS, IFSYM, IZ, KR(-300:300)
       REAL*8  :: THR_PRINT
       INTEGER, SAVE :: ICOUNT = 0
@@ -843,9 +842,8 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
-      create_outputs = .false.
       icount = icount + 1
-      write(6,*) 'M2DNZ390',icount
+      write(6,*) 'M2DNZ390',psymm,ksymm,tsymm,icount
 
 #ifdef CREATE_UNIT_TESTS
       call set_suffix(psymm)
@@ -853,11 +851,9 @@ contains
       call set_suffix(tsymm)
       call set_suffix(icount)
       call add_input_file ('m2dnz390.inp')
-      call add_output_file('m2dnz390.out')
+      call add_output_file('m2dnz390.out',array='vduuuu')
       call set_driver_routine('m2dnz390')
       call add_module('mcscf_routines')
-
-      call add_opt_variable('key   ','1','integer')
 
       call add_inp_variable(psymm ,'psymm ')
       call add_inp_variable(ksymm ,'ksymm ')
@@ -880,7 +876,6 @@ contains
       call add_out_variable(vduuuu,'vduuuu')
 
       call generate_test
-      create_outputs = .true.
 #endif
 
   !------------------------------------------------------------------------------!
@@ -1402,32 +1397,25 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( present(key) .or. create_outputs )then
-
-    call set_suffix(psymm)
-    call set_suffix(ksymm)
-    call set_suffix(tsymm)
-    call set_suffix(icount)
-    call add_output_file('m2dnz390.out')
-
+#ifdef CREATE_UNIT_TESTS
     ! open file
     open(60,file=get_output_name(1),status='unknown',form='formatted', &
                                     access='sequential',iostat=ier)
     if(ier /= 0)then
-      write(6,*) 'm2dnz390: ERROR while creating m2dnz390.out file'
+      write(6,*) 'm2dnz390: ERROR while creating file',get_output_name(1)
       stop
     endif
 
     rewind 60
 
     ! write output data to the file
-    do i=1,nz
-    do j=1,nnashx
-    do k=1,nasht
-    do l=1,nasht
-    write(60,*) vduuuu(l,k,j,i,1)
-    write(60,*) vduuuu(l,k,j,i,2)
-    write(60,*) vduuuu(l,k,j,i,3)
+    do m=1,3
+    do l=1,nz
+    do k=1,nnashx
+    do j=1,nasht
+    do i=1,nasht
+    write(60,*) vduuuu(i,j,k,l,m)
+    enddo
     enddo
     enddo
     enddo
@@ -1437,7 +1425,7 @@ contains
     close(60,status='keep')
 
     call unit_test_generator_destructor
-  endif
+#endif
 
   end subroutine m2dnz390
 
