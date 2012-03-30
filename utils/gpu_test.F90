@@ -1,14 +1,14 @@
-!----------------------------------------------
+!---------------------------------------------------------------------------------------------
 !
-! Simple test of Fortran GPU CUDA libraries
+! Simple test of Fortran GPU CUDA & CULA libraries
 ! in the DIRAC environment. 
 !
-! Comparison between few CPU BLAS and GPU CUBLAS
+! Program does time measurements of performance of few CPU BLAS/LAPACK and GPU CUBLAS/CULA
 ! mathematical routines.
 !
 ! Written by Miro Ilias, Banska Bystrica, March 2012
 !
-!----------------------------------------------
+!-----------------------------------------------------------------------------------------------
 
 module fortran_timing
 ! http://software.intel.com/sites/products/documentation/hpc/compilerpro/en-us/fortran/lin/compiler_f/lref_for/source_files/rfsystmc.htm
@@ -53,14 +53,25 @@ integer, parameter :: size_of_real  =4
 integer, parameter :: size_of_double=8
 integer :: AllocateStatus, stat, ios
 
+! CUDA specifix library obejcts 
+#if USE_CUBLAS
 external ::  cublas_init, cublas_free, cublas_set_matrix
 external ::  cublas_get_matrix,cublas_set_vector,cublas_get_vector
 external ::  cublas_shutdown, cublas_alloc
 external ::  cublas_sgemm, cublas_sgemv, cublas_dgemm
 integer ::   cublas_alloc, cublas_set_matrix, cublas_get_matrix, cublas_free
-integer ::  cublas_set_vector, cublas_get_vector, cublas_sgemm, cublas_sgemv,cublas_dgemm
-external :: snrm2
-real(kind=size_of_real) :: snrm2
+integer ::   cublas_set_vector, cublas_get_vector, cublas_sgemm, cublas_sgemv,cublas_dgemm
+#endif
+
+! CULA specific library objects 
+#if USE_CULA
+external :: cula_initialize, cula_shutdown
+external :: CULA_SGEQRF, cula_sgesv
+integer ::  cula_initialize, cula_SGEQRF, cula_shutdown, cula_sgesv
+#endif
+
+external :: snrm2 ! for checking  the norm of a vector ...
+real(kind=size_of_real) :: snrm2 
 
 CHARACTER*100  BUFFER
 character*10   method
@@ -70,8 +81,12 @@ integer :: verb=0 ! default verbosity level
 integer :: n
 integer :: i,j
 
+! common allocatble objects - both for CUDA (BLAS) and CULA (BLAS+LAPACK) routines...
 real(kind=size_of_real),   allocatable:: A_r(:,:),B_r(:,:),C_r(:,:),x_r(:),y_r(:)
 real(kind=size_of_double), allocatable:: A_d(:,:),B_d(:,:),C_d(:,:),x_d(:),y_d(:)
+REAL(kind=size_of_real),   ALLOCATABLE :: TAU_r(:), TAU1_r(:)
+REAL(kind=size_of_real),   ALLOCATABLE :: WORK_r(:)
+integer, allocatable :: ipiv(:), ipiv1(:)
 
 #if ARCH_64
 ! 8-byte pointers on 64-bit architectures
@@ -83,7 +98,11 @@ integer   :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
 contains
 
 subroutine usage
+#if USE_CULA
+write(*,*) 'usage: gpu_test.x  <sgemm/sgemv/dgemm/sgesv/sgeqrf>  <n> <verbosity level>'
+#else
 write(*,*) 'usage: gpu_test.x  <sgemm/sgemv/dgemm>  <n> <verbosity level>'
+#endif
 end subroutine usage
 
 subroutine read_arguments
@@ -104,11 +123,11 @@ ELSE
   !print *,'online argument read in ...n=',n
 ENDIF
 ! read in verbosity level - optional argument
-CALL GETARG(3,BUFFER); READ(BUFFER,*,IOSTAT=IOS) verb
-IF (IOS.NE.0) THEN
-  write(*,*) 'using default verbosity level=',verb
+CALL GETARG(3,BUFFER); READ(BUFFER,*,IOSTAT=ios) verb
+IF (ios.NE.0) THEN
+  write(*,'(1x,a,i1)') 'using default verbosity level:',verb
 ELSE
-  write(*,*) 'online argument read in - verbosity level =',verb
+  write(*,'(1x,a,i2)') 'online argument read in - verbosity level:',verb
 ENDIF
 end subroutine read_arguments
 
@@ -466,6 +485,201 @@ call print_time("CPU sgemv")
 write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
 end subroutine sgemv_test
 
+#if USE_CULA
+subroutine sgeqrf_test
+! test on matrix QR decomposition ....
+  real(kind=size_of_real) :: diffs = 0.0e0
+  write(*,'(2x,a)') 'cula_sgeqrf GPU vs lapack CPU test'
+  allocate (A_r(n,n),B_r(n,n),STAT=AllocateStatus)
+  if (AllocateStatus.ne.0) then
+    stop "error in allocations of A_r,B_r !"
+  else
+    if (verb.ge.1) then
+      write(*,*) "A_r, B_r matrixes allocated in CPU memory"
+    endif
+  endif
+  allocate(WORK_r(n),STAT=AllocateStatus)
+  if (AllocateStatus.ne.0) then
+    stop "error in WORK_r array allocation"
+  else
+    if (verb.ge.1) then
+      print *,"allocated array, WORK_r(LWORK)"
+    endif
+  endif
+  allocate(TAU_r(n),TAU1_r(n),STAT=AllocateStatus)
+  if (AllocateStatus.ne.0) then
+    stop "error in TAU_r, TAU1_r array allocation"
+  else
+    if (verb.ge.1) then
+      print *,"allocated auxiliary array, TAU_r(N),N=",n
+    endif
+  endif
+! fill allocated objects A_r, B_r with random data for later checking
+  do i=1,n
+  do j=1,n
+     A_r(i,j) = rand(); B_r(i,j)=A_r(i,j)
+  enddo
+  enddo
+  ! ... start the time measurement
+  call system_clock( c1, cr, cm )
+  stat = CULA_INITIALIZE(); call check_cula_status(stat)
+  stat = CULA_SGEQRF(N, N, A_r, N, TAU_r); call check_cula_status(stat)
+
+  call system_clock( count=c2 )
+  call print_time("GPU CULA_SGEQRF")
+
+  stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+! time for lapack SGEQRF
+!see  http://www.netlib.org/lapack/single/sgeqrf.f
+! SUBROUTINE SGEQRF( M, N, A, LDA, TAU, WORK, LWORK, INFO )
+  CALL SGEQRF(N, N, B_r, N, TAU1_r, WORK_r, N , stat)
+  IF (stat.ne.0) then
+    stop "error in CPU LAPACK SGEQRF..."
+  else
+    if (verb.ge.1) then
+      print *,"LAPACK SGEQRF finished successfully ...."
+    endif
+  endif
+call system_clock( count=c2 )
+call print_time("CPU LAPACK SGEQRF")
+! check numbers in A_r, b_r - must be the same...
+  do i=1,n
+  do j=1,n
+    diffs = diffs + abs(A_r(i,j)-B_r(i,j))  
+    if (verb.ge.3) then
+      print *,i,j,A_r(i,j), B_r(i,j)
+    endif
+  enddo
+    diffs =  diffs + abs(TAU_r(i)-TAU1_r(i))
+    if (verb.ge.3) then
+      print *,i,TAU_r(i),TAU1_r(i)
+    endif
+  enddo
+  write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged diffs are ',diffs/float(n*n)
+end subroutine sgeqrf_test
+
+subroutine sgesv_test
+  real(kind=size_of_real) :: diffs = 0.0e0
+  write(*,'(2x,a)') 'cula_sgesv GPU vs lapack CPU test'
+  allocate (A_r(n,n),B_r(n,n),STAT=AllocateStatus)
+  if (AllocateStatus.ne.0) then
+    stop "error in allocations of A_r,B_r !"
+  else
+    if (verb.ge.1) then
+      write(*,*) "A_r, B_r matrixes allocated in CPU memory"
+    endif
+  endif
+  allocate(TAU_r(n),TAU1_r(n),STAT=AllocateStatus)
+  if (AllocateStatus.ne.0) then
+    stop "error in TAU_r, TAU1_r array allocation"
+  else
+    if (verb.ge.1) then
+      print *,"allocated arrays for solving linear equations"
+    endif
+  endif
+  allocate(ipiv(n),ipiv1(n),STAT=AllocateStatus)
+  if (AllocateStatus.ne.0) then
+    stop "error in ipiv, ipiv1 integer arrays allocation"
+  else
+    if (verb.ge.1) then
+      print *,"allocated integer arrays ipiv, ipiv1 for solving linear equations"
+    endif
+  endif
+! fill allocated objects A_r, B_r, TAU1_r, TAU_r with random data for later checking
+  do i=1,n
+  do j=1,n
+     A_r(i,j) = rand();  B_r(i,j)=A_r(i,j)
+  enddo
+     TAU_r(i) = rand();  TAU1_r(i) = TAU_r(i) 
+  enddo
+  ! ... start the time measurement
+  call system_clock( c1, cr, cm )
+  stat = CULA_INITIALIZE(); call check_cula_status(stat)
+  stat = cula_sgesv(n, 1 , A_r, n , ipiv, TAU_r, n, stat ); call check_cula_status(stat)
+
+  call system_clock( count=c2 )
+  call print_time("GPU CULA_SGESV")
+
+  stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+  ! now lapack sgesv...
+  call sgesv(n, 1 , B_r, n , ipiv1, TAU1_r, n, stat )
+  IF (stat.ne.0) then
+    stop "error in CPU LAPACK SGESV ..."
+  else
+    if (verb.ge.1) then
+      print *,"LAPACK SGESV finished successfully ..."
+    endif
+  endif
+  call system_clock( count=c2 )
+  call print_time("CPU LAPACK SGESV")
+  ! check  results - roots - must be identical 
+  do i=1,n
+    diffs = diffs + abs(TAU_r(i)-TAU1_r(i))  
+    if (verb.ge.3) then
+      print *,i,TAU_r(i),TAU1_r(i)
+    endif
+  enddo
+  write(*,*) 'control of results - CULA_SGESV vs lapack SGESV averaged diffs are ',diffs/float(n)
+
+end subroutine sgesv_test
+
+SUBROUTINE check_cula_status(STATUS)
+! TOOD: make it more general wrt cula&lapack routines exit codes
+         INTEGER, intent(in) :: STATUS
+         INTEGER INFO
+         external :: CULA_GETERRORINFO
+         INTEGER  :: CULA_GETERRORINFO
+         INFO = CULA_GETERRORINFO()
+         IF (STATUS .NE. 0) THEN
+            write(*,'(2x,a,$)') "CULA system status:"
+            IF (STATUS .EQ. 7) THEN
+!*              culaArgumentError
+               WRITE(*,*) 'Invalid value for parameter ', INFO
+            ELSE IF (STATUS .EQ. 8) THEN
+!*              culaDataError
+               WRITE(*,*) 'Data error (', INFO ,')'
+            ELSE IF (STATUS .EQ. 9) THEN
+!*              culaBlasError
+               WRITE(*,*) 'Blas error (', INFO ,')'
+            ELSE IF (STATUS .EQ. 10) THEN
+!*              culaRuntimeError
+               WRITE(*,*) 'Runtime error (', INFO ,')'
+            ELSE
+!*              others
+               call CULA_GETSTATUSSTRING(STATUS)
+            ENDIF
+            STOP 1
+         END IF
+END subroutine check_cula_status
+
+subroutine CulaAbouts
+! get info about CULA ...
+! see  nm -D /usr/local/cula/lib64/libcula_fortran.so | less
+! int cudaMinimumVersion = culaGetCudaMinimumVersion();
+external :: CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDARUNTIMEVERSION 
+external :: CULA_GETDEVICEINFO,CULA_GETCUDAMINIMUMVERSION,  CULA_GETCUDADRIVERVERSION
+integer ::  CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, cula_version ,  CULA_GETCUDADRIVERVERSION
+integer :: CULA_GETCUDARUNTIMEVERSION, CULA_GETDEVICEINFO, CULA_GETCUDAMINIMUMVERSION
+! int cudaRuntimeVersion = culaGetCudaRuntimeVersion();
+! int cudaDriverVersion = culaGetCudaDriverVersion();
+! int cublasMinimumVersion = culaGetCublasMinimumVersion();
+! int cublasRuntimeVersion = culaGetCublasRuntimeVersion();
+
+  cula_version = CULA_GETVERSION()
+  write(*,*) 'cula version=',cula_version
+  write(*,*) 'cublas runtime version=',CULA_GETCUBLASRUNTIMEVERSION()
+  write(*,*) 'cula cuda runtime version=',CULA_GETCUDARUNTIMEVERSION()
+  write(*,*) ' CULA_GETCUDAMINIMUMVERSION=',CULA_GETCUDAMINIMUMVERSION()
+  write(*,*) ' CULA_GETCUDADRIVERVERSION', CULA_GETCUDADRIVERVERSION()
+ !! write(*,*) 'cula get device info=',CULA_GETDEVICEINFO()
+! if(cudaRuntimeVersion < cudaMinimumVersion)
+! if(cudaDriverVersion < cudaMinimumVersion)
+! if(cublasRuntimeVersion < cublasMinimumVersion)
+
+end subroutine CulaAbouts
+
+#endif
+
 subroutine mtx_check(Mtx)
 real*4, intent(in) :: Mtx(n,n)
 real*4 ::  diag,offdiag
@@ -498,23 +712,33 @@ end subroutine mtx_check_d
 
 end module gpu_stuff
 
+!------------------------------------------------------
 Program GPU_math_tests
   use gpu_stuff
   use fortran_timing
 
   call print_time_info
+#if USE_CULA
+  call CulaAbouts
+#endif
 
   call read_arguments
   select case (method)
     case("sgemm")
-      write(*,'(2x,a)') 'sgemm GPU vs CPU test'
+      write(*,'(2x,a)') 'cula_sgemm GPU vs CPU test'
       call sgemm_test
     case("dgemm")
-      write(*,'(2x,a)') 'dgemm GPU vs CPU test'
+      write(*,'(2x,a)') 'cula_dgemm GPU vs CPU test'
       call dgemm_test
     case("sgemv")
-      write(*,'(2x,a)') 'sgemv GPU vs CPU test'
+      write(*,'(2x,a)') 'cula_sgemv GPU vs CPU test'
       call sgemv_test
+#if USE_CULA
+    case("sgeqrf")
+      call sgeqrf_test
+    case("sgesv")
+      call sgesv_test
+#endif
     case default
       write(*,*) 'no method for GPU math testing selected'
       call usage
