@@ -160,6 +160,7 @@ if(ENABLE_PCMMOD)
         cavity
         metal
         pedra
+        pwl
         wem
         wavcav
         getkw
