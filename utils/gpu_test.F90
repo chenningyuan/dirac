@@ -6,56 +6,52 @@
 ! This program measures performance of few CPU BLAS/LAPACK and GPU CUBLAS/CULA
 ! mathematical routines.
 !
+! Note:  CULA Dense Free Edition implements popular single precision real and complex functions from LAPACK,
+! full commercial version of CULA meets all the LAPACK/BLAS needs of DIRAC.
+!
 ! Written by Miro Ilias, Banska Bystrica, March/April 2012
 !
 !-----------------------------------------------------------------------------------------------
 
-subroutine compiler_info
+subroutine fortran_compiler_info
 ! see  http://fortranwiki.org/fortran/show/Predefined+preprocessor+macros ...
-write(*,'(1X,A,$)') '--- Fortran compiler info: '
+write(*,'(A)') '--- Fortran compiler info --- '
 #if defined VAR_GFORTRAN
 ! http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 write(*,'(A,3(I1,A))') 'GNU, gfortran, version  ',__GNUC__,'.',__GNUC_MINOR__,'.',__GNUC_PATCHLEVEL__
 write(*,*) 'version:',__VERSION__
 #endif
 #if defined VAR_IFORT
-write(*,'(A)') 'Intel Fortran info :'
+!write(*,'(A)') 'Intel Fortran info :'
 #if defined __ECC
 write(*,*) __ECC
 #endif
 #if defined __INTEL_COMPILER
-write(*,*) 'version:',__INTEL_COMPILER
+write(*,*) 'Intel Fortran, version:',__INTEL_COMPILER
 #endif
 write(*,*) 'intel compiler build date:', __INTEL_COMPILER_BUILD_DATE
 #endif
-end subroutine compiler_info
+end subroutine fortran_compiler_info
 
 subroutine CulaAbouts
 implicit none
 #if defined USE_CULA
 ! get info about CULA ...
 ! see  nm -D /usr/local/cula/lib64/libcula_fortran.so | less
-! int cudaMinimumVersion = culaGetCudaMinimumVersion();
-external :: CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDARUNTIMEVERSION 
-external :: CULA_GETDEVICEINFO,CULA_GETCUDAMINIMUMVERSION, CULA_GETCUDADRIVERVERSION
-integer ::  CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDADRIVERVERSION
-integer :: CULA_GETCUDARUNTIMEVERSION, CULA_GETDEVICEINFO, CULA_GETCUDAMINIMUMVERSION
-! int cudaRuntimeVersion = culaGetCudaRuntimeVersion();
-! int cudaDriverVersion = culaGetCudaDriverVersion();
-! int cublasMinimumVersion = culaGetCublasMinimumVersion();
-! int cublasRuntimeVersion = culaGetCublasRuntimeVersion();
-!write(*,'(1X,A)') 'CULA & CUDA info :'
-  write(*,'(2X,A,I5)') 'CULA version=',CULA_GETVERSION()
-  write(*,'(2X,A,I5)') 'CUBLAS runtime version=',CULA_GETCUBLASRUNTIMEVERSION()
-  write(*,'(2X,A,I5)') 'CUDA runtime version=',CULA_GETCUDARUNTIMEVERSION()
- ! write(*,*) ' CULA_GETCUDAMINIMUMVERSION=',CULA_GETCUDAMINIMUMVERSION()
-  write(*,'(2X,A,I5)') 'CUDA driver version', CULA_GETCUDADRIVERVERSION()
- !  write(*,*) '  cublasRuntimeVersion',cula_GetCublasRuntimeVersion()
+integer, external ::  CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDADRIVERVERSION
+integer, external :: CULA_GETCUDARUNTIMEVERSION, CULA_GETDEVICEINFO, CULA_GETCUDAMINIMUMVERSION
+write(*,'(A)') '--- CULA (and CUDA) GPU info ---'
+  write(*,'(1X,A,I5)') 'CULA version=',CULA_GETVERSION()
+  write(*,'(1X,A,I5)') 'CULA_CUBLAS runtime version :',CULA_GETCUBLASRUNTIMEVERSION()
+  write(*,'(1X,A,I5)') 'CULA_CUDA   runtime version :',CULA_GETCUDARUNTIMEVERSION()
+  write(*,'(1X,A,I5)') 'CULA_CUDA   driver version  :', CULA_GETCUDADRIVERVERSION()
  if (CULA_GETCUDARUNTIMEVERSION().LT.CULA_GETCUDAMINIMUMVERSION()) then
-   write(*,*) "CUDA runtime version < cuda minumum required version !"
+   write(*,*) ' CULA_GETCUDAMINIMUMVERSION=',CULA_GETCUDAMINIMUMVERSION()
+   write(*,*) "warning: CUDA runtime version < cuda minumum required version !"
  endif
  if (CULA_GETCUBLASRUNTIMEVERSION().LT.CULA_GETCUDAMINIMUMVERSION()) then
-   write(*,*) "CUBLAS runtime version < cuda minumum required version !"
+   write(*,*) "warning: CUBLAS runtime version < cuda minumum required version !"
+   write(*,*) '  cublasRuntimeVersion',cula_GetCublasRuntimeVersion()
  endif
  if (CULA_GETCUDADRIVERVERSION() .LT.CULA_GETCUDAMINIMUMVERSION()) then
    write(*,*) "CUDA driver version < cuda minumum required version !"
@@ -64,11 +60,10 @@ integer :: CULA_GETCUDARUNTIMEVERSION, CULA_GETDEVICEINFO, CULA_GETCUDAMINIMUMVE
 end subroutine CulaAbouts
 
 subroutine CudaAbouts
+! No fortran functions about CUDA version, obtainable only from CULA
 ! see less /usr/local/cuda/src/fortran.c
-! None fortran function about version, obtainable only from CULA
 implicit none
 external :: CudaAbouts_C
-!write(*,'(1X,A)') 'CUDA info :'
 call CudaAbouts_C()
 end subroutine CudaAbouts
 
@@ -85,7 +80,7 @@ contains
 
 subroutine print_time_info
 call system_clock( count_rate=cr, count_max=cm )
-write(*,'(2x,a,i10,a,i20)') "* system_clock timing routine:  COUNT_RATE=",cr," COUNT_MAX=",cm
+write(*,'(1x,a,i8,a,i20)') "--- Fortran system_clock timing routine, COUNT_RATE=",cr," COUNT_MAX=",cm
 !if (cr.ne.count_rate_kind8) then
 !  write(*,'(2x,a,i7)') 'wrong system value of system COUNT_RATE parameter, must be (kind=8) ',count_rate_kind8
   !write(*,'(2x,a,i7)') 'wrong system value of system COUNT_RATE parameter, must be (kind=4) ',count_rate_kind4
@@ -134,7 +129,6 @@ external :: snrm2 ! for checking  the norm of a vector ...
 real(kind=size_of_real) :: snrm2 
 
 CHARACTER*100  BUFFER
-character*10   method
 
 integer :: verb=0 ! default verbosity level
 
@@ -155,14 +149,35 @@ integer*8 :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
 integer   :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
 #endif
 
+integer, parameter  :: maxnu=20
+integer :: no_rout=0
+character*15 :: routine(maxnu), method
+
 contains
 
 subroutine usage
+ integer :: no_rout1=0
+routine(1)="sgemm_cuda"
+routine(2)="sgemv_cuda"
+routine(3)="dgemm_cuda" 
+routine(4)="sgemm_cuda_c"
+routine(5)="sgemv_cuda_c"
+routine(6)="dgemm_cuda_c"
+no_rout=6
 #if USE_CULA
-write(*,*) 'usage: gpu_test.x  <sgemm_cuda/sgemm_cula/sgemv_cuda/sgemv_cula/dgemm_cuda/sgesv/sgeqrf>  <n> <verbosity level>'
-#else
-write(*,*) 'usage: gpu_test.x  <sgemm_cuda/sgemv_cuda/dgemm_cuda>  <n> <verbosity level>'
+ ! cula lapack
+ no_rout1=no_rout
+routine(no_rout1+1)="sgemm_cula"
+routine(no_rout1+2)="sgemv_cula"
+routine(no_rout1+3)="sgesv_cula"
+routine(no_rout1+4)="sgeqrf_cula"
+routine(no_rout1+5)="sgemm_cula_c"
+routine(no_rout1+6)="sgemv_cula_c"
+  no_rout=no_rout1+6
 #endif
+write(*,*) 'usage: gpu_test.x  <routine>  <n> <verbosity level>'
+! using own C-function trim 
+write(*,*) 'routine: ',(trim(routine(i)),',',i=1,no_rout)
 end subroutine usage
 
 subroutine read_arguments
@@ -636,6 +651,9 @@ subroutine sgeqrf_test
 #if defined USE_CULA
 ! test on matrix QR decomposition ....
   real(kind=size_of_real) :: diffs = 0.0e0
+#if defined VAR_IFORT
+  real(kind=size_of_real), external :: rand
+#endif
   write(*,'(2x,a)') 'cula_sgeqrf GPU vs lapack CPU test'
   allocate (A_r(n,n),B_r(n,n),STAT=AllocateStatus)
   if (AllocateStatus.ne.0) then
@@ -711,6 +729,9 @@ end subroutine sgeqrf_test
 subroutine sgesv_test
 #if defined USE_CULA
   real(kind=size_of_real) :: diffs = 0.0e0
+#if defined VAR_IFORT
+  real(kind=size_of_real), external :: rand
+#endif
   write(*,'(2x,a)') 'cula_sgesv GPU vs lapack CPU test'
   allocate (A_r(n,n),B_r(n,n),STAT=AllocateStatus)
   if (AllocateStatus.ne.0) then
@@ -764,10 +785,13 @@ subroutine sgesv_test
   call system_clock( count=c2 )
   call print_time("CPU LAPACK SGESV")
   ! check  results - roots - must be identical 
+  if (verb.ge.3) then
+    print *," roots and their differences  "
+  endif
   do i=1,n
     diffs = diffs + abs(TAU_r(i)-TAU1_r(i))  
     if (verb.ge.3) then
-      print *,i,TAU_r(i),TAU1_r(i)
+      print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
   write(*,*) 'control of results - CULA_SGESV vs lapack SGESV averaged diffs are ',diffs/float(n)
@@ -839,9 +863,11 @@ Program GPU_math_tests
   use gpu_stuff
   use fortran_timing
 
-  call compiler_info
-  call CulaAbouts
+  call fortran_compiler_info
+  call c_compiler_info
+
   call CudaAbouts
+  call CulaAbouts
 
   call print_time_info
 
@@ -849,18 +875,30 @@ Program GPU_math_tests
   select case (method)
     case("sgemm_cuda")
       call sgemm_cuda_test
+    case("sgemm_cuda_c")
+      call  c_gpu_math_tests(n,method,verb)
     case("sgemm_cula")
       call sgemm_cula_test
+    case("sgemm_cula_c")
+      call c_gpu_math_tests(n,method,verb)
     case("dgemm_cuda")
       call dgemm_cuda_test
     case("sgemv_cuda")
       call sgemv_cuda_test
+    case("sgemv_cuda_c")
+      call  c_gpu_math_tests(n,method,verb)
     case("sgemv_cula")
       call sgemv_cula_test
-    case("sgeqrf")
+    case("sgemv_cula_c")
+      call  c_gpu_math_tests(n,method,verb)
+    case("sgeqrf_cula")
       call sgeqrf_test
-    case("sgesv")
+    case("sgeqrf_cula_c")
+      call  c_gpu_math_tests(n,method,verb)
+    case("sgesv_cula")
       call sgesv_test
+    case("sgesv_cula_c")
+      call  c_gpu_math_tests(n,method,verb)
     case default
       write(*,*) 'no method for GPU math testing selected'
       call usage
