@@ -32,11 +32,7 @@ import glob
 # this is a hack to "sanitize" input from cmake
 # example: ./pamadm "--adm --hsfsdyn --auto"
 # sys.argv contains: ['./pamadm', '--adm --hsfsdyn --auto']
-l = []
-for x in sys.argv:
-    for y in x.split():
-        l.append(y)
-sys.argv = l[:]
+sys.argv = [w for arg in sys.argv for w in arg.split()]
 # sys.argv now contains: ['./pamadm', '--adm', '--hsfsdyn', '--auto']
 
 class dirac_module:
@@ -72,31 +68,6 @@ class dirac_module:
 
 def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
-
-def provide_star_basisfile_names():
-    '''
-    Restore basis set files with "*" in name
-    (this is to be done on non-Windows machines)
-    '''
-    # : ls basis_dalton/*star
-    basfile={   \
-       '3-21++G-star':'3-21++G*',\
-       '3-21G-star':'3-21G*',\
-       '6-311+G-star':'6-311+G*',\
-       '6-311G-star':'6-311G*', \
-       '6-311++G-star-star':'6-311++G**',\
-       '6-311G-star-star':'6-311G**',\
-       '6-31++G-star':'6-31++G*', \
-       '6-31+G-star':'6-31+G*',\
-       '6-31G-star':'6-31G*',\
-       '6-31++G-star-star':'6-31++G**',\
-       '6-31G-star-star':'6-31G**' \
-       }
-    basdir="basis_dalton"+"/" # basis set directory
-    for basfilename in basfile:
-        src=basdir+basfilename
-        dest=basdir+basfile[basfilename]
-        shutil.copy(src,dest)
 
 # import external functions, assuming you are always in trunk/ directory
 sys.path.append(os.getcwd() + '/utils')
@@ -601,9 +572,10 @@ f = open('cmake/pamadm-generated/pamadm-flags', 'w')
 f.write(string.join(sys.argv[1:]))
 f.close()
 
-# generate *-provided basis set files
-
-if sys.platform != "win32": provide_star_basisfile_names()
+# generate basis set files containing "*"
+if sys.platform != "win32":
+    for f in glob.glob('basis_dalton/*-star'):
+        shutil.copy(f, string.replace(f, '-star', '*'))
 
 # get delete flags (used by make release)
 delete_flags = ''
