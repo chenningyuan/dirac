@@ -11,13 +11,22 @@
 !-----------------------------------------------------------------------------------------------
 
 subroutine compiler_info
+! see  http://fortranwiki.org/fortran/show/Predefined+preprocessor+macros ...
 write(*,'(1X,A,$)') '--- Fortran compiler info: '
 #if defined VAR_GFORTRAN
 ! http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 write(*,'(A,3(I1,A))') 'GNU, gfortran, version  ',__GNUC__,'.',__GNUC_MINOR__,'.',__GNUC_PATCHLEVEL__
+write(*,*) 'version:',__VERSION__
 #endif
 #if defined VAR_IFORT
-write(*,'(A)') 'Intel, ifort, version :'
+write(*,'(A)') 'Intel Fortran info :'
+#if defined __ECC
+write(*,*) __ECC
+#endif
+#if defined __INTEL_COMPILER
+write(*,*) 'version:',__INTEL_COMPILER
+#endif
+write(*,*) 'intel compiler build date:', __INTEL_COMPILER_BUILD_DATE
 #endif
 end subroutine compiler_info
 
@@ -58,11 +67,9 @@ subroutine CudaAbouts
 ! see less /usr/local/cuda/src/fortran.c
 ! None fortran function about version, obtainable only from CULA
 implicit none
-!external :: cudaDriverGetVersion, cudaRuntimeGetVersion
-!integer :: cudaDriverGetVersion,  cudaRuntimeGetVersion
+external :: CudaAbouts_C
 !write(*,'(1X,A)') 'CUDA info :'
-!write(*,*) 'cudaDriverGetVersion',cudaDriverGetVersion()
-!write(*,*) 'cudaRuntimeGetVersion',cudaRuntimeGetVersion()
+call CudaAbouts_C()
 end subroutine CudaAbouts
 
 module fortran_timing
