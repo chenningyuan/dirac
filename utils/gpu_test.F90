@@ -7,7 +7,8 @@
 ! mathematical routines.
 !
 ! Note:  CULA Dense Free Edition implements popular single precision real and complex functions from LAPACK,
-! full commercial version of CULA meets all the LAPACK/BLAS needs of DIRAC.
+! full commercial version of CULA meets all the LAPACK/BLAS needs of the DIRAC suite,
+! see http://www.culatools.com/downloads/dense/
 !
 ! Written by Miro Ilias, Banska Bystrica, March/April 2012
 !
@@ -679,10 +680,13 @@ subroutine sgeqrf_test
       print *,"allocated auxiliary array, TAU_r(N),N=",n
     endif
   endif
-! fill allocated objects A_r, B_r with random data for later checking
+! fill allocated objects A_r, B_r with (random?) data for later checking
   do i=1,n
   do j=1,n
-     A_r(i,j) = rand(); B_r(i,j)=A_r(i,j)
+     !miro: CPU-lapack SGEQRF of MKL library is giving wrong results !!! (found on 31.3.2012)
+     ! A_r(i,j) = rand(0)
+     A_r(i,j) = float(i)+float(j) 
+     B_r(i,j)=A_r(i,j)
   enddo
   enddo
   ! ... start the time measurement
@@ -708,6 +712,9 @@ subroutine sgeqrf_test
 call system_clock( count=c2 )
 call print_time("CPU LAPACK SGEQRF")
 ! check numbers in A_r, b_r - must be the same...
+  if (verb.ge.3) then
+    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF '
+  endif
   do i=1,n
   do j=1,n
     diffs = diffs + abs(A_r(i,j)-B_r(i,j))  
@@ -728,10 +735,10 @@ end subroutine sgeqrf_test
 
 subroutine sgesv_test
 #if defined USE_CULA
-  real(kind=size_of_real) :: diffs = 0.0e0
 #if defined VAR_IFORT
   real(kind=size_of_real), external :: rand
 #endif
+  real(kind=size_of_real) :: diffs = 0.0e0
   write(*,'(2x,a)') 'cula_sgesv GPU vs lapack CPU test'
   allocate (A_r(n,n),B_r(n,n),STAT=AllocateStatus)
   if (AllocateStatus.ne.0) then
@@ -760,9 +767,9 @@ subroutine sgesv_test
 ! fill allocated objects A_r, B_r, TAU1_r, TAU_r with random data for later checking
   do i=1,n
   do j=1,n
-     A_r(i,j) = rand();  B_r(i,j)=A_r(i,j)
+     A_r(i,j) = rand(0);  B_r(i,j)=A_r(i,j)
   enddo
-     TAU_r(i) = rand();  TAU1_r(i) = TAU_r(i) 
+     TAU_r(i) = rand(0);  TAU1_r(i) = TAU_r(i) 
   enddo
   ! ... start the time measurement
   call system_clock( c1, cr, cm )
