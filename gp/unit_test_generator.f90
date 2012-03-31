@@ -42,6 +42,7 @@ interface set_suffix
 end interface set_suffix
 
 private :: init_string, add_string, errall, erropen, gets, i2c, l2c, csize, change_string
+private :: write_real_data, write_integer_data, add_data_routine
 
 private
 
@@ -69,38 +70,43 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_int_array(ivar,vname,ndim,vsize)
+  subroutine add_inp_int_array(ivar,vname,ndim)
   implicit none
 
   ! External variables
-  character(*), intent(in) :: vname, vsize
+  character(*), intent(in) :: vname
   integer,      intent(in) :: ndim, ivar(*)
 
   ! Internal variables
   integer :: ier
   integer, allocatable :: itmp(:)
 
-  ! --\-- write array to the file
-  allocate( itmp(ndim), stat=ier ); call errall(ier,'add_inp_int_array','itmp')
-  itmp(1:ndim) = ivar(1:ndim)
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    allocate( itmp(ndim), stat=ier ); call errall(ier,'add_inp_int_array','itmp')
+    itmp(1:ndim) = ivar(1:ndim)
+  
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_int_array',gets(input_files(1)%str))
+  
+    write(iunit,'(a)')    vname
+    write(iunit,'(6i12)') itmp
+  
+    close(iunit,status='keep')
 
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_int_array',gets(input_files(1)%str))
-
-  write(iunit,*) vname
-  write(iunit,*) itmp
-
-  close(iunit,status='keep')
-
-  deallocate(itmp)
-  ! --/--
+    deallocate(itmp)
+  else
+    call write_integer_data(ivar,ndim,vname)
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('integer, allocatable, dimension(:)',var_type)
-  call add_string(vsize,var_dim)
+  call add_string('(' // i2c(ndim) // ')',var_dim)
   call add_string('input',var_info)
   call add_string('own_name',var_value)
 
@@ -109,11 +115,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_inp_real_array(dvar,vname,ndim,vsize)
+  subroutine add_inp_real_array(dvar,vname,ndim)
   implicit none
 
   ! External variables
-  character(*), intent(in) :: vname, vsize
+  character(*), intent(in) :: vname
   integer,      intent(in) :: ndim
   real*8,       intent(in) :: dvar(*)
 
@@ -121,27 +127,31 @@ contains
   integer :: ier
   real*8, allocatable :: dtmp(:)
 
-  ! --\-- write array to the file
-  allocate( dtmp(ndim), stat=ier ); call errall(ier,'add_inp_real_array','dtmp')
-  dtmp(1:ndim) = dvar(1:ndim)
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    allocate( dtmp(ndim), stat=ier ); call errall(ier,'add_inp_real_array','dtmp')
+    dtmp(1:ndim) = dvar(1:ndim)
 
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_real_array',gets(input_files(1)%str))
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_real_array',gets(input_files(1)%str))
 
-  write(iunit,*) vname
-  write(iunit,*) dtmp
+    write(iunit,'(a)')       vname
+    write(iunit,'(3D24.16)') dtmp
 
-  close(iunit,status='keep')
+    close(iunit,status='keep')
 
-  deallocate(dtmp)
-  ! --/--
-
+    deallocate(dtmp)
+  else
+    call write_real_data(dvar,ndim,vname)
+  endif
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8,  allocatable, dimension(:)',var_type)
-  call add_string(vsize,var_dim)
+  call add_string('(' // i2c(ndim) // ')',var_dim)
   call add_string('input',var_info)
   call add_string('own_name',var_value)
 
@@ -150,17 +160,18 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_int_array(vname,vsize)
+  subroutine add_out_int_array(vname,ndim)
   implicit none
 
   ! External variables
-  character(*), intent(in) :: vname, vsize
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ndim
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('integer,  allocatable, dimension(:)',var_type)
-  call add_string(vsize,var_dim)
+  call add_string('(' // i2c(ndim) // ')',var_dim)
   call add_string('output',var_info)
   call add_string('own_name',var_value)
 
@@ -169,17 +180,18 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_array(vname,vsize)
+  subroutine add_out_real_array(vname,ndim)
   implicit none
 
   ! External variables
-  character(*), intent(in) :: vname, vsize
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ndim
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8,  allocatable, dimension(:)',var_type)
-  call add_string(vsize,var_dim)
+  call add_string('(' // i2c(ndim) // ')',var_dim)
   call add_string('output',var_info)
   call add_string('own_name',var_value)
 
@@ -198,16 +210,36 @@ contains
   ! Internal variables
   integer :: ier
 
-  ! --\-- write variable to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_logical_variable',gets(input_files(1)%str))
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_logical_variable',gets(input_files(1)%str))
 
-  write(iunit,*) vname
-  write(iunit,*) lvar
+    write(iunit,'(a)') vname
+    write(iunit,'(l)') lvar
 
-  close(iunit,status='keep')
-  ! --/--
+    close(iunit,status='keep')
+  else
+    open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+    call erropen(ier,'add_inp_logical_variable',vname)
+
+    write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+    write(iunit,'(a)')        '  implicit none'
+    write(iunit,'(a,a)')      '  logical :: ',vname
+    write(iunit,'(a)')
+    if(lvar)then
+      write(iunit,'(a,a,a)')  '  ', vname, ' = .True.'
+    else
+      write(iunit,'(a,a,a)')  '  ', vname, ' = .False.'
+    endif
+    write(iunit,'(a)')
+    write(iunit,'(a)')        '  end subroutine'
+
+    close(iunit,status='keep')
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -232,16 +264,32 @@ contains
   ! Internal variables
   integer :: ier
 
-  ! --\-- write variable to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_integer_variable',gets(input_files(1)%str))
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_integer_variable',gets(input_files(1)%str))
 
-  write(iunit,*) vname
-  write(iunit,*) ivar
+    write(iunit,'(a)')   vname
+    write(iunit,'(i12)') ivar
 
-  close(iunit,status='keep')
-  ! --/--
+    close(iunit,status='keep')
+  else
+    open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+    call erropen(ier,'add_inp_integer_variable',vname)
+ 
+    write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+    write(iunit,'(a)')        '  implicit none'
+    write(iunit,'(a,a)')      '  integer :: ',vname
+    write(iunit,'(a)')
+    write(iunit,'(2x,a,a,i12)') vname, ' = ', ivar
+    write(iunit,'(a)')
+    write(iunit,'(a)')        '  end subroutine'
+ 
+    close(iunit,status='keep')
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -266,22 +314,28 @@ contains
   ! Internal variables
   integer :: n1, ier
 
-  ! --\-- write 1d array to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_integer_1d_array',gets(input_files(1)%str))
+  n1 = size(ivar,1)
 
-  write(iunit,*) vname
-  write(iunit,*) ivar
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_integer_1d_array',gets(input_files(1)%str))
 
-  close(iunit,status='keep')
-  ! --/--
+    write(iunit,'(a)')    vname
+    write(iunit,'(6i12)') ivar
+
+    close(iunit,status='keep')
+  else
+    call write_integer_data(ivar,n1,vname)
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('integer, allocatable, dimension(:)',var_type)
-  n1 = size(ivar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
   call add_string('own_name',var_value)
@@ -301,23 +355,29 @@ contains
   ! Internal variables
   integer :: n1, n2, ier
 
-  ! --\-- write 2d array to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_integer_2d_array',gets(input_files(1)%str))
+  n1 = size(ivar,1)
+  n2 = size(ivar,2)
 
-  write(iunit,*) vname
-  write(iunit,*) ivar
-
-  close(iunit,status='keep')
-  ! --/--
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_integer_2d_array',gets(input_files(1)%str))
+  
+    write(iunit,'(a)')    vname
+    write(iunit,'(6i12)') ivar
+  
+    close(iunit,status='keep')
+  else
+    call write_integer_data(ivar,n1*n2,vname)
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('integer, allocatable, dimension(:,:)',var_type)
-  n1 = size(ivar,1)
-  n2 = size(ivar,2)
   call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
   call add_string('input',var_info)
   call add_string('own_name',var_value)
@@ -337,16 +397,33 @@ contains
   ! Internal variables
   integer :: ier
 
-  ! --\-- write variable to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_real_variable',gets(input_files(1)%str))
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_real_variable',gets(input_files(1)%str))
+  
+    write(iunit,'(a)')      vname
+    write(iunit,'(D24.16)') dvar
+  
+    close(iunit,status='keep')
+  else
+    open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+    call erropen(ier,'add_inp_real_variable',vname)
+ 
+    write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+    write(iunit,'(a)')        '  implicit none'
+    write(iunit,'(a,a)')      '  integer :: ',vname
+    write(iunit,'(a)')
+    write(iunit,'(2x,a,a,D24.16)') vname, ' = ', dvar
+    write(iunit,'(a)')
+    write(iunit,'(a)')        '  end subroutine'
+ 
+    close(iunit,status='keep')
+  endif
 
-  write(iunit,*) vname
-  write(iunit,*) dvar
-
-  close(iunit,status='keep')
-  ! --/--
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -371,22 +448,28 @@ contains
   ! Internal variables
   integer :: n1, ier
 
-  ! --\-- write 1d array to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_real_1d_array',gets(input_files(1)%str))
+  n1 = size(dvar,1)
 
-  write(iunit,*) vname
-  write(iunit,*) dvar
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_real_1d_array',gets(input_files(1)%str))
 
-  close(iunit,status='keep')
-  ! --/--
+    write(iunit,'(a)')       vname
+    write(iunit,'(3D24.16)') dvar
+
+    close(iunit,status='keep')
+  else
+    call write_real_data(dvar,n1,vname)
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8,  allocatable, dimension(:)',var_type)
-  n1 = size(dvar,1)
   call add_string( '(' // i2c(n1) // ')' , var_dim )
   call add_string('input',var_info)
   call add_string('own_name',var_value)
@@ -406,23 +489,29 @@ contains
   ! Internal variables
   integer :: n1, n2, ier
 
-  ! --\-- write 2d array to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_real_2d_array',gets(input_files(1)%str))
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
 
-  write(iunit,*) vname
-  write(iunit,*) dvar
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_real_2d_array',gets(input_files(1)%str))
 
-  close(iunit,status='keep')
-  ! --/--
+    write(iunit,'(a)')       vname
+    write(iunit,'(3D24.16)') dvar
+
+    close(iunit,status='keep')
+  else
+    call write_real_data(dvar,n1*n2,vname)
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8,  allocatable, dimension(:,:)',var_type)
-  n1 = size(dvar,1)
-  n2 = size(dvar,2)
   call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
   call add_string('input',var_info)
   call add_string('own_name',var_value)
@@ -442,24 +531,30 @@ contains
   ! Internal variables
   integer :: n1, n2, n3, ier
 
-  ! --\-- write 3d array to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_real_3d_array',gets(input_files(1)%str))
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
 
-  write(iunit,*) vname
-  write(iunit,*) dvar
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_real_3d_array',gets(input_files(1)%str))
 
-  close(iunit,status='keep')
-  ! --/--
+    write(iunit,'(a)')       vname
+    write(iunit,'(3D24.16)') dvar
+
+    close(iunit,status='keep')
+  else
+    call write_real_data(dvar,n1*n2*n3,vname)
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8,  allocatable, dimension(:,:,:)',var_type)
-  n1 = size(dvar,1)
-  n2 = size(dvar,2)
-  n3 = size(dvar,3)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
   call add_string('input',var_info)
   call add_string('own_name',var_value)
@@ -479,25 +574,31 @@ contains
   ! Internal variables
   integer :: n1, n2, n3, n4, ier
 
-  ! --\-- write 4d array to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_real_4d_array',gets(input_files(1)%str))
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+  n3 = size(dvar,3)
+  n4 = size(dvar,4)
 
-  write(iunit,*) vname
-  write(iunit,*) dvar
-
-  close(iunit,status='keep')
-  ! --/--
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_real_4d_array',gets(input_files(1)%str))
+  
+    write(iunit,'(a)')       vname
+    write(iunit,'(3D24.16)') dvar
+  
+    close(iunit,status='keep')
+  else
+    call write_real_data(dvar,n1*n2*n3*n4,vname)
+  endif
 
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
   call add_string(vname,var_name)
   call add_string('real*8,  allocatable, dimension(:,:,:,:)',var_type)
-  n1 = size(dvar,1)
-  n2 = size(dvar,2)
-  n3 = size(dvar,3)
-  n4 = size(dvar,4)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//')',var_dim)
   call add_string('input',var_info)
   call add_string('own_name',var_value)
@@ -517,31 +618,152 @@ contains
   ! Internal variables
   integer :: n1, n2, n3, n4, n5, ier
 
-  ! --\-- write 5d array to the input file
-  open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
-       access='sequential',position='append',iostat=ier)
-  call erropen(ier,'add_inp_real_5d_array',gets(input_files(1)%str))
-
-  write(iunit,*) vname
-  write(iunit,*) dvar
-
-  close(iunit,status='keep')
-  ! --/--
-
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('real*8,  allocatable, dimension(:,:,:,:,:)',var_type)
   n1 = size(dvar,1)
   n2 = size(dvar,2)
   n3 = size(dvar,3)
   n4 = size(dvar,4)
   n5 = size(dvar,5)
+
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_real_5d_array',gets(input_files(1)%str))
+
+    write(iunit,'(a)')       vname
+    write(iunit,'(3D24.16)') dvar
+
+    close(iunit,status='keep')
+  else
+    call write_real_data(dvar,n1*n2*n3*n4*n5,vname)
+  endif
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('real*8,  allocatable, dimension(:,:,:,:,:)',var_type)
   call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//','//i2c(n5)//')',var_dim)
   call add_string('input',var_info)
   call add_string('own_name',var_value)
 
   end subroutine add_inp_real_5d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_real_data(dvar,ndim,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ndim
+  real*8,       intent(in) :: dvar(*)
+
+  ! Internal variables
+  integer :: i, ier
+
+  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_real_data',vname)
+
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  real*8, dimension(*) :: ',vname
+  write(iunit,'(a)')
+  do i=1,ndim
+    write(iunit,'(2x,a,a,i12,a,3D24.16)') vname, '(', i, ') = ', dvar(i)
+  enddo
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+
+  close(iunit,status='keep')
+
+  end subroutine write_real_data
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_integer_data(ivar,ndim,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ndim, ivar(*)
+
+  ! Internal variables
+  integer :: i, ier
+
+  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_integer_data',vname)
+
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  integer, dimension(*) :: ',vname
+  write(iunit,'(a)')
+  do i=1,ndim
+    write(iunit,'(2x,a,a,i12,a,6i12)') vname, '(', i, ') = ', ivar(i)
+  enddo
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+
+  close(iunit,status='keep')
+
+  end subroutine write_integer_data
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_data_routine(iw,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: iw
+
+  ! Internal variables
+  integer :: i, io, ier
+  character*(250) :: line
+
+  io = iw + 1
+  open(io,file=vname,status='old',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'add_data_routine',vname)
+  rewind io
+
+  do
+
+  read(io,'(a)',iostat=ier) line
+  if(ier == -1) exit
+  write(iw,'(a)') strip_blank(line)
+
+  enddo
+
+  close(io,status='delete')
+
+  end subroutine add_data_routine
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  function strip_blank(string) result(str)
+  implicit none
+  character*(*), intent(in) :: string
+  character(len=str_size(string)) :: str
+  integer :: i
+  do i=1,len(str)
+    str(i:i) = string(i:i)
+  enddo
+  end function strip_blank
+
+  pure function str_size(string) result(is)
+  implicit none
+  character*(*), intent(in) :: string
+  integer :: i, is
+  do i=len(string),1,-1
+    if(string(i:i) /= ' ') exit
+  enddo
+  is = i
+  end function str_size
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1219,45 +1441,48 @@ contains
   do i=1,size(var_name)
     write(iunit,'(2x,70a,a,70a)') gets(var_type(i)%str),' :: ',gets(var_name(i)%str)
   enddo
-  ! open input file
-  if(size(input_files) > 1)then
-    write(6,*) 'ERROR: For now the program works only with one input file.'
-    stop
-  endif
-  write(iunit,'(a)')
-  write(iunit,'(a,70a,a)') "  open(60,file='" , gets(input_files(1)%str)  , &
-                             "',status='old',form='formatted',access='sequential',iostat=ier)"
-  write(iunit,'(a)')       '  if(ier /= 0)then'
-  write(iunit,'(a,70a,a)') "    write(6,*) 'test: ERROR while creating " , &
-                             gets(input_files(1)%str) , " file'"
-  write(iunit,'(a)')       '    stop'
-  write(iunit,'(a)')       '  endif'
-  ! read input variables
+  ! allocate arrays
   write(iunit,'(a)')
   do i=1,size(var_name)
-    if( gets(var_info(i)%str) == 'input')then ! input variables
-      if( var_dim(i)%str(1) /= '0')then       ! if we are reading array first allocate it
-        write(iunit,'(a)')
-        write(iunit,'(a,70a,70a,a,70a,a)') &
-              '  allocate( ' , gets(var_name(i)%str) , gets(var_dim(i)%str) , &
-              " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
-      endif
-      write(iunit,'(a)')     '  read(60,*)'
-      write(iunit,'(a,70a)') '  read(60,*) ' , gets(var_name(i)%str)
-    endif
-  enddo
-  ! allocate output arrays
-  write(iunit,'(a)')
-  do i=1,size(var_name)
-    if( gets(var_info(i)%str) == 'output' .and. var_dim(i)%str(1) /= '0')then
+    if( var_dim(i)%str(1) /= '0')then
       write(iunit,'(a,70a,70a,a,70a,a)') &
             '  allocate( ' , gets(var_name(i)%str) , gets(var_dim(i)%str) , &
             " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
     endif
   enddo
-  ! close input file
+  ! open input file (if data are in the file)
+  if(associated(input_files))then
+    if(size(input_files) > 1)then
+      write(6,*) 'ERROR: For now the program works only with one input file.'
+      stop
+    endif
+    write(iunit,'(a)')
+    write(iunit,'(a,70a,a)') "  open(60,file='" , gets(input_files(1)%str)  , &
+                               "',status='old',form='formatted',access='sequential',iostat=ier)"
+    write(iunit,'(a)')       '  if(ier /= 0)then'
+    write(iunit,'(a,70a,a)') "    write(6,*) 'test: ERROR while creating " , &
+                               gets(input_files(1)%str) , " file'"
+    write(iunit,'(a)')       '    stop'
+    write(iunit,'(a)')       '  endif'
+  endif
+  ! get input data
   write(iunit,'(a)')
-  write(iunit,'(a)')"  close(60,status='keep')"
+  do i=1,size(var_name)
+    if( gets(var_info(i)%str) == 'input')then ! input variables
+      if(associated(input_files))then
+        write(iunit,'(a)')     '  read(60,*)'
+        write(iunit,'(a,70a)') '  read(60,*) ' , gets(var_name(i)%str)
+      else
+        write(iunit,'(a,70a,a,70a,a)') &
+              '  call get_data_', gets(var_name(i)%str), '(', gets(var_name(i)%str), ')'
+      endif
+    endif
+  enddo
+  ! close input file
+  if(associated(input_files))then
+    write(iunit,'(a)')
+    write(iunit,'(a)')"  close(60,status='keep')"
+  endif
   ! set optional parameters
   write(iunit,'(a)')
   do i=1,size(var_name)
@@ -1318,10 +1543,21 @@ contains
   write(iunit,'(a)')"  endif"
   write(iunit,'(a)')
   write(iunit,'(a)')"  end subroutine"
-  write(iunit,'(a)')
+  ! add input data routines
+  if(.not. associated(input_files))then
+    do i=1,size(var_name)
+      if( gets(var_info(i)%str) == 'input')then ! input variables
+        write(iunit,'(a)')
+        call add_data_routine(iunit,gets(var_name(i)%str))
+      endif
+    enddo
+  endif
+  ! end of the test program
   write(iunit,'(a)')"end program"
 
   close(iunit,status='keep')
+
+  if(.not. associated(input_files)) call unit_test_generator_destructor
 
   end subroutine generate_test
 

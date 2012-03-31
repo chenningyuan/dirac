@@ -850,7 +850,6 @@ contains
       call set_suffix(ksymm)
       call set_suffix(tsymm)
       call set_suffix(icount)
-      call add_input_file ('m2dnz390.inp')
       call add_output_file('m2dnz390.out',array='vduuuu')
       call set_driver_routine('m2dnz390')
       call add_module('mcscf_routines')
@@ -874,8 +873,6 @@ contains
       call add_inp_variable(vmuuuu,'vmuuuu')
 
       call add_out_variable(vduuuu,'vduuuu')
-
-      call generate_test
 #endif
 
   !------------------------------------------------------------------------------!
@@ -1424,7 +1421,7 @@ contains
     ! close file
     close(60,status='keep')
 
-    call unit_test_generator_destructor
+    call generate_test
 #endif
 
   end subroutine m2dnz390
