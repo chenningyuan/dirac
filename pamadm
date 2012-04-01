@@ -22,11 +22,8 @@
 from optparse import OptionParser
 import sys
 import os
-import stat
 import shutil
-import distutils.util
 import string
-import datetime
 import glob
 
 # this is a hack to "sanitize" input from cmake
