@@ -66,9 +66,6 @@ class dirac_module:
 def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
 
-# import external functions, assuming you are always in trunk/ directory
-sys.path.append(os.getcwd() + '/utils')
-
 # list of vital directories and files
 # these are always packaged
 
