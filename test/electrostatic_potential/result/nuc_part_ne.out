@@ -1,4 +1,4 @@
-DIRAC pam run in /home/bast/dirac/develop/test/electrostatic_potential
+DIRAC pam run in /home/roberto/dirac/test/electrostatic_potential
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -153,37 +153,41 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
  
- Who compiled             | bast@lpqlx131
- System                   | Linux-2.6.32-5-amd64
+ Who compiled             | roberto@vhagar
+ System                   | Linux-3.0.0-15-generic
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /opt/intel/bin/ifort
+ Fortran compiler         | /opt/intel/composer_xe_2011_sp1.6.233/bin/intel64/
+                          | ifort
  Fortran compiler version | ifort (IFORT) 12.1.0 20110811
- Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
- C flags                  | -g -O0
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O3 
+                          | -ip
+ C compiler               | /opt/intel/composer_xe_2011_sp1.6.233/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 12.1.0 20110811
+ C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
+                          | 7 -O2
  BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
                           | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
                           | lp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequenti
-                          | al.so;/usr/lib/libpthread.so;/usr/lib/libm.so;-Wl,
-                          | --end-group
+                          | al.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr
+                          | /lib/x86_64-linux-gnu/libm.so;-Wl,--end-group
  LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
                           | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
                           | lp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequenti
-                          | al.so;/usr/lib/libpthread.so;/usr/lib/libm.so;-Wl,
-                          | --end-group
+                          | al.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr
+                          | /lib/x86_64-linux-gnu/libm.so;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | 7816307
- Configuration time       | 2012-02-27 22:51:14.098528
+ Last Git revision        | eca8c0e
+ Configuration time       | 2012-03-06 15:27:29.575809
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Mon Feb 27 23:17:40 2012
+     Date and time (Linux)  : Fri Mar  9 23:40:44 2012
      Host name              : not found                               
  
  
@@ -196,8 +200,11 @@ Contents of the input file
 **WAVE FUNCTION                                                                                     
 .SCF                                                                                                
 **INTEGRALS                                                                                         
-.NUCMOD                                                                                             
- 1                                                                                                  
+*TWOINT                                                                                             
+.SCREEN                                                                                             
+-1.0D00                                                                                             
+**GRID                                                                                              
+.COARSE                                                                                             
 **PROPERTIES                                                                                        
 *EXPECTATION                                                                                        
 .OPERATOR                                                                                           
@@ -207,7 +214,7 @@ Contents of the input file
  COMFACTOR                                                                                          
  1.0                                                                                                
 **VISUAL                                                                                            
-.ESPNRHO                                                                                            
+.ESPNRH                                                                                             
  DFCOEF                                                                                             
 .3D_INTEGRATE                                                                                       
 .SCALE                                                                                              
@@ -219,12 +226,12 @@ Contents of the molecule file
 -----------------------------
  
 INTGRL                                                                                              
-                                                                                                    
-                                                                                                    
+.                                                                                                   
+.                                                                                                   
 C   1    0                                                                                          
-      10.     1                                                                                     
-Ne    0.0   0.0   0.0                                                                               
-LARGE BASIS cc-pVDZ                                                                                 
+       10.    1                                                                                     
+Ne   0.0000    0.0000    0.0000                                                                     
+LARGE BASIS cc-pVTZ                                                                                 
 FINISH                                                                                              
 
 
@@ -267,13 +274,21 @@ FINISH
     *************************************************************************
 
  Default print level:        1
- Nuclear model: Point charge.
+ Nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
 
  Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
 
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+ * Direct calculation of Fock matrices in SO-basis.
+    ---> WARNING : Integral screening turned off !
 
 
     *************************************************************************
@@ -285,8 +300,10 @@ FINISH
   Title Cards
   -----------
 
-                                                                          
-                                                                          
+  .                                                                       
+  .                                                                       
+
+  Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
 
 
                           SYMGRP:Point group information
@@ -347,13 +364,13 @@ Point group: C1
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  Ne          1      10      27      15      L  - [9s4p1d|3s2p1d]                                                
-                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
+  Ne          1      10      47      35      L  - [10s5p2d1f|4s3p2d1f]                                           
+                            112     112      S  - [5s12p6d2f1g|5s12p6d2f1g]                                      
   ----------------------------------------------------------------------
-                             27      15      L  - large components
-                             68      68      S  - small components
+                             47      35      L  - large components
+                            112     112      S  - small components
   ----------------------------------------------------------------------
-  total:      1      10      95      83
+  total:      1      10     159     147
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -399,52 +416,41 @@ Ne     0.0000000000   0.0000000000   0.0000000000
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   10
+   * Large components:   20
      1  L Ne  1 s        2  L Ne  1 px       3  L Ne  1 py       4  L Ne  1 pz       5  L Ne  1 dxx      6  L Ne  1 dxy 
-     7  L Ne  1 dxz      8  L Ne  1 dyy      9  L Ne  1 dyz     10  L Ne  1 dzz 
-   * Small components:   20
-    11  S Ne  1 s       12  S Ne  1 px      13  S Ne  1 py      14  S Ne  1 pz      15  S Ne  1 dxx     16  S Ne  1 dxy 
-    17  S Ne  1 dxz     18  S Ne  1 dyy     19  S Ne  1 dyz     20  S Ne  1 dzz     21  S Ne  1 fxxx    22  S Ne  1 fxxy
-    23  S Ne  1 fxxz    24  S Ne  1 fxyy    25  S Ne  1 fxyz    26  S Ne  1 fxzz    27  S Ne  1 fyyy    28  S Ne  1 fyyz
-    29  S Ne  1 fyzz    30  S Ne  1 fzzz
+     7  L Ne  1 dxz      8  L Ne  1 dyy      9  L Ne  1 dyz     10  L Ne  1 dzz     11  L Ne  1 fxxx    12  L Ne  1 fxxy
+    13  L Ne  1 fxxz    14  L Ne  1 fxyy    15  L Ne  1 fxyz    16  L Ne  1 fxzz    17  L Ne  1 fyyy    18  L Ne  1 fyyz
+    19  L Ne  1 fyzz    20  L Ne  1 fzzz
+   * Small components:   35
+    21  S Ne  1 s       22  S Ne  1 px      23  S Ne  1 py      24  S Ne  1 pz      25  S Ne  1 dxx     26  S Ne  1 dxy 
+    27  S Ne  1 dxz     28  S Ne  1 dyy     29  S Ne  1 dyz     30  S Ne  1 dzz     31  S Ne  1 fxxx    32  S Ne  1 fxxy
+    33  S Ne  1 fxxz    34  S Ne  1 fxyy    35  S Ne  1 fxyz    36  S Ne  1 fxzz    37  S Ne  1 fyyy    38  S Ne  1 fyyz
+    39  S Ne  1 fyzz    40  S Ne  1 fzzz    41  S Ne  1 g400    42  S Ne  1 g310    43  S Ne  1 g301    44  S Ne  1 g220
+    45  S Ne  1 g211    46  S Ne  1 g202    47  S Ne  1 g130    48  S Ne  1 g121    49  S Ne  1 g112    50  S Ne  1 g103
+    51  S Ne  1 g040    52  S Ne  1 g031    53  S Ne  1 g022    54  S Ne  1 g013    55  S Ne  1 g004
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           83
-  Number of large orbitals in each symmetry:     15
-  Number of small orbitals in each symmetry:     68
+  Number of orbitals in each symmetry:          147
+  Number of large orbitals in each symmetry:     35
+  Number of small orbitals in each symmetry:    112
 
 * Large component functions
 
   Symmetry  A  ( 1)
 
-        3 functions:    Ne s   
-        2 functions:    Ne px  
-        2 functions:    Ne py  
-        2 functions:    Ne pz  
-        1 functions:    Ne dxx 
-        1 functions:    Ne dxy 
-        1 functions:    Ne dxz 
-        1 functions:    Ne dyy 
-        1 functions:    Ne dyz 
-        1 functions:    Ne dzz 
-
-* Small component functions
-
-  Symmetry  A  ( 1)
-
         4 functions:    Ne s   
-       10 functions:    Ne px  
-       10 functions:    Ne py  
-       10 functions:    Ne pz  
-        4 functions:    Ne dxx 
-        4 functions:    Ne dxy 
-        4 functions:    Ne dxz 
-        4 functions:    Ne dyy 
-        4 functions:    Ne dyz 
-        4 functions:    Ne dzz 
+        3 functions:    Ne px  
+        3 functions:    Ne py  
+        3 functions:    Ne pz  
+        2 functions:    Ne dxx 
+        2 functions:    Ne dxy 
+        2 functions:    Ne dxz 
+        2 functions:    Ne dyy 
+        2 functions:    Ne dyz 
+        2 functions:    Ne dzz 
         1 functions:    Ne fxxx
         1 functions:    Ne fxxy
         1 functions:    Ne fxxz
@@ -455,6 +461,46 @@ Ne     0.0000000000   0.0000000000   0.0000000000
         1 functions:    Ne fyyz
         1 functions:    Ne fyzz
         1 functions:    Ne fzzz
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        5 functions:    Ne s   
+       12 functions:    Ne px  
+       12 functions:    Ne py  
+       12 functions:    Ne pz  
+        6 functions:    Ne dxx 
+        6 functions:    Ne dxy 
+        6 functions:    Ne dxz 
+        6 functions:    Ne dyy 
+        6 functions:    Ne dyz 
+        6 functions:    Ne dzz 
+        2 functions:    Ne fxxx
+        2 functions:    Ne fxxy
+        2 functions:    Ne fxxz
+        2 functions:    Ne fxyy
+        2 functions:    Ne fxyz
+        2 functions:    Ne fxzz
+        2 functions:    Ne fyyy
+        2 functions:    Ne fyyz
+        2 functions:    Ne fyzz
+        2 functions:    Ne fzzz
+        1 functions:    Ne g400
+        1 functions:    Ne g310
+        1 functions:    Ne g301
+        1 functions:    Ne g220
+        1 functions:    Ne g211
+        1 functions:    Ne g202
+        1 functions:    Ne g130
+        1 functions:    Ne g121
+        1 functions:    Ne g112
+        1 functions:    Ne g103
+        1 functions:    Ne g040
+        1 functions:    Ne g031
+        1 functions:    Ne g022
+        1 functions:    Ne g013
+        1 functions:    Ne g004
 
 
    ***************************************************************************
@@ -582,8 +628,8 @@ Ne     0.0000000000   0.0000000000   0.0000000000
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          1(Proj:          1, Lindep:          0)
-   S   A     * Deleted:          7(Proj:          7, Lindep:          0)
+   L   A     * Deleted:          5(Proj:          5, Lindep:          0)
+   S   A     * Deleted:         18(Proj:         18, Lindep:          0)
 
 
                                 Output from MODHAM
@@ -596,9 +642,9 @@ Ne     0.0000000000   0.0000000000   0.0000000000
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    14
-No. of negative energy orbitals (NPSH):    14
-Total no. of orbitals           (NORB):    28
+No. of positive energy orbitals (NESH):    30
+No. of negative energy orbitals (NPSH):    30
+Total no. of orbitals           (NORB):    60
 
 
    ****************************************************************************
@@ -610,108 +656,120 @@ Total no. of orbitals           (NORB):    28
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Mon Feb 27 23:17:40 2012
+########## START ITERATION NO.   1 ##########   Fri Mar  9 23:40:44 2012
 
-It.    1    -65.05164796592      1.00D+20  0.00D+00  0.00D+00               0.02400100s   Scr. nuclei    Mon Feb 27
+It.    1    -65.31176003618      1.00D+20  0.00D+00  0.00D+00               0.04400300s   Scr. nuclei    Fri Mar  9
 
-########## START ITERATION NO.   2 ##########   Mon Feb 27 23:17:40 2012
+########## START ITERATION NO.   2 ##########   Fri Mar  9 23:40:44 2012
 
-
-* GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.04%   63.66%   16.33%   13.17%   0.00400100s
-SOfock:SL  1.00D-12   12.71%   63.54%   15.32%   16.29%   0.02800100s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.07600500s
-
-########## END ITERATION NO.   2 ##########   Mon Feb 27 23:17:40 2012
-
-It.    2    -128.6045238485      6.36D+01  5.49D+00  5.13D-01               0.07600500s   LL SL          Mon Feb 27
-
-########## START ITERATION NO.   3 ##########   Mon Feb 27 23:17:40 2012
-
-    3 *** Differential density matrix. DCOVLP     = 0.9026
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    4.87%   69.42%   14.33%   11.23%   0.00400000s
-SOfock:SL  1.00D-12   12.53%   64.05%   15.13%   16.12%   0.02800200s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04000200s
-
-########## END ITERATION NO.   3 ##########   Mon Feb 27 23:17:40 2012
-
-It.    3    -128.6263974685      2.19D-02 -4.28D-01  2.13D-01   DIIS   2    0.04000200s   LL SL          Mon Feb 27
-
-########## START ITERATION NO.   4 ##########   Mon Feb 27 23:17:40 2012
-
-    4 *** Differential density matrix. DCOVLP     = 1.0337
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.04%   63.66%   16.33%   11.75%   0.00400099s
-SOfock:SL  1.00D-12   14.12%   62.98%   15.21%   16.34%   0.02800101s
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02400100s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.19201200s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.06400399s
+>>> Total CPU-time : 0.44802801s
 
-########## END ITERATION NO.   4 ##########   Mon Feb 27 23:17:40 2012
+########## END ITERATION NO.   2 ##########   Fri Mar  9 23:40:44 2012
 
-It.    4    -128.6318171094      5.42D-03  1.39D-01  9.77D-03   DIIS   3    0.06400399s   LL SL          Mon Feb 27
+It.    2    -128.4319106255      6.31D+01  6.21D+00  2.02D+00               0.44802801s   LL SL          Fri Mar  9
 
-########## START ITERATION NO.   5 ##########   Mon Feb 27 23:17:41 2012
+########## START ITERATION NO.   3 ##########   Fri Mar  9 23:40:45 2012
 
-    5 *** Differential density matrix. DCOVLP     = 0.9990
+    3 *** Differential density matrix. DCOVLP     = 0.7354
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.04%   63.66%   16.33%   13.32%   0.00400101s
-SOfock:SL  1.00D-12   14.44%   63.35%   14.83%   16.20%   0.02800100s
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02000099s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.19601297s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05600402s
+>>> Total CPU-time : 0.39202398s
 
-########## END ITERATION NO.   5 ##########   Mon Feb 27 23:17:41 2012
+########## END ITERATION NO.   3 ##########   Fri Mar  9 23:40:45 2012
 
-It.    5    -128.6318313840      1.43D-05 -5.98D-03  1.11D-03   DIIS   4    0.05600402s   LL SL          Mon Feb 27
+It.    3    -128.6668798847      2.35D-01 -5.82D-01  2.82D-01   DIIS   2    0.39202398s   LL SL          Fri Mar  9
 
-########## START ITERATION NO.   6 ##########   Mon Feb 27 23:17:41 2012
+########## START ITERATION NO.   4 ##########   Fri Mar  9 23:40:45 2012
 
-    6 *** Differential density matrix. DCOVLP     = 1.0002
+    4 *** Differential density matrix. DCOVLP     = 1.0437
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.04%   63.66%   16.33%   10.41%   0.00399998s
-SOfock:SL  1.00D-12   14.62%   63.83%   14.43%   15.95%   0.02800202s
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02000201s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.19201195s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05200300s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.39602500s
 
-########## END ITERATION NO.   6 ##########   Mon Feb 27 23:17:41 2012
+########## END ITERATION NO.   4 ##########   Fri Mar  9 23:40:45 2012
 
-It.    6    -128.6318315417      1.58D-07  3.35D-04  1.62D-05   DIIS   5    0.05200300s   LL SL          Mon Feb 27
+It.    4    -128.6743716567      7.49D-03  2.38D-01  1.24D-01   DIIS   3    0.39602500s   LL SL          Fri Mar  9
 
-########## START ITERATION NO.   7 ##########   Mon Feb 27 23:17:41 2012
+########## START ITERATION NO.   5 ##########   Fri Mar  9 23:40:46 2012
+
+    5 *** Differential density matrix. DCOVLP     = 0.9839
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02400100s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.19201195s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.44002700s
+
+########## END ITERATION NO.   5 ##########   Fri Mar  9 23:40:46 2012
+
+It.    5    -128.6755903445      1.22D-03 -7.01D-02  5.63D-03   DIIS   4    0.44002700s   LL SL          Fri Mar  9
+
+########## START ITERATION NO.   6 ##########   Fri Mar  9 23:40:47 2012
+
+    6 *** Differential density matrix. DCOVLP     = 1.0006
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02400196s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.20001209s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.45602894s
+
+########## END ITERATION NO.   6 ##########   Fri Mar  9 23:40:47 2012
+
+It.    6    -128.6755929651      2.62D-06  3.16D-03  5.95D-05   DIIS   5    0.45602894s   LL SL          Fri Mar  9
+
+########## START ITERATION NO.   7 ##########   Fri Mar  9 23:40:48 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.04%   63.66%   16.33%    8.91%   0.00400001s
-SOfock:SL  1.00D-12   13.42%   67.55%   13.07%   14.09%   0.02800199s
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02000189s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.19201207s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05600399s
+>>> Total CPU-time : 0.43602705s
 
-########## END ITERATION NO.   7 ##########   Mon Feb 27 23:17:41 2012
+########## END ITERATION NO.   7 ##########   Fri Mar  9 23:40:48 2012
 
-It.    7    -128.6318315418      6.37D-11  3.35D-06  4.72D-06   DIIS   6    0.05600399s   LL SL          Mon Feb 27
+It.    7    -128.6755929660      9.66D-10  4.94D-06  1.74D-05   DIIS   6    0.43602705s   LL SL          Fri Mar  9
 
-########## START ITERATION NO.   8 ##########   Mon Feb 27 23:17:41 2012
+########## START ITERATION NO.   8 ##########   Fri Mar  9 23:40:48 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.04%   63.66%   16.03%    8.91%   0.00400001s
-SOfock:SL  1.00D-12   13.42%   68.73%   13.07%   13.38%   0.02800199s
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02400208s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.19201183s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05200300s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.41602612s
 
-########## END ITERATION NO.   8 ##########   Mon Feb 27 23:17:41 2012
+########## END ITERATION NO.   8 ##########   Fri Mar  9 23:40:48 2012
 
-It.    8    -128.6318315418      6.65D-12  3.87D-07  2.10D-09   DIIS   6    0.05200300s   LL SL          Mon Feb 27
+It.    8    -128.6755929661      9.92D-11 -1.44D-06  5.76D-07   DIIS   7    0.41602612s   LL SL          Fri Mar  9
+
+########## START ITERATION NO.   9 ##########   Fri Mar  9 23:40:49 2012
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   72.71%    0.00%    0.00%   0.02400184s
+SOfock:SL  0.00D+00    0.00%   73.64%    0.00%    0.00%   0.19201207s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.44402790s
+
+########## END ITERATION NO.   9 ##########   Fri Mar  9 23:40:49 2012
+
+It.    9    -128.6755929661      5.97D-13  6.97D-08  3.17D-08   DIIS   7    0.44402790s   LL SL          Fri Mar  9
 
 
                                    SCF - CYCLE
@@ -727,32 +785,33 @@ It.    8    -128.6318315418      6.65D-12  3.87D-07  2.10D-09   DIIS   6    0.05
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -65.05164796592      1.00D+20  0.00D+00  0.00D+00               0.02400100s   Scr. nuclei    Mon Feb 27
-It.    2    -128.6045238485      6.36D+01  5.49D+00  5.13D-01               0.07600500s   LL SL          Mon Feb 27
-It.    3    -128.6263974685      2.19D-02 -4.28D-01  2.13D-01   DIIS   2    0.04000200s   LL SL          Mon Feb 27
-It.    4    -128.6318171094      5.42D-03  1.39D-01  9.77D-03   DIIS   3    0.06400399s   LL SL          Mon Feb 27
-It.    5    -128.6318313840      1.43D-05 -5.98D-03  1.11D-03   DIIS   4    0.05600402s   LL SL          Mon Feb 27
-It.    6    -128.6318315417      1.58D-07  3.35D-04  1.62D-05   DIIS   5    0.05200300s   LL SL          Mon Feb 27
-It.    7    -128.6318315418      6.37D-11  3.35D-06  4.72D-06   DIIS   6    0.05600399s   LL SL          Mon Feb 27
-It.    8    -128.6318315418      6.65D-12  3.87D-07  2.10D-09   DIIS   6    0.05200300s   LL SL          Mon Feb 27
+It.    1    -65.31176003618      1.00D+20  0.00D+00  0.00D+00               0.04400300s   Scr. nuclei    Fri Mar  9
+It.    2    -128.4319106255      6.31D+01  6.21D+00  2.02D+00               0.44802801s   LL SL          Fri Mar  9
+It.    3    -128.6668798847      2.35D-01 -5.82D-01  2.82D-01   DIIS   2    0.39202398s   LL SL          Fri Mar  9
+It.    4    -128.6743716567      7.49D-03  2.38D-01  1.24D-01   DIIS   3    0.39602500s   LL SL          Fri Mar  9
+It.    5    -128.6755903445      1.22D-03 -7.01D-02  5.63D-03   DIIS   4    0.44002700s   LL SL          Fri Mar  9
+It.    6    -128.6755929651      2.62D-06  3.16D-03  5.95D-05   DIIS   5    0.45602894s   LL SL          Fri Mar  9
+It.    7    -128.6755929660      9.66D-10  4.94D-06  1.74D-05   DIIS   6    0.43602705s   LL SL          Fri Mar  9
+It.    8    -128.6755929661      9.92D-11 -1.44D-06  5.76D-07   DIIS   7    0.41602612s   LL SL          Fri Mar  9
+It.    9    -128.6755929661      5.97D-13  6.97D-08  3.17D-08   DIIS   7    0.44402790s   LL SL          Fri Mar  9
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    8 iterations.
+* Convergence after    9 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL        :    0.14285714s
+      LL SL        :    0.75000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -128.63183154181240
+   Electronic energy                        :    -128.67559296611873
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
    SS Coulombic correction                  :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -128.63183154181240
+   Total energy                             :    -128.67559296611873
 
 
                                    Eigenvalues
@@ -761,15 +820,17 @@ It.    8    -128.6318315418      6.65D-12  3.87D-07  2.10D-09   DIIS   6    0.05
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--32.81798163252824  ( 2)    -1.92411133777141  ( 2)    -0.83437799854662  ( 2)    -0.83026705982706  ( 4)
+-32.81565386155853  ( 2)    -1.93276537658885  ( 2)    -0.84784934638500  ( 2)    -0.84348094096522  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.69051329965613  ( 2)     1.69503325117568  ( 4)     2.15590653130634  ( 2)     5.19643907039613  ( 4)     5.19758175758707  ( 6)
+  1.09750845803232  ( 2)     1.09940438098814  ( 4)     1.41574750578690  ( 2)     2.81444378294161  ( 4)     2.81449300702940  ( 6)
+  6.13960162837460  ( 2)     6.15359793527715  ( 4)     9.64458632067787  ( 6)     9.64542708180957  ( 8)    11.22072569352685  ( 4)
+ 11.22432770302278  ( 6)    11.64179877628394  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     1.69051330 au (symmetry E1 )
-  - E(HOMO) :    -0.83026706 au (symmetry E1 )
+    E(LUMO) :     1.09750846 au (symmetry E1 )
+  - E(HOMO) :    -0.84348094 au (symmetry E1 )
   ------------------------------------------
-    gap     :     2.52078036 au
+    gap     :     1.94098940 au
 
 
 
@@ -817,7 +878,7 @@ It.    8    -128.6318315418      6.65D-12  3.87D-07  2.10D-09   DIIS   6    0.05
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    molfield         :    -311.1952928515 a.u.      F   F
+    molfield         :    -311.4865693816 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -852,25 +913,25 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
  
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-Ne      1   0.462E-06   0.684E+01   0.117E+00     123   28830
+Ne      1   0.184E-05   0.733E+01   0.126E+00     104   20704
 
-   Number of grid points in quadrature:     28830 (100.0%)
+   Number of grid points in quadrature:     20704 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.04 seconds
+ >>>> Time used in DFTGRD:   0.09 seconds
 
 
       scalar              x-component         y-component         z-component
 
-   -0.3111952929E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
+   -0.3114866055E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:   0.52 seconds
+ >>>> time used in integration:   0.57 seconds
 
  
-     Date and time (Linux)  : Mon Feb 27 23:17:41 2012
+     Date and time (Linux)  : Fri Mar  9 23:40:51 2012
      Host name              : not found                               
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -882,23 +943,23 @@ Ne      1   0.462E-06   0.684E+01   0.117E+00     123   28830
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine MAIN__+0x95b                               for work array at main                        
-        7.63 Mb at subroutine dftgrd_+0x545                              for unnamed variable                          
-        7.63 Mb at subroutine dftgrd_+0x517                              for unnamed variable                          
-        7.63 Mb at subroutine dftgrd_+0x4e9                              for unnamed variable                          
-        7.63 Mb at subroutine dftgrd_+0x4bb                              for unnamed variable                          
-        0.22 Mb at subroutine visual_integrate_mp_visual_integration_+0x for unnamed variable                          
-        0.22 Mb at subroutine visual_integrate_mp_visual_integration_+0x for unnamed variable                          
-        0.22 Mb at subroutine visual_integrate_mp_visual_integration_+0x for unnamed variable                          
-        0.22 Mb at subroutine visual_integrate_mp_visual_integration_+0x for unnamed variable                          
-        0.05 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
+      488.28 Mb at subroutine MAIN__+0x55d                               for work array at main                        
+        7.63 Mb at subroutine dftgrd_+0x12ef                             for unnamed variable                          
+        7.63 Mb at subroutine dftgrd_+0x12d9                             for unnamed variable                          
+        7.63 Mb at subroutine dftgrd_+0x12c3                             for unnamed variable                          
+        7.63 Mb at subroutine dftgrd_+0x12ad                             for unnamed variable                          
+        0.16 Mb at subroutine butobs_no_work_+0xf8                       for buf in butobs                             
+        0.16 Mb at subroutine lowdi1_+0x1b8                              for unnamed variable                          
+        0.16 Mb at subroutine visual_integrate_mp_visual_integration_+0x for unnamed variable                          
+        0.16 Mb at subroutine visual_integrate_mp_visual_integration_+0x for unnamed variable                          
+        0.16 Mb at subroutine visual_integrate_mp_visual_integration_+0x for unnamed variable                          
   
   Peak memory usage    (Mb) :       519.00
-       reached at subroutine : dftgrd_+0x870                             
+       reached at subroutine : dftgrd_+0x1461                            
               for variable   : unnamed variable                          
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 9870, majflt: 0, nvcsw: 7, nivcsw: 104, maxrss: 16132
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 4, stime: 2, minflt: 19231, majflt: 0, nvcsw: 8, nivcsw: 723, maxrss: 21336
+>>>> Total WALL time used in DIRAC: 7s

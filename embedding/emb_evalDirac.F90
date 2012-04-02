@@ -69,7 +69,7 @@ module fde_eval_dirac
          
          call alloc(work,work_dim, id="scratch space emb_vc")
          write (*,*) 'Generating the Coulomb potential ...'
-         call emb_vc(dmat,grid,vc,iprint,WORK,work_dim) 
+         call emb_vc(size(grid, 2), dmat,grid,vc,iprint,WORK,work_dim) 
          write (*,*) 'done!'
          call dealloc(work)
                            
