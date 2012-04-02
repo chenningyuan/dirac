@@ -1,3 +1,12 @@
+/*
+
+ Space for C routines of GPGPU libraries CUDA & CULA.
+
+ Written by Miro Ilias & Daniel Kuzma in order to extend Fortran language handling
+ of GPU mathematical libraries.
+
+*/
+
 #include "stdio.h"
 
 // we need CUDA Toolkit routines...

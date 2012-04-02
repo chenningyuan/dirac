@@ -3,8 +3,8 @@
 ! Simple test of Fortran GPU CUDA & CULA libraries
 ! in the DIRAC environment. 
 !
-! This program measures performance of few CPU BLAS/LAPACK and GPU CUBLAS/CULA
-! mathematical routines.
+! This program measures performances of few  GPU CUBLAS/CULA
+! mathematical routines against corresponding CPU BLAS/LAPACK counterparts.
 !
 ! Note:  CULA Dense Free Edition implements popular single precision real and complex functions from LAPACK,
 ! full commercial version of CULA meets all the LAPACK/BLAS needs of the DIRAC suite,
