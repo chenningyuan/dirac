@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 # suppress Windows warning about policy
 cmake_policy(SET CMP0010 OLD)
 
-project(DIRAC Fortran C)
+project(DIRAC)
+
+enable_language(Fortran C)
+
 add_definitions(-DPRG_DIRAC)
 
 # set version
@@ -27,33 +30,20 @@ include(ConfigSafeGuards)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# check whether pamadm-generated files exist
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/SourcesList.cmake"      AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/DefinitionsList.cmake"  AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
-   EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake")
-else()
-    # they do not exist: run pamadm -a
-    execute_process(
-        COMMAND python pamadm -a
-        TIMEOUT 1
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_QUIET
-    )
-    message("-- You are lazy. Running pamadm -a for you ...")
-endif()
+include(ConfigPamadm)
 
-option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
+option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
+option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
-option(ENABLE_UTILITIES       "Enable utitilites"                                         OFF)
+option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
@@ -95,33 +85,68 @@ endif()
 
 if(ENABLE_CUDA)
     find_package(CUDA)
-    if(CUDA_FOUND)
-        set(LIBS
-            ${LIBS}
-            ${CUDA_CUBLAS_LIBRARIES}
-            )
-        add_definitions(-DUSE_CUBLAS)
+    if(CUDA_FOUND) 
+        if(NOT ENABLE_64BIT_INTEGERS)
+            # for CUDA we are employing variables set and returned by FindCUDA.cmake
+            add_library(fortran_cuda "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.c" "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.h")
+            INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
+            #message("CUDA_CUBLAS_LIBRARIES=${CUDA_CUBLAS_LIBRARIES}")
+            set(CULA_LIB_DIRS Empty)
+            if (ENABLE_CULA) # both CUDA & CULA present
+                # miro: there is no FindCULA yet - we are using hardcoded default installation links
+                add_definitions(-DUSE_CULA)
+                INCLUDE_DIRECTORIES( /usr/local/cula/include ) 
+                if (CUDA_64_BIT_DEVICE_CODE)  # set 64bit according to CUDA prerequisite
+                    set(CULA_LIB_DIR /usr/local/cula/lib64 )
+                else()
+                    set(CULA_LIB_DIR /usr/local/cula/lib )    
+                endif()
+                find_library(CULA NAMES cula PATHS ${CULA_LIB_DIR} )
+                find_library(CULA_FORTRAN NAMES cula_fortran PATHS ${CULA_LIB_DIR} )
+                find_library(CULA_BLAS NAMES cublas PATHS ${CULA_LIB_DIR} ) 
+                find_library(CULA_CUDART NAMES cudart PATHS ${CULA_LIB_DIR} )
+                #message("CULA_CUDART=${CULA_CUDART}")
+                #message("CULA=${CULA}")
+            endif()
+            add_definitions(-DUSE_CUBLAS)
+            if (CUDA_64_BIT_DEVICE_CODE) 
+                add_definitions(-DARCH_64)
+            endif()
+            # fortran executable with some routines in C to check all GPU possibilities
+            add_executable(gpu_test.x utils/gpu_test.F90 utils/gpu_routines.c)
+            if (ENABLE_CULA) # both CUDA & CULA present
+                # "CULA is built on NVIDIA CUDAand NVIDIA CUBLAS", but it can also be linked against  newer CUDA libraries
+                # miro: we have two linking possibilities, explore them
+                target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CULA} ${CULA_FORTRAN} ${CULA_BLAS} ${CULA_CUDART} blas lapack) # employ solely own stuff from CULA ...
+                #target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CULA} ${CULA_FORTRAN} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} blas lapack) # employ some stuff from CUDA
+            else() # linking against sole CUDA 
+                target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} blas)
+            endif()
+        else()
+            message("-- CUDA library found, but can not be used with 64-bit integers!")
+        endif()
     endif()
 endif()
 
 add_custom_command(
     OUTPUT
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     DEPENDS
     gen_fortran_interface_h
     COMMAND
-    gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     )
 
 add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
+add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/src/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -132,7 +157,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-add_subdirectory(xcfun)
+add_subdirectory(src/xcfun)
 set(LIBS
     xcfun
     ${LIBS}
@@ -153,7 +178,7 @@ configure_file(
     )
 
 set(GENERATED_FILES
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     )
 add_custom_target(dirac_interfaces
     ALL
@@ -187,12 +212,13 @@ macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
         ${_executable}
         ${_source}
     )
+    set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
     set(LIST_OF_EXECUTABLES
         ${LIST_OF_EXECUTABLES}
         ${_executable}
     )
 endmacro()
-compile_standalone(dirac.x                   main/main.F90                     "${LIST_OF_EXECUTABLES}")
+compile_standalone(dirac.x src/main/main.F90 "${LIST_OF_EXECUTABLES}")
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${LIST_OF_EXECUTABLES}")
     compile_standalone(rspread.x                 utils/rspread.F                   "${LIST_OF_EXECUTABLES}")
@@ -248,11 +274,4 @@ add_custom_target(
     latex
     COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/latex
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    )
-
-# run pamadm -a in source root
-add_custom_target(
-    adm
-    COMMAND python pamadm -a
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
