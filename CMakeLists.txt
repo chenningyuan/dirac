@@ -242,6 +242,7 @@ macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
         ${_executable}
         ${_source}
     )
+    set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
     set(LIST_OF_EXECUTABLES
         ${LIST_OF_EXECUTABLES}
         ${_executable}
