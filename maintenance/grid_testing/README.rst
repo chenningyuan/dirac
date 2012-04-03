@@ -1,4 +1,9 @@
 
- Testing of the DIRAC program suite in the grid enviroment.
+Testing of the DIRAC program suite in the grid enviroment.
 
- One packs and copies dirac suite into VO location.
+DIRAC is packed and the tar-ball is copied onto VO location,
+from, where CE unpacks it and performs calculations.
+
+Python script is not yet used for launching jdl-initiated script due to possibility
+that not all CE are equipped with appropriate python version. So we resort to bash shell.
+

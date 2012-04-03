@@ -1,7 +1,0 @@
-#if defined (INT_STAR8)
-#define my_MPI_INTEGER MPI_INTEGER8
-#define my_MPI_LOGICAL MPI_LOGICAL8
-#else
-#define my_MPI_INTEGER MPI_INTEGER4
-#define my_MPI_LOGICAL MPI_LOGICAL4
-#endif

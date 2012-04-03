@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export PATH=$PATH':/opt/intel/mkl'
+export MATH_ROOT='/opt/intel/mkl'
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/opt/intel/mkl/lib/intel64'
 
 TMP_DIR=/scratch/scratch-nightly-compile
 SCRATCH_DIR=/scratch/scratch-nightly-run
@@ -9,20 +10,6 @@ mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 
 cd $TMP_DIR
-
-# devel code
-  ./pamadm -a
-
-# release
-# git checkout -b prepare-release-11 origin/prepare-release-11
-# ./pamadm --release
-# mkdir build
-# cd build
-# cmake ..
-# make release
-# tar xvzf DIRAC-11.0.0-Source.tar.gz
-# cd DIRAC-11.0.0-Source
-
 ./setup --fc=gfortran --cc=gcc --int64 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8"
 cd build
 make Nightly
