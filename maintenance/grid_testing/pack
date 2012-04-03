@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# simple script for preparing Dirac tar-ball for grid computing
+#
+
+
+DIRAC=/home/ilias/qch_work/software/dirac_git/trunk
+
+### update, compile & pack ###
+
+cd $DIRAC
+
+git pull
+pamadm -a
+
+cd $DIRAC/build
+
+echo -e "\n --- obtaining the fresh static MPI dirac.x executable from other server: ---"
+scp ilias@194.160.135.47:~/qch_work/qch_software/dirac_git/dirac-git-repo/build_ompi_static/dirac.x .
+#scp ilias@frpd2.utcpd.sk:~/Work/qch/qch_software/dirac/dirac-git-repo/build_ompi_static/dirac.x .
+
+cd $DIRAC/maintenance/grid_testing
+
+echo -e "\n removing old dirac_test_suite.tgz..."
+rm dirac_test_suite.tgz
+
+#--------------------------------------------------------------
+# make one tgz-file with all Dirac stuff for testing & running 
+#--------------------------------------------------------------
+
+# problems with "--exclude test/*/*.out"  - so remove them
+/bin/rm ../../test/*/*.out*
+/bin/rm -r ../../test/*/compare
+
+echo -e "\n now packing... "
+
+# pack all necessary stuff
+tar cvzf dirac_test_suite.tgz diracrc_grid ../../CMakeLists.txt ../../CTestConfig.cmake ../../main/config.h ../../cmake  ../../build  ../../pam  ../../runtest ../../test ../../basis ../../basis_dalton 
+
+echo "package dirac_test_suite.tgz ready"
+
+
+exit 0

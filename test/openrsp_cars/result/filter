@@ -1,7 +1,9 @@
 $ERROR 1.E-6
-FromRE:dg Alpha
-ToRE:SCR
+nlines 10:dg Alpha
 
 $ERROR 1.E-6
-FromRE:Gamma
-ToRE: total
+nlines 28:Gamma =
+
+$ERROR 1.E-6
+From:Polarizability (au)
+To: total

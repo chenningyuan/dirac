@@ -19,9 +19,9 @@
 .X2C
 #################################
 **WAVE FUNCTION
-.DHF
+.SCF
 .RELCCSD
-*DHFCAL
+*SCF
 .CLOSED SHELL
  18
 .EVCCNV
