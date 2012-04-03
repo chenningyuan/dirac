@@ -132,11 +132,11 @@ endif()
 
 add_custom_command(
     OUTPUT
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     DEPENDS
     gen_fortran_interface_h
     COMMAND
-    gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     )
 
 add_executable(
@@ -146,9 +146,9 @@ add_executable(
 add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/src/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -159,7 +159,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-add_subdirectory(xcfun)
+add_subdirectory(src/xcfun)
 set(LIBS
     xcfun
     ${LIBS}
@@ -208,7 +208,7 @@ configure_file(
     )
 
 set(GENERATED_FILES
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     )
 add_custom_target(dirac_interfaces
     ALL
@@ -248,7 +248,7 @@ macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
         ${_executable}
     )
 endmacro()
-compile_standalone(dirac.x                   main/main.F90                     "${LIST_OF_EXECUTABLES}")
+compile_standalone(dirac.x src/main/main.F90 "${LIST_OF_EXECUTABLES}")
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${LIST_OF_EXECUTABLES}")
     compile_standalone(rspread.x                 utils/rspread.F                   "${LIST_OF_EXECUTABLES}")
