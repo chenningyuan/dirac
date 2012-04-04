@@ -1263,15 +1263,14 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         all static allocations, for example
         """
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
-        # radovan: just FYI, the "-e" ends up in my output, not in yours?
         if not is_windows:
             # this is pure linux way to obatin size of static allocations
             size_command = \
             "echo -e 'Size of all static allocations: \c'; size " \
             + self.dirac_exe + ' 2> /dev/null | grep ' + self.dirac_exe \
             + " 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
-            p1 = subprocess.Popen(size_command, shell=True,
-                           stdin=subprocess.PIPE, stdout=self.f)
+            p1 = subprocess.Popen(shlex.split(size_command),
+                                  stdin=subprocess.PIPE, stdout=self.f)
 
     def grep_for_warnings(self):
         if os.path.isfile(self.output_file_full):
@@ -1330,7 +1329,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         sys.stderr.flush()
         # command - print all processes, to be adapted for other architectures ?
         command="ps -fu "+self.user_name
-        process_string=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,\
+        process_string=subprocess.Popen(shlex.split(command),stdin=subprocess.PIPE,\
                        stdout=subprocess.PIPE).communicate()[0]
         print_std_out_err("\n current processes left: \n--------------------------- \n"+process_string)
 
@@ -1425,19 +1424,15 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         
         # process the dirac.x (or mpi-wrapper) as the child subprocess
         # stderr=None means flushing stderr output only into console (red color in CDash-webpage)
-        # radovan: with shell=True the pid does not necessarily match
-        #          the dirac job, it matches the shell command that spawns the dirac job
-        #          then timeout terminates the command but not the dirac.x run
-        #          but we do need shell=True (painful lesson when testing without)
         # http://mail.python.org/pipermail/python-bugs-list/2009-January/067267.html
         # ulf: Passing the signal on to the process group should work
         if not is_windows():
-            self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
+            self.dirac_p = subprocess.Popen(shlex.split(self.dirac_cmd),
                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE, preexec_fn=os.setsid)
         else:
         # Windows: provide exec command with "" to fix =/+ characters in the full path
             self.dirac_cmd='"'+self.dirac_cmd+'"'
-            self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
+            self.dirac_p = subprocess.Popen(shlex.split(self.dirac_cmd),
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
         self.pgid = self.dirac_p.pid
         if not self.silent:
@@ -1472,7 +1467,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
                 + ' ' + self.profiling_file
             print '  Going to profile after, command:',self.profile_command
             self.f.write('\ncommand:'+self.profile_command+'\n\n')
-            p = subprocess.Popen(self.profile_command, shell=True,
+            p = subprocess.Popen(shlex.split(self.profile_command),
                                  stdin=subprocess.PIPE, stdout=self.f)
             p.wait()
             self.f.close()
