@@ -39,6 +39,7 @@ implicit none
 #if defined USE_CULA
 ! get info about CULA ...
 ! see  nm -D /usr/local/cula/lib64/libcula_fortran.so | less
+! CULA Programmer’s Guide,  www.culatools.com,  Release R14 (CUDA 4.1)
 integer, external ::  CULA_GETVERSION, CULA_GETCUBLASRUNTIMEVERSION, CULA_GETCUDADRIVERVERSION
 integer, external :: CULA_GETCUDARUNTIMEVERSION, CULA_GETDEVICEINFO, CULA_GETCUDAMINIMUMVERSION
 write(*,'(A)') '--- CULA (and CUDA) GPU info ---'
@@ -120,14 +121,13 @@ integer ::   cublas_set_vector, cublas_get_vector, cublas_sgemm, cublas_sgemv,cu
 
 ! CULA specific library objects 
 #if USE_CULA
-external :: cula_initialize, cula_shutdown,cula_sgemv
-external :: CULA_SGEQRF, cula_sgesv, cula_sgemm
-integer ::  cula_initialize, cula_SGEQRF, cula_shutdown
-integer ::  cula_sgesv,cula_sgemm,cula_sgemv
+!external  :: cula_initialize, cula_shutdown,cula_sgemv
+integer, external  :: cula_initialize, cula_shutdown,cula_sgemv, cula_dgemv
+integer, external  :: CULA_SGEQRF, cula_sgesv, cula_sgemm, cula_dgemm
 #endif
 
-external :: snrm2 ! for checking  the norm of a vector ...
-real(kind=size_of_real) :: snrm2 
+real(kind=size_of_real),   external :: snrm2 ! for checking  the norm of a vector ..
+real(kind=size_of_double), external :: dnrm2 ! for checking  the norm of a vector ..
 
 CHARACTER*100  BUFFER
 
@@ -174,7 +174,9 @@ routine(no_rout1+3)="sgesv_cula"
 routine(no_rout1+4)="sgeqrf_cula"
 routine(no_rout1+5)="sgemm_cula_c"
 routine(no_rout1+6)="sgemv_cula_c"
-  no_rout=no_rout1+6
+routine(no_rout1+7)="dgemm_cula"
+routine(no_rout1+8)="dgemv_cula"
+  no_rout=no_rout1+8
 #endif
 write(*,*) 'usage: gpu_test.x  <routine>  <n> <verbosity level>'
 ! using own C-function trim 
@@ -364,9 +366,52 @@ call system_clock( count=c2 )
 call print_time("CPU BLAS SGEMM")
 call mtx_check(C_r)
 #else
-  print *,'CULA libraty not active !'
+  print *,'CULA library not active !'
 #endif
 end subroutine sgemm_cula_test
+
+subroutine dgemm_cula_test
+#if defined USE_CULA
+write(*,'(2x,a)') 'cula_dgemm GPU vs CPU test'
+allocate (A_d(n,n),B_d(n,n),C_d(n,n),STAT=AllocateStatus)
+if (AllocateStatus.ne.0) then
+   stop "error in dgemm_cula_test allocations !"
+else
+   if (verb.ge.1) then
+     write(*,*) "A_d,B_d,C_d matrixes allocated in CPU memory for dgemm_cula_test"
+   endif
+endif
+do i=1,n
+do j=1,n
+ if (i.eq.j) then ! A_d is unit matrix
+   A_d(i,j)=1.0e0
+ else
+   A_d(i,j)=0.0e0
+ endif
+ B_d(i,j)=dfloat(i+j) ! B_d is symmetric matrix
+ C_d(i,j)=0.0e0
+enddo
+enddo
+! start the time measurement
+call system_clock( c1, cr, cm )
+stat = CULA_INITIALIZE(); call check_cula_status(stat)
+stat = CULA_DGEMM('n','n',n,n,n,1.0d0,A_d,n,B_d,n,1.0e0,C_d,n); call check_cula_status(stat)
+call system_clock( count=c2 )
+call print_time("GPU CULA_DGEMM")
+stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+! ---
+call mtx_check_d(C_d)
+! now CPU sgemm...
+call system_clock( c1, cr, cm )
+call dgemm('n','n',n,n,n,1.0d0,A_d,n,B_d,n,-2.0e0,C_d,n)
+call system_clock( count=c2 )
+call print_time("CPU BLAS DGEMM")
+call mtx_check_d(C_d)
+#else
+  print *,'CULA library not active !'
+#endif
+end subroutine dgemm_cula_test
+
 
 subroutine dgemm_cuda_test
 write(*,'(2x,a)') 'cuda_dgemm GPU vs CPU test'
@@ -503,15 +548,15 @@ else
 endif
 ! fill allocated objects
 do i=1,n
-do j=1,n
- if (i.eq.j) then
-   A_r(i,j)=1.0e0
- else
-   A_r(i,j)=0.0e0
- endif
- x_r(i)=float(1)
- y_r(i)=0.0e0
-enddo
+  do j=1,n
+    if (i.eq.j) then
+      A_r(i,j)=1.0e0
+    else
+     A_r(i,j)=0.0e0
+    endif
+  enddo
+  x_r(i)=float(1)
+  y_r(i)=0.0e0
 enddo
 !call system_clock( c1, cr, cm )
 call cublas_init
@@ -624,11 +669,10 @@ do j=1,n
  else
    A_r(i,j)=0.0e0
  endif
+enddo
  x_r(i)=float(1)
  y_r(i)=0.0e0
 enddo
-enddo
-
 call system_clock( c1, cr, cm )
 stat = CULA_INITIALIZE(); call check_cula_status(stat)
 stat=cula_sgemv('n',n,n,1.0e0,A_r,n,x_r,1,0.0e0,y_r,1)
@@ -647,6 +691,51 @@ write(*,*) 'CPU sgemv vector control output: sum,norm=',sum(y_r),snrm2(n,y_r,1)
  print *,'sorry, CULA library is not active'
 #endif
 end subroutine sgemv_cula_test
+
+subroutine dgemv_cula_test
+#if defined USE_CULA
+write(*,'(2x,a)') 'cula_dgemv GPU vs CPU test'
+allocate (A_d(n,n),x_d(n),y_d(n),STAT=AllocateStatus)
+if (AllocateStatus.ne.0) then
+  stop "error in matrix,vectors allocations in dgemv_cula_test !"
+else
+  if (verb.ge.1) then
+    write(*,*) "A_d,x_d,y_d objects allocated in CPU memory"
+  endif
+endif
+! fill allocated objects
+do i=1,n
+do j=1,n
+ if (i.eq.j) then
+   A_d(i,j)=1.0e0
+ else
+   A_d(i,j)=0.0e0
+ endif
+enddo
+ x_d(i)=dfloat(1)
+ y_d(i)=0.0d0
+enddo
+call system_clock( c1, cr, cm )
+stat = CULA_INITIALIZE(); call check_cula_status(stat)
+stat=cula_dgemv('n',n,n,1.0d0,A_d,n,x_d,1,0.0d0,y_d,1); call check_cula_status(stat)
+call system_clock( count=c2 )
+call print_time("GPU CULA SGEMV")
+stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+write(*,*) 'GPU cula_dgemv vector control output: sum,norm=',sum(y_d),dnrm2(n,y_d,1)
+! ---
+call system_clock( c1, cr, cm )
+!now perform CPU lib routine:  y = beta*y+alpha*A*x
+call dgemv('n',n,n,-2.0d0,A_d,n,x_d,1,1.0d0,y_d,1)
+call system_clock( count=c2 )
+call print_time("CPU BLAS DGEMV")
+write(*,*) 'CPU dgemv vector control output: sum,norm=',sum(y_d),dnrm2(n,y_d,1)
+#else
+ print *,'sorry, CULA library is not active'
+#endif
+end subroutine dgemv_cula_test
+
+
+
 
 subroutine sgeqrf_test
 #if defined USE_CULA
@@ -816,7 +905,7 @@ SUBROUTINE check_cula_status(STATUS)
          INTEGER  :: CULA_GETERRORINFO
          INFO = CULA_GETERRORINFO()
          IF (STATUS .NE. 0) THEN
-            write(*,'(2x,a,$)') "CULA system status:"
+            write(*,'(2x,a,$)') "CULA system status: "
             IF (STATUS .EQ. 7) THEN
 !*              culaArgumentError
                WRITE(*,*) 'Invalid value for parameter ', INFO
@@ -841,7 +930,7 @@ END subroutine check_cula_status
 subroutine mtx_check(Mtx)
 real*4, intent(in) :: Mtx(n,n)
 real*4 ::  diag
-diag=0.0e0;
+diag=0.0e0
 do i=1,n
   diag = diag + Mtx(i,i)
 enddo
@@ -850,17 +939,12 @@ end subroutine mtx_check
 
 subroutine mtx_check_d(Mtx)
 real*8, intent(in) :: Mtx(n,n)
-real*8 ::  diag,offdiag
-diag=0.0d0; offdiag=0.0d0
+real*8 ::  diag
+diag=0.0d0
 do i=1,n
   diag = diag + Mtx(i,i)
-  do j=1,i
-    if (j.ne.i) then
-      offdiag = offdiag + (Mtx(i,j)+Mtx(j,i))
-    endif
-  enddo
 enddo
-write(*,*)  'sum of diag ',diag,'sum of offdiag:',offdiag,'1,n:',Mtx(1,n),'n,1:',Mtx(n,1)
+write(*,*)  'aver. sum of diag:',diag/dfloat(n),'1,1:',Mtx(1,1),'1,n:',Mtx(1,n),'n,1:',Mtx(n,1),'n,n',Mtx(n,n)
 end subroutine mtx_check_d
 
 end module gpu_stuff
@@ -890,12 +974,16 @@ Program GPU_math_tests
       call c_gpu_math_tests(n,method,verb)
     case("dgemm_cuda")
       call dgemm_cuda_test
+    case("dgemm_cula")
+      call dgemm_cula_test
     case("sgemv_cuda")
       call sgemv_cuda_test
     case("sgemv_cuda_c")
       call  c_gpu_math_tests(n,method,verb)
     case("sgemv_cula")
       call sgemv_cula_test
+    case("dgemv_cula")
+      call dgemv_cula_test
     case("sgemv_cula_c")
       call  c_gpu_math_tests(n,method,verb)
     case("sgeqrf_cula")
