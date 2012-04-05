@@ -41,8 +41,15 @@ interface set_suffix
   module procedure set_suffix_logical
 end interface set_suffix
 
-private :: init_string, add_string, errall, erropen, gets, i2c, l2c, csize, change_string
-private :: write_real_data, write_integer_data, add_data_routine
+private :: init_string, add_string, errall, erropen, i2c, l2c, gets, csize, change_string
+private :: add_data_routine, find_name, strip_blank, str_size, add_compare_info
+private :: write_data, write_integer_array, write_real_array
+
+interface write_data
+  module procedure write_logical_variable
+  module procedure write_integer_variable
+  module procedure write_real_variable
+end interface write_data
 
 private
 
@@ -56,6 +63,7 @@ type ( string ), pointer, save :: var_name(:), var_type(:), var_dim(:)
 type ( string ), pointer, save :: var_info(:), var_value(:)
 type ( string ), pointer, save :: modules(:), suffix(:)
 type ( string ), pointer, save :: compare_technique(:), thresholds(:), compare_array(:)
+type ( string ), pointer, save :: compare_info(:)
 
 type :: keys
   logical :: mod_call = .true.
@@ -99,7 +107,7 @@ contains
 
     deallocate(itmp)
   else
-    call write_integer_data(ivar,ndim,vname)
+    call write_integer_array(ivar,ndim,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -145,7 +153,7 @@ contains
 
     deallocate(dtmp)
   else
-    call write_real_data(dvar,ndim,vname)
+    call write_real_array(dvar,ndim,vname)
   endif
   ! add name, type, dimension, info and order in driver call
   !   of the variable to the corresponding list
@@ -223,22 +231,7 @@ contains
 
     close(iunit,status='keep')
   else
-    open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
-    call erropen(ier,'add_inp_logical_variable',vname)
-
-    write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
-    write(iunit,'(a)')        '  implicit none'
-    write(iunit,'(a,a)')      '  logical :: ',vname
-    write(iunit,'(a)')
-    if(lvar)then
-      write(iunit,'(a,a,a)')  '  ', vname, ' = .True.'
-    else
-      write(iunit,'(a,a,a)')  '  ', vname, ' = .False.'
-    endif
-    write(iunit,'(a)')
-    write(iunit,'(a)')        '  end subroutine'
-
-    close(iunit,status='keep')
+    call write_data(lvar,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -277,18 +270,7 @@ contains
 
     close(iunit,status='keep')
   else
-    open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
-    call erropen(ier,'add_inp_integer_variable',vname)
- 
-    write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
-    write(iunit,'(a)')        '  implicit none'
-    write(iunit,'(a,a)')      '  integer :: ',vname
-    write(iunit,'(a)')
-    write(iunit,'(2x,a,a,i12)') vname, ' = ', ivar
-    write(iunit,'(a)')
-    write(iunit,'(a)')        '  end subroutine'
- 
-    close(iunit,status='keep')
+    call write_data(ivar,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -329,7 +311,7 @@ contains
 
     close(iunit,status='keep')
   else
-    call write_integer_data(ivar,n1,vname)
+    call write_integer_array(ivar,n1,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -371,7 +353,7 @@ contains
   
     close(iunit,status='keep')
   else
-    call write_integer_data(ivar,n1*n2,vname)
+    call write_integer_array(ivar,n1*n2,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -410,18 +392,7 @@ contains
   
     close(iunit,status='keep')
   else
-    open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
-    call erropen(ier,'add_inp_real_variable',vname)
- 
-    write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
-    write(iunit,'(a)')        '  implicit none'
-    write(iunit,'(a,a)')      '  integer :: ',vname
-    write(iunit,'(a)')
-    write(iunit,'(2x,a,a,D24.16)') vname, ' = ', dvar
-    write(iunit,'(a)')
-    write(iunit,'(a)')        '  end subroutine'
- 
-    close(iunit,status='keep')
+    call write_data(dvar,vname)
   endif
 
 
@@ -463,7 +434,7 @@ contains
 
     close(iunit,status='keep')
   else
-    call write_real_data(dvar,n1,vname)
+    call write_real_array(dvar,n1,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -505,7 +476,7 @@ contains
 
     close(iunit,status='keep')
   else
-    call write_real_data(dvar,n1*n2,vname)
+    call write_real_array(dvar,n1*n2,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -548,7 +519,7 @@ contains
 
     close(iunit,status='keep')
   else
-    call write_real_data(dvar,n1*n2*n3,vname)
+    call write_real_array(dvar,n1*n2*n3,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -592,7 +563,7 @@ contains
   
     close(iunit,status='keep')
   else
-    call write_real_data(dvar,n1*n2*n3*n4,vname)
+    call write_real_array(dvar,n1*n2*n3*n4,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -637,7 +608,7 @@ contains
 
     close(iunit,status='keep')
   else
-    call write_real_data(dvar,n1*n2*n3*n4*n5,vname)
+    call write_real_array(dvar,n1*n2*n3*n4*n5,vname)
   endif
 
   ! add name, type, dimension, info and order in driver call
@@ -653,38 +624,95 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine write_real_data(dvar,ndim,vname)
+  subroutine write_logical_variable(lvar,vname)
   implicit none
 
   ! External variables
   character(*), intent(in) :: vname
-  integer,      intent(in) :: ndim
-  real*8,       intent(in) :: dvar(*)
+  logical,      intent(in) :: lvar
 
   ! Internal variables
-  integer :: i, ier
+  integer :: ier
 
   open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
-  call erropen(ier,'write_real_data',vname)
+  call erropen(ier,'write_logical_variable',vname)
 
   write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
   write(iunit,'(a)')        '  implicit none'
-  write(iunit,'(a,a)')      '  real*8, dimension(*) :: ',vname
+  write(iunit,'(a,a)')      '  logical :: ',vname
   write(iunit,'(a)')
-  do i=1,ndim
-    write(iunit,'(2x,a,a,i12,a,3D24.16)') vname, '(', i, ') = ', dvar(i)
-  enddo
+  if(lvar)then
+    write(iunit,'(a,a,a)')  '  ', vname, ' = .True.'
+  else
+    write(iunit,'(a,a,a)')  '  ', vname, ' = .False.'
+  endif
   write(iunit,'(a)')
   write(iunit,'(a)')        '  end subroutine'
 
   close(iunit,status='keep')
 
-  end subroutine write_real_data
+  end subroutine write_logical_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine write_integer_data(ivar,ndim,vname)
+  subroutine write_integer_variable(ivar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ivar
+
+  ! Internal variables
+  integer :: ier
+
+  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_integer_variable',vname)
+ 
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  integer :: ',vname
+  write(iunit,'(a)')
+  write(iunit,'(2x,a,a,i12)') vname, ' = ', ivar
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+ 
+  close(iunit,status='keep')
+
+  end subroutine write_integer_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_real_variable(dvar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  real*8,       intent(in) :: dvar
+
+  ! Internal variables
+  integer :: ier
+
+  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_real_variable',vname)
+ 
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  real*8 :: ',vname
+  write(iunit,'(a)')
+  write(iunit,'(2x,a,a,D24.16)') vname, ' = ', dvar
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+ 
+  close(iunit,status='keep')
+
+  end subroutine write_real_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_integer_array(ivar,ndim,vname)
   implicit none
 
   ! External variables
@@ -695,7 +723,7 @@ contains
   integer :: i, ier
 
   open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
-  call erropen(ier,'write_integer_data',vname)
+  call erropen(ier,'write_integer_array',vname)
 
   write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
   write(iunit,'(a)')        '  implicit none'
@@ -709,7 +737,38 @@ contains
 
   close(iunit,status='keep')
 
-  end subroutine write_integer_data
+  end subroutine write_integer_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_real_array(dvar,ndim,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ndim
+  real*8,       intent(in) :: dvar(*)
+
+  ! Internal variables
+  integer :: i, ier
+
+  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_real_array',vname)
+
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  real*8, dimension(*) :: ',vname
+  write(iunit,'(a)')
+  do i=1,ndim
+    write(iunit,'(2x,a,a,i12,a,3D24.16)') vname, '(', i, ') = ', dvar(i)
+  enddo
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+
+  close(iunit,status='keep')
+
+  end subroutine write_real_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -745,6 +804,28 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+  integer function find_name(string) result(ipos)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: string
+
+  ! Internal variables
+  integer :: i
+
+  ipos = 0
+  do i=1,size(var_name)
+    if(string == gets(var_name(i)%str))then
+      ipos = i
+      exit
+    endif
+  enddo
+
+  end function find_name
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
   function strip_blank(string) result(str)
   implicit none
   character*(*), intent(in) :: string
@@ -768,20 +849,93 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_integer_variable(ivar,vname)
+  subroutine add_compare_info(vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
+  character(*), intent(in) :: vname
+
+  call add_string(compare,compare_info)
+  select case(compare)
+    case('array-array')
+      call add_string('  call compare_arrays', compare_technique)
+      call add_string(vname, compare_array)
+
+    case('file-array')
+      call add_string('  call compare_vector', compare_technique)
+      call add_string(vname, compare_array)
+      if(.not.present(file))then
+        write(6,*) 'ERROR: You forgot to define "file" name add_out_variable call'
+        stop
+      endif
+      ! add file (with suffix) to the list of output files (output_files)
+      if(associated(suffix))then
+        call add_string(file // '_' // gets(suffix(1)%str), output_files)
+      else
+        call add_string(file, output_files)
+      endif
+
+    case('file-file')
+      call add_string('  call compare_files', compare_technique)
+      call add_string('0', compare_array)
+      if(.not.present(file))then
+        write(6,*) 'ERROR: You forgot to define "file" name in add_out_variable call'
+        stop
+      endif
+      ! add file (with suffix) to the list of output files (output_files)
+      if(associated(suffix))then
+        call add_string(file // '_' // gets(suffix(1)%str), output_files)
+      else
+        call add_string(file, output_files)
+      endif
+
+    case default
+      write(6,*) 'ERROR: Wrong optional parameter "compare" in add_out_variable call'
+      write(6,*) '       Use string "file-array" or "file-file"'
+      stop
+  end select
+
+  ! set threshold
+  if(present(threshold))then
+    call add_string(threshold, thresholds)
+  else
+    call add_string('1.0d-15', thresholds)
+  endif
+
+  end subroutine add_compare_info
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_integer_variable(ivar,vname,compare,threshold,file)
+  implicit none
+
+  ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('integer',var_type)
-  call add_string('0',var_dim)
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('integer',var_type)
+    call add_string('0',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,compare,threshold,file)
+  else
+    call add_compare_info(vname,'array-array',threshold,file)
+    call write_data(ivar,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_integer_variable
 
@@ -798,14 +952,21 @@ contains
   ! Internal variables
   integer :: n1
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('integer, allocatable, dimension(:)',var_type)
   n1 = size(ivar,1)
-  call add_string( '(' // i2c(n1) // ')' , var_dim )
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('integer, allocatable, dimension(:)',var_type)
+    call add_string( '(' // i2c(n1) // ')' , var_dim )
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+    call write_integer_array(ivar,n1,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_integer_1d_array
 
@@ -822,15 +983,22 @@ contains
   ! Internal variables
   integer :: n1, n2
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('integer, allocatable, dimension(:,:)',var_type)
   n1 = size(ivar,1)
   n2 = size(ivar,2)
-  call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('integer, allocatable, dimension(:,:)',var_type)
+    call add_string( '(' // i2c(n1) // ',' // i2c(n2) // ')' , var_dim )
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+    call write_integer_array(ivar,n1*n2,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_integer_2d_array
 
@@ -844,13 +1012,19 @@ contains
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('real*8',var_type)
-  call add_string('0',var_dim)
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('real*8',var_type)
+    call add_string('0',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+    call write_data(dvar,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_real_variable
 
@@ -867,14 +1041,21 @@ contains
   ! Internal variables
   integer :: n1
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('real*8,  allocatable, dimension(:)',var_type)
   n1 = size(dvar,1)
-  call add_string( '(' // i2c(n1) // ')' , var_dim )
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('real*8,  allocatable, dimension(:)',var_type)
+    call add_string( '(' // i2c(n1) // ')' , var_dim )
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+    call write_real_array(dvar,n1,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_real_1d_array
 
@@ -891,41 +1072,63 @@ contains
   ! Internal variables
   integer :: n1, n2
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('real*8,  allocatable, dimension(:,:)',var_type)
   n1 = size(dvar,1)
   n2 = size(dvar,2)
-  call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('real*8,  allocatable, dimension(:,:)',var_type)
+    call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+    call write_real_array(dvar,n1*n2,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_real_2d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_3d_array(dvar,vname)
+  subroutine add_out_real_3d_array(dvar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:)
 
   ! Internal variables
   integer :: n1, n2, n3
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('real*8,  allocatable, dimension(:,:,:)',var_type)
   n1 = size(dvar,1)
   n2 = size(dvar,2)
   n3 = size(dvar,3)
-  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('real*8,  allocatable, dimension(:,:,:)',var_type)
+    call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//')',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,compare,threshold,file)
+  else
+    call add_compare_info(vname,'array-array',threshold,file)
+    call write_real_array(dvar,n1*n2*n3,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_real_3d_array
 
@@ -942,45 +1145,68 @@ contains
   ! Internal variables
   integer :: n1, n2, n3, n4
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('real*8,  allocatable, dimension(:,:,:,:)',var_type)
   n1 = size(dvar,1)
   n2 = size(dvar,2)
   n3 = size(dvar,3)
   n4 = size(dvar,4)
-  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//')',var_dim)
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('real*8,  allocatable, dimension(:,:,:,:)',var_type)
+    call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//')',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+    call write_real_array(dvar,n1*n2*n3*n4,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_real_4d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_5d_array(dvar,vname)
+  subroutine add_out_real_5d_array(dvar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:,:)
 
   ! Internal variables
   integer :: n1, n2, n3, n4, n5
 
-  ! add name, type, dimension, info and order in driver call
-  !   of the variable to the corresponding list
-  call add_string(vname,var_name)
-  call add_string('real*8,  allocatable, dimension(:,:,:,:,:)',var_type)
   n1 = size(dvar,1)
   n2 = size(dvar,2)
   n3 = size(dvar,3)
   n4 = size(dvar,4)
   n5 = size(dvar,5)
-  call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//','//i2c(n5)//')',var_dim)
-  call add_string('output',var_info)
-  call add_string('own_name',var_value)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('real*8,  allocatable, dimension(:,:,:,:,:)',var_type)
+    call add_string('('//i2c(n1)//','//i2c(n2)//','//i2c(n3)//','//i2c(n4)//','//i2c(n5)//')',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+    call write_real_array(dvar,n1*n2*n3*n4*n5,strip_blank(vname) // '_out')
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,compare,threshold,file)
+  else
+    call add_compare_info(vname,'array-array',threshold,file)
+    call write_real_array(dvar,n1*n2*n3*n4*n5,strip_blank(vname) // '_out')
+  endif
 
   end subroutine add_out_real_5d_array
 
@@ -1032,30 +1258,15 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_output_file(file_name,threshold,array)
+  subroutine add_output_file(file_name)
   implicit none
   character(*), intent(in) :: file_name
-  character(*), intent(in), optional :: threshold, array
 
   ! add file_name (with suffix) to the list of output files (output_files)
   if(associated(suffix))then
     call add_string(file_name // '_' // gets(suffix(1)%str), output_files)
   else
     call add_string(file_name, output_files)
-  endif
-
-  if(present(threshold))then
-    call add_string(threshold, thresholds)
-  else
-    call add_string('1.0d-15', thresholds)
-  endif
-
-  if(present(array))then
-    call add_string('  call compare_vector', compare_technique)
-    call add_string(array, compare_array)
-  else
-    call add_string('  call compare_files', compare_technique)
-    call add_string('0', compare_array)
   endif
 
   end subroutine add_output_file
@@ -1173,7 +1384,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine print_input_files
+  subroutine print_input_files()
   implicit none
   integer :: i
 
@@ -1188,7 +1399,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine print_output_files
+  subroutine print_output_files()
   implicit none
   integer :: i
 
@@ -1203,7 +1414,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine print_variable_info
+  subroutine print_variable_info()
   implicit none
   integer :: i
 
@@ -1468,7 +1679,7 @@ contains
   ! get input data
   write(iunit,'(a)')
   do i=1,size(var_name)
-    if( gets(var_info(i)%str) == 'input')then ! input variables
+    if( gets(var_info(i)%str) == 'input' .or. gets(var_info(i)%str) == 'inout' )then
       if(associated(input_files))then
         write(iunit,'(a)')     '  read(60,*)'
         write(iunit,'(a,70a)') '  read(60,*) ' , gets(var_name(i)%str)
@@ -1546,7 +1757,7 @@ contains
   ! add input data routines
   if(.not. associated(input_files))then
     do i=1,size(var_name)
-      if( gets(var_info(i)%str) == 'input')then ! input variables
+      if( gets(var_info(i)%str) == 'input' .or. gets(var_info(i)%str) == 'inout' )then
         write(iunit,'(a)')
         call add_data_routine(iunit,gets(var_name(i)%str))
       endif
@@ -1557,7 +1768,7 @@ contains
 
   close(iunit,status='keep')
 
-  if(.not. associated(input_files)) call unit_test_generator_destructor
+  call unit_test_generator_destructor
 
   end subroutine generate_test
 
