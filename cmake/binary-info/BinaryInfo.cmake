@@ -36,7 +36,7 @@ configure_file(
 execute_process(
     COMMAND python ${CMAKE_BINARY_DIR}/binary_info.py
     TIMEOUT 1
-    OUTPUT_FILE ${CMAKE_SOURCE_DIR}/gp/binary_info.F90
+    OUTPUT_FILE ${CMAKE_SOURCE_DIR}/src/gp/binary_info.F90
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )

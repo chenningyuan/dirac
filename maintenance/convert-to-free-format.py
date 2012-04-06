@@ -22,10 +22,13 @@ for i in range(len(s)):
             s[i] = '!' + s[i][1:]
     if i+1 < len(s):
         if len(s[i+1]) > 5:
-            if s[i+1][5] == '&':
-                # add continuation marker to previous line
-                if not '&' in s[i][6:]: # unless it is already there
+            # check the presence of a continuation marker which can be any ASCII character (not only '&')
+            if s[i+1][0:4]=='    ' and  s[i+1][5] != ' ':
+                # add continuation marker to previous line and verify the line length
+                if not '&' in s[i][6:] and len(s[i])>0: # unless it is already there
                     if not s[i][0] == '#': # unless this line starts with CPP
+                        # replace the continuation marker with blank character
+                        s[i+1]=' ' + s[i+1][6:]
                         for j in range(72 - len(s[i])):
                             s[i] += ' '
                         s[i] += '&'

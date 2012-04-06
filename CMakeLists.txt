@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 # suppress Windows warning about policy
 cmake_policy(SET CMP0010 OLD)
 
-project(DIRAC Fortran C)
-add_definitions(-DPRG_DIRAC)
+project(DIRAC)
+
+enable_language(Fortran C)
 
 # set version
 set(VERSION_MAJOR 11)
@@ -35,6 +36,7 @@ option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                  
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
+option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
@@ -49,22 +51,6 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
-# set work memory
-set(WORK_MEM_WORDS
-    "64000000"
-    CACHE STRING
-    "Work memory in words"
-    )
-add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
-
-if(ENABLE_LARGE_MOLECULES)
-    add_definitions(-DLARGE_MOLECULES)
-endif()
-
-if(ENABLE_MATLAB_LOG)
-    add_definitions(-DMOD_MATLAB_LOG)
-endif()
-
 include(ConfigTesting)
 include(DefinitionsList)
 include(ConfigArchitecture)
@@ -74,41 +60,15 @@ include(ConfigParallelEnvironment)
 set(LIBS)
 
 include(ConfigMath)
-
-if(ENABLE_64BIT_INTEGERS)
-    add_definitions(-DINT_STAR8)
-endif()
-
-if(ENABLE_CUDA)
-    find_package(CUDA)
-    if(CUDA_FOUND) 
-        if(NOT ENABLE_64BIT_INTEGERS)
-            # employing variables set and returned by FindCUDA.cmake
-            add_library(fortran_cuda "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.c" "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.h")
-            INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
-            set(LIBS
-                ${LIBS}
-                ${CUDA_CUBLAS_LIBRARIES}
-                )
-            add_definitions(-DUSE_CUBLAS)
-            if (CUDA_64_BIT_DEVICE_CODE) 
-                add_definitions(-DARCH_64)
-            endif()
-            add_executable(gpu_test.x utils/gpu_test.F90)
-            target_link_libraries(gpu_test.x fortran_cuda ${LIBS} blas)
-        else()
-            message("-- CUDA library found, but can not be used with 64-bit integers!")
-        endif()
-    endif()
-endif()
+include(ConfigGPUMath)
 
 add_custom_command(
     OUTPUT
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     DEPENDS
     gen_fortran_interface_h
     COMMAND
-    gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     )
 
 add_executable(
@@ -118,9 +78,9 @@ add_executable(
 add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/src/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -131,7 +91,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-add_subdirectory(xcfun)
+add_subdirectory(src/xcfun)
 set(LIBS
     xcfun
     ${LIBS}
@@ -152,13 +112,37 @@ configure_file(
     )
 
 set(GENERATED_FILES
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
     )
 add_custom_target(dirac_interfaces
     ALL
     DEPENDS
     ${GENERATED_FILES}
 )
+
+# set definitions
+
+add_definitions(-DPRG_DIRAC)
+set(WORK_MEM_WORDS
+    "64000000"
+    CACHE STRING
+    "Work memory in words"
+    )
+add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
+if(ENABLE_64BIT_INTEGERS)
+    add_definitions(-DINT_STAR8)
+endif()
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
 
 include(SourcesList)
 
@@ -186,12 +170,13 @@ macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
         ${_executable}
         ${_source}
     )
+    set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
     set(LIST_OF_EXECUTABLES
         ${LIST_OF_EXECUTABLES}
         ${_executable}
     )
 endmacro()
-compile_standalone(dirac.x                   main/main.F90                     "${LIST_OF_EXECUTABLES}")
+compile_standalone(dirac.x src/main/main.F90 "${LIST_OF_EXECUTABLES}")
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${LIST_OF_EXECUTABLES}")
     compile_standalone(rspread.x                 utils/rspread.F                   "${LIST_OF_EXECUTABLES}")
@@ -228,12 +213,6 @@ if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUN
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
         target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
     endif()
-endif()
-
-# forward CPP directly to the code
-set(CPP)
-if(NOT "${CPP}" STREQUAL "")
-    add_definitions(${CPP})
 endif()
 
 include(ConfigPackaging)
