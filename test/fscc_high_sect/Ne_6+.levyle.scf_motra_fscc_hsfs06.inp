@@ -1,0 +1,71 @@
+! ....
+**DIRAC
+.TITLE
+   Ne_6+
+.WAVE F
+.ANALYZE
+.4INDEX
+!.INPTEST
+**INTEGRALS
+.PRINT
+1
+.NUCMOD
+1
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+!.SPINFREE
+!.INTFLG
+!1 1 0
+.LEVY-LEBLOND
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+.HSFS
+*SCF
+.EVCCNV
+1.0E-10 1.0D-8
+.ERGCNV
+1.0E-8 1.0E-6
+.CLOSED SHELL
+4 0
+.PRINT
+1
+*HSFS
+.PRINT
+1
+.CONV
+9
+.METHOD
+csd
+csv
+csu
+csw
+csx
+csy
+csz
+.END
+.INPUT
+ Ne(6+) test with DIRAC-HSFS
+  1 99 07  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+ 9
+hppvpvpvp
+  8
+  3  2  2  0  2  0  0  0
+  0  0  0  0  0  0  0  0
+9
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all  
+all 
+**MOLTRA
+# 1s(2) is frozen; all virtuals are correlated
+.ACTIVE
+energy -15.0 1000.0 1.0
+energy -15.0 1000.0 1.0
+*END OF
+
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=2 INTERFACE="DIRAC6" DEBUG=F  &END
+ &CCFSPC MAXIT=50, NACTH=0,0,0,0,  NACTP=0,0,3,3, FSSECT=1,1,0,0,1,0  &END
