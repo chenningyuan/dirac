@@ -2,11 +2,11 @@
 ! ... 
 !
 
-      integer nszv,nszhv,nszhp,nszhq,istrv1,istrv2,
-     & istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
+      integer nszv,nszhv,nszhp,nszhq,istrv1,istrv2,  & 
+         istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
 
-      common /csize/ nszv,nszhv,nszhp,nszhq,istrv1,istrv2,
-     &    istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
+      common /csize/ nszv,nszhv,nszhp,nszhq,istrv1,istrv2,  & 
+         istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
 
 ! to replace :
 !--------------------------------------
