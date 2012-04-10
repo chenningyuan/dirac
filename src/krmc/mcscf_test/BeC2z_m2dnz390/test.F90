@@ -79,6 +79,8 @@ program test
   deallocate( vmuuuu )
   deallocate( vduuuu )
 
+  write(6,*) ' test result: =====  OK  ====='
+
 contains
 
   subroutine errall(ier,chsub,charr)

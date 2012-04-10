@@ -100,6 +100,8 @@ program test
   deallocate( pv     )
   deallocate( fq     )
 
+  write(6,*) ' test result: =====  OK  ====='
+
 contains
 
   subroutine errall(ier,chsub,charr)

@@ -38,14 +38,14 @@ contains
               access = 'sequential')
       else
          print *, 'error: file '//file_name//' not found'
-         stop 1
+         stop
       end if
       rewind(file_unit)
 
       read(file_unit, *) n
       if (n /= l*l) then
          print *, 'error: matrix dimensions do not match in file '//file_name
-         stop 1
+         stop
       end if
 
       max_diff = 0.0d0
@@ -62,10 +62,13 @@ contains
       close(file_unit, status = 'keep')
 
       if (max_diff > tolerance) then
-         stop 1
+         stop
       end if
 
-   end subroutine
+   end subroutine compare_matrix
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
    subroutine compare_vector(iunit, file_name, vector, thresh)
    implicit none
@@ -84,7 +87,7 @@ contains
    if(ier /= 0)then
      write(6,*) 'compare_vector: ERROR while opening file ',file_name
      write(0,*) 'compare_vector: ERROR while opening file ',file_name
-     stop 1
+     stop
    endif
    rewind iunit
 
@@ -98,7 +101,7 @@ contains
        write(6,*) 'compare_vector: ERROR reading file ',file_name
        write(0,*) 'compare_vector: ERROR reading file ',file_name
        write(6,*) 'ier: ',ier
-       stop 1
+       stop
      endif
 
      if( (dabs(dnum-vector(ic))) > dmax )then
@@ -118,10 +121,13 @@ contains
      write(6,*) ' dmax   = ',dmax
      write(6,*) ' imax   = ',icmax
      write(0,*) ' ERROR in compare_vector routine: Examined file and vector differ'
-     stop 1
+     stop
    endif
 
-   end subroutine
+   end subroutine compare_vector
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
    subroutine compare_2vectors(ndim, vector1, vector2, thresh)
    implicit none
@@ -171,13 +177,13 @@ contains
      write(6,'(a)')
      write(6,'(a)') ' ERROR in compare_2vectors routine: Examined arrays differ too much'
      write(0,'(a)') ' ERROR in compare_2vectors routine: Examined arrays differ too much'
-     stop 1
-   else
-     write(6,'(a)')
-     write(6,'(a)') ' =====  OK  ====='
+     stop
    endif
 
    end subroutine compare_2vectors
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
    subroutine compare_files(iunit, file1, file2, thresh)
    implicit none
@@ -199,7 +205,7 @@ contains
    if(ier /= 0)then
      write(6,*) 'compare_files: ERROR while opening file ',file1
      write(0,*) 'compare_files: ERROR while opening file ',file1
-     stop 1
+     stop
    endif
    rewind iu1
 
@@ -208,7 +214,7 @@ contains
    if(ier /= 0)then
      write(6,*) 'compare_files: ERROR while opening file ',file2
      write(0,*) 'compare_files: ERROR while opening file ',file2
-     stop 1
+     stop
    endif
    rewind iu2
 
@@ -221,13 +227,13 @@ contains
      if( (ier1 == -1) .or.  (ier2 == -1) )then
        write(6,*) ' ERROR: Examined files have different length '
        write(0,*) ' ERROR: Examined files have different length '
-       stop 1
+       stop
      endif
      if( (ier1 /=  0) .or. (ier2 /=  0) )then
        write(6,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
        write(0,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
        write(6,*) 'ier1, ier2: ',ier1, ier2
-       stop 1
+       stop
      endif
 
      if( (dabs(dnum1-dnum2)) > dmax ) dmax = dabs(dnum1-dnum2)
@@ -245,10 +251,13 @@ contains
      write(6,*) ' ERROR: Examined files differ; thresh = ',thresh
      write(6,*) ' dmax = ',dmax
      write(0,*) ' ERROR: Examined files differ; thresh = ',thresh
-     stop 1
+     stop
    endif
 
-   end subroutine
+   end subroutine compare_files
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
    subroutine matrix_to_file(file_name, matrix)
 
@@ -286,7 +295,10 @@ contains
 
       close(file_unit, status = 'keep')
 
-   end subroutine
+   end subroutine matrix_to_file
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
    subroutine matrix_from_file(file_name, matrix)
 
@@ -308,14 +320,14 @@ contains
               access = 'sequential')
       else
          print *, 'error: file '//file_name//' not found'
-         stop 1
+         stop
       end if
       rewind(file_unit)
 
       read(file_unit, *) n
       if (n /= l*l) then
          print *, 'error: matrix dimensions do not match in file '//file_name
-         stop 1
+         stop
       end if
 
       do i = 1, l
@@ -326,6 +338,6 @@ contains
 
       close(file_unit, status = 'keep')
 
-   end subroutine
+   end subroutine matrix_from_file
 
 end module

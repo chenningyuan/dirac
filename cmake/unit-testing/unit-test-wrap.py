@@ -31,7 +31,9 @@ f = open('%s/%s.err' % (test_dir, options.name), 'w')
 f.write(err)
 f.close()
 
-if err == '':
+last_line = file('%s/%s.log' % (test_dir, options.name), 'r').readlines()[-1]
+
+if 'OK' in last_line:
     sys.exit(0)
 else:
     sys.exit(1)

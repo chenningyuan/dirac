@@ -634,8 +634,9 @@ contains
   ! Internal variables
   integer :: ier
 
-  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
   call erropen(ier,'write_logical_variable',vname)
+  rewind iunit
 
   write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
   write(iunit,'(a)')        '  implicit none'
@@ -666,8 +667,9 @@ contains
   ! Internal variables
   integer :: ier
 
-  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
   call erropen(ier,'write_integer_variable',vname)
+  rewind iunit
  
   write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
   write(iunit,'(a)')        '  implicit none'
@@ -694,8 +696,9 @@ contains
   ! Internal variables
   integer :: ier
 
-  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
   call erropen(ier,'write_real_variable',vname)
+  rewind iunit
  
   write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
   write(iunit,'(a)')        '  implicit none'
@@ -722,8 +725,9 @@ contains
   ! Internal variables
   integer :: i, ier
 
-  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
   call erropen(ier,'write_integer_array',vname)
+  rewind iunit
 
   write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
   write(iunit,'(a)')        '  implicit none'
@@ -753,8 +757,9 @@ contains
   ! Internal variables
   integer :: i, ier
 
-  open(iunit,file=vname,status='new',form='formatted',access='sequential',iostat=ier)
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
   call erropen(ier,'write_real_array',vname)
+  rewind iunit
 
   write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
   write(iunit,'(a)')        '  implicit none'
@@ -1692,7 +1697,10 @@ contains
   endif
 
   open(iunit,file=gets(test_name(1)%str),status='new',form='formatted',access='sequential',&
-       iostat=ier); call erropen(ier,'generate_test',gets(test_name(1)%str))
+       iostat=ier)
+  if( ier /= 0 .and. ier /= 10 ) call erropen(ier,'generate_test',gets(test_name(1)%str))
+  if( ier == 10 ) write(6,*) ' WARNING: file ',gets(test_name(1)%str),' already exists', &
+                             ' ==> it will be rewritten'
 
   ! header
   write(iunit,'(a)')'program test'
@@ -1725,13 +1733,15 @@ contains
       write(iunit,'(a,70a,70a,a,70a,a)') &
             '  allocate( ' , gets(var_name(i)%str) , gets(var_dim(i)%str) , &
             " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
-      ! allocate reference array if we want to use array-array comparison
-      if( gets(var_info(i)%str) == 'output' .or. gets(var_info(i)%str) == 'inout' )then
-        io = io + 1
-        if(gets(compare_info(io)%str) == 'array-array')then
+    endif
+    ! allocate reference array if we want to use array-array comparison
+    if( gets(var_info(i)%str) == 'output' .or. gets(var_info(i)%str) == 'inout' )then
+      io = io + 1
+      if(gets(compare_info(io)%str) == 'array-array')then
+        if( var_dim(i)%str(1) /= '0')then
           write(iunit,'(a,70a,70a,a,70a,a)') '  allocate( ' , &
-                strip_blank(gets(var_name(i)%str)) // '_ref' , gets(var_dim(i)%str) , &
-                " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
+          strip_blank(gets(var_name(i)%str)) // '_ref' , gets(var_dim(i)%str) , &
+          " , stat=ier ); call errall(ier,'test','", strip_blank(gets(var_name(i)%str)),"_ref')"
         endif
       endif
     endif
@@ -1822,12 +1832,25 @@ contains
     endif
   enddo
   ! deallocation
+  io = 0
   write(iunit,'(a)')
   do i=1,size(var_name)
     if( var_dim(i)%str(1) /= '0')then
       write(iunit,'(a,70a,a)')"  deallocate( " , gets(var_name(i)%str) , " )"
     endif
+    ! deallocate reference array
+    if( gets(var_info(i)%str) == 'output' .or. gets(var_info(i)%str) == 'inout' )then
+      io = io + 1
+      if(gets(compare_info(io)%str) == 'array-array')then
+        if( var_dim(i)%str(1) /= '0')then
+          write(iunit,'(a,70a,a)')"  deallocate( ", strip_blank(gets(var_name(i)%str)), "_ref )"
+        endif
+      endif
+    endif
   enddo
+  ! test finished successfully
+  write(iunit,'(a)')
+  write(iunit,'(a)')"  write(6,*) ' test result: =====  OK  ====='"
   ! write error routine
   write(iunit,'(a)')
   write(iunit,'(a)')"contains"
