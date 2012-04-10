@@ -5,6 +5,7 @@ module unit_testing
    public compare_matrix
    public compare_files
    public compare_vector
+   public compare_2vectors
    public matrix_to_file
    public matrix_from_file
 
@@ -121,6 +122,62 @@ contains
    endif
 
    end subroutine
+
+   subroutine compare_2vectors(ndim, vector1, vector2, thresh)
+   implicit none
+
+   ! External variables
+   integer, intent(in) :: ndim
+   real*8,  intent(in) :: thresh, vector1(*), vector2(*)
+
+   ! Internal variables
+   integer :: ic, icmax
+   real*8  :: sdev, errmax, diff, dval1, dval2
+
+   ! compare data from file and vector
+   errmax = 0.0d0
+   sdev   = 0.0d0
+   dval1  = 0.0d0
+   dval2  = 0.0d0
+   icmax  = 0
+   do ic=1, ndim
+
+     diff = dabs(vector1(ic)-vector2(ic))
+     sdev = sdev + diff*diff
+
+     if( diff > errmax )then
+       errmax = diff
+       dval1  = vector1(ic)
+       dval2  = vector2(ic)
+       icmax  = ic
+     endif
+
+   enddo
+
+   ! info
+   write(6,'(a)') ' Compare two sets of real numbers'
+   write(6,'(a)') '   a --> reference  set'
+   write(6,'(a)') '   b --> calculated set'
+   write(6,'(a,d12.4)')  ' Threshold  = ',thresh
+   write(6,'(a,i12)')    ' Number of compared elements  = ',ndim
+   write(6,'(a,d12.4)')  ' The largest difference (max|a-b|) = ',errmax
+   write(6,'(a,d25.16)') ' a = ',dval1
+   write(6,'(a,d25.16)') ' b = ',dval2
+   write(6,'(a,i12)')    ' Position of these elements = ',icmax
+   write(6,'(a,d12.4)')  ' Standard deviation: sqrt( (a-b)^2 / n ) = ',dsqrt(sdev/dfloat(ndim))
+
+   ! check result
+   if(errmax > thresh)then
+     write(6,'(a)')
+     write(6,'(a)') ' ERROR in compare_2vectors routine: Examined arrays differ too much'
+     write(0,'(a)') ' ERROR in compare_2vectors routine: Examined arrays differ too much'
+     stop 1
+   else
+     write(6,'(a)')
+     write(6,'(a)') ' =====  OK  ====='
+   endif
+
+   end subroutine compare_2vectors
 
    subroutine compare_files(iunit, file1, file2, thresh)
    implicit none

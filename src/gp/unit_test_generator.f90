@@ -849,22 +849,23 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_compare_info(vname,compare,threshold,file)
+  subroutine add_compare_info(vname,ndim,compare,threshold,file)
   implicit none
 
   ! External variables
   character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
+  integer,      intent(in) :: ndim
 
   call add_string(compare,compare_info)
   select case(compare)
     case('array-array')
-      call add_string('  call compare_arrays', compare_technique)
-      call add_string(vname, compare_array)
+      call add_string('  call compare_2vectors(' // i2c(ndim), compare_technique)
+      call add_string(strip_blank(vname), compare_array)
 
     case('file-array')
       call add_string('  call compare_vector', compare_technique)
-      call add_string(vname, compare_array)
+      call add_string(strip_blank(vname), compare_array)
       if(.not.present(file))then
         write(6,*) 'ERROR: You forgot to define "file" name add_out_variable call'
         stop
@@ -931,10 +932,12 @@ contains
 
   ! set what you want to compare
   if(present(compare))then
-    call add_compare_info(vname,compare,threshold,file)
+    call add_compare_info(vname,0,compare,threshold,file)
   else
-    call add_compare_info(vname,'array-array',threshold,file)
-    call write_data(ivar,strip_blank(vname) // '_out')
+    call add_compare_info(vname,0,'array-array',threshold,file)
+    call write_data(ivar,strip_blank(vname) // '_ref')
+    write(6,*) ' STOP: output integer data are not yet implemented'
+    stop
   endif
 
   end subroutine add_out_integer_variable
@@ -942,10 +945,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_integer_1d_array(ivar,vname)
+  subroutine add_out_integer_1d_array(ivar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:)
 
@@ -965,7 +969,16 @@ contains
     call add_string('own_name',var_value)
   else
     call change_string(var_info,'inout',find_name(vname))
-    call write_integer_array(ivar,n1,strip_blank(vname) // '_out')
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,n1,compare,threshold,file)
+  else
+    call add_compare_info(vname,n1,'array-array',threshold,file)
+    call write_integer_array(ivar,n1,strip_blank(vname) // '_ref')
+    write(6,*) ' STOP: output integer data are not yet implemented'
+    stop
   endif
 
   end subroutine add_out_integer_1d_array
@@ -973,10 +986,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_integer_2d_array(ivar,vname)
+  subroutine add_out_integer_2d_array(ivar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   integer,      intent(in) :: ivar(:,:)
 
@@ -997,7 +1011,16 @@ contains
     call add_string('own_name',var_value)
   else
     call change_string(var_info,'inout',find_name(vname))
-    call write_integer_array(ivar,n1*n2,strip_blank(vname) // '_out')
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,n1*n2,compare,threshold,file)
+  else
+    call add_compare_info(vname,n1*n2,'array-array',threshold,file)
+    call write_integer_array(ivar,n1*n2,strip_blank(vname) // '_ref')
+    write(6,*) ' STOP: output integer data are not yet implemented'
+    stop
   endif
 
   end subroutine add_out_integer_2d_array
@@ -1005,10 +1028,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_variable(dvar,vname)
+  subroutine add_out_real_variable(dvar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar
 
@@ -1023,7 +1047,16 @@ contains
     call add_string('own_name',var_value)
   else
     call change_string(var_info,'inout',find_name(vname))
-    call write_data(dvar,strip_blank(vname) // '_out')
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,0,compare,threshold,file)
+  else
+    call add_compare_info(vname,0,'array-array',threshold,file)
+    call write_data(dvar,strip_blank(vname) // '_ref')
+    write(6,*) ' STOP: output real variable is not yet implemented'
+    stop
   endif
 
   end subroutine add_out_real_variable
@@ -1031,10 +1064,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_1d_array(dvar,vname)
+  subroutine add_out_real_1d_array(dvar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:)
 
@@ -1054,7 +1088,14 @@ contains
     call add_string('own_name',var_value)
   else
     call change_string(var_info,'inout',find_name(vname))
-    call write_real_array(dvar,n1,strip_blank(vname) // '_out')
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,n1,compare,threshold,file)
+  else
+    call add_compare_info(vname,n1,'array-array',threshold,file)
+    call write_real_array(dvar,n1,strip_blank(vname) // '_ref')
   endif
 
   end subroutine add_out_real_1d_array
@@ -1062,10 +1103,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_2d_array(dvar,vname)
+  subroutine add_out_real_2d_array(dvar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:)
 
@@ -1086,7 +1128,14 @@ contains
     call add_string('own_name',var_value)
   else
     call change_string(var_info,'inout',find_name(vname))
-    call write_real_array(dvar,n1*n2,strip_blank(vname) // '_out')
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,n1*n2,compare,threshold,file)
+  else
+    call add_compare_info(vname,n1*n2,'array-array',threshold,file)
+    call write_real_array(dvar,n1*n2,strip_blank(vname) // '_ref')
   endif
 
   end subroutine add_out_real_2d_array
@@ -1124,10 +1173,10 @@ contains
 
   ! set what you want to compare
   if(present(compare))then
-    call add_compare_info(vname,compare,threshold,file)
+    call add_compare_info(vname,n1*n2*n3,compare,threshold,file)
   else
-    call add_compare_info(vname,'array-array',threshold,file)
-    call write_real_array(dvar,n1*n2*n3,strip_blank(vname) // '_out')
+    call add_compare_info(vname,n1*n2*n3,'array-array',threshold,file)
+    call write_real_array(dvar,n1*n2*n3,strip_blank(vname) // '_ref')
   endif
 
   end subroutine add_out_real_3d_array
@@ -1135,10 +1184,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine add_out_real_4d_array(dvar,vname)
+  subroutine add_out_real_4d_array(dvar,vname,compare,threshold,file)
   implicit none
 
   ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
   character(*), intent(in) :: vname
   real*8,       intent(in) :: dvar(:,:,:,:)
 
@@ -1161,7 +1211,14 @@ contains
     call add_string('own_name',var_value)
   else
     call change_string(var_info,'inout',find_name(vname))
-    call write_real_array(dvar,n1*n2*n3*n4,strip_blank(vname) // '_out')
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,n1*n2*n3*n4,compare,threshold,file)
+  else
+    call add_compare_info(vname,n1*n2*n3*n4,'array-array',threshold,file)
+    call write_real_array(dvar,n1*n2*n3*n4,strip_blank(vname) // '_ref')
   endif
 
   end subroutine add_out_real_4d_array
@@ -1197,15 +1254,14 @@ contains
     call add_string('own_name',var_value)
   else
     call change_string(var_info,'inout',find_name(vname))
-    call write_real_array(dvar,n1*n2*n3*n4*n5,strip_blank(vname) // '_out')
   endif
 
   ! set what you want to compare
   if(present(compare))then
-    call add_compare_info(vname,compare,threshold,file)
+    call add_compare_info(vname,n1*n2*n3*n4*n5,compare,threshold,file)
   else
-    call add_compare_info(vname,'array-array',threshold,file)
-    call write_real_array(dvar,n1*n2*n3*n4*n5,strip_blank(vname) // '_out')
+    call add_compare_info(vname,n1*n2*n3*n4*n5,'array-array',threshold,file)
+    call write_real_array(dvar,n1*n2*n3*n4*n5,strip_blank(vname) // '_ref')
   endif
 
   end subroutine add_out_real_5d_array
@@ -1626,7 +1682,7 @@ contains
 
   ! Internal variables
   character :: coma*1
-  integer   :: i, ier
+  integer   :: i, io, ier
 
   ! set name of the test source file
   if(associated(suffix))then
@@ -1649,16 +1705,35 @@ contains
   write(iunit,'(a)')
   write(iunit,'(a)')'  integer :: ier'
   ! declaration of variables
+  io = 0
   do i=1,size(var_name)
     write(iunit,'(2x,70a,a,70a)') gets(var_type(i)%str),' :: ',gets(var_name(i)%str)
+    ! declare reference array if we want to use array-array comparison
+    if( gets(var_info(i)%str) == 'output' .or. gets(var_info(i)%str) == 'inout' )then
+      io = io + 1
+      if(gets(compare_info(io)%str) == 'array-array')then
+        write(iunit,'(2x,70a,a,70a)') gets(var_type(i)%str),' :: ', &
+                                      strip_blank(gets(var_name(i)%str)) // '_ref'
+      endif
+    endif
   enddo
   ! allocate arrays
+  io = 0
   write(iunit,'(a)')
   do i=1,size(var_name)
     if( var_dim(i)%str(1) /= '0')then
       write(iunit,'(a,70a,70a,a,70a,a)') &
             '  allocate( ' , gets(var_name(i)%str) , gets(var_dim(i)%str) , &
             " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
+      ! allocate reference array if we want to use array-array comparison
+      if( gets(var_info(i)%str) == 'output' .or. gets(var_info(i)%str) == 'inout' )then
+        io = io + 1
+        if(gets(compare_info(io)%str) == 'array-array')then
+          write(iunit,'(a,70a,70a,a,70a,a)') '  allocate( ' , &
+                strip_blank(gets(var_name(i)%str)) // '_ref' , gets(var_dim(i)%str) , &
+                " , stat=ier ); call errall(ier,'test','" , gets(var_name(i)%str) ,"')"
+        endif
+      endif
     endif
   enddo
   ! open input file (if data are in the file)
@@ -1716,17 +1791,34 @@ contains
     enddo
   endif
   write(iunit,'(9x,a)') ')'
+  ! get output data
+  io = 0
+  do i=1,size(var_name)
+    if( gets(var_info(i)%str) == 'output' .or. gets(var_info(i)%str) == 'inout' )then
+      io = io + 1
+      if(gets(compare_info(io)%str) == 'array-array')then
+        write(iunit,'(a)')
+        write(iunit,'(a,70a,a,70a,a)') '  call get_data_', &
+              strip_blank(gets(var_name(i)%str)), '_ref(', & 
+              strip_blank(gets(var_name(i)%str)), '_ref)'
+      endif
+    endif
+  enddo
   ! compare results
   write(iunit,'(a)')
   do i=1,size(compare_technique)
-    if(compare_array(i)%str(1) == '0')then
+    if(gets(compare_info(i)%str) == 'file-file')then
       write(iunit,'(70a,a,70a,a,70a,a,70a,a)') &
            gets(compare_technique(i)%str), "(60,'", gets(output_files(i)%str), "','", &
            gets(output_files(i)%str), "_ref',", gets(thresholds(i)%str), ')'
-    else
+    elseif(gets(compare_info(i)%str) == 'file-array')then
       write(iunit,'(70a,a,70a,a,70a,a,70a,a)') &
            gets(compare_technique(i)%str), "(60,'", gets(output_files(i)%str), "',", &
            gets(compare_array(i)%str), ",", gets(thresholds(i)%str), ')'
+    elseif(gets(compare_info(i)%str) == 'array-array')then
+      write(iunit,'(70a,a,70a,a,70a,a,70a,a)') &
+           gets(compare_technique(i)%str), ',', gets(compare_array(i)%str), '_ref,', &
+           gets(compare_array(i)%str), ',', gets(thresholds(i)%str), ')'
     endif
   enddo
   ! deallocation
@@ -1763,6 +1855,17 @@ contains
       endif
     enddo
   endif
+  ! add output data routines
+  io = 0
+  do i=1,size(var_name)
+    if( gets(var_info(i)%str) == 'output' .or. gets(var_info(i)%str) == 'inout' )then
+      io = io + 1
+      if(gets(compare_info(io)%str) == 'array-array')then
+        write(iunit,'(a)')
+        call add_data_routine(iunit,strip_blank(gets(var_name(i)%str)) // '_ref')
+      endif
+    endif
+  enddo
   ! end of the test program
   write(iunit,'(a)')"end program"
 
@@ -1782,6 +1885,7 @@ contains
   nullify( var_info ); nullify( var_value )
   nullify( modules ); nullify( suffix )
   nullify( compare_technique ); nullify( thresholds ); nullify( compare_array )
+  nullify( compare_info )
 
   end subroutine unit_test_generator_destructor
 
