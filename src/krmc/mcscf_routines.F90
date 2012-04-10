@@ -871,8 +871,6 @@ contains
       call add_inp_variable(nash  ,'nash  ')
       call add_inp_variable(ipqtoq,'ipqtoq')
       call add_inp_variable(vmuuuu,'vmuuuu')
-
-      call add_out_variable(vduuuu,'vduuuu',compare='file-array',file='m2dnz390.out')
 #endif
 
   !------------------------------------------------------------------------------!
@@ -1395,32 +1393,7 @@ contains
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
 #ifdef CREATE_UNIT_TESTS
-    ! open file
-    open(60,file=get_output_name(1),status='unknown',form='formatted', &
-                                    access='sequential',iostat=ier)
-    if(ier /= 0)then
-      write(6,*) 'm2dnz390: ERROR while creating file',get_output_name(1)
-      stop
-    endif
-
-    rewind 60
-
-    ! write output data to the file
-    do m=1,3
-    do l=1,nz
-    do k=1,nnashx
-    do j=1,nasht
-    do i=1,nasht
-    write(60,*) vduuuu(i,j,k,l,m)
-    enddo
-    enddo
-    enddo
-    enddo
-    enddo
-
-    ! close file
-    close(60,status='keep')
-
+    call add_out_variable(vduuuu,'vduuuu')
     call generate_test()
 #endif
 

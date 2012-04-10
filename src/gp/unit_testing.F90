@@ -4,6 +4,7 @@ module unit_testing
 
    public compare_matrix
    public compare_files
+   public compare_text_files
    public compare_vector
    public compare_2vectors
    public matrix_to_file
@@ -13,6 +14,8 @@ module unit_testing
 
    integer, parameter :: file_unit = 137
    logical            :: file_exists
+
+   private :: strip_blank, str_size
 
 contains
 
@@ -259,6 +262,80 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
+   subroutine compare_text_files(iunit, file1, file2)
+   implicit none
+
+   ! External variables
+   character(*), intent(in) :: file1, file2
+   integer,      intent(in) :: iunit
+
+   ! Internal variables
+   character*(250) :: line1, line2
+   integer :: ic, iu1, iu2, ier, ier1, ier2
+
+   iu1 = iunit
+   iu2 = iunit + 1
+
+   ! open file1
+   open(iu1,file=file1,status='old',form='formatted',access='sequential',iostat=ier)
+   if(ier /= 0)then
+     write(6,*) 'compare_text_files: ERROR while opening file ',file1
+     write(0,*) 'compare_text_files: ERROR while opening file ',file1
+     stop
+   endif
+   rewind iu1
+
+   ! open file2
+   open(iu2,file=file2,status='old',form='formatted',access='sequential',iostat=ier)
+   if(ier /= 0)then
+     write(6,*) 'compare_text_files: ERROR while opening file ',file2
+     write(0,*) 'compare_text_files: ERROR while opening file ',file2
+     stop
+   endif
+   rewind iu2
+
+   ! compare two files
+   ic = 0
+   do
+
+     ic = ic + 1
+     read(iu1,'(a)',iostat=ier1) line1
+     read(iu2,'(a)',iostat=ier2) line2
+     if( (ier1 == -1) .and. (ier2 == -1) ) exit
+     if( (ier1 == -1) .or.  (ier2 == -1) )then
+       write(6,*) ' ERROR: Examined files have different length '
+       write(0,*) ' ERROR: Examined files have different length '
+       stop
+     endif
+     if( (ier1 /=  0) .or. (ier2 /=  0) )then
+       write(6,*) 'compare_text_files: ERROR reading one of the files ',file1,' ',file2
+       write(0,*) 'compare_text_files: ERROR reading one of the files ',file1,' ',file2
+       write(6,*) 'ier1, ier2: ',ier1, ier2
+       stop
+     endif
+
+     if( line1 /= line2 )then
+       write(6,*) ' ERROR in compare_text_files routine'
+       write(6,*) '       files (',file1,' and ',file2,') differ on line ',ic
+       write(6,'(a)') strip_blank(line1)
+       write(6,'(a)') strip_blank(line2)
+       write(0,*) ' ERROR: files differ (see output for more details) '
+       stop
+     endif
+
+   enddo
+
+   ! close file1
+   close(iu1,status='keep')
+
+   ! close file2
+   close(iu2,status='keep')
+
+   end subroutine compare_text_files
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
    subroutine matrix_to_file(file_name, matrix)
 
 !     --------------------------------------------------------------------------
@@ -339,5 +416,28 @@ contains
       close(file_unit, status = 'keep')
 
    end subroutine matrix_from_file
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  function strip_blank(string) result(str)
+  implicit none
+  character*(*), intent(in) :: string
+  character(len=str_size(string)) :: str
+  integer :: i
+  do i=1,len(str)
+    str(i:i) = string(i:i)
+  enddo
+  end function strip_blank
+
+  pure function str_size(string) result(is)
+  implicit none
+  character*(*), intent(in) :: string
+  integer :: i, is
+  do i=len(string),1,-1
+    if(string(i:i) /= ' ') exit
+  enddo
+  is = i
+  end function str_size
 
 end module
