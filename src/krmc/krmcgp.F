@@ -41,7 +41,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcborb.h"
 C
       DIMENSION VCL(NELEM,NZ,NZ,*)
       DIMENSION VNZ3(NELEM,NZ,3)
@@ -128,8 +127,6 @@ C
                      IQ2 = IPQTOQ(IZ2,IREPAB)
                      IFAC = IFACNZ3(ICLASS,1,IQ1,IQ2)
                      IF (IFAC .NE. 0) THEN
-            IF(ICLASS==1) WRITE(6,'(1X,A,6I4)') 
-     & 'NZ=1:IFAC,IZ2,IZ1,IREPABR,IQ1,IQ2:',IFAC,IZ2,IZ1,IREPABR,IQ1,IQ2
                         CALL DAXPY(NELEM,dble(IFAC),
      &                       VCL(1,IZ2,IZ1,IREPABR),1,
      &                       VNZ3(1,1,ICLASS),1)
@@ -137,8 +134,6 @@ C
                      IF (NZ .GT. 1) THEN
                         IFAC = IFACNZ3(ICLASS,2,IQ1,IQ2)
                         IF (IFAC .NE. 0) THEN
-            IF(ICLASS==1) WRITE(6,'(1X,A,6I4)') 
-     & 'NZ=2:IFAC,IZ2,IZ1,IREPABR,IQ1,IQ2:',IFAC,IZ2,IZ1,IREPABR,IQ1,IQ2
                            CALL DAXPY(NELEM,dble(IFAC),
      &                          VCL(1,IZ2,IZ1,IREPABR),1,
      &                          VNZ3(1,2,ICLASS),1)
@@ -161,22 +156,6 @@ C
          end if
 
       END DO
-C
-C   ------------- START TEST -------------
-C
-      WRITE(6,*) 'VNZ3',NELEM,NORBT
-      IF(NZ==1)THEN
-        WRITE(6,'(A,3D12.4)') ' VNZ3(1,1),VCL(1,1,1),VCL(1,1,3):',
-     &  VNZ3(2*NORBT+12,1,1),VCL(2*NORBT+12,1,1,1),VCL(2*NORBT+12,1,1,3)
-      ENDIF
-      IF(NZ==2)THEN
-        WRITE(6,'(A,3D12.4)') ' VNZ3(1,1)',VNZ3(2*NORBT+12,1,1)
-        WRITE(6,'(A,3D12.4)') ' VNZ3(2,1),VCL(1,2,1),VCL(2,1,1):',
-     &  VNZ3(2*NORBT+12,2,1),VCL(2*NORBT+12,1,2,1),VCL(2*NORBT+12,2,1,1)
-      ENDIF
-C
-C   ------------- END TEST -------------
-C
 
       IF (NZ .EQ. 4) THEN
          DO ICLASS = 1, 3
@@ -363,15 +342,6 @@ C
                  END DO
               END DO
            END DO
-C
-C   ------------- START TEST -------------
-C
-           WRITE(6,*) 'H2XY-12',IDXU2G(2),NORBT
-           IF(NZ>=1)WRITE(6,*) 'H2XY-12',H2XY(12,2,1,1),HX(12,3,1,1)
-           IF(NZ>=2)WRITE(6,*) 'H2XY-12',H2XY(12,2,2,1),HX(12,3,2,1)
-C
-C   ------------- END TEST -------------
-C
          else  ! I3 = 1 and NZ = 1 for spin-free
            DO IG = 1, NORBT
              DO IU = 1, NASHT
@@ -786,14 +756,6 @@ C
 #endif
          END DO
       END DO
-C
-C   ------------- START TEST -------------
-C
-      WRITE(6,*) 'INTB2X'
-      WRITE(6,*) HX(12,3,1,1,1),HX(12,3,2,1,1)
-C
-C   ------------- END TEST -------------
-C
 C
       RETURN
       END

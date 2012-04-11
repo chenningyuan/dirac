@@ -1515,7 +1515,6 @@ C
       DIMENSION H2YX(NORBT,NASHT,NZ,3)
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
-      REAL*8, ALLOCATABLE :: TMPMAT(:,:,:)
 C
       IF (IPRINT .GE. 20) THEN
          CALL HEADER('Output from RADDFQ',-1)
@@ -1544,92 +1543,6 @@ C
             END DO
          END IF
       END IF
-C
-C
-C   ------------- START TEST -------------
-C
-      CALL HEADER('Output from RADDFQ',-1)
-      WRITE(LUPRI,'(A,3I3)') ' NXY, IX, IY  = ',NXY,IX,IY
-      WRITE(LUPRI,'(A,3I3)') ' NORBT, NASHT = ',NORBT,NASHT
-      DO IZZ=1,NZ
-        DO I=1,3
-          WRITE(LUPRI,'(/A,I1,A,I1,$A)')' PV matrix(',IZZ,',',I,')'
-          CALL PMATTMP(LUPRI,PV(1,1,NXY,IZZ,I),NASHT,NASHT)
-        ENDDO
-      ENDDO
-      ALLOCATE(TMPMAT(NORBT,NASHT,3))
-      ! H2XY
-      IF (NZ==1)THEN
-        DO K=1,3
-        DO J=1,NASHT
-        DO I=1,NORBT
-          TMPMAT(I,J,K) = H2XY(I,J,1,K)
-        ENDDO
-        ENDDO
-        ENDDO
-      ELSEIF(NZ==2)THEN
-        DO K=1,3
-          IF(K/=3)THEN
-            DO J=1,NASHT
-            DO I=1,NORBT
-              TMPMAT(I,J,K) = H2XY(I,J,1,K) + H2XY(I,J,2,K)
-            ENDDO
-            ENDDO
-          ELSE
-            DO J=1,NASHT
-            DO I=1,NORBT
-              TMPMAT(I,J,K) = H2XY(I,J,1,K) - H2XY(I,J,2,K)
-            ENDDO
-            ENDDO
-          ENDIF
-        ENDDO
-      ENDIF
-      DO I=1,3
-        WRITE(LUPRI,'(/A,I1,A,I1,$A)')' H2XY matrix(',NZ,',',I,')'
-        CALL PMATTMP(LUPRI,TMPMAT(1,1,I),NORBT,NASHT)
-      ENDDO
-      ! H2YX
-      IF (NZ==1)THEN
-        DO K=1,3
-          DO J=1,NASHT
-          DO I=1,NORBT
-            TMPMAT(I,J,K) = H2YX(I,J,1,K)
-          ENDDO
-          ENDDO
-          DO IZZ=1,NZ
-            WRITE(LUPRI,'(/A,I1,A,I1,$A)')' H2YX matrix(',IZZ,',',K,')'
-            CALL PMATTMP(LUPRI,TMPMAT(1,1,K),NORBT,NASHT)
-          ENDDO
-        ENDDO
-      ELSEIF(NZ==2)THEN
-!        DO J=1,NASHT
-!        DO I=1,NORBT
-!          TMPMAT(I,J,1) = H2YX(I,J,1,1) - H2YX(I,J,2,1)
-!        ENDDO
-!        ENDDO
-!        I = 1
-!        WRITE(LUPRI,'(/A,I1,A,I1,$A)')' H2YX matrix(',NZ,',',I,')'
-!        CALL PMATTMP(LUPRI,TMPMAT(1,1,1),NORBT,NASHT)
-        DO I=1,3
-          DO IZZ=1,NZ
-            WRITE(LUPRI,'(/A,I1,A,I1,$A)')' H2YX matrix(',IZZ,',',I,')'
-            CALL PMATTMP(LUPRI,H2YX(1,1,IZZ,I),NORBT,NASHT)
-          ENDDO
-        ENDDO
-      ENDIF
-      DEALLOCATE(TMPMAT)
-!     DO I=1,3
-!       DO IZZ=1,NZ
-!         WRITE(LUPRI,'(/A,I1,A,I1,$A)')' H2XY matrix(',IZZ,',',I,')'
-!         CALL PMATTMP(LUPRI,H2XY(1,1,IZZ,I),NORBT,NASHT)
-!       ENDDO
-!     ENDDO
-!     DO IZZ=1,NZ
-!       WRITE(LUPRI,'(/A,I1,$A)')' FQ matrix(',IZZ,')'
-!       CALL PMATTMP(LUPRI,FQ(1,1,IZZ),NORBT,NASHT)
-!     ENDDO
-C
-C   ------------- END TEST -------------
 C
 C
 C     ***********************
@@ -4521,57 +4434,3 @@ C
       RETURN
       END
 #endif
-C
-C &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-      SUBROUTINE PMATTMP(LUPRI,AMAT,NK,NL)
-      IMPLICIT NONE
-C
-      INTEGER, INTENT(IN) :: LUPRI, NK, NL
-      REAL*8,  INTENT(IN) :: AMAT(NK,NL)
-C
-      INTEGER :: K, L
-      REAL*8, ALLOCATABLE :: ATMP(:,:)
-      REAL*8 :: D0, THRTMP, DMAX
-C
-      D0 = 0.0D0
-      DMAX = D0
-      THRTMP = 1.0D-13
-      ALLOCATE(ATMP(NK,NL))
-C
-      
-      ! Check for zero
-      DO K=1,NK
-        DO L=1,NL
-          ATMP(K,L) = AMAT(K,L)
-          IF(DMAX < DABS(ATMP(K,L))) DMAX = DABS(ATMP(K,L))
-          IF(DABS(ATMP(K,L)) < THRTMP) ATMP(K,L) = D0
-        ENDDO
-      ENDDO
-      ! Print
-      IF(DMAX > THRTMP)THEN
-        ! First row
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,'($A)')'      '
-        DO L=1,NL
-          WRITE(LUPRI,'($A,I2,A)') '   Coulomn',L,'   '
-        ENDDO
-        WRITE(LUPRI,*)
-        ! Print matrix
-        DO K=1,NK
-          DMAX = D0
-          DO L=1,NL
-            IF(DMAX < DABS(ATMP(K,L))) DMAX = DABS(ATMP(K,L))
-          ENDDO
-          IF(DMAX > THRTMP)THEN
-             WRITE(LUPRI,'(3X,I2,6D15.7)')K,(ATMP(K,L),L=1,NL)
-          ENDIF
-        ENDDO
-      ELSE
-        WRITE(LUPRI,'(A)') ' --> Zero matrix.'
-      ENDIF
-C
-      DEALLOCATE(ATMP)
-C
-      END SUBROUTINE PMATTMP

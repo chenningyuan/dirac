@@ -49,7 +49,6 @@ contains
   integer :: i, j, k, izz, npvcol, ier
 
   real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
-  real*8, allocatable :: tmpmat(:,:,:)
 
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
@@ -116,93 +115,6 @@ contains
       end do
     end if
   end if
-
-!
-!   ------------- START TEST -------------
-!
-  call header('Output from raddfq90',-1)
-  write(lupri,'(a,3i3)') ' nxy, ix, iy  = ',nxy,ix,iy
-  write(lupri,'(a,3i3)') ' norbt, nasht = ',norbt,nasht
-  do izz=1,nz
-    do i=1,3
-      write(lupri,'(/a,i1,a,i1,$a)')' pv matrix(',izz,',',i,')'
-      call pmattmp(lupri,pv(1,1,nxy,izz,i),nasht,nasht)
-    enddo
-  enddo
-  allocate(tmpmat(norbt,nasht,3))
-  ! h2xy
-  if (nz==1)then
-    do k=1,3
-    do j=1,nasht
-    do i=1,norbt
-      tmpmat(i,j,k) = h2xy(i,j,1,k)
-    enddo
-    enddo
-    enddo
-  elseif(nz==2)then
-    do k=1,3
-      if(k/=3)then
-        do j=1,nasht
-        do i=1,norbt
-          tmpmat(i,j,k) = h2xy(i,j,1,k) + h2xy(i,j,2,k)
-        enddo
-        enddo
-      else
-        do j=1,nasht
-        do i=1,norbt
-          tmpmat(i,j,k) = h2xy(i,j,1,k) - h2xy(i,j,2,k)
-        enddo
-        enddo
-      endif
-    enddo
-  endif
-  do i=1,3
-    write(lupri,'(/a,i1,a,i1,$a)')' h2xy matrix(',nz,',',i,')'
-    call pmattmp(lupri,tmpmat(1,1,i),norbt,nasht)
-  enddo
-  ! h2yx
-  if (nz==1)then
-    do k=1,3
-      do j=1,nasht
-      do i=1,norbt
-        tmpmat(i,j,k) = h2yx(i,j,1,k)
-      enddo
-      enddo
-      do izz=1,nz
-        write(lupri,'(/a,i1,a,i1,$a)')' h2yx matrix(',izz,',',k,')'
-        call pmattmp(lupri,tmpmat(1,1,k),norbt,nasht)
-      enddo
-    enddo
-  elseif(nz==2)then
-!    do j=1,nasht
-!    do i=1,norbt
-!      tmpmat(i,j,1) = h2yx(i,j,1,1) - h2yx(i,j,2,1)
-!    enddo
-!    enddo
-!    i = 1
-!    write(lupri,'(/a,i1,a,i1,$a)')' h2yx matrix(',nz,',',i,')'
-!    call pmattmp(lupri,tmpmat(1,1,1),norbt,nasht)
-    do i=1,3
-      do izz=1,nz
-        write(lupri,'(/a,i1,a,i1,$a)')' h2yx matrix(',izz,',',i,')'
-        call pmattmp(lupri,h2yx(1,1,izz,i),norbt,nasht)
-      enddo
-    enddo
-  endif
-  deallocate(tmpmat)
-!     do i=1,3
-!       do izz=1,nz
-!         write(lupri,'(/a,i1,a,i1,$a)')' h2xy matrix(',izz,',',i,')'
-!         call pmattmp(lupri,h2xy(1,1,izz,i),norbt,nasht)
-!       enddo
-!     enddo
-!     do izz=1,nz
-!       write(lupri,'(/a,i1,$a)')' fq matrix(',izz,')'
-!       call pmattmp(lupri,fq(1,1,izz),norbt,nasht)
-!     enddo
-!
-!   ------------- END TEST -------------
-!
 
   !------------------------------------------------------------------------------!
   !                          *** Real part of FQ ***                             !
