@@ -1698,9 +1698,10 @@ contains
 
   open(iunit,file=gets(test_name(1)%str),status='new',form='formatted',access='sequential',&
        iostat=ier)
-  if( ier /= 0 .and. ier /= 10 ) call erropen(ier,'generate_test',gets(test_name(1)%str))
-  if( ier == 10 ) write(6,*) ' WARNING: file ',gets(test_name(1)%str),' already exists', &
-                             ' ==> it will be rewritten'
+  if( ier /= 0 )then
+    write(6,*) ' WARNING: error while opening new file ',gets(test_name(1)%str),' in generate_test'
+    write(6,*) ' WARNING: most probably it already exists; iostat = ',ier
+  endif
 
   ! header
   write(iunit,'(a)')'program test'
