@@ -3,10 +3,10 @@ module unit_testing
    implicit none
 
    public compare_matrix
-   public compare_files
-   public compare_text_files
    public compare_vector
    public compare_2vectors
+   public compare_files
+   public compare_text_files
    public matrix_to_file
    public matrix_from_file
 
@@ -15,7 +15,7 @@ module unit_testing
    integer, parameter :: file_unit = 137
    logical            :: file_exists
 
-   private :: strip_blank, str_size
+   private :: strip_blank, str_size, print_err_info
 
 contains
 
@@ -83,7 +83,7 @@ contains
 
    ! Internal variables
    integer :: ier, ic, icmax
-   real*8  :: dnum, dmax
+   real*8  :: dnum, errmax, sdev, dval1, dval2, diff
 
    ! open file_name
    open(iunit,file=file_name,status='old',form='formatted',access='sequential',iostat=ier)
@@ -95,8 +95,14 @@ contains
    rewind iunit
 
    ! compare data from file and vector
-   dmax = 0.0d0; ic = 0
+   errmax = 0.0d0
+   sdev   = 0.0d0
+   dval1  = 0.0d0
+   dval2  = 0.0d0
+   icmax  = 0
+   ic     = 0
    do
+
      ic = ic + 1
      read(iunit,*,iostat=ier) dnum
      if(ier == -1)exit
@@ -107,9 +113,14 @@ contains
        stop
      endif
 
-     if( (dabs(dnum-vector(ic))) > dmax )then
-       dmax = dabs(dnum-vector(ic))
-       icmax = ic
+     diff = dabs(dnum-vector(ic))
+     sdev = sdev + diff*diff
+
+     if( diff > errmax )then
+       errmax = diff
+       dval1  = dnum
+       dval2  = vector(ic)
+       icmax  = ic
      endif
 
    enddo
@@ -117,13 +128,16 @@ contains
    ! close file_name
    close(iunit,status='keep')
 
+   ! info
+   ic = ic - 1
+   sdev = dsqrt(sdev/dfloat(ic))
+   call print_err_info(ic,thresh,errmax,dval1,dval2,icmax,sdev)
+
    ! check result
-   if(dmax > thresh)then
-     write(6,*) ' ERROR in compare_vector routine: Examined file and vector differ'
-     write(6,*) ' thresh = ',thresh
-     write(6,*) ' dmax   = ',dmax
-     write(6,*) ' imax   = ',icmax
-     write(0,*) ' ERROR in compare_vector routine: Examined file and vector differ'
+   if(errmax > thresh)then
+     write(6,'(a)')
+     write(6,'(a)') ' ERROR in compare_vector routine: Examined file and vector differ'
+     write(0,'(a)') ' ERROR in compare_vector routine: Examined file and vector differ'
      stop
    endif
 
@@ -164,16 +178,8 @@ contains
    enddo
 
    ! info
-   write(6,'(a)') ' Compare two sets of real numbers'
-   write(6,'(a)') '   a --> reference  set'
-   write(6,'(a)') '   b --> calculated set'
-   write(6,'(a,d12.4)')  ' Threshold  = ',thresh
-   write(6,'(a,i12)')    ' Number of compared elements  = ',ndim
-   write(6,'(a,d12.4)')  ' The largest difference (max|a-b|) = ',errmax
-   write(6,'(a,d25.16)') ' a = ',dval1
-   write(6,'(a,d25.16)') ' b = ',dval2
-   write(6,'(a,i12)')    ' Position of these elements = ',icmax
-   write(6,'(a,d12.4)')  ' Standard deviation: sqrt( (a-b)^2 / n ) = ',dsqrt(sdev/dfloat(ndim))
+   sdev = dsqrt(sdev/dfloat(ndim))
+   call print_err_info(ndim,thresh,errmax,dval1,dval2,icmax,sdev)
 
    ! check result
    if(errmax > thresh)then
@@ -197,8 +203,8 @@ contains
    real*8,       intent(in) :: thresh
 
    ! Internal variables
-   integer :: iu1, iu2, ier, ier1, ier2
-   real*8  :: dnum1, dnum2, dmax
+   integer :: iu1, iu2, ier, ier1, ier2, ic, icmax
+   real*8  :: dnum1, dnum2, errmax, sdev, dval1, dval2, diff
 
    iu1 = iunit
    iu2 = iunit + 1
@@ -222,24 +228,39 @@ contains
    rewind iu2
 
    ! compare two files
-   dmax = 0.0d0
+   errmax = 0.0d0
+   sdev   = 0.0d0
+   dval1  = 0.0d0
+   dval2  = 0.0d0
+   icmax  = 0
+   ic     = 0
    do
+
+     ic = ic + 1
      read(iu1,*,iostat=ier1) dnum1
      read(iu2,*,iostat=ier2) dnum2
      if( (ier1 == -1) .and. (ier2 == -1) ) exit
      if( (ier1 == -1) .or.  (ier2 == -1) )then
-       write(6,*) ' ERROR: Examined files have different length '
-       write(0,*) ' ERROR: Examined files have different length '
+       write(6,*) ' ERROR in compare_files: Examined files have different length '
+       write(0,*) ' ERROR in compare_files: Examined files have different length '
        stop
      endif
      if( (ier1 /=  0) .or. (ier2 /=  0) )then
-       write(6,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
-       write(0,*) 'compare_files: ERROR reading one of the files ',file1,' ',file2
-       write(6,*) 'ier1, ier2: ',ier1, ier2
+       write(6,*) ' ERROR in compare_files: reading one of the files ',file1,' ',file2
+       write(0,*) ' ERROR in compare_files: reading one of the files ',file1,' ',file2
+       write(6,*) ' ier1, ier2: ',ier1, ier2
        stop
      endif
 
-     if( (dabs(dnum1-dnum2)) > dmax ) dmax = dabs(dnum1-dnum2)
+     diff = dabs(dnum1-dnum2)
+     sdev = sdev + diff*diff
+
+     if( diff > errmax )then
+       errmax = diff
+       dval1  = dnum2  ! reference file
+       dval2  = dnum1
+       icmax  = ic
+     endif
 
    enddo
 
@@ -249,11 +270,16 @@ contains
    ! close file2
    close(iu2,status='keep')
 
+   ! info
+   ic = ic - 1
+   sdev = dsqrt(sdev/dfloat(ic))
+   call print_err_info(ic,thresh,errmax,dval1,dval2,icmax,sdev)
+
    ! check result
-   if(dmax > thresh)then
-     write(6,*) ' ERROR: Examined files differ; thresh = ',thresh
-     write(6,*) ' dmax = ',dmax
-     write(0,*) ' ERROR: Examined files differ; thresh = ',thresh
+   if(errmax > thresh)then
+     write(6,'(a)')
+     write(6,'(a)') ' ERROR in compare_files routine: Examined files differ'
+     write(0,'(a)') ' ERROR in compare_files routine: Examined files differ'
      stop
    endif
 
@@ -439,5 +465,29 @@ contains
   enddo
   is = i
   end function str_size
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine print_err_info(ndim,thresh,errmax,dval1,dval2,icmax,sdev)
+  implicit none
+
+  integer, intent(in) :: ndim, icmax
+  real*8,  intent(in) :: thresh, errmax, dval1, dval2, sdev
+
+  write(6,'(a)')
+  write(6,'(a)') ' --------------------------------'
+  write(6,'(a)') ' Compare two sets of real numbers'
+  write(6,'(a)') '   a --> reference  set'
+  write(6,'(a)') '   b --> calculated set'
+  write(6,'(a,d12.4)')  ' Threshold  = ',thresh
+  write(6,'(a,i12)')    ' Number of compared elements  = ',ndim
+  write(6,'(a,d12.4)')  ' The largest difference (max|a-b|) = ',errmax
+  write(6,'(a,d25.16)') ' a = ',dval1
+  write(6,'(a,d25.16)') ' b = ',dval2
+  write(6,'(a,i12)')    ' Position of these elements = ',icmax
+  write(6,'(a,d12.4)')  ' Standard deviation: sqrt( (a-b)^2 / n ) = ',dsqrt(sdev/dfloat(ndim))
+
+  end subroutine print_err_info
 
 end module
