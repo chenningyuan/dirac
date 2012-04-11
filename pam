@@ -586,16 +586,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             metavar='INTEGER',
             )
 
-        help_mpirun='set MPI launcher, otherwise taken the first from your $PATH ('+str(self.mpirun)+').'
-        group.add_option(
-            '--mpirun',
-            type='string',
-            action='store',
-            dest='dest_mpirun',
-            help=help_mpirun,
-            metavar='STRING',
-            )
-        
         group.add_option(
             '--mpiarg',
             type='string',
@@ -824,11 +814,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
         self.max_memory_dynamic = int(options.dest_aw)
 
-        if options.dest_mpirun:
-            self.mpirun = options.dest_mpirun
-            if not os.path.isfile(options.dest_mpirun):
-                print_std_out_err('pam: you are assigning non existing mpi-launcher:'+options.dest_mpirun+'!')
-
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
 
@@ -925,7 +910,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
 #   if yes, assign output file name
 
         if not self.just_show_settings:
-            if options.mol_file and options.inp_file:
+            if options.mol_file is not None and options.inp_file \
+                is not None:
                 self.input_molecule = options.mol_file
                 self.input_dirac = options.inp_file
                 self.assign_mol_inp_files()
@@ -946,7 +932,10 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.scratch_dir = os.path.join(self.scratch_dir,self.user_name,'DIRAC_' + self.output_name + '_' + str(self.current_pid))
         else:
             if not options.dest_scratchfull:
-                sys.exit('error: neither --scratch nor --scratchfull specified. you can set them as pam flag or in ~/.diracrc or ./diracrc')
+                error_message = '''ERROR: pam does not know which scratch directory to use
+set it either via pam --scratch=<path>
+or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
+                sys.exit(error_message)
 
         if options.dest_scratchfull:
             self.scratch_dir=options.dest_scratchfull
@@ -1070,7 +1059,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         else:
             print '  No input file provided, assuming it is obtained from the restart file.'
 
-        if self.put_files:
+        if self.put_files is not None:
             for file_name in self.put_files:
                 for f in glob.glob(file_name):
                     copy_single_file(f,f)
@@ -1274,15 +1263,14 @@ Options are also read from the ~/.dirac and .diracrc files."""
         all static allocations, for example
         """
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
-        # radovan: just FYI, the "-e" ends up in my output, not in yours?
         if not is_windows:
             # this is pure linux way to obatin size of static allocations
             size_command = \
             "echo -e 'Size of all static allocations: \c'; size " \
             + self.dirac_exe + ' 2> /dev/null | grep ' + self.dirac_exe \
             + " 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
-            p1 = subprocess.Popen(size_command, shell=True,
-                           stdin=subprocess.PIPE, stdout=self.f)
+            p1 = subprocess.Popen(shlex.split(size_command),
+                                  stdin=subprocess.PIPE, stdout=self.f)
 
     def grep_for_warnings(self):
         if os.path.isfile(self.output_file_full):
@@ -1341,7 +1329,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         sys.stderr.flush()
         # command - print all processes, to be adapted for other architectures ?
         command="ps -fu "+self.user_name
-        process_string=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,\
+        process_string=subprocess.Popen(shlex.split(command),stdin=subprocess.PIPE,\
                        stdout=subprocess.PIPE).communicate()[0]
         print_std_out_err("\n current processes left: \n--------------------------- \n"+process_string)
 
@@ -1360,7 +1348,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 return str(num)
         signum_kill=2 # for killing, prepare the strongest ammo
         # interrupt dirac run
-        if self.pgid:
+        if self.pgid is not None:
             if signum != signum_kill:
                 interrupt_message="\npam: Caught signal #"+str(signum)+"("+signal_numtoname(signum)+")"\
                 " but dirac.x process group is going to be terminated"+\
@@ -1436,19 +1424,15 @@ Options are also read from the ~/.dirac and .diracrc files."""
         
         # process the dirac.x (or mpi-wrapper) as the child subprocess
         # stderr=None means flushing stderr output only into console (red color in CDash-webpage)
-        # radovan: with shell=True the pid does not necessarily match
-        #          the dirac job, it matches the shell command that spawns the dirac job
-        #          then timeout terminates the command but not the dirac.x run
-        #          but we do need shell=True (painful lesson when testing without)
         # http://mail.python.org/pipermail/python-bugs-list/2009-January/067267.html
         # ulf: Passing the signal on to the process group should work
         if not is_windows():
-            self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
+            self.dirac_p = subprocess.Popen(shlex.split(self.dirac_cmd),
                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE, preexec_fn=os.setsid)
         else:
         # Windows: provide exec command with "" to fix =/+ characters in the full path
             self.dirac_cmd='"'+self.dirac_cmd+'"'
-            self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
+            self.dirac_p = subprocess.Popen(shlex.split(self.dirac_cmd),
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
         self.pgid = self.dirac_p.pid
         if not self.silent:
@@ -1483,7 +1467,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 + ' ' + self.profiling_file
             print '  Going to profile after, command:',self.profile_command
             self.f.write('\ncommand:'+self.profile_command+'\n\n')
-            p = subprocess.Popen(self.profile_command, shell=True,
+            p = subprocess.Popen(shlex.split(self.profile_command),
                                  stdin=subprocess.PIPE, stdout=self.f)
             p.wait()
             self.f.close()
@@ -1514,7 +1498,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
     # take care of the rest - get files from scratch_dir to home dir
 
-        if self.get_files:
+        if self.get_files is not None:
             for p in self.get_files.split():
                 for f in glob.glob(p):
                     save_single_file(f)
@@ -1608,7 +1592,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # we have all args here, therefore canceled printout of input file & molecule file 
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
-                print '  executable     :', self.dirac_exe
+                print '  executable      :', self.dirac_exe
             disk= disk_space_find(self.scratch_dir)
             if disk.available:
                 scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available) 

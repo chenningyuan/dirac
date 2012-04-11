@@ -2,21 +2,19 @@
 #
 # simple script for preparing Dirac tar-ball for grid computing
 #
-#
 
 
-DIRAC=/home/ilias/qch_work/software/dirac_git/trunk_current_grid
+DIRAC=/home/ilias/qch_work/software/dirac_git/trunk_current
 
 ### update & pack ###
 
 cd $DIRAC
 
-echo -e "\n --- obtaining the fresh trunk ---"
-git pull
+#echo -e "\n --- obtaining the fresh trunk ---"
+#git pull
 
-echo -e "\n --- last git revision ---"
-git  log -n 1
-
+#echo -e "\n --- last git revision ---"
+#git log -n 1
 
 echo -e "\n removing old dirac_current.tgz..."
 /bin/rm dirac_current.tgz
@@ -35,6 +33,7 @@ echo -e "\n now packing... "
 tar cvzf dirac_current.tgz *
 
 echo -e "\n --- package dirac_current.tgz ready, you can copy it onto grid SE ---"
+
 echo -e "\n --- last git revision ---"
 git  log -n 1
 

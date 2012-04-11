@@ -2,8 +2,6 @@
 #
 # simple script for preparing Dirac tar-ball for grid computing
 #
-#
-#
 
 
 DIRAC=/home/ilias/qch_work/software/dirac_git/trunk
