@@ -24,6 +24,7 @@ module xc_derv
    use xc_max_block_length
    use xc_mpi
    use xcfun
+   use dft_cfg
  
    implicit none
  
@@ -403,34 +404,24 @@ contains
     else
 
 #ifdef PRG_DIRAC
-      select case (order)
-
-        case (0)
-          do k = 1, block_length
-            derv(k, d0000000) = dftenergy(r_0(k), dsqrt(z_0(k)))
-          end do
-
-        case (1)
-          do k = 1, block_length
-            derv(k, d0000000) = dftenergy(r_0(k), dsqrt(z_0(k)))
-            call dftpot0(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
-          end do
-
-        case (2)
-          do k = 1, block_length
-            call  dftpot1(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
-            call sdftpot1(t2(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
-          end do
-
-        case (3)
-          do k = 1, block_length
-            call sdftpot2(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
-          end do
-
-        case default
-          call my_quit('get_functional_derv: order too high')
-
-      end select
+       do k = 1, block_length
+          if (r_0(k) > dft_cfg_tinydens) then
+             select case (order)
+                case (0)
+                   derv(k, d0000000) = dftenergy(r_0(k), dsqrt(z_0(k)))
+                case (1)
+                   derv(k, d0000000) = dftenergy(r_0(k), dsqrt(z_0(k)))
+                   call dftpot0(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+                case (2)
+                   call  dftpot1(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+                   call sdftpot1(t2(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+                case (3)
+                   call sdftpot2(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+                case default
+                   call my_quit('get_functional_derv: order too high')
+             end select
+          end if
+       end do
 #else
       print *, 'tried to use cfun in standalone'
       stop
