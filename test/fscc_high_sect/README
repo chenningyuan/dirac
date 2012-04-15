@@ -4,7 +4,22 @@
 
 Mg atom:
 
+
 SCF:  
+
+Configuration in abelian subgroup - only alpha states:
+                                        Ag a B3ua B2ua B1ga B1ua B2ga B3ga 
+ Spinor class : inactive occupied          2    0    0    0    0    0    0   
+ Spinor class : active occupied            0    1    1    0    1    0    0    
+ Spinor class : active virtual             2    1    1    0    1    0    0    
+ Spinor class : inactive virtual           4    1    1    1    1    1    1    
+
+ 20
+hhvvpppp gvp gvp p gvp p p 
+  8
+  8  3  3  1  3  1  1  0
+  0  0  0  0  0  0  0  0
+
   
 CCSD 02: -0.13113488967157
 relcc  : -0.131134892087296
@@ -163,3 +178,49 @@ IP(D,3p2) = -(-396.427093105551+395.152685571624)* 27.2113834378 eV = 34.67839 [
 EE(D,1D) = 1.28493  [Ref: 1.29] eV
 EE(D,1S) = 3.552368 [Ref: 3.55] eV
 
+
+------------------------------------------------------
+
+ Mg_2+, STO-2G, small space
+
+ Configuration in abelian subgroup
+
+ Configuration in abelian subgroup
+                                        Ag a B3ua B2ua B1ua 
+ Spinor class : inactive occupied          2    0    0    0    
+ Spinor class : active occupied            0    1    1    1    
+ Spinor class : active virtual             2    1    1    1    
+ Spinor class : inactive virtual           2    2    2    2    
+
+18
+hhvvpp gvpp gvpp gvpp 
+
+ CCSD correlation energy :                    -0.104742689575262
+                 correlation energy(final)=   -0.10474268957529
+ Total CCSD energy :                        -191.663965423758896
+(0,1)
+ Level  eigenvalue (eV)
+    1        0.000000000       
+    2        4.760343001     
+    3       24.443508159    
+
+energy  1 -0.54371728E+00. degen  2. ion pot=  14.795ev,  119333.cm-1. term 2s. major det  5  0
+energy  2 -0.36877788E+00. degen  6. exc en=  4.760ev,  38395.cm-1. term 2p. major det 31  0
+energy  3  0.35456517E+00. degen  2. exc en= 24.442ev, 197151.cm-1. term 2s. major det  7  0
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+
+C(2+) --> C(1+) --> C
+
+(0,2) sect
+ energy  1 -0.11439814E+01. degen  9. ion pot=   8.793ev,   70921.cm-1. term 3p. major det 13 18
+ energy  2 -0.10795362E+01. degen  5. exc en=  1.754ev,  14144.cm-1. term 1d. major det 13 18
+ energy  3 -0.10395575E+01. degen  1. exc en=  2.841ev,  22919.cm-1. term 1s. major det 13 14
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)  Ag 4B3u4B2u4B1g4B1u4B2g4B3g4Au 4
+
+    1        0.000000000          0.000000   0   0   0   0   0   0   0   0
+    2        1.753641537      14144.074324   0   0   0   0   0   0   0   0
+    3        2.841533944      22918.519229   0   0   
