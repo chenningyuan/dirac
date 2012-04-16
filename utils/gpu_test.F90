@@ -226,7 +226,7 @@ do j=1,n
   else
     A_r(i,j)=0.0e0
   endif
-  B_r(i,j)=float(i+j) ! same jednotky...
+  B_r(i,j)=float(i+j) 
   C_r(i,j)=0.0e0
 enddo
 enddo
@@ -802,18 +802,18 @@ call system_clock( count=c2 )
 call print_time("CPU LAPACK SGEQRF")
 ! check numbers in A_r, b_r - must be the same...
   if (verb.ge.3) then
-    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF '
+    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF    diff'
   endif
   do i=1,n
   do j=1,n
     diffs = diffs + abs(A_r(i,j)-B_r(i,j))  
     if (verb.ge.3) then
-      print *,i,j,A_r(i,j), B_r(i,j)
+      print *,i,j,A_r(i,j), B_r(i,j), A_r(i,j)-B_r(i,j)
     endif
   enddo
     diffs =  diffs + abs(TAU_r(i)-TAU1_r(i))
     if (verb.ge.3) then
-      print *,i,TAU_r(i),TAU1_r(i)
+      print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
   write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged diffs are ',diffs/float(n*n)
