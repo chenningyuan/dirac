@@ -25,9 +25,11 @@
 #if defined HAVE_MKL_BLAS
 /* see /opt/intel/mkl/include/mkl_cblas.h */
 #include "mkl_cblas.h"
+#pragma message "Using Intel MKL <mkl_cblas.h> interface"
 #else
 /* see /usr/include/cblas.h */
 #include "cblas.h"
+#pragma message "Using GNU <cblas.h> interface"
 #endif
 
 /* lapack */
@@ -35,11 +37,11 @@
 /* see /opt/intel/mkl/include/mkl_lapack(e).h  */
 //#include <mkl_lapack.h>
 #include <mkl_lapacke.h>
+#pragma message "Using Intel MKL <mkl_lapacke.h> interface"
 #else
 #include <clapack.h>
+#pragma message "Using GNU <clapack.h> interface"
 #endif
-
-
 
 
 int NRHS = 1; //for cula sgesv
