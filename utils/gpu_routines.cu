@@ -71,13 +71,30 @@ char *trim_(char *buf)
 /*   
  Space for testing GPU routines written in C
 */
+void sgemm_cuda_c_test(int *n, int *verbosity){
+
+printf("preslo");
+}
+
+
 void c_gpu_math_tests_(int *n, char *routine, int *verbosity)
 {
 printf("--- Testing of C based routines --- \n");
 printf("entering routine name=%s, size of the problem n=%i, verbosity level=%i \n", trim_(routine), *n, *verbosity);
 //printf("trimmed entering routine name=%s\n",trim(routine));
 // DOPLNTE SEM VASE C-ovske RUTINY, PAN KUZMA
-printf(" DOPLNTE SEM VASE C-ovske RUTINY, PAN KUZMA !!!!\n");
+//printf(" DOPLNTE SEM VASE C-ovske RUTINY, PAN KUZMA !!!!\n");
+char *rutina;
+rutina = trim_(routine);
+switch (rutina){
+     case "sgemm_cuda_c": sgemm_cuda_c_test(n,verbosity);
+                          break;
+}
+/*switch(routine){
+ case 'sgemm_cuda_c': sgemm_cuda_c_test(n,verbosity);
+                    break;
+}         */
+//if (&routine=='sgemm_cuda_c') sgemm_cuda_c_test(n,verbosity);
 return;
 
 }
