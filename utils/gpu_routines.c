@@ -23,8 +23,8 @@
 
 /* cblas */
 #if defined HAVE_MKL_BLAS
-/* see /opt/intel/mkl/include/mkl_blas.h */
-#include "mkl_blas.h"
+/* see /opt/intel/mkl/include/mkl_cblas.h */
+#include "mkl_cblas.h"
 #else
 /* see /usr/include/cblas.h */
 #include "cblas.h"
@@ -226,13 +226,6 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
     
         cpu_time_1 = getTime();
 
-#if defined HAVE_MKL_BLAS
-/* void sgemm(const char *transa, const char *transb, const MKL_INT *m, const MKL_INT *n, const MKL_INT *k,
-           const float *alpha, const float *a, const MKL_INT *lda, const float *b, const MKL_INT *ldb,
-           const float *beta, float *c, const MKL_INT *ldc);  */
-
-        sgemm((char *)"n", (char *)"n",  (const int *) &n3, n3,n3, alpha, h_A, n3, h_B, n3, beta, h_C, n3);
-#else
 /*
  void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
                  const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
@@ -241,7 +234,6 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
                  const float beta, float *C, const int ldc);
 */
         cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n3, n3,n3, alpha, h_A, n3, h_B, n3, beta, h_C, n3);
-#endif
 
         cpu_time_2 = getTime();
 
@@ -440,14 +432,6 @@ cublasStatus status;
     
         cpu_time_1 = getTime();
 
-#if defined HAVE_MKL_BLAS
-/*
-void sgemv(const char *trans, const MKL_INT *m, const MKL_INT *n, const float *alpha,
-           const float *a, const MKL_INT *lda, const float *x, const MKL_INT *incx,
-           const float *beta, float *y, const MKL_INT *incy);
-*/
-        sgemv((const char*) 'n', n3,n3, alpha, h_A, n3, h_B, 1, beta, h_C, 1);
-#else
 /*
 void cblas_sgemv(const enum CBLAS_ORDER order,
                  const enum CBLAS_TRANSPOSE TransA, const int M, const int N,
@@ -456,8 +440,6 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
                  float *Y, const int incY);
 */
         cblas_sgemv(CblasRowMajor, CblasNoTrans, n3,n3, alpha, h_A, n3, h_B, 1, beta, h_C, 1);
-#endif
-
 
         cpu_time_2 = getTime();
 
@@ -906,29 +888,24 @@ void sgesv_cula_c_test(int *n, int *verbosity){
 
     set_variables();
 
-/*
-
-GNU version:
- int clapack_sgesv(const enum CBLAS_ORDER Order, const int N, const int NRHS,
-                   float *A, const int lda, int *ipiv, float *B, const int ldb)
-
-or MKL version:
-void sgesv( const MKL_INT* n, const MKL_INT* nrhs, float* a, 
-            const MKL_INT* lda, MKL_INT* ipiv, float* b, const MKL_INT* ldb,
-            MKL_INT* info );
-
-lapack_int LAPACKE_sgesv( int matrix_order, lapack_int n, lapack_int nrhs,
-                          float* a, lapack_int lda, lapack_int* ipiv, float* b,
-                          lapack_int ldb );
-
-*/
-
     printf("Starting clapack_sgesv ....");
 
     cpu_time_1 = getTime();
 #if defined HAVE_MKL_LAPACK
+/*
+lapack_int LAPACKE_sgesv( int matrix_order, lapack_int n, lapack_int nrhs,
+                          float* a, lapack_int lda, lapack_int* ipiv, float* b,
+                          lapack_int ldb );
+*/
+
     info = LAPACKE_sgesv(CblasRowMajor, n3, NRHS, A,  n3, IPIV, B, n3);
 #else // we have GNU clapack.h
+/*
+GNU version:
+ int clapack_sgesv(const enum CBLAS_ORDER Order, const int N, const int NRHS,
+                   float *A, const int lda, int *ipiv, float *B, const int ldb)
+*/
+
     info = clapack_sgesv(CblasRowMajor, n3, NRHS, A,  n3, IPIV, B, n3);
 #endif
     cpu_time_2 = getTime();
