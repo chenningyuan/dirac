@@ -296,6 +296,29 @@ C
      &    '(RGETNO) active orbitals are NOT transformed '//
      &    'to natural orbitals.'
       ELSE
+
+!       prepare for reordered NOs in transformation scheme below
+        if(save_reordered_nos)then
+          WRITE(LUPRI,'(/A)') '  saving REORDERED NOs on KRMCSCF!'
+          WRITE(LUPRI,'(A/)') '         ---------                '
+          DO I = 1, NFSYM
+            NOCCI = NOCC(I)
+            IOCCI = IOCC(I)
+!           restore unsorted NO numbers
+            call dzero(OCCNO(IOCCI+1),NOCCI)
+            CALL DCOPY(NOCCI,WORK(KOCCNO2+IORB(I)),1,OCCNO(IOCCI+1),1)
+            JUNO = 1 + IASH(I)
+!           sort NOs in descending order according to occupation numbers
+            write(lupri,'(/a,i4,a,i4)') 
+     &                    '  reorder from active index... ',
+     &                    IOCCI+NISH(I)+1, ' ... to ... ', 
+     &                    IOCCI+NISH(I)+NASH(I)+1
+            CALL ORDER3(UNO(JUNO,JUNO,1),OCCNO(IOCCI+NISH(I)+1),
+     &                  NASH(I),NASH(I),0,-1)
+          END DO
+
+        end if
+
 C       save MO coefficients
         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
         CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)

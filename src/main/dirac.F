@@ -720,6 +720,7 @@ C
       OPT_CHCKJZ     = .FALSE.
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
       no1pdens_save  = .true.
+      save_reordered_nos = .false.
 C
 C     Set common block DCCOPT
 C
@@ -822,12 +823,13 @@ C
 C
 C     Set common block DCLOPT
 C
-      OPT_SKIPEE     = KRMC_SKIPEE
-      OPT_SKIPEP     = KRMC_SKIPEP
-      OPT_NOCI       = KRMC_NOCI
-      OPT_UCIBOS     = KRMC_UCIBOS
-      OPT_CHCKJZ     = KRMC_CHCKJZ
-      no1pdens_save  = KRMC_NO1pdens
+      OPT_SKIPEE         = KRMC_SKIPEE
+      OPT_SKIPEP         = KRMC_SKIPEP
+      OPT_NOCI           = KRMC_NOCI
+      OPT_UCIBOS         = KRMC_UCIBOS
+      OPT_CHCKJZ         = KRMC_CHCKJZ
+      no1pdens_save      = KRMC_NO1pdens
+      save_reordered_nos = krmc_save_reordered_nos
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -952,6 +954,7 @@ C
       if(linear) opt_chckjz = .true.
 !     opt_chckjz = .true.
       no1pdens_save  = .true.
+      save_reordered_nos = save_reordered_nos_krci
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.
