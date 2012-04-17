@@ -69,6 +69,9 @@ C
       real*8,  allocatable :: cref_x(:)
       integer, allocatable :: mjvec(:)
 #endif
+      integer, allocatable :: reorder_fermion(:)
+      integer, allocatable :: reorder_list(:,:)
+      real(8), parameter   :: dm2 = -2.0d0
 C
       CALL QENTER('RGETNO')
       KFRSAV = KFREE
@@ -246,7 +249,11 @@ C
 C        save occupancies for later use 
          DO I = 1, NFSYM
            IOFF1 = IOCC(I) + 1
-           IOFF2 = IORB(I) + 1
+           IOFF2 = IORB(I)
+           do jj = 1, NPSH(i)
+             WORK(KOCCNO2+IOFF2+jj-1) = dm2
+           end do
+           IOFF2 = IORB(I) + NPSH(i) + 1
            IF(NOCC(I).gt.0)THEN
              CALL DCOPY(NOCC(I),OCCNO(IOFF1),1,WORK(KOCCNO2+IOFF2-1),1)
            END IF
@@ -297,27 +304,6 @@ C
      &    'to natural orbitals.'
       ELSE
 
-!       prepare for reordered NOs in transformation scheme below
-        if(save_reordered_nos)then
-          WRITE(LUPRI,'(/A)') '  saving REORDERED NOs on KRMCSCF!'
-          WRITE(LUPRI,'(A/)') '         ---------                '
-          DO I = 1, NFSYM
-            NOCCI = NOCC(I)
-            IOCCI = IOCC(I)
-!           restore unsorted NO numbers
-            call dzero(OCCNO(IOCCI+1),NOCCI)
-            CALL DCOPY(NOCCI,WORK(KOCCNO2+IORB(I)),1,OCCNO(IOCCI+1),1)
-            JUNO = 1 + IASH(I)
-!           sort NOs in descending order according to occupation numbers
-            write(lupri,'(/a,i4,a,i4)') 
-     &                    '  reorder from active index... ',
-     &                    IOCCI+NISH(I)+1, ' ... to ... ', 
-     &                    IOCCI+NISH(I)+NASH(I)+1
-            CALL ORDER3(UNO(JUNO,JUNO,1),OCCNO(IOCCI+NISH(I)+1),
-     &                  NASH(I),NASH(I),0,-1)
-          END DO
-
-        end if
 
 C       save MO coefficients
         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
@@ -369,13 +355,16 @@ C
  10       CONTINUE
           MOISNO = .TRUE.
         END IF
-C
-C       write NOs and occupancies to file with label MCCINATO and 
-C       MCNATOCC, respectively.
+ 
+!       write NOs and occupancies to file with label MCCINATO and 
+!       MCNATOCC, respectively.
+
         CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
         CALL IZERO(WORK(KMJVEC),NORBT)
         LUNI            = -1
         mypath_write_no = -1
+
+!       retrieve boson/mj-value information if applciable
         INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
         IF(EX)THEN
           IF(FILEOPEN)THEN
@@ -399,6 +388,105 @@ C       MCNATOCC, respectively.
           REWIND(LUNI)
           mypath_write_no = 3
         END IF
+
+!       save reordered NOs if requested
+        if(save_reordered_nos)then
+          WRITE(LUPRI,'(/A)') '  saving REORDERED NOs on KRMCSCF!'
+          WRITE(LUPRI,'(A/)') '         ---------                '
+
+          call alloc(reorder_fermion,2)
+          call alloc(reorder_list,nesht,2)
+
+          reorder_fermion = -1
+          reorder_list    =  0
+!         restore unsorted NO numbers in occno
+          call dzero(occno,norbt)
+          call dcopy(norbt,WORK(KOCCNO2),1,occno,1)
+!         create list for reordering in descending order according to occupation numbers
+!         ------------------------------------------------------------------------------
+          do i = 1, nfsym
+
+!           write(lupri,'(/a,i4,a,i4)') 
+!    &                  '  reorder from active index... ',
+!    &                     NISH(I)+1, ' ... to ... ', 
+!    &                     NISH(I)+NASH(I)
+
+!           a. inactive shells
+            icount = 1
+            do jj = 1, nish(i)
+              reorder_list(icount,i) = icount
+              icount                 = icount + 1
+            end do
+
+!           do jj = 1, nish(i)
+!             write(lupri,*) ' inactive electronic shell # ',jj,
+!    &                         ' goes to ',reorder_list(jj,i)
+!           end do
+
+!           b. active shells
+!           ----------------
+!           b. 1. initialize
+!           ----------------
+            do jj = 1, nash(i)
+              reorder_list(icount,i) = icount
+              icount                 = icount + 1
+            end do
+
+!           -------------
+!           b. 2. reorder
+!           -------------
+
+            myturn = 1
+            do 
+!             write(lupri,*) 'myturn,nash(i) ', myturn,nash(i)
+!             exit condition
+              if(myturn > nash(i)) exit
+
+              mymax  = idamax(nash(i),
+     &                 occno(iorb(i)+npsh(i)+nish(i)+1),1)
+!             write(lupri,*) '  max index and value',
+!    &        mymax, occno(iorb(i)+npsh(i)+nish(i)+mymax)
+
+!             new max index
+              reorder_list(nish(i)+myturn,i) = mymax + nish(i)
+              occno(iorb(i)+npsh(i)+nish(i)+mymax) = 0.0d0
+
+              myturn = myturn + 1
+            end do
+
+!           do jj = 1, nash(i)
+!             write(lupri,*) ' active electronic shell # ',
+!    &                         nish(i)+jj,
+!    &                         ' goes to ',
+!    &                         reorder_list(nish(i)+jj,i)
+!           end do
+
+!           c. secondary shells
+            icount = nish(i) + nash(i) + 1
+            do jj = 1, nesh(i) - nish(i) + nash(i)
+              reorder_list(icount,i) = icount
+              icount                 = icount + 1
+            end do
+            reorder_fermion(i) = nesh(i)
+          end do
+
+!         write(lupri,*) 'reorder list'
+!         do i = 1, nfsym
+!           write(lupri,*) ' fermion sym # ',i
+!           do jj = 1, nesh(i)
+!             write(lupri,*) ' electronic shell # ',jj,' goes to ',
+!    &                         reorder_list(jj,i)
+!           end do
+!         end do
+
+          CALL REORD(CMO,WORK(KOCCNO2),WORK(KMJVEC),
+     &               reorder_list,reorder_fermion,nesht,
+     &               WORK(KFREE),LFREE)
+
+          call dealloc(reorder_list)
+          call dealloc(reorder_fermion)
+        end if
+
         REWIND(LUNI)
         FND = FNDLAB('SODLABEL',LUNI)
         BACKSPACE LUNI
