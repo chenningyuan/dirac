@@ -1016,7 +1016,8 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         
         for (i=0;i<n2;i++)
         {
-          A[i] = rand() / (float)RAND_MAX;
+         // A[i] = rand() / (float)RAND_MAX;
+          A[i] = (float) i;
           B[i] = A[i];
         }
         printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",B[n2-1],A[n2-1]);
@@ -1083,10 +1084,14 @@ rutina = trim_(routine);
 if (strcmp(rutina,"sgemm_cuda_c")==0) sgemm_cuda_c_test(n, verbosity);
 if (strcmp(rutina,"sgemv_cuda_c")==0) sgemv_cuda_c_test(n, verbosity);
 if (strcmp(rutina,"dgemm_cuda_c")==0) sgemm_cuda_c_test(n, verbosity);
+#if defined USE_CULA
 if (strcmp(rutina,"sgemm_cula_c")==0) sgemm_cula_c_test(n, verbosity);
 if (strcmp(rutina,"sgemv_cula_c")==0) sgemv_cula_c_test(n, verbosity);
 if (strcmp(rutina,"sgesv_cula_c")==0) sgesv_cula_c_test(n, verbosity);
 if (strcmp(rutina,"sgeqrf_cula_c")==0) sgegrf_cula_c_test(n, verbosity);
+#else
+   printf("CULA not present, exiting.\n");
+#endif
 
 //if (strcmp(rutina,"dgemm_cuda_c")==0) printf("\n\n\ndgemm_cuda_c\n\n\n");
 

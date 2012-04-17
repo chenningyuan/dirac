@@ -746,9 +746,6 @@ write(*,*) 'CPU dgemv vector control output: sum,norm=',sum(y_d),dnrm2(n,y_d,1)
 #endif
 end subroutine dgemv_cula_test
 
-
-
-
 subroutine sgeqrf_test
 #if defined USE_CULA
 ! test on matrix QR decomposition ....
