@@ -290,7 +290,7 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
         free(h_A);
         free(h_B);
         free(h_C);
-        free(h_C_ref);
+        //free(h_C_ref);
         status = cublasFree(d_A);
         if (status != CUBLAS_STATUS_SUCCESS) {
                 fprintf (stderr, "!!!! memory free error (A)\n");
@@ -496,7 +496,7 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
         free(h_A);
         free(h_B);
         free(h_C);
-        free(h_C_ref);
+        //free(h_C_ref);
         status = cublasFree(d_A);
         if (status != CUBLAS_STATUS_SUCCESS) {
                 fprintf (stderr, "!!!! memory free error (A)\n");
@@ -654,7 +654,7 @@ void sgemm_cula_c_test(int *n, int *verbosity){
         free(h_A);
         free(h_B);
         free(h_C);
-        free(h_C_ref);
+        //free(h_C_ref);
 
         /* Shutdown */
         culaShutdown();
@@ -928,6 +928,140 @@ GNU version:
     free(IPIV);
 }
 
+void sgegrf_cula_c_test(int *n, int *verbosity){
+        double gpu_time_1,gpu_time_2,gpu_time; // zaciatocny a konecny cas na gpu
+        double cpu_time_1,cpu_time_2; // zaciatocny a konecny cas na cpu
+        
+        int i;
+        
+         culaFloat thresh = 1e-6f;
+         culaFloat diff;
+        
+         srand ( time(NULL) );
+        
+         void checkStatus(culaStatus status)
+{
+    char buf[80];
+    if(!status) return;
+    culaGetErrorInfoString(status, culaGetErrorInfo(), buf, sizeof(buf));
+    printf("%s\n", buf);
+    culaShutdown();
+    exit(EXIT_FAILURE);
+}
+        
+        culaStatus status;
+        int n2;
+        int info = 0;
+        int n3 = *n;
+        culaFloat* A = NULL;
+        culaFloat* TAU_r = NULL;
+        float* B = 0;
+        float* TAU_r1 = 0;
+        float* WORK_r = 0;
+        
+        n2 = n3*n3;
+        
+        
+        void verify_result(void)
+    {
+    printf("Verifying Result\n");
+    for(i = 0; i < n2; ++i)
+    {
+        diff = B[i] - A[i];
+        if(diff < 0.0f)
+            diff = -diff;
+        if(diff > thresh)
+        
+           if(*verbosity>0) printf("Result check failed:  i=%d  B[i]=%f  A[i]=%f\n", i, B[i], A[i]);
+    }
+    for(i = 0; i < n3; ++i)
+    {
+        diff = TAU_r1[i] - TAU_r[i];
+        if(diff < 0.0f)
+            diff = -diff;
+        if(diff > thresh)
+        
+           if(*verbosity>0) printf("Result check failed:  i=%d  TAU_r1[i]=%f  TAU_r[i]=%f\n", i, TAU_r1[i], TAU_r[i]);
+    }
+    } 
+        
+        B = (float*)malloc(n2 * sizeof(B[0]));
+        if (B == 0) {
+                fprintf (stderr, "!!!! host memory allocation error (A)\n");
+                exit(EXIT_FAILURE);
+        } else {if(*verbosity>0)fprintf(stdout,"B mtx allocated \n"); }
+        
+        TAU_r1 = (float*)malloc(n3 * sizeof(TAU_r1[0]));
+        if (TAU_r1 == 0) {
+                fprintf (stderr, "!!!! host memory allocation error (TAU_r1)\n");
+                exit(EXIT_FAILURE);
+        } else {if(*verbosity>0)fprintf(stdout,"TAU_r1 allocated \n"); }
+        
+        WORK_r = (float*)malloc(n3 * sizeof(WORK_r[0]));
+        if (WORK_r == 0) {
+                fprintf (stderr, "!!!! host memory allocation error (WORK_r)\n");
+                exit(EXIT_FAILURE);
+        } else {if(*verbosity>0)fprintf(stdout,"WORK_r allocated \n"); }
+        
+        A = (culaFloat*)malloc(n2*sizeof(culaFloat));
+        TAU_r = (culaFloat*)malloc(n3*sizeof(culaFloat));
+        
+        if (A == NULL) {fprintf (stderr, "!!!! device memory allocation error (A)\n");
+                exit(EXIT_FAILURE);
+        } else {if(*verbosity>0)fprintf(stdout,"A mtx allocated on graphic card\n"); }
+        
+        if (TAU_r == NULL) {fprintf (stderr, "!!!! device memory allocation error (TAU_r)\n");
+                exit(EXIT_FAILURE);
+        } else {if(*verbosity>0)fprintf(stdout,"TAU_r allocated on graphic card\n"); }
+        
+        for (i=0;i<n2;i++)
+        {
+          A[i] = rand() / (float)RAND_MAX;
+          B[i] = A[i];
+        }
+        printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",B[n2-1],A[n2-1]);
+        
+        printf("-------------------\n");
+        printf("   GPU CULA_SGEQRF  \n");
+        printf("-------------------\n");
+        
+        printf("Initializing CULA\n");
+        status = culaInitialize();
+        checkStatus(status);
+        gpu_time_1 = getTime();
+        status = culaSgeqrf(n3, n3, A, n3, TAU_r);
+        gpu_time_2 = getTime();
+        checkStatus(status);
+        
+        printf("Shutting down CULA\n\n");
+        culaShutdown();
+        
+        printf("----------------------\n");
+        printf("   CPU LAPACKE_sgeqrt (MKL)  \n");
+        printf("----------------------\n");
+      
+        printf("Starting clapack_sgeqrf ....");
+        cpu_time_1 = getTime();
+#if defined HAVE_MKL_LAPACK
+        info=LAPACKE_sgeqrf(LAPACK_COL_MAJOR,n3, n3, B, n3, TAU_r1);
+#else
+        printf("clapack_sgeqrf not present in GNU clapack.h ! returning\n");
+        return;
+#endif
+        cpu_time_2 = getTime();
+        printf("\nComputing ... done\n");
+        
+        verify_result();
+        printf(" ... done\n");
+        printf("\n\n\n");
+        printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",B[n2-1],A[n2-1]);
+        if(*verbosity>0)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",TAU_r1[0],TAU_r[0]);
+        printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",TAU_r1[n3-1],TAU_r[n3-1]);
+        printf("\n\n\n");
+        printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
+        printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",(gpu_time_2-gpu_time_1)/1000);
+}
+
 
 void c_gpu_math_tests_(int *n, char *routine, int *verbosity)
 {
@@ -952,6 +1086,8 @@ if (strcmp(rutina,"dgemm_cuda_c")==0) sgemm_cuda_c_test(n, verbosity);
 if (strcmp(rutina,"sgemm_cula_c")==0) sgemm_cula_c_test(n, verbosity);
 if (strcmp(rutina,"sgemv_cula_c")==0) sgemv_cula_c_test(n, verbosity);
 if (strcmp(rutina,"sgesv_cula_c")==0) sgesv_cula_c_test(n, verbosity);
+if (strcmp(rutina,"sgeqrf_cula_c")==0) sgegrf_cula_c_test(n, verbosity);
+
 //if (strcmp(rutina,"dgemm_cuda_c")==0) printf("\n\n\ndgemm_cuda_c\n\n\n");
 
 //printf("\n\n\n%s\n\n\n",rutina);

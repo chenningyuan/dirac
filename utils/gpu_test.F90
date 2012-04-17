@@ -31,6 +31,15 @@ write(*,*) __ECC
 write(*,*) 'Intel Fortran, version:',__INTEL_COMPILER
 #endif
 write(*,*) 'intel compiler build date:', __INTEL_COMPILER_BUILD_DATE
+!#include "mkl.fi"
+!DEC$IF DEFINED INTEL_MKL_VERSION
+!#pragma message "INTEL_MKL_VERSION=",INTEL_MKL_VERSION
+!write(*,*) 'Intel MKL  version:',INTEL_MKL_VERSION
+
+!!DEC$IF INTEL_MKL_VERSION .EQ. 100304
+!!* 	Code to be conditionally compiled 
+!!DEC$ENDIF
+!DEC$ENDIF
 #endif
 end subroutine fortran_compiler_info
 
@@ -176,7 +185,10 @@ routine(no_rout1+5)="sgemm_cula_c"
 routine(no_rout1+6)="sgemv_cula_c"
 routine(no_rout1+7)="dgemm_cula"
 routine(no_rout1+8)="dgemv_cula"
-  no_rout=no_rout1+8
+routine(no_rout1+9)="sgesv_cula_c"
+routine(no_rout1+10)="dgemm_cula_c"
+routine(no_rout1+11)="sgeqrf_cula_c"
+  no_rout=no_rout1+11
 #endif
 write(*,*) 'usage: gpu_test.x  <routine>  <n> <verbosity level>'
 ! using own C-function trim 
