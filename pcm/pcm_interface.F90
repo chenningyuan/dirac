@@ -40,7 +40,7 @@
    end subroutine
       
       
-   subroutine collect_atoms(charges, centers, unit_flag)
+   subroutine collect_atoms(charges, centers)
       implicit none
 
 #include "mxcent.h"
@@ -48,7 +48,6 @@
       
       real(8), intent(out) :: charges(*)
       real(8), intent(out) :: centers(3,*)
-      integer, intent(out) :: unit_flag
 
       integer :: i, j, k 
 
@@ -62,9 +61,6 @@
             charges(i) = charge(j)
          enddo
       enddo
-   
-! If units is AU unit_flag = 0. If Angstrom unit_flag = 1.
-      unit_flag = 0
    
    end subroutine
 
