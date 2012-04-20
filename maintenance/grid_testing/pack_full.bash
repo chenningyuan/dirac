@@ -16,9 +16,6 @@ cd $DIRAC
 #echo -e "\n --- last git revision ---"
 #git log -n 1
 
-echo -e "\n removing old dirac_current.tgz..."
-/bin/rm dirac_current.tgz
-
 #--------------------------------------------------------------
 # make one tgz-file with all Dirac stuff for testing & running 
 #--------------------------------------------------------------
@@ -27,14 +24,20 @@ echo -e "\n removing old dirac_current.tgz..."
 /bin/rm test/*/*.out*
 /bin/rm test/*/compare
 
+if [[ -e $DIRAC/maintenance/dirac_current.tgz ]];  then
+   echo -e "\n removing old dirac_current.tgz..."
+   /bin/rm dirac_current.tgz
+fi
+
 echo -e "\n now packing... "
 
 # pack all necessary stuff
-tar cvzf dirac_current.tgz *
+tar cvzf maintenance/grid_testing/dirac_current.tgz  ----exclude maintenance/grid_testing/dirac_current.tgz  *
+#mv   $DIRAC/dirac_current.tgz   maintenance/grid_testing/.
 
-echo -e "\n --- package dirac_current.tgz ready, you can copy it onto grid SE ---"
+echo -e "\n --- package dirac_current.tgz ready, you can copy it onto chosen grid SE ---"
 
-echo -e "\n --- last git revision ---"
+echo -e "\n --- and the last git revision ---"
 git  log -n 1
 
 exit 0
