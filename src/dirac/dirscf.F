@@ -381,6 +381,9 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use xmlout
+#ifdef PCM_MODULE
+      use pcm_interface
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -608,7 +611,6 @@ C
            CALL SOLFCK(FOCK,DMAT,1,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
         ENDIF
-
       ENDIF
 C
 C     2) - using old 2-electron Fock matrix
@@ -653,6 +655,14 @@ C
            END IF 
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
+
+#ifdef PCM_MODULE
+         if (dirac_cfg_pcm) then
+           write(lupri,'(a)') '* Calling pcm_fock_driver'
+! fock is the 2-el Fock matrix
+           call pcm_fock_driver(fock, work, lwork)
+       endif 
+#endif       
 
 CMI      ... add 1-electron Fock matrix into the total Fock matrix ...
         CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
@@ -1217,6 +1227,9 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use xmlout
+#ifdef PCM_MODULE
+      use pcm_interface
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1241,6 +1254,9 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
+#ifdef PCM_MODULE
+      integer :: printlevel
+#endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
@@ -1301,6 +1317,8 @@ C
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
+
+
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -1428,11 +1446,13 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
+ 
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
+
 C        
 C        Calculate correction according to the One-center app. models 
 C        ============================================================
@@ -1446,11 +1466,21 @@ C        Calculate total energy
 C        ======================
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
+
+#ifdef PCM_MODULE
+         if (dirac_cfg_pcm) then
+           write(lupri,'(a)') '* Calling pcm_fock_driver'
+! fock is the 2-el Fock matrix
+           call pcm_fock_driver(fock, work, lwork)
+         endif 
+#endif     
+ 
 C
 C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
          CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
+
 C
 C        Add active two-electron Fock matrices
 C
@@ -1600,6 +1630,7 @@ C*****************************************************************************
 
       use dirac_cfg
       use fde_mod
+      use pcm_interface
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1629,6 +1660,9 @@ c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
       real(kind=8) :: fde_energy
+#ifdef PCM_MODULE
+      real(8)      :: pcm_energy
+#endif
       data besterg /1.0D100/
       save besterg
 C
@@ -1704,6 +1738,13 @@ C
         ERGSOL = ESOLVE + ESOLVN
         DHFERG = DHFERG + ERGSOL
       ENDIF
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+! Add polarization energy to dhferg 
+        call pcm_energy_driver(pcm_energy, dmat, work, lwork)
+        dhferg = dhferg + pcm_energy
+      endif 
+#endif       
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
@@ -1724,7 +1765,6 @@ C
 !     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
 !        write (*,*) 'FDE energy: ',fde_energy
 !     endif
-
 
       DHFERG = DHFERG + ELERGY
 C
@@ -1761,6 +1801,10 @@ CMI      ... print out matrixes ...
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Solvent energy                     :  ',ERGSOL
+#ifdef PCM_MODULE
+         IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
+     +       'Polarization energy                :  ',get_pcm_energy()
+#endif
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN
