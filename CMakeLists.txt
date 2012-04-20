@@ -3,11 +3,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 # suppress Windows warning about policy
 cmake_policy(SET CMP0010 OLD)
 
-project(DIRAC)
-
-enable_language(Fortran C)
-
-add_definitions(-DPRG_DIRAC)
+project(DIRAC Fortran C)
 
 # set version
 set(VERSION_MAJOR 11)
@@ -52,22 +48,6 @@ option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSol
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-endif()
-
-# set work memory
-set(WORK_MEM_WORDS
-    "64000000"
-    CACHE STRING
-    "Work memory in words"
-    )
-add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
-
-if(ENABLE_LARGE_MOLECULES)
-    add_definitions(-DLARGE_MOLECULES)
-endif()
-
-if(ENABLE_MATLAB_LOG)
-    add_definitions(-DMOD_MATLAB_LOG)
 endif()
 
 include(ConfigTesting)
@@ -186,6 +166,7 @@ if(ENABLE_PCMMOD)
         cavity
         metal
         pedra
+        pwl
         wem
         wavcav
         getkw
@@ -215,6 +196,30 @@ add_custom_target(dirac_interfaces
     DEPENDS
     ${GENERATED_FILES}
 )
+
+# set definitions
+
+add_definitions(-DPRG_DIRAC)
+set(WORK_MEM_WORDS
+    "64000000"
+    CACHE STRING
+    "Work memory in words"
+    )
+add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
+if(ENABLE_64BIT_INTEGERS)
+    add_definitions(-DINT_STAR8)
+endif()
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
 
 include(SourcesList)
 
@@ -289,12 +294,6 @@ if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUN
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
         target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
     endif()
-endif()
-
-# forward CPP directly to the code
-set(CPP)
-if(NOT "${CPP}" STREQUAL "")
-    add_definitions(${CPP})
 endif()
 
 include(ConfigPackaging)

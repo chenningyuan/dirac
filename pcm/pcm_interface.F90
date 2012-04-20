@@ -40,7 +40,7 @@
    end subroutine
       
       
-   subroutine collect_atoms(charges, centers, unit_flag)
+   subroutine collect_atoms(charges, centers)
       implicit none
 
 #include "mxcent.h"
@@ -48,7 +48,6 @@
       
       real(8), intent(out) :: charges(*)
       real(8), intent(out) :: centers(3,*)
-      integer, intent(out) :: unit_flag
 
       integer :: i, j, k 
 
@@ -62,9 +61,6 @@
             charges(i) = charge(j)
          enddo
       enddo
-   
-! If units is AU unit_flag = 0. If Angstrom unit_flag = 1.
-      unit_flag = 0
    
    end subroutine
 
@@ -136,7 +132,7 @@
 ! Compute total polarization charges
       call pcm_charges(dmat, work, lwork, 0)
 ! Compute polarization energy
-      call comp_pol_ene_pcm(pol_ene, 0)
+      call comp_pol_ene_pcm(pol_ene)
       pcm_energy = pol_ene
 
    end subroutine
@@ -197,6 +193,9 @@
       real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
       real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
       integer              :: i
+      real(8)              :: factor = 1.0d0
+      character(7)         :: potName, potName1, potName2
+      character(7)         :: chgName, chgName1, chgName2
 
 ! Allocation
       allocate(nuc_pot(nr_points))
@@ -208,14 +207,29 @@
       allocate(ele_pol_chg(nr_points))
       ele_pol_chg = 0.0d0
       
-! Compute nuclear and electronic MEP @tesserae centers
+! Compute nuclear MEP @tesserae centers
+      potName = 'NucPot'//char(0)
+      chgName = 'NucChg'//char(0)
       call esp_nuc(nr_points, tess_cent, nuc_pot, 0)
+! Set a cavity surface function with the nuclear MEP
+      call set_surface_function(nr_points, nuc_pot, potName)
+! Compute nuclear polarization charges and set the proper surface function
+      call comp_chg_pcm(potName, chgName)
+! Get nuclear polarization charges @tesserae centers
+! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
+      call get_surface_function(nr_points, nuc_pol_chg, chgName)
+
+! Compute electronic MEP @tesserae centers
+      potName = 'ElePot'//char(0)
+      chgName = 'EleChg'//char(0)
       call ele_pot_pcm(ele_pot, dmat, work, lwork, .false.)
-! Compute nuclear and electronic polarization charges @tesserae centers
-! Store potentials and charges in the Cavity object?  TO BE REVISED SOON
-! 0 -> no; 1 -> nuclear; 2 -> electronic; 3-> nuclear + electronic
-      call comp_charge(nuc_pot, nuc_pol_chg, 1)
-      call comp_charge(ele_pot, ele_pol_chg, 2)
+! Set a cavity surface function with the electronic MEP
+      call set_surface_function(nr_points, ele_pot, potName)
+! Compute electronic polarization charges and set the proper surface function
+      call comp_chg_pcm(potName, chgName)
+! Get electronic polarization charges @tesserae centers
+! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
+      call get_surface_function(nr_points, ele_pol_chg, chgName)
 
 ! Print some information
       if (printlevel > 5) then
@@ -230,13 +244,33 @@
       end if
 
 ! Gauss' Theorem Test
-      if (printlevel > 4 ) then 
-          call gauss_test(nuc_pol_chg, ele_pol_chg)
-      end if
+! NOT SURE IF NECESSARY
+!      if (printlevel > 4 ) then 
+!          call gauss_test(nuc_pol_chg, ele_pol_chg)
+!      end if
 
-      potentials = nuc_pot + ele_pot
-      call get_total_surface_charge(charges)
-  
+! Obtain vector of total polarization charges 
+      chgName  = 'TotChg'//CHAR(0)
+      chgName1 = 'NucChg'//CHAR(0)
+      chgName2 = 'EleChg'//CHAR(0)
+
+      call append_surf_func(chgName)
+      call clear_surf_func(chgName)
+      call add_surface_function(chgName, factor, chgName1)
+      call add_surface_function(chgName, factor, chgName2)
+      call get_surface_function(nr_points, charges, chgName)
+
+! Obtain vector of total MEP
+! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
+      potName  = 'TotPot'//char(0)
+      potName1 = 'NucPot'//char(0)
+      potName2 = 'ElePot'//char(0)
+      call append_surf_func(potName)
+      call clear_surf_func(potName)
+      call add_surface_function(potName, factor, potName1)
+      call add_surface_function(potName, factor, potName2)
+      call get_surface_function(nr_points, potentials, potName)
+ 
       deallocate(nuc_pot)
       deallocate(nuc_pol_chg)
       deallocate(ele_pot)
@@ -303,71 +337,71 @@
 
    end subroutine
 
-   subroutine gauss_test(nuc_pol_chg, ele_pol_chg)
+!  subroutine gauss_test(nuc_pol_chg, ele_pol_chg)
 
-#include "dcbgen.h"
+!#include "dcbgen.h"
 
 ! Passed variables   
-      real(8), intent(in)  :: nuc_pol_chg(nr_points), ele_pol_chg(nr_points)
+!     real(8), intent(in)  :: nuc_pol_chg(nr_points), ele_pol_chg(nr_points)
 
 ! Local variables
-      integer :: i
-      real(8) :: eps, factor
-      real(8) :: nuc_pol_tot, ele_pol_tot 
-      real(8) :: nuc_tot_chg, ele_tot_chg, theo_nuc_pol, theo_ele_pol
-      real(8) :: calc_diff, theo_diff
+!     integer :: i
+!     real(8) :: eps, factor
+!     real(8) :: nuc_pol_tot, ele_pol_tot 
+!     real(8) :: nuc_tot_chg, ele_tot_chg, theo_nuc_pol, theo_ele_pol
+!     real(8) :: calc_diff, theo_diff
 
 ! Obtain total nuclear and electronic polarization charges
-      nuc_pol_tot = 0.0d0
-      ele_pol_tot = 0.0d0
-      do i = 1, nr_points
-        nuc_pol_tot = nuc_pol_tot + nuc_pol_chg(i)
-        ele_pol_tot = ele_pol_tot + ele_pol_chg(i)
-      end do
+!     nuc_pol_tot = 0.0d0
+!     ele_pol_tot = 0.0d0
+!     do i = 1, nr_points
+!       nuc_pol_tot = nuc_pol_tot + nuc_pol_chg(i)
+!       ele_pol_tot = ele_pol_tot + ele_pol_chg(i)
+!     end do
 
 ! Obtain total nuclear and electronic charges
-      nuc_tot_chg = 0.0d0
-      call get_nuclear_charge(nuc_tot_chg) 
-      ele_tot_chg = kcharg - nuc_tot_chg
+!     nuc_tot_chg = 0.0d0
+!     call get_nuclear_charge(nuc_tot_chg) 
+!     ele_tot_chg = kcharg - nuc_tot_chg
 
 ! Obtain solvent static permittivity
-      call get_epsilon_static(eps)
-       
+!     call get_epsilon_static(eps)
+!      
 ! Perform test   
-      factor = (eps - 1)/eps
-      theo_nuc_pol = - factor * nuc_tot_chg
-      theo_ele_pol = - factor * ele_tot_chg
-      
-      calc_diff = ele_pol_tot + nuc_pol_tot
-      theo_diff = theo_ele_pol + theo_nuc_pol
+!     factor = (eps - 1)/eps
+!     theo_nuc_pol = - factor * nuc_tot_chg
+!     theo_ele_pol = - factor * ele_tot_chg
+!     
+!     calc_diff = ele_pol_tot + nuc_pol_tot
+!     theo_diff = theo_ele_pol + theo_nuc_pol
 
 ! Print
-      print *, "Calculated Nuclear Polarization = ", nuc_pol_tot
-      print *, "Gauss's Law Nuclear Polarization = ", theo_nuc_pol
-   
-      print *, "Calculated Electronic Polarization = ", ele_pol_tot
-      print *, "Gauss's Law Electronic Polarization = ", theo_ele_pol
+!     print *, "Calculated Nuclear Polarization = ", nuc_pol_tot
+!     print *, "Gauss's Law Nuclear Polarization = ", theo_nuc_pol
+!  
+!     print *, "Calculated Electronic Polarization = ", ele_pol_tot
+!     print *, "Gauss's Law Electronic Polarization = ", theo_ele_pol
 
-      print *, "(EP + NP)_calc - (EP + NP)_Gauss", calc_diff - theo_diff 
+!     print *, "(EP + NP)_calc - (EP + NP)_Gauss", calc_diff - theo_diff 
 
-   end subroutine
+!  end subroutine
 
-   subroutine get_nuclear_charge(nuc_tot_chg)
-   
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "nuclei.h"
-#include "symmet.h" 
-      
-      integer :: i
-      real(8) :: nuc_tot_chg
+!  subroutine get_nuclear_charge(nuc_tot_chg)
+!  
+!#include "mxcent.h"
+!#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "nuclei.h"
+!#include "symmet.h" 
+!     
+!     integer :: i
+!     real(8) :: nuc_tot_chg
 
 ! Obtain total nuclear charge of the molecule
-      do i = 1, nucind
-        nuc_tot_chg = nuc_tot_chg + fmult(istbnu(i)) * charge(i)
-      end do
+!     do i = 1, nucind
+!       nuc_tot_chg = nuc_tot_chg + fmult(istbnu(i)) * charge(i)
+!     end do
 
-   end subroutine
+!  end subroutine
 
    end module
