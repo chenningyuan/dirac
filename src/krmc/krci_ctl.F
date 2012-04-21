@@ -95,7 +95,7 @@ C
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
-     &            '.DIPMOM','.MCANA ','.GAS SH','.xxxxxx','.xxxxxx'/
+     &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.xxxxxx'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: tmp_symmetry_str
@@ -142,6 +142,7 @@ C
       LOWSORT_KRCI      = .FALSE.
       STATE_SELECT_KRCI = .FALSE.
       LOWSORT_KRCI      = .FALSE.
+      save_reordered_nos_krci = .false.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -754,7 +755,8 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                GO TO 100
    44          CONTINUE
-C&&&  xxxxxx:  
+C&&&  SVRONO:  save reordered NOs rather than unsorted ones (the latter being the default)
+               save_reordered_nos_krci = .true.
                GO TO 100
    45          CONTINUE
 C&&&  xxxxxx:  

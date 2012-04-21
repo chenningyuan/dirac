@@ -75,7 +75,7 @@ C
      &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.xxxxxx','.SYMMET',
-     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.xxxxxx','.xxxxxx'/
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.xxxxxx'/
       DATA SET/.FALSE./
 C
 C
@@ -96,19 +96,20 @@ C     Initialize /CBLKRMC/
 C     ===================
 C
       DO I = 1,NMCFLAG
-         MCFLAG(I)  = .FALSE.
+         MCFLAG(I)            = .FALSE.
       END DO
-      KRMC_SKIPEE   = .FALSE.
-      KRMC_SKIPEP   = .FALSE.
+      KRMC_SKIPEE             = .FALSE.
+      KRMC_SKIPEP             = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
       if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
-     &  KRMC_SKIPEP = .TRUE.
-      KRMC_NOCI     = .FALSE.
-      KRMC_UCIBOS   = .FALSE.
-      KRMC_MKCNST   = .FALSE.
-      KRMC_CHCKJZ   = .FALSE.
-      IF(LINEAR) KRMC_CHCKJZ = .TRUE.
-      KRMC_no1pdens = .FALSE.
+     &  KRMC_SKIPEP           = .TRUE.
+      KRMC_NOCI               = .FALSE.
+      KRMC_UCIBOS             = .FALSE.
+      KRMC_MKCNST             = .FALSE.
+      KRMC_CHCKJZ             = .FALSE.
+      IF(LINEAR) KRMC_CHCKJZ  = .TRUE.
+      KRMC_no1pdens           = .FALSE.
+      krmc_save_reordered_nos = .false.
 C
 C     Initialize /CBIKRMC/
 C     ===================
@@ -460,7 +461,8 @@ C                 the m_j values of each orbital
                  KRMC_CHCKJZ = .FALSE.
                GO TO 100
  34            CONTINUE
-C&&&  .xxxxxx  -- xxx
+C&&&  .SVRONO  -- save reordered NOs rather than the original NOs
+               krmc_save_reordered_nos = .true.
                GO TO 100
  35            CONTINUE
 C&&&  .xxxxxx  -- xxx
