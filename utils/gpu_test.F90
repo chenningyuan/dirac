@@ -31,6 +31,15 @@ write(*,*) __ECC
 write(*,*) 'Intel Fortran, version:',__INTEL_COMPILER
 #endif
 write(*,*) 'intel compiler build date:', __INTEL_COMPILER_BUILD_DATE
+!#include "mkl.fi"
+!DEC$IF DEFINED INTEL_MKL_VERSION
+!#pragma message "INTEL_MKL_VERSION=",INTEL_MKL_VERSION
+!write(*,*) 'Intel MKL  version:',INTEL_MKL_VERSION
+
+!!DEC$IF INTEL_MKL_VERSION .EQ. 100304
+!!* 	Code to be conditionally compiled 
+!!DEC$ENDIF
+!DEC$ENDIF
 #endif
 end subroutine fortran_compiler_info
 
@@ -176,7 +185,10 @@ routine(no_rout1+5)="sgemm_cula_c"
 routine(no_rout1+6)="sgemv_cula_c"
 routine(no_rout1+7)="dgemm_cula"
 routine(no_rout1+8)="dgemv_cula"
-  no_rout=no_rout1+8
+routine(no_rout1+9)="sgesv_cula_c"
+routine(no_rout1+10)="dgemm_cula_c"
+routine(no_rout1+11)="sgeqrf_cula_c"
+  no_rout=no_rout1+11
 #endif
 write(*,*) 'usage: gpu_test.x  <routine>  <n> <verbosity level>'
 ! using own C-function trim 
@@ -226,7 +238,7 @@ do j=1,n
   else
     A_r(i,j)=0.0e0
   endif
-  B_r(i,j)=float(i+j) ! same jednotky...
+  B_r(i,j)=float(i+j) 
   C_r(i,j)=0.0e0
 enddo
 enddo
@@ -734,9 +746,6 @@ write(*,*) 'CPU dgemv vector control output: sum,norm=',sum(y_d),dnrm2(n,y_d,1)
 #endif
 end subroutine dgemv_cula_test
 
-
-
-
 subroutine sgeqrf_test
 #if defined USE_CULA
 ! test on matrix QR decomposition ....
@@ -802,18 +811,18 @@ call system_clock( count=c2 )
 call print_time("CPU LAPACK SGEQRF")
 ! check numbers in A_r, b_r - must be the same...
   if (verb.ge.3) then
-    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF '
+    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF    diff'
   endif
   do i=1,n
   do j=1,n
     diffs = diffs + abs(A_r(i,j)-B_r(i,j))  
     if (verb.ge.3) then
-      print *,i,j,A_r(i,j), B_r(i,j)
+      print *,i,j,A_r(i,j), B_r(i,j), A_r(i,j)-B_r(i,j)
     endif
   enddo
     diffs =  diffs + abs(TAU_r(i)-TAU1_r(i))
     if (verb.ge.3) then
-      print *,i,TAU_r(i),TAU1_r(i)
+      print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
   write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged diffs are ',diffs/float(n*n)
