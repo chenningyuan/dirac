@@ -13,6 +13,7 @@
 ! Written by Miro Ilias, Banska Bystrica, March/April 2012
 !
 !-----------------------------------------------------------------------------------------------
+      ! include "mkl.fi"
 
 subroutine fortran_compiler_info
 ! see  http://fortranwiki.org/fortran/show/Predefined+preprocessor+macros ...
@@ -364,9 +365,10 @@ enddo
 ! start the time measurement
 call system_clock( c1, cr, cm )
 stat = CULA_INITIALIZE(); call check_cula_status(stat)
-stat = CULA_SGEMM('n','n',n,n,n,1.0e0,A_r,n,B_r,n,1.0e0,C_r,n); call check_cula_status(stat)
+stat = CULA_SGEMM('n','n',n,n,n,1.0e0,A_r,n,B_r,n,1.0e0,C_r,n)
 call system_clock( count=c2 )
 call print_time("GPU CULA_SGEMM")
+call check_cula_status(stat)
 stat = CULA_SHUTDOWN(); call check_cula_status(stat)
 ! ---
 call mtx_check(C_r)
@@ -779,20 +781,28 @@ subroutine sgeqrf_test
     endif
   endif
 ! fill allocated objects A_r, B_r with (random?) data for later checking
-  do i=1,n
+  if (verb.ge.3) then
+    print *,'    Matrix for QR decomposition:'
+  endif
   do j=1,n
-     !miro: CPU-lapack SGEQRF of MKL library is giving wrong results !!! (found on 31.3.2012)
+  do i=1,n
+     ! symmetric matrix ....
      ! A_r(i,j) = rand(0)
      A_r(i,j) = float(i)+float(j) 
+     ! B the same as A
      B_r(i,j)=A_r(i,j)
+     if (verb.ge.3) then
+       print *,i,j,A_r(i,j)
+     endif
   enddo
   enddo
   stat = CULA_INITIALIZE(); call check_cula_status(stat)
 
   ! ... start the time measurement
   call system_clock( c1, cr, cm )
-  stat = CULA_SGEQRF(N, N, A_r, N, TAU_r); call check_cula_status(stat)
+  stat = CULA_SGEQRF(N, N, A_r, N, TAU_r)
   call system_clock( count=c2 )
+  call check_cula_status(stat)
   call print_time("GPU CULA_SGEQRF")
 
   stat = CULA_SHUTDOWN(); call check_cula_status(stat)
@@ -804,6 +814,7 @@ subroutine sgeqrf_test
 !see  http://www.netlib.org/lapack/single/sgeqrf.f
 ! SUBROUTINE SGEQRF( M, N, A, LDA, TAU, WORK, LWORK, INFO )
   CALL SGEQRF(N, N, B_r, N, TAU1_r, WORK_r, N , stat)
+  call system_clock( count=c2 )
   IF (stat.ne.0) then
     stop "error in CPU LAPACK SGEQRF..."
   else
@@ -811,11 +822,10 @@ subroutine sgeqrf_test
       print *,"LAPACK SGEQRF finished successfully ...."
     endif
   endif
-  call system_clock( count=c2 )
   call print_time("CPU LAPACK SGEQRF")
-! check numbers in A_r, b_r - must be the same...
+! check numbers in A_r, B_r - must be the same...
   if (verb.ge.3) then
-    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF    diff'
+    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF        diff'
   endif
   do i=1,n
   do j=1,n
@@ -826,10 +836,10 @@ subroutine sgeqrf_test
   enddo
     diffs =  diffs + abs(TAU_r(i)-TAU1_r(i))
     if (verb.ge.3) then
-      print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
+      print *,i,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
-  write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged diffs are ',diffs/float(n*n)
+  write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged absolute diffs are ',diffs/float(n*n)
 #else
  print *,'sorry, CULA library is not active'
 #endif
@@ -867,24 +877,40 @@ subroutine sgesv_test
     endif
   endif
 ! fill allocated objects A_r, B_r, TAU1_r, TAU_r with random data for later checking
+  if (verb.ge.3) then
+    write(*,"(2X,A)") "Matrix A and vector b for solving linear equations Ax=b:"
+  endif
   do i=1,n
   do j=1,n
-     A_r(i,j) = rand(0);  B_r(i,j)=A_r(i,j)
+     !A_r(i,j) = rand(0);  B_r(i,j)=A_r(i,j)
+     !A_r(i,j) = float(i)+float(j);  B_r(i,j)=A_r(i,j)
+     A_r(i,j) = float(i)+(float(j)*float(j));  B_r(i,j)=A_r(i,j)
+     if (verb.ge.3) then
+        write(*,"(7X,A,i2,A,i2,a,f12.7)")  "A[",i,",",j,"]=",A_r(i,j)
+     endif
   enddo
-     TAU_r(i) = rand(0);  TAU1_r(i) = TAU_r(i) 
+     !TAU_r(i) = rand(0);  TAU1_r(i) = TAU_r(i) 
+     !TAU_r(i) = float(i);  TAU1_r(i) = TAU_r(i) 
+     TAU_r(i) = float(i+1);  TAU1_r(i) = TAU_r(i) 
+     if (verb.ge.3) then
+        write(*,"(7X,A,I2,A,f12.7)") "b[",i,"]=",TAU_r(i)
+     endif
   enddo
   stat = CULA_INITIALIZE(); call check_cula_status(stat)
 
   ! ... start the time measurement
   call system_clock( c1, cr, cm )
-  stat = cula_sgesv(n, 1 , A_r, n , ipiv, TAU_r, n, info ); call check_cula_status(stat)
+  stat = cula_sgesv(n, 1 , A_r, n , ipiv, TAU_r, n, info )
   call system_clock( count=c2 )
+
+  call check_cula_status(stat)
   call print_time("GPU CULA_SGESV")
 
   stat = CULA_SHUTDOWN(); call check_cula_status(stat)
   ! now lapack sgesv with time measurement...
   call system_clock( c1, cr, cm )
   call sgesv(n, 1 , B_r, n , ipiv1, TAU1_r, n, stat )
+  call system_clock( count=c2 )
   IF (stat.ne.0) then
     stop "error in CPU LAPACK SGESV ..."
   else
@@ -892,11 +918,12 @@ subroutine sgesv_test
       print *,"LAPACK SGESV finished successfully ..."
     endif
   endif
-  call system_clock( count=c2 )
+  
   call print_time("CPU LAPACK SGESV")
   ! check  results - roots - must be identical 
   if (verb.ge.3) then
-    print *," roots and their differences  "
+    !print *," roots and their differences  "
+    write(*,"(7X,A)")  "root #     GPU           CPU           diff"
   endif
   do i=1,n
     diffs = diffs + abs(TAU_r(i)-TAU1_r(i))  
@@ -904,7 +931,7 @@ subroutine sgesv_test
       print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
-  write(*,*) 'control of results - CULA_SGESV vs lapack SGESV averaged diffs are ',diffs/float(n)
+  write(*,*) 'control of results - CULA_SGESV vs lapack SGESV averaged absolute diffs are ',diffs/float(n)
 #else
  print *,'sorry, CULA library is not active'
 #endif
