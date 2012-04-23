@@ -270,7 +270,7 @@
 ! Fock matrix contribution or potential calculation?      
       do_fock = .false. 
       if (present(get_fock)) then
-        if (get_fock == .true.) then
+        if (get_fock) then
             do_fock = .true.
         end if
       end if
