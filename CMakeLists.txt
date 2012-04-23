@@ -149,7 +149,7 @@ include(ConfigExternal)
 
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
-        -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
