@@ -805,18 +805,35 @@ void sgesv_cula_c_test(int *n, int *verbosity){
 
     double gpu_time_1,gpu_time_2,gpu_time; // zaciatocny a konecny cas na gpu
     double cpu_time_1,cpu_time_2; // zaciatocny a konecny cas na cpu
-
+    //n3=5;
     culaStatus status;
-    
+    float* A1 = NULL;
     culaFloat* A = NULL;
     culaFloat* B = NULL;
     culaFloat* X = NULL;
     culaInt* IPIV = NULL;
 
-    culaFloat one = 1.0f;
-    culaFloat thresh = 1e-6f;
-    culaFloat diff;
+    float h[25] = {
+            6.80f, -2.11f,  5.66f,  5.97f,  8.23f,
+           -6.05f, -3.30f,  5.36f, -4.44f,  1.08f,
+           -0.45f,  2.58f, -2.70f,  0.27f,  9.04f,
+            8.32f,  2.71f,  4.35f, -7.17f,  2.14f,
+           -9.67f, -5.14f, -7.26f,  6.08f, -6.87f
+        };
+    float u[15] = {
+            4.02f,  6.19f, -8.22f, -7.57f, -3.03f,
+           -1.56f,  4.00f, -8.67f,  1.75f,  2.86f,
+            9.81f, -4.09f, -4.57f, -8.61f,  8.99f
+        };
 
+              
+    culaFloat one = 1.0f;
+    culaFloat thresh = 0.1f;//1e-6f;
+    culaFloat diff;
+    srand ( time(NULL) );
+    
+    
+    
     void checkStatus(culaStatus status)
 {
     char buf[80];
@@ -836,23 +853,21 @@ void sgesv_cula_c_test(int *n, int *verbosity){
         if(diff < 0.0f)
             diff = -diff;
         if(diff > thresh)
-            printf("Result check failed:  i=%d  X[i]=%f  B[i]=%f", i, X[i], B[i]);
+            printf("Result check failed:  i=%d  X[i]=%f  B[i]=%f\n", i, X[i], B[i]);
     }
     } 
 
-    void set_variables(void)
-    {
-    // Set A to the identity matrix
-    memset(A, 0, n3*n3*sizeof(culaFloat)); // first zero all numbers
-    for(i = 0; i < n3; ++i)
-        A[i*n3+i] = one;
-    // Set B to a random matrix (see note at top)
-    for(i = 0; i < n3; ++i)
-        B[i] = (culaFloat)rand();
-    // copy all stuff into X, which will get roots
-    memcpy(X, B, n3*sizeof(culaFloat));
-    memset(IPIV, 0, n3*sizeof(culaInt));
-    }
+    A = (culaFloat*)malloc(n3*n3*sizeof(culaFloat));
+        if (A == NULL) {fprintf (stderr, "!!!! device memory allocation error (A)\n");
+                exit(EXIT_FAILURE);
+        } else {if(*verbosity>0)fprintf(stdout,"A mtx allocated on graphic card\n"); }
+
+    A1 = (float*)malloc(n3*n3 * sizeof(A1[0]));
+    if (A1 == 0) {
+                fprintf (stderr, "!!!! host memory allocation error (A)\n");
+                exit(EXIT_FAILURE);
+        } else {if(*verbosity>0)fprintf(stdout,"A1 mtx allocated \n"); }
+    
 
     printf("-------------------\n");
     printf("   GPU CULA_SGESV  \n");
@@ -860,8 +875,8 @@ void sgesv_cula_c_test(int *n, int *verbosity){
 
     printf("Allocating Matrix A, vectors B, X and IPIV, size N=%d \n",n3);
     A = (culaFloat*)malloc(n3*n3*sizeof(culaFloat));
-    B = (culaFloat*)malloc(n3*sizeof(culaFloat));
-    X = (culaFloat*)malloc(n3*sizeof(culaFloat));
+    B = (culaFloat*)malloc(n3*NRHS*sizeof(culaFloat));
+    X = (culaFloat*)malloc(n3*NRHS*sizeof(culaFloat));
     IPIV = (culaInt*)malloc(n3*sizeof(culaInt));
     if(!A || !B || !IPIV)
         exit(EXIT_FAILURE);
@@ -870,16 +885,58 @@ void sgesv_cula_c_test(int *n, int *verbosity){
     status = culaInitialize();
     checkStatus(status);
 
-    set_variables();
 
+
+    for (i=0;i<n3*n3;i++)
+        {
+          A1[i] = rand() / (float)RAND_MAX;
+          A[i] = A1[i];
+        }
+
+    for (i=0;i<n3;i++)
+        {
+          B[i] = rand() / (float)RAND_MAX;
+          X[i] = B[i];//rand() / (float)RAND_MAX;
+        }  
+        
+    /* *A = {
+            6.80f, -2.11f,  5.66f,  5.97f,  8.23f,
+           -6.05f, -3.30f,  5.36f, -4.44f,  1.08f,
+           -0.45f,  2.58f, -2.70f,  0.27f,  9.04f,
+            8.32f,  2.71f,  4.35f, -7.17f,  2.14f,
+           -9.67f, -5.14f, -7.26f,  6.08f, -6.87f
+        }  
+     
+     *A1 = {
+            6.80f, -2.11f,  5.66f,  5.97f,  8.23f,
+           -6.05f, -3.30f,  5.36f, -4.44f,  1.08f,
+           -0.45f,  2.58f, -2.70f,  0.27f,  9.04f,
+            8.32f,  2.71f,  4.35f, -7.17f,  2.14f,
+           -9.67f, -5.14f, -7.26f,  6.08f, -6.87f
+        }
+      
+     *B = {
+            4.02f,  6.19f, -8.22f, -7.57f, -3.03f,
+           -1.56f,  4.00f, -8.67f,  1.75f,  2.86f,
+            9.81f, -4.09f, -4.57f, -8.61f,  8.99f
+            } 
+     
+     X ={
+            4.02f,  6.19f, -8.22f, -7.57f, -3.03f,
+           -1.56f,  4.00f, -8.67f,  1.75f,  2.86f,
+            9.81f, -4.09f, -4.57f, -8.61f,  8.99f
+           } 
+     
+                       */
+     printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",A[1],A1[1]);
     printf("Calling culaSgesv...");
-    gpu_time_1 = getTime();
+    gpu_time_1 = getTime(); 
     status = culaSgesv(n3, NRHS, A, n3, IPIV, X, n3);
     gpu_time_2 = getTime();
     checkStatus(status);
     printf("done\n");
 
-    verify_result();
+    //verify_result();
 
     printf("Shutting down CULA\n\n");
     culaShutdown();
@@ -888,7 +945,7 @@ void sgesv_cula_c_test(int *n, int *verbosity){
     printf("   CPU CLAPACK_SGESV  \n");
     printf("----------------------\n");
 
-    set_variables();
+    
 
     printf("Starting clapack_sgesv ....");
 
@@ -900,7 +957,7 @@ lapack_int LAPACKE_sgesv( int matrix_order, lapack_int n, lapack_int nrhs,
                           lapack_int ldb );
 */
 
-    info = LAPACKE_sgesv(CblasRowMajor, n3, NRHS, A,  n3, IPIV, B, n3);
+    info = LAPACKE_sgesv(CblasColMajor, n3, NRHS, A1,  n3, IPIV, B, n3);
 #else // we have GNU clapack.h
 /*
 GNU version:
@@ -908,7 +965,7 @@ GNU version:
                    float *A, const int lda, int *ipiv, float *B, const int ldb)
 */
 
-    info = clapack_sgesv(CblasRowMajor, n3, NRHS, A,  n3, IPIV, B, n3);
+    info = clapack_sgesv(CblasColMajor, n3, NRHS, A1,  n3, IPIV, B, n3);
 #endif
     cpu_time_2 = getTime();
     if (info != 0) { fprintf(stderr, "clapack_sgesv failure with error %d\n", info);}
@@ -922,10 +979,10 @@ GNU version:
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
         printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",(gpu_time_2-gpu_time_1)/1000);
 
-    free(A);
-    free(B);
-    free(X);
-    free(IPIV);
+   // free(A);
+    //free(B);
+   // free(X);
+   // free(IPIV);
 }
 
 void sgegrf_cula_c_test(int *n, int *verbosity){
@@ -953,11 +1010,25 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         int n2;
         int info = 0;
         int n3 = *n;
+        //n3 = 4;
         culaFloat* A = NULL;
         culaFloat* TAU_r = NULL;
         float* B = 0;
         float* TAU_r1 = 0;
         float* WORK_r = 0;
+        
+        float h[16] = {
+            1.0f, 3.0f, 2.0f, 1.0f,
+            1.0f, 1.0f, 4.0f, 1.0f,
+            1.0f, 3.0f, 4.0f, 1.0f,
+            1.0f, 1.0f, 2.0f, -3.0f
+        };
+        float h1[16] = {
+            1.0f, 1.0f, 1.0f, 1.0f,
+            3.0f, 1.0f, 3.0f, 1.0f,
+            2.0f, 4.0f, 4.0f, 2.0f,
+            1.0f, 1.0f, 1.0f, -3.0f
+        };
         
         n2 = n3*n3;
         
@@ -965,24 +1036,35 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         void verify_result(void)
     {
     printf("Verifying Result\n");
-    for(i = 0; i < n2; ++i)
-    {
-        diff = B[i] - A[i];
-        if(diff < 0.0f)
+    int p = 0;
+    int pocit = 0;
+    int j,i;
+        for (i=0;i<n3;i++)
+        {
+        for (j=0;j<n3;j++){
+          
+          diff =  B[pocit] + A[j*n3+i];
+          
+         if(diff < 0.0f)
             diff = -diff;
-        if(diff > thresh)
+         // printf("Result check failed:  i=%d  B[i]=%f  A[i]=%f\n", i, B[pocit], A[j*n3+i]);  
+        if(diff > thresh){
+           if(*verbosity>0) printf("Result check failed:  i=%d  B[i]=%f  A[i]=%f\n", i, B[pocit], A[j*n3+i]); 
+           p++;
         
-           if(*verbosity>0) printf("Result check failed:  i=%d  B[i]=%f  A[i]=%f\n", i, B[i], A[i]);
-    }
-    for(i = 0; i < n3; ++i)
-    {
-        diff = TAU_r1[i] - TAU_r[i];
-        if(diff < 0.0f)
-            diff = -diff;
-        if(diff > thresh)
+        }
         
-           if(*verbosity>0) printf("Result check failed:  i=%d  TAU_r1[i]=%f  TAU_r[i]=%f\n", i, TAU_r1[i], TAU_r[i]);
-    }
+        
+        
+           
+          //A[j*n3+i] = rand() / (float)RAND_MAX;//h[pocit];
+          //B[pocit] = A[j*n3+i];
+          pocit++;
+        }
+        }
+    
+       printf("Result check failed number: %d from %d",p,pocit);
+ 
     } 
         
         B = (float*)malloc(n2 * sizeof(B[0]));
@@ -1014,12 +1096,24 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
                 exit(EXIT_FAILURE);
         } else {if(*verbosity>0)fprintf(stdout,"TAU_r allocated on graphic card\n"); }
         
-        for (i=0;i<n2;i++)
+       /* for (i=0;i<n2;i++)
         {
          // A[i] = rand() / (float)RAND_MAX;
-          A[i] = (float) i;
-          B[i] = A[i];
+          B[i] = h[i];//(float) i;
+          //A[i] = h1[i];
+        }*/
+        int pocit = 0;
+        int j;
+        for (i=0;i<n3;i++)
+        {
+        for (j=0;j<n3;j++){
+          
+          A[j*n3+i] = 2;//rand() / (float)RAND_MAX;//h[pocit];
+          B[pocit] = A[j*n3+i];
+          pocit++;
         }
+        }
+           
         printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",B[n2-1],A[n2-1]);
         
         printf("-------------------\n");
@@ -1042,22 +1136,39 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         printf("----------------------\n");
       
         printf("Starting clapack_sgeqrf ....");
-        cpu_time_1 = getTime();
+        
 #if defined HAVE_MKL_LAPACK
-        info=LAPACKE_sgeqrf(LAPACK_COL_MAJOR,n3, n3, B, n3, TAU_r1);
+        cpu_time_1 = getTime();
+        info=LAPACKE_sgeqrf(LAPACK_ROW_MAJOR,n3, n3, B, n3, TAU_r1);
+        cpu_time_2 = getTime();
 #else
         printf("clapack_sgeqrf not present in GNU clapack.h ! returning\n");
         return;
 #endif
-        cpu_time_2 = getTime();
+        
         printf("\nComputing ... done\n");
         
+        //for (i=0;i<n2;i++)
+       // {
+         // A[i] = rand() / (float)RAND_MAX;
+        //  printf("%f %f\n",A[i],B[i]);
+          //A[i] = h[i]//(float) i;
+          //B[i] = A[i];
+        //}
+       // printf("\n\n\n");
+       // for (i=0;i<n2;i++)
+       // {
+         // A[i] = rand() / (float)RAND_MAX;
+       //   printf("%f %f\n",TAU_r1[i],TAU_r[i]);
+          //A[i] = h[i]//(float) i;
+          //B[i] = A[i];
+       // }
         verify_result();
         printf(" ... done\n");
         printf("\n\n\n");
         printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",B[n2-1],A[n2-1]);
-        if(*verbosity>0)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",TAU_r1[0],TAU_r[0]);
-        printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",TAU_r1[n3-1],TAU_r[n3-1]);
+       // if(*verbosity>0)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",TAU_r1[0],TAU_r[0]);
+       // printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",TAU_r1[n3-1],TAU_r[n3-1]);
         printf("\n\n\n");
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
         printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",(gpu_time_2-gpu_time_1)/1000);
