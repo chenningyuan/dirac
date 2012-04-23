@@ -245,9 +245,9 @@
 
 ! Gauss' Theorem Test
 ! NOT SURE IF NECESSARY
-!      if (printlevel > 4 ) then 
-!          call gauss_test(nuc_pol_chg, ele_pol_chg)
-!      end if
+      if (printlevel > 4 ) then 
+          call gauss_test(nuc_pol_chg, ele_pol_chg)
+      end if
 
 ! Obtain vector of total polarization charges 
       chgName  = 'TotChg'//CHAR(0)
@@ -337,71 +337,71 @@
 
    end subroutine
 
-!  subroutine gauss_test(nuc_pol_chg, ele_pol_chg)
+   subroutine gauss_test(nuc_pol_chg, ele_pol_chg)
 
-!#include "dcbgen.h"
+#include "dcbgen.h"
 
 ! Passed variables   
-!     real(8), intent(in)  :: nuc_pol_chg(nr_points), ele_pol_chg(nr_points)
+      real(8), intent(in)  :: nuc_pol_chg(nr_points), ele_pol_chg(nr_points)
 
 ! Local variables
-!     integer :: i
-!     real(8) :: eps, factor
-!     real(8) :: nuc_pol_tot, ele_pol_tot 
-!     real(8) :: nuc_tot_chg, ele_tot_chg, theo_nuc_pol, theo_ele_pol
-!     real(8) :: calc_diff, theo_diff
+      integer :: i
+      real(8) :: eps, factor
+      real(8) :: nuc_pol_tot, ele_pol_tot 
+      real(8) :: nuc_tot_chg, ele_tot_chg, theo_nuc_pol, theo_ele_pol
+      real(8) :: calc_diff, theo_diff
 
 ! Obtain total nuclear and electronic polarization charges
-!     nuc_pol_tot = 0.0d0
-!     ele_pol_tot = 0.0d0
-!     do i = 1, nr_points
-!       nuc_pol_tot = nuc_pol_tot + nuc_pol_chg(i)
-!       ele_pol_tot = ele_pol_tot + ele_pol_chg(i)
-!     end do
+      nuc_pol_tot = 0.0d0
+      ele_pol_tot = 0.0d0
+      do i = 1, nr_points
+        nuc_pol_tot = nuc_pol_tot + nuc_pol_chg(i)
+        ele_pol_tot = ele_pol_tot + ele_pol_chg(i)
+      end do
 
 ! Obtain total nuclear and electronic charges
-!     nuc_tot_chg = 0.0d0
-!     call get_nuclear_charge(nuc_tot_chg) 
-!     ele_tot_chg = kcharg - nuc_tot_chg
+      nuc_tot_chg = 0.0d0
+      call get_nuclear_charge(nuc_tot_chg) 
+      ele_tot_chg = kcharg - nuc_tot_chg
 
 ! Obtain solvent static permittivity
-!     call get_epsilon_static(eps)
-!      
+      call get_epsilon_static(eps)
+      
 ! Perform test   
-!     factor = (eps - 1)/eps
-!     theo_nuc_pol = - factor * nuc_tot_chg
-!     theo_ele_pol = - factor * ele_tot_chg
-!     
-!     calc_diff = ele_pol_tot + nuc_pol_tot
-!     theo_diff = theo_ele_pol + theo_nuc_pol
+      factor = (eps - 1)/eps
+      theo_nuc_pol = - factor * nuc_tot_chg
+      theo_ele_pol = - factor * ele_tot_chg
+     
+      calc_diff = ele_pol_tot + nuc_pol_tot
+      theo_diff = theo_ele_pol + theo_nuc_pol
 
 ! Print
-!     print *, "Calculated Nuclear Polarization = ", nuc_pol_tot
-!     print *, "Gauss's Law Nuclear Polarization = ", theo_nuc_pol
-!  
-!     print *, "Calculated Electronic Polarization = ", ele_pol_tot
-!     print *, "Gauss's Law Electronic Polarization = ", theo_ele_pol
+      print *, "Calculated Nuclear Polarization = ", nuc_pol_tot
+      print *, "Gauss's Law Nuclear Polarization = ", theo_nuc_pol
+   
+      print *, "Calculated Electronic Polarization = ", ele_pol_tot
+      print *, "Gauss's Law Electronic Polarization = ", theo_ele_pol
 
-!     print *, "(EP + NP)_calc - (EP + NP)_Gauss", calc_diff - theo_diff 
+      print *, "(EP + NP)_calc - (EP + NP)_Gauss", calc_diff - theo_diff 
 
-!  end subroutine
+   end subroutine
 
-!  subroutine get_nuclear_charge(nuc_tot_chg)
-!  
-!#include "mxcent.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
-!#include "nuclei.h"
-!#include "symmet.h" 
-!     
-!     integer :: i
-!     real(8) :: nuc_tot_chg
+   subroutine get_nuclear_charge(nuc_tot_chg)
+  
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h" 
+     
+      integer :: i
+      real(8) :: nuc_tot_chg
 
 ! Obtain total nuclear charge of the molecule
-!     do i = 1, nucind
-!       nuc_tot_chg = nuc_tot_chg + fmult(istbnu(i)) * charge(i)
-!     end do
+      do i = 1, nucind
+        nuc_tot_chg = nuc_tot_chg + fmult(istbnu(i)) * charge(i)
+      end do
 
-!  end subroutine
+   end subroutine
 
    end module
