@@ -22,13 +22,17 @@ install(
     )
 
 if(ENABLE_PCMMOD)
-    install(
+    install( # Install PCMSolver input parsing script
         FILES ${PROJECT_SOURCE_DIR}/external/pcmsolver-build/src/solverlib/pcmsolver
         DESTINATION bin
         PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ             GROUP_EXECUTE
         WORLD_READ             WORLD_EXECUTE
+        )
+    install( # Install libraries 
+        DIRECTORY ${PROJECT_SOURCE_DIR}/external/share/libgetkw
+        DESTINATION share/dirac
         )
 endif()
 
