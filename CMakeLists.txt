@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 cmake_policy(SET CMP0010 OLD)
 
 project(DIRAC Fortran C)
-add_definitions(-DPRG_DIRAC)
 
 # set version
 set(VERSION_MAJOR 11)
@@ -46,6 +45,7 @@ option(ENABLE_UTILITIES       "Enable utilities"                                
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
+option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 
@@ -76,13 +76,14 @@ include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigParallelEnvironment)
 
-set(LIBS)
+set(LIBS "stdc++")
 
 include(ConfigMath)
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
 endif()
+
 
 if(ENABLE_CUDA)
     find_package(CUDA)
@@ -165,6 +166,35 @@ set(LIBS
     ${LIBS}
     )
 
+include(ConfigExternal)
+
+if(ENABLE_PCMMOD)
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCBLAS_ROOT=${CBLAS_ROOT}
+        -DEIGEN3_ROOT=${EIGEN3_ROOT}
+        )
+ 
+    add_external(pcmsolver)
+
+    set(LIBS
+        solver
+        green
+        cavity
+        metal
+        pedra
+        pwl
+        wem
+        wavcav
+        getkw
+        ${LIBS}
+        )
+endif()
+
 include(BinaryInfo)
 
 # copy pam to build dir as pam and pam-dirac
@@ -187,6 +217,30 @@ add_custom_target(dirac_interfaces
     DEPENDS
     ${GENERATED_FILES}
 )
+
+# set definitions
+
+add_definitions(-DPRG_DIRAC)
+set(WORK_MEM_WORDS
+    "64000000"
+    CACHE STRING
+    "Work memory in words"
+    )
+add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
+if(ENABLE_64BIT_INTEGERS)
+    add_definitions(-DINT_STAR8)
+endif()
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
 
 include(SourcesList)
 
@@ -245,7 +299,11 @@ foreach(
         ${EXECUTABLE}
         dirac
         ${LIBS}
+        dirac
         )
+    if(ENABLE_PCMMOD)
+        add_dependencies(${EXECUTABLE} pcmsolver)
+    endif()
 endforeach()
 
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)

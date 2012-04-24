@@ -31,6 +31,15 @@ write(*,*) __ECC
 write(*,*) 'Intel Fortran, version:',__INTEL_COMPILER
 #endif
 write(*,*) 'intel compiler build date:', __INTEL_COMPILER_BUILD_DATE
+!#include "mkl.fi"
+!DEC$IF DEFINED INTEL_MKL_VERSION
+!#pragma message "INTEL_MKL_VERSION=",INTEL_MKL_VERSION
+!write(*,*) 'Intel MKL  version:',INTEL_MKL_VERSION
+
+!!DEC$IF INTEL_MKL_VERSION .EQ. 100304
+!!* 	Code to be conditionally compiled 
+!!DEC$ENDIF
+!DEC$ENDIF
 #endif
 end subroutine fortran_compiler_info
 
@@ -107,7 +116,7 @@ implicit none
 
 integer, parameter :: size_of_real  =4
 integer, parameter :: size_of_double=8
-integer :: AllocateStatus, stat, ios
+integer :: AllocateStatus, stat, ios, info
 
 ! CUDA specifix library obejcts 
 #if USE_CUBLAS
@@ -176,7 +185,9 @@ routine(no_rout1+5)="sgemm_cula_c"
 routine(no_rout1+6)="sgemv_cula_c"
 routine(no_rout1+7)="dgemm_cula"
 routine(no_rout1+8)="dgemv_cula"
-  no_rout=no_rout1+8
+routine(no_rout1+9)="sgesv_cula_c"
+routine(no_rout1+10)="dgemm_cula_c"
+  no_rout=no_rout1+10
 #endif
 write(*,*) 'usage: gpu_test.x  <routine>  <n> <verbosity level>'
 ! using own C-function trim 
@@ -226,7 +237,7 @@ do j=1,n
   else
     A_r(i,j)=0.0e0
   endif
-  B_r(i,j)=float(i+j) ! same jednotky...
+  B_r(i,j)=float(i+j) 
   C_r(i,j)=0.0e0
 enddo
 enddo
@@ -735,8 +746,6 @@ write(*,*) 'CPU dgemv vector control output: sum,norm=',sum(y_d),dnrm2(n,y_d,1)
 end subroutine dgemv_cula_test
 
 
-
-
 subroutine sgeqrf_test
 #if defined USE_CULA
 ! test on matrix QR decomposition ....
@@ -778,15 +787,19 @@ subroutine sgeqrf_test
      B_r(i,j)=A_r(i,j)
   enddo
   enddo
+  stat = CULA_INITIALIZE(); call check_cula_status(stat)
+
   ! ... start the time measurement
   call system_clock( c1, cr, cm )
-  stat = CULA_INITIALIZE(); call check_cula_status(stat)
   stat = CULA_SGEQRF(N, N, A_r, N, TAU_r); call check_cula_status(stat)
-
   call system_clock( count=c2 )
   call print_time("GPU CULA_SGEQRF")
 
   stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+
+
+  ! ... start again the time measurement
+  call system_clock( c1, cr, cm )
 ! time for lapack SGEQRF
 !see  http://www.netlib.org/lapack/single/sgeqrf.f
 ! SUBROUTINE SGEQRF( M, N, A, LDA, TAU, WORK, LWORK, INFO )
@@ -798,22 +811,22 @@ subroutine sgeqrf_test
       print *,"LAPACK SGEQRF finished successfully ...."
     endif
   endif
-call system_clock( count=c2 )
-call print_time("CPU LAPACK SGEQRF")
+  call system_clock( count=c2 )
+  call print_time("CPU LAPACK SGEQRF")
 ! check numbers in A_r, b_r - must be the same...
   if (verb.ge.3) then
-    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF '
+    print *,'          QR results:     GPU-SGEQRF    CPU-SGEQRF    diff'
   endif
   do i=1,n
   do j=1,n
     diffs = diffs + abs(A_r(i,j)-B_r(i,j))  
     if (verb.ge.3) then
-      print *,i,j,A_r(i,j), B_r(i,j)
+      print *,i,j,A_r(i,j), B_r(i,j), A_r(i,j)-B_r(i,j)
     endif
   enddo
     diffs =  diffs + abs(TAU_r(i)-TAU1_r(i))
     if (verb.ge.3) then
-      print *,i,TAU_r(i),TAU1_r(i)
+      print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
   write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged diffs are ',diffs/float(n*n)
@@ -860,16 +873,17 @@ subroutine sgesv_test
   enddo
      TAU_r(i) = rand(0);  TAU1_r(i) = TAU_r(i) 
   enddo
+  stat = CULA_INITIALIZE(); call check_cula_status(stat)
+
   ! ... start the time measurement
   call system_clock( c1, cr, cm )
-  stat = CULA_INITIALIZE(); call check_cula_status(stat)
-  stat = cula_sgesv(n, 1 , A_r, n , ipiv, TAU_r, n, stat ); call check_cula_status(stat)
-
+  stat = cula_sgesv(n, 1 , A_r, n , ipiv, TAU_r, n, info ); call check_cula_status(stat)
   call system_clock( count=c2 )
   call print_time("GPU CULA_SGESV")
 
   stat = CULA_SHUTDOWN(); call check_cula_status(stat)
-  ! now lapack sgesv...
+  ! now lapack sgesv with time measurement...
+  call system_clock( c1, cr, cm )
   call sgesv(n, 1 , B_r, n , ipiv1, TAU1_r, n, stat )
   IF (stat.ne.0) then
     stop "error in CPU LAPACK SGESV ..."

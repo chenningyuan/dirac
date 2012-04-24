@@ -1,4 +1,6 @@
-nuc_part.inp   he.mol
-el_part_he.inp he.mol
 nuc_part.inp   ne.mol
-# el_part_ne.inp ne.mol
+nuc_part.inp   CH4.mol
+
+el_part-coarse.inp ne.mol
+el_part-levy-CH4.inp CH4.mol
+el_part-points.inp CH4.mol
