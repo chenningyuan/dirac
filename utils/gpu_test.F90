@@ -153,7 +153,7 @@ REAL(kind=size_of_real),   ALLOCATABLE :: WORK_r(:)
 integer, allocatable :: ipiv(:), ipiv1(:)
 
 ! extra stuff for checking QR-decomposition from SGEQRF ouputs
-real(kind=size_of_real),  allocatable:: H_r(:,:),Q_r(:,:),Q1_r(:,:),v_r(:) , A1_r(:,:)
+real(kind=size_of_real),  allocatable:: H_r(:,:),Q_r(:,:),Q1_r(:,:),v_r(:) , A1_r(:,:), A2_r(:,:)
 
 #if ARCH_64
 ! 8-byte pointers on 64-bit architectures
@@ -757,7 +757,7 @@ subroutine sgeqrf_test
 #if defined VAR_IFORT
   real(kind=size_of_real), external :: rand
 #endif
-  write(*,'(2x,a)') 'cula_sgeqrf GPU vs lapack CPU test'
+  write(*,'(2x,a)') '=== Going to perform GPU cula_sgeqrf vs CPU lapack  test ==='
   allocate (A_r(n,n),B_r(n,n),STAT=AllocateStatus)
   if (AllocateStatus.ne.0) then
     stop "error in allocations of A_r,B_r !"
@@ -783,12 +783,12 @@ subroutine sgeqrf_test
     endif
   endif
 ! allocate extra stuff for throught checking of result:
-  if (verb.ge.3) then
-     allocate(H_r(n,n),Q_r(n,n),Q1_r(n,n),v_r(n),A1_r(n,n),STAT=AllocateStatus)
+  if (verb.ge.1) then
+     allocate(H_r(n,n),Q_r(n,n),Q1_r(n,n),v_r(n),A1_r(n,n),A2_r(n,n),STAT=AllocateStatus)
      if (AllocateStatus.ne.0) then
-        stop "error in H_r(n,n),Q_r(n,n),Q1_r(n,n),v_r(n),A1_r(n,n) allocations"
+        stop "error in H_r(n,n),Q_r(n,n),Q1_r(n,n),v_r(n),A1_r(n,n),A2_r(n,n) allocations"
      else
-        print *,"H_r(n,n),Q_r(n,n),Q1_r(n,n),v_r(n),A1_r(n,n) allocation OK." 
+        print *,"H_r(n,n),Q_r(n,n),Q1_r(n,n),v_r(n),A1_r(n,n),A2_r(n,n) allocations OK." 
      endif
   endif
 ! fill allocated objects A_r, B_r with (random?) data for later checking
@@ -803,14 +803,17 @@ subroutine sgeqrf_test
      A_r(i,j) = float(i)+float(j) 
      ! B the same as A
      B_r(i,j)=A_r(i,j)
+     if (verb.ge.1) then ! save mtx for further tests of GPU/CPU data ...
+        A1_r(i,j) = A_r(i,j) 
+        A2_r(i,j) = A_r(i,j)
+     endif
      if (verb.ge.3) then
-       A1_r(i,j) = A_r(i,j) ! save mtx
        write(*,"(7X,A,i2,A,i2,a,f12.7)")  "A[",i,",",j,"]=",A_r(i,j)
      endif
   enddo
   enddo
+  !-----------
   stat = CULA_INITIALIZE(); call check_cula_status(stat)
-
   ! ... start the time measurement
   call system_clock( c1, cr, cm )
   stat = CULA_SGEQRF(N, N, A_r, N, TAU_r)
@@ -850,7 +853,7 @@ subroutine sgeqrf_test
   enddo
   enddo
   if (verb.ge.3) then
-    write(*,"(5X,A)") "-----------------------------------------------------"
+    write(*,"(5X,A)") "---------  ONLY INFORMATIVE RESULTS !!!  ------------"
   endif
   do i=2,n
   do j=1,i
@@ -861,7 +864,7 @@ subroutine sgeqrf_test
   enddo
   enddo
   if (verb.ge.3) then
-  write(*,"(5X,A)") "-----------------------------------------------------"
+    write(*,"(5X,A)") "-----  ONLY INFORMATIVE RESULT !!!    ---------------"
   endif
   do i=1, n
     diffs =  diffs + abs(TAU_r(i)-TAU1_r(i))
@@ -869,11 +872,14 @@ subroutine sgeqrf_test
       write(*,'(8X,A,I2,A,F12.6,A,F12.6,A,F12.6)') "TAU[",i,"]=",TAU_r(i),"  ",TAU1_r(i),":",abs(TAU_r(i)-TAU1_r(i))
     endif
   enddo
-  write(*,"(5X,A)") "-----------------------------------------------------"
-  write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged absolute diffs are ',diffs/float(n*n)
-
   if (verb.ge.3) then
-      write(*,*) 'Going to do a through check A = QR by using CPU data/routines'
+    write(*,"(5X,A)") "-------  ONLY INFORMATIVE RESULT !!!    -------------"
+    write(*,*) 'CULA_SGEQRF vs lapack SGEQRF averaged absolute diffs are ',diffs/float(n*n)
+  endif
+
+  if (verb.ge.1) then
+      write(*,"(1x,a)")  & 
+"--- Going to do a thorough check of QR decomposed matrixes by using CPU data/routines (shall take some time ) ---"
       ! make Q(i) unit matrix
       do i = 1,n
       do j = 1,n
@@ -956,7 +962,7 @@ subroutine sgeqrf_test
     endif
     call check_unit_mtx_r(Q1_r)
     ! Finally check A = Q R
-    ! frst zero lower triangle of R contained in B_r
+    ! frst zero lower triangle of R contained in B_r - CPU data
     do i=2,n
     do j=1,i
       if (i.ne.j) then
@@ -965,11 +971,108 @@ subroutine sgeqrf_test
     enddo
     enddo
     ! Finally check A = Q R, what is A1_r = Q_r * B_r - A1_r = 0
-    write(*,'(3X,A)') "--- Final check of CPU SGEQRF results through A-QR=0: ---"
+    write(*,'(3X,A)') "--- FINAL CHECK of CPU SGEQRF results through A-QR=0: ---"
     call sgemm('n','n',n,n,n,+1.0e0,Q_r,n,B_r,n,-1.0e0,A1_r,n)
     call mtx_check(A1_r)
 
-    write(*,*) 'Going to do a through check A = QR by using GPU data/routines'
+    write(*,'(2X,A)') 'Going to do a thorough check A = QR by using GPU data/routines (shall take some time):'
+      ! make Q(i) unit matrix
+      do i = 1,n
+      do j = 1,n
+        if (i.eq.j) then
+          Q_r(i,j)=1.0e0
+        else
+          Q_r(i,j)=0.0e0
+        endif
+      enddo
+      enddo
+    ! own computing H(i) = I - tau(i) * v[i] * v[i]^T and Q(i) = H(1)H(2) ...
+    do ii = 1,n
+      ! compute H(i) = I - tau(i) * v * v^T, where v(1:i-1) = 0 and v(i) = 1; v(i+1:n)=A(i+1:n,i)
+      do j = 1, ii-1
+        v_r(j) = 0.0e0
+      enddo
+      v_r(ii) = 1.0e0
+      do j = ii+1,n
+        v_r(j)=A_r(j,ii)  ! GPU data
+      enddo
+      ! initialize  H(i)  as  unit matrix
+      do i = 1,n
+      do j = 1,n
+        if (i.eq.j) then
+          H_r(i,j)=1.0e0
+        else
+          H_r(i,j)=0.0e0
+        endif
+      enddo
+      enddo
+      ! own computing H(i) = I - tau(i) * v[i] * v[i]^T
+      call sgemm('n','t',n,n,1,-TAU_r(ii),v_r,n,v_r,n,+1.0e0,H_r,n) ! using GPU data - TAU_r
+      if (verb.ge.5) then
+        write(*,'(3X,A,I2,A)') "current vector v[",ii,"]:"
+        do i=1,n
+          write(*,*) i,v_r(i)
+        enddo
+        ! ------------------ !
+        write(*,'(3X,A,I2,A)') "current matrix H(",ii,") = I - tau(i) * v[i] * v[i]^T:"
+        do i=1,n
+        do j=1,n
+          write(*,*) i,j,H_r(i,j)
+        enddo
+        enddo
+      endif
+      ! compute  Q = H(1) H(2) . . . H(n), or Q1 := Q*H(i) plus Q:=Q1
+      call sgemm('n','n',n,n,n,+1.0e0,Q_r,n,H_r,n,+0.0e0,Q1_r,n)
+      ! (n, x, incx, y, incy)
+      call scopy(n*n,Q1_r,1,Q_r,1)
+      if (verb.ge.5) then
+        write(*,'(3X,A,I2,A)') "current matrix Q(",ii,"):"
+        do i=1,n
+        do j=1,n
+          write(*,*) i,j,Q_r(i,j)
+        enddo
+        enddo
+      endif
+    enddo
+    ! orthonormality check of Q^T* Q
+    stat = CULA_INITIALIZE(); call check_cula_status(stat)
+    stat = cula_sgemm('t','n',n,n,n,+1.0e0,Q_r,n,Q_r,n,+0.0e0,Q1_r,n); call check_cula_status(stat)
+    !stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+    write(*,'(3X,A)') "orthoronormality check of Q^T*Q=I:"
+    if (verb.ge.5) then
+        do i=1,n
+        do j=1,n
+          write(*,*) i,j,Q1_r(i,j)
+        enddo
+        enddo
+    endif
+    call check_unit_mtx_r(Q1_r)
+    ! orthonormality check of Q* Q^T
+    stat = cula_sgemm('n','t',n,n,n,+1.0e0,Q_r,n,Q_r,n,+0.0e0,Q1_r,n); call check_cula_status(stat)
+    write(*,'(3X,A)') "orthoronormality check of Q*Q^T=I:"
+    if (verb.ge.5) then
+        do i=1,n
+        do j=1,n
+          write(*,*) i,j,Q1_r(i,j)
+        enddo
+        enddo
+    endif
+    call check_unit_mtx_r(Q1_r)
+    ! Finally check A = Q R
+    ! frst zero lower triangle of R contained in A_r (GPU data)
+    do i=2,n
+    do j=1,i
+      if (i.ne.j) then
+       A_r(i,j) = 0.0e0
+      endif
+    enddo
+    enddo
+    ! Finally check A = Q R, what is A1_r = Q_r * A_r - A2_r = 0
+    write(*,'(3X,A)') "--- FINAL CHECK of GPU CULA_SGEQRF results through A-QR=0: ---"
+    stat = cula_sgemm('n','n',n,n,n,+1.0e0,Q_r,n,A_r,n,-1.0e0,A2_r,n);call check_cula_status(stat)
+    stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+    call mtx_check(A1_r)
+
   endif
 #else
  print *,'sorry, CULA library is not activated (through -D USE_CULA)'
@@ -1051,7 +1154,7 @@ subroutine sgesv_test
   
   call print_time("CPU LAPACK SGESV")
   ! check  results - roots - must be identical 
-  if (verb.ge.3) then
+  if (verb.ge.2) then
     !print *," roots and their differences  "
     write(*,"(7X,A)")  "root #     GPU           CPU           diff"
   endif
@@ -1061,7 +1164,7 @@ subroutine sgesv_test
       print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
-  write(*,*) 'control of results - CULA_SGESV vs lapack SGESV averaged absolute diffs are ',diffs/float(n)
+  write(*,"(1X,A,D11.6)") '*** FINAL CONTROL OF RESULTS - GPU CULA_SGESV vs CPU SGESV averaged absolute diffs are ',diffs/float(n)
 #else
  print *,'sorry, CULA library is not active'
 #endif
@@ -1112,7 +1215,8 @@ do j=1,n
   endif
 enddo
 enddo
-write(*,'(1X,A,D12.4,A,D12.4)') 'aver. sum of diag. elem.:',diag/float(n),' aver.sum of offdiag elem.:',offdiag/(float(n*n)-float(n))
+write(*,'(1X,A,D12.4,A,D12.4)') & 
+ 'aver. sum of diag. elem.:',diag/float(n),' aver.sum of offdiag elem.:',offdiag/(float(n*n)-float(n))
 write(*,'(1X,4(A,D12.4,1X))') '1,1:',Mtx(1,1),'1,n:',Mtx(1,n),'n,1:',Mtx(n,1),'n,n:',Mtx(n,n)
 end subroutine mtx_check
 
