@@ -1185,6 +1185,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
           printf(" %f ",TAU_r1[i]);
         }
        */
+       if(*verbosity>2)
        printf("\n\n");
        int prem = 0;
        for (i=0;i<n3;i++) {
@@ -1193,7 +1194,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
          {
            newes = fabs(A[j*n3+i]-B[i*n3+j]);
            pole = pole + newes;
-           printf("R[GPU][%i][%i] %f R[CPU][%i][%i] %f  Diference : %f\n",i+1,j+1,A[j*n3+i],i+1,j+1,B[i*n3+j],newes);
+         if(*verbosity>2)  printf("R[GPU][%i][%i] %f R[CPU][%i][%i] %f  Diference : %f\n",i+1,j+1,A[j*n3+i],i+1,j+1,B[i*n3+j],newes);
          }
          prem ++;
         }
@@ -1205,7 +1206,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
          {
            newes = fabs(A[j*n3+i]-B[i*n3+j]);
            pole = pole + newes;
-           printf("Q[GPU][%i][%i] %f Q[CPU][%i][%i] %f  Diference : %f\n",i+1,j+1,A[j*n3+i],i+1,j+1,B[i*n3+j],newes);
+          if(*verbosity>2) printf("Q[GPU][%i][%i] %f Q[CPU][%i][%i] %f  Diference : %f\n",i+1,j+1,A[j*n3+i],i+1,j+1,B[i*n3+j],newes);
          }
          prem ++;
         }
@@ -1213,10 +1214,10 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         for (i=0;i<n3;i++) {
           newes = fabs(TAU_r1[i]-TAU_r[i]);
           pole = pole + newes;
-          printf(" TAU_r(GPU)[%i] %f TAU_r(CPU)[%i] %f Diference :%f\n",i,TAU_r[i],i,TAU_r1[i],newes);
+         if(*verbosity>2) printf(" TAU_r(GPU)[%i] %f TAU_r(CPU)[%i] %f Diference :%f\n",i,TAU_r[i],i,TAU_r1[i],newes);
         }
         
-       printf("\n\n Average absolute difference :%f \n\n", pole/n3);
+       printf("\n\n Average absolute difference :%f \n\n", pole/(n3*n3));
        printf("Result check failed number: %d from %d",p,pocit);
  
     } 
