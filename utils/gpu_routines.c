@@ -8,6 +8,7 @@
 */
 
 #include "stdio.h"
+#include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
 
@@ -800,7 +801,7 @@ void sgemv_cula_c_test(int *n, int *verbosity){
 }
 
 void sgesv_cula_c_test(int *n, int *verbosity){
-    int i, info;
+    int i, info,j;
     int n3 = *n;
 
     double gpu_time_1,gpu_time_2,gpu_time; // zaciatocny a konecny cas na gpu
@@ -828,7 +829,7 @@ void sgesv_cula_c_test(int *n, int *verbosity){
 
               
     culaFloat one = 1.0f;
-    culaFloat thresh = 0.1f;//1e-6f;
+    culaFloat thresh = 1e-5f;//0.01f;//1e-6f;
     culaFloat diff;
     srand ( time(NULL) );
     
@@ -846,15 +847,30 @@ void sgesv_cula_c_test(int *n, int *verbosity){
 
     void verify_result(void)
     {
-    printf("Verifying Result\n");
+    float pole = 0;
+    
+    printf("Verifying Result\n\n");
     for(i = 0; i < n3; ++i)
     {
         diff = X[i] - B[i];
         if(diff < 0.0f)
             diff = -diff;
         if(diff > thresh)
-            printf("Result check failed:  i=%d  X[i]=%f  B[i]=%f\n", i, X[i], B[i]);
+            if(*verbosity>2) printf("Result check failed:  i=%d  GPU[i]=%f  CPU[i]=%f\n", i, X[i], B[i]);
     }
+    float newes;
+    printf("\n\n");
+    for (i=0;i<n3;i++)
+        {
+           newes = fabs(X[i]-B[i]);
+           pole = pole + newes;
+           if(*verbosity>2) printf("Result check :  i=%d  GPU[%d]=%f  CPU[%d]=%f  Difference :%f \n",i, i+1,X[i],i+1, B[i],newes); 
+     
+      
+        }
+    
+    printf("\n\n Average absolute difference :%f \n\n", pole/n3);
+    
     } 
 
     A = (culaFloat*)malloc(n3*n3*sizeof(culaFloat));
@@ -881,23 +897,63 @@ void sgesv_cula_c_test(int *n, int *verbosity){
     if(!A || !B || !IPIV)
         exit(EXIT_FAILURE);
 
-    printf("Initializing CULA\n");
-    status = culaInitialize();
-    checkStatus(status);
-
-
-
-    for (i=0;i<n3*n3;i++)
-        {
-          A1[i] = rand() / (float)RAND_MAX;
-          A[i] = A1[i];
-        }
-
+    
     for (i=0;i<n3;i++)
         {
-          B[i] = rand() / (float)RAND_MAX;
+          B[i] = rand() / (float)RAND_MAX;//rand() / (float)RAND_MAX;//i+2;//rand() / (float)RAND_MAX;
           X[i] = B[i];//rand() / (float)RAND_MAX;
-        }  
+        }
+
+    for (i=0;i<n3;i++) {
+    for (j=0;j<n3;j++)
+        {
+          A1[j*n3+i] = rand() / (float)RAND_MAX;//rand() / (float)RAND_MAX;//j+1+i+1;//rand() / (float)RAND_MAX;
+          A[j*n3+i] = A1[j*n3+i];
+        }
+       }
+    
+    if (*verbosity>2){
+    int poc = 0;
+    int ooo = 0;
+    for (i=0;i<n3;i++) {
+    for (j=0;j<n3;j++)
+        {
+        printf(" %f ",A1[j*n3+i]);//  A1[j*n3+i] = i+1+(j+1)*(j+1);//rand() / (float)RAND_MAX;//j+1+i+1;//rand() / (float)RAND_MAX;
+         // A[j*n3+i] = A1[j*n3+i];
+        if ((ooo+1)%n3 == 0) {printf("| %f\n",B[poc]);poc++;}
+        ooo++;
+        }
+       }
+    
+    /*for (i=0;i<n3*n3;i++){
+      printf(" %f ",A1[i]);
+      if ((i+1)%n3 == 0) {printf("| %f\n",B[poc]);poc++;}
+    }          */
+    
+    printf("\n\n");
+    ooo=0;
+    poc=0;
+    
+    
+    for (i=0;i<n3;i++) {
+    for (j=0;j<n3;j++)
+        {
+        printf(" %f ",A[j*n3+i]);//  A1[j*n3+i] = i+1+(j+1)*(j+1);//rand() / (float)RAND_MAX;//j+1+i+1;//rand() / (float)RAND_MAX;
+         // A[j*n3+i] = A1[j*n3+i];
+        if ((ooo+1)%n3 == 0) {printf("| %f\n",X[poc]);poc++;}
+        ooo++;
+        }
+       }
+    
+    /*for (i=0;i<n3*n3;i++){
+      printf(" %f ",A[i]);
+      if ((i+1)%n3 == 0) {printf("| %f\n",B[poc]);poc++;}
+    } */
+    
+        }
+      
+    
+    
         
     /* *A = {
             6.80f, -2.11f,  5.66f,  5.97f,  8.23f,
@@ -928,6 +984,10 @@ void sgesv_cula_c_test(int *n, int *verbosity){
            } 
      
                        */
+                       
+     printf("Initializing CULA\n");
+    status = culaInitialize();
+    checkStatus(status);                  
      printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",A[1],A1[1]);
     printf("Calling culaSgesv...");
     gpu_time_1 = getTime(); 
@@ -1049,7 +1109,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
             diff = -diff;
          // printf("Result check failed:  i=%d  B[i]=%f  A[i]=%f\n", i, B[pocit], A[j*n3+i]);  
         if(diff > thresh){
-           if(*verbosity>0) printf("Result check failed:  i=%d  B[i]=%f  A[i]=%f\n", i, B[pocit], A[j*n3+i]); 
+           if(*verbosity>0) printf("Result check failed:  i=%d  B[%d,%d]=%f  A[%d,%d]=%f\n", i, i+1,j+1,B[pocit],i+1,j+1, A[j*n3+i]); 
            p++;
         
         }
@@ -1062,7 +1122,101 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
           pocit++;
         }
         }
-    
+        float newes;
+        float pole = 0;
+        //pocit = ;
+        printf("\n\n\n");
+       /* pocit=0;
+        
+        for (i=0;i<n3;i++)
+        {
+        for (j=0;j<n3;j++){
+          
+           newes = fabs(B[pocit]-A[j*n3+i]);
+           pole = pole + newes;
+           if(*verbosity>2) printf("Result check :  i=%d  B[%d,%d]=%f  A[%d,%d]=%f  Difference :%f \n",i, i+1,j+1,B[pocit],i+1,j+1, A[j*n3+i],newes); 
+     
+        
+           // printf("%d",pocit);
+        
+        
+        
+           
+          //A[j*n3+i] = rand() / (float)RAND_MAX;//h[pocit];
+          //B[pocit] = A[j*n3+i];
+          pocit++;
+        }
+        }  */
+        /*int ooo = 0;
+        printf("\nGPU\n");
+        
+        for (i=0;i<n3;i++) {
+         for (j=0;j<n3;j++)
+        {
+        printf(" %f ",A[j*n3+i]);//  A1[j*n3+i] = i+1+(j+1)*(j+1);//rand() / (float)RAND_MAX;//j+1+i+1;//rand() / (float)RAND_MAX;
+         // A[j*n3+i] = A1[j*n3+i];
+        if ((ooo+1)%n3 == 0) {printf("\n");}
+        ooo++;
+        }
+       }
+       
+       printf("\nTau_r\n");
+        for (i=0;i<n3;i++) {
+          printf(" %f ",TAU_r[i]);
+        }
+       ooo = 0;
+      
+       printf("\nCPU\n");
+       
+       for (i=0;i<n3;i++) {
+         for (j=0;j<n3;j++)
+        {
+        printf(" %f ",B[i*n3+j]);//  A1[j*n3+i] = i+1+(j+1)*(j+1);//rand() / (float)RAND_MAX;//j+1+i+1;//rand() / (float)RAND_MAX;
+         // A[j*n3+i] = A1[j*n3+i];
+        if ((ooo+1)%n3 == 0) {printf("\n");}
+        ooo++;
+        }
+       }
+               
+        }
+        
+        printf("\nTau_r\n");
+        for (i=0;i<n3;i++) {
+          printf(" %f ",TAU_r1[i]);
+        }
+       */
+       printf("\n\n");
+       int prem = 0;
+       for (i=0;i<n3;i++) {
+         
+         for (j=prem;j<n3;j++)
+         {
+           newes = fabs(A[j*n3+i]-B[i*n3+j]);
+           pole = pole + newes;
+           printf("R[GPU][%i][%i] %f R[CPU][%i][%i] %f  Diference : %f\n",i+1,j+1,A[j*n3+i],i+1,j+1,B[i*n3+j],newes);
+         }
+         prem ++;
+        }
+       printf("\n\n");
+       prem = 0;
+        for (i=0;i<n3;i++) {
+         
+         for (j=0;j<prem;j++)
+         {
+           newes = fabs(A[j*n3+i]-B[i*n3+j]);
+           pole = pole + newes;
+           printf("Q[GPU][%i][%i] %f Q[CPU][%i][%i] %f  Diference : %f\n",i+1,j+1,A[j*n3+i],i+1,j+1,B[i*n3+j],newes);
+         }
+         prem ++;
+        }
+        printf("\n\n");
+        for (i=0;i<n3;i++) {
+          newes = fabs(TAU_r1[i]-TAU_r[i]);
+          pole = pole + newes;
+          printf(" TAU_r(GPU)[%i] %f TAU_r(CPU)[%i] %f Diference :%f\n",i,TAU_r[i],i,TAU_r1[i],newes);
+        }
+        
+       printf("\n\n Average absolute difference :%f \n\n", pole/n3);
        printf("Result check failed number: %d from %d",p,pocit);
  
     } 
@@ -1108,7 +1262,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         {
         for (j=0;j<n3;j++){
           
-          A[j*n3+i] = 2;//rand() / (float)RAND_MAX;//h[pocit];
+          A[j*n3+i] = i+1 +j+1;//2;//rand() / (float)RAND_MAX;//////h[pocit];
           B[pocit] = A[j*n3+i];
           pocit++;
         }
@@ -1132,7 +1286,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         culaShutdown();
         
         printf("----------------------\n");
-        printf("   CPU LAPACKE_sgeqrt (MKL)  \n");
+        printf("   CPU LAPACKE_sgeqrf (MKL)  \n");
         printf("----------------------\n");
       
         printf("Starting clapack_sgeqrf ....");
@@ -1143,7 +1297,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         cpu_time_2 = getTime();
 #else
         printf("clapack_sgeqrf not present in GNU clapack.h ! returning\n");
-        return;
+        //return;
 #endif
         
         printf("\nComputing ... done\n");
@@ -1166,7 +1320,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         verify_result();
         printf(" ... done\n");
         printf("\n\n\n");
-        printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",B[n2-1],A[n2-1]);
+       // printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",B[n2-1],A[n2-1]);
        // if(*verbosity>0)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",TAU_r1[0],TAU_r[0]);
        // printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n\n\n",TAU_r1[n3-1],TAU_r[n3-1]);
         printf("\n\n\n");
