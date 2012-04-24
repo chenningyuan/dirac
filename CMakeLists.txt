@@ -43,6 +43,7 @@ option(ENABLE_UTILITIES       "Enable utilities"                                
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
+option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
@@ -55,10 +56,59 @@ include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigParallelEnvironment)
 
-set(LIBS)
+set(LIBS "stdc++")
 
 include(ConfigMath)
-include(ConfigGPUMath)
+
+if(ENABLE_64BIT_INTEGERS)
+    add_definitions(-DINT_STAR8)
+endif()
+
+
+if(ENABLE_CUDA)
+    find_package(CUDA)
+    if(CUDA_FOUND) 
+        if(NOT ENABLE_64BIT_INTEGERS)
+            # for CUDA we are employing variables set and returned by FindCUDA.cmake
+            add_library(fortran_cuda "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.c" "${CUDA_TOOLKIT_ROOT_DIR}/src/fortran.h")
+            INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} ) 
+            #message("CUDA_CUBLAS_LIBRARIES=${CUDA_CUBLAS_LIBRARIES}")
+            set(CULA_LIB_DIRS Empty)
+            if (ENABLE_CULA) # both CUDA & CULA present
+                # miro: there is no FindCULA yet - we are using hardcoded default installation links
+                add_definitions(-DUSE_CULA)
+                INCLUDE_DIRECTORIES( /usr/local/cula/include ) 
+                if (CUDA_64_BIT_DEVICE_CODE)  # set 64bit according to CUDA prerequisite
+                    set(CULA_LIB_DIR /usr/local/cula/lib64 )
+                else()
+                    set(CULA_LIB_DIR /usr/local/cula/lib )    
+                endif()
+                find_library(CULA NAMES cula PATHS ${CULA_LIB_DIR} )
+                find_library(CULA_FORTRAN NAMES cula_fortran PATHS ${CULA_LIB_DIR} )
+                find_library(CULA_BLAS NAMES cublas PATHS ${CULA_LIB_DIR} ) 
+                find_library(CULA_CUDART NAMES cudart PATHS ${CULA_LIB_DIR} )
+                #message("CULA_CUDART=${CULA_CUDART}")
+                #message("CULA=${CULA}")
+            endif()
+            add_definitions(-DUSE_CUBLAS)
+            if (CUDA_64_BIT_DEVICE_CODE) 
+                add_definitions(-DARCH_64)
+            endif()
+            # fortran executable with some routines in C to check all GPU possibilities
+            add_executable(gpu_test.x utils/gpu_test.F90 utils/gpu_routines.c)
+            if (ENABLE_CULA) # both CUDA & CULA present
+                # "CULA is built on NVIDIA CUDAand NVIDIA CUBLAS", but it can also be linked against  newer CUDA libraries
+                # miro: we have two linking possibilities, explore them
+                target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CULA} ${CULA_FORTRAN} ${CULA_BLAS} ${CULA_CUDART} blas lapack) # employ solely own stuff from CULA ...
+                #target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CULA} ${CULA_FORTRAN} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} blas lapack) # employ some stuff from CUDA
+            else() # linking against sole CUDA 
+                target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} blas)
+            endif()
+        else()
+            message("-- CUDA library found, but can not be used with 64-bit integers!")
+        endif()
+    endif()
+endif()
 
 add_custom_command(
     OUTPUT
@@ -94,6 +144,35 @@ set(LIBS
     xcfun
     ${LIBS}
     )
+
+include(ConfigExternal)
+
+if(ENABLE_PCMMOD)
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCBLAS_ROOT=${CBLAS_ROOT}
+        -DEIGEN3_ROOT=${EIGEN3_ROOT}
+        )
+ 
+    add_external(pcmsolver)
+
+    set(LIBS
+        solver
+        green
+        cavity
+        metal
+        pedra
+        pwl
+        wem
+        wavcav
+        getkw
+        ${LIBS}
+        )
+endif()
 
 include(BinaryInfo)
 
@@ -199,7 +278,11 @@ foreach(
         ${EXECUTABLE}
         dirac
         ${LIBS}
+        dirac
         )
+    if(ENABLE_PCMMOD)
+        add_dependencies(${EXECUTABLE} pcmsolver)
+    endif()
 endforeach()
 
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)

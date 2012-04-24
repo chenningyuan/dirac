@@ -669,9 +669,10 @@ C     Last revision: 1997/09/15 - jth (OPTIMIZE added)
 C
 C***********************************************************************
       use xmlout
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (NTABLE = 13, NDIR = 4)
+      PARAMETER (NTABLE = 14, NDIR = 4)
       LOGICAL FIND_KEYWORD
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7, TABDIR(NDIR)*7,
@@ -684,7 +685,7 @@ C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
-     &             '.XMLOUT'/
+     &             '.XMLOUT','.EXTPCM'/
 C
       NJOBS = 0
       NOSFCRASH=.FALSE.
@@ -711,7 +712,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112,113),I
+     &                111,112,113,114),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -781,6 +782,18 @@ Ctsaue: retained for backwards compatibility
 C     XMLOUT: Write output in xml format to separate file
          call xml_open_file('dirac.xml')
          GOTO 100
+
+!        pcm module
+ 114     continue
+#ifdef PCM_MODULE
+         dirac_cfg_pcm = .true.
+#else
+         call quit('.EXTPCM not included in this version')
+#endif
+         goto 100
+
+
+
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
