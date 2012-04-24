@@ -1630,7 +1630,9 @@ C*****************************************************************************
 
       use dirac_cfg
       use fde_mod
+#ifdef PCM_MODULE
       use pcm_interface
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
