@@ -299,7 +299,6 @@ foreach(
         ${EXECUTABLE}
         dirac
         ${LIBS}
-        dirac
         )
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)
