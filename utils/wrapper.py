@@ -446,7 +446,8 @@ class Wrapper:
     def run(self):
         try:
             os.chdir(self.tmppath)
-            os.system('./pcmsolver --dryrun')
+          # radovan: it's not always a pcm calculation
+          # os.system('./pcmsolver --dryrun')
             for cmd in self.cmdlines:
                 self.run_cmd(cmd)
         finally:
