@@ -209,6 +209,13 @@ contains
            hfx_out = hfx_out + 0.25d0*w
         end if
       
+        w = get_weight(word_array(i), 'pbe38')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_PBEX) = f%w(XC_PBEX) + 0.625d0*w
+           f%w(XC_PBEC) = f%w(XC_PBEC) +        w
+           hfx_out = hfx_out + 0.375d0*w
+        end if
+      
         w = get_weight(word_array(i), 'kt1')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_SLATERX) = f%w(XC_SLATERX) +            w
