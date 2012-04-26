@@ -82,11 +82,15 @@ C  /* Deck dirctl */
       use xmlout
       use dirac_cfg
 
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-      DIMENSION WORK(LWORK)
+#include "dgroup.h"
+
+      integer :: LWORK
+      real(8) :: WORK(LWORK)
 C
       CALL QENTER('DIRCTL')
 C
