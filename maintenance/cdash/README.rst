@@ -31,8 +31,8 @@ Once "make Experimental" works you can create a script to run "make Nightly".
 To get inspired have a look at the cdash example recipes in the repository.
 
 
-  Setting effective automatic buildup and tests
-  ----------------------------------------------
+Setting effective automatic buildup and tests
+---------------------------------------------
 
 It is recommended to use "git clone" scheme for repetitive downloading, building up 
 and testing the entire DIRAC suite.
