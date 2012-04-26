@@ -2136,7 +2136,7 @@ C
 C
 C#include "memint.h"
 *
-      NTEST = 200
+      NTEST = 00
 *
       CALL QENTER('LCISP')
 *. Number of spaces
@@ -2146,7 +2146,7 @@ C#include "memint.h"
 *
 *.  Largest NOCTPA*NOCTPB
       print*,'entering LCISPC_KRCC'
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
       MXNOCAB = 0
       DO IMS2 = 1, NMS2VAL
         IATP = IST_FOR_DT(1,IMS2)
@@ -2159,7 +2159,7 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
       CALL MEMGET('REAL',KLIOIO,MXNOCAB,WORK,KFREE,LFREE)
       print*,'KFREE,LFREE',KFREE,LFREE
       CALL TEST_ARRAY(WORK(KLIOIO),MXNOCAB)
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
       print*,'after KLIOIO'
 *
       print*,'NSMST',NSMST
@@ -2175,7 +2175,7 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
 * MXSOOB_AS added by Lasse 20-01-04
       MXSOOB_AS = 0
       MXSOOB = 0
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
 *. Loop over MS2 spaces
       print*,'NMS2VAL,NICISP',NMS2VAL,NICISP
       DO IMS2 = 1, NMS2VAL
@@ -2197,7 +2197,7 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
      &                    IGSOCCX,NOCTPA,
      &                    NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
      &                    NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),0)
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
 *
           DO  ISYM = 1, NSMCI
             CALL ZBLTP_KRCC(ISMOST(1,ISYM),NSMST,IDC,WORK(KLBLTP))
@@ -3769,7 +3769,7 @@ C             print*,'NCREA,NANNI',NCREA,NANNI
       NTEST = 00
 *
       IDUM = 0
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
 *. Largest number of creation and annihilation operators
       MX_CREA = IMNMX(LCOBEX_TP,NOBEX_TP,2)
       MX_ANNI = IMNMX(LAOBEX_TP,NOBEX_TP,2)
@@ -3806,7 +3806,7 @@ C
 C
       CALL MEMGET('REAL',KLSOEX,MX_SOEX_BLK*MX_OPS*NMS2VAL*2*40,
      &            WORK,KFREE,LFREE)
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
 *.Alpha and beta-occupations for reference space
 *. Notice : IREFSPC is not used, info in IHPVGAS is used !
 *. if condition in use here
@@ -4161,6 +4161,17 @@ C?    WRITE(6,*) ' SPOBEX_TO_ABOBEX_CC : NSPOBEX_TP = ', NSPOBEX_TP
       END IF
       END DO
 *     ^ End of loop over IAB
+* Temp fix for He
+      NAOBEX_TP = NAOBEX_TP + 1
+      NBOBEX_TP = NBOBEX_TP + 1
+      IAOBEX_TP(1,NAOBEX_TP) = 0
+      IAOBEX_TP(2,NAOBEX_TP) = 2
+      IAOBEX_TP(3,NAOBEX_TP) = 1
+      IAOBEX_TP(4,NAOBEX_TP) = 0
+      IBOBEX_TP(1,NBOBEX_TP) = 0
+      IBOBEX_TP(2,NBOBEX_TP) = 2
+      IBOBEX_TP(3,NBOBEX_TP) = 1
+      IBOBEX_TP(4,NBOBEX_TP) = 0
 *
       NTEST = 00
       IF(NTEST.GE.3) THEN
@@ -4559,7 +4570,7 @@ C     END IF
         INI = 1
         CALL FIND_ALL_ABOBEX(INI,NGAS,WORK(KLAOBEX_CC),
      &                       NAOBEX_TP,WORK(KLAOBEX_KRCC),LENA_KRCC)
-        CALL MEMCHK_KRCC(WORK)
+C       CALL MEMCHK_KRCC(WORK)
 * Now beta
         INI = 0
         CALL FIND_ALL_ABOBEX(INI,NGAS,WORK(KLBOBEX_CC),
@@ -4570,8 +4581,8 @@ C     END IF
         INI = 1
         CALL FIND_ALL_ABOBEX(INI,NGAS,WORK(KLBOBEX_CC),
      &                       NBOBEX_TP,WORK(KLBOBEX_KRCC),LENB_KRCC)
-        CALL MEMCHK_KRCC(WORK)
-      END IF 
+C       CALL MEMCHK_KRCC(WORK)
+      END IF
 *
 * Values
 *
@@ -4581,8 +4592,10 @@ C     END IF
 *
       IP = 1
       IH = 0
-      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-      IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
+C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+C     IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = NACTEL !Set it to this value for all
+      print*,'IKRFLIPMAX',IKRFLIPMAX
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4637,10 +4650,11 @@ C     END IF
       CALL ISETVC(WORK(KIPARTICLEA),IZERO,IPARTATOT*NGAS)
       CALL ISETVC(WORK(KIPARTICLEB),IZERO,IPARTBTOT*NGAS)
 *
-* Find the 01 intermediates
+* Find the 10 intermediates
 *
       CALL MEMCHK_KRCC(WORK)
       IINI = 1
+      print*,'Finding intermediates for M10'
 *
       CALL SET_INTMEDIATES(IINI,IP,IH,NINTER10,WORK(KINTM10),IKRFLIPMAX,
      &                     IHOLEATOT,IHOLEBTOT,
@@ -4659,7 +4673,7 @@ C     END IF
 *
       IP = 0
       IH = 1
-      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4718,6 +4732,7 @@ C     END IF
 *
       CALL MEMCHK_KRCC(WORK)
       IINI = 1
+      print*,'Finding intermediates for M01'
 *
       CALL SET_INTMEDIATES(IINI,IP,IH,NINTER01,WORK(KINTM01),IKRFLIPMAX,
      &                     IHOLEATOT,IHOLEBTOT,
@@ -4736,8 +4751,8 @@ C     END IF
 *
       IP = 1
       IH = 1
-      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-      IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4796,6 +4811,7 @@ C     END IF
 *
       CALL MEMCHK_KRCC(WORK)
       IINI = 1
+      print*,'Finding intermediates for M11'
 *
       CALL SET_INTMEDIATES(IINI,IP,IH,NINTER11,WORK(KINTM11),IKRFLIPMAX,
      &                     IHOLEATOT,IHOLEBTOT,
@@ -4814,8 +4830,8 @@ C     END IF
 *
       IP = 2
       IH = 0
-      IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
-      IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
+C     IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
+C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4874,6 +4890,7 @@ C     END IF
 *
       CALL MEMCHK_KRCC(WORK)
       IINI = 1
+      print*,'Finding intermediates for M20'
 *
       CALL SET_INTMEDIATES(IINI,IP,IH,NINTER20,WORK(KINTM20),IKRFLIPMAX,
      &                     IHOLEATOT,IHOLEBTOT,
@@ -4892,8 +4909,8 @@ C     END IF
 *
       IP = 0
       IH = 2
-      IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
-      IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
+C     IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
+C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4952,6 +4969,7 @@ C     END IF
 *
       CALL MEMCHK_KRCC(WORK)
       IINI = 1
+      print*,'Finding intermediates for M02'
 *
       CALL SET_INTMEDIATES(IINI,IP,IH,NINTER02,WORK(KINTM02),IKRFLIPMAX,
      &                     IHOLEATOT,IHOLEBTOT,
@@ -4970,8 +4988,8 @@ C     END IF
 *
       IP = 1
       IH = 2
-      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-      IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -5030,6 +5048,7 @@ C     END IF
 *     
       CALL MEMCHK_KRCC(WORK)
       IINI = 1
+      print*,'Finding intermediates for M12'
 *     
       CALL SET_INTMEDIATES(IINI,IP,IH,NINTER12,WORK(KINTM12),IKRFLIPMAX,
      &                     IHOLEATOT,IHOLEBTOT,
@@ -5201,6 +5220,7 @@ C     print*,IHOLEB(1,1),IHOLEB(2,1)
      &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
      &                  IHOLEAIDENT,IHOLEBIDENT,
      &                  IALLOWIDENT)
+C           print*,'NINTER',NINTER
           ELSE
             STOP "HOW DID YOU MANAGE TO GET HERE??? "
           END IF
@@ -5208,7 +5228,7 @@ C     print*,IHOLEB(1,1),IHOLEB(2,1)
       END DO
 *
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' Information for intemediate ',IH,IP
+        WRITE(6,*) ' Information for intemediate ',IP,IH
         WRITE(6,*) ' =============================== '
         WRITE(6,*) ' Holes and particles '
         WRITE(6,*) ' IHOLEATOT ',IHOLEATOT
@@ -5326,7 +5346,8 @@ C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
 *
-        DO IAH2 = 1,IHOLEATOT
+C       DO IAH2 = 1,IHOLEATOT
+        DO IAH2 = IAH,IHOLEATOT
 *
           IF(IAH2.EQ.IHOLEAIDENT) THEN
             IF(IDENTHA.EQ.1) THEN
@@ -5372,7 +5393,8 @@ C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF        
         END IF          
 *
-        DO IBH2 = 1,IHOLEBTOT
+C       DO IBH2 = 1,IHOLEBTOT
+        DO IBH2 = IBH,IHOLEBTOT
 *
           IF(IBH2.EQ.IHOLEBIDENT) THEN
             IF(IDENTHB.EQ.1) THEN
@@ -5491,7 +5513,8 @@ C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
 *
-        DO IAP2 = 1,IPARTATOT
+C       DO IAP2 = 1,IPARTATOT
+        DO IAP2 = IAP,IPARTATOT
 *
           IF(IAP2.EQ.IPARTAIDENT) THEN
             IF(IDENTPA.EQ.1) THEN
@@ -5537,7 +5560,8 @@ C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF        
         END IF          
 *
-        DO IBP2 = 1,IPARTBTOT
+C       DO IBP2 = 1,IPARTBTOT
+        DO IBP2 = IBP,IPARTBTOT
 *
           IF(IBP2.EQ.IPARTBIDENT) THEN
             IF(IDENTPB.EQ.1) THEN
@@ -5709,7 +5733,8 @@ C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
 *
-        DO IAH2 = 1,IHOLEATOT
+C       DO IAH2 = 1,IHOLEATOT
+        DO IAH2 = IAH,IHOLEATOT
 *
           IF(IAH2.EQ.IHOLEAIDENT) THEN
             IF(IDENTHA.EQ.1) THEN
@@ -5803,7 +5828,8 @@ C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
 *
-        DO IBH2 = 1,IHOLEBTOT
+C       DO IBH2 = 1,IHOLEBTOT
+        DO IBH2 = IBH,IHOLEBTOT
 *
           IF(IBH2.EQ.IHOLEBIDENT) THEN
             IF(IDENTHB.EQ.1) THEN
@@ -6302,6 +6328,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
 * any comtraction has Delta MK=0 so the total
 * kramers flip of the resultant operator will 
 * just be the sum of the two ooperators contracted
+* Just perhaps just use IMAXKRFLIP from crun
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
@@ -6312,6 +6339,12 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
       INTEGER IOP(4*NGAS)
 *
       NTEST = 00
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Welcome to CANITBE '
+        WRITE(6,*) ' Checking for operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IOP,1)
+      END IF
 *
       IANSWER = 0
 *
@@ -6386,14 +6419,14 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
         DO J=1,NFSYM
           ICOMP = ICOMP + NGSSH(J,IGAS)
         END DO
-        IF(IHPVGAS(IGAS).NE.1) THEN
+C       IF(IHPVGAS(IGAS).NE.1) THEN
           IF(IOP(IGAS+0*NGAS).GT.ICOMP) RETURN
           IF(IOP(IGAS+1*NGAS).GT.ICOMP) RETURN
-        END IF
-        IF(IHPVGAS(IGAS).NE.2) THEN
+C       END IF
+C       IF(IHPVGAS(IGAS).NE.2) THEN
           IF(IOP(IGAS+2*NGAS).GT.ICOMP) RETURN
           IF(IOP(IGAS+3*NGAS).GT.ICOMP) RETURN
-        END IF
+C       END IF
       END DO
       IF(NTEST.EQ.100) WRITE(6,*) " operator allowed for GAS"
 *
@@ -6406,12 +6439,12 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
      &            IOP(IGAS+3*NGAS) +
      &            IKRFLIP
       END DO
+      IKRFLIP = IKRFLIP/2
       IF(ABS(IKRFLIP).GT.IKRFLIPMAX) RETURN
-      IF(NTEST.EQ.100) WRITE(6,*) ' I flip ok ',IKRFLIP/2
+      IF(NTEST.EQ.100) WRITE(6,*) ' I flip ok ',IKRFLIP
 *
 * Even or Odd Kramers flip
       IF(NZ.LT.4) THEN
-        IKRFLIP = IKRFLIP/2
         CALL EVENODD(ITEST,ABS(IKRFLIP))
         IF(ITEST.EQ.1) RETURN
         IF(NTEST.EQ.100) WRITE(6,*) ' even KRAMERS FLIP'
@@ -7426,7 +7459,7 @@ C     Double group
       END
 *
       SUBROUTINE SORT_OP_3_INDEX(IOP,IDIMOP,NGAS,
-     &                           IEXCITE,IKRFLIP,
+     &                           IEXCITE,IKRFLIP,IMUB,
      &                           IVECS,IVECF,
      &                           IVECH,IHELP_OP,IHELP_IDX)
 *
@@ -7436,9 +7469,9 @@ C     Double group
 *
 #include "implicit.inc"
 *
-      INTEGER IVECS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
-      INTEGER IVECF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
-      INTEGER IVECH(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
+      INTEGER IVECS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
+      INTEGER IVECF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
+      INTEGER IVECH(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
       INTEGER IOP(4*NGAS,IDIMOP)
       INTEGER IHELP_OP(4*NGAS,IDIMOP),IHELP_IDX(IDIMOP)
 *
@@ -7446,7 +7479,7 @@ C     Double group
 *
 * Find the number of operators with given N,Mk,Mub
 *
-C     print*,'NGAS,IDIMOP',NGAS,IDIMOP
+      print*,'NGAS,IDIMOP',NGAS,IDIMOP
       DO I =1,IDIMOP
         CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
         IVECS(N,MK,MUB) = IVECS(N,MK,MUB) + 1
@@ -7457,7 +7490,7 @@ C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
         WRITE(6,*) ' Number of operators of given N,Mk,Mub '
         DO I = 0,IEXCITE
           DO J = -IKRFLIP,IKRFLIP
-            DO K = -IEXCITE,IEXCITE
+            DO K = -IMUB,IMUB
               IF(IVECS(I,J,K).GT.0) THEN
                 WRITE(6,*) IVECS(I,J,K),' Operators with ',
      &                     'N ',I,' Mk',J,' Mub ',K
@@ -7487,13 +7520,15 @@ C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
         WRITE(6,*) ' Start and finish for Operators '
         DO I =0,IEXCITE
           DO J = -IKRFLIP,IKRFLIP
-            DO K = -IEXCITE,IEXCITE
+            DO K = -IMUB,IMUB
               IF(IVECF(I,J,K)-IVECS(I,J,K).GE.0) THEN
+                IF(IVECF(I,J,K).GE.1) THEN
                 WRITE(6,*) ' Operators with ',
      &                     'N ',I,' Mk',J,' Mub ',K,
      &                     ' begins ',IVECS(I,J,K),
      &                     ' ends ',IVECF(I,J,K)
                 IDIFF = IDIFF + 1
+                END IF
               END IF
             END DO
           END DO

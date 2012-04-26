@@ -299,4 +299,18 @@ C     WRITE(6,*)
 *
       RETURN
       END
-
+*
+      SUBROUTINE IWRT_VEC(IVEC,NDIM)
+*
+#include "implicit.inc"
+*
+      INTEGER IVEC(NDIM)
+*
+      WRITE(6,*) ' Will write vector of dimension : ',NDIM
+*
+      DO I=1,NDIM
+        WRITE(6,*) IVEC(I)
+      END DO
+*
+      RETURN
+      END

@@ -31,7 +31,7 @@ C
 * Set some local variables
 *
 C     print*,'ISEA,JSEA,KSEA,LSEA',ISEA,JSEA,KSEA,LSEA
-      NTEST = 000
+      NTEST = 00
       SIGN2 = 1.0D0
 * 1. Identify the GAS and mark those with one orbital
       IORBCOUNT = 0
@@ -79,7 +79,7 @@ C     print*,'ISEA,JSEA,KSEA,LSEA',ISEA,JSEA,KSEA,LSEA
 *    NALPHA 2 is not sorted like this
 *
 C      WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA,start = ',ISEA,JSEA,KSEA,LSEA
-      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
+      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0.OR.ISPINORBIT.EQ.1) THEN
         IF(ABS(ISEA).GT.ABS(KSEA)) THEN
           IF(ABS(JSEA).GT.ABS(LSEA)) THEN
 C swap all 4 indices and I_INDX_TO_GAS
@@ -127,7 +127,7 @@ C           print*,'enter 4'
 * 3. Identify relative type of integral and find offset of type and integral from lists
 * Remember to check if there is only one kramers pair in gas shell. Done in step 1
 * Should also add relative offset of type. Done
-      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
+      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0.OR.ISPINORBIT.EQ.1) THEN
         ITYPE = ISUBLENGHT(I_INDX_TO_GAS(4)) + I_INDX_TO_GAS(2)-1 +
      & ILENGHT*(ISUBLENGHT(I_INDX_TO_GAS(3)) + I_INDX_TO_GAS(1)-1)
 *
@@ -138,7 +138,7 @@ C        print*,'ITYPE ABS',ITYPE
 C          print*,'ITYPE,IRELTYPE(4)',ITYPE,IRELTYPE(4)
           ITYPE = ITYPE + IRELTYPE(4)
         ELSE
-          ITYPE = ITYPE + IRELTYPE(8)
+          ITYPE = ITYPE + IRELTYPE(6)
         END IF
       ELSE
 C
@@ -163,7 +163,7 @@ C       print*,'IRELTYPE(5),IRELTYPE(6)',IRELTYPE(5)!,IRELTYPE(6)
 * 4. Calculate position of integral
 * First calculate position of integral in type then add offset for type
 C Number of integrals can be found from array
-      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
+      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0.OR.ISPINORBIT.EQ.1) THEN
 C Four possibilties
         IF(I_INDX_TO_GAS(1).EQ.I_INDX_TO_GAS(3).AND.
      &     I_INDX_TO_GAS(2).EQ.I_INDX_TO_GAS(4)) THEN
@@ -192,7 +192,7 @@ C          print*,'IPOS,IOFFINTTYPE(ITYPE) for 1',IPOS,IOFFINTTYPE(ITYPE)
      &            KSEA - IORB(I_INDX_TO_GAS(3))-1
 C          print*,'JSEA,LSEA,ISEA,KSEA',JSEA,LSEA,ISEA,KSEA
 C          print*,'IORB(I_INDX_TO_GAS(2)-1)',IORB(I_INDX_TO_GAS(2)-1)
-C          print*,'IPOS',IPOS
+C          print*,'IPOS for 2',IPOS
           IPOS = IPOS + IOFFINTTYPE(ITYPE)
 C          print*,'IPOS,IOFFINTTYPE(ITYPE) for 2',IPOS,IOFFINTTYPE(ITYPE)
 C          print*,'
@@ -260,7 +260,7 @@ C        print*,'IPOS2ALPHA',IPOS2ALPHA(1),IPOS2ALPHA(2),IPOS2ALPHA(3)
 C
 C      print*,'ipos',ipos
 C      print*,'i am here'
-      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
+      IF(NALPHA.EQ.4.OR.NALPHA.EQ.0.OR.ISPINORBIT.EQ.1) THEN
         XOUT = SIGN2*XINT(IPOS)
 C       print*,'IPOS = ',IPOS
       ELSE
@@ -286,7 +286,7 @@ C       END IF
         DO I = 1,4
           WRITE(6,*) 'I_INDX_TO_GAS(I) = ',I_INDX_TO_GAS(I)
         END DO
-C       WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA = ',ISEA,JSEA,KSEA,LSEA
+        WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA = ',ISEA,JSEA,KSEA,LSEA
         IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
           WRITE(6,*) 'ITYPE = ',ITYPE
         ELSE

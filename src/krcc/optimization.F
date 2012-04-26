@@ -196,7 +196,7 @@ C Norm of real + imagenary
         print*
         END IF
 C Notice the identety is now number one and not the last element!
-          XNORM = SQRT(INPROD(CCVEC1(2),CCVEC1(2),IMULTFAC*N_CC_AMP))
+         XNORM = SQRT(INPROD(CCVEC1(2),CCVEC1(2),IMULTFAC*N_CC_AMP))
          print*,'after XNORM',XNORM
          CALL MEMCHK_KRCC(WORK)
 ****************************************
@@ -254,7 +254,7 @@ C          end do
           CALL DIAVC2(CCVEC1(2),CCVEC1(2),WORK(KDIA+1),
      &                ZERO,IMULTFAC*N_CC_AMP)
            print*,'after DIAVC2'
-           CALL DUMDUM(N_CC_AMP,CCVEC1,WORK(KDIA))
+C          CALL DUMDUM(N_CC_AMP,CCVEC1,WORK(KDIA))
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1',CCVEC1(i),CCVEC2(i),i
 C          end do

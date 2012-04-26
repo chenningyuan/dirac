@@ -55,7 +55,12 @@ C     KCCVEC2 = 0
 *.3 : Maps for T1T2 => T12 for individual strings types 
       CALL DIM_T1T2_TO_T12_MAP_REL(LEN_T1T2_STRING,LENT_T1T2_TCC,
      &                             WORK,KFREE,LFREE)
-      LEN = LEN_T1T2_STRING
+      DO I=1,1000
+      print*,'temporary dimensioning of LEN_T1T2_STRING'
+      END DO
+C     LEN = LEN_T1T2_STRING
+      LEN = 10*LEN_T1T2_STRING
+      print*,'LEN_T1T2_STRING',LEN_T1T2_STRING
 *. Arrays for holding elementary operators times strings
 *
       CALL MEMGET('INTE',KIX1_CA,LEN,WORK,KFREE,LFREE)

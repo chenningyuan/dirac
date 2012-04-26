@@ -217,11 +217,11 @@ c     call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
 *  Reading integrals from DIRAC
 *******************************************************
 *
-      print*,'check before READ_DIRAC_FOR_KRCC'
-      CALL MEMCHK_KRCC(WORK)
+C     print*,'check before READ_DIRAC_FOR_KRCC'
+C     CALL MEMCHK_KRCC(WORK)
 C     CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE) !to start with
-      print*,'check after READ_DIRAC_FOR_KRCC'
-      CALL MEMCHK_KRCC(WORK)
+C     print*,'check after READ_DIRAC_FOR_KRCC'
+C     CALL MEMCHK_KRCC(WORK)
 *
 *******************************************************
 *  Integral reading section
@@ -245,14 +245,14 @@ C     CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE) !to start with
 *
           IRIOFF = (2*NDIM_TOT)**2
           NDIM_TOT2 = NDIM_TOT*2
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
 C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
       CALL MEMGET('INTE',KISTR_CA,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KISTR_CB,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KISTR_AA,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KISTR_AB,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
 *
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
        call dist_ints_sigden_KRCC(INTIMP,ISPINFREE,ISYM_T,
      &                            WORK(KLSOBEX),WORK(KT_CC),
      &                            WORK(KISTR_CA),WORK(KISTR_CB),
@@ -264,7 +264,7 @@ C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
      &                            WORK,KFREE,LFREE)
 *
         write(6,*)
-        write(6,*) ' Number of integrals/CC amplitudes: ',NALLINT
+        write(6,*) ' Number of integrals: ',NALLINT
         write(6,*) ' (including imaginary parts) '
 C       stop 'after dist_ints_sigden_KRCC'
 *
@@ -491,8 +491,8 @@ C
 C     Integrals for KR-CC calculation. Which are actually needed
 C
       print*,'AT THE MOMENT HARDWIRED TO LL LS AND SS INTEGRALS'
-      IOPT_INTDEF = 0111
-      IOPT_INTBUF = 0111
+      IOPT_INTDEF = 7!0111
+      IOPT_INTBUF = 7!0111
       CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,GNORM(5),
      &            OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
 *     Mo's from DFCOEF
@@ -671,14 +671,14 @@ C     NTEST = max(NTESTL,IPRNT)
       if (DOUGRP.eq.7.or.DOUGRP.eq.4.or.DOUGRP.eq.1) INVSYM = 1
 *
 * Get reordering info depending on environment
-      print*,'INVSYM,DOUGRP,INTIMP',INVSYM,DOUGRP,INTIMP
-        print*,'before reo_info_dirac_KRCC'
-        print*,'NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM',
-     &          NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM
-        print*,'SYDI,DOUGRP,INVSYM,IDGTYP,ISPINFREE',
-     &          SYDI,DOUGRP,INVSYM,IDGTYP,ISPINFREE
-        print*,'KISREO,KINVREO,IPRNT',KISREO,KINVREO,IPRNT
-        CALL MEMCHK_KRCC(WORK)
+C     print*,'INVSYM,DOUGRP,INTIMP',INVSYM,DOUGRP,INTIMP
+C       print*,'before reo_info_dirac_KRCC'
+C       print*,'NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM',
+C    &          NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM
+C       print*,'SYDI,DOUGRP,INVSYM,IDGTYP,ISPINFREE',
+C    &          SYDI,DOUGRP,INVSYM,IDGTYP,ISPINFREE
+C       print*,'KISREO,KINVREO,IPRNT',KISREO,KINVREO,IPRNT
+C       CALL MEMCHK_KRCC(WORK)
         call reo_info_dirac_KRCC(NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM,
      &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
      &                      INVSYM,IDGTYP,ISPINFREE,IPRNT)
@@ -731,7 +731,7 @@ C     NTEST = max(NTESTL,IPRNT)
         end if
         ITPSV = 0
         if (NTEST.ge.1) write(LUINGR,'(A)') 'INTEGRAL FILE'
-        CALL MEMCHK_KRCC(WORK)
+C       CALL MEMCHK_KRCC(WORK)
 *
 * Loop over excitation types
         do IXTP=1,NSPOBEX_TP,1
@@ -752,7 +752,7 @@ C     NTEST = max(NTESTL,IPRNT)
             write(6,*) 'ISOBEX partition:'
             call iwrtma(ISOBEX(1,1,IXTP),NGAS,4,NGAS,4)
           end if
-        CALL MEMCHK_KRCC(WORK)
+C       CALL MEMCHK_KRCC(WORK)
 C
 * write statement about next integral type (to file)
 C
@@ -855,7 +855,7 @@ C         print*,'INCLUDED_HX(IXTP),IXTP',INCLUDED_HX(IXTP),IXTP
                   write(6,*) 'Adj. Ham. symm.    :',IADJSYM(ISYM_T)
                   write(6,*) 'more',INVELM(ISM_CA),INVELM(ISM_AA)
                 end if
-                CALL MEMCHK_KRCC(WORK)
+C               CALL MEMCHK_KRCC(WORK)
 *
 *. Generate strings of these symmetries
 *. obtain strings
@@ -1186,7 +1186,7 @@ C Kramers pair in a gas space we need to insure that there is always
 C an increasing number for the next HTYPE in IOFFINTTYPE
       CALL NXT_NUM_GE_NUM_MINUS_ONE(IOFFINTTYPE,2*NSPOBEX_TP)
 *
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
       NTEST = 00
       if (NTEST.ge.1) then
         write(6,*) ' DIST_INTS_SIGDEN reporting   : '
@@ -1211,7 +1211,7 @@ C Routine to see if there has been a change in the type of integral
 C
 #include "implicit.inc"
 C from 1 to
-      NTEST = 00
+      NTEST = 100
       ICHANGE = 0
       IF(ISUM.NE.IISUM) ICHANGE = 1
 C
@@ -1452,7 +1452,7 @@ C
 * New (memory saving) (NZ,3) integral interface (if true)
       NZ3FORM = .TRUE.
 *
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
       
 !
 !         this is the default integral scheme of today's LUCIAREL.
@@ -1462,7 +1462,7 @@ C
             call getind_nz3_KRCC(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
      &                      WORK(KKR),NASHT,NNASHX,F1,F2,IPRNT)
 *
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
       end
 *
 * Set KR array according to number of functions in fermion

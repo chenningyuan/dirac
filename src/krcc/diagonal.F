@@ -89,21 +89,28 @@ C NOTE ONLY DIAGONAL IS USED!!!
 C THEREFORE ONLY THAT WILL BE GENERATED
         I_ORI = 0
         IF(I_ORI.EQ.0) THEN
-          CALL FI_HS_DIA_KRCC(T,ECC,
-     &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
-     &               NGAS,NGSSH,IHPVGAS_AB,
-     &               NTOOBS,NTOOB,IDOH2,
-     &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),NELEC)
+C much easier just to fetch the diagonal from inactive Fock matrix hence
+          IOFF = 0
+          CALL GET_DIA_KRCC(WORK(KFDIA_AL),WORK(KFDIA_BE),
+     &                      WORK(KFI),NTOOB,IOFF)
+C         CALL FI_HS_DIA_KRCC(T,ECC,
+C    &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
+C    &               NGAS,NGSSH,IHPVGAS_AB,
+C    &               NTOOBS,NTOOB,IDOH2,
+C    &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+C    &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),NELEC)
 *
           IF(IRECOM.NE.1) THEN
             print*,'img dia'
-            CALL FI_HS_DIA_KRCC(T(N1ELINT+N2ELINT+1),ECCCOM,
-     &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
-     &               NGAS,NGSSH,IHPVGAS_AB,
-     &               NTOOBS,NTOOB,IDOH2,
-     &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),NELEC)
+          IOFF = NTOOB
+          CALL GET_DIA_KRCC(WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),
+     &                      WORK(KFI),NTOOB,IOFF)
+C           CALL FI_HS_DIA_KRCC(T(N1ELINT+N2ELINT+1),ECCCOM,
+C    &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
+C    &               NGAS,NGSSH,IHPVGAS_AB,
+C    &               NTOOBS,NTOOB,IDOH2,
+C    &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+C    &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),NELEC)
           END IF
         END IF
 * end replacement. Lasse
@@ -145,6 +152,27 @@ C      end do
 C?    WRITE(6,*) ' Enforced stop in GENCC_F_DIAG_M '
 C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
       CALL MEMREL('F_DIAG',WORK,KFDIA_AL,KFDIA_AL,KFREE,LFREE)
+*
+      RETURN
+      END
+*
+      SUBROUTINE GET_DIA_KRCC(DIA_AL,DIA_BE,
+     &                      FOCK,NTOOB,IOFF)
+*
+* The easy way to extract the diagonal from the inactive fock matrix
+* At the moment only double occupied spinors.
+*
+#include "implicit.inc"
+*
+      DIMENSION DIA_AL(NTOOB),DIA_BE(NTOOB),FOCK(NTOOB**2)
+*
+      DO I=1,NTOOB
+        IFETCH = IOFF + NTOOB*(I-1) + I
+C       print*,'IFETCH',IFETCH
+        DIA_AL(I) = FOCK(IFETCH)
+        DIA_BE(I) = FOCK(IFETCH)
+C       print*,'DIA_AL(I),I',DIA_AL(I),I
+      END DO
 *
       RETURN
       END
@@ -278,8 +306,18 @@ C         ICOUNT = ITPFSO(ISTART)
           IF(ININT.GE.1) THEN
             IUB = 1
             CALL ONE_ELEC_DIA(IUB,FI_AL(ICOUNT),T,ISTART,IEND,ISIDE)
+            IF(IHPVGAS_AB(ICOUNT,1).EQ.1) THEN
+              DO II=1,NGSSH(ISMOB,IGAS)
+                ECC = ECC + FI_AL(II)
+              END DO
+            END IF
             IUB = 2
             CALL ONE_ELEC_DIA(IUB,FI_BE(ICOUNT),T,ISTART,IEND,ISIDE)
+            IF(IHPVGAS_AB(ICOUNT,2).EQ.1) THEN
+              DO II=1,NGSSH(ISMOB,IGAS)
+                ECC = ECC + FI_BE(II)
+              END DO
+            END IF
           END IF
           ICOUNT = ICOUNT + IEND - ISTART + 1
         END DO
@@ -296,6 +334,7 @@ C         ICOUNT = ITPFSO(ISTART)
         END DO
       END IF
       print*,'grep for this'
+      print*,'ECC',ECC
 *
 *
 * 2-electron case. Now fetching all integrals in one loop.
@@ -336,6 +375,7 @@ C
                  print*,'I',I
                   do J = 1+JOFF,NJ+JOFF,1
                    print*,'J',J
+C                  IF(J.GE.3) CYCLE
 C
 C Assuming a bottom up occupation of electrons
 C IUB loop to only count occpied contributions for IAB
@@ -351,17 +391,22 @@ C
                       XOUT2 = 0.0D0
                       XOUT3 = 0.0D0
                       XOUT4 = 0.0D0
+                      IF(I.GT.J) THEN
                       II = I
                       JJ = J
+                      ELSE
+                      II = J
+                      JJ = I
+                      END IF
 C                     IABA = IAB
 C                     IABB = IAB
 C
 C Check if integral for nalpha = 0 or 4 is present and fetch it.
 C
-                      DO III=1,100
-                        print*,'Lasse is not sure if this is right'
-                        print*,'please debug completely'
-                      END DO
+C                     DO III=1,100
+C                       print*,'Lasse is not sure if this is right'
+C                       print*,'please debug completely'
+C                     END DO
                       print*,'II,JJ',II,JJ
                       IF(IHPVGAS_AB(ITPFSO(JOFF+1),1).EQ.1) THEN
                       INOINT = 0
@@ -370,9 +415,25 @@ C
                         INOINT = 1
                       END IF
                       IF(NOP.EQ.4.AND.INOINT.EQ.0) THEN
-                      CALL GET_INT2(XOUT,T,II,II,JJ,JJ,NALPHA)
+C                     CALL GET_INT2(XOUT,T,II,II,JJ,JJ,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT,T,II,JJ,II,JJ,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT,T,II,JJ,JJ,II,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT,T,JJ,II,II,JJ,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT,T,JJ,II,JJ,II,NALPHA)
+C                     II = I
+C                     JJ = J
+                      CALL GET_INT2(XOUT,T,JJ,JJ,II,II,NALPHA)
                       END IF
                       END IF
+                      print*,'XOUT',XOUT
 C
 C Fetch second term with nalpha = 2
 C
@@ -383,14 +444,35 @@ C                     print*,'XOUT',XOUT
                       JJ = J
                       IABA = IAB
                       IABB = IAB
-                      print*,'II,JJ',II,JJ
-                      CALL GET_INT2(XOUT2,T,II,II,JJ,JJ,NALPHA)
-                      IF(II.NE.JJ) THEN
-                      print*,'II,JJ',II,JJ
-                        CALL GET_INT2(XOUT3,T,JJ,JJ,II,II,NALPHA)
-                        CALL GET_INT2(XOUT4,T,II,JJ,JJ,II,NALPHA)
-                        XOUT2 = XOUT2 + XOUT3 - XOUT4
-                      END IF
+C                     print*,'II,JJ',II,JJ
+C                     CALL GET_INT2(XOUT2,T,II,II,JJ,JJ,NALPHA)
+C                     CALL GET_INT2(XOUT2,T,JJ,JJ,II,II,NALPHA)
+C                     CALL GET_INT2(XOUT2,T,JJ,II,JJ,II,NALPHA)
+
+C                     CALL GET_INT2(XOUT2,T,II,II,JJ,JJ,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT2,T,II,JJ,II,JJ,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT2,T,II,JJ,JJ,II,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT2,T,JJ,II,II,JJ,NALPHA)
+C                     II = I
+C                     JJ = J
+C                     CALL GET_INT2(XOUT2,T,JJ,II,JJ,II,NALPHA)
+C                     II = I
+C                     JJ = J
+                      CALL GET_INT2(XOUT2,T,JJ,JJ,II,II,NALPHA)
+                      print*,'XOUT2',XOUT2
+C                     IF(II.NE.JJ) THEN
+C                     print*,'II,JJ',II,JJ
+C                       CALL GET_INT2(XOUT3,T,JJ,JJ,II,II,NALPHA)
+C                       CALL GET_INT2(XOUT4,T,II,JJ,JJ,II,NALPHA)
+C                       XOUT2 = XOUT2 + XOUT3 - XOUT4
+C                       print*,'XOUT3,XOUT4',XOUT3,XOUT4
+C                     END IF
 C
 C Add the integrals to inactive fock matrix
 C
@@ -447,6 +529,7 @@ C       ^ IGAS
        CALL APRBLM2(FI_BE,NTOOBS,NTOOBS,NSMOB,ISYMPACK)
       END IF
       print*,'ECC',ECC
+      stop
 *
       RETURN
       END
