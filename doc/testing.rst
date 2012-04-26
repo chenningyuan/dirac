@@ -123,6 +123,7 @@ The default accepted relative/absolute error (DIRAC/Dalton) is 0.0001.
 You can modify this using $ERROR. If you want to ignore sign, use $IGNORESIGN.
 Also not that $ERROR and $IGNORESIGN are only valid for the next subtest.
 Example::
+
   $ERROR 0.000000001
   nlines 8:Electronic energy
 
@@ -135,6 +136,7 @@ following lines using tolerance 0.000000001, then we test Eigenvalues using
 tolerance 1.E-5.  We need to specify 1.E-5 for the second subtest otherwise
 runtest defaults to 0.0001.
 Possible keywords are::
+
   $ERROR          # accepted error
   $IGNORESIGN     # ignore sign
   from:STRING     # start from string STRING

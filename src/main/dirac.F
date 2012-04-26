@@ -82,11 +82,15 @@ C  /* Deck dirctl */
       use xmlout
       use dirac_cfg
 
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-      DIMENSION WORK(LWORK)
+#include "dgroup.h"
+
+      integer :: LWORK
+      real(8) :: WORK(LWORK)
 C
       CALL QENTER('DIRCTL')
 C
@@ -123,12 +127,12 @@ C***********************************************************************
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
         if (nbsym > 1) then
-          call quit('Polarizable Continuum Model calculation cannot     &
-     & handle symmetry!')
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle symmetry!')
         end if
         if (bss.or.x2c) then
-          call quit('Polarizable Continuum Model calculation not        &
-     & working with X2C Hamiltonian!')
+          call quit('Polarizable Continuum Model calculation not '//
+     & 'working with X2C Hamiltonian!')
         end if
         call init_pcm 
         print *, 'after pcm init'

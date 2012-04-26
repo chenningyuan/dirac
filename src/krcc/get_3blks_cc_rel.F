@@ -113,7 +113,7 @@ C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
      &  ' Largest block of strings with given symmetry and type',MXSTBL
 *. Largest number of resolution strings and spectator strings
 *  that can be treated simultaneously
-        MAXK = MIN(MXINKA,MXSTBL)
+        MAXK = MIN(LCCB,MXSTBL) ! Changed to LCCB
 *.scratch space for projected matrices and a CI block
 *
 *. Scratch space for CJKAIB resolution matrices
