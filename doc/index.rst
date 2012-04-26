@@ -5,7 +5,7 @@ Main page
 .. toctree::
    :maxdepth: 1
 
-   install.rst
+   installation.rst
    testing.rst
    plotting_orbital_densities.rst
    basis.rst
