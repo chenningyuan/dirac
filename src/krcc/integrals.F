@@ -1746,7 +1746,7 @@ C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
 C
-include "memint.h"
+#include "memint.h"
 C
       CALL QENTER('RGETH21')
 C
