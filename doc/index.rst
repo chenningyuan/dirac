@@ -11,3 +11,4 @@ Main page
    basis.rst
    cdash.rst
    programmers_manual.rst
+   documentation_howto.rst
