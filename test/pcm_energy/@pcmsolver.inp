@@ -1,0 +1,65 @@
+SECT toplevel 2 False
+TAG F KW 1
+STR Units 1 True
+Angstrom
+SECT Cavity 0 True
+TAG T KW 10
+gepol
+DBL Area 1 True
+357.106482748
+DBL Coarsity 1 False
+0.5
+INT_ARRAY Atoms 0 False
+STR Scaling 1 False
+Yes
+DBL_ARRAY Spheres 0 False
+DBL_ARRAY Radii 0 False
+STR Mode 1 True
+Implicit
+STR AddSpheres 1 False
+Yes
+STR Type 1 True
+GePol
+INT PatchLevel 1 False
+2
+SECT Medium 1 True
+TAG F KW 4
+STR SolverType 1 False
+Traditional
+DBL ProbeRadius 1 False
+1.88972612499
+STR Solvent 1 True
+Water
+STR EquationType 1 False
+SecondKind
+SECT Green 1 False
+TAG F KW 7
+DBL EpsRe 1 False
+1.0
+STR Der 1 False
+Derivative
+DBL SphereRadius 1 False
+1.88972612499
+DBL Eps 1 False
+1.0
+DBL_ARRAY SpherePosition 0 False
+STR Type 1 False
+Vacuum
+DBL EpsImg 1 False
+1.0
+SECT Green 0 False
+TAG F KW 7
+DBL EpsRe 1 False
+1.0
+STR Der 1 False
+Derivative
+DBL SphereRadius 1 False
+1.88972612499
+DBL Eps 1 False
+1.0
+DBL_ARRAY SpherePosition 0 False
+STR Type 1 False
+Vacuum
+DBL EpsImg 1 False
+1.0
+
