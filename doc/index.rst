@@ -5,12 +5,13 @@ Main page
 .. toctree::
    :maxdepth: 1
 
-   installation.rst
+   installation.rst  
+   installation_windows.rst
    testing.rst
-   plotting_orbital_densities.rst
    basis.rst
-   cdash.rst
+   plotting_orbital_densities.rst
+   pcm.rst
    programmers_manual.rst
    documentation_howto.rst
-   pcm.rst
+   cdash.rst
    references.rst
