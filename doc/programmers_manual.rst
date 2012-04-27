@@ -82,3 +82,46 @@ I want my new module to be completely modular. Can I then use DIRAC infrastructu
 
 If you want to be 100% independent of the DIRAC infrastructure then you cannot
 use such routines.
+
+I like to use implicit.h to avoid variables declaration...
+---------------------------------------------------------
+
+The "implicit.h" is bad programing practice and I strongly recommend
+to always use implicit none. 
+
+Reasons:
+1. With "implicit.h" it is easy to use variables that are undefined.
+
+ example:
+
+ call daxpy(size(array1), D1, array1, 1, array2, 2)
+
+if one forgets to define the parameter D1, the code will compile
+and D1 can be any number so the result is undefined.
+With "implicit none" this will not compile.
+
+Another example is a typo:
+istead of
+ NDIM = 12  ! correct code
+ you could type:
+ NDIN = 12  ! typo
+ 
+With implicit none such mistake won't compile, with "implicit.h" the code will compile
+and behave unexpectedly. In this case also the compiler flag "-Wuninitialized" won't help!
+
+In the code we had (and unfortunatelly still have( many bugs like this and some of us have spent several long afternoons
+chasing them. The insertions of "implicit.h"  is too dangerous and also experienced programmers
+make typos.
+
+2. The insertion of "implicit none" is nice for other people reading your code. They
+can see which variables are local, which are global (from common blocks).
+Without implicit none you have no idea whether this is a local or a global
+variable if you don't know the common blocks by heart.
+
+3. The  command "implicit none" makes it easier to identify include statements that are  
+really 
+used and includes that are just included but not used.
+With "implicit.h"  you can comment out includes and the code may still  
+compile.
+Contraty, "implicit none" will warn you. If you remove an include file using "implicit none"
+and the code compiles, then this include was useless. 

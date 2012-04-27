@@ -16,6 +16,12 @@ intuitive and for first steps use these guides:
 Typically RST markups is auto-colored in the terminal so you can
 see when the markup is correct or wrong.
 
+Installation of the documentation tool
+--------------------------------------
+
+In order to create documentation you need to install "python-sphinx"
+and "python-matplotlib" with related packages on your Linux machine.
+
 
 Generation of html pages
 ------------------------

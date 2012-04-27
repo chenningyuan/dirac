@@ -12,3 +12,4 @@ Main page
    cdash.rst
    programmers_manual.rst
    documentation_howto.rst
+   references.rst
