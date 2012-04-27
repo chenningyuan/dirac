@@ -83,8 +83,9 @@ I want my new module to be completely modular. Can I then use DIRAC infrastructu
 If you want to be 100% independent of the DIRAC infrastructure then you cannot
 use such routines.
 
-I like to use implicit.h to avoid variables declaration...
----------------------------------------------------------
+
+I like to use implicit.h to avoid variables declaration
+-------------------------------------------------------
 
 The "implicit.h" is bad programing practice and I strongly recommend
 to always use implicit none. 
