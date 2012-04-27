@@ -13,20 +13,13 @@ Primer <http://sphinx.pocoo.org/rest.html>`_ and the `Sphinx Markup Constructs
 auto-colored in the terminal so you can see when the markup is correct or
 wrong.
 
-Installation of the documentation tool
---------------------------------------
-
-In order to create documentation you need to install the packages
-"python-sphinx" and "python-matplotlib".
-
-
 Generation of html pages
 ------------------------
 
 The central documentation web pages are generated automatically
 from the RST files every hour.
 But you can also generate the web pages yourself. For this install
-the python-sphinx package, then::
+the packages "python-sphinx" and "python-matplotlib", then::
 
   $ mkdir build
   $ cd build
