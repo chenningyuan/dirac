@@ -1,7 +1,7 @@
 
 
 Polarizable Continuum Model
-=======================================================
+===========================
 
 The possibility to perform solvent calculations is currently under development in the 
 ``pcm-response`` branch. We will exploit a *Continuum Solvation Model* (CSM) namely the
@@ -16,8 +16,9 @@ centered on the atoms constituting the molecule under investigation.
 Although in principle we could exploit whatever level of QM theory, we will limit ourselves 
 to the implementation of an SCF description of the solute.
 
+
 Basic Theory
-------------------------
+------------
 
 In CSMs we write the Schrödinger equation for the solute as:
 

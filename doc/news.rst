@@ -1,5 +1,9 @@
 
 
+News
+====
+
+
 New features in DIRAC11
 -----------------------
 

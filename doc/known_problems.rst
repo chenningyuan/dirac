@@ -1,5 +1,9 @@
 
 
+Known problems
+==============
+
+
 g95 does not support cray pointers (MPI-2)
 ------------------------------------------
 
