@@ -356,7 +356,10 @@ def configure_host():
     if args.host:
         host = args.host
     else:
-        u = os.uname()
+        if sys.platform != "win32":
+            u = os.uname()
+        else:
+            u = "Windows"
         host = string.join(u)
     msg = None
     # Generic systems
