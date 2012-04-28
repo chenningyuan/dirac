@@ -1,6 +1,7 @@
 
-Installing DIRAC under Windows 7
-================================
+Windows 7
+=========
+
 
 DIRAC is working mostly under the Linux/Unix operating systems. 
 Regarding the Windows system, the code is able to run under the *CygWin* enviroment 
@@ -28,6 +29,7 @@ The MinGW (GNU) compilers and related tools are reachable through the system %PA
 the same for Python and CMake.
 See also http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues
 
+
 Git & PuTTy (developpers)
 --------------------------
 
@@ -51,7 +53,7 @@ For comfortable commits  with git you should set up the editor.
 For popular Notepad++ setting for git follow 
 http://stackoverflow.com/questions/10564/how-can-i-set-up-an-editor-to-work-with-git-on-windows::
 
- C:\Git\bin\git.exe config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
+  C:\Git\bin\git.exe config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
 
 The "pageant" agent, running in the background, also enables passwordless terminal conections (or PuTTy sessions) 
 onto server which are provided with users's public key. Pageant can be activated during the Windows startup.
@@ -63,12 +65,14 @@ Usage
 Currently the installation and run is made from the Windows command prompt.
 For example::
  
- C:\Users\milias\Documents\Work\Dirac_git\trunk>python pamadm -a
- C:\Users\milias\Documents\Work\Dirac_git\trunk\build>mingw32-make dirac.x
- C:\Users\milias\Documents\Work\Dirac_git\trunk>python runtest --tests=cosci_energy --verbose
- C:\Users\milias\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
+  C:\Users\milias\Documents\Work\Dirac_git\trunk>python pamadm -a
+  C:\Users\milias\Documents\Work\Dirac_git\trunk\build>mingw32-make dirac.x
+  C:\Users\milias\Documents\Work\Dirac_git\trunk>python runtest --tests=cosci_energy --verbose
+  C:\Users\milias\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
+
 
 Remarks
 --------
+
 So far we tested sequential buildup with the MinGW suite of compilers. 
 One has to investigate Open MPI parallelization, and trying other compilers.

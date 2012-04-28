@@ -33,6 +33,7 @@ In standard molecular electronic-structure theory we write the energy as the exp
 (:math: `| \phi \rangle` being a trial wave function):
 
 .. math::
+
    \langle \phi | \mathcal{H} | \phi \rangle
 
 An upper-bound estimate to the exact energy of the system can then be obtained by a variational procedure 
@@ -41,6 +42,7 @@ When introducing a nonlinearity of the type above, the standard functional **doe
 estimate to the exact energy upon minimization. The appropriate functional is instead given by:
 
 .. math::
+
    \langle \phi | \mathcal{H}_0 + \frac{1}{2}\mathcal{V}_\mathrm{int} | \phi \rangle
 
 which has the status of a *free energy* (an extensive justification of this fact is given in [Tomasi1994]_).
@@ -50,6 +52,7 @@ Thus in the PCM framework, the basic energetic quantity is the *free energy of s
 which is conveniently partitioned as follows ([Mennucci2007]_, [Tomasi2005]_, [Amovilli1998]_):
 
 .. math:: 
+
    \Delta G_\mathrm{sol} = \Delta G_\mathrm{el} + G_\mathrm{cav} + G_\mathrm{dis} + G_\mathrm{rep} + \Delta G_\mathrm{Mm}
 
 where:

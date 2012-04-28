@@ -1,7 +1,7 @@
 
 
-Installation
-============
+Linux, Unix, and Mac
+====================
 
 DIRAC is configured using CMake, typically via the setup script,
 and subsequently compiled using make or gmake.

@@ -4,8 +4,8 @@ Installation
 .. toctree::
    :maxdepth: 1
 
-   installation.rst  
-   installation_windows.rst
+   installation/installation.rst
+   installation/windows.rst
 
 
 Basis sets
@@ -23,9 +23,10 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
-   tutorials.rst
-   plotting_orbital_densities.rst
-   pcm.rst
+   tutorials/getting_started.rst
+   tutorials/open_shells.rst
+   tutorials/plotting_orbital_densities.rst
+   tutorials/pcm.rst
 
 
 Keyword reference manual
