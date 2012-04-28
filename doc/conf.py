@@ -30,7 +30,7 @@ extensions = ['matplotlib.sphinxext.mathmpl',
 
 
 # Add any paths that contain templates here, relative to this directory.
-#templates_path = ['_templates']
+templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -104,7 +104,7 @@ html_theme = 'dirac'
 #html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['_theme']
+html_theme_path = ['_themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -115,7 +115,7 @@ html_theme_path = ['_theme']
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = '_theme/logo.png'
+html_logo = '_themes/logo.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
