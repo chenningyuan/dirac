@@ -52,3 +52,8 @@ This and that
    :maxdepth: 1
 
    references.rst
+   changelog.rst
+   known_problems.rst
+   math_example.rst
+   news.rst
+   static_linking.rst
