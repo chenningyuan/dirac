@@ -4,6 +4,7 @@ Bibliography
 radovan->miro: we should not have an extra document
 for references, this is not convenient, the easiest
 is IMO to make a direct hyperlink to the doi reference.
+see how i link to pages in programmers/documentation_howto.rst
 
 List of published papers documenting i) the development of various
 features of Dirac and ii) some interesting applications.
