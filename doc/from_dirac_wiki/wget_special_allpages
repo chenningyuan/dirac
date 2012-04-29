@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="robots" content="noindex,nofollow" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="search" type="application/opensearchdescription+xml" href="/dirac/opensearch_desc.php" title="Diracwiki (English)" />
+		<title>All articles - Diracwiki</title>
+		<style type="text/css" media="screen, projection">/*<![CDATA[*/
+			@import "/dirac/skins/common/shared.css?97";
+			@import "/dirac/skins/monobook/main.css?97";
+		/*]]>*/</style>
+		<link rel="stylesheet" type="text/css" media="print" href="/dirac/skins/common/commonPrint.css?97" />
+		<!--[if lt IE 5.5000]><style type="text/css">@import "/dirac/skins/monobook/IE50Fixes.css?97";</style><![endif]-->
+		<!--[if IE 5.5000]><style type="text/css">@import "/dirac/skins/monobook/IE55Fixes.css?97";</style><![endif]-->
+		<!--[if IE 6]><style type="text/css">@import "/dirac/skins/monobook/IE60Fixes.css?97";</style><![endif]-->
+		<!--[if IE 7]><style type="text/css">@import "/dirac/skins/monobook/IE70Fixes.css?97";</style><![endif]-->
+		<!--[if lt IE 7]><script type="text/javascript" src="/dirac/skins/common/IEFixes.js?97"></script>
+		<meta http-equiv="imagetoolbar" content="no" /><![endif]-->
+		
+		<script type= "text/javascript">/*<![CDATA[*/
+var skin = "monobook";
+var stylepath = "/dirac/skins";
+var wgArticlePath = "/dirac/index.php/$1";
+var wgScriptPath = "/dirac";
+var wgScript = "/dirac/index.php";
+var wgServer = "http://wiki.chem.vu.nl";
+var wgCanonicalNamespace = "Special";
+var wgCanonicalSpecialPageName = "Allpages";
+var wgNamespaceNumber = -1;
+var wgPageName = "Special:Allpages";
+var wgTitle = "Allpages";
+var wgAction = "view";
+var wgRestrictionEdit = [];
+var wgRestrictionMove = [];
+var wgArticleId = 0;
+var wgIsArticle = false;
+var wgUserName = null;
+var wgUserGroups = null;
+var wgUserLanguage = "en";
+var wgContentLanguage = "en";
+var wgBreakFrames = false;
+var wgCurRevisionId = 0;
+/*]]>*/</script>
+                
+		<script type="text/javascript" src="/dirac/skins/common/wikibits.js?97"><!-- wikibits js --></script>
+		<script type="text/javascript" src="/dirac/index.php?title=-&amp;action=raw&amp;gen=js&amp;useskin=monobook"><!-- site js --></script>
+		<style type="text/css">/*<![CDATA[*/
+@import "/dirac/index.php?title=MediaWiki:Common.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=18000";
+@import "/dirac/index.php?title=MediaWiki:Monobook.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=18000";
+@import "/dirac/index.php?title=-&action=raw&gen=css&maxage=18000";
+/*]]>*/</style>
+		<!-- Head Scripts -->
+		<script type="text/javascript" src="/dirac/skins/common/ajax.js?97"></script>
+	</head>
+<body  class="mediawiki ns--1 ltr page-Special_Allpages">
+	<div id="globalWrapper">
+		<div id="column-content">
+	<div id="content">
+		<a name="top" id="top"></a>
+				<h1 class="firstHeading">All articles</h1>
+		<div id="bodyContent">
+			<h3 id="siteSub">From Diracwiki</h3>
+			<div id="contentSub"></div>
+									<div id="jump-to-nav">Jump to: <a href="#column-one">navigation</a>, <a href="#searchInput">search</a></div>			<!-- start content -->
+			<table style="background: inherit;" width="100%" cellpadding="0" cellspacing="0" border="0"><tr valign="top"><td><div class="namespaceoptions"><form method="get" action="/dirac/index.php"><input name="title" type="hidden" value="Special:Allpages" /><table id="nsselect" class="allpages"><tr>
+			<td align='right'><label for="nsfrom">Display pages starting at:</label></td>
+			<td><input name="from" size="20" value="" id="nsfrom" /></td>
+		</tr>
+		<tr>
+			<td align='right'><label for="namespace">Namespace:</label></td>
+			<td><select id="namespace" name="namespace" class="namespaceselector">
+<option value="0" selected="selected">(Main)</option>
+<option value="1">Talk</option>
+<option value="2">User</option>
+<option value="3">User talk</option>
+<option value="4">Diracwiki</option>
+<option value="5">Diracwiki talk</option>
+<option value="6">Image</option>
+<option value="7">Image talk</option>
+<option value="8">MediaWiki</option>
+<option value="9">MediaWiki talk</option>
+<option value="10">Template</option>
+<option value="11">Template talk</option>
+<option value="12">Help</option>
+<option value="13">Help talk</option>
+<option value="14">Category</option>
+<option value="15">Category talk</option>
+</select><input type="submit" value="Go" /></td>
+			</tr></table></form></div></td><td align="right" style="font-size: smaller; margin-bottom: 1em;"><a href="/dirac/index.php/Special:Allpages" title="Special:Allpages">All pages</a></td></tr></table><hr /><table style="background: inherit;" border="0" width="100%"><tr><td><a href="/dirac/index.php/%22Manual:Hamiltonian:DFT%22" title="&quot;Manual:Hamiltonian:DFT&quot;">&quot;Manual:Hamiltonian:DFT&quot;</a></td><td><a href="/dirac/index.php/AMFI" title="AMFI">AMFI</a></td><td><a href="/dirac/index.php/BSSE_calculations_with_DIRAC" title="BSSE calculations with DIRAC">BSSE calculations with DIRAC</a></td></tr><tr><td><a href="/dirac/index.php/B_atom" title="B atom">B atom</a></td><td><a href="/dirac/index.php/Basis_Sets" title="Basis Sets">Basis Sets</a></td><td><a href="/dirac/index.php/Bugs" title="Bugs">Bugs</a></td></tr><tr><td><a href="/dirac/index.php/CVS2SVN" title="CVS2SVN">CVS2SVN</a></td><td><a href="/dirac/index.php/Calculating_and_plotting_the_magnetically_induced_current_density" title="Calculating and plotting the magnetically induced current density">Calculating and plotting the magnetically induced current density</a></td><td><a href="/dirac/index.php/ChangeLog" title="ChangeLog">ChangeLog</a></td></tr><tr><td><a href="/dirac/index.php/Citation" title="Citation">Citation</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Citing" title="Citing">Citing</a></div></td><td><a href="/dirac/index.php/Clarify" title="Clarify">Clarify</a></td></tr><tr><td><a href="/dirac/index.php/Closed_shell_CCSD" title="Closed shell CCSD">Closed shell CCSD</a></td><td><a href="/dirac/index.php/Coding_guides" title="Coding guides">Coding guides</a></td><td><a href="/dirac/index.php/Compilation_on_various_platforms" title="Compilation on various platforms">Compilation on various platforms</a></td></tr><tr><td><a href="/dirac/index.php/Copy_converted_bibtex_references_from_here" title="Copy converted bibtex references from here">Copy converted bibtex references from here</a></td><td><a href="/dirac/index.php/Coupled-Cluster_calculations" title="Coupled-Cluster calculations">Coupled-Cluster calculations</a></td><td><a href="/dirac/index.php/Developers_page" title="Developers page">Developers page</a></td></tr><tr><td><div class="allpagesredirect"><a href="/dirac/index.php/Dirac" title="Dirac">Dirac</a></div></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Dirac08:KnownIssues" title="Dirac08:KnownIssues">Dirac08:KnownIssues</a></div></td><td><a href="/dirac/index.php/Dirac08:Release_statement" title="Dirac08:Release statement">Dirac08:Release statement</a></td></tr><tr><td><a href="/dirac/index.php/DiracMedal" title="DiracMedal">DiracMedal</a></td><td><a href="/dirac/index.php/Dirac_Program" title="Dirac Program">Dirac Program</a></td><td><a href="/dirac/index.php/DiscussionForum" title="DiscussionForum">DiscussionForum</a></td></tr><tr><td><a href="/dirac/index.php/Documentation" title="Documentation">Documentation</a></td><td><a href="/dirac/index.php/Drawbacks_and_difficult_cases_in_DIRAC" title="Drawbacks and difficult cases in DIRAC">Drawbacks and difficult cases in DIRAC</a></td><td><a href="/dirac/index.php/ExampleNeeded" title="ExampleNeeded">ExampleNeeded</a></td></tr><tr><td><a href="/dirac/index.php/Example_run_scripts" title="Example run scripts">Example run scripts</a></td><td><a href="/dirac/index.php/Examples_of_various_platforms/compilers" title="Examples of various platforms/compilers">Examples of various platforms/compilers</a></td><td><a href="/dirac/index.php/FAQ" title="FAQ">FAQ</a></td></tr><tr><td><a href="/dirac/index.php/Features" title="Features">Features</a></td><td><a href="/dirac/index.php/Further_reading" title="Further reading">Further reading</a></td><td><a href="/dirac/index.php/Grasp:Orbpri" title="Grasp:Orbpri">Grasp:Orbpri</a></td></tr><tr><td><div class="allpagesredirect"><a href="/dirac/index.php/Guidelines" title="Guidelines">Guidelines</a></div></td><td><a href="/dirac/index.php/Help_with_memory_problems" title="Help with memory problems">Help with memory problems</a></td><td><a href="/dirac/index.php/Hints_and_tips" title="Hints and tips">Hints and tips</a></td></tr><tr><td><a href="/dirac/index.php/How_to_Restart_a_Coupled-Cluster_calculation" title="How to Restart a Coupled-Cluster calculation">How to Restart a Coupled-Cluster calculation</a></td><td><a href="/dirac/index.php/How_to_build_MPI_libraries_for_64-bit_integers" title="How to build MPI libraries for 64-bit integers">How to build MPI libraries for 64-bit integers</a></td><td><a href="/dirac/index.php/How_to_build_math_libraries_for_64-bit_integers" title="How to build math libraries for 64-bit integers">How to build math libraries for 64-bit integers</a></td></tr><tr><td><a href="/dirac/index.php/How_to_handle_open-shell_systems_using_CC_methods" title="How to handle open-shell systems using CC methods">How to handle open-shell systems using CC methods</a></td><td><a href="/dirac/index.php/How_to_handle_open-shell_systems_using_Coupled-Cluster_methods_in_DIRAC" title="How to handle open-shell systems using Coupled-Cluster methods in DIRAC">How to handle open-shell systems using Coupled-Cluster methods in DIRAC</a></td><td><a href="/dirac/index.php/How_to_plot_vector_fields_calculated_with_DIRAC11_as_streamline_plots_using_PyNGL" title="How to plot vector fields calculated with DIRAC11 as streamline plots using PyNGL">How to plot vector fields calculated with DIRAC11 as streamline plots using PyNGL</a></td></tr><tr><td><a href="/dirac/index.php/How_to_run_a_MCSCF_calculation_%28followed_by%29_a_GAS-CI_calculation_%28DIRAC10_and_higher%29" title="How to run a MCSCF calculation (followed by) a GAS-CI calculation (DIRAC10 and higher)">How to run a MCSCF calculation (followed by) a GAS-CI calculation (DIRAC10 and higher)</a></td><td><a href="/dirac/index.php/How_to_run_a_MCSCF_calculation_followed_by/or_a_GAS-CI_calculation_%28DIRAC10_and_higher%29" title="How to run a MCSCF calculation followed by/or a GAS-CI calculation (DIRAC10 and higher)">How to run a MCSCF calculation followed by/or a GAS-CI calculation (DIRAC10 and higher)</a></td><td><a href="/dirac/index.php/How_to_run_a_calculation_in_separate_steps" title="How to run a calculation in separate steps">How to run a calculation in separate steps</a></td></tr><tr><td><div class="allpagesredirect"><a href="/dirac/index.php/How_to_run_a_calculation_is_separate_steps" title="How to run a calculation is separate steps">How to run a calculation is separate steps</a></div></td><td><a href="/dirac/index.php/How_to_safely_move_your_uncommited_files_to_SVN" title="How to safely move your uncommited files to SVN">How to safely move your uncommited files to SVN</a></td><td><a href="/dirac/index.php/How_to_visualize_densities_and_properties_using_DIRAC11" title="How to visualize densities and properties using DIRAC11">How to visualize densities and properties using DIRAC11</a></td></tr><tr><td><a href="/dirac/index.php/How_useful_is_the_linear_symmetry_in_DIRAC" title="How useful is the linear symmetry in DIRAC">How useful is the linear symmetry in DIRAC</a></td><td><a href="/dirac/index.php/InstallationWalkthroughs" title="InstallationWalkthroughs">InstallationWalkthroughs</a></td><td><a href="/dirac/index.php/Installation_guide" title="Installation guide">Installation guide</a></td></tr><tr><td><a href="/dirac/index.php/Integer8" title="Integer8">Integer8</a></td><td><a href="/dirac/index.php/KR-CI_properties" title="KR-CI properties">KR-CI properties</a></td><td><a href="/dirac/index.php/Known_bugs" title="Known bugs">Known bugs</a></td></tr><tr><td><a href="/dirac/index.php/Licensing_and_download" title="Licensing and download">Licensing and download</a></td><td><a href="/dirac/index.php/List_of_developers" title="List of developers">List of developers</a></td><td><a href="/dirac/index.php/Local_subversion_server_how-to" title="Local subversion server how-to">Local subversion server how-to</a></td></tr><tr><td><a href="/dirac/index.php/Local_subversion_server_howto" title="Local subversion server howto">Local subversion server howto</a></td><td><a href="/dirac/index.php/Localizing_bugs_in_DIRAC_run_using_debugger" title="Localizing bugs in DIRAC run using debugger">Localizing bugs in DIRAC run using debugger</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Main_Page" title="Main Page">Main Page</a></div></td></tr><tr><td><div class="allpagesredirect"><a href="/dirac/index.php/Manual" title="Manual">Manual</a></div></td><td><a href="/dirac/index.php/Manual:ANALYZE" title="Manual:ANALYZE">Manual:ANALYZE</a></td><td><a href="/dirac/index.php/Manual:ANALYZE:DENSITY" title="Manual:ANALYZE:DENSITY">Manual:ANALYZE:DENSITY</a></td></tr><tr><td><a href="/dirac/index.php/Manual:ANALYZE:LOCALIZATION" title="Manual:ANALYZE:LOCALIZATION">Manual:ANALYZE:LOCALIZATION</a></td><td><a href="/dirac/index.php/Manual:ANALYZE:MULPOP" title="Manual:ANALYZE:MULPOP">Manual:ANALYZE:MULPOP</a></td><td><a href="/dirac/index.php/Manual:ANALYZE:PRIVEC" title="Manual:ANALYZE:PRIVEC">Manual:ANALYZE:PRIVEC</a></td></tr><tr><td><a href="/dirac/index.php/Manual:ANALYZE:PROJECTION" title="Manual:ANALYZE:PROJECTION">Manual:ANALYZE:PROJECTION</a></td><td><a href="/dirac/index.php/Manual:ANALYZE:RHO1" title="Manual:ANALYZE:RHO1">Manual:ANALYZE:RHO1</a></td><td><a href="/dirac/index.php/Manual:ANALYZE:Sample_inputs" title="Manual:ANALYZE:Sample inputs">Manual:ANALYZE:Sample inputs</a></td></tr><tr><td><a href="/dirac/index.php/Manual:ANALYZE:VISUAL" title="Manual:ANALYZE:VISUAL">Manual:ANALYZE:VISUAL</a></td><td><a href="/dirac/index.php/Manual:Basis:Atomic_coordinates" title="Manual:Basis:Atomic coordinates">Manual:Basis:Atomic coordinates</a></td><td><a href="/dirac/index.php/Manual:Basis:Fitting_basis_set" title="Manual:Basis:Fitting basis set">Manual:Basis:Fitting basis set</a></td></tr><tr><td><a href="/dirac/index.php/Manual:Basis:General" title="Manual:Basis:General">Manual:Basis:General</a></td><td><a href="/dirac/index.php/Manual:Basis:Large_component_basis_set" title="Manual:Basis:Large component basis set">Manual:Basis:Large component basis set</a></td><td><a href="/dirac/index.php/Manual:Basis:MOL" title="Manual:Basis:MOL">Manual:Basis:MOL</a></td></tr><tr><td><a href="/dirac/index.php/Manual:Basis:Small_component_basis_set" title="Manual:Basis:Small component basis set">Manual:Basis:Small component basis set</a></td><td><a href="/dirac/index.php/Manual:Basis:Title_and_symmetry" title="Manual:Basis:Title and symmetry">Manual:Basis:Title and symmetry</a></td><td><a href="/dirac/index.php/Manual:Basis:XYZ" title="Manual:Basis:XYZ">Manual:Basis:XYZ</a></td></tr><tr><td><a href="/dirac/index.php/Manual:DIRAC" title="Manual:DIRAC">Manual:DIRAC</a></td><td><a href="/dirac/index.php/Manual:DIRAC:OPTIMIZE" title="Manual:DIRAC:OPTIMIZE">Manual:DIRAC:OPTIMIZE</a></td><td><a href="/dirac/index.php/Manual:DIRRCI" title="Manual:DIRRCI">Manual:DIRRCI</a></td></tr><tr><td><a href="/dirac/index.php/Manual:DIRRCI:CIROOT" title="Manual:DIRRCI:CIROOT">Manual:DIRRCI:CIROOT</a></td><td><a href="/dirac/index.php/Manual:DIRRCI:DIRECT" title="Manual:DIRRCI:DIRECT">Manual:DIRRCI:DIRECT</a></td><td><a href="/dirac/index.php/Manual:DIRRCI:LEADDET" title="Manual:DIRRCI:LEADDET">Manual:DIRRCI:LEADDET</a></td></tr><tr><td><a href="/dirac/index.php/Manual:DIRRCI:OPTIM" title="Manual:DIRRCI:OPTIM">Manual:DIRRCI:OPTIM</a></td><td><a href="/dirac/index.php/Manual:DIRRCI:RASORB" title="Manual:DIRRCI:RASORB">Manual:DIRRCI:RASORB</a></td><td><a href="/dirac/index.php/Manual:DIRRCI:Sample_inputs" title="Manual:DIRRCI:Sample inputs">Manual:DIRRCI:Sample inputs</a></td></tr><tr><td><a href="/dirac/index.php/Manual:GENERAL" title="Manual:GENERAL">Manual:GENERAL</a></td><td><a href="/dirac/index.php/Manual:GENERAL:PARALLEL" title="Manual:GENERAL:PARALLEL">Manual:GENERAL:PARALLEL</a></td><td><a href="/dirac/index.php/Manual:GENERAL:Sample_inputs" title="Manual:GENERAL:Sample inputs">Manual:GENERAL:Sample inputs</a></td></tr><tr><td><a href="/dirac/index.php/Manual:GOSCIP" title="Manual:GOSCIP">Manual:GOSCIP</a></td><td><a href="/dirac/index.php/Manual:GOSCIP:GOSCIP" title="Manual:GOSCIP:GOSCIP">Manual:GOSCIP:GOSCIP</a></td><td><a href="/dirac/index.php/Manual:GOSCIP:POPANA" title="Manual:GOSCIP:POPANA">Manual:GOSCIP:POPANA</a></td></tr><tr><td><a href="/dirac/index.php/Manual:GOSCIP:Sample_inputs" title="Manual:GOSCIP:Sample inputs">Manual:GOSCIP:Sample inputs</a></td><td><a href="/dirac/index.php/Manual:GRID" title="Manual:GRID">Manual:GRID</a></td><td><a href="/dirac/index.php/Manual:HAMILTONIAN" title="Manual:HAMILTONIAN">Manual:HAMILTONIAN</a></td></tr><tr><td><a href="/dirac/index.php/Manual:HAMILTONIAN:AMFI" title="Manual:HAMILTONIAN:AMFI">Manual:HAMILTONIAN:AMFI</a></td><td><a href="/dirac/index.php/Manual:HAMILTONIAN:DFT" title="Manual:HAMILTONIAN:DFT">Manual:HAMILTONIAN:DFT</a></td><td><a href="/dirac/index.php/Manual:HAMILTONIAN:FDE" title="Manual:HAMILTONIAN:FDE">Manual:HAMILTONIAN:FDE</a></td></tr><tr><td><a href="/dirac/index.php/Manual:HAMILTONIAN:Sample_inputs" title="Manual:HAMILTONIAN:Sample inputs">Manual:HAMILTONIAN:Sample inputs</a></td><td><a href="/dirac/index.php/Manual:Hamiltonian:DFT" title="Manual:Hamiltonian:DFT">Manual:Hamiltonian:DFT</a></td><td><a href="/dirac/index.php/Manual:INTEGRALS" title="Manual:INTEGRALS">Manual:INTEGRALS</a></td></tr><tr><td><a href="/dirac/index.php/Manual:INTEGRALS:ONEINT" title="Manual:INTEGRALS:ONEINT">Manual:INTEGRALS:ONEINT</a></td><td><a href="/dirac/index.php/Manual:INTEGRALS:READIN" title="Manual:INTEGRALS:READIN">Manual:INTEGRALS:READIN</a></td><td><a href="/dirac/index.php/Manual:INTEGRALS:Sample_inputs" title="Manual:INTEGRALS:Sample inputs">Manual:INTEGRALS:Sample inputs</a></td></tr><tr><td><a href="/dirac/index.php/Manual:INTEGRALS:TWOINT" title="Manual:INTEGRALS:TWOINT">Manual:INTEGRALS:TWOINT</a></td><td><a href="/dirac/index.php/Manual:KR-CI" title="Manual:KR-CI">Manual:KR-CI</a></td><td><a href="/dirac/index.php/Manual:KR-CI_properties" title="Manual:KR-CI properties">Manual:KR-CI properties</a></td></tr><tr><td><a href="/dirac/index.php/Manual:KR-MCSCF" title="Manual:KR-MCSCF">Manual:KR-MCSCF</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Manual:KR_CI" title="Manual:KR CI">Manual:KR CI</a></div></td><td><a href="/dirac/index.php/Manual:LUCIAREL" title="Manual:LUCIAREL">Manual:LUCIAREL</a></td></tr><tr><td><a href="/dirac/index.php/Manual:LUCITA" title="Manual:LUCITA">Manual:LUCITA</a></td><td><a href="/dirac/index.php/Manual:LUCITA:Sample_inputs" title="Manual:LUCITA:Sample inputs">Manual:LUCITA:Sample inputs</a></td><td><a href="/dirac/index.php/Manual:MOLTRA" title="Manual:MOLTRA">Manual:MOLTRA</a></td></tr><tr><td><a href="/dirac/index.php/Manual:MOLTRA:PRPTRA" title="Manual:MOLTRA:PRPTRA">Manual:MOLTRA:PRPTRA</a></td><td><a href="/dirac/index.php/Manual:MOLTRA:Sample_inputs" title="Manual:MOLTRA:Sample inputs">Manual:MOLTRA:Sample inputs</a></td><td><a href="/dirac/index.php/Manual:Namelist" title="Manual:Namelist">Manual:Namelist</a></td></tr><tr><td><a href="/dirac/index.php/Manual:One-electron_operators" title="Manual:One-electron operators">Manual:One-electron operators</a></td><td><a href="/dirac/index.php/Manual:Orbital_strings" title="Manual:Orbital strings">Manual:Orbital strings</a></td><td><a href="/dirac/index.php/Manual:PROPERTIES" title="Manual:PROPERTIES">Manual:PROPERTIES</a></td></tr><tr><td><a href="/dirac/index.php/Manual:PROPERTIES:EXCITATION_ENERGIES" title="Manual:PROPERTIES:EXCITATION ENERGIES">Manual:PROPERTIES:EXCITATION ENERGIES</a></td><td><a href="/dirac/index.php/Manual:PROPERTIES:EXPECTATION_VALUE" title="Manual:PROPERTIES:EXPECTATION VALUE">Manual:PROPERTIES:EXPECTATION VALUE</a></td><td><a href="/dirac/index.php/Manual:PROPERTIES:LINEAR_RESPONSE" title="Manual:PROPERTIES:LINEAR RESPONSE">Manual:PROPERTIES:LINEAR RESPONSE</a></td></tr><tr><td><a href="/dirac/index.php/Manual:PROPERTIES:MOLGRD" title="Manual:PROPERTIES:MOLGRD">Manual:PROPERTIES:MOLGRD</a></td><td><a href="/dirac/index.php/Manual:PROPERTIES:NMR" title="Manual:PROPERTIES:NMR">Manual:PROPERTIES:NMR</a></td><td><a href="/dirac/index.php/Manual:PROPERTIES:QUADRATIC_RESPONSE" title="Manual:PROPERTIES:QUADRATIC RESPONSE">Manual:PROPERTIES:QUADRATIC RESPONSE</a></td></tr><tr><td><a href="/dirac/index.php/Manual:PROPERTIES:STEX" title="Manual:PROPERTIES:STEX">Manual:PROPERTIES:STEX</a></td><td><a href="/dirac/index.php/Manual:PROPERTIES:Sample_inputs" title="Manual:PROPERTIES:Sample inputs">Manual:PROPERTIES:Sample inputs</a></td><td><a href="/dirac/index.php/Manual:RELADC" title="Manual:RELADC">Manual:RELADC</a></td></tr><tr><td><a href="/dirac/index.php/Manual:RELADC:Sample_inputs" title="Manual:RELADC:Sample inputs">Manual:RELADC:Sample inputs</a></td><td><a href="/dirac/index.php/Manual:RELCCSD" title="Manual:RELCCSD">Manual:RELCCSD</a></td><td><a href="/dirac/index.php/Manual:RELCCSD:CCENER" title="Manual:RELCCSD:CCENER">Manual:RELCCSD:CCENER</a></td></tr><tr><td><a href="/dirac/index.php/Manual:RELCCSD:CCFOPR" title="Manual:RELCCSD:CCFOPR">Manual:RELCCSD:CCFOPR</a></td><td><a href="/dirac/index.php/Manual:RELCCSD:CCFSPC" title="Manual:RELCCSD:CCFSPC">Manual:RELCCSD:CCFSPC</a></td><td><a href="/dirac/index.php/Manual:RELCCSD:CCIH" title="Manual:RELCCSD:CCIH">Manual:RELCCSD:CCIH</a></td></tr><tr><td><a href="/dirac/index.php/Manual:RELCCSD:CCSOPR" title="Manual:RELCCSD:CCSOPR">Manual:RELCCSD:CCSOPR</a></td><td><a href="/dirac/index.php/Manual:RELCCSD:CCSORT" title="Manual:RELCCSD:CCSORT">Manual:RELCCSD:CCSORT</a></td><td><a href="/dirac/index.php/Manual:RELCCSD:New_input" title="Manual:RELCCSD:New input">Manual:RELCCSD:New input</a></td></tr><tr><td><a href="/dirac/index.php/Manual:RELCCSD:RELCCSD" title="Manual:RELCCSD:RELCCSD">Manual:RELCCSD:RELCCSD</a></td><td><a href="/dirac/index.php/Manual:RELCCSD:Sample_inputs" title="Manual:RELCCSD:Sample inputs">Manual:RELCCSD:Sample inputs</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Manual:Running_Dirac" title="Manual:Running Dirac">Manual:Running Dirac</a></div></td></tr><tr><td><a href="/dirac/index.php/Manual:VISUAL" title="Manual:VISUAL">Manual:VISUAL</a></td><td><a href="/dirac/index.php/Manual:WAVE_FUNCTION" title="Manual:WAVE FUNCTION">Manual:WAVE FUNCTION</a></td><td><a href="/dirac/index.php/Manual:WAVE_FUNCTION:DHFCAL" title="Manual:WAVE FUNCTION:DHFCAL">Manual:WAVE FUNCTION:DHFCAL</a></td></tr><tr><td><a href="/dirac/index.php/Manual:WAVE_FUNCTION:MP2CAL" title="Manual:WAVE FUNCTION:MP2CAL">Manual:WAVE FUNCTION:MP2CAL</a></td><td><a href="/dirac/index.php/Manual:WAVE_FUNCTION:MVOCAL" title="Manual:WAVE FUNCTION:MVOCAL">Manual:WAVE FUNCTION:MVOCAL</a></td><td><a href="/dirac/index.php/Manual:WAVE_FUNCTION:RESOLVE" title="Manual:WAVE FUNCTION:RESOLVE">Manual:WAVE FUNCTION:RESOLVE</a></td></tr><tr><td><a href="/dirac/index.php/Manual:WAVE_FUNCTION:SCF" title="Manual:WAVE FUNCTION:SCF">Manual:WAVE FUNCTION:SCF</a></td><td><a href="/dirac/index.php/Meeting2008" title="Meeting2008">Meeting2008</a></td><td><a href="/dirac/index.php/Meeting2009" title="Meeting2009">Meeting2009</a></td></tr><tr><td><a href="/dirac/index.php/Meeting2010" title="Meeting2010">Meeting2010</a></td><td><a href="/dirac/index.php/Meeting2011" title="Meeting2011">Meeting2011</a></td><td><a href="/dirac/index.php/Meeting2012" title="Meeting2012">Meeting2012</a></td></tr><tr><td><a href="/dirac/index.php/NORECMP" title="NORECMP">NORECMP</a></td><td><a href="/dirac/index.php/N_atom" title="N atom">N atom</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/News" title="News">News</a></div></td></tr><tr><td><a href="/dirac/index.php/News_archive" title="News archive">News archive</a></td><td><a href="/dirac/index.php/Notes:Screening" title="Notes:Screening">Notes:Screening</a></td><td><a href="/dirac/index.php/OH_radical" title="OH radical">OH radical</a></td></tr><tr><td><a href="/dirac/index.php/Reference_Manual" title="Reference Manual">Reference Manual</a></td><td><a href="/dirac/index.php/Restarting" title="Restarting">Restarting</a></td><td><a href="/dirac/index.php/Run_and_restart_an_X2C_calculation" title="Run and restart an X2C calculation">Run and restart an X2C calculation</a></td></tr><tr><td><a href="/dirac/index.php/SCF_convergence_troubleshooting" title="SCF convergence troubleshooting">SCF convergence troubleshooting</a></td><td><a href="/dirac/index.php/SCF_niobium_atom" title="SCF niobium atom">SCF niobium atom</a></td><td><a href="/dirac/index.php/SCF_open_shell" title="SCF open shell">SCF open shell</a></td></tr><tr><td><a href="/dirac/index.php/SVN" title="SVN">SVN</a></td><td><a href="/dirac/index.php/SVN_and_Git" title="SVN and Git">SVN and Git</a></td><td><a href="/dirac/index.php/Setting_various_two-component_Hamiltonians" title="Setting various two-component Hamiltonians">Setting various two-component Hamiltonians</a></td></tr><tr><td><a href="/dirac/index.php/Shell_programming" title="Shell programming">Shell programming</a></td><td><a href="/dirac/index.php/Smallbugs" title="Smallbugs">Smallbugs</a></td><td><a href="/dirac/index.php/Standalone_programs_and_scripts" title="Standalone programs and scripts">Standalone programs and scripts</a></td></tr><tr><td><a href="/dirac/index.php/Style_templates" title="Style templates">Style templates</a></td><td><a href="/dirac/index.php/Suggestion_box" title="Suggestion box">Suggestion box</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Supported_platforms" title="Supported platforms">Supported platforms</a></div></td></tr><tr><td><a href="/dirac/index.php/Supported_platforms_and_compilers" title="Supported platforms and compilers">Supported platforms and compilers</a></td><td><a href="/dirac/index.php/TDDFT_calculations_with_DIRAC" title="TDDFT calculations with DIRAC">TDDFT calculations with DIRAC</a></td><td><a href="/dirac/index.php/Terminology" title="Terminology">Terminology</a></td></tr><tr><td><a href="/dirac/index.php/Troubleshooting" title="Troubleshooting">Troubleshooting</a></td><td><a href="/dirac/index.php/Tutorial:2D_density" title="Tutorial:2D density">Tutorial:2D density</a></td><td><a href="/dirac/index.php/Tutorial:BSSE" title="Tutorial:BSSE">Tutorial:BSSE</a></td></tr><tr><td><a href="/dirac/index.php/Tutorial:CAM" title="Tutorial:CAM">Tutorial:CAM</a></td><td><a href="/dirac/index.php/Tutorial:Getting_started" title="Tutorial:Getting started">Tutorial:Getting started</a></td><td><a href="/dirac/index.php/Tutorial:Getting_started_DIRAC11" title="Tutorial:Getting started DIRAC11">Tutorial:Getting started DIRAC11</a></td></tr><tr><td><a href="/dirac/index.php/Tutorial:TDDFT_excitation_energies" title="Tutorial:TDDFT excitation energies">Tutorial:TDDFT excitation energies</a></td><td><a href="/dirac/index.php/Tutorial:Tests" title="Tutorial:Tests">Tutorial:Tests</a></td><td><a href="/dirac/index.php/Tutorial:_4c/2c-relativistic_Hamiltonian_choices" title="Tutorial: 4c/2c-relativistic Hamiltonian choices">Tutorial: 4c/2c-relativistic Hamiltonian choices</a></td></tr><tr><td><a href="/dirac/index.php/Tutorial:_Preparing_the_right_input_for_a_chosen_Hamiltonian" title="Tutorial: Preparing the right input for a chosen Hamiltonian">Tutorial: Preparing the right input for a chosen Hamiltonian</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Tutorial_visualization_current_density" title="Tutorial visualization current density">Tutorial visualization current density</a></div></td><td><a href="/dirac/index.php/Tutorials" title="Tutorials">Tutorials</a></td></tr><tr><td><a href="/dirac/index.php/Users_mailing_list" title="Users mailing list">Users mailing list</a></td><td><div class="allpagesredirect"><a href="/dirac/index.php/Visualization_of_magnetically_induced_current_density" title="Visualization of magnetically induced current density">Visualization of magnetically induced current density</a></div></td><td><a href="/dirac/index.php/Webmaster" title="Webmaster">Webmaster</a></td></tr><tr><td><a href="/dirac/index.php/Wiki_guidelines" title="Wiki guidelines">Wiki guidelines</a></td><td><a href="/dirac/index.php/XML_Libraries" title="XML Libraries">XML Libraries</a></td></tr></table><div class="printfooter">
+Retrieved from "<a href="http://wiki.chem.vu.nl/dirac/index.php/Special:Allpages">http://wiki.chem.vu.nl/dirac/index.php/Special:Allpages</a>"</div>
+						<!-- end content -->
+			<div class="visualClear"></div>
+		</div>
+	</div>
+		</div>
+		<div id="column-one">
+	<div id="p-cactions" class="portlet">
+		<h5>Views</h5>
+		<div class="pBody">
+			<ul>
+					 <li id="ca-nstab-special" class="selected"><a href="/dirac/index.php/Special:Allpages" title="This is a special page, you can't edit the page itself">Special</a></li>
+				</ul>
+		</div>
+	</div>
+	<div class="portlet" id="p-personal">
+		<h5>Personal tools</h5>
+		<div class="pBody">
+			<ul>
+				<li id="pt-login"><a href="/dirac/index.php?title=Special:Userlogin&amp;returnto=Special:Allpages" title="You are encouraged to log in, it is not mandatory however. [o]" accesskey="o">Log in / create account</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="portlet" id="p-logo">
+		<a style="background-image: url(http://wiki.chem.vu.nl/dirac/DiracPaul.jpg);" href="/dirac/index.php/Dirac_Program" title="Visit the Main Page [z]" accesskey="z"></a>
+	</div>
+	<script type="text/javascript"> if (window.isMSIE55) fixalpha(); </script>
+		<div class='portlet' id='p-navigation'>
+		<h5>Navigation</h5>
+		<div class='pBody'>
+			<ul>
+				<li id="n-Home"><a href="/dirac/index.php/Dirac_Program">Home</a></li>
+				<li id="n-Documentation"><a href="/dirac/index.php/Documentation">Documentation</a></li>
+				<li id="n-Reference-manual"><a href="/dirac/index.php/Manual">Reference manual</a></li>
+				<li id="n-Discussion-forum"><a href="/dirac/index.php/DiscussionForum">Discussion forum</a></li>
+				<li id="n-News-Archive"><a href="/dirac/index.php/News_archive">News Archive</a></li>
+				<li id="n--Basis-sets"><a href="/dirac/index.php/Basis_Sets"> Basis sets</a></li>
+			</ul>
+		</div>
+	</div>
+		<div id="p-search" class="portlet">
+		<h5><label for="searchInput">Search</label></h5>
+		<div id="searchBody" class="pBody">
+			<form action="/dirac/index.php/Special:Search" id="searchform"><div>
+				<input id="searchInput" name="search" type="text" title="Search Diracwiki [f]" accesskey="f" value="" />
+				<input type='submit' name="go" class="searchButton" id="searchGoButton"	value="Go" />&nbsp;
+				<input type='submit' name="fulltext" class="searchButton" id="mw-searchButton" value="Search" />
+			</div></form>
+		</div>
+	</div>
+	<div class="portlet" id="p-tb">
+		<h5>Toolbox</h5>
+		<div class="pBody">
+			<ul>
+<li id="t-upload"><a href="/dirac/index.php/Special:Upload" title="Upload images or media files [u]" accesskey="u">Upload file</a></li>
+<li id="t-specialpages"><a href="/dirac/index.php/Special:Specialpages" title="List of all special pages [q]" accesskey="q">Special pages</a></li>
+			</ul>
+		</div>
+	</div>
+		</div><!-- end of the left (by default at least) column -->
+			<div class="visualClear"></div>
+			<div id="footer">
+				<div id="f-poweredbyico"><a href="http://www.mediawiki.org/"><img src="/dirac/skins/common/images/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" /></a></div>
+			<ul id="f-list">
+				<li id="privacy"><a href="/dirac/index.php/Diracwiki:Privacy_policy" title="Diracwiki:Privacy policy">Privacy policy</a></li>
+				<li id="about"><a href="/dirac/index.php/Diracwiki:About" title="Diracwiki:About">About Diracwiki</a></li>
+				<li id="disclaimer"><a href="/dirac/index.php/Diracwiki:General_disclaimer" title="Diracwiki:General disclaimer">Disclaimers</a></li>
+			</ul>
+		</div>
+		
+	
+		<script type="text/javascript">if (window.runOnloadHook) runOnloadHook();</script>
+</div>
+<!-- Served in 0.435 secs. --></body></html>
