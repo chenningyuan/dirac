@@ -1,0 +1,252 @@
+FAQ
+===
+
+From Diracwiki
+~~~~~~~~~~~~~~
+
+Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
+
+Frequently asked questions.
+
+Contents
+--------
+
+-  `1 Building <#Building>`_
+
+   -  `1.1 I am about to install DIRAC on a 64-bit machine, should I
+      compile using 64-bit integers or 32-bit
+      integers? <#I_am_about_to_install_DIRAC_on_a_64-bit_machine.2C_should_I_compile_using_64-bit_integers_or_32-bit_integers.3F>`_
+
+-  `2 Running Jobs with DIRAC <#Running_Jobs_with_DIRAC>`_
+
+   -  `2.1 Parallel run information <#Parallel_run_information>`_
+
+      -  `2.1.1 My shell environment variables are not forwarded to the
+         compute nodes. What do i have to
+         do? <#My_shell_environment_variables_are_not_forwarded_to_the_compute_nodes._What_do_i_have_to_do.3F>`_
+
+   -  `2.2 General run information <#General_run_information>`_
+
+      -  `2.2.1 How can I restart from the MO coefficients file
+         DFCOEF? <#How_can_I_restart_from_the_MO_coefficients_file_DFCOEF.3F>`_
+      -  `2.2.2 Can I move the DFCOEF file from one machine to another
+         and restart from
+         it? <#Can_I_move_the_DFCOEF_file_from_one_machine_to_another_and_restart_from_it.3F>`_
+      -  `2.2.3 I tried to restart but get the error "Incompatible
+         number of basis functions" - what does it
+         mean? <#I_tried_to_restart_but_get_the_error_.22Incompatible_number_of_basis_functions.22_-_what_does_it_mean.3F>`_
+      -  `2.2.4 I would like to use the 2c-molecular-mean-field
+         Hamiltonian (X2Cmmf) for my post-HF (Coupled-Cluster [CC],
+         Fock-Space CC, KR-MCSCF or KR-CI) calculations - what do i need
+         to
+         consider? <#I_would_like_to_use_the_2c-molecular-mean-field_Hamiltonian_.28X2Cmmf.29_for_my_post-HF_.28Coupled-Cluster_.5BCC.5D.2C_Fock-Space_CC.2C_KR-MCSCF_or_KR-CI.29_calculations_-_what_do_i_need_to_consider.3F>`_
+
+Building
+--------
+
+I am about to install DIRAC on a 64-bit machine, should I compile using 64-bit integers or 32-bit integers?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+DIRAC runs smoothly (with few exceptions; see below) on 64-bit platforms
+using either 32-bit or 64-bit integers.
+
+It is easier to install for 32-bit integers because MPI and math
+libraries are typically built for 32-bit integers. Therefore DIRAC is by
+default built for 32-bit integers.
+
+If you decide to build for 32-bit integers, you will **not** be able to:
+
+-  Safely allocate more than 16 GB of memory **per cpu-core**
+-  Run LUCITA
+-  Run really, really large Coupled-Cluster calculations
+
+If you want to be able to run the above calculations, you have to build
+for 64-bit integers.
+
+If you decide to build for 64-bit integers, you **have to** make sure
+that:
+
+-  The math library you link to can handle 64-bit integers
+-  MPI library is built for 64-bit integers
+
+Otherwise DIRAC will stop.
+
+Running Jobs with DIRAC
+-----------------------
+
+Parallel run information
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+My shell environment variables are not forwarded to the compute nodes. What do i have to do?
+                                                                                            
+
+Assuming you are using our submit script pam to submit your parallel
+calculation you can forward any environment variable, e.g.,
+LD\_LIBRARY\_PATH, to the slave-node shell by adding to you pam command
+line:
+
+-  ./pam --mpiarg="-x LD\_LIBRARY\_PATH" (for **OpenMPI**)
+-  ./pam --mpiarg="-envall" (for **IntelMPI** and **MPICH(2)**)
+
+In the latter case ALL environment variables will be forwarded in one
+shot whereas for **OpenMPI** you may need to provide the most essential
+environment variables individually. These may be for a typical parallel
+Dirac run:
+
+-  LD\_LIBRARY\_PATH
+-  BASDIR
+-  PATH
+
+General run information
+^^^^^^^^^^^^^^^^^^^^^^^
+
+How can I restart from the MO coefficients file DFCOEF?
+                                                       
+
+Simply copy DFCOEF to the scratch directory using the pam script. If
+DIRAC finds DFCOEF in the scratch directory it will automatically try to
+restart from it.
+
+Can I move the DFCOEF file from one machine to another and restart from it?
+                                                                           
+
+In general no, unless it is the same architecture.
+
+What you can do instead is to export the DFCOEF in a machine independent
+format using the .PCMOUT keyword. This creates a file called DFPCMO.
+Copy DFPCMO to the other machine, make it avaliable in the scratch
+directory using the pam script, then restart from it using .PCMOIN.
+
+**Note:** if you are running a calculation in linear symmetry you will
+find an indication in the DIRAC output (.PCMOUT run) of whether you need
+the keyword .PCMOIN or .PCMOI3 for the restart. This is connected to the
+formatted writing of DFCOEF and the space needed to store the mj-value
+of each spinor.
+
+I tried to restart but get the error "Incompatible number of basis functions" - what does it mean?
+                                                                                                  
+
+This probably means that you have changed the basis set. Presently DIRAC
+cannot restart from DFCOEF if the basis set changes (more correctly if
+matrix dimensions change).
+
+I would like to use the 2c-molecular-mean-field Hamiltonian (X2Cmmf) for my post-HF (Coupled-Cluster [CC], Fock-Space CC, KR-MCSCF or KR-CI) calculations - what do i need to consider?
+                                                                                                                                                                                       
+
+The 2c-molecular-mean-field Hamiltonian (X2Cmmf) is at present (Dirac11
+release Nov 2011) **available** for the following methods:
+
+-  Coupled-Cluster
+-  Fock-space Coupled Cluster (including the intermediate Hamiltonian
+   version)
+
+The remaining modules are **not supported** at the Dirac11 release date
+but patches are planned in the course of 2012:
+
+-  KR-MCSCF
+-  KR-CI
+-  TD-DFT
+
+The X2Cmmf Hamiltonian scheme can be used for the Dirac-Coulomb as well
+as the Dirac-Coulomb-Gaunt Hamiltonian (add .GAUNT to \*\*HAMILTONIAN).
+
+As follows we will consider the necessary inputs for an X2Cmmf
+calculation where we perform the SCF + post-SCF calculation in **one**
+shot or **two separate** runs:
+
+-  **one-step** procedure:
+
+   -  add .X2Cmmf to the \*\*HAMILTONIAN keyword section:
+
+::
+
+    **HAMILTONIAN
+    .X2Cmmf
+
+that's it. After the SCF calculation the program will proceed with the
+transformation to 2-components prior to the post-HF steps.
+
+-  **two-step** procedure (**EXPERT mode**!):
+
+1. ***SCF step***. Add .X2Cmmf to the \*\*HAMILTONIAN keyword section:
+
+::
+
+    **HAMILTONIAN
+    .X2Cmmf
+
+and save the file DFCOEF (keyword *--outcmo* with our default submit
+script *pam*)
+
+2. ***post-HF step***. Remove .X2Cmmf from the \*\*HAMILTONIAN section
+(**non-intuitive (!)** step which will be solved in Dirac12) and add the
+following keywords to the \*\*MOLTRA and namelist RELCCSSD input
+section.
+
+::
+
+    **MOLTRA
+    .INTFL2
+    1 0 0 0 
+    .INTFL4
+    1 0 0 0   
+    ...
+    ...
+    &CCSORT USEOE=T, NORECMP=T &END
+
+You are now ready to restart your post-HF calculation but do not forget
+to copy your MO-coefficient file DFCOEF to your scratch directory, i.e.
+add *--incmo* to your *pam* command line.
+
+Retrieved from
+"`http://wiki.chem.vu.nl/dirac/index.php/FAQ <http://wiki.chem.vu.nl/dirac/index.php/FAQ>`_"
+
+Views
+'''''
+
+-  `Article </dirac/index.php/FAQ>`_
+-  `Discussion </dirac/index.php?title=Talk:FAQ&action=edit>`_
+-  `View source </dirac/index.php?title=FAQ&action=edit>`_
+-  `History </dirac/index.php?title=FAQ&action=history>`_
+
+Personal tools
+''''''''''''''
+
+-  `Log in / create
+   account </dirac/index.php?title=Special:Userlogin&returnto=FAQ>`_
+
+` </dirac/index.php/Dirac_Program>`_
+
+Navigation
+''''''''''
+
+-  `Home </dirac/index.php/Dirac_Program>`_
+-  `Documentation </dirac/index.php/Documentation>`_
+-  `Reference manual </dirac/index.php/Manual>`_
+-  `Discussion forum </dirac/index.php/DiscussionForum>`_
+-  `News Archive </dirac/index.php/News_archive>`_
+-  `Basis sets </dirac/index.php/Basis_Sets>`_
+
+Search
+''''''
+
+Toolbox
+'''''''
+
+-  `What links here </dirac/index.php/Special:Whatlinkshere/FAQ>`_
+-  `Related changes </dirac/index.php/Special:Recentchangeslinked/FAQ>`_
+-  `Upload file </dirac/index.php/Special:Upload>`_
+-  `Special pages </dirac/index.php/Special:Specialpages>`_
+-  `Printable version </dirac/index.php?title=FAQ&printable=yes>`_
+-  `Permanent link </dirac/index.php?title=FAQ&oldid=34621>`_
+
+`|Powered by MediaWiki| <http://www.mediawiki.org/>`_
+
+-  This page was last modified 10:35, 27 April 2012.
+-  This page has been accessed 1,816 times.
+-  `Privacy policy </dirac/index.php/Diracwiki:Privacy_policy>`_
+-  `About Diracwiki </dirac/index.php/Diracwiki:About>`_
+-  `Disclaimers </dirac/index.php/Diracwiki:General_disclaimer>`_
+
+.. |Powered by
+MediaWiki| image:: /dirac/skins/common/images/poweredby_mediawiki_88x31.png
