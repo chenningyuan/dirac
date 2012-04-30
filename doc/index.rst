@@ -23,10 +23,16 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
+   tutorials/tests.rst
    tutorials/getting_started.rst
    tutorials/open_shells.rst
+   tutorials/niobium.rst
+   tutorials/ham2c.rst
+   tutorials/tddft.rst
    tutorials/plotting_orbital_densities.rst
    tutorials/pcm.rst
+   tutorials/bsse.rst
+   tutorials/restart.rst
 
 
 Keyword reference manual
@@ -42,6 +48,7 @@ For programmers
 
    programmers/testing.rst
    programmers/programmers_manual.rst
+   programmers/xml.rst
    programmers/documentation_howto.rst
    programmers/cdash.rst
 

@@ -1,7 +1,7 @@
 Basis set superposition error
 ==============================
 
- The basis set superposition error (BSSE) can be estimated by performing
+The basis set superposition error (BSSE) can be estimated by performing
 subsystem calculations using ghost atoms which carry basis sets of the
 full system.
 
