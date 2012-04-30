@@ -38,6 +38,11 @@ Tutorials
 Reference manual
 ================
 
+.. toctree::
+   :maxdepth: 1
+
+   reference_manual/dirac.rst
+   reference_manual/optimize.rst
 
 
 For programmers
@@ -60,7 +65,7 @@ This and that
 .. toctree::
    :maxdepth: 1
 
-   references.rst
+   ref.rst
    changelog.rst
    known_problems.rst
    news.rst
