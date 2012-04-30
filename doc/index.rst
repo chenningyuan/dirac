@@ -33,6 +33,11 @@ Tutorials
    tutorials/pcm.rst
    tutorials/bsse.rst
    tutorials/restart.rst
+   tutorials/screening.rst
+   tutorials/int8.rst
+   tutorials/faq.rst
+   tutorials/grasp.rst
+   tutorials/steps.rst
 
 
 Reference manual
