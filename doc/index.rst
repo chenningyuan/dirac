@@ -44,6 +44,7 @@ For programmers
    programmers/programmers_manual.rst
    programmers/documentation_howto.rst
    programmers/cdash.rst
+   programmers/external_projects.rst
 
 
 This and that
