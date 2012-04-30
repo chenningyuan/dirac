@@ -7,6 +7,7 @@ Installation
    installation/installation.rst
    installation/windows.rst
    installation/tests.rst
+   installation/mkl.rst
 
 
 Basis sets
