@@ -35,8 +35,8 @@ Tutorials
    tutorials/restart.rst
 
 
-Keyword reference manual
-========================
+Reference manual
+================
 
 
 
@@ -46,11 +46,11 @@ For programmers
 .. toctree::
    :maxdepth: 1
 
+   programmers/documentation_howto.rst
    programmers/testing.rst
+   programmers/cdash.rst
    programmers/programmers_manual.rst
    programmers/xml.rst
-   programmers/documentation_howto.rst
-   programmers/cdash.rst
    programmers/external_projects.rst
 
 
