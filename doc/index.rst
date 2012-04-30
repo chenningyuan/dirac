@@ -51,6 +51,7 @@ For programmers
    programmers/xml.rst
    programmers/documentation_howto.rst
    programmers/cdash.rst
+   programmers/external_projects.rst
 
 
 This and that
