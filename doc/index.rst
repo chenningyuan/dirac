@@ -6,6 +6,7 @@ Installation
 
    installation/installation.rst
    installation/windows.rst
+   installation/tests.rst
 
 
 Basis sets
@@ -23,7 +24,6 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
-   tutorials/tests.rst
    tutorials/getting_started.rst
    tutorials/open_shells.rst
    tutorials/niobium.rst
