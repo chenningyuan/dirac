@@ -84,9 +84,13 @@
       LUSC1 = 70
       LUSC2 = 71
       LUSC3 = 72
+      LUSC4 = 73 !For intermediates
+      LUSC5 = 74 !For intermediates
       Open(Unit=LUSC1,File='LUSC1',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC2,File='LUSC2',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC3,File='LUSC3',Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC4,File='LUSC4',Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC5,File='LUSC5',Status='UNKNOWN',Form='UNFORMATTED')
 *. Scratch space for subspace handling
       LUSC41 = 79
       Open(Unit=LUSC41,File='LUSC41',Status='UNKNOWN',
@@ -102,3 +106,17 @@
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TEST_ARRAY(ARRAY,NDIM)
+C
+#include "implicit.inc"
+C
+      DIMENSION ARRAY(NDIM)
+C
+      PRINT*,'NDIM',NDIM
+      DO I=1,NDIM
+       ARRAY(I) = I
+       PRINT*,'ARRAY,I',ARRAY(I),I
+      END DO
+C
+      RETURN
+      END

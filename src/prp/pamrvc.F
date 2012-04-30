@@ -3711,6 +3711,7 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Last revision :
 C
 C***********************************************************************
+      use mcscf_routines
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3719,6 +3720,7 @@ C
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcborb.h"
+#include "dcbham.h"
 C
       LOGICAL TSYMM
       DIMENSION WORK(*)
@@ -3779,7 +3781,10 @@ C        Two-electron density matrix
 C
          CALL DZERO(PV,NASHT**4 * MIN(2,NZ))
 !
-         CALL M2DNZ3(TSYMM,.TRUE.,.TRUE.,WORK(KPVMOLF),PV,IPRXRS)
+         NM5 = MIN(2,NZ)
+         CALL M2DNZ390(TSYMM,.TRUE.,.TRUE.,WORK(KPVMOLF),PV,IPRXRS,
+     &                 IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+     &                 NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
 C        CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PV,IPRINT)
 C
          CALL MEMREL('XRSDM',WORK,1,KFRSAV,KFREE,LFREE)

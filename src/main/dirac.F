@@ -80,11 +80,17 @@ C  /* Deck dirctl */
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
+      use dirac_cfg
 
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "dcbgen.h"
-      DIMENSION WORK(LWORK)
+#include "dcbham.h"
+#include "dgroup.h"
+
+      integer :: LWORK
+      real(8) :: WORK(LWORK)
 C
       CALL QENTER('DIRCTL')
 C
@@ -116,6 +122,23 @@ C***********************************************************************
 !     this is used in dft and visualization
       call interface_ao_write()
       call interface_mo_write()
+
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+! Quit if symmetry or X2C are requested.
+        if (nbsym > 1) then
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle symmetry!')
+        end if
+        if (bss.or.x2c) then
+          call quit('Polarizable Continuum Model calculation not '//
+     & 'working with X2C Hamiltonian!')
+        end if
+        call init_pcm 
+        print *, 'after pcm init'
+      end if
+#endif
+
 
 C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************

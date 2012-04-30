@@ -132,12 +132,13 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
       INTEGER NGSOB(MXPOBS,*), NGSOB2(MXPOBS,*)
       INTEGER NGSOBT(*), NGSOBT2(*), IHPVGAS_AB(MXPNGAS,2)
 *
-      NTEST = 0
-C      print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
-C      print*,'NORBT',NORBT
+      NTEST = 100
+       print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
+       print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' FI_HS : Initial 1 e integral list '
-        CALL APRBLM2(T,NTOOBS,NTOOBS,NSMOB,ISYMPACK)
+C       CALL APRBLM2(T,NTOOBS,NTOOBS,NSMOB,ISYMPACK)
+        CALL APRBLM2(T,NORBT,NORBT,NSMOB,ISYMPACK)
       END IF
 *
       ZERO = 0.0D0
@@ -213,7 +214,7 @@ C              print*,'NGSSH,JSM,JGASS',NGSSH(JSM,JGASS),JSM,JGASS
           END DO
         end do
       end do
-      NTEST = 00
+*
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Printing entire one-electron inactive Fock-matrix '
         DO I = 1, ISIDE
@@ -222,7 +223,6 @@ C              print*,'NGSSH,JSM,JGASS',NGSSH(JSM,JGASS),JSM,JGASS
           END DO
         END DO
       END IF
-      NTEST = 00
 *
 *
 * 2-electron case. Now fetching all integrals in one loop.
@@ -318,7 +318,7 @@ C
 C Add the integrals to inactive fock matrix
 C
                       FI(IPOS) = HALF * (XOUT + XOUT2) + FI(IPOS)
-C                     print*,'XOUT,XOUT2,IPOS',XOUT,XOUT2,IPOS
+                      print*,'XOUT,XOUT2,IPOS',XOUT,XOUT2,IPOS
                       END DO
                     END DO
                   end do
@@ -347,7 +347,8 @@ C       ^ IGAS
        WRITE(6,*) ' Printing entire inactive Fock-matrix '
          DO I = 1, ISIDE
            DO J = 1, ISIDE
-             IF(I.GE.J) WRITE(6,*) FI(I + (J-1)*ISIDE) , I, J
+             WRITE(6,*) FI(I + (J-1)*ISIDE) , I, J
+C            IF(I.GE.J) WRITE(6,*) FI(I + (J-1)*ISIDE) , I, J
            END DO
          END DO
        END IF
