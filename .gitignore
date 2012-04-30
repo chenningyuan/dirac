@@ -5,11 +5,11 @@
 maintenance/delete_flags
 DFCOEF
 PAMXVC
-gp/binary_info.F90
+src/gp/binary_info.F90
 basis_dalton/*\*
 build*/*
 dirac.x
-include/fortran_interface.h
+src/include/fortran_interface.h
 pamq.py
 test/*/*out
 test/*/compare
@@ -18,3 +18,8 @@ diracrc
 .diracrc
 */Makefile
 */*/Makefile
+external/include/
+external/lib/
+external/pcmsolver-build/
+external/src/
+external/tmp/
