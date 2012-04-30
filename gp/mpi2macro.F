@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -292,17 +292,17 @@ C     Last revision :
 C
 C
 C***********************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "priunit.h"
 #include "infpar.h"
-#include "mpif.h"
 #include "typesz_mpi2.h"
 C
-      CALL MPI_TYPE_EXTENT(MPI_REAL8,ISIZE_DP,IERR)
-      CALL MPI_TYPE_EXTENT(my_MPI_INTEGER,ISIZE_my_int,IERR)
-      CALL MPI_TYPE_EXTENT(MPI_INTEGER8,ISIZE_int8,IERR)
-      CALL MPI_TYPE_EXTENT(MPI_INTEGER,ISIZE_intdef,IERR)
-      CALL MPI_TYPE_EXTENT(MPI_LOGICAL,ISIZE_log,IERR)
+      call interface_MPI_TYPE_EXTENT(df_MPI_REAL8,ISIZE_DP)
+      call interface_MPI_TYPE_EXTENT(df_my_MPI_INTEGER,ISIZE_my_int)
+      call interface_MPI_TYPE_EXTENT(df_MPI_INTEGER8,ISIZE_int8)
+      call interface_MPI_TYPE_EXTENT(df_MPI_INTEGER,ISIZE_intdef)
+      call interface_MPI_TYPE_EXTENT(df_MPI_LOGICAL,ISIZE_log)
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -504,19 +504,7 @@ C
  100  CONTINUE
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-C    /* deck write_a_hello_mpi2 */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WRITE_A_HELLO_MPI2(IPROC_TAG)
-C
-#include "implicit.h"
-#include "priunit.h"
-C
-      WRITE(LUPRI,*) 'HELLO FROM MPI-2 routines',IPROC_TAG
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
 #else
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DUMMY_MPIXXX2

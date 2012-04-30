@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -46,6 +46,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "ccpar.inc"
 #include "waio.h"
 C
 C---------------Local variables--------------------------------------

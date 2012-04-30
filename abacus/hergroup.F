@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -273,6 +273,7 @@ c     export it to ARGOS
 c     ==================
 #ifdef MOD_ECP
       ndptag = ndptags(IGROUP)
+      IGRPAG = IGROUP
 #endif
 C
 C     Generate character table
@@ -513,11 +514,20 @@ C
       IZQ = 2
       IYQ = 3
       IXQ = 4
-C.....complex groups
+C.....Complex groups
+C.....has only one totally symmetric rotation. Since the triple product of the three rotations is
+C.....totally symmetric G0, this implies that the other two rotations have the same symmetry G1
+C.....Let X0 be a totally symmetric basis function, and X1 a basis function of this second symmetry
       IF(NZ.EQ.2) THEN
+C.........totally symmetric z-rotation uses default mapping:
+C         (x,y,z) --> (k,j,i)
+C         Non-zero coefficients of X0: ( C0 + iCz)
+C         Non-zero coefficients of X1: (jCy + kCx) = k(Cx + iCy) (k shifted over to X1, as indicated by JMROI)
         IF(ITOT.EQ.1) THEN
 C.........totally symmetric x-rotation
 C         (x,y,z) --> (i,k,j)
+C         Non-zero coefficients of X0: ( C0 + iCx)
+C         Non-zero coefficients of X1: (jCz + kCy) = k(Cy + iCz) (k shifted over to X1, as indicated by JMROI)
           IQ1 = 1
           IQ2 = 3
           IQ3 = 2
@@ -527,6 +537,8 @@ C         (x,y,z) --> (i,k,j)
         ELSEIF(ITOT.EQ.2) THEN
 C.........totally symmetric y-rotation
 C         (x,y,z) --> (j,i,k)
+C         Non-zero coefficients of X0: ( C0 + iCy)
+C         Non-zero coefficients of X1: (jCz + kCx) = k(Cx + iCz) (k shifted over to X1, as indicated by JMROI)
           IQ1 = 2
           IQ2 = 1
           IQ3 = 3
@@ -535,13 +547,31 @@ C         (x,y,z) --> (j,i,k)
           IZQ = 4
         ENDIF
       ENDIF
+C     
+C     Set up an array that points back to the default assignment of quaternion units
+C
+      IQMAP(1)   = 1
+      IQMAP(IZQ) = 2
+      IQMAP(IYQ) = 3
+      IQMAP(IXQ) = 4
 C
 C
 C     Set up direct product table for fermion ircops
 C     ==============================================
 C
-C     IF there is a totally symmetric irrep, it should be the
-C     symmetry of Im(p_1,q_1)......
+C     Consider a Kramers basis of spinors {p,P} where p and P referred to 
+C     the unbarred and barred spinors of a Kramers pair, respectively.
+C     Limiting attention to the binary groups, that is, D2h and subgroups,
+C     there are at most two fermion ircops, depending on whether inversion is
+C     present or not. We shall use subscripts 1 and 2 to denote the gerade
+C     and ungerade representations, respectively.
+C
+C     Assuming the spinor structure to be given below the boson irrep of the real and imaginary
+C     parts of spinor products pq and pQ are given below.
+C     For complex groups having a single totally symmetric rotation, 
+C     the rotation will have the symmetry of Im(p_1,q_1)......
+C
+C     Gerade product:
 C
 C     Re(p_1,q_1)
       IFDIRP(1,1) = 0
@@ -551,6 +581,9 @@ C     Re(p_1,Q_1)
       IFDIRP(3,1) = ISYMAX(IQ2,2)
 C     Im(p_1,Q_1)
       IFDIRP(4,1) = ISYMAX(IQ3,2)
+C
+C     Ungerade product:
+C
 C     Re(p_1,q_2)
       IFDIRP(1,2) = IXYZ
 C     Im(p_1,q_2)
@@ -563,20 +596,70 @@ C
 C
 C     Determine distribution of boson irreps in spinors
 C     =================================================
+C     All 4-component operators span boson irreps. 
+C     JBTOF shows for given operator symmetry IBREP 
+C     connects spinors of fermion ircops IFSYM and JFSYM, 
+C     that is, JFSYM = JBTOF(IBREP,IFSYM) 
 C
-      DO 10 IM = 1,4
+C     A 2- (or 4-) spinor spans fermion irreps. 
+C     However, the real and imaginary parts of the alpha- and beta-
+C     components are scalar functions and span boson irreps.
+C     
+C     The array JSPINR(IM,IC,IFSYM) gives the boson irrep 
+C     of the real and imaginary parts of the alpha/beta-components
+C     of the large (IC=1) and small (IC=2) components of
+C     2-spinors of fermion ircop IFSYM.
+C
+C     The default structure of large component spinors are:
+C
+C       Re[La]: JSPINR(1,1,1) = G0 (totally symmetric)
+C       Im[La]: JSPINR(2,1,1) = Rz (z-rotation)       i
+C       Re[Lb]: JSPINR(3,1,1) = Ry (y-rotation)       j
+C       Im[Lb]: JSPINR(4,1,1) = Rx (x-rotation)       k
+C
+C     The default structure of small component spinors are:
+C
+C       Re[Sa]: JSPINR(1,2,1) = xyz
+C       Im[Sa]: JSPINR(2,2,1) = z
+C       Re[Sb]: JSPINR(3,2,1) = y
+C       Im[Sb]: JSPINR(4,2,1) = x
+C
+C     The choice of Re[La] being totally symmetric corresponds to a choice of phase.
+C     
+C     For complex groups with a totally symmetric rotation other than z, the spinor
+C     structure is modified such that the totally symmetric rotation enters Im[La]
+C     Note that this corresponds to choosing a different axis than z for spin quantization
+C     and so the (Pauli) spin matrices are reordered accordingly.
+C
+C     Specifically:
+C     Totally symmetric x-rotation:
+C       Re[La]: JSPINR(1,1,1) = G0 (totally symmetric)
+C       Im[La]: JSPINR(2,1,1) = Rx i
+C       Re[Lb]: JSPINR(3,1,1) = Rz j
+C       Im[Lb]: JSPINR(4,1,1) = Ry k
+C     Totally symmetric y-rotation:
+C       Re[La]: JSPINR(1,1,1) = G0 (totally symmetric)
+C       Im[La]: JSPINR(2,1,1) = Ry i  
+C       Re[Lb]: JSPINR(3,1,1) = Rx j
+C       Im[Lb]: JSPINR(4,1,1) = Rz k
+C
+C     
+      DO IM = 1,4
         JBTOF(IFDIRP(IM,1),1) = 1
         JSPINR(IM,1,1) = IFDIRP(IM,1)
         JBTOF(IFDIRP(IM,2),2) = 1
         JSPINR(IM,2,1) = IFDIRP(IM,2)
-   10 CONTINUE
+      ENDDO
+C
+C     If there is inversion symmetry, the structures of the
+C     large and small components are reversed for the ungerade fermion ircop:
       IF(NFSYM.EQ.2) THEN
-        DO 20 IM = 1,4
+        DO IM = 1,4
           JBTOF(IFDIRP(IM,2),1) = 2
-          JSPINR(IM,1,2) = IFDIRP(IM,2)
+          JSPINR(IM,1,2) = JSPINR(IM,2,1)
           JBTOF(IFDIRP(IM,1),2) = 2
-          JSPINR(IM,2,2) = IFDIRP(IM,1)
-   20   CONTINUE
+          JSPINR(IM,2,2) = JSPINR(IM,1,1)
+        ENDDO
       ENDIF
 C
 C     Determine boson symmetries connected by a given
@@ -632,12 +715,10 @@ C
 C     Complex groups:
 C
       ELSEIF(NZ.EQ.2) THEN
-C
-C       Totally symmetric Z-rotation
-C
-          JMROI (2) = 1
-          JMROI (3) = 4
-          JMROI (4) = 4
+C                        ! Z Y X
+          JMROI (2) = 1  ! z y x
+          JMROI (3) = 4  ! y z z
+          JMROI (4) = 4  ! x x y
 C         ..non-totally symmetric rotation
           IRNT           = ISYMAX(IQ2,2)
           IPQTOQ(1,0   ) = 1
@@ -685,10 +766,10 @@ C     Assign JQBAS - gives quaternion vector for given
 C     component and bosonirrep
 C     ================================================
 C
-      DO 60 IFR = 1,NFSYM
+      DO 60 IFSYM = 1,NFSYM
         DO 70 IC = 1,2
           DO 80 IM = 1,4
-            JQBAS(JSPINR(IM,IC,IFR),IC) = JMROI(IM)
+            JQBAS(JSPINR(IM,IC,IFSYM),IC) = JMROI(IM)
    80     CONTINUE
    70   CONTINUE
    60 CONTINUE
@@ -806,7 +887,6 @@ C
      &               REP(JSPINR(2,2,I)),
      &            '(',JQBAS(JSPINR(2,2,I),2),')','|',I=1,NFSYM)
         WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
-C        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3),2X,A1,10X))')
      &     ('Lb','|',REP(JSPINR(3,1,I)),
      &            '(',JQBAS(JSPINR(3,1,I),1),')',
      &               REP(JSPINR(4,1,I)),

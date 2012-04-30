@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -75,7 +75,7 @@ C
      &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.xxxxxx','.SYMMET',
-     &            '.xxxxxx','.MEMFAC','.NOCKJZ','.xxxxxx','.xxxxxx'/
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
 C
 C
@@ -96,18 +96,19 @@ C     Initialize /CBLKRMC/
 C     ===================
 C
       DO I = 1,NMCFLAG
-         MCFLAG(I) = .FALSE.
+         MCFLAG(I)  = .FALSE.
       END DO
-      KRMC_SKIPEE = .FALSE.
-      KRMC_SKIPEP = .FALSE.
+      KRMC_SKIPEE   = .FALSE.
+      KRMC_SKIPEP   = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
       if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
      &  KRMC_SKIPEP = .TRUE.
-      KRMC_NOCI   = .FALSE.
-      KRMC_UCIBOS = .FALSE.
-      KRMC_MKCNST = .FALSE.
-      KRMC_CHCKJZ = .FALSE.
+      KRMC_NOCI     = .FALSE.
+      KRMC_UCIBOS   = .FALSE.
+      KRMC_MKCNST   = .FALSE.
+      KRMC_CHCKJZ   = .FALSE.
       IF(LINEAR) KRMC_CHCKJZ = .TRUE.
+      KRMC_no1pdens = .FALSE.
 C
 C     Initialize /CBIKRMC/
 C     ===================
@@ -432,7 +433,8 @@ C&&& .SYMMETRY: symmetry of the wave function
                   end if
                GO TO 100
  31            CONTINUE
-C&&&  xxx
+C&&& .NO1pDENS
+               KRMC_no1pdens = .true.
                GO TO 100
  32            CONTINUE
 C&&& .MEMFAC: multiplier for subtracted scratch memory in
@@ -779,11 +781,13 @@ C
          WRITE(LUPRI,'(A,I1,2A)')
      &        ('   - symmetry ',I,' : ',KRMC_DELSTR(I),I=1,NFSYM)
       END IF
+      IF( KRMC_no1pdens ) WRITE (LUPRI, '(A)' )
+     &     ' * DO NOT save the 1-particle density matrix obtained'//
+     &     ' from the converged MCSCF wave function'
       IF( IKRMC_MEMFAC .ne. 9 ) WRITE (LUPRI, '(A,I3)' )
      &     ' * Multiplier for memory guess: ',IKRMC_MEMFAC
 C
  9999 if(linear) then
-!       call quit('bla bla')
         if(allocated(mcscf_ciroots_symstr))
      &    deallocate(mcscf_ciroots_symstr)
       end if
@@ -1012,7 +1016,7 @@ C     --------------
 C
       MAXCIT      =    4
       MXCIV       =    0
-      IOPTST      = 1531
+      IOPTST      = 1563
       KTRLVL      =    3
       IKRMCCNO    =  - 3
       IANACI      =    0

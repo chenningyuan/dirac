@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -205,11 +205,16 @@
 *. Local scratch
       CHARACTER*72 CSCR
 *
+      LOGICAL :: LINE_ICHAR_CHECK
 *
       JITEM=0
       JEFF = 0
+      LINE_ICHAR_CHECK=.FALSE.
       DO ICHAR = 0, NCHAR
-        IF(ICHAR.EQ.0.OR.LINE(ICHAR:ICHAR).EQ.',') THEN
+!miro: fix of "Fortran runtime error: Substring out of bounds: lower bound (0) of 'line' is less than one"
+        IF (ICHAR.GT.0) LINE_ICHAR_CHECK=(LINE(ICHAR:ICHAR).EQ.',')
+        !IF(ICHAR.EQ.0.OR.LINE(ICHAR:ICHAR).EQ.',') THEN
+        IF(ICHAR.EQ.0.OR.LINE_ICHAR_CHECK) THEN
 *Start of new item, make sure there is space and clean up
           JITEM = JITEM + 1
           IF(JITEM .GT.MXENTRY) THEN

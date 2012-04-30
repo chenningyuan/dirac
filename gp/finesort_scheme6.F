@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -366,18 +366,17 @@ c set_metadata: keeps track of the start and end records fot a given
 c               row/column of the 2-electron supermatrix
 c
       subroutine set_metadata(irec,b,indexb,metadata)
-         integer, intent(out) :: metadata(3,*)
+         integer, intent(inout) :: metadata(3,*)
          integer, intent(in)  :: irec, indexb, b(2,*)
          integer :: iprev
 
          iprev = indexb - 1
-         
-         md_idx_prev    = b(2,iprev) 
          md_idx_current = b(2,indexb)
 
-         if (indexb.eq.1) then
+         if (indexb==1) then
             metadata(2,md_idx_current) = irec
-         elseif ( indexb.gt.1.and.(b(2,iprev).ne.b(2,indexb))) then
+         elseif ( (indexb > 1) .and. (b(2,iprev) .ne. b(2,indexb))) then
+            md_idx_prev    = b(2,iprev) 
             metadata(3,md_idx_prev)    = irec
             metadata(2,md_idx_current) = irec
          endif

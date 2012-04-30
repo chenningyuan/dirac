@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -266,6 +266,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "dcbham.h"
       PARAMETER (D0=0.0D0,DP25=0.25D0,DP5=0.5D0)
       INTEGER A,B,C,D
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT)
@@ -284,7 +285,6 @@ C           antisymmetric density matrix
 C
 C     Check whether this is a pure DFT calculation (no exchange)
 C
-!radovan: HFXFAC and HFXMU are not set!
       IF (HFXFAC.EQ.D0 .AND. HFXMU.EQ.D0) THEN
         IY = MOD(IY,2)
 C       ... only Coulomb contribution

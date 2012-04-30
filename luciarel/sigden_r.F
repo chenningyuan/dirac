@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -168,12 +168,12 @@ C (alpha creation, beta creation, alpha annihilation, beta annihilation)
 C
 C***********************************************************************
 C
+       use interface_to_mpi
 #include "implicit.inc"
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -1073,11 +1073,11 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
 #endif
 *. General input
 #include "mxpdim.inc"
@@ -1188,7 +1188,7 @@ C     total length of sigma block
 #endif
       print *,'LEN_S is',LEN_S
       if(LEN_S.eq.0)then
-        print *,'oops, zero sigma vector???'
+        print *,"oops, zero sigma vector???"
         goto 9999
       end if
       IF(ISD.EQ.2)THEN ! check S norm (only density runs)
@@ -1525,7 +1525,7 @@ C                                 statistics
                                   T_INI = Second()
 C
 #if defined (VAR_MPI2)
-                                  xxxsitime = MPI_WTIME()
+                                  xxxsitime = interface_MPI_WTIME()
 #endif
                                   IF(ISD.EQ.1) THEN
 C
@@ -1567,7 +1567,7 @@ C
 C
 #if defined (VAR_MPI2)
                                   xcomputesi = xcomputesi - xxxsitime 
-     &                                       + MPI_WTIME()
+     &                                       + interface_MPI_WTIME()
 #endif
 C                                 ISD == 1:
 C                                 S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
@@ -1679,11 +1679,11 @@ C
 *
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
 #endif
 *. General input
 #include "mxpdim.inc"
@@ -1722,9 +1722,9 @@ C
       DIMENSION TBSUB(*), T_SCR_CC(*)
       DIMENSION ISMDST(*)
       INTEGER    KJA(MAXLB), KJB(MAXLB), KIA(MAXLB), KIB(MAXLB)
-      DIMENSION XKJA(MAXLB),XKJB(MAXLB),XKIA(MAXLB),XKIB(MAXLB)
+      DIMENSION XKJA(*),XKJB(*),XKIA(*),XKIB(*)
       INTEGER    KJAD(MAXLB), KJBD(MAXLB), KIAD(MAXLB), KIBD(MAXLB)
-      DIMENSION XKJAD(MAXLB),XKJBD(MAXLB),XKIAD(MAXLB),XKIBD(MAXLB)
+      DIMENSION XKJAD(*),XKJBD(*),XKIAD(*),XKIBD(*)
 
       INTEGER NICA(MXNDGIRR),NICB(MXNDGIRR)
       INTEGER NIAA(MXNDGIRR),NIAB(MXNDGIRR)
@@ -2149,7 +2149,7 @@ C                                 statistics
                                   T_INI = Second()
 C
 #if defined (VAR_MPI2)
-                                  xxxsitime = MPI_WTIME()
+                                  xxxsitime = interface_MPI_WTIME()
 #endif
                                   IF(ISD.EQ.1) THEN
 C
@@ -2191,7 +2191,7 @@ C
 C
 #if defined (VAR_MPI2)
                                   xcomputesi = xcomputesi - xxxsitime 
-     &                                       + MPI_WTIME()
+     &                                       + interface_MPI_WTIME()
 #endif
 C                                 ISD == 1:
 C                                 S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
@@ -2742,7 +2742,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
             NSTR = NST_FOR_OCC(KSPGRP,NOBPT,NGAS)
             NORB = NOBPT(IOPTP)
             LEN = LEN + NSTR*NORB 
-       if(LEN.gt.100000000) print*,'NSTR,NORB ',NSTR,NORB
+!      if(LEN.gt.100000000) print*,'NSTR,NORB ',NSTR,NORB
 *. Update KSPGRP 
             KSPGRP(IOPTP) = KSPGRP(IOPTP) + 1
           END DO
@@ -2753,10 +2753,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       END DO
 *
 #if defined LUCI_DEBUG
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
-      END IF
+      WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
 #endif
 *
       RETURN
@@ -2943,9 +2940,15 @@ CTF
             DO JSMSPGP = 1, NSMST
 
 !             print *, 'JSMOB,JGAS,NGAS',JSMOB,JGAS,NGAS
+#ifdef BLABLUBB
               CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
      &                           IX(IOFF),SSX(IOFF),NKSTR,IEND,
      &                           IFRST,KFRST,KACT,1.0d0,2,ISMDST,IAB)
+#else
+              CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
+     &                           IX(IOFF),xdummy,NKSTR,IEND,
+     &                           IFRST,KFRST,KACT,1.0d0,2,ISMDST,IAB)
+#endif
 C             ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
 C    &                      I1,XI1S,NKSTR,IEND,
 C    &                      IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
@@ -3367,11 +3370,11 @@ C
 * Modified mv7 routine 
 *  Timo Fleig, Halloween 2001  =:-()
 *
+      use interface_to_mpi
 #include "implicit.inc"
 * some stuff relevant for parallel runs
 #if defined (VAR_MPI2)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)     
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)     
       INTEGER RCCTOS(*)
 #endif
 #include "infpar.h"
@@ -3466,6 +3469,7 @@ C
 C***********************************************************************
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3488,15 +3492,14 @@ C***********************************************************************
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL_C(*), NPARBLOCK_C(*), IGROUPLIST(*)
       DIMENSION IPROCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*)
       INTEGER   RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SCR2_C
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SCR2_C
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
 #endif /* if def VAR_MPI2 */
 #include "parluci.h"
@@ -3596,8 +3599,8 @@ C***********************************************************************
 *
           LENGTH_BLK = IBLOCKL_C(IBLK)
           IF(ISCLFAC_GROUP(((I_COMPLEX-1)*NUM_BLOCKS)+IBLK).ne.0)THEN
-            CALL MPI_FILE_READ_AT(LLUC,IOFFSET_SCRATCH,C,LENGTH_BLK,
-     &                            MPI_REAL8,ISTAT,IERR)
+          call interface_mpi_FILE_READ_AT_r(LLUC,IOFFSET_SCRATCH,C,
+     &                                    LENGTH_BLK,ISTAT)
             WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
      &            IOFFSET_SCRATCH,'for block', 
      &            (I_COMPLEX - 1 ) * NUM_BLOCKS  + IBLK,
@@ -3703,7 +3706,7 @@ C***********************************************************************
 #if defined (VAR_MPI2)
 *
 *           start various timings...
-            starttime  = mpi_wtime()
+            starttime  = interface_MPI_WTIME()
             sbatchtime = 0.0D0
             writetime  = 0.0D0
             KBATSEND = I1BATS(JBATABS) + LBATS(JBATABS)
@@ -3727,7 +3730,7 @@ C***********************************************************************
               END IF
             END DO
             IF( ICOMPUTE .eq. 0 ) THEN
-              starttimer = MPI_WTIME()
+              starttimer = interface_MPI_WTIME()
               GOTO 60
             ENDIF
 #endif /* if def VAR_MPI2 */
@@ -3872,7 +3875,7 @@ C                 skip blocks with given MK2_C
 #endif
               KBATSEND = I1BATS(JBATABS) + LBATS(JBATABS)
 #if defined (VAR_MPI2)
-              starttimer = MPI_WTIME()
+              starttimer = interface_MPI_WTIME()
               IF( ICOMPUTE .eq. 0 ) GOTO 70
 #endif /* if def VAR_MPI2 */
               do ISBLK = I1BATS(JBATABS),KBATSEND-1,1
@@ -3899,8 +3902,9 @@ C                 transfer block to disc
 !                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
 !                 WRITE(LUWRT,*) 'offset,length, IRIS',
 !    &                            IOFF_SCR1,LEN_T,IRIS
-                  CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
-     &                                   MPI_REAL8,ISTAT,IERR)
+                  call interface_mpi_FILE_WRITE_AT(LLUHC,IOFF_SCR1,
+     &                                   HC(IOFF),LEN_T,
+     &                                   ISTAT)
                   ISI_CALC_BL = ISI_CALC_BL + 1
                 END IF
 *               keep track of correct offset
@@ -3918,8 +3922,10 @@ C                 transfer block to disc
  70           CONTINUE
 #if defined (VAR_MPI2)
               IF( ICOMPUTE .ne. 0 ) THEN
-                writetime = writetime + MPI_WTIME() - starttimer
-                sbatchtime = sbatchtime + MPI_WTIME() - starttime
+                writetime  = writetime  + interface_MPI_WTIME() 
+     &                     - starttimer
+                sbatchtime = sbatchtime + interface_MPI_WTIME() 
+     &                     - starttime
 CSK too much information?                WALLTID  = SECTID(writetime)
                 WALLTID2 = SECTID(sbatchtime)
 CSK too much information?                 WRITE(LUWRT,50000) WALLTID
@@ -4036,15 +4042,15 @@ C
 * =====
 *
       use symmetry_setup_krci
+      use interface_to_mpi
 #include "implicit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), NPARBLOCK_C(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_C(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), IBLOCKL_C(*)
       DIMENSION LUHCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*) 
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2 
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_EXPL
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2 
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR_EXPL
       INTEGER INT_IOFF1, INT_IOFF2, INT_IOFF3, INT_IOFF_EXPL
 #endif
 #include "parluci.h"
@@ -4177,6 +4183,7 @@ C           CPU-block - test if non-zero
 *
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -4208,8 +4215,7 @@ C     integer array may become very long
 C
 #if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "cintfo.inc"
 #include "parluci.h"
@@ -4280,16 +4286,16 @@ C     non-local scratch - used in called subroutines
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'SIGD3Y')
 C
       call memmar(KI1  ,LSCR3,'ADDL  ',1,'I1    ')
-      call memmar(KXI1S,LSCR3,'ADDL  ',2,'XI1S  ')
+      call memmar(KXI1S,0    ,'ADDL  ',2,'XI1S  ')
 C
       call memmar(KI2  ,LSCR3,'ADDL  ',1,'I2    ')
-      call memmar(KXI2S,LSCR3,'ADDL  ',2,'XI2S  ')
+      call memmar(KXI2S,0    ,'ADDL  ',2,'XI2S  ')
 C
       call memmar(KI3  ,LSCR3,'ADDL  ',1,'I3    ')
-      call memmar(KXI3S,LSCR3,'ADDL  ',2,'XI3S  ')
+      call memmar(KXI3S,0    ,'ADDL  ',2,'XI3S  ')
 C
       call memmar(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
-      call memmar(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
+      call memmar(KXI4S,0    ,'ADDL  ',2,'XI4S  ')
 C
       call izero(work(KI1), LSCR3)
       call izero(work(KI2), LSCR3)
@@ -4310,28 +4316,28 @@ C
 C     arrays for storing NEL consecutive annihilations/creations
       LSCR4 = MXINKA*MXINKA*MXINKA
       call memmar(KI1G  ,LSCR4,'ADDL  ',1,'I1G   ')
-      call memmar(KXI1G,LSCR4,'ADDL  ',2,'XIG   ')
+      call memmar(KXI1G,     0,'ADDL  ',2,'XIG   ')
 C
       call memmar(KI2G  ,LSCR4,'ADDL  ',1,'I2G   ')
-      call memmar(KXI2G,LSCR4,'ADDL  ',2,'XI2G  ')
+      call memmar(KXI2G,     0,'ADDL  ',2,'XI2G  ')
 C
       call memmar(KI3G  ,LSCR4,'ADDL  ',1,'I3G   ')
-      call memmar(KXI3G,LSCR4,'ADDL  ',2,'XI3G  ')
+      call memmar(KXI3G,     0,'ADDL  ',2,'XI3G  ')
 C
       call memmar(KI4G  ,LSCR4,'ADDL  ',1,'I4G   ')
-      call memmar(KXI4G,LSCR4,'ADDL  ',2,'XI4G  ')
+      call memmar(KXI4G,     0,'ADDL  ',2,'XI4G  ')
 C
       call memmar(KI1GE  ,LSCR4,'ADDL  ',1,'I1GE  ')
-      call memmar(KXI1GE,LSCR4,'ADDL  ',2,'XIGE  ')
+      call memmar(KXI1GE,     0,'ADDL  ',2,'XIGE  ')
 C
       call memmar(KI2GE  ,LSCR4,'ADDL  ',1,'I2GE  ')
-      call memmar(KXI2GE,LSCR4,'ADDL  ',2,'XI2GE ')
+      call memmar(KXI2GE,     0,'ADDL  ',2,'XI2GE ')
 C
       call memmar(KI3GE  ,LSCR4,'ADDL  ',1,'I3GE  ')
-      call memmar(KXI3GE,LSCR4,'ADDL  ',2,'XI3GE ')
+      call memmar(KXI3GE,     0,'ADDL  ',2,'XI3GE ')
 C
       call memmar(KI4GE  ,LSCR4,'ADDL  ',1,'I4GE  ')
-      call memmar(KXI4GE,LSCR4,'ADDL  ',2,'XI4GE ')
+      call memmar(KXI4GE,     0,'ADDL  ',2,'XI4GE ')
 C     TTS arrays for partitioning of vector 
       NTTS = MXNTTS
       call memmar(KLLBT ,NTTS  ,'ADDL  ',1,'LBTC  ')
@@ -4520,19 +4526,19 @@ C
 *
       use symmetry_setup_krci
       use mospinor_info
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 *
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), LUHCLIST(*)
       DIMENSION NPARBLOCK_C(*), IBLOCKL_C(*), IT_TTPL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C, IOFF_SCR_C_EXPL
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SAVE
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
-      INTEGER(KIND=MPI_ADDRESS_KIND) ICPL_I8, ITB_I8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR_C, IOFF_SCR_C_EXPL
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SAVE
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
+      INTEGER(KIND=df_MPI_ADDRESS_KIND) ICPL_I8, ITB_I8
 #endif
 #include "parluci.h"
 C     general input
@@ -4791,7 +4797,7 @@ C
                    IF( ISIGDEN .eq. 1 )THEN
 csk                  write(luwrt,*) ' ID_GET, ITB_I8, IXXTTP, ICPL',
 csk  &                                ID_GET, ITB_I8, IXXTTP, ICPL
-                     start_timer = MPI_WTIME() 
+                     start_timer = interface_MPI_WTIME() 
                      IF( MYNEW_ID_SM .eq. ID_GET )THEN
                        CALL DCOPY(ICPL,T_BUFF(ITB_I8+1),1,T_SCR_CC,1)
                      ELSE
@@ -4799,7 +4805,7 @@ csk  &                                ID_GET, ITB_I8, IXXTTP, ICPL
      &                              ITB_I8,ICPL,2,MY_T_WIN)
                      END IF
                      mem_cp_time = mem_cp_time + 
-     &                             MPI_WTIME() - start_timer
+     &                             interface_MPI_WTIME() - start_timer
                    ELSE IF( ISIGDEN .eq. 2 )THEN
                      CALL DZERO8( T_SCR_CC, ICPL_I8)
                    END IF
@@ -4843,10 +4849,11 @@ CSK                  WRITE(LUWRT,*) ' memory offset',
 CSK  &                                JOFF
 C
 C                    read block in core
-                     xxxbitime = MPI_WTIME()
+                     xxxbitime = interface_MPI_WTIME()
                      CALL GSTTBLD_PAR2(CB(JOFF),LLUC,
      &                                 IOFF_SCR_C_EXPL,JLEN)
-                     xreadtimebi = xreadtimebi-xxxbitime+MPI_WTIME()
+                     xreadtimebi = xreadtimebi-xxxbitime
+     &                           + interface_MPI_WTIME()
 #else
                      CALL GSTTBLD2(CB(JOFF),LUC)
 #endif
@@ -5360,13 +5367,14 @@ C
 C     last revision:
 C
 C**********************************************************************
+      use interface_to_mpi
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "krciprop.h"
 #include "parluci.h"
 #if defined (VAR_MPI2)
-#include "mpif.h"
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*) 
       DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*), LU1LIST(*), LU2LIST(*)
       DIMENSION LUCLIST(*), LBATX(*), LEBATX(*), I1BATX(*), IBATX(8,*)

@@ -35,6 +35,8 @@ be deleted at the end of a run.
                      metavar='NAME=VALUE')
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
+    group.add_option('--backup', type='int', default=1, dest='backup_level',
+		     help="Set backup level for output files [default: %default]. Set to 0 for no backup.")
 
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
@@ -132,8 +134,24 @@ be deleted at the end of a run.
             W.copyin.append([molpath,'MOLECULE.XYZ']+replacements)
     if inppath is not None:
         W.copyin.append([inppath,'DIRAC.INP']+replacements)
-    W.stdout = open(jobname+'.out','w')
+
+    stdout_file_name = jobname + '.out'
+    if options.backup_level > 0:
+        # backup output file before writing to it
+        if os.path.isfile(stdout_file_name):
+            if options.backup_level > 1:
+                for i in range(options.backup_level-2, -1, -1):
+                    src = stdout_file_name + '_' + str(i)
+                    dst = stdout_file_name + '_' + str(i+1)
+                    if os.path.isfile(src):
+                        shutil.copy2(src, dst)
+            src = stdout_file_name
+            dst = stdout_file_name + '_0'
+            shutil.copy2(src, dst)
+
+    W.stdout = open(stdout_file_name,'w')
     W.stderr = open(jobname+'.err','w')
+
     W.stdin = None
     if not options.noarchive:
         W.archive = jobname+'.tgz'
@@ -353,8 +371,6 @@ class Wrapper:
             except:
                print >> sys.stderr, "Wrapper: Error creating tar archive"
                raise # TODO: Should try to copy out files as well
-            finally:
-                os.chdir(self.workdir)
         # Copy back files
         def cpout(src,dst=None):
             if self.verbose: print "Wrapper: Copying back",src
@@ -368,6 +384,7 @@ class Wrapper:
                 shutil.copytree(src,dst)
             elif self.verbose: # Just give a warning, don't panic
                 print "Wrapper: When copying out, file",src,"not found."
+        os.chdir(self.workdir)
         for f in self.copyout:
             try:
                 if len(f) == 2:

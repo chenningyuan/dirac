@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -48,7 +48,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real(8), allocatable :: gao1(:)
       real(8), allocatable :: gao2(:)
       real(8), allocatable :: gab1(:)
-      real(8), allocatable :: ncnt(:)
+!     real(8), allocatable :: ncnt(:) stefan: FIXME - as far as i can see this array should be integer
+      integer, allocatable :: ncnt(:)
       real(8), allocatable :: buf(:)
       integer, allocatable :: iclab(:)
 
@@ -71,7 +72,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            ncnt,
      &            buf,
      &            iclab,
-     &            dft_cfg_print_level)
+     &            iprham)
 
       call dealloc(smat)
       call dealloc(gao)
@@ -126,7 +127,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "symmet.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "../cfun/functionals.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -145,7 +145,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dcbibt.h"
 
-      iprint = dft_cfg_print_level
 
 
 C
@@ -207,7 +206,7 @@ C
      &               NPOINT,
      &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,BUF,IPRINT)
+     &               NCNT,BUF)
 
          call dealloc(kx)
          call dealloc(ky)
@@ -466,8 +465,7 @@ C     /* Deck grtes2 */                                                C
       SUBROUTINE GRTES2(CORX,CORY,CORZ,WEIGHT,NPOINT,
      &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,BUF,
-     &               IPRINT)
+     &               NCNT,BUF)
 C                                                                      C
 C     Written by Trond Saue and T.Helgaker                             C
 C     Modified for grid testing by Olav Fossgaard July 2002.           C
@@ -487,15 +485,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "../cfun/functionals.h"
+#include "../xcint/cfun/functionals.h"
       
       DIMENSION SMAT(*)
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &            GAB1(NBAST,3), 
-     &            NCNT(NBAST), BUF(NBAST,4),
-     &            VX(DERVS1)
+     &            NCNT(NBAST), BUF(NBAST,4)
       DIMENSION RHG(3)
       nder = 0
       if (need_ao_order(1, 0)) nder = 1

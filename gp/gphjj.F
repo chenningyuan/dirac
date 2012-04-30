@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -659,7 +659,7 @@ CMI ... copied from pdpack/arhpack.F due to linking problems
 CMI    with DIRAC gp/ routines 
 CMI    in ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),VIN(*),VOUT(*)
       PARAMETER (D0 = 0.0D0)
 C
@@ -1020,9 +1020,8 @@ C
       character*100 msg
       CALL GETDAT(LDATE,LTIME)
 
-#if !defined VAR_G95 && !defined VAR_IFORT
-!miro: g95 does not know the "iomsg" parameter ....
-!the same for ifort 10.1
+#if !defined VAR_IFORT
+!miro: ifort 10.1 does not know the "iomsg" parameter ....
       WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
      &              LSTARS,LDATE,LTIME,LABEL
 #else
@@ -1039,7 +1038,7 @@ C
      &      '         IOSTAT value',IOSVAL
          WRITE(LUERR,*) 'LSTARS=',LSTARS
          WRITE(LUERR,*) 'LDATE=',LDATE,' LTIME=',LTIME
-#if !defined VAR_G95  && !defined VAR_IFORT
+#if !defined VAR_IFORT
          WRITE (LUERR,'(A,A)') 'message:',msg
 #endif
          CALL QTRACE(LUERR)

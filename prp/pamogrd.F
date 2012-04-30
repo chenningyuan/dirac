@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -246,7 +246,7 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-      DIMENSION FC(NORBT,NORBT,NZ),FQ(NORBT,NORBT,NZ),
+      DIMENSION FC(NORBT,NORBT,NZ),FQ(NORBT,NASHT,NZ),
      &          FGEN(NORBT,NASHT,NZ),IPQ(*),DV(NASHT,NASHT,NZ)
 C
       CALL QENTER('FGEN_PV')

@@ -1,8 +1,9 @@
-DIRAC launched (pam script) by bast@larry at Mon Sep 20 08:56:49 CEST 2010
-in : /home/bast/dirac/intel_mkl/test/visual_div_rot
-===========================================================================================
-Size of all static allocations (pam script) : 82.5895 MB
-DIRAC serial allocating 64000000 words (488 MB) of memory
+DIRAC pam run in /home/bast/dirac/master/test/visual_div_rot
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by pam --aw
+ 
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -72,44 +73,57 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ******************************************************************************
  *                                                                            *
- *         =======================================================            *
+ *         =========================================================          *
  *                     Program for Atomic and Molecular                       *
- *          Direct Iterative Relativistic Allelectron Calculations            *
- *         =======================================================            *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
  *                                                                            *
- *                        VERSION 08.00  17 September 2008                    *
- *                                                                            *
- ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
- *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
- *    Trond Saue               CNRS/ULP Strasbourg               France       *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
  *                                                                            *
- *    with new contributions to DIRAC08 from:                                 *
+ *    with contributions from:                                                *
  *                                                                            *
- *    Radovan Bast             University of Tromsoe             Norway       *
- *    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
- *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
  *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Trygve U. Helgaker       University of Oslo                Norway       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
  *    Johan Henriksson         Linkoeping University             Sweden       *
  *    Miroslav Ilias           Matej Bel University              Slovakia     *
- *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
- *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
  *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
  *    Kenneth Ruud             University of Tromsoe             Norway       *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
- *    website http://dirac.chem.sdu.dk                                        *
+ *    website http://dirac.chem.vu.nl                                         *
  *                                                                            *
  *    This is an experimental code. The authors accept no responsibility      *
  *    for the performance of the code or for the correctness of the results.  *
@@ -122,62 +136,99 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC08 (2008),                                                 *
- *    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *
- *    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *
- *    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *
- *    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *
- *    (see http://dirac.chem.sdu.dk).                                         *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
- Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : larry
- Operating system  : Linux 2.6.32-24-generic
- Machine           : i686
- Run               : Sequential
- Last compilation  : 08:43:57 Sep 20 2010 (by bast@larry:/home/bast/dirac/intel_mkl)
- FORTRAN compiler  : /opt/intel/Compiler/11.1/072/bin/ia32/ifort  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MKL -DVAR_MFDS -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
- C compiler        : /opt/intel/Compiler/11.1/072/bin/ia32/icc  -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries: -L/opt/intel/mkl/10.2.5.035/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread 
- Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
- ILP data model    : ILP32 
- SVN URL           : 'unknown Subversion URL' 
- SVN Revision      : 'unknown Subversion revision' 
+
+
+Compilation info
+----------------
+
+ User (who compiled)      | bast@lpqlx131
+ System                   | Linux-2.6.32-5-amd64
+ Processor                | x86_64
+ Internal math            | OFF
+ 64-bit integers          | ON
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Debian 4.4.5-8) 4.4.5
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -fdefault-integer-8 -O3 -fu
+                          | nroll-all-loops
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
+ C flags                  | -g -O2 -Wno-unused
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
+                          | ilp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequent
+                          | ial.so;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_lapack95_ilp64.a;-Wl,--end-group
+ static libraries linking | OFF
+ Configuration time       | 2012-01-17 09:41:44.185270
+ Git revision             | 65449f064f739231ca1efec825642f8589187f1e
+
+
+Execution time and host
+-----------------------
 
  
-     Date and time (Linux)  : Mon Sep 20 08:56:49 2010
-     Host name              :                                         
+     Date and time (Linux)  : Tue Jan 17 10:02:35 2012 
+     Host name              : not found                               
 
 
- *******************************************************************************
- ************************** Input read from DIRAC.INP **************************
- *******************************************************************************
+Contents of the input file
+--------------------------
 
-**DIRAC
-#.WAVE FUNCTION
-**HAMILTONIAN
-.LVCORR
-.INTFLG
- 1 0 0
-**INTEGRALS
-*READIN
-.UNCONTRACT
-**WAVE FUNCTION
-.DHF
-**VISUAL
-.LIST
- 5
- 0.0 0.1 0.0
- 0.0 0.2 0.0
- 0.0 0.5 0.0
- 0.0 1.0 0.0
- 0.0 2.0 0.0
-.QUANTITIES
- 2
-PAMXVC 1 5 0
-PAMXVC 2 5 0
-*END OF
+**DIRAC                                                                                             
+#.WAVE FUNCTION                                                                                     
+**HAMILTONIAN                                                                                       
+.LVCORR                                                                                             
+.INTFLG                                                                                             
+ 1 0 0                                                                                              
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACT                                                                                         
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+**VISUAL                                                                                            
+.LIST                                                                                               
+ 5                                                                                                  
+ 0.0 0.1 0.0                                                                                        
+ 0.0 0.2 0.0                                                                                        
+ 0.0 0.5 0.0                                                                                        
+ 0.0 1.0 0.0                                                                                        
+ 0.0 2.0 0.0                                                                                        
+.J                                                                                                  
+ PAMXVC 1                                                                                           
+.J                                                                                                  
+ PAMXVC 2                                                                                           
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+.                                                                                                   
+.                                                                                                   
+C   2    0         A                                                                                
+       6.     1                                                                                     
+C       .0000000000         .0000000000         .0000000000                                         
+LARGE BASIS cc-pVDZ                                                                                 
+       8.     1                                                                                     
+O       .0000000000         .0000000000        1.1280000000                                         
+LARGE BASIS cc-pVDZ                                                                                 
+FINISH                                                                                              
 
 
     *************************************************************************
@@ -194,7 +245,7 @@ PAMXVC 2 5 0
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
- * Running in the four-component mode
+ * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -231,12 +282,6 @@ PAMXVC 2 5 0
 
  Uncontracted basis forced, irrespective of basis input file.
 
-
-
- Settings for FCK3 calculation:
- ------------------------------
-
-Dynamical threshold is not (yet) implemented in DIRAC
 
 
     *************************************************************************
@@ -305,10 +350,8 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :   22.518179076596
-  QM-pc interaction energy       :    0.000000000000
-  pc-pc interaction energy       :    0.000000000000
-  Total interaction energy       :   22.518179076596
+  QM-QM nuclear repulsion energy :     22.518179076596
+
 
 
   Atoms and basis sets
@@ -331,8 +374,6 @@ Point group: C1
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-
-  MNF.INP input file (for the AMFI stuff) is ready.
 
 
   References for the basis sets
@@ -367,6 +408,15 @@ Point group: C1
 
 
 
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    2
+
+C      0.0000000000   0.0000000000   0.0000000000
+O      0.0000000000   0.0000000000   1.1280000000
+
+
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
@@ -393,18 +443,18 @@ Point group: C1
                                 -----------------
 
    * Large components:   20
-     1  L C     s        2  L C     px       3  L C     py       4  L C     pz       5  L C     dxx      6  L C     dxy 
-     7  L C     dxz      8  L C     dyy      9  L C     dyz     10  L C     dzz     11  L O     s       12  L O     px  
-    13  L O     py      14  L O     pz      15  L O     dxx     16  L O     dxy     17  L O     dxz     18  L O     dyy 
-    19  L O     dyz     20  L O     dzz 
+     1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L C   1 dxx      6  L C   1 dxy 
+     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L O   1 s       12  L O   1 px  
+    13  L O   1 py      14  L O   1 pz      15  L O   1 dxx     16  L O   1 dxy     17  L O   1 dxz     18  L O   1 dyy 
+    19  L O   1 dyz     20  L O   1 dzz 
    * Small components:   40
-    21  S C     s       22  S C     px      23  S C     py      24  S C     pz      25  S C     dxx     26  S C     dxy 
-    27  S C     dxz     28  S C     dyy     29  S C     dyz     30  S C     dzz     31  S C     fxxx    32  S C     fxxy
-    33  S C     fxxz    34  S C     fxyy    35  S C     fxyz    36  S C     fxzz    37  S C     fyyy    38  S C     fyyz
-    39  S C     fyzz    40  S C     fzzz    41  S O     s       42  S O     px      43  S O     py      44  S O     pz  
-    45  S O     dxx     46  S O     dxy     47  S O     dxz     48  S O     dyy     49  S O     dyz     50  S O     dzz 
-    51  S O     fxxx    52  S O     fxxy    53  S O     fxxz    54  S O     fxyy    55  S O     fxyz    56  S O     fxzz
-    57  S O     fyyy    58  S O     fyyz    59  S O     fyzz    60  S O     fzzz
+    21  S C   1 s       22  S C   1 px      23  S C   1 py      24  S C   1 pz      25  S C   1 dxx     26  S C   1 dxy 
+    27  S C   1 dxz     28  S C   1 dyy     29  S C   1 dyz     30  S C   1 dzz     31  S C   1 fxxx    32  S C   1 fxxy
+    33  S C   1 fxxz    34  S C   1 fxyy    35  S C   1 fxyz    36  S C   1 fxzz    37  S C   1 fyyy    38  S C   1 fyyz
+    39  S C   1 fyzz    40  S C   1 fzzz    41  S O   1 s       42  S O   1 px      43  S O   1 py      44  S O   1 pz  
+    45  S O   1 dxx     46  S O   1 dxy     47  S O   1 dxz     48  S O   1 dyy     49  S O   1 dyz     50  S O   1 dzz 
+    51  S O   1 fxxx    52  S O   1 fxxy    53  S O   1 fxxz    54  S O   1 fxyy    55  S O   1 fxyz    56  S O   1 fxzz
+    57  S O   1 fyyy    58  S O   1 fyyz    59  S O   1 fyzz    60  S O   1 fzzz
 
 
   Symmetry Orbitals
@@ -511,17 +561,6 @@ Point group: C1
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
 
 
- *******************************************************************************
- ************************** Memory required by HERMIT **************************
- *******************************************************************************
-
-===========================================================================
- Maximum memory load for two-electron integral processing:
-===========================================================================
- * LL-integrals:
-   5(O    Lp)   2(C    Lp)   5(O    Lp)   2(C    Lp)              101645
-
-
     **************************************************************************
     ************************** Wave function module **************************
     **************************************************************************
@@ -534,7 +573,7 @@ Point group: C1
    Charge of molecule    =   0
    i.e. no. of electrons =  14
 ===========================================================================
- DHFINP: Set-up for Hartree-Fock calculation:
+ SCFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with   14 electrons in
@@ -576,6 +615,18 @@ Point group: C1
 
 
 
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z     17.05288863     43.34452074
+
+                        1 Debye =   2.54177000 a.u. 
+
+
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
@@ -608,11 +659,11 @@ Total no. of orbitals           (NORB):   104
 
      r_x           r_y           r_z            scalar          x-component       y-component       z-component
 
-  0.000000E+00  0.100000E+00  0.000000E+00  0.0000000000E+00  0.1309074028E+01 -0.3563212992E-10  0.4486694864E-09
-  0.000000E+00  0.200000E+00  0.000000E+00  0.0000000000E+00  0.8177427528E+00  0.1886786526E-10  0.1650445572E-09
-  0.000000E+00  0.500000E+00  0.000000E+00  0.0000000000E+00  0.1060518051E+00  0.2959236084E-10 -0.4917163596E-11
-  0.000000E+00  0.100000E+01  0.000000E+00  0.0000000000E+00  0.6500898598E-01  0.2047874878E-10  0.1882389018E-11
-  0.000000E+00  0.200000E+01  0.000000E+00  0.0000000000E+00  0.1927163822E-01  0.1760000194E-11 -0.3256182358E-11
+  0.000000E+00  0.100000E+00  0.000000E+00         0.0000000         1.3090740         0.0000000        -0.0000000
+  0.000000E+00  0.200000E+00  0.000000E+00         0.0000000         0.8177428         0.0000000        -0.0000000
+  0.000000E+00  0.500000E+00  0.000000E+00         0.0000000         0.1060518        -0.0000000         0.0000000
+  0.000000E+00  0.100000E+01  0.000000E+00         0.0000000         0.0650090        -0.0000000        -0.0000000
+  0.000000E+00  0.200000E+01  0.000000E+00         0.0000000         0.0192716        -0.0000000         0.0000000
 
 ----------------------------------------------------------------------------------------------------
 
@@ -621,11 +672,35 @@ Total no. of orbitals           (NORB):   104
  >>>> time used in integration:   0.00 seconds
 
  
-     Date and time (Linux)  : Mon Sep 20 08:56:49 2010
-     Host name              :                                         
-*****************************************************
+     Date and time (Linux)  : Tue Jan 17 10:02:35 2012 
+     Host name              : not found                               
+>>>> Node 0, utime: 0, stime: 0, minflt: 5573, majflt: 0, nvcsw: 0, nivcsw: 19, maxrss: 20496
+>>>> Total WALL time used in DIRAC: 0s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 0, stime: 0, minflt: 135386, majflt: 0, nvcsw: 23, nivcsw: 179, maxrss: 519536
->>>> Total WALL time used in DIRAC: 0s
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :        37.62
+  
+  Largest                   10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
+        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.14 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.14 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.01 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.01 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.01 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+  
+  Peak memory usage    (Mb) :       489.00
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : unnamed variable                          
+  
+ MEMGET high-water mark:     5.10 MB
+
+*****************************************************

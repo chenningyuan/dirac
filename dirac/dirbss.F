@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1292,8 +1292,8 @@ C
 C  Written by Miro ILIAS, Odense,2003
 C             
 C****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00, THRNULL = 1.00D-09 )
 
       DIMENSION S(LR,LC,NZ)
@@ -1319,7 +1319,7 @@ C****************************************************************************
       END
 
       REAL*8 FUNCTION SUM_DIAG_EL(S,N,LR,LC,NZ)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (  D0 = 0.00D00 )
       DIMENSION S(LR*LC*NZ)
 
@@ -1335,7 +1335,7 @@ C****************************************************************************
       END
 
       REAL*8 FUNCTION SUM_OFFDIAG_EL(S,N,LR,LC,NZ)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
       DIMENSION S(LR*LC*NZ)
 

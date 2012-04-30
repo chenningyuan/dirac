@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -75,21 +75,24 @@
           KAKBITAB = ((ITB-1)*NTA + ITA - 1) * NKA * NKB
           DO KB = 1, NKB         
             JB = IKJB(ITB,KB)
-            if(JB .gt. 0)then
+            if(JB /= 0)then
               KAKBITABx = KAKBITAB
               ITAKA     = ITA-NTA
               do ka = 1, nka           
                 KAKBITABx = KAKBITABx + 1
                 ITAKA     = ITAKA + NTA
                 JA        = IKJA(ITAKA)
-                if(ja .gt. 0)then
+                if(ja /= 0)then
                   if(iway.eq.1)then
-                    CKK(KAKBITABx)     = XKJA(ITAKA) * XKJB(ITB,KB) 
-     &                                 * C((JB-1)*NJA + JA)
+                    CKK(KAKBITABx)     = (JB/abs(JB)) * (JA/abs(JA))
+!                   CKK(KAKBITABx)     = XKJA(ITAKA) * XKJB(ITB,KB) 
+     &                                 * C((abs(JB)-1)*NJA + abs(JA))
                   else
-                    C((JB-1)*NJA + JA) = XKJA(ITAKA) * XKJB(ITB,KB)
+                    C((abs(JB)-1)*NJA  + abs(JA)) 
+!    &                                 = XKJA(ITAKA) * XKJB(ITB,KB)
+     &                                 = (JB/abs(JB)) * (JA/abs(JA))
      &                                 * CKK(KAKBITABx)
-     &                                 + C((JB-1)*NJA + JA)
+     &                                 + C((abs(JB)-1)*NJA + abs(JA))
                   end if ! iway switch
                 end if ! ja > 0
               end do ! ka loop
@@ -243,31 +246,33 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 *. Input lists
-      DIMENSION I1I(N1,NKIN),XI1I(N1,NKIN)
-      DIMENSION I2I(N2,NKIN),XI2I(N2,NKIN)
+!     DIMENSION I1I(N1,NKIN),XI1I(N1,NKIN)
+!     DIMENSION I2I(N2,NKIN),XI2I(N2,NKIN)
+      DIMENSION I2I(N2,NKIN), I1I(N1,NKIN)
 *. Output lists
-      DIMENSION I1O(N1,NKIN),XI1O(N1,NKIN)
-      DIMENSION I2O(N2,NKIN),XI2O(N2,NKIN)
+!     DIMENSION I1O(N1,NKIN),XI1O(N1,NKIN)
+!     DIMENSION I2O(N2,NKIN),XI2O(N2,NKIN)
+      DIMENSION I2O(N2,NKIN), I1O(N1,NKIN)
 *
       NKOUT = 0
       DO K = 1, NKIN
         I1ACT  = 0
         DO I = 1, N1
-          IF(I1I(I,K).NE.0) I1ACT = 1
+          IF(I1I(I,K) /= 0) I1ACT = 1
         END DO
         I2ACT = 0
         DO I = 1, N2
-          IF(I2I(I,K).NE.0) I2ACT = 1
+          IF(I2I(I,K) /= 0) I2ACT = 1
         END DO
         IF(I1ACT.EQ.1.AND.I2ACT.EQ.1) THEN
           NKOUT = NKOUT + 1
             DO I = 1, N1
-               I1O(I,NKOUT) = I1I(I,K)
-              XI1O(I,NKOUT) =XI1I(I,K)
+               I1O(I,NKOUT) = I1I(I,K)!*XI1I(I,K)
+!             XI1O(I,NKOUT) =XI1I(I,K)
             END DO
             DO I = 1, N2
-               I2O(I,NKOUT) = I2I(I,K)
-              XI2O(I,NKOUT) =XI2I(I,K)
+               I2O(I,NKOUT) = I2I(I,K)!* XI2I(I,K)
+!             XI2O(I,NKOUT) =XI2I(I,K)
             END DO
         END IF
       END DO
@@ -304,7 +309,8 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
       DIMENSION XM(*)
 *. Output
       INTEGER IKJ(NTOP,(IK_E-IK_B+1))
-      DIMENSION XKJ(NTOP,(IK_E-IK_B+1))
+!     DIMENSION XKJ(NTOP,(IK_E-IK_B+1))
+      DIMENSION XKJ(*)
 *
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
@@ -352,11 +358,16 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
 !             with loop restrictions in MAP_EXSTR.
               if(lk.gt.0)then
                 IADR  = IBM(JOB_SM,KNSM,IOP) -1 + (JOB_REL-1)*LK+KNSTR
-                KNSTR = IM(IADR)
+                KNSTR = iabs(IM(IADR))
 !               WRITE(6,*) ' LK ==> ',LK
 !               WRITE(6,*) ' IADR, JOB_SM, KNSM, KNSTR, JOB_REL-1', 
 !     &                      IADR, JOB_SM, KNSM, KNSTR, JOB_REL-1
-                SIGN = SIGN*XM(IADR) 
+!               SIGN = SIGN*XM(IADR) 
+                if(iabs(IM(IADR)) > 0)then
+                  SIGN = SIGN*(IM(IADR)/iabs(IM(IADR)))
+                else
+                  sign = 0.0d0
+                end if
               else
                 KNSTR = 0
               end if
@@ -368,8 +379,8 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
             IF(KNSTR.NE.0) IZERO_MAP = 0
 !            print *,' assign KNSTR to ITOP-IT_B+1,KSTR-IK_B+1',
 !     &                       KNSTR,   ITOP-IT_B+1,KSTR-IK_B+1
-            IKJ(ITOP-IT_B+1,KSTR-IK_B+1) = KNSTR
-            XKJ(ITOP-IT_B+1,KSTR-IK_B+1) = SIGN
+            IKJ(ITOP-IT_B+1,KSTR-IK_B+1) = KNSTR * SIGN
+!           XKJ(ITOP-IT_B+1,KSTR-IK_B+1) = SIGN
           END DO
         END DO
       ELSE
@@ -377,7 +388,7 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
         IZERO_MAP = 0
         DO KSTR = IK_B,  IK_E
           IKJ(1,KSTR-IK_B+1) = KSTR
-          XKJ(1,KSTR-IK_B+1) = 1.0D0
+!         XKJ(1,KSTR-IK_B+1) = 1.0D0
         END DO
       END IF
 *

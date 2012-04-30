@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -283,7 +283,7 @@ call QENTER('get_napg')
            JPRIMA = JSTA + IPRIMA
            CONTA = PRICCF(JPRIMA,NUMCFA)
            EXPA = PRIEXP(JPRIMA)
-           write(LUPRI,'(2X,A,F16.6,A,F20.12))')  &
+           write(LUPRI,'(2X,A,F16.6,A,F20.12)')  &
            ' exp:',EXPA,'  normalized contr.coeff:',CONTA
 
            ! that's it !!!

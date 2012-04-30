@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetno */
-      SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,
+      SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,save_1pdens,
      &                  IPRINT,WORK,KFREE,LFREE)
       use memory_allocator
 C***********************************************************************
@@ -62,7 +62,7 @@ C
       DIMENSION CMO(*)
       DIMENSION WORK(*)
 C
-      LOGICAL NATORB, MOISNO, EX, FILEOPEN
+      LOGICAL NATORB, MOISNO, EX, FILEOPEN, save_1pdens
 #if defined MCSCF_DEBUG
       real*8,  allocatable :: onedens(:,:,:)
       real*8,  allocatable :: cref_x(:)
@@ -94,6 +94,7 @@ C
         rewind(luni)
         call reakrmc(luni,'CREF    ',cref_x,nzconfq)
         iread_from_mc_file = 1
+        close(luni)
       else if( .not. ex )then
 	  call dcopy(nzconfq,cref,1,cref_x,1)
       end if
@@ -110,6 +111,18 @@ C
 #else
       CALL RMAKDV(WORK(KDV),CREF,WORK,KFREE,LFREE)
 #endif
+!
+!     save 1-particle density matrix on file
+!     TODO: expand to full NORBT x NORBT x NZ matrix
+!
+      if(save_1pdens)then
+        lunii = 98
+        CALL OPNFIL(lunii,'MCDENS','UNKNOWN','STORE_')
+        CALL NEWLAB('MC  DENS',lunii,LUPRI)
+        CALL WRITT(lunii,NASHT*NASHT*NZ,WORK(KDV))
+        CLOSE(Unit=lunii,Status='KEEP')
+        goto 100
+      end if
 C
 C     Calculate max off-diagonal elements of density matrix
 C
@@ -153,60 +166,10 @@ C
       end do
       call dealloc(onedens)
 #endif
-!
 C
 C     Diagonalize density matrix
 C     --------------------------
-C
       IF (.NOT. MOISNO) THEN
-#if defined MCSCF_DEBUG
-!
-!        S. Knecht - commented out (and not working yet) because I have
-!        implemented a general mj-blocking in the conversion of the 
-!        one-electron density matrix from MOLFDIR to quaternion format.
-!        It seems simpler to me... and the result ought to be the same.
-!
-!        in linear symmetry we block-diagonalize the 
-!        one-electron density matrix in terms of mj-blocks
-!        if( linear )then
-!!         some scratch space 
-!          call alloc(onedens,nasht,nasht,nz)
-!          call alloc(mjvec,norbt)
-!          onedens = 0
-!          mjvec   = 0
-!          luni = -1
-!          inquire(file='KRMCSCF',exist=ex,opened=fileopen,number=luni)
-!          if(ex.and.fileopen)then
-!            call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
-!          else if( ex.and.(.not. fileopen))then
-!            luni = 99
-!            call opnfil(luni,'KRMCSCF','OLD    ','rgetno')
-!            call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
-!            close(luni,status='keep')
-!          else if(.not. ex)then
-!            call quit('*** error in rgetno: no mj-vector available
-!    &                  or block-diagonalization. ***')
-!          end if 
-!          call dcopy(n2ashxq,work(kdv),1,onedens,1)
-!          call dzero(uno,n2ashxq)
-!          call dzero(work(keig),nasht)
-!          do ifsym = 1, nfsym
-!            mj_max = 0
-!            do i = 1, nash(ifsym)
-!             mj_max = max(mj_max,iabs(mjvec(iash(ifsym)+i)))
-!            end do
-!            do imj_val = 1, mj_max
-!              call onedens_diag_block(iprint,imj_val,
-!    &              onedens(1+iash(ifsym),1+iash(ifsym),1),
-!    &              work(keig+iash(ifsym)),
-!    &              uno(1+iash(ifsym),1+iash(ifsym),1),
-!    &              mjvec(1+iash(ifsym)),nash(ifsym),work(kfree),lfree)
-!            end do
-!          end do
-!          call dealloc(onedens)
-!          call dealloc(mjvec)
-!        end if
-#endif
          IF (NZ .EQ. 1) THEN
             IJOB = 1
             IORDER = 0
@@ -411,7 +374,7 @@ C       copy back MO coefficients
         CALL DZERO(CMO,NCMOTQ)
         CALL DCOPY(NCMOTQ,WORK(KCMO),1,CMO,1)
       ENDIF
-      CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
+ 100  CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RGETNO')

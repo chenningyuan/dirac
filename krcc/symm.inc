@@ -6,10 +6,9 @@
       integer   NIRR_PN,DDIM,NIRR_DG,DOUGRP,
      &          IDGTYP,SYDI,SYMDIM,SYMDIM_F,ITOTDM,
      &          NDIM_TOT,IDIMGRP,NSDGIRR,NSPGIRR,
-     &          N_SPINR_EXP,NGASPI,NGSOBPI,IMAXDIM,
-     &          ITRIA,ITRIADB,ITRIASUM,ITRIADBSUM,
-     &          ITRIA_F,ITRIADB_F,ITRIASUM_F,ITRIADBSUM_F,
-     &          MORB_DIRAC,IOFPGSM,INVSYM
+     &          ITRIADB,ITRIADBSUM,
+     &          ITRIADB_F,ITRIADBSUM_F,
+     &          IOFPGSM,INVSYM
       dimension IDBGMULT(MXNDGIRR,MXNDGIRR),
      &          IPGMULT(MXNSPIR,MXNSPIR),
      &          IMOSF_SP(MXNDGIRR,2),
@@ -17,19 +16,17 @@
      &          INVELM(MXNDGIRR),IOFPGSM(MXNSPIR)
       dimension SYDI(MXNSPIR),SYMDIM(MXNSPIR),
      &          SYMDIM_F(MXNSPIR),
-     &          NGSOBPI(MXPIRR,MXPNGAS),
-     &          ITRIA(MXNSPIR),ITRIADB(MXNSPIR),
-     &          ITRIA_F(MXNSPIR),ITRIADB_F(MXNSPIR),
-     &          ITOTDM(MXNSPIR),NFRO_L(8)
+     &          ITRIADB(MXNSPIR),
+     &          ITRIADB_F(MXNSPIR),
+     &          ITOTDM(MXNSPIR)
       common /DGSYMM/KRAMERS,NIRR_PN,DDIM,NIRR_DG,DOUGRP,
      &          IDGTYP,SYDI,SYMDIM,SYMDIM_F,ITOTDM,
      &          NDIM_TOT,IDIMGRP,NSDGIRR,NSPGIRR,
-     &          N_SPINR_EXP,NGASPI,NGSOBPI,IMAXDIM,
-     &          ITRIA,ITRIADB,ITRIASUM,ITRIADBSUM,
+     &          ITRIADB,ITRIADBSUM,
+     &          IOFPGSM,INVSYM,
+     &          ITRIADB_F,ITRIADBSUM_F,
      &          IDBGMULT,IPGMULT,IMOSF_SP,ISPSF_MO,
-     &          IADJSYM,INVELM,NFRO_L,ITRIA_F,
-     &          ITRIADB_F,ITRIASUM_F,ITRIADBSUM_F,
-     &          MORB_DIRAC,IOFPGSM,INVSYM
+     &          IADJSYM,INVELM
       common /DGSYMMC/ DBGSYM
 
 *
@@ -45,14 +42,6 @@
 * IDIMGRP	: dimension group for int trafo (1 SYMDIM)
 * NSDGIRR	: number of sub double group irreps
 * NSPGIRR	: number of sub point group irreps
-* N_SPINR_EXP   : number of spinor expansions
-* NGASPI	: number of GAS spaces (in picasso)
-* NGSOBPI	: matrix with number orbitals in GAS and symmetries
-* IMAXDIM	: largest dimension of spatial irreps (number from 
-*                 ordering
-*                    in Koster, Dimmock, Wheeler, Statz)
-* ITRIA         : triangle lengths of point group blocks
-* ITRIASUM      : sum of these
 * ITRIADB       : triangle lengths of two connected blocks in double 
 *                 group
 * ITOTDM        : total orbital space dimensions per spatial irrep
@@ -69,9 +58,6 @@
 *
 * IADJSYM       : IADJSYM(ISPSYM) is the adjoint symmetry of ISPSYM
 * INVELM        : Inverse elements
-* NFRO_L 	: Number of frozen (external Fock) orbitals per symmetry
-* MORB_DIRAC	: Number of spinors per non-redundant fermion irrep 
-*                 (DIRAC)
 * IOFPGSM	: Offset for number of orbitals in spatial symmetry
 * INVSYM        : 0 for groups without, 1 for groups with inversion s.
 * _F (general)	: Full info with respect to Fock type calculations

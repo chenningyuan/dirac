@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -346,6 +346,7 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
         if (NSTA*NSTB*NIAC*NKAC.NE.0) then
 !         print *,'IIAC, IBSTRINI ==>',IIAC,IBSTRINI
           if (IAB.eq.1) then
+#ifdef BLABLUBB
             CALL ADAST_GASSM(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
      &                       WORK(KSTSTM(KACGRP,1)),
      &                       WORK(KSTSTM(KACGRP,2)),
@@ -353,7 +354,17 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
      &                       NKSTR,KBSTRIN,NELB,
      &                       I1,XI1S,SCLFAC,IAC,
      &                       LROW_IN,IEC)
+#else
+            CALL ADAST_GASSM_opt(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
+     &                       WORK(KSTSTM(KACGRP,1)),
+     &                       WORK(KSTSTM(KACGRP,2)),
+     &                       IBORBSPS,IBORBSP,NORBTS,NKAC,NKACT,NIAC,
+     &                       NKSTR,KBSTRIN,NELB,
+     &                       I1,SCLFAC,IAC,
+     &                       LROW_IN,IEC)
+#endif
           else if (IAB.eq.2) then
+#ifdef BLABLUBB
             CALL ADAST_GASSM(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
      &                       WORK(KSTSTM2(KACGRP,1)),
      &                       WORK(KSTSTM2(KACGRP,2)),
@@ -361,6 +372,15 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
      &                       NKSTR,KBSTRIN,NELB,
      &                       I1,XI1S,SCLFAC,IAC,
      &                       LROW_IN,IEC)
+#else
+            CALL ADAST_GASSM_opt(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
+     &                       WORK(KSTSTM2(KACGRP,1)),
+     &                       WORK(KSTSTM2(KACGRP,2)),
+     &                       IBORBSPS,IBORBSP,NORBTS,NKAC,NKACT,NIAC,
+     &                       NKSTR,KBSTRIN,NELB,
+     &                       I1,SCLFAC,IAC,
+     &                       LROW_IN,IEC)
+#endif
           end if
         end if
         KSTRBS = KSTRBS + NKSD
@@ -377,7 +397,9 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
           WRITE(6,*) ' Info for orbital ', IORB
           WRITE(6,*) ' Excited strings and sign '
           CALL IWRTMA(  I1((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
+#ifdef BLABLUBB
           CALL WRTMAT(XI1S((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
+#endif
         END DO
       END IF
 #endif
@@ -1747,6 +1769,107 @@ C     release scratch memory
 *
       END
 ***********************************************************************
+
+      SUBROUTINE NSTPTP_GAS_NEW(NGAS,ISPGRP,NSTSGP,NSMST,
+     &                          NSTSSPGP,IGRP,MXNSTR)
+*
+* Find number of strings per symmetry for the supergroup defined
+* by the groups of ISPGRP. The obtained number of strings per sym 
+* is stored in NSTSSPGP(*,IGRP)
+*
+* Jeppe Olsen, Winter 2011 - old version too slow for many gaspaces
+*                            (new version simpler and quicker)
+* 
+*. Also delivered:
+*
+* NSMCLS : MAX Number of symmetry classes for given supergroup,
+*          i.e. number of combinations of symmetries of groups
+*          containing strings
+* NSMCLSE : Number of symmetry classes for given supergroup 
+*          obtained by restricting allowed symmetries in 
+*          a given group by a max and min.
+* NSMCLSE1 : As NSMCLSE, but the symmetry of the last active 
+*            orbital space where there is more than one symmetry 
+*            is left out
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*. Input
+      DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
+*. Input and Output (column IGRP updated)
+      DIMENSION NSTSSPGP(NSMST,IGRP)
+#include "mxpdim.inc"
+*. Scratch 
+      INTEGER ISM
+      INTEGER MSM1(NSMST),MSM2(NSMST)
+      INTEGER ISM1(NSMST),ISM2(NSMST)
+*
+      NTEST = 00
+      IF(NTEST.GE.10) THEN
+        WRITE(6,*) ' ==========================='
+        WRITE(6,*) ' NSTPTP_GAS_NEW is speaking '
+        WRITE(6,*) ' ==========================='
+*
+        WRITE(6,*) ' Supergroup in action '
+        CALL IWRTMA(ISPGRP,1,NGAS,1,NGAS)
+      END IF
+*
+      IZERO = 0
+* 
+      DO IGAS = 1, NGAS
+*. In ISM1, the number of strings per symmetry for the first 
+*  IGAS-1 spaces are given, obtain in ISM2 the number of strings per sym
+*  for the first IGAS spaces
+*. Also: in MSM1, MSM2, counts the number of nontrivial combinations per
+*  sym
+        IF(IGAS.EQ.1) THEN
+*. ISM1: The number of strings per symmetry for zero electrons
+          CALL ISETVC(ISM1,IZERO,NSMST)
+          ITOTSM_IRREP = 1
+          ISM1(ITOTSM_IRREP) = 1
+          CALL ISETVC(MSM1,IZERO,NSMST)
+          MSM1(ITOTSM_IRREP) = 1
+        ELSE
+*. copy from the ISM2 obtained for preceeding IGAS
+         CALL ICOPVE(ISM2,ISM1,NSMST)
+         CALL ICOPVE(MSM2,MSM1,NSMST)
+        END IF
+        CALL ISETVC(ISM2,IZERO,NSMST)
+        CALL ISETVC(MSM2,IZERO,NSMST)
+        DO ISM_IGASM1 = 1, NSMST
+         DO ISM_IGAS = 1, NSMST
+!          write(6,*) "ISM_IGASM1, ISM_IGAS are ==>" ,
+!    &                 ISM_IGASM1, ISM_IGAS
+           CALL SYMCOM_REL(3,ISM_IGASM1,ISM_IGAS,ISM)
+!          write(6,*) "ISM is ==>" , ISM
+!          ISM = MULTD2H(ISM_IGASM1,ISM_IGAS)
+           ISM2(ISM) = ISM2(ISM) +
+     &                 ISM1(ISM_IGASM1) * 
+     &                 NSTSGP(ISM_IGAS,ISPGRP(IGAS))
+           IF(ISM1(ISM_IGASM1)*NSTSGP(ISM_IGAS,ISPGRP(IGAS)).NE.0)
+     &        MSM2(ISM) = MSM2(ISM) + 
+     &                    MSM1(ISM_IGASM1)
+         END DO  
+        END DO
+      END DO !loop over IGAS
+
+      CALL ICOPVE(ISM2,NSTSSPGP(1,IGRP),NSMST)
+*
+      MXNSTR = 0 
+      DO ISTRSM = 1, NSMST
+        MXNSTR = MAX(MXNSTR,NSTSSPGP(ISTRSM,IGRP))
+      END DO
+*
+      IF(NTEST.GE.10) THEN
+        WRITE(6,*) 
+     &  ' Number of strings per symmetry for supergroup',IGRP
+        CALL IWRTMA10(NSTSSPGP(1,IGRP),1,NSMST,1,NSMST)
+        WRITE(6,*) ' Largest number of strings of given sym ',MXNSTR
+*
+      END IF
+*
+      RETURN
+      END
+***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
@@ -2297,9 +2420,17 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *  with given occupation in each GAS space
         DO IGRP = 1, NSPGPFTP(ITP)
           IGRPABS = IGRP-1 + IBSPGPFTP(ITP)
+!#define DEBUG_BLA_BLA
+#ifdef DEBUG_BLA_BLA
           CALL NSTPTP_GAS_REL(NGAS,ISPGPFTP(1,IGRPABS),
      &                        WORK(KNSTSGP(1)),NSMST,
      &                        WORK(KNSTSO(ITP)),IGRP,MXNSTRFSG)
+#else
+          CALL NSTPTP_GAS_NEW(NGAS,ISPGPFTP(1,IGRPABS),
+     &                        WORK(KNSTSGP(1)),NSMST,
+     &                        WORK(KNSTSO(ITP)),IGRP,MXNSTRFSG)
+#endif
+         
           MXNSTR = MAX(MXNSTR,MXNSTRFSG)
         END DO
 *
@@ -2311,9 +2442,16 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *       double group CI, symmetry for spin down strings
         DO IGRP = 1, NSPGPFTP(ITP)
           IGRPABS = IGRP-1 + IBSPGPFTP(ITP)
+#ifdef DEBUG_BLA_BLA
           CALL NSTPTP_GAS_REL(NGAS,ISPGPFTP(1,IGRPABS),
      &                        WORK(KNSTSGP2(1)),NSMST,
      &                        WORK(KNSTSO2(ITP)),IGRP,MXNSTRFSG)
+#undef DEBUG_BLA_BLA
+#else
+          CALL NSTPTP_GAS_NEW(NGAS,ISPGPFTP(1,IGRPABS),
+     &                        WORK(KNSTSGP2(1)),NSMST,
+     &                        WORK(KNSTSO2(ITP)),IGRP,MXNSTRFSG)
+#endif
           MXNSTR = MAX(MXNSTR,MXNSTRFSG)
         END DO
 *

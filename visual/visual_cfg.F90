@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -61,7 +61,17 @@ module visual_cfg
    integer, public :: iq_ndipydia = 24
    integer, public :: iq_ndipzdia = 25
    integer, public :: iq_esp      = 26
-   integer, public :: iq_esprho   = 27
+   integer, public :: iq_espe     = 27
+   integer, public :: iq_espn     = 28
+   integer, public :: iq_esprho   = 29
+   integer, public :: iq_esperho  = 30
+   integer, public :: iq_espnrho  = 31
+   integer, public :: iq_kin      = 32
+   integer, public :: iq_kin_ls   = 33
+   integer, public :: iq_kin_sl   = 34
+   integer, public :: iq_kin_tau  = 35
+   integer, public :: iq_kin_lap  = 36
+   integer, public :: iq_kin_nr   = 37
 
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.

@@ -824,7 +824,7 @@ contains
       if (present(unit)) uni = unit
       if (present(title)) then
          if (present(freqs)) then
-            fmt = '(a,nf6.3)'
+            fmt = '(a,nf7.3)'
             write (fmt(4:4),'(i1)') size(freqs)
             write (uni,fmt) title // ' w:', dreal(freqs)
          else
@@ -836,7 +836,9 @@ contains
       !dec = max(dec,ceiling(log10( maxval(tensor(1:siz)))))
       cwid = 15
       if (present(colwidth)) cwid = max(colwidth,dec+2)
-      dec = cwid - dec - 1
+     !dec = cwid - dec - 1
+     !radovan: too much
+      dec = cwid - dec - 4
       fmt = '(fww.dd)'
       write (fmt(3:7),'(i2,a1,i2)') cwid, '.', dec
       if (any(dimag(tensor(1:siz)) /= 0)) write (uni,'(a)') '    (real part)'

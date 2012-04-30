@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2010 by the authors of DIRAC.
+ *     Copyright (c) 2011 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -48,10 +48,6 @@
 #endif
 
 #include <math.h>
-#include "patchlevel.h"
-#ifndef THIS_IS_CMAKE_BUILD
-#include "compinfo.h"
-#endif
 #include "fortran_interface.h"
 
 void printaddr_(void *p)
@@ -149,45 +145,6 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 	}
     }
 #endif
-}
-
-void sysinf_(fortran_int_t *parcal)
-{
-
-#ifndef THIS_IS_CMAKE_BUILD
-#if !defined (SYS_WINDOWS)
-   struct utsname *un;
-   un = (struct utsname *) malloc(sizeof(struct utsname));
-   if ( un != NULL )
-   {
-      uname(un);
-   }
-   printf( " Version           : %s %i.%i (patchlevel %i) \n" , \
-      VER_STR,MAJOR_REV,MINOR_REV,PATCHLEVEL);
-   if ( un != NULL )
-   {
-      printf( " Hostname          : %s\n" , un->nodename);
-      printf( " Operating system  : %s %s\n" , un->sysname, un->release);
-      printf( " Machine           : %s\n" , un->machine);
-   }
-   free(un);
-#endif /* if !defined (SYS_WINDOWS) */
-   if ( ! *parcal )
-      printf( " Run               : Sequential\n");
-   else
-      printf( " Run               : Parallel\n");
-
-   printf(" Last compilation  : %s %s (by %s@%s:%s)\n", 
-      __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED, COMPILED_DIRAC_DIR);
-
-   printf(" FORTRAN compiler  : %s \n", FCOMP);
-   printf(" C compiler        : %s \n", CCOMP);
-   printf(" External libraries: %s \n", LIBRARIES);
-   printf(" Internal libraries: DIRAC_BLAS=%s  DIRAC_LAPACK=%s \n", DIRAC_BLAS, DIRAC_LAPACK);
-   printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
-
-#endif /* #ifndef THIS_IS_CMAKE_BUILD */
-   fflush(stdout);
 }
 
 #define quit        quit_
@@ -422,3 +379,14 @@ int high_water_mark_(void)
 {
   return mem_high - mem_start;
 }
+
+/* 
+Make break of given amount of seconds. Call if no Fortran SLEEP() intrinsic.
+*/
+void make_pause_(int *sec)
+{
+  printf("making pause of %d seconds\n",*sec);
+ // sleep(*sec);
+  return;
+}
+

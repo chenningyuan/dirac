@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -49,10 +49,10 @@ C
 C     Last revision:     S. Knecht       - March 2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -60,12 +60,12 @@ C
       DIMENSION RNRM(MAXIT,*), EIG(MAXIT,*)
       DIMENSION SCRRED(*)
       LOGICAL CONVER, RTCNV(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1,IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -162,7 +162,8 @@ C     ^ loop over batches
 C
 C     communicate REDSCRVAR to get full RNORM
 C
-      CALL REDVEC_REL(REDSCRVAR,SCRRED,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCRRED,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
       CALL DCOPY(1,SCRRED,1,REDSCRVAR,1)
 C
       RNORM = SQRT(REDSCRVAR)
@@ -226,25 +227,25 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUT1LIST(*), LUOUT2LIST(*)
       DIMENSION LUOUT3LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT3
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_LUOUT1
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT3
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT3
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUDIA
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_LUOUT1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT3
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUDIA
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -358,7 +359,7 @@ C
 C
 C     communicate REDSCRVAR to get full GAMMA
 C
-      CALL REDVEC_REL(REDSCRVAR,GAMMA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,GAMMA,1,2,op_MPI_SUM,global_communicator,-1)
 C
 CSK   WRITE(LUWRT,*) 'THIS IS GAMMA',GAMMA
 C
@@ -430,7 +431,8 @@ C
 C
 C     communicate REDSCRVAR to get full VNORM_Q
 C
-      CALL REDVEC_REL(REDSCRVAR,VNORM_Q,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,VNORM_Q,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
 C
 C     is X an eigen vector for (H0 - 1 ) - 1 ???
 C
@@ -500,7 +502,8 @@ C
 C
 C       communicate REDSCRVAR to get full DELTA
 C
-        CALL REDVEC_REL(REDSCRVAR,DELTA,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+        CAll redvec(REDSCRVAR,DELTA,1,2,op_MPI_SUM,
+     &              global_communicator,-1)
 C
 C
 CSK     WRITE(LUWRT,*) ' THIS IS DELTA'
@@ -601,22 +604,22 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), LUOUTLIST(*)
       DIMENSION SCRRED(*), LUOUT2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT, IOFFSET_LUOUT2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT, IOFFSET_LUOUT2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
       LOGICAL STORE_F
 C
@@ -710,8 +713,8 @@ C
 C
 C     communicate SCRRED to get full OVERLAP matrix
 C
-      CALL REDVEC_REL(SCRRED,SUBSPH,NROOT_INFO,2,MPI_SUM,
-     &                MPI_COMM_WORLD,-1)
+      CAll redvec(SCRRED,SUBSPH,NROOT_INFO,2,op_MPI_SUM,
+     &                global_communicator,-1)
 C
 C
 C
@@ -900,8 +903,8 @@ C
 C
 C       communicate SCRRED to get full OVERLAP matrix
 C
-        CALL REDVEC_REL(SCRRED,SUBSPH,NVEC+IADD-1-NROOT_INFO,2,MPI_SUM,
-     &                  MPI_COMM_WORLD,-1)
+        CAll redvec(SCRRED,SUBSPH,NVEC+IADD-1-NROOT_INFO,2,op_MPI_SUM,
+     &                  global_communicator,-1)
 C
 C       zero scratch offsets
 C
@@ -997,7 +1000,8 @@ C
 C
 C     communicate REDSCRVAR to get full scale factor
 C       
-      CALL REDVEC_REL(REDSCRVAR,SCALEVEC,1,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(REDSCRVAR,SCALEVEC,1,2,op_MPI_SUM,
+     &            global_communicator,-1)
 C
 C     1.4 normalizing the new vector
 C
@@ -1058,10 +1062,10 @@ csk  &                LUWRT)
 C
         IDEBUGPRNT = 0
 C
-        CALL WTVEC_BATCH_DRV4SP(LUOUT,VEC2,LBATCH(ISBATCH),
-     &                          IBATCH(1,I1BATCH(ISBATCH)),
-     &                          IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
-     &                          LUOUTLIST,NUM_ACTIVE_BATCH,IDEBUGPRNT)
+        CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
 C
 C
 C       keep track of correct offset
@@ -1100,20 +1104,20 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), LUIN3LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN3
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN3
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN3
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -1282,21 +1286,21 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), LUIN2LIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_IN_LUIN2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
@@ -1452,7 +1456,7 @@ C
      &                            IPROCLIST,IRILP,BLOCKTIME)
 C
 C     make an update of of grouplist for c-vector file based on 
-C     different list gathered from MPI_COMM_WORLD
+C     different list gathered from global_communicator
 C
 C
 C     Written by  S. Knecht         - March 08 2008 
@@ -1460,10 +1464,10 @@ C
 C     OUTPUT: ISCLFAC_GROUP and updated file ILUC
 C
 C**********************************************************************
+      use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
@@ -1500,14 +1504,14 @@ csk   CALL IWRTMAMN(WORK(KSCALLOC2),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
 csk   WRITE(LUCIWT,*) 'WORK(KSCALLOC3):'
 csk   CALL IWRTMAMN(WORK(KSCALLOC3),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
 C
-      starttimer = MPI_WTIME()
+      starttimer = interface_MPI_WTIME()
 C
 C     "mpi_allsum" local LUCLIST which then on all
 C     nodes will contain the number of non-zero C-blocks in
 C     the complete CI-vector
 C
-      CALL REDVEC_REL(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
-     &                MPI_SUM,MPI_COMM_WORLD,-1)
+      CAll redvec(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
+     &                op_MPI_SUM,global_communicator,-1)
 C
 C     find all c-blocks connecting to all sigma-blocks on each cpu
 C
@@ -1521,8 +1525,8 @@ C
 *
       IF( NEWCOMM_PROC .ne. NMPROC ) THEN
 *
-        CALL REDVEC_REL(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
-     &                  MPI_SUM,MYNEW_COMM,0)
+        CAll redvec(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
+     &                  op_MPI_SUM,MYNEW_COMM,0)
 *
 *       all local node-masters call this routine!
 *
@@ -1538,8 +1542,8 @@ C     &                               IGROUPLIST,IPROCLIST,IRILP)
 C
 
         END IF
-           CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
-     &                    my_MPI_INTEGER,0,MYNEW_COMM,IERR)
+        call interface_mpi_bcast_i1_work_f77(ISCLFAC_GROUP,NUM_BLOCKS2,
+     &       0,MYNEW_COMM)
 *
       ELSE
 *
@@ -1562,7 +1566,7 @@ csk   WRITE(LUCIWT,*) 'ISCLFAC_GROUP:'
 csk   CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
 C
 C     final timing for block distribution
-      blocktime = blocktime + MPI_WTIME() - starttimer
+      blocktime = blocktime + interface_MPI_WTIME() - starttimer
 C
 C     flush local memory
 C
@@ -1579,18 +1583,18 @@ C
       SUBROUTINE CALC_OFF_MPI_FILE2(FILENAME,IGROUPLIST,IBLOCKL,
      &                              IBLOCKD,IVEC_IN)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
       DIMENSION IGROUPLIST(*), IBLOCKL(*), IBLOCKD(*)
       CHARACTER*6 FILENAME
-      INTEGER(KIND=MPI_OFFSET_KIND) ND_VEC_IOFF, ND_VEC_IOFF2
-      INTEGER(KIND=MPI_OFFSET_KIND) MULT1, MULT2, JVEC
-      INTEGER(KIND=MPI_OFFSET_KIND) I_VEC_LEN_SCR
+      INTEGER(KIND=df_MPI_OFFSET_KIND) ND_VEC_IOFF, ND_VEC_IOFF2
+      INTEGER(KIND=df_MPI_OFFSET_KIND) MULT1, MULT2, JVEC
+      INTEGER(KIND=df_MPI_OFFSET_KIND) I_VEC_LEN_SCR
 C
       I_VEC_LEN_SCR = 0
       JVEC  = IVEC_IN
@@ -1772,11 +1776,10 @@ C
 ***********************************************************************
       SUBROUTINE GROUP_CONSTRUCTOR(IGROUPLIST,IPROCLIST)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),IGROUPLIST(NMPROC)
@@ -1786,18 +1789,19 @@ csk   ITEST = 10
 C
 C     'intra-node' communicator MYNEW_COMM ( I/O communicator )
 C
-      IKEY = MYPROC
+      IKEY   = MYPROC
       ICOLOR = IPROCLIST(MYPROC+1)
 C
-      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ICOLOR,IKEY,MYNEW_COMM,IERR)
+      CALL interface_MPI_COMM_SPLIT(global_communicator,ICOLOR,IKEY,
+     &                              MYNEW_COMM)
 C
 C     collect useful information about each group,
 C     store on common block
 C
       NEWCOMM_PROC = 0
       MYNEW_ID = 0
-      CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
-      CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
+      CALL interface_MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC)
+      CALL interface_MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID)
 C
 C     inter-node communicator ICOMM
 C
@@ -1809,14 +1813,15 @@ C
         JCOLOR = 3
       END IF
 C
-      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,JCOLOR,JKEY,ICOMM,IERR)
+      CALL interface_MPI_COMM_SPLIT(global_communicator,JCOLOR,JKEY,
+     &                              ICOMM)
 C
 C     collect again ...
 C
       ICOMM_ID = 0
       ICOMM_SIZE = 0
-      CALL MPI_COMM_RANK(ICOMM,ICOMM_ID,IERR)
-      CALL MPI_COMM_SIZE(ICOMM,ICOMM_SIZE,IERR)
+      CALL interface_MPI_COMM_RANK(ICOMM,ICOMM_ID)
+      CALL interface_MPI_COMM_SIZE(ICOMM,ICOMM_SIZE)
 C
 C     set-up and store group information
 C
@@ -1842,15 +1847,12 @@ C
 ***********************************************************************
       SUBROUTINE GROUP_DESTRUCTOR(JCOMM1,JCOMM2)
 C
-      IMPLICIT REAL*8 (A-H,O-Z)
+      use interface_to_mpi
+      implicit none
+      integer :: JCOMM1,JCOMM2
 C
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-C
-      CALL MPI_COMM_FREE(JCOMM1,IERR)
-      CALL MPI_COMM_FREE(JCOMM2,IERR)
+      CALL interface_MPI_COMM_FREE(JCOMM1)
+      CALL interface_MPI_COMM_FREE(JCOMM2)
 C
       END
 ***********************************************************************
@@ -1861,11 +1863,11 @@ C
 ***********************************************************************
       SUBROUTINE SET_GROUP_TABLE(IGROUPLIST,IPROCLIST,ICOLOR)
 C
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
 C     INPUT
@@ -1909,17 +1911,17 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       CHARACTER*10 PLU1,PLU2,PLU3,PLU4,PLU5,PLU6,PLU7,PLU8,PLUC,PDIA
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU6BL,PLU7BL,PLU5BL
       CHARACTER*6 PLUDIA,PLUCBL
       CHARACTER*4 FILE_INFO_GROUPSZ
       INTEGER PFILELENGTH
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
       IDISP = 0
       PFILELENGTH = 0
 C
@@ -1975,69 +1977,88 @@ C
 C
 C     file info object - provide useful hints for the MPI implementation
 C
-      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+      call interface_mpi_info_CREATE(FILE_INFO_OBJ)
 C     ... number of CPUs sharing the following MPI-I/O files
       WRITE (FILE_INFO_GROUPSZ,'(I4)') NEWCOMM_PROC
-      CALL MPI_INFO_SET(FILE_INFO_OBJ,"nb_proc",FILE_INFO_GROUPSZ,IERR)
+      call interface_mpi_info_SET(FILE_INFO_OBJ,"nb_proc",
+     &                            FILE_INFO_GROUPSZ)
 C
 #if defined (VAR_PFS)
 C
 C     special information on IBMs GPFS to enhance I/O performance
 C
-      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
-     &                  "true",IERR)
+      call interface_mpi_info_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                  "true")
 #endif
 C
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PDIA(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,IDIA,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU1(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU1,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU2(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU2,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU3(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU3,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU4(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU4,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU5(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU5,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU6(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU6,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLU7(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILU7,IERR)
-      CALL MPI_FILE_OPEN(MYNEW_COMM,PLUC(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
-     &     FILE_INFO_OBJ,ILUC,IERR)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PDIA(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR + 
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,IDIA)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU1(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU1)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU2(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU2)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU3(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU3)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU4(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU4)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU5(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU5)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU6(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU6)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLU7(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU7)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,PLUC(1:PFILELENGTH),
+     &     df_mpi_mode_CREATE + df_mpi_mode_RDWR +
+     &     df_mpi_mode_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILUC)
 C
-      CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
+      call interface_mpi_info_FREE(FILE_INFO_OBJ)
 C
 C     ... set fileview
 C
-      CALL MPI_FILE_SET_VIEW(IDIA,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU1,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU2,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU3,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU4,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU5,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU6,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILU7,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
-      CALL MPI_FILE_SET_VIEW(ILUC,IDISP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
+      call interface_mpi_FILE_SET_VIEW(IDIA,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU1,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU2,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU3,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU4,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU5,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU6,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILU7,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
+      call interface_mpi_FILE_SET_VIEW(ILUC,IDISP,
+     &        df_MPI_REAL8,df_MPI_REAL8,
+     &        "native",df_mpi_info_NULL)
 C
       END
 ***********************************************************************
@@ -2057,22 +2078,22 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
 C     ... close
 C
-      CALL MPI_FILE_CLOSE(IDIA,IERR)
-      CALL MPI_FILE_CLOSE(ILU2,IERR)
-      CALL MPI_FILE_CLOSE(ILU3,IERR)
-      CALL MPI_FILE_CLOSE(ILU4,IERR)
-      CALL MPI_FILE_CLOSE(ILU5,IERR)
-      CALL MPI_FILE_CLOSE(ILU6,IERR)
-      CALL MPI_FILE_CLOSE(ILU7,IERR)
-      CALL MPI_FILE_CLOSE(ILUC,IERR)
+      call interface_mpi_FILE_CLOSE(IDIA)
+      call interface_mpi_FILE_CLOSE(ILU2)
+      call interface_mpi_FILE_CLOSE(ILU3)
+      call interface_mpi_FILE_CLOSE(ILU4)
+      call interface_mpi_FILE_CLOSE(ILU5)
+      call interface_mpi_FILE_CLOSE(ILU6)
+      call interface_mpi_FILE_CLOSE(ILU7)
+      call interface_mpi_FILE_CLOSE(ILUC)
 C
       END
 ***********************************************************************
@@ -2092,15 +2113,13 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 C
 C     ... close
 C
-      CALL MPI_FILE_CLOSE(ILU1,IERR)
+      call interface_mpi_FILE_CLOSE(ILU1)
 C
       END
 ***********************************************************************
@@ -2112,8 +2131,6 @@ C
       SUBROUTINE BLOCK_DISTR_DRV(NBLOCK,IBLOCKL,NBLOCKD,IBLOCKS_FNODE,
      &                           SCALFAC,NVAR,IPROCLIST)
 #include "implicit.h"
-#include "infpar.h"
-#include "mpif.h"
 #include "parluci.h"
 #include "wrkspc.inc"
       INTEGER*8 IABSOLUTE_WEIGHT
@@ -2175,9 +2192,6 @@ C
       DIMENSION BLK_A(*)
 *. Scratch
       DIMENSION SEGMNT(*)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION IBLOCKD(NBLOCK)
 *
@@ -2242,9 +2256,6 @@ C
 *
 
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 *. Specific input
       INTEGER JISBLOCK(8,*)
@@ -2524,9 +2535,6 @@ C
 *
 
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 *
 *. input
@@ -2708,9 +2716,6 @@ C
      &           MMPINFA,JYTOTB)
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 *
 *. input
@@ -2891,9 +2896,6 @@ C
 
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 *
 *. input
@@ -3088,16 +3090,16 @@ C
 *        ELEMENT I
 *SUBVAL: VALUE OF SORTED ELEMENTS
 
+      use interface_to_mpi
       IMPLICIT REAL*8           ( A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
       
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
       DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR
 C
       NTESTL = 0000
       NTEST = MAX(NTESTG,NTESTL)
@@ -3129,8 +3131,8 @@ C
             KBLK = -1
           END IF
           IF( IBLOCKD(II) .eq. MYPROC )THEN 
-             CALL MPI_FILE_READ_AT(IDIA,IOFF_SCR,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+             call interface_mpi_FILE_READ_AT_r(IDIA,IOFF_SCR,SEGMNT,LBL,
+     &                             ISTAT)
           ENDIF
           IF(NTEST.GE.100) THEN
             WRITE(LUWRT,*) ' Elements read in '
@@ -3231,183 +3233,6 @@ CSK      NTEST = 0
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COPVCD_SPAR_CCOEFF(LCFILE,LUOUT,SCR,SCALFAC,
-     &                              IBLOCKL,IBLOCKD,NDIM,IGROUPLIST)
-C
-C     copy vector from serial I/O file LCFILE to 
-C     parallel I/O file MPILUSCR
-C
-      IMPLICIT REAL*8(A-H,O-Z)
-*
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
-C     INPUT 
-      DIMENSION SCR(*), IBLOCKL(NDIM), IBLOCKD(NDIM)
-      DIMENSION IGROUPLIST(NMPROC)
-C     OUTPUT
-      DIMENSION SCALFAC(NDIM)
-C     SCRATCH
-      INTEGER MIN2
-      MIN2 = -2
-C
-C     Initialize SCALFAC to 0.0D0
-C
-      ZERO = 0.0D0
-      CALL SETVEC(SCALFAC,ZERO,NDIM) 
-CSKT      write(6,*) 'I arrived at the copy routine',myproc
-C
-C     file offset is at 0
-      IOFFSET = 0
-C
-C     Loop over blocks
-C
-      DO IBLK = 1, NDIM
-C
-        LBL = IBLOCKL(IBLK)
-        NDBLOCK = IBLOCKD(IBLK)
-C
-        IF( NDBLOCK .eq. MIN2 ) GOTO 500
-        IF( NDBLOCK .eq. MYPROC ) GOTO 100
-        IGROUPBLK = 0
-        IF(NEWCOMM_PROC .ne. NMPROC ) THEN
-          DO IPROC = 1, NEWCOMM_PROC
-            IF( NDBLOCK .eq. IGROUPLIST(IPROC) ) IGROUPBLK = 1 
-          END DO
-          IF( IGROUPBLK .eq. 0) GOTO 500
-        END IF
-C       ... well this nonzero block is at least inside this file-group
- 100    CONTINUE
-        IF( MYPROC .eq. NDBLOCK ) THEN
-          CALL IFRMDS(LBL,1,-1,LCFILE)
-          CALL ITODS (LBL,1,-1,LUOUT)
-          KBLK = -1
-          NO_ZEROING = 1
-          CALL FRMDSC2(SCR,LBL,KBLK,LCFILE,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-          IF( IMZERO .eq. 0 ) THEN
-            SCALFAC(IBLK) = 1.0D0
-            CALL MPI_FILE_WRITE_AT(MPILUSCR2,IOFFSET,SCR,LBL,MPI_REAL8,
-     &           MPI_STATUS_IGNORE,IERR)
-CSKT           WRITE(6,*) 'THIS IS WHAT I HAVE WRITTEN',MYPROC
-CSKT           WRITE(6,*) 'IOFFSET',IOFFSET
-CSKT            CALL WRTMAT(SCR,1,LBL,1,LBL)
-            IF(IAMPACK.EQ.0) THEN
-              CALL TODSC (SCR,LBL,KBLK,LUOUT)
-            ELSE
-              CALL TODSCP(SCR,LBL,KBLK,LUOUT)
-            END IF
-          ELSE
-            CALL ZERORC(LBL,LUOUT,IAMPACK)
-          END IF
-CSK          IOFFSET = IOFFSET + LBL
-        ELSE
-CSK        IOFFSET = IOFFSET + LBL
-        END IF
- 500    CONTINUE
-        IOFFSET = IOFFSET + LBL
-      END DO
-C
-C     find EOF-mark
-C
-      IF( NROOT_INFO .gt. 0 ) THEN
-        CALL IFRMDS(LBL,1,-1,LCFILE)
-CSK        IF(LBL.LT.0) WRITE(LUDUMPF,*)'I am fine'
-        IF(LBL.GE.0) THEN
-          WRITE(6,*) 'Error in COPVCD_SPAR_CCOEFF detected'
-          CALL Abend2('I assume all blocks to be distributed among the
-     & nodes but there are still some left')
-        ENDIF
-      END IF
-C
-C     write EOF-mark
-C
-      CALL ITODS(-1,1,-1,LUOUT)
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FIND_ACTIVE_BLOCKS_MR(LUIN,LBLK,BLK_A,SEGMNT,IFHBLK)
-*
-*. Find the active (nonvanishing blocks) on LUIN
-*. Non vanishing block is flagged by a 1.0 ( note : real)
-*  in BLK_A
-*  master version
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-*. Output
-      DIMENSION BLK_A(*)
-*. Scratch
-      DIMENSION SEGMNT(*)
-*      INTEGER ISTBLK
-*
-      CALL REWINE(LUIN,LBLK)
-*
-      IBLK = 0
-*      IBLK = ISTBLK
-      NBLK_A = 0
-      NBLK = 0
-**      write(6,*)'ISTBLK',ISTBLK
-*. Loop over blocks
- 1000 CONTINUE
-        IBLK = IBLK + 1
-*        write(6,*)'IBLK =',IBLK
-        IF(IBLK.GT.IFHBLK) GOTO 1001
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LUIN) LBL
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-        END IF
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-          NO_ZEROING = 1
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(IMZERO.EQ.0) THEN
-           NBLK_A = NBLK_A + 1
-           BLK_A(IBLK) = 1.0D0
-          ELSE
-           BLK_A(IBLK) = 0.0D0
-          END IF
-        END IF
-*      write(6,*)'lbl of IBLK =',lbl, iblk
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-1001  CONTINUE
-      NBLK =  IBLK - 1
-*
-      NTEST = 0
-      IF(NTEST.GE.1) THEN
-        WRITE(6,'(A,I8,I8)')
-     &  ' FIND_A.... Number of total and active Blocks',NBLK,NBLK_A
-      END IF
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Active blocks (master)'
-        CALL WRTMAT(BLK_A,1,NBLK,1,NBLK)
-      END IF
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
       SUBROUTINE ADDSB(A,B,NDIM)
 *
 * add recieved SB vector to current SB vector
@@ -3422,998 +3247,6 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
 *
       RETURN
       END
-*
-*
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DIST_NODES(NTOTALND,NACTROOT,JDISTROOT)
-*
-* find an even distribution for the sum NTOTALND of the nodes 
-* w.r.t. the number of roots NACTROOT that have to be calculated
-* distribution is stored in array JDISTROOT 
-*
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-*
-      INTEGER NTOTALND,NACTROOT,ISTNODE,ISTIADD 
-      DIMENSION JDISTROOT(NTOTALND)
-*
-      ISTNODE = 1
-      ISTIADD = 1
- 1    CONTINUE
-      IF(ISTIADD.LE.NACTROOT)THEN
-*
-        JDISTROOT(ISTNODE) = ISTIADD
-        ISTIADD = ISTIADD + 1
-        ISTNODE = ISTNODE + 1
-        GOTO 1
-*        
-      ELSE IF(ISTIADD.GT.NACTROOT) THEN
-*
-        ISTIADD = NACTROOT
-        GOTO 2
-*
-      END IF
- 2    CONTINUE
-*
-      ISTNODE = NTOTALND
- 3    CONTINUE
-      ISTIADD = NACTROOT
- 4    CONTINUE
-      IF(ISTIADD.NE.0.AND.ISTNODE.NE.NACTROOT) THEN
-        JDISTROOT(ISTNODE) = ISTIADD
-        ISTIADD = ISTIADD - 1
-        ISTNODE = ISTNODE - 1
-        GOTO 4
-      ELSE IF(ISTIADD.EQ.0.AND.ISTNODE.GT.NACTROOT) THEN
-        GOTO 3 
-      ELSE IF(ISTIADD.NE.0.AND.ISTNODE.EQ.NACTROOT) THEN
-        GOTO 5
-      ELSE IF(ISTIADD.EQ.0.AND.ISTNODE.EQ.NACTROOT) THEN
-        GOTO 5
-      END IF
- 5    CONTINUE
-*    
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MSSNDBLCK(LUIN,LUOUT,SEGMNT,JCOMM,LBLK,IDISTLIST,
-     &           NMBLOCK)
-*
-* Read vector (master) from disc file luin to array segmnt
-* and send to node IDISTLIST(block) the vector where it is 
-* written in file luout
-*
-* LBLK DEFINES STRUCTURE OF FILE
-* COMM IS THE COMMUNICATOR USED FOR MPI-COMMUNICATION
-* --> DEFAULT: MPI_COMM_WORLD
-* YOUR CALL SHOULD LOOK LIKE: CALL MSS...(LUIN,...,MPI_COMM_WORLD,LBLK)
-*
-*
-* Type of file LUOUT is inherited from LUIN
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*),IDISTLIST(NMBLOCK)
-      INTEGER ISENDN,NROUND
-C
-*
-      IREW = 1
-*
-      IF( IREW .NE. 0 ) THEN
-        IF (MYNEW_ID.EQ.0) THEN
-          CALL REWINE( LUIN ,LBLK)
-        ELSE IF (MYNEW_ID.NE.0) THEN
-          CALL REWINE( LUOUT ,LBLK)
-        END IF
-      END IF
-      ISENDN = 0
-      NROUND = 0
-C
-C LOOP OVER BLOCKS
-C
- 1000 CONTINUE
-      NROUND = NROUND + 1
-      IF(NROUND.LE.NMBLOCK+1) THEN
-        IF(NROUND.EQ.NMBLOCK+1) THEN
-          GOTO 9000
-        ELSE
-          ISENDN = IDISTLIST(NROUND)
-*          if (myproc.eq.master) WRITE(6,*)'NROUND=',NROUND
-*          if (myproc.eq.master) WRITE(6,*)'I..D(NROUND)=ISENDN =',ISENDN
-*          if (myproc.eq.master) WRITE(6,*)'LBLK =',LBLK
-*          if (myproc.eq.master) WRITE(6,*)'LUIN =',LUIN
-        END IF
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-            if (MYNEW_ID.EQ.0.and.ISENDN.GT.0) then
-              call mpi_send(LBL,1,my_MPI_INTEGER,ISENDN,60,
-     &                      JCOMM,ISTAT,IERR)
-            end if
-            if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-              call mpi_recv(LBL,1,my_MPI_INTEGER,0,60,
-     &                      JCOMM,ISTAT,IERR)
-            end if
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          if (MYNEW_ID.EQ.0) then
-            READ(LUIN) LBL
-          if (MYNEW_ID.EQ.0.and.ISENDN.GT.0) then
-            call mpi_send(LBL,1,my_MPI_INTEGER,ISENDN,60,
-     &                    JCOMM,ISTAT,IERR)
-          end if
-          end if
-
-
-          if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,0,60,
-     &                    JCOMM,ISTAT,IERR)
-            WRITE(LUOUT) LBL
-        end if
-        if (MYNEW_ID.EQ.0) then
-        write(6,*) 'SR MSSNDBLCK:  LBLK = ', LBLK
-        end if
-*
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          if (MYNEW_ID.EQ.0) then
-*            write(6,*)'master reads in block',NROUND
-            CALL IFRMDS(LBL,1,-1,LUIN)
-          if (MYNEW_ID.EQ.0.and.ISENDN.GT.0) then
-            call mpi_send(LBL,1,my_MPI_INTEGER,ISENDN,60,
-     &                    JCOMM,ISTAT,IERR)
-*            write(6,*)'master has sent block',NROUND
-          end if
-          end if
-*
-*
-          if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,0,60,
-     &                    JCOMM,ISTAT,IERR)
-            CALL ITODS(LBL,1,-1,LUOUT)
-C?        write(6,*) ' COPVCD LBL : ', LBL
-          end if
-*
-        END IF
-*
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          NO_ZEROING = 1
-*
-          if (MYNEW_ID.EQ.0) then
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-            if (ISENDN.GT.0) then
-              call mpi_send(IMZERO,1,my_MPI_INTEGER,ISENDN,61,
-     &             JCOMM,ISTAT,IERR)
-              call mpi_send(IAMPACK,1,my_MPI_INTEGER,ISENDN,62,
-     &             JCOMM,ISTAT,IERR)
-              call mpi_send(SEGMNT,LBL,MPI_REAL8,ISENDN,63,
-     &             JCOMM,ISTAT,IERR)
-            end if
-          end if
-*
-*
-          if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-             call mpi_recv(IMZERO,1,my_MPI_INTEGER,0,61,
-     &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,0,62,
-     &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(SEGMNT,LBL,MPI_REAL8,0,63,
-     &                     JCOMM,ISTAT,IERR)
-          end if
-*
-*
-          IF(IMZERO.EQ.0) THEN
-            IF(IAMPACK.EQ.0) THEN
-              if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-                CALL TODSC(SEGMNT,LBL,KBLK,LUOUT)
-              end if
-            ELSE
-              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
-            END IF
-          ELSE
-            if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-              CALL ZERORC(LBL,LUOUT,IAMPACK)
-            end if
-          END IF
-        END IF
-      END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-9000  CONTINUE
-      IF (MYNEW_ID.NE.0) THEN
-        CALL ITODS(-1,1,-1,LUOUT)
-      END IF
-*
-      RETURN
-      END
-*
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MSBCVC_MPI(LUIN,LUOUT,SEGMNT,COMM,LBLK)
-*
-* Read vector (master) from disc file luin to array segmnt
-* and broadcast the vector to all nodes
-* where vector is written in file luout
-*
-* MPI adaption         Stefan Knecht, Feb 21, 2006
-*
-* LBLK DEFINES STRUCTURE OF FILE
-* COMM IS THE COMMUNICATOR USED FOR MPI-COMMUNICATION
-* --> DEFAULT: MPI_COMM_WORLD
-* YOUR CALL SHOULD LOOK LIKE: CALL MSB...(LUIN,...,MPI_COMM_WORLD,LBLK)
-*
-*
-* Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*)
-C
-*
-      IREW = 0
-*
-      IF( IREW .NE. 0 ) THEN
-        IF (MYPROC.EQ.MASTER) THEN
-          CALL REWINE( LUIN ,LBLK)
-        ELSE IF (MYPROC.NE.MASTER) THEN
-          CALL REWINE( LUOUT ,LBLK)
-        END IF
-      END IF
-      ihere = 0
-C
-C LOOP OVER BLOCKS
-C
- 1000 CONTINUE
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-              call mpi_bcast(LBL,1,my_MPI_INTEGER,MASTER,
-     &                      COMM,IERR)
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          if (myproc.eq.master) then
-            READ(LUIN) LBL
-          end if
-            call mpi_bcast(LBL,1,my_MPI_INTEGER,MASTER,
-     &                    COMM,IERR)
-           if (myproc.ne.master) then
-            WRITE(LUOUT) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
-           end if
-*
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          if (myproc.eq.master) then
-            CALL IFRMDS(LBL,1,-1,LUIN)
-          end if
-            call mpi_bcast(LBL,1,my_MPI_INTEGER,MASTER,
-     &                    COMM,IERR)
-*
-*
-          if (myproc.ne.master) then
-            CALL ITODS (LBL,1,-1,LUOUT)
-          end if
-        END IF
-*
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          NO_ZEROING = 1
-*
-          if (myproc.eq.master) then
-            ihere = ihere + 1
-**            write(6,*)'i am here for the x time', ihere
-            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                   NO_ZEROING)
-          end if
-          call mpi_bcast(IMZERO,1,my_MPI_INTEGER,MASTER,
-     &                  COMM,IERR)
-          call mpi_bcast(IAMPACK,1,my_MPI_INTEGER,MASTER,
-     &                  COMM,IERR)
-          call mpi_bcast(SEGMNT,LBL,MPI_REAL8,MASTER,
-     &                  COMM,IERR)
-*
-**          if (myproc.eq.master) then
-**            write(6,*)'lbl,IMZERO,IAMPACK = ',lbl,IMZERO,IAMPACK
-**            write(6,*)'this is segment(LBL)', SEGMNT(LBL)
-**          end if
-*
-          IF(IMZERO.EQ.0) THEN
-            IF(IAMPACK.EQ.0) THEN
-              if (myproc.ne.master) then
-                CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
-              end if
-            ELSE
-              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
-            END IF
-          ELSE
-            if (myproc.ne.master) then
-              CALL ZERORC(LBL,LUOUT,IAMPACK)
-            end if
-          END IF
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MSCPCFF(SEGMNT,LUCFF,NJBATCH,JRESTC,JLOOPC,JLOOPCS,
-     &                   NYCOMM,JCBLOCK,NNBLOCKS,LBLK)
-*
-* Read coff. blocks (master) from disc file lucff to array segmnt
-* and send to node X
-* where vector is written in file lucff
-*
-* MPI adaption         Stefan Knecht, Aug. 17., 2006
-* MSDTAG: send-tag; NOFSLV: process-# of the node
-*
-* LBLK DEFINES STRUCTURE OF FILE
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*), JCBLOCK(*), NNBLOCKS(NEWCOMM_PROC)
-*.scratch
-      INTEGER MTAG,NBLCK,JMBLOCK,JSBLOCK,JNCBLOCK,IGETRNR,ICHNBLCK
-C
-*
-      IREW = 1
-      JMBLOCK = 0
-      JSBLOCK = 0
-      NBLCK = 0
-      IGETRNR = 0
-      NODEX = 0
-      LBLK = -1
-*
-      IF( IREW .NE. 0 ) THEN
-        IF (MYNEW_ID.EQ.0) THEN
-          CALL REWINE( LUCFF ,LBLK)
-        ELSE IF (MYNEW_ID.NE.0) THEN
-          CALL REWINE( LUCFF ,LBLK)
-        END IF
-      END IF
-      MTAG = 100
-*
-      IF(MYNEW_ID.EQ.0) THEN
-*
-        DO ISK = 1, JLOOPC
-*
-           JCBATCH = ISK
-           JMBLOCK = JMBLOCK + JCBLOCK(JCBATCH)
-*
-        END DO
-*
-
-*
-        IF(NEWCOMM_PROC.LT.NJBATCH) THEN
-**
-          DO IGTB = 1, NEWCOMM_PROC -1
-             JNCBLOCK = 0
-             IF(IGTB.GT.(NEWCOMM_PROC-JRESTC)) THEN
-               IGETRNR = IABS(JRESTC - NEWCOMM_PROC + IGTB)
-               ISKIPR = (IGTB*JLOOPCS) + IGETRNR
-               DO ISK = 1, JLOOPC+1
-                  JCBATCH = ISKIPR + ISK
-                  JNCBLOCK = JNCBLOCK + JCBLOCK(JCBATCH)
-               END DO
-               NNBLOCKS(IGTB) = JNCBLOCK
-             ELSE IF(IGTB.EQ.(NEWCOMM_PROC-JRESTC)) THEN
-               ISKIPR = (IGTB*JLOOPCS)
-               DO ISK = 1, JLOOPC+1
-                  JCBATCH = ISKIPR + ISK
-                  JNCBLOCK = JNCBLOCK + JCBLOCK(JCBATCH)
-               END DO
-               NNBLOCKS(IGTB) = JNCBLOCK
-             ELSE IF(IGTB.LT.(NEWCOMM_PROC-JRESTC)) THEN
-               ISKIPR = (IGTB*JLOOPCS)
-               DO ISK = 1, JLOOPC
-                  JCBATCH = ISKIPR + ISK
-                  JNCBLOCK = JNCBLOCK + JCBLOCK(JCBATCH)
-               END DO
-               NNBLOCKS(IGTB) = JNCBLOCK
-             END IF
-          END DO
-**
-        ELSE IF(NEWCOMM_PROC.EQ.NJBATCH) THEN
-*
-          DO IGTB = 1, NEWCOMM_PROC -1
-             JNCBLOCK = 0
-             ISKIPR = (IGTB*JLOOPCS)
-             DO ISK = 1, JLOOPC
-                  JCBATCH = ISKIPR + ISK
-                  JNCBLOCK = JNCBLOCK + JCBLOCK(JCBATCH)
-             END DO
-               NNBLOCKS(IGTB) = JNCBLOCK
-          END DO
-**
-        ELSE IF(NEWCOMM_PROC.GT.NJBATCH) THEN
-            DO IGTB = 1, (NJBATCH - 1)
-            JNCBLOCK = 0
-            ISKIPR = (IGTB*JLOOPCS)
-            DO ISK = 1, JLOOPC
-                  JCBATCH = ISKIPR + ISK
-                  JNCBLOCK = JNCBLOCK + JCBLOCK(JCBATCH)
-             END DO
-               NNBLOCKS(IGTB) = JNCBLOCK
-          END DO
-        END IF
-**
-*
-      ELSE IF (MYNEW_ID.NE.0) THEN
-*
-        ISKIPR = 0
-* how many records do i have to skip ?
-*
-        IF(NEWCOMM_PROC.LT.NJBATCH) THEN
-*
-          IF(MYNEW_ID.GT.(NEWCOMM_PROC-JRESTC)) THEN
-*
-            IGETRNR = IABS(JRESTC - NEWCOMM_PROC + MYNEW_ID)
-            ISKIPR = (MYNEW_ID*JLOOPCS) + IGETRNR
-*
-          ELSE IF(MYNEW_ID.LE.(NEWCOMM_PROC-JRESTC)) THEN
-*
-            ISKIPR = (MYNEW_ID*JLOOPCS)
-*
-          END IF
-        ELSE IF(NEWCOMM_PROC.GE.NJBATCH) THEN
-*
-            ISKIPR = (MYNEW_ID*JLOOPCS)
-*
-        END IF
-*
-        DO ISK = 1, JLOOPC
-          JCBATCH = ISKIPR + ISK
-          JSBLOCK = JSBLOCK + JCBLOCK(JCBATCH)
-        END DO
-*
-      END IF
-C
-C LOOP OVER BLOCKS
-C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
- 1000 CONTINUE
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-            if (MYNEW_ID.eq.0.and.NEWCOMM_PROC.gt.1) then
-              if(nodex.gt.0) then
-                call mpi_send(LBL,1,my_MPI_INTEGER,NODEX,MTAG-2,
-     &                        NYCOMM,IERR)
-              end if
-            end if
-            if (MYNEW_ID.ne.0) then
-              call mpi_recv(LBL,1,my_MPI_INTEGER,0,MTAG-2,
-     &                      NYCOMM,ISTAT,IERR)
-            end if
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          if (MYNEW_ID.eq.0) then
-            READ(LUCFF) LBL
-            if(nodex.gt.0.and.NEWCOMM_PROC.gt.1) then
-              call mpi_send(LBL,1,my_MPI_INTEGER,NODEX,MTAG-2,
-     &                      NYCOMM,IERR)
-            end if
-          end if
-*
-*
-          if (MYNEW_ID.ne.0) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,0,MTAG-2,
-     &                    NYCOMM,ISTAT,IERR)
-            WRITE(LUCFF) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
-            end if
-*
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          if (MYNEW_ID.eq.0) then
-            CALL IFRMDS(LBL,1,-1,LUCFF)
-            if(nodex.gt.0.and.NEWCOMM_PROC.gt.1) then
-              call mpi_send(LBL,1,my_MPI_INTEGER,NODEX,MTAG-2,
-     &                      NYCOMM,IERR)
-            end if
-          end if
-*
-*
-          if (MYNEW_ID.ne.0) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,MTAG-2,
-     &                    NYCOMM,ISTAT,IERR)
-            CALL ITODS (LBL,1,-1,LUCFF)
-          end if
-        END IF
-*
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          NO_ZEROING = 1
-*
-          if (MYNEW_ID.eq.0) then
-            CALL FRMDSC2(SEGMNT,LBL,KBLK,LUCFF,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-            if(nodex.gt.0.and.NEWCOMM_PROC.gt.1) then
-              call mpi_send(IMZERO,1,my_MPI_INTEGER,NODEX,MTAG+1,
-     &                      NYCOMM,IERR)
-              call mpi_send(IAMPACK,1,my_MPI_INTEGER,NODEX,MTAG+2,
-     &                      NYCOMM,IERR)
-              call mpi_send(SEGMNT,LBL,MPI_REAL8,NODEX,MTAG+3,
-     &                      NYCOMM,IERR)
-            end if
-          end if
-*
-*
-          if (MYNEW_ID.ne.0) then
-             call mpi_recv(IMZERO,1,my_MPI_INTEGER,0,MTAG+1,
-     &                     NYCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,0,MTAG+2,
-     &                     NYCOMM,ISTAT,IERR)
-             call mpi_recv(SEGMNT,LBL,MPI_REAL8,0,MTAG+3,
-     &                     NYCOMM,ISTAT,IERR)
-          end if
-*
-*
-          IF(IMZERO.EQ.0) THEN
-            IF(IAMPACK.EQ.0) THEN
-              if (MYNEW_ID.ne.0) then
-                CALL TODSC (SEGMNT,LBL,KBLK,LUCFF)
-              end if
-            ELSE
-              if (MYNEW_ID.ne.0) then
-                CALL TODSCP(SEGMNT,LBL,KBLK,LUCFF)
-              end if
-            END IF
-          ELSE
-            if (MYNEW_ID.ne.0) then
-              CALL ZERORC(LBL,LUCFF,IAMPACK)
-            end if
-          END IF
-        END IF
-*
-      NBLCK = NBLCK + 1
-**      if(myproc.eq.master) then
-**        write(6,*)'NBLCK (myproc) =', NBLCK,myproc
-**      end if
-      IF(MYNEW_ID.EQ.0.and.NEWCOMM_PROC.gt.1) THEN
-*
-        IF(NBLCK.LT.JMBLOCK) THEN
-*           write(6,*)'i am here?', myproc
-           GOTO 999
-        END IF
-*
-        IF(NBLCK.EQ.JMBLOCK) THEN
-*           write(6,*)'start with node1 at NBLCK=',NBLCK
-           NODEX = 1
-           GOTO 999
-        END IF
-*
-        IF(NODEX.GT.0) THEN
-          ICHNBLCK = 0
-          ICHNBLCK = JMBLOCK
-          DO IFCH = 1, NODEX
-             ICHNBLCK = ICHNBLCK + NNBLOCKS(IFCH)
-          END DO
-**          write(6,*)'ICHNBLCK=',ICHNBLCK
-          IF(NBLCK.EQ.ICHNBLCK) THEN
-*.? is the complete number of nodes relevant? I assume, it is NOT!
-            NODEX = NODEX + 1
-*            write(6,*)'master comm. now with nodex',NODEX
-*.?
-            IF(NEWCOMM_PROC.LE.NJBATCH) THEN
-              IF(NODEX.LE.(NEWCOMM_PROC-1)) THEN
-**                write(6,*)'master comm. now with nodex',NODEX
-                GOTO 999
-              ELSE IF(NODEX.GT.(NEWCOMM_PROC-1)) THEN
-**                write(6,*)'master comm. NOT with nodex',NODEX
-                GOTO 1001
-              END IF
-*
-            ELSE IF(NEWCOMM_PROC.GT.NJBATCH) THEN
-              IF(NODEX.LE.(NJBATCH-1)) THEN
-**                write(6,*)'master comm. now with nodex',NODEX
-                GOTO 999
-              ELSE IF(NODEX.GT.(NJBATCH-1)) THEN
-**                write(6,*)'master comm. NOT with nodex',NODEX
-                GOTO 1001
-              END IF
-            END IF
-          END IF
-*.        /\ end if of (NBLCK.EQ.(JMBLOCK + NNBLOCKS(NODEX))
-        END IF
-      ELSE IF (MYNEW_ID.NE.0) THEN
-        IF(NBLCK.EQ.JSBLOCK) THEN
-          CALL ITODS (-1,1,-1,LUCFF)
-          GOTO 1001
-        END IF
-      END IF
-*
-999   CONTINUE
-*      write(6,*)'after 999 (myproc)', myproc
-*      write(6,*)'LBL, LBLK',LBL,LBLK
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-1001  CONTINUE
-**      write(6,*)'everything done', myproc
-
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_PAR_MS(LUIN,LUOUT,SEGMNT,NOFSLV,JCOMM,LBLK)
-*
-* Read vector (master) from disc file luin to array segmnt
-* and send to node nofslv using communicator jcomm
-* where vector is written in file luout
-*
-* MPI adaption         Stefan Knecht, Feb 21, 2006
-* NOFSLV: process-# of the slave
-*
-* LBLK DEFINES STRUCTURE OF FILE
-*
-* Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*)
-C
-*
-      IREW = 0
-      IF(LBLK.NE.-1) THEN
-        LBLK = -1
-      END IF
-*
-      IF( IREW .NE. 0 ) THEN
-        IF (MYPROC.EQ.MASTER) THEN
-          CALL REWINE( LUIN ,LBLK)
-        ELSE IF (MYPROC.NE.MASTER) THEN
-          CALL REWINE( LUOUT ,LBLK)
-        END IF
-      END IF
-      MYNSLV = NOFSLV
-
-C
-C LOOP OVER BLOCKS
-C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
- 1000 CONTINUE
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-            if (myproc.eq.master) then
-              call mpi_send(LBL,1,my_MPI_INTEGER,MYNSLV,80,
-     &                      JCOMM,IERR)
-            end if
-            if (myproc.ne.master) then
-              call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,80,
-     &                      JCOMM,ISTAT,IERR)
-            end if
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          if (myproc.eq.master) then
-            READ(LUIN) LBL
-            call mpi_send(LBL,1,my_MPI_INTEGER,MYNSLV,80,
-     &                    JCOMM,IERR)
-          end if
-*
-*
-          if (myproc.ne.master) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,80,
-     &                    JCOMM,ISTAT,IERR)
-            WRITE(LUOUT) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
-            end if
-*
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          if (myproc.eq.master) then
-            CALL IFRMDS(LBL,1,-1,LUIN)
-            call mpi_send(LBL,1,my_MPI_INTEGER,MYNSLV,80,
-     &                    JCOMM,IERR)
-          end if
-*
-*
-          if (myproc.ne.master) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,MASTER,80,
-     &                    JCOMM,ISTAT,IERR)
-            CALL ITODS (LBL,1,-1,LUOUT)
-          end if
-        END IF
-*
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          NO_ZEROING = 1
-*
-          if (myproc.eq.master) then
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-          call mpi_send(IMZERO,1,my_MPI_INTEGER,MYNSLV,81,
-     &                  JCOMM,IERR)
-          call mpi_send(IAMPACK,1,my_MPI_INTEGER,MYNSLV,82,
-     &                  JCOMM,IERR)
-          call mpi_send(SEGMNT,LBL,MPI_REAL8,MYNSLV,83,
-     &                  JCOMM,IERR)
-          end if
-*
-*
-          if (myproc.ne.master) then
-             call mpi_recv(IMZERO,1,my_MPI_INTEGER,MASTER,81,
-     &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,MASTER,82,
-     &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(SEGMNT,LBL,MPI_REAL8,MASTER,83,
-     &                     JCOMM,ISTAT,IERR)
-          end if
-*
-*
-          IF(IMZERO.EQ.0) THEN
-            IF(IAMPACK.EQ.0) THEN
-              if (myproc.ne.master) then
-                CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
-              end if
-            ELSE
-              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
-            END IF
-          ELSE
-            if (myproc.ne.master) then
-              CALL ZERORC(LBL,LUOUT,IAMPACK)
-            end if
-          END IF
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_SPECIAL(LUIN,LUOUT,SEGMNT,LBLK,ACT_BLK,NUMBLK)
-*
-* Read vector from disc file luin to array segmnt
-* and send to master using communicator jcomm.
-* vector is written in file luout
-*
-* MPI adaption         Stefan Knecht, Feb 21, 2006
-* NOFSLV: process-# of the node
-*
-* LBLK DEFINES STRUCTURE OF FILE
-*
-* Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*),ACT_BLK(*)
-C
-*
-      IREW = 0
-      IBLOCK = 0
-*
-      IF( IREW .NE. 0 ) THEN
-          CALL REWINE( LUIN ,LBLK)
-          CALL REWINE( LUOUT ,LBLK)
-      END IF
-
-C
-C LOOP OVER BLOCKS
-C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
- 1000 CONTINUE
-        IBLOCK = IBLOCK + 1
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-            READ(LUIN) LBL
-*
-            WRITE(LUOUT) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
-*
-        ELSE IF  (LBLK .LT. 0 ) THEN
-            CALL IFRMDS(LBL,1,-1,LUIN)
-*
-            CALL ITODS (LBL,1,-1,LUOUT)
-        END IF
-*
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          NO_ZEROING = 1
-*
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-          IF(IMZERO.EQ.0) THEN
-            ACT_BLK(IBLOCK) = 1.0D0 
-            IF(IAMPACK.EQ.0) THEN
-                CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
-            ELSE
-              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
-            END IF
-          ELSE
-              ACT_BLK(IBLOCK) = 0.0D0
-              CALL ZERORC(LBL,LUOUT,IAMPACK)
-          END IF
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-*
-      NUMBLK = IBLOCK - 1
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_PAR_SM(LUIN,LUOUT,SEGMNT,NOFSLV,JCOMM,LBLK)
-*
-* Read vector (node # mynslv) from disc file luin to array segmnt
-* and send to master using communicator jcomm.
-* vector is written in file luout
-*
-* MPI adaption         Stefan Knecht, Feb 21, 2006
-* NOFSLV: process-# of the node
-*
-* LBLK DEFINES STRUCTURE OF FILE
-*
-* Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*)
-C
-*
-      IREW = 0
-*
-      IF( IREW .NE. 0 ) THEN
-        IF (MYPROC.NE.MASTER) THEN
-          CALL REWINE( LUIN ,LBLK)
-        ELSE IF (MYPROC.EQ.MASTER) THEN
-          CALL REWINE( LUOUT ,LBLK)
-        END IF
-      END IF
-      MYNSLV = NOFSLV
-
-C
-C LOOP OVER BLOCKS
-C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
- 1000 CONTINUE
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-            if (myproc.ne.master) then
-              call mpi_send(LBL,1,my_MPI_INTEGER,MASTER,90,
-     &                      JCOMM,IERR)
-            end if
-            if (myproc.eq.master) then
-              call mpi_recv(LBL,1,my_MPI_INTEGER,MYNSLV,90,
-     &                      JCOMM,ISTAT,IERR)
-            end if
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          if (myproc.ne.master) then
-            READ(LUIN) LBL
-            call mpi_send(LBL,1,my_MPI_INTEGER,MASTER,90,
-     &                    JCOMM,IERR)
-          end if
-*
-*
-          if (myproc.eq.master) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,MYNSLV,90,
-     &                    JCOMM,ISTAT,IERR)
-            WRITE(LUOUT) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
-            end if
-*
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          if (myproc.ne.master) then
-            CALL IFRMDS(LBL,1,-1,LUIN)
-            call mpi_send(LBL,1,my_MPI_INTEGER,MASTER,90,
-     &                    JCOMM,IERR)
-          end if
-*
-*
-          if (myproc.eq.master) then
-            call mpi_recv(LBL,1,my_MPI_INTEGER,MYNSLV,90,
-     &                    JCOMM,ISTAT,IERR)
-            CALL ITODS (LBL,1,-1,LUOUT)
-          end if
-        END IF
-*
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          NO_ZEROING = 1
-*
-          if (myproc.ne.master) then
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-          call mpi_send(IMZERO,1,my_MPI_INTEGER,MASTER,91,
-     &                  JCOMM,IERR)
-          call mpi_send(IAMPACK,1,my_MPI_INTEGER,MASTER,92,
-     &                  JCOMM,IERR)
-          call mpi_send(SEGMNT,LBL,MPI_REAL8,MASTER,93,
-     &                  JCOMM,IERR)
-          end if
-*
-*
-          if (myproc.eq.master) then
-             call mpi_recv(IMZERO,1,my_MPI_INTEGER,MYNSLV,91,
-     &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(IAMPACK,1,my_MPI_INTEGER,MYNSLV,92,
-     &                     JCOMM,ISTAT,IERR)
-             call mpi_recv(SEGMNT,LBL,MPI_REAL8,MYNSLV,93,
-     &                     JCOMM,ISTAT,IERR)
-          end if
-*
-*
-          IF(IMZERO.EQ.0) THEN
-            IF(IAMPACK.EQ.0) THEN
-              if (myproc.eq.master) then
-                CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
-              end if
-            ELSE
-              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
-            END IF
-          ELSE
-            if (myproc.eq.master) then
-              CALL ZERORC(LBL,LUOUT,IAMPACK)
-            end if
-          END IF
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-      RETURN
-      END
-*****************************************************
-* dummy routine for normal compilation
-       SUBROUTINE DO_NOTHING(NOTHING)
-       IMPLICIT REAL*8(A-H,O-Z)
-*        write(6,*) 'let us do nothing',nothing
-       END
 *****************************************************
 #else
 * dummy routine for normal compilation

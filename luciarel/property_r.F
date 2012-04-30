@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -263,6 +263,7 @@ C
 !***********************************************************************
       use symmetry_setup_krci
       use memory_allocator
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
@@ -286,8 +287,7 @@ C information for property run
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
       CHARACTER CIRUN*6, FILELAB*8, FILELAB_REOD*8, RODLAB*2
@@ -489,6 +489,7 @@ C
 C***********************************************************************
       use krci_properties
       use symmetry_setup_krci
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
@@ -518,9 +519,8 @@ C information for property run
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
 #endif
 #include "parluci.h"
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
@@ -754,8 +754,8 @@ C           erase old property integrals
 C
 C           read new property integrals from disk
 #if defined (VAR_MPI2)
-            CALL MPI_FILE_READ_AT(ILPRP_X,IOFFSET_SCRATCH,WORK(KT_CC),
-     &                            LENGTH_BLK,MPI_REAL8,ISTAT,IERR)
+            call interface_mpi_FILE_READ_AT(ILPRP_X,IOFFSET_SCRATCH,
+     &                            WORK(KT_CC),LENGTH_BLK,ISTAT)
             IOFFSET_SCRATCH = IOFFSET_SCRATCH + LENGTH_BLK
 C
 #else
@@ -920,8 +920,8 @@ C     ----------------------------------
       CALL MEMMAR(KXPROP_SCR,LXPRPKRCI,'ADDL  ',2,'XPRPSC')
       CALL DZERO(WORK(KXPROP_SCR),LXPRPKRCI)
 C
-      CALL REDVEC_REL(XPROPMAT,WORK(KXPROP_SCR),LXPRPKRCI,2,
-     &                MPI_SUM,MPI_COMM_WORLD,MASTER)
+      CAll redvec(XPROPMAT,WORK(KXPROP_SCR),LXPRPKRCI,2,
+     &                op_MPI_SUM,global_communicator,MASTER)
       IF( MYPROC .eq. MASTER) 
      &    CALL DCOPY(LXPRPKRCI,WORK(KXPROP_SCR),1,XPROPMAT,1)
 #endif
@@ -946,7 +946,7 @@ C
 C
 C     ... close scratch file with reordered property integrals (opened
 C     in DIST_XPROP)
-      CALL MPI_FILE_CLOSE(ILPRP_X,IERR)
+      call interface_mpi_FILE_CLOSE(ILPRP_X)
 #endif
 C
 C     set back to default

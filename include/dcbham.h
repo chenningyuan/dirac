@@ -31,8 +31,8 @@
 !
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
-!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**) in correlated calcs.
-!     MOLMF3     - Use molecular mean field approximation (^4 DCG*)    in correlated calcs.
+!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**)       in correlated calcs.
+!     MOLMF3     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 !     SMLV1C     - Neglect two-center blocks of VSS

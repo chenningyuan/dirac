@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -257,6 +257,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -294,10 +295,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -338,17 +335,11 @@ C
 #if defined (VAR_MPI)
       IF(NMPROC.GT.1) THEN
 C
-C     LV 16-10-2002
-C     The next statements might be combined to an MPI_ALLREDUCE
-C     but I found the SGI implementation to give a runtime error.
-C
-        CALL MPI_REDUCE(XVO,BUF1,RCW*NDIMX,
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
-     &    MPI_COMM_WORLD,IERR)
-        CALL XCOPY(NDIMX,BUF1,1,XVO,1)
-        CALL MPI_BCAST (XVO,RCW*NDIMX,
-     &    MPI_DOUBLE_PRECISION,MASTER,
-     &    MPI_COMM_WORLD,IERR)
+        CALL XCOPY(NDIMX,XVO,1,BUF1,1)
+        CALL DZERO(XVO,RCW*NDIMX)
+        call interface_MPI_allREDUCE_r1_work_f77(BUF1,XVO,RCW*NDIMX,
+     &                                           op_mpi_sum,
+     &                                           global_communicator)
       ENDIF
 #endif
 C--------------------------------------------
@@ -648,9 +639,6 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
 C
       DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
       LOGICAL NOZG
@@ -920,19 +908,39 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
-      LOGICAL FND,FNDLAB
+      LOGICAL FND,FNDLAB,ADD_2_FOCK
       CHARACTER*8 LABEL
+      CHARACTER*6 FILE_NAME
 C
 C---------------Executable code--------------------------------------
  
+      ADD_2_FOCK = .FALSE.
       SELECT CASE (WF)
          CASE ("MP2 ")
             WRITE (LUPRI,*) " Retrieving MP2 density matrix from file"
-            LABEL = 'MP2 DENS'
-            IERR = 0
+            LABEL        = 'MP2 DENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .TRUE.
+            IERR         = 0
+         CASE ("MC  ")
+            WRITE (LUPRI,*) " Retrieving MCSCF density matrix from file"
+            LABEL        = 'MC  DENS'
+            FILE_NAME    = 'MCDENS'
+            ADD_2_FOCK   = .FALSE.
+            IERR         = 0
+            CALL QUIT('MCSCF density read not fully implemented yet!')
+         CASE ("CI  ")
+            WRITE (LUPRI,*) " Retrieving CI density matrix from file"
+            LABEL        = 'CI  DENS'
+            FILE_NAME    = 'MCDENS'
+            ADD_2_FOCK   = .FALSE.
+            IERR         = 0
+            CALL QUIT('CI density read not fully implemented yet!')
          CASE ("HF  ")
             WRITE (LUPRI,*) " Generating Hartree-Fock density matrix"
-            IERR = 0
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .TRUE.
+            IERR         = 0
          CASE DEFAULT
             WRITE (LUPRI,*) " Unknown or unimplemented density: ",WF
             WRITE (LUPRI,*) " Will use Hartree-Fock density matrix"
@@ -945,16 +953,18 @@ C     Read the appropriate correlated density from file
       IF (IERR.NE.0) THEN
         CALL QUIT('Error in DMO allocation !')
       ENDIF
-      CALL OPNFIL(MCCDENS,'CCDENS','OLD','GET_CC')
+      CALL OPNFIL(MCCDENS,FILE_NAME,'OLD','GET_CC')
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
+      
 C     Add the closed shell Hartree-Fock contribution
-
-C     The add_two routine scales by 2, scale back to the orginal afterwards
-      CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
-      CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+      IF(ADD_2_FOCK)THEN
+C       The add_two routine scales by 2, scale back to the orginal afterwards
+        CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
+        CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+      END IF
 
       SELECT CASE (BASIS)
          CASE ("MO")

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -52,6 +52,10 @@ C
 C     Set basis set directory
 C
       CALL GETBASDIR()
+C
+C     Initialize output units for gp/mempkg.F (MEMGET/MEMREL/MEMCH routines)
+C
+      CALL MEMINI(lupri,lupri)
 C
 C     Execute Dirac
 C
@@ -145,6 +149,7 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
+      use fde_mod
       use dirac_cfg
       use visual
 
@@ -167,7 +172,7 @@ C
 C
 C     Extend RKB coeffcients with complementary UKB space
 C
-      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK)
+      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK,IPRGEN)
 C
 C***********************************************************************
 C*****  G E T    W A V E    F U N C T I O N   **************************
@@ -203,6 +208,15 @@ C***** V I S U A L I Z A T I O N ***************************************
 C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
+
+C
+C***********************************************************************
+C ***** cleaning up data stored in fde calculations ********************
+C***********************************************************************
+C
+      if (dirac_cfg_fde) 
+     &   call fde_cleanup_data()
+
 
  666  CONTINUE
       CALL QEXIT('PAMDRV')
@@ -577,15 +591,11 @@ C
 C        ... do CI for ESR spin-polarization /hjaaj nov 2002
 C            (Cxx are preparation for RESOLVE instead of FULLCI
 C             in the DHF open shells)
-         NGAS_DC  = NOPEN + 2
-         THR_CVEC = THR_CVEC_ESR
-         IF (NOPEN .NE. 1) THEN
-            write (lupri,*) 'NOPEN is not 1, it is: ',NOPEN
-            call quit ('NOPEN is not 1')
-         END IF
 
 C        ... set CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
+C
+         THR_CVEC = THR_CVEC_ESR
 C
 C        set up core and virtual spaces
 C
@@ -595,48 +605,69 @@ C
            IF (NCESR(I) .LT. 0) THEN
               NCESR(I) = NISH(I)
            END IF
-           NISH(I) = NISH(I) - NCESR(I)
+           NISH(I)  = NISH(I)  - NCESR(I)
            NELEC(I) = NELEC(I) - 2*NCESR(I)
-           NCESRT = NCESRT + NCESR(I)
+           NCESRT   = NCESRT   + NCESR(I)
            IF (NVESR(I) .LT. 0) THEN
               NVESR(I) = NSSH(I)
            END IF
            NSSH(I) = NSSH(I) - NVESR(I)
-           NVESRT = NVESRT + NVESR(I)
+           NVESRT  = NVESRT  + NVESR(I)
          END DO
          NAELEC = NAELEC + 2*NCESRT
 C
-C        initialize min and max accumlated no. of electrons in each gas space
+C        initialize min and max accumulated no. of electrons in each gas space
 C
-Cxx      XELEC = D2*NCESRT
-         NGSP(1,1) = MAX(0,2*NCESRT-LVL_CIESR)
-         NGSP(2,1) = 2*NCESRT
-         DO J = 2, NGAS_DC - 1
-Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
-Cxx         NGSP(1,J) = NINT(XELEC)
-Cxx         NGSP(2,J) = NINT(XELEC)
-            NGSP(1,J) = MAX(0,NAELEC-LVL_CIESR)
-            NGSP(2,J) = NAELEC
-         END DO
-         NGSP(1,NGAS_DC) = NAELEC
-         NGSP(2,NGAS_DC) = NAELEC
-
          CALL IZERO(NGSHT,MXMCGAS)
-         DO J = 2, NGAS_DC-1
+         NGAS_DC = 0
+         IF (NCESRT .GT. 0) THEN
+            NGAS_DC = NGAS_DC + 1
+            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR)
+            NGSP(2,NGAS_DC) = 2*NCESRT
             DO I = 1,NFSYM
-Cxx            NGSH(I,J) = NACSH(I,J)
-               NGSH(I,J) = NASH(I)
-               NGSHT(J)  = NGSHT(J) + NGSH(I,J)
+               NGSH(I,NGAS_DC) = NCESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+            END DO
+         END IF
+
+Cxx      XELEC = D2*NCESRT
+         IF (NOPEN .NE. 1) THEN
+            write (lupri,*) 'ESRCI: NOPEN is not 1, it is: ',NOPEN
+            call quit ('ESRCI: sorry, NOPEN is not 1')
+         END IF
+         DO J = 1, NOPEN
+            NGAS_DC = NGAS_DC + 1
+Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
+Cxx         NGSP(1,NGAS_DC) = NINT(XELEC)
+Cxx         NGSP(2,NGAS_DC) = NINT(XELEC)
+            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR)
+            NGSP(2,NGAS_DC) = NAELEC
+            DO I = 1,NFSYM
+Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
+               NGSH(I,NGAS_DC) = NASH(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             END DO
          END DO
-C        do core (gas 1) and virtual (gas NGAS_DC) and update NASH(*)
+         IF (NVESRT .GT. 0) THEN
+            NGAS_DC = NGAS_DC + 1
+            NGSP(1,NGAS_DC) = NAELEC
+            NGSP(2,NGAS_DC) = NAELEC
+            DO I = 1,NFSYM
+               NGSH(I,NGAS_DC) = NVESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+            END DO
+         ELSE
+            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NALEL-LVL_CIESR if not virt gas space
+         END IF
+C
+C        reset number of active orbitals
          DO I = 1,NFSYM
-            NGSH(I,1)    = NCESR(I)
-            NGSH(I,NGAS_DC) = NVESR(I)
-            NGSHT(1)     = NGSHT(1)    + NGSH(I,1)
-            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
-            NASH(I)      = NASH(I) + NCESR(I) + NVESR(I)
+            NASH(I) = 0
+            DO J = 1,NGAS_DC
+               NASH(I) = NASH(I) + NGSH(I,J)
+            END DO
          END DO
+
       ELSE
          CALL QUIT('Invalid CISELECT parameter')
       END IF
@@ -678,7 +709,7 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV(1))
       END IF
-      THRPCI = D0
+      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
 C
 C     Set common block DCLOPT
 C
@@ -688,6 +719,7 @@ C
       OPT_UCIBOS     = .FALSE.
       OPT_CHCKJZ     = .FALSE.
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
+      no1pdens_save  = .true.
 C
 C     Set common block DCCOPT
 C
@@ -785,7 +817,7 @@ C
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
       THRPCI         = DKRMC_THRPCI
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
@@ -795,6 +827,7 @@ C
       OPT_NOCI       = KRMC_NOCI
       OPT_UCIBOS     = KRMC_UCIBOS
       OPT_CHCKJZ     = KRMC_CHCKJZ
+      no1pdens_save  = KRMC_NO1pdens
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -903,7 +936,7 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
@@ -918,6 +951,7 @@ C
 !     required for KR-CI in linear symmetry set-up
       if(linear) opt_chckjz = .true.
 !     opt_chckjz = .true.
+      no1pdens_save  = .true.
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.
@@ -941,7 +975,7 @@ C
       MXCIV       = MXCIV_KRCI
       IRESTRK     = IRESTRK_KRCI
       IDOPARIO    = IDOPARIO_KRCI
-      IOPTST      = 1531
+      IOPTST      = 1563
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
@@ -977,20 +1011,18 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C***********************************************************************
-
-      use xcint_main
+      use interface_to_mpi
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
-C
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_mpi_status_size)
       LOGICAL NEWTASK
 C
 C
       DIMENSION WORK(MWORK)
+      integer :: sleep_time=15
 C
       CALL QENTER('DIRNOD')
       LWORK = MWORK
@@ -1005,6 +1037,17 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
+
+#if defined (SLOWDOWN_SLAVES)
+!mi+sk: introduce slowdown statement for debug purposes :
+! node 'sleeps' short time and in between the user can attach debugger to the process
+      if(mytid > 0)then
+         write(lupri,'(2x,a,i2,a)')
+     &   'slaves first sleep for ',sleep_time,' seconds. '
+         call sleep(sleep_time)
+      endif 
+#endif
+
 C
 C     Set basis set directory for this slave
 C     (it may be needed for reading the .mol file)
@@ -1017,14 +1060,14 @@ C
 ! then one can define VAR_SLEEPING SLAVES.
 ! If set, then the slaves test once per second if there
 ! is a new task (because of the CALL SLEEP(1))
-      CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
-     &                NEWTASK,STATUS_MPI,IERR)
+      call interface_mpi_iprobe(MPARID,27,NEWTASK,global_communicator,
+     &                          ISTAT)
       IF (NEWTASK) THEN
 chj      write (0,*) 'mpi_iprobe true for node',mytid
 chj      write (0,*) 'istatus(source,tag,error):',
 chj  &     ( istatus(i),i=1,3)
-         CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(ITASK,1,MPARID,27,
+     &                           global_communicator)
 chj      write (0,*) ' itask, node',itask,mytid
 chj      write (0,*) 'istatus(source,tag,error):',
 chj  &     ( istatus(i),i=1,3)
@@ -1035,8 +1078,8 @@ chj  &     ( istatus(i),i=1,3)
 #else
 C
 Csk      write(6,*) 'node will recieve itask',MYTID
-      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
-     &              MPI_COMM_WORLD,ISTAT,IERR)
+         CALL interface_MPI_RECV(ITASK,1,MPARID,27,
+     &                           global_communicator)
 Csk      write(6,*) 'node has recieved itask',MYTID,itask
 #endif
 C
@@ -1088,14 +1131,9 @@ C        Start coupled cluster calculation.
 C
          CALL CCNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 4) THEN
-C
 C        Enter the DFT module
-C
-         call integrate_xc(xc_mat_dim = 1,
-     &                     xc_nz      = 1,
-     &                     xc_dmat_0  = (/0.0d0/),
-     &                     xc_nr_dmat = 0,
-     &                     xc_nr_fmat = 0)
+         call xcint_launch_slave_process()
+
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -1139,16 +1177,13 @@ C     of work during a calculation (i.e. : if one parallel module calls the
 C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
-
-         use xcint_main
+      use interface_to_mpi
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 C
-      INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 C
 C
@@ -1160,8 +1195,8 @@ C
 C
  100  CONTINUE
 C
-      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
-     &              MPI_COMM_WORLD,ISTAT,IERR)
+      CALL interface_MPI_RECV(ITASK,1,MPARID,27,
+     &                        global_communicator)
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -1208,14 +1243,9 @@ C        Start coupled cluster calculation.
 C
          CALL CCNOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 4) THEN
-C
 C        Enter the DFT module
-C
-         call integrate_xc(xc_mat_dim = 1,
-     &                     xc_nz      = 1,
-     &                     xc_dmat_0  = (/0.0d0/),
-     &                     xc_nr_dmat = 0,
-     &                     xc_nr_fmat = 0)
+         call xcint_launch_slave_process()
+
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -1264,23 +1294,23 @@ C ITASK .eq. 0: send slaves to sleep ("0" makes sure they are in menu)
 C ITASK .lt. 0: release slaves from current task and send them to sleep
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 C
 C
 #if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
 C
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
-         CALL MPI_BCAST(ITASK,1,my_MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_BCAST(ITASK,1,MPARID,
+     &                            global_communicator)
       ELSE
 C        slave should be in main menu, ready to receive task
          DO NODE = 1,NUMNOD
-            CALL MPI_SEND(ITASK,1,my_MPI_INTEGER,NODE,27,
-     &           MPI_COMM_WORLD,IERR)
+            CALL interface_MPI_SEND(ITASK,1,NODE,27,
+     &                              global_communicator)
          END DO
       END IF
 
@@ -1405,7 +1435,7 @@ C IOPT_INTDEF controls the Hamiltonian
 C     
 C     Set common block DCROPT
 C     
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 
       OPT_CIPROGRAM  = 'KRCC'
@@ -1429,7 +1459,7 @@ C at the moment this is not the way to restart
       IRESTRK     = 0 !IRESTRK_KRCI
 C parallel stuff
       IDOPARIO    = 0 !IDOPARIO_KRCI
-      IOPTST      = 1531
+      IOPTST      = 1563
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
@@ -1450,6 +1480,7 @@ C at the moment no fock type orbitlas
       COMPFAC     = 0.01D00
       CHCKPT_WRT  = .FALSE. !CHCKPT_KRCI
       CPBLCK_FILE = .FALSE. !CUSE_PBLFL_KRCI
+      no1pdens_save  = .true.
 C
       CALL QEXIT('TKRCCORB')
       END

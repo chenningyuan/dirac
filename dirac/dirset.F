@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -90,7 +90,7 @@ C
       IF(MDIRAC) call initialize_interest
 #endif
 #ifdef MOD_ECP
-      IF (ECPCALC) CALL ECPINT(WORK,LWORK)
+      IF (ECPCALC) CALL RECP
 #endif
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
@@ -899,7 +899,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
-	  LOGICAL TABSCQ
+      LOGICAL TABSCQ
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -952,7 +952,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck lvcorr_r1 */
+C/* Deck lvcorr_1 */
       SUBROUTINE LVCORR_1(SCQ,IPRINT)
 C***********************************************************************
 C
@@ -973,11 +973,12 @@ C
 #include "dcbham.h"
       DIMENSION SCQ(*)
 C
+      IPRINT_local = IPRINT - 3
       IF (ONECAP .AND. INTV1C .EQ. 2) THEN
          DO I = 1,NUCIND
             SCQ(I) = SCQ(I) + CHARGE(I)
          END DO
-         CORRLV = GETPOT(SCQ,IPRINT) - POTNUC
+         CORRLV = GETPOT(SCQ,IPRINT_local) - POTNUC
          IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
      &     ' * ONECAP model 1 classical repulsion from small component',
      &     CORRLV
@@ -985,7 +986,7 @@ C
 C
 C        Calculate repulsion energy for small component atomic charges
 C
-         CORRLV = GETPOT(SCQ,IPRINT)
+         CORRLV = GETPOT(SCQ,IPRINT_local)
 C
 C        Print section
 C
@@ -1087,23 +1088,23 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dcbdhf.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
       DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
 C
-#include <memint.h>
+#include "memint.h"
       CALL DZERO(QLC,NUCIND)
       CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KSMAT),SSMTRC)
@@ -1138,22 +1139,22 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <frame.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "frame.h"
 C
-#include <dcblab.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "dcblab.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,*),DMAT(NBAST,*)
@@ -1161,7 +1162,7 @@ C
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
-#include <dcbibt.h>
+#include "dcbibt.h"
 
 C
 C     Get array ICLAB which maps large component basis functions onto
@@ -1199,7 +1200,7 @@ C
 C     Calculate the large component charge density on each atom
 C
       DO I = 1, NTBAS(1)
-	 QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
+         QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
       ENDDO
 C
       RETURN
@@ -1217,20 +1218,20 @@ C
 C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dgroup.h>
-#include <dcbham.h>
-#include <dcbgen.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcbgen.h"
       DIMENSION QMAT(NUCDEP,NUCDEP,2,NMPOLOP),DMAT(*),WORK(LWORK)
       DIMENSION INDDIP(3)
       LOGICAL   DIPDONE
@@ -1242,7 +1243,7 @@ C
       SAVE DIPDONE
       DATA DIPDONE /.FALSE./
 C
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('LSQMAT')
       CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMPOLOP .NE. 1 .AND. NMPOLOP .NE. 4) THEN
@@ -1413,25 +1414,25 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <frame.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "frame.h"
 C
-#include <dcblab.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "dcblab.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
       DIMENSION ICLAB(*)
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
 C     Get array ICLAB which maps AO basis functions (large and small)
 C     onto atomic centers.
@@ -1470,14 +1471,14 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbbas.h"
       PARAMETER(D2=2.0D0)
-#include <nuclei.h>
+#include "nuclei.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION RLMMAT(NBAST,*),DMAT(NBAST,*)
@@ -1485,7 +1486,7 @@ C***********************************************************************
       DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
 C     Calculate the population of each large and small component basis
 C     function and add to appropiate element of QMAT(NUCDEP,NUCDEP,IC).

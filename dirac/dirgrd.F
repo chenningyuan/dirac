@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -44,6 +44,7 @@ C
       LOGICAL   LSAVE(3)
 #include "ccom.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -108,7 +109,12 @@ C
      &        ' not implemented for DFT with symmetry')
             end if
          end if
-C
+
+         if (bss .or. x2c) then
+            call quit('error in molecular gradient:' // 
+     &      ' not implemented for X2C')
+         end if
+
          CALL SETDHF(IPRGRD)
 C
 C        Density and Fock matrices for (Dirac-)Hartree-Fock
@@ -297,30 +303,33 @@ c        ... Calculate and add correction.
 !        in one go integrate xc potential
 !        and xc contribution to molecular gradient
 !        call integrate_xc(xc_mat_dim           = ntbas(0),
-!    &                      xc_nz                = nz,
-!    &                      xc_dmat_0            = dmat,
-!    &                      xc_nr_dmat           = 0, 
-!    &                      xc_nr_fmat           = 1,
-!    &                      xc_fmat              = work(kh1ao),
-!    &                      xc_do_potential      = .true.,
-!    &                      xc_nr_atoms          = nucdep, 
-!    &                      xc_property_gradient = gradxc,
-!    &                      xc_do_geo_0          = .true.)
+!    &                     xc_nz                = nz,
+!    &                     xc_dmat_0            = dmat,
+!    &                     xc_nr_dmat           = 0, 
+!    &                     xc_nr_fmat           = 1,
+!    &                     xc_fmat              = work(kh1ao),
+!    &                     xc_do_potential      = .true.,
+!    &                     xc_nr_atoms          = nucdep, 
+!    &                     xc_property_gradient = gradxc,
+!    &                     xc_do_geo_0          = .true.)
          call integrate_xc(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = dmat,
-     &                      xc_nr_dmat           = 0, 
-     &                      xc_nr_fmat           = 1,
-     &                      xc_fmat              = work(kh1ao),
-     &                      xc_do_potential      = .true.)
+     &                     xc_nz                = nz,
+     &                     xc_dmat_0            = dmat,
+     &                     xc_nr_dmat           = 0, 
+     &                     xc_nr_fmat           = 1,
+     &                     xc_fmat              = work(kh1ao),
+     &                     xc_do_potential      = .true.)
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(4)
+#endif
          call integrate_xc(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = dmat,
-     &                      xc_nr_dmat           = 0, 
-     &                      xc_nr_fmat           = 0,
-     &                      xc_nr_atoms          = nucdep, 
-     &                      xc_property_gradient = gradxc,
-     &                      xc_do_geo_0          = .true.)
+     &                     xc_nz                = nz,
+     &                     xc_dmat_0            = dmat,
+     &                     xc_nr_dmat           = 0, 
+     &                     xc_nr_fmat           = 0,
+     &                     xc_nr_atoms          = nucdep, 
+     &                     xc_property_gradient = gradxc,
+     &                     xc_do_geo_0          = .true.)
          deallocate(dmat)
 
       end if
@@ -2588,15 +2597,15 @@ C     Get total density matrix in SO basis (used for SCDENS & LCDENS)
 C
 C     31-July-2001 HJAaJ
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DSO(*), WORK(LWORK)
 C
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcbdhf.h>
-#include <dcborb.h>
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2633,15 +2642,15 @@ C     Transform molecular gradient and print calculate the norm -
 C     for printing norm of gradient in single-point calculations.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)
 C
 C     Transform gradient to Cartesian coordinates

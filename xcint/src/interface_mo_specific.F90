@@ -49,7 +49,8 @@ contains
               form   = 'unformatted', &
               access = 'sequential')
          rewind(interface_file_unit)
-         allocate(mo_eigenvalues(norbt))
+         !miro: increased array size as it's sometimes getting out of bounds: NORBT --> NORBT*2
+         allocate(mo_eigenvalues(norbt*2))
          mo_eigenvalues = 0.0d0
          allocate(mo_coef(n2bbasxq))
          mo_coef = 0.0d0
@@ -110,9 +111,9 @@ contains
          nr_open_shells = 0
       end if
 
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_inactive
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_active'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_active_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_active
       write(interface_file_unit, '(4x, a)') 'nr_mo_gerade_negative_secondary'
       write(interface_file_unit, '(4x, i6)') nr_mo_gerade_negative_secondary
@@ -225,9 +226,9 @@ contains
 
       nr_open_shells = 0
 
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_inactive_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_inactive
-      write(interface_file_unit, '(4x, a)') 'nr_electrons_active'
+      write(interface_file_unit, '(4x, a)') 'nr_electrons_active_total'
       write(interface_file_unit, '(4x, i6)') nr_electrons_active
       write(interface_file_unit, '(4x, a)') 'nr_mo_gerade_negative_secondary'
       write(interface_file_unit, '(4x, i6)') nr_mo_gerade_negative_secondary

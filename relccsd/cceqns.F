@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -117,6 +117,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -162,8 +163,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
@@ -354,8 +354,9 @@ C ... we collect the H array
         CALL XCOPY (NBUF3,A0,0,BUF3,1)
 CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
         IERR = 0
-        CALL MPI_ALLREDUCE(H,BUF3,RCW*IVOVO(NREP+1),
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+        call interface_mpi_allreduce_r1_work_f77(H,BUF3,
+     &       RCW*IVOVO(NREP+1),
+     &       op_MPI_SUM,global_communicator)
         IF(IERR.GT.0) THEN
            CALL QUIT('MPI_REDUCE ERROR in collecting HINTM !')
         ENDIF
@@ -1192,6 +1193,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE T3CORR (FVO,EPS,T1,T2,T2S,T2T,BUF1,BUF2,BUF3,TAU3,
      &                   VVVO,VVOO,VOOO)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -1228,8 +1230,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
 C
@@ -1369,9 +1370,10 @@ C       Switch off the overall timer for this part and focus on
 C       the communication.
         CALL XTIME(0,2,'-- T3CORR: VOVV contraction        ')
         CALL XTIME(0,1,'-- T3CORR: addition of partial U   ')
-        CALL MPI_REDUCE(BUF1(OFF1),BUF2(1),RCW*M*N,
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
-     &    MPI_COMM_WORLD,IERR)
+        call interface_mpi_reduce_r1_work_f77(BUF1(OFF1),BUF2(1),
+     &       RCW*M*N,
+     &       op_MPI_SUM,MASTER,
+     &       global_communicator)
         CALL XCOPY(M*N,BUF2(1),1,BUF1(OFF1),1)
 C       Communication completed, switch back to operations timer
         CALL XTIME(0,2,'-- T3CORR: addition of partial U   ')
@@ -1767,6 +1769,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PARTS(IMODE,RMS,T1,T2,BUF1,BUF2)
 C
+      use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -1797,8 +1800,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
@@ -1808,20 +1810,20 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC.EQ.1) RETURN
       IF (IMODE.EQ.1) THEN
-          CALL MPI_REDUCE(T1,BUF1,NDIMT1*RCW,MPI_DOUBLE_PRECISION,
-     &                    MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
-          CALL MPI_REDUCE(T2,BUF2,NDIMT2*RCW,MPI_DOUBLE_PRECISION,
-     &                    MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
+          call interface_mpi_reduce_r1_work_f77(T1,BUF1,NDIMT1*RCW,
+     &                    op_MPI_SUM,MASTER,global_communicator)
+          call interface_mpi_reduce_r1_work_f77(T2,BUF2,NDIMT2*RCW,
+     &                    op_MPI_SUM,MASTER,global_communicator)
           IF (MYPROC.EQ.MASTER) CALL XCOPY (NDIMT1,BUF1,1,T1,1)
           IF (MYPROC.EQ.MASTER) CALL XCOPY (NDIMT2,BUF2,1,T2,1)
       ENDIF
 C
-      CALL MPI_BCAST(T1,NDIMT1*RCW,MPI_DOUBLE_PRECISION,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(T2,NDIMT2*RCW,MPI_DOUBLE_PRECISION,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(RMS,1,MPI_DOUBLE_PRECISION,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      call interface_mpi_bcast_r1_work_f77(T1,NDIMT1*RCW,MASTER,
+     &               global_communicator)
+      call interface_mpi_bcast_r1_work_f77(T2,NDIMT2*RCW,MASTER,
+     &               global_communicator)
+      call interface_mpi_BCAST(RMS,1,MASTER,
+     &               global_communicator)
 #endif
       RETURN
       END

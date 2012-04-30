@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3568,7 +3568,6 @@ C           IGTYP 2 will add also the SL (Gaunt) type integrals
          ENDIF
       ENDIF
 C
-CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
       IF(NBSYM.GT.1) THEN
         IF(MDIRAC) THEN
           CALL QUIT('DIRAOF: Dont know how to handle symmetry yet..')
@@ -3610,12 +3609,11 @@ C
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
-CTROND
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(A)') 'After DIRAO1'
-            CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NZC1,IQMULT,LUPRI)
-          ENDIF
+        IF(IPRINT.GE.5) THEN
+          WRITE(LUPRI,'(A)') 'After DIRAO1'
+          CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NTBAS(0),NZC1,IQMULT,LUPRI)
+        ENDIF
 C
 C       Transform Fock matrix from AO to QO
 C       ===================================

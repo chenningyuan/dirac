@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,7 +19,8 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-#include <single.h>
+C FILE    : hersym.F
+#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================
@@ -95,10 +96,8 @@ C  /* Deck fndsym */
 #include "cbisol.h"
 #include "cbihr1.h"
 #include "molinp.h"
-CCCC#ifndef PRG_DIRAC
 #include "r12int.h"
 #include "numder.h"
-CCCC#endif
 C ***********************************************************
 C *   ATMARR - Atomic coordinates
 C *   CLASS  - Full point group
@@ -107,9 +106,6 @@ C *   DIRAXS - Improper rotational axes
 C *   DMRPLN - Mirror planes
 C *   TMPARR + TMP2AR - Temporary arrays
 C ***********************************************************
-Caspg
-CCCC         LOGICAL NOMOVE
-Caspg
          DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
@@ -119,9 +115,6 @@ Caspg
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
-Caspg
-CCCC         NOMOVE = .TRUE.
-Caspg
 
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
@@ -157,14 +150,9 @@ C        END IF
          IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT, MXCENT, ATMARR)
 C        Sort atoms after atom number and distance from origo
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
-CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
             CALL CNTRML(MXCENT, ATMARR)
          END IF
-CCCC#else
-C        Place molecular center of mass at the origin
-CCCC         CALL CNTRML(MXCENT, ATMARR)
-CCCC#endif
 C        Determine molecular point group
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
@@ -176,25 +164,16 @@ C
          IF( MYTID .eq. MPARID ) 
      &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
-CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
            CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
          END IF
-CCCC#else
-CCCC         CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
-CCCC#endif
-CCCC#ifndef PRG_DIRAC
-          IF (.NOT. NOMOVE) THEN
+         IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
             IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT , MXCENT, ATMARR)
-          ELSE
+         ELSE
             WRITE (LUPRI,'(/A/)') 
      &  ' System could not be centered or rotated due to finite field'
          END IF
-CCCC#else
-CCCC         TEXT = 'Centered and Rotated                    '
-CCCC         CALL PRNARR(TEXT , MXCENT, ATMARR)
-CCCC#endif
          IF (IPRSYM .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/1X,A)') 'No rotational axes were found.'
@@ -253,39 +232,39 @@ C ::: If there's any Aangstroem mark, it's removed.    :::
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
-         DO 250 I = 1, NINT(ATMARR(1,0))
-            DO 260 J = 1, 3
-               CORD(J,I) = ATMARR(J,I)
- 260        CONTINUE
+
+         NUCIND = NINT(ATMARR(1,0))
+         IF (NUCIND .LE. 0) CALL QUIT ('No atoms defined')
+
+         DO 250 I = 1, NUCIND
+            CORD(1:3,I) = ATMARR(1:3,I)
             IOLD = NINT(ATMARR(5,I))
 C           ... IOLD .ge. I after CALL SRTOLD
+            IATOMTYP(I) = IATOMTYP(IOLD)
             CHARGE(I) = CHARGE(IOLD)
-C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
             GNUEXP(I) = GNUEXP(IOLD)
-#ifndef PRG_DIRAC
-            MULBSI(I) = MULBSI(IOLD)
-#endif
             NCLINE(I) = NCLINE(IOLD)
- 250     CONTINUE
-C ::: Then the different elements are counted, and arrays updated. :::
-         NONTYP = 1
-         CALL IZERO(NONT, KATOM)
-         IELMNT = NINT(ATMARR(4,1))
-         DO 275 I = 1, NINT(ATMARR(1,0))
-            IF (NINT(ATMARR(4,I)) .NE. IELMNT) THEN
-               NONTYP = NONTYP + 1
-               IELMNT = NINT(ATMARR(4,I))
-            END IF
-            NONT(NONTYP) = NONT(NONTYP) + 1
-            NAMN(I) = NAMN(NINT(ATMARR(5,I)))
+            NAMN(I)   = NAMN(IOLD)
             NAMEX(3*I)   = NAMN(I)//'z'
             NAMEX(3*I-1) = NAMN(I)//'y'
             NAMEX(3*I-2) = NAMN(I)//'x'
 #ifndef PRG_DIRAC
             ISOTOP(I) = NINT(ATMARR(6,I))
+            MULBSI(I) = MULBSI(IOLD)
 #endif
+ 250     CONTINUE
+C ::: Then the different elements are counted, and arrays updated. :::
+
+         NONT(1:KATOM) = 0
+         NONTYP = 1
+         NONT(NONTYP) = 1
+         DO 275 I = 2, NUCIND
+            IF (IATOMTYP(I) .NE. IATOMTYP(I-1)) THEN
+               NONTYP = NONTYP + 1
+            END IF
+            NONT(NONTYP) = NONT(NONTYP) + 1
  275     CONTINUE
-         NUCIND = NINT(ATMARR(1,0))
+
          DO 300 I = NUCIND + 1, KATOM
             NAMN(I) = '    '
             NAMEX(3*I)   = '      '
@@ -304,7 +283,7 @@ C ::: We update the coordinates of the input file :::
            DO 400 I = 1, NUCIND
              NC = NCLINE(I)
              TMPLN = MLINE(NC)
-             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
+             WRITE(TMPLN( 5:24),'(F20.14)') CORD(1,I)
              WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
              WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
 #ifndef PRG_DIRAC
@@ -312,22 +291,17 @@ C ::: We update the coordinates of the input file :::
              IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
      &                             'Isotope=', NINT(QMASS)
 #endif
-CMI       ... fix for gfortran-4.3  - otherwise IPREAD get bad value...
              MLINE(NC) = TMPLN
  400       CONTINUE
 C ::: Finally the number of atoms are updated. :::
            I = 1
-           J = NINT(ATMARR(4,I))
            DO K = 1, NONTYP
               NC = NCLINE(I) - 1
               TMPLN = MLINE(NC)
               WRITE(TMPLN(12:15),'(I4)') NONT(K)
               MLINE(NC) = TMPLN
-              do while(j==nint(atmarr(4,i)))
-                i=i+1
-              end do
-              J = NINT(ATMARR(4,I))
-           end do
+              I = I + NONT(K)
+           END DO
          end if
 C        IF (SOLVNT .OR. DORLM) THEN
 C           NUCIND = NUCIND + 1

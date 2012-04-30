@@ -1,17 +1,26 @@
+!dirac_copyright_start
+!      Copyright (c) 2011 by the authors of DIRAC.
+!      All Rights Reserved.
 !
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
 !
-!  ************************************************************
-!  ************************************************************
-!  *******   ADCANAL                                 **********
-!  *******   In this file all the analysis routines  **********
-!  *******   for RELADC are combined that make use   **********
-!  *******   of F90 features.                        **********
-!  *******                                           **********
-!  ************************************************************
-!  ************************************************************
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
 !
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine RADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, & 
+      subroutine RADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, &
                                     irecl,filecnf,ionizlevel)
 !
 ! purpose: reads in and analyzes long eigenvectors of 
@@ -69,10 +78,18 @@
 
       IF(DESREP.GT.9) THEN
         WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',DESREP
-        WRITE(ANALOUT,'(A8,I2)') 'EVCANAL.',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A8,I2)') 'SEVCANL.',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A8,I2)') 'DEVCANL.',DESREP
+        ENDIF
       ELSE
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',DESREP
-        WRITE(ANALOUT,'(A9,I1)') 'EVCANAL.0',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A9,I1)') 'SEVCANL.0',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A9,I1)') 'DEVCANL.0',DESREP
+        ENDIF
       ENDIF
       write(*,*) 'Fetching eigenvectors from: ',LEVECFN
       write(*,*) 'Writing analysis results to: ',ANALOUT
@@ -245,7 +262,7 @@
       
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine ZADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, & 
+      subroutine ZADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, &
                                     irecl,filecnf,ionizlevel)
 
       implicit none
@@ -287,10 +304,18 @@
 
       IF(DESREP.GT.9) THEN
         WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',DESREP
-        WRITE(ANALOUT,'(A8,I2)') 'EVCANAL.',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A8,I2)') 'SEVCANL.',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A8,I2)') 'DEVCANL.',DESREP
+        ENDIF
       ELSE
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',DESREP
-        WRITE(ANALOUT,'(A9,I1)') 'EVCANAL.0',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A9,I1)') 'SEVCANL.0',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A9,I1)') 'DEVCANL.0',DESREP
+        ENDIF
       ENDIF
       write(*,*) 'Fetching eigenvectors from: ',LEVECFN
       write(*,*) 'Writing analysis results to: ',ANALOUT

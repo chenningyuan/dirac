@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1342,7 +1342,7 @@ C     Written by H.J.Aa. Jensen, June 2002
 C     (based on DIFMMH)
 C
 C***********************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0, DP5=0.5D0)
       DIMENSION AMAT(LRA,LCA,NZ)
 C
@@ -1383,7 +1383,7 @@ C     Written by Miro Ilias, July 2003
 C     (based on QGETHE)
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C  Generate A(dagger), where A(dagger)ij = Aji^*
@@ -1412,7 +1412,7 @@ C
 C   Written by Miro Ilias, August 2005
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C  Generate -A(dagger), where A(dagger)ij = Aji^*
@@ -1454,7 +1454,7 @@ C
 C     Written by MI, september 2003, Prievidza, Slovakia.
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(LRA,LCA,NZ),IQSYM(4)
 C
 C     Generate A - A(dagger)
@@ -3043,6 +3043,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
          
           IF (IPRINT.GE.IPRLIM) THEN
@@ -3105,6 +3106,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
 
 C
@@ -3125,7 +3127,7 @@ C
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
         ENDIF
-        IF(IPRINT.GE.5) THEN
+        IF(IPRINT.GE.11) THEN
           CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
           CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
         ENDIF
@@ -3146,6 +3148,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
 C
 C         First part of transformation: W = F(C+)
@@ -3168,6 +3171,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
 C
 C         First part of transformation: W = CF
@@ -3184,7 +3188,7 @@ C
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
         ENDIF
-       IF(IPRINT.GE.5) THEN
+       IF(IPRINT.GE.11) THEN
           CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
           CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
         ENDIF
@@ -6123,9 +6127,10 @@ C
 C
       DIMENSION C(NP)
 C
+      V2 = POLNDER(NORDER,C,XOPT,2)
       V3 = POLNDER(NORDER,C,XOPT,3)
       V4 = POLNDER(NORDER,C,XOPT,4)
-!radovan: V2 is not set!
+
       TEMP = 7.0D0*V3*V3/V2/9.0D0
       T2 = 100.0D0*(TEMP - V4)/V4
       WRITE(ILOGG,'(A,D20.10)')
@@ -6205,16 +6210,18 @@ C***********************************************************************
 C
       PARAMETER(D2=2.0D0,D4=4.0D0)
       DE = OMEGA*OMEGA/WXE/D4
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
-      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated D_e:',DE*XTKAYS, ' cm-1'
-      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, ' eV'
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
+      WRITE(LUPRI,'(A,2X,E10.4,A)')
+     &  '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
+      WRITE(LUPRI,'(A,2X,E10.4,A)')
+     & '* Estimated D_e:',DE*XTKAYS, ' cm-1'
+      WRITE(ILOGG,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV, ' eV'
       D0 = DE-(OMEGA/D2)+WXE/D4
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated dissociation energy:',
      &       D0*XTEV, ' eV'
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated dissociation energy:',
      &       D0*XKJMOL, ' kJ/mol'
-      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated dissociation energy:',
+      WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated dissociation energy:',
      &       D0*XTKAYS  , ' cm-1'
       RETURN
       END
@@ -6378,5 +6385,29 @@ C***********************************************************************
         JLIST(J) = I
       ENDIF
       ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION SYMCHECK(A,LR,LC,N,NZ)
+C***********************************************************************
+C
+C     Check symmetry aboyut the diagonal of a matrix; 
+C     uses absolute values  in order to work for both 
+C     symmetric and anti-symmetric matrices
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION A(LR,LC,NZ)
+      SYMCHECK = 0.0D0
+      DO IZ = 1,NZ
+        DO J = 1,N-1
+          DO I = J+1,N
+            SYMCHECK = SYMCHECK +
+     &        (DABS(A(I,J,IZ))-DABS(A(J,I,IZ)))
+          ENDDO
+        ENDDO
+      ENDDO
+      SYMCHECK=SYMCHECK/DFLOAT(NZ*N*(N-1)/2)
       RETURN
       END

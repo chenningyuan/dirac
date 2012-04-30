@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1529,12 +1529,14 @@ C                         integrals skipped for each NEM separately
 C
 C     Written by T.Saue Oct 11 1996
 C
+C mi: entering size of TEXT variable varries, has to be general...
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(2,4),DSTEP(4)
-      CHARACTER SECTID*12, INTTID*12,TEXT*9
+      CHARACTER SECTID*12, INTTID*12,TEXT*(*)
 #include "twocom.h"
 C
 C Current format of output (Jan 2001/hjaaj):

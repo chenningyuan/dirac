@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2842,7 +2842,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
      &         + IFRMR(WORK(KLLBTR),1,NBATCHR) - 1
         WRITE(6,*) ' DENSI2T :NBLOCKR =',NBLOCKR
       WRITE(6,*) ' Memcheck in densi2 before GASDN2'
-      CALL LMEMCHK
 *
       WRITE(6,*) ' LUL LUR = ',LUL,LUR
       WRITE(6,*) ' LUSC1 LUSC2 ',LUSC1,LUSC2
@@ -2906,8 +2905,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       END DO
 *     ^ End of loop over left states
 *
-      WRITE(6,*) ' Memcheck in TRADEN '
-      CALL LMEMCHK
 *
 *. Eliminate local memory
       CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'TRADEN')

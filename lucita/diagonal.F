@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1048,12 +1048,12 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * Parallel adaption in January 2007, Stefan Knecht
 * last parallel revision: March 2008
 *
+      use interface_to_mpi
       IMPLICIT REAL*8           (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
 #include "parluci.h"
 C     REAL * 8  INPROD
@@ -1070,17 +1070,19 @@ C     REAL * 8  INPROD
 *. Output
       DIMENSION DIAG(*)
 *
-      NTEST =  20
+      NTEST =  00
       NTEST = MAX(NTEST,IPRNT)
       IF(PSSIGN.EQ.-1.0D0) THEN
          XADD = 1000000.0
       ELSE
          XADD = 0.0D0
       END IF
-      IDIA_OFFSET = 0
 *     proper offset
 !stefan: MY_DIA_OFF is set on a common block in parluci.h.
+#ifdef VAR_MPI
+      IDIA_OFFSET = 0
       IDIA_OFFSET = IDIA_OFFSET + MY_DIA_OFF
+#endif
 *
       IF( NTEST .GE. 20 ) THEN
         WRITE(LUWRT,*) ' Diagonal one electron integrals'
@@ -1212,8 +1214,8 @@ C     REAL * 8  INPROD
             end if
           END IF
 #if defined (VAR_MPI2)
-          CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
-     &                           MPI_REAL8,ISTAT,IERR)
+          CALL interface_MPI_FILE_WRITE_AT_r(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                                       ISTAT)
 C         new offset
           IDIA_OFFSET = IDIA_OFFSET + IDET
 #else
@@ -1278,8 +1280,6 @@ C         new offset
 C
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 

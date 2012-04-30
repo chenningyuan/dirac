@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -643,8 +643,6 @@ C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *. Obtain MO-MO transformation matrix
 C             GET_CMOMO(CMOMO)
         CALL GET_CMOMO(WORK(KLCMOMO))
-        WRITE(6,*) ' Memcheck after GET_CMOMO'
-        CALL LMEMCHK
 *
 *. Transform CI vector : Input on LUHC, output on LUDIA (!)
         CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)

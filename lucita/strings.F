@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4367,9 +4367,6 @@ C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
         END IF
         END IF
       END DO
-*
-C     WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
-      CALL LMEMCHK
 *
       CALL QEXIT('STRIN')
       RETURN

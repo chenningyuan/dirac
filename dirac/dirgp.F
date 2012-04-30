@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2569,35 +2569,41 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcborb.h"
-      LOGICAL TOBE
+      LOGICAL TOBE, TOBEK
       DIMENSION WORK(LWORK)
 C
 #include "memint.h"
 C
-C     Check if coefficients are on file
-C
+C     check if file KRMCSCF or DFCOEF is present
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
+      IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
+        WRITE(LUPRI,'(A)') 
+     &  'PSTORB: Coefficient file DFCOEF/KRMCSCF not found !'
+         CALL QUIT('PSTORB: Coefficient file not found !')
+      ENDIF
+
+!     assign mcscf file higher priority
+      if(tobek .and. tobe) tobe = .false.
+C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
 C
       CALL PSTOR1(WORK(KCMO),WORK(KEIG),WORK(KIBG),
-     &            WORK(KFREE),LFREE)
+     &            tobek,WORK(KFREE),LFREE)
 C
 C     Memory deallocation
       CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
 C
  1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'PSTORB: Coefficient file not found !'
-      CALL QUIT('PSTORB: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/*Deck Pstor1 */
-      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,read_mcscf,WORK,LWORK)
 C***********************************************************************
 C
 C     Post orbital modifications
@@ -2614,14 +2620,56 @@ C
 #include "dgroup.h"
 #include "dcbreo.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(*)
+      logical, intent(in) :: read_mcscf
+      logical             :: mcorb, mjava, boson_irrep_info
+      logical             :: fndlab
 #include "memint.h"
 
-C
-C     Read coefficients, eigenvalues and irrep identification 
-C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREMOD')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &            WORK,KFREE,LFREE)
+C     Get coefficients from KRMCSCF/DFCOEF
+C     ====================================
+      if(read_mcscf)then
+
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
+        REWIND LUKRMC
+        MCORB = .not.FNDLAB('MCCINATO',LUKRMC)
+        REWIND LUKRMC
+        MJAVA = FNDLAB('MJVEC   ',LUKRMC)
+
+!       read mj-values / boson irrep info
+        IF(MJAVA)THEN
+          CALL IREAKRMC(LUKRMC,'MJVEC   ',IBEIG,NORBT)
+        ELSE
+          REWIND LUKRMC
+          boson_irrep_info = FNDLAB('IBEIG   ',LUKRMC)
+          if(boson_irrep_info)then
+            CALL IREAKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
+          else
+            CALL IZERO(IBEIG,NORBT)
+          end if
+        END IF
+
+!       read mcscf /natural orbitals
+        IF(MCORB)THEN
+          JRDMO = -1
+          CALL RREADMO(CMO,JRDMO,1,LUKRMC)
+!         ... set to zero
+          CALL DZERO(EIG,NORBT)
+        ELSE
+!         read CI/MCSCF natural orbitals and occupancies
+          JRDMO = -1
+          CALL RREADMO(CMO,JRDMO,4,LUKRMC)
+          CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+        END IF
+
+!       remove old MCSCF - we write a new one as this reordering step requires 
+!       a recalculation of the reference state vector in any following
+!       MCSCF/CI run.
+        CLOSE (LUKRMC,STATUS='DELETE')
+      ELSE
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSTOR1')
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &              WORK,KFREE,LFREE)
+      END IF
 C
 C     Reorder orbitals
 C
@@ -2638,8 +2686,30 @@ C
 C
 C     Write new coefficients
 C
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      if(read_mcscf)then
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
+        CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
+        REWIND(LUKRMC)
+!       mj-values / boson irrep info
+        if(mjava)then
+          CALL IWRTKRMC(LUKRMC,'MJVEC   ',IBEIG,NORBT)
+        else
+          if(boson_irrep_info)then
+            CALL IWRTKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
+          end if
+        end if
+!       reordered orbitals
+        if(mcorb)then
+          CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+        else
+          CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
+          CALL WRTKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+        end if
+        close(LUKRMC,status='keep')
+      else
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        CLOSE(LUCOEF,STATUS='KEEP')
+      end if
 C
       RETURN
       END
@@ -3609,7 +3679,7 @@ C
      &      '* ACMOIN : final SO coefficients.',
      &      ' Fermion ircop ',IFRP
           CALL PRQMAT(CMO1,NTBAS(0),NORBT,
-     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+     &                NTBAS(0),NORBT,NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
       ENDIF
 C
@@ -3721,12 +3791,17 @@ C
             IFRP = JBTOF(IREP,IC)
             IBB  = ICOS (ISYM,IC)
             NBB  = NBBAS(IREP,IC)
-            IBRQ = IBTXOR(IREP,III(IC))
             IF(NBB.GT.0) THEN
-              DO IQ = 1,4
-                WB(IQ,ISYM,IC) = DDOT(NBB,CMO(IBB+1,JORB,IQ),1,
+C....Carefully note that the assignment of the quaternion units (i,j,k) with
+C....respect to axes (x,y,z) may change; 
+C....This is the case of complex groups with totally symmetric x- or y-rotation
+C....and is the reason why the array IQMAP is used. It refers to the default
+C....assigment used for the C1 coefficients.
+              DO IQQ = 1,4
+                IQ=IQMAP(IQQ)
+                WB(IQQ,ISYM,IC) = DDOT(NBB,CMO(IBB+1,JORB,IQ),1,
      &                   CMO(IBB+1,JORB,IQ),1)
-                TMP(IFRP) = TMP(IFRP) + WB(IQ,ISYM,IC)
+                TMP(IFRP) = TMP(IFRP) + WB(IQQ,ISYM,IC)
               ENDDO
 C
 C             Order contributions
@@ -3788,11 +3863,16 @@ C       a consistency check can be included later
 C       by scanning through more contributions
 C
         II   = IB(64,1)
-        IQ   = IB(II,2)
         IREP = IB(II,3)
         IC   = IB(II,4)
-        IBRQ = IBTXOR(IREP,III(IC))        
-        IBUF(JORB,2) = IQMULT(IQ,IPQTOQ(1,IBRQ),1)
+C.......IQ is the position where the contribution from (IREP,IC) was found
+        IQ   = IB(II,2)
+C.......KQ is the position where this contribution would be expected
+C.......(note that for complex/quaternion groups there are two/four possibilities, though)
+        KQ   = JQBAS(IREP,IC)
+C.......IBUF(JORB,2) indicates the quaternion phase transformation necessary to bring the
+C.......contribution to the desired position
+        IBUF(JORB,2) = IQMULT(IQ,KQ,1)
       ENDDO ! End loop over coefficients
 C
       RETURN
@@ -3876,9 +3956,10 @@ C.....III is the totally symmetric irrep for the large components
       III(1) = 0
 C.....III is the symmety of XYZ for the small components
       III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C
       NBRP = 4/NZ
+C.....loop over components
       DO IC = 1,MC
+C.......loop over symmetries associated with fermion ircop and component
         DO ISYM = 1,NBRP
           IP    = MOD(IFRP+IC,2) + 1
           IBSYM = JFSYM(ISYM,IP)
@@ -3887,9 +3968,11 @@ C
           IU    = ICOS(IBSYM,IC) + 1 
           IBRQ  = IBTXOR(IBRP,III(IC))
           NBB   = NBBAS(IBRP,IC)
+C.........Note the use of IQMAP referring to the default asignment of
+C.........quaternion units vectors to coordinate axes (x,y,z)
           DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IBRQ)
-            KQ = IQMULT(IQ,JQ,1)
+            KQ = IQMAP(IQMULT(IQ,JQ,1))
             CALL DCOPY(NBB,CBU(IU,IVU,KQ),1,CBS(IS,IVS,IZ),1)
             IFAC = IQPHASE(IQ,JQ,1)
             IF(IFAC.EQ.-1) CALL DSCAL(NBB,DM1,CBS(IS,IVS,IZ),1)
@@ -3901,7 +3984,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp */
-      SUBROUTINE RKBIMP(WORK,LWORK)
+      SUBROUTINE RKBIMP(WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Import RKB coefficients and add complementary UKB space
@@ -3973,7 +4056,7 @@ C.........Read MO-to-AO-transformation matrix
      &                      WORK(KCMO+ICMOQ(IFRP)),WORK(KBEIG),
      &                      WORK(KIBOS),IADR,
      &                      WORK(KCBUF+IOFF),WORK(KTMAT+I2TMT(IFRP)),
-     &                      NZT,WORK,KFREE,LFREE)
+     &                      NZT,WORK,KFREE,LFREE,IPRINT)
               IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
             ENDIF
           ENDDO
@@ -3989,7 +4072,7 @@ C.........Backtransform UKB complement
      &                      WORK(KCMO+ICMOQ(IFRP)),WORK(KBEIG),
      &                      WORK(KEIG),WORK(KIBOS),IADR,
      &                      WORK(KCBUF+IOFF),WORK(KTMAT+I2TMT(IFRP)),
-     &                      NZT,WORK,KFREE,LFREE)
+     &                      NZT,WORK,KFREE,LFREE,IPRINT)
               IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
             ENDIF
           ENDDO
@@ -4018,7 +4101,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp_1 */
       SUBROUTINE RKBIMP_1(IFRP,NBAS,NORB,NPRKB,NERKB,NUKBP,
      &                    CMO,IBEIG,IBOS,IADR,CBUF,TINV,NZT,
-     &                    WORK,KFREE,LFREE)
+     &                    WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Extend RKB coefficients of fermion ircop IFRP by UKB complement
@@ -4032,12 +4115,12 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcb_rkbimp.h"
       DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),IBOS(NORB),
      &          TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
      &          WORK(*)
       DIMENSION NQ(2)
       KFRSAV = KFREE
-      IPRINT = 0
 C     Initialize unit matrix (transformation matrix in MO-basis)
       CALL DUNIT2(CBUF,NORB,NORB,NORB,NZ)
       IF(SUB_BL) THEN
@@ -4059,10 +4142,9 @@ C.....Transform negative energy coefficients to orthonormal basis
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
 C.....Project out negative energy solutions
-      PRJTHR  = 1.0D-5
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NPRKB,
-     &            PRJTHR,THRMAX,NORB,NORB,
+     &            RKBIMP_PRJTHR,THRMAX,NORB,NORB,
      &            NPRKB,NQ(IP),IP,IPRINT)
       CALL MEMREL('RKBIMP_1.neg',WORK,1,KCF,KFREE,LFREE)
 C.....Transform positive energy coefficients to orthonormal basis
@@ -4076,10 +4158,9 @@ C.....Transform positive energy coefficients to orthonormal basis
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NERKB,NZ)
 C.....Project out positive energy solutions
-      PRJTHR  = 1.0D-5
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NERKB,
-     &            PRJTHR,THRMAX,NORB,NORB,
+     &            RKBIMP_PRJTHR,THRMAX,NORB,NORB,
      &            NERKB,NQ(IP),IP,IPRINT)
       CALL MEMREL('RKBIMP_1',WORK,1,KCF,KFREE,LFREE)
 C.....
@@ -4103,7 +4184,7 @@ C.....
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp_2 */
       SUBROUTINE RKBIMP_2(IFRP,NBAS,NORB,CMO,IBEIG,EIG,IBOS,IADR,
-     &                    CBUF,TMAT,NZT,WORK,KFREE,LFREE)
+     &                    CBUF,TMAT,NZT,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Extend RKB coefficients of fermion ircop IFRP by UKB complement
@@ -4122,7 +4203,6 @@ C
      &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),WORK(*)
       DIMENSION NQ(2)
       KFRSAV = KFREE
-      IPRINT = 0
 C.....Approximate eigenvalue of UKB complement
       FAC=-D2*CVAL*CVAL
       II = 0

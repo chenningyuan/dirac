@@ -1,6 +1,6 @@
 #define notESR_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -35,15 +35,15 @@ C     Written by A.Noerager - Mar 2000
 C     Last revision: 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "orgcom.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 10)
+      PARAMETER (NTABLE = 11)
       LOGICAL SET, NEWDEF, RESET, GORG
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
@@ -51,7 +51,7 @@ C
       SAVE SET
       DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
-     &            '.THRCVE','.THRCI '/
+     &            '.THRCVE','.THRCI ','.SDTCI '/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -72,20 +72,19 @@ C
 C     Initialize /CBIESR/
 C     ===================
 C
-      IPRESR  = 0
-      NESRP   = 0
+      IPRESR    = 0
+      NESRP     = 0
       MULTIPESR = 0
       MAX_CIESR_IT = 0
       THR_CVEC_ESR = 1.0D-3
-      N_CIESR  = -1
+      N_CIESR   = -1
       THR_CIESR = 1.0D-6 ! based on 1 ppm = 10**(-6)
 C     variables for spin polarization in CI
-      SPINPOLESR = .FALSE.
-      NCESR(1) = 0
-      NCESR(2) = 0
-      NVESR(1) = 0
-      NVESR(2) = 0
-      LVL_CIESR = 1
+      NCESR(1)  = 0
+      NCESR(2)  = 0
+      NVESR(1)  = 0
+      NVESR(2)  = 0
+      LVL_CIESR = 0
 C
 C     Initialize orgcom.h
 C     ===================
@@ -111,7 +110,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -146,14 +145,16 @@ C Read multiplicity
                GO TO 100
     5          CONTINUE ! .SPINPOL
 C&&&& SPINPOLARIZATION (= SCI)
-                  SPINPOLESR = .TRUE.
+                  LVL_CIESR = 1
                   READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
                   READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
                GO TO 100
     6          CONTINUE ! .SDCI
 C&&&& Singles and doubles CI
                   LVL_CIESR = 2
-               GO TO 5 !! NB! go to 5, not go to 100
+                  READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
+               GO TO 100
     7          CONTINUE ! .MAX CI ITERATIONS
 C&&&& MAX CI ITERATIONS
                   READ(LUCMD,*) MAX_CIESR_IT
@@ -171,6 +172,12 @@ C&&&& THRESHOLD FOR CVECS IN GASCIP_RCISTD
    10          CONTINUE  ! .THRCI
 C&&&& Convergence threshold for CI 
                   READ(LUCMD,*) THR_CIESR
+               GO TO 100
+   11          CONTINUE ! .SDTCI
+C&&&& Singles doubles triples CI
+                  LVL_CIESR = 3
+                  READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -197,12 +204,14 @@ C
          WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP not (correctly) specified'
          INPERR = INPERR + 1
       END IF
-      IF (SPINPOLESR) THEN
+      IF (LVL_CIESR .GT. 0) THEN
          WRITE (LUPRI,'(/A)') ' * Spin polarization included with'
          IF (LVL_CIESR .EQ. 1) THEN
             WRITE (LUPRI,'(A)') '   - singles CI'
          ELSE IF (LVL_CIESR .EQ. 2) THEN
             WRITE (LUPRI,'(A)') '   - singles and doubles CI'
+         ELSE IF (LVL_CIESR .EQ. 3) THEN
+            WRITE (LUPRI,'(A)') '   - CISDT'
          ELSE
             call quit('only SCI and SDCI implemented so far')
          END IF
@@ -308,9 +317,13 @@ C
 !    &                     N_CIESR,MAX_CIESR_IT,NZCONF
       IF (N_CIESR .GE. 0) THEN
          !
+      IF (MULTIPESR .gt. NZCONF) THEN
+         CALL QUIT('.MULTIPESR specification > # determinants')
+      END IF
       IF (MAX_CIESR_IT .GT. 0) THEN
          ! Davidson iterations
-         N_CIESR = MIN(NZCONF, MULTIPESR + 1)
+!        N_CIESR = MIN(NZCONF, MULTIPESR + 1)
+         N_CIESR = MULTIPESR
 !      write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
       ELSE
          ! full CI (now primarily for debugging Davidson iterations code)
@@ -705,9 +718,9 @@ C     --- Find state vectors diagonalizing S_z (for a "standard" S_eff basis)
 C         Modify phases acc. to convention so <M_S + 1 | Sx | M_S > .gt. 0
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -728,15 +741,15 @@ C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C
-#include <dcbgen.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbesr.h>
-#include <dcbxpr.h>
-#include <dcbprp.h>
-#include <dcbdhf.h>
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbesr.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
@@ -1190,9 +1203,9 @@ C
 C     Based on PRPESR1
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -1212,15 +1225,15 @@ C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C
-#include <dcbgen.h>
-#include <dcbopt.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbesr.h>
-#include <dcbxpr.h>
-#include <dcbprp.h>
-#include <dcbdhf.h>
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbesr.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('ESRTRANS')
       KFRSAV = KFREE
@@ -1347,7 +1360,7 @@ C
 #endif
          CALL GASCIP_MAKE_P1MAT(CIEVEC,N_CIESR,NZCONF,WORK(KZCONF),
      &                         ESRVAL(1,1,JZ),MULTIPESR,IHRM,
-     &                         WORK(KPMLF),WORK(KFREE),LFREE,IPRINT)
+     &                         WORK(KPMLF),WORK(KFREE),LFREE,IPRESR)
 C        CALL GASCIP_MAKE_P1MAT(CIVEC,N_CIVEC,NDET,IDET,
 C     &                            P1MAT_CI,N_P1MAT_CI,IHRM_P1,
 C     &                            P1MAT_MO,  WORK,LWORK, IPRINT)
@@ -1504,9 +1517,9 @@ C***********************************************************************
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <dcbesr.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dcbesr.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       DIMENSION ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
       LOGICAL   REAL_PMLF
@@ -1889,7 +1902,7 @@ C                factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
       CHARACTER NAME*6, NAMEX(3)*6
       DIMENSION TMAT(3,3), TMATNY(3,3), IATINF(3), RATINF(3,*),
      &          TMATX(3,3)
-#include <chrxyz.h>
+#include "chrxyz.h"
 C
 C     Multiply with FACTOR
 C

@@ -73,6 +73,8 @@ MODULE Matrix_module
       integer :: tr_sym = 1
       !> irep
       integer :: irep   = 0
+      !> algebra (1, 2, or 4)
+      integer :: nz = 4
 #endif
 
    END TYPE Matrix

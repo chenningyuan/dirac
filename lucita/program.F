@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,6 +33,7 @@
 *
 * Jeppe Olsen, Winter of 1995
 *
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
       EXTERNAL MV7
 #include "mxpdim.inc"
@@ -57,9 +58,8 @@
 #include "cc_exc.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) ITEST_OFF
 #endif
 #include "parluci.h"
 
@@ -520,8 +520,9 @@ C     debug printing
             CALL GET_BLOCK_PROC(WORK(KBLCKPD),IIBLK,IPROC)
             IF( MYPROC .eq. IPROC ) THEN
               CALL GET_BLOCK_LENGTH(WORK(KBLCKIF),IIBLK,ILEN)
-              CALL MPI_FILE_READ_AT(IDIA,ITEST_OFF,WORK(KVEC1),ILEN,
-     &                              MPI_REAL8,ISTAT,IERR)
+              call interface_mpi_FILE_READ_AT_r(IDIA,ITEST_OFF,
+     &                              WORK(KVEC1),ILEN,
+     &                              ISTAT)
               WRITE(LUWRT,*) ' Diagonal elements',ILEN
               CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
               ITEST_OFF = ITEST_OFF + ILEN
@@ -529,11 +530,6 @@ C     debug printing
         END DO
       ENDIF
       NPTEST_VAR = 00
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      WRITE(LUWRTOUT,*) ' Thats it',MYPROC
-CSK      CALL Abend2( 'Stefan forced me to stop after diagonal' )
 #endif
 *
 *     explicit Hamiltonian
@@ -710,7 +706,7 @@ C
         CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                            WORK(KBLCKPD),NUM_BLOCKS2,
      &                            WORK(KBLCKIF),
-     &                            MPI_COMM_WORLD,LBLK,JROOT,
+     &                            global_communicator,LBLK,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
         IF(MYPROC.EQ.MASTER) THEN
            CALL REWINE(LUSC41,-1)
@@ -952,10 +948,6 @@ C In the case of a parallel run, the relevant nodes will be
 C waken up and sent to sleep.
 C
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "infpar.h"
 #include "priunit.h"
 #include "parluci.h"
@@ -1013,11 +1005,11 @@ C
 * Stefan Knecht, Feb. 06 
 *
       use os_utils
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
 #if defined (VAR_MPI2)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "files.inc"
@@ -1040,7 +1032,8 @@ C
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
 C     character line and machinename
-      CHARACTER*72 CARD,MACHINENAME
+      CHARACTER*72 CARD
+      CHARACTER*255 MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
       INTEGER*8 K_OFFSET, K8BASE_LUCITA
       integer global_scratch_disk
@@ -1067,19 +1060,6 @@ C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK,WORK,K_OFFSET)
       KBASE_LUCITA = K_OFFSET
-      ! HJAaJ Aug 2008:
-      ! MEMMAN in LUCITA is using default integer type
-      ! while K_OFFSET is always INTEGER*8.
-      ! Therefore we use implicit conversion to KBASE_LUCITA.
-      ! Now we test if KBASE_LUCITA is OK:
-      K8BASE_LUCITA = KBASE_LUCITA
-      IF (K8BASE_LUCITA .NE. K_OFFSET) THEN
-         WRITE (LUOUT,'(/A/A,2I20//A)')
-     &   'FATAL ERROR in LUCITA: offset is too big for i*4',
-     &   'K_OFFSET and KBASE_LUCITA:',K_OFFSET, KBASE_LUCITA,
-     &   '(See code in lucita/program.F)'
-         CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
-      END IF
 C
       MXPWRD = LWRK
       KADD = MXPWRD
@@ -1130,15 +1110,15 @@ C
         global_scratch_disk = 0
       end if
 
-      call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
-     &               MASTER,MPI_COMM_WORLD,ierr)
+      call interface_mpi_bcast(global_scratch_disk,1,
+     &               MASTER,global_communicator)
 
       if(global_scratch_disk .eq. 0)then
 
 C       parallel I/O mode for parallel runs / executable
         IIOMOD = 1
 C
-        CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+        call interface_mpi_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH)
 C
         CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
      &                           WORK(KPROCLIST),WORK(KPROCLENGTH))
@@ -1183,10 +1163,6 @@ C
 C      open the files for parallel file I/O
 C
        CALL SETUNITS_PAR_OPEN(MY_GROUPN)
-CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK       CALL Abend2('Sorry, I stop')
 C
 #endif
 C
@@ -1652,8 +1628,6 @@ C
 #include "machine.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *./CECORE/
@@ -5648,29 +5622,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "maxorb.h"
-#if defined (VAR_MPI2)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "dcbgen.h"
 #include "infpar.h"
 #include "parluci.h"
 C
       IF (.NOT.PARCAL) RETURN
-C
-C     Find the slaves and release them
-
-      NTEST = -1
-#if defined (VAR_MPI2)
-      DO I = 1,NUMNOD
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,ISTAT,IERR)
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                  MPI_COMM_WORLD,IERR)
-      ENDDO
-#endif
-
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
@@ -5692,8 +5648,6 @@ C/* Deck LUCITA_NODE */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "files.inc"
 *. Parameters for dimensioning
@@ -5791,19 +5745,5 @@ C
       CLOSE (LUCMD,STATUS='KEEP')
 *
 *
-*     The slave is finished, wait for the master
-
-
-      LUEND = .FALSE.
-      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
-     &              MPI_COMM_WORLD,IREQ,IERR)
-    1    CONTINUE
-         CALL SLEEP(1)
-         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
-         IF (.NOT.LUEND) GOTO 1
-
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
-C
       END
 #endif    /* ifdef VAR_MPI2 */

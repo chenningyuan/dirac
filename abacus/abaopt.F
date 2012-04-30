@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1252,6 +1252,9 @@ C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
 
 C  /* Deck optmin */
       SUBROUTINE OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+
+      use interface_to_mpi
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1259,9 +1262,6 @@ C  /* Deck optmin */
 #include "dcbgen.h"
 #else
 #include "infpar.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include "gnrinf.h"
 #endif
 #include "optinf.h"
@@ -1364,8 +1364,8 @@ C
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IJOB = 0
-         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MOTHER),
-     &                  MPI_COMM_WORLD,IERR)
+         CALL interface_MPI_BCAST(IJOB,1,NODEID(MOTHER),
+     &                  global_communicator)
       END IF
 #endif      
 #endif 
@@ -1667,6 +1667,8 @@ C
      &           WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
      &           WORK(KTEMP2),WORK(KTEMP3))
          ELSE
+!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!                                 in the actual subroutine... - FIXME
             CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &           WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
          END IF
@@ -1910,6 +1912,8 @@ C
      &              WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
      &              WORK(KTEMP2),WORK(KTEMP3))
             ELSE
+!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!                                 in the actual subroutine... - FIXME
                CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &              WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
             END IF
@@ -5288,9 +5292,9 @@ C
          RATIO = ERGDIF/ERGPRD
          IF (IPRINT .GT. 2) THEN
             CALL HEADER('Energy difference to previous geometry:',-1)
-            WRITE(LUPRI,'(/A),/)')
+            WRITE(LUPRI,'(/A/))')
      &      '      Actual           /  Predicted       =    Ratio '
-            WRITE(LUPRI,'(5X,F15.10,2(A,F15.10))')
+            WRITE(LUPRI,'(5X,F15.10,A,F15.10,A,F15.10)')
      &            ERGDIF,'  /  ',ERGPRD,'  =  ',RATIO
          END IF
       ELSE
@@ -7308,7 +7312,7 @@ C
          WRITE(LUHES,*)
          DO 100 J = 1, 3*NUCDEP
             DO 110 I = 1, 3*NUCDEP
-               WRITE(LUHES,'(F20.16)') TMPMT4(I,J)
+               WRITE(LUHES,'(F25.16)') TMPMT4(I,J)
  110        CONTINUE
             WRITE(LUHES,*)
  100     CONTINUE

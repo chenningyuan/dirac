@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,26 +23,22 @@ module interface_functional_read
 
    use dft_cfg
    use xc_derv
-#ifdef MOD_XCFUN
    use xcfun
-#endif
 
    implicit none
 
-#ifdef MOD_XCFUN
    public parse_functional
    public set_xc_fun_alda
    public set_xc_fun_xalda
    public set_kin_fun_alda
    public set_kin_fun_xalda
-#endif
    public consistency_after_dft_input
    public report_after_dft_input
    public set_hf_exchange_factor
  
    real(8), public :: hf_exchange_factor
    logical, public :: pure_hf_run
- 
+   logical, save   :: already_checked = .true.
    private
 
 contains
@@ -82,7 +78,6 @@ contains
 
   end function
 
-#ifdef MOD_XCFUN
    subroutine parse_functional(line,     &
                                f,        &
                                hfx_out,  &
@@ -95,14 +90,8 @@ contains
 !              otherwise it is set to 1.0
 !     
 !              equivalent functionals:
-!              lda
-!              slater vwn
-!              slater=1.0 vwn=1.0
-!     
-!              equivalent functionals:
 !              b3lyp
-!              slater=0.8 becke=0.72 hfx=0.2 vwn=0.19 lyp=0.81
-!              lda slater=-0.2 hfx=0.2 becke=0.72 vwn=-0.81 lyp=0.81
+!              slaterx=0.8 bcorrx=0.72 hfx=0.2 vwnc=0.19 lypc=0.81
       
 !     --------------------------------------------------------------------------
       character(80)              :: line
@@ -118,7 +107,7 @@ contains
       integer                    :: u
 !     --------------------------------------------------------------------------
       
-      write(*, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
+      write(*, '(a)') '* Using the automatic differentiation xc functional:'
       write(*, '(a)') '   (weight: functional)'
 
       hfx_out  = 0.0d0
@@ -208,6 +197,7 @@ contains
       
         w = get_weight(word_array(i), 'pbe')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbe'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
@@ -266,11 +256,13 @@ contains
       
         w = get_weight(word_array(i), 'pbex')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbex'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
         end if
       
         w = get_weight(word_array(i), 'pbec')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbec'
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
       
@@ -310,19 +302,24 @@ contains
            beta_out = beta_out + w
         end if
 
-        w = get_weight(word_array(i), 'slater')
+        w = get_weight(word_array(i), 'slaterx')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_SLATERX) = f%w(XC_SLATERX) + w
         end if
 
-        w = get_weight(word_array(i), 'vwn')
+        w = get_weight(word_array(i), 'vwnc')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_VWN5C) = f%w(XC_VWN5C) + w
         end if
 
-        w = get_weight(word_array(i), 'becke')
+        w = get_weight(word_array(i), 'beckex')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_BECKEX) = f%w(XC_BECKEX) + w
+        end if
+
+        w = get_weight(word_array(i), 'bcorrx')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_BECKECORRX) = f%w(XC_BECKECORRX) + w
         end if
       
       end do
@@ -340,10 +337,11 @@ contains
       do i = 1, size(f%w)
          h = h + dabs(f%w(i)) 
       end do
-      pure_hf_run = .false.
+      if (.not.already_checked) pure_hf_run = .false.
       if (h < tiny(0.0d0)) then
          if (hf_exchange_factor == 1.0d0) then
              pure_hf_run = .true.
+             already_checked = .true.
          else
 !            no functional is recognized
 !            in this case quit the program
@@ -398,8 +396,6 @@ contains
       call set_kin_fun_alda(f)
    end subroutine
 
-#endif /* ifdef MOD_XCFUN */
-
   subroutine consistency_after_dft_input()
 
     if (dft_cfg_asymptote_is_lb94 .and. dft_cfg_asymptote_is_lbalpha) then
@@ -425,7 +421,7 @@ contains
 !   thresholds
 
     write(*, '(a)')          ' * DFT thresholds:'
-    write(*, '(a, e12.5)')   '   - small density threshold = ', dft_cfg_small_density_threshold
+    write(*, '(a, e12.5)')   '   - small density threshold = ', dft_cfg_tinydens
 
 !   asymptotic correction
 

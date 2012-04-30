@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2010 by the authors of DIRAC.
+ *     Copyright (c) 2011 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -116,13 +116,13 @@ cgendet ( integer *pnElec, integer *pnAsht,
     
   *pnStr = 0;
 
-     printf ("\nHi from cgendet. IEL, NASHT, NGAS %i %i %i\n\n",nElec,nOrb,*pnGAS);
+     // printf ("\nHi from cgendet. IEL, NASHT, NGAS %i %i %i\n\n",nElec,nOrb,*pnGAS);
 
   cgendet1 ( anStr,  nOrb,     nElec,     pnStr,    i8_zero,    0,
 	       *pnGAS, nGASTot, anGASMask, anGASSpc, *pnMaxStr );
 
-     printf ("   cgendet: number of strings %i\n", *pnStr);
-  // fflush(stdout);
+     // printf ("   cgendet: number of strings %i\n", *pnStr);
+     // fflush(stdout);
 
   /*
   integer i;
@@ -287,7 +287,7 @@ const char *lli_to_b_format ( unsigned long long int x , integer bits)
 
     if ( (bits > 64) || (bits <= 0) ) {
        strcat(b, "\n *** ERROR Illegal number of bits! ***\n");
-       return;
+       return b;
     }
 
     unsigned long long int z, zmax;

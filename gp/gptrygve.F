@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -248,11 +248,9 @@ C  /* Deck stopit */
       END
 C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
+      use interface_to_mpi
 #include "implicit.h"
-#if defined (VAR_MPI)
 #include "infpar.h"
-      INCLUDE 'mpif.h'
-#endif
 #include "priunit.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -297,10 +295,11 @@ C 3 = pretty print traceback to stdout...
 #endif /* SYS_LINUX */
 
 #if defined (VAR_MPI)
+      ierr = -9999
 #   if defined (PRG_DIRAC)
-      IF (PARCAL) CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
+      IF (PARCAL) CALL interface_MPI_ABORT(global_communicator,IERR)
 #   else
-      CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
+      CALL interface_MPI_ABORT(global_communicator,IERR)
 #   endif
 #endif
 #if defined (VAR_PVM)

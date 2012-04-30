@@ -1,0 +1,5 @@
+$ERROR 1.E-5
+nlines 3:scalar              x-component         y-component         z-component
+
+$ERROR 1.E-5
+nlines 3:     r_x           r_y           r_z            scalar

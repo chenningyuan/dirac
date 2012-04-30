@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,9 +23,7 @@ module xc_derv
 
    use xc_max_block_length
    use xc_mpi
-#ifdef MOD_XCFUN
    use xcfun
-#endif
  
    implicit none
  
@@ -33,17 +31,11 @@ module xc_derv
    public fun_is_lda
    public fun_is_gga
    public fun_is_tau_mgga
-#ifdef MOD_XCFUN
    public xcfun_set_functional
-#endif
 
    public functional
    type functional
-#ifdef MOD_XCFUN
       real(8)              :: w(XC_NR_PARAMS)
-#else                      
-      real(8)              :: w(1)
-#endif                     
       integer              :: id
       logical              :: xcfun_id_is_set
       real(8), allocatable :: input(:, :)
@@ -55,8 +47,6 @@ module xc_derv
    type(functional), public :: xc_fun
    type(functional), public :: xc_fun_alda
    type(functional), public :: xc_fun_xalda
-   type(functional), public :: kin_fun
-   type(functional), public :: kin_fun_alda
 
    integer, parameter, public :: d0000000 =  0
    integer, parameter, public :: d1000000 =  1
@@ -94,21 +84,20 @@ module xc_derv
    private
 
 #ifdef PRG_DIRAC
-#include "../../cfun/functionals.h"
+#include "../cfun/functionals.h"
 #endif
 
    integer, parameter :: max_dim = 99
 
 contains
 
-   function fun_is_lda()
+   function fun_is_lda(f)
+      type(functional) :: f
       logical :: fun_is_lda
 
       fun_is_lda = .false.
       if (fun_is_automatic) then
-#ifdef MOD_XCFUN
-         fun_is_lda = (xc_get_type(xc_fun%id) == 0)
-#endif
+         fun_is_lda = (xc_get_type(f%id) == 0)
       else
 #ifdef PRG_DIRAC
          fun_is_lda = (.not. dftisgga())
@@ -116,14 +105,13 @@ contains
       end if
    end function
 
-   function fun_is_gga()
+   function fun_is_gga(f)
+      type(functional) :: f
       logical :: fun_is_gga
 
       fun_is_gga = .false.
       if (fun_is_automatic) then
-#ifdef MOD_XCFUN
-         fun_is_gga = (xc_get_type(xc_fun%id) == 1)
-#endif
+         fun_is_gga = (xc_get_type(f%id) == 1)
       else
 #ifdef PRG_DIRAC
          fun_is_gga = dftisgga()
@@ -131,20 +119,18 @@ contains
       end if
    end function
 
-   function fun_is_tau_mgga()
+   function fun_is_tau_mgga(f)
+      type(functional) :: f
       logical :: fun_is_tau_mgga
 
       fun_is_tau_mgga = .false.
       if (fun_is_automatic) then
-#ifdef MOD_XCFUN
-         fun_is_tau_mgga = (xc_get_type(xc_fun%id) == 2)
-#endif
+         fun_is_tau_mgga = (xc_get_type(f%id) == 2)
       else
          fun_is_tau_mgga = .false.
       end if
    end function
 
-#ifdef MOD_XCFUN
    subroutine xcfun_set_functional(f,              &
                                    response_order, &
                                    parallel_xc)
@@ -177,7 +163,7 @@ contains
       end if
 
       if (allocated(f%input)) then
-         l = size(f%input)
+         l = size(f%input)/max_block_length
       else
          l = 0
       end if
@@ -186,11 +172,11 @@ contains
          if (allocated(f%input)) then
             deallocate(f%input)
          end if
-         allocate(f%input(l, 1))
+         allocate(f%input(l, max_block_length))
       end if
 
       if (allocated(f%output)) then
-         l = size(f%output)
+         l = size(f%output)/max_block_length
       else
          l = 0
       end if
@@ -199,11 +185,10 @@ contains
          if (allocated(f%output)) then
             deallocate(f%output)
          end if
-         allocate(f%output(l, 1))
+         allocate(f%output(l, max_block_length))
       end if
 
    end subroutine
-#endif /* ifdef MOD_XCFUN */
 
   subroutine get_functional_derv(f,            &
                                  f_alda,       &
@@ -233,7 +218,7 @@ contains
     logical, optional, intent(in) :: alda_real
     logical, optional, intent(in) :: alda_imag
     logical, optional, intent(in) :: xalda
-    real(8), optional, intent(in) :: tau
+    real(8), optional, intent(in) :: tau(*)
 !   ----------------------------------------------------------------------------
     real(8)                       :: t1(max_dim, max_block_length)
     real(8)                       :: t2(max_dim, max_block_length)
@@ -264,24 +249,23 @@ contains
     t1   = 0.0d0
     t2   = 0.0d0
 
-#ifdef MOD_XCFUN
     if (fun_is_automatic) then
 
       f%input = 0.0d0
       do k = 1, block_length
          f%input(1, k) = r_0(k)
       end do
-      if (fun_is_gga()) then
+      if (fun_is_gga(f)) then
          do k = 1, block_length
             f%input(3, k) = z_0(k)
          end do
       end if
-      if (fun_is_tau_mgga()) then
+      if (fun_is_tau_mgga(f)) then
          do k = 1, block_length
             f%input(3, k) = z_0(k)
          end do
          do k = 1, block_length
-            f%input(6, k) = tau
+            f%input(6, k) = tau(k)
          end do
       end if
 
@@ -316,12 +300,12 @@ contains
          end if
 
          if (order > 0) then
-               if (fun_is_lda()) then
+               if (fun_is_lda(f)) then
                   derv(k, d1000000) = f%output(XC_D10, k)
-               else if (fun_is_gga()) then
+               else if (fun_is_gga(f)) then
                   derv(k, d1000000) = f%output(XC_D10000, k)
                   derv(k, d0010000) = f%output(XC_D00100, k)
-               else if (fun_is_tau_mgga()) then
+               else if (fun_is_tau_mgga(f)) then
                   derv(k, d1000000) = f%output(XC_D1000000, k)
                   derv(k, d0010000) = f%output(XC_D0010000, k)
                   derv(k, d0000010) = f%output(XC_D0000010, k)
@@ -333,14 +317,14 @@ contains
                if (do_alda_real) then
                   derv(k, d2000000) = f_alda%output(XC_D20, k)
                else
-                  if (fun_is_lda()) then
+                  if (fun_is_lda(f)) then
                      derv(k, d2000000) = f%output(XC_D20, k)
-                  else if (fun_is_gga()) then
+                  else if (fun_is_gga(f)) then
                      derv(k, d2000000) = f%output(XC_D20000, k)
                      derv(k, d1010000) = f%output(XC_D10100, k)
                      derv(k, d0020000) = f%output(XC_D00200, k)
                      derv(k, d0010000) = f%output(XC_D00100, k)
-                  else if (fun_is_tau_mgga()) then
+                  else if (fun_is_tau_mgga(f)) then
                      derv(k, d0010000) = f%output(XC_D0010000, k)
                      derv(k, d2000000) = f%output(XC_D2000000, k)
                      derv(k, d1010000) = f%output(XC_D1010000, k)
@@ -355,14 +339,14 @@ contains
                if (do_alda_imag) then
                   derv(k, d0200000) = f_alda%output(XC_D02, k)
                else
-                  if (fun_is_lda()) then
+                  if (fun_is_lda(f)) then
                      derv(k, d0200000) = f%output(XC_D02, k)
-                  else if (fun_is_gga()) then
+                  else if (fun_is_gga(f)) then
                      derv(k, d0200000) = f%output(XC_D02000, k)
                      derv(k, d0101000) = f%output(XC_D01010, k)
                      derv(k, d0002000) = f%output(XC_D00020, k)
                      derv(k, d0000100) = f%output(XC_D00001, k)
-                  else if (fun_is_tau_mgga()) then
+                  else if (fun_is_tau_mgga(f)) then
                      derv(k, d0000100) = f%output(XC_D0000100, k)
                      derv(k, d0200000) = f%output(XC_D0200000, k)
                      derv(k, d0101000) = f%output(XC_D0101000, k)
@@ -379,12 +363,12 @@ contains
                if (do_alda_real .or. do_alda_imag) then
                   call my_quit('get_functional_derv: xcfun alda qr not implemented')
                end if
-               if (fun_is_lda()) then
+               if (fun_is_lda(f)) then
                   derv(k, d2000000) = f%output(XC_D20, k)
                   derv(k, d0200000) = f%output(XC_D02, k)
                   derv(k, d1200000) = f%output(XC_D12, k)
                   derv(k, d3000000) = f%output(XC_D30, k)
-               else if (fun_is_gga()) then
+               else if (fun_is_gga(f)) then
                   derv(k, d0010000) = f%output(XC_D00100, k)
                   derv(k, d0000100) = f%output(XC_D00001, k)
                   derv(k, d2000000) = f%output(XC_D20000, k)
@@ -405,7 +389,7 @@ contains
                   derv(k, d0111000) = f%output(XC_D01110, k)
                   derv(k, d0030000) = f%output(XC_D00300, k)
                   derv(k, d0012000) = f%output(XC_D00120, k)
-               else if (fun_is_tau_mgga()) then
+               else if (fun_is_tau_mgga(f)) then
                   call my_quit('get_functional_derv: tau mgga qr not implemented')
                end if
          end if
@@ -417,7 +401,6 @@ contains
       end do
 
     else
-#endif /* ifdef MOD_XCFUN */
 
 #ifdef PRG_DIRAC
       select case (order)
@@ -466,9 +449,7 @@ contains
          end do
       end if
 
-#ifdef MOD_XCFUN
     end if
-#endif
 
 !   multiply by weight
     do l = 0, n

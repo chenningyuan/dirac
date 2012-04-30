@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -125,9 +125,7 @@ C***********************************************************************
 #ifdef MOD_OPENRSP
       use openrsp_main
 #endif
-
-!     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
-      USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
+      use fde_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -143,6 +141,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
+      logical :: export_n,export_gn,export_vc
 C
       CALL QENTER('PAMPR1')
 C
@@ -182,7 +181,7 @@ C
 #ifdef MOD_ESR
       IF (DOESR) THEN
          KFRSAV = KFREE
-         CALL ESR_INIT(WF,IPRESR,N_CIESR,SPINPOLESR,WORK,KFREE,LFREE)
+         CALL ESR_INIT(WF,IPRESR,N_CIESR,WORK,KFREE,LFREE)
 C
          LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
 C        max(4,nesrp): make sure sufficient space for ESRPHASE
@@ -265,14 +264,13 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-      call get_xml_export_level(wfexport)
-      IF (DO_GRID_OUT.and.(WF.eq.wfexport)) THEN
+#ifdef MOD_UNRELEASED
+      if (dirac_cfg_fde) then
 #ifdef MOD_XML
-         CALL FDE_GRIDOUT(WORK,LFREE)
-#else
-         call quit("FDE density export unsupported in this version.")
+         call fde_export_write_data_to_file(wf)
 #endif
       END IF
+#endif
 
 #ifdef MOD_OPENRSP
       if (dirac_cfg_openrsp) then
@@ -4093,9 +4091,6 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(A)') ' NMR shieldings:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE (LUPRI,'(A,F9.4,A)')
-     &   ' Shieldings printed for atoms with '//
-     &   'abundance greater than', ABUND,' %'
 C
 C     A operators
 C     ===========
@@ -6630,7 +6625,7 @@ C
       IZ = IDMAX(3,PVAL,1)
       IX = IDMIN(3,PVAL,1)
       DO 320 I = 1, 3
-         IF (I .NE. IZ .AND. I .NE. IX) IY = I
+        IF (I .NE. IZ .AND. I .NE. IX) IY = I
  320  CONTINUE
 C
       SPAN  = PVAL(IZ) - PVAL(IX)
@@ -7605,15 +7600,15 @@ CMI Added from dalton-2.0, May 2006, Strasbourg
 C
 C calling in DALTON:  IF (MOLGFA) CALL NUCMGF(WORK(KGEOM),GAGORG,LUPRI,IPRDEF)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
-#include <symmet.h>
-#include <molgfa.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "molgfa.h"
+#include "ibtfun.h"
 C
 
       IF (IPRINT.GE.5) THEN
@@ -7674,12 +7669,12 @@ C
 C
       SUBROUTINE MGFRES(GEOM,AMASS,KATOM,IPRINT)
       use codata
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 C#include <mxorb.h>
-#include <maxorb.h>
+#include "maxorb.h"
 C#include <pmass.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5)
@@ -7689,15 +7684,15 @@ CC    DIMENSION ANGMOM(3), TINERT(9), OMEGA(3,3), WORK(LWORK),
      &          EIGVAL(3), EIGVEC(3,3),
      &          GTRAN1(3,3), GTRAN2(3,3), GTRAN3(3,3), GEOM(KATOM,3),
      &          AMASS(KATOM)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
 C#include <suscpt.h>
 #include "dcbsusc.h"
 C#include "cbiher.h"
-#include <molgfa.h>
-#include <orgcom.h>
-#include <ibtfun.h>
+#include "molgfa.h"
+#include "orgcom.h"
+#include "ibtfun.h"
 C
 
       CALL QENTER('MGFRES')
@@ -8485,7 +8480,7 @@ C
      &      '** A operators for blao, component **', chcomp
       CALL PRSYMB(LUPRI,'-',75,0)
       DO J = 1, 4
-        CALL WRIXPR(0,IPLONDON(J,icomp))
+        CALL WRIXPR(0,IPLONDON(J,ICOMP))
       ENDDO
 !
 !     B operators

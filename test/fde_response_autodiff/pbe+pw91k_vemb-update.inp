@@ -8,8 +8,8 @@ electric properties for frozen density embedding
 .DFTAUTO
 pbex=1.0 pbec=1.0
 .FDE
-.FDERSP
 *FDE
+.RSP
 .NAKEF
 kin_pw91
 .NAXCF
@@ -28,4 +28,15 @@ pbex=1.0 pbec=1.0
  0.100
 .OPERATOR
  YDIPLEN
+*EXCITATIONS
+.TRIPLET
+.EXCITATIONS
+ 1 10
+.EXCITATIONS
+ 2 10
+.EXCITATIONS
+ 3 10
+.EXCITATIONS
+ 4 10
+.ANALYZE
 *END OF

@@ -43,12 +43,12 @@ module interface_ao
    integer, public :: iq(0:3)
    integer, public :: irep_of_axes(3)
    integer, public :: irep_of_rotations(3)
-   integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
-   integer, public :: llss_nr_density_blocks(0:3, 0:7)
-   integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
-   integer, public :: lssl_nr_ao(2, 16, 0:3, 0:7)
-   integer, public :: lssl_nr_density_blocks(0:3, 0:7)
-   integer, public :: lssl_st_ao(2, 16, 0:3, 0:7)
+   integer, public :: ao_block_start(0:16) !cheat: 0 start is to catch cases where one of AO blocks is empty
+   integer, public :: ao_block_nr(0:16)    !       in dens eval these blocks are skipped
+   integer, public :: nr_ao_blocks
+   integer, public :: llss_block_partner(16, 0:3, 0:7)
+   integer, public :: lssl_block_partner(16, 0:3, 0:7)
+   real(8), public :: llss_prefactor(16)
    integer, public :: nr_ao
    integer, public :: nr_ao_cartesian
    integer, public :: nr_ao_gerade
@@ -68,7 +68,6 @@ module interface_ao
    integer, public :: uq_to_pq(4, 0:7)
    logical, public :: basis_is_spherical
    logical, public :: use_only_large
-   real(8), public :: llss_prefactor(16, 0:3, 0:7)
 
    integer, allocatable, public :: cartesian_deg(:)
    integer, allocatable, public :: cartesian_off(:)
@@ -109,12 +108,12 @@ contains
       iq                         = 0
       irep_of_axes               = 0
       irep_of_rotations          = 0
-      llss_nr_ao                 = 0
-      llss_nr_density_blocks     = 0
-      llss_st_ao                 = 0
-      lssl_nr_ao                 = 0
-      lssl_nr_density_blocks     = 0
-      lssl_st_ao                 = 0
+      ao_block_start             = 0
+      ao_block_nr                = 0
+      nr_ao_blocks               = 0
+      llss_block_partner         = 0
+      lssl_block_partner         = 0
+      llss_prefactor             = 0.0d0
       nr_ao                      = 0
       nr_ao_cartesian            = 0
       nr_ao_gerade               = 0
@@ -134,27 +133,26 @@ contains
       uq_to_pq                   = 0
       basis_is_spherical         = .false.
       use_only_large             = .false.
-      llss_prefactor             = 0.0d0
 
-      if (allocated(cartesian_deg                 )) deallocate(cartesian_deg                 )
-      if (allocated(cartesian_off                 )) deallocate(cartesian_off                 )
-      if (allocated(i_so_ao                       )) deallocate(i_so_ao                       )
-      if (allocated(l_quantum_nr                  )) deallocate(l_quantum_nr                  )
-      if (allocated(nr_nonzero_contraction_coefs  )) deallocate(nr_nonzero_contraction_coefs  )
-      if (allocated(shell_center                  )) deallocate(shell_center                  )
-      if (allocated(shell_stabilizing_irep        )) deallocate(shell_stabilizing_irep        )
-      if (allocated(spherical_deg                 )) deallocate(spherical_deg                 )
-      if (allocated(spherical_off                 )) deallocate(spherical_off                 )
-      if (allocated(center_deg    )) deallocate(center_deg    )
-      if (allocated(center_stabilizing_irep    )) deallocate(center_stabilizing_irep    )
-      if (allocated(ao_center                     )) deallocate(ao_center                     )
-      if (allocated(ao_center_xyz                 )) deallocate(ao_center_xyz                 )
-      if (allocated(ao_distance                   )) deallocate(ao_distance                   )
-      if (allocated(contraction_coef              )) deallocate(contraction_coef              )
-      if (allocated(f_so_ao                       )) deallocate(f_so_ao                       )
-      if (allocated(primitive_exp                 )) deallocate(primitive_exp                 )
-      if (allocated(center_charge )) deallocate(center_charge )
-      if (allocated(center_xyz    )) deallocate(center_xyz    )
+      if (allocated(cartesian_deg                )) deallocate(cartesian_deg                )
+      if (allocated(cartesian_off                )) deallocate(cartesian_off                )
+      if (allocated(i_so_ao                      )) deallocate(i_so_ao                      )
+      if (allocated(l_quantum_nr                 )) deallocate(l_quantum_nr                 )
+      if (allocated(nr_nonzero_contraction_coefs )) deallocate(nr_nonzero_contraction_coefs )
+      if (allocated(shell_center                 )) deallocate(shell_center                 )
+      if (allocated(shell_stabilizing_irep       )) deallocate(shell_stabilizing_irep       )
+      if (allocated(spherical_deg                )) deallocate(spherical_deg                )
+      if (allocated(spherical_off                )) deallocate(spherical_off                )
+      if (allocated(center_deg                   )) deallocate(center_deg                   )
+      if (allocated(center_stabilizing_irep      )) deallocate(center_stabilizing_irep      )
+      if (allocated(ao_center                    )) deallocate(ao_center                    )
+      if (allocated(ao_center_xyz                )) deallocate(ao_center_xyz                )
+      if (allocated(ao_distance                  )) deallocate(ao_distance                  )
+      if (allocated(contraction_coef             )) deallocate(contraction_coef             )
+      if (allocated(f_so_ao                      )) deallocate(f_so_ao                      )
+      if (allocated(primitive_exp                )) deallocate(primitive_exp                )
+      if (allocated(center_charge                )) deallocate(center_charge                )
+      if (allocated(center_xyz                   )) deallocate(center_xyz                   )
 
    end subroutine
 
@@ -181,6 +179,7 @@ contains
       integer              :: ishell, nshell
       integer              :: nround
       integer              :: ixyz
+      integer              :: iblock, jblock
       integer              :: nl, nt, nc, ns, kc, ks, oc, os
       integer              :: lssl_ic(2) = (/2, 1/)
       real(8)              :: f, px, py, pz
@@ -218,25 +217,24 @@ contains
       integer :: size2_center_xyz
 !     --------------------------------------------------------------------------
 
+      symmetry_info_found = .false.
+
       call interface_ao_clear()
 
       if (xc_mpi_is_master()) then
-         symmetry_info_found = .false.
-
          inquire(file = interface_file_name_ao, exist = interface_file_exists)
          if (.not. interface_file_exists) then
             print *, 'interface_ao file not found'
             stop
          end if
-         open(interface_file_unit,            &
-              file   = interface_file_name_ao,   &
-              status = 'unknown',   &
-              form   = 'formatted', &
+         open(interface_file_unit,             &
+              file   = interface_file_name_ao, &
+              status = 'unknown',              &
+              form   = 'formatted',            &
               access = 'sequential')
          rewind(interface_file_unit)
 
          do while (.true.)
-
             read(interface_file_unit, '(a120)', end=1) line
 
             if (word_contains(line, '*** geometry')) then
@@ -430,69 +428,75 @@ contains
             mc = 2
          end if
 
-!        transform as rotation
-         llss_nr_density_blocks = 0
+         i = 0
+         llss_prefactor = 1.0d0
+         do irep = 0, nr_boson_ireps - 1
+            do ic = 1, mc
+               if (ao_nr(irep, ic) > 0) then
+                  i = i + 1
+                  ao_block_nr(i)    = ao_nr(irep, ic)
+                  ao_block_start(i) = ao_off(irep, ic) + 1
+                  if (ic == 2) then
+                     llss_prefactor(i) = sigma_prefactor
+                  end if
+               end if
+            end do
+         end do
+         nr_ao_blocks = i
 
+!        transform as rotation
          inter_irep(0) = 0
          do jxyz = 1, 3
             inter_irep(jxyz) = irep_of_rotations(jxyz)
          end do
-
-         do irep = 0, nr_boson_ireps - 1
-            do jxyz = 0, 3
-               i = 0
-               do ic = 1, mc
-                  do irep1 = 0, nr_boson_ireps - 1
+         do irep1 = 0, nr_boson_ireps - 1
+            do ic = 1, mc
+               do irep = 0, nr_boson_ireps - 1
+                  do jxyz = 0, 3
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-
-                     nr1 = ao_nr(irep1, ic)
-                     nr2 = ao_nr(irep2, ic)
-
-                     if ((nr1 > 0) .and. (nr2 > 0)) then
-                        i = i + 1
-                        llss_nr_ao(1, i, jxyz, irep) = nr1
-                        llss_st_ao(1, i, jxyz, irep) = ao_off(irep1, ic) + 1
-                        llss_nr_ao(2, i, jxyz, irep) = nr2
-                        llss_st_ao(2, i, jxyz, irep) = ao_off(irep2, ic) + 1
-                        llss_prefactor(i, jxyz, irep) = 1.0d0
-                        if (ic == 2) then
-                           llss_prefactor(i, jxyz, irep) = sigma_prefactor
-                        end if
+                     if ((ao_nr(irep1, ic) > 0) .and. (ao_nr(irep2, ic) > 0)) then
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
+                              iblock = i
+                           end if
+                        end do
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
+                              jblock = i
+                           end if
+                        end do
+                        llss_block_partner(iblock, jxyz, irep) = jblock
                      end if
                   end do
                end do
-               llss_nr_density_blocks(jxyz, irep) = i
             end do
          end do
 
 !        transform as translation
-         lssl_nr_density_blocks = 0
-
          inter_irep(0) = 0
          do jxyz = 1, 3
             inter_irep(jxyz) = irep_of_axes(jxyz)
          end do
-
-         do irep = 0, nr_boson_ireps - 1
-            do jxyz = 0, 3
-               i = 0
-               do ic = 1, mc
-                  do irep1 = 0, nr_boson_ireps - 1
+         do irep1 = 0, nr_boson_ireps - 1
+            do ic = 1, mc
+               do irep = 0, nr_boson_ireps - 1
+                  do jxyz = 0, 3
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-
-                     nr1 = ao_nr(irep1, ic)
-                     nr2 = ao_nr(irep2, lssl_ic(ic))
-
-                     if ((nr1 > 0) .and. (nr2 > 0)) then
-                        i = i + 1
-                        lssl_nr_ao(1, i, jxyz, irep) = nr1
-                        lssl_st_ao(1, i, jxyz, irep) = ao_off(irep1, ic) + 1
-                        lssl_nr_ao(2, i, jxyz, irep) = nr2
-                        lssl_st_ao(2, i, jxyz, irep) = ao_off(irep2, lssl_ic(ic)) + 1
+                     if ((ao_nr(irep1, ic) > 0) .and. (ao_nr(irep2, lssl_ic(ic)) > 0)) then
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
+                              iblock = i
+                           end if
+                        end do
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep2, lssl_ic(ic)) + 1)) then
+                              jblock = i
+                           end if
+                        end do
+                        lssl_block_partner(iblock, jxyz, irep) = jblock
                      end if
                   end do
                end do
-               lssl_nr_density_blocks(jxyz, irep) = i
             end do
          end do
 
@@ -882,12 +886,12 @@ contains
          call xc_mpi_bcast(iq                            )
          call xc_mpi_bcast(irep_of_axes                  )
          call xc_mpi_bcast(irep_of_rotations             )
-         call xc_mpi_bcast(llss_nr_ao                    )
-         call xc_mpi_bcast(llss_nr_density_blocks        )
-         call xc_mpi_bcast(llss_st_ao                    )
-         call xc_mpi_bcast(lssl_nr_ao                    )
-         call xc_mpi_bcast(lssl_nr_density_blocks        )
-         call xc_mpi_bcast(lssl_st_ao                    )
+         call xc_mpi_bcast(ao_block_start                )
+         call xc_mpi_bcast(ao_block_nr                   )
+         call xc_mpi_bcast(nr_ao_blocks                  )
+         call xc_mpi_bcast(llss_block_partner            )
+         call xc_mpi_bcast(lssl_block_partner            )
+         call xc_mpi_bcast(llss_prefactor                )
          call xc_mpi_bcast(nr_ao_cartesian               )
          call xc_mpi_bcast(nr_ao_gerade                  )
          call xc_mpi_bcast(nr_ao_large                   )
@@ -904,7 +908,6 @@ contains
          call xc_mpi_bcast(uq_to_pq                      )
          call xc_mpi_bcast(basis_is_spherical            )
          call xc_mpi_bcast(use_only_large                )
-         call xc_mpi_bcast(llss_prefactor                )
 
          call xc_mpi_bcast(cartesian_deg                 )
          call xc_mpi_bcast(cartesian_off                 )

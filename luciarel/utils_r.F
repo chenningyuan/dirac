@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -297,7 +297,6 @@ C
 C**********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "mpif.h"
 #include "infpar.h"
 #endif
 #include "parluci.h"
@@ -361,7 +360,6 @@ C
 C**********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "mpif.h"
 #include "infpar.h"
 #endif
 #include "parluci.h"
@@ -421,8 +419,6 @@ C
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "files_r.inc"
@@ -455,6 +451,7 @@ C
 C***********************************************************************
       use mospinor_info
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 * =====
@@ -474,16 +471,15 @@ C***********************************************************************
 #include "oper.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, IOFF_T_IJKL
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET, IOFF_T_IJKL
 #if defined (INT_STAR8)
-      INTEGER(KIND=MPI_OFFSET_KIND)  IWRITE_BYTE
+      INTEGER(KIND=df_MPI_OFFSET_KIND)  IWRITE_BYTE
 #else
       INTEGER IWRITE_BYTE
 #endif
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8 
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_LENGHT8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGHT8
 #endif
 #include "parluci.h"
 #include "typesz_mpi2.h"
@@ -540,8 +536,9 @@ C
 C     WRITE(LUWRT,*)' writing WORK(KLH1DA): offset + bytes',
 C    &                IOFFSET, IWRITE_BYTE
 C     CALL WRTMAT(WORK(KLH1DA),1,NTOOB,1,NTOOB)
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DA),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_br(IIJKL_ROD,IOFFSET,
+     &                                    WORK(KLH1DA),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -554,8 +551,9 @@ C
 C     WRITE(LUWRT,*)' writing WORK(KLH1DB): offset + bytes',
 C    &                IOFFSET, IWRITE_BYTE
 C     CALL WRTMAT(WORK(KLH1DB),1,NTOOB,1,NTOOB)
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DB),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_br(IIJKL_ROD,IOFFSET,
+     &                                    WORK(KLH1DB),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -568,8 +566,8 @@ C
 C     WRITE(LUWRT,*)' writing WORK(KLJ): offset + bytes',
 C    &                IOFFSET, IWRITE_BYTE
 C     CALL WRTMAT(WORK(KLJ),1,NTOOB**2,1,NTOOB**2)
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLJ),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_br(IIJKL_ROD,IOFFSET,WORK(KLJ),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -579,8 +577,8 @@ C
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_br(IIJKL_ROD,IOFFSET,WORK(KLK),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C     
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
@@ -590,8 +588,8 @@ C
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK2),
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_br(IIJKL_ROD,IOFFSET,WORK(KLK2),
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
 #endif
 C     flush local memory
@@ -617,18 +615,18 @@ C
 C
 C***********************************************************************
       use symmetry_setup_krci
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8 
-      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TOFFW,IWRITE_ELM
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_ADD
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TOFFW,IWRITE_ELM
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_ADD
 #if defined (INT_STAR8)
-      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_BYTE
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_BYTE
 #else
       INTEGER IWRITE_BYTE
 #endif
@@ -651,6 +649,7 @@ C***********************************************************************
       real*8,  allocatable :: t_buffx(:)
 #endif
       logical              :: int_file_is_master_file
+      character (len=4)    :: FILE_INFO_group
 !     scratch memory
       real(8), allocatable :: t_unsort(:)
       real(8), allocatable :: t_buff_lowsort(:)
@@ -690,21 +689,38 @@ C       every MPI implementation (IBM?); anyway bcast should
 C       NOT be our first choice...
 C
 #if defined (VAR_MPI2)
-        CALL MPI_BCAST(t_unsort,LEN_ALL_INT,MPI_REAL8,MASTER,
-     &                 IXCOMM,IERR)
+        LEN_ALL_INT_i4 = LEN_ALL_INT
+        if(LEN_ALL_INT_i4 /= LEN_ALL_INT) 
+     &  call quit('*** WRITE_IJKL_GAS: the chosen integral handling'//
+     &            ' type requires a 64-bit integer Dirac/MPI ***')
+        call interface_mpi_BCAST(t_unsort,LEN_ALL_INT_i4,MASTER,
+     &                 IXCOMM)
 #endif
       END IF
 !
 !     write back to disk pre-sorted integrals
       if( lowsrt_ijkl )then
 #if defined (VAR_MPI2)
-        CALL MPI_FILE_OPEN(MPI_COMM_SELF,"IJKL_PRESORT",
-     &       MPI_MODE_CREATE + MPI_MODE_WRONLY,MPI_INFO_NULL,
-     &                     IJKL_PRE,IERR)
+C     file info object - provide useful hints for the MPI implementation
+C
+        call interface_mpi_INFO_CREATE(FILE_INFO_OBJ)
+C
+C     ... number of CPUs sharing the following MPI-I/O file
+        WRITE (FILE_INFO_group,'(I4)') 1
+        call interface_mpi_INFO_SET(FILE_INFO_OBJ,"nb_proc",
+     &       FILE_INFO_group)
+
+        call interface_mpi_FILE_OPEN(self_communicator,"IJKL_PRESORT",
+     &       df_MPI_MODE_CREATE + df_MPI_MODE_WRONLY,FILE_INFO_OBJ,
+     &                     IJKL_PRE)
+
         IDISP = 0
-        CALL MPI_FILE_SET_VIEW(IJKL_PRE,IDISP,MPI_BYTE,MPI_BYTE,
-     &                         "native",MPI_INFO_NULL,IERR)
+        call interface_mpi_FILE_SET_VIEW(IJKL_PRE,IDISP,
+     &                         df_MPI_BYTE,df_MPI_BYTE,
+     &                         "native",FILE_INFO_OBJ)
+        call interface_mpi_INFO_free(FILE_INFO_OBJ)
 !
+
 !       check for total number of elements - do not write more than 
 !       1.0*10^8 elements at each cycle
         IWRITE_MAX  = 100 000 000
@@ -732,8 +748,9 @@ C
 !
 !
         DO IJ = 1, ILOOP_WRITE
-           CALL MPI_FILE_WRITE_AT(IJKL_PRE,IOFFSET,t_unsort(IT_TOFFW),
-     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+           call interface_mpi_FILE_WRITE_AT_br(IJKL_PRE,IOFFSET,
+     &                            t_unsort(IT_TOFFW),
+     &                            IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 !          new offsets
            IT_TOFFW    = IT_TOFFW + IWRITE_ELM
            IOFFSET     = IOFFSET  + IOFF_ADD
@@ -750,8 +767,10 @@ C
            IWRITE_ELM4 = IGIVE_I_B(XLENALL)
            IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
 #endif
-           CALL MPI_FILE_WRITE_AT(IJKL_PRE,IOFFSET,t_unsort(IT_TOFFW),
-     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+           call interface_mpi_FILE_WRITE_AT_br(IJKL_PRE,IOFFSET,
+     &                                      t_unsort(IT_TOFFW),
+     &                                      IWRITE_BYTE,df_MPI_BYTE,
+     &                                      ISTAT)
            IOFFSET     = IOFFSET  + IOFF_ADD
         END IF
 #endif
@@ -762,7 +781,7 @@ C
 !       free memory and close scratch file
         deallocate(t_unsort)
 #if defined (VAR_MPI2)
-        call mpi_file_close(ijkl_pre,ierr)
+        call interface_mpi_file_close(ijkl_pre)
 #endif
       end if ! low-memory sorting branch
 C
@@ -846,18 +865,21 @@ C     Last revision :
 C
 C
 C***********************************************************************
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8 
-      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TOFFW,IWRITE_ELM
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_IJKL, IOFF_ADD
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TOFFW,IWRITE_ELM
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_T_IJKL, IOFF_ADD
+      INTEGER(KIND=df_MPI_OFFSET_KIND) NDIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N1DIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N2DIAINT_i8
 #if defined (INT_STAR8)
-      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_BYTE
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_BYTE
 #else
       INTEGER IWRITE_BYTE
 #endif
@@ -870,6 +892,7 @@ C***********************************************************************
 #include "ctcc.inc"
       DIMENSION T_BUFF(*), T(*), MDIASV(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_OUT
+      character (len=4) :: group_size_info
 C
       NINT_TOT = N1ELINT + N2ELINT
 C     WRITE(LUWRT,*) 'NINT_TOT, N1ELINT, N2ELINT',
@@ -885,47 +908,58 @@ C    &                NINT_TOT, N1ELINT, N2ELINT
       IDISP    = 0
       IOFFSET  = 0
 C
+      call interface_mpi_INFO_CREATE(FILE_INFO_OBJ)
+
 #if defined (VAR_PFS) && defined (SYS_AIX)
 C
 C     provide useful I/O performance information on IBMs GPFS
 C
-      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
-      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
-     &                  "true",IERR)
-      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &     MPI_MODE_CREATE + MPI_MODE_WRONLY,FILE_INFO_OBJ,
-     &                       IIJKL_ROD,IERR)
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                  "true")
+      call interface_mpi_FILE_OPEN(self_communicator,
+     &     NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_WRONLY,FILE_INFO_OBJ,
+     &                       IIJKL_ROD)
 C
-      CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
 #else
-      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &     MPI_MODE_CREATE + MPI_MODE_WRONLY,MPI_INFO_NULL,
-     &                       IIJKL_ROD,IERR)
+      WRITE (group_size_info,'(I4)') 1
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ,"nb_proc",
+     &     group_size_info)
+
+      call interface_mpi_FILE_OPEN(self_communicator,
+     &     NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &     df_MPI_MODE_CREATE + df_MPI_MODE_WRONLY,FILE_INFO_OBJ,
+     &                       IIJKL_ROD)
 #endif
+      call interface_mpi_INFO_FREE(FILE_INFO_OBJ)
 C
-      CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
-     &                       "native",MPI_INFO_NULL,IERR)
+      call interface_mpi_FILE_SET_VIEW(IIJKL_ROD,IDISP,df_MPI_BYTE,
+     &                                 df_MPI_BYTE,
+     &                       "native",df_MPI_INFO_NULL)
 C
 C     WRITE(LUWRT,*) ' NTEST_DIA',NTEST_DIA
       IOFFSET     = 0 
       IWRITE_BYTE = ISIZE_int8
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NALLINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,NALLINT,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
-      IWRITE_BYTE = ISIZE_my_int
+      IWRITE_BYTE = ISIZE_int8
+      NDIAINT_i8  = NDIAINT
 C     WRITE(LUWRT,*) ' NDIAINT',NDIAINT
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NDIAINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,NDIAINT_i8,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
-      IWRITE_BYTE = ISIZE_my_int
+      IWRITE_BYTE = ISIZE_int8
+      N1DIAINT_i8 = N1DIAINT
 C     WRITE(LUWRT,*) ' N1DIAINT',N1DIAINT
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,N1DIAINT_i8,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
       IOFFSET     = IOFFSET + IWRITE_BYTE
-      IWRITE_BYTE = ISIZE_my_int
+      IWRITE_BYTE = ISIZE_int8
+      N2DIAINT_i8 = N2DIAINT
 C     WRITE(LUWRT,*) ' N2DIAINT',N2DIAINT
-      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
-     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_WRITE_AT_bi(IIJKL_ROD,IOFFSET,N2DIAINT_i8,
+     &                       IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C
 C     T in SIGDEN ordered format
 C
@@ -970,8 +1004,8 @@ C
 C        WRITE(LUWRT,*) ' loop index IJ',IJ
 C        CALL WRTMATMN8(T(IT_TOFFW),1,IWRITE_ELM,1,
 C    &   IWRITE_ELM,LUWRT)
-         CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                          IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+         call interface_mpi_FILE_WRITE_AT_br(IIJKL_ROD,IOFFSET,
+     &        T(IT_TOFFW),IWRITE_BYTE,df_MPI_BYTE,ISTAT)
 C        new offsets
          IT_TOFFW    = IT_TOFFW + IWRITE_ELM
          IOFFSET     = IOFFSET  + IOFF_ADD
@@ -989,8 +1023,8 @@ C        bytes to add in remaining step
           IWRITE_ELM4 = IGIVE_I_B(XLENALL)
           IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
 #endif
-          CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                           IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+          call interface_mpi_FILE_WRITE_AT_br(IIJKL_ROD,IOFFSET, 
+     &         T(IT_TOFFW),IWRITE_BYTE,df_MPI_BYTE,ISTAT)
           IOFFSET     = IOFFSET  + IOFF_ADD
       END IF
 C
@@ -1004,7 +1038,7 @@ C
       CALL WRITE_T_DIAG(T,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
      &                  IPRNT,IOFF_T_IJKL)
 C
-      CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
+      call interface_mpi_FILE_CLOSE(IIJKL_ROD)
 C
 #endif
 C
@@ -1025,16 +1059,19 @@ C
 C
 C***********************************************************************
       use mospinor_info
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW
-      INTEGER(KIND=MPI_OFFSET_KIND) IREAD_ELM,IOFF_ADD
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IREAD_ELM,IOFF_ADD
+      INTEGER(KIND=df_MPI_OFFSET_KIND) NDIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N1DIAINT_i8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) N2DIAINT_i8
 #if defined (INT_STAR8)
-      INTEGER(KIND=MPI_OFFSET_KIND)  IREAD_BYTE
+      INTEGER(KIND=df_MPI_OFFSET_KIND)  IREAD_BYTE
 #else
       INTEGER IREAD_BYTE
 #endif
@@ -1048,6 +1085,7 @@ C***********************************************************************
       DIMENSION T_BUFF(*),T(NALLINT),MDIASV(*),IT_TTPL(*)
       DIMENSION T_BUFF_D(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_IN
+      character (len=4) :: group_size_info
 C
       NINT_TOT = N1_INT + N2ELINT
       IWRITE_ELM4 = 0
@@ -1060,51 +1098,61 @@ C
       IDISP    = 0
       IOFFSET  = 0
 C
+      call interface_mpi_INFO_CREATE(FILE_INFO_OBJ)
 #if defined (VAR_PFS) && defined (SYS_AIX)
 C
 C     provide useful information on IBMs GPFS to enhance 
 C     I/O performance
 C
-      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
-      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
-     &                  "true",IERR)
-      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &                   MPI_MODE_RDONLY,FILE_INFO_OBJ,
-     &                   IIJKL_ROD,IERR)
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                  "true")
+      call interface_mpi_FILE_OPEN(self_communicator,
+     &     NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &                   df_MPI_MODE_RDONLY,FILE_INFO_OBJ,
+     &                   IIJKL_ROD)
 C
-      CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
 #else
 
-      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &                   MPI_MODE_RDONLY,MPI_INFO_NULL,
-     &                   IIJKL_ROD,IERR)
+      WRITE (group_size_info,'(I4)') 1
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ,"nb_proc",
+     &     group_size_info)
+      call interface_mpi_FILE_OPEN(self_communicator,
+     &     NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &                   df_MPI_MODE_RDONLY,FILE_INFO_OBJ,
+     &                   IIJKL_ROD)
 C
 #endif
-      CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
-     &                       "native",MPI_INFO_NULL,IERR)
+      call interface_mpi_INFO_FREE(FILE_INFO_OBJ)
+
+      call interface_mpi_FILE_SET_VIEW(IIJKL_ROD,IDISP,
+     &     df_MPI_BYTE,df_MPI_BYTE,
+     &     "native",df_MPI_INFO_NULL)
 C
       IOFFSET     = 0
       IREAD_BYTE  = ISIZE_int8
-      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NALLINT,
-     &                     IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,NALLINT,
+     &                     IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: NALLINT ',NALLINT
       IOFFSET     = IOFFSET + IREAD_BYTE
-      IREAD_BYTE  = ISIZE_my_int
-      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NDIAINT,
-     &                       IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+      IREAD_BYTE  = ISIZE_int8
+      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,NDIAINT_i8,
+     &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
+      NDIAINT     = NDIAINT_i8
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: NDIAINT ',NDIAINT
       IOFFSET     = IOFFSET + IREAD_BYTE
-      IREAD_BYTE  = ISIZE_my_int
-      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
-     &                       IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+      IREAD_BYTE  = ISIZE_int8
+      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,N1DIAINT_i8,
+     &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
+      N1DIAINT    = N1DIAINT_i8
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: N1DIAINT',N1DIAINT
       IOFFSET     = IOFFSET + IREAD_BYTE
-      IREAD_BYTE  = ISIZE_my_int
-      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
-     &                       IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+      IREAD_BYTE  = ISIZE_int8
+      call interface_mpi_FILE_READ_AT_bi(IIJKL_ROD,IOFFSET,N2DIAINT_i8,
+     &                       IREAD_BYTE,df_MPI_BYTE,ISTAT)
+      N2DIAINT    = N2DIAINT_i8
 C     WRITE(LUWRT,*) ' read-in at ',IOFFSET
 C     WRITE(LUWRT,*) ' read-in result: N2DIAINT',N2DIAINT
 C
@@ -1157,8 +1205,9 @@ C    &                   IMOD_READ, IOFFSET
 C
 C       WRITE(LUWRT,*) ' ILOOP_READ',ILOOP_READ
         DO IJ = 1, ILOOP_READ
-           CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                           IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+           call interface_mpi_FILE_READ_AT_br(IIJKL_ROD,IOFFSET,
+     &          T(IT_TOFFW),
+     &                           IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C          WRITE(LUWRT,*) ' read cycle IJ',IJ
 C          new offsets
            IT_TOFFW    = IT_TOFFW + IREAD_ELM
@@ -1177,8 +1226,8 @@ C         bytes to add in remaining step
           IREAD_ELM4 = IGIVE_I_B(XLENALL)
           IREAD_BYTE = IREAD_ELM4 * ISIZE_dp
 #endif
-          CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                           IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+          call interface_mpi_FILE_READ_AT_br(IIJKL_ROD,IOFFSET,
+     &         T(IT_TOFFW),IREAD_BYTE,df_MPI_BYTE,ISTAT)
           IOFFSET     = IOFFSET  + IOFF_ADD
         END IF
       
@@ -1201,15 +1250,15 @@ C
 #endif
 C     WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
 C     WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
-      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,
-     &                      IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+      call interface_mpi_FILE_READ_AT_br(IIJKL_ROD,IOFFSET,T_BUFF_D,
+     &                      IREAD_BYTE,df_MPI_BYTE,ISTAT)
 C
 C     WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
 C    &                                          MY_T_LEN_D
 C     WRITE(LUWRT,*) ' printing first 100 elements'
 C     CALL WRTMATMN8(T_BUFF_D,1,100,1,100,LUWRT)
 C
-      CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
+      call interface_mpi_FILE_CLOSE(IIJKL_ROD)
 C
 #endif
 C
@@ -1227,9 +1276,6 @@ C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "mpif.h"
-#include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION ICHECK_VEC(*)
 C
@@ -1257,16 +1303,16 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+      use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "mpif.h"
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C information for property run
 #include "krciprop.h"
 #include "dcbxpr.h"
       CHARACTER FILE_INFO_GROUPSZ*4,XPROP_INT*13,FILELAB_REOD*8,RODLAB*2
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_XPRP
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_XPRP
       DIMENSION XPROP(*)
 C
       RODLAB    = 'RO'
@@ -1277,17 +1323,19 @@ C     ---------------------------------------
 C
 C     file info object - provide useful hints for the MPI implementation
 C
-      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+      call interface_mpi_INFO_CREATE(FILE_INFO_OBJ)
 C
 C     ... number of CPUs sharing the following MPI-I/O file
       WRITE (FILE_INFO_GROUPSZ,'(I4)') NEWCOMM_PROC
-      CALL MPI_INFO_SET(FILE_INFO_OBJ,"nb_proc",FILE_INFO_GROUPSZ,IERR)
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ,"nb_proc",
+     &     FILE_INFO_GROUPSZ)
 C
 #if defined (VAR_PFS)
 C
 C     special information on IBMs GPFS to enhance I/O performance
 C
-      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io", "true",IERR)
+      call interface_mpi_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io", 
+     &     "true")
 #endif
 C
 C     ... set correct name
@@ -1303,15 +1351,17 @@ C     ... set correct name
       END IF
 C
 C     ... open file
-      CALL MPI_FILE_OPEN(MYNEW_COMM,XPROP_INT(1:LXPROP_INT),
-     &     MPI_MODE_DELETE_ON_CLOSE + MPI_MODE_CREATE + MPI_MODE_RDWR,
-     &     FILE_INFO_OBJ,ILPRP_X,IERR)
+      call interface_mpi_FILE_OPEN(MYNEW_COMM,XPROP_INT(1:LXPROP_INT),
+     &     df_MPI_MODE_DELETE_ON_CLOSE + df_MPI_MODE_CREATE 
+     &   + df_MPI_MODE_RDWR,
+     &     FILE_INFO_OBJ,ILPRP_X)
 C
-      CALL MPI_INFO_FREE(FILE_INFO_OBJ,IERR)
+      call interface_mpi_INFO_FREE(FILE_INFO_OBJ)
 C
 C     ... set fileview
-      CALL MPI_FILE_SET_VIEW(ILPRP_X,IOFF_XPRP,MPI_REAL8,MPI_REAL8,
-     &        "native",MPI_INFO_NULL,IERR)
+      call interface_mpi_FILE_SET_VIEW(ILPRP_X,IOFF_XPRP,
+     &     df_MPI_REAL8,df_MPI_REAL8,
+     &     "native",df_MPI_INFO_NULL)
 C
 C     XPROP distribution
       DO IPROP_X = 1, NPROP_KRCI
@@ -1324,10 +1374,10 @@ C     XPROP distribution
      &                         LEN_XPRP_INT,1)
            END IF
            IF( MYNEW_ID .eq. N_MASTER ) THEN
-             CALL MPI_BCAST(XPROP,LEN_XPRP_INT,MPI_REAL8,MASTER,
-     &                      ICOMM,IERR)
-             CALL MPI_FILE_WRITE_AT(ILPRP_X,IOFF_XPRP,XPROP,
-     &                              LEN_XPRP_INT,MPI_REAL8,ISTAT,IERR)
+             call interface_mpi_bcast_r1_work_f77(XPROP,LEN_XPRP_INT,
+     &            MASTER,ICOMM)
+             call interface_mpi_FILE_WRITE_AT_r(ILPRP_X,IOFF_XPRP,XPROP,
+     &                              LEN_XPRP_INT,ISTAT)
 C            new offset
              IOFF_XPRP = IOFF_XPRP + LEN_XPRP_INT
            END IF
@@ -1351,10 +1401,8 @@ C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "mpif.h"
 #include "infpar.h"
 #include "parluci.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
       DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)
@@ -1413,10 +1461,8 @@ C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "mpif.h"
 #include "infpar.h"
 #include "parluci.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
       DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)

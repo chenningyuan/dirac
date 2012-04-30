@@ -17,7 +17,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION S(N),OVE(N)
       DO I=1,N
         OVE(I)=OVE(I)+S(I)
@@ -38,8 +38,8 @@ C statuses (nonconvergence, divergence etc...)
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
 C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
@@ -136,8 +136,8 @@ C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_v10.h"
       DIMENSION WORK(LWORK)
@@ -204,8 +204,8 @@ C  MULT(ISIZE) -> MULT(*), MULT part of REL, which is from MEMGET
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 CMI   DIMENSION V(ISIZE),SMAT(ISIZE),MULT(ISIZE),P(ISIZE),G(ISIZE),
       DIMENSION V(ISIZE),SMAT(ISIZE),MULT(*),P(ISIZE),G(ISIZE),
      *H(ISIZE),BU(ISIZE),EV2(ISIZE),
@@ -365,14 +365,14 @@ C
 C   Called from INPUT_AT34.
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_ijpair.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 C
-C     VERSION INCLUDING IDK ARRAY
+Cvec  VERSION INCLUDING IDK ARRAY
 C
 #include "amfi_if.h"
 c     logical relscf_verbose
@@ -503,8 +503,8 @@ CMI   call quit('stopped after HFMAIN for debugging purposes')
       END
 
       SUBROUTINE BESSKA(AVAL,XVAL,KA,KA1)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       REAL*8 AVAL,XVAL,EPS,KA,KA1
 C
 C     SUBROUTINE TO CALCULATE MODIFIED BESSEL FUNCTION OF THE
@@ -615,8 +615,8 @@ C
       END
 
       SUBROUTINE CHECK(ICORE,K,TEXT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "amfi_if.h"
 c     logical relscf_verbose
       CHARACTER*8 TEXT
@@ -677,8 +677,8 @@ CMI   STOP
       END
 
       SUBROUTINE CPLAB (A,B,L,M,N,IA,IB,C,IC,IER)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION   A(IA,M),B(IB,N),C(IC,N)
       IF (IA .GE. L .AND. IB .GE. M .AND. IC .GE. L) GO TO 5
       IER=129
@@ -699,7 +699,7 @@ CMI   STOP
       END
 
       DOUBLE PRECISION FUNCTION DCOF(E,LX,IX)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_crelop.h"
 C
 C     FUNCTION DCOF CALCULATES COEFFICIENT D NEEDED FOR FT
@@ -731,8 +731,8 @@ C
 CMI - removed S from param.list
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_dim.h"
 C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -800,7 +800,7 @@ C
 C    CALCULATE INTEGRAL OVER DERIVATIVE OF THE FUNCTIONS
 C
       DOUBLE PRECISION FUNCTION DER(IDER,IS1,IS2,AL,BE)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_crelop.h"
 #include "amfi_if.h"
 c     logical relscf_verbose
@@ -885,8 +885,8 @@ C
       END
 
       SUBROUTINE DIAGX(A,N,EIG,EW,SINV,AUX,IC)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(*),AUX(N,N),SINV(N,N),EIG(N,N),EW(*)
       TOL=1.D-15
       IJ=0
@@ -935,8 +935,8 @@ C     LENGTH N1
 C     NO DEFINE THE COLUMN CORRESPONDING TO THE VECTOR C IN A MATRIX C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -1127,8 +1127,8 @@ C
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
@@ -1218,8 +1218,8 @@ C     TT      NONREL. KINETIC ENERGY (DIAGONAL)
 C     AUXF,AUXG,AUXH  SCRATCH ARAYS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION V(*),G(*),E(N),R(N),A(N),TT(N),AUXF(N,N),
      *AUXG(N,N),AUXH(N,N)
       M=N
@@ -1345,7 +1345,7 @@ C
 C *** PVP V 1.0 - 19.1.84 - BERND HESS
 C *** PVP V 1.1 -  5.6.86 - BERND HESS
       DOUBLE PRECISION FUNCTION EXTC(LAMBDA,AL,BE,L1,M1,N1,L2,M2,N2)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_crelop.h"
       INTEGER IS1(3),IS2(3)
 C
@@ -1416,8 +1416,8 @@ C   CM1SCF(MXBF,1) --> CM1SCF(MXBF,*)
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
       DIMENSION SCR(*),
@@ -1544,8 +1544,8 @@ C
 
 C***** NAME FILLMA
       SUBROUTINE FILLMA(N,S,OVE)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION S(*),OVE(N,N)
       IJ=0
       DO I=1,N
@@ -1559,7 +1559,7 @@ C***** NAME FILLMA
       END
 
       DOUBLE PRECISION FUNCTION GAM(M)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_crelop.h"
       
       IF (MOD(M,2).EQ.0) GOTO 10
@@ -1593,8 +1593,8 @@ C  X(2) -> X(*)
 C  W(2) -> W(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 CMI   DIMENSION X(2), W(2)
       DIMENSION X(*), W(*)
       DIMENSION GPT(166),GWT(166),P3(2),W3(2)
@@ -1814,7 +1814,7 @@ CMI  ...  for array 'w', upper bound of dimension 1 exceeded
 
 C     EXPONENTIATIONS REMOVED
       FUNCTION GINY(NY,NAB,NCD,ZAB,ZCD)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_dim.h"
 C
 C     CALCULATES THE INTEGRAL I(NY) NEEDED FOR THE SUPERMATRICES P AND Q
@@ -1823,7 +1823,7 @@ C
       TABCD=ZAB/ZCD
       NABNY=NAB-NY-1
       NCDNY=NCD+NY
-C$    VNAB=FACTO(NABNY)/ZAB**(0.5D0*(NABNY+1))
+Cvec  VNAB=FACTO(NABNY)/ZAB**(0.5D0*(NABNY+1))
       IPOW=(NABNY+1)/2
       JPOW=NABNY+1-2*IPOW
       RES=1.D0
@@ -1931,8 +1931,8 @@ C  SMIN(MXBF,1) ->  SMIN(MXBF,*)
 C  GMIN(MXBF,1) ->  GMIN(MXBF,*)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_dim.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
@@ -2103,8 +2103,8 @@ C
 C   C(MXBF,1) -> C(MXBF,*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 #include "scfarr.h"
@@ -2673,8 +2673,8 @@ C X(2) -> X(*)
 C W(2) -> W(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 CMI   DIMENSION N (2),A(2),B(2),C(2),X(2),W(2),NP(2),XP(2),WP(2),
       DIMENSION N (*),A(*),B(*),C(*),X(*),W(*),NP(*),XP(*),WP(*),
      1          X1(150),W1(150),X2(12),W2(12)
@@ -2827,8 +2827,8 @@ C
 C   Called from AT3
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -2891,7 +2891,7 @@ CMI   MXXTRP=80
 
       DGATH=1.D-4
       SCFAT=1.D-3
-      EXPMN=1.1D-3
+      EXPMN=1.1D-4
       DMNXP=1.1D-3
       RMNED=1.1D-8
       RMXED=0.99D-1
@@ -3184,7 +3184,7 @@ C --- verify number of basis functions wrt shell occupation
       I=I-1
       IF ((SCFAT.LT.1.D-4).OR.(SCFAT.GT.0.1)) GO TO 370
       I=I-1
-      IF ((EXPMN.LT.1.D-3).OR.(EXPMN.GT.1.)) GO TO 370
+      IF ((EXPMN.LT.1.D-4).OR.(EXPMN.GT.1.)) GO TO 370
       I=I-1
       IF ((DMNXP.LT.1.D-3).OR.(DMNXP.GT.1.)) GO TO 370
       I=I-1
@@ -3494,8 +3494,8 @@ C     IC=1 EIGNEVALUES AND VECTORS REARRANGED
 C       =0 LEFT AS THEY ARE
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(N,N),B(N,N),EIG(*)
       ENUI=0.D0
       U1=N
@@ -3592,8 +3592,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C     V 2.0 - VECTORIZED VERSION - BERND HESS
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(N,N),EIVU(N),EIVR(N,N)
 
       IF(N-1) 2,2,1
@@ -3752,7 +3752,7 @@ C      PLACE EIGENVALUES IN EIVU
      *    CSAV1,CSAV2,GMIN,W,THRE,EPS,EPSI,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C$    VERSION INCLUDING IDK ARRAY
+Cvec  VERSION INCLUDING IDK ARRAY
 C
 C     THIS SUBROUTINE  DIAGONALIZES THE HARTREE-FOCK MATRIX  FC AND FO
 C         SYMMETRY BY SYMMETRY,NBAS(N) IS SMALLER OR EQUAL TO 15
@@ -3763,8 +3763,8 @@ C   U(2)  -> U(*)
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_ijpair.h"
 #include "relscf_dim.h"
@@ -3812,7 +3812,7 @@ C     NEW (EIGRS) DIAGONALIZATION ROUTINE
 C
         CALL JACVAO (DT,NBAS1,EPSI,V,THRSH)
 
-C$    INTRODUCE NEW VECTOR LOOP (INTERMEDIATE STORAGE OF TERM)
+Cvec  INTRODUCE NEW VECTOR LOOP (INTERMEDIATE STORAGE OF TERM)
         eigval_min = 1.0d0
         DO I=1,NBAS1
           eigval_min = min(eigval_min,EPSI(I))
@@ -3947,8 +3947,8 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
       END
 
       SUBROUTINE KBR(BETA,X,RESULT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     PROGRAM TO CALCULATE CONTINUED FRACTION
 C     1/1+ A1*X/1+ A2*X/1+ ...
@@ -3999,7 +3999,7 @@ C     CRAY CHANGES ARE MARKED BY c
 C     RELATIVISTIC VERSION
 C     VERSION 1.2 - 14.2.87 - EIGRS
 C     IBM+ VERSION - 24.10.86 - BERND HESS
-C     VECTORIZATION CHANGES MARKED BY C$
+C     VECTORIZATION CHANGES MARKED BY Cvec
 C     THIS VERSION WORKS FOR F FUNCTIONS
 C>@V  VERSION
 C     FOLLOWING SUBROUTINES HAVE BEEN OPTIMIZED:
@@ -4028,8 +4028,8 @@ C
 CMI   PARAMETER (MAINST=1500000)
 C     PARAMETER (MAINST=2400000)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "amfi_if.h"
 c     logical relscf_verbose
 
@@ -4065,8 +4065,8 @@ C  REL(2) -> REL(*) because REL is from MEMGET
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -4311,8 +4311,8 @@ C  P(2)      -> P(*)
 C  U(2)       --> U(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -4960,7 +4960,7 @@ CMI   IF(NPENFA.EQ.1) WRITE(1,1233) WIG,WIGNER
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DOUBLE PRECISION FUNCTION PHI(M,N)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_crelop.h"
       IF (MOD(N,2).EQ.1.OR.MOD(M,2).EQ.1) GOTO 10
       PHI=2.D0*GA(M+1)*GA(N+1)/GA(M+N+2)
@@ -4979,8 +4979,8 @@ C
 C     PRINT INTERMEDIATE ITERATION RESULTS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_dim.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -5055,7 +5055,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      *PVP(CHARGE,AL,BE,L1,M1,N1,L2,M2,N2)
 C *** PVP V 1.0 - 19.1.84 - BERND HESS
 C *** PVP V 1.1 -  5.6.86 - BERND HESS
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_crelop.h"
       INTEGER IS1(3),IS2(3)
 C
@@ -5134,8 +5134,8 @@ C      RELOP - PROGRAM TO CALCULATE RELATIVISTIC ONE-ELECTRON
 C      OPERATORS IN A BASIS SET OF GAUSSIAN FUNCTIONS
 C      V 1.0 - 12.3.86 - BERND HESS
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_crelop.h"
 C
 C     SUBROUTINE RELOP INITIALIZES THE COMMON BLOCK USED BY
@@ -5220,8 +5220,8 @@ C               VECTOR (BEFORE ORTHOGONALIZATION) WITH THE N-1 VECTORS
 C               OF LOWER INDEX
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_v10.h"
 C     DIMENSION C(MXBF,1),S(*),SCR(*)
       DIMENSION C(MXBF,*),S(*),SCR(*)
@@ -5287,7 +5287,7 @@ C
       END
 
       FUNCTION SINY(NY,NAB,NCD,ZAB,ZCD)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_dim.h"
 C
 C     CALCULATES THE INTEGRAL I(NY) NEEDED FOR THE SUPERMATRICES P AND Q
@@ -5323,8 +5323,8 @@ C     G (ISIZE)      SCRATCH
 C     A1(N)          SCRATCH
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 CMI   DIMENSION SS(2),P(2),G(2),A1(2),SINV(N,N)
       DIMENSION SS(*),P(*),G(*),A1(*),SINV(N,N)
       JL=0
@@ -5392,8 +5392,8 @@ C      INTEGRALS ARE CALCULATED BETWEEN   NORMALIZED FUNCTIONS
 
       DOUBLE PRECISION FUNCTION
      *SQROPY(AA,AB,LA,MA,NA,LB,MB,NB)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_crelop.h"
 C
 C     SUBROUTINE SQROPY CALCULATES MATRIXELEMENT BETWEEN FUNCTION
@@ -5525,7 +5525,7 @@ C
       END
 
       DOUBLE PRECISION FUNCTION THETA(M,N)
-#include <implicit.h>
+#include "implicit.h"
 #include "relscf_crelop.h"
 C
 C     INTEGRATION OVER THETA. INCLUDES A FACTOR SIN(TH)
@@ -5539,8 +5539,8 @@ C
       END
 
       SUBROUTINE TRSM(A,B,C,N,H,W)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     TRANSFORM SYMMETRIC MATRIX A BY UNITARY TRANSFORMATION
@@ -5577,8 +5577,8 @@ C
       END
 
       SUBROUTINE TRSMT(A,B,C,N,H,W)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     B*A*BT
@@ -5625,8 +5625,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "relscf_dim.h"
 C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -5719,8 +5719,8 @@ C
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TEIG(P,Q,NSYM,NBAS,NOSH,ZETA,ajmn,U,OCCUP,ndimpq)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL OPEN,KLNEMN
 C.......................................................................
 C
@@ -6021,8 +6021,8 @@ C.......................................................................
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SETABJ(AJMN,NSYM,NOSH,NCCUP)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C.......................................................................
 C
 C     SET COUPLING COEFFICIENTS FOR OPEN SHELLS. FOR A TABULATION

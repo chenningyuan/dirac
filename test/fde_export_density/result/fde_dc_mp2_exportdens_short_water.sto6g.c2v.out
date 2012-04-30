@@ -1701,14 +1701,7 @@ SOfock:SL  1.49D-10    0.00%    3.05%    0.00%    0.00%   0.26801586s
        *******************************************************************
 
  Name of the outputfile:GRIDOUT
- Reading CC_DENSITY
-  Retrieving MP2 density matrix from file
- lugridout id is:           1
- Reading grid.
- Grid read from file.
- Number of gridpoints:        8884
- Calculating the density and its derivatives.
-  Integrated density adds up to   1.530471337922833E-002  electrons.
+  Exported (active) density integrates to   1.530471337922833E-002  electrons.
  Calculating the coulomb potential and its derivatives.
  Writing data to xml_file:
  GRIDOUT                                                     

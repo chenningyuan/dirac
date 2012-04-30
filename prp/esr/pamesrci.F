@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,7 +21,7 @@
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck esr_init */
-      SUBROUTINE ESR_INIT(WF,IPRINT,N_CIESR,SPINPOLESR,WORK,KFREE,LFREE)
+      SUBROUTINE ESR_INIT(WF,IPRINT,N_CIESR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Initialize ESR calculation: find out what to do
@@ -33,18 +33,17 @@ C
 C     Author: Hans Joergen Aa. Jensen
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(*)
       CHARACTER WF*4
-      LOGICAL   SPINPOLESR
 C
       CALL QENTER('ESR_INIT')
 C
@@ -66,10 +65,8 @@ C
 C     Include spin polarization in CI ?? If yes redefine GAS spaces
 C     NASH(:), NASHT, NACTEL, NAELEC etc. are all reset in THDFORB
 C
-      IF (SPINPOLESR) THEN
-         CALL TDHFORB('ESRCI')
-         CALL SETDC2(0)
-      END IF
+      CALL TDHFORB('ESRCI')
+      CALL SETDC2(0)
 
 C
 C     Define dcbidx.h
@@ -145,15 +142,15 @@ C     Author: Hans Joergen Aa. Jensen
 C     (Based on GASCIP_STARTVEC by Joern Thyssen June 2000)
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0)
 C
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbopt.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
 !#include <krmcluci_inf.h>
 C
       DIMENSION CMO(*), WORK(*)
@@ -209,13 +206,13 @@ C
       call memchk('before RCISTD',work,1)
          CALL GASCIP_RCISTD(N_CIROOTS,THR_CI,MAX_CI_IT,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
-     &                     WORK(KZCONF),CMO,lvcorr_mc,
+     &                     WORK(KZCONF),CMO,
      &                     IOPT_ISTATE,OPT_CIPROGAM,
      &                     IPROPT, WORK(KFREE),LFREE)
       call memchk('after RCISTD',work,1)
 C      SUBROUTINE GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
 C     &                        ECI,CVECS,NDET,IDET,CMO,
-C     &                        clvcorr,ISTATE,CIPROG,IPRINT,
+C     &                        ISTATE,CIPROG,IPRINT,
 C     &                        WORK,LWORK)
 
        

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -32,9 +32,12 @@ module density_eval
    public get_gamma5
    public get_s
    public get_j
-   public get_t
-   public get_tau
-   public get_tau_imag
+   public get_kin
+   public get_kin_ls
+   public get_kin_sl
+   public get_kin_lap
+   public get_kin_tau
+   public get_kin_tau_imag
    public get_gn
    public get_gn_nonhermitian
    public get_gj
@@ -76,7 +79,8 @@ contains
     integer, intent(in)    :: isym(nr_mat)
 !   ----------------------------------------------------------------------------
     integer                :: irep, iblock, imat, iz
-    integer                :: i, j, ii, jj, h(4)
+    integer                :: i, j, ii, jj
+    integer, parameter     :: h(4) = (/-1, 1, 1, 1/)
     integer                :: st1, st2, nr1, nr2
     real(8)                :: average
 !   ----------------------------------------------------------------------------
@@ -85,15 +89,13 @@ contains
 
        irep = isym(imat) - 1
 
-       h(1) = - 1
-       h(2:nz) = 1
-
        do iz = 1, nz
-          do iblock = 1, llss_nr_density_blocks(0, irep)
-             nr1 = llss_nr_ao(1, iblock, 0, irep)
-             st1 = llss_st_ao(1, iblock, 0, irep)
-             nr2 = llss_nr_ao(2, iblock, 0, irep)
-             st2 = llss_st_ao(2, iblock, 0, irep)
+          do iblock = 1, nr_ao_blocks
+             nr1 = ao_block_nr(iblock)
+             st1 = ao_block_start(iblock)
+             nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+             st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+             if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
              do i = 1, nr1
                 do j = 1, nr2
@@ -139,18 +141,19 @@ contains
     do imat = 1, nr_mat
 
        skip = .false.
-       if (ih(imat) ==  1) skip(1:3) = .true.
-       if (ih(imat) == -1) skip(0:0) = .true.
+       if (ih(imat) ==  1) skip = (/.false., .true.,  .true.,  .true./)
+       if (ih(imat) == -1) skip = (/.true.,  .false., .false., .false./)
 
        irep = isym(imat) - 1
 
        do jxyz = 0, 3
           if (.not. skip(jxyz)) then
-             do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-                nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-                st1 = llss_st_ao(1, iblock, jxyz, irep)
-                nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-                st2 = llss_st_ao(2, iblock, jxyz, irep)
+             do iblock = 1, nr_ao_blocks
+                nr1 = ao_block_nr(iblock)
+                st1 = ao_block_start(iblock)
+                nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+                st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+                if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
                 if (.not. (st2 > st1)) then
                    do i = 1, nr1
@@ -194,11 +197,12 @@ contains
 !     --------------------------------------------------------------------------
    
       n = 0.0d0
-      do iblock = 1, llss_nr_density_blocks(0, irep)
-         nr1 = llss_nr_ao(1, iblock, 0, irep)
-         st1 = llss_st_ao(1, iblock, 0, irep)
-         nr2 = llss_nr_ao(2, iblock, 0, irep)
-         st2 = llss_st_ao(2, iblock, 0, irep)
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+         st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
     
          call dgemv('N',                   &
                     nr1,                   &
@@ -237,11 +241,12 @@ contains
 !     --------------------------------------------------------------------------
    
       n = 0.0d0
-      do iblock = 1, lssl_nr_density_blocks(0, irep)
-         nr1 = lssl_nr_ao(1, iblock, 0, irep)
-         st1 = lssl_st_ao(1, iblock, 0, irep)
-         nr2 = lssl_nr_ao(2, iblock, 0, irep)
-         st2 = lssl_st_ao(2, iblock, 0, irep)
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(lssl_block_partner(iblock, 0, irep))
+         st2 = ao_block_start(lssl_block_partner(iblock, 0, irep))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
     
          call dgemv('N',                   &
                     nr1,                   &
@@ -281,11 +286,12 @@ contains
    
       s = 0.0d0
       do jxyz = jxyz_start, 3
-         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-            st1 = llss_st_ao(1, iblock, jxyz, irep)
-            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
      
             call dgemv('N',                      &
                        nr1,                      &
@@ -300,7 +306,7 @@ contains
                        1)
      
             s(jxyz) = s(jxyz) &
-                    + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
+                    + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
          end do
       end do
    
@@ -329,11 +335,12 @@ contains
    
       j = 0.0d0
       do jxyz = jxyz_start, 3
-         do iblock = 1, lssl_nr_density_blocks(jxyz, irep)
-            nr1 = lssl_nr_ao(1, iblock, jxyz, irep)
-            st1 = lssl_st_ao(1, iblock, jxyz, irep)
-            nr2 = lssl_nr_ao(2, iblock, jxyz, irep)
-            st2 = lssl_st_ao(2, iblock, jxyz, irep)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(lssl_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(lssl_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
      
             call dgemv('N',                      &
                        nr1,                      &
@@ -379,11 +386,12 @@ contains
     n  = 0.0d0
     gn = 0.0d0
 
-    do iblock = 1, llss_nr_density_blocks(0, irep)
-       nr1 = llss_nr_ao(1, iblock, 0, irep)
-       st1 = llss_st_ao(1, iblock, 0, irep)
-       nr2 = llss_nr_ao(2, iblock, 0, irep)
-       st2 = llss_st_ao(2, iblock, 0, irep)
+    do iblock = 1, nr_ao_blocks
+       nr1 = ao_block_nr(iblock)
+       st1 = ao_block_start(iblock)
+       nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+       st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+       if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
        call dgemv('N',                      &
                   nr1,                      &
@@ -408,7 +416,7 @@ contains
 
   end subroutine
 
-   subroutine get_tau(t,       &
+   subroutine get_kin_tau(t,       &
                       irep,    &
                       mat_dim, &
                       dmat,    &
@@ -434,11 +442,12 @@ contains
 
       t = 0.0d0
       
-      do iblock = 1, llss_nr_density_blocks(0, irep)
-         nr1 = llss_nr_ao(1, iblock, 0, irep)
-         st1 = llss_st_ao(1, iblock, 0, irep)
-         nr2 = llss_nr_ao(2, iblock, 0, irep)
-         st2 = llss_st_ao(2, iblock, 0, irep)
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+         st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
       
          do ixyz = 1, 3
             call dgemv('N',                   &
@@ -461,7 +470,7 @@ contains
 
    end subroutine
 
-   subroutine get_tau_imag(t,       &
+   subroutine get_kin_tau_imag(t,       &
                            irep,    &
                            mat_dim, &
                            dmat,    &
@@ -483,11 +492,12 @@ contains
       t = 0.0d0
      
       do jxyz = 1, 3 
-         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-            st1 = llss_st_ao(1, iblock, jxyz, irep)
-            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
          
             do ixyz = 1, 3
                call dgemv('N',                      &
@@ -503,7 +513,7 @@ contains
                           1)
          
                t(jxyz) = t(jxyz) &
-             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
+             + llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
             end do
          end do
       end do
@@ -512,75 +522,176 @@ contains
 
    end subroutine
 
-  subroutine get_t(t,       &
-                   cval,    &
-                   irep,    &
-                   mat_dim, &
-                   dmat,    &
-                   buffer,  &
-                   ao_g0,   &
-                   ao_g1)
-
-!   ----------------------------------------------------------------------------
-!   radovan bast 2010-04-15
-!                this routine calculates the kinetic energy density
-!                c \psi+(r) \alpha \cdot p \psi(r)
-!                you can call it as you would call for instance get_gn
-!
-!   caveat: (1)  it needs ao_g1 and they may not be
-!                there in the naive lda case
-!           (2)  it needs small components and by default
-!                small components are not calculated for levy-leblond
-!                this has to be reactivated in the ao evaluation
-!                nonrel and x2c(4) fail for this reason
-!                (will add nonrelativistic get_t soon)
-!           (2)  with the default dft grid it can be very difficult to
-!                integrate it up to the analytic kinetic energy
-!                (with atoms i got it 99.8% right)
-!   ----------------------------------------------------------------------------
-    real(8), intent(out) :: t
-    real(8), intent(in)  :: cval
-    integer, intent(in)  :: irep
-    integer, intent(in)  :: mat_dim
-    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-    real(8), intent(in)  :: buffer(mat_dim)
-    real(8), intent(in)  :: ao_g0(mat_dim)
-    real(8), intent(in)  :: ao_g1(mat_dim, 3)
-!   ----------------------------------------------------------------------------
-    integer              :: nr1, nr2, st1, st2, iblock, jxyz
-    real(8), external    :: ddot
-!   ----------------------------------------------------------------------------
-
-    t = 0.0d0
-
-    do jxyz = 1, 3
-      do iblock = 1, lssl_nr_density_blocks(jxyz, irep)
-
-        nr1 = lssl_nr_ao(1, iblock, jxyz, irep)
-        st1 = lssl_st_ao(1, iblock, jxyz, irep)
-        nr2 = lssl_nr_ao(2, iblock, jxyz, irep)
-        st2 = lssl_st_ao(2, iblock, jxyz, irep)
-
-        call dgemv('N',                           &
-                   nr1,                           &
-                   nr2,                           &
-                   1.0d0,                         &
-                   dmat(st1, st2, iq(jxyz)), &
-                   mat_dim,                       &
-                   ao_g0(st2),                    &
-                   1,                             &
-                   0.0d0,                         &
-                   buffer,                        &
-                   1)
-
-        t = t + ddot(nr1, ao_g1(st1, jxyz), 1, buffer, 1)
-
+   subroutine get_kin_lap(t,       &
+                          irep,    &
+                          mat_dim, &
+                          dmat,    &
+                          buffer,  &
+                          ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: t
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      real(8), external    :: ddot
+      integer, parameter   :: pos(9) = (/1, 2, 3, 2, 4, 5, 3, 5, 6/)
+!     --------------------------------------------------------------------------
+   
+      t = 0.0d0
+      
+      do jxyz = 1, 3
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
+            call dgemv('N',               &
+                       nr1,               &
+                       nr2,               &
+                       1.0d0,             &
+                       dmat(st1, st2, 1), &
+                       mat_dim,           &
+                       ao(st2),           &
+                       1,                 &
+                       0.0d0,             &
+                       buffer,            &
+                       1)
+            t = t - ddot(nr1, ao(ao_off_g2_m0(pos((jxyz-1)*3 + jxyz), 0) + st1), 1, buffer, 1)
+         end do
       end do
-    end do
+      
+      t = t*0.5d0
+   
+   end subroutine
 
-    t = t*cval
+   subroutine get_kin(t,       &
+                      cval,    &
+                      irep,    &
+                      mat_dim, &
+                      dmat,    &
+                      buffer,  &
+                      ao)
+   
+!     --------------------------------------------------------------------------
+!     radovan bast 2010-04-15
+!                  this routine calculates the kinetic energy density
+!                  c \psi+(r) \alpha \cdot p \psi(r)
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: t
+      real(8), intent(in)  :: cval
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
+   
+      t = 0.0d0
+      
+      do jxyz = 1, 3
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(lssl_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(lssl_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
+            call dgemv('N',                      &
+                       nr1,                      &
+                       nr2,                      &
+                       1.0d0,                    &
+                       dmat(st1, st2, iq(jxyz)), &
+                       mat_dim,                  &
+                       ao(st2),                  &
+                       1,                        &
+                       0.0d0,                    &
+                       buffer,                   &
+                       1)
+            t = t + ddot(nr1, ao(ao_off_g1_m0(jxyz, 0) + st1), 1, buffer, 1)
+         end do
+      end do
+      
+      t = t*cval*0.5d0
+   
+   end subroutine
 
-  end subroutine
+   subroutine get_kin_ls(t,       &
+                         cval,    &
+                         irep,    &
+                         mat_dim, &
+                         dmat,    &
+                         buffer,  &
+                         ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: t
+      real(8), intent(in)  :: cval
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: jxyz
+      integer              :: k, l
+!     --------------------------------------------------------------------------
+   
+      t = 0.0d0
+      
+      do k = 1, nr_ao_large
+         do l = nr_ao_large+1, nr_ao
+            do jxyz = 1, 3
+               t = t - ao(k)*ao(ao_off_g1_m0(jxyz, 0) + l)*dmat(k, l, iq(jxyz))
+            end do
+         end do
+      end do
+      
+      t = t*cval*0.5d0
+   
+   end subroutine
+
+   subroutine get_kin_sl(t,       &
+                         cval,    &
+                         irep,    &
+                         mat_dim, &
+                         dmat,    &
+                         buffer,  &
+                         ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: t
+      real(8), intent(in)  :: cval
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: jxyz
+      integer              :: k, l
+!     --------------------------------------------------------------------------
+   
+      t = 0.0d0
+      
+      do l = 1, nr_ao_large
+         do k = nr_ao_large+1, nr_ao
+            do jxyz = 1, 3
+               t = t - ao(k)*ao(ao_off_g1_m0(jxyz, 0) + l)*dmat(k, l, iq(jxyz))
+            end do
+         end do
+      end do
+      
+      t = t*cval*0.5d0
+   
+   end subroutine
 
   subroutine get_gn_nonhermitian(n,       &
                                  gn,      &
@@ -606,11 +717,12 @@ contains
     n  = 0.0d0
     gn = 0.0d0
 
-    do iblock = 1, llss_nr_density_blocks(0, irep)
-       nr1 = llss_nr_ao(1, iblock, 0, irep)
-       st1 = llss_st_ao(1, iblock, 0, irep)
-       nr2 = llss_nr_ao(2, iblock, 0, irep)
-       st2 = llss_st_ao(2, iblock, 0, irep)
+    do iblock = 1, nr_ao_blocks
+       nr1 = ao_block_nr(iblock)
+       st1 = ao_block_start(iblock)
+       nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+       st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+       if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
        call dgemv('N',                      &
                   nr1,                      &
@@ -674,11 +786,12 @@ contains
       v  = 0.0d0
       gv = 0.0d0
       do jxyz = jxyz_start, 3
-         do iblock = 1, lssl_nr_density_blocks(jxyz, irep)
-            nr1 = lssl_nr_ao(1, iblock, jxyz, irep)
-            st1 = lssl_st_ao(1, iblock, jxyz, irep)
-            nr2 = lssl_nr_ao(2, iblock, jxyz, irep)
-            st2 = lssl_st_ao(2, iblock, jxyz, irep)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(lssl_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(lssl_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
   
             call dgemv('N',                      &
                        nr1,                      &
@@ -726,11 +839,12 @@ contains
       v  = 0.0d0
       gv = 0.0d0
       do jxyz = jxyz_start, 3
-         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-            st1 = llss_st_ao(1, iblock, jxyz, irep)
-            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
   
             call dgemv('N',                      &
                        nr1,                      &
@@ -745,10 +859,10 @@ contains
                        1)
   
             v(jxyz) = v(jxyz) &
-                    + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
+                    + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
             do ixyz = 1, 3
                gv(ixyz, jxyz) = gv(ixyz, jxyz) &
-             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
+             + llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
             end do
          end do
       end do
@@ -782,11 +896,12 @@ contains
 
     do jxyz = jxyz_start, 3
 
-       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-          st1 = llss_st_ao(1, iblock, jxyz, irep)
-          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-          st2 = llss_st_ao(2, iblock, jxyz, irep)
+       do iblock = 1, nr_ao_blocks
+          nr1 = ao_block_nr(iblock)
+          st1 = ao_block_start(iblock)
+          nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+          st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+          if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
           call dgemv('N',                         &
                      nr1,                         &
@@ -800,10 +915,10 @@ contains
                      buffer,                      &
                      1)
 
-          s(jxyz) = s(jxyz) + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
+          s(jxyz) = s(jxyz) + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
           do ixyz = 1, 3
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
+                            + llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
           end do
 
           do ixyz = 1, 3
@@ -820,7 +935,7 @@ contains
                         1)
 
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
+                            + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
           end do
        end do
 
@@ -849,11 +964,12 @@ contains
       real(8)                :: f
 !     --------------------------------------------------------------------------
       
-      do iblock = 1, llss_nr_density_blocks(0, irep)
-         nr1 = llss_nr_ao(1, iblock, 0, irep)
-         st1 = llss_st_ao(1, iblock, 0, irep)
-         nr2 = llss_nr_ao(2, iblock, 0, irep)
-         st2 = llss_st_ao(2, iblock, 0, irep)
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+         st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
       
          do i = 1, nr2
             ii = st2 + i - 1
@@ -893,11 +1009,12 @@ contains
       real(8)                :: f
 !     --------------------------------------------------------------------------
       
-      do iblock = 1, llss_nr_density_blocks(0, irep)
-         nr1 = llss_nr_ao(1, iblock, 0, irep)
-         st1 = llss_st_ao(1, iblock, 0, irep)
-         nr2 = llss_nr_ao(2, iblock, 0, irep)
-         st2 = llss_st_ao(2, iblock, 0, irep)
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+         st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
       
          do i = 1, nr2
             ii = st2 + i - 1
@@ -940,15 +1057,16 @@ contains
       
       do jxyz = jxyz_start, 3
 
-         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-            st1 = llss_st_ao(1, iblock, jxyz, irep)
-            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
          
             do i = 1, nr2
                ii = st2 + i - 1
-               f  = u(jxyz)*ao_g0(ii)*llss_prefactor(iblock, jxyz, irep)
+               f  = u(jxyz)*ao_g0(ii)*llss_prefactor(iblock)
          
                call daxpy(nr1,                         &
                           f,                           &
@@ -987,11 +1105,12 @@ contains
       
       do jxyz = jxyz_start, 3
 
-         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-            st1 = llss_st_ao(1, iblock, jxyz, irep)
-            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
          
             do i = 1, nr2
                ii = st2 + i - 1
@@ -1000,7 +1119,7 @@ contains
                  + 2.0d0*v(2, jxyz)*ao(ao_off_g1_m0(2, 0) + ii) &
                  + 2.0d0*v(3, jxyz)*ao(ao_off_g1_m0(3, 0) + ii)
               
-               f = llss_prefactor(iblock, jxyz, irep)*f
+               f = llss_prefactor(iblock)*f
          
                call daxpy(nr1,                         &
                           f,                           &
@@ -1046,12 +1165,13 @@ contains
            b = 1; c = 2
        end select
      
-         do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
+         do iblock = 1, nr_ao_blocks
      
-           nr1 = llss_nr_ao(1, iblock, 0, isym(a) - 1)
-           st1 = llss_st_ao(1, iblock, 0, isym(a) - 1)
-           nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
-           st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, 0, isym(a) - 1))
+           st2 = ao_block_start(llss_block_partner(iblock, 0, isym(a) - 1))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
      
            do i = 1, nr2
              ii = st2 + i - 1
@@ -1121,12 +1241,13 @@ contains
                      - r(c)*ao(ao_off_g0_m1(0, b) + ii)
        end do
    
-       do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
+       do iblock = 1, nr_ao_blocks
    
-         nr1 = llss_nr_ao(1, iblock, 0, isym(a) - 1)
-         st1 = llss_st_ao(1, iblock, 0, isym(a) - 1)
-         nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
-         st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(llss_block_partner(iblock, 0, isym(a) - 1))
+         st2 = ao_block_start(llss_block_partner(iblock, 0, isym(a) - 1))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
    
          do i = 1, nr2
            ii = st2 + i - 1
@@ -1169,7 +1290,7 @@ contains
                       1)
    
          end do ! i = 1, nr2
-       end do   ! iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
+       end do   ! iblock = 1, nr_ao_blocks
      end do     ! a = 1, 3
    
    end subroutine
@@ -1213,12 +1334,13 @@ contains
     
        do jxyz = jxyz_start, 3
     
-         do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
+         do iblock = 1, nr_ao_blocks
     
-           nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
-           st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
-           nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
-           st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
     
            do ii = st1, st1 + nr1 - 1
              do jj = st2, st2 + nr2 - 1
@@ -1233,7 +1355,7 @@ contains
              end do
            end do
 
-         end do  ! do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
+         end do  ! do iblock = 1, nr_ao_blocks
 
        end do    ! do jxyz = 1, jxyz_start, 3
      end do      ! do a = 1, 3
@@ -1271,11 +1393,12 @@ contains
       j = 0.0d0
 
       do ixyz = 1, 3
-         do iblock = 1, lssl_nr_density_blocks(ixyz, 0)
-            nr1 = lssl_nr_ao(1, iblock, ixyz, 0)
-            st1 = lssl_st_ao(1, iblock, ixyz, 0)
-            nr2 = lssl_nr_ao(2, iblock, ixyz, 0)
-            st2 = lssl_st_ao(2, iblock, ixyz, 0)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(lssl_block_partner(iblock, ixyz, 0))
+            st2 = ao_block_start(lssl_block_partner(iblock, ixyz, 0))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
             do k = st1, st1 + nr1 - 1
                do l = st2, st2 + nr2 - 1
                   f = (r(c)*ao(ao_off_g0_m1(0, b) + l) &
@@ -1323,11 +1446,12 @@ contains
       gj = 0.0d0
 
       do ixyz = 1, 3
-         do iblock = 1, lssl_nr_density_blocks(ixyz, 0)
-            nr1 = lssl_nr_ao(1, iblock, ixyz, 0)
-            st1 = lssl_st_ao(1, iblock, ixyz, 0)
-            nr2 = lssl_nr_ao(2, iblock, ixyz, 0)
-            st2 = lssl_st_ao(2, iblock, ixyz, 0)
+         do iblock = 1, nr_ao_blocks
+            nr1 = ao_block_nr(iblock)
+            st1 = ao_block_start(iblock)
+            nr2 = ao_block_nr(lssl_block_partner(iblock, ixyz, 0))
+            st2 = ao_block_start(lssl_block_partner(iblock, ixyz, 0))
+            if ((nr1 < 1) .or. (nr2 < 1)) cycle
             do jxyz = 1, 3
                do k = st1, st1 + nr1 - 1
                   do l = st2, st2 + nr2 - 1
@@ -1395,11 +1519,12 @@ contains
     
       j = 0.0d0
 
-      do iblock = 1, llss_nr_density_blocks(0, 0)
-         nr1 = llss_nr_ao(1, iblock, 0, 0)
-         st1 = llss_st_ao(1, iblock, 0, 0)
-         nr2 = llss_nr_ao(2, iblock, 0, 0)
-         st2 = llss_st_ao(2, iblock, 0, 0)
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(llss_block_partner(iblock, 0, 0))
+         st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
          do k = st1, st1 + nr1 - 1
             do l = st2, st2 + nr2 - 1
                do ixyz = 1, 3

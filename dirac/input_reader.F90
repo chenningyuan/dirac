@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -109,6 +109,9 @@ contains
 
                      case ('*CCFOPR')
                         call read_input_ccfopr(word, kw_section)
+
+                     case ('*CCSORT')
+                        call read_input_ccsort(word, kw_section)
 
                      case ('*CCFSPC')
                         call read_input_ccfspc(word, kw_section)
@@ -344,6 +347,30 @@ contains
          call read_input_visual_helper(iq_j)
       end if
 
+      if (kw_matches(word, '.KIN   ')) then
+         call read_input_visual_helper(iq_kin)
+      end if
+
+      if (kw_matches(word, '.KINLS ')) then
+         call read_input_visual_helper(iq_kin_ls)
+      end if
+
+      if (kw_matches(word, '.KINSL ')) then
+         call read_input_visual_helper(iq_kin_sl)
+      end if
+
+      if (kw_matches(word, '.KINTAU')) then
+         call read_input_visual_helper(iq_kin_tau)
+      end if
+
+      if (kw_matches(word, '.KINLAP')) then
+         call read_input_visual_helper(iq_kin_lap)
+      end if
+
+      if (kw_matches(word, '.KINNR ')) then
+         call read_input_visual_helper(iq_kin_nr)
+      end if
+
       if (kw_matches(word, '.DIVJ  ')) then
          call read_input_visual_helper(iq_divj)
       end if
@@ -413,11 +440,24 @@ contains
       if (kw_matches(word, '.NDIPZD')) then
          call read_input_visual_helper2(iq_ndipzdia)
       end if
+
       if (kw_matches(word, '.ESP   ')) then
          call read_input_visual_helper(iq_esp)
       end if
+      if (kw_matches(word, '.ESPE  ')) then
+         call read_input_visual_helper(iq_espe)
+      end if
+      if (kw_matches(word, '.ESPN  ')) then
+         call read_input_visual_helper(iq_espn)
+      end if
       if (kw_matches(word, '.ESPRHO')) then
          call read_input_visual_helper(iq_esprho)
+      end if
+      if (kw_matches(word, '.ESPERH')) then
+         call read_input_visual_helper(iq_esperho)
+      end if
+      if (kw_matches(word, '.ESPNRH')) then
+         call read_input_visual_helper(iq_espnrho)
       end if
 
       if (kw_matches(word, '.GAUGE ')) then
@@ -647,6 +687,12 @@ contains
          need_1el_f = .true.
          need_1el_q = .true.
          need_1el_o = .true.
+         need_1el_g = .true.
+      end if
+
+      if (kw_matches(word, '.PNC   ')) then
+         openrsp_cfg_pnc = .true.
+         call kw_read(word, openrsp_cfg_pnc_center)
          need_1el_g = .true.
       end if
 
@@ -883,6 +929,31 @@ contains
 
       if (kw_matches(word, '.NTOL  ')) then
          read(unit_in,'(i5)') relcc_fopr_desired_convergence
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_ccsort(word, kw_section)
+
+      use relcc_cfg
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+!     ignore HF orbital energies 
+      if (kw_matches(word, '.IGNOE  ')) then
+         relcc_use_orbital_energies = .false.
+      end if
+
+!     do not re-compute orbital energies
+      if (kw_matches(word, '.NORCMP')) then
+         relcc_no_recompute   = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

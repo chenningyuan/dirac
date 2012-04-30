@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2082,12 +2082,12 @@ C
 C***********************************************************************
       use symmetry_setup_krci
       use memory_allocator
+      use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "pgroup.h"
@@ -2131,17 +2131,17 @@ C
 !     introduce CI program
 #ifdef VAR_MPI
       if(isync_nodes .eq. 1)then
-       CALL MPI_BCAST(OPT_CIPROGRAM, 8,MPI_CHARACTER,MASTER,
-     &                MPI_COMM_WORLD,IERR)
+       call interface_mpi_BCAST(OPT_CIPROGRAM, 8,MASTER,
+     &                global_communicator)
       end if
 #endif
 
 !     basic symmetry information
 #ifdef VAR_MPI
       if(isync_nodes .eq. 1)then
-       CALL MPI_BCAST(GROUP, 3,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
-       CALL MPI_BCAST(spinfr,1,MPI_LOGICAL,  MASTER,MPI_COMM_WORLD,IERR)
-       CALL MPI_BCAST(linear,1,MPI_LOGICAL,  MASTER,MPI_COMM_WORLD,IERR)
+       call interface_mpi_BCAST(GROUP, 3,MASTER,global_communicator)
+       call interface_mpi_bcast_l0(spinfr,1,MASTER,global_communicator)
+       call interface_mpi_bcast_l0(linear,1,MASTER,global_communicator)
       end if
 #endif
 
@@ -2190,8 +2190,8 @@ C
 !       communicate data
 #ifdef VAR_MPI
         if(isync_nodes .eq. 1)then
-          call mpi_bcast(orb_sym_vec,norbt,my_MPI_INTEGER,master,
-     &                   MPI_COMM_WORLD,ierr)
+          call interface_mpi_bcast(orb_sym_vec,norbt,master,
+     &                   global_communicator)
         end if
 #endif
 !       store orbital symmetry information on file 'orbsym.xxxx' 
@@ -2322,15 +2322,15 @@ C
 C     Reference symmetry
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
-     &   CALL MPI_BCAST(IOPT_SYMMETRY,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST(IOPT_SYMMETRY,1,MASTER,
+     &                  global_communicator)
 #endif
       IREFSM = IOPT_SYMMETRY
 C     max reference symmetry
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
-     &   CALL MPI_BCAST(NMAX_SYM,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST(NMAX_SYM,1,MASTER,
+     &                  global_communicator)
 #endif
       NMAX_SYM_CI = NMAX_SYM
 C
@@ -2339,8 +2339,8 @@ C     KRCI_CVECS.x vector file extensions
 C     Roots to be obtained
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
-     &   CALL MPI_BCAST(NCIROOT,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST(NCIROOT,1,MASTER,
+     &                  global_communicator)
 #endif
       NROOT = NCIROOT
       DO IRT = 1,NROOT
@@ -2349,8 +2349,8 @@ C     Roots to be obtained
 C     Restart option - special treatment for some CIRUN flags
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
-     &   CALL MPI_BCAST(IRESTRK,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST(IRESTRK,1,MASTER,
+     &                  global_communicator)
 #endif
       IRESTR = IRESTRK
       IF (CIRUN .EQ. 'SIGMA ' .OR. CIRUN .EQ. 'SIGMAD'
@@ -2368,8 +2368,8 @@ C     Integrals all held in memory
 C     print flags
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
-     &   CALL MPI_BCAST(IPROPT,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST(IPROPT,1,MASTER,
+     &                  global_communicator)
 #endif
       IF (IPROPT.EQ.1) THEN
          IPRSTR    = 0 * IPROPT
@@ -2397,8 +2397,8 @@ C     print flags
 C     Maximum number of CI vectors
 #if defined (VAR_MPI)
        IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(MXCIV,1,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST(MXCIV,1,MASTER,
+     &                  global_communicator)
 #endif
       MXCIV_CI = MXCIV
       IF( MXCIV_CI .eq. 0 ) THEN
@@ -2418,7 +2418,7 @@ C     Dimension of resolution matrices (used in SIGDEN_REL3)
 C     Core energy from DIRAC
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(EMY,1,MPI_REAL8,MASTER,MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST(EMY,1,MASTER,global_communicator)
 #endif
       ECORE = EMY
 C     GAS shells and constraints.
@@ -2427,8 +2427,8 @@ C     GAS shells and constraints.
       NCMBSPC = NCISPC
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(NGAS_DC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST(NGAS_DC,1,MASTER,
+     &                 global_communicator)
 #endif
       NGAS = NGAS_DC
       IF( MXPNGAS .ne. MXMCGAS) THEN
@@ -2442,31 +2442,31 @@ C     GAS shells and constraints.
 C     ... just in case these variable have not 
 C     been initialized on the outside.
       IF( ISYNC_NODES .eq. 1 ) THEN
-        CALL MPI_BCAST(OPT_UCIBOS,1,MPI_LOGICAL,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NGSH,2*MXPNGAS,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NGSHT,MXPNGAS,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IORB,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NPSH,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NISH,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NASH,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IBOSYM,MXCORB,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+        call interface_mpi_bcast_l0(OPT_UCIBOS,1,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(NBSYM,1,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(NGSH,2*MXPNGAS,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(NGSHT,MXPNGAS,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(IORB,NFSYM,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(NPSH,NFSYM,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(NISH,NFSYM,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(NASH,NFSYM,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(IBOSYM,MXCORB,MASTER,
+     &                 global_communicator)
       END IF
 #endif
             
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(NGSP,2*MXPNGAS,my_MPI_INTEGER,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST(NGSP,2*MXPNGAS,MASTER,
+     &                  global_communicator)
 #endif
       DO I = 1, NGAS
          CALL ADD_TO_GSS(IGSOCCX,I,NGSP(1,I),2)
@@ -2487,8 +2487,8 @@ C     Maximum number of CI iterations
       IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' )THEN
 #if defined (VAR_MPI)
         IF( ISYNC_NODES .eq. 1 )
-     &    CALL MPI_BCAST(MAXCIT,1,my_MPI_INTEGER,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
+     &    call interface_mpi_BCAST(MAXCIT,1,MASTER,
+     &                   global_communicator)
 #endif
         ISEQCI(1,1) = MAXCIT
       END IF
@@ -2504,8 +2504,8 @@ C     Density matrices requested
 C     Type of operator wrt. relativity
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) THEN
-        CALL MPI_BCAST(SPINFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(LEVYLE,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+        call interface_mpi_BCAST_L0(SPINFR,1,MASTER,global_communicator)
+        call interface_mpi_BCAST_L0(LEVYLE,1,MASTER,global_communicator)
       END IF
 #endif
 C     Relativistic CI
@@ -2516,15 +2516,15 @@ C     Relativistic CI
 C     Reference value for two times M_K projection
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(MK2REF,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST(MK2REF,1,MASTER,
+     &                 global_communicator)
 #endif
       MK2REF_CI = MK2REF
 C     Reference value for two times Delta M_K projection (coupling range)
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(MK2DEL,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST(MK2DEL,1,MASTER,
+     &                 global_communicator)
 #endif
       MK2DEL_CI = MK2DEL
       IF ((.not.SPINFR).and.(.not.LEVYLE).and.MK2DEL_CI.eq.0) THEN
@@ -2552,14 +2552,14 @@ C     calculate property operator symmetry in double group subgroup
 C     notation
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(DOSYMOPPRP,1,MPI_LOGICAL,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST_L0(DOSYMOPPRP,1,MASTER,
+     &                 global_communicator)
 #endif
 C     reorder property operator matrix (already done by the MASTER...)
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST_L0(DOPROPREOD,1,MASTER,
+     &                 global_communicator)
 #endif
 C     Wave function analysis
       IPRWFC = 0
@@ -2601,16 +2601,16 @@ C     integral handling in parallel runs
       IIOMOD_REL = 0
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(IDOPARIO,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST(IDOPARIO,1,MASTER,
+     &                 global_communicator)
 #endif
       IIOMOD_REL = IDOPARIO
 C     multiplier for max memory allocation guess
       ISMEMFAC = 0
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  CALL MPI_BCAST(IMEMFAC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+     &  call interface_mpi_BCAST(IMEMFAC,1,MASTER,
+     &                 global_communicator)
 #endif
       ISMEMFAC = IMEMFAC
 C     default maximum C/sigma block size
@@ -2619,8 +2619,8 @@ C     running a nat. orb. occ. num. run?
       NOOCCN_DENS_RUN = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(NATOLCR,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(NATOLCR,1,MASTER,
+     &                  global_communicator)
 #endif
       NOOCCN_DENS_RUN = NATOLCR
 C     state number for density calculation
@@ -2628,8 +2628,8 @@ C     state number for density calculation
       IF( CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ') THEN
 #if defined (VAR_MPI)
         IF( ISYNC_NODES .eq. 1 )
-     &    CALL MPI_BCAST(IDENSLR_STATE,1,my_MPI_INTEGER,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
+     &    call interface_mpi_BCAST(IDENSLR_STATE,1,MASTER,
+     &                   global_communicator)
 #endif
         IDENSI_STATE = IDENSLR_STATE
       END IF
@@ -2640,15 +2640,15 @@ C     running in "shared memory" mode?
       IC_SHL      = - 1
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(CSHMEMO,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(CSHMEMO,1,MASTER,
+     &                  global_communicator)
 #endif
       SHARED_M = CSHMEMO
       IF( SHARED_M )THEN
 #if defined (VAR_MPI)
         IF( ISYNC_NODES .eq. 1 )
-     &    CALL MPI_BCAST(ISHMEM_TYPE,1,my_MPI_INTEGER,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
+     &    call interface_mpi_BCAST(ISHMEM_TYPE,1,MASTER,
+     &                   global_communicator)
 #endif
         LEVEL_SM = ISHMEM_TYPE
       END IF
@@ -2685,40 +2685,40 @@ C       disable shared memory usage
 C     write check point file during large-scale CI optimization 
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(CHCKPT_WRT,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(CHCKPT_WRT,1,MASTER,
+     &                  global_communicator)
 #endif
       CHECKPOINT_LUCIX = CHCKPT_WRT
 C     read from / write to block distribution file KRCI_BLOCKDIST.x
 C     (x=sym)
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(CPBLCK_FILE,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(CPBLCK_FILE,1,MASTER,
+     &                  global_communicator)
 #endif
       CPBLCK_FILE_LUCIX = CPBLCK_FILE
 C     using GAS-scheme specific integral file resp. writing it
       REORD_IJKL = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(CINT_REORD,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(CINT_REORD,1,MASTER,
+     &                  global_communicator)
 #endif
       REORD_IJKL = CINT_REORD
 C     using revised integral allocation scheme                
       SPLIT_IJKL = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(CINT_SPLIT,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(CINT_SPLIT,1,MASTER,
+     &                  global_communicator)
 #endif
       SPLIT_IJKL = CINT_SPLIT
 C     using low-memory scheme for integral resorting
       LOWSRT_IJKL = .FALSE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(CINT_LOWSRT,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(CINT_LOWSRT,1,MASTER,
+     &                  global_communicator)
 #endif
       LOWSRT_IJKL = CINT_LOWSRT
 C
@@ -2744,8 +2744,8 @@ C     do not write file CIDIA_REL.x
          IF( MOPT_MXMACRO .ge. 0 ) NO_CDIAF = .FALSE.
       END IF
       IF( ISYNC_NODES .eq. 1 )
-     &   CALL MPI_BCAST(NO_CDIAF,1,MPI_LOGICAL,MASTER,
-     &                  MPI_COMM_WORLD,IERR)
+     &   call interface_mpi_BCAST_L0(NO_CDIAF,1,MASTER,
+     &                  global_communicator)
 #else
       NO_CDIAF = .FALSE.
 #endif
@@ -2757,27 +2757,27 @@ C     DIAPAR.1
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) THEN
         IF( PNTGRP .ge. 2 .and. PNTGRP .le. 4 ) THEN
-          CALL MPI_BCAST(IREFML,1,my_MPI_INTEGER,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
+          call interface_mpi_BCAST(IREFML,1,MASTER,
+     &                   global_communicator)
         END IF
         IF( PNTGRP .eq. 3 .or. PNTGRP .eq. 4 ) THEN
-          CALL MPI_BCAST(IREFPA,1,my_MPI_INTEGER,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
+          call interface_mpi_BCAST(IREFPA,1,MASTER,
+     &                   global_communicator)
         END IF
         IF( PNTGRP .eq. 4 ) THEN
-          CALL MPI_BCAST(IREFL,1,my_MPI_INTEGER,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
+          call interface_mpi_BCAST(IREFL,1,MASTER,
+     &                   global_communicator)
         END IF
         IF(IDIAG.EQ.2) THEN
-          CALL MPI_BCAST(E_THRE,1,MPI_REAL8,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(C_THRE,1,MPI_REAL8,MASTER,
-     &                   MPI_COMM_WORLD,IERR)
+          call interface_mpi_BCAST(E_THRE,1,MASTER,
+     &                   global_communicator)
+          call interface_mpi_BCAST(C_THRE,1,MASTER,
+     &                   global_communicator)
           IF(ICLSSEL.EQ.1) THEN
-            CALL MPI_BCAST(E_CONV,1,MPI_REAL8,MASTER,
-     &                     MPI_COMM_WORLD,IERR)
-            CALL MPI_BCAST(C_CONV,1,MPI_REAL8,MASTER,
-     &                     MPI_COMM_WORLD,IERR)
+            call interface_mpi_BCAST(E_CONV,1,MASTER,
+     &                     global_communicator)
+            call interface_mpi_BCAST(C_CONV,1,MASTER,
+     &                     global_communicator)
           END IF
         END IF
       END IF 
@@ -2788,6 +2788,7 @@ C     DIAPAR.1
 
       subroutine print_ci_info()
 !**********************************************************************
+      use interface_to_mpi
       use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
@@ -2808,7 +2809,6 @@ C     DIAPAR.1
 #include "../luciarel/cands.inc"
 #include "../luciarel/noccn_inf.inc"
 #ifdef VAR_MPI
-#include "mpif.h"
 #include "krmc_shmem.h"
 #endif
 #include "krmcluci_inf.h"

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -120,7 +120,7 @@ contains
             
 !           elf: electron localization function
             if (visual_cfg_property(imat) == iq_elf) then
-               call get_tau(tau,          &
+               call get_kin_tau(tau,          &
                             D(imat)%irep, &
                             D(imat)%nrow, &
                             D(imat)%elms, &
@@ -146,33 +146,133 @@ contains
               
                result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
             end if
-            
-!           total electrostatic potential
-            if (visual_cfg_property(imat) == iq_esp) then
-               call get_esp(esp,3,       &
-                          D(imat)%irep,  &
-                          D(imat)%nrow,  &
-                          D(imat)%elms,  &
-                          px,py,pz)
-                         
-               result(0) = result(0) + esp
+           
+!           electrostatic potential - total
+            if ((visual_cfg_property(imat) == iq_esp) .or. &
+                (visual_cfg_property(imat) == iq_esprho)) then
+               call get_esp(esp,          &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            px,           &
+                            py,           &
+                            pz)
             end if
 
-!           density of Coulomb 2-electron contribution
-            if (visual_cfg_property(imat) == iq_esprho) then
-               call get_esp(esp,1,       &
-                          D(imat)%irep,  &
-                          D(imat)%nrow,  &
-                          D(imat)%elms,  &
-                          px,py,pz)
+!           electrostatic potential - electronic part
+            if ((visual_cfg_property(imat) == iq_espe) .or. &
+                (visual_cfg_property(imat) == iq_esperho)) then
+               call get_esp(esp,                      &
+                            D(imat)%irep,             &
+                            D(imat)%nrow,             &
+                            D(imat)%elms,             &
+                            px,                       &
+                            py,                       &
+                            pz,                       &
+                            include_nuc_part=.false., &
+                            include_el_part=.true.)
+            end if
+
+!           electrostatic potential - nuclear part
+            if ((visual_cfg_property(imat) == iq_espn) .or. &
+                (visual_cfg_property(imat) == iq_espnrho)) then
+               call get_esp(esp,                     &
+                            D(imat)%irep,            &
+                            D(imat)%nrow,            &
+                            D(imat)%elms,            &
+                            px,                      &
+                            py,                      &
+                            pz,                      &
+                            include_nuc_part=.true., &
+                            include_el_part=.false.)
+            end if
+
+            if ((visual_cfg_property(imat) == iq_esprho)  .or. &
+                (visual_cfg_property(imat) == iq_esperho) .or. &
+                (visual_cfg_property(imat) == iq_espnrho)) then
+!              multiply electrostatic potential with density
                call get_n(density,       &
                           D(imat)%irep,  &
                           D(imat)%nrow,  &
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
-               result(0) = result(0) + density*esp*0.5d0
+               result(0) = result(0) + density*esp
+            else if ((visual_cfg_property(imat) == iq_esp)  .or. &
+                     (visual_cfg_property(imat) == iq_espe) .or. &
+                     (visual_cfg_property(imat) == iq_espn)) then
+!              just the electrostatic potential
+               result(0) = result(0) +         esp
+            end if
 
+            if (visual_cfg_property(imat) == iq_kin) then
+               call get_kin(density,      &
+                            cval,         &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            buffer,       &
+                            ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_ls) then
+               call get_kin_ls(density,      &
+                               cval,         &
+                               D(imat)%irep, &
+                               D(imat)%nrow, &
+                               D(imat)%elms, &
+                               buffer,       &
+                               ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_sl) then
+               call get_kin_sl(density,      &
+                               cval,         &
+                               D(imat)%irep, &
+                               D(imat)%nrow, &
+                               D(imat)%elms, &
+                               buffer,       &
+                               ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_tau) then
+               call get_kin_tau(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_lap) then
+               call get_kin_lap(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_kin_nr) then
+               call get_kin_tau(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + 0.5d0*density
+               call get_kin_lap(density,      &
+                                D(imat)%irep, &
+                                D(imat)%nrow, &
+                                D(imat)%elms, &
+                                buffer,       &
+                                ao)
+               result(0) = result(0) + 0.5d0*density
             end if
 
 !           current density: -ec \psi^\dag \alpha \psi
@@ -435,6 +535,8 @@ contains
                           D(imat)%elms,            &
                           ao,                      &
                           (/px, py, pz/))
+#else
+               call quit('ndip dia not part of this released version')
 #endif
 
                if (visual_cfg_property(imat) == iq_ndipxdia) i = 1
@@ -464,7 +566,7 @@ contains
       f = visual_cfg_scale
       if (visual_cfg_radial) then
          distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-         f = f*(distance_to_origin**2.0d0)
+         f = f*(distance_to_origin**2.0d0)*4.0d0*3.14159265358979323846d0
       end if
       result = f*result
 

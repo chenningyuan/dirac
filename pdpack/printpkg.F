@@ -47,7 +47,7 @@ C          FLORIDA, GAINESVILLE
 C..........VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMATRX(*)
       INTEGER BEGIN
       CHARACTER*1 ASA(3),BLANK,CTL
@@ -121,10 +121,10 @@ C.....BEGIN NON STANDARD DO LOOP.
          BEGIN= BEGIN + NCOL
       IF (BEGIN.LE.NROW) GO TO 1050
   200 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
 C
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outpkb */
       SUBROUTINE OUTPKB (AMATRX,NDIM,NBLK,NCTL,LUPRI)
@@ -171,7 +171,7 @@ C          FLORIDA, GAINESVILLE
 C..........OUTPAK VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NDIM(NBLK),BEGIN
       DIMENSION AMATRX(*)
       CHARACTER*1 ASA(3),BLANK,CTL
@@ -263,12 +263,12 @@ C
   100 CONTINUE
 C
   800 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outpks */
       SUBROUTINE OUTPKS (AMATRX,NDIM,NBLK,IREPO,NCTL,LUPRI)
@@ -316,7 +316,7 @@ C          FLORIDA, GAINESVILLE
 C..........OUTPAK VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NDIM(NBLK),BEGIN
       DIMENSION AMATRX(*)
       CHARACTER*1 ASA(3),BLANK,CTL
@@ -324,7 +324,7 @@ C
       PARAMETER (D0 = 0.0D0, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IREPO .NE. 1) THEN
          IBLK = 1
@@ -419,12 +419,12 @@ C
   100 CONTINUE
 C
   800 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outptb */
       SUBROUTINE OUTPTB (AMATRX,NDIM,NBLK,NCTL,LUPRI)
@@ -460,7 +460,7 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMATRX(*)
       INTEGER NDIM(NBLK), BEGIN, KCOL
       CHARACTER*1 ASA(3), BLANK, CTL
@@ -539,12 +539,12 @@ C
   100   CONTINUE
 C
   800 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck output */
       SUBROUTINE OUTPUT (AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
@@ -587,7 +587,7 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL
@@ -649,9 +649,9 @@ C
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-    3 WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
- 1000 FORMAT (/10X,8(4X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck prtab */
       SUBROUTINE PRTAB(NTABLE,TABLE,TEXT,LUPRI)
@@ -689,7 +689,7 @@ C   MAXLIN    : max. lines of output with vector elements
 C   LUOUT     : output unit
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10)
@@ -790,7 +790,7 @@ C   NPOT      : IBASE**-NPOT is lowest magnitude considered
 C   LUOUT     : output unit
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (IBASE = 10)
@@ -920,9 +920,9 @@ C   INCVEC    : Increment between each element in vector VEC
 C   THRZER    : Threshold for zero elements
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(*)
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
 C
 C     Test input
@@ -999,9 +999,11 @@ C
       IMPLICIT DOUBLE COMPLEX (A-H,O-Z)
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       DIMENSION AMATRX(ROWDIM,COLDIM)
+      COMPLEX   C4_test           ! hjaaj: for testing elements for print
+      REAL*4    R4_test,R4_thrpri !        because no double complex absolute value :-(
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
-      DOUBLE PRECISION ZERO, FFMIN, FFMAX, THRPRI
+      DOUBLE PRECISION ZERO, FFMIN, FFMAX
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
@@ -1021,11 +1023,11 @@ C
       END IF
       IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
 C        use F output format
-         PFMT = '(A1,I3,2X,4(2F10.6))'
+         PFMT = '(A1,I7,2X,4(F17.8,F13.8))'
          thrpri = 0.5D-6
       ELSE
 C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,4(2D12.6))'
+         PFMT = '(A1,I7,2X,1P,4(D17.6,D13.6))'
          thrpri = 1.0D-6*AMAX
       END IF
 C
@@ -1041,20 +1043,23 @@ C
          CTL = BLANK
       END IF
 C
+      R4_thrpri = thrpri
       LAST = MIN(COLHI,COLLOW+KCOL-1)
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 1 K = ROWLOW,ROWHI
             DO 4 I = BEGIN,LAST
-               IF (abs(AMATRX(K,I)).gt.thrpri) GO TO 5
+               C4_test = AMATRX(K,I)   ! hjaaj: all this because no intrinsic routine to
+               R4_test = cabs(C4_test) !        calculate absolute value of double complex number
+               IF (R4_test .gt. R4_thrpri) GO TO 5
     4       CONTINUE
          GO TO 1
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-    3 WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
- 1000 FORMAT (/5X,6(3X,A6,I4,7X),(3X,A6,I4))
+ 1000 FORMAT (/10X,4('    real <- ',A6,I4,' <- imag'))
       END
 C === Deck is_nan ===============
       LOGICAL FUNCTION IS_NAN(XA,XB)

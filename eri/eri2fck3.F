@@ -1,35 +1,24 @@
 !dalton_copyright_start
-!      Copyright (c) 2005 by the authors of Dalton (see below).
+!      Copyright (c) 2011 by the authors of Dalton (see below).
 !      All Rights Reserved.
-!
+!   
 !      The source code in this file is part of
-!      "Dalton, a molecular electronic structure program, Release 2.0
-!      (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
-!      O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-!      E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-!      K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
-!      H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
-!      W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
-!      P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-!      T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue,
-!      S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
-!      P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+!      "Dalton, a molecular electronic structure program,
+!       Release DALTON2011 (2011), see http://daltonprogram.org"
+!   
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
 !      written licence.
-!
+!   
 !      In particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the licence holder.
 !      This means also that persons (e.g. post-docs) leaving the research
 !      group of the licence holder may not take any part of Dalton,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own licence.
-!
-!      For questions concerning this copyright write to:
-!         dalton-admin@kjemi.uio.no
-!
-!      For information on how to get a licence see:
-!         http://www.kjemi.uio.no/software/dalton/dalton.html
+!   
+!      For further information, including how to get a licence, see:
+!         http://daltonprogram.org
 !dalton_copyright_end
 
 #if defined (OLFDCK3DRV)
@@ -38,6 +27,7 @@ C
 C   Calculates the nonclassical coulomb contribution to the
 C   Fock matrix
 C
+      use interface_to_mpi
 #include "implicit.h"
       DIMENSION FMAT(*),DMAT(*), WORK(*)
 C
@@ -62,7 +52,6 @@ C
 #include "erithr.h"
 #include "clsfmm.h"
 #if defined (VAR_MPI)
-      INCLUDE "mpif.h"
 #include "infpar.h"
 #endif
 
@@ -90,10 +79,8 @@ C
 c wake up slaves.
        IPRTYP = 5
        IPRINT = 0
-       CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
-     &      MPI_COMM_WORLD,IERR)
-       CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
-     &      MPI_COMM_WORLD,IERR)
+       CAll interface_mpi_bcast(IPRTYP,1,MASTER,global_communicator)
+       CAll interface_mpi_bcast(IPRINT,1,MASTER,global_communicator)
        CALL fck3_dims(NDMAT)
        CALL FCK3SN1(DMAT,NDMAT,ISYMDM,IFCTYP,WORK(KSAO))
 #endif
@@ -469,7 +456,6 @@ C  /* Deck odcdr1 */
      &          CSQ(NCSQ1,NCSQ2), WORK(LWORK)
       LOGICAL CLASSIC
 #if defined(VAR_MPI)
-      INCLUDE 'mpif.h'
 #include "infpar.h"
 #include "ibtfun.h"
       NOFF  = MYNUM
@@ -1578,7 +1564,6 @@ c ===================================================================
 #include "primit.h"
 #include "priunit.h"
 #include "shells.h"
-      INCLUDE "mpif.h"
 #include "infpar.h"
 c
 #include "memint.h"
@@ -1614,6 +1599,7 @@ c      CALL MEMREL('FCK3_SLAVE',WRK,KWORK,KWORK,KFREE,LFREE)
       END
 c     fck2sn1 - broadcast variables each time.
       SUBROUTINE fck3sn1(DMAT,NDMT,ISYMDM,IFCTYP,SAO)
+      use interface_to_mpi
 #include "implicit.h"
 #include "inforb.h"
 #include "siripc.h"
@@ -1625,20 +1611,16 @@ c     fck2sn1 - broadcast variables each time.
 c note: NDMT is always INTENT(IN)
       DIMENSION DMAT(N2BASX,NDMT), ISYMDM(NDMT),IFCTYP(NDMT),
      &          SAO(N2BASX)
-      INCLUDE 'mpif.h'
 #include "maxorb.h"
 #include "infpar.h"
 c
-      CALL MPI_BCAST(DMAT,N2BASX*NDMT,MPI_DOUBLE_PRECISION,
-     &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(SAO,N2BASX,MPI_DOUBLE_PRECISION,
-     &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISYMDM,NDMT,my_MPI_INTEGER,
-     &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IFCTYP,NDMT,my_MPI_INTEGER,
-     &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOFMM,1,MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast(DMAT,N2BASX*NDMT,
+     &                         MASTER,global_communicator)
+      CAll interface_mpi_bcast(SAO,N2BASX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(ISYMDM,NDMT,MASTER,global_communicator)
+      CAll interface_mpi_bcast(IFCTYP,NDMT,MASTER,global_communicator)
+      CAll interface_mpi_bcast_l0(DOFMM,1,MASTER,
+     &                                global_communicator)
       IF(NEWBAS) CALL fck3sn2
       IF(NEWGEO) CALL fck3sn3
       END
@@ -1648,10 +1630,10 @@ c
       END
 #if defined (FCK3COLLECT_NO_CONFLICT)
       SUBROUTINE fck3collect(FMAT,NDMAT,tm,WORK,LFREE,IPRINT)
+      use interface_to_mpi
 #include "implicit.h"
 #include "inforb.h"
       DIMENSION FMAT(N2BASX,NDMAT), WORK(*)
-      INCLUDE 'mpif.h'
 #include "maxorb.h"
 #include "infpar.h"
 #include "priunit.h"
@@ -1664,24 +1646,23 @@ c
         Call QUIT('Insufficient memory in fck3collect')
       END IF
       CALL DCOPY(NSIZE,FMAT,1,WORK,1)
-      CALL MPI_REDUCE(WORK,FMAT,NSIZE,MPI_DOUBLE_PRECISION,MPI_SUM,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+      CALL interface_mpi_reduce_r1_work_f77(WORK,FMAT,NSIZE,op_mpi_sum,
+     &                                      MASTER,global_communicator)
       iF(iprint.ge.0) THEN
 c     for a good measure, collect times to to provide more info about
 c     load balancing.
-         CALL MPI_GATHER(tm,1,MPI_DOUBLE_PRECISION,
-     &        tms,1,MPI_DOUBLE_PRECISION,MASTER,MPI_COMM_WORLD,IERR)
-         if(IERR.NE.0) WRITE(LUPRI,*) 'error collecting times:',IERR
-         WRITE(LUPRI,"('Node times:',/,20(10F7.2,/))")
-     &        (tms(i),i=1,NODTOT+1)
+      call interface_MPI_GATHER(tm,1,tms,1,MASTER,global_communicator)
+      if(IERR.NE.0) WRITE(LUPRI,*) 'error collecting times:',IERR
+        WRITE(LUPRI,"('Node times:',/,20(10F7.2,/))")
+     &       (tms(i),i=1,NODTOT+1)
       END IF
       END
 #endif /* FCK3COLLECT_NO_CONFLICT */
 c
       SUBROUTINE FCK3_DIMS(NDMAT)
+      use interface_to_mpi
 #include "implicit.h"
 #include "erithr.h"
-      INCLUDE 'mpif.h'
 #include "maxorb.h"
 #include "infpar.h"
 #include "inforb.h"
@@ -1699,68 +1680,44 @@ c
 c FIXME: ccom for NHTYP and SPHNRM which should really go away.
 #include "ccom.h"
 c     for ODBCH
-      CALL MPI_BCAST(KMAX,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NDMAT,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NBAST,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(N2BASX,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NODCL1,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NODCL2,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast(KMAX,  1,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NDMAT, 1,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NBAST, 1,MASTER,global_communicator)
+      CAll interface_mpi_bcast(N2BASX,1,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NODCL1,1,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NODCL2,1,MASTER,global_communicator)
 c     for DENS_FIT
-      CALL MPI_BCAST(KMAXTOT,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast(KMAXTOT,1,MASTER,global_communicator)
 c     for SETAOS
       KMAXX = KMAX
       IF (DOFIT) KMAXX = KMAXTOT
-c     CALL MPI_BCAST(ISTBAO,KMAXX,my_MPI_INTEGER,MASTER,
-c    &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(MULT,8,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JSTRT,KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NCENT,KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NBCH, KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NUCO, KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NRCO, KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(KCKT, KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(KHKT, KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NHKT, KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(LCLASS,KMAXX,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NHTYP,1 ,  my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(SPHNRM,1,  MPI_LOGICAL,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(CENT, MXSHEL*6,MPI_DOUBLE_PRECISION,
-     &               MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(CORD, MXCENT*3,MPI_DOUBLE_PRECISION,
-     &               MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(PRIEXP,MXPRIM,MPI_DOUBLE_PRECISION,
-     &               MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(PRICCF, MXPRIM*MXCONT,MPI_DOUBLE_PRECISION,
-     &               MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(THRSH,1,MPI_DOUBLE_PRECISION,
-     &               MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(PT,8,MPI_DOUBLE_PRECISION,
-     &               MASTER,MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast(MULT,8,MASTER,global_communicator)
+      CAll interface_mpi_bcast(JSTRT,KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NCENT,KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NBCH, KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NUCO, KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NRCO, KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(KCKT, KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(KHKT, KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NHKT, KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(LCLASS,KMAXX,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NHTYP,1 ,  MASTER,global_communicator)
+      CAll interface_mpi_bcast_l0(SPHNRM,1,MASTER,
+     &                                global_communicator)
+      CAll interface_mpi_bcast(CENT,MXSHEL*6,MASTER,global_communicator)
+      CAll interface_mpi_bcast(CORD,MXCENT*3,MASTER,global_communicator)
+      CAll interface_mpi_bcast(PRIEXP,MXPRIM,MASTER,global_communicator)
+      CAll interface_mpi_bcast(PRICCF,MXPRIM*MXCONT,MASTER,
+     &                         global_communicator)
+      CAll interface_mpi_bcast(THRSH,1,MASTER,global_communicator)
+      CAll interface_mpi_bcast(PT,8,MASTER,global_communicator)
 c     shptrm: FIXME: call sphinp instead
-      CALL MPI_BCAST(ISPADR,MXQN,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(CSP,NCSP,MPI_DOUBLE_PRECISION,
-     &               MASTER,MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast(ISPADR,MXQN,MASTER,global_communicator)
+      CAll interface_mpi_bcast(CSP,NCSP,MASTER,global_communicator)
 c     nuclei
-      CALL MPI_BCAST(NATOMS,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast(NATOMS,1,MASTER,global_communicator)
 c     needed for HERPRP
-      CALL MPI_BCAST(JTOP,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NRTOP,1,my_MPI_INTEGER,MASTER,
-     &               MPI_COMM_WORLD,IERR)
+      CAll interface_mpi_bcast(JTOP,1,MASTER,global_communicator)
+      CAll interface_mpi_bcast(NRTOP,1,MASTER,global_communicator)
       END
 #endif

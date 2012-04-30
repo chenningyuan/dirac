@@ -70,11 +70,6 @@ contains
       deallocate(tsr)
     end if
 
-!radovan: this needs an if check
-!   allocate(tsr(3))
-!   call elec_dipmom(S, D, F, tsr)
-!   deallocate(tsr)
-
     if (openrsp_cfg_alpha) then
       n = 2
       allocate(tsr(3**n))
@@ -159,6 +154,11 @@ contains
                                 (/(0d0,i=1,27*l*4)/),lupri)
            deallocate(tsr)
         endif
+
+        if (openrsp_cfg_pnc) then
+           call get_natoms(number_atoms)
+           call pnc_gradient(mol, S, D, F, number_atoms)
+        end if
 
         ! calculates vibrational hyperpolarizability
         if (openrsp_cfg_pv_beta) then

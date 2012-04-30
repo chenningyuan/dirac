@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1688,8 +1688,6 @@ C     REORHO1(RHO1I,RHO1O,IRHO1SM)
      &            IREOST,WORK(KLXNAT),
      &            WORK(KLHNAT),WORK(KLOCC),NACOB,
      &            WORK(KLSCR),IPRDEN)
-      WRITE(6,*) ' memchk 1 '
-      CALL LMEMCHK
 *
       DO IPROP =1, NPROP
         WRITE(6,'(A,A)') ' Property to be calculated',
@@ -1757,8 +1755,6 @@ C               ELSE IF (LABEL2(1:3).EQ.'EFG' ) THEN
                 LABEL=XYZ(JCOMP)//XYZ(ICOMP)//LABEL2
 C               END IF
 *. Obtain one-electron integrals
-                WRITE(6,*) ' memchk 2'
-                CALL LMEMCHK
                 CALL GET_PROPINT(WORK(KLHONE),IRHO1SM,LABEL,
      &               WORK(KLSCR),NTOOBS,NTOOBS,NSMOB,0)
 *. and then : Expectation value
@@ -1769,15 +1765,11 @@ C               END IF
 *. Transform  integrals to nat orb basis
                 CALL TRAN_SYM_BLOC_MAT2(WORK(KLHONE),WORK(KLXNAT),
      &               NSMOB,NTOOBS,WORK(KLHNAT),WORK(KLSCR),0)
-                WRITE(6,*) ' memchk 3'
-                CALL LMEMCHK
 *. Extract diagonal integrals
                 CALL GET_DIAG_BLOC_MAT(WORK(KLHNAT),WORK(KLHDIA),
      &               NSMOB,NTOOBS,0)
                 CALL PROP_NATORB(WORK(KLHDIA),WORK(KLOCC),
      &               NTOOBS,NSMOB)
-                WRITE(6,*) ' memchk 4'
-                CALL LMEMCHK
               END IF
             END DO
           END DO
@@ -1943,8 +1935,6 @@ C               END IF
 *. LUN is positioned at end of vector I-1, copy vector I to LUSC1
         CALL REWINE(LUSC1,-1)
         CALL COPVCD(LUN,LUSC1,WORK(KLVEC1),0,LBLK)
-        WRITE(6,*) ' Memcheck I '
-        CALL LMEMCHK
 *
         CALL REWINE(LUN,-1)
         DO J = 1, I
@@ -1953,8 +1943,6 @@ C               END IF
           WORK(KLSIJ-1+IJ) =
      &    INPRDD (WORK(KLVEC1),WORK(KLVEC2),LUSC1,LUN,0,LBLK)
         END DO
-        WRITE(6,*) ' Memcheck II '
-        CALL LMEMCHK
       END DO
 * SI(i) = sum(j=1,i-1)S(j,i-j)
       DO I = 1, N
@@ -1976,8 +1964,6 @@ C               END IF
         WRITE(6,*) ' ================= '
         CALL WRTMAT(WORK(KLSI),N,1,N,1)
       END IF
-        WRITE(6,*) ' Memcheck III '
-        CALL LMEMCHK
 *
 * ===============================================
 * 2 : Construct density matrices through order N
@@ -2215,8 +2201,6 @@ C          PTWFNRM(LU0,LUN,N,VEC1,VEC2,LUSC1,LUSC2,PTNORM)
         CALL WRTMAT(WORK(KLSCR4),NTOOB,NTOOB,NTOOB,NTOOB)
       END IF
 *
-      WRITE(6,*) ' Memtest 1 : '
-      CALL LMEMCHK
 *
 * =====================================================
 * 3 : Construct n'th order contribution to Fock matrix

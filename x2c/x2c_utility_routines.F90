@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -538,12 +538,14 @@ contains
      integer                :: nbas1_f
      integer                :: ilowdmat
      integer                :: ilowdmat_tmp
+     integer                :: nlowdmat
      integer                :: nborb_dim(4,2,0:2)
      character (len=12)     :: flabel
 !**********************************************************************
 
 !      initialize offset
        ilowdmat = 1
+       nlowdmat = 0
 
 !      step 1: zero out L-S terms
 !      --------------------------
@@ -572,9 +574,11 @@ contains
 !      step 2: reorder the L blocks for nfsym > 1:
 !              L for nfsym==1 followed by L for nfsym==2                        
 !      -------------------------------------------------
+       nlowdmat = naosh_all(1) * nesh_dim(1)
        if(nfsym == 2)then
-         ilowdmat_tmp = 1 + naosh_all(1) * norb_dim_lwd_all(1)
-         ilowdmat     = 1 + naosh_all(1) * nesh_dim(1)
+         ilowdmat_tmp =        1 + naosh_all(1)     * norb_dim_lwd_all(1)
+         ilowdmat     =        1 + naosh_all(1)     * nesh_dim(1)
+         nlowdmat     = nlowdmat + naosh_all(nfsym) * nesh_dim(nfsym)
          call dcopy(naosh_all(2)*nesh_dim(2),lowd_mat(ilowdmat_tmp),1,lowd_mat(ilowdmat),1)
        end if
 
@@ -583,7 +587,8 @@ contains
 !      label code:   ||         | |              ||   |
        write(flabel,'(a7,i4,i1)') '2cLWAOg',is_fragment,0
 
-       call x2c_write(flabel,lowd_mat,(naosh_all(1)*nesh_dim(1)+naosh_all(2)*nesh_dim(2)),x2c_file_glb)
+       
+       call x2c_write(flabel,lowd_mat,nlowdmat,x2c_file_glb)
 
 
 !      step 4: transform 2c-adapted Lowdin matrix in AO2MO basis to account for linear symmetry
@@ -599,7 +604,7 @@ contains
          ilowdmat = 1
          do i = 1, nfsym
 
-           call readt(8,nesh_dim(i)**2,scr_mat1(ilowdmat))
+           if(nesh_dim(i) > 0) call readt(8,nesh_dim(i)**2,scr_mat1(ilowdmat))
 
 !          debug print
            if(print_lvl > 2)then
@@ -633,7 +638,7 @@ contains
  
 !        store adapted 2c-LOWDIN matrix on file
          write(flabel,'(a7,i4,i1)') '2cLWAOl',is_fragment,0
-         call x2c_write(flabel,scr_mat2,(naosh_all(1)*nesh_dim(1)+naosh_all(2)*nesh_dim(2)),x2c_file_glb)
+         call x2c_write(flabel,scr_mat2,nlowdmat,x2c_file_glb)
 
        end if
 

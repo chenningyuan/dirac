@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1121,6 +1121,14 @@ C
 #include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2EIN1','*',103)
+
+!mi: initialization to prevent runtime check failure...
+      MINT=0
+      MINU=0
+      MINV=0
+      MAXT=0
+      MAXU=0
+      MAXV=0
 C
       INCRMT = I340X + 1
       INCRMU = I340Y + 1

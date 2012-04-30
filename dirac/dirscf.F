@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -193,7 +193,11 @@ C         .... prepare the DFCOEF file with staring MOs
 
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) THEN
+#if defined SYS_WINDOWS
+          CALL SYSTEM('del DFDIIS')
+#else
           CALL SYSTEM('/bin/rm DFDIIS')
+#endif
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
      &    'PSIDHF: DFDIIS file from previous SCF cycle was deleted.'
         ENDIF
@@ -367,9 +371,8 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xcint_main
       use interface_mo_specific
-      use dft_cfg
+      use fde_types
       use fde_mod
       use num_grid_gen
       use xmlout
@@ -391,7 +394,8 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-      LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
+      type(fde_import) :: itmp
+      LOGICAL DOSEL,DOLEV,DSCFON,BARNUC,AOCBUF
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -446,14 +450,17 @@ C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
       DOSEL = .FALSE.
-      TOBE  = .TRUE.
-CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
+C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
-
 C
 C     1) - atomic start
 C     -------------------------
       IF(ATOMST) THEN
+C.......In the open-shell case use fractional occupation in first iteration; reset at the end
+        AOCBUF   = AOC
+        AOC      = .FALSE.
+        NFMATBUF = NFMAT
+        NFMAT    = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
         !fixme: michal for InteRest                            
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
@@ -561,32 +568,35 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDXC = SECOND()
-        TDF2 = TDXC - TDF2
+        TDfde = SECOND()
+        TDF2 = TDfde - TDF2
 
+        call interface_mo_write()
+        
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+
+           tdfde =  second() - tdfde
+        endif
+#endif
+
+        tdxc = second()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
- 
-!          write mo info to file
-!          read by the dft module
-           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.,
-     &                        xc_do_fde_update_vemb =
-     &                                (dirac_cfg_fde .and. update_vemb),
-     &                        xc_do_fde_response    =
-     &                                           dirac_cfg_fde_response)
+           call xcint_potential_rks(ntbas(0),
+     &                              dmat,
+     &                              fock)
            tdxc = second() - tdxc
         end if
+
+       
 C
 C       Solvent contribution
 C
@@ -685,6 +695,10 @@ C
       ENDIF
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,DOLEV,WORK(KFREE),LFREE)
+      IF(ATOMST) THEN
+        AOC      = AOCBUF
+        NFMAT    = NFMATBUF
+      ENDIF
 C
 C     Add vacuum polarisation in case of ONESYS
 C
@@ -756,6 +770,11 @@ C
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
           ENDIF
+          if (dirac_cfg_fde) then
+             cputid = sectid(tdfde)
+             write(lupri,'(3X,A,A12)')
+     &      '* FDE Fock matrix           (CPU):',CPUTID
+          endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)
@@ -786,7 +805,7 @@ C
  666  CONTINUE
       CALL QEXIT('PREDHF')
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1031,6 +1050,10 @@ CMI     ... Control printout ...
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
+C
+C     sebastian+stefan: subtract level shift from orbital energies
+      IF(DOLEV) CALL UNDOLEVSHI(EIG)
+C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
 C
@@ -1180,8 +1203,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use dft_cfg
-      use xcint_main
+      use fde_types
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
@@ -1203,6 +1225,7 @@ C
 #include "dcbreo.h"
 #include "densfit.h"
       LOGICAL   LBIT
+      type(fde_import) :: itmp
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
@@ -1262,7 +1285,7 @@ C
 C        Get density matrices (normed to one)
 C
          CALL DENMAT(DMAT,CMO,IPRSCF)
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
          call matexport_text('% In SCFCYC1')
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
@@ -1360,33 +1383,31 @@ C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
 !       mi - variable initialization (otherwise runtime-check failure)
-        TDXC = SECOND()
+        
+        tdfde= second()
+        call interface_mo_write()
 
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           tdfde = second() - tdfde
+        endif
+#endif
+        
+        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
- 
-!          write mo info to file
-!          read by the dft module
-           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.,
-     &                        xc_do_fde_update_vemb =
-     &                                (dirac_cfg_fde .and. update_vemb),
-     &                        xc_do_fde_response    =
-     &                                           dirac_cfg_fde_response)
-           
+           call xcint_potential_rks(ntbas(0),
+     &                              dmat,
+     &                              fock)
            tdxc = second() - tdxc
         end if
-
 
 C
 C        Solvent contribution
@@ -1543,7 +1564,7 @@ C
 
       CALL QEXIT('SCFCY1')
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1569,7 +1590,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xcint_main
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1596,16 +1617,16 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-#ifdef SAVE_BEST
+      real(kind=8) :: fde_energy
       data besterg /1.0D100/
       save besterg
-#endif
 C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
 C
       LVCON = DOLVC.AND.
-     &        ( (INTFLG.EQ.3) .OR. (ONECAP.AND.INTV1C.EQ.2) )
+     &        ( (INTFLG.EQ.3 .or. INTFLG.EQ.11) .OR. 
+     &          (ONECAP.AND.INTV1C.EQ.2) )
       CALL DZERO(E,8*(MXOPEN+1))
       ERGBUF  = DHFERG
       E1PART  = D0
@@ -1656,7 +1677,7 @@ C
 
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
-        e(1, 2, 0) = e(1, 2, 0) - get_xc_mat_energy()
+        e(1, 2, 0) = e(1, 2, 0) - xcint_get_xc_mat_energy()
       end if
 
       DO IZ = 1,NZ
@@ -1684,8 +1705,15 @@ C
       ELERGY = E1PART + E2PART
 
       if (dirac_cfg_dft_calculation) then
-        elergy = elergy + get_xc_energy()
+        elergy = elergy + xcint_get_xc_energy()
       end if
+
+!     if (dirac_cfg_fde) then
+!        call fde_export_write_data_to_memory('DHF') 
+!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
+!        write (*,*) 'FDE energy: ',fde_energy
+!     endif
+
 
       DHFERG = DHFERG + ELERGY
 C
@@ -1747,23 +1775,19 @@ CMI      ... print out matrixes ...
                END DO
    30          CONTINUE
             ENDIF
-            IF (dirac_cfg_dft_calculation) then
-               xc_energy = get_xc_energy()
-               WRITE(LUPRI,'(6X,A,'//FMT//')')
-     &         '* DFT xc energy              :  ',
-     &         xc_energy
-            end IF
          END IF
       ENDIF
-#ifdef SAVE_BEST
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
          write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
+#if defined SYS_WINDOWS
+         call system('copy DFCOEF DFCOEF.BEST')
+#else
          call system('cp DFCOEF DFCOEF.BEST')
+#endif
          besterg = dhferg
       endif
-#endif
       CALL QEXIT('ERGCAL')
       RETURN
 C
@@ -3431,8 +3455,8 @@ C     If (oldfmo) we can check all convergence criteria
 C
       IF (OLDFMO) ICHKCNV = 1
       RETURN
- 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
- 1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
+ 1020 FORMAT(4X,    I4,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C     ... 1020 is used for reading, thus no '1P' !!! /hjaaj
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4585,6 +4609,64 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE UNDOLEVSHI(EIG)
+C***********************************************************************
+C
+C     undo Level shift
+C
+C     Written by S. Hoefener and S. Knecht   Nov 15 2011
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D1 = 1.0D0,D0=0.0D0)
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION EIG(*)
+!#def LEVELSHIFT_DEBUG
+
+      CALL QENTER('UNDOLEVSHI')
+C
+      ISTART = 0
+      DO I = 1,NFSYM
+        ISTART = IORB(I) + NPSH(I)+NISHMF(I)+1
+#ifdef LEVELSHIFT_DEBUG
+        write(lupri,*) ' inactive offset is ',istart
+#endif
+        DO IOPEN = 1,NOPEN
+          IF(OLEV(IOPEN).NE.D0) THEN
+            DO J = 1, NACSHMF(I,IOPEN)
+              EIG(ISTART+J-1) = EIG(ISTART+J-1) - OLEV(IOPEN)
+            END DO
+          ENDIF
+          ISTART = ISTART + NACSHMF(I,IOPEN)
+        END DO
+        NVEC = NESH(I) - NOCCMF(I)
+#ifdef LEVELSHIFT_DEBUG
+        write(lupri,*) ' blabla nvec is ',nvec
+        write(lupri,*) ' istart is ',istart
+        write(lupri,*) ' undo... i, nesh(i), noccmf(i) ',
+     &                           i, nesh(i), noccmf(i)
+#endif
+        IF(DLSHIF.NE.D0) THEN
+          DO J = 1, NVEC
+            EIG(ISTART+J-1) = EIG(ISTART+J-1) - DLSHIF
+#ifdef LEVELSHIFT_DEBUG
+            write(lupri,*) 'orb, old new epsilon ==> ',ISTART+J-1,
+     &                      EIG(ISTART+J-1)+DLSHIF,
+     &                      EIG(ISTART+J-1)
+#undef LEVELSHIFT_DEBUG
+#endif
+          END DO
+        ENDIF
+      END DO
+C
+      CALL QEXIT('UNDOLEVSHI')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck precmos */
       SUBROUTINE PRECMOS(COFT,COFU,TMAT,DOSEL,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -5063,7 +5145,7 @@ C.....Say hello
       ENDIF
 C.....Initialize buffer density matrix
       NDMAT=NTBAS(0)*NTBAS(0)*NZ
-      NDBUF=NTBAS(0)*NTBAS(0)*4
+      NDBUF=NTBAS(0)*NTBAS(0)*NZC1
       CALL MEMGET('REAL',KDBUF,NDBUF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KDBUF),NDBUF)
 C.....Loop over atomic types
@@ -5084,7 +5166,6 @@ C.......Read atomic coefficients in C1 format
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
         READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
-C.......add test fro NSYM
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5100,39 +5181,46 @@ C.......add test fro NSYM
         ENDIF
         NAORB  = NNEG+NPOS
         NACMO  = NBAS*NAORB
-        NACMOQ = NACMO*4
-        NADEN  = NBAS*NBAS*4
+        NACMOQ = NACMO*NZC1
+        NADEN  = NBAS*NBAS*NZC1
+C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET('REAL',KADE,NADEN ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KCMO,NACMOQ,WORK,KFREE,LFREE)
         CALL READT(LUATOM,NACMOQ,WORK(KCMO))
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
-        NDIM=MAX(NAORB,NBAS)
+        NDIM=MAX(NAORB+1,NBAS)
         CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
         FAC = D0
         DO ISHELL = 1,NVECATOM(IATOM)
+C.........starting from orbital string VECATOM return index array WORK(KVEC) of selected orbitals
           NSEL=1
           CALL NUMLS1(VECATOM(ISHELL,IATOM),WORK(KVEC),
      &        NAORB,-NNEG,NPOS,NSEL,WORK(KIBUF))
+C.........count number NPVEC and NEVEC of negative- and positive-energy orbitals, respectively
           CALL ORBCNT(WORK(KVEC),NSEL,NNEG,NPOS,NPVEC,NEVEC)
-          CALL MEMGET('REAL',KCBUF,NBAS*NSEL*4,WORK,KFREE,LFREE)
+C.........extract selected vectors from CMO and place in CBUF
+          CALL MEMGET('REAL',KCBUF,NBAS*NSEL*NZC1,WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
-          CALL SELOWC(4,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
+          CALL SELOWC(NZC1,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
-CTROND: C1 test
-          WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
-          CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-          WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
-          CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-          CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
-     &                WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
-CTROND
-         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
-         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
-     &              4,IPQTOQ(1,0),LUPRI)
+          IF(IPRINT.GE.4) THEN
+            WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+C.........Generate contribution to atomic density matrix from this shell
+          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,OCCATOM(ISHELL,IATOM),
+     &                FAC,WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
+          IF(IPRINT.GE.4) THEN
+            WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
+            CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
+     &                 NZC1,IPQTOQ(1,0),LUPRI)
+          ENDIF
           FAC = D1
           CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO
@@ -5140,14 +5228,9 @@ C.......Now we have the atomic density matrix.
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
         CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
-     &                   NUCDEG(ICENT),
+     &                   NUCDEG(ICENT),NZC1,
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
      &                   WORK,KFREE,LFREE)
-CTROND: C1 test
-C        CALL DCOPY(NADEN,WORK(KADE),1,DMAT,1)
-C        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-C        CALL PRQMAT(DMAT,NBAS,NBAS,NBAS,NBAS,
-C     &              NZ,IPQTOQ(1,0),LUPRI)
 C.......Release memory        
         CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
@@ -5156,28 +5239,46 @@ C.......Release memory
 C
       IF(NBSYM.EQ.1) THEN
         CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
-CTROND
-         WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NZ,IPQTOQ(1,0),LUPRI)
       ELSE
+C.......transform atomic start to actual symmetry
+        IF(IPRINT.GE.5) THEN 
+          WRITE(LUPRI,'(A)') '* C1 Density matrix from atomic guess'
+          CALL PRQMAT(WORK(KDBUF),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZC1,IQDEF,LUPRI)
+        ENDIF
         CALL DZERO(DMAT,NDMAT)
         IREP = 0
         IOFF = 0
         NOFF = NTBAS(0)*NTBAS(0)
-        DO IZ = 1,4
+        DO IZ = 1,NZC1
            IREPD = IRQMAT(IZ,IREP)
-           IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+           IQ    = IQMULT(1,JQBAS(IREPD,1),IZ)
            IPQ   = IQTOPQ(IQ,IREP)
            CALL DTAOSO(WORK(KDBUF+IOFF),DMAT(1,1,IPQ),NTBAS(0),
      &                 IREPD,IPRINT)
            IOFF = IOFF + NOFF
         ENDDO
+        CALL BUTOBS(DMAT,NZ,WORK(KDBUF),NDBUF)
+        DO IZ = 1,NZ
+           IQ = IPQTOQ(IZ,IREP)
+           CALL Q2BPHASE('D',IQ,1,DMAT(1,1,IZ))
+        ENDDO
       ENDIF
+      IF(IPRINT.GE.4) THEN
+        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(/A,A3)')
+     &      '* Fermion ircop ',FREP(IFRP)
+          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1,1,1),
+     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+        ENDDO
+      ENDIF
+      CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,
+      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,NZC1,
      &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
      &                       WORK,KFREE,LFREE)
 C***********************************************************************
@@ -5198,7 +5299,7 @@ C     Written by T. Saue March 31 2011
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION AMOL(NBAS,NBAS,4),ATOM(LR,LC,4),NDEG(*),
+      DIMENSION AMOL(NBAS,NBAS,NZC1),ATOM(LR,LC,NZC1),NDEG(*),
      &          WORK(*)
       KFRSAV=KFREE
       ICENT=INUC
@@ -5230,7 +5331,7 @@ C.........Create pointer mol->atom for rows
           ENDIF
 C.........Create reverse pointer atom->mol
           CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
      &                 WORK(KIBUF),WORK(KJBUF))
           ENDDO

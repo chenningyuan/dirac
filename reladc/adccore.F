@@ -1,5 +1,5 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,176 +16,203 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
 !
+#ifdef HAVE_MKL_BLAS
+!radovan: workaround for strange crash when using MKL zdotc
+#define ZDOTC z_dot_c
+#define zdotc z_dot_c
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMADC (CC,MAXCOR)
-C
-C---------------Description-----------------------------------------------
-C
-C    Main entra module for the ADC calculations. Link to main program.
-C    Parallel setup is done here.
-C
-C---------------Routines called-------------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : M.P.
-C
-C---------------Calling variables--------------------------------------
-C
-C---------------Common Blocks--------------------------------------
-C
+!
+!---------------Description-----------------------------------------------
+!
+!    Double group symmetry adapted adc code
+!    This version is called from within DIRAC
+!
+!---------------Routines called-------------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : MP adapted from LV
+!
+!---------------Common Blocks--------------------------------------
+!
+      use interface_to_mpi
 #include "implicit.h"
 #include "maxorb.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#if defined (VAR_MPI)
+#include "dcbpsi.h"
+#include "dcbmp2no.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
 #include "../relccsd/complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
+!
+!---------------Local variables--------------------------------------
+!
       REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
-
-C
-C---------------Executable code--------------------------------------
-C
+!
+!---------------Executable code--------------------------------------
+!
       CALL CPUUSED(SEC0)
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       IN = LUCMD
       IW = LUPRI
-C aspg 20080903
-C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
-c     INTFCE = 'DIRAC     '
+!
+! iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
+!     INTFCE = 'DIRAC     '
       INTFCE = 'DIRAC6    '
+      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+!
+!  determine condition when we have complex arithmetic !
+!
       CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
+!MI   ... if CAP is on, switch to complex algebra
+      IF (CAP) CA = .TRUE.
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
-C     Add the master node
+!     Add the master node
       NMPROC = NUMNOD + 1
 #else
       MASTER = 0
       MYPROC = 0
       NMPROC = 1
 #endif
-C
-C     FIXME: SK - Aug 08: write parallel slave initialization 
-C                         and slave release routines for later
-C                         parallelization.
-C
-C     Summon the slaves, who are waiting in the general menu routine.
-C
-CSK   CALL ADCMSTI
-C
-C     Tell them the correct arithmetic (NZ is not initialized on the
-C     slaves
-C     if you do not run HF !)
-C
-CSK#if defined (VAR_MPI)
-CSK   IF (NMPROC .GT. 1) THEN
-CSK      CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-CSK   END IF
-CSK#endif
-C
-C     Enter the driver routine for ADC (master becomes now primus inter
-C     pares)
-C
-      CALL ADCDRIV(CC,MAXCOR,IN,IW,CA)
-C
-C     Return the slaves to the general menu routine.
-C
-CSK   CALL ADCMSTE
-C
+!
+!     ADC is not yet parallel!
+!
+!     Summon the slaves, who are waiting in the general menu routine.
+!
+!     CALL CCMSTI
+!
+!     Tell them the correct arithmetic (NZ is not initialized on the slaves
+!     if you do not run HF !)
+!
+#if defined (VAR_MPI)
+      IF (NMPROC .GT. 1) THEN
+         call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
+         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
+     &                  global_communicator)
+      END IF
+!
+!     if MP2-NO is enabled, tell the slaves about the correct interface
+!
+      IF( MP2_DENRUN )THEN
+        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
+     &                 global_communicator)
+        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
+     &                 global_communicator)
+        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
+     &                 global_communicator)
+      END IF
+#endif
+!
+!     Enter the generic ADCMAIN routine (master becomes now primus inter pares)
+!
+      CALL ADCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
+!
+!     Return the slaves to the general menu routine.
+!
+!     CALL CCMSTE
+!
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC
       WRITE (IW,'(//80A1)') ('#',I=1,80)
       CLOSE(LUCMD)
-C
+!
  1000 FORMAT (//' CPU time (seconds) used in RELADC:',T50,F14.4/
      & ' CPU time (seconds) used before RELADC:',T50,F14.4/
      & ' CPU time (seconds) used in total sofar:',T50,F14.4//
      & '  --- Normal end of RELADC Run ---')
-C
+!
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCDRIV (CC,MAXCORE,IN123,IW123,CA)
-C
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ADCMAIN (CC,MAXCORE,IN123,IW123,CA,INTFCE)
+!
+      use memory_allocator
+      use allocator_parameters, only : klongint, kreal
+      use interface_to_mpi
+
       IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Driver for Relativistic Propagator Program
-C     It is extremeley unlikely that we need a standalone version
-C     of ADC. Therefore no options for this are included.
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Markus Pernpointner
-C
-C---------------Calling variables--------------------------------------
-C
+!
+!---------------Description--------------------------------------------
+!
+!     Driver for Relativistic Propagator Program
+!     It is extremeley unlikely that we need a standalone version
+!     of ADC. Therefore no options for this are included.
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Markus Pernpointner
+!
+!---------------Calling variables--------------------------------------
+!
       INTEGER MAXCORE
       REAL*8 CC(MAXCORE)
       INTEGER IN123,IW123
       LOGICAL CA
-C
-C---------------Common Blocks--------------------------------------
-C
+      CHARACTER*10 INTFCE
+!
+!---------------Common Blocks--------------------------------------
+!
 #include "../relccsd/files.inc"
 #include "../relccsd/inpt.inc"
+#include "../relccsd/symm.inc"
 #include "../relccsd/eqns.inc"
 #include "adcinpt.inc"
-#include "../relccsd/symm.inc"
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/waio.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-C
-C---------------Local variables--------------------------------------
-C
+!
+!---------------Local variables--------------------------------------
+!
       PARAMETER (MAXSP=1000)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
-      LOGICAL ALLOC,DOCCSETI
+      LOGICAL ALLOC_ME,DOCCSETI
       REAL*8 CPU0,CPU1,CPU2,CPU3
-C
-C---------------Executable code--------------------------------------
+      integer :: verbose = 0
+      integer(kind=klongint) :: maxcor
+      integer(kind=klongint) :: mxcorr
+      integer(kind=klongint) :: mxcorr1
+      integer(kind=klongint) :: mword_limit
+      real(kind=kreal) :: total_mem_new = 0
+      real(kind=kreal) :: new_mword_limit = 0
 
-C
-C     Set the input and output units and a control string
-C     In case relccsd is not called beforehand we need to agree
-C     on which orbital energies we take (the original ones!)
-C     Controlled by inpt.inc from relccsd.
-C
-C     The INTERFACE/EQNS variable is defined in ccinpt.inc and is needed
-C     by CCSETI. The default scheme is DIRAC6. This is also hardcoded
-C     in the RELCCSD code.
-C
+!
+!---------------Executable code--------------------------------------
+
+!
+!     Set the input and output units and a control string
+!     In case relccsd is not called beforehand we need to agree
+!     on which orbital energies we take (the original ones!)
+!     Controlled by inpt.inc from relccsd.
+!
+!     The INTERFACE/EQNS variable is defined in ccinpt.inc and is needed
+!     by CCSETI. The default scheme is DIRAC6. This is also hardcoded
+!     in the RELCCSD code.
+!
       CARITH = CA
       IN=IN123
       IW=IW123
-      INTERFACE = 'DIRAC6    '
+      INTERFACE = INTFCE
       EQNS='RELADC'
-      USEOE = .TRUE.
-      DOCCSETI = .FALSE.
-c
-c    say hello
-c
+!
+!    say hello
+!
       WRITE (IW,160)
  160  FORMAT (///10X,"************************************************"/
      &      10X,"****",40X,"****"/
@@ -204,164 +231,212 @@ c
      &       J. Phys. B 43, 205102 (2010)."//)
       WRITE (IW,1011) MYPROC+1,NMPROC
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
-      WRITE (IW,*) 'Numbers of words given to ADC:',MAXCORE
 
-C
-C     Initialize low-level I/O
-C
+!
+!     Initialize low-level I/O
+!
       CALL WAIO_INIT (IW)
-C
-C     Initialize the timing.
-C
+!
+!     Initialize the timing.
+!
       CALL CPUUSED(CPU0)
-C
-C     Write out memory information
-C
+!
+!     Write out memory information and
+!     call new mem alloc routines
+!
       WRITE (IW,1000) MAXCORE,MAXCORE / (128 * 1024)
 1000  FORMAT (/" Total memory provided:", T50,I15," Words ",
      &  I10," MB")
-C
-C     Read symmetry information from MRCONEE
-C
+      call allocator_get_available_mem(total_mem_new)
+      maxcor = nint((total_mem_new/8.0d0),kind(8))
+      mword_limit = maxcor / (1024*1024)
+
+!     WRITE(IW,*) 'Status variables from allocator:'
+!     WRITE(IW,*) 'total_mem_new: ',total_mem_new
+!     WRITE(IW,*) 'maxcor: ',maxcor
+!     WRITE(IW,*) 'mword_limit: ',mword_limit
+
+      MXCORR = 0
+!
+! temporary solution:
+! unsettled issue wih the memory manager. We allow total maxcore for maxcor!
+!
+      MAXCOR = MAXCORE
+      WRITE (IW,*) 'temporary maxcor:',maxcor
+      WRITE (IW,*) '(Attributed due to static memory usage)'
+      
+!
+!     Read symmetry information from MRCONEE
+!
       CALL RDSYMI (NSP,EPS1,IREPSP)
       IF (NSP.GT.MAXSP) THEN
-         PRINT*," INCREASE MAXSP IN ADCDRIV TO",NSP
+         PRINT*," INCREASE MAXSP IN ADCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
-C
-C     Read ADC input and set IPRNT variable =2 for CCSETI in order
-C     to print out the recomputed orbital energies and orbital numbers
-C
+!
+!     Read ADC input and set IPRNT variable =2 for CCSETI in order
+!     to print out the recomputed orbital energies and orbital numbers
+!
       CALL ADCINPT (IN,IW)
-      IPRNT = 2
-C
-C     Number of integer words for REAL*8 and 
-C     number of REAL*8 words per variable (2 for complex groups, 
-C     1 for real)
-C
+      IPRNT = 2   ! print orbital and recalc. orbital energies
+!
+!     Number of integer words for REAL*8 and 
+!     number of REAL*8 words per variable (2 for complex groups, 
+!     1 for real)
+!
       IRW = INTOWP(1)
       IF (CARITH) THEN
          RCW = 2
       ELSE
          RCW = 1
       ENDIF
-C
-C     Set up symmetry tables and parallel distribution arrays
-C     Symtab is required for the pure diagonalization also.
-c     The variables NELEC, NFROZ ... are defined in inpt.inc.
-C
+!
+!  Report memory in megabytes
+!
+      if(maxcor .gt. 0) then
+        write(iw,*) 'Total avail. memory (MB):',MAXCOR/(128 * 1024)
+      else
+        write(iw,*) 'Total avail. memory has not been determined!'
+      endif
+!
+!     Set up symmetry tables and parallel distribution arrays
+!     Symtab is required for the pure diagonalization also.
+!     The variables NELEC, NFROZ ... are defined in inpt.inc.
+!
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,
      &             IREPSPI,.FALSE.,.TRUE.,NELEC_F1,NELEC_F2)
-C
-C  determine number of electrons and print general information
-C
+!
+!  determine number of electrons and print general information
+!
       NELECT = 0
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
-C
+!
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH
 1004  FORMAT (//" Number of electrons :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1/)
 
-      IF(DOSIPS.OR.DODIPS) DOCCSETI=.TRUE.
+      IF(DOSIPS.OR.DODIPS) then
+         DOCCSETI=.TRUE.
+         DOSORT  =.TRUE.
+      ENDIF
+!
+!  initialize USEOE=T default also for RELADC
+!  because it relies on CCSETI and needs the orbital
+!  energies from the original HF calculation
+!  This allow for the use of X2Cmmf
+!  The NORECMP parameter is irrelevant
+!
+      USEOE = .TRUE.
 
       WRITE (IW,*) '       *** GENERAL JOB SPECIFICATION ***'
-      WRITE (IW,1006) DOSIPS,DODIPS,DOCCSETI
-1006  FORMAT (/" Calculate Single ionization spectra :",T40,L1
-     &        /" Calculate double ionization spectra :",T40,L1
-     &        /" Perform integral sorting (if necc.) :",T40,L1/)
-C     
-C     Check the memory requirements of the active modules
-C     Hereby the variable ICALC determines if there is a
-C     calculation or not. ALLOC acts correspondingly.
-C     KFREE/LFREE are initialized (occupied/free memory)
-C
-C     Since all the modules are independent of each other with
-C     respect to buffer usage, we reset the (dynamical) memory
-C     pointers KFREE/LFREE each time to their initial values.
-C     Each module can therefore use the maximum amount of memory.
-C
-C     For the moment we refrain from implementing a stand-alone
-C     diagonalisator because tha ADC matrices would be too large
-C     for copying anyway! The interface structure, however would allow
-C     for such a strategy. The diagonalization is completely decoupled
-C     from the ADC matrix generation.
-C
+      WRITE (IW,1006) DOSIPS,DODIPS,DOSORT,USEOE,NORECMP
+1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
+     &        /" Calculate double ionization spectra:",T50,L1
+     &        /" Perform integral sorting           :",T50,L1
+     &        /" Use orbital energies from HF calc. :",T50,L1
+     &        /" Recalculating of Fock matrix forbidden:",T50,L1/)
+
+      if(maxcor .gt. 0) then
+        write(iw,*) 'Memory limit (MWORD):',mword_limit
+      else
+        write(iw,*) 'MWORD not set in dirac but by the OS!'
+      endif
+       
+!     
+!     Check the memory requirements of the active modules
+!     Hereby the variable ICALC determines if there is a
+!     calculation or not. ALLOC acts correspondingly.
+!     KFREE/LFREE are initialized (occupied/free memory)
+!
+!     Since all the modules are independent of each other with
+!     respect to buffer usage, we reset the (dynamical) memory
+!     pointers KFREE/LFREE each time to their initial values.
+!     Each module can therefore use the maximum amount of memory.
+!
+!     For the moment we refrain from implementing a stand-alone
+!     diagonalisator because tha ADC matrices would be too large
+!     for copying anyway! The interface structure, however would allow
+!     for such a strategy. The diagonalization is completely decoupled
+!     from the ADC matrix generation.
+!
       ICALC = 1
-      ALLOC = .FALSE.
-      MXCORR=0
-C
-C
+      ALLOC_ME = .FALSE.
+      KFREE = 1
+      LFREE = MAXCOR
+!
+      MXCORR1 = 0
+!
       IF(DOCCSETI) THEN
-        KFREE = 1
-        LFREE = MAXCORE
         MXCORR1 = 0
         CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &               NSP,IREPSP,IREPSPI)
-c       WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
-        MXCORR = MAX0(MXCORR,MXCORR1)
+        WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
+        MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 
+      IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
+
       IF(DOSIPS) THEN
-        KFREE = 1
-        LFREE = MAXCORE
         MXCORR1 = 0
         CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
-c       WRITE(IW,*) 'Memory requments for Single-ionization spectra:',
-c    &              MXCORR1
-        MXCORR = MAX0(MXCORR,MXCORR1)
+        WRITE(IW,*) 'Memory requments for Single-ionization spectra:',
+     &              MXCORR1
+        MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 
       IF(DODIPS) THEN
-        KFREE = 1
-        LFREE = MAXCORE
         MXCORR1 = 0
         CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
-c       WRITE(IW,*) 'Memory requments for Double-ionization spectra:',
-c    &              MXCORR1
-        MXCORR = MAX0(MXCORR,MXCORR1)
+        WRITE(IW,*) 'Memory requments for Double-ionization spectra:',
+     &              MXCORR1
+        MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
-C
-C MXCORR is a cumulative maximum of individual memory requirements
-C ===> if any subroutine would need more core than MAXCORE we quit.
-C
-      IF (MXCORR.GT.MAXCORE) THEN
+!
+! MXCORR is a cumulative maximum of individual memory requirements
+! ===> if any subroutine would need more core than MAXCORE we quit.
+!
+      IF (MXCORR.GT.MAXCOR) THEN
          WRITE (IW,1002) MXCORR
 1002     FORMAT (" Not enough core, increase to at least",I20,
      &        " Words")
          CALL QUIT("Insufficient memory")
       ENDIF
       WRITE (IW,1001) MXCORR
-C
-C  We have sufficient memory. Now start the calculations
-C  Again, all modules are independent, resetting of mem. pointers
-C
+1001  FORMAT (" Memory used for active modules :",
+     &        T50,I10," 8-byte words")
+!
+!  We have sufficient memory. Now start the calculations
+!  Again, all modules are independent, resetting of mem. pointers
+!
       ICALC = 2
-      ALLOC = .TRUE.
-C
-      IF(DOCCSETI) THEN
-        KFREE = 1
-        LFREE = MAXCORE
-        CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
+      ALLOC_ME = .TRUE.
+      KFREE = 1
+      LFREE = MXCORR
+!
+      write(*,*) 'Providing ',MXCORR,' to the act. modules.'
+      IF(DOSORT) THEN
+        CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &               NSP,IREPSP,IREPSPI)
       ENDIF
 
+      write(*,*) 'MXCORR after allocated CCSETI:',MXCORR
+      write(*,*) 'We give the FULL memory to the ADC modules.'
+
+      LFREE = MAXCOR
+
       IF(DOSIPS) THEN
-        KFREE = 1
-        LFREE = MAXCORE
-        CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
+        CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
       ENDIF
 
       IF(DODIPS) THEN
-        KFREE = 1
-        LFREE = MAXCORE
-        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
+        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
       ENDIF
-C
-C     return after closing low-level I/O files
-C
+!
+!     return after closing low-level I/O files
+!
       JCODE = 3
       CALL WAIO_CLOSE(ITAPT+0,JCODE)
       JCODE = 3
@@ -376,15 +451,13 @@ C
       CALL WAIO_CLOSE(ITAPT+5,JCODE)
       JCODE = 3
       CALL WAIO_CLOSE(ITAPT+6,JCODE)
-C
-C     Print I/O statistics
-C
+!
+!     Print I/O statistics
+!
       CALL WAIO_PRST (IW)
 C
       RETURN
 C
-1001  FORMAT (" Memory used for active modules :",
-     &        T50,I10," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCINPT (IN,IW)
@@ -419,7 +492,8 @@ C
       NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
      &                 DOCONST,DOADCPOP,DOFULL,VCONV
-      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,SIPPRNT,DIPPRNT
+      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,
+     &                 SIPPRNT,DIPPRNT,DOINCORE
 c
 c  set input default values and read ADC input
 c  from ADC namelist input.
@@ -490,6 +564,7 @@ c
         SIPEIGV(J) = 0
         DIPEIGV(J) = 0
       ENDDO
+      DOINCORE = .FALSE.
       REWIND (5)
       CALL LOCATE('LANINP',5,ITEST)
       IF (ITEST.GT.0) THEN
@@ -544,7 +619,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL ALLOC,LFLAG
+      LOGICAL ALLOC_ME,LFLAG
       INTEGER KFRSAV,LFRSAV,IDUMMY(2)
       REAL*8 RDUMMY(2)
       COMPLEX*16 CDUMMY(2)
@@ -678,7 +753,7 @@ c      in the different symmetries
 c
 c   save the original memory space for the diagonalizers
 
-      ALLOC = ICALC.GE.2
+      ALLOC_ME = ICALC.GE.2
       KFRSAV=KFREE
       LFRSAV=LFREE
       ALLCNT=0
@@ -746,20 +821,20 @@ C
  15   CONTINUE
 
       NCKKS   = MXNO*MXNO
-      INTBUF = 65536  !output buffer is now enlarged to 64K
+      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 C
 C  allocate memory needed in all types of ADC calculations
 C
 C  **** ALLOCATIONS #  1-8
 C
-      CALL MEMOPT('REAL',CKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUF1A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUF1B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUF4,NDIMT4,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUF5A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUF5B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',EAJL,MXNVOOT,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',ICRA,6*LADCM,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',CKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',BUF1A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',BUF1B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',BUF4,NDIMT4,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',BUF5A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',BUF5B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',EAJL,MXNVOOT,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('INTE',ICRA,6*LADCM,CC,KFREE,LFREE,ALLOC_ME)
 C
 C  allocate memory for I/O buffers, h/h2p buffer
 C  and for one ADC matrix column plus the diagonal
@@ -767,12 +842,12 @@ C  needed in all ADC calculations
 C
 C  **** ALLOCATIONS #  9-14
 C
-      CALL MEMOPT('REAL',ADCL,LADCM*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',DIAG,LADCM*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUFIO,INTBUF*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUFY1,LBUFUIH*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',IOI,INTBUF,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',IOJ,INTBUF,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',ADCL,LADCM*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',DIAG,LADCM*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',BUFIO,INTBUF*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('REAL',BUFY1,LBUFUIH*RCW,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('INTE',IOI,INTBUF,CC,KFREE,LFREE,ALLOC_ME)
+      CALL MEMOPT('INTE',IOJ,INTBUF,CC,KFREE,LFREE,ALLOC_ME)
 C
 C  For ADC-2X and ADC-3 we need one more OOOO and VOVO buffer 
 C  for the satellite block and the occ/occ lookup table
@@ -781,9 +856,9 @@ C  **** ALLOCATIONS #  15-17
 C
       IF(ADCLEVEL.GE.2) THEN
         OOLTL=MXNO*MXNO*NREP
-        CALL MEMOPT('INTE',OOLT,OOLTL,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFO1,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUF9A,NV4*RCW,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('INTE',OOLT,OOLTL,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFO1,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUF9A,NV4*RCW,CC,KFREE,LFREE,ALLOC_ME)
       ENDIF
 C
 C  For ADC(3) we need additional buffers.
@@ -792,55 +867,55 @@ C
 C
 C  **** ALLOCATIONS #  18-30
 C
-        CALL MEMOPT('REAL',CKKSA,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',FKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUF1C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUF1D,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUF5C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUF9B,NV4*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUF9C,NV4*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFO2,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFO3,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFU1,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFU2,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFU3,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFU4,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFW1,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('REAL',CKKSA,NCKKS*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',FKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUF1C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUF1D,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUF5C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUF9B,NV4*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUF9C,NV4*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFO2,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFO3,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFU1,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFU2,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFU3,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFU4,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFW1,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
 C
 C  **** ALLOCATIONS #  31-42
 C
-        CALL MEMOPT('REAL',BUFW2,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFW3,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFW4,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFX1,LBUFUAP*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',EJAB,MXNOVVT,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',ADIAG1,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',ADIAG2,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BDIAG1,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BDIAG2,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFQOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFQVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFQVOI,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('REAL',BUFW2,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFW3,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFW4,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFX1,LBUFUAP*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',EJAB,MXNOVVT,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',ADIAG1,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',ADIAG2,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BDIAG1,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BDIAG2,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFQOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFQVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFQVOI,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
 C
 C  **** ALLOCATIONS #  43-58
 C
-        CALL MEMOPT('REAL',BUFQVOA,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFQVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFBOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFBVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFXVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFYVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFBVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFXVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('INTE',BUFIVV,MVV(1),CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFBVO2,2*MVO(1)*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFSIG,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('REAL',BUFQVOA,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFQVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFBOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFBVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFXVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFYVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFBVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFXVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('INTE',BUFIVV,MVV(1),CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFBVO2,2*MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFSIG,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
         N=4*MVO(1)*MVO(1)*RCW
-        CALL MEMOPT('REAL',CSIGM,N,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('INTE',ICRB,6*MXICRB,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('INTE',IPIVOT,2*MVO(1),CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('REAL',CSIGM,N,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('INTE',ICRB,6*MXICRB,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('INTE',IPIVOT,2*MVO(1),CC,KFREE,LFREE,ALLOC_ME)
         N=MXNV*MXNV*NREP
-        CALL MEMOPT('INTE',VVLT,N,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('INTE',VVLT,N,CC,KFREE,LFREE,ALLOC_ME)
       ENDIF
 C
 C  The remaining memory (major part) has to be enough for
@@ -893,23 +968,25 @@ C  We therefore test, if there is enough memspace for these buffers
 C  when it comes to a real allocation.
 C
       IF(ICALC.EQ.1) THEN
-        write(IW,*)  ' *** Overview memory pointers: ***'
-        write(IW,*)  ' *** KFREE:    ',KFREE
-        write(IW,*)  ' *** LFREE:    ',LFREE
-        write(IW,*)  ' *** NDIMTV:   ',NDIMTV
-        write(IW,*)  ' *** IVMAX:    ',IVMAX
         MXCORR=KFREE+IVMAX
-        write(IW,*)  ' *** MXCORR:   ',MXCORR
-        VREMAIN = NDIMTV - IVMAX
-        write(IW,*)  ' *** VREMAIN:  ',VREMAIN
-        WRITE(IW,*) 'MWORDS allocated for the <VV|VV>/<VO|VV> class:',
-     &             IVMAX/(1024*1024)
-        WRITE(IW,*) 'MWORDS available for additional buffering:',
-     &             VREMAIN/(1024*1024)
-        WRITE(IW,150) MXCORR
- 150  FORMAT (" Core used for SIPS calculation:",T50,I10," words")
-        KFREE = KFRSAV
-        LFREE = LFRSAV
+      ENDIF
+
+      WRITE(IW,*) '-------------------------------------------'
+      WRITE(IW,*) '-- ADC memory usage summary'
+      WRITE(IW,*) '-------------------------------------------'
+      WRITE(IW,*)
+      WRITE(IW,*) 'Allocation status:',ICALC
+      WRITE(IW,*) 'Static memory provided during calc:',MXCORR
+      WRITE(IW,*) 'Words requd. static+ integrals:',KFREE + IVMAX
+      WRITE(IW,*) 'Words available:',LFREE - IVMAX
+      VREMAIN = LFREE - IVMAX
+      WRITE(IW,*)  'Available for buffering with integrals:',VREMAIN
+      WRITE(IW,*)  'Available for buffering without integrals:',LFREE
+C     WRITE(IW,*) 'MWORDS to be allocated for the VVVV/VOVV class:',
+C    &             IVMAX/(1024*1024)
+C     WRITE(IW,*) 'MWORDS available for additional buffering:',
+C    &             VREMAIN/(1024*1024)
+      IF(ICALC.EQ.1) THEN
         RETURN
       ENDIF
 C
@@ -1039,7 +1116,7 @@ c------------------------------------------------------------
 c
 c in the constant diagram loop we need the VVVV integral buffer
 c
-          CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC_ME)
 c
 c -------  prepare V+/- vector iteration
 c
@@ -1094,8 +1171,8 @@ C  VOVV integral batches
 C
           CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
           IX1 = JVVVO (NREP+1) 
-          CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('REAL',BUFVOW,IX1*RCW,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMOPT('REAL',BUFVOW,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
 C
 C
 C  next we generate the remaining two U arrays in order to
@@ -1183,8 +1260,8 @@ C MAKE_BPQ1 is written for real and complex case. The Q_kl were
 C generated in |><| BKC ==> NO additional complex conjugation.
 C
         IX1 = JVVVO (NREP+1)
-        CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC)
-        CALL MEMOPT('REAL',BUFVOW,IX1*RCW,CC,KFREE,LFREE,ALLOC)
+        CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        CALL MEMOPT('REAL',BUFVOW,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
 
         CALL MAKE_BPQ1(CC(BUFQOO),CC(BUFQVO),CC(BUFQVV),
      &                 CC(BUFBOO),CC(BUFBVO),
@@ -1318,7 +1395,7 @@ C  S4P flag is always false because the Sigma(4+) algorithm will not
 C  go into this implementation.
 C
         IF(ADCLEVEL.EQ.3) THEN
-          CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC_ME)
           CALL MAKE_HH3(KREP,CC(CKKS),CC(CKKSA),EPS,CC(BUFVVVV),
      &                  CC(BUF1A),CC(BUF1B),CC(BUF1C),CC(BUF1D),
      &                  CC(BUF9A),CC(BUF9B),CC(BUF9C),CC(BUFO1),
@@ -1355,7 +1432,7 @@ C
           CALL MAKE_HHP2(CC(BUF5A),CC(BUF5B),CC(BUFY1),KREP)
         ELSE IF(ADCLEVEL.EQ.3) THEN
           IX1 = JVVVO (NREP+1)
-          CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
           CALL UIONHO(CC(BUFY1),CC(BUF1A),CC(BUF1B),CC(BUF1C),
      &                CC(BUF9A),CC(BUFVOV),EPS,KREP)
           NX=NO(KREP)*NVOOT(KREP)
@@ -1505,7 +1582,7 @@ c
 c  call diagonalizer.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW)
+        CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
         CLOSE(ITAPADC,STATUS='DELETE')
 c
         WRITE(IW,*)
@@ -1705,9 +1782,11 @@ C
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
+      integer JVVVO_I48(MXREP+1)   !mxrep+1 is defined in symm.inc !
       LOGICAL DONE
       real*8 ddot,getimag
       complex*16 zdotc
@@ -1718,6 +1797,9 @@ c     CALL PST('Calculating coupling block AFFIN/PART+')
 C
       LENU = NV(KREP)*NOVVT(KREP)
       OFFS = LVOVVT(KREP)*RCW
+      DO I=1,NREP+1
+        JVVVO_I48(I) = JVVVO(I)
+      ENDDO
 
       IF(IVOVVT(NREP+1) .NE. LVOVVT(NREP+1)) THEN
         WRITE(IW,*) 'Unexpected size differences of arrays'
@@ -1738,8 +1820,9 @@ c     else
 c       write(*,*) 'vovv1 chksum (r)',ddot(nv5,vovv1,1,vovv1,1)
 c     endif
 
+      NV5_I48 = NV5  ! transfer true I8 variable to the default length variable
       CALL RDVOVV(VOVV1)
-      IF(CARITH) CALL CONJUGA(NV5,VOVV1,1)
+      IF(CARITH) CALL CONJUGA(NV5_I48,VOVV1,1)
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NV,NO,NVVT,LVOVVT,LLOVVT,
      &             VOVV1,VOVV2)
       CALL SRT1C1N (NREP,NV,NOVVT,VOVV2,VOVV1)
@@ -1790,9 +1873,8 @@ C  no additional complex conjugation ! the transposition is accounted
 C  for in the 'T' parameter of the XGEMM routine.
 C
       CALL RDVOVV(VOVV2)
-      CALL SRT26 (NREP,MULTB,LFA,LFA,NV,NO,NV,NV,MVV,JVVVO,JJVV,JJVO,
-     &            VOVV2,VOVV1)
-c     write(*,*) '** chksum (c) SRT26:',zdotc(JVVVO(NREP+1),vovv1,1,vovv1,1)
+      CALL SRT26 (NREP,MULTB,LFA,LFA,NV,NO,NV,NV,MVV,JVVVO_I48,
+     &            JJVV,JJVO,VOVV2,VOVV1)
 C
 C  here again special contraction, with 'T' in XGEMM
 C
@@ -3423,8 +3505,15 @@ C
       LOGICAL DONE
       COMPLEX*16 zdotc
       REAL*8 ddot,getimag
+      INTEGER JVVVO_I48(MXREP+1)   !MXREP is defined in symm.inc !
+      INTEGER IVOVVTAUX
 C---------------Executable Code --------------------------------------
 C
+C  preparation of aux array by implicit type conversion
+C
+      DO I=1,NREP+1
+        JVVVO_I48(I) = JVVVO(I)
+      ENDDO
 C****************
 C***** b_oo
 C****************
@@ -3570,9 +3659,10 @@ C  the first irrep is taken !
 C  afterwards contract over Q_bc = Q^*_cb. restored after contraction
 C
       CALL RDVOVV (VOVV1)
-      IF(CARITH) CALL CONJUGA(IVOVVT(NREP+1),VOVV1,1)
+      IVOVVTAUX = IVOVVT(NREP+1)
+      IF(CARITH) CALL CONJUGA(IVOVVTAUX,VOVV1,1)
       CALL SRT20M(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,
-     &            JVVVO,JJVV,JJVO,VOVV1,VOVV2)
+     &            JVVVO_I48,JJVV,JJVO,VOVV1,VOVV2)
       IF(CARITH) CALL CONJUGA(MVV(1),QVV,1)
       CALL XGEMV ('T',MVV(1),MVO(1),A1,VOVV2,MVV(1),QVV,1,A1,BVO,1)
       IF(CARITH) CALL CONJUGA(MVV(1),QVV,1)
@@ -6463,27 +6553,23 @@ C
       LOGICAL DONE
       complex*16 zdotc
       real*8 ddot
+      integer*8 off1
 C
 C---------------Executable code--------------------------------------
 C
       OFF1 = 1
       DO 30 IRP = 1, NREP
 
-c        write(iw,*) '    irep for getvovv:',irp
-
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
          MINT = NVVT(IRP)
          CALL GETVOVV (IRP,ISTART,NINT,DONE,VOVV(OFF1),MINT)
-
-c        write(iw,*) '    mint/nint/done after getvovv:',mint,nint,done
 
          IF (.NOT.DONE) THEN
             WRITE(IW,*) 'Irrep',IRP,' unfinished'
             CALL QUIT('VOVV reading error in RDVOVV')
          ENDIF
          OFF1 = OFF1 + NVO(IRP)*NVVT(IRP)*RCW
-c        write(iw,*) '    off1 after getvovv:',off1
  30   CONTINUE
 
       RETURN
@@ -6515,12 +6601,12 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
+      integer*8 off1
 C
 C---------------Executable code--------------------------------------
 C
       OFF1 = 1
       DO 30 IRP = 1, NREP
-c        WRITE(IW,*) 'GETVVVV irep:',IRP
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
          MINT = NVVT(IRP)
@@ -6530,9 +6616,7 @@ c        WRITE(IW,*) 'GETVVVV irep:',IRP
             CALL QUIT('VVVV reading error in RDVVVV')
          ENDIF
          OFF1 = OFF1 + NVVT(IRP)*NVVT(IRP)*RCW
-c        WRITE(IW,*) 'VVVV array pointer:    ',OFF1
  30   CONTINUE
-c     WRITE(IW,*) 'total # of VVVV:',IVVVVTT(NREP+1)
 
       RETURN
       END
@@ -6915,3 +6999,60 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     
 
+
+      DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
+*     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE COMPLEX ZX(*),ZY(*)
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  ZDOTC forms the dot product of a vector.
+*
+*  Further Details
+*  ===============
+*
+*     jack dongarra, 3/11/78.
+*     modified 12/3/93, array(1) declarations changed to array(*)
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      DOUBLE COMPLEX ZTEMP
+      INTEGER I,IX,IY
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC DCONJG
+*     ..
+      ZTEMP = (0.0d0,0.0d0)
+      ZDOTC = (0.0d0,0.0d0)
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+*
+*        code for both increments equal to 1
+*
+         DO I = 1,N
+            ZTEMP = ZTEMP + DCONJG(ZX(I))*ZY(I)
+         END DO
+      ELSE
+*
+*        code for unequal increments or equal increments
+*          not equal to 1
+*
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            ZTEMP = ZTEMP + DCONJG(ZX(IX))*ZY(IY)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      ZDOTC = ZTEMP
+      RETURN
+      END

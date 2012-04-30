@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -552,8 +552,6 @@ C?   &                      IFOFF-1+(J+IJ-1-1)*NIJS + I+II-1
       IPRDEN = IPRDEN_SAVE
       I12 = I12_SAVE
 *
-      WRITE(6,*) ' Memtest 1 : '
-      CALL LMEMCHK
 *
 * =====================================================
 * 3 : Construct for all orders Fock matrix with unpartioned Hamiltonian

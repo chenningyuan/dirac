@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,6 +23,7 @@
 
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 ! ... needed to get another Fortran executable 
+!     radovan: with configure perhaps but not with cmake
 subroutine dirprg
 #else
 ! default executable - dirac.x
@@ -33,15 +34,18 @@ program dirprg
   use os_utils
   use dft_cfg
   use xmlout
+  use interface_ao
+  use interface_mo
+
+#ifdef VAR_MPI
+  use mpi
+#endif
 
   implicit none
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr
   integer(kind=8) :: maxsize = -1
@@ -95,7 +99,6 @@ program dirprg
 
 #ifdef VAR_MPI
   if (parcal) then
-    call mpi_barrier(mpi_comm_world,ierr)
     call allocator_init()
     call allocator_set_max(maxsize)
     call sync_nodes(int(memsize,8),0)
@@ -123,7 +126,7 @@ program dirprg
     endif
 #endif
     print '(a)',' '
-    print '(a)','Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam'
+    print '(a)','Note: maximum allocatable memory for serial run can be set by pam --aw'
     print '(a)',' '
 #ifdef VAR_MPI
   endif
@@ -138,23 +141,18 @@ program dirprg
 
      write(lupri, *)
      write(lupri, *)
-     write(lupri, '(a)') 'Compilation info'
-     write(lupri, '(a)') '----------------'
+     write(lupri, '(a)') 'Binary information'
+     write(lupri, '(a)') '------------------'
      write(lupri, *)
 
-#ifdef THIS_IS_CMAKE_BUILD
-     call print_compilation_info()
-     call print_git_revision_info()
-#else
-     call sysinf(iparcal)
-#endif
+     call print_binary_info()
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
 #ifndef NO_SELFTEST
      call selftest_lapack()
 #ifdef VAR_MPI
-!    MASTER checks MPI library compatibility
+!    MASTER checks MPI library compatibility (now done at compile time)
      if ( parcal ) call selftest_mpi()
 #endif
 #endif
@@ -206,6 +204,9 @@ program dirprg
 #endif
 
    call allocator_cleanup()
+
+   call interface_ao_clear()
+   call interface_mo_clear()
 
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 end subroutine dirprg

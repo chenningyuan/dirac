@@ -2,7 +2,6 @@ module interface_input
 
    use keyword
    use character_processing
-   use dirac_cfg
 
    implicit none
 
@@ -15,7 +14,6 @@ contains
    subroutine read_input_dft(word, kw_section)
 
       use dft_cfg
-      use dirac_cfg
       use sigma_prefactor_setting
 
 !     ---------------------------------------------------------------------------
@@ -27,14 +25,14 @@ contains
       integer                          :: i, n
 !     ---------------------------------------------------------------------------
 
-#ifdef PRG_DIRAC
-      if (.not. dirac_cfg_dft_calculation) return
-#endif
-
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.SMALLD')) then
-         call kw_read(word, dft_cfg_small_density_threshold)
+      if (kw_matches(word, '.TINYDE')) then
+         call kw_read(word, dft_cfg_tinydens)
+      end if
+
+      if (kw_matches(word, '.SCREEN')) then
+         call kw_read(word, dft_cfg_screening)
       end if
 
       if (kw_matches(word, '.GRAC  ')) then
@@ -70,6 +68,7 @@ contains
          end if
       end if
 
+#ifdef PRG_DIRAC
       if (kw_matches(word, '.SAOP! ')) then
 !        "original" SAOP as in JCP 112, 1344 (2000).
          dft_cfg_saop                    = .true.
@@ -77,11 +76,10 @@ contains
          dft_cfg_asymptote_is_lbalpha    = .true.
          dft_cfg_alda_hs                 = .true.
          dft_cfg_alda_ha                 = .true.
-#ifdef PRG_DIRAC
          call setaldahs(.true.) !activate alda for the h+ part
          call setaldaha(.true.) !activate alda for the h- part
-#endif
       end if
+#endif
 
       if (kw_matches(word, '.NOSDFT')) then
          dft_cfg_no_sdft = .true.
@@ -152,9 +150,13 @@ contains
          dft_cfg_blocked = .true.
       end if
 
+      if (kw_matches(word, '.POINTW')) then
+         dft_cfg_pointwise = .true.
+      end if
+
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.OVLDIA')) then
-         dirac_cfg_overlap_diagnostic = .true.
+         dft_cfg_overlap_diagnostic = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

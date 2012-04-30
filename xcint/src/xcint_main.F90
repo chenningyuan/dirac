@@ -1,9 +1,5 @@
 module xcint_main
 
-#ifdef PRG_DIRAC
-!  these dependencies should be removed
-   use fde_mod
-#endif
    use interface_ao
    use interface_mo
    use interface_file_io
@@ -18,18 +14,16 @@ module xcint_main
    use density_eval
    use xc_blas3
    use xc_max_block_length
+   use xc_geometric
 #ifdef MOD_UNRELEASED
    use overlap_diagnostic
-   use xc_geometric
    use xc_london_c1
 #endif
 #ifdef MOD_OPENRSP
    use xc_response
 #endif
    use xc_mpi
-#ifdef MOD_XCFUN
    use xcfun
-#endif
 
    implicit none
 
@@ -65,8 +59,6 @@ module xcint_main
    real(8), allocatable :: ry(:)
    real(8), allocatable :: rz(:)
    real(8), allocatable :: rw(:)
-   real(8), allocatable :: fde_prop1(:)
-   real(8), allocatable :: fde_prop2(:)
    real(8), allocatable :: dmat_sorted(:, :)
 
    real(8) :: tau_integral
@@ -77,6 +69,8 @@ module xcint_main
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
    logical :: use_gga    = .false.
+
+   logical :: use_blas3_scheme = .false.
 
    logical :: parallel_xc
 
@@ -133,12 +127,6 @@ module xcint_main
    real(8), pointer             :: property_gradient(:)
    real(8), allocatable, target :: property_gradient_container(:)
 
-#ifdef MOD_UNRELEASED
-   real(8), allocatable :: fde_froz_n(:)
-   real(8), allocatable :: fde_froz_ng(:,:)
-   real(8), allocatable :: fde_elpot(:)
-#endif
-
    logical :: do_potential
    integer :: response_order_mo
    integer :: response_order_ao
@@ -151,8 +139,10 @@ module xcint_main
    logical :: do_london_ks
    logical :: do_london_lr
    logical :: do_overlap_diagnostic
-   logical :: do_fde_update_vemb
-   logical :: do_fde_response
+
+   integer, allocatable, target :: default_fmat_pg_sym(:)
+   integer, allocatable, target :: default_dmat_pg_sym(:)
+   integer, allocatable, target :: default_dmat_ih_sym(:)
 
 contains
 
@@ -177,8 +167,6 @@ contains
                             xc_do_london_ks,          &
                             xc_do_london_lr,          &
                             xc_do_overlap_diagnostic, &
-                            xc_do_fde_update_vemb,    &
-                            xc_do_fde_response,       &
                             xc_response_order_mo,     &
                             xc_response_order_ao)
 
@@ -218,20 +206,16 @@ contains
       logical, optional,         intent(in)    :: xc_do_london_ks
       logical, optional,         intent(in)    :: xc_do_london_lr
       logical, optional,         intent(in)    :: xc_do_overlap_diagnostic
-      logical, optional,         intent(in)    :: xc_do_fde_update_vemb
-      logical, optional,         intent(in)    :: xc_do_fde_response
 
       integer, optional,         intent(in)    :: xc_response_order_mo
       integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
-      integer, parameter :: max_mat_number = 10
-      integer, target    :: default_pg_sym(max_mat_number)
-      integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
 
       integer, parameter :: max_response_order_mo = 5
+      integer            :: i, j, iz, imat
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
@@ -258,6 +242,7 @@ contains
       end if
 #endif
       if (pure_hf_run) then
+         write (*,*) 'this is a pure hf run?!?'
          return
       end if
 
@@ -287,8 +272,6 @@ contains
       do_london_ks          = .false.
       do_london_lr          = .false.
       do_overlap_diagnostic = .false.
-      do_fde_update_vemb    = .false.
-      do_fde_response       = .false.
       nr_atoms              = 0
 
       if (xc_mpi_is_master()) then
@@ -305,9 +288,21 @@ contains
          if (present(xc_do_london_lr))          do_london_lr          = xc_do_london_lr
          if (present(xc_nr_atoms))              nr_atoms              = xc_nr_atoms
          if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
-         if (present(xc_do_fde_update_vemb))    do_fde_update_vemb    = xc_do_fde_update_vemb
-         if (present(xc_do_fde_response))       do_fde_response       = xc_do_fde_response
       end if
+
+#ifndef MOD_UNRELEASED
+      if (do_london_rhs_direct .or. &
+          do_london_rhs_ro     .or. &
+          do_london_ks         .or. &
+          do_london_lr) then
+         print *, 'error: LAO+DFT not available in this version'
+         stop 1
+      end if
+      if (do_overlap_diagnostic) then
+         print *, 'error: overlap diagnostic not available in this version'
+         stop 1
+      end if
+#endif
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -328,8 +323,6 @@ contains
          call xc_mpi_bcast(do_london_ks)
          call xc_mpi_bcast(do_london_lr)
          call xc_mpi_bcast(do_overlap_diagnostic)
-         call xc_mpi_bcast(do_fde_update_vemb)
-         call xc_mpi_bcast(do_fde_response)
       end if
 #endif
 
@@ -380,8 +373,16 @@ contains
          end if
       end if
 
-      default_pg_sym = 1
-      default_ih_sym = 0
+      if (nr_fmat > 0) then
+         allocate(default_fmat_pg_sym(nr_fmat))
+         default_fmat_pg_sym = 1
+      end if
+      if (nr_dmat > 0) then
+         allocate(default_dmat_pg_sym(nr_dmat))
+         allocate(default_dmat_ih_sym(nr_dmat))
+         default_dmat_pg_sym = 1
+         default_dmat_ih_sym = 0
+      end if
 
       nullify(fmat_pg_sym)
       nullify(dmat_pg_sym)
@@ -402,17 +403,17 @@ contains
          if (present(xc_fmat_pg_sym)) then
             fmat_pg_sym => xc_fmat_pg_sym
          else
-            fmat_pg_sym => default_pg_sym(1:nr_fmat)
+            fmat_pg_sym => default_fmat_pg_sym(1:nr_fmat)
          end if
          if (present(xc_dmat_pg_sym)) then
             dmat_pg_sym => xc_dmat_pg_sym
          else
-            dmat_pg_sym => default_pg_sym(1:nr_dmat)
+            dmat_pg_sym => default_dmat_pg_sym(1:nr_dmat)
          end if
          if (present(xc_dmat_ih_sym)) then
             dmat_ih_sym => xc_dmat_ih_sym
          else
-            dmat_ih_sym => default_ih_sym(1:nr_dmat)
+            dmat_ih_sym => default_dmat_ih_sym(1:nr_dmat)
          end if
       end if
 
@@ -440,7 +441,6 @@ contains
       end if
 
 !     set and sync functional
-#ifdef MOD_XCFUN
       if (fun_is_automatic) then
 !        call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
 !        call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
@@ -450,19 +450,23 @@ contains
          call xcfun_set_functional(xc_fun_alda,  max_response_order_mo, parallel_xc)
          call xcfun_set_functional(xc_fun_xalda, max_response_order_mo, parallel_xc)
       else
-#endif
 #ifdef VAR_MPI
       if (parallel_xc) then
          call dftsyncfunc(xc_mpi_is_master())
       end if
 #endif
-#ifdef MOD_XCFUN
+      end if
+
+#ifndef MOD_UNRELEASED
+      if (fun_is_tau_mgga(xc_fun)) then
+         print *, 'error: meta-GGA not available in this version'
+         stop 1
       end if
 #endif
 
 !     check whether gga code structure will be used
-      use_gga_qr = (fun_is_gga() .or. fun_is_tau_mgga())
-      use_gga_qi = (fun_is_gga() .or. fun_is_tau_mgga())
+      use_gga_qr = (fun_is_gga(xc_fun) .or. fun_is_tau_mgga(xc_fun))
+      use_gga_qi = (fun_is_gga(xc_fun) .or. fun_is_tau_mgga(xc_fun))
       if (response_order_mo > 0) then
          if (dft_cfg_alda_hs) use_gga_qr = .false.
          if (dft_cfg_alda_ha) use_gga_qi = .false.
@@ -577,13 +581,11 @@ contains
 #endif
       end if
 
-#ifdef MOD_UNRELEASED
-!     aspg, toying with having the frozen density and adfgrid available
-!     for the respose calcs or otherwise...
-      if (have_frozen_density) then
-         call FDE_testFrozenDensity()
-      endif
-#endif
+!     pointer to the array is passed to blocked eval
+!     to avoid out of bounds compiler complaint
+!     allocate it with size 1
+      if (.not. allocated(dmat_saop_outer)) allocate(dmat_saop_outer(1))
+      if (.not. allocated(dmat_saop_resp))  allocate(dmat_saop_resp(1))
 
 #ifdef DEBUG_XC
       write(*, *) 'debug: XC potential matrix zeroed out prior to integration'
@@ -629,12 +631,8 @@ contains
 #endif
 
 !     deallocate saop density matrices
-      if (dft_cfg_saop) then
-        deallocate(dmat_saop_outer)
-        if (dft_cfg_saop_with_response_part) then
-          deallocate(dmat_saop_resp)
-        end if
-      end if
+      if (allocated(dmat_saop_outer)) deallocate(dmat_saop_outer)
+      if (allocated(dmat_saop_resp))  deallocate(dmat_saop_resp)
 
       if (xc_mpi_is_master()) then
 #ifdef PRG_DIRAC
@@ -645,11 +643,9 @@ contains
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 !        symmetrize matrices
-         if (dft_cfg_blocked .or. (use_gga                          &
+         if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct &
                                    .and. .not. do_london_ks         &
-!radovan: with do_london_lr matrices have to be symmetrized!
-!                                  .and. .not. do_london_lr         &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
@@ -658,10 +654,8 @@ contains
             end if
          end if
 
-! gosia: later i will join it with what is done above (now it is not working if i just
-! add another if)
          if (do_london_rhs_direct) then
-           call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
          call insert_half_phases()
@@ -689,6 +683,20 @@ contains
                   file_unit)
       call matrix_to_file('xc_fmat', mat_dim*mat_dim, xc_fmat)
 #endif
+
+!     check for nan in xc matrix
+      do imat = 1, xc_nr_fmat
+         do iz = 1, nz
+            do i = 1, mat_dim
+               do j = 1, mat_dim
+                  if (xc_fmat(j, i, iz, imat) /= xc_fmat(j, i, iz, imat)) then
+                     print *, 'error: found NaN in XC matrix, quitting'
+                     stop
+                  end if
+               end do
+            end do
+         end do
+      end do
 
    end subroutine
 
@@ -751,6 +759,16 @@ contains
          if (allocated(property_gradient_container)) then
             deallocate(property_gradient_container)
          end if
+      end if
+
+      if (allocated(default_fmat_pg_sym)) then
+         deallocate(default_fmat_pg_sym)
+      end if
+      if (allocated(default_dmat_pg_sym)) then
+         deallocate(default_dmat_pg_sym)
+      end if
+      if (allocated(default_dmat_ih_sym)) then
+         deallocate(default_dmat_ih_sym)
       end if
 
    end subroutine
@@ -817,10 +835,6 @@ contains
       real(8) :: r_t1(max_block_length)
       real(8) :: r_t2(max_block_length)
 !     --------------------------------------------------------------------------
-!     fde and fde response
-      logical :: fde_resp_verbose =.false.
-      real(8) :: z0tt(3)
-!     --------------------------------------------------------------------------
       integer :: id, m
       integer :: ii, ji
       real(8) :: temp
@@ -867,8 +881,8 @@ contains
 
 
 
-    if (dft_cfg_blocked) then
-       block_threshold = get_block_threshold(dft_cfg_small_density_threshold, mat_dim, dmat_0)
+    if (use_blas3_scheme) then
+       block_threshold = get_block_threshold(dft_cfg_tinydens, mat_dim, dmat_0)
     end if
 
 
@@ -912,7 +926,6 @@ contains
        end if
     end if
 
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
     if (response_order_ao > 0) then
       derv_length = xc_output_length(xc_fun%id, response_order_ao)
@@ -920,14 +933,11 @@ contains
       allocate(derv_nadd(derv_length, max_block_length))
     else
 #endif
-#endif
       derv_length = nr_nonzero_derv
       allocate(derv(max_block_length, 0:derv_length))
       allocate(derv_nadd(max_block_length, 0:derv_length))
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
     end if
-#endif
 #endif
 
 !       better safe than sorry
@@ -938,8 +948,7 @@ contains
         gnn_0 = 0.0d0
 
 
-#ifdef MOD_UNRELEASED
-   if (dft_cfg_blocked) then
+   if (use_blas3_scheme) then
       loop_over_points_block: do ipoint = 1, nr_points_on_this_proc, max_block_length
          block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
 
@@ -953,22 +962,26 @@ contains
                      rx(ipoint:ipoint+block_length-1), &
                      ry(ipoint:ipoint+block_length-1), &
                      rz(ipoint:ipoint+block_length-1), &
-                     ao,                         &
-                     buffer                      &
+                     ao,                               &
+                     buffer                            &
                     )
 
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
+                                    use_gga_qr,               &
+                                    use_gga_qi,               &
                                     (response_order_mo == 1), &
                                     block_length,             &
                                     block_threshold,          &
                                     mat_dim,                  &
                                     nz,                       &
                                     buffer,                   &
-                                    ao,                 &
+                                    ao,                       &
                                     nr_fmat,                  &
                                     fmat,                     &
                                     dmat_0,                   &
+                                    dmat_saop_outer,          &
+                                    dmat_saop_resp,           &
                                     nr_dmat,                  &
                                     dmat,                     &
                                     dmat_pg_sym,              &
@@ -977,16 +990,23 @@ contains
                                     derv,                     &
                                     max_fun_derv,             &
                                     rw(ipoint),               &
-                                    nr_electrons_integrated,             &
+                                    nr_electrons_integrated,  &
                                     xc_energy                 &
                                    )
+
+#ifdef MOD_UNRELEASED
+         if (do_overlap_diagnostic) then
+            call integrate_o_matrix(block_length, rw(ipoint), ao)
+         end if
+#endif
 
          deallocate(ao)
          deallocate(buffer)
 
       end do loop_over_points_block
-   else
-#endif /* ifdef MOD_UNRELEASED */
+   end if !if (use_blas3_scheme) then
+
+   if (.not. use_blas3_scheme) then
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
@@ -999,7 +1019,7 @@ contains
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
    do ipoint = 1, nr_points_on_this_proc
-
+   
       time_ao_start = second()
       call get_ao(1,          &
                   rx(ipoint), &
@@ -1022,13 +1042,7 @@ contains
       end if
       time_density = time_density + second() - time_density_start
 
-#ifdef MOD_UNRELEASED
-      if (do_overlap_diagnostic) then
-         call integrate_o_matrix(rw(ipoint), ao)
-      end if
-#endif
-
-      if (n_0(1) > dft_cfg_small_density_threshold) then
+      if (n_0(1) > dft_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
 
          u%n  = 0.0d0
@@ -1043,8 +1057,8 @@ contains
          w(1) = rw(ipoint)
 
 #ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga()) then
-            call get_tau(tau,     &
+         if (fun_is_tau_mgga(xc_fun)) then
+            call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
                          dmat_0,  &
@@ -1052,34 +1066,16 @@ contains
                          ao)
             tau_integral = tau_integral + w(1)*tau
          end if
-
-        if (do_fde_update_vemb .or. do_fde_response) then
-           if ( fde_froz_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
-              n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
-
-              z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1)
-              z0tt(2)  = gn_0_pointwise(2) + fde_froz_ng(ipoint,2)
-              z0tt(3)  = gn_0_pointwise(3) + fde_froz_ng(ipoint,3)
-
-              gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
-
-           else
-              n_0_t(1) = n_0(1)
-              gnn_0_t(1) = gnn_0(1)
-           endif
-      endif
 #endif /* ifdef MOD_UNRELEASED */
 
 !       number of electrons
         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
-
+        
         time_derv_start = second()
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
 !       if we run openrsp with xcfun we evaluate derivatives
 !       somewhere else
         if (response_order_ao == 0) then
-#endif
 #endif
           call get_functional_derv(xc_fun,                    &
                                    xc_fun_alda,               &
@@ -1094,46 +1090,10 @@ contains
                                    alda_real=dft_cfg_alda_hs, &
                                    alda_imag=dft_cfg_alda_ha, &
                                    xalda=dft_cfg_xalda,       &
-                                   tau=tau)
+                                   tau=(/tau/))
 
-#ifdef MOD_UNRELEASED
-#ifdef MOD_XCFUN
-           if (do_fde_update_vemb .or. do_fde_response) then
-!
-! aspg: this way we are forcing the same xc functional for the active and non-additive
-!       contributions. this is not desired, but we have to overcome xcfun's limitation
-!       on using only up to 5 functionals...
-!
-              call get_fde_nadd_fun_derv(max_fun_derv, &
-                                         bllen,        &
-                                         w,            &
-                                         n_0,          &
-                                         n_0_t,        &
-                                         gnn_0,        &
-                                         gnn_0_t,      &
-                                         derv_length,  &
-                                         derv_nadd,    &
-                                         parallel_xc)
-
-
-              do ii = 1, max_block_length
-                do ji = 0, derv_length
-                  if (ji >  1 ) &
-      &             derv(ii,ji) = derv(ii,ji) + derv_nadd(ii,ji)
-! we add the electrostatic potential from the frozen subsystem(s) to the derivative
-                  if (ji == 1 .and. do_fde_update_vemb) &
-      &             derv(ii,ji) = derv(ii,ji) + derv_nadd(ii,ji) + w(1)*fde_elpot(ipoint)
-                enddo
-              enddo
-           endif
-#endif /*  MOD_XCFUN */
-#endif /*  MOD_UNRELEASED */
-
-
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
         end if
-#endif
 #endif
         time_derv = time_derv + second() - time_derv_start
 
@@ -1162,9 +1122,7 @@ contains
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-            rho13 = n_0(1)**(1.0d0/3.0d0)
-            call dftac(derv, w(1), n_0(1), rho13, &
-     &                 rho_resp, rho_outer, gnn_0(1))
+             call dftac(1, derv, w, n_0, (/rho_resp/), (/rho_outer/), gnn_0)
           end if
 
 !         energy density
@@ -1179,7 +1137,7 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
 #ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga()) then
+         if (fun_is_tau_mgga(xc_fun)) then
             u%tn(1) = derv(1, d0000010)
          end if
 #endif
@@ -1188,6 +1146,7 @@ contains
 
 
 
+#ifdef MOD_UNRELEASED
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
@@ -1259,6 +1218,7 @@ contains
               !                        derv, u,        &
               !                        rx(ipoint), ry(ipoint), rz(ipoint))
         end if
+#endif /* #ifdef MOD_UNRELEASED */
 
 
 !       linear response
@@ -1332,34 +1292,31 @@ contains
         endif
 
 
-#ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
           if (response_order_ao > 0) then
-            call xc_response_contribution(response_order_ao,                 &
-                                          mat_dim,   &
-                                          nz,        &
-                                          fmat,      &
-                                          nr_dmat, &
-                                          dmat,    &
-                                          dmat_pg_sym,      &
-                                          dmat_ih_sym,      &
-                                          fmat_pg_sym,      &
-                                          use_gga,                           &
-                                          ao, &
-                                          n_0(1),                            &
-                                          gn_0_pointwise,                               &
-                                          rx(ipoint),                      &
-                                          ry(ipoint),                      &
-                                          rz(ipoint),                      &
-                                          w(1),                              &
-                                          buffer, &
-                                          derv_length,  &
-                                          derv)
+             call xc_response_contribution(response_order_ao, &
+                                           mat_dim,           &
+                                           nz,                &
+                                           fmat,              &
+                                           nr_dmat,           &
+                                           dmat,              &
+                                           dmat_pg_sym,       &
+                                           dmat_ih_sym,       &
+                                           fmat_pg_sym,       &
+                                           use_gga,           &
+                                           ao,                &
+                                           n_0(1),            &
+                                           gn_0_pointwise,    &
+                                           rx(ipoint),        &
+                                           ry(ipoint),        &
+                                           rz(ipoint),        &
+                                           w(1),              &
+                                           buffer,            &
+                                           derv_length,       &
+                                           derv)
           end if
 #endif
-#endif
 
-#ifdef MOD_UNRELEASED
           if (do_geo_0) then
              if (use_gga) then
                 call xc_geo_0_gga_c1(property_gradient,               &
@@ -1378,6 +1335,7 @@ contains
              end if
           end if
 
+#ifdef MOD_UNRELEASED
           if (do_geo_1) then
              call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
              call xc_geo_1_lda_c1(property_gradient, &
@@ -1674,15 +1632,13 @@ contains
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
-      end if !if (n_0(1) > dft_cfg_small_density_threshold) then
+      end if !if (n_0(1) > dft_cfg_tinydens) then
     end do !do ipoint = 1, nr_points_on_this_proc
 
     deallocate(ao)
     deallocate(buffer)
 
-#ifdef MOD_UNRELEASED
-   end if !if (dft_cfg_blocked) then
-#endif /* ifdef MOD_UNRELEASED */
+   end if !if (.not. use_blas3_scheme) then
 
     deallocate(derv)
     deallocate(derv_nadd)
@@ -1704,13 +1660,12 @@ contains
       error_nr_electrons = nr_electrons_integrated - nr_electrons
 
       write(file_unit, *)
+      write(file_unit, *) 'DFT integration'
+      write(file_unit, *)
 
       write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &
             nr_points_total
-      write(file_unit, '(3x, a, i9)')                            &
-            'number of grid points below density threshold  = ', &
-            nr_points_total - nr_points_used
 
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
@@ -1788,18 +1743,15 @@ contains
 
       if (xc_mpi_is_master()) then
          interface_file_open = .false. 
-         if (do_fde_update_vemb .or. do_fde_response) then
-!           don't open and rewind anything
-!           data is already stored at this point
-         else
-            open(interface_file_unit,       &
-                 file   = 'numerical_grid', &
-                 status = 'unknown',        &
-                 form   = 'formatted',      &
-                 access = 'sequential')
-            rewind(interface_file_unit)
-            interface_file_open = .true. 
-         end if
+         open(interface_file_unit,       &
+! aspg debug
+             file   = 'numerical_grid', &
+!            file   = 'ADFGRID',        &
+              status = 'unknown',        &
+              form   = 'formatted',      &
+              access = 'sequential')
+         rewind(interface_file_unit)
+         interface_file_open = .true. 
       end if
 
       ibatch                = 0
@@ -1811,15 +1763,7 @@ contains
 
 !        get number of points in this batch
          if (xc_mpi_is_master()) then
-#ifdef MOD_UNRELEASED
-            if (do_fde_update_vemb .or. do_fde_response) then
-               nr_points_batch = fde_grid_np
-            else
-#endif
-               read(interface_file_unit, *) nr_points_batch
-#ifdef MOD_UNRELEASED
-            end if
-#endif
+            read(interface_file_unit, *) nr_points_batch
          end if
 
 #ifdef VAR_MPI
@@ -1836,46 +1780,7 @@ contains
 
 !radovan: grid stuff will be moved outside this module
          if (xc_mpi_is_master()) then
-#ifdef MOD_UNRELEASED
-            if (do_fde_update_vemb .or. do_fde_response) then
-               if (parallel_xc) then
-                  call my_quit('fix fde_response mpi')
-               end if
-
-               allocate(fde_froz_n(nr_points_batch))
-               fde_froz_n = 0.0d0
-               allocate(fde_elpot(nr_points_batch))
-               fde_elpot = 0.0d0
-               allocate(fde_froz_ng(nr_points_batch, 3))
-               fde_froz_ng = 0.0d0
-
-!              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
-               do i = 1, nr_points_batch
-                  rx(i) = fde_grid(1,i)
-                  ry(i) = fde_grid(2,i)
-                  rz(i) = fde_grid(3,i)
-                  rw(i) = fde_grid(4,i)
-
-                  fde_froz_n(i) = fde_frozen_prp(3,i)
-                  fde_elpot(i)  = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
-
-                  if (fde_nprop.eq.6) then
-                     fde_froz_ng(i,1) = fde_frozen_prp(4,i)
-                     fde_froz_ng(i,2) = fde_frozen_prp(5,i)
-                     fde_froz_ng(i,3) = fde_frozen_prp(6,i)
-                  else
-                     fde_froz_ng(i,1) = 0.0d0
-                     fde_froz_ng(i,2) = 0.0d0
-                     fde_froz_ng(i,3) = 0.0d0
-                  endif
-               end do
-
-            else
-#endif
-               call num_grid_read(rx, ry, rz, rw, interface_file_unit, nr_points_batch)
-#ifdef MOD_UNRELEASED
-            end if
-#endif
+            call num_grid_read(rx, ry, rz, rw, interface_file_unit, nr_points_batch)
          end if
 
          ibatch          = ibatch + 1
@@ -1889,22 +1794,27 @@ contains
          end if
 #endif
 
+         if (do_potential .or. (response_order_mo == 1)) then
+            use_blas3_scheme = .true.
+         else
+            use_blas3_scheme = .false.
+         end if
+         if (fun_is_tau_mgga(xc_fun)) then
+            use_blas3_scheme = .false.
+         end if
+         if (dft_cfg_blocked) then
+            use_blas3_scheme = .true.
+         end if
+         if (dft_cfg_pointwise) then
+            use_blas3_scheme = .false.
+         end if
+
          call integrate()
 
          deallocate(rx)
          deallocate(ry)
          deallocate(rz)
          deallocate(rw)
-
-#ifdef MOD_UNRELEASED
-        if (do_fde_update_vemb .or. do_fde_response) then
-           if (allocated(fde_froz_n))  deallocate(fde_froz_n)
-           if (allocated(fde_elpot))   deallocate(fde_elpot)
-           if (allocated(fde_froz_ng)) deallocate(fde_froz_ng)
-!          don't try to read another batch
-           goto 999
-        end if
-#endif
 
 !     end loop over batches
       end do
@@ -2000,8 +1910,8 @@ contains
       if (calculate_qr) then
 
 #ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga()) then
-            call get_tau(t_b,     &
+         if (fun_is_tau_mgga(xc_fun)) then
+            call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
@@ -2052,7 +1962,7 @@ contains
         end if
 
 #ifdef MOD_UNRELEASED
-        if (fun_is_tau_mgga()) then
+        if (fun_is_tau_mgga(xc_fun)) then
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
@@ -2094,8 +2004,8 @@ contains
                    ao)
         end if
 #ifdef MOD_UNRELEASED
-        if (fun_is_tau_mgga()) then
-           call get_tau_imag(ts_b,     &
+        if (fun_is_tau_mgga(xc_fun)) then
+           call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &
@@ -2119,7 +2029,7 @@ contains
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
 #ifdef MOD_UNRELEASED
-           if (fun_is_tau_mgga()) then
+           if (fun_is_tau_mgga(xc_fun)) then
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)

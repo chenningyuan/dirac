@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -99,6 +99,7 @@ contains
          end if
        else
          print '(2x,a)', ' *** warning in x2c_read: attempt to read data array which is supposed to be zero. ***'
+!        call quit('bla bla')
        end if
        
   end subroutine x2c_read

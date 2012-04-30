@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4145,20 +4145,20 @@ C
 
 
       SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -4188,20 +4188,20 @@ C
       RETURN
       END
       SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION INTREP(18*MXCENT), INTADR(18*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(18*MXCENT)*8
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
