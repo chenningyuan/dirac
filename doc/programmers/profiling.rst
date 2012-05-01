@@ -26,7 +26,7 @@ results directory is not specified VTune will put everything in a subdirectory
 of the current directory.
 For step 2::
 	
-	amplxe-cl -report report_name -r /results/directory
+	amplxe-cl -report hotspots -r /results/directory > report_name
 
 this will produce a hotspots report called ``report_name``.
 
