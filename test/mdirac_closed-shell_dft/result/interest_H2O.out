@@ -170,15 +170,15 @@ Binary information
  LAPACK                   | /usr/lib/atlas-base/liblapack_atlas.so;/usr/lib/at
                           | las-base/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | c4e4a06
- Configuration time       | 2012-05-01 15:55:06.064466
+ Last Git revision        | b81acf8
+ Configuration time       | 2012-05-01 16:50:30.981260
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue May  1 16:02:05 2012
+     Date and time (Linux)  : Tue May  1 16:51:22 2012
      Host name              : not found                               
 
 
@@ -364,14 +364,13 @@ Point group: C1
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
   H2          2       1       7       7      L  - [4s1p|4s1p]                                                    
-                              0       0      S  - No small component basis functions attached                    
+                              7       7      S  - [4s1p|4s1p]                                                    
   O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
-                              0       0      S  - No small component basis functions attached                    
+                             27      27      S  - [9s4p1d|9s4p1d]                                                
   ----------------------------------------------------------------------
                              41      41      L  - large components
-                              0       0      S  - small components
   ----------------------------------------------------------------------
-  total:      3      10      41      41
+  total:      3      10      82      82
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -833,153 +832,153 @@ Total no. of orbitals           (NORB):    80
 
 *** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
 
-########## START ITERATION NO.   1 ##########   Tue May  1 16:02:05 2012
+########## START ITERATION NO.   1 ##########   Tue May  1 16:51:22 2012
 
-It.    1    -129.6310702636      1.00D+20  0.00D+00  0.00D+00               0.02000100s   Bare nuclei    Tue May  1
+It.    1    -129.6310702636      1.00D+20  0.00D+00  0.00D+00               0.02400100s   Bare nuclei    Tue May  1
 
-########## START ITERATION NO.   2 ##########   Tue May  1 16:02:05 2012
+########## START ITERATION NO.   2 ##########   Tue May  1 16:51:22 2012
 
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13200800s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.13200799s
 
-########## END ITERATION NO.   2 ##########   Tue May  1 16:02:05 2012
+########## END ITERATION NO.   2 ##########   Tue May  1 16:51:22 2012
 
-It.    2    -60.29912156008     -6.93D+01  2.27D+01  1.48D+01               0.13200800s   LL             Tue May  1
+It.    2    -60.29912156008     -6.93D+01  2.27D+01  1.48D+01               0.13200799s   LL             Tue May  1
 
-########## START ITERATION NO.   3 ##########   Tue May  1 16:02:05 2012
+########## START ITERATION NO.   3 ##########   Tue May  1 16:51:23 2012
 
     3 *** Differential density matrix. DCOVLP     = 0.0864
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13200799s
+>>> Total CPU-time : 0.13200800s
 
-########## END ITERATION NO.   3 ##########   Tue May  1 16:02:05 2012
+########## END ITERATION NO.   3 ##########   Tue May  1 16:51:23 2012
 
-It.    3    -67.40273864070      7.10D+00 -9.81D+00  4.55D+00   DIIS   2    0.13200799s   LL             Tue May  1
+It.    3    -67.40273864070      7.10D+00 -9.81D+00  4.55D+00   DIIS   2    0.13200800s   LL             Tue May  1
 
-########## START ITERATION NO.   4 ##########   Tue May  1 16:02:05 2012
+########## START ITERATION NO.   4 ##########   Tue May  1 16:51:23 2012
 
     4 *** Differential density matrix. DCOVLP     = 0.0068
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13200802s
+>>> Total CPU-time : 0.13200900s
 
-########## END ITERATION NO.   4 ##########   Tue May  1 16:02:05 2012
+########## END ITERATION NO.   4 ##########   Tue May  1 16:51:23 2012
 
-It.    4    -73.55514611956      6.15D+00  6.02D+00  4.17D+00   DIIS   3    0.13200802s   LL             Tue May  1
+It.    4    -73.55514611956      6.15D+00  6.02D+00  4.17D+00   DIIS   3    0.13200900s   LL             Tue May  1
 
-########## START ITERATION NO.   5 ##########   Tue May  1 16:02:05 2012
+########## START ITERATION NO.   5 ##########   Tue May  1 16:51:23 2012
 
     5 *** Differential density matrix. DCOVLP     = 0.7640
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.13600805s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.13600802s
 
-########## END ITERATION NO.   5 ##########   Tue May  1 16:02:05 2012
+########## END ITERATION NO.   5 ##########   Tue May  1 16:51:23 2012
 
-It.    5    -75.81434394535      2.26D+00 -1.48D+00  1.25D+00   DIIS   4    0.13600805s   LL             Tue May  1
+It.    5    -75.81434394535      2.26D+00 -1.48D+00  1.25D+00   DIIS   4    0.13600802s   LL             Tue May  1
 
-########## START ITERATION NO.   6 ##########   Tue May  1 16:02:06 2012
+########## START ITERATION NO.   6 ##########   Tue May  1 16:51:23 2012
 
     6 *** Differential density matrix. DCOVLP     = 0.9326
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13200897s
+>>> Total CPU-time : 0.13600802s
 
-########## END ITERATION NO.   6 ##########   Tue May  1 16:02:06 2012
+########## END ITERATION NO.   6 ##########   Tue May  1 16:51:23 2012
 
-It.    6    -76.10608782730      2.92D-01 -7.01D-01  8.00D-02   DIIS   5    0.13200897s   LL             Tue May  1
+It.    6    -76.10608782730      2.92D-01 -7.01D-01  8.00D-02   DIIS   5    0.13600802s   LL             Tue May  1
 
-########## START ITERATION NO.   7 ##########   Tue May  1 16:02:06 2012
+########## START ITERATION NO.   7 ##########   Tue May  1 16:51:23 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0025
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13600796s
+>>> Total CPU-time : 0.13200796s
 
-########## END ITERATION NO.   7 ##########   Tue May  1 16:02:06 2012
+########## END ITERATION NO.   7 ##########   Tue May  1 16:51:23 2012
 
-It.    7    -76.10800952244      1.92D-03 -2.00D-02  3.62D-02   DIIS   6    0.13600796s   LL             Tue May  1
+It.    7    -76.10800952244      1.92D-03 -2.00D-02  3.62D-02   DIIS   6    0.13200796s   LL             Tue May  1
 
-########## START ITERATION NO.   8 ##########   Tue May  1 16:02:06 2012
+########## START ITERATION NO.   8 ##########   Tue May  1 16:51:23 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0022
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13200897s
+>>> Total CPU-time : 0.13600999s
 
-########## END ITERATION NO.   8 ##########   Tue May  1 16:02:06 2012
+########## END ITERATION NO.   8 ##########   Tue May  1 16:51:23 2012
 
-It.    8    -76.10830149841      2.92D-04  1.50D-02  5.48D-03   DIIS   7    0.13200897s   LL             Tue May  1
+It.    8    -76.10830149841      2.92D-04  1.50D-02  5.48D-03   DIIS   7    0.13600999s   LL             Tue May  1
 
-########## START ITERATION NO.   9 ##########   Tue May  1 16:02:06 2012
+########## START ITERATION NO.   9 ##########   Tue May  1 16:51:23 2012
 
     9 *** Differential density matrix. DCOVLP     = 1.0011
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13600904s
+>>> Total CPU-time : 0.13600802s
 
-########## END ITERATION NO.   9 ##########   Tue May  1 16:02:06 2012
+########## END ITERATION NO.   9 ##########   Tue May  1 16:51:23 2012
 
-It.    9    -76.10832008251      1.86D-05  1.40D-03  1.60D-03   DIIS   8    0.13600904s   LL             Tue May  1
+It.    9    -76.10832008251      1.86D-05  1.40D-03  1.60D-03   DIIS   8    0.13600802s   LL             Tue May  1
 
-########## START ITERATION NO.  10 ##########   Tue May  1 16:02:06 2012
+########## START ITERATION NO.  10 ##########   Tue May  1 16:51:23 2012
 
    10 *** Differential density matrix. DCOVLP     = 1.0002
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13200796s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.13200808s
 
-########## END ITERATION NO.  10 ##########   Tue May  1 16:02:06 2012
+########## END ITERATION NO.  10 ##########   Tue May  1 16:51:23 2012
 
-It.   10    -76.10832121381      1.13D-06 -6.77D-04  2.10D-04   DIIS   9    0.13200796s   LL             Tue May  1
+It.   10    -76.10832121381      1.13D-06 -6.77D-04  2.10D-04   DIIS   9    0.13200808s   LL             Tue May  1
 
-########## START ITERATION NO.  11 ##########   Tue May  1 16:02:06 2012
+########## START ITERATION NO.  11 ##########   Tue May  1 16:51:24 2012
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.13200808s
+>>> Total CPU-time : 0.13600886s
 
-########## END ITERATION NO.  11 ##########   Tue May  1 16:02:06 2012
+########## END ITERATION NO.  11 ##########   Tue May  1 16:51:24 2012
 
-It.   11    -76.10832123979      2.60D-08  3.67D-05  4.39D-05   DIIS   9    0.13200808s   LL             Tue May  1
+It.   11    -76.10832123979      2.60D-08  3.67D-05  4.39D-05   DIIS   9    0.13600886s   LL             Tue May  1
 
-########## START ITERATION NO.  12 ##########   Tue May  1 16:02:06 2012
+########## START ITERATION NO.  12 ##########   Tue May  1 16:51:24 2012
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.13200796s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.13200808s
 
-########## END ITERATION NO.  12 ##########   Tue May  1 16:02:06 2012
+########## END ITERATION NO.  12 ##########   Tue May  1 16:51:24 2012
 
-It.   12    -76.10832124051      7.26D-10  1.14D-05  7.34D-06   DIIS   9    0.13200796s   LL             Tue May  1
+It.   12    -76.10832124051      7.26D-10  1.14D-05  7.34D-06   DIIS   9    0.13200808s   LL             Tue May  1
 
-########## START ITERATION NO.  13 ##########   Tue May  1 16:02:07 2012
+########## START ITERATION NO.  13 ##########   Tue May  1 16:51:24 2012
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
  Entering InteRest two-electron Fock matrix part
@@ -988,22 +987,22 @@ It.   12    -76.10832124051      7.26D-10  1.14D-05  7.34D-06   DIIS   9    0.13
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.13600802s
 
-########## END ITERATION NO.  13 ##########   Tue May  1 16:02:07 2012
+########## END ITERATION NO.  13 ##########   Tue May  1 16:51:24 2012
 
 It.   13    -76.10832124053      1.68D-11  3.51D-06  7.61D-07   DIIS   9    0.13600802s   LL             Tue May  1
 
-########## START ITERATION NO.  14 ##########   Tue May  1 16:02:07 2012
+########## START ITERATION NO.  14 ##########   Tue May  1 16:51:24 2012
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
  Entering InteRest two-electron Fock matrix part
  nz =            4 nfmat =            1
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.11200798s
+>>> Total CPU-time : 0.11200702s
 
-########## END ITERATION NO.  14 ##########   Tue May  1 16:02:07 2012
+########## END ITERATION NO.  14 ##########   Tue May  1 16:51:24 2012
 
-It.   14    -76.10832124053      6.54D-13  1.30D-07  9.15D-08   DIIS   9    0.11200798s   LL             Tue May  1
+It.   14    -76.10832124053      6.54D-13  1.30D-07  9.15D-08   DIIS   9    0.11200702s   LL             Tue May  1
 
 
                                    SCF - CYCLE
@@ -1019,20 +1018,20 @@ It.   14    -76.10832124053      6.54D-13  1.30D-07  9.15D-08   DIIS   9    0.11
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -129.6310702636      1.00D+20  0.00D+00  0.00D+00               0.02000100s   Bare nuclei    Tue May  1
-It.    2    -60.29912156008     -6.93D+01  2.27D+01  1.48D+01               0.13200800s   LL             Tue May  1
-It.    3    -67.40273864070      7.10D+00 -9.81D+00  4.55D+00   DIIS   2    0.13200799s   LL             Tue May  1
-It.    4    -73.55514611956      6.15D+00  6.02D+00  4.17D+00   DIIS   3    0.13200802s   LL             Tue May  1
-It.    5    -75.81434394535      2.26D+00 -1.48D+00  1.25D+00   DIIS   4    0.13600805s   LL             Tue May  1
-It.    6    -76.10608782730      2.92D-01 -7.01D-01  8.00D-02   DIIS   5    0.13200897s   LL             Tue May  1
-It.    7    -76.10800952244      1.92D-03 -2.00D-02  3.62D-02   DIIS   6    0.13600796s   LL             Tue May  1
-It.    8    -76.10830149841      2.92D-04  1.50D-02  5.48D-03   DIIS   7    0.13200897s   LL             Tue May  1
-It.    9    -76.10832008251      1.86D-05  1.40D-03  1.60D-03   DIIS   8    0.13600904s   LL             Tue May  1
-It.   10    -76.10832121381      1.13D-06 -6.77D-04  2.10D-04   DIIS   9    0.13200796s   LL             Tue May  1
-It.   11    -76.10832123979      2.60D-08  3.67D-05  4.39D-05   DIIS   9    0.13200808s   LL             Tue May  1
-It.   12    -76.10832124051      7.26D-10  1.14D-05  7.34D-06   DIIS   9    0.13200796s   LL             Tue May  1
+It.    1    -129.6310702636      1.00D+20  0.00D+00  0.00D+00               0.02400100s   Bare nuclei    Tue May  1
+It.    2    -60.29912156008     -6.93D+01  2.27D+01  1.48D+01               0.13200799s   LL             Tue May  1
+It.    3    -67.40273864070      7.10D+00 -9.81D+00  4.55D+00   DIIS   2    0.13200800s   LL             Tue May  1
+It.    4    -73.55514611956      6.15D+00  6.02D+00  4.17D+00   DIIS   3    0.13200900s   LL             Tue May  1
+It.    5    -75.81434394535      2.26D+00 -1.48D+00  1.25D+00   DIIS   4    0.13600802s   LL             Tue May  1
+It.    6    -76.10608782730      2.92D-01 -7.01D-01  8.00D-02   DIIS   5    0.13600802s   LL             Tue May  1
+It.    7    -76.10800952244      1.92D-03 -2.00D-02  3.62D-02   DIIS   6    0.13200796s   LL             Tue May  1
+It.    8    -76.10830149841      2.92D-04  1.50D-02  5.48D-03   DIIS   7    0.13600999s   LL             Tue May  1
+It.    9    -76.10832008251      1.86D-05  1.40D-03  1.60D-03   DIIS   8    0.13600802s   LL             Tue May  1
+It.   10    -76.10832121381      1.13D-06 -6.77D-04  2.10D-04   DIIS   9    0.13200808s   LL             Tue May  1
+It.   11    -76.10832123979      2.60D-08  3.67D-05  4.39D-05   DIIS   9    0.13600886s   LL             Tue May  1
+It.   12    -76.10832124051      7.26D-10  1.14D-05  7.34D-06   DIIS   9    0.13200808s   LL             Tue May  1
 It.   13    -76.10832124053      1.68D-11  3.51D-06  7.61D-07   DIIS   9    0.13600802s   LL             Tue May  1
-It.   14    -76.10832124053      6.54D-13  1.30D-07  9.15D-08   DIIS   9    0.11200798s   LL             Tue May  1
+It.   14    -76.10832124053      6.54D-13  1.30D-07  9.15D-08   DIIS   9    0.11200702s   LL             Tue May  1
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   14 iterations.
 * Average elapsed time per iteration: 
@@ -1076,9 +1075,9 @@ It.   14    -76.10832124053      6.54D-13  1.30D-07  9.15D-08   DIIS   9    0.11
 
 
  
-     Date and time (Linux)  : Tue May  1 16:02:07 2012
+     Date and time (Linux)  : Tue May  1 16:51:24 2012
      Host name              : not found                               
->>>> Node 0, utime: 1, stime: 0, minflt: 8242, majflt: 0, nvcsw: 14, nivcsw: 161, maxrss: 7636
+>>>> Node 0, utime: 1, stime: 0, minflt: 8242, majflt: 4, nvcsw: 18, nivcsw: 171, maxrss: 7660
 >>>> Total WALL time used in DIRAC: 2s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
