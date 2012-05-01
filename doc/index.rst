@@ -73,6 +73,7 @@ For programmers
    programmers/programmers_manual.rst
    programmers/xml.rst
    programmers/external_projects.rst
+   programmers/profiling.rst
 
 
 This and that
