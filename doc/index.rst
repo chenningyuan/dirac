@@ -47,8 +47,6 @@ More advanced tutorials
 .. toctree::
    :maxdepth: 1
 
-   tutorials/memory.rst
-
    tutorials/open_shells.rst
    tutorials/niobium.rst
    tutorials/scf_conv.rst
@@ -68,6 +66,15 @@ More advanced tutorials
    tutorials/magn_curr_den.rst
    tutorials/dft_cam.rst
    tutorials/visualize.rst
+
+
+Getting help
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   getting_help/memory.rst
 
 
 Reference manual
