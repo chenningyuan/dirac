@@ -2108,7 +2108,7 @@ C
 C     Generate IRKB array for use in RKBLOW
 C     =====================================
 C
-      IF(.NOT.TWOCOMP.AND.LBIT(ISPHTR,2)) THEN
+      IF(LBIT(ISPHTR,2).AND..NOT.(TWOCOMP.OR.MDIRAC)) THEN
         CALL RKBREL(IRKB,IPRINT)
       ENDIF
 C
@@ -4040,6 +4040,7 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
+#include "dcbham.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),WORK(*)
@@ -4051,8 +4052,16 @@ C***  Generate spherical transformation matrix  ***
 C**************************************************
 C
       DONRM = .TRUE.
-      CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,
+      IF(MDIRAC) THEN
+C.......set IC=1 since the large and small component basis is (assumed) identical
+        CALL SPHCAR(TMAT,IREP,1,NCAR,NSPH,
      &            DONRM,IPRINT,WORK,LWORK)
+      ELSE
+        CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,
+     &            DONRM,IPRINT,WORK,LWORK)
+      ENDIF
+CTROND
+      WRITE(6,*) 'TEST...',NCAR,NSPH
 C
 C*********************************************************
 C***  Transform overlap matrix to spherical basis and
