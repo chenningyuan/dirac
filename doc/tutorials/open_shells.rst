@@ -319,3 +319,32 @@ Number of electronic states is higher.
 Electronic states can be found
 `here <http://webbook.nist.gov/cgi/cbook.cgi?ID=C12259299&Units=SI&Mask=1000#Diatomic>`_.
 
+How to handle open-shell systems using CC methods
+=================================================
+
+Coupled-Cluster Singles, Doubles and Noniterative triples (CCSD(T)) and
+Fock-space Coupled-Cluser methods are powerful correlation methods in
+the DIRAC program suite.
+
+Even at the Coupled Cluster correlated level the user has certain
+variability in choosing the occupation of spinors. Thus he may alter the
+electronic state of a system.
+
+We give you few hints how to employ them in correlated open-shell
+calculations.
+
+CCSD(T) method
+--------------
+
+Example 1: FO molecule
+
+Fock space CCSD method
+----------------------
+
+The starting system is always closed shell. One can add one or
+two-electrons to the N-electron system to iterate into N+1 and/or N+2
+systems.
+
+
+
+

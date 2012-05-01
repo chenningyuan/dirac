@@ -1,12 +1,7 @@
 Run and restart an X2C calculation
 ==================================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-This examples shows how one can run a Hartree-Fock (HF) calculation in
+These examples shows how one can run a Hartree-Fock (HF) calculation in
 2-component mode with the exact two component (X2C) Hamiltonian and
 restart a property calculation at the HF level in a second run without
 the need to re-do the X2C transformation.

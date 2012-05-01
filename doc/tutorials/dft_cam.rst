@@ -1,11 +1,6 @@
 Tutorial:CAM
 ============
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 In DIRAC, you can calculate with the CAMB3LYP functional using
 
 ::

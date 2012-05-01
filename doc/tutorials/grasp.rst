@@ -1,11 +1,6 @@
 Grasp:Orbpri
 ============
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 I assume that you have updated Grasp and performed the following steps
 in your Grasp-directory
 
@@ -22,6 +17,7 @@ directory. Now let's get started:
 At the 4-component level atomic orbitals are given as
 
 ::
+ ADDME
 
 Consider the following Grasp-input (on file Cl.ginp):
 

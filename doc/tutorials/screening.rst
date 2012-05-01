@@ -1,20 +1,15 @@
 Notes:Screening
 ===============
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 We have some number of old density matrices *D*\ :sub:`*k* −
 1`\ ,*D*\ :sub:`*k* − 2`\  etc, and want to write the new density matrix
 as
 
-.. figure:: /dirac/images/math/6/c/8/6c86ef3df163c5e325edbc447abb31d9.png
+..figure:: /dirac/images/math/6/c/8/6c86ef3df163c5e325edbc447abb31d9.png
    :align: center
    :alt: D\_k = \\Delta D + \\sum\_{i=1}^N c\_i D\_{k-i},
+   D\_k = \\Delta D + \\sum\_{i=1}^N c\_i D\_{k-i}, 
 
-   D\_k = \\Delta D + \\sum\_{i=1}^N c\_i D\_{k-i},
 where Δ*D* will be sent to ``TWOFCK`` and should give efficient
 screening. Currently we are minimizing the Frobenius norm (sum of
 squares of elements) of Δ*D*, using one old density matrix. In the
@@ -23,17 +18,17 @@ general case we have to solve *S**c* = *y*, where
 *S*\ :sub:`*i**j*`\  = (*D*\ :sub:`*k* − *i*`\ ,*D*\ :sub:`*k* − *j*`\ )
 and *y*\ :sub:`*i*`\  = (*D*\ :sub:`*k*`\ ,*D*\ :sub:`*k* − *i*`\ ).
 
-Here |(\\cdot,\\cdot)| is the inner product between the *D* "vectors".
+Here "(\cdot,\\cdot)"(FIX) is the inner product between the *D* "vectors".
 However, the use of the Frobenius norm gives the larges weight to the
 large elements of Δ*D*. This is not really what we want, because we care
 more about producing as many small elements in Δ*D* as possible.
 Therefore we can imagine to introduce a metric matrix *M*, so that
 
-.. figure:: /dirac/images/math/8/7/7/877cd0b8aba2f7fcefddaa52ff414fdd.png
+..figure:: /dirac/images/math/8/7/7/877cd0b8aba2f7fcefddaa52ff414fdd.png
    :align: center
    :alt: (A,B) = \\sum\_{ij} A^\*\_{ij}M\_{ij}B\_{ij},
-
    (A,B) = \\sum\_{ij} A^\*\_{ij}M\_{ij}B\_{ij},
+
 and set *M* to emphasize the elements that have a chance of being made
 small. In practice one could imagine
 
