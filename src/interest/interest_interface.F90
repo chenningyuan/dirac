@@ -457,12 +457,13 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> note: on input G, P are assumed to be in cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals( Gmat, Pmat ) 
+  SUBROUTINE process_two_electron_integrals( Gmat, Pmat, intflg ) 
 
     !> input
     !> note:  we assume nz=4 !!!
     !> fixme: the case when nz!=4
        real(8), intent(in) :: Pmat(2*nrow,2*ncol,4)
+       integer, intent(in) :: intflg
        interface 
          subroutine interest_eri(rkb,factor,fint,nint,   &
                                  la,alpha,ax,ay,az,anorm,&
@@ -523,7 +524,10 @@ CONTAINS
 
        integer              :: record_length
        real(8), allocatable :: dG_guess(:,:,:)
+       logical              :: lbit
     !> end
+
+    !  lbit(intflg,i2typ)=T means to calculate this integral class i2typ = 1(LL),2(SL),3(SS),4(GT);
     
    
     nr_integrals_total = 0   
