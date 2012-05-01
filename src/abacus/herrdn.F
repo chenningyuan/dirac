@@ -2425,6 +2425,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "cbirea.h"
 #include "dcbgen.h"
+#include "dcbham.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -2436,7 +2437,8 @@ C*****************************************************************************
       CHARACTER*(6*MXQN+3) TSTRING(MXBSETS)
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       CHARACTER*31 SET_TYPE(MXBSETS)
-      DIMENSION NPRIM(MXBSETS),NBAS(MXBSETS)
+      DIMENSION NPRIM(MXBSETS),NBAS(MXBSETS),
+     &          NTPRIM(MXBSETS),NTBAS(MXBSETS)
       DIMENSION IBLOCK(MXBSETS)
       integer blk
 #include "ccom.h"
@@ -2478,7 +2480,19 @@ C
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
       END IF
       NCHTOT = 0
+      DO ISET = 1,KSETS
+        NTPRIM(ISET) = 0
+        NTBAS(ISET)  = 0
+      ENDDO
       DO 100 I = 1,NONTYP
+C
+         NUCLEI_IN_TYPE = 0
+         DO 20 N = 1,NONT(I)
+            ICENT  = ICENT + 1
+            NCHARG = NINT(CHARGE(ICENT))
+            NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
+            NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
+   20    CONTINUE
 C
 C        Convert information to a string that can be understood by the innocent user
 C
@@ -2489,29 +2503,29 @@ C
      &                     NRC(IBLOCK(ISET),ISET),
      &                     NUC(IBLOCK(ISET),ISET),
      &                     NPRIM(ISET),NBAS(ISET),TSTRING(ISET))
+            ELSEIF(ISET.EQ.2.AND.MDIRAC.AND..NOT.TWOCOMPBSS) THEN
+               TSTRING(ISET) = TSTRING(1)
+               NPRIM(ISET) = NPRIM(1)
+               NBAS(ISET)  = NBAS(1)
             ELSE
                TSTRING(ISET) = 'No '//SET_TYPE(ISET)//' attached'
                NPRIM(ISET) = 0
                NBAS(ISET) = 0
             END IF
+            NTPRIM(ISET) = NTPRIM(ISET)+NUCLEI_IN_TYPE*NPRIM(ISET)
+            NTBAS(ISET)  = NTBAS(ISET) +NUCLEI_IN_TYPE*NBAS(ISET)
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
          END DO
-C
-         NUCLEI_IN_TYPE = 0
-         DO 20 N = 1,NONT(I)
-            ICENT  = ICENT + 1
-            NCHARG = NINT(CHARGE(ICENT))
-            NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
-            NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
-   20    CONTINUE
          
          IF (IPREAD .GT. 0) THEN
             IF(DIRAC) THEN
                WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
      &                NUCLEI_IN_TYPE,NCHARG,NPRIM(1),NBAS(1),
      &                'L  - ',TSTRING(1)
-               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+               IF(.NOT.TWOCOMPBSS) THEN
+                 WRITE(LUPRI,'(23X,2I8,6X,2A)')
      &               NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
+               ENDIF
                IF (DOFIT) THEN
                   IF (NPRIM(3).GT.0)
      &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
@@ -2534,9 +2548,11 @@ C
          IF(DIRAC) THEN
             CALL PRSYMB(LUPRI,'-',70,2)
             WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPLRG,NLARGE,'   L  - large components'
-            WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPSML,NSMALL,'   S  - small components'
+     &            NTPRIM(1),NTBAS(1),'   L  - large components'
+            IF(.NOT.TWOCOMP) THEN
+              WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NTPRIM(2),NTBAS(2),'   S  - small components'
+            ENDIF
             IF (DOFIT) THEN
 #if defined (NEW_DIRAC_DENSFIT_PROCESSING)
 C
@@ -2577,14 +2593,9 @@ C
          NTPBAS  = NPBAS  + NPBAS_FIT 
          NTBASIS = NBASIS + NBASIS_FIT
 #else
-         NTPBAS  = NPBAS  + NPBASAUX 
-         NTBASIS = NBASIS + NBASISAUX
+         NTPBAS  = NTPRIM(1) +NTPRIM(2) + NPBASAUX 
+         NTBASIS = NTBAS(1)  +NTBAS(2)  + NBASISAUX
 #endif
-C        WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
-C    &            'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
-C        ELSE
-C           NTPBAS  = NPBAS  + NPBAS_FIT 
-C           NTBASIS = NBASIS + NBASIS_FIT
          WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
      &         'total:',NUCDEP,NCHTOT,NTPBAS,NTBASIS
 C
