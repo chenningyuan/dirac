@@ -4060,8 +4060,6 @@ C.......set IC=1 since the large and small component basis is (assumed) identica
         CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,
      &            DONRM,IPRINT,WORK,LWORK)
       ENDIF
-CTROND
-      WRITE(6,*) 'TEST...',NCAR,NSPH
 C
 C*********************************************************
 C***  Transform overlap matrix to spherical basis and
