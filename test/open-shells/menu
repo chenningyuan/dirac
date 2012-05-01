@@ -7,7 +7,7 @@ CH.x2c.scf_mj.2Pi32.inp       CH.lsym.mol
 
 regular
 sh rm DFCOEF 
-N.x2c.scf_mj_2os_aver.inp     N.lsym.mol
+# N.x2c.scf_mj_2os_aver.inp     N.lsym.mol   # radovan: same here
 # O.x2c.scf_2os.inp             O.lsym.mol   # radovan: this test is not stable, see ticket
 F.x2c.scf_2P32.inp            F.lsym.mol   --outcmo
 F.x2c.scf_2P12_reord.inp      F.lsym.mol   --incmo

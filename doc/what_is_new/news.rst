@@ -1,7 +1,7 @@
 
 
-News
-====
+New features
+============
 
 
 New features in DIRAC11

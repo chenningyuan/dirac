@@ -8,6 +8,7 @@ Installation
    installation/windows.rst
    installation/tests.rst
    installation/mkl.rst
+   installation/known_problems.rst
 
 
 Basis sets
@@ -19,14 +20,20 @@ Basis sets
    basis.rst
 
 
-Tutorials
-=========
+First steps in DIRAC territory
+==============================
 
 .. toctree::
    :maxdepth: 1
 
    tutorials/getting_started.rst
-   tutorials/memory.rst
+
+
+More advanced tutorials
+=======================
+
+.. toctree::
+   :maxdepth: 1
 
    tutorials/open_shells.rst
    tutorials/niobium.rst
@@ -51,6 +58,15 @@ Tutorials
    tutorials/visualize.rst
 
 
+Getting help
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   getting_help/memory.rst
+
+
 Reference manual
 ================
 
@@ -59,10 +75,11 @@ Reference manual
 
    reference_manual/dirac.rst
    reference_manual/optimize.rst
+   reference_manual/molecule.rst
 
 
-For programmers
-===============
+For DIRAC programmers
+=====================
 
 .. toctree::
    :maxdepth: 1
@@ -74,16 +91,6 @@ For programmers
    programmers/xml.rst
    programmers/external_projects.rst
    programmers/profiling.rst
-
-
-This and that
-=============
-
-.. toctree::
-   :maxdepth: 1
-
-   ref.rst
-   changelog.rst
-   known_problems.rst
-   news.rst
-   static_linking.rst
+   programmers/static_linking.rst
+   programmers/int8.rst
+   programmers/grasp.rst
