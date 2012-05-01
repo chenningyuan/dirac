@@ -71,6 +71,7 @@ Reference manual
 
    reference_manual/dirac.rst
    reference_manual/optimize.rst
+   reference_manual/molecule.rst
 
 
 For programmers
