@@ -1,27 +1,6 @@
-Troubleshooting
-===============
+Troubleshooting of the SCF convergence
+=======================================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 SCF convergence <#SCF_convergence>`_
-
-   -  `1.1 Basis set requirements <#Basis_set_requirements>`_
-   -  `1.2 Spinors occupation <#Spinors_occupation>`_
-   -  `1.3 Excited states <#Excited_states>`_
-   -  `1.4 Oscillating SCF energies <#Oscillating_SCF_energies>`_
-
--  `2 Hf\ :sup:`2 +`\ , Ta\ :sup:`3 +`\ , W\ :sup:`4 +`\  with broken
-   orbital
-   degeneracies <#Hf2_.2B_.2C_Ta3_.2B_.2C_W4_.2B__with_broken_orbital_degeneracies>`_
-
-SCF convergence
----------------
 
 Obtaining converged molecular orbitals (or better, molecular spinors-MS)
 is an essential step in each *ab-intio* quantum chemical calculation. We

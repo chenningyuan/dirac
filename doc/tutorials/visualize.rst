@@ -1,40 +1,6 @@
 How to visualize densities and properties using DIRAC11
 =======================================================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 What we will need and cover <#What_we_will_need_and_cover>`_
--  `2 Getting the unperturbed and perturbed wave function (example
-   molecule:
-   benzene) <#Getting_the_unperturbed_and_perturbed_wave_function_.28example_molecule:_benzene.29>`_
--  `3 Example unperturbed densities <#Example_unperturbed_densities>`_
-
-   -  `3.1 Density in a plane <#Density_in_a_plane>`_
-   -  `3.2 Density in 3D <#Density_in_3D>`_
-   -  `3.3 Orbital densities <#Orbital_densities>`_
-   -  `3.4 Integrating densities in 3D <#Integrating_densities_in_3D>`_
-   -  `3.5 Plotting the ELF in 3D <#Plotting_the_ELF_in_3D>`_
-
--  `4 Densities and currents induced by a magnetic
-   field <#Densities_and_currents_induced_by_a_magnetic_field>`_
-
-   -  `4.1 Current density <#Current_density>`_
-   -  `4.2 Integrating the current density passing through a
-      plane <#Integrating_the_current_density_passing_through_a_plane>`_
-   -  `4.3 What else is there <#What_else_is_there>`_
-
--  `5 Densities for a list of points in
-   space <#Densities_for_a_list_of_points_in_space>`_
--  `6 Densities along a line <#Densities_along_a_line>`_
--  `7 Radial densities (for atoms) <#Radial_densities_.28for_atoms.29>`_
--  `8 Good practices and gotchas <#Good_practices_and_gotchas>`_
-
 What we will need and cover
 ---------------------------
 
@@ -703,4 +669,22 @@ function should not be allowed to (re)optimize.
 When plotting orbital densities it is useful to do a 3D integration
 (.3D\_INT) at the same time. As a sanity check the integrated number
 should be twice the number of orbitals.
+
+How to plot vector fields calculated with DIRAC11 as streamline plots using PyNGL
+=================================================================================
+
+`PyNGL <http://www.pyngl.ucar.edu/>`_ is a great program for scientific
+visualization based on python.
+
+On this page you can find a (link to) an example script that will
+convert DIRAC's plot.2d.vector to `streamline
+plots <http://www.pyngl.ucar.edu/Examples/gallery.shtml#Streamlines>`_.
+
+You need to download and install
+`PyNGL <http://www.pyngl.ucar.edu/Download/>`_. You will have to
+register but the program is free.
+
+And here is the link to the script:
+`https://repo.ctcc.no/projects/pyngl-scripts <https://repo.ctcc.no/projects/pyngl-scripts>`_
+
 

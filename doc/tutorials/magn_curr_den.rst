@@ -1,13 +1,6 @@
 Calculating and plotting the magnetically induced current density
 =================================================================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-`|image0| </dirac/index.php/Image:Dirac.png>`_
-
 **The functionality described on this page works with DIRAC10 but not
 with the latest development version and will not work with DIRAC11.**
 

@@ -26,11 +26,16 @@ Tutorials
    :maxdepth: 1
 
    tutorials/getting_started.rst
+   tutorials/memory.rst
+
    tutorials/open_shells.rst
    tutorials/niobium.rst
+   tutorials/scf_conv.rst
+
    tutorials/ham2c.rst
+   tutorials/x2c.rst
+
    tutorials/tddft.rst
-   tutorials/plotting_orbital_densities.rst
    tutorials/pcm.rst
    tutorials/bsse.rst
    tutorials/restart.rst
@@ -39,6 +44,11 @@ Tutorials
    tutorials/faq.rst
    tutorials/grasp.rst
    tutorials/steps.rst
+
+   tutorials/plotting_orbital_densities.rst
+   tutorials/magn_curr_den.rst
+   tutorials/dft_cam.rst
+   tutorials/visualize.rst
 
 
 Reference manual

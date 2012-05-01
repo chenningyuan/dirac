@@ -111,4 +111,3 @@ to **cc\_clf.out**. In addition an archive file *cc\_clf.tgz* will be
 created, as mentioned above. 
 
 You can suppress creation of the archive file by pam flag  *--noarch*.
-

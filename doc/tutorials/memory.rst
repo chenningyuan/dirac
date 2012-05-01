@@ -1,11 +1,6 @@
 Help with memory problems
 =========================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 DIRAC will allocate the following memory segments:
 
 -  Static allocation (94 MB; you can verify it using "make info")
