@@ -32,13 +32,21 @@ Basis sets
    basis.rst
 
 
-Tutorials
-=========
+First steps in DIRAC territory
+==============================
 
 .. toctree::
    :maxdepth: 1
 
    tutorials/getting_started.rst
+
+
+More advanced tutorials
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
    tutorials/memory.rst
 
    tutorials/open_shells.rst
@@ -54,7 +62,6 @@ Tutorials
    tutorials/restart.rst
    tutorials/screening.rst
    tutorials/faq.rst
-   tutorials/grasp.rst
    tutorials/steps.rst
 
    tutorials/plotting_orbital_densities.rst
@@ -74,8 +81,8 @@ Reference manual
    reference_manual/molecule.rst
 
 
-For programmers
-===============
+For DIRAC programmers
+=====================
 
 .. toctree::
    :maxdepth: 1
@@ -88,3 +95,4 @@ For programmers
    programmers/external_projects.rst
    programmers/static_linking.rst
    programmers/int8.rst
+   programmers/grasp.rst
