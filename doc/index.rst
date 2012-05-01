@@ -1,3 +1,15 @@
+
+
+What is new
+===========
+
+.. toctree::
+   :maxdepth: 1
+
+   what_is_new/news.rst
+   what_is_new/changelog.rst
+
+
 Installation
 ============
 
@@ -8,6 +20,7 @@ Installation
    installation/windows.rst
    installation/tests.rst
    installation/mkl.rst
+   installation/known_problems.rst
 
 
 Basis sets
@@ -40,7 +53,6 @@ Tutorials
    tutorials/bsse.rst
    tutorials/restart.rst
    tutorials/screening.rst
-   tutorials/int8.rst
    tutorials/faq.rst
    tutorials/grasp.rst
    tutorials/steps.rst
@@ -73,16 +85,5 @@ For programmers
    programmers/programmers_manual.rst
    programmers/xml.rst
    programmers/external_projects.rst
-
-
-This and that
-=============
-
-.. toctree::
-   :maxdepth: 1
-
-   ref.rst
-   changelog.rst
-   known_problems.rst
-   news.rst
-   static_linking.rst
+   programmers/static_linking.rst
+   programmers/int8.rst

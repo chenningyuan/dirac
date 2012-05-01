@@ -1,7 +1,7 @@
 
-====================================
-Installing static dirac.x executable
-====================================
+
+Static linking
+==============
 
 Theoretically, it's easy to install the static dirac.x executable with the CMake buildup system.
 However, not all static executables are performing correctly. Therefore we show some configurations giving
