@@ -4052,14 +4052,8 @@ C***  Generate spherical transformation matrix  ***
 C**************************************************
 C
       DONRM = .TRUE.
-      IF(MDIRAC) THEN
-C.......set IC=1 since the large and small component basis is (assumed) identical
-        CALL SPHCAR(TMAT,IREP,1,NCAR,NSPH,
+      CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,
      &            DONRM,IPRINT,WORK,LWORK)
-      ELSE
-        CALL SPHCAR(TMAT,IREP,IC,NCAR,NSPH,
-     &            DONRM,IPRINT,WORK,LWORK)
-      ENDIF
 C
 C*********************************************************
 C***  Transform overlap matrix to spherical basis and
