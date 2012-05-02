@@ -44,6 +44,7 @@ More advanced tutorials
 
    tutorials/ham2c.rst
    tutorials/x2c.rst
+   tutorials/amfi.rst
 
    tutorials/tddft.rst
    tutorials/pcm.rst
@@ -51,6 +52,7 @@ More advanced tutorials
    tutorials/restart.rst
    tutorials/screening.rst
    tutorials/int8.rst
+   tutorials/linsym.rst
    tutorials/faq.rst
    tutorials/grasp.rst
    tutorials/steps.rst

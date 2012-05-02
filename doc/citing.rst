@@ -3,7 +3,8 @@ Citation
 
 
 Any use of the DIRAC program suite that results in published material has to use one
-of the following citations (depending on the version of DIRAC):
+of the following citations (depending on the employed version of DIRAC):
+
 
 DIRAC12
 -------
