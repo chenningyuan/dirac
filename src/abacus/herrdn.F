@@ -885,6 +885,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
+#include "dcbham.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
@@ -931,7 +932,6 @@ C
       CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL SEGT
-CMI ... forgotten
       CHARACTER(LEN=72) :: str
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1224,10 +1224,6 @@ C                 Assume it is 'LARGE   2    1....'
                   ENDIF
                END IF
 
-CMI            IF (INPTST.OR.IPREAD.GE.5) THEN
-CMI              WRITE(LUPRI,*) 'read JCO(K,I,1):',
-CMI  &           (JCO(K,I,1), K=1,IQM(I,1))
-CMI            ENDIF
 C
                IF ( IBSFLAG .EQ. 1 ) THEN
 C
@@ -1553,16 +1549,18 @@ C                 Make uncontracted small component basis
 C                 set from kinetic balance.
 C                 =======================================================
 C
-CMI               IF (IPREAD .GE. 5 .OR. INPTST) THEN
-CMI                  write(LUPRI,*) 'read JCO(K,I,2):',
-CMI  &              (JCO(K,I,2),K=1,IQM(I,2))
-CMI               ENDIF
-
-                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                 CNTBAS)
-                  BASREF(1,I,2) = ' Derived from large component'
+                  IF(MDIRAC) THEN
+                    CALL RKBBAS(I,IBLOCK(1),IBLOCK(2),
+     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                   NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                   CNTBAS)
+                  ELSE
+                    CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
+     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                   NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                   CNTBAS)
+                    BASREF(1,I,2) = ' Derived from large component'
+                  ENDIF
 C
                ENDIF
                NOORBTS    = NOORBTS.AND.IQM(I,2).EQ.0
@@ -2503,10 +2501,6 @@ C
      &                     NRC(IBLOCK(ISET),ISET),
      &                     NUC(IBLOCK(ISET),ISET),
      &                     NPRIM(ISET),NBAS(ISET),TSTRING(ISET))
-            ELSEIF(ISET.EQ.2.AND.MDIRAC.AND..NOT.TWOCOMPBSS) THEN
-               TSTRING(ISET) = TSTRING(1)
-               NPRIM(ISET) = NPRIM(1)
-               NBAS(ISET)  = NBAS(1)
             ELSE
                TSTRING(ISET) = 'No '//SET_TYPE(ISET)//' attached'
                NPRIM(ISET) = 0

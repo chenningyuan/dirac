@@ -253,13 +253,6 @@ C        IBBAS(ibrp,ic),
 C        I2BBASX(ibrp,jbrp,ic,jc)
 C        IBAS(ifrp),I2BASX(ifrp,ifrp),I2BAST(ifrp)
 C
-      IF(MDIRAC) THEN
-C.....if modified Dirac Hamiltonian update from 2c to 4c mode
-        DO ISYM = 1, NBSYM
-          NAOS(ISYM)   = NAOS(ISYM)+NAOS(ISYM)
-          NCOS(ISYM,2) = NCOS(ISYM,1)
-        ENDDO
-      ENDIF
       NNBBAST = 0
       N2BBAST = 0
       DO IBREP = 0,MAXREP

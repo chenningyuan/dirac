@@ -173,15 +173,9 @@ C     General input
 C
 C     Integral and basis input
 C
-C.....If modified Dirac Hamiltonian switch to 2c mode here
-      IF(MDIRAC) TWOCOMP=.TRUE.
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
-      IF(MDIRAC) THEN
-C.....switch back to 4c mode
-        TWOCOMP=.FALSE.
-      ENDIF
 C
       DOJACO = DOJACO.AND.(NZ.EQ.1)
 C
@@ -195,7 +189,7 @@ C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
 C
-      IF(.NOT.MDIRAC) CALL GETLAB(WORK,LWORK,IPREAD)
+      CALL GETLAB(WORK,LWORK,IPREAD)
 C
 C     Define Hamiltonian
 C
