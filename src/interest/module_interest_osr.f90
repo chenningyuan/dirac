@@ -1,11 +1,34 @@
+! -------------------------------------------------------------------------
 !
-! Author:   Michal Repisky  (michal.repisky@uit.no)
+! Library:      InteRest
 !
-! Date:     27.08.2010 University of Tromsø - create a nuclear class 
-!           29.11.2010 University of Tromsø - update the nuclear class
-!           02.12.2010 University of Tromsø - create an overlap class 
-!           17.06.2011 University of Tromsø - switching to TRS for RKB  
-! ---------------------------------------------------------------------------------------
+! File:         module_interest_osr.f90 
+!
+! Licensing:    Copyright 2010 Michal Repisky, and Kenneth Ruud
+!
+!               This file is part of InteRest.
+!
+!               InteRest is free software: you can redistribute it and/or modify
+!               it under the terms of the GNU Lesse General Public License as published by
+!               the Free Software Foundation, either version 3 of the License, or
+!               (at your option) any later version.
+!               
+!               InteRest is distributed in the hope that it will be useful,
+!               but WITHOUT ANY WARRANTY; without even the implied warranty of
+!               MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!               GNU Lesser General Public License for more details.
+!               
+!               You should have received a copy of the GNU Lesser General Public License
+!               along with InteRest.  If not, see <http://www.gnu.org/licenses/>.
+!
+! Description:  Performing integral calculations over normalized cartesian/spherical
+!               unbalanced, or kinetically/magnetically balanced gaussian type functions
+!
+! Author:       Michal Repisky (michal.repisky@uit.no)
+!
+! Revision:     2.0   
+!
+! -------------------------------------------------------------------------
 
 module module_interest_osr
   implicit none

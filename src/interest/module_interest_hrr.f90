@@ -1,23 +1,49 @@
+! ---------------------------------------------------------------------------------------
 !
-! Author:   Michal Repisky  (michal.repisky@uit.no)
+! Library:      InteRest
 !
-! Date:     26.11.2010 University of Tromsø
-!           17.06.2011 University of Tromsø - switching to TRS for RKB
+! File:         module_interest_hrr.f90 
 !
-! Note:     prva dimenzia (t.j. n1) vaux musi mat cielovu dlzku
-!           (in_file: interest_hrr_bra) 
-!           pre rkb verziu n1 musi byt 5x vacsia
-!           (in_file: interest_hrr_bra_rkb) 
+! Licensing:    Copyright 2010 Michal Repisky, and Kenneth Ruud
 !
-!           druha dimenzia (t.j. n2) vaux musi mat cielovu dlzku
-!           n1r je redukovana prva dimenzia
-!           (in_file: interest_hrr_ket) 
-!           pre rkb verziu musi byt n1 aj n2 5x vacsia
-!           (in_file: interest_hrr_ket_rkb) 
+!               This file is part of InteRest.
+!
+!               InteRest is free software: you can redistribute it and/or modify
+!               it under the terms of the GNU Lesse General Public License as published by
+!               the Free Software Foundation, either version 3 of the License, or
+!               (at your option) any later version.
+!               
+!               InteRest is distributed in the hope that it will be useful,
+!               but WITHOUT ANY WARRANTY; without even the implied warranty of
+!               MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!               GNU Lesser General Public License for more details.
+!               
+!               You should have received a copy of the GNU Lesser General Public License
+!               along with InteRest.  If not, see <http://www.gnu.org/licenses/>.
+!
+! Description:  Performing integral calculations over normalized cartesian/spherical
+!               unbalanced, or kinetically/magnetically balanced gaussian type functions
+!
+! Author:       Michal Repisky (michal.repisky@uit.no)
+!
+! Revision:     2.0   
 !
 ! ---------------------------------------------------------------------------------------
 
 module module_interest_hrr
+! ---------------------------------------------------------------------------------------
+! Note: prva dimenzia (t.j. n1) vaux musi mat cielovu dlzku
+!       (in_file: interest_hrr_bra) 
+!       pre rkb verziu n1 musi byt 5x vacsia
+!       (in_file: interest_hrr_bra_rkb) 
+!
+!       druha dimenzia (t.j. n2) vaux musi mat cielovu dlzku
+!       n1r je redukovana prva dimenzia
+!       (in_file: interest_hrr_ket) 
+!       pre rkb verziu musi byt n1 aj n2 5x vacsia
+!       (in_file: interest_hrr_ket_rkb) 
+!
+! ---------------------------------------------------------------------------------------
   implicit none
 
   public interest_hrr_bra
