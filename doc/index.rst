@@ -5,6 +5,7 @@ Installation
    :maxdepth: 1
 
    installation/installation.rst
+   installation/platforms.rst
    installation/windows.rst
    installation/tests.rst
    installation/mkl.rst
@@ -39,6 +40,8 @@ More advanced tutorials
    tutorials/niobium.rst
    tutorials/scf_conv.rst
 
+   tutorials/mcscf.rst
+
    tutorials/ham2c.rst
    tutorials/x2c.rst
 
@@ -56,6 +59,10 @@ More advanced tutorials
    tutorials/magn_curr_den.rst
    tutorials/dft_cam.rst
    tutorials/visualize.rst
+
+   tutorials/standalones.rst
+
+   tutorials/reading.rst
 
 
 Getting help
@@ -94,3 +101,11 @@ For DIRAC programmers
    programmers/static_linking.rst
    programmers/int8.rst
    programmers/grasp.rst
+
+Citing
+======
+
+.. toctree::
+   :maxdepth: 1
+
+   citing.rst
