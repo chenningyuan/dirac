@@ -62,6 +62,8 @@ More advanced tutorials
    tutorials/dft_cam.rst
    tutorials/visualize.rst
 
+   tutorials/drawbacks.rst
+
    tutorials/standalones.rst
 
    tutorials/reading.rst
