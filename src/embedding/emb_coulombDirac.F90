@@ -387,7 +387,7 @@
       jmaxm = 0
       jmax = jmaxa + jmaxb
       allocate(odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3))
-      ader(:, :, :) = 0.0d0
+      allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
 
       cora(1) = corax
       cora(2) = coray
@@ -432,16 +432,14 @@
      &           .true.,.false.,origin,idummy)
           do ipoint = 1, nr_points
             difcp(:) = points(1:3,ipoint) - corp(:)
-            allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
-            ahgtf = 0.0d0
             call vnuc(ahgtf, jmax, expp, difcp, iprint)
-            call cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
-     &            ader(:, :, ipoint), ahgtf, iprint)
-            deallocate(ahgtf)
+!           call cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
+!    &            ader(:, :, ipoint), ahgtf, iprint)
           end do ! Close loop over grid points
         end do ! Close loop over second shell
       end do ! Close loop over first shell
       deallocate(odc)
+      deallocate(ahgtf)
 
       return
 
