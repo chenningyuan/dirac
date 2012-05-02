@@ -4,3 +4,8 @@ How to run a MCSCF calculation followed by/or a GAS-CI calculation (DIRAC10 and 
 
 stefan: write me.
 
+KR-CI properties
+================
+
+write me...
+

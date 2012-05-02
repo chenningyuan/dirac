@@ -4,6 +4,8 @@ Installation
 .. toctree::
    :maxdepth: 1
 
+   features.rst
+
    installation/installation.rst
    installation/platforms.rst
    installation/windows.rst
