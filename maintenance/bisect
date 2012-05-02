@@ -17,7 +17,7 @@ then
   exit 1
 fi
 
-if [ -d cbuild ]; then
+if [ -d build ]; then
     echo "running bisect with:"
     echo "test     $TEST"
     echo "bad_rev  $BAD_REV"
@@ -28,7 +28,7 @@ else
 fi 
 
 THIS_DIR=$PWD
-BUILD_DIR=$THIS_DIR/cbuild
+BUILD_DIR=$THIS_DIR/build
 TMP_DIR=$BUILD_DIR/delete_me
 mkdir -p $TMP_DIR
 

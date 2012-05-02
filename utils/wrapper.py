@@ -35,7 +35,8 @@ be deleted at the end of a run.
                      metavar='NAME=VALUE')
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
-
+    group.add_option('--backup', type='int', default=1, dest='backup_level',
+		     help="Set backup level for output files [default: %default]. Set to 0 for no backup.")
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
                      metavar='[NAME=]FILE]')
@@ -46,6 +47,8 @@ be deleted at the end of a run.
     group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
 		     help='Copy FILE from temporary directory after the calculation',
                      metavar='NAME[=FILE]')
+    group.add_option('-p', '--pcm', type='string', action='callback', callback=W.pcm_callback,
+                     help='PCM calculation: parse PCM input and copy it to scratch')
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Temporary directory options')
@@ -132,8 +135,24 @@ be deleted at the end of a run.
             W.copyin.append([molpath,'MOLECULE.XYZ']+replacements)
     if inppath is not None:
         W.copyin.append([inppath,'DIRAC.INP']+replacements)
-    W.stdout = open(jobname+'.out','w')
+
+    stdout_file_name = jobname + '.out'
+    if options.backup_level > 0:
+        # backup output file before writing to it
+        if os.path.isfile(stdout_file_name):
+            if options.backup_level > 1:
+                for i in range(options.backup_level-2, -1, -1):
+                    src = stdout_file_name + '_' + str(i)
+                    dst = stdout_file_name + '_' + str(i+1)
+                    if os.path.isfile(src):
+                        shutil.copy2(src, dst)
+            src = stdout_file_name
+            dst = stdout_file_name + '_0'
+            shutil.copy2(src, dst)
+
+    W.stdout = open(stdout_file_name,'w')
     W.stderr = open(jobname+'.err','w')
+
     W.stdin = None
     if not options.noarchive:
         W.archive = jobname+'.tgz'
@@ -203,6 +222,7 @@ class Wrapper:
         self.remote_hosts = set() # Duplicate tmpdir and stage in on these hosts
         self.rsh = 'ssh'
         self.rcp = 'scp'
+        self.do_pcm = False 
 
     def define_callback(self, option, opt, value, parser):
 	if '=' in value:
@@ -234,7 +254,20 @@ class Wrapper:
 	    self.copyout.append([value])
 
     def command_callback(self, option, opt, value, parser):
-	self.cmdlines.append(shlex.split(value))        
+	self.cmdlines.append(shlex.split(value))       
+ 
+    def pcm_callback(self, option, opt, value, parser):
+        if value is None: 
+            sys.exit('No .pcm file specified') 
+        else:
+            self.copyin.append([value,'pcmsolver.inp'])
+	if 'PCMSOLVER_PARSE' in os.environ.keys():
+	    self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver']) 
+	else:
+            self.copyin.append(['pcmsolver','pcmsolver'])
+        self.archpatterns.append('PEDRA.OUT')
+        self.archpatterns.append('cavity.off')
+        self.do_pcm = True
 
     def setup(self):
         try:
@@ -310,7 +343,7 @@ class Wrapper:
                     raise
             else:
                 if not self.allow_empty_infiles:
-                    print >> sys.stderr, "Wrapper: File copy failed, source file nonexistent, quitting."
+                    print >> sys.stderr, "Wrapper: File copy of %s failed, source file nonexistent, quitting." % src
                     raise
         for h in self.remote_hosts:
             try:
@@ -353,8 +386,6 @@ class Wrapper:
             except:
                print >> sys.stderr, "Wrapper: Error creating tar archive"
                raise # TODO: Should try to copy out files as well
-            finally:
-                os.chdir(self.workdir)
         # Copy back files
         def cpout(src,dst=None):
             if self.verbose: print "Wrapper: Copying back",src
@@ -368,6 +399,7 @@ class Wrapper:
                 shutil.copytree(src,dst)
             elif self.verbose: # Just give a warning, don't panic
                 print "Wrapper: When copying out, file",src,"not found."
+        os.chdir(self.workdir)
         for f in self.copyout:
             try:
                 if len(f) == 2:
@@ -429,6 +461,8 @@ class Wrapper:
     def run(self):
         try:
             os.chdir(self.tmppath)
+            if self.do_pcm:
+		os.system('./pcmsolver --dryrun')
             for cmd in self.cmdlines:
                 self.run_cmd(cmd)
         finally:

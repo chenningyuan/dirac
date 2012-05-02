@@ -1,0 +1,13 @@
+
+FromRE: Energy eigenvalues in atomic units
+To:Total CPU
+
+Nlines 2:Number of reference determinants
+
+FromRE: CI Total Energy
+ToIRE: Relative to reference
+
+FromRE: .*CI-SD Energy
+ToIRE: .*CI-SD\+Q energy
+
+

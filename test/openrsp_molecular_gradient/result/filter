@@ -1,3 +1,2 @@
-$ERROR 1.E-8
-FromRE:molecular gradient
-ToRE:---------------------------------
+$ERROR 1.E-6
+nlines 6:molecular gradient

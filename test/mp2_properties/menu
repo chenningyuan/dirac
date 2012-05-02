@@ -1,2 +1,2 @@
-mp2_gradient.inp           H2O2.mol --mw=120 
-bss+mfsso.mp2_gradient.inp H2O2.mol --mw=120 
+mp2_gradient.inp           H2O2.mol --mw=60 --aw=140 
+bss+mfsso.mp2_gradient.inp H2O2.mol --mw=60 --aw=140
