@@ -8,6 +8,10 @@ Installation
 
    installation/installation.rst
    installation/platforms.rst
+
+   installation/math_int64.rst
+   installation/mpi_int64.rst
+
    installation/windows.rst
    installation/tests.rst
    installation/mkl.rst
