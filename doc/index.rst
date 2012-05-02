@@ -6,6 +6,9 @@ Installation
 
    installation/installation.rst
    installation/windows.rst
+   installation/tests.rst
+   installation/mkl.rst
+   installation/known_problems.rst
 
 
 Basis sets
@@ -17,43 +20,77 @@ Basis sets
    basis.rst
 
 
-Tutorials
-=========
+First steps in DIRAC territory
+==============================
 
 .. toctree::
    :maxdepth: 1
 
    tutorials/getting_started.rst
+
+
+More advanced tutorials
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
    tutorials/open_shells.rst
-   tutorials/plotting_orbital_densities.rst
+   tutorials/niobium.rst
+   tutorials/scf_conv.rst
+
+   tutorials/ham2c.rst
+   tutorials/x2c.rst
+
+   tutorials/tddft.rst
    tutorials/pcm.rst
+   tutorials/bsse.rst
+   tutorials/restart.rst
+   tutorials/screening.rst
+   tutorials/int8.rst
+   tutorials/faq.rst
+   tutorials/grasp.rst
+   tutorials/steps.rst
+
+   tutorials/plotting_orbital_densities.rst
+   tutorials/magn_curr_den.rst
+   tutorials/dft_cam.rst
+   tutorials/visualize.rst
 
 
-Keyword reference manual
-========================
-
-
-
-For programmers
-===============
+Getting help
+============
 
 .. toctree::
    :maxdepth: 1
 
-   programmers/testing.rst
-   programmers/programmers_manual.rst
+   getting_help/memory.rst
+
+
+Reference manual
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   reference_manual/dirac.rst
+   reference_manual/optimize.rst
+   reference_manual/molecule.rst
+
+
+For DIRAC programmers
+=====================
+
+.. toctree::
+   :maxdepth: 1
+
    programmers/documentation_howto.rst
+   programmers/testing.rst
    programmers/cdash.rst
-
-
-This and that
-=============
-
-.. toctree::
-   :maxdepth: 1
-
-   references.rst
-   changelog.rst
-   known_problems.rst
-   news.rst
-   static_linking.rst
+   programmers/programmers_manual.rst
+   programmers/xml.rst
+   programmers/external_projects.rst
+   programmers/profiling.rst
+   programmers/static_linking.rst
+   programmers/int8.rst
+   programmers/grasp.rst

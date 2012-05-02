@@ -68,7 +68,6 @@ C     .... only for master or single process !!!
 
       KIPCON = 1
       KLAST  = KIPCON + KPRIM
-C      IF (KLAST.GT.LWORK) CALL STOPIT('BASOUT','CAPOUT',KLAST,LWORK)
       IF (KLAST.GT.LWORK) CALL QUIT('CAPOUT: KLAST.GT.LWORK !')
 
       IF (IPRINT.GE.2) THEN

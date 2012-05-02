@@ -1,3 +1,4 @@
+DIRAC pam run in /home/roberto/Workspace/dirac/test/pcm_energy
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -153,7 +154,7 @@ Binary information
 ------------------
  
  Who compiled             | roberto@manchot
- System                   | Linux-3.2.0-23-generic
+ System                   | Linux-3.2.0-24-generic
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
@@ -169,24 +170,22 @@ Binary information
                           | 7 -O2
  BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
                           | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
-                          | lp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequenti
-                          | al.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr
-                          | /lib/x86_64-linux-gnu/libm.so;-Wl,--end-group
+                          | thread.so;/usr/lib/x86_64-linux-gnu/libpthread.so;
+                          | /usr/lib/x86_64-linux-gnu/libm.so;/opt/intel/mkl/l
+                          | ib/intel64/libmkl_intel_lp64.so;-liomp5;-Wl,--end-
+                          | group
  LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
-                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
-                          | lp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequenti
-                          | al.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr
-                          | /lib/x86_64-linux-gnu/libm.so;-Wl,--end-group
+                          | l_lapack95_lp64.a;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | ecd3ed5
- Configuration time       | 2012-04-25 14:35:00.177512
+ Last Git revision        | daa6793
+ Configuration time       | 2012-05-01 15:17:21.903654
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Apr 26 09:57:18 2012
+     Date and time (Linux)  : Tue May  1 15:29:23 2012
      Host name              : not found                               
  
  
@@ -622,6 +621,7 @@ H     -0.3333229788   0.3333229788  -0.3333229788
 No. of positive energy orbitals (NESH):     9
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):     9
+Number of tesserae: 80
 Setting eq type NUM 1
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 
@@ -644,7 +644,7 @@ Solvent radius:         1.385
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu Apr 26 09:57:18 2012
+########## START ITERATION NO.   1 ##########   Tue May  1 15:29:23 2012
 
 
   BNCORR: SS contribution to the bare nuclei omitted !
@@ -676,90 +676,27 @@ Nuclear potential energy  :    25.365934555796475
 Total energy              :    -3.937856918086538
    * Quaternion diagonalization(CPU): 0.00000000s
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -3.937856918087      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Apr 26
+It.    1    -3.937856918087      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue May  1
 
-########## START ITERATION NO.   2 ##########   Thu Apr 26 09:57:18 2012
+########## START ITERATION NO.   2 ##########   Tue May  1 15:29:23 2012
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.01200100s
- E_ee -49.6585 E_en 51.3525 E_ne 51.3526 E_nn -53.1131
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.01600100s
+ E_ee -30.1648 E_en 30.199 E_ne 30.1989 E_nn -30.2355
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.456445422913369
+Total electronic energy            :   -62.456445422913426
 Nuclear potential energy           :    25.365934555796475
- E_ee -49.6585 E_en 51.3525 E_ne 51.3526 E_nn -53.1131
-Polarization energy                :    -0.033283250655014
-Total energy                       :   -37.123794117771908
+ E_ee -30.1648 E_en 30.199 E_ne 30.1989 E_nn -30.2355
+Polarization energy                :    -0.001260837320769
+Total energy                       :   -37.091771704437718
  cp DFCOEF DFCOEF.BEST
 * Calling pcm_fock_driver
- FOCK_PCM
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1      -0.17554580    -0.04359895     0.00000000     0.00000000     0.00000000    -0.03429692    -0.03429692    -0.03429692
-       2      -0.04359895    -0.16817757     0.00000000     0.00000000     0.00000000    -0.13315126    -0.13315126    -0.13315126
-       3       0.00000000     0.00000000    -0.16818063     0.00000000     0.00000000    -0.04987505     0.04987505    -0.04987505
-       4       0.00000000     0.00000000     0.00000000    -0.16818063     0.00000000    -0.04987505     0.04987505     0.04987505
-       5       0.00000000     0.00000000     0.00000000     0.00000000    -0.16818063    -0.04987505    -0.04987505     0.04987505
-       6      -0.03429692    -0.13315126    -0.04987505    -0.04987505    -0.04987505    -0.16614025    -0.08804356    -0.08804356
-       7      -0.03429692    -0.13315126     0.04987505     0.04987505    -0.04987505    -0.08804356    -0.16614025    -0.08804356
-       8      -0.03429692    -0.13315126    -0.04987505     0.04987505     0.04987505    -0.08804356    -0.08804356    -0.16614025
-       9      -0.03429692    -0.13315126     0.04987505    -0.04987505     0.04987505    -0.08804356    -0.08804356    -0.08804356
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1      -0.03429692     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2      -0.13315126     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.04987505     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       4      -0.04987505     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.04987505     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.08804356     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.08804356     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.08804356     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9      -0.16614025     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-
-               Column  33     Column  34     Column  35     Column  36     Column  37     Column  38     Column  39     Column  40
-
-               Column  41     Column  42     Column  43     Column  44     Column  45     Column  46     Column  47     Column  48
-
-               Column  49     Column  50     Column  51     Column  52     Column  53     Column  54     Column  55     Column  56
-
-               Column  57     Column  58     Column  59     Column  60     Column  61     Column  62     Column  63     Column  64
-
-               Column  65     Column  66     Column  67     Column  68     Column  69     Column  70     Column  71     Column  72
-
-               Column  73     Column  74     Column  75     Column  76     Column  77     Column  78     Column  79     Column  80
-
-               Column  81     Column  82     Column  83     Column  84
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
 
 
                                Output from DIISD1:
@@ -768,96 +705,34 @@ Total energy                       :   -37.123794117771908
 * DIIS iteration no.:         1
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
-   * Two-electron Fock matrix  (CPU): 0.02000100s
+   * Two-electron Fock matrix  (CPU): 0.04800300s
+   * PCM Fock matrix contribution  (CPU): 0.02000099s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.08000500s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.16401001s
 
-########## END ITERATION NO.   2 ##########   Thu Apr 26 09:57:18 2012
+########## END ITERATION NO.   2 ##########   Tue May  1 15:29:23 2012
 
-It.    2    -37.12379411777      3.32D+01  6.44D-01  6.81D-01               0.08000500s   LL             Thu Apr 26
+It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.16401001s   LL             Tue May  1
 
-########## START ITERATION NO.   3 ##########   Thu Apr 26 09:57:18 2012
+########## START ITERATION NO.   3 ##########   Tue May  1 15:29:24 2012
 
-    3 *** Differential density matrix. DCOVLP     = 0.8047
+    3 *** Differential density matrix. DCOVLP     = 0.8103
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.00800000s
- E_ee -49.1248 E_en 51.0769 E_ne 51.0772 E_nn -53.1131
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.02000199s
+ E_ee -30.1352 E_en 30.1851 E_ne 30.1851 E_nn -30.2355
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.565124054449569
+Total electronic energy            :   -62.564643394611188
 Nuclear potential energy           :    25.365934555796475
- E_ee -49.1248 E_en 51.0769 E_ne 51.0772 E_nn -53.1131
-Polarization energy                :    -0.041836964582682
-Total energy                       :   -37.241026463235777
+ E_ee -30.1352 E_en 30.1851 E_ne 30.1851 E_nn -30.2355
+Polarization energy                :    -0.000264341412523
+Total energy                       :   -37.198973180227235
  cp DFCOEF DFCOEF.BEST
 * Calling pcm_fock_driver
- FOCK_PCM
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1      -0.20730051    -0.05148558     0.00000000     0.00000000     0.00000000    -0.04048476    -0.04048476    -0.04048476
-       2      -0.05148558    -0.19525076     0.00000000     0.00000000     0.00000000    -0.15329669    -0.15329669    -0.15329669
-       3       0.00000000     0.00000000    -0.19530171     0.00000000     0.00000000    -0.05632578     0.05632578    -0.05632578
-       4       0.00000000     0.00000000     0.00000000    -0.19530171     0.00000000    -0.05632578     0.05632578     0.05632578
-       5       0.00000000     0.00000000     0.00000000     0.00000000    -0.19530171    -0.05632578    -0.05632578     0.05632578
-       6      -0.04048476    -0.15329669    -0.05632578    -0.05632578    -0.05632578    -0.18707487    -0.10125510    -0.10125510
-       7      -0.04048476    -0.15329669     0.05632578     0.05632578    -0.05632578    -0.10125510    -0.18707487    -0.10125510
-       8      -0.04048476    -0.15329669    -0.05632578     0.05632578     0.05632578    -0.10125510    -0.10125510    -0.18707487
-       9      -0.04048476    -0.15329669     0.05632578    -0.05632578     0.05632578    -0.10125510    -0.10125510    -0.10125510
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1      -0.04048476     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2      -0.15329669     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.05632578     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       4      -0.05632578     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.05632578     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.10125510     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.10125510     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.10125510     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9      -0.18707487     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-
-               Column  33     Column  34     Column  35     Column  36     Column  37     Column  38     Column  39     Column  40
-
-               Column  41     Column  42     Column  43     Column  44     Column  45     Column  46     Column  47     Column  48
-
-               Column  49     Column  50     Column  51     Column  52     Column  53     Column  54     Column  55     Column  56
-
-               Column  57     Column  58     Column  59     Column  60     Column  61     Column  62     Column  63     Column  64
-
-               Column  65     Column  66     Column  67     Column  68     Column  69     Column  70     Column  71     Column  72
-
-               Column  73     Column  74     Column  75     Column  76     Column  77     Column  78     Column  79     Column  80
-
-               Column  81     Column  82     Column  83     Column  84
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
 
 
                                Output from DIISD1:
@@ -865,103 +740,41 @@ Total energy                       :   -37.241026463235777
 
 * DIIS iteration no.:         2
 * B matrix dimension:         3
-* B matrix condition: 7.388D-02
+* B matrix condition: 8.147D-02
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     2.073D-03
-         2     -2.465D-01
-         3      1.247D+00
-   * Two-electron Fock matrix  (CPU): 0.00800000s
+     lambda     1.824D-03
+         2     -1.621D-01
+         3      1.162D+00
+   * Two-electron Fock matrix  (CPU): 0.02000199s
+   * PCM Fock matrix contribution  (CPU): 0.02000099s
    * Quaternion diagonalization(CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05200300s
+>>> Total CPU-time : 0.12800801s
 
-########## END ITERATION NO.   3 ##########   Thu Apr 26 09:57:18 2012
+########## END ITERATION NO.   3 ##########   Tue May  1 15:29:24 2012
 
-It.    3    -37.24102646324      1.17D-01 -1.54D-01  1.42D-01   DIIS   2    0.05200300s   LL             Thu Apr 26
+It.    3    -37.19897318023      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.12800801s   LL             Tue May  1
 
-########## START ITERATION NO.   4 ##########   Thu Apr 26 09:57:18 2012
+########## START ITERATION NO.   4 ##########   Tue May  1 15:29:24 2012
 
-    4 *** Differential density matrix. DCOVLP     = 0.9835
+    4 *** Differential density matrix. DCOVLP     = 0.9900
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.00800100s
- E_ee -48.9923 E_en 51.0065 E_ne 51.0068 E_nn -53.1131
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.01600099s
+ E_ee -30.1305 E_en 30.1829 E_ne 30.1828 E_nn -30.2355
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.566443780419696
+Total electronic energy            :   -62.567430690109148
 Nuclear potential energy           :    25.365934555796475
- E_ee -48.9923 E_en 51.0065 E_ne 51.0068 E_nn -53.1131
-Polarization energy                :    -0.045999739755828
-Total energy                       :   -37.246508964379046
+ E_ee -30.1305 E_en 30.1829 E_ne 30.1828 E_nn -30.2355
+Polarization energy                :    -0.000173501137459
+Total energy                       :   -37.201669635450131
  cp DFCOEF DFCOEF.BEST
 * Calling pcm_fock_driver
- FOCK_PCM
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1      -0.21544633    -0.05350869     0.00000000     0.00000000     0.00000000    -0.04207202    -0.04207202    -0.04207202
-       2      -0.05350869    -0.20217407     0.00000000     0.00000000     0.00000000    -0.15843999    -0.15843999    -0.15843999
-       3       0.00000000     0.00000000    -0.20223767     0.00000000     0.00000000    -0.05796537     0.05796537    -0.05796537
-       4       0.00000000     0.00000000     0.00000000    -0.20223767     0.00000000    -0.05796537     0.05796537     0.05796537
-       5       0.00000000     0.00000000     0.00000000     0.00000000    -0.20223767    -0.05796537    -0.05796537     0.05796537
-       6      -0.04207202    -0.15843999    -0.05796537    -0.05796537    -0.05796537    -0.19238943    -0.10462733    -0.10462733
-       7      -0.04207202    -0.15843999     0.05796537     0.05796537    -0.05796537    -0.10462733    -0.19238943    -0.10462733
-       8      -0.04207202    -0.15843999    -0.05796537     0.05796537     0.05796537    -0.10462733    -0.10462733    -0.19238943
-       9      -0.04207202    -0.15843999     0.05796537    -0.05796537     0.05796537    -0.10462733    -0.10462733    -0.10462733
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1      -0.04207202     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2      -0.15843999     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.05796537     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       4      -0.05796537     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.05796537     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.10462733     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.10462733     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.10462733     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9      -0.19238943     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-
-               Column  33     Column  34     Column  35     Column  36     Column  37     Column  38     Column  39     Column  40
-
-               Column  41     Column  42     Column  43     Column  44     Column  45     Column  46     Column  47     Column  48
-
-               Column  49     Column  50     Column  51     Column  52     Column  53     Column  54     Column  55     Column  56
-
-               Column  57     Column  58     Column  59     Column  60     Column  61     Column  62     Column  63     Column  64
-
-               Column  65     Column  66     Column  67     Column  68     Column  69     Column  70     Column  71     Column  72
-
-               Column  73     Column  74     Column  75     Column  76     Column  77     Column  78     Column  79     Column  80
-
-               Column  81     Column  82     Column  83     Column  84
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
 
 
                                Output from DIISD1:
@@ -969,104 +782,42 @@ Total energy                       :   -37.246508964379046
 
 * DIIS iteration no.:         3
 * B matrix dimension:         4
-* B matrix condition: 2.214D-04
+* B matrix condition: 2.051D-04
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.436D-06
-         2      1.883D-02
-         3     -1.114D-01
-         4      1.093D+00
-   * Two-electron Fock matrix  (CPU): 0.00800100s
+     lambda     3.302D-06
+         2      1.618D-02
+         3     -1.323D-01
+         4      1.116D+00
+   * Two-electron Fock matrix  (CPU): 0.01600099s
+   * PCM Fock matrix contribution  (CPU): 0.02000201s
    * Quaternion diagonalization(CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.06000401s
+>>> Total CPU-time : 0.11600798s
 
-########## END ITERATION NO.   4 ##########   Thu Apr 26 09:57:18 2012
+########## END ITERATION NO.   4 ##########   Tue May  1 15:29:24 2012
 
-It.    4    -37.24650896438      5.48D-03 -3.92D-02  4.72D-03   DIIS   3    0.06000401s   LL             Thu Apr 26
+It.    4    -37.20166963545      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.11600798s   LL             Tue May  1
 
-########## START ITERATION NO.   5 ##########   Thu Apr 26 09:57:18 2012
+########## START ITERATION NO.   5 ##########   Tue May  1 15:29:24 2012
 
-    5 *** Differential density matrix. DCOVLP     = 1.0001
+    5 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.00799999s
- E_ee -48.9903 E_en 51.0054 E_ne 51.0058 E_nn -53.1131
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.01600099s
+ E_ee -30.1305 E_en 30.1828 E_ne 30.1828 E_nn -30.2355
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.566370967635706
+Total electronic energy            :   -62.567437407020996
 Nuclear potential energy           :    25.365934555796475
- E_ee -48.9903 E_en 51.0054 E_ne 51.0058 E_nn -53.1131
-Polarization energy                :    -0.046077215748522
-Total energy                       :   -37.246513627587753
+ E_ee -30.1305 E_en 30.1828 E_ne 30.1828 E_nn -30.2355
+Polarization energy                :    -0.000171687087605
+Total energy                       :   -37.201674538312126
  cp DFCOEF DFCOEF.BEST
 * Calling pcm_fock_driver
- FOCK_PCM
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1      -0.21557519    -0.05354069     0.00000000     0.00000000     0.00000000    -0.04209711    -0.04209711    -0.04209711
-       2      -0.05354069    -0.20228054     0.00000000     0.00000000     0.00000000    -0.15851779    -0.15851779    -0.15851779
-       3       0.00000000     0.00000000    -0.20234438     0.00000000     0.00000000    -0.05798901     0.05798901    -0.05798901
-       4       0.00000000     0.00000000     0.00000000    -0.20234438     0.00000000    -0.05798901     0.05798901     0.05798901
-       5       0.00000000     0.00000000     0.00000000     0.00000000    -0.20234438    -0.05798901    -0.05798901     0.05798901
-       6      -0.04209711    -0.15851779    -0.05798901    -0.05798901    -0.05798901    -0.19246534    -0.10467823    -0.10467823
-       7      -0.04209711    -0.15851779     0.05798901     0.05798901    -0.05798901    -0.10467823    -0.19246534    -0.10467823
-       8      -0.04209711    -0.15851779    -0.05798901     0.05798901     0.05798901    -0.10467823    -0.10467823    -0.19246534
-       9      -0.04209711    -0.15851779     0.05798901    -0.05798901     0.05798901    -0.10467823    -0.10467823    -0.10467823
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1      -0.04209711     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2      -0.15851779     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.05798901     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       4      -0.05798901     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.05798901     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.10467823     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.10467823     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.10467823     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9      -0.19246534     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-
-               Column  33     Column  34     Column  35     Column  36     Column  37     Column  38     Column  39     Column  40
-
-               Column  41     Column  42     Column  43     Column  44     Column  45     Column  46     Column  47     Column  48
-
-               Column  49     Column  50     Column  51     Column  52     Column  53     Column  54     Column  55     Column  56
-
-               Column  57     Column  58     Column  59     Column  60     Column  61     Column  62     Column  63     Column  64
-
-               Column  65     Column  66     Column  67     Column  68     Column  69     Column  70     Column  71     Column  72
-
-               Column  73     Column  74     Column  75     Column  76     Column  77     Column  78     Column  79     Column  80
-
-               Column  81     Column  82     Column  83     Column  84
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
 
 
                                Output from DIISD1:
@@ -1074,105 +825,43 @@ Total energy                       :   -37.246513627587753
 
 * DIIS iteration no.:         4
 * B matrix dimension:         5
-* B matrix condition: 3.123D-07
+* B matrix condition: 3.084D-07
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.004D-11
-         2     -1.624D-03
-         3      9.963D-03
-         4     -1.258D-01
-         5      1.117D+00
-   * Two-electron Fock matrix  (CPU): 0.00799999s
+     lambda     7.146D-12
+         2     -1.053D-03
+         3      8.682D-03
+         4     -9.598D-02
+         5      1.088D+00
+   * Two-electron Fock matrix  (CPU): 0.02000099s
+   * PCM Fock matrix contribution  (CPU): 0.01600099s
    * Quaternion diagonalization(CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04400298s
+>>> Total CPU-time : 0.12400702s
 
-########## END ITERATION NO.   5 ##########   Thu Apr 26 09:57:18 2012
+########## END ITERATION NO.   5 ##########   Tue May  1 15:29:24 2012
 
-It.    5    -37.24651362759      4.66D-06 -7.96D-04  2.17D-04   DIIS   4    0.04400298s   LL             Thu Apr 26
+It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.12400702s   LL             Tue May  1
 
-########## START ITERATION NO.   6 ##########   Thu Apr 26 09:57:18 2012
+########## START ITERATION NO.   6 ##########   Tue May  1 15:29:24 2012
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.00800002s
- E_ee -48.9903 E_en 51.0054 E_ne 51.0058 E_nn -53.1131
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.01600105s
+ E_ee -30.1305 E_en 30.1828 E_ne 30.1828 E_nn -30.2355
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.566370771604738
+Total electronic energy            :   -62.567437448212232
 Nuclear potential energy           :    25.365934555796475
- E_ee -48.9903 E_en 51.0054 E_ne 51.0058 E_nn -53.1131
-Polarization energy                :    -0.046077420488071
-Total energy                       :   -37.246513636296335
+ E_ee -30.1305 E_en 30.1828 E_ne 30.1828 E_nn -30.2355
+Polarization energy                :    -0.000171651651680
+Total energy                       :   -37.201674544067437
  cp DFCOEF DFCOEF.BEST
 * Calling pcm_fock_driver
- FOCK_PCM
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1      -0.21557490    -0.05354062     0.00000000     0.00000000     0.00000000    -0.04209705    -0.04209705    -0.04209705
-       2      -0.05354062    -0.20228007     0.00000000     0.00000000     0.00000000    -0.15851735    -0.15851735    -0.15851735
-       3       0.00000000     0.00000000    -0.20234392     0.00000000     0.00000000    -0.05798878     0.05798878    -0.05798878
-       4       0.00000000     0.00000000     0.00000000    -0.20234392     0.00000000    -0.05798878     0.05798878     0.05798878
-       5       0.00000000     0.00000000     0.00000000     0.00000000    -0.20234392    -0.05798878    -0.05798878     0.05798878
-       6      -0.04209705    -0.15851735    -0.05798878    -0.05798878    -0.05798878    -0.19246455    -0.10467793    -0.10467793
-       7      -0.04209705    -0.15851735     0.05798878     0.05798878    -0.05798878    -0.10467793    -0.19246455    -0.10467793
-       8      -0.04209705    -0.15851735    -0.05798878     0.05798878     0.05798878    -0.10467793    -0.10467793    -0.19246455
-       9      -0.04209705    -0.15851735     0.05798878    -0.05798878     0.05798878    -0.10467793    -0.10467793    -0.10467793
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1      -0.04209705     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2      -0.15851735     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.05798878     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       4      -0.05798878     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.05798878     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.10467793     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.10467793     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.10467793     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9      -0.19246455     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-
-               Column  33     Column  34     Column  35     Column  36     Column  37     Column  38     Column  39     Column  40
-
-               Column  41     Column  42     Column  43     Column  44     Column  45     Column  46     Column  47     Column  48
-
-               Column  49     Column  50     Column  51     Column  52     Column  53     Column  54     Column  55     Column  56
-
-               Column  57     Column  58     Column  59     Column  60     Column  61     Column  62     Column  63     Column  64
-
-               Column  65     Column  66     Column  67     Column  68     Column  69     Column  70     Column  71     Column  72
-
-               Column  73     Column  74     Column  75     Column  76     Column  77     Column  78     Column  79     Column  80
-
-               Column  81     Column  82     Column  83     Column  84
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
 
 
                                Output from DIISD1:
@@ -1180,113 +869,53 @@ Total energy                       :   -37.246513636296335
 
 * DIIS iteration no.:         5
 * B matrix dimension:         6
-* B matrix condition: 2.626D-12
+* B matrix condition: 6.454D-13
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     1.212D-27
-         2     -3.722D-07
-         3     -1.024D-05
-         4      4.248D-04
-         5     -5.615D-03
+     lambda     2.019D-28
+         2     -2.210D-08
+         3      3.616D-06
+         4      1.679D-04
+         5     -5.009D-03
          6      1.005D+00
-   * Two-electron Fock matrix  (CPU): 0.01200002s
+   * Two-electron Fock matrix  (CPU): 0.01600105s
+   * PCM Fock matrix contribution  (CPU): 0.02800202s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.04400203s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.12000799s
 
-########## END ITERATION NO.   6 ##########   Thu Apr 26 09:57:18 2012
+########## END ITERATION NO.   6 ##########   Tue May  1 15:29:24 2012
 
-It.    6    -37.24651363630      8.71D-09 -1.35D-05  1.11D-06   DIIS   5    0.04400203s   LL             Thu Apr 26
+It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.12000799s   LL             Tue May  1
 
-########## START ITERATION NO.   7 ##########   Thu Apr 26 09:57:19 2012
+########## START ITERATION NO.   7 ##########   Tue May  1 15:29:24 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.00800100s
- E_ee -48.9903 E_en 51.0054 E_ne 51.0058 E_nn -53.1131
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.02400100s
+ E_ee -30.1305 E_en 30.1828 E_ne 30.1828 E_nn -30.2355
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.566370747037915
+Total electronic energy            :   -62.567437447805808
 Nuclear potential energy           :    25.365934555796475
- E_ee -48.9903 E_en 51.0054 E_ne 51.0058 E_nn -53.1131
-Polarization energy                :    -0.046077445050337
-Total energy                       :   -37.246513636291780
+ E_ee -30.1305 E_en 30.1828 E_ne 30.1828 E_nn -30.2355
+Polarization energy                :    -0.000171652058288
+Total energy                       :   -37.201674544067622
+ cp DFCOEF DFCOEF.BEST
 * Calling pcm_fock_driver
- FOCK_PCM
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1      -0.21557495    -0.05354063     0.00000000     0.00000000     0.00000000    -0.04209706    -0.04209706    -0.04209706
-       2      -0.05354063    -0.20228011     0.00000000     0.00000000     0.00000000    -0.15851738    -0.15851738    -0.15851738
-       3       0.00000000     0.00000000    -0.20234396     0.00000000     0.00000000    -0.05798879     0.05798879    -0.05798879
-       4       0.00000000     0.00000000     0.00000000    -0.20234396     0.00000000    -0.05798879     0.05798879     0.05798879
-       5       0.00000000     0.00000000     0.00000000     0.00000000    -0.20234396    -0.05798879    -0.05798879     0.05798879
-       6      -0.04209706    -0.15851738    -0.05798879    -0.05798879    -0.05798879    -0.19246458    -0.10467795    -0.10467795
-       7      -0.04209706    -0.15851738     0.05798879     0.05798879    -0.05798879    -0.10467795    -0.19246458    -0.10467795
-       8      -0.04209706    -0.15851738    -0.05798879     0.05798879     0.05798879    -0.10467795    -0.10467795    -0.19246458
-       9      -0.04209706    -0.15851738     0.05798879    -0.05798879     0.05798879    -0.10467795    -0.10467795    -0.10467795
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1      -0.04209706     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2      -0.15851738     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.05798879     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       4      -0.05798879     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.05798879     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.10467795     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.10467795     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.10467795     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9      -0.19246458     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-
-               Column  33     Column  34     Column  35     Column  36     Column  37     Column  38     Column  39     Column  40
-
-               Column  41     Column  42     Column  43     Column  44     Column  45     Column  46     Column  47     Column  48
-
-               Column  49     Column  50     Column  51     Column  52     Column  53     Column  54     Column  55     Column  56
-
-               Column  57     Column  58     Column  59     Column  60     Column  61     Column  62     Column  63     Column  64
-
-               Column  65     Column  66     Column  67     Column  68     Column  69     Column  70     Column  71     Column  72
-
-               Column  73     Column  74     Column  75     Column  76     Column  77     Column  78     Column  79     Column  80
-
-               Column  81     Column  82     Column  83     Column  84
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:  84  84  84  84
-
-
-     Zero matrix.
-    ==== End of matrix output ====
-   * Two-electron Fock matrix  (CPU): 0.00800100s
+   * Two-electron Fock matrix  (CPU): 0.02400100s
+   * PCM Fock matrix contribution  (CPU): 0.02000201s
    * Quaternion diagonalization(CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04000300s
+>>> Total CPU-time : 0.12400800s
 
-########## END ITERATION NO.   7 ##########   Thu Apr 26 09:57:19 2012
+########## END ITERATION NO.   7 ##########   Tue May  1 15:29:24 2012
 
-It.    7    -37.24651363629     -4.55D-12 -2.12D-07  9.09D-10   DIIS   5    0.04000300s   LL             Thu Apr 26
+It.    7    -37.20167454407      1.85D-13  1.57D-07  7.23D-11   DIIS   5    0.12400800s   LL             Tue May  1
 
 
                                    SCF - CYCLE
@@ -1302,13 +931,13 @@ It.    7    -37.24651363629     -4.55D-12 -2.12D-07  9.09D-10   DIIS   5    0.04
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -3.937856918087      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Apr 26
-It.    2    -37.12379411777      3.32D+01  6.44D-01  6.81D-01               0.08000500s   LL             Thu Apr 26
-It.    3    -37.24102646324      1.17D-01 -1.54D-01  1.42D-01   DIIS   2    0.05200300s   LL             Thu Apr 26
-It.    4    -37.24650896438      5.48D-03 -3.92D-02  4.72D-03   DIIS   3    0.06000401s   LL             Thu Apr 26
-It.    5    -37.24651362759      4.66D-06 -7.96D-04  2.17D-04   DIIS   4    0.04400298s   LL             Thu Apr 26
-It.    6    -37.24651363630      8.71D-09 -1.35D-05  1.11D-06   DIIS   5    0.04400203s   LL             Thu Apr 26
-It.    7    -37.24651363629     -4.55D-12 -2.12D-07  9.09D-10   DIIS   5    0.04000300s   LL             Thu Apr 26
+It.    1    -3.937856918087      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue May  1
+It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.16401001s   LL             Tue May  1
+It.    3    -37.19897318023      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.12800801s   LL             Tue May  1
+It.    4    -37.20166963545      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.11600798s   LL             Tue May  1
+It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.12400702s   LL             Tue May  1
+It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.12000799s   LL             Tue May  1
+It.    7    -37.20167454407      1.85D-13  1.57D-07  7.23D-11   DIIS   5    0.12400800s   LL             Tue May  1
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    7 iterations.
 * Average elapsed time per iteration: 
@@ -1319,15 +948,15 @@ It.    7    -37.24651363629     -4.55D-12 -2.12D-07  9.09D-10   DIIS   5    0.04
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -62.566370747037915
+   Electronic energy                        :    -62.567437447805808
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     25.365934555796475
- E_ee -48.9903 E_en 51.0054 E_ne 51.0058 E_nn -53.1131
-   Solvation energy                         :     -0.046077445050337
+ E_ee -30.1305 E_en 30.1828 E_ne 30.1828 E_nn -30.2355
+   Solvation energy                         :     -0.000171652058288
 
    Sum of all contributions to the energy
-   Total energy                             :    -37.246513636291780
+   Total energy                             :    -37.201674544067622
 
 
                                    Eigenvalues
@@ -1336,9 +965,9 @@ It.    7    -37.24651363629     -4.55D-12 -2.12D-07  9.09D-10   DIIS   5    0.04
 
 * Boson symmetry A  
   * Closed shell, f = 1.0000
--11.35439581164625  ( 2)    -1.11469247245743  ( 2)    -0.67202526181001  ( 6)
+-11.54290658301002  ( 2)    -1.30209748783956  ( 2)    -0.85875539184218  ( 6)
   * Virtual eigenvalues, f = 0.0000
-  1.57443183531652  ( 6)     2.38834199054964  ( 2)
+  1.39437908354512  ( 6)     2.22396216724482  ( 2)
 
 * Occupation of subblocks
                        E1 :  A                                                                              
@@ -1349,14 +978,14 @@ tot.num. of pos.erg shells:    9
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :     1.57443184 au (symmetry A  )
-  - E(HOMO) :    -0.67202526 au (symmetry A  )
+    E(LUMO) :     1.39437908 au (symmetry A  )
+  - E(HOMO) :    -0.85875539 au (symmetry A  )
   ------------------------------------------
-    gap     :     2.24645710 au
+    gap     :     2.25313448 au
 
 
  
-     Date and time (Linux)  : Thu Apr 26 09:57:19 2012
+     Date and time (Linux)  : Tue May  1 15:29:24 2012
      Host name              : not found                               
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1381,5 +1010,5 @@ tot.num. of pos.erg shells:    9
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 7161, majflt: 0, nvcsw: 6, nivcsw: 50, maxrss: 16708
+>>>> Node 0, utime: 0, stime: 0, minflt: 8434, majflt: 0, nvcsw: 29, nivcsw: 119, maxrss: 19328
 >>>> Total WALL time used in DIRAC: 1s
