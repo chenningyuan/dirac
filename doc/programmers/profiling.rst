@@ -1,13 +1,13 @@
 
 Profiling how to
-================================================
+================
 
 This is a quick and dirty guide to profiling. You are **strongly** recommended to read
 the profiling software documentation to get deeper insight in the commands suggested 
 in the following.
 
-Profiling with Intel VTune Amplifier XE  
-------------------------------------------------
+Intel VTune Amplifier XE  
+------------------------
 
 This software is a nice tool for profiling and has a GUI working also on Linux.
 Moreover, you will not need to compile your program with profiling flags on.
@@ -30,8 +30,29 @@ For step 2::
 
 this will produce a hotspots report called ``report_name``.
 
+gprof
+-----
+
+``gprof`` is free software. It works a bit differently from VTune since we need to explictly 
+compile our code with the ``-pg`` flag. This step is needed in order to link correctly the 
+profiling library to the executable that will be produced. Once the program is correctly
+compiled you just need to execute it without specifying ``gprof`` as launcher as is the case
+for VTune::
+	
+	./foobar [--flag1 --flag2 ...] [input1 input2 ...]
+
+your program will automatically create a file, called ``gmon.out`` containing the profiling 
+information collected. This file will by default sit in the current working directory.
+After data collection you need to generate a human-readable profile summary. We run then the ``gprof`` command::
+	
+	gprof options [executable-file [profile-data-files ...]] [>outfile]
+
+this will produce a so-called flat profile from the raw data collected. A more detailed introduction to ``gprof``
+can be found here: `gprof <http://www.cs.utah.edu/dept/old/texinfo/as/gprof.html#SEC2>`_.
+
+
 Profiling DIRAC with Intel VTune Amplifier XE
-------------------------------------------------
+---------------------------------------------
 
 The situation is a bit different if you want to profile DIRAC, because we usually
 launch the executable through a script. 
@@ -63,6 +84,32 @@ Some more words of comment (shamelessly copied from ``amplxe-cl -help collect``)
 - ``fast-frames-threshold``, specifies the threshold to separate good and fast frames.
 
 
+Profiling DIRAC with gprof 
+--------------------------
 
+In contrast with VTune using ``gprof`` to profile DIRAC is rather straightforward.
+The only thing you will need to do is to link the profiling library. Thus if using the ``setup`` script
+you will type::
+
+	./setup --fc=... --cc=... --cxx=... --profiling --release
+
+we recommend to build in release mode if you want to have your collected profiling data to be 
+really significant.
+Once you managed to compile the sources correctly, you just run DIRAC as you're used to using ``pam``
+or ``wrapper.py``. The program itself will produce in your current working directory the ``gmon.out``
+file and you will translate it to human-readable form with ``gprof`` as explained before.
+
+One word of caution for MPI runs. To avoid all the processes trying to write to the same ``gmon.out``
+file you should export the ``GMON_OUT_PREFIX`` environment variable::
+
+	export GMON_OUT_PREFIX=foobarmon
+
+and pass it to ``mpirun``::
+	
+	mpirun -x GMON_OUT_PREFIX -np <np> ./foobar
+
+In this way you will have a series of files named ``GMON_OUT_PREFIX.pid``, post-collection analysis
+works exactly as for non-parallel runs. One warning from the ``mpirun`` manual:
+"*Users are advised to set variables in the environment, and then use -x to export (not define) them.*"
 	
 	
