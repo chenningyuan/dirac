@@ -75,15 +75,6 @@ Restarting calculations and multi-step jobs
    tutorials/steps.rst
 
 
-Correlation treatment
-=====================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/mcscf.rst
-
-
 DFT and TDDFT
 =============
 
