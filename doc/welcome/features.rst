@@ -1,18 +1,5 @@
-ChangeLog
-=========
-
-DIRAC11 version 11.0.1 (2011-11-18)
------------------------------------
-
--  Minor changes in documentation (INSTALL.rst).
--  Added NEWS.rst and KNOWN-PROBLEMS.rst.
--  Allow static linking (CMakeLists.txt).
--  Allow visualization of 3D vector fields using the vtk format.
--  Modify "make install" target and DEB package generator.
-
-
-Features
-========
+Features in DIRAC |version|
+===========================
 
 New features in DIRAC11 (released 11/11/11)
 -------------------------------------------
@@ -90,6 +77,7 @@ New features in DIRAC11 (released 11/11/11)
    -  Parallelization using MPI library calls (MPI should be
       pre-installed)
 
+
 New features in DIRAC10 (released 10/10/10)
 -------------------------------------------
 
@@ -123,6 +111,7 @@ New features in DIRAC10 (released 10/10/10)
    -  visualization of unperturbed and perturbed densities
    -  projection analysis of expectation values
    -  expectation values/transition moments KRCI/GOSCI
+
 
 Features in DIRAC08
 -------------------

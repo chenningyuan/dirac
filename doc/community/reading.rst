@@ -1,5 +1,7 @@
-Further reading
-===============
+
+
+Books about relativistic quantum chemistry
+==========================================
 
 Graduate level material for the field of *relativistic* quantum
 chemistry can be found in:
@@ -23,7 +25,3 @@ chemistry can be found in:
 -  R. E. Moss, *Advanced Molecular Quantum Mechanics: An Introduction to
    Relativistic Quantum Mechanics and the Quantum Theory of Radiation*,
    Chapman and Hall, London, 1973.
-
-
-
-

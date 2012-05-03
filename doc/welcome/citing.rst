@@ -1,15 +1,17 @@
-Citation
-========
 
 
-Any use of the DIRAC program suite that results in published material has to use one
-of the following citations (depending on the employed version of DIRAC):
+How to cite our work
+====================
+
+Any use of the DIRAC program suite that results in published material has to
+use one of the following citations (depending on the employed version of
+DIRAC):
 
 
 DIRAC12
 -------
 
-comming soon :)
+Coming soon to stores near you.
 
 
 DIRAC11
@@ -26,9 +28,7 @@ Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, J. van
 Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto (see
 `http://dirac.chem.vu.nl <http://dirac.chem.vu.nl>`_).
 
-bibtex entry:
-
-::
+bibtex entry::
 
     @Misc{DIRAC11,
      note = "{DIRAC}, a relativistic ab initio electronic structure program,
@@ -45,6 +45,7 @@ bibtex entry:
              (see http://dirac.chem.vu.nl)"
     }
 
+
 DIRAC10
 -------
 
@@ -57,9 +58,7 @@ K. Ruud, B. Schimmelpfennig, J. Sikkema, A. Thorvaldsen, J. Thyssen, S.
 Villaume, and S. Yamamoto (see
 `http://dirac.chem.vu.nl <http://dirac.chem.vu.nl>`_).
 
-bibtex entry:
-
-::
+bibtex entry::
 
     @Misc{DIRAC10,
      note = "{DIRAC}, a relativistic ab initio electronic structure program, Release {DIRAC10} (2010),
@@ -72,6 +71,7 @@ bibtex entry:
              (see http://dirac.chem.vu.nl)"
     }
 
+
 DIRAC08
 -------
 
@@ -83,9 +83,7 @@ Henriksson, M. Iliaš, Ch. R. Jacob, S. Knecht, P. Norman, J. Olsen, M.
 Pernpointner, K. Ruud, P. Sałek, and J. Sikkema (see
 `http://dirac.chem.sdu.dk <http://dirac.chem.sdu.dk>`_).
 
-bibtex entry:
-
-::
+bibtex entry::
 
     @Misc{DIRAC08,
      note = "{DIRAC}, a relativistic ab initio electronic structure program, Release {DIRAC08} (2008),
@@ -96,6 +94,7 @@ bibtex entry:
              J.~Olsen, M.~Pernpointner, K.~Ruud, P.~Sa{\l}ek, and J.~Sikkema
              (see http://dirac.chem.sdu.dk)"
     }
+
 
 DIRAC04
 -------
@@ -108,9 +107,7 @@ M. Pernpointner, J. K. Pedersen, K. Ruud, P. Sałek, J. N. P. van
 Stralen, J. Thyssen, O. Visser, and T. Winther (see
 `http://dirac.chem.sdu.dk <http://dirac.chem.sdu.dk>`_).
 
-bibtex entry:
-
-::
+bibtex entry::
 
     @Misc{DIRAC04,
      note = "{DIRAC}, a relativistic ab initio electronic structure program, Release {DIRAC04.0} (2004),

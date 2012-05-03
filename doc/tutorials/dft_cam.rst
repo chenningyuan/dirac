@@ -1,5 +1,5 @@
-Tutorial:CAM
-============
+CAM functional
+==============
 
 In DIRAC, you can calculate with the CAMB3LYP functional using
 

@@ -1,12 +1,14 @@
 
 
-What's new in DIRAC |version|
-=============================
+Welcome
+=======
 
 .. toctree::
    :maxdepth: 1
 
-   what_is_new/features.rst
+   welcome/features.rst
+   welcome/citing.rst
+   welcome/changelog.rst
 
 
 Installing DIRAC
@@ -49,10 +51,61 @@ First steps in DIRAC territory
    :maxdepth: 1
 
    tutorials/getting_started.rst
+   tutorials/faq.rst
 
 
-More advanced tutorials
-=======================
+Menu of 2- and 4-component Hamiltonians
+=======================================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/ham2c.rst
+   tutorials/amfi.rst
+
+
+Restarting calculations and multi-step jobs
+===========================================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/restart.rst
+   tutorials/x2c.rst
+   tutorials/steps.rst
+
+
+Correlation treatment
+=====================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/mcscf.rst
+
+
+DFT and TDDFT
+=============
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/tddft.rst
+   tutorials/bsse.rst
+   tutorials/dft_cam.rst
+
+
+Modeling the solvent
+====================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/pcm.rst
+
+
+How to tackle open-shell systems
+================================
 
 .. toctree::
    :maxdepth: 1
@@ -61,33 +114,16 @@ More advanced tutorials
    tutorials/niobium.rst
    tutorials/scf_conv.rst
 
-   tutorials/mcscf.rst
 
-   tutorials/ham2c.rst
-   tutorials/x2c.rst
-   tutorials/amfi.rst
+Visualization
+=============
 
-   tutorials/tddft.rst
-   tutorials/pcm.rst
-   tutorials/bsse.rst
-   tutorials/restart.rst
-   tutorials/screening.rst
-   tutorials/int8.rst
-   tutorials/linsym.rst
-   tutorials/faq.rst
-   tutorials/grasp.rst
-   tutorials/steps.rst
+.. toctree::
+   :maxdepth: 1
 
+   tutorials/visualize.rst
    tutorials/plotting_orbital_densities.rst
    tutorials/magn_curr_den.rst
-   tutorials/dft_cam.rst
-   tutorials/visualize.rst
-
-   tutorials/drawbacks.rst
-
-   tutorials/standalones.rst
-
-   tutorials/reading.rst
 
 
 Getting help
@@ -111,6 +147,15 @@ Reference manual
    reference_manual/molecule.rst
 
 
+Relativistic community
+======================
+
+.. toctree::
+   :maxdepth: 1
+
+   community/reading.rst
+
+
 For DIRAC programmers
 =====================
 
@@ -128,11 +173,5 @@ For DIRAC programmers
    programmers/static_linking.rst
    programmers/int8.rst
    programmers/grasp.rst
-
-Citing
-======
-
-.. toctree::
-   :maxdepth: 1
-
-   citing.rst
+   programmers/screening.rst
+   programmers/standalones.rst
