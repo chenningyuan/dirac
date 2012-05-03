@@ -108,6 +108,7 @@ For DIRAC programmers
    programmers/xml.rst
    programmers/external_projects.rst
    programmers/profiling.rst
+   programmers/debugging.rst
    programmers/static_linking.rst
    programmers/int8.rst
    programmers/grasp.rst
