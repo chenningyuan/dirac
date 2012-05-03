@@ -299,10 +299,10 @@ If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or cmake/C
 
 
 Installation Walkthroughs
-===========================
+=========================
 
 Hyperion (2012-02-13)
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 First set the correct environment. For this unload all possibly
 conflicting modules:
