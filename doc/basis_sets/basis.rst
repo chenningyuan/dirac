@@ -1,41 +1,30 @@
-Basis Sets
-==========
-
+Pick the right basis for your calculation
+=========================================
 
 The DIRAC distribution shares a large library of standard
 non-relativistic and scalar-relativistic basis sets with the
 `Dalton <http://www.kjemi.uio.no/software/dalton>`_ program.
+These basis sets can be found
+in the directory **basis\_dalton** of the DIRAC distribution.
 
 These basis sets are not all suitable for relativistic calculations,
-especially not for the heavier elements. These basis sets can be found
-in the directory **basis\_dalton** of the DIRAC distribution.
+especially not for the heavier elements.
 
 Basis sets developed for full relativistic calculations (including
 spin-orbit coupling) can be found in the directory **basis**.
 
-In general, for *4s*, *4p*, and heavier atoms **we recommend to use the
-basis sets being developed by Ken Dyall**.
+As Ken Dyall extends the archive actively, the latest of these basis
+sets may not be available in the **basis** directory of your DIRAC
+distribution.
 
 See the `Dyall basis set
 repository <http://dirac.chem.sdu.dk/basisarchives/dyall/index.html>`_
 for the latest updates by Ken Dyall and the appropriate basis set
 references.
 
-As Ken Dyall extends the archive actively, the latest of these basis
-sets may not be available in the **basis** directory of your DIRAC
-distribution.
-
-
-Relativistic Basis Sets for Use with Dirac
-==========================================
-
-There are now a fair number of basis sets developed for all-electron
-relativistic calculations, and in this directory one can find some of
-these basis sets.
-
-The authors of Dirac, however, recommend that the Dyall basis sets
+We recommend that the Dyall basis sets
 (see, for instance http://dirac.chem.sdu.dk/basisarchives/dyall/index.html)
-are used in Dirac calculations whenever they are available for the
+are used in DIRAC calculations whenever they are available for the
 elements of interest. In order to make that usage as convenient as possible,
 the following files, containing all sets currently available at the
 URL above (published or to be published), are made available:
@@ -66,8 +55,8 @@ basis, http://dirac.chem.sdu.dk/basisarchives/dyall/5p_tz_archive)
 to get a feel for what is included in each case.
 
 In the case of p-block elements, additional files containing the
-corresponding diffuse functions, in addition to the the valence and
-core-valence basis sets mentione above, are also provided.
+corresponding diffuse functions, in addition to the valence and
+core-valence basis sets mentioned above, are also provided.
 
 +------------------+--------------+-----------------+
 |     quality      |  valence     |  core-valence   |
@@ -80,4 +69,4 @@ core-valence basis sets mentione above, are also provided.
 +------------------+--------------+-----------------+
 
 In case of errors or omissions on any of the files in this directory,
-users are kindly asked to contact the authors of Dirac.
+users are kindly asked to contact the authors of DIRAC.

@@ -1,21 +1,36 @@
-Installation
-============
+
+
+What's new in DIRAC |version|
+=============================
 
 .. toctree::
    :maxdepth: 1
 
-   features.rst
+   what_is_new/features.rst
 
-   installation/installation.rst
+
+Installing DIRAC
+================
+
+.. toctree::
+   :maxdepth: 1
+
    installation/platforms.rst
+   installation/installation.rst
+   installation/windows.rst
+   installation/tests.rst
+   installation/walkthroughs.rst
+
+
+Installing and configuring libraries used by DIRAC
+==================================================
+
+.. toctree::
+   :maxdepth: 1
 
    installation/math_int64.rst
    installation/mpi_int64.rst
-
-   installation/windows.rst
-   installation/tests.rst
    installation/mkl.rst
-   installation/known_problems.rst
 
 
 Basis sets
@@ -24,7 +39,7 @@ Basis sets
 .. toctree::
    :maxdepth: 1
 
-   basis.rst
+   basis_sets/basis.rst
 
 
 First steps in DIRAC territory
@@ -82,6 +97,7 @@ Getting help
    :maxdepth: 1
 
    getting_help/memory.rst
+   getting_help/known_problems.rst
 
 
 Reference manual
