@@ -346,6 +346,15 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
         if (NSTA*NSTB*NIAC*NKAC.NE.0) then
 !         print *,'IIAC, IBSTRINI ==>',IIAC,IBSTRINI
           if (IAB.eq.1) then
+#ifdef BLABLUBB
+            CALL ADAST_GASSM(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
+     &                       WORK(KSTSTM(KACGRP,1)),
+     &                       WORK(KSTSTM(KACGRP,2)),
+     &                       IBORBSPS,IBORBSP,NORBTS,NKAC,NKACT,NIAC,
+     &                       NKSTR,KBSTRIN,NELB,
+     &                       I1,XI1S,SCLFAC,IAC,
+     &                       LROW_IN,IEC)
+#else
             CALL ADAST_GASSM_opt(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
      &                       WORK(KSTSTM(KACGRP,1)),
      &                       WORK(KSTSTM(KACGRP,2)),
@@ -353,7 +362,17 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
      &                       NKSTR,KBSTRIN,NELB,
      &                       I1,SCLFAC,IAC,
      &                       LROW_IN,IEC)
+#endif
           else if (IAB.eq.2) then
+#ifdef BLABLUBB
+            CALL ADAST_GASSM(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
+     &                       WORK(KSTSTM2(KACGRP,1)),
+     &                       WORK(KSTSTM2(KACGRP,2)),
+     &                       IBORBSPS,IBORBSP,NORBTS,NKAC,NKACT,NIAC,
+     &                       NKSTR,KBSTRIN,NELB,
+     &                       I1,XI1S,SCLFAC,IAC,
+     &                       LROW_IN,IEC)
+#else
             CALL ADAST_GASSM_opt(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
      &                       WORK(KSTSTM2(KACGRP,1)),
      &                       WORK(KSTSTM2(KACGRP,2)),
@@ -361,6 +380,7 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
      &                       NKSTR,KBSTRIN,NELB,
      &                       I1,SCLFAC,IAC,
      &                       LROW_IN,IEC)
+#endif
           end if
         end if
         KSTRBS = KSTRBS + NKSD
@@ -377,6 +397,9 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
           WRITE(6,*) ' Info for orbital ', IORB
           WRITE(6,*) ' Excited strings and sign '
           CALL IWRTMA(  I1((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
+#ifdef BLABLUBB
+          CALL WRTMAT(XI1S((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
+#endif
         END DO
       END IF
 #endif
