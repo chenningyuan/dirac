@@ -1173,5 +1173,36 @@ contains
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+   
+   subroutine read_input_pcm(word, kw_section)
+
+      use pcmmod_cfg
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+#ifdef PCM_MODULE
+      dirac_cfg_pcm = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.DOSS  ')) then
+!         Do not use precomputed small charges
+!         pcmmod_doss = .true.
+      end if
+
+      if (kw_matches(word, '.SEPARA')) then
+!         Split potentials and polarization charges in nuclear and electronic
+         pcmmod_separate = .true.
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+#else
+      call quit('Polarizable Continuum Model not included in this version') 
+#endif
+
+   end subroutine
 
 end module
