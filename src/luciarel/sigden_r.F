@@ -3578,6 +3578,7 @@ C           CPU-block - test if non-zero
       use symmetry_setup_krci
       use mospinor_info
       use interface_to_mpi
+!     will later contain useful string information... - placeholder for the time being
       use string_info
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
