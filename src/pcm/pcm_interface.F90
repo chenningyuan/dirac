@@ -130,7 +130,7 @@
 
       if (nr_points <= 0) call init
 ! Compute total polarization charges
-      call pcm_charges(dmat, work, lwork, 0)
+      call pcm_charges(dmat, work, lwork, pcmmod_print)
 ! Compute polarization energy
       call comp_pol_ene_pcm(pol_ene)
       pcm_energy = pol_ene

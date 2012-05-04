@@ -1198,6 +1198,10 @@ contains
          pcmmod_separate = .true.
       end if
 
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, pcmmod_print)
+      end if
+
       call check_whether_kw_found(word, kw_section)
 #else
       call quit('Polarizable Continuum Model not included in this version') 

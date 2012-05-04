@@ -26,9 +26,9 @@ module pcmmod_cfg
   save
 
 ! logical block
-  logical, public :: pcmmod_lvcorr   =  .false.
   logical, public :: pcmmod_dossss   =  .false.
   logical, public :: pcmmod_separate =  .false.
-  logical, public :: pcmmod_total    =  .false.
+! printlevel
+  integer, public :: pcmmod_print    = 0
 
 end module
