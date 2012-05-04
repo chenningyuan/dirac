@@ -67,7 +67,7 @@
      &        JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,                    &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
      &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
-     &        NMAX_SYM, nopen_mc
+     &        NMAX_SYM, nopen_mc, ISVRONO(2)
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
@@ -81,7 +81,7 @@
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
      &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&
-     &                NMAX_SYM, nopen_mc
+     &                NMAX_SYM, nopen_mc, ISVRONO
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&
@@ -109,9 +109,8 @@
       LOGICAL spinfr_krmc, cana_mcscf, no1pdens_save, save_reordered_nos
 !     cana_mcscf means: analysis of mcscf reference vector in a separate 
 !                       ci run (after mcscf convergence)
-!     stano/radovan: OPT_MKCNST is not used anywhere
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
-     &                OPT_NOCI, OPT_UCIBOS, OPT_MKCNST, DONR, FROZCI,   &
+     &                OPT_NOCI, OPT_UCIBOS,             DONR, FROZCI,   &
      &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT, NATOLCR,   &
      &                CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD,       &
      &                CINT_SPLIT, GENFOCK, CHCKPT_WRT, CPBLCK_FILE,     &

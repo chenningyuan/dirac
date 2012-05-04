@@ -173,6 +173,13 @@ C
 C
 C     Diagonalize density matrix
 C     --------------------------
+
+!     zero out coupling blocks between non-equivalent GA spaces
+      if(save_reordered_nos)then
+!       to not destroy some U2 MCSCF/GASCI stuff...
+        if(ngas_dc > 2) call gasno(work(kdv))
+      end if
+
       IF (.NOT. MOISNO) THEN
          IF (NZ .EQ. 1) THEN
             IJOB = 1
@@ -440,16 +447,17 @@ C
             do 
 !             write(lupri,*) 'myturn,nash(i) ', myturn,nash(i)
 !             exit condition
-              if(myturn > nash(i)) exit
+              if(myturn > nash(i)-isvrono(i)) exit
 
-              mymax  = idamax(nash(i),
-     &                 occno(iorb(i)+npsh(i)+nish(i)+1),1)
+              mymax  = idamax(nash(i)-isvrono(i),
+     &                 occno(iorb(i)+npsh(i)+nish(i)+isvrono(i)+1),1)
 !             write(lupri,*) '  max index and value',
 !    &        mymax, occno(iorb(i)+npsh(i)+nish(i)+mymax)
 
 !             new max index
-              reorder_list(nish(i)+myturn,i) = mymax + nish(i)
-              occno(iorb(i)+npsh(i)+nish(i)+mymax) = 0.0d0
+              reorder_list(nish(i)+isvrono(i)+myturn,i) 
+     &        = mymax + nish(i) + isvrono(i)
+              occno(iorb(i)+npsh(i)+nish(i)+isvrono(i)+mymax) = 0.0d0
 
               myturn = myturn + 1
             end do
@@ -517,6 +525,70 @@ C
       CALL QEXIT('RGETNO')
       RETURN
       END
+
+!*******************************************************************************
+      SUBROUTINE GASNO(DV)
+!
+!
+! Zero blocks in one-electron density matrix DV
+! connecting different GAS spaces (RAS1, RAS2, RAS3).
+!
+! stefan: heavily inspired by RASNO written by Hans Joergen Aa. Jensen in Dalton
+!
+! currently works only for GASCISD or similar, e.g. no cv-correlation with an 
+! additional GAS space to take care of for zeroing... FIXME. 
+!
+!
+      use memory_allocator
+      implicit none
+
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+
+      integer , parameter     :: dp = 8
+      real(dp), parameter     :: d0 = 0.0d0
+
+      real(dp), intent(inout) :: dv(nasht,nasht,nz)
+
+      integer,  allocatable   :: iactyp(:)
+      integer                 :: i, j, iactj, iacti, ifsym, iz
+
+      call alloc(iactyp,nasht)
+      iactyp = 0
+
+!     alter type only for GAS 1 !!!
+      do ifsym = 1, nfsym
+        do j = 1, ngsh(ifsym,1)
+          iactyp(iash(ifsym)+j) = -1
+        end do
+      end do
+
+      do ifsym = 1, nfsym
+        do 200 j = 1, nash(ifsym)
+          iactj = iactyp(j+iash(ifsym))
+          do 100 i = 1, nash(ifsym)
+            iacti = iactyp(i+iash(ifsym))
+            if(iacti /= iactj)then
+              write(lupri,*) ' zero DV element between orbital '//
+     &        ' # ',j + iash(ifsym), ' and orbital # ',
+     &              i + iash(ifsym), ' element: ',
+     &        dv(i + iash(ifsym), j + iash(ifsym), 1)
+              do iz = 1, nz
+                dv(i + iash(ifsym), j + iash(ifsym), iz) = d0
+                dv(j + iash(ifsym), i + iash(ifsym), iz) = d0
+              end do
+            end if
+  100     continue
+  200   continue
+      end do
+
+      call dealloc(iactyp)
+
+      end
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmccno */
       SUBROUTINE KRMCCNO(KEYCNO,RTRACI,CREF,CMO,IPRINT,EIG,

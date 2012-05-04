@@ -14,7 +14,7 @@
 
 !     MXPSTT == max. number of symmetry type-types
 !     decrease/increase when running smaller/larger systems
-      PARAMETER (MXPSTT = 10000 )
+      PARAMETER (MXPSTT = 12500 )
 
 !     MXINT_TP == max. number of SO-integral types 
       INTEGER MXINT_TP

@@ -75,7 +75,7 @@ C
      &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.xxxxxx','.SYMMET',
-     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.xxxxxx'/
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.SVRONX'/
       DATA SET/.FALSE./
 C
 C
@@ -133,6 +133,8 @@ C
       NKRMC_MK2DEL    = -1
       NKRMC_MINMK2    = -1
       NKRMC_MAXMK2    = -1
+      IKRMC_SVRONO(1) =  0
+      IKRMC_SVRONO(2) =  0
 C
 C     Initialize /CBRKRMC/
 C     ===================
@@ -465,7 +467,9 @@ C&&&  .SVRONO  -- save reordered NOs rather than the original NOs
                krmc_save_reordered_nos = .true.
                GO TO 100
  35            CONTINUE
-C&&&  .xxxxxx  -- xxx
+C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+               krmc_save_reordered_nos = .true.
+               READ(LUCMD,*) (IKRMC_SVRONO(I),I=1,NFSYM)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

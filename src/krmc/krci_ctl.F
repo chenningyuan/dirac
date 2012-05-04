@@ -95,7 +95,7 @@ C
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
-     &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.xxxxxx'/
+     &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: tmp_symmetry_str
@@ -184,6 +184,7 @@ C
          NKRCISSH(I) = 0
          NKRCIPSH(I) = 0
          NKRCIFRO(I) = 0
+         IKRCI_SVRONO(i)  = 0
          DO J = 1, MXMCGAS
             NKRCIGSH(I,J) = 0
             NKRCIGSP(I,J) = 0
@@ -759,7 +760,9 @@ C&&&  SVRONO:  save reordered NOs rather than unsorted ones (the latter being th
                save_reordered_nos_krci = .true.
                GO TO 100
    45          CONTINUE
-C&&&  xxxxxx:  
+C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+               save_reordered_nos_krci = .true.
+               READ(LUCMD,*) (IKRCI_SVRONO(I),I=1,NFSYM)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

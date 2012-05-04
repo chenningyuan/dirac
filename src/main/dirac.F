@@ -699,6 +699,8 @@ C
       MOPT_MAXBCK    = MAXBCK
       IOPT_ISTATE    = 1
       JKRRUNTYPE     = 0
+      ISVRONO(1)     = 0
+      ISVRONO(2)     = 0
 C
 C     Set common block DCROPT
 C
@@ -811,6 +813,8 @@ C
       JKRRUNTYPE     = 1
 !     information from dcbdhf.h
       nopen_mc       = nopen
+      ISVRONO(1)     = IKRMC_SVRONO(1)
+      ISVRONO(2)     = IKRMC_SVRONO(2)
 C
 C     Set common block DCROPT
 C
@@ -931,6 +935,8 @@ C
       JKRRUNTYPE     = 2
 !     information from dcbdhf.h
       nopen_mc       = nopen
+      ISVRONO(1)     = IKRCI_SVRONO(1)
+      ISVRONO(2)     = IKRCI_SVRONO(2)
 C
 C     Set common block DCROPT
 C
