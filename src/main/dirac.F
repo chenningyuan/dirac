@@ -30,12 +30,20 @@ C
 C
 #include "infpar.h"
 #include "dgroup.h"
+#ifdef VAR_OMP
+      INTEGER omp_get_num_procs
+#endif
 C
       DIMENSION WORK(LWORK)
 C
 C     Set up basic information for parallel execution, to be stored in the
 C     common block infpar
 C
+#ifdef VAR_OMP
+         write(lupri,'(//A,I5)')
+     &   ' * openMP activated, number of threads:',
+     &   omp_get_num_procs()
+#endif
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
