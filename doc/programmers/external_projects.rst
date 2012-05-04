@@ -3,6 +3,8 @@
 Including external projects using Git submodules
 ================================================
 
+See also this nice `tutorial <http://chrisjean.com/2009/04/20/git-submodules-adding-using-removing-and-updating/>`_.
+
 We can use CMake's support for external projects together with the Git
 submodule functionality to fetch, compile, and link source code from external
 repositories.
