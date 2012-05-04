@@ -511,8 +511,10 @@ class run:
                      os.killpg(pgid_dirac,signum_kill) 
                  else: 
                      kill_win(pgid_dirac)
-                 #miro: important to have short time delay !
-                 time.sleep(2)
+                 if not executed_from_subdir:
+                     # time delay for killing
+                     # don't delay if this is interactive run from subdir
+                     time.sleep(2)
              sys.exit()
 			 
          if sys.platform != 'win32':
@@ -541,7 +543,7 @@ class run:
              if options.launcher:
                  launcher = options.launcher
              else:
-                 launcher = os.path.join(root_directory, '../build/dalton')
+                 launcher = os.path.join(root_directory, '../../build/dalton')
              # verify that launcher really exists
              if not os.path.isfile(launcher):
                  error_message = 'error: launcher not found in %s' % launcher

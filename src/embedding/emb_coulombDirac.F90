@@ -1,57 +1,59 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
-!      All Rights Reserved.
+!      copyright (c) 2011 by the authors of dirac.
+!      all rights reserved.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
+!      this source code is part of the dirac program package.
+!      it is provided under a written license and may be used,
 !      copied, transmitted, or stored only in accordance to the
 !      conditions of that written license.
 !
-!      In particular, no part of the source code or compiled modules may
+!      in particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
+!      this means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of dirac,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own license.
 !
-!      For information on how to get a license, as well as the
+!      for information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      dirac program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-! FILE    : emb1int.F
+! file    : emb1int.f
 !
 !
-!  /* Deck oneprm */
-      MODULE VC_GRID
+!  /* deck oneprm */
+      module vc_grid
 
       implicit none
 
-      PRIVATE
+      private
 
       public emb_vc
       public get_esp
+      public esp_nuc
+      public esp_el
       
-!     Module for calculating the coulomb potential on a grid.
-!     Contains:
-!     EMB_VC    The interface for users. 
-!     LOOP_PRIM Loops over primitive orbitals.
-!     VC_1PRIM  The routine that calls for one primitive shell VC and VC_CART
+!     module for calculating the coulomb potential on a grid.
+!     contains:
+!     emb_vc    the interface for users. 
+!     loop_prim loops over primitive orbitals.
+!     vc_1prim  the routine that calls for one primitive shell vc and vc_cart
 !               to calculate the shell's contribution to the coulomb potential.
-!     VC        Calculates the coulomb integrals in Hermite basis
-!     VC_CART   Transforms the coulomb integrals to a cartesian basis.
+!     vc        calculates the coulomb integrals in hermite basis
+!     vc_cart   transforms the coulomb integrals to a cartesian basis.
 !     
 !
-!     Calls the Dirac F77 routines: GETODC in abacus/her1odc.F
-!     Based on the routines: HERNAI, CINT0 in abacus/her1car.F
-!     The loop over the primitives is based on abacus/her1drv.F and abacus/her1sym.F
+!     calls the dirac f77 routines: getodc in abacus/her1odc.f
+!     based on the routines: hernai, cint0 in abacus/her1car.f
+!     the loop over the primitives is based on abacus/her1drv.f and abacus/her1sym.f
 !
-!     The include files that need to be set:
+!     the include files that need to be set:
 !     onecom.h
 !     sdepre.h
 !
 
-      CONTAINS
+      contains
 
       subroutine get_esp(esp,              &
                          irep,             &
@@ -91,48 +93,123 @@
 
       vc = 0.0d0
       if (nuc_part) then
-         call esp_nuc(r_p, vc, 0)
+         call esp_nuc(1, r_p, vc, 0)
       end if
       if (el_part) then
-         call esp_el(dmat, r_p, vc, work, lwork, 0)
+         call esp_el(1, dmat, r_p, vc, work, lwork, 0)
       end if
 
       esp = vc(1)
 
-   end subroutine
+      end subroutine
 
-      SUBROUTINE EMB_VC(DMAT,points,vc,IPRINT,WORK,LWORK)
-!     Interface for the user. Calles LOOP_PRIM
-!     calls VC_PRIM.
-!     Needed to make contact with F77.
-!     JHS DMAT is in MO basis. Transformations needed.
+      subroutine emb_vc(nr_points, dmat, points, vc, iprint, work, lwork)
+!     interface for the user. calles loop_prim
+!     calls vc_prim.
+!     needed to make contact with f77.
+!     jhs dmat is in mo basis. transformations needed.
 
 #include "priunit.h"
 #include "maxaqn.h"
 #include "ccom.h"
 
-!     PASSED variables
-      real(kind=8) :: points(:,:),vc(:)
-      INTEGER :: IPRINT
-      REAL(KIND=8) :: DMAT(*)
-      REAL(KIND=8) :: WORK(*)
-      INTEGER :: LWORK
+!     passed variables
+      integer, intent(in) :: nr_points
+      real(8) :: points(3,*),vc(*)
+      integer :: iprint
+      real(8) :: dmat(*)
+      real(8) :: work(*)
+      integer :: lwork
       
-      IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
+      if (iprint .ge. 5) call titler('output from emb_vc','*',103)
+
+!     electrostatic potential: electronic contribution
+      call esp_el(nr_points, dmat, points, vc, work, & 
+                  lwork, iprint)
+
+!     electrostatic potential: nuclear contribution
+      call esp_nuc(nr_points, points,vc,iprint)
+
+      end subroutine
+
+      subroutine esp_nuc(nr_points, points, vc, iprint)
+!      
+! Routine for the calculation of the nuclear part of the molecular 
+! electrostatic potential on a certain grid of points {r_i}:
+!     V_nuc(r_i) = sum_K Z_K/|R_K - r_i| 
+! 
+!  array vc(r_i) contains the nuclear MEP at point r_i.
+! 
+! We also take care of symmetry, since it is straightforward 
+! for the nuclei.      
+! This routine is essential for the Polarizable Continuum Model.
+!
+! Originally written by JHS. Cleaned by RDR 0312.
+!
+
+#include "mxcent.h"
+#include "nuclei.h"
+
+!     Passed variables
+      integer, intent(in) :: nr_points
+      real(8) :: points(3, *), vc(nr_points)
+      integer :: iprint
+
+!     Local variables
+      real(8) :: coora(3, nucdep), charges(nucdep), dist
+      integer :: ipoint, i, j, k
+
+!     Get coordinates and charges of all centers, not only the ones
+!     that are symmetry independent      
+      call getacord(coora)
+      i = 0
+      do j=1,nucind
+         do k = 1,nucdeg(j)
+            i = i + 1
+            charges(i) = charge(j)
+         enddo
+      enddo
 
       vc = 0.0d0
+      do i = 1, nucdep 
+        do ipoint = 1, nr_points
+            dist = (coora(1, i) - points(1, ipoint))**2 +               &
+                   (coora(2, i) - points(2, ipoint))**2 +               &
+                   (coora(3, i) - points(3, ipoint))**2
+            vc(ipoint) = vc(ipoint) + charges(i) / (sqrt(dist))       
+        end do
+      end do
 
-!     Electrostatic potential: electronic contribution
-      CALL ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
+      if (iprint > 5) then
+          do ipoint = 1, nr_points
+            print *, "Nuclear ESP @point", ipoint, vc(ipoint)
+          end do
+      end if
+                                                                 
+      end subroutine
 
-!     Electrostatic potential: nuclear contribution
-      CALL ESP_NUC(points,vc,IPRINT)
-
-      END SUBROUTINE
-
-      SUBROUTINE ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
-!     Driver routine that loops over the primitive orbitals and
-!     calls VC_PRIM.
+      subroutine esp_el(nr_points, dmat, points, pot_or_chg,    &
+                        work, lwork, iprint)
+!      
+! Driver routine for the calculation of the electronic part of the molecular 
+! electrostatic potential on a certain grid of points {r_i}:
+!     V_el(r_i) = tr(DV_i)
+! tr is the trace operator, D is the density matrix, V^i is the matrix of the 
+! "nuclear attraction" integrals calculated at point r_i of the grid:
+!     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
+! 
+!  array ADER(mu, nu, r_i) contains these integrals.
+!  array vc(r_i) contains the electronic MEP at point r_i.
+!
+! This routine is essential for the Polarizable Continuum Model.
+!
+! Originally written by JHS. Debugged by RB and RDR 0312.
+! 
+! RDR 050312 CANNOT yet handle 2-component Hamiltonians.
+! RDR 050312 CANNOT yet handle symmetry.
+! RDR 010512 Disentangle this routine from PCM, from now on
+! PCM will have its own electronic MEP routines.
+!                        
 
 #include "priunit.h"
 #include "pi.h"
@@ -140,36 +217,14 @@
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
-#ifdef PRG_DIRAC
+#ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
 #include "ccom.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-
-!     PASSED variables
-      real(kind=8) :: points(:,:),vc(:)
-      INTEGER :: IPRINT
-      REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),NZ)
-      REAL(KIND=8) :: WORK(*)
-      INTEGER :: LWORK
-
-!     Local Variables
-      INTEGER :: ISHELA,ISHELB,ICA,ICB,NA,IREP,NB
-      INTEGER :: MULTA,MULTB,NHKTAB,KAB,IDENB_TMP
-      INTEGER :: ISYM
-      INTEGER :: ipoint, i,j,k,l
-      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
-
-      REAL(KIND=8),ALLOCATABLE :: ADER(:,:,:)
-!     Contains the coulomb integrals for one set of primitive orbitals.
-
-!     JHS TMP STUFF FOR DEBUGGING
-      REAL(KIND=8) :: gexp=0.0,vc_tmp
-      REAL(KIND=8) :: dummy
-      INTEGER(KIND=8) :: idummy
-
+#include "dcbham.h"
 #include "cbisol.h"
 #include "shells.h"
 #include "onecom.h"
@@ -179,584 +234,345 @@
 #include "lmns.h"
 #include "nuclei.h"
 
-!     Initialization
-      ISOFRA(:)=0
-      TOLS=THRS**2
-      TOLOG=2*LOG(THRS)
+! Passed variables
+      integer, intent(in) :: nr_points
+      real(8)             :: dmat(ntbas(0), ntbas(0), nz)
+      real(8)             :: pot_or_chg(nr_points)
+      real(8)             :: points(3, nr_points), work(*)
+      integer             :: iprint, lwork
 
-!     Loop over shells.
-      IDENA=0
-      DO ISHELA = 1,KMAX
-        NHKTA = NHKT(ISHELA)
-        KHKTA = KHKT(ISHELA)
-        KCKTA = KCKT(ISHELA)
-        ICA   = LCLASS(ISHELA)
-        SPHRA = SPHR(ISHELA)
-        CALL LMNVAL(NHKTA,KCKTA,LVALUA,MVALUA,NVALUA)
-        NCENTA = NCENT(ISHELA)
-        ICENTA = NUCNUM(NCENTA,1)
-        MULA   = ISTBAO(ISHELA)
-        MULTA  = MULT(MULA)
-        NUCA   = NUCO(ISHELA)
-        NUMCFA = NUMCF(ISHELA)
-        JSTA   = JSTRT(ISHELA)
-        CORAX  = CENT(ISHELA,1,1)
-        CORAY  = CENT(ISHELA,2,1)
-        CORAZ  = CENT(ISHELA,3,1)
+! Local variables
+      real(8), allocatable :: ader(:, :, :)
+      real(8) :: tolog, tols, factor = 1.0d0
+      integer :: ishela, ishelb, ica, icb, ia, ib
+      integer :: multa, multb, nhktab, kab
+      integer :: ipoint, idxmax
+
+      if (nbsym > 1) then
+         call quit('Electrostatic potential calculation cannot          &
+      handle symmetry!')
+      end if
+      if (BSS.or.x2c) then
+         call quit('Electrostatic potential calculation not working     &
+      with X2C Hamiltonian!')
+      end if
+
+      tols = thrs**2
+      tolog = 2 * log(thrs)
+! mc is the number of components, as defined in include/dcbham.h
+! Decide whether we loop on LL block only or not
+      if (mc == 1) then 
+          idxmax = nlrgsh
+      else 
+          idxmax = kmax
+      end if
+! Loop over bras <mu|      
+      idena = 0
+      do ishela = 1, idxmax
+        ica   = lclass(ishela)
+        nhkta = nhkt(ishela)
+        khkta = khkt(ishela)
+        kckta = kckt(ishela)
+        call lmnval(nhkta, kckta, lvalua, mvalua, nvalua)
+        ncenta = ncent(ishela)
+        icenta = nucnum(ncenta, 1)
+        mula   = istbao(ishela)
+        multa  = mult(mula)
+        nuca   = nuco(ishela)
+        numcfa = numcf(ishela)
+        jsta   = jstrt(ishela)
+        corax  = cent(ishela, 1, 1)
+        coray  = cent(ishela, 2, 1)
+        coraz  = cent(ishela, 3, 1)
+! Loop over kets |nu>
+        idenb = 0        
+        do ishelb = 1, ishela
+          icb   = lclass(ishelb)
+          ldiag = ishela .eq. ishelb
+          nhktb = nhkt(ishelb)
+          khktb = khkt(ishelb)
+          kcktb = kckt(ishelb)
+          call lmnval(nhktb, kcktb, lvalub, mvalub, nvalub)
+          ncentb = ncent(ishelb)
+          nhktab = nhkta + nhktb
+          mulb   = istbao(ishelb)
+          multb  = mult(mulb)
+          nucb   = nuco(ishelb)
+          numcfb = numcf(ishelb)
+          jstb   = jstrt(ishelb)
+          corbx  = cent(ishelb, 1, 1)
+          corby  = cent(ishelb, 2, 1)
+          corbz  = cent(ishelb, 3, 1)
+          khktab = khkta * khktb
+          kcktab = kckta * kcktb
+          mab    = ior(mula, mulb)
+          kab    = iand(mula ,mulb)
+          hkab   = fmult(kab)
+! Calculate -<mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i,
+! then contract with the density matrix. The minus sign accounts for the
+! charge of the electron.
+          if (ica == icb) then 
+              allocate(ader(kckta, kcktb, nr_points))
+              ader = 0.0d0
+              call vc_shell(nr_points, ader, tolog, tols,               &
+                    points, iprint, work, lwork)
+              if (ishela /= ishelb) then 
+                  ader = 2.0d0*ader
+              end if
+! We multiply by +2.0d0. The D matrix refers to the alpha part only.
+              do ipoint = 1, nr_points
+               pot_or_chg(ipoint) = pot_or_chg(ipoint) + 2.0d0                    * &
+                    sum(dmat(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
+                            ader(1:kckta, 1:kcktb, ipoint))
+              end do 
+              deallocate(ader)
+          end if  
+        idenb = idenb + khktb * multb
+       end do
+       idena = idena + khkta * multa
+      end do
+
+      if (iprint > 5) then
+          do ipoint = 1, nr_points
+            print *, "Electronic ESP @point", ipoint, pot_or_chg(ipoint)
+          end do
+      end if
+
+      end subroutine
+
+      subroutine vc_shell(nr_points, ader, tolog, tols,                 &
+     &                    points, iprint, work, lwork)
+!      
+! Calculates the contribution for one primitive orbital set.
 !
-!       Compute symmetry integral pointers for contributions
-!       from this block.  Note that at present this assumes all
-!       components from a shell are included.
+! RDR 090312 Clean-up.      
 !
-        IDENB = 0
-        ISOFRB(:) = 0
-        INDFA(:,:) = -10000000
-        DO NA = 1, KHKTA
-          DO IREP = 0, MAXREP
-          IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA)))==0) THEN
-            ISOFRA(IREP+1)    = ISOFRA(IREP+1) + 1
-            INDFA (IREP+1,NA) = ISOFRA(IREP+1)
-          END IF
-          END DO
-        END DO
-        DO ISHELB = 1,ISHELA
-          LDIAG = ISHELA .EQ. ISHELB
-          NHKTB = NHKT(ISHELB)
-          KHKTB = KHKT(ISHELB)
-          KCKTB = KCKT(ISHELB)
-          ICB   = LCLASS(ISHELB)
-          SPHRB = SPHR(ISHELB)
-          CALL LMNVAL(NHKTB,KCKTB,LVALUB,MVALUB,NVALUB)
-          NCENTB = NCENT(ISHELB)
-          NHKTAB = NHKTA + NHKTB
-          MULB   = ISTBAO(ISHELB)
-          MULTB  = MULT(MULB)
-          NUCB   = NUCO(ISHELB)
-          NUMCFB = NUMCF(ISHELB)
-          JSTB   = JSTRT(ISHELB)
-!     JHS Later we need to multiply with the sign for the symmetry operations
-          CORBX  = CENT(ISHELB,1,1)
-          CORBY  = CENT(ISHELB,2,1)
-          CORBZ  = CENT(ISHELB,3,1)
-          KHKTAB = KHKTA*KHKTB
-          KCKTAB = KCKTA*KCKTB
-          MAB    = IOR(MULA,MULB)
-          KAB    = IAND(MULA,MULB)
-          HKAB   = FMULT(KAB)
-
-          JMAX = NHKTAB - 2
-!
-          SPHRAB = SPHRA .OR. SPHRB
-!     JHS Note that if SPHRAB is true we should correct the densitymatrix for this.
-!
-!        Compute symmetry integral pointers for contributions
-!        from this block.  Note that at present this assumes all
-!        components from a shell are included
-!
-          INDFB(:,:) = -10000000
-          DO NB = 1, KHKTB
-            DO IREP = 0, MAXREP
-            IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB)))==0) THEN
-              ISOFRB(IREP+1)    = ISOFRB(IREP+1) + 1
-              INDFB (IREP+1,NB) = ISOFRB(IREP+1)
-            END IF
-            END DO
-          END DO
-!        jth - CLASS (which integral class: LL,LS,SL,SS)
-!                                           0  1  1  2
-!     JHS FOLLOWING STATEMENT NEEDS DEBUGGING FOR OTHER COMPILERS
-         IF (ICA==1 .AND. ICB==1) THEN; INTCLASS=2
-         ELSE IF (ICA==1.OR.ICB==1 ) THEN; INTCLASS=1
-         ELSE; INTCLASS=0
-         END IF
-
-         IF (IPRINT>5)                                                  &
-     &        WRITE(LUPRI,*) 'JHS ICA,ICB,INTCLASS', ICA,ICB,INTCLASS
-
-         IF (IPRINT .GE. 05) WRITE (LUPRI, *) ISHELA, ISHELB
-         IF (IPRINT .GE. 10) THEN
-             WRITE (LUPRI,'(A,2I10)') ' NRCO',NRCO(ISHELA),NRCO(ISHELB)
-             WRITE (LUPRI,'(A,2I10)') ' NHKT   ', NHKTA, NHKTB
-             WRITE (LUPRI,'(A,2I10)') ' KHKT   ', KHKTA, KHKTB
-             WRITE (LUPRI,'(A,2I10)') ' KCKT   ', KCKTA, KCKTB
-             WRITE (LUPRI,'(A,2I10)') ' NCENT  ', NCENTA, NCENTB
-             WRITE (LUPRI,'(A,2I10)') ' ISTBAO ', MULA, MULB
-             WRITE (LUPRI,'(A,2I10)') ' MULT   ', MULTA, MULTB
-             WRITE (LUPRI,'(A,2I10)') ' NUC    ', NUCA, NUCB
-             WRITE (LUPRI,'(A,2I10)') ' NUMCF  ', NUMCFA, NUMCFB
-             WRITE (LUPRI,'(A,2I10)') ' JST    ', JSTA, JSTB
-             WRITE (LUPRI,'(A,2I10)') ' NBCH',NBCH(ISHELA),NBCH(ISHELB)
-             WRITE (LUPRI,'(A,2I10)') ' NCENT  ', NCENTA,NCENTB
-             WRITE (LUPRI,'(A,2F12.6)') ' CORAX    ', CORAX, CORBX
-             WRITE (LUPRI,'(A,2F12.6)') ' CORAY    ', CORAY, CORBY
-             WRITE (LUPRI,'(A,2F12.6)') ' CORAZ    ', CORAZ, CORBZ
-             WRITE (LUPRI,'(A,2I10)') ' IDEN   ',IDENA,IDENB           
-         END IF
-
-         ALLOCATE(ADER(KCKTA,KCKTB,SIZE(points,2)))
-!        Contains ader for one gridpoint in SO basis.
-
-
-         IF (IPRINT>5) WRITE(LUPRI,*) 'JHS SYMMETRY,SYMOP',MAXOPR
-!     JHS Now loop over symmetry dependend stuff.
-
-!     JHS Maybe IDENB needs to be corrected by -KHKTB
-         IDENB_TMP=IDENB-KHKTB
-!     JHS IDENB_TMP variable necessary?
-         DO ISYM=0,MAXOPR
-            IF (IAND(ISYM,MAB)/=0) THEN
-              IF (IAND(ISYM,MULB)==0) IDENB_TMP=IDENB+KHKTB
-              CYCLE
-            END IF
-            IDENB_TMP=IDENB_TMP+KHKTB
-            ICENTB=NUCNUM(NCENTB,ISYM+1)
-            ONECEN=(ICENTA==ICENTB)
-            SIGNBX=PT(IAND(ISYMAX(1,1),ISYM))
-            SIGNBY=PT(IAND(ISYMAX(2,1),ISYM))
-            SIGNBZ=PT(IAND(ISYMAX(3,1),ISYM))
-            
-!     JHS Correct the B coordinate for the symmetry operations.
-!         Direct passing is not possible as CORA,CORB are used inside her1odc.F
-            CORBX=CORBX*SIGNBX
-            CORBY=CORBY*SIGNBY
-            CORBZ=CORBZ*SIGNBZ
- 
-            IF (IPRINT>5) WRITE(LUPRI,*) 'JHS CORB',CORBX,CORBY,CORBZ
-            
-            CALL VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,LWORK)
-            
-!     JHS Transform to SO basis?
-
-            IF (IPRINT>5) WRITE(LUPRI,*) 'JHS ADER(VC_SHELL)',ADER
-
-!     JHS Start contraction with the density matrix.
-
-!     JHS Density matrix is in AO basis. 
-!     Contraction of ADER to AO basis done in CART_VC (in ODC coefficients)
-!     Maybe move inside PRIM_VC
-!     Similar to dirac/diraos.F:GETGAO and dirac/dirden.F:DENMAT
-!
-!     Contract ADER with density matrix, indices in ADER are swapped.
-            IF (IPRINT>10) THEN
-                 WRITE(LUPRI,*) 'DMAT Contraction.',ISHELA,ISHELB
-
-                 WRITE(LUPRI,*) ISHELA,ISHELB,KCKTA,KCKTB,IDENA,        &
-     &           IDENB_TMP,NZ,SPHRA,SPHRB            
-            END IF
-
-       DO ipoint=1,SIZE(vc)               
-!     Contract with the right symmetry part of the density matrix.
-!     This is given by INDFA and INDFB
-
-
-!     No contraction over the non-real quaternionic part. Use index matrices of quaternions
-               vc(ipoint)=vc(ipoint)+SUM(                               &
-     &              DMAT(idena+1:idena+KCKTA,idenb+1:idenb+KCKTB,1)*    &
-     &              ADER(1:KCKTA,1:KCKTB,ipoint))
-
-       END DO 
-
-
-!     JHS Transform back to the original B coordinate.
-            CORBX=CORBX/SIGNBX
-            CORBY=CORBY/SIGNBY
-            CORBZ=CORBZ/SIGNBZ
-         END DO
-
-         DEALLOCATE(ADER)
-
-
-         IDENB = IDENB + KHKTB*MULTB
-       END DO
-       IDENA = IDENA + KHKTA*MULTA
-      END DO
-
-      END SUBROUTINE
-      
-      SUBROUTINE ESP_NUC(points,vc,IPRINT)
-!     Routine for calcuating electrostatic potential from nuclei in points
-!     provided by array points
-      USE VECTOR_FUN, ONLY: NORM
-#include "priunit.h"
-#include "mxcent.h"
-!     PASSED variables
-      real(kind=8) :: points(:,:),vc(:)
-      INTEGER :: IPRINT
-!     Local Variables
-      INTEGER :: ipoint, i
-      REAL(KIND=8) :: vc_tmp
-
-#include "nuclei.h"
-
-      DO ipoint=1,SIZE(vc)
-        vc_tmp=0.0D0
-        DO i=1,MXCENT          
-          vc_tmp=vc_tmp-CHARGE(i)/(NORM(CORD(:,i)-                      &
-     &          points(1:3,ipoint)))
-        END DO
-        vc(ipoint)=vc(ipoint)-vc_tmp
-      END DO
-
-      END SUBROUTINE
-
-
-      SUBROUTINE VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,           &
-     &     LWORK)
-!     Calculates the contribution for one primitive orbital set.
-      USE VECTOR_FUN, ONLY: NORM
-
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
-#ifdef PRG_DIRAC
+#ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
-!     PASSED variables
-      INTEGER :: IPRINT
-      real(kind=8) :: points(:,:)
-      REAL(KIND=8) :: ADER(KCKTA,KCKTB,SIZE(points,2))
-      REAL(KIND=8) :: WORK(*)
-      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
-      INTEGER :: LWORK
-
-
-!     Local variables
-      REAL(KIND=8),PARAMETER :: D0=0.0D0, D1=1.00D00, D3=3.00D00,       &
-     &                          THIRD=D1/D3, GNUTHR=1.D-4,D1P5=1.5D0
-      REAL(KIND=8)::AHGTF(0:JMAX,0:JMAX,0:JMAX)
-      REAL(KIND=8),ALLOCATABLE::ODC(:,:,:,:,:,:)
-
-      LOGICAL :: KINODC
-      REAL(KIND=8) :: DIFAB(3),DIFCP(3),CORP(3),ORIGIN(3),              &
-     &     CORA(3),CORB(3)
-      REAL(KIND=8) :: DISTAB,CONTA,EXPA,CONTB,EXPB,EXPP,EXPPI,          &
-     &                EXPABQ,SAAB, ASAAB,SAAB13, EXPAPI,EXPBPI
-      INTEGER :: JMAXA,JMAXB,JMAXD,JMAXT,JMAXM,ipoint,                  &
-     &           IPRIMA,IPRIMB,JPRIMA,JPRIMB
-      INTEGER :: IDUMMY
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
 #include "primit.h"
-     
-      IF (IPRINT .GE. 5) CALL TITLER('Output from VC_SHELL','*',103)
 
-!     ALLOCATION
-      JMAXD = 2
-      JMAXA = NHKTA - 1
-      JMAXB = NHKTB - 1
-      JMAXT = JMAXA + JMAXB + JMAXD
-      JMAXM = 0
-      ALLOCATE(ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3))
+! Passed variables
+      integer, intent(in) :: nr_points, iprint, lwork
+      real(8) :: points(3, nr_points), ader(kckta, kcktb, nr_points)
+      real(8) :: work(*)
+      real(8) :: tolog, tols, factor=1.0
 
-!     Initialization
-      ADER(:,:,:)=0.0D0
-      CORA(1)=CORAX
-      CORA(2)=CORAY
-      CORA(3)=CORAZ
-      CORB(1)=CORBX
-      CORB(2)=CORBY
-      CORB(3)=CORBZ
-
-      DIFAB(:) = CORA(:) - CORB(:)
-      DISTAB=NORM(DIFAB)
-
-!
-!     ****************************************
-!     ***** Loop over primitive orbitals *****
-!     ****************************************
-!
-      IF (IPRINT>10)                                                    &
-     &     WRITE(LUPRI,*) 'JHS Start looping over prim orbitals'
-      DO IPRIMA = 1,NUCA
-         JPRIMA = JSTA + IPRIMA
-         CONTA = PRICCF(JPRIMA,NUMCFA)
-         EXPA = PRIEXP(JPRIMA)
-         DO IPRIMB = 1,NUCB
-            JPRIMB = JSTB + IPRIMB
-            CONTB = PRICCF(JPRIMB,NUMCFB)
-            EXPB = PRIEXP(JPRIMB)
-            EXPP = EXPA + EXPB
-            EXPPI = D1/EXPP
-!
-!           Calculate and test square root factor
-!     JHS SAAB are the contraction coefficients from the primitive orbitals to the basisfunctions.
-            EXPABQ = EXPA*EXPB*DISTAB*EXPPI
-            SAAB = CONTA*CONTB*EXP(-EXPABQ)
-            ASAAB = ABS(SAAB)
-            IF (IPRINT>20) WRITE(LUPRI,*) 'JHS INTSCREENING',           &
-     &           'EXPABQ=',EXPABQ,'TOLOG=',TOLOG,                       &
-     &           'ASAAB=',ASAAB,'TOLS=',TOLS
-            IF (EXPABQ<TOLOG) CYCLE
-            IF (ASAAB<TOLS) CYCLE
-            SAAB13 = SIGN(ASAAB**THIRD,SAAB)
-!
-!           Calculate coordinates of product Gaussian P
-!
-            EXPAPI = EXPA*EXPPI
-            EXPBPI = EXPB*EXPPI
-            CORP(:)=EXPAPI*CORA(:) + EXPBPI*CORB(:)
-!
-!           *********************************************
-!           ***** Overlap Distribution Coefficients *****
-!           *********************************************
-!
-!           Expansion coefficients for undifferentiated orbitals
-!
-#ifdef PRG_DIRAC
-!           jth: removed KINODC = .NOT.PROPTY
-            KINODC = .FALSE.
-#else
-            KINODC = .TRUE.
-#endif 
-            IDUMMY = 0
-            CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,.FALSE.,      &
-     &           KINODC,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,WORK,LWORK,&
-     &           CORP(1),CORP(2),CORP(3),.TRUE.,.FALSE.,ORIGIN,IDUMMY)
-!
-!           **********************************************
-!           ***** Calculation of Hermitian integrals *****
-!           **********************************************
-!
-!           Nuclear attraction integrals
-!
-            DO ipoint=1,SIZE(points,2)
-              DIFCP(:) = points(1:3,ipoint) - CORP(:)
-              CALL VNUC(AHGTF,JMAX,EXPP,DIFCP,FACTOR,IPRINT)
-!
-!           **********************************************
-!           ***** Calculation of Cartesian integrals *****
-!           **********************************************
-!             
-              CALL CART_VC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,           &
-     &             ADER(1:KCKTA,1:KCKTB,ipoint:ipoint),AHGTF,IPRINT)
-            END DO
-         END DO
-      END DO
-
-      DEALLOCATE(ODC)
-
-!
-!     Print
-!
+! Local variables
+      real(8), allocatable :: ahgtf(:, :, :), odc(:, :, :, :, :, :)
+      real(8) :: difab(3), difcp(3), corp(3), origin(3),                &
+     &           cora(3), corb(3)
+      real(8) :: distab, conta, expa, contb, expb, expp, exppi,         &
+     &           expabq, saab, asaab, saab13, expapi, expbpi
+      integer :: jmaxa, jmaxb, jmaxd, jmaxt, jmaxm,               &
+     &           ipoint, iprima, iprimb, jprima, jprimb
+      integer :: idummy
+      real(8) :: pval
       
-      RETURN
-      END SUBROUTINE
-!  /* Deck hernai */
 
+! Allocation
+      jmaxd = 2
+      jmaxa = nhkta - 1
+      jmaxb = nhktb - 1
+      jmaxt = jmaxa + jmaxb + jmaxd
+      jmaxm = 0
+      jmax = jmaxa + jmaxb
+      allocate(odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3))
+      allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
 
+      cora(1) = corax
+      cora(2) = coray
+      cora(3) = coraz
+      corb(1) = corbx
+      corb(2) = corby
+      corb(3) = corbz
+      difab(:) = cora(:) - corb(:)
+      distab = difab(1)*difab(1) + difab(2)*difab(2) + difab(3)*difab(3)
 
+! Loop over primitive orbitals
+! Shell a       
+      do iprima = 1, nuca
+        jprima = jsta + iprima
+        conta = priccf(jprima, numcfa)
+        expa = priexp(jprima)
+! Shell b        
+        do iprimb = 1, nucb
+          jprimb = jstb + iprimb
+          contb = priccf(jprimb, numcfb)
+          expb = priexp(jprimb)
+          expp = expa + expb
+          exppi = 1.0d0 / expp
+          expabq = expa * expb * exppi 
+          saab = conta * contb * exp(-expabq * distab) 
+          asaab = abs(saab)
+!          if (expabq * distab < tolog) then 
+!                cycle
+!          end if
+!          if (asaab < tols) then 
+!                cycle
+!          end if
+          saab13 = sign(asaab**(1.0d0/3.0d0), saab)
+          expapi  = expa * exppi
+          expbpi  = expb * exppi
+          corp(:) = expapi * cora(:) + expbpi * corb(:)
+! Calculate the Overlap Distribution Coefficients
+          idummy = 0
+          call getodc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, .false.,  &
+     &           .false., onecen, expa, expb, iprint, saab13, exppi,    &
+     &           work, lwork, corp(1), corp(2), corp(3),                &
+     &           .true.,.false.,origin,idummy)
+          do ipoint = 1, nr_points
+            difcp(:) = points(1:3,ipoint) - corp(:)
+            call vnuc(ahgtf, jmax, expp, difcp, iprint)
+            call cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
+     &            ader(:, :, ipoint), ahgtf, iprint)
+          end do ! Close loop over grid points
+        end do ! Close loop over second shell
+      end do ! Close loop over first shell
+      deallocate(odc)
+      deallocate(ahgtf)
 
-      SUBROUTINE VNUC(AHGTF,JMAX,PVAL,CP,FACINT,IPRINT)
-      USE VECTOR_FUN, ONLY: NORM
+      return
+
+      end subroutine
+
+      subroutine vnuc(ahgtf, jmax, pval, cp, iprint)
 !
-!     This subroutine calculates the R integrals as defined by
-!     McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
-!     The recursion formulas (4.6) - (4.8) are used.
+! This subroutine calculates the R integrals as defined by
+! McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
+! The recursion formulas (4.6) - (4.8) are used.
 !
-!     Only slightly slower than the implementation HERNAI in abacus/her1car.F of TUH 
-!
-!     JHS 26-03-08
+! JHS 260308 Only slightly slower than the implementation hernai 
+!            in abacus/her1car.f of TUH
+! RDR 090312 Clean-up.      
 !     
 #include "priunit.h"
 #include "pi.h"
 #include "maxaqn.h"
-
-!     Arguments passed
-      REAL(KIND=8) :: AHGTF(0:,0:,0:),CP(3)
-      REAL(KIND=8) :: PVAL,FACINT
-      INTEGER :: JMAX,IPRINT
-
-!     Local Variables
-      REAL(KIND=8) :: RJ(0:JMAX,0:JMAX,0:JMAX,0:JMAX)
-      REAL(KIND=8) :: FACTOR
-      INTEGER :: JVAL,IT,IU,IV
-
-!     Temporary variables
 #include "gamcom.h"
 
-!     Initialisation:
-      RJ = 0.0d0
+! Passed variables
+      integer :: jmax, iprint
+      real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax), cp(3)
+      real(8) :: pval
 
-      IF (IPRINT>10) THEN
-         WRITE (LUPRI,'(/A/)') ' <<<<< Output from VC >>>>> '
-         WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
-         WRITE (LUPRI,'(A,F12.6)') ' PVAL   ', PVAL
-         WRITE (LUPRI,'(A,F12.6)') ' FACINT ', FACINT
-         WRITE (LUPRI,'(A,3F12.6)') ' CP ', CP
-      END IF
-!
-!     *************************************
-!     ***** Incomplete Gamma Function *****
-!     *************************************
-!
-      WVAL = PVAL*NORM(CP)**2
-      JMAX0 = JMAX
-      CALL GAMFUN
-      IF (IPRINT==20) THEN
-         CALL HEADER ('FJW after GAMFUN',-1)
-         WRITE (LUPRI,'(6F12.6)') (FJW(JVAL), JVAL = 0, JMAX)
-      END IF
+! Local variables
+      real(8), allocatable :: r(:, :, :, :)
+      real(8) :: factor, prod
+      integer :: jval, t, u, v
+
+! Initialization
+      allocate(r(0:jmax, 0:jmax, 0:jmax, 0:jmax))
+
+! Incomplete gamma function
+      wval = pval * (cp(1) * cp(1) + cp(2) * cp(2) + cp(3) * cp(3))
+      jmax0 = jmax
+      call gamfun
       
-!     RJ(0,0,0)
-      FACTOR = FACINT*2.0*PI/PVAL
-      DO JVAL = 0, JMAX
-         FJW(JVAL)      =   FACTOR*FJW(JVAL)
-         FACTOR         = - 2*PVAL*FACTOR
-         RJ(0,0,0,JVAL) =   FJW(JVAL)
-      END DO
+! Calculate r(0, 0, 0, jval)
+      factor = (2.0d0 * pi) / pval
+      do jval = 0, jmax
+         fjw(jval)         =   factor * fjw(jval)
+         factor            = - 2.0d0 * pval * factor
+         r(0, 0, 0, jval) =   fjw(jval)
+      end do
 
-!     Contraction scheme of Davidson. 
-!     Slicing is not possible as we need to perform the calculations in order.
-      DO JVAL = JMAX, 1, -1
-         RJ(0,0,1,JVAL-1)= -CP(3)*RJ(0,0,0,JVAL)
-         DO IV=1,JMAX-JVAL
-!           Having one loop and using array slices is a tiny bit slower.
-            RJ(0,0,IV+1,JVAL-1)= -CP(3)*RJ(0,0,IV,JVAL)+                &
-     &                             IV*RJ(0,0,IV-1,JVAL)
-!     RJ(0,1,v) etc. is moved outside the loop for efficiency
-            RJ(0,1,IV,JVAL-1)= -CP(2)*RJ(0,0,IV,JVAL)
-            DO IU=1,JMAX-JVAL-IV
-               RJ(0,IU+1,IV,JVAL-1)= -CP(2)*RJ(0,IU,IV,JVAL)+           &
-     &                                 IU*RJ(0,IU-1,IV,JVAL)
-               RJ(1,IU,IV,JVAL-1)= -CP(1)*RJ(0,IU,IV,JVAL)
-               DO IT=1,JMAX-JVAL-IU-IV
-!     USE TRANSFER(IT,real_8) etc. if this is platform dependend.
-                  RJ(IT+1,IU,IV,JVAL-1)= -CP(1)*RJ(IT,IU,IV,JVAL)+      &
-     &                                     IT*RJ(IT-1,IU,IV,JVAL)
-               END DO
-            END DO
-         END DO
-      END DO
+! Calculate r(t, u, v, jval) 
+      do jval = jmax, 1, -1
+         do v = 0, jmax - jval
+            prod = -cp(3) * r(0, 0, v, jval)
+            if (v > 0) then 
+                prod = prod + v * r(0, 0, v - 1, jval)
+            end if    
+            r(0, 0, v + 1, jval - 1) = prod
+            do u = 0, jmax - jval - v
+               prod = -cp(2) * r(0, u, v, jval)
+               if (u > 0) then 
+                   prod = prod + u * r(0, u - 1, v, jval)
+               end if    
+               r(0, u + 1, v, jval - 1) = prod
+               do t = 0, jmax - jval - u - v
+                  prod = -cp(1) * r(t, u, v, jval)
+                  if (t > 0) then 
+                      prod = prod + t * r(t - 1, u, v, jval)
+                  end if
+                  r(t + 1, u, v, jval - 1) = prod
+               end do
+            end do
+         end do
+      end do
+! The nuclear attraction integrals are given as r(t, u, v, 0)
+      do v = 0, jmax
+         do u = 0, jmax
+            do t = 0, jmax
+               ahgtf(t, u, v) = - r(t, u, v, 0)
+            end do
+         end do
+      end do
+      deallocate(r)
 
-      AHGTF(:,:,:)=RJ(0:,0:,0:,0)
+      end subroutine
 
-      IF (IPRINT .GT. 20) THEN
-         CALL HEADER ('Hermite integrals in HERNAI',-1)
-         WRITE (LUPRI,'(6F12.6)') AHGTF(:,:,:)
-      END IF
+      subroutine cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
+     &                 ader, ahgtf, iprint)
+!      
+! Originally written by JHS.
+!      
+! RDR 060312 Clean-up.
+!
 
-      END SUBROUTINE
-
-!  /* Deck cint0 */
-      SUBROUTINE CART_VC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,             &
-     &                 ADER,AHGTF,IPRINT)
-!     TUH
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-!     Variables passed to CART_VC
-      REAL(KIND=8) :: AHGTF(0:,0:,0:), ADER(KCKTA,KCKTB),               &
-     &                ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-      INTEGER :: JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT
-
-!     Local variables
-      REAL(KIND=8) :: AINT,EV,EE,EEE
-      INTEGER :: ICOMPA,LVALA,MVALA,NVALA,ICOMPB,LVALB,MVALB,NVALB,     &
-     &           IV,IU,IT
-
 #include "onecom.h"
 #include "lmns.h"
 
-      DO ICOMPA = 1,KCKTA
-         LVALA = LVALUA(ICOMPA)
-         MVALA = MVALUA(ICOMPA)
-         NVALA = NVALUA(ICOMPA)
-      DO ICOMPB = 1,KCKTB
-         LVALB = LVALUB(ICOMPB)
-         MVALB = MVALUB(ICOMPB)
-         NVALB = NVALUB(ICOMPB)
-!
-!     **************************************************
-!     ***** CALCULATE NUCLEAR ATTRACTION INTEGRALS *****
-!     **************************************************
-!      
-      AINT = 0.0d0
-      DO IV = 0, NVALA + NVALB
-         EV = ODC(NVALA,NVALB,IV,0,0,3)
-         DO IU = 0, MVALA + MVALB
-            EE = ODC(MVALA,MVALB,IU,0,0,2)*EV
-            DO IT = 0, LVALA + LVALB
-               EEE = ODC(LVALA,LVALB,IT,0,0,1)*EE
-               AINT = AINT + EEE*AHGTF(IT,IU,IV)
-            END DO
-         END DO
-      END DO
-      ADER(ICOMPA,ICOMPB) = ADER(ICOMPA,ICOMPB) + AINT
+! Passed variables
+      real(8) :: ahgtf(0:jmax, 0:jmax, 0:jmax)
+      real(8) :: ader(kckta, kcktb, 1),                                 &
+     &           odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)
+      integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, iprint
 
-      END DO
-      END DO
+! Local variables
+      real(8) :: naint, ev, ee, eee
+      integer :: icompa, lvala, mvala, nvala,                           &
+     &           icompb, lvalb, mvalb, nvalb,                           &
+     &           t, u, v
 
 
-      RETURN
-      END SUBROUTINE
+      do icompa = 1,kckta
+        lvala = lvalua(icompa)
+        mvala = mvalua(icompa)
+        nvala = nvalua(icompa)
+        do icompb = 1,kcktb
+          lvalb = lvalub(icompb)
+          mvalb = mvalub(icompb)
+          nvalb = nvalub(icompb)
+          naint = 0.0d0
+          do v = 0, nvala + nvalb
+            ev = odc(nvala,nvalb,v,0,0,3)
+            do u = 0, mvala + mvalb
+              ee = odc(mvala,mvalb,u,0,0,2)*ev
+              do t = 0, lvala + lvalb
+                eee = odc(lvala,lvalb,t,0,0,1)*ee
+                naint = naint + eee*ahgtf(t,u,v)
+              end do
+            end do
+          end do
+          ader(icompa, icompb, 1) = ader(icompa, icompb, 1) + naint
+        end do
+      end do
 
+      return
+      end subroutine
 
-
-      SUBROUTINE SYM_CONTRACT(AO,SO,KB,MULA,MULB,NHKTA,NHKTB,           &
-     &     KHKTA,KHKTB,HKAB,THRESH,IMAT0,IPRINT)
-!
-!     Take block of distinct AO integral (derivatives) and
-!     generate symmetrized contributions to SO integral
-!     (derivatives) for the totally symmetric case
-!                                          880407  PRT
-!     Modified tuh 880819
-!
-#include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-      REAL(KIND=8) :: AO(:,:),SO(:,:)
-#include "csym1.h"
-#include "symmet.h"
-#include "symind.h"
-
-      real(8) :: HKAB,THRESH
-      integer :: kb, mula, mulb, nhkta,nhktb, khkta,khktb
-      integer :: IMAT0,IPRINT
-      integer :: irep, indoff, na, nb, inda, indb, ind, indm
-      real(8) :: fac, rint
-
-      IF (IPRINT .GT. 10) THEN
-         CALL HEADER('Subroutine SYM1S',-1)
-         WRITE (LUPRI, '(A, I5)') ' KB ', KB
-         WRITE (LUPRI, '(A,2I5)') ' NHKTA/B ', NHKTA, NHKTB
-      END IF
-!
-!     Loop over all irreps in molecule
-!
-      DO IREP = 0, MAXREP
-         INDOFF = NPARSU(IREP + 1)
-!
-!        Loop over AOs which are of symmetry IREP in stabilizer MULA
-!
-         DO NA = 1, KHKTA
-         IF (iand(MULA,ieor(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
-            DO NB = 1,KHKTB
-            IF (iand(MULB,ieor(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
-!
-!              Weight and parity factor
-!
-               FAC = HKAB*PT(iand(KB,ieor(IREP,ISYMAO(NHKTB,NB))))
-!
-!              Locate SO integrals to which AO's contribute
-!
-               INDA = INDFA(IREP + 1,NA)
-               INDB = INDFB(IREP + 1,NB)
-               INDM = MAX(INDA,INDB)
-               RINT = FAC*AO(NA,NB)
-               IND  = INDOFF + (INDM*(INDM - 3))/2 + INDA + INDB
-               SO(INDA,INDB) = SO(INDA,INDB) + RINT
-            END IF
-            END DO
-         END IF
-         END DO
-      END DO
-      RETURN
-      END SUBROUTINE
-
-
-      END MODULE
+      end module

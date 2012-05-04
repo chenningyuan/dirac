@@ -38,13 +38,13 @@
 *
       CALL GET_3BLKS_CC_REL(LVEC1,LC2,WORK,KFREE,LFREE)
       WRITE(6,*) ' Length of vectors for CI  : ', LVEC1, LC2
-      print*,'LC2,MXSOOB_AS,MXINKA_CC',LC2,MXSOOB_AS,MXINKA_CC
+      print*,'LC2,MXSOOB_AS',LC2,MXSOOB_AS
 *
-* 2 : Length of vectors used in CC
-      MXCJ = MXINKA_CC ** 4
+* 2 : Length of vectors used in CC 
+      MXCJ = LCCB ** 4 ! changed to LCCB. Lasse 2012
       LBLOCK = MXSOOB_AS
       print*,' BEFORE COMPARISON.'
-      print*,' MXINKA_CC,LBLOCK,LVEC1,LC2 ',MXINKA_CC,LBLOCK,LVEC1,LC2
+      print*,' LBLOCK,LVEC1,LC2 ',LBLOCK,LVEC1,LC2
 *
       LBLOCK = MAX(LBLOCK,LCSBLK)
       LSCR12 = MAX(LBLOCK,2*MXCJ)  

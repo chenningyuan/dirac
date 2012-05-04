@@ -5,7 +5,7 @@
       COMMON/KRCC_CRUNI/
      &            MAXIT,
 ! See if next line is needed
-     &            IDIAG,MXINKA,MXINKA_CC,
+     &            IDIAG,
 ! use MXCCV
      &            MXCCV,NTOTORB,
      &            LCSBLK,

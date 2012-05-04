@@ -6,13 +6,14 @@
       PARAMETER (NMCFLAG = 20)
 
       LOGICAL MCFLAG(NMCFLAG), KRMC_SKIPEE, KRMC_SKIPEP
-      LOGICAL KRMC_NOCI, KRMC_UCIBOS, KRMC_MKCNST, KRMC_CHCKJZ
-      LOGICAL KRMC_NO1pdens, krmc_save_reordered_nos
+      LOGICAL KRMC_NOCI, KRMC_UCIBOS, KRMC_CHCKJZ
+      LOGICAL KRMC_NO1pdens, krmc_save_reordered_nos, KRMC_full_ci
       CHARACTER*8 KRMC_CIPROGRAM
       CHARACTER*72 KRMC_FRZSTR(2), KRMC_DELSTR(2)
       COMMON /DCLKRMC/ MCFLAG, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_NOCI,     &
-     &                 KRMC_UCIBOS, KRMC_MKCNST, KRMC_CHCKJZ,           &
-     &                 KRMC_NO1pdens, krmc_save_reordered_nos
+     &                 KRMC_UCIBOS, KRMC_CHCKJZ,                        &
+     &                 KRMC_NO1pdens, krmc_save_reordered_nos,          &
+     &                 KRMC_full_ci
 
       INTEGER NKRMCISH(2), NKRMCASH(2), NKRMCSSH(2),                    &
      &        NKRMCGSH(2, MXMCGAS), NKRMCGSP(2, MXMCGAS), NKRMCESH(2),  &

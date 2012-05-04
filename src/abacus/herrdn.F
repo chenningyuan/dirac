@@ -2675,7 +2675,6 @@ C
 #if defined (NEW_DIRAC_DENSFIT_PROCESSING)
          IF (NLARGE_FIT.GT.0) THEN
 #else
-         write (*,*) 'debug: nbasiaux =',nbasisaux
          IF (NBASISAUX.GT.0) THEN
 #endif
             CALL HEADER('Fit Functions, Global/Large Component',-1)

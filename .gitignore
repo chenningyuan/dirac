@@ -18,3 +18,8 @@ diracrc
 .diracrc
 */Makefile
 */*/Makefile
+external/include/
+external/lib/
+external/pcmsolver-build/
+external/src/
+external/tmp/

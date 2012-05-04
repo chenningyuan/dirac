@@ -946,7 +946,7 @@ contains
 
       call reset_available_kw_list()
 
-!     ignore HF orbital energies 
+!     ignore HF orbital energies
       if (kw_matches(word, '.IGNOE  ')) then
          relcc_use_orbital_energies = .false.
       end if
@@ -1171,6 +1171,43 @@ contains
       end if
 
       call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+   
+   subroutine read_input_pcm(word, kw_section)
+
+#ifdef PCM_MODULE
+      use pcmmod_cfg
+#endif
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+#ifdef PCM_MODULE
+      dirac_cfg_pcm = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.DOSS  ')) then
+!         Do not use precomputed small charges
+!         pcmmod_doss = .true.
+      end if
+
+      if (kw_matches(word, '.SEPARA')) then
+!         Split potentials and polarization charges in nuclear and electronic
+         pcmmod_separate = .true.
+      end if
+
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, pcmmod_print)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+#else
+      call quit('Polarizable Continuum Model not included in this version') 
+#endif
 
    end subroutine
 

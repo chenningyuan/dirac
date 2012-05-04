@@ -20,12 +20,12 @@ module func_PipekMezey
 !   isel   - integer array which contains numbers of MOs that will be localized  !
 !   ... ( not finished yet )                                                     !
 !================================================================================!
-use memory_allocator
 implicit none
 
 public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod, ROTCMO_MOD, errall
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod
+private :: ROTCMO_MOD, NUMLST_MOD, errall, get_overlap, selcfs_mod, qtrans90_mod, qdiag90_mod
 
 type :: PipekMezey_flags
   integer :: iprloc
@@ -35,7 +35,7 @@ end type PipekMezey_flags
 type :: PipekMezey_variales
   integer :: lupri, lucoef
   integer :: nfbas(2,0:2), n2bbasx, n2bbasxq
-  integer :: nish(2), norb(2), npsh(2), nesh(2), iorb(2), icmoq(2), norbt, ncmotq
+  integer :: nish(2), norb(2), npsh(2), nesh(2), iorb(2), icmoq(2), norbt, ncmotq, i_dcborb_set
   real*8  :: ssmtrc
   logical :: h2comp, levyle
   integer :: nfsym, nz, ipqtoq(4,0:7)
@@ -79,7 +79,7 @@ contains
 
   ! Internal variables
 
-  ! this parameter must match dimension of reffil and vecref in type PipekMezey_variables
+  ! this parameter must match dimension of reffil and vecref in type PipekMezey_variales
   integer, parameter :: maxref = 15
 
   logical :: tobe, twocomp, x2c
@@ -89,7 +89,7 @@ contains
   character*8  :: chdum
   character*72 :: vecref(2,maxref), selmos
 
-  integer, allocatable, dimension(:) :: itmp, indao, indaos, indnao, ibeig
+  integer, allocatable, dimension(:) :: itmp, indnao, ibeig
   real*8,  allocatable, dimension(:) :: cmo, eig
 
   !------------------------------------------------------------------------------!
@@ -125,6 +125,7 @@ contains
   read(iunit,*) chdum
   read(iunit,*) var%nfbas(:,:)
   ! dcborb.h
+  read(iunit,*) chdum,var%i_dcborb_set
   read(iunit,*) chdum,var%norbt
   read(iunit,*) chdum,var%ncmotq
   read(iunit,*) chdum,var%nish(:)
@@ -166,8 +167,11 @@ contains
     read(iunit,*) vecref(1,i)
   enddo
 
-  ! close file
-  close(iunit,status='keep')
+  ! indaoc routine
+  allocate( indnao(2*var%nucdep+2), stat=ier ); call errall(ier,'init_func','indnao')
+  indnao = 0
+  read(iunit,*) chdum
+  read(iunit,*) indnao(:)
 
   ! two component calculation
   var%h2comp = twocomp .or. x2c
@@ -181,21 +185,24 @@ contains
   ! starting time
   var%timstr = second()
 
+  ! close file
+  close(iunit,status='keep')
+
   !----------------!
   ! set dimensions !
   !----------------!
   ifrp = 1
   ! set limits on possible localized orbitals
-  ! when selmos == 'allocc' subroutine numlst will select 0..nmax MOs
+  ! when selmos == 'allocc' subroutine numlst_mod will select 0..nmax MOs
   nmax = var%nesh(ifrp)
   if(selmos == 'allocc') nmax = var%nish(ifrp)
   ! set maximum possible number of localized orbitals
   nloc = var%norb(ifrp)
   ! alocate temporary array; the data will be later moved to isel
-  call alloc(itmp,nloc,id='itmp in init_func')
+  allocate( itmp(nloc), stat=ier ); call errall(ier,'init_func','itmp')
   itmp = 0; idum = 1
   ! read string selmos
-  call numlst(selmos,itmp,nloc,0,nmax,ifrp,idum)
+  call numlst_mod(selmos,itmp,nloc,0,nmax,ifrp,idum)
   nloc = idum                          ! set number of orbitals for localization
   ndim = 4 * ( nloc*nloc - nloc ) / 2  ! set dimension of your space
 
@@ -221,20 +228,17 @@ contains
   ! allocate global arrays
   allocate( scoef (var%nfbas(ifrp,0),nloc,4), stat=ier ); call errall(ier,'init_func','scoef ')
   allocate( storec(var%nfbas(ifrp,0),nloc,4), stat=ier ); call errall(ier,'init_func','storec')
-  call alloc(pmat  ,nloc,nloc,4,var%nucdep,id='pmat   in init_func')
-  call alloc(smat  ,var%n2bbasx,           id='smat   in init_func')
-  call alloc(nfnuc ,2*var%nucdep,          id='nfnuc  in init_func')
-  call alloc(isel  ,nloc,                  id='isel   in init_func')
+  allocate( pmat  (nloc,nloc,4,var%nucdep),   stat=ier ); call errall(ier,'init_func','pmat  ')
+  allocate( smat  (var%n2bbasx),              stat=ier ); call errall(ier,'init_func','smat  ')
+  allocate( nfnuc (2*var%nucdep),             stat=ier ); call errall(ier,'init_func','nfnuc ')
+  allocate( isel  (nloc),                     stat=ier ); call errall(ier,'init_func','isel  ')
   scoef = d0; storec = d0; pmat = d0; smat = d0; nfnuc = 0
 
   ! allocate local arrays
-  call alloc(cmo   ,var%n2bbasxq,     id='cmo    in init_func')
-  call alloc(eig   ,var%norbt,        id='eig    in init_func')
-  call alloc(ibeig ,var%norbt,        id='ibeig  in init_func')
-  call alloc(indao ,var%nfbas(ifrp,0),id='indao  in init_func')
-  call alloc(indaos,var%nfbas(ifrp,0),id='indaos in init_func')
-  call alloc(indnao,2*var%nucdep+2,   id='indnao in init_func')
-  cmo = d0; indao = 0; indaos = 0; indnao = 0
+  allocate( cmo   (var%n2bbasxq),      stat=ier ); call errall(ier,'init_func','cmo   ')
+  allocate( eig   (var%norbt),         stat=ier ); call errall(ier,'init_func','eig   ')
+  allocate( ibeig (var%norbt),         stat=ier ); call errall(ier,'init_func','ibeig ')
+  cmo = d0
 
   !------------------------------------------------------------------------------!
   !                      Precalculate some global arrays                         !
@@ -242,13 +246,12 @@ contains
   !----------------------------------------------------!
   ! -- nfnuc -- Get the number of functions per center !
   !----------------------------------------------------!
-  call indaoc(indao,indaos,indnao)
   call orblo4(indnao,var%nucdep)
 
   !-------------------------------!
   ! -- smat -- Get overlap matrix !
   !-------------------------------!
-  call gtovlx(smat,var%ssmtrc)
+  call get_overlap(smat)
   if(PM%iprloc.ge.6)then
     write(var%lupri,'(/a)') '* orbloc: Overlap matrix' 
     call prqmat(smat,var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0),var%nfbas(ifrp,0), &
@@ -275,7 +278,7 @@ contains
 
   ! select orbitals
   isel(1:nloc) = itmp(1:nloc)
-  call selcfs(cmo,ifrp,scoef,nloc,isel,0,nloc,var%nfbas(ifrp,0),var%norb(ifrp))
+  call selcfs_mod(cmo,ifrp,scoef,nloc,isel,0,nloc,var%nfbas(ifrp,0),var%norb(ifrp))
   if(PM%iprloc.ge.5)then
     write(var%lupri,'(/a)') '* orblo1: Selected molecular coefficients'
     call prqmat(scoef,var%nfbas(ifrp,0),nloc,var%nfbas(ifrp,0),nloc,4,var%ipqtoq(1,0),var%lupri)
@@ -284,13 +287,11 @@ contains
   !------------------------------------------------------------------------------!
   !                         Deallocate local arrays                              !
   !------------------------------------------------------------------------------!
-  call dealloc(cmo   ,id='cmo    in init_func')
-  call dealloc(eig   ,id='eig    in init_func')
-  call dealloc(ibeig ,id='ibeig  in init_func')
-  call dealloc(itmp  ,id='itmp   in init_func')
-  call dealloc(indao ,id='indao  in init_func')
-  call dealloc(indaos,id='indaos in init_func')
-  call dealloc(indnao,id='indnao in init_func')
+  deallocate( cmo    )
+  deallocate( eig    )
+  deallocate( ibeig  )
+  deallocate( itmp   )
+  deallocate( indnao )
 
   end subroutine init_func
 
@@ -316,13 +317,13 @@ contains
   ! deallocate global arrays
   deallocate( storec )
   deallocate( scoef  )
-  call dealloc(pmat  ,id='pmat   in quit_func')
-  call dealloc(smat  ,id='smat   in quit_func')
-  call dealloc(nfnuc ,id='nfnuc  in quit_func')
-  call dealloc(isel  ,id='isel   in quit_func')
+  deallocate( pmat   )
+  deallocate( smat   )
+  deallocate( nfnuc  )
+  deallocate( isel   )
 
   ! deallocate pointers
-  call deallocp(hmat ,id='hmat   in quit_func')
+  deallocate( hmat   )
 
   ! print final functional value
   write(resst,'(a,f21.15)') 'Inverse mean delocalization =',dinvmg4out
@@ -360,7 +361,7 @@ contains
   real*8,  intent(in) :: xtmp(:)
 
   ! Internal variables
-  integer :: i, j, ij1, ij2, ij3, ij4, iz, nloc, nloc12, ifrp
+  integer :: i, j, ij1, ij2, ij3, ij4, iz, nloc, nloc12, ifrp, ier
 
   real*8, allocatable :: xkappa(:,:,:)
 
@@ -370,7 +371,7 @@ contains
   nloc12 = size(xtmp,1) / 4
 
   ! allocate local variable
-  call alloc(xkappa,nloc,nloc,4,id='xkappa in mv2point')
+  allocate( xkappa(nloc,nloc,4), stat=ier ); call errall(ier,'mv2point','xkappa')
 
   ! Unpack X to kappa matrix
   xkappa(:,:,:) = d0
@@ -415,7 +416,7 @@ contains
   call rotcmo_mod(var%nfbas(ifrp,0),nloc,4,xkappa,nloc,var%ipqtoq(ifrp,0))
 
   ! deallocate local variable
-  call dealloc(xkappa,id='xkappa in mv2point')
+  deallocate( xkappa )
 
   !------------------------------------------------------------------------------!
   end subroutine mv2point
@@ -442,7 +443,7 @@ contains
   nucdep = size(pmat,4)
 
   if(PM%prjloc)then ! localization with projection analysis
-    call gtovlx(smat,var%ssmtrc)
+    call get_overlap(smat)
     call orblp1(var%nfbas(1,1),var%nfbas(1,2),nloc,nucdep,var%maxref,dinvmg)
   else               ! localization with Mulliken analysis
     call orblo1(var%nfbas(1,1),var%nfbas(1,2),nloc,nucdep,dinvmg)
@@ -478,7 +479,7 @@ contains
   real*8,  intent(out), pointer :: hmat(:,:)
 
   ! Internal variables
-  integer :: i, j, k, l, m, n, ij, kl
+  integer :: i, j, k, l, m, n, ij, kl, ier
   integer :: nucdep, nloc, ndimh, nloc12, lupri
   real*8  :: pij1, pij2, pkml, p2kml, p2lmk, buf, buf1, buf2
 
@@ -504,8 +505,8 @@ contains
 
   if(.not.full)then  ! label 111
 
-    if(associated(hmat)) call deallocp(hmat,id='hmat in get_hessian')
-    call allocp(hmat,ndimh,1,id='hmat in get_hessian')
+    if(associated(hmat)) deallocate( hmat )
+    allocate( hmat(ndimh,1), stat=ier ); call errall(ier,'get_hessian','hmat')
     hmat(:,:) = d0
 
     ! unbared-unbared A^R + B^R contribution
@@ -579,18 +580,18 @@ contains
 
   else ! label 111
 
-    if(associated(hmat)) call deallocp(hmat,id='hmat in get_hessian')
-    call allocp(hmat,ndimh,ndimh,id='hmat in get_hessian')
+    if(associated(hmat)) deallocate( hmat )
+    allocate( hmat(ndimh,ndimh), stat=ier ); call errall(ier,'get_hessian','hmat')
     hmat(:,:) = d0
 
-    call alloc(ijn,nloc,nloc,      id='ijn in get_hessian')
-    call alloc(iju,nloc,           id='iju in get_hessian')
-    call alloc(ijl,nloc,           id='ijl in get_hessian')
-    call alloc(pd,nloc,nucdep,     id='pd  in get_hessian')
-    call alloc(p1,nloc,nloc,nucdep,id='p1  in get_hessian')
-    call alloc(p2,nloc,nloc,nucdep,id='p2  in get_hessian')
-    call alloc(p3,nloc,nloc,nucdep,id='p3  in get_hessian')
-    call alloc(p4,nloc,nloc,nucdep,id='p4  in get_hessian')
+    allocate( ijn(nloc,nloc),        stat=ier ); call errall(ier,'minimization_drv','ijn ')
+    allocate( iju(nloc),             stat=ier ); call errall(ier,'minimization_drv','iju ')
+    allocate( ijl(nloc),             stat=ier ); call errall(ier,'minimization_drv','ijl ')
+    allocate( pd (nloc,nucdep),      stat=ier ); call errall(ier,'minimization_drv','pd  ')
+    allocate( p1 (nloc,nloc,nucdep), stat=ier ); call errall(ier,'minimization_drv','p1  ')
+    allocate( p2 (nloc,nloc,nucdep), stat=ier ); call errall(ier,'minimization_drv','p2  ')
+    allocate( p3 (nloc,nloc,nucdep), stat=ier ); call errall(ier,'minimization_drv','p3  ')
+    allocate( p4 (nloc,nloc,nucdep), stat=ier ); call errall(ier,'minimization_drv','p4  ')
 
     ! prepare some arrays for effective construction of the hessian
     do m=1,nucdep
@@ -959,14 +960,14 @@ contains
     endif
 
     ! deallocate arrays
-    call dealloc(ijn,id='ijn in get_hessian')
-    call dealloc(iju,id='iju in get_hessian')
-    call dealloc(ijl,id='ijl in get_hessian')
-    call dealloc(pd, id='pd  in get_hessian')
-    call dealloc(p1, id='p1  in get_hessian')
-    call dealloc(p2, id='p2  in get_hessian')
-    call dealloc(p3, id='p3  in get_hessian')
-    call dealloc(p4, id='p4  in get_hessian')
+    deallocate( ijn )
+    deallocate( iju )
+    deallocate( ijl )
+    deallocate( pd  )
+    deallocate( p1  )
+    deallocate( p2  )
+    deallocate( p3  )
+    deallocate( p4  )
 
   endif ! label 111
 
@@ -1128,10 +1129,10 @@ contains
       NB     = NBL + NBS
 !     DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
-        CALL ALLOC(KVECTMP,NORB,ID='KVECTMP IN ORBLP1')
+        ALLOCATE( KVECTMP(NORB), STAT=IER ); CALL ERRALL(IER,'ORBLP1','KVECTMP')
         DO I = 1,NREFS
           NSTR(IFRP,0,I) = 1
-          CALL NUMLST(VECREF(IFRP,I),KVECTMP, &
+          CALL NUMLST_MOD(VECREF(IFRP,I),KVECTMP, &
                NORB,-NPSH,NESH,               &
                IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(KVECTMP,NSTR(IFRP,0,I), &
@@ -1139,20 +1140,20 @@ contains
                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
-          CALL ALLOCP(KVEC(IFRP,I)%P,NSTR(IFRP,0,I),ID='KVEC%P IN ORBLP1')
+          ALLOCATE(KVEC(IFRP,I)%P(NSTR(IFRP,0,I)),STAT=IER); CALL ERRALL(IER,'ORBLP1','KVEC%P')
           KVEC(IFRP,I)%P(1:NSTR(IFRP,0,I)) = KVECTMP(1:NSTR(IFRP,0,I))
         ENDDO
-        CALL DEALLOC(KVECTMP,ID='KVECTMP IN ORBLP1')
+        DEALLOCATE( KVECTMP )
 !     ENDDO
       NCDIM = NB*NVECS(IFRP,1)*4
-      CALL ALLOC(RCOEF,NCDIM,ID="RCOEF in ORBLP1")
+      ALLOCATE( RCOEF(NCDIM), STAT=IER ); CALL ERRALL(IER,'ORBLP1','RCOEF')
 
 !     COEFFICIENT SELECTION
 !     =====================
 
       ICFS = 6
       IF(VAR%IPRPRJ.GE.5) ICFS = 7
-      CALL ALLOC(CMO,VAR%N2BBASXQ,ID="CMO in ORBLP1")
+      ALLOCATE( CMO(VAR%N2BBASXQ), STAT=IER ); CALL ERRALL(IER,'ORBLP1','CMO')
 
       IOFF(1) = 0
       VAR%IPRPRJ = 4
@@ -1185,7 +1186,7 @@ contains
 !     Throw away the full coefficients and eigenvalues
 !     ================================================
 
-      CALL DEALLOC(CMO,ID='CMO IN ORBLP1')
+      DEALLOCATE( CMO )
 
 !     Do projection analysis
 !     ======================
@@ -1194,16 +1195,16 @@ contains
 !     DO IFRP = 1,NFSYM
         NBDIM = NVECS(IFRP,1)*NLOC*4
 !     ENDDO
-      CALL ALLOC(BV,NBDIM,ID="BV in ORBLP1")
+      ALLOCATE( BV(NBDIM), STAT=IER ); CALL ERRALL(IER,'ORBLP1','BV')
 !     DO IFRP = 1,NFSYM
 !     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
       NMOL   = NLOC
       NREF   = NVECS(IFRP,1)
       N2REF  = NREF*NREF
-      CALL ALLOC(GVEC,(NREF+1)*2,ID="GVEC in ORBLP1")
-      CALL ALLOC(AMAT,N2REF*4,ID="AMAT in ORBLP1")
-      CALL ALLOC(JREF,NREF*3,ID="JREF in ORBLP1")
-      CALL ALLOC(IPIV,NREF,ID="IPIV in ORBLP1")
+      ALLOCATE( GVEC((NREF+1)*2), STAT=IER ); CALL ERRALL(IER,'ORBLP1','GVEC')
+      ALLOCATE( AMAT(N2REF*4),    STAT=IER ); CALL ERRALL(IER,'ORBLP1','AMAT')
+      ALLOCATE( JREF(NREF*3),     STAT=IER ); CALL ERRALL(IER,'ORBLP1','JREF')
+      ALLOCATE( IPIV(NREF),       STAT=IER ); CALL ERRALL(IER,'ORBLP1','IPIV')
       IVEC = 0
       DO I = 1,NREFS
         CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
@@ -1213,7 +1214,7 @@ contains
 
 ! Memory allocation for the matrix W = Ac
 
-      CALL ALLOC(WMAT,NREF*NLOC*4,ID="WMAT in ORBLP1")
+      ALLOCATE( WMAT(NREF*NLOC*4), STAT=IER ); CALL ERRALL(IER,'ORBLP1','WMAT')
 
 ! Construction of W = Ac
 
@@ -1308,16 +1309,16 @@ contains
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
     DO I=1,NREFS
-      CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
+      DEALLOCATE( KVEC(1,I)%P )
     ENDDO
-    DEALLOCATE( KVEC )
-    CALL DEALLOC(RCOEF,ID='RCOEF IN ORBLP1')
-    CALL DEALLOC(BV,ID='BV IN ORBLP1')
-    CALL DEALLOC(GVEC,ID='GVEC IN ORBLP1')
-    CALL DEALLOC(AMAT,ID='AMAT IN ORBLP1')
-    CALL DEALLOC(JREF,ID='JREF IN ORBLP1')
-    CALL DEALLOC(IPIV,ID='IPIV IN ORBLP1')
-    CALL DEALLOC(WMAT,ID='WMAT IN ORBLP1')
+    DEALLOCATE( KVEC  )
+    DEALLOCATE( RCOEF )
+    DEALLOCATE( BV    )
+    DEALLOCATE( GVEC  )
+    DEALLOCATE( AMAT  )
+    DEALLOCATE( JREF  )
+    DEALLOCATE( IPIV  )
+    DEALLOCATE( WMAT  )
 
   END SUBROUTINE ORBLP1
 
@@ -1370,20 +1371,20 @@ contains
 
 !     Make projection vector
 
-      CALL QTRANS90('AOMO','S',D0,NB,NB,NREF,NMOL, &
-                    SMAT,NB,NB,1,IPQTOQ(1,0),      &
-                    BVEC,NREF,NMOL,4,IPQTOQ(1,0),  &
-                    RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
-                    SCOEF,NB,NMOL,4,IPQTOQ(1,0),VAR%IPRPRJ)
+      CALL QTRANS90_MOD('AOMO','S',D0,NB,NB,NREF,NMOL, &
+                        SMAT,NB,NB,1,IPQTOQ(1,0),      &
+                        BVEC,NREF,NMOL,4,IPQTOQ(1,0),  &
+                        RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
+                        SCOEF,NB,NMOL,4,IPQTOQ(1,0),VAR%IPRPRJ)
       IF(NREFS.GT.1) THEN
 
 !       Make overlap matrix
 
-        CALL QTRANS90('AOMO','S',D0,NB,NB,NREF,NREF, &
-                      SMAT,NB,NB,1,IPQTOQ(1,0),      &
-                      AMAT,NREF,NREF,4,IPQTOQ(1,0),  &
-                      RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
-                      RCOEF,NB,NREF,4,IPQTOQ(1,0),VAR%IPRPRJ)
+        CALL QTRANS90_MOD('AOMO','S',D0,NB,NB,NREF,NREF, &
+                          SMAT,NB,NB,1,IPQTOQ(1,0),      &
+                          AMAT,NREF,NREF,4,IPQTOQ(1,0),  &
+                          RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
+                          RCOEF,NB,NREF,4,IPQTOQ(1,0),VAR%IPRPRJ)
 
 !       Print overlaps
 
@@ -1448,7 +1449,7 @@ contains
   real*8,  intent(out) :: dinvm
 
   ! Internal variables
-  integer :: i, j, k, iz, nb, ioffl, ioffs, lupri
+  integer :: i, j, k, iz, nb, ioffl, ioffs, lupri, ier
   integer :: ipqtoq(4,0:7)
   real*8  :: dinv, qloc2, dloc
 
@@ -1461,8 +1462,8 @@ contains
   ipqtoq(:,:) = var%ipqtoq(:,:)
 
   ! Memory allocation for the matrix W = Sc
-  call alloc(wlmat,nbl*nloc*4,id='wlmat in orblo1')
-  call alloc(wsmat,nbs*nloc*4,id='wsmat in orblo1')
+  allocate( wlmat(nbl*nloc*4), stat=ier ); call errall(ier,'orblo1','wlmat')
+  allocate( wsmat(nbs*nloc*4), stat=ier ); call errall(ier,'orblo1','wsmat')
 
   ! Construction of W = Sc (large and small components)
   call qgemm(nbl,nloc,nbl,d1,                     &
@@ -1563,8 +1564,8 @@ contains
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-  call dealloc(wlmat,id='wlmat in orblo1')
-  call dealloc(wsmat,id='wsmat in orblo1')
+  deallocate( wlmat )
+  deallocate( wsmat )
 
   end subroutine orblo1
 
@@ -1623,7 +1624,7 @@ contains
    ! real*8  :: scoef(:,:,:) ! scoef(nb,nloc,4)
 
    ! Internal variables
-   integer :: ifrp, nz, no, nb, nloc
+   integer :: ifrp, nz, no, nb, nloc, ier
    integer :: i, ii, iz, ioff
    real*8  :: toterg
 
@@ -1638,9 +1639,9 @@ contains
   nloc = size(scoef,2)
 
   ! allocate arrays
-  call alloc(cmo  ,nb,no,4  ,id='cmo   in wcmo2file')
-  call alloc(eig  ,var%norbt,id='eig   in wcmo2file')
-  call alloc(ibeig,var%norbt,id='ibeig in wcmo2file')
+  allocate( cmo  (nb,no,4),   stat=ier ); call errall(ier,'wcmo2file','cmo  ')
+  allocate( eig  (var%norbt), stat=ier ); call errall(ier,'wcmo2file','eig  ')
+  allocate( ibeig(var%norbt), stat=ier ); call errall(ier,'wcmo2file','ibeig')
 
   ! read EIG, IBEIG and TOTERG
   call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
@@ -1663,9 +1664,9 @@ contains
   call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
 
   ! deallocate arrays
-  call dealloc(cmo  ,id='cmo   in wcmo2file')
-  call dealloc(eig  ,id='eig   in wcmo2file')
-  call dealloc(ibeig,id='ibeig in wcmo2file')
+  deallocate( cmo   )
+  deallocate( eig   )
+  deallocate( ibeig )
 
   end subroutine wcmo2file
 
@@ -1880,7 +1881,7 @@ contains
 
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 
-      INTEGER :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX, LUPRI
+      INTEGER :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX, LUPRI, IER
       REAL*8  :: CPU1, WALL1, CPU2, WALL2, CPU3, WALL3, CPU4, WALL4, EIG, SQEIG, D_MAX
       REAL*8  :: ABS, SQRT, COS, SIN
 
@@ -1893,12 +1894,12 @@ contains
       IF (PM%IPRLOC.GE.5) CALL HEADER('Output from ROTCMO_MOD',-1)
 
       NORBXQ = NORBI*NORBI*NZ
-      CALL ALLOC(REIG,NORBI ,ID='REIG IN ROTCMO_MOD')
-      CALL ALLOC(RSIN,NORBXQ,ID='RSIN IN ROTCMO_MOD')
-      CALL ALLOC(RV  ,NORBXQ,ID='KV   IN ROTCMO_MOD')
-      CALL ALLOC(RTMP,NORBXQ,ID='RTMP IN ROTCMO_MOD')
+      ALLOCATE( REIG(NORBI ), STAT=IER ); CALL ERRALL(IER,'ROTCMO_MOD','REIG')
+      ALLOCATE( RSIN(NORBXQ), STAT=IER ); CALL ERRALL(IER,'ROTCMO_MOD','RSIN')
+      ALLOCATE( RV  (NORBXQ), STAT=IER ); CALL ERRALL(IER,'ROTCMO_MOD','KV  ')
+      ALLOCATE( RTMP(NORBXQ), STAT=IER ); CALL ERRALL(IER,'ROTCMO_MOD','RTMP')
 
-      CALL ALLOC(RCOS,NORBI*NBASI*NZ,ID='RCOS IN ROTCMO_MOD')
+      ALLOCATE( RCOS(NORBI*NBASI*NZ), STAT=IER ); CALL ERRALL(IER,'ROTCMO_MOD','RCOS')
 
 !     Calculate -\kappa^2 = \kappa^{\dagger} \kappa
 !     (use RCOS as temporary array)
@@ -1917,8 +1918,8 @@ contains
 !     Diagonalize -\kappa^2
 !     ---------------------------------------------
 
-      CALL QDIAG90(NZ,NORBI,RCOS,NORBI,NORBI, &
-                   REIG,1,RV,NORBI,NORBI,IERR)
+      CALL QDIAG90_MOD(NZ,NORBI,RCOS,NORBI,NORBI, &
+                       REIG,1,RV,NORBI,NORBI,IERR)
       IF (PM%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: V matrix (eigenvector)',-1)
          CALL PRQMAT(RV,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -1968,11 +1969,11 @@ contains
 !     (use KTMP as temporatory storage)
 !     ------------------------------------
 
-      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
-                    RTMP,NORBI,NORBI,NZ,IP,                &
-                    RCOS,NORBI,NORBI,NZ,IP,                &
-                    RV,NORBI,NORBI,NZ,IP,                  &
-                    RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
+      CALL QTRANS90_MOD('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                        RTMP,NORBI,NORBI,NZ,IP,                &
+                        RCOS,NORBI,NORBI,NZ,IP,                &
+                        RV,NORBI,NORBI,NZ,IP,                  &
+                        RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
       IF (PM%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: V cos(d) V^{dagger}',-1)
          CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -1982,11 +1983,11 @@ contains
 !     (use RCOS as temporatory storage)
 !     ------------------------------------
 
-      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
-                    RCOS,NORBI,NORBI,NZ,IP,                &
-                    RSIN,NORBI,NORBI,NZ,IP,                &
-                    RV,NORBI,NORBI,NZ,IP,                  &
-                    RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
+      CALL QTRANS90_MOD('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                        RCOS,NORBI,NORBI,NZ,IP,                &
+                        RSIN,NORBI,NORBI,NZ,IP,                &
+                        RV,NORBI,NORBI,NZ,IP,                  &
+                        RV,NORBI,NORBI,NZ,IP,PM%IPRLOC)
       IF (PM%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: V sin(d)/d V^{dagger}',-1)
          CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -2068,13 +2069,108 @@ contains
  9020 FORMAT(/'ROTCMO_MOD: total CPU (WALL) time       : ',A12,' (',A12,')')
  9021 FORMAT( 'ROTCMO_MOD: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
 
-      CALL DEALLOC(REIG,ID='REIG IN ROTCMO_MOD')
-      CALL DEALLOC(RSIN,ID='RSIN IN ROTCMO_MOD')
-      CALL DEALLOC(RCOS,ID='RCOS IN ROTCMO_MOD')
-      CALL DEALLOC(RV  ,ID='KV   IN ROTCMO_MOD')
-      CALL DEALLOC(RTMP,ID='RTMP IN ROTCMO_MOD')
+      DEALLOCATE( REIG )
+      DEALLOCATE( RSIN )
+      DEALLOCATE( RCOS )
+      DEALLOCATE( RV   )
+      DEALLOCATE( RTMP )
 
   END SUBROUTINE ROTCMO_MOD
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+      SUBROUTINE NUMLST_MOD(A,ILIST,NLIST,IRNGE1,IRNGE2,IFRP,IP)
+!*****************************************************************************
+!
+!     Original purpose was to read the numbers in the string A which has
+!     the format : '3..6, 8, -27..2, 123, 14..15'.
+!     
+!     !! Number 0 (Zero) NOT counted or stored !!
+!
+!     Input: 
+!           IF(IP.NE.0) : Give list of numbers in array
+!                         ILIST(NLIST).
+!           ELSE : Only IP as OUTPUT
+!
+!     Output:
+!           IP : number of elements in the list A.
+!                Duplicates only counted once.
+!
+!     IRNGE1..IRNGE2 is range of allowed values in A.
+!     ITMPAR   : Temporary storage
+!     If the string starts with 'all', all elements in the range enters.
+!
+!                           Jon K. Laerdahl 30.12.96
+!     Minor polish T.Saue Jan 7 1997
+!
+!     Additional feature (LV, 15-5-2001) : Determine list based on energy or
+!     other criteria. This is more user-friendly for standard cases.
+!
+!     This option is toggled by starting the string by energy, followed by the
+!     lower treshold, upper treshold and minimal gap (to prevent cutting through
+!     quasi-degenerate orbitals).
+!
+!*****************************************************************************
+      IMPLICIT NONE
+
+      ! External variables
+      INTEGER   :: IFRP, IP, NLIST, IRNGE1, IRNGE2
+      CHARACTER :: A*(*)
+      INTEGER   :: ILIST(NLIST)
+  
+      ! Internal variables
+      LOGICAL :: TOBE
+      INTEGER :: IER, NA, NORBT, LUCOEF, IOFF
+      REAL*8  :: DUM
+
+      REAL(8), ALLOCATABLE :: EIG(:)
+      INTEGER, ALLOCATABLE :: IBG(:)
+      INTEGER, ALLOCATABLE :: ITM(:)
+
+  !------------------------------------------------------------------------------!
+      NORBT = VAR%NORBT
+      LUCOEF= VAR%LUCOEF
+
+  !   Distinguish between the two branches
+
+      NA = LEN(A)
+      IF (NA.GT.80) NA = 80
+      IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
+         ALLOCATE( ITM(IRNGE2-IRNGE1+1), STAT=IER ); CALL ERRALL(IER,'NUMLST_MOD','ITM')
+         CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,ITM)
+         DEALLOCATE( ITM )
+      ELSE
+         ALLOCATE( EIG(NORBT), STAT=IER ); CALL ERRALL(IER,'NUMLST_MOD','EIG')
+         ALLOCATE( IBG(NORBT), STAT=IER ); CALL ERRALL(IER,'NUMLST_MOD','IBG')
+!
+!        Get eigenvalues from DFCOEF
+!
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF(.NOT.TOBE.OR.VAR%I_DCBORB_SET.NE.1) THEN
+
+!           DFCOEF does not (yet) exist, put IP = - 666, which makes 
+!           NUMLS2 return with an empty list
+!           Another showstopper occurs if we call this before the 
+!           orbital common block is set (this info is currently needed
+!           to correctly process the orbital energy list), this is
+!           why we check for I_DCBORB_SET as well.
+
+
+            IP = - 666
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
+            CALL REACMO_no_work(LUCOEF,'DFCOEF',DUM,EIG,IBG,DUM,4)
+            CLOSE(LUCOEF,STATUS='KEEP')
+            IOFF = VAR%IORB(IFRP)+VAR%NPSH(IFRP)
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))
+         ENDIF
+         DEALLOCATE( EIG )
+         DEALLOCATE( IBG )
+      ENDIF
+
+      END SUBROUTINE NUMLST_MOD
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -2092,6 +2188,189 @@ contains
     stop 'ERROR in allocation (see output form more information)'
   endif
 
-  end subroutine
+  end subroutine errall
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine get_overlap(smat)
+  implicit none
+
+  integer :: ier
+  real*8  :: smat(:)
+
+  ! open file
+  open(60,file='OVERLAP.INP',status='old',form='formatted',access='sequential',iostat=ier)
+  if(ier /= 0)then
+    write(6,*) 'get_overlap: ERROR while opening OVERLAP.INP file'
+    stop
+  endif
+
+  rewind 60
+
+  read(60,*) smat
+
+  ! close file
+  close(60,status='keep')
+
+  end subroutine get_overlap
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine selcfs_mod(cmo,ifrp,cbuf,lcb,jvec,npvec,nevec,knfbas,knorb)
+  !==============================================================================!
+  !          Pick out a set of vectors from CMO according to array JVEC          !
+  !                     (based on Dirac routine SELCFS)                          !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  integer, intent( in) :: ifrp, lcb, npvec, nevec, knfbas, knorb
+  integer, intent( in) :: jvec(*)
+  real*8,  intent( in) :: cmo(knfbas,knorb,var%nz)
+  real*8,  intent(out) :: cbuf(knfbas,lcb,var%nz)
+
+  ! Internal variables
+  integer :: iz, nvec, i, ii
+
+  !------------------------------------------------------------------------------!
+  nvec = npvec + nevec
+  do iz = 1,var%nz
+
+    ! Positronic vectors
+    do i = 1,npvec
+      ii = var%npsh(ifrp)+1+jvec(i)
+      call dcopy(var%nfbas(ifrp,0),cmo(1,ii,iz),1,cbuf(1,i,iz),1)
+    enddo
+
+    ! Electronic vectors
+    do i = npvec+1,nvec
+      ii = var%npsh(ifrp)+jvec(i)
+      call dcopy(var%nfbas(ifrp,0),cmo(1,ii,iz),1,cbuf(1,i,iz),1)
+    enddo
+  enddo
+
+  end subroutine selcfs_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine qtrans90_mod(typ,trev,fadd,nrao,ncao,nrmo,ncmo, &
+                          fao,lrao,lcao,nzao,iqao,           &
+                          fmo,lrmo,lcmo,nzmo,iqmo,           &
+                          tm1,lr1,lc1,nztm1,iqtm1,           &
+                          tm2,lr2,lc2,nztm2,iqtm2,iprint)
+  !==============================================================================!
+  !       Like QTRANS, but uses fortran 90 memory allocation internally          !
+  !      (based on Dirac QTRANS90 routine; uses standard f90 allocation)         !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  character, intent(in) :: trev*1, typ*4
+  integer,   intent(in) :: nrao, ncao, nrmo, ncmo, lrao, lcao, nzao, lrmo, lcmo, nzmo
+  integer,   intent(in) :: lr1, lc1, nztm1, lr2, lc2, nztm2, iprint
+  integer,   intent(in) :: iqao(*), iqmo(*), iqtm1(*), iqtm2(*)
+  real*8,    intent(in) :: fadd, fao(*), fmo(*), tm1(*), tm2(*)
+
+  ! Internal variables
+  integer :: ier, nbuf, nzw, iqw(4)
+
+  real*8, allocatable :: work(:)
+
+  !------------------------------------------------------------------------------!
+  !   find out how much buffer is needed in qtrans
+  if(typ == 'AOMO')then
+    if(ncao.ge.nrao)then
+      call iqpack(iqao,nzao,iqtm2,nztm2,iqw,nzw)
+      nbuf = nrao*ncmo*nzw
+    else
+      call iqpack(iqao,nzao,iqtm1,nztm1,iqw,nzw)
+      nbuf = nrmo*ncao*nzw
+    endif
+  else
+    if(ncmo >= nrmo)then
+      call iqpack(iqmo,nzmo,iqtm2,nztm2,iqw,nzw)
+      nbuf = nrmo*ncao*nzw
+    else
+      call iqpack(iqmo,nzmo,iqtm1,nztm1,iqw,nzw)
+      nbuf = nrao*ncmo*nzw
+    endif
+  endif
+
+  if(nbuf <= 0)then
+   call quit(' *** error in QTRANS90: buffer space allocation not possible for length <= 0.***')
+  end if
+
+  allocate(work(nbuf), stat=ier); if(ier /= 0) call quit('qtrans90_mod: error in allocation !')
+  work(:) = 0.0d0
+
+  CALL qtrans(typ,trev,fadd,nrao,ncao,nrmo,ncmo, &
+              fao,lrao,lcao,nzao,iqao,           &
+              fmo,lrmo,lcmo,nzmo,iqmo,           &
+              tm1,lr1,lc1,nztm1,iqtm1,           &
+              tm2,lr2,lc2,nztm2,iqtm2,           &
+              work,nbuf,iprint)
+
+  deallocate(work, stat=ier); if (ier /= 0) call quit('qtrans90_mod: error in deallocation !')
+      
+  end subroutine qtrans90_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine qdiag90_mod(nz,n,a,lra,lca,eig,matz,vec,lrv,lcv,ierr)
+  !==============================================================================!
+  !           Like QDIAG but uses f90 memory allocation internally               !
+  !       (based on Dirac QDIAG90 routine; uses standard f90 allocation)         !
+  !==============================================================================!
+  implicit none
+
+  ! External variables
+  integer, intent(in) :: nz, n, lra, lca, matz, lrv, lcv, ierr
+  real*8,  intent(in) :: a(*), eig(*), vec(*)
+
+  ! Internal variables
+  integer :: idum, iworkdum, info, llwork, lilwork
+  real*8  :: ddum, workdum
+
+  integer :: lenid, lwork, ier
+  real*8, allocatable :: work(:)
+
+  !------------------------------------------------------------------------------!
+
+  lenid = 3 ! lenid used in MEMGET in QDIAG
+  lwork = 4*lenid + 2*N
+  if(nz > 1) lwork = lwork + N*NZ
+
+#ifdef LAPACK_QDIAG
+  if(matz == 1)then
+    ddum = 0.0d0
+    idum = 0
+    workdum  = 0.0d0
+    iworkdum = 0
+    ! first let lapack estimate memory use
+    info = 0
+    call dsyevr('V','A','U',n,a,lra,ddum,ddum,idum,idum,0.0D0, &
+                m,eig,vec,lrv,idum,workdum,-1,iworkdum,-1,info)
+    llwork  = nint(workdum)
+    lilwork = iworkdum
+    lwork = llwork + lilwork + 2*n + 6*lenid
+  endif
+#endif
+
+  if(lwork <= 0)then
+   call quit(' *** error in qdiag90_mod: buffer space allocation not possible for length <= 0.***')
+  endif
+
+  allocate(work(lwork), stat=ier); if(ier /= 0) call quit('qdiag90_mod: error in allocation !')
+  work(:) = 0.0d0
+
+  call qdiag(nz,n,a,lra,lca,eig,matz,vec,lrv,lcv,work,lwork,ierr)
+
+  deallocate(work, stat=ier); if (ier /= 0) call quit('qdiag90_mod: error in deallocation !')
+
+  end subroutine qdiag90_mod
 
 end module func_PipekMezey

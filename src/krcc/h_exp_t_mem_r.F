@@ -23,7 +23,7 @@
 * Setting a default batch length. Increase or decrease according to
 * memory available and speed
 *
-      LCCB = 35
+      LCCB = 15000
       WRITE(6,*) ' Batch lenght LCCB ',LCCB
 *
 *.1 : KCCF : Intermediate F-vectors for needed out of space 
@@ -55,7 +55,12 @@ C     KCCVEC2 = 0
 *.3 : Maps for T1T2 => T12 for individual strings types 
       CALL DIM_T1T2_TO_T12_MAP_REL(LEN_T1T2_STRING,LENT_T1T2_TCC,
      &                             WORK,KFREE,LFREE)
-      LEN = LEN_T1T2_STRING
+      DO I=1,1000
+      print*,'temporary dimensioning of LEN_T1T2_STRING'
+      END DO
+C     LEN = LEN_T1T2_STRING
+      LEN = 10*LEN_T1T2_STRING
+      print*,'LEN_T1T2_STRING',LEN_T1T2_STRING
 *. Arrays for holding elementary operators times strings
 *
       CALL MEMGET('INTE',KIX1_CA,LEN,WORK,KFREE,LFREE)
@@ -116,7 +121,7 @@ C     CALL MEMGET('REAL',KLTSCR3,LEN,WORK,KFREE,LFREE)
       print*,'LEN,LCCB',LEN,LCCB
 *
 *and for a batch of Hamiltonian
-      LOPSCR = LCCB*LCCB*LB
+      LOPSCR = LCCB*LCCB*LB*10
 *. The above is not correct as the excitation part of the 
 *. integrals are obtained as a single block. 
 *. The largest block of integrals (hp!hp) should therefore
@@ -134,6 +139,7 @@ C Lasse
 *. MXTSOB_P is largest number of particle orbitals of given type, ALL SYM!
 C     LEN = 4*MXTSOB_P**2 * MXTSOB_H**2
       LEN = 4*LB
+      print*,'LEN',LEN
       CALL MEMGET('INTE',KLSMD1,LEN,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLNMD1,LEN,WORK,KFREE,LFREE)
 *

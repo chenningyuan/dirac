@@ -67,6 +67,9 @@ C
       integer                         :: double_group
       integer, allocatable            :: multb_tmp(:,:)
       integer, parameter              :: max_nkrmc_max_sym = 128
+      character(len=400)              :: input_line
+      character(len=400)              :: test_string
+      integer                         :: ios, islash
 
       SAVE SET
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
@@ -74,8 +77,8 @@ C
      &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
      &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
-     &            '.CI PRO','.INACTI','.CASSCF','.xxxxxx','.SYMMET',
-     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.SVRONX'/
+     &            '.CI PRO','.INACTI','.CASSCF','.GAS SH','.SYMMET',
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.xxxxxx'/
       DATA SET/.FALSE./
 C
 C
@@ -91,6 +94,8 @@ C
       ELSE
          SET = .TRUE.
       END IF
+
+
 C
 C     Initialize /CBLKRMC/
 C     ===================
@@ -105,11 +110,12 @@ C
      &  KRMC_SKIPEP           = .TRUE.
       KRMC_NOCI               = .FALSE.
       KRMC_UCIBOS             = .FALSE.
-      KRMC_MKCNST             = .FALSE.
       KRMC_CHCKJZ             = .FALSE.
       IF(LINEAR) KRMC_CHCKJZ  = .TRUE.
       KRMC_no1pdens           = .FALSE.
       krmc_save_reordered_nos = .false.
+!     initialize logical flag for new full-ci input 
+      KRMC_full_ci  = .false.
 C
 C     Initialize /CBIKRMC/
 C     ===================
@@ -366,6 +372,88 @@ C&&&  CASSCF -- this defines a CAS space
                GO TO 100
 !     xxx
  29            CONTINUE
+
+C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
+!              and Diracs opens-shell AOC Hartree-Fock format
+               IF(NKRMCGAS .GT. 0)THEN
+                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
+     &            'You cannot specify both GAS SH and '//
+     &            '(.GASSH/GASSPC or .CASSCF)')
+               END IF
+
+!              step 1: read the # of GA spaces
+               READ(LUCMD,*) NKRMCGAS
+               IF(NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
+                 CALL QUIT('*** ERROR in *KRMCSCF *** ' //
+     &                     'illegal value of NKRMCGAS')
+               END IF
+
+!              process the min max occupation / per orbital occupation in each GAS shell
+               i = 0
+               do
+
+                 i = i + 1
+                 if(i > nkrmcgas) exit 
+
+                 read(lucmd,'(a)') input_line
+                 call upcase(input_line)
+                 islash = index(input_line,'/')
+
+!                check for correct input format: 
+!                min e- max e- / #orbs_fermion_irrep1 #orbs_fermion_irrep2
+                 if(islash <= 1)then
+
+                   write(lupri,'(/a,i2,a,i2/a/2a)') 
+     &             'ERROR for *KRMCSCF .GAS SHELL shell no.',
+     &             i,'/',NKRMCGAS,
+     &             '- the defining input line does not contain a "/":',
+     &             '- the bad line : ',input_line
+
+                   write(lupri,'(a)') 
+     &             '- Or the specification of the number of GAS-'//
+     &             'shells might be wrong! Check the input.'
+                   call quit('Input error for .GAS SHELL under'//
+     &                       ' *KRMCSCF')
+                 end if
+                
+!                step 2: min max occupation
+                 read(input_line(1:islash-1),*,iostat=ios) 
+     &           nkrmcgsp(1,i), nkrmcgsp(2,i)
+
+                 if(ios /= 0)then
+                   write(lupri,'(/a,i2,a,i2/a/2a)') 
+     &             'ERROR for *KRMCSCF .GAS SHELL shell no.',
+     &             i,'/',NKRMCGAS, 
+     &             '- the input line does not contain correct'//
+     &             ' min max electrons','- the bad line : ',input_line
+                   call quit('Input error for .GAS SHELL under '//
+     &                       '*KRMCSCF')
+                 end if
+!                step 3: GAS shell orbital occupation
+                 read(input_line(islash+1:),*,iostat=ios) test_string
+                 if(trim(test_string) .eq. "ALL")then
+                   do j=1,nfsym
+                     NKRMCGSH(j,i) = -9999
+                   end do
+                   KRMC_full_ci = .true.
+                   exit ! jump out of loop
+                 else
+                   read(input_line(islash+1:),*,iostat=ios) 
+     &             (NKRMCGSH(j,i), j=1,nfsym)
+                 end if
+
+                 if(ios /= 0)then
+                   write(lupri,'(/a,i2,a,i2/a,i2,a/2a)') 
+     &             'ERROR for *KRMCSCF .GAS SHELL shell no.',
+     &             i,'/',NKRMCGAS,
+     &             '- the input line does not contain',nfsym,
+     &             ' occupations','- the bad line : ',input_line
+                   call quit('Input error for .GAS SHELL under '//
+     &                       '*KRMCSCF')
+                 end if
+               END DO
+!              step 4: set # of active electrons ==> max occupation in last GAS space
+               nkrmcaelec = nkrmcgsp(2,nkrmcgas)
                GO TO 100
  30            CONTINUE
 C&&& .SYMMETRY: symmetry of the wave function
@@ -505,32 +593,33 @@ C
       IF(DKRMC_CNVINT(1).LT.DUMMY) IKRMC_ITRINT(1) = 1
       IF(DKRMC_CNVINT(2).LT.DUMMY) IKRMC_ITRINT(2) = 1
 C
-      IF (NKRMCGAS .GT. 0) THEN
-         NKRMCASHT = 0
-         DO J = 1, NFSYM
-            NKRMCASH(J) = 0
-            DO I = 1, NKRMCGAS
-               NKRMCASH(J) = NKRMCASH(J) + NKRMCGSH(J,I)
-            END DO
-            NKRMCASHT = NKRMCASHT + NKRMCASH(J)
-         END DO
-      END IF
-C
-C
-C     Check that the number of orbitals is less than MAXASH
-C     -----------------------------------------------------
-C
-C
-      NTEST = 0
-      DO J = 1, NFSYM
-         NTEST = NTEST + NKRMCASH(J)
-      END DO
-      IF (NTEST .GT. MAXASH) THEN
-        WRITE(LUPRI,'(A,I5/10X,A,I4)')
-     &       ' *** ERROR in *KRMCSCF *** Too many active orbitals: ',
-     &       NTEST, ' -- max is ',MAXASH
-        CALL QUIT('*** ERROR in *KRMCSCF *** Too many active orbitals!')
-      END IF
+C     set the # of active orbitals and Check that it is less than MAXASH
+C     ------------------------------------------------------------------
+      if(.not.KRMC_full_ci)then
+        IF (NKRMCGAS .GT. 0) THEN
+           NKRMCASHT = 0
+           DO J = 1, NFSYM
+              NKRMCASH(J) = 0
+              DO I = 1, NKRMCGAS
+                 NKRMCASH(J) = NKRMCASH(J) + NKRMCGSH(J,I)
+              END DO
+              NKRMCASHT = NKRMCASHT + NKRMCASH(J)
+           END DO
+        END IF
+        NTEST = 0
+        DO J = 1, NFSYM
+           NTEST = NTEST + NKRMCASH(J)
+        END DO
+        IF (NTEST .GT. MAXASH) THEN
+          WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &         ' *** ERROR in *KRMCSCF *** Too many active orbitals: ',
+     &         NTEST, ' -- max is ',MAXASH
+          CALL QUIT('*** ERROR in *KRMCSCF: Too many active orbitals!')
+        END IF
+      else
+       ! skip the test - we set this later in TKRMCORB
+      end if
+
 C
 C     Use boson symmetry for CI expansion for the spin-free and
 C     the Levy-Leblond Hamiltonian, if KRMC_UCIBOS not set in input.
@@ -556,19 +645,24 @@ C
      &   ' *KRMCSCF: Set-up for KR-MCSCF calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRKRMC
-      WRITE(LUPRI,'(A,2I4)')
+      WRITE(LUPRI,'(A,I6)') ' * General print level   : ',IPRKRMC
+      WRITE(LUPRI,'(A,2I6)')
      &     ' * Inactive orbitals     : ',(NKRMCISH(I),I=1,NFSYM)
-      WRITE(LUPRI,'(A,2I4)')
-     &     ' * Active orbitals       : ',(NKRMCASH(I),I=1,NFSYM)
-      WRITE(LUPRI,'(A,I4)')
+      if(.not.KRMC_full_ci)then
+        WRITE(LUPRI,'(A,2I6)')
+     &       ' * Active orbitals       : ',(NKRMCASH(I),I=1,NFSYM)
+      else
+        WRITE(LUPRI,'(A,A)')
+     &       ' * Active orbitals       : ',' all remaining (code -9999)'
+      end if
+      WRITE(LUPRI,'(A,I6)')
      &     ' * Active electrons      : ',NKRMCAELEC
       IF (NKRMCGAS .GT. 0) THEN
          WRITE(LUPRI,'(A,I3,A)')
      &        ' * GAS space setup for ',NKRMCGAS,' GAS space(s) : '
          N_GAS_ERR = 0
          DO I = 1, NKRMCGAS
-            WRITE(LUPRI,'(A,I3,A,2I4)')
+            WRITE(LUPRI,'(A,I3,A,2I6)')
      &           '   - GAS space ',I,'       : ',
      &           (NKRMCGSH(J,I),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
@@ -607,29 +701,35 @@ C
 C
 C     MK constraints in the CI expansion.
 C
-      IF(NKRMC_MINMK2 .ge. 0 .AND. NKRMC_MAXMK2.ge. 0)THEN
+      if(.not.KRMC_full_ci)then
+        IF(NKRMC_MINMK2 .ge. 0 .AND. NKRMC_MAXMK2.ge. 0)THEN
 C
-C        MINMK2/MAXMK2 explicitly set
+C          MINMK2/MAXMK2 explicitly set
 C
-      ELSE
-         IF(NKRMC_MK2REF .ge. 0 .AND. NKRMC_MK2DEL .ge. 0)THEN
+        ELSE
+           IF(NKRMC_MK2REF .ge. 0 .AND. NKRMC_MK2DEL .ge. 0)THEN
 C
-C           MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
+C             MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
 C
-            KRMC_MKCNST = .TRUE.
-            NKRMC_MINMK2 = NKRMC_MK2REF - NKRMC_MK2DEL
-            NKRMC_MAXMK2 = NKRMC_MK2REF + NKRMC_MK2DEL
+              NKRMC_MINMK2 = NKRMC_MK2REF - NKRMC_MK2DEL
+              NKRMC_MAXMK2 = NKRMC_MK2REF + NKRMC_MK2DEL
 C
-         ELSE
+           ELSE
 C
-C           Assign default values for MINMK2/MAXMK2
+C             Assign default values for MINMK2/MAXMK2
 C
-            NKRMC_MAXMK2 = 2*MIN(NKRMCAELEC,NKRMCASHT) - NKRMCAELEC
-            NKRMC_MINMK2 = NKRMCAELEC-2*MIN(NKRMCAELEC,NKRMCASHT)
-            NKRMC_MK2REF = 0
-            NKRMC_MK2DEL = NKRMC_MAXMK2
-         END IF
-      END IF
+              NKRMC_MAXMK2 = 2*MIN(NKRMCAELEC,NKRMCASHT) - NKRMCAELEC
+              NKRMC_MINMK2 = NKRMCAELEC-2*MIN(NKRMCAELEC,NKRMCASHT)
+              NKRMC_MK2REF = 0
+              NKRMC_MK2DEL = NKRMC_MAXMK2
+           END IF
+        END IF
+      else
+        NKRMC_MINMK2 = -9999
+        NKRMC_MAXMK2 = -9999
+        NKRMC_MK2REF =     0
+        NKRMC_MK2DEL = -9999
+      end if
 C
 C     Boson symmetry in the CI expansion
 C
@@ -690,9 +790,14 @@ C               store on common block in krciprop.h
                 XREPEIG(IKRMC_SYMMETRY) = REPNA(IKRMC_SYMMETRY)
            END IF
          end if
-         WRITE(LUPRI,'(A,I4,A,I3)')
-     &     ' * Allowed interval of 2 * MK :',
-     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+         if(.not.KRMC_full_ci)then
+           WRITE(LUPRI,'(A,I4,A,I3)')
+     &       ' * Allowed interval of 2 * MK :',
+     &       NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+         else
+           WRITE(LUPRI,'(A)')
+     &       ' * Allowed interval of 2 * MK : will be set later!'
+         end if
       END IF
 C
       IF (KRMC_CIPROGRAM.EQ.'GASCIP  ') THEN

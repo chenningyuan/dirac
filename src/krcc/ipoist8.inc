@@ -5,7 +5,7 @@
 ! ctccp.inc start
 ! Hamiltonian
      &             KLSOBEX,KLLSOBEX,KLIBSOBEX,
-     &             KLIHIND,KSIGNNHX,KLABEXTP,
+     &             KLIHIND,KLIHINDOP,KSIGNNHX,KLABEXTP,
      &             KNH22,KNH21,KNH12,KNH20,
      &             KNH11,KNH02,KNH10,KNH01,KNH00,
 ! Cluster operator
@@ -56,7 +56,7 @@
      & KSBSPJA, KSRHO1, KBMAT, KSCDIIS,
 ! glbbas.inc end
 ! cc_scr2.inc start
-     &KDUM, KFREEL, 
+     & KDUM, KFREEL, 
      & KLZ, KLZSCR, KLSTOCC1,
      & KLSTOCC2, KLSTOCC3, KLSTOCC4, KLSTREO,
      & KIX1_CA, KSX1_CA, KIX1_CB, KSX1_CB,
@@ -178,14 +178,14 @@
      & KT_IDXH, KHELP_IDX, KHELP_OP,
      & KEX_TO_OC, KLOCCLS_REF,
 !
-     &KLIOIO,  
-     &KLSCR, KLSCR2, 
+     & KLIOIO,  
+     & KLSCR, KLSCR2, 
      & KLSOBEX_TEMP, KLSOEX,
      & KLSTR1_OCC,KLSTR2_OCC, KLSTR3_OCC, KLSTR4_OCC, 
-     &KNCPMT_OX, KNCPMT_SOX,  
-     &KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, 
+     & KNCPMT_OX, KNCPMT_SOX,  
+     & KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, 
      & KSB,
      & KWCPMT_OX, 
-     &KWCPMT_SOX, 
-     &KOCSTR_ADD,
-     &KMUB
+     & KWCPMT_SOX, 
+     & KOCSTR_ADD,
+     & KMUB
