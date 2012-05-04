@@ -20,6 +20,14 @@ macro(add_external _project)
     include_directories(${PROJECT_SOURCE_DIR}/external/${_project}-build)
     include_directories(${PROJECT_SOURCE_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_SOURCE_DIR}/external/lib)
-    link_directories(${CMAKE_SOURCE_DIR}/external/pcmsolver/external/lib)
+    link_directories(${CMAKE_SOURCE_DIR}/external/${_project}/external/lib)
     add_dependencies(${_project} git_update)
+
+  # # remove stamps for external builds so that they are rebuilt every time
+  # add_custom_command(
+  #     TARGET ${_project}
+  #     PRE_BUILD
+  #     COMMAND rm -rf ${PROJECT_SOURCE_DIR}/external/src/${_project}-stamp
+  #     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  #     )
 endmacro()

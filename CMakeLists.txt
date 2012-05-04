@@ -78,6 +78,22 @@ include(ConfigParallelEnvironment)
 
 set(LIBS "stdc++")
 
+include(ConfigExternal)
+
+# set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DBUILD_OPENRSP -DVAR_DALTON")
+set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_SOURCE_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/src/include
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+    )
+
+add_external(gen1int)
+
 include(ConfigMath)
 
 if(ENABLE_64BIT_INTEGERS)
@@ -121,8 +137,6 @@ set(LIBS
     xcfun
     ${LIBS}
     )
-
-include(ConfigExternal)
 
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
@@ -212,6 +226,8 @@ add_library(
     ${GENERATED_FILES}
     )
 
+add_dependencies(dirac gen1int)
+
 # get size of static allocations
 add_custom_target(
     info
@@ -255,6 +271,7 @@ foreach(
         ${EXECUTABLE}
         dirac
         ${LIBS}
+        ${PROJECT_SOURCE_DIR}/external/lib/libgen1int.a
         )
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)

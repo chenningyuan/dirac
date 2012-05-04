@@ -51,6 +51,10 @@ C
 #include "cbihr1.h"
 #include "cbirea.h"
 #include "infpar.h"
+
+#ifdef BUILD_GEN1INT
+#include "gen1int.h"
+#endif
 C
       LOGICAL TWOBUF,GOFAST,TOBE
       DIMENSION WORK(LWORK)
@@ -87,6 +91,14 @@ C
 #ifdef MOD_ECP
       IF (ECPCALC) CALL RECP
 #endif
+
+#ifdef BUILD_GEN1INT
+!     test suite of Gen1Int interface
+      if (test_gen1int) then
+         call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
+      end if
+#endif
+
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
 !     gosia: don't restart and don't generate integrals if visual_cfg_london
