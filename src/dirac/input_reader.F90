@@ -1176,7 +1176,9 @@ contains
    
    subroutine read_input_pcm(word, kw_section)
 
+#ifdef PCM_MODULE
       use pcmmod_cfg
+#endif
 
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
