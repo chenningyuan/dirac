@@ -1,5 +1,5 @@
-Notes:Screening
-===============
+Notes on screening
+==================
 
 We have some number of old density matrices *D*\ :sub:`*k* −
 1`\ ,*D*\ :sub:`*k* − 2`\  etc, and want to write the new density matrix

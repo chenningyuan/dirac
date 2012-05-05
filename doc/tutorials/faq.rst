@@ -1,5 +1,7 @@
-FAQ
-===
+
+
+Frequently asked questions
+==========================
 
 Some frequently asked questions.
 

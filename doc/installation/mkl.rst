@@ -1,5 +1,7 @@
-Intel MKL library
-==================
+
+
+How to set good environment variables for the Intel MKL library
+===============================================================
 
 The Intel MKL library can be linked in a sequential or in a multithreaded (default) mode; the latter is
 advantegous for multi-CPU architectures.

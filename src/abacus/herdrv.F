@@ -44,7 +44,9 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "efield.h"
-      PARAMETER (NDIR = 9, NTABLE = 82)
+C     adds test suite of Gen1Int interface as term 83
+C     Bin Gao, Nov. 9, 2011
+      PARAMETER (NDIR = 9, NTABLE = 83)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -67,10 +69,13 @@ C#endif
 #include "ccom.h"
 #include "hrunit.h"
 #include "densfit.h"
+#include "gen1int.h"
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*JENGIN', '*DENSFI',
      &             '*XXXXXX'/
+C     adds test suite of Gen1Int interface as .GENINT
+C     Bin Gao, Nov. 9, 2011
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
@@ -91,7 +96,7 @@ C
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
      &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.RUNERI',
-     &             '.LINK  ', '.DENSFI'/
+     &             '.LINK  ', '.DENSFI', '.GENINT'/
 C
 C     Check if input has been processed earlier.
 C
@@ -263,7 +268,7 @@ C
      &                151,152,153,154,155,156,157,158,159,160,
      &                161,162,163,164,165,166,167,168,169,170,
      &                171,172,173,174,175,176,177,178,179,180,
-     &                181,182,183), I
+     &                181,182,183,184), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -675,6 +680,9 @@ CC&&&& DENSFIT: Density fitting (Not yet implemented)
 #endif
 #endif
  183     CONTINUE
+            TEST_GEN1INT = .true.
+            goto 100
+ 184     CONTINUE
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199

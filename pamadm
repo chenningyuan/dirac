@@ -355,6 +355,12 @@ dirac_modules[this_module] = dirac_module('mcscf_sf', 'spinfree MCSCF module')
 dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
 dirac_modules[this_module].take_out_of_release()
 
+this_module = 'gen1int'
+dirac_modules[this_module] = dirac_module('gen1int', 'Generalized One-electron Integral module')
+dirac_modules[this_module].add_cppflag('BUILD_GEN1INT')
+dirac_modules[this_module].add_directory('src/gen1int')
+dirac_modules[this_module].take_out_of_release()
+
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
