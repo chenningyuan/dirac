@@ -97,9 +97,9 @@ C
 #endif
 
 #ifdef BUILD_GEN1INT
-!     test suite of Gen1Int interface
+!     test suite of gen1int interface
       if (test_gen1int) then
-!        call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
+         call gen1int_ifc_test(lwork, work, lupri, iprdef)
          call get_1el_integrals(lupri)
       end if
 #endif
