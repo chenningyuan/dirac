@@ -81,6 +81,7 @@ contains
 
      ! allocates integral matrices
      allocate(val_ints(num_opt_derv))
+
      do imat = 1, num_opt_derv
         call MatCreate(A=val_ints(imat),      &
                        num_row=num_ao,        &
@@ -94,7 +95,21 @@ contains
      end do
 
      ! computes the integrals and/or expectation values
-     call DaltonShellIntegral(one_prop=prop_operator,           &
+
+     call DaltonShellIntegral(bra=1,                            &
+                              ket=1,                            &
+                              one_prop=prop_operator,           &
+                              london_ao=LONDON_AO,              &
+                              num_ints=num_opt_derv,            &
+                              val_ints=val_ints,                &
+                              wrt_ints=write_integrals_to_file, &
+                              num_dens=nr_dens_mat,             &
+                              io_viewer=io_viewer,              &
+                              level_print=0)
+
+     call DaltonShellIntegral(bra=2,                            &
+                              ket=2,                            &
+                              one_prop=prop_operator,           &
                               london_ao=LONDON_AO,              &
                               num_ints=num_opt_derv,            &
                               val_ints=val_ints,                &
