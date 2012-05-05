@@ -142,7 +142,7 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
         /* Initialize CUBLAS */
         //printf("\nCUBLAS SGEMM test running...\n\n");
 
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   GPU CUBLAS_SGEMM  \n");
         printf("-------------------\n");
@@ -151,7 +151,7 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
         if (status != CUBLAS_STATUS_SUCCESS) {
                 fprintf (stderr, "!!!! CUBLAS initialization error\n");
                 exit(EXIT_FAILURE);
-        } else { fprintf(stdout,"\nGPU cublas initialized.\n"); }
+        } else { fprintf(stdout,"GPU cublas initialized.\n"); }
 
 
         /* Allocate host memory for the matrices */
@@ -268,13 +268,13 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
         //printf("...done\n");
         
         h_C_ref = h_C;
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   CPU CBLAS_SGEMM  \n");
         printf("-------------------\n");
         
         
-        printf("\nCPU cblas_sgemm running....");
+        printf("CPU cblas_sgemm running....");
         fflush(stdout);
     
         cpu_time_1 = getTime();
@@ -295,7 +295,7 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
         
 
         
-        printf("\n\n");
+        //printf("\n\n");
         
         
         
@@ -304,7 +304,7 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
            printf("-------------------\n");
            float pole = 0;
            float newes;
-           printf("\n");
+           //printf("\n");
            for (i=0;i<n3;i++)
             {
               newes = fabs(h_C_ref[i]-h_C[i]);
@@ -315,13 +315,13 @@ void sgemm_cuda_c_test(int *n, int *verbosity){
             }
        if(*verbosity==2)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",h_C[0],h_C_ref[0]);
         if(*verbosity<=2)printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n",h_C[n3-1],h_C_ref[n3-1]);
-       printf("\nAverage absolute difference :%f \n\n", pole/n3);
+       printf("Average absolute difference :%f \n", pole/n3);
         
         printf("-------------------\n");
         printf("   TIMES SGEMM  \n");
         printf("-------------------\n");
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
-        printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",gpu_time/1000);
+        printf("Overall time of computation and transfer on GPU: %f sekund\n\n",gpu_time/1000);
         
         /* Memory clean up */
         free(h_A);
@@ -378,7 +378,7 @@ cublasStatus status;
         n2 = n3*n3;
         //printf("\n\n\n N2:%i N:%i N*:%i\n\n\n",n2,n3,*n);
         /* Initialize CUBLAS */
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   GPU CUBLAS_SGEMV  \n");
         printf("-------------------\n");
@@ -506,12 +506,12 @@ cublasStatus status;
         } else {if(*verbosity>0)fprintf(stdout,"C mtx obtained from GPU device. \n");}
         
         h_C_ref = h_C;
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   CPU CBLAS_SGEMV  \n");
         printf("-------------------\n");
         
-        printf("\nCPU cblas_sgemv running....");
+        printf("CPU cblas_sgemv running....");
         fflush(stdout);
     
         cpu_time_1 = getTime();
@@ -529,14 +529,14 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
 
         printf("...done\n");
         
-        printf("\n\n");
+        //printf("\n\n");
            
            printf("-------------------\n");
            printf("   CHECK RESULT SGEMV  \n");
            printf("-------------------\n");
            float pole = 0;
            float newes;
-           printf("\n");
+           //printf("\n");
            for (i=0;i<n3;i++)
             {
               newes = fabs(h_C_ref[i]-h_C[i]);
@@ -547,7 +547,7 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
             }
            if(*verbosity==2)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",h_C[0],h_C_ref[0]);
           if(*verbosity<=2)printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n",h_C[n3-1],h_C_ref[n3-1]);
-          printf("\nAverage absolute difference :%f \n\n", pole/n3); 
+          printf("Average absolute difference :%f \n", pole/n3); 
 
         
        
@@ -557,7 +557,7 @@ void cblas_sgemv(const enum CBLAS_ORDER order,
         printf("-------------------\n");
                 
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
-        printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",gpu_time/1000);
+        printf("Overall time of computation and transfer on GPU: %f sekund\n",gpu_time/1000);
         
         /* Memory clean up */
         free(h_A);
@@ -615,7 +615,7 @@ void sgemm_cula_c_test(int *n, int *verbosity){
         n2 = n3*n3;
         //printf("\n\n\n N2:%i N:%i N*:%i\n\n\n",n2,n3,*n);
         /* Initialize CUBLAS */
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   GPU CULA_SGEMM  \n");
         printf("-------------------\n");
@@ -699,7 +699,7 @@ void sgemm_cula_c_test(int *n, int *verbosity){
         
         h_C_ref = h_C;
        
-       printf("\n\n");
+      // printf("\n\n");
         printf("-------------------\n");
         printf("   CPU CBLAS_SGEMM  \n");
         printf("-------------------\n");
@@ -712,7 +712,7 @@ void sgemm_cula_c_test(int *n, int *verbosity){
 
         printf("...done\n");
         
-         printf("\n\n");
+        // printf("\n\n");
         
         
         
@@ -721,7 +721,7 @@ void sgemm_cula_c_test(int *n, int *verbosity){
            printf("-------------------\n");
            float pole = 0;
            float newes;
-           printf("\n");
+           //printf("\n");
            for (i=0;i<n3;i++)
             {
               newes = fabs(h_C_ref[i]-h_C[i]);
@@ -732,13 +732,13 @@ void sgemm_cula_c_test(int *n, int *verbosity){
             }
        if(*verbosity==2)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",h_C[0],h_C_ref[0]);
         if(*verbosity<=2)printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n",h_C[n3-1],h_C_ref[n3-1]);
-       printf("\nAverage absolute difference :%f \n\n", pole/n3);
+       printf("Average absolute difference :%f \n", pole/n3);
         
         printf("-------------------\n");
         printf("   TIMES SGEMM  \n");
         printf("-------------------\n");
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
-        printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",gpu_time/1000);
+        printf("Overall time of computation and transfer on GPU: %f sekund\n",gpu_time/1000);
 
         
         //if(*verbosity==2)printf("Time of computation on GPU: %f sekund\n",(gpu_time_2 - gpu_time_1)/1000);
@@ -792,7 +792,7 @@ void sgemv_cula_c_test(int *n, int *verbosity){
         n2 = n3*n3;
         //printf("\n\n\n N2:%i N:%i N*:%i\n\n\n",n2,n3,*n);
         /* Initialize CUBLAS */
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   GPU CULA_SGEMV  \n");
         printf("-------------------\n");
@@ -874,7 +874,7 @@ void sgemv_cula_c_test(int *n, int *verbosity){
         } else  {fprintf(stdout,"...done.\n"); }
        
         h_C_ref = h_C;
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   CPU CBLAS_SGEMV  \n");
         printf("-------------------\n");
@@ -887,7 +887,7 @@ void sgemv_cula_c_test(int *n, int *verbosity){
 
         printf("...done\n");
         
-        printf("\n\n");
+        //printf("\n\n");
         
         
         
@@ -896,7 +896,7 @@ void sgemv_cula_c_test(int *n, int *verbosity){
            printf("-------------------\n");
            float pole = 0;
            float newes;
-           printf("\n");
+           //printf("\n");
            for (i=0;i<n3;i++)
             {
               newes = fabs(h_C_ref[i]-h_C[i]);
@@ -907,13 +907,13 @@ void sgemv_cula_c_test(int *n, int *verbosity){
             }
        if(*verbosity==2)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",h_C[0],h_C_ref[0]);
         if(*verbosity<=2)printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n",h_C[n3-1],h_C_ref[n3-1]);
-       printf("\nAverage absolute difference :%f \n\n", pole/n3);
+       printf("Average absolute difference :%f \n", pole/n3);
         
         printf("-------------------\n");
         printf("   TIMES SGEMV  \n");
         printf("-------------------\n");
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
-        printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",gpu_time/1000);
+        printf("Overall time of computation and transfer on GPU: %f sekund\n",gpu_time/1000);
        
         //if(*verbosity==2)printf("Time of computation on GPU: %f sekund\n",(gpu_time_2 - gpu_time_1)/1000);
         /* Allocate host memory for reading back the result from the device memory */
@@ -1015,7 +1015,7 @@ void sgesv_cula_c_test(int *n, int *verbosity){
     
     } 
 
-    printf("\n-------------------\n");
+    printf("-------------------\n");
     printf("   GPU CULA_SGESV  \n");
     printf("-------------------\n");
 
@@ -1077,7 +1077,7 @@ void sgesv_cula_c_test(int *n, int *verbosity){
     }          */
     
     
-    printf("\n\n");
+   // printf("\n\n");
     ooo=0;
     poc=0;
     
@@ -1145,7 +1145,7 @@ void sgesv_cula_c_test(int *n, int *verbosity){
 
     //verify_result();
 
-    printf("Shutting down CULA\n\n");
+    printf("Shutting down CULA\n");
     culaShutdown();
 
     printf("----------------------\n");
@@ -1179,7 +1179,7 @@ GNU version:
     else { fprintf(stdout,"done.\n"); }
 
 
-    printf("\n\n");
+    //printf("\n\n");
         
         
         
@@ -1188,7 +1188,7 @@ GNU version:
            printf("-------------------\n");
            float pole = 0;
            float newes;
-           printf("\n");
+           //printf("\n");
            for (i=0;i<n3;i++)
             {
               newes = fabs(X[i]-B[i]);
@@ -1199,13 +1199,13 @@ GNU version:
             }
        if(*verbosity==2)printf("Results : CPU - First element of matrix - %f / GPU - First element of vector - %f\n",B[0],X[0]);
         if(*verbosity<=2)printf("Results : CPU - Last element of matrix - %f / GPU - Last element of vector - %f\n",B[n3-1],X[n3-1]);
-       printf("\nAverage absolute difference :%f \n\n", pole/n3);
+       printf("Average absolute difference :%f \n", pole/n3);
         
         printf("-------------------\n");
         printf("   TIMES SGESV  \n");
         printf("-------------------\n");
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
-        printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",(gpu_time_2-gpu_time_1)/1000);
+        printf("Overall time of computation and transfer on GPU: %f sekund\n\n",(gpu_time_2-gpu_time_1)/1000);
 
 
     //verify_result();
@@ -1362,7 +1362,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
           printf(" %f ",TAU_r1[i]);
         }
        */
-       if(*verbosity>2) printf("\n\n");
+       //if(*verbosity>2) printf("\n\n");
        int prem = 0;
        for (i=0;i<n3;i++) {
          
@@ -1374,7 +1374,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
          }
          prem ++;
         }
-       if(*verbosity>2) printf("\n\n");
+       //if(*verbosity>2) printf("\n\n");
        prem = 0;
         for (i=0;i<n3;i++) {
          
@@ -1386,18 +1386,18 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
          }
          prem ++;
         }
-        if(*verbosity>2)printf("\n\n");
+        //if(*verbosity>2)printf("\n\n");
         for (i=0;i<n3;i++) {
           newes = fabs(TAU_r1[i]-TAU_r[i]);
           pole = pole + newes;
-         if(*verbosity>2) printf(" TAU_r(GPU)[%i] %f TAU_r(CPU)[%i] %f Diference :%f\n",i,TAU_r[i],i,TAU_r1[i],newes);
+         if(*verbosity>2) printf("TAU_r(GPU)[%i] %f TAU_r(CPU)[%i] %f Diference :%f\n",i,TAU_r[i],i,TAU_r1[i],newes);
         }
         
-       printf("\nAverage absolute difference :%f \n", pole/(n3*n3));
+       printf("Average absolute difference :%f \n", pole/(n3*n3));
        printf("Result check failed number: %d from %d\n",p,pocit);
  
     } 
-        printf("\n-------------------\n");
+        printf("-------------------\n");
         printf("   GPU CULA_SGEQRF  \n");
         printf("-------------------\n");
         
@@ -1463,7 +1463,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
          printf("done.\n");
         //printf("Shutting down CULA\n\n");
         culaShutdown();
-        printf("\n\n");
+        //printf("\n\n");
         printf("----------------------\n");
         printf("   CPU LAPACKE_sgeqrf (MKL)  \n");
         printf("----------------------\n");
@@ -1488,7 +1488,7 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
           //A[i] = h[i]//(float) i;
           //B[i] = A[i];
         //}
-        printf("\n\n");
+       // printf("\n\n");
        // for (i=0;i<n2;i++)
        // {
          // A[i] = rand() / (float)RAND_MAX;
@@ -1508,12 +1508,12 @@ void sgegrf_cula_c_test(int *n, int *verbosity){
         if(*verbosity==2)printf("Results : CPU - First element of matrix - %f / GPU - First element of matrix - %f\n",B[0],A[0]);
         if(*verbosity<=2)printf("Results : CPU - Last element of matrix - %f / GPU - Last element of matrix - %f\n",B[n3-1],A[n3-1]);
        //printf("\nAverage absolute difference :%f \n\n", pole/n3);
-        printf("\n\n");
+        //printf("\n\n");
         printf("-------------------\n");
         printf("   TIMES SGEMM  \n");
         printf("-------------------\n");
         printf("Time of computation on CPU: %f sekund\n",(cpu_time_2-cpu_time_1)/1000);
-        printf("Overall time of computation and transfer on GPU: %f sekund\n\n\n",(gpu_time_2-gpu_time_1)/1000);
+        printf("Overall time of computation and transfer on GPU: %f sekund\n\n",(gpu_time_2-gpu_time_1)/1000);
 }
 
 
