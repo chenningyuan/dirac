@@ -36,8 +36,12 @@ C***********************************************************************
       use visual_cfg
       use x2cmod_cfg
 #ifdef MOD_CAP
-      USE Memory
+      use memory
 #endif
+#ifdef BUILD_GEN1INT
+      use dirac_gen1int_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -95,7 +99,8 @@ C
 #ifdef BUILD_GEN1INT
 !     test suite of Gen1Int interface
       if (test_gen1int) then
-         call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
+!        call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
+         call get_1el_integrals(lupri)
       end if
 #endif
 
