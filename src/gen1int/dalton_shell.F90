@@ -369,8 +369,11 @@ module dalton_shell
       call GeomTreeIdxPath(geom_tree=geom_tree, idx_path=curr_path)
       call GeomTreeNumPath(geom_tree=geom_tree, num_paths=num_paths)
       ! calculates the property integrals of current path
-      call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
-                                sub_shells=sub_shells,           &
+      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells,   &
+                                num_shells_ket=num_sub_shells,   &
+                                sub_shells_bra=sub_shells,       &
+                                sub_shells_ket=sub_shells,       &
+                                bra_same_as_ket=.true.,          &
                                 one_prop=one_prop,               &
                                 london_ao=london_ao,             &
                                 order_mag_bra=order_mag_bra,     &
@@ -399,8 +402,11 @@ module dalton_shell
         if (level_print>=20) &
           call GeomTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
         ! calculates the property integrals of current path
-        call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
-                                  sub_shells=sub_shells,           &
+        call Gen1IntShellIntegral(num_shells_bra=num_sub_shells,   &
+                                  num_shells_ket=num_sub_shells,   &
+                                  sub_shells_bra=sub_shells,       &
+                                  sub_shells_ket=sub_shells,       &
+                                  bra_same_as_ket=.true.,          &
                                   one_prop=one_prop,               &
                                   london_ao=london_ao,             &
                                   order_mag_bra=order_mag_bra,     &
@@ -424,8 +430,11 @@ module dalton_shell
       end do
     ! no total geometric derivatives
     else
-      call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
-                                sub_shells=sub_shells,           &
+      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells,   &
+                                num_shells_ket=num_sub_shells,   &
+                                sub_shells_bra=sub_shells,       &
+                                sub_shells_ket=sub_shells,       &
+                                bra_same_as_ket=.true.,          &
                                 one_prop=one_prop,               &
                                 london_ao=london_ao,             &
                                 order_mag_bra=order_mag_bra,     &
