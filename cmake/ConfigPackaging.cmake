@@ -77,8 +77,9 @@ include(IncludeFilesList)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/fetch_external_sources ${CMAKE_SOURCE_DIR}
         COMMAND mkdir -p ${EXPORT_DIR}
-        COMMAND mkdir -p ${EXPORT_DIR}/doc
+        COMMAND mkdir -p ${EXPORT_DIR}/external
         COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
         COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
         COMMAND rm     ${EXPORT_DIR}/sources.tar
@@ -96,16 +97,18 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external                     ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/maintenance                  ${EXPORT_DIR}
+        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external/gen1int             ${EXPORT_DIR}/external
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src                          ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
+        COMMAND echo "set(DEVELOPMENT_CODE FALSE)" >> ${EXPORT_DIR}/cmake/ConfigVersion.cmake
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
         )
 endif()
+
+set(DEVELOPMENT_CODE TRUE)
