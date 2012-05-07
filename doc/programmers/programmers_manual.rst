@@ -102,7 +102,7 @@ and D1 can be any number so the result is undefined.
 With "implicit none" this will not compile.
 
 Another example is a typo:
-istead of
+istead of ::
  NDIM = 12  ! correct code
  you could type:
  NDIN = 12  ! typo
