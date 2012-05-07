@@ -125,11 +125,11 @@ preprocessor statements!) shall have this form:
      module pass_integer
      contains
      subroutine f(x)
-    #if defined (F_INT4)
+     #if defined (F_INT4)
      integer(kind=4), intent(inout) :: x ! F90 compiler gives error !
-    #else
+     #else
      integer(kind=8), intent(inout) :: x ! F90 compiler passed
-    #endif
+     #endif
      print *, x
      x = 12345
      end subroutine f
@@ -155,9 +155,3 @@ gives error of "Type/rank mismatch in argument 'x'" while
     gfortran test_f90.F90
 
 compiles with the proper integer kind.
-
-Examples of parallel compiling
-==============================
-
-add openmpi f77/f90 examples .
-

@@ -215,7 +215,9 @@ module numoper_integrals
          rewind(from_file)
          read (from_file,*) npoint
 
+         if (associated(grid)) nullify(grid)
          call allocp(grid,4,npoint)
+         if (associated(operator)) nullify(operator)
          call allocp(operator,npoint)
 
          do i = 1, npoint

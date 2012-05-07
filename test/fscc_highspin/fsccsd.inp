@@ -3,7 +3,7 @@
 !
 **DIRAC
 .TITLE
-Moelcular oxygen. Ground and excited states (X, a, b).
+Molecular oxygen. Ground and excited states (X, a, b).
 .WAVE F
 **HAMILTONIAN
 .LVCORR
@@ -11,6 +11,7 @@ Moelcular oxygen. Ground and excited states (X, a, b).
 .SCF
 .RELCCSD
 *SCF
+! O2_2+ closed shell reference
 .CLOSED SHELL
  6 8
 .EVCCNV

@@ -6,4 +6,8 @@
 *SCF
 .PRINT
 1
+*PCM
+.DOSS
+.PRINT
+ 6
 *END OF

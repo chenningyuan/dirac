@@ -387,7 +387,7 @@
       jmaxm = 0
       jmax = jmaxa + jmaxb
       allocate(odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3))
-      ader(:, :, :) = 0.0d0
+      allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
 
       cora(1) = corax
       cora(2) = coray
@@ -432,16 +432,14 @@
      &           .true.,.false.,origin,idummy)
           do ipoint = 1, nr_points
             difcp(:) = points(1:3,ipoint) - corp(:)
-            allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
-            ahgtf = 0.0d0
             call vnuc(ahgtf, jmax, expp, difcp, iprint)
             call cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
      &            ader(:, :, ipoint), ahgtf, iprint)
-            deallocate(ahgtf)
           end do ! Close loop over grid points
         end do ! Close loop over second shell
       end do ! Close loop over first shell
       deallocate(odc)
+      deallocate(ahgtf)
 
       return
 
@@ -474,7 +472,6 @@
 
 ! Initialization
       allocate(r(0:jmax, 0:jmax, 0:jmax, 0:jmax))
-      r = 0.0d0
 
 ! Incomplete gamma function
       wval = pval * (cp(1) * cp(1) + cp(2) * cp(2) + cp(3) * cp(3))
@@ -514,9 +511,9 @@
          end do
       end do
 ! The nuclear attraction integrals are given as r(t, u, v, 0)
-      do t = 0, jmax
+      do v = 0, jmax
          do u = 0, jmax
-            do v = 0, jmax
+            do t = 0, jmax
                ahgtf(t, u, v) = - r(t, u, v, 0)
             end do
          end do

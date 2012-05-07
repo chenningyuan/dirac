@@ -1123,9 +1123,9 @@ subroutine sgesv_test
   endif
 
 ! fill allocated objects A_r, B_r, TAU1_r, TAU_r with random data for later checking
-  write(*,"(2X,A)") "Matrix A[i,j]=-i+j*j and vector b[i]=i*i for solving linear equations Ax=b:"
+  !write(*,"(2X,A)") "Matrix A[i,j]=-i+j*j and vector b[i]=i*i for solving linear equations Ax=b:"
   !write(*,"(2X,A)") "Matrix A[i,j]=i+j and vector b[i]=i for solving linear equations Ax=b:"
-  !write(*,"(2X,A)") "Matrix A[i,j]=rand(0) and vector b[i]=rand(0) for solving linear equations Ax=b:"
+  write(*,"(2X,A)") "Matrix A[i,j]=rand(0) and vector b[i]=rand(0) for solving linear equations Ax=b:"
   do i=1,n
   do j=1,n
      A_r(i,j) = rand(0);  ! <= ONLY RANDOM WORKS !!!

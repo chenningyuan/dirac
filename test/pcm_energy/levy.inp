@@ -8,4 +8,7 @@
 *SCF
 .PRINT
 1
+*PCM
+.DOSS
+.SEPARATE
 *END OF
