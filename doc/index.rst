@@ -140,6 +140,7 @@ Reference manual
    reference_manual/molecule.rst
    reference_manual/hamiltonian.rst
    reference_manual/wavefunction.rst
+   reference_manual/scf.rst
    reference_manual/properties.rst
    reference_manual/moltra.rst
    reference_manual/relccsd.rst
