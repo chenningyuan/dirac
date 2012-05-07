@@ -1,16 +1,13 @@
 Manual:GRID
 ===========
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 The numerical integration scheme uses the Becke partitioning
-\ :sup:``[1] <#_note-Becke:1988:jchemphys>`_`\  of the molecular volume
+[1] <#_note-Becke:1988:jchemphys>`_`\ 
+of the molecular volume
 into atomic ones, for which the quadrature is performed in spherical
 coordinates. Radial integration is carried out using the scheme proposed
-by Lindh *et al.* \ :sup:``[2] <#_note-Lindth:2001:theorchemacc>`_`\ ,
+by Lindh *et al.* 
+[2] <#_note-Lindth:2001:theorchemacc>`_`\ ,
 while the angular integration is handled by a set of highly accurate
 Lebedev grids. Note that the Becke partitioning scheme generally uses
 Slater-Bragg radii for atomic size adjustments. For the heavier
@@ -18,23 +15,6 @@ elements, with their more variable oxidation states, this can lead to
 errors. If the user invokes the `.ATSIZE <#.ATSIZE>`_ keyword, DIRAC
 tries to deduce relative atomic sizes from available densities, if it
 can find coefficients.
-
-Contents
---------
-
--  `1 .RADINT <#.RADINT>`_
--  `2 .ANGINT <#.ANGINT>`_
--  `3 .NOPRUN <#.NOPRUN>`_
--  `4 .ANGMIN <#.ANGMIN>`_
--  `5 .ATSIZE <#.ATSIZE>`_
--  `6 .IMPORT <#.IMPORT>`_
--  `7 .NOZIP <#.NOZIP>`_
--  `8 .4CGRID <#.4CGRID>`_
--  `9 .DEBUG <#.DEBUG>`_
--  `10 .COARSE <#.COARSE>`_
--  `11 .ULTRAFINE <#.ULTRAFINE>`_
--  `12 .INTCHK <#.INTCHK>`_
--  `13 References <#References>`_
 
 .RADINT
 -------
@@ -217,12 +197,13 @@ be printed.
 References
 ----------
 
-#. `↑ <#_ref-Becke:1988:jchemphys_0>`_ A. D. Becke, *A multicenter
-   numerical integration scheme for polyatomic molecules*, J. Chem.
-   Phys. **88**, *2547* (1988) `electronic
-   version <http://dx.doi.org/10.1063/1.454033>`_.
-#. `↑ <#_ref-Lindth:2001:theorchemacc_0>`_ R. Lindh, P. A. Malmqvist,
-   and L. Galgiardi, *Molecular integrals by numerical quadrature. I.
-   Radial integration*, Theor. Chem. Acc. **106**, *178* (2001)
-   `electronic version <http://dx.doi.org/10.1007/s002140100263>`_.
+<#_ref-Becke:1988:jchemphys_0>`_ A. D. Becke, *A multicenter
+numerical integration scheme for polyatomic molecules*, J. Chem.
+Phys. **88**, *2547* (1988) `electronic
+version <http://dx.doi.org/10.1063/1.454033>`_.
+
+<#_ref-Lindth:2001:theorchemacc_0>`_ R. Lindh, P. A. Malmqvist,
+and L. Galgiardi, *Molecular integrals by numerical quadrature. I.
+Radial integration*, Theor. Chem. Acc. **106**, *178* (2001)
+`electronic version <http://dx.doi.org/10.1007/s002140100263>`_.
 

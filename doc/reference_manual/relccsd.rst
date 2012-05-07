@@ -399,6 +399,17 @@ molecular mean field approximation.
 
     NORECMP=F
 
+For the open shell calculation, turn off this flag. Use it with USEOE
+option.
+
+::
+
+    &RELCCSD NELEC=4,3 TIMING=T, IPRNT=1, DOSORT=T, DOENER=T &END
+    &CCSORT USEOE=F, NORECMP=F &END
+    &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=F &END
+
+
+
 &CCFOPR -- First-order properties
 =================================
 

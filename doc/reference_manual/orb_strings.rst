@@ -1,10 +1,3 @@
-Manual:Orbital strings
-======================
-
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
 
 Specification of orbital strings
 ================================
