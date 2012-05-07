@@ -6,16 +6,15 @@ Manual:RELCCSD
 This section specifies the input necessary for relativistic Coupled
 Cluster calculations. The program is currently capable of doing energy
 calculations at the MP2, CCSD, and CCSD(T) levels of theory
-.. \ :sup:``[1] <#_note-visscher:relccsd1>`_`\ 
-
-.. \ :sup:``[2] <#_note-pernpointner:relccsd3>`_`\ , 
+[1]<#_note-visscher:relccsd1>`_`\ 
+[2] <#_note-pernpointner:relccsd3>`_`\ , 
 
 while first order
 properties are available only at the MP2 level of theory.
 
 Open shell states can be calculated also via the Fock space Coupled
 Cluster method
-.. \ :sup:``[3] <#_note-visscher:relccsd2>`_`\  
+[3] <#_note-visscher:relccsd2>`_`\  
 in which
 electrons are added to or subtracted from a closed shell core. All
 sectors that involve no more than 2 replacements are available.
@@ -23,6 +22,10 @@ sectors that involve no more than 2 replacements are available.
 The input should be given in namelist form and is subdivided in a
 general menu section and section describing energy, first-order,
 second-order property and Fock-space Coupled Cluster calculations.
+
+note of namelist: Some parts of DIRAC reads input in the Fortran *namelist* format. These
+statements are put *after* the ``*END OF INPUT`` statement in the DIRAC
+input file.
 
 &RELCCSD -- Generic and control input
 =====================================
