@@ -3,28 +3,16 @@
 Fragment C
 .WAVE FUNCTION
 .ANALYZE
-**INTEGRALS
-*TWOINT
-.SCREEN
-1.0D-11
-*READIN
-.CONTRACT
-**HAMILTONIAN
-.LVCORR
-! We add a small electric field to split degeneracy
-! and get well-characterized atomic orbitals
-.OPERATOR
- 'ZDIPLEN'
- FACTOR
- 1.0D-04
+**GENERAL
+.ACMOUT
 **WAVE FUNCTIONS
 .SCF
 *SCF
 .CLOSED SHELL
-4
+4 0
 .OPEN SHEL
 1
-2/6
+2/0,6
 **ANALYZE
 .MULPOP
 *END OF
