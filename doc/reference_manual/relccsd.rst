@@ -24,13 +24,10 @@ The input should be given in namelist form and is subdivided in a
 general menu section and section describing energy, first-order,
 second-order property and Fock-space Coupled Cluster calculations.
 
-`&RELCCSD </dirac/index.php/Manual:RELCCSD:RELCCSD>`_
------------------------------------------------------
-
-Generic and control input.
-
 &RELCCSD -- Generic and control input
 =====================================
+
+Generic and control input.
 
 DOENER
 ------
@@ -64,8 +61,6 @@ reference closed shell state.
 ::
 
     DOFSPC=F
-
-.. `|image0| </dirac/index.php/Image:Dirac.png>`_
 
 **Advanced options**
 
@@ -122,9 +117,11 @@ electrons in gerade orbitals (2s σ\ :sub:`g`\  + 2p σ\ :sub:`g`\  + 2p
 ungerade orbitals (2s σ\ :sub:`u`\  + 2p π\ :sub:`u`\  = 3). This gives
 the following occupation:
 
+::
+
  NELEC=4,2,3,3
 
- Note that this determinant does not represent the exact ground state of
+Note that this determinant does not represent the exact ground state of
 the oxygen molecule as this triplet is split by a few wave numbers due
 to spin-spin and (second order) spin-orbit interactions. The lowest
 state is the Omega=0 component that cannot be represented by a single
@@ -198,8 +195,6 @@ precise specification of the reference determinant.
 `Here </dirac/index.php/Manual:RELCCSD:Sample_inputs>`_ we give an
 example for the high spin state of the nitrogen atom.
 
-`|image2| </dirac/index.php/Image:HJAaJ.png>`_
-
 **Programmers options**
 
 DEBUG
@@ -266,14 +261,10 @@ not necessary. However, if one uses scheme 4 in MOLTRA, the keyword
 
     INTERFACE='DIRAC'
 
-
-`&CCENER </dirac/index.php/Manual:RELCCSD:CCENER>`_
----------------------------------------------------
-
-Energy module.
-
 &CCENER -- Energy module
 ========================
+
+Energy module.
 
 DOMP2
 -----
@@ -310,8 +301,6 @@ non-iterative triple corrections
 
     DOCCSDT=T
 
-.. `|image0| </dirac/index.php/Image:Dirac.png>`_
-
 **Advanced options**
 
 NTOL
@@ -347,8 +336,6 @@ Maximum dimension of the reduced space used in the DIIS extrapolation.
 
     MAXDIM=8
 
-.. `|image1| </dirac/index.php/Image:HJAaJ.png>`_
-
 **Programmers options**
 
 NOCCS
@@ -375,14 +362,10 @@ test purposes.
 
     NOCCD=F
 
-
-`&CCSORT </dirac/index.php/Manual:RELCCSD:CCSORT>`_
----------------------------------------------------
-
-Sorting module.
-
 &CCSORT -- Sorting module
 =========================
+
+Sorting module.
 
 USEOE
 -----
@@ -416,14 +399,10 @@ molecular mean field approximation.
 
     NORECMP=F
 
-
-`&CCFOPR </dirac/index.php?title=Manual:RELCCSD:CCSFOPR&action=edit>`_
-----------------------------------------------------------------------
-
-First-order properties.
-
 &CCFOPR -- First-order properties
 =================================
+
+First-order properties.
 
 Only MP2 first order properties are currently available. They are
 computed by forming a relaxed density matrix, which is done (partly) in
@@ -444,8 +423,6 @@ expectation value part of the input.
 ::
 
     DOMP2G=F
-
-.. `|image0| </dirac/index.php/Image:Dirac.png>`_
 
 **Advanced options for the old formalism**
 
@@ -519,13 +496,10 @@ Maximum dimension of the reduced space.
     MAXDIM=8
 
 
-`&CCSOPR </dirac/index.php/Manual:RELCCSD:CCSOPR>`_
----------------------------------------------------
-
-Second-order properties
-
 &CCSOPR -- Second-order properties
 ==================================
+
+Second-order properties
 
 Only the SCF wave function can be used at the moment (RPA). The names of
 the property integrals should first be defined in the
@@ -605,8 +579,6 @@ Values of frequencies in |image5|.
 
     EFREQ=0.0
 
-`|image6| </dirac/index.php/Image:Dirac.png>`_
-
 **Advanced options**
 
 NTOL
@@ -641,7 +613,6 @@ Maximum dimension of the reduced space.
 ::
 
     MAXDIM=8
-
 
 
 &CCFSPC -- Fock space module
@@ -728,7 +699,8 @@ calculation.
 *Default:* No default; should always be set when using `DOIE <#DOIE>`_
 or `DOIE2 <#DOIE2>`_!
 
---------------
+Example
+---------
 
 An example of the use of the Fock space method concerns the calculation
 of the lowest three states of molecular oxygen. These are obtained by
@@ -743,13 +715,13 @@ O\ :sub:`2`\ \ :sup:`+2`\  and calculate the three X states, the
 degenerate open shell singlet a and the singlet b state in one single
 Fock space run. The FSCCSD input reads then
 
-&RELCCSD NELEC=2,2,3,3, DOFSPC=T, DOENER=F &END
+:: 
 
-&CCFSPC MAXIT=100, NACTP=2,2,0,0, DOEA2=T, &END
+ &RELCCSD NELEC=2,2,3,3, DOFSPC=T, DOENER=F &END
 
- This example can be found as test #52 in the Dirac test set.
+ &CCFSPC MAXIT=100, NACTP=2,2,0,0, DOEA2=T, &END
 
-.. `|image0| </dirac/index.php/Image:Dirac.png>`_
+This example can be found as test #52 REFERENCE_IT in the Dirac test set.
 
 **Advanced options**
 
@@ -797,8 +769,6 @@ Maximum dimension of the reduced space.
 ::
 
     MAXDIM=8
-
-.. `|image1| </dirac/index.php/Image:HJAaJ.png>`_
 
 **Programmers options**
 
