@@ -1,48 +1,11 @@
-Manual:MOLTRA
-=============
-
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 \*\*MOLTRA -- Integral transformation
-   module <#.2A.2AMOLTRA_--_Integral_transformation_module>`_
-
-   -  `1.1 .ACTIVE <#.ACTIVE>`_
-   -  `1.2 .THROUT <#.THROUT>`_
-   -  `1.3 .PRPTRA <#.PRPTRA>`_
-   -  `1.4 .SCHEME <#.SCHEME>`_
-   -  `1.5 .INTFLG <#.INTFLG>`_
-   -  `1.6 .INTFL2 <#.INTFL2>`_
-   -  `1.7 .INTFL4 <#.INTFL4>`_
-   -  `1.8 .CORE <#.CORE>`_
-   -  `1.9 .POSITRONS <#.POSITRONS>`_
-   -  `1.10 .NO2IND <#.NO2IND>`_
-   -  `1.11 .NO4IND <#.NO4IND>`_
-   -  `1.12 .SCREEN <#.SCREEN>`_
-   -  `1.13 .ASCII <#.ASCII>`_
-   -  `1.14 .RCORBS <#.RCORBS>`_
-   -  `1.15 .PRINT <#.PRINT>`_
-   -  `1.16 .2INDEX <#.2INDEX>`_
-   -  `1.17 .4INDEX <#.4INDEX>`_
-   -  `1.18 .MDCINT <#.MDCINT>`_
-   -  `1.19 .NOMDCI <#.NOMDCI>`_
-   -  `1.20 .SCATTER <#.SCATTER>`_
-   -  `1.21 .NOSCAT <#.NOSCAT>`_
-   -  `1.22 .PAR4BAS <#.PAR4BAS>`_
-   -  `1.23 References <#References>`_
-
 \*\*MOLTRA -- Integral transformation module
 ============================================
 
 This module transforms integrals from the scalar AO basis to integrals
 in the molecular spinor basis. The algorithm is not yet described in
 detail but it may be helpful to read Ref.
-\ :sup:``[1] <#_note-visscher:jcc-overview>`_`\  to find information
+[1] <#_note-visscher:jcc-overview>
+to find information
 about the double quaternion formalism that is used. This module is
 usually invoked by one of the correlation modules but can also be run as
 a stand-alone module by specifying
@@ -300,8 +263,6 @@ Recanonize orbitals before transforming.
 
 *Default:* Do not recanonize orbitals before transforming.
 
-`|image1| </dirac/index.php/Image:HJAaJ.png>`_
-
 **Programmers options**
 
 .PRINT
@@ -369,8 +330,55 @@ working for parallel distributions.
 References
 ----------
 
-#. `↑ <#_ref-visscher:jcc-overview_0>`_ L. Visscher, *The Dirac equation
-   in quantum chemistry: strategies to overcome the current
-   computational problems*, J. Comput. Chem. **23**, *759* (2002)
-   `electronic version <http://dx.doi.org/10.1002/jcc.10036>`_.
+<#_ref-visscher:jcc-overview_0>`_ L. Visscher, *The Dirac equation
+in quantum chemistry: strategies to overcome the current
+computational problems*, J. Comput. Chem. **23**, *759* (2002)
+`electronic version <http://dx.doi.org/10.1002/jcc.10036>`_.
+
+
+\*PRPTRA -- Property integrals transformation
+=============================================
+
+This section defines the property operators that should to be
+transformed. Such integrals are only used in an experimental section of
+`RELCCSD </dirac/index.php/Manual:RELCCSD>`_, and this subsection can
+thus usually be omitted.
+
+**Programmers options**
+
+.PRINT
+------
+
+Print level.
+
+*Default:*
+
+::
+
+    .PRINT
+     0
+
+.OPERATOR
+---------
+
+Specification of general one-electron operators.
+
+See the `specification of one-electron
+operators </dirac/index.php/Manual:One-electron_operators>`_ section for
+more information and explicit examples.
+
+
+Manual:MOLTRA:Sample inputs
+===========================
+
+
+Use all spinors with energies between -12.0 and 20.0 a.u. as active
+space. Note that one may *not* place a comment line directly after
+.ACTIVE:
+
+::
+
+    **MOLTRA
+    .ACTIVE
+    energy -12.0 20.0 1.0
 
