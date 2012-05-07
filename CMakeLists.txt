@@ -24,7 +24,7 @@ option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecu
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
-option(ENABLE_GEN1INT         "Enable Gen1Int"                                            ON)
+option(ENABLE_GEN1INT         "Enable Gen1Int"                                            OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 
