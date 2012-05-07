@@ -1023,6 +1023,7 @@ C*********************************************************
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 #include "inftap.h"
+#include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -1092,10 +1093,17 @@ C     continue in inquiring:
       IF (.NOT.EXST2) THEN
         INQUIRE (FILE = BASNAM, EXIST = EXST)
         IF (EXST) THEN  
+#ifdef VAR_MPI
+          ! print only from one process
+          if (mytid == 1) then
+#endif
           WRITE(LUPRI,"(/2A/2A)")
      &     "Info: used proper basis set name: ",BASNAM,
      &     "Info: instead of                : ",STRING
           USE_BASNAM=.TRUE.
+#ifdef VAR_MPI
+          end if
+#endif
         ENDIF
       ENDIF
         
