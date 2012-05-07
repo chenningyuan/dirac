@@ -1,11 +1,6 @@
 Licensing and download
 ======================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 We will distribute the code freely to all academic users.
 
 An academic user in this context defined to be anyone doing research

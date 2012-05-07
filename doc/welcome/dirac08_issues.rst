@@ -1,41 +1,6 @@
 Known bugs
 ==========
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-(Redirected from
-`Dirac08:KnownIssues </dirac/index.php?title=Dirac08:KnownIssues&redirect=no>`_)
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 DIRAC10 <#DIRAC10>`_
-
-   -  `1.1 Automatic augmentation for larger basis
-      sets <#Automatic_augmentation_for_larger_basis_sets>`_
-   -  `1.2 DFT geometry optimization is
-      incorrect <#DFT_geometry_optimization_is_incorrect>`_
-   -  `1.3 Parallel DFT crashes with
-      MPICH2 <#Parallel_DFT_crashes_with_MPICH2>`_
-   -  `1.4 User-defined CAM functional line is cut after character
-      80 <#User-defined_CAM_functional_line_is_cut_after_character_80>`_
-   -  `1.5 Parallel MCSCF/CI calculations on one node with more than 2
-      processes are wrong (multiple nodes calculations are
-      fine) <#Parallel_MCSCF.2FCI_calculations_on_one_node_with_more_than_2_processes_are_wrong_.28multiple_nodes_calculations_are_fine.29>`_
-
--  `2 DIRAC08 <#DIRAC08>`_
-
-   -  `2.1 xlf compiler <#xlf_compiler>`_
-   -  `2.2 Parallel 64-bit integer
-      code <#Parallel_64-bit_integer_code>`_
-   -  `2.3 Parallel direct MP2
-      calculation <#Parallel_direct_MP2_calculation>`_
-
- This page contains patches to known bugs.
-
 DIRAC10
 -------
 
