@@ -156,6 +156,12 @@ C***********************************************************************
 C*****  T  E  R  M  I  N  A  T  I  O  N  *******************************
 C***********************************************************************
 C
+
+#ifdef BUILD_GEN1INT
+!     clean up Gen1Int interface
+      call gen1int_ifc_clean()
+#endif
+
       if (doxml) then
          call xml_end('output')
          call xml_end('task') ! started om dirrdn.F

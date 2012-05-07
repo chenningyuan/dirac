@@ -1446,7 +1446,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         # deal with the error output only if happens
         if self.dirac_stderr and not self.silent:
             # attach stderr to the pam output
-            self.f.write('\n ====  below this line is the stderr stream  ====' + str(self.dirac_stderr))
+            self.f.write('\n ====  below this line is the stderr stream  ====\n' + str(self.dirac_stderr))
             # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
             self.stderr_message()
 

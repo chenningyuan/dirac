@@ -1,36 +1,10 @@
 Manual:GENERAL
 ==============
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 \*\*GENERAL -- General input <#.2A.2AGENERAL_--_General_input>`_
-
-   -  `1.1 .DIRECT <#.DIRECT>`_
-   -  `1.2 .SPHTRA <#.SPHTRA>`_
-   -  `1.3 .PCMOIN <#.PCMOIN>`_
-   -  `1.4 .PCMOUT <#.PCMOUT>`_
-   -  `1.5 .ACMOUT <#.ACMOUT>`_
-   -  `1.6 .ACMOIN <#.ACMOIN>`_
-   -  `1.7 .LOWJACO <#.LOWJACO>`_
-   -  `1.8 .DOJACO <#.DOJACO>`_
-   -  `1.9 .QJACO <#.QJACO>`_
-   -  `1.10 .LINDEP <#.LINDEP>`_
-   -  `1.11 .RKBIMP <#.RKBIMP>`_
-   -  `1.12 .PRJTHR <#.PRJTHR>`_
-   -  `1.13 .PRINT <#.PRINT>`_
-   -  `1.14 .CVALUE <#.CVALUE>`_
-   -  `1.15 .LOGMEM <#.LOGMEM>`_
-
 \*\*GENERAL -- General input
 ============================
 
-`|image0| </dirac/index.php/Image:Dirac.png>`_
+..`|image0| </dirac/index.php/Image:Dirac.png>`_
 
 **Advanced options**
 
@@ -206,4 +180,79 @@ Speed of light in a.u.
 Write out a line in the output for each memory allocation done by Dirac.
 This is mainly useful for programmers or for solving out-of-memory
 issues.
+
+
+\*PARALLEL -- Parallelization directives
+========================================
+
+.. `|image0| </dirac/index.php/Image:HJAaJ.png>`_
+
+**Programmers options**
+
+.PRINT
+------
+
+Print level for the parallel calculation.
+
+*Default:*
+
+::
+
+    .PRINT
+     0
+
+A print level of at least 2 is needed in order to be able to evaluate
+the parallelization efficiency. A complete timing for all nodes will be
+given if the print level is 4 or higher.
+
+.NTASK
+------
+
+Number of tasks to send to each node when distributing the calculation
+of two-electron integrals.
+
+*Default:*
+
+::
+
+    .NTASK
+     1
+
+A task is defined as a shell of atomic integrals, a shell being an input
+block. One may therefore increase the number of shells given to each
+node in order to reduce the amount of communication. However, the
+program uses dynamical allocation of work to each node, and thus this
+option should be used with some care, as too large tasks may cause the
+dynamical load balancing to fail, giving an overall decrease in
+efficiency. The parallelization is also very coarse grained, so that the
+amount of communication seldom represents any significant problem.
+
+Sample inputs
+=============
+
+Use a reduced value for the speed of light to amplify the effect of
+relativity (for testing):
+
+::
+
+    **GENERAL
+    .CVALUE
+     50.0
+
+Very often one needs to export or to read formatted file with orbital
+coefficients - DFPCMO. Therefore the user should provide for the reading
+
+::
+
+    **GENERAL
+    .PCMOIN
+
+or
+
+::
+
+    **GENERAL
+    .PCMOUT
+
+for the export.
 

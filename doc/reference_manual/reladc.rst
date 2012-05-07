@@ -1,11 +1,6 @@
 Manual:RELADC
 =============
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 *Relativistic Green's function (propagator) module RELADC* written by
 Markus Pernpointner.
 
@@ -16,7 +11,10 @@ of the propagator reveals the type of physical property which is
 described but does not necessarily point to an efficient solution
 strategy. One way to achieve this is the method of (A)lgebraic
 (D)iagrammatic (C)onstruction originally formulated by Schirmer
-\ :sup:``[1] <#_note-schirmer:adc>`_`\ . Hereby the diagonal
+
+.. \ :sup:``[1] <#_note-schirmer:adc>`_`\ . 
+
+Hereby the diagonal
 representation of the propagator is transformed to a nondiagonal form by
 formally inserting a completeness relation in an arbitrary basis which
 does not have to be specified further because this is just a formal
@@ -28,8 +26,12 @@ the ADC matrix. The final diagonalization of the ADC matrix then yields
 the desired eigenvalues (poles) and eigenvectors (spectral intensities).
 
 In the current version of DIRAC a four-component realization of ADC
-providing single \ :sup:``[2] <#_note-pernpointner:dhfadc2>`_`\  and
-double \ :sup:``[3] <#_note-pernpointner:dhfadc3>`_`\  ionization
+providing single 
+.. \ :sup:``[2] <#_note-pernpointner:dhfadc2>`_`\  
+and
+double 
+.. \ :sup:``[3] <#_note-pernpointner:dhfadc3>`_`\  
+ionization
 potentials (SIPs and DIPs) is available starting from a \*closed shell\*
 reference determinant. Open-shell ADC based on a single reference (e.g.
 high-spin states) can be done in principle but the theoretical basis is
@@ -53,33 +55,13 @@ of course) a Lanczos diagonalizer is invoked as well. Controlling the
 diagonalizer also occurs via Namelist starting with &LANINP &END.
 
 RELADC similar to many post-DHF programs sets out from the transformed
-totally antisymmetric two-electron integrals |\\langle
-ij\|\|kl\\rangle|. Therefore the
+totally antisymmetric two-electron integrals 
+\\langle ij\|\|kl\\rangle.
+
+Therefore the
 `\*\*MOLTRA </dirac/index.php/Manual:MOLTRA>`_ step is required and
 automatically invoked if the .4INDEX keyword is not given.
 
-Contents
---------
-
--  `1 &RELADC &END -- Control propagator
-   calculation <#.26RELADC_.26END_--_Control_propagator_calculation>`_
-
-   -  `1.1 DOSIPS,DODIPS <#DOSIPS.2CDODIPS>`_
-   -  `1.2 ADCLEVEL <#ADCLEVEL>`_
-   -  `1.3 XREPS <#XREPS>`_
-   -  `1.4 READQKL <#READQKL>`_
-   -  `1.5 DOCONST <#DOCONST>`_
-   -  `1.6 VCONV <#VCONV>`_
-
--  `2 &LANINP &END -- Control Lanczos
-   diagonalizer <#.26LANINP_.26END_--_Control_Lanczos_diagonalizer>`_
-
-   -  `2.1 SIPITER,DIPITER <#SIPITER.2CDIPITER>`_
-   -  `2.2 SIPPRNT,DIPPRNT <#SIPPRNT.2CDIPPRNT>`_
-   -  `2.3 SIPEIGV <#SIPEIGV>`_
-
--  `3 Examples <#Examples>`_
--  `4 References <#References>`_
 
 &RELADC &END -- Control propagator calculation
 ==============================================
@@ -270,3 +252,97 @@ References
    ionization spectra of heavy-element compounds I. Method.*, J. Phys. B
    **43**, *205102* (2010) .
 
+
+Manual:RELADC:Sample inputs
+===========================
+
+Example 1:
+----------
+A bent triatomic molecule in *C*\ :sub:`*s*`\  symmetry. We have only
+one fermionic IRREP and complex MOs. This is indicated in the ADC output
+reporting complex ADC matrices. We want to do single ionizations
+(DOSIPS=T) at the ADC(3) level (ADCLEVEL=3) including constant diagrams
+(DOCONST=default) and compute all final states in symmetry 1, the only
+available one (XREPS=1). If the basis set is large, we restrict the
+iterations for the constant diagrams by releasing convergence a bit
+(VCONV=1.0E-05) beacause this step takes longest. We request 1000
+Lanczos iterations and consider ionization energies up to 100 eV on
+screen. The complete spectrum is written to SSPEC.1. You get as many
+entries as you have Lanczos iterations. A characteristic of the
+iterative diagonalizer is that the eigenvalues at the edge of the
+spectrum converge very fast and are reproduced for high iteration
+numbers. In order to get higher eigenvalues equally tightly converged
+the number of iterations has to be increased accordingly. In this case
+the spurious (already converged) eigenvalues are projected out. For the
+*C*\ :sub:`*s*`\  molecule the ADC input would then look like this:
+
+::
+
+    $RELADC DOSIPS=T, ADCLEVEL=3, XREPS=1, VCONV=1.0D-05 $END
+    $LANINP SIPITER=1000, SIPPRNT=100.0 $END
+
+Since we do not activate DIPs nothing else needs to be specified in the
+&LANINP Namelist.
+
+Example 2:
+----------
+The cadmium atom in *D*\ :sub:`2*h*`\  with .SPINFREE Hamiltonian. The
+*D*\ :sub:`2*h*`\  double group has two fermionic IRREPS (g and u)
+leading to XREPS=1,2. By using the .SPINFREE option a real calculation
+in the ordinary *D*\ :sub:`2*h*`\  point group is performed in DIRAC
+leading to eight symmetries as known from the character table. Therefore
+we set XREPS=1,2,3,4,5,6,7,8 if we need all symmetries. The relation of
+the irrep name to the number can be obtained from the Dirac output and
+is reproduced in the ADC code as well. After the calculation the
+*A*\ :sub:`1*g*`\  final states are the in SSPEC.01, the
+*B*\ :sub:`2*g*`\  in SSPEC.02 asf. The complete spectrum is then the
+merge of SSPEC.01 ... SSPEC.08. Remember that for the plot we only need
+the IP and the corresponding pole strength. We therefore do a grep '@'
+on the merged SSPEC.X files (cat SSPEC.\* > SPEC.all) and obtain all
+lines in each symmetry. If we need only a specific range we do "sort -n
+SPEC.all > SPEC.range" and edit according to our needs. Then we can use
+gnuplot with "plot "SPEC.range" u 1:2 w i". For ADC(3) with constant
+diagrams and 600 Lanczos iterations we would have an input like this:
+
+::
+
+    **DIRAC
+    .TITLE
+     input for Cd atom
+    .WAVE F
+    .4INDEX
+    **GENERAL
+    .DIRECT
+     1 1 1
+    **INTEGRALS
+    *READIN
+    *TWOINT
+    .SOFOCK
+    .SCREEN
+    1.E-16
+    **HAMILTONIAN
+    .SPINFREE
+    **WAVE FUNCTIONS
+    .DHF
+    .RELADC
+    *DHFCAL
+    .CLOSED
+     30 18
+    .FCKCNV
+    5.0E-09
+    .INTFLG
+    1 1 1
+    **MOLTRA
+    .INTFLG
+    1 1 1
+    .CORE
+    1..8
+    1..6
+    .ACTIVE
+    9..25
+    7..22
+    *END OF
+    $RELADC DOSIPS=T, ADCLEVEL=3, XREPS=1,2,3,4,5,6,7,8, $END
+    $LANINP SIPITER=600 $END
+
+ Back to `RELADC </dirac/index.php/Manual:RELADC>`_ manual.
