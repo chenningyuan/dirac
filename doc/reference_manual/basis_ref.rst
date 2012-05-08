@@ -1,9 +1,6 @@
 Manual:Basis:General
 ====================
 
-General information
-===================
-
 Choosing input type
 -------------------
 
@@ -91,11 +88,8 @@ that one needs to be aware of!
 version <http://dx.doi.org/10.1007/s002140100263>`_.
 
 
-Manual:Basis:Atomic coordinates
-===============================
-
 Atomic coordinates
-==================
+------------------
 
 Note that only the top six lines are shown in the input examples below.
 
@@ -204,14 +198,8 @@ of the atom must still be left four places, and no coordinates must
 enter the four first positions.
 
 
-Manual:Basis:Fitting basis set
-==============================
-
-**This page describes unreleased functionality. The keywords may not be
-available in your version of DIRAC.**
-
 Fitting basis set
-=================
+-----------------
 
 In the development version of DIRAC it is now possible to make use of
 density fitting. In such calculations, it is mandatory to include a
@@ -244,11 +232,8 @@ Basis sets from the basis set library
     FTSET BASIS Ahlrichs-Coulomb-Fit
 
 
-Manual:Basis:Large component basis set
-======================================
-
 Large component basis set
-=========================
+-------------------------
 
 The specification of the large component basis set follows the atomic
 coordinates. There are various possibilities for giving the basis set.
@@ -659,9 +644,6 @@ For the specification of blocks and exponent ranges see
 EVENTEMP </dirac/index.php/Manual:Basis:Large_component_basis_set#Even-tempered_basis_sets_.28geometric_progressions.29>`_.
 
 
-Manual:Basis:MOL
-================
-
 DIRAC Molecule File Structure
 -----------------------------
 
@@ -693,9 +675,8 @@ so-called fit sets via an additional section:
    set </dirac/index.php/Manual:Basis:Fitting_basis_set>`_
 
 
-
 Small component basis set
-=========================
+-------------------------
 
 After the large component basis set the small component basis set *can*
 be specified. If nothing is specified it is equivalent to specifying
@@ -761,7 +742,7 @@ the scratch area, for example using the pam script:
 
 
 Title and symmetry
-==================
+------------------
 
 The detailed input is best described using an example:
 
