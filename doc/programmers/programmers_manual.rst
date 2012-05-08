@@ -102,7 +102,7 @@ and D1 can be any number so the result is undefined.
 With "implicit none" this will not compile.
 
 Another example is a typo:
-istead of
+istead of ::
  NDIM = 12  ! correct code
  you could type:
  NDIN = 12  ! typo
@@ -126,3 +126,19 @@ With "implicit.h"  you can comment out includes and the code may still
 compile.
 Contraty, "implicit none" will warn you. If you remove an include file using "implicit none"
 and the code compiles, then this include was useless. 
+
+How about integers ?
+--------------------
+Please  in your codes always use *KIND free* declarations ::
+ integer :: variable
+instead of *KIND restricted* integer variables :: 
+ integer(KIND=4) :: variable
+ integer(KIND=8) :: variable
+
+This is because we need flexibility for integer variables: compilation
+of the DIRAC suite goes also with predefined integer*8 variables 
+(through -i8 Fortranflag), 
+for what all integer variables in the code must be declared without KIND 
+restriction.
+
+

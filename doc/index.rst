@@ -134,8 +134,17 @@ Reference manual
    :maxdepth: 1
 
    reference_manual/dirac.rst
+   reference_manual/general.rst
+   reference_manual/integrals.rst
    reference_manual/optimize.rst
    reference_manual/molecule.rst
+   reference_manual/hamiltonian.rst
+   reference_manual/wavefunction.rst
+   reference_manual/scf.rst
+   reference_manual/properties.rst
+   reference_manual/moltra.rst
+   reference_manual/relccsd.rst
+   reference_manual/reladc.rst
 
 
 Relativistic community
