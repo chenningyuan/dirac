@@ -1,6 +1,3 @@
-DiscussionForum
-===============
-
 The Dirac mailing list
 ======================
 

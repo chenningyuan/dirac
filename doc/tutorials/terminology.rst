@@ -32,19 +32,9 @@ DC
 
 DC+G
 
+AMFI
+
 Spin-own orbit
-
-AMFI
-
-AMFI
-
-Y
-
-Y
-
 Spin-other orbit
 
-`AMFI </dirac/index.php/AMFI>`_
-
-Y
 

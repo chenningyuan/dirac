@@ -193,7 +193,7 @@ Write timing information.
 
 The detailed `NELEC\_F1 <#NELEC_F1>`_ and `NELEC\_F2 <#NELEC_F2>`_ input
 is mainly of interest in atomic calculations where the program may use
-the |D\_{\\infty h}| symmetry group. In that case this option permits
+the D\_{\\infty h}| symmetry group. In that case this option permits
 precise specification of the reference determinant.
 `Here </dirac/index.php/Manual:RELCCSD:Sample_inputs>`_ we give an
 example for the high spin state of the nitrogen atom.
@@ -454,7 +454,7 @@ Calculate the MP2 gradient via the old (approximate) MO formalism.
 NEOPER
 ------
 
-Number of first order property operators |\\langle E \\rangle| (only
+Number of first order property operators \\langle E \\rangle| (only
 relevant for the old formalism).
 
 *Default:*
@@ -466,7 +466,7 @@ relevant for the old formalism).
 NAMEE
 -----
 
-Names of *E* operators in |image2|.
+Names of *E* operators in image2|.
 
 *Arguments:* Character (A8) (NAMEE(I),I = 1,NEOPER).
 
@@ -523,7 +523,7 @@ the property integrals should first be defined in the
 NAOPER
 ------
 
-Number of A operators in |\\langle\\langle A ; B
+Number of A operators in \\langle\\langle A ; B
 \\rangle\\rangle\_\\omega|.
 
 *Default:*
@@ -535,7 +535,7 @@ Number of A operators in |\\langle\\langle A ; B
 NBOPER
 ------
 
-Number of B operators in |image1|.
+Number of B operators in image1|.
 
 *Default:*
 
@@ -546,7 +546,7 @@ Number of B operators in |image1|.
 NFREQ
 -----
 
-Number of frequencies in |image2|.
+Number of frequencies in image2|.
 
 *Default:*
 
@@ -557,7 +557,7 @@ Number of frequencies in |image2|.
 NAMEA
 -----
 
-Names of A operators in |image3|.
+Names of A operators in image3|.
 
 *Arguments:* Character (A8) (NAMEA(I),I = 1,NAOPER).
 
@@ -570,7 +570,7 @@ Names of A operators in |image3|.
 NAMEB
 -----
 
-Names of B operators in |image4|.
+Names of B operators in image4|.
 
 *Arguments:* Character (A8) (NAMEB(I),I = 1,NBOPER).
 
@@ -583,7 +583,7 @@ Names of B operators in |image4|.
 EFREQ
 -----
 
-Values of frequencies in |image5|.
+Values of frequencies in image5|.
 
 *Arguments:* Real (EFREQ(I),I = 1,NFREQ).
 

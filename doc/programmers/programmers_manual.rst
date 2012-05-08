@@ -103,8 +103,11 @@ With "implicit none" this will not compile.
 
 Another example is a typo:
 istead of ::
+
  NDIM = 12  ! correct code
- you could type:
+
+you could type ::
+
  NDIN = 12  ! typo
  
 With implicit none such mistake won't compile, with "implicit.h" the code will compile
@@ -140,5 +143,4 @@ of the DIRAC suite goes also with predefined integer*8 variables
 (through -i8 Fortranflag), 
 for what all integer variables in the code must be declared without KIND 
 restriction.
-
 
