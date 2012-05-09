@@ -196,7 +196,7 @@ C***********************************************************************
 C*****  Read (C1/formatted) MO coefficients   **************************
 C***********************************************************************
 C
-      IF(DOPIN.or.dopin_i3) CALL PCMOIN(WORK,LWORK)
+      CALL PCMOIN(WORK,LWORK)
       IF(DOACIN) CALL ACMOIN(WORK,LWORK)
 C
 C     Extend RKB coeffcients with complementary UKB space
