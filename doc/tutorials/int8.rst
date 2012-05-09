@@ -1,20 +1,5 @@
-Integer8
-========
-
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 Introduction <#Introduction>`_
--  `2 Testing program <#Testing_program>`_
--  `3 Notes <#Notes>`_
--  `4 Integer\*4/8 type safe
-   programs <#Integer.2A4.2F8_type_safe_programs>`_
--  `5 Examples of parallel compiling <#Examples_of_parallel_compiling>`_
+Working with integer*8 variables
+====================================
 
 Introduction
 ------------
@@ -24,7 +9,7 @@ called with a integer\*8 argument?
 
 The answer depends on the hardware and software platform, and
 unfortunately errors can often be difficult to detect. To understand
-this look at the memory layout of the number 12345 stored in integer\*4
+this, look at the memory layout of the number 12345 stored in integer\*4
 and integer\*8 variables, on an regular Intel CPU (x86):
 
 ::
@@ -38,7 +23,7 @@ the eight bytes of the integer\*8 representing the same number. As you
 can see the start of the integer\*8 is the same as the integer\*4 (on
 this machine!).
 
-Similarly the number -1 is stored as
+Similarly, the number -1 is stored as
 
 ::
 
@@ -106,7 +91,7 @@ Which will be printed as -4294954951.
 This is just one example of how things can go wrong, and why things can
 often work by "chance".
 
-Note that this is very platform dependent, on a big-endian CPU the above
+Note that this illustrated situation is very platform dependent; on a big-endian CPU the above
 example would not work at all. Always make sure to use the correct
 integer type in arguments, and link to correct versions of external
 libraries.
@@ -119,8 +104,8 @@ Notes
    you may have an integer size mismatch.
 -  Passing integer arrays of the wrong size gives even more obvious
    bugs.
--  Problems also appear if you pass integer\*4 variables to a subroutine
-   expecting integer\*8.
+-  Problems also appear if you pass integer*4 variables to a subroutine
+   expecting integer*8.
 
 Integer\*4/8 type safe programs
 -------------------------------

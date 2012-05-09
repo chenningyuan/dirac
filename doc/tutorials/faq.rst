@@ -1,45 +1,7 @@
 FAQ
 ===
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Frequently asked questions.
-
-Contents
---------
-
--  `1 Building <#Building>`_
-
-   -  `1.1 I am about to install DIRAC on a 64-bit machine, should I
-      compile using 64-bit integers or 32-bit
-      integers? <#I_am_about_to_install_DIRAC_on_a_64-bit_machine.2C_should_I_compile_using_64-bit_integers_or_32-bit_integers.3F>`_
-
--  `2 Running Jobs with DIRAC <#Running_Jobs_with_DIRAC>`_
-
-   -  `2.1 Parallel run information <#Parallel_run_information>`_
-
-      -  `2.1.1 My shell environment variables are not forwarded to the
-         compute nodes. What do i have to
-         do? <#My_shell_environment_variables_are_not_forwarded_to_the_compute_nodes._What_do_i_have_to_do.3F>`_
-
-   -  `2.2 General run information <#General_run_information>`_
-
-      -  `2.2.1 How can I restart from the MO coefficients file
-         DFCOEF? <#How_can_I_restart_from_the_MO_coefficients_file_DFCOEF.3F>`_
-      -  `2.2.2 Can I move the DFCOEF file from one machine to another
-         and restart from
-         it? <#Can_I_move_the_DFCOEF_file_from_one_machine_to_another_and_restart_from_it.3F>`_
-      -  `2.2.3 I tried to restart but get the error "Incompatible
-         number of basis functions" - what does it
-         mean? <#I_tried_to_restart_but_get_the_error_.22Incompatible_number_of_basis_functions.22_-_what_does_it_mean.3F>`_
-      -  `2.2.4 I would like to use the 2c-molecular-mean-field
-         Hamiltonian (X2Cmmf) for my post-HF (Coupled-Cluster [CC],
-         Fock-Space CC, KR-MCSCF or KR-CI) calculations - what do i need
-         to
-         consider? <#I_would_like_to_use_the_2c-molecular-mean-field_Hamiltonian_.28X2Cmmf.29_for_my_post-HF_.28Coupled-Cluster_.5BCC.5D.2C_Fock-Space_CC.2C_KR-MCSCF_or_KR-CI.29_calculations_-_what_do_i_need_to_consider.3F>`_
+Some frequently asked questions.
 
 Building
 --------
@@ -124,14 +86,14 @@ formatted writing of DFCOEF and the space needed to store the mj-value
 of each spinor.
 
 I tried to restart but get the error "Incompatible number of basis functions" - what does it mean?
-                                                                                                  
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This probably means that you have changed the basis set. Presently DIRAC
 cannot restart from DFCOEF if the basis set changes (more correctly if
 matrix dimensions change).
 
 I would like to use the 2c-molecular-mean-field Hamiltonian (X2Cmmf) for my post-HF (Coupled-Cluster [CC], Fock-Space CC, KR-MCSCF or KR-CI) calculations - what do i need to consider?
-                                                                                                                                                                                       
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The 2c-molecular-mean-field Hamiltonian (X2Cmmf) is at present (Dirac11
 release Nov 2011) **available** for the following methods:

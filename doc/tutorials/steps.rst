@@ -1,14 +1,6 @@
 How to run a calculation in separate steps
 ==========================================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-(Redirected from `How to run a calculation is separate
-steps </dirac/index.php?title=How_to_run_a_calculation_is_separate_steps&redirect=no>`_)
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 Most of the time there are no problems in executing the three steps in a
 coupled-cluster calculation with RELCCSD (1. the Hartree-Fock
 calculation; 2. the transformation from AOs to MOs performed by MOLTRA;
@@ -26,20 +18,6 @@ considerably shorten the total wall time spent on a parallel
 calculation, since a larger number of MPI processes can be started for
 the SCF (and/or Moltra) step(s) with the same amount of memory per
 compute node.
-
-Contents
---------
-
--  `1 Overview <#Overview>`_
-
-   -  `1.1 Step 1: SCF <#Step_1:_SCF>`_
-   -  `1.2 Step 2: MOLTRA <#Step_2:_MOLTRA>`_
-   -  `1.3 Step 3: RELCCSD <#Step_3:_RELCCSD>`_
-
-      -  `1.3.1 A note on Fock-Space
-         Calculations <#A_note_on_Fock-Space_Calculations>`_
-
--  `2 Walk-thru <#Walk-thru>`_
 
 Overview
 --------

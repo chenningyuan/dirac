@@ -1,12 +1,7 @@
 SCF niobium atom
 ================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-DIRAC presently does not do open-shell Hartree-Fock, rather
+DIRAC presently does not do open-shell Hartree-Fock in a strict sense, rather
 average-of-configuration, which amounts to the optimization of the
 average energy of a set of configurations (or determinants) generated
 from the specification of a given number of open shells and their

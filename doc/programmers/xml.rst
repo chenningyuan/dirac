@@ -1,24 +1,3 @@
-XML Libraries
-=============
-
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 Documentation for Fortran XML
-   libraries <#Documentation_for_Fortran_XML_libraries>`_
-
-   -  `1.1 Usage <#Usage>`_
-   -  `1.2 Example: Writing an xml
-      document <#Example:_Writing_an_xml_document>`_
-   -  `1.3 Example: Reading an xml
-      document <#Example:_Reading_an_xml_document>`_
-   -  `1.4 xml\_settings.h <#xml_settings.h>`_
-
 Documentation for Fortran XML libraries
 =======================================
 

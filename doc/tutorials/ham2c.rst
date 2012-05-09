@@ -1,11 +1,6 @@
 Setting various two-component Hamiltonians
 ==========================================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 There are several two-component Hamiltonians in DIRAC arising from the
 decoupling transformation of the one-electron DIRAC Hamiltonian.
 Likewise spin-orbit interaction terms can be left out and calculations
@@ -22,4 +17,21 @@ The best two-component Hamiltonian is BSS+MFSSO, or IOTC+MFSSO, where
 one-electron scalar and spin-orbit effects are up to infinite order, and
 AMFI MFSSO contribution (mean-field spin-same orbit) provides
 'screening' of one-electron spin-orbit terms.
+
+Tutorial: 4c/2c-relativistic Hamiltonian choices
+================================================
+
+**IN PREPARATION!!!!!!!!! stefan**
+
+Tutorial: Preparing the right input for a chosen Hamiltonian
+============================================================
+
+This tutorial chapter deals with the manifold of Hamiltonian choices in
+Dirac and intends to
+
+-  provide an "accuracy" guideline for the user that can be expected
+   from a comparison of different Hamiltonians
+-  provide a sample input for each Hamiltonian listed
+
+... bla Stefan more to come
 

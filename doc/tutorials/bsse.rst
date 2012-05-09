@@ -1,19 +1,7 @@
-Tutorial:BSSE
-=============
+Basis set superposition error
+==============================
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
-Contents
---------
-
--  `1 Definition of ghost atoms <#Definition_of_ghost_atoms>`_
--  `2 DFT grid <#DFT_grid>`_
--  `3 Symmetry recognition <#Symmetry_recognition>`_
-
- The basis set superposition error (BSSE) can be estimated by performing
+The basis set superposition error (BSSE) can be estimated by performing
 subsystem calculations using ghost atoms which carry basis sets of the
 full system.
 
@@ -94,4 +82,3 @@ Note that the symmetry recognition uses the atom types and coordinates
 but not the respective basis sets. This means that if you use ghost
 atoms with different basis sets, you should give the symmetry explicitly
 or check the symmetry recognized by DIRAC.
-

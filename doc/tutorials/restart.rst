@@ -1,11 +1,6 @@
 Restarting
 ==========
 
-From Diracwiki
-~~~~~~~~~~~~~~
-
-Jump to: `navigation <#column-one>`_, `search <#searchInput>`_
-
 A DIRAC calculation can be restarted at various stages depending on the
 type of calculation. In general it should be enough to give the archive
 file of a previous calculation as an argument to the ``pam`` script.
@@ -24,3 +19,7 @@ the manual section of `MOLTRA </dirac/index.php/Manual:MOLTRA>`_, and
 also the tips on `how to run a coupled-cluster calculation in separate
 steps </dirac/index.php/How_to_run_a_calculation_in_separate_steps>`_.
 
+Restarting a Coupled-Cluster calculation
+----------------------------------------
+
+write me...
