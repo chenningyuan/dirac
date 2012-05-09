@@ -1,5 +1,8 @@
 module dirac_gen1int_interface
 
+!  radovan: this file is only used in DIRAC
+!           but i keep it here for interface refactoring
+
    use dalton_shell
 
    implicit none
@@ -96,8 +99,8 @@ contains
 
      ! computes the integrals and/or expectation values
 
-     call DaltonShellIntegral(bra=1,                            &
-                              ket=1,                            &
+     call DaltonShellIntegral(comp_bra=1,                       &
+                              comp_ket=1,                       &
                               one_prop=prop_operator,           &
                               london_ao=LONDON_AO,              &
                               num_ints=num_opt_derv,            &
@@ -107,8 +110,8 @@ contains
                               io_viewer=io_viewer,              &
                               level_print=0)
 
-     call DaltonShellIntegral(bra=2,                            &
-                              ket=2,                            &
+     call DaltonShellIntegral(comp_bra=2,                       &
+                              comp_ket=2,                       &
                               one_prop=prop_operator,           &
                               london_ao=LONDON_AO,              &
                               num_ints=num_opt_derv,            &

@@ -279,15 +279,15 @@ module dalton_shell
   !> \return val_ints contains the integral matrices
   !> \return val_expt contains the expectation values
   !> \note \var(val_expt) should be zero by users before calculations
-  subroutine DaltonShellIntegral(bra, ket, one_prop, london_ao,                      &
+  subroutine DaltonShellIntegral(comp_bra, comp_ket, one_prop, london_ao,            &
                                  order_mag_bra, order_mag_ket, order_mag_total,      &
                                  order_ram_bra, order_ram_ket, order_ram_total,      &
                                  order_geo_bra, order_geo_ket, geom_tree,            &
                                  num_ints, val_ints, redunt_ints, wrt_ints,          &
                                  num_dens, ao_dens, val_expt, redunt_expt, wrt_expt, &
                                  io_viewer, level_print)
-    integer,           intent(in) :: bra
-    integer,           intent(in) :: ket
+    integer,           intent(in) :: comp_bra
+    integer,           intent(in) :: comp_ket
     type(one_prop_t), intent(in) :: one_prop
     logical, optional, intent(in) :: london_ao
     integer, optional, intent(in) :: order_mag_bra
@@ -399,30 +399,30 @@ module dalton_shell
       call GeomTreeIdxPath(geom_tree=geom_tree, idx_path=curr_path)
       call GeomTreeNumPath(geom_tree=geom_tree, num_paths=num_paths)
       ! calculates the property integrals of current path
-      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(bra), &
-                                num_shells_ket=num_sub_shells(ket), &
-                                sub_shells_bra=sub_shells(1, bra),  &
-                                sub_shells_ket=sub_shells(1, ket),  &
-                                bra_same_as_ket=(bra==ket),         &
-                                one_prop=one_prop,                  &
-                                london_ao=london_ao,                &
-                                order_mag_bra=order_mag_bra,        &
-                                order_mag_ket=order_mag_ket,        &
-                                order_mag_total=order_mag_total,    &
-                                order_ram_bra=order_ram_bra,        &
-                                order_ram_ket=order_ram_ket,        &
-                                order_ram_total=order_ram_total,    &
-                                order_geo_bra=order_geo_bra,        &
-                                order_geo_ket=order_geo_ket,        &
-                                geom_tree=geom_tree,                &
-                                num_ints=num_ints,                  &
-                                val_ints=val_ints,                  &
-                                redunt_ints=redunt_ints,            &
-                                wrt_ints=wrt_ints,                  &
-                                num_dens=num_dens,                  &
-                                ao_dens=ao_dens,                    &
-                                val_expt=val_expt,                  &
-                                redunt_expt=redunt_expt,            &
+      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(comp_bra), &
+                                num_shells_ket=num_sub_shells(comp_ket), &
+                                sub_shells_bra=sub_shells(1, comp_bra),  &
+                                sub_shells_ket=sub_shells(1, comp_ket),  &
+                                bra_same_as_ket=(comp_bra==comp_ket),    &
+                                one_prop=one_prop,                       &
+                                london_ao=london_ao,                     &
+                                order_mag_bra=order_mag_bra,             &
+                                order_mag_ket=order_mag_ket,             &
+                                order_mag_total=order_mag_total,         &
+                                order_ram_bra=order_ram_bra,             &
+                                order_ram_ket=order_ram_ket,             &
+                                order_ram_total=order_ram_total,         &
+                                order_geo_bra=order_geo_bra,             &
+                                order_geo_ket=order_geo_ket,             &
+                                geom_tree=geom_tree,                     &
+                                num_ints=num_ints,                       &
+                                val_ints=val_ints,                       &
+                                redunt_ints=redunt_ints,                 &
+                                wrt_ints=wrt_ints,                       &
+                                num_dens=num_dens,                       &
+                                ao_dens=ao_dens,                         &
+                                val_expt=val_expt,                       &
+                                redunt_expt=redunt_expt,                 &
                                 wrt_expt=wrt_expt)
       ! loops over other paths
       do ipath = curr_path+1, num_paths
@@ -432,57 +432,57 @@ module dalton_shell
         if (level_print>=20) &
           call GeomTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
         ! calculates the property integrals of current path
-        call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(bra), &
-                                  num_shells_ket=num_sub_shells(ket), &
-                                  sub_shells_bra=sub_shells(1, bra),  &
-                                  sub_shells_ket=sub_shells(1, ket),  &
-                                  bra_same_as_ket=(bra==ket),         &
-                                  one_prop=one_prop,                  &
-                                  london_ao=london_ao,                &
-                                  order_mag_bra=order_mag_bra,        &
-                                  order_mag_ket=order_mag_ket,        &
-                                  order_mag_total=order_mag_total,    &
-                                  order_ram_bra=order_ram_bra,        &
-                                  order_ram_ket=order_ram_ket,        &
-                                  order_ram_total=order_ram_total,    &
-                                  order_geo_bra=order_geo_bra,        &
-                                  order_geo_ket=order_geo_ket,        &
-                                  geom_tree=geom_tree,                &
-                                  num_ints=num_ints,                  &
-                                  val_ints=val_ints,                  &
-                                  redunt_ints=redunt_ints,            &
-                                  wrt_ints=wrt_ints,                  &
-                                  num_dens=num_dens,                  &
-                                  ao_dens=ao_dens,                    &
-                                  val_expt=val_expt,                  &
-                                  redunt_expt=redunt_expt,            &
+        call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(comp_bra), &
+                                  num_shells_ket=num_sub_shells(comp_ket), &
+                                  sub_shells_bra=sub_shells(1, comp_bra),  &
+                                  sub_shells_ket=sub_shells(1, comp_ket),  &
+                                  bra_same_as_ket=(comp_bra==comp_ket),    &
+                                  one_prop=one_prop,                       &
+                                  london_ao=london_ao,                     &
+                                  order_mag_bra=order_mag_bra,             &
+                                  order_mag_ket=order_mag_ket,             &
+                                  order_mag_total=order_mag_total,         &
+                                  order_ram_bra=order_ram_bra,             &
+                                  order_ram_ket=order_ram_ket,             &
+                                  order_ram_total=order_ram_total,         &
+                                  order_geo_bra=order_geo_bra,             &
+                                  order_geo_ket=order_geo_ket,             &
+                                  geom_tree=geom_tree,                     &
+                                  num_ints=num_ints,                       &
+                                  val_ints=val_ints,                       &
+                                  redunt_ints=redunt_ints,                 &
+                                  wrt_ints=wrt_ints,                       &
+                                  num_dens=num_dens,                       &
+                                  ao_dens=ao_dens,                         &
+                                  val_expt=val_expt,                       &
+                                  redunt_expt=redunt_expt,                 &
                                   wrt_expt=wrt_expt)
       end do
     ! no total geometric derivatives
     else
-      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(bra), &
-                                num_shells_ket=num_sub_shells(ket), &
-                                sub_shells_bra=sub_shells(1, bra),  &
-                                sub_shells_ket=sub_shells(1, ket),  &
-                                bra_same_as_ket=(bra==ket),         &
-                                one_prop=one_prop,                  &
-                                london_ao=london_ao,                &
-                                order_mag_bra=order_mag_bra,        &
-                                order_mag_ket=order_mag_ket,        &
-                                order_mag_total=order_mag_total,    &
-                                order_ram_bra=order_ram_bra,        &
-                                order_ram_ket=order_ram_ket,        &
-                                order_ram_total=order_ram_total,    &
-                                order_geo_bra=order_geo_bra,        &
-                                order_geo_ket=order_geo_ket,        &
-                                num_ints=num_ints,                  &
-                                val_ints=val_ints,                  &
-                                redunt_ints=redunt_ints,            &
-                                wrt_ints=wrt_ints,                  &
-                                num_dens=num_dens,                  &
-                                ao_dens=ao_dens,                    &
-                                val_expt=val_expt,                  &
-                                redunt_expt=redunt_expt,            &
+      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(comp_bra), &
+                                num_shells_ket=num_sub_shells(comp_ket), &
+                                sub_shells_bra=sub_shells(1, comp_bra),  &
+                                sub_shells_ket=sub_shells(1, comp_ket),  &
+                                bra_same_as_ket=(comp_bra==comp_ket),    &
+                                one_prop=one_prop,                       &
+                                london_ao=london_ao,                     &
+                                order_mag_bra=order_mag_bra,             &
+                                order_mag_ket=order_mag_ket,             &
+                                order_mag_total=order_mag_total,         &
+                                order_ram_bra=order_ram_bra,             &
+                                order_ram_ket=order_ram_ket,             &
+                                order_ram_total=order_ram_total,         &
+                                order_geo_bra=order_geo_bra,             &
+                                order_geo_ket=order_geo_ket,             &
+                                num_ints=num_ints,                       &
+                                val_ints=val_ints,                       &
+                                redunt_ints=redunt_ints,                 &
+                                wrt_ints=wrt_ints,                       &
+                                num_dens=num_dens,                       &
+                                ao_dens=ao_dens,                         &
+                                val_expt=val_expt,                       &
+                                redunt_expt=redunt_expt,                 &
                                 wrt_expt=wrt_expt)
     end if
 100 format("DaltonShellIntegral>> ",A,I4)
