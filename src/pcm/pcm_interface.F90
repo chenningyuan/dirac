@@ -130,7 +130,7 @@
 
       if (nr_points <= 0) call init
 ! Compute total polarization charges
-      call pcm_charges(dmat, work, lwork, 0)
+      call pcm_charges(dmat, work, lwork, pcmmod_print)
 ! Compute polarization energy
       call comp_pol_ene_pcm(pol_ene)
       pcm_energy = pol_ene
@@ -182,7 +182,7 @@
 !
 
    subroutine pcm_charges(dmat, work, lwork, printlevel)
-     use vc_grid 
+     use pcm_electrostatic_potential 
 ! Passed variables
       integer, intent(in)  :: printlevel
       real(8), intent(in)  :: dmat(*)
@@ -210,7 +210,7 @@
 ! Compute nuclear MEP @tesserae centers
       potName = 'NucPot'//char(0)
       chgName = 'NucChg'//char(0)
-      call esp_nuc(nr_points, tess_cent, nuc_pot, 0)
+      call pcm_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
 ! Set a cavity surface function with the nuclear MEP
       call set_surface_function(nr_points, nuc_pot, potName)
 ! Compute nuclear polarization charges and set the proper surface function
@@ -279,7 +279,7 @@
    end subroutine
 
    subroutine ele_pot_pcm(pot_or_chg, fock_or_dmat, work, lwork, get_fock)
-      use vc_grid
+      use pcm_electrostatic_potential
 
       real(8), intent(out) :: pot_or_chg(nr_points)
       real(8), intent(in)  :: fock_or_dmat(*)
@@ -289,10 +289,10 @@
 
 ! get_fock is .true. if we want the Fock matrix contribution 
       if (get_fock) then
-        call esp_el(nr_points, fock_or_dmat, tess_cent, pot_or_chg, work, lwork, 0, get_fock)
+        call pcm_electronic_mep(nr_points, fock_or_dmat, tess_cent, pot_or_chg, work, lwork, 0, get_fock)
       else
 ! get_fock is .false. if we want the electronic MEP
-        call esp_el(nr_points, fock_or_dmat, tess_cent, pot_or_chg, work, lwork, 0, get_fock)
+        call pcm_electronic_mep(nr_points, fock_or_dmat, tess_cent, pot_or_chg, work, lwork, 0, get_fock)
       end if
 
    end subroutine

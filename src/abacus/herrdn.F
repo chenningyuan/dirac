@@ -722,6 +722,15 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
 #endif
      &            DOOWN,blk)
+
+#ifdef BUILD_GEN1INT
+!     initialize basis sets (large and small components) used in Gen1Int interface
+      call gen1int_ifc_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
+     &                      NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
+     &                      NUC(:,1:2), NRC(:,1:2), KPRIM,
+     &                      ALPHA(:,:,1:2), CPRIMU(:,:,:,1:2))
+#endif
+
 C
 C     *************************************************
 C     ***** Print orbital and geometry input data *****
@@ -2680,7 +2689,6 @@ C
 #if defined (NEW_DIRAC_DENSFIT_PROCESSING)
          IF (NLARGE_FIT.GT.0) THEN
 #else
-         write (*,*) 'debug: nbasiaux =',nbasisaux
          IF (NBASISAUX.GT.0) THEN
 #endif
             CALL HEADER('Fit Functions, Global/Large Component',-1)

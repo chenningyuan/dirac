@@ -96,7 +96,7 @@
          call esp_nuc(1, r_p, vc, 0)
       end if
       if (el_part) then
-         call esp_el(1, dmat, r_p, vc, work, lwork, 0, .false.)
+         call esp_el(1, dmat, r_p, vc, work, lwork, 0)
       end if
 
       esp = vc(1)
@@ -125,7 +125,7 @@
 
 !     electrostatic potential: electronic contribution
       call esp_el(nr_points, dmat, points, vc, work, & 
-                  lwork, iprint, .false.)
+                  lwork, iprint)
 
 !     electrostatic potential: nuclear contribution
       call esp_nuc(nr_points, points,vc,iprint)
@@ -188,8 +188,8 @@
                                                                  
       end subroutine
 
-      subroutine esp_el(nr_points, fock_or_dmat, points, pot_or_chg,    &
-                        work, lwork, iprint, get_fock)
+      subroutine esp_el(nr_points, dmat, points, pot_or_chg,    &
+                        work, lwork, iprint)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
@@ -205,16 +205,10 @@
 !
 ! Originally written by JHS. Debugged by RB and RDR 0312.
 ! 
-! RDR 050312 CANNOT yet handle symmetry. This is unimportant at the moment
-!            since also PCMSolver cannot handle symmetry.
-! RDR 220312 This routine will be used to form both potentials and Fock
-!            matrix contribution for PCM.
-!            fock_or_dmat is Fock or density matrix, pot_or_chg is potentials 
-!            or charges vector.
-!            get_fock logical is present and TRUE:
-!            charges vector as input, Fock matrix contribution as output.
-!            get_fock logical is absent or is present and FALSE:
-!            density matrix as input, potentials vector as output.                        
+! RDR 050312 CANNOT yet handle 2-component Hamiltonians.
+! RDR 050312 CANNOT yet handle symmetry.
+! RDR 010512 Disentangle this routine from PCM, from now on
+! PCM will have its own electronic MEP routines.
 !                        
 
 #include "priunit.h"
@@ -242,10 +236,7 @@
 
 ! Passed variables
       integer, intent(in) :: nr_points
-      real(8)             :: fock_or_dmat(ntbas(0), ntbas(0), nz)
-! Triggers whether we want PCM Fock matrix contribution or just the
-! potential.      
-      logical, optional   :: get_fock 
+      real(8)             :: dmat(ntbas(0), ntbas(0), nz)
       real(8)             :: pot_or_chg(nr_points)
       real(8)             :: points(3, nr_points), work(*)
       integer             :: iprint, lwork
@@ -256,7 +247,6 @@
       integer :: ishela, ishelb, ica, icb, ia, ib
       integer :: multa, multb, nhktab, kab
       integer :: ipoint, idxmax
-      logical :: do_fock
 
       if (nbsym > 1) then
          call quit('Electrostatic potential calculation cannot          &
@@ -267,14 +257,6 @@
       with X2C Hamiltonian!')
       end if
 
-! Fock matrix contribution or potential calculation?      
-      do_fock = .false. 
-      if (present(get_fock)) then
-        if (get_fock) then
-            do_fock = .true.
-        end if
-      end if
-                
       tols = thrs**2
       tolog = 2 * log(thrs)
 ! mc is the number of components, as defined in include/dcbham.h
@@ -339,18 +321,9 @@
               end if
 ! We multiply by +2.0d0. The D matrix refers to the alpha part only.
               do ipoint = 1, nr_points
-              if (do_fock) then
-                 do ib = 1, kcktb
-                   do ia = 1, kckta 
-               fock_or_dmat(idena+ia,idenb+ib, 1) = fock_or_dmat(idena+ia,idenb+ib, 1) &
-                    - ader(ia, ib, ipoint) * pot_or_chg(ipoint)
-                   end do
-                 end do
-               else
                pot_or_chg(ipoint) = pot_or_chg(ipoint) + 2.0d0                    * &
-                    sum(fock_or_dmat(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
+                    sum(dmat(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
                             ader(1:kckta, 1:kcktb, ipoint))
-                end if
               end do 
               deallocate(ader)
           end if  
@@ -414,7 +387,7 @@
       jmaxm = 0
       jmax = jmaxa + jmaxb
       allocate(odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3))
-      ader(:, :, :) = 0.0d0
+      allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
 
       cora(1) = corax
       cora(2) = coray
@@ -459,16 +432,14 @@
      &           .true.,.false.,origin,idummy)
           do ipoint = 1, nr_points
             difcp(:) = points(1:3,ipoint) - corp(:)
-            allocate(ahgtf(0:jmax, 0:jmax, 0:jmax))
-            ahgtf = 0.0d0
             call vnuc(ahgtf, jmax, expp, difcp, iprint)
             call cart_vc(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm,        &
      &            ader(:, :, ipoint), ahgtf, iprint)
-            deallocate(ahgtf)
           end do ! Close loop over grid points
         end do ! Close loop over second shell
       end do ! Close loop over first shell
       deallocate(odc)
+      deallocate(ahgtf)
 
       return
 
@@ -501,7 +472,6 @@
 
 ! Initialization
       allocate(r(0:jmax, 0:jmax, 0:jmax, 0:jmax))
-      r = 0.0d0
 
 ! Incomplete gamma function
       wval = pval * (cp(1) * cp(1) + cp(2) * cp(2) + cp(3) * cp(3))
@@ -541,9 +511,9 @@
          end do
       end do
 ! The nuclear attraction integrals are given as r(t, u, v, 0)
-      do t = 0, jmax
+      do v = 0, jmax
          do u = 0, jmax
-            do v = 0, jmax
+            do t = 0, jmax
                ahgtf(t, u, v) = - r(t, u, v, 0)
             end do
          end do

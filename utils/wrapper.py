@@ -356,7 +356,13 @@ class Wrapper:
         try:
             if self.verbose: print "Wrapper: Copying '"+src+"' to '"+dst+"'"
             if len(rep) == 0:
-                shutil.copy2(src,dst)
+                if src.endswith('.gz') and not dst.endswith('.gz'):
+                    # -ifile.gz=file
+                    # guzip file after copyin
+                    shutil.copy2(src, dst+'.gz')
+                    os.system('gunzip %s.gz' % dst)
+                else:
+                    shutil.copy2(src,dst)
             else:
                 if self.verbose:
                     for r in rep:
@@ -403,7 +409,13 @@ class Wrapper:
         for f in self.copyout:
             try:
                 if len(f) == 2:
-                    cpout(os.path.join(self.tmppath,f[0]),f[1])
+                    if f[1].endswith('.gz') and not f[0].endswith('.gz'):
+                        # -gfile=file.gz
+                        # gzip file and add file.gz=file.gz to cpout
+                        os.system('gzip %s' % os.path.join(self.tmppath, f[0]))
+                        cpout(os.path.join(self.tmppath,f[0]+'.gz'),f[1])
+                    else:
+                        cpout(os.path.join(self.tmppath,f[0]),f[1])
                 else: # allow patterns in copyout if there is no = 
                     for ff in glob.glob(os.path.join(self.tmppath,f[0])):
                         cpout(ff)

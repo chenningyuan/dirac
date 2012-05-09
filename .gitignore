@@ -20,6 +20,7 @@ diracrc
 */*/Makefile
 external/include/
 external/lib/
-external/pcmsolver-build/
 external/src/
 external/tmp/
+external/pcmsolver-build/
+external/gen1int-build/

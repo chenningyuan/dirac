@@ -5500,7 +5500,6 @@ C     *******************************
 C
       CALL MEMGET('REAL',KMOLFFC,(2*NASHT)*(2*NASHT)*MIN(NZ,2),
      $     WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
       IOFF1 = 1 + NCSIM
       DO I = 1, NOSIM
 C
@@ -5529,6 +5528,8 @@ C           debug
 c           CALL CHKNZ3R(H2ACX(1,I))
 C           end debug
 C
+            CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2,
+     &                  WORK,KFREE,LFREE)
             CALL DNZ32M(H2ACX(1,I),WORK(KMUUUU),IPRXRS)
 C
          END IF

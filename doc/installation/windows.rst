@@ -1,6 +1,6 @@
 
-Windows 7
-=========
+Installation on Windows 7
+=========================
 
 
 DIRAC is working mostly under the Linux/Unix operating systems. 

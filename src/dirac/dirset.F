@@ -39,8 +39,12 @@ C***********************************************************************
       use interest_interface
 #endif
 #ifdef MOD_CAP
-      USE Memory
+      use memory
 #endif
+#ifdef BUILD_GEN1INT
+      use dirac_gen1int_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -54,6 +58,10 @@ C
 #include "cbihr1.h"
 #include "cbirea.h"
 #include "infpar.h"
+
+#ifdef BUILD_GEN1INT
+#include "gen1int.h"
+#endif
 C
       LOGICAL TWOBUF,GOFAST,TOBE
       DIMENSION WORK(LWORK)
@@ -92,6 +100,15 @@ C
 #ifdef MOD_ECP
       IF (ECPCALC) CALL RECP
 #endif
+
+#ifdef BUILD_GEN1INT
+!     test suite of gen1int interface
+      if (test_gen1int) then
+         call gen1int_ifc_test(lwork, work, lupri, iprdef)
+         call get_1el_integrals(lupri)
+      end if
+#endif
+
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
 !     gosia: don't restart and don't generate integrals if visual_cfg_london

@@ -21,12 +21,15 @@ echo " "
 #####################################
 export rundir=`pwd`
 #lcg-cp lfn://grid/voce/ilias/dirac_test_suite.tgz  file://$rundir/dirac_test_suite.tgz  ||  { echo "Exiting...no dirac_test_suite.tgz found..." ; exit 3; }
-lcg-cp lfn://grid/voce/ilias/dirac_current.tgz  file://$rundir/dirac_current.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
+#lcg-cp lfn://grid/voce/ilias/dirac_current.tgz  file://$rundir/dirac_current.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
+lcg-cp lfn://grid/voce/ilias/dirac_current.tgz  file://$PWD/dirac_current.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
 
 ##########################################
 ##  make it executable and finally launch
 ##########################################
 echo -e "\n Job started at : \c"; date
+
+uname -a
 
 echo -e "\n server Python version \c"; python -V
 
@@ -57,9 +60,12 @@ cat /proc/meminfo
 echo -e "\n ---- DIRAC unpacking ---- \n"
 tar --version
 tar xvfz dirac_current.tgz
-/bin/rm -rf $BUILD
-mv $BUILD_EXECS  $BUILD
-chmod  u+x  $BUILD/dirac.x  $BUILD/mpirun  $BUILD/cmake  $BUILD/ctest  pam  runtest
+
+#/bin/rm -rf $BUILD
+#mv $BUILD_EXECS  $BUILD
+
+#chmod  u+x  $BUILD/dirac.x  $BUILD/mpirun  $BUILD/cmake  $BUILD/ctest  pam  runtest
+chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest  pam  runtest
 
 # create diracrc file for paralle run on the grid CE
 cp maintenance/grid_testing/diracrc_grid  diracrc
@@ -67,7 +73,8 @@ echo -e "\n ---- diracrc created ---- \n"
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 
-python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo --mpi=2
+#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo --mpi=2
+python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
 #####################################################################
 
@@ -75,7 +82,8 @@ echo -e "\n --- Launching quick runtest --- \n ";
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-python ./runtest --verbose --quick --mpi=2  #  works
+#python ./runtest --verbose --quick --mpi=2  #  works
+python ./runtest --verbose --quick #  works
 #python ./runtest --verbose --all  # works
 
 #############################################################
@@ -83,7 +91,15 @@ python ./runtest --verbose --quick --mpi=2  #  works
 #############################################################
  python pamadm -a
  cd $BUILD
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF ..
+
+# FIX ERROR:
+# CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
+#CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
+mv CMakeCache.txt CMakeCache.txt_STORED
+
+# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_serial_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF ..
+
  make ExperimentalConfigure
  make ExperimentalStart
  make ExperimentalTest
@@ -97,7 +113,8 @@ ls -lt
 tar --version
 #tar --help
 echo " "
-tar cvzf dirac_suite_back.tgz test *.out *.tgz
+#tar cvzf dirac_suite_back.tgz test *.out *.tgz
+tar cvzf dirac_suite_back.tgz test *.out 
 
 ############################
 #  print out some info .. 

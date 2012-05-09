@@ -326,6 +326,14 @@ Coupled-Cluster Singles, Doubles and Noniterative triples (CCSD(T)) and
 Fock-space Coupled-Cluser methods are powerful correlation methods in
 the DIRAC program suite.
 
+Coupled Cluster (CC) methods in DIRAC are most powerful ab-initio
+correlation methods working upon two/four-component Kramers unrestricted
+spinors. They serve as widely employed relativistic analogue with
+respect the nonrelativistic realm.
+
+Therefore we feel it is important to present the user few hints on how
+to fully exhaust CC capabilities for practical calculations.
+
 Even at the Coupled Cluster correlated level the user has certain
 variability in choosing the occupation of spinors. Thus he may alter the
 electronic state of a system.
