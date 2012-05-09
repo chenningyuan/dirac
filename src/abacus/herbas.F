@@ -597,9 +597,17 @@ C
 
                CALL CONLIN(JNTORB, NUMLIN, IPRINT)
 
-               IF (INTORB .LE. 0) THEN
-C                 uncontracted basis set or
-C                 forced uncontracted with .UNCONT
+               IF (INTORB .EQ. 0) THEN
+C                 uncontracted basis set: allow unformatted read                                                                                      
+                  READ (STRING, *,IOSTAT=IOS) ALPHA(J,NBLOCK)
+                  CPRIMU(J,J,NBLOCK) = 1.0D0
+
+                  IF (IPRINT.GE.5) write(lupri,*)
+     &              'READNU read 1 - NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)
+                  GOTO 20
+               ELSEIF (INTORB .LT. 0) THEN
+C                 forced uncontracted with .UNCONT   
                   READ (STRING, '(F16.9)',IOSTAT=IOS) ALPHA(J,NBLOCK)
                   IF (IOS.NE.0) CALL QUIT('Error in reading alpha')
 
@@ -1015,6 +1023,7 @@ C*********************************************************
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 #include "inftap.h"
+#include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -1084,10 +1093,17 @@ C     continue in inquiring:
       IF (.NOT.EXST2) THEN
         INQUIRE (FILE = BASNAM, EXIST = EXST)
         IF (EXST) THEN  
+#ifdef VAR_MPI
+          ! print only from one process
+          if (mytid == 1) then
+#endif
           WRITE(LUPRI,"(/2A/2A)")
      &     "Info: used proper basis set name: ",BASNAM,
      &     "Info: instead of                : ",STRING
           USE_BASNAM=.TRUE.
+#ifdef VAR_MPI
+          end if
+#endif
         ENDIF
       ENDIF
         
