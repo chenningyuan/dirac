@@ -151,6 +151,7 @@ CONTAINS
     !> local variables
        integer :: i
        integer :: j
+       integer :: ij
        integer :: ier
        type( type_gto ) :: tmpgto
     !> end
@@ -182,16 +183,19 @@ CONTAINS
     !> interface basis set data
        allocate( gto(nlrgsh), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: gto(:)'
        i = 1
+       ij= 0
        do while( i <= size(gto) )  
          do j=1,nrco(i)
-           gto(i)  = type_gto( i, 0, nhkt(i), ncent(i), 0, 0, priccf(i,j), priexp(i), priccf(i,j) )
-           i = i + 1
+           gto(i)  = type_gto( ij, 0, nhkt(i), ncent(i), 0, 0, priccf(i,j), priexp(i), priccf(i,j) )
+           i =i + 1
+           ij=ij+(nhkt(i)*(nhkt(i)+1))/2  !note: cartesian indexation
          enddo
        enddo
     !> end
 
     !> reorder basis functions to the angular momentum 
     !> ascending order to increase the integral performance
+    !> set the AO-vector offsets and shell-degeneracy
        do i=1,size(gto)-1
          do j=(i+1),size(gto)
            if( gto(j)%lvalue >= gto(i)%lvalue )cycle
@@ -200,15 +204,12 @@ CONTAINS
            gto(j) = tmpgto
          enddo
        enddo
-    !> end
-
-    !> set some gto data + AO-vector offsets 
        j=0
        do i=1,size(gto)
          gto(i)%offset = j 
          gto(i)%sdegen = 2*gto(i)%lvalue - 1 
          gto(i)%cdegen = ( gto(i)%lvalue*(gto(i)%lvalue+1) )/2 
-         j=j+gto(i)%cdegen    !note:this is offset refers to cartesian GTOs
+         j = j + gto(i)%cdegen
        enddo
     !> end
 
@@ -545,29 +546,16 @@ CONTAINS
        allocate( dG_guess( 2,nr_shells,nr_shells ) )
     !> end
 
-    !> resorting of the P-matrix for better integral performance 
+    !> forward resorting of the density matrix elements
        G(:,:)=0.0d0
        do j=1,ncol
          do i=1,nrow
            P(i,j) = 0.5d0*Pmat(i,j,1)  !Re(A,LL)
          enddo
        enddo
+       call forward_ao_resorting( P )
     !> end
 
-!   select case( scf%difference_density )
-!   !> dG(n) = G[dP(n)], where dP(n)=P(n)-P(n-1)
-!      case( 1 ) 
-!          record_length = 8*size(P%elms)  !todo: consider perhaps double integer????
-!          open ( 16, file='Fock_matrix_two_electron', access='direct', recl=record_length, form='unformatted' )
-!          read ( 16, rec=1 ) G%elms       !read  P(n-1) 
-!          write( 16, rec=1 ) P%elms       !write P(n)
-!               P%elms=P%elms-G%elms       !dP(n)=P(n)-P(n-1)
-!          read ( 16, rec=2 ) G%elms       !read  G(n-1) 
-!   !> G(n) := G[P(n)]
-!      case default
-           !note: G is assumed to already be zero
-!   end select
-          
     !> precalculate maximum shell pair contributions to the Fock matrix
        call max_shell_pair_contributions( P, nrow, dG_guess )
     !> end
@@ -698,13 +686,6 @@ lloop:       do l=1,lmax
     !> prescreening
        screened = 100.d0*(1.0d0-real(nr_integrals_pased)/real(nr_integrals_total))  
     !> end
-
-!   select case( scf%difference_density )
-!      case( 1 ) 
-!          read ( 16, rec=1         ) P%elms   !read  P(n)
-!          write( 16, rec=2         ) G%elms   !write G(n)
-!          close( 16, status='keep' ) 
-!   end select
 
     !> backward resorting of the Fock matrix
        do j=1,ncol
@@ -1093,474 +1074,77 @@ jloop:   do j=1,i
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!> 
-!  SUBROUTINE process_two_electron_integrals_old( G, D ) 
-!
-!    !> input
-!    interface 
-!      subroutine interest_eri(rkb,                                            &
-!                              fint,nint,                                      &
-!                              la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
-!                              lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
-!
-!        integer, intent(out) :: nint
-!        real(8), intent(out) :: fint(*)
-!        logical, intent(in ) :: rkb 
-!        integer, intent(in ) :: la,lb,lc,ld
-!        real(8), intent(in ) :: alpha,ax,ay,az,anorm
-!        real(8), intent(in ) :: beta, bx,by,bz,bnorm
-!        real(8), intent(in ) :: gamma,cx,cy,cz,cnorm
-!        real(8), intent(in ) :: delta,dx,dy,dz,dnorm
-!      end subroutine
-!    end interface
-!
-!    logical :: rkb = .true. !todo: umelo dodane
-!
-!    !> output
-!    type(complex_matrix) :: G
-!    type(complex_matrix) :: D
-!
-!    !> local
-!    integer :: nint
-!    integer :: ni, nj, nk, nl
-!    integer :: i, j, k, l, lmax 
-!    real(8) :: gout(44100) !fixme: chyba!!!   !todo: rozumnejsia definicia
-!    real(8),           allocatable :: dpij(:) 
-!    type(real_vector), allocatable :: dp(:,:) 
-!    
-!   
-!    allocate( dpij(4410*2)               )    !todo: zmenit do buducna
-!    allocate( dp( size(gto), size(gto) ) )
-!
-!    !> create shell-blocks of difference density (dp)
-!       !> Re(aa,ll)  
-!          call doP( index= 1, GR=G%elms(1,1,1), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Re(aa,ss)  
-!          call doP( index= 2, GR=G%elms(1,2,2), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Im(aa,ss)  
-!          call doP( index= 3, GI=G%elms(1,2,2), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Re(ab,ss)  
-!          call doP( index= 4, GR=G%elms(1,2,4), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Im(ab,ss)  
-!          call doP( index= 5, GI=G%elms(1,2,4), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Re(bb,ll)  
-!          call doP( index= 6, GR=G%elms(1,3,3), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Re(bb,ss)  
-!          call doP( index= 7, GR=G%elms(1,4,4), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Im(bb,ss)  
-!          call doP( index= 8, GI=G%elms(1,4,4), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Re(ba,ss)  
-!          call doP( index= 9, GR=G%elms(1,4,2), idg=G%nrow, P=dp, idp=size(gto) )
-!       !> Im(ba,ss)  
-!          call doP( index=10, GI=G%elms(1,4,2), idg=G%nrow, P=dp, idp=size(gto) )
-!    !> end
-!
-!
-!    !> loop over shells
-!iloop: do i=1,size(gto)
-!         ni = gto(i)%cdegen
-!jloop:   do j=1,i
-!           nj   = gto(j)%cdegen
-!           dpij = dp(i,j)%elms
-!kloop:     do k=1,size(gto)
-!             nk   = gto(k)%cdegen
-!lloop:       do l=1,k
-!               nl = gto(l)%cdegen
-!
-!
-!               !> call InteRest library routine for a given batch
-!                  call interest_eri(rkb,                                &
-!                                    gout, nint,                         &
-!                                    !> bra-function(1)
-!                                    gto(i)%lvalue,                      &
-!                                    gto(i)%exponent(1),                 &
-!                                    atom( gto(i)%origin )%coordinate_x, &
-!                                    atom( gto(i)%origin )%coordinate_y, &
-!                                    atom( gto(i)%origin )%coordinate_z, &
-!                                    gto(i)%coefficient(1),              &
-!                                    !> ket-function(1)
-!                                    gto(j)%lvalue,                      &
-!                                    gto(j)%exponent(1),                 &
-!                                    atom( gto(j)%origin )%coordinate_x, &
-!                                    atom( gto(j)%origin )%coordinate_y, &
-!                                    atom( gto(j)%origin )%coordinate_z, &
-!                                    gto(j)%coefficient(1),              &
-!                                    !> bra-function(2)
-!                                    gto(k)%lvalue,                      &
-!                                    gto(k)%exponent(1),                 &
-!                                    atom( gto(k)%origin )%coordinate_x, &
-!                                    atom( gto(k)%origin )%coordinate_y, &
-!                                    atom( gto(k)%origin )%coordinate_z, &
-!                                    gto(k)%coefficient(1),              &
-!                                    !> ket-function(2)
-!                                    gto(l)%lvalue,                      &
-!                                    gto(l)%exponent(1),                 &
-!                                    atom( gto(l)%origin )%coordinate_x, &
-!                                    atom( gto(l)%origin )%coordinate_y, &
-!                                    atom( gto(l)%origin )%coordinate_z, &
-!                                    gto(l)%coefficient(1)               )
-!
-!               !> process JK-contribution
-!                  call process_JK( gout, ni*nj, nk*nl, dpij, dp(k,l)%elms, &
-!                                         ni,    nj,    nk,   nl,           &
-!                                         dp(i,l)%elms,                     &   
-!                                         dp(k,j)%elms,                     &
-!                                         dp(j,l)%elms,                     &
-!                                         dp(k,i)%elms                      )
-!               !> end 
-!             enddo lloop
-!           enddo kloop   
-!           !> add J-contribution
-!              call add_J( ni*nj, dpij, dp(i,j)%elms )
-!           !> end 
-!         enddo jloop
-!       enddo iloop   
-!       !> process G-contribution to the Fock matrix 
-!          call doG( 'aall', dp, size(gto), G%elms(1,1,1), G%nrow )
-!          call doG( 'aass', dp, size(gto), G%elms(1,2,2), G%nrow )
-!          call doG( 'abss', dp, size(gto), G%elms(1,2,4), G%nrow )
-!          call doG( 'bbll', dp, size(gto), G%elms(1,3,3), G%nrow )
-!          call doG( 'bbss', dp, size(gto), G%elms(1,4,4), G%nrow )
-!          call doG( 'bass', dp, size(gto), G%elms(1,4,2), G%nrow )
-!       !> end
-!    !> end
-!
-!    deallocate( dp   )
-!    deallocate( dpij )
-!
-!  END SUBROUTINE
-!! ------------------------------------------------------------------------------------
-!!> Process Coulomb and Exchange contributions to Fock matrix 
-!  SUBROUTINE process_JK( gout, nij, nkl, pij, pkl, &
-!                               ni,  nj,  nk,  nl,  &
-!                               pil, pkj, pjl, pki  )
-!
-!    !> input 
-!    integer :: nij, nkl
-!    integer :: ni, nj, nk, nl 
-!    real(8) :: gout(nkl,10,nij,10) 
-!
-!    !> output
-!    real(8) :: pij(10,nij,2)  !batch data block
-!    real(8) :: pkl(10,nkl,2)  !full  data block
-!
-!    real(8) :: pil(10,ni,nl,2)  !output G(il)
-!    real(8) :: pkj(10,nk,nj,2)  !input  P(kj)
-!    real(8) :: pjl(10,nj,nl,2)  !output G(jl)
-!    real(8) :: pki(10,nk,ni,2)  !input  P(ki)
-!
-!
-!    !> local
-!    integer :: m, i, j, k, l, ij, kl
-!    real(8) :: tk, gll, sum0, epsx, epsy, epsz
-!
-!    !note: consider correct prefactors (alpha^2, alpha^4) for ss-blocks
-!
-!!ok do k=1,10
-!    do k=1,1
-!      do ij=1,nij
-!        tk = 0.0d0      !fock(k,ij)
-!        do kl=1,nkl
-!      
-!          gll  = gout(kl, 1, ij, k)
-!!ok       epsz = gout(kl, 5, ij, k) - gout(kl, 3, ij, k)
-!!ok       epsy = gout(kl, 4, ij, k) - gout(kl, 8, ij, k)
-!!ok       epsx = gout(kl, 9, ij, k) - gout(kl, 7, ij, k)
-!!ok       sum0 = gout(kl, 2, ij, k) + gout(kl, 6, ij, k) + gout(kl,10, ij, k) 
-!
-!          !> coulomb large-component only
-!          tk = tk + gll*( pkl( 1,kl,1) + pkl( 6,kl,1) )   !Re[(aa,ll) + (bb,ll)] 
-!!ok     
-!!ok       tk = tk + gll *( pkl( 1,kl,1) + pkl( 6,kl,1) ) &  !Re[(aa,ll) + (bb,ll)] 
-!!ok               + sum0*( pkl( 2,kl,1) + pkl( 7,kl,1) ) &  !Re[(aa,ss) + (bb,ss)]
-!!ok               - epsz*( pkl( 3,kl,1) - pkl( 8,kl,1) ) &  !Im[(aa,ss) - (bb,ss)] - Im*Im              
-!!ok               + epsy*( pkl( 4,kl,1) - pkl( 9,kl,1) ) &  !Re[(ab,ss) - (ba,ss)]
-!!ok               - epsx*( pkl( 5,kl,1) + pkl(10,kl,1) )    !Im[(ab,ss) + (ba,ss)] - Im*Im
-!
-!        enddo
-!        pij(k,ij,2) = pij(k,ij,2) + tk
-!      enddo
-!    enddo
-!
-!!   do k=1,10
-!!     do kl=1,nkl
-!!       tk = 0.0d0      !fock(k,kl)
-!!       do ij=1,nij
-!!     
-!!         gll  = gout(kl, k, ij,  1)
-!!         epsz = gout(kl, k, ij,  5) - gout(kl, k, ij, 3)
-!!         epsy = gout(kl, k, ij,  4) - gout(kl, k, ij, 8)
-!!         epsx = gout(kl, k, ij,  9) - gout(kl, k, ij, 7)
-!!         sum0 = gout(kl, k, ij,  2) + gout(kl, k, ij, 6) + gout(kl, k, ij, 10) 
-!!     
-!!         tk = tk + gll *( pij( 1,ij,1) + pij( 6,ij,1) ) &  !Re[(aa,ll) + (bb,ll)] 
-!!                 + sum0*( pij( 2,ij,1) + pij( 7,ij,1) ) &  !Re[(aa,ss) + (bb,ss)]
-!!                 - epsz*( pij( 3,ij,1) - pij( 8,ij,1) ) &  !Im[(aa,ss) - (bb,ss)] - Im*Im              
-!!                 + epsy*( pij( 4,ij,1) - pij( 9,ij,1) ) &  !Re[(ab,ss) - (ba,ss)]
-!!                 - epsx*( pij( 5,ij,1) + pij(10,ij,1) )    !Im[(ab,ss) + (ba,ss)] - Im*Im
-!
-!!       enddo
-!!       pkl(k,kl,2) = pkl(k,kl,2) + tk
-!!     enddo
-!!   enddo
-!
-!
-!
-!    !> HF exchange contribution
-!
-!!ok do k=1,10
-!!   do m=1,1
-!!     ij = 0
-!!     do j=1,nj
-!!       do i=1,ni
-!!         kl = 0
-!!         ij = ij + 1
-!!         do l=1,nl
-!!           do k=1,nk
-!!             kl = kl + 1
-!
-!!             gll = gout(kl, 1, ij, m)
-!
-!!             pil( 1,i,l,2) = pil( 1,i,l,2) - gll*pkj( 1,k,j,1) !Re[(aa,ll)]
-!!             pil( 6,i,l,2) = pil( 6,i,l,2) - gll*pkj( 6,k,j,1) !Re[(bb,ll)]
-!
-!!       enddo
-!!       pij(m,ij,2) = pij(m,ij,2) + tk
-!!     enddo
-!!   enddo
-!
-!  END SUBROUTINE
-!! ------------------------------------------------------------------------------------
-!!>
-!  SUBROUTINE add_J( nij, pij, gij )  
-!
-!    !> input 
-!    integer :: nij
-!    real(8) :: pij(10,nij,2) 
-!
-!    !> output
-!    real(8) :: gij(10,nij,2)
-!
-!    !> local
-!    integer :: ij 
-!
-!    do ij=1,nij
-!      gij( 1,ij,2) = gij( 1,ij,2) + 2.0d0*pij( 1,ij,2)  
-!      gij( 2,ij,2) = gij( 2,ij,2) + 2.0d0*pij( 2,ij,2)  
-!      gij( 3,ij,2) = gij( 3,ij,2) + 2.0d0*pij( 3,ij,2)  
-!      gij( 4,ij,2) = gij( 4,ij,2) + 2.0d0*pij( 4,ij,2)  
-!      gij( 5,ij,2) = gij( 5,ij,2) + 2.0d0*pij( 5,ij,2)  
-!      gij( 6,ij,2) = gij( 6,ij,2) + 2.0d0*pij( 6,ij,2)  
-!      gij( 7,ij,2) = gij( 7,ij,2) + 2.0d0*pij( 7,ij,2)  
-!      gij( 8,ij,2) = gij( 8,ij,2) + 2.0d0*pij( 8,ij,2)  
-!      gij( 9,ij,2) = gij( 9,ij,2) + 2.0d0*pij( 9,ij,2)  
-!      gij(10,ij,2) = gij(10,ij,2) + 2.0d0*pij(10,ij,2)  
-!    enddo
-!
-!  END SUBROUTINE
-!! ------------------------------------------------------------------------------------
-!!> 
-!  SUBROUTINE doP( index, GR, GI, idg, P, idp )
-!
-!    !> input
-!    integer,              intent(in) :: idg 
-!    integer,              intent(in) :: idp 
-!    integer,              intent(in) :: index 
-!    complex(8), optional, intent(in) :: GR(idg,idg)
-!    complex(8), optional, intent(in) :: GI(idg,idg)
-!
-!    !> output
-!    type(real_vector) :: P(idp,idp)
-!
-!    !> local
-!    integer :: ij
-!    integer :: i, ii, io, icc
-!    integer :: j, jj, jo, jcc
-!
-!
-!    if( index == 1 )then
-!      do i=1,size(gto)
-!        icc = gto(i)%cdegen
-!        do j=1,size(gto)
-!          jcc = gto(j)%cdegen
-!          allocate( P(i,j)%elms(10*icc*jcc*2) )     !todo: tu je 20 zatial pre coulomb cast iba
-!        enddo
-!      enddo 
-!    endif
-!
-!
-!    if( present(GR) )then
-!      do i=1,size(gto)
-!        io  = gto(i)%offset
-!        icc = gto(i)%cdegen
-!        do j=1,size(gto)
-!          jo  = gto(j)%offset
-!          jcc = gto(j)%cdegen
-!          ij  =  index
-!          !> density-block
-!          do jj=1,jcc
-!            do ii=1,icc
-!              P(i,j)%elms(ij) = dreal( GR( jo+jj, io+ii ) )      !note:  P(ba) -> sa uklada ako (ab)
-!              ij = ij + 10                                       !fixme: tu je 10 zatial pre coulomb cast iba
-!            enddo
-!          enddo
-!          !> fock-block 
-!          do jj=1,jcc
-!            do ii=1,icc
-!              P(i,j)%elms(ij) = 0.0d0
-!              ij = ij + 10                                       !fixme: tu je 10 zatial pre coulomb cast iba
-!            enddo
-!          enddo
-!        enddo
-!      enddo
-!    elseif( present(GI) )then
-!      do i=1,size(gto)
-!        io  = gto(i)%offset
-!        icc = gto(i)%cdegen
-!        do j=1,size(gto)
-!          jo  = gto(j)%offset
-!          jcc = gto(j)%cdegen
-!          ij  = index
-!          !> density-block
-!          do jj=1,jcc
-!            do ii=1,icc
-!              P(i,j)%elms(ij) = dimag( GI( jo+jj, io+ii ) )    !note:  P(ba) -> sa uklada ako (ab) 
-!              ij = ij + 10                                     !fixme: tu je 10 zatial pre coulomb cast iba
-!            enddo
-!          enddo
-!          !> fock-block
-!          do jj=1,jcc
-!            do ii=1,icc
-!              P(i,j)%elms(ij) = 0.0d0                        
-!              ij = ij + 10                                    !fixme: tu je 10 zatial pre coulomb cast iba
-!            enddo
-!          enddo
-!        enddo
-!      enddo
-!    endif
-! 
-!  END SUBROUTINE
-!! ------------------------------------------------------------------------------------
-!!> 
-!  SUBROUTINE doG( block, p, idp, g, idg )
-!
-!    !> input
-!    integer,          intent(in) :: idp 
-!    integer,          intent(in) :: idg 
-!    character(len=4), intent(in) :: block 
-!    type(real_vector)            :: p(idp,idp)
-!
-!    !> output
-!    complex(8) :: g(idg,idg)
-!
-!    !> local
-!    integer :: ij
-!    integer :: i, ii, io, icc
-!    integer :: j, jj, jo, jcc
-!    real(8) :: sum0, epsx, epsy, epsz
-!
-!
-!    select case( block )
-!      case('aall','bbll')
-!        do i=1,size(gto)
-!          io  = gto(i)%offset
-!          icc = gto(i)%cdegen
-!          do j=1,i
-!            jo  = gto(j)%offset
-!            jcc = gto(j)%cdegen
-!            ij  = 10*icc*jcc 
-!            do jj=1,jcc
-!              do ii=1,icc
-!                g( io+ii, jo+jj ) = dcmplx( p(i,j)%elms(ij+1), 0.0d0 ) 
-!                ij = ij + 10                                       
-!              enddo
-!            enddo
-!          enddo
-!        enddo
-!
-!      case('aass')
-!        do i=1,size(gto)
-!          io  = gto(i)%offset
-!          icc = gto(i)%cdegen
-!          do j=1,i
-!            jo  = gto(j)%offset
-!            jcc = gto(j)%cdegen
-!            ij  = 10*icc*jcc 
-!            do jj=1,jcc
-!              do ii=1,icc
-!                epsz = p(i,j)%elms(ij+5) - p(i,j)%elms(ij+3) 
-!                sum0 = p(i,j)%elms(ij+2) + p(i,j)%elms(ij+6) + p(i,j)%elms(ij+10)
-!                g( io+ii, jo+jj ) = dcmplx( sum0, epsz ) 
-!                ij = ij + 10                                       
-!              enddo
-!            enddo
-!          enddo
-!        enddo
-!
-!      case('bbss')
-!        do i=1,size(gto)
-!          io  = gto(i)%offset
-!          icc = gto(i)%cdegen
-!          do j=1,i
-!            jo  = gto(j)%offset
-!            jcc = gto(j)%cdegen
-!            ij  = 10*icc*jcc 
-!            do jj=1,jcc
-!              do ii=1,icc
-!                epsz = p(i,j)%elms(ij+5) - p(i,j)%elms(ij+3) 
-!                sum0 = p(i,j)%elms(ij+2) + p(i,j)%elms(ij+6) + p(i,j)%elms(ij+10)
-!                g( io+ii, jo+jj ) = dcmplx( sum0,-epsz ) 
-!                ij = ij + 10                                       
-!              enddo
-!            enddo
-!          enddo
-!        enddo
-!
-!      case('abss')
-!        do i=1,size(gto)
-!          io  = gto(i)%offset
-!          icc = gto(i)%cdegen
-!          do j=1,i
-!            jo  = gto(j)%offset
-!            jcc = gto(j)%cdegen
-!            ij  = 10*icc*jcc 
-!            do jj=1,jcc
-!              do ii=1,icc
-!                epsy = p(i,j)%elms(ij+4) - p(i,j)%elms(ij+8) 
-!                epsx = p(i,j)%elms(ij+9) - p(i,j)%elms(ij+7) 
-!                g( io+ii, jo+jj ) = dcmplx( epsy, epsx ) 
-!                ij = ij + 10                                       
-!              enddo
-!            enddo
-!          enddo
-!        enddo
-!
-!      case('bass')
-!        do i=1,size(gto)
-!          io  = gto(i)%offset
-!          icc = gto(i)%cdegen
-!          do j=1,i
-!            jo  = gto(j)%offset
-!            jcc = gto(j)%cdegen
-!            ij  = 10*icc*jcc 
-!            do jj=1,jcc
-!              do ii=1,icc
-!                epsy = p(i,j)%elms(ij+4) - p(i,j)%elms(ij+8) 
-!                epsx = p(i,j)%elms(ij+9) - p(i,j)%elms(ij+7) 
-!                g( io+ii, jo+jj ) = dcmplx(-epsy, epsx ) 
-!                ij = ij + 10                                       
-!              enddo
-!            enddo
-!          enddo
-!        enddo
-!
-!      case default
-!        write(6,*) ' Storage machanism for this block is not implemented yet => stop'
-!        stop
-!
-!      end select
-!       
-!  END SUBROUTINE
+!>on input:  the matrix in "input"  AO order 
+!>on output: the matrix in integral AO order 
+!>fixme:     clsed-shell and LL-only case!!!
+  SUBROUTINE forward_ao_resorting( A )
+
+    !> input/ouput
+    real(8), intent(inout) :: A(nrow,ncol) 
+
+    !> local
+    real(8), allocatable :: B(:,:)
+    integer :: i, ii, ic, io_new, io_old
+    integer :: j, jj, jc, jo_new, jo_old
+
+
+    allocate( B(nrow,ncol) )
+
+    B = A
+    do j=1,nr_shells
+      jc     = gto(j)%cdegen
+      jo_new = gto(j)%offset
+      jo_old = gto(j)%index 
+      do i=1,nr_shells
+        ic     = gto(i)%cdegen
+        io_new = gto(i)%offset
+        io_old = gto(i)%index 
+        do jj=1,jc
+          do ii=1,ic
+            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)  !Re(A,LL) 
+          enddo
+        enddo
+      enddo
+    enddo
+        
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!>on input:  the matrix in "integral" AO order 
+!>on output: the matrix in "input"    AO order 
+!>fixme:     clsed-shell and LL-only case!!!
+  SUBROUTINE backward_ao_resorting( A )
+
+    !> input/ouput
+    real(8), intent(inout) :: A(nrow,ncol) 
+
+    !> local
+    real(8), allocatable :: B(:,:)
+    integer :: i, ii, ic, io_new, io_old
+    integer :: j, jj, jc, jo_new, jo_old
+
+
+    allocate( B(nrow,ncol) )
+
+    B = A
+    do j=1,nr_shells
+      jc     = gto(j)%cdegen
+      jo_new = gto(j)%index 
+      jo_old = gto(j)%offset
+      do i=1,nr_shells
+        ic     = gto(i)%cdegen
+        io_new = gto(i)%index 
+        io_old = gto(i)%offset
+        do jj=1,jc
+          do ii=1,ic
+            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)  !Re(A,LL) 
+          enddo
+        enddo
+      enddo
+    enddo
+
+    deallocate( B )
+        
+  END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>on input: lower triangle, on output: square symmetric matrix 
   SUBROUTINE symmetrize_matrix( factor, A, ida )
@@ -1591,6 +1175,8 @@ jloop:   do j=1,i
         enddo
       enddo
     endif
+
+    call backward_ao_resorting( A )
      
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
@@ -1623,6 +1209,8 @@ jloop:   do j=1,i
         enddo
       enddo
     endif
+
+    call backward_ao_resorting( A )
      
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
