@@ -3,9 +3,6 @@
 !
 !*** General information in DIRAC ***
 !
-!  DOPIN - read MO-coefficients from formatted file and write them to
-!          unformatted
-!  DOPIN_I3 - IBEIG in MO-coeff formatted file in I3 format (linear symmetry, large basis set)
 !  DOPUT - write MO-coefficients to formatted file
 !
 !  INTGEN - Give top level integral flag
@@ -38,7 +35,7 @@
       COMMON /CBCPAM/ TITLE
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
-     &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO, DOPIN, DOPIN_I3,    & 
+     &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO,                     & 
      &        DOPUT,DORKBIMP,                                           &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
@@ -48,7 +45,7 @@
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
-     &                DOFCK3, DOPIN, DOPIN_I3,DORKBIMP,                 & 
+     &                DOFCK3,                 DORKBIMP,                 & 
      &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &

@@ -44,23 +44,14 @@ from Cartesian functions to spherical harmonics. The transformation of
 the small components is modified, however, in accordance with the
 restricted kinetic balance relation.
 
-.PCMOIN
--------
-
-Read MO coefficients from the formatted file DFPCMO.
-
-This is useful for porting coefficients between machines with different
-binary structure, for example, between Silicon Graphics and IBM. See
-also `.PCMOUT <#.PCMOUT>`_.
-
 .PCMOUT
 -------
 
 Write MO coefficients to the formatted file DFPCMO.
 
 This is useful for porting coefficients between machines with different
-binary structure, for example, between Silicon Graphics and IBM. See
-also `.PCMOIN <#.PCMOIN>`_.
+binary structure, for example, between Silicon Graphics and IBM.
+
 
 .ACMOUT
 -------
@@ -240,17 +231,9 @@ relativity (for testing):
      50.0
 
 Very often one needs to export or to read formatted file with orbital
-coefficients - DFPCMO. Therefore the user should provide for the reading
+coefficients - DFPCMO. Therefore the user should provide
 
 ::
-
-    **GENERAL
-    .PCMOIN
-
-or
-
-::
-
     **GENERAL
     .PCMOUT
 
