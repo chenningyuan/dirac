@@ -93,43 +93,11 @@ MODULE INTEREST_INTERFACE
           integer :: origin
           integer :: sdegen 
           integer :: cdegen 
-          real(8) :: norm(1)
           real(8) :: exponent(1)
           real(8) :: coefficient(1)
      end  type
      type(type_gto), allocatable, target :: gto(:)
   !> end
-
-!  !> fixme: temporary
-!     !> definition of "real_vector" data type
-!        type real_vector
-!             real(8), pointer :: elms(:)
-!        end  type
-!     !> end
-!
-!     !> definition of "real_matrix" data type 
-!        type real_matrix
-!             integer          :: nrow 
-!             integer          :: ncol  
-!             real(8), pointer :: elms(:,:) 
-!        end  type
-!     !> end
-!     
-!     !> definition of "complex_pointer" data type 
-!        type complex_pointer
-!             complex(8), pointer :: p => NULL()
-!        end  type
-!     !> end
-!     
-!     !> definition of "complex_matrix" data type 
-!        type complex_matrix
-!             integer                 :: nrow 
-!             integer                 :: ncol  
-!             type(complex_pointer)   :: info(4,4)  
-!             complex(8), allocatable :: elms(:,:,:) 
-!        end  type
-!     !> end
-!  !> end
 
 CONTAINS
 ! ------------------------------------------------------------------------------------
@@ -176,19 +144,32 @@ CONTAINS
     !> interface molecular data
        allocate( atom(nucind), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
        do i=1,size(atom)
-         atom(i) = type_atom( charge(i), cord(1,i), cord(2,i), cord(3,i), gnuexp(i) )
+         atom(i) = type_atom( charge(i), &
+                              cord(1,i), &
+                              cord(2,i), &
+                              cord(3,i), &
+                              gnuexp(i)  )
        enddo
     !> end
   
     !> interface basis set data
+    !> fixme: contracted basis sets
        allocate( gto(nlrgsh), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: gto(:)'
-       i = 1
-       ij= 0
-       do while( i <= size(gto) )  
-         do j=1,nrco(i)
-           gto(i)  = type_gto( ij, 0, nhkt(i), ncent(i), 0, 0, priccf(i,j), priexp(i), priccf(i,j) )
-           i =i + 1
-           ij=ij+(nhkt(i)*(nhkt(i)+1))/2  !note: cartesian indexation
+       i =0
+       ij=0
+       do while( i < size(gto) )  
+         do j=1,nrco(i+1)
+           i=i+1
+           gto(i) = type_gto( ij,                      &
+                              0,                       &
+                              nhkt(i),                 &
+                              ncent(i),                & 
+                              (2*nhkt(i)-1),           &
+                              (nhkt(i)*(nhkt(i)+1))/2, &
+                              priexp(i),               &
+                              priccf(i,j)              )
+           !> note: cartesian indexation
+           ij=ij+(nhkt(i)*(nhkt(i)+1))/2
          enddo
        enddo
     !> end
@@ -204,12 +185,8 @@ CONTAINS
            gto(j) = tmpgto
          enddo
        enddo
-       j=0
-       do i=1,size(gto)
-         gto(i)%offset = j 
-         gto(i)%sdegen = 2*gto(i)%lvalue - 1 
-         gto(i)%cdegen = ( gto(i)%lvalue*(gto(i)%lvalue+1) )/2 
-         j = j + gto(i)%cdegen
+       do i=1,size(gto)-1
+         gto(i+1)%offset = gto(i)%offset + gto(i)%cdegen
        enddo
     !> end
 
@@ -220,7 +197,6 @@ CONTAINS
                                                   ' offset = ',     gto(i)%offset,       &
                                                   ' lvalue = ',     gto(i)%lvalue,       &
                                                   ' origin = ',     gto(i)%origin,       &
-                                                  ' norm = ',       gto(i)%norm(1),      &
                                                   ' exponent = ',   gto(i)%exponent(1),  &
                                                   ' coefficient = ',gto(i)%coefficient(1)
        enddo
@@ -567,10 +543,10 @@ iloop: do i=1,nr_shells
          oi =       gto(i)%offset
          ni =       gto(i)%cdegen
          ei =       gto(i)%exponent(1)
+         ci =       gto(i)%coefficient(1)
          xi = atom( gto(i)%origin )%coordinate_x
          yi = atom( gto(i)%origin )%coordinate_y
          zi = atom( gto(i)%origin )%coordinate_z
-         ci =       gto(i)%coefficient(1)
      
          !> K-preparation
             ibas = oi+ni
@@ -584,10 +560,10 @@ jloop:   do j=1,i
            oj =       gto(j)%offset
            nj =       gto(j)%cdegen
            ej =       gto(j)%exponent(1)
+           cj =       gto(j)%coefficient(1)
            xj = atom( gto(j)%origin )%coordinate_x
            yj = atom( gto(j)%origin )%coordinate_y
            zj = atom( gto(j)%origin )%coordinate_z
-           cj =       gto(j)%coefficient(1)
            fij= 1.0d0;if( j==i )fij=0.5d0
        
            !> prescreening
@@ -610,10 +586,10 @@ kloop:     do k=1,i
              ok =       gto(k)%offset
              nk =       gto(k)%cdegen
              ek =       gto(k)%exponent(1)
+             ck =       gto(k)%coefficient(1)
              xk = atom( gto(k)%origin )%coordinate_x
              yk = atom( gto(k)%origin )%coordinate_y
              zk = atom( gto(k)%origin )%coordinate_z
-             ck =       gto(k)%coefficient(1)
        
              !> prescreening
                 max_dpkj = dG_guess(2,k,j)
@@ -629,10 +605,10 @@ lloop:       do l=1,lmax
                nl   =       gto(l)%cdegen
                ol   =       gto(l)%offset
                el   =       gto(l)%exponent(1)
+               cl   =       gto(l)%coefficient(1)
                xl   = atom( gto(l)%origin )%coordinate_x
                yl   = atom( gto(l)%origin )%coordinate_y
                zl   = atom( gto(l)%origin )%coordinate_z
-               cl   =       gto(l)%coefficient(1)
                fijkl= fij;if(  k==l  )fijkl=0.5d0*fijkl
                           if( ij==kl )fijkl=0.5d0*fijkl
        
@@ -1074,6 +1050,74 @@ jloop:   do j=1,i
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
+!>on input: lower triangle, on output: square symmetric matrix 
+  SUBROUTINE symmetrize_matrix( factor, A, ida )
+
+    !> input
+    integer,           intent(in) :: ida
+    real(8), optional, intent(in) :: factor
+
+    !> output
+    real(8), intent(inout) :: A(ida,ida)
+
+    !> local
+    integer :: i
+    integer :: j
+
+
+    if( present(factor) )then
+      do j=1,ida
+        do i=j,ida
+          A(i,j) = A(i,j)*factor
+          A(j,i) = A(i,j) 
+        enddo
+      enddo
+    else
+      do j=1,ida
+        do i=j,ida
+          A(j,i) = A(i,j) 
+        enddo
+      enddo
+    endif
+
+    call backward_ao_resorting( A )
+     
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!>on input: lower triangle, on output: square antisymmetric matrix 
+  SUBROUTINE antisymmetrize_matrix( factor, A, ida )
+
+    !> input
+    integer,           intent(in) :: ida
+    real(8), optional, intent(in) :: factor
+
+    !> output
+    real(8), intent(inout) :: A(ida,ida)
+
+    !> local
+    integer :: i
+    integer :: j
+
+
+    if( present(factor) )then
+      do j=1,ida
+        do i=j,ida
+          A(i,j) =  A(i,j)*factor
+          A(j,i) = -A(i,j) 
+        enddo
+      enddo
+    else
+      do j=1,ida
+        do i=j,ida
+          A(j,i) = -A(i,j) 
+        enddo
+      enddo
+    endif
+
+    call backward_ao_resorting( A )
+     
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
 !>on input:  the matrix in "input"  AO order 
 !>on output: the matrix in integral AO order 
 !>fixme:     clsed-shell and LL-only case!!!
@@ -1144,74 +1188,6 @@ jloop:   do j=1,i
 
     deallocate( B )
         
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!>on input: lower triangle, on output: square symmetric matrix 
-  SUBROUTINE symmetrize_matrix( factor, A, ida )
-
-    !> input
-    integer,           intent(in) :: ida
-    real(8), optional, intent(in) :: factor
-
-    !> output
-    real(8), intent(inout) :: A(ida,ida)
-
-    !> local
-    integer :: i
-    integer :: j
-
-
-    if( present(factor) )then
-      do j=1,ida
-        do i=j,ida
-          A(i,j) = A(i,j)*factor
-          A(j,i) = A(i,j) 
-        enddo
-      enddo
-    else
-      do j=1,ida
-        do i=j,ida
-          A(j,i) = A(i,j) 
-        enddo
-      enddo
-    endif
-
-    call backward_ao_resorting( A )
-     
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!>on input: lower triangle, on output: square antisymmetric matrix 
-  SUBROUTINE antisymmetrize_matrix( factor, A, ida )
-
-    !> input
-    integer,           intent(in) :: ida
-    real(8), optional, intent(in) :: factor
-
-    !> output
-    real(8), intent(inout) :: A(ida,ida)
-
-    !> local
-    integer :: i
-    integer :: j
-
-
-    if( present(factor) )then
-      do j=1,ida
-        do i=j,ida
-          A(i,j) =  A(i,j)*factor
-          A(j,i) = -A(i,j) 
-        enddo
-      enddo
-    else
-      do j=1,ida
-        do i=j,ida
-          A(j,i) = -A(i,j) 
-        enddo
-      enddo
-    endif
-
-    call backward_ao_resorting( A )
-     
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 END MODULE
