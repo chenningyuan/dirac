@@ -5,11 +5,13 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/pamadm)
        EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
        EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake"        AND
        EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/pamadm-flags")
-        # they exist, read previously used flags
-        execute_process(
-            COMMAND cat ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/pamadm-flags
-            OUTPUT_VARIABLE PAMADM_FLAGS
-            )
+       # they exist, read previously used flags from "pamadm-flags"
+       file(READ ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/pamadm-flags PAMADM_FLAGS)
+       message("-- Read previous pamadm flags from file, these are: ${PAMADM_FLAGS}")
+       # miro: inserted check for Windows
+       if (PAMADM_FLAGS STREQUAL "") 
+           message(FATAL_ERROR "No pamadm flags in the read file !")
+       endif()
     else()
         # set flags to '-a'
         set(PAMADM_FLAGS "-a")
