@@ -5,10 +5,9 @@ rem the directory where your DIRAC sits
 echo "Hello, building up DIRAC on Windows 7 server Urpin FPV-UMB"
 
 set DIRAC=C:\Users\milias\Documents\Work\QCH\dirac_git\trunk
-set BUILD=%DIRAC%\build
-set BUILD_STATIC=%DIRAC%\build_gnu_i8_static
+set BUILD=build
+rem set BUILDC=build_gnu_i8_static
 
-echo %BUILD%
 rem go to the local DIRAC directory
 cd %DIRAC%
 
@@ -18,12 +17,7 @@ rem "C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\Documents\milias
 rem download fresh Dirac - MUST HAVE full path of git
 rem C:\Git\bin\git.exe pull 
 
-python pamadm -a 
-
-rem delete the old build directory
-rmdir /S /Q %BUILD%
-
-python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --build-dir=%BUILD% --generator="MinGW Makefiles" --int64
+python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD%
 
 cd %BUILD%
 mingw32-make Experimental
