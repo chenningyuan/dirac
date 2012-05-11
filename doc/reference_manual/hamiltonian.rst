@@ -7,9 +7,7 @@ are expanded using distinct large and small component basis sets. In the
 transformation to an orthogonal basis set one may, however, combine
 large and small component functions and/or functions of different
 symmetry in order to obtain a matrix expansion of e.g. the spinfree
-modified Dirac equation or the Lévy-Leblond equation
-
-.. \ :sup:``[1] <#_note-visscher-saue-00>`_` \
+modified Dirac equation or the Lévy-Leblond equation [Visscher2000]_.
 
 In addition one can also modify the Hamiltonian by introduction of an
 additional operator, e.g. describing an external field. Any additional
@@ -23,8 +21,7 @@ requirement precludes the introduction of external magnetic fields.
 This keyword gives Dirac-Coulomb Hamiltonian in which (SS\|SS) integrals
 are neglected and replaced by an interatomic SS correction (calculated
 as a classical repulsion term of (tabulated) small component atomic
-charges)
-.. \ :sup:``[2] <#_note-visscher-97>`_`\ .
+charges) [Visscher1997a]_
 
 This is currently the most economical and accurate approximation to the
 full Dirac-Coulomb Hamiltonian and can certainly be used for the
@@ -68,9 +65,7 @@ interaction.
 ----
 
 Keyword referring to the new module for the *E*xact *Two*-*C*omponent
-relativistic Hamiltonian. 
-.. \ :sup:``[3] <#_note-ilias:iotc>`_`\ 
-.. \ :sup:``[4] <#_note-knecht:x2c_mod>`_`\ .
+relativistic Hamiltonian [Ilias2007]_,[Knecht2010]_
 
 DIRAC runs in 2-component mode. One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
@@ -82,9 +77,7 @@ specified. See also the warning there.
 
 Keyword referring to the 2-component molecular-mean-field Hamiltonian
 apporach within the new module for the *E*xact *Two*-*C*omponent
-relativistic Hamiltonian. 
-.. \ :sup:``[5] <#_note-sikkema_mmf>`_`\ 
-.. \ :sup:``[4] <#_note-knecht:x2c_mod>`_`\ .
+relativistic Hamiltonian [Sikkema2009]_,[Knecht2010]_
 
 DIRAC starts with a 4c-SCF run and performs a transformation to
 2-component mode (based on the converged Fock operator) prior to a
@@ -100,8 +93,7 @@ page </dirac/index.php/FAQ>`_.
 .SPINFREE
 ---------
 
-Use Dyall's spinfree Hamiltonian
-.. \ :sup:``[6] <#_note-dyall-94>`_`\ 
+Use Dyall's spinfree Hamiltonian [Dyall1994]_
 to
 obtain results without spin-orbit coupling for the four-component
 Hamiltonian in the default restricted kinetic balance scheme. This
@@ -116,8 +108,7 @@ contributions. Add more...
 .LEVY-LEBLOND
 -------------
 
-Use the nonrelativistic Lévy-Leblond Hamiltonian
-.. \ :sup:``[7] <#_note-levy-leblond-67>`_`\ .
+Use the nonrelativistic Lévy-Leblond Hamiltonian [Levy1967]_.
 
 Use this option before any additional one-electron operators are
 specified, because it redefines the metric used in the calculation.
@@ -158,12 +149,9 @@ functionals together with their weights:
 
 -  LDA exchange 
 .. \ :sup:``[8] <#_note-lda:exchange>`_`\ : SLATER
--  Becke 1988 
-.. \ :sup:``[9] <#_note-gga:B88>`_`\ : BECKE
--  The correction term to LDA proposed by Becke
-..   \ :sup:``[9] <#_note-gga:B88>`_`\ : B88CORR
--  Perdew-Wang 1986 
-.. \ :sup:``[10] <#_note-gga:pw86x>`_`\ : PW86X
+-  Becke 1988 [Becke1998]_
+-  The correction term to LDA proposed by Becke [Becke1998]_
+-  Perdew-Wang 1986 [Perdew1986]_
 
 *Correlation functionals:*
 
@@ -1215,44 +1203,19 @@ and make the pruning less pronounced:
 References
 ----------
 
-  \ :sup:``1.0 <#_ref-visscher-saue-00_0>`_`\ 
 
-   \ :sup:``1.1 <#_ref-visscher-saue-00_1>`_`\  L. Visscher and T. Saue,
-   *Approximate relativistic electronic structure methods based on the
-   quaternion modified Dirac equation*, J. Chem. Phys. **113**, *3996*
-   (2000) `electronic version <http://dx.doi.org/10.1063/1.1288371>`_.
-#. `↑ <#_ref-visscher-97_0>`_ L. Visscher, *Approximate molecular
-   Dirac-Coulomb calculations using a simple Coulombic correction*,
-   Theor. Chem. Acc. **98**, *68* (1997) `electronic
-   version <http://dx.doi.org/10.1007/s002140050280>`_.
-#. ↑ \ :sup:``3.0 <#_ref-ilias:iotc_0>`_`\ 
-   \ :sup:``3.1 <#_ref-ilias:iotc_1>`_`\ 
-   \ :sup:``3.2 <#_ref-ilias:iotc_2>`_`\  M. Iliaš and T. Saue, *An
-   infinite-order two-component relativistic Hamiltonian by a simple
-   one-step transformation*, J. Chem. Phys. **126**, *064102* (2007)
-   `electronic version <http://dx.doi.org/10.1063/1.2436882>`_.
-#. ↑ \ :sup:``4.0 <#_ref-knecht:x2c_mod_0>`_`\ 
-   \ :sup:``4.1 <#_ref-knecht:x2c_mod_1>`_`\  S. Knecht and T. Saue,
-   *tba*, xxx **xxx**, *Universities of Strasbourg and Odense*
-   (2010-2011) .
-#. `↑ <#_ref-sikkema_mmf_0>`_ J. Sikkema, L. Visscher, T. Saue, and M.
-   Iliaš, *The molecular mean-field approach for correlated relativistic
-   calculations*, J. Chem. Phys. **131**, *124116* (2009) .
-#. `↑ <#_ref-dyall-94_0>`_ K. G. Dyall, *An exact separation of the
-   spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
-   hamiltonian*, J. Chem. Phys. **100**, *2118* (1994) `electronic
-   version <http://dx.doi.org/10.1063/1.466508>`_.
-#. `↑ <#_ref-levy-leblond-67_0>`_ J.-M. Lévy-Leblond, *Nonrelativistic
-   particles and wave equations*, Commun. Math. Phys. **6**, *286*
-   (1967) `electronic version <http://dx.doi.org/10.1007/BF01646020>`_.
+
+
 #. `↑ <#_ref-lda:exchange_0>`_ P. A. M. Dirac, *Note on Exchange
    Phenomena in the Thomas Atom*, Proc. Roy. Soc. London **26**, *376*
    (1930) .
+
 #. ↑ \ :sup:``9.0 <#_ref-gga:B88_0>`_`\ 
    \ :sup:``9.1 <#_ref-gga:B88_1>`_`\  A. D. Becke, *Density-Functional
    Exchange-Energy Approximation With Correct Asymptotic Behavior*,
    Phys. Rev. A **38**, *3098* (1988) `electronic
    version <http://dx.doi.org/10.1103/PhysRevA.38.3098>`_.
+
 #. `↑ <#_ref-gga:pw86x_0>`_ J. P. Perdew and Y. Wang, *Accurate and
    Simple Density Functional for the Electronic Exchange Energy:
    Generalized Gradient Approximation*, Phys. Rev. B **33**, *8800*

@@ -202,3 +202,11 @@ For DIRAC programmers
    programmers/screening.rst
    programmers/standalones.rst
    programmers/shell_prog.rst
+
+Bibliography
+============
+
+.. toctree::
+   :maxdepth: 1
+   
+   refs.rst
