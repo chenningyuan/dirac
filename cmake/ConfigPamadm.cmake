@@ -23,10 +23,16 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/pamadm)
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_QUIET
     )
-
+    #miro: tweak null device for Windows & Unix
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        set(NULL_DEVICE "/dev/null")
+    else()
+        set(NULL_DEVICE "NUL")
+    endif()
+	
     add_custom_target(
         run_pamadm
-        COMMAND python pamadm ${PAMADM_FLAGS} > /dev/null
+        COMMAND python pamadm ${PAMADM_FLAGS} > ${NULL_DEVICE}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         )
 
