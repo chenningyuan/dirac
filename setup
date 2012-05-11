@@ -226,7 +226,11 @@ def gen_cmake_command():
     if args.alternative_cmake:
         command += ' %s' % args.alternative_cmake
     else:
-        command += ' cmake'
+        # fix for Windows
+        if sys.platform != "win32":
+            command += ' cmake'
+        else:
+            command = ' cmake ' + command
 
     # if compiler starts with 'mp' turn on mpi
     # it is possible to call compilers with long paths
