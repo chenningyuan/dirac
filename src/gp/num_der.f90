@@ -35,7 +35,10 @@ contains
   !     [1]:  F.B. Hildebrand, Introduction to Numerical Analysis, DPI, Inc.,    !
   !           New York, 1974.                                                    !
   !------------------------------------------------------------------------------!
+  use unit_test_generator
   implicit none
+
+#include "unit-test.h"
 
   ! external variables
   character*(*), intent(in) :: derstr
@@ -56,6 +59,28 @@ contains
 
   integer*4, allocatable, dimension(:)   :: ndmax
   real*8,    allocatable, dimension(:,:) :: dcon, err3c, dpar
+  integer*4, save :: icount = 0
+
+  !------------------------------------------------------------------------------!
+  !           Write to the file input information for unit testing               !
+  !------------------------------------------------------------------------------!
+#ifdef CREATE_UNIT_TESTS
+  icount = icount + 1
+  call set_suffix(icount)
+  call set_driver_routine('nddrv')
+  call add_module('num_der')
+
+  call add_inp_variable(nder   ,'nder   ')
+  call add_inp_variable(derstr ,'derstr ')
+  call add_inp_variable(ipoint ,'ipoint ')
+  call add_inp_variable(nprint ,'nprint ')
+  call add_inp_variable(lunit  ,'lunit  ')
+  call add_inp_variable(npoints,'npoints')
+  call add_inp_variable(xcoor  ,'xcoor  ')
+  call add_inp_variable(ycoor  ,'ycoor  ')
+  call add_inp_variable(yerr   ,'yerr   ')
+  call add_inp_variable(ierr   ,'ierr   ')
+#endif
 
   !------------------------------------------------------------------------------!
   luout = lunit
@@ -154,6 +179,14 @@ contains
   deallocate( dcon  )
   deallocate( err3c )
   deallocate( dpar  )
+
+  !------------------------------------------------------------------------------!
+  !           Write to the file ouput information for unit testing               !
+  !------------------------------------------------------------------------------!
+#ifdef CREATE_UNIT_TESTS
+  call add_out_variable(derres,'derres')
+  call generate_test()
+#endif
 
   !------------------------------------------------------------------------------!
   end subroutine nddrv
