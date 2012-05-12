@@ -109,6 +109,7 @@
       LOGICAL spinfr_krmc, cana_mcscf, no1pdens_save
 !     cana_mcscf means: analysis of mcscf reference vector in a separate 
 !                       ci run (after mcscf convergence)
+!     stano/radovan: OPT_MKCNST is not used anywhere
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
      &                OPT_NOCI, OPT_UCIBOS, OPT_MKCNST, DONR, FROZCI,   &
      &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT, NATOLCR,   &

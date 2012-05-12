@@ -946,7 +946,7 @@ contains
 
       call reset_available_kw_list()
 
-!     ignore HF orbital energies 
+!     ignore HF orbital energies
       if (kw_matches(word, '.IGNOE  ')) then
          relcc_use_orbital_energies = .false.
       end if
