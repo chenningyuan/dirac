@@ -21,13 +21,34 @@ for books you may use (semiparmanent?) Google-Books references.
 
 .. [Bast2011]          http://dx.doi.org/10.1039/c0cp01483d
 
-.. [Becke1998]  A. D. Becke, *Density-Functional Exchange-Energy Approximation With Correct Asymptotic Behavior*,
+.. [Becke1998]  A. D. Becke, 
+   *Density-Functional Exchange-Energy Approximation With Correct Asymptotic Behavior*,
    Phys. Rev. A **38**, *3098* (1988) `electronic version <http://dx.doi.org/10.1103/PhysRevA.38.3098>`_.
+
+.. [Dirac1930] P. A. M. Dirac, *Note on Exchange
+   Phenomena in the Thomas Atom*, Proc. Roy. Soc. London **26**, *376*
+   (1930) . ELVERSION???
+
 
 .. [Dyall1994]    K. G. Dyall, *An exact separation of the
    spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
    hamiltonian*, J. Chem. Phys. **100**, *2118* (1994) `electronic
    version <http://dx.doi.org/10.1063/1.466508>`_.
+
+.. [Fossgaard2003] O. Fossgaard, O. Gropen, M.
+   Corral Valero, and T. Saue, *On the performance of four-component
+   relativistic density functional theory: Spectroscopic constants and
+   dipole moments of the diatomics HX and XY (X, Y = F, Cl, Br and I)*,
+   J. Chem. Phys. **118**, *10418* (2003) `electronic 
+   version <http://dx.doi.org/10.1063/1.1574317>`_.
+
+.. [Gruning2001] M. Grüning, O. V.Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends,
+   *Shape
+   corrections to exchange-correlation potentials by gradient-regulated
+   seamless connection of model potentials for inner and outer region*,
+   J. Chem. Phys. **114**, *652* (2001) `electronic
+   version <http://dx.doi.org/10.1063/1.1327260>`_.
+
 
 .. [Ilias2001] M. Iliaš and V. Kello and L. Visscher and
    B. Schimmelpfennig, *Inclusion of mean-field spin–orbit effects based
@@ -56,8 +77,26 @@ for books you may use (semiparmanent?) Google-Books references.
    particles and wave equations*, Commun. Math. Phys. **6**, *286*
    (1967) `electronic version <http://dx.doi.org/10.1007/BF01646020>`_.
 
-.. [Perdew1986] J. P. Perdew and Y. Wang, *Accurate and Simple Density Functional for the Electronic Exchange Energy: 
-   Generalized Gradient Approximation*, Phys. Rev. B **33**, *8800* (1986) `electronic version <http://dx.doi.org/10.1103/PhysRevB.33.8800>`_.
+.. [Mayer1996]  M. Mayer and O. D. Häberlen and N.
+   Rösch, *Relevance of relativistic exchange-correlation functionals
+   and of finite nuclei in molecular density-functional calulations*,
+   Phys. Rev. A **54**, *4775* (54) `electronic
+   version <http://dx.doi.org/10.1103/PhysRevA.54.4775>`_.
+
+.. [Perdew1986] J. P. Perdew and Y. Wang, 
+   *Accurate and Simple Density Functional for the Electronic Exchange Energy: 
+   Generalized Gradient Approximation*, Phys. Rev. B **33**, *8800* (1986) 
+   `electronic version <http://dx.doi.org/10.1103/PhysRevB.33.8800>`_.
+
+.. [Saue2002] T. Saue and T. Helgaker,
+   *Four-component relativistic Kohn-Sham theory*, J. Comput. Chem.
+   **23**, *814* (2002) `electronic version <http://dx.doi.org/10.1002/jcc.10066>`_.
+
+.. [Schipper2000] P. R. T. Schipper, O. V. Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends,
+   *Molecular calculations of excitation energies and (hyper)polarizabilities with
+   a statistical average of orbital model exchange-correlation
+   potentials*, J. Chem. Phys. **112**, *1344* (2000) `electronic
+   version <http://dx.doi.org/10.1063/1.480688>`_.
 
 .. [Sikkema2009]       J. Sikkema, L. Visscher, T. Saue, and M. Ilias, *The molecular mean-field approach for correlated relativistic calculations*, J. Chem. Phys. **131**, *124116* (2009) ADD ELECTR V
 
@@ -73,6 +112,17 @@ for books you may use (semiparmanent?) Google-Books references.
    effects: The effect of spin-orbit coupling in closed shell
    molecules*, J. Chem. Phys. **105**, *6505* (1996) `electronic
    version <http://dx.doi.org/10.1063/1.472460>`_.
+
+.. [Varga1999] S. Varga, E. Engel, W.-D. Sepp,
+   and B. Fricke, *Systematic study of the Ib diatomic molecules
+   Cu\ :sub:`2`\ , Ag\ :sub:`2`\ , and Au\ :sub:`2`\  using advanced
+   relativistic density functionals*, Phys. Rev. A **59**, *4288* (1999)
+   `electronic version <http://dx.doi.org/10.1103/PhysRevA.59.4288>`_.
+
+.. [Varga2000] S. Varga, B. Fricke, H. akaamatsu, T. Mukoyama, J. Anton, D. Geschke, A. Heitmann, E. Engel,
+   and T. Bastug, *Four-component relativistic density functional
+   calculations of heavy diatomic molecules*, J. Chem. Phys. **112**,
+   *3499* (2000) `electronic version <http://dx.doi.org/10.1063/1.480934>`_.
 
 .. [Vies2012]          http://dx.doi.org/10.1103/PhysRevA.85.030304
 
