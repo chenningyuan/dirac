@@ -156,7 +156,7 @@ functionals together with their weights:
 
 -  The Vosko-Wilk-Nusair LDA correlation energy (VWN5) [Vosko1980]_
 -  The Lee-Yang-Parr functional  [Lee1988]_
--  Perdew 1986 [Perdws1986]_
+-  Perdew 1986 [Perdew1986]_
 
 *Some of the predefined combinations (see the `Dalton
 manual <http://www.daltonprogram.org>`_ for a more complete list):*
