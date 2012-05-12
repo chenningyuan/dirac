@@ -567,8 +567,6 @@ class run:
                                       stdout=subprocess.PIPE,
                                       preexec_fn=os.setsid)
              else:
-                 #print "shlex.split(command)=",shlex.split(command)
-                 #p = subprocess.Popen(shlex.split(command),
                  p = subprocess.Popen(command,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE)
