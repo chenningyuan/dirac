@@ -15,9 +15,19 @@ for books you may use (semipermanent) Google-Books links.
 
 .. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
 
-.. [Becke1998]  A. D. Becke, 
+.. [Bauschlicher1980] C. W. Bauschlicher, Jr.,
+   *The construction of modified virtual orbitals (MVO's) which are suited
+   for configuration interaction calculations*, 
+   J. Chem. Phys. **72**, *880* (1980)
+   <http://dx.doi.org/10.1063/1.439243>
+
+.. [Becke1988]  A. D. Becke, 
    *Density-Functional Exchange-Energy Approximation With Correct Asymptotic Behavior*,
    Phys. Rev. A **38**, *3098* (1988) <http://dx.doi.org/10.1103/PhysRevA.38.3098>
+
+.. [Becke1988a] A. D. Becke, *A multicenter numerical integration scheme for polyatomic molecules*,
+   J. Chem. Phys. **88**, *2547* (1988) 
+   <http://dx.doi.org/10.1063/1.454033>
 
 .. [Dirac1930] P. A. M. Dirac, *Note on Exchange
    Phenomena in the Thomas Atom*, Proc. Roy. Soc. London **26**, *376*
@@ -29,15 +39,50 @@ for books you may use (semipermanent) Google-Books links.
    H\ :sub:`2`\ X (X=Te, Po, eka-Po)*, J. Chem. Phys. **124**, *154307* (2006)
    <http://dx.doi.org/10.1063/1.2187001>
 
-.. [Dyall1994]    K. G. Dyall, *An exact separation of the
+.. [Dyall1994] K. G. Dyall, *An exact separation of the
    spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
    hamiltonian*, J. Chem. Phys. **100**, *2118* (1994) 
    <http://dx.doi.org/10.1063/1.466508>
+
+.. [Dyall2007] K. G. Dyall and K. Fægri jr., *Introduction to Relativistic Quantum
+   Chemistry*, Oxford University Press, New York, 2007
+   `URL <http://books.google.sk/books?id=k8gDJm1t2q4C&lpg=PA509&dq=K.%20G.%20Dyall%20and%20K.%20F%C3%A6gri%20jr.%2C%20*Introduction%20to%20Relativistic%20Quantum%20%20%20%20Chemistry*%2C%20Oxford%20University%20Press%2C%20New%20York%2C%202007&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+
+.. [Ekstrom2005] Ulf Ekstrom and Patrick Norman and Antonio Rizzo, 
+   *Four-component Hartree--Fock calculations of
+   magnetic-field induced circular birefringence---Faraday effect---in
+   noble gases and dihalogens*, 
+   The Journal of Chemical Physics **122**,  *074321* (2005) 
+   <http://dx.doi.org/10.1063/1.1849167>
 
 .. [Faegri2001]  K. Fægri and T. Saue, *Diatomic molecules
    between very heavy elements of group 13 and group 17: A study of
    relativistic effects on bonding*, J. Chem. Phys. **115**, *2456*
    (2001) <http://dx.doi.org/10.1063/1.1385366>
+
+.. [Fleig2003] T. Fleig, J. Olsen, and L. Visscher,
+   *The generalized active space concept for the relativistic treatment
+   of electron correlation. II: Large-scale configuration interaction
+   implementation based on relativistic 2- and 4-spinors and its application*
+   J. Chem. Phys. **119**, *2963* (2003)
+   <http://dx.doi.org/10.1063/1.1590636>
+
+.. [Fleig2005] T. Fleig and L. Visscher,
+   *Large-Scale Electron Correlation Calculations in the Framework of
+   the Spin-Free Dirac Formalism. The Au\ :sub:`2`\  Molecule Revisited*,
+   Chem. Phys. **311**, *113* (2005) 
+   <http://dx.doi.org/10.1016/j.chemphys.2004.10.003>
+
+.. [Fleig2006] T. Fleig, J. Olsen, H. J. Aa. Jensen, and L. Visscher,
+   *The generalized active space concept for the
+   relativistic treatment of electron correlation. III: Large-scale
+   configuration interaction and multi-configuration
+   self-consistent-field four-component methods with application to UO\_2*,
+   J. Chem. Phys. **124**, *104106* (2006), ADD EL.VERS
+
+.. [Fleig2006a] T. Fleig, *`Habilitation thesis*,
+   University of Düsseldorf (Germany) '***, '** (2006)*
+   http://dirac.chem.sdu.dk/thesis/
 
 .. [Fossgaard2003] O. Fossgaard, O. Gropen, M.
    Corral Valero, and T. Saue, *On the performance of four-component
@@ -70,16 +115,58 @@ for books you may use (semipermanent) Google-Books links.
    anion*, Chem.Phys.Lett. **408**, *210* (2005) 
    <http://dx.doi.org/doi:10.1016/j.cplett.2005.04.027>
 
-
 .. [Ilias2007] M. Ilias and T. Saue, *An infinite-order two-component relativistic Hamiltonian by a simple 
    one-step transformation*, J. Chem. Phys. **126**, *064102* (2007) 
    <http://dx.doi.org/10.1063/1.2436882>
 
+.. [Ilias2010]  M. Ilias, V. Kello and M. Urban, 
+   *Relativistic effects in atomic and molecular properties*,
+   Acta Physica Slovaca. Reviews and Tutorials, **60**, *259-391* (2010)
+   <http://dx.doi.org/10.2478/v10155-010-0003-1>
+
+.. [Jensen1996] H. J. Aa. Jensen and K. G. Dyall and T. Saue and K. Fægri jr.,
+   *`Relativistic 4-component Multi-Configurational Self-Consistent Field Theory for Molecules: Formalism*
+   J. Chem. Phys. **104**, *4083* (1996)
+   <http://link.aip.org/link/doi/10.1063/1.471644>
+
+.. [Knecht2008] S. Knecht and H. J. Aa. Jensen and T. Fleig, 
+   *Large-Scale Parallel Configuration Interaction.
+   I. Non-Relativistic and Scalar-Relativistic General Active Space
+   Implementation with Application to* (Rb-Ba)\ :sup:`+`\ .*, 
+   J. Chem. Phys. **128**,*014108*(2008)*
+   <http://dx.doi.org/10.1063/1.2805369>
+
+.. [Knecht2009] S. R. Knecht, *`PhD thesis*,
+   University of Düsseldorf (Germany) '***, '** (2009)*
+   <http://dirac.chem.sdu.dk/thesis/09.PhD.StefanKnecht.pdf>
+ 
 .. [Knecht2010]  S. Knecht and T. Saue, *tba*, xxx **xxx**, *Universities of Strasbourg and Odense*,(2010-2011) .
+
+.. [Knecht2010a] S. Knecht and H. J. Aa. Jensen and T. Fleig,
+   *Large-Scale Parallel Configuration Interaction. II. Two- and 4-Component Double-Group General Active Space
+   Implementation with Application to BiH.*, 
+   J. Chem. Phys. **128**, *014108* (2010)
+   <http://dx.doi.org/http://link.aip.org/link/JCPSA6/v132/i1/p014108/s1>
+
+.. [Knecht2011] S. Knecht, S. Fux, R. van Meer, L. Visscher, M. Reiher, T. Saue,
+   *Mössbauer spectroscopy for heavy elements: a relativistic benchmark study of mercury*,
+   Theor. Chem. Acc. **129**, *631-650* (2011)
+   <http://dx.doi.org/10.1007/s00214-011-0911-2>
 
 .. [Kutzelnigg1984] W. Kutzelnigg,
    *Chemical Bonding in the Higher Main Group Elements*, Angew. Chem. Int. Ed. Engl. **23**, *272* (1984),
    http://dx.doi.org/10.1002/anie.198402721
+
+.. [Laerdahl1997] J. K. Lærdahl, T. Saue and K. Fægri,
+   *Direct relativistic MP2: Properties of ground state CuF, AgF and AuF*,
+   Theor. Chem. Acc. **97**, *177* (1997) 
+   <http://dx.doi.org/10.1007/s002140050251>
+
+.. [Laerdahl1999] J. K. Lærdahl and P. Schwerdtfeger,
+   *Fully relativistic ab initio calculations of the energies of chiral
+   molecules including partiy-violating weak interactions*, 
+   Phys. Rev. A **60**, *4439* (1999)
+   <http://dx.doi.org/10.1103/PhysRevA.60.4439>
 
 .. [Lee1988] C. Lee, W. Yang, and R. G. Parr, *Development
    of the Colle-Salvetti Correlation-Energy Formula into a Functional of
@@ -90,16 +177,31 @@ for books you may use (semipermanent) Google-Books links.
    particles and wave equations*, Commun. Math. Phys. **6**, *286* (1967)
    <http://dx.doi.org/10.1007/BF01646020>
 
+.. [Lindh2001] R. Lindh, P. A. Malmqvist, and L. Gagliardi,
+   *Molecular integrals by numerical quadrature. I.Radial integration*,
+   Theor. Chem. Acc. **106**, *178* (2001)
+   <http://dx.doi.org/10.1007/s002140100263>
+
 .. [Mulliken1955] R. S. Mulliken, *Electronic Population
    Analysis on LCAO-MO Molecular Wave Functions. I*, 
    J. Chem. Phys. **23**, *1833* (1955)
    <http://dx.doi.org/10.1063/1.1740588>
 
-.. [Mayer1996]  M. Mayer and O. D. Häberlen and N.
-   Rösch, *Relevance of relativistic exchange-correlation functionals
+.. [Mayer1996]  M. Mayer and O. D. Häberlen and N. Rösch,
+   *Relevance of relativistic exchange-correlation functionals
    and of finite nuclei in molecular density-functional calulations*,
-   Phys. Rev. A **54**, *4775* (54) `
+   Phys. Rev. A **54**, *4775* (54) 
    <http://dx.doi.org/10.1103/PhysRevA.54.4775>
+
+.. [Moss1973]  R. E. Moss, *Advanced Molecular Quantum Mechanics: An Introduction to
+   Relativistic Quantum Mechanics and the Quantum Theory of Radiation*,
+   Chapman and Hall, London, 1973
+   `URL <http://goo.gl/11Esq>`_
+
+.. [Olsen1990] J. Olsen and P. Joergensen and J. Simons,
+   *Passing the one-billion limit in Full CI calculations*, 
+   Chem. Phys. Lett. **169**, *463* (1990)
+   <http://dx.doi.org/10.1016/0009-2614(90)85633-N>
 
 .. [Perdew1986] J. P. Perdew and Y. Wang, 
    *Accurate and Simple Density Functional for the Electronic Exchange Energy: 
@@ -130,6 +232,14 @@ for books you may use (semipermanent) Google-Books links.
    *Improved SCF acceleration*, J. Comput. Chem. **3**, *556* (1982)
    <http://dx.doi.org/10.1002/jcc.540030413>
 
+.. [Reiher2009] M. Reiher and A. Wolf, *Relativistic Quantum Chemistry*, Wiley-VCH, Weinheim 2009
+   `URL <http://books.google.sk/books?id=u47v2YmR-P8C&lpg=PA611&ots=2OK6t2Mavd&dq=M.%20Reiher%20and%20A.%20Wolf%2C%20*Relativistic%20Quantum%20Chemistry*%2C%20Wiley-VCH%2C%20%20%20%20Weinheim%202009&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+
+.. [Saue1997] T. Saue, K. Fægri, T. Helgaker, and O. Gropen, 
+   *Principles of direct 4-component relativistic SCF: Application to cesium auride*,
+   Mol. Phys. **91**, *937* (1997)
+   <http://dx.doi.org/10.1080/002689797171058>
+
 .. [Saue2000] T. Saue and H. J. Aa. Jensen,
    *Quaternion symmetry of the Dirac equation*, in
    *Mathematical Methods for Ab Initio Quantum Chemistry*, edited by
@@ -139,6 +249,17 @@ for books you may use (semipermanent) Google-Books links.
    *Four-component relativistic Kohn-Sham theory*, 
    J. Comput. Chem. **23**, *814* (2002)
    <http://dx.doi.org/10.1002/jcc.10066>
+
+.. [Saue2002a] T.Saue,
+   *Post Dirac-Hartree-Fock methods - Properties*,
+   in *Relativistic Electronic Structure Theory - Part 1: Fundamentals*,
+   edited by P. Schwerdtfeger, Elsevier, Amsterdam, 2002.
+
+.. [Saue2003] T. Saue and H. J. Aa. Jensen,
+   *Linear response at the 4-component relativistic level:
+   Application to the frequency-dependent dipole polarizabilities of the coinage metal dimers*,
+   J.Chem.Phys. **118**, *522* (2003)
+   <http://dx.doi.org/10.1063/1.1522407>
 
 .. [Schipper2000] P. R. T. Schipper, O. V. Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends,
    *Molecular calculations of excitation energies and (hyper)polarizabilities with
@@ -150,16 +271,36 @@ for books you may use (semipermanent) Google-Books links.
    *New approach to the one-particle Green's function for finite Fermi systems*,
    Phys. Rev. A **28**, *1237* (1983) ADD_EL_V
 
+.. [Schwerdtfeger2002] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
+   Part 1: Fundamentals*, Elsevier, Amsterdam, 2002
+   `URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
+
+.. [Schwerdtfeger2002a] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
+   Part 2: Applications*, Elsevier, Amsterdam, 2002.
+   `URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
 
 .. [Sikkema2009] J. Sikkema, L. Visscher, T. Saue, and M. Ilias, 
    *The molecular mean-field approach for correlated relativistic calculations*, 
    J. Chem. Phys. **131**, *124116* (2009) 
    ADD ELECTR V
 
+.. [Strange1998] P. Strange, *Relativistic Quantum Mechanics: with applications in
+   condensed matter and atomic physics*, Cambridge University Press, Cambridge, 1998
+   `URL <http://books.google.sk/books?id=sdVrBM2w0OwC&lpg=PR6&ots=MYEjcoTosy&dq=P.%20Strange%2C%20*Relativistic%20Quantum%20Mechanics%3A%20with%20applications%20in%20%20%20%20condensed%20matter%20and%20atomic%20physics*%2C%20Cambridge%20University%20Press%2C%20%20%20%20Cambridge%2C%201998&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+
 .. [Sultzer2011]       http://dx.doi.org/10.1039/C1CP22457C
 
 .. [Thyssen1998] J. Thyssen and H. J. Aa. Jensen,
    *Average-of-configurations SCF manuscript*, unpublished (1998).
+
+.. [Thyssen2004] J. Thyssen, *PhD thesis*,
+   University of Southern Denmark (Denmark) '***, '** (2004)*
+   <http://dirac.chem.sdu.dk/thesis/thesis-jth2001.pdf>
+
+.. [Thyssen2008] J. Thyssen and T. Fleig and H. J. Aa. Jensen,
+   *A Direct Relativistic Four-Component Multi-Configuration Self-Consistent-Field Method for Molecules*,
+   J. Chem. Phys. **129**, *034109* (2008)
+   <http://link.aip.org/link/doi/10.1063/1.2943670>
 
 .. [vanLenthe1994]  E. van Lenthe, E. J. Baerends, and J. G.
    Snijders, *Relativistic total energies using regular approximations*,
@@ -193,8 +334,14 @@ for books you may use (semipermanent) Google-Books links.
 
 .. [Visscher1997]      http://dx.doi.org/10.1063/1.472655
  
-.. [Visscher1997a]  L. Visscher, *Approximate molecular Dirac-Coulomb calculations using a simple Coulombic correction*,
+.. [Visscher1997a]  L. Visscher, 
+   *Approximate molecular Dirac-Coulomb calculations using a simple Coulombic correction*,
    Theor. Chem. Acc. **98**, *68* (1997) <http://dx.doi.org/10.1007/s002140050280>
+
+.. [Visscher1997b] L. Visscher and K. G. Dyall,
+   *Dirac-Fock atomic electronic structure calculations using different nuclear charge distributions*,
+   At. Data Nucl. Data Tabl. **67**, *207* (1997)
+   <http://dx.doi.org/10.1006/adnd.1997.0751>
 
 .. [Visscher2000] L. Visscher and T. Saue, 
    *Approximate relativistic electronic structure methods based on the quaternion modified Dirac equation*, 
@@ -205,6 +352,11 @@ for books you may use (semipermanent) Google-Books links.
    *Formulation and implementation of the relativistic Fock-space coupled cluster method for molecules*,
    J. Chem. Phys. **115**, *9720* (2001)
    <http://dx.doi.org/10.1063/1.1415746>
+
+.. [Visscher2002] L. Visscher, 
+   *The Dirac equation in quantum chemistry: strategies to overcome the current computational problems*,
+   J. Comput. Chem. **23**, *759* (2002)
+   <http://dx.doi.org/10.1002/jcc.10036>
 
 .. [Vosko1980] S. J. Vosko, L. Wilk, and M. Nusair, *Accurate
    Spin-Dependent Electron Liquid Correlation Energies for Local Spin

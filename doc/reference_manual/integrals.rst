@@ -1,6 +1,3 @@
-Manual:INTEGRALS
-================
-
 \*\*INTEGRALS -- Integral directives
 ====================================
 
@@ -30,8 +27,7 @@ code, e.g.
 methods should give precisely the same energies.
 
 For the Gaussian charge distribution the default exponents are in
-accordance with values proposed by Visscher and Dyall
-[1] <#_note-visscher-dyall:nucmod>`_`\ , 
+accordance with values proposed by Visscher and Dyall [Visscher1997b]_
 see also the web-site
 `[1] <http://dirac.chem.sdu.dk/doc/FiniteNuclei/FiniteNuclei.shtml>`_.
 If desired, other exponents may be specified in the `basis
@@ -117,19 +113,6 @@ General print level in HERMIT.
 
     .PRINT
      1
-
-References
-----------
-
-#. ` <#_ref-visscher-dyall:nucmod_0>`_ L. Visscher and K. G. Dyall,
-   *Dirac-Fock atomic electronic structure calculations using different
-   nuclear charge distributions*, At. Data Nucl. Data Tabl. **67**,
-   *207* (1997) `electronic
-   version <http://dx.doi.org/10.1006/adnd.1997.0751>`_.
-
-
-Manual:INTEGRALS:ONEINT
-=======================
 
 \*ONEINT -- One-electron integrals
 ==================================
@@ -229,8 +212,7 @@ completely off.
 .ICEDIF
 -------
 
-Separate screening of Coulomb and exchange contributions
-[1] <#_note-saue:csau>
+Separate screening of Coulomb and exchange contributions [Saue1997]_.
 Useful for fine regulation of the
 convergence process.
 
@@ -297,16 +279,6 @@ integrals are printed.
 
 Give detailed timing for integral calculation.
 
-References
-----------
-
-1.0 <#_ref-saue:csau_0>`_`\ 
-1.1 <#_ref-saue:csau_1>
-T. Saue, K. Fægri, T. Helgaker,
-and O. Gropen, *Principles of direct 4-component relativistic SCF:
-Application to cesium auride*, Mol. Phys. **91**, *937* (1997)
-`electronic version <http://dx.doi.org/10.1080/002689797171058>`_.
-
 
 Manual:INTEGRALS:Sample inputs
 ==============================
@@ -325,7 +297,7 @@ Use the point nucleus model to compare with nonrelativistic programs
      1
      [...]
 
- Read very large contracted basis set (from a basis set file, for
+Read very large contracted basis set (from a basis set file, for
 example) as uncontracted.
 
 ::

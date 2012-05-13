@@ -5,16 +5,13 @@ Manual:LUCITA
 to DIRAC by Timo Fleig, parallelization by Stefan Knecht
 
 LUCITA is a string-based Hamiltonian-direct configuration interaction
-(CI) program, based on the LUCIA code
-[1] <#_note-olsen:lucia>`_`\ . 
+(CI) program, based on the LUCIA code [Olsen1990]_.
 It is capable of doing efficient
 CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI,
-and MRCI using general active spaces. The code is interfaced
-[2] <#_note-fleig-visscher:au2>`_`\ 
+and MRCI using general active spaces. The code is interfaced [Fleig2005]_
 to molecular integrals
 obtained in the spin-free Dirac formalism and uses non-relativistic
-point group symmetry. It is implemented as a full parallel version
-[3] <#_note-knecht-jensen-fleig:lupar1>`_`\ .
+point group symmetry. It is implemented as a full parallel version [Knecht2008]_.
 
 A central feature of the program is the Generalized Active Space (GAS)
 concept, in which the underlying total orbital space is subdivided into
@@ -46,8 +43,7 @@ triple, and quadruple excitations (SDTQ), restricted active space CI
 (RASCI), and generalized active space CI (GASCI). All types of CI can be
 considered special cases of a GASCI, so internally, DIRLUC transfers all
 information into GAS format. More detailed information on GAS-type of
-wavefunctions can be found in the literature
-<#_note-fleig-olsen-visscher:luciarel>`_`\ .
+wavefunctions can be found in the literature [Fleig2003]_.
 
 
 *Important Information for Users*
@@ -370,35 +366,6 @@ more advanced and efficient distribution routine:
      2
 
 *Default:* 2
-
-References
-==========
-
-<#_ref-olsen:lucia_0>`_ J. Olsen and P. Joergensen and J. Simons,
-*Passing the one-billion limit in Full CI calculations*, Chem. Phys.
-Lett. **169**, *463* (1990) .
-
-<#_ref-fleig-visscher:au2_0>`_ T. Fleig and L. Visscher,
-*Large-Scale Electron Correlation Calculations in the Framework of
-the Spin-Free Dirac Formalism. The Au\ :sub:`2`\  Molecule
-Revisited*, Chem. Phys. **311**, *113* (2005) `electronic
-version <http://dx.doi.org/10.1016/j.chemphys.2004.10.003>`_.
-
-<#_ref-knecht-jensen-fleig:lupar1_0>`_ S. Knecht and H. J. Aa.
-Jensen and T. Fleig, *Large-Scale Parallel Configuration Interaction.
-I. Non-Relativistic and Scalar-Relativistic General Active Space
-Implementation with Application to* (Rb-Ba)\ :sup:`+`\ .*, J. Chem.
-Phys. **128**,*014108*(2008)* `electronic
-version <http://dx.doi.org/10.1063/1.2805369>`_.
-
-<#_ref-fleig-olsen-visscher:luciarel_0>`_ T. Fleig and J. Olsen
-and L. Visscher, *The generalized active space concept for the
-relativistic treatment of electron correlation: II. Large-scale
-configuration interaction implementation based on relativistic 2-and
-4-spinors and its application.*, J. Chem. Phys. **119**, *2963*
-(2003) `electronic version <http://dx.doi.org/10.1063/1.1590636>`_.
-
-
 
 Manual:LUCITA:Sample inputs
 ===========================

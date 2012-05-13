@@ -1,13 +1,11 @@
 Manual:GRID
 ===========
 
-The numerical integration scheme uses the Becke partitioning
-[1] <#_note-Becke:1988:jchemphys>`_`\ 
+The numerical integration scheme uses the Becke partitioning [Becke1988a]_
 of the molecular volume
 into atomic ones, for which the quadrature is performed in spherical
 coordinates. Radial integration is carried out using the scheme proposed
-by Lindh *et al.* 
-[2] <#_note-Lindth:2001:theorchemacc>`_`\ ,
+by Lindh *et al.* [Lindh2001]_,
 while the angular integration is handled by a set of highly accurate
 Lebedev grids. Note that the Becke partitioning scheme generally uses
 Slater-Bragg radii for atomic size adjustments. For the heavier
@@ -193,17 +191,4 @@ be printed.
 
     .INTCHK
      2
-
-References
-----------
-
-<#_ref-Becke:1988:jchemphys_0>`_ A. D. Becke, *A multicenter
-numerical integration scheme for polyatomic molecules*, J. Chem.
-Phys. **88**, *2547* (1988) `electronic
-version <http://dx.doi.org/10.1063/1.454033>`_.
-
-<#_ref-Lindth:2001:theorchemacc_0>`_ R. Lindh, P. A. Malmqvist,
-and L. Galgiardi, *Molecular integrals by numerical quadrature. I.
-Radial integration*, Theor. Chem. Acc. **106**, *178* (2001)
-`electronic version <http://dx.doi.org/10.1007/s002140100263>`_.
 

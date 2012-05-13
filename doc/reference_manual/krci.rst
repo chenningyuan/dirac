@@ -5,17 +5,14 @@ Manual:KR-CI
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht
 
 The KR-CI module is a string-based Hamiltonian-direct configuration
-interaction (CI) program
-[1] <#_note-fleig:luciarel1>`_`\ 
-[2] <#_note-fleig:luciarel2>`_`\ , based on the LUCIA code
-[3] <#_note-olsen:lucia>`_`\ . 
+interaction (CI) program [Fleig2003]_, [Fleig2006]_ ,
+based on the LUCIA code [Olsen1990]_.
 It is capable of doing efficient
 CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI,
 and MRCI using general active spaces. The code is interfaced to
 molecular integrals obtained in the relativistic 2c- and 4-component
 framework and uses double-point group symmetry. It is implemented as a
-full parallel version
-[4] <#_note-knecht-jensen-fleig:lupar2>`_`\ .
+full parallel version [Knecht2010a]_ .
 
 A central feature of the program is the Generalized Active Space (GAS)
 concept, in which the underlying total orbital space is subdivided into
@@ -38,8 +35,7 @@ optimized CI wave functions from which the natural orbital occupations
 are printed.
 
 The program is also used for the computation of various one-electron
-properties at the GASCI level
-<#_note-knecht:thesis>`_`\  .
+properties at the GASCI level [Knecht2009]_ .
 Please refer to the `KR-CI property
 module </dirac/index.php/Manual:KR-CI_properties>`_ page for more
 information.
@@ -123,8 +119,8 @@ symmetry: g u) entries per line). The design of GAS is non-trivial and
 should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful
 to subdivide the valence space, for scientific reasons, or/and the
-virtual space, for technical reasons (save core memory). See reference
-[6] <#_note-fleig:habthesis>`_`\ , pp. 27 for more details.
+virtual space, for technical reasons (save core memory). See reference [Fleig2006a]_,
+pp. 27 for more details.
 
  *Default:* None.
 
@@ -316,49 +312,6 @@ only be used in combination with.IJKLRO.
 
     do no split the resorted integrals among the co-workers.
 
-[KR-CI\_properties]
-===================
-
-see the `KR-CI property
-module </dirac/index.php/Manual:KR-CI_properties>`_ page for more
-information.
-
-References
-==========
-
-<#_ref-fleig:luciarel1_0>`_ T. Fleig, J. Olsen, and L. Visscher,
-*The generalized active space concept for the relativistic treatment
-of electron correlation. II: Large-scale configuration interaction
-implementation based on relativistic 2- and 4-spinors and its
-application*, J. Chem. Phys. **119**, *2963* (2003) .
-
-<#_ref-fleig:luciarel2_0>`_ T. Fleig, J. Olsen, H. J. Aa. Jensen,
-and L. Visscher, *The generalized active space concept for the
-relativistic treatment of electron correlation. III: Large-scale
-configuration interaction and multi-configuration
-self-consistent-field four-component methods with application to
-UO\_2*, J. Chem. Phys. **124**, *104106* (2006) .
-
-<#_ref-olsen:lucia_0>`_ J. Olsen and P. Joergensen and J. Simons,
-*Passing the one-billion limit in Full CI calculations*, Chem. Phys.
-Lett. **169**, *463* (1990) .
-
-<#_ref-knecht-jensen-fleig:lupar2_0>`_ S. Knecht and H. J. Aa.
-Jensen and T. Fleig, *Large-Scale Parallel Configuration Interaction.
-II. Two- and 4-Component Double-Group General Active Space
-Implementation with Application to BiH.*, J. Chem. Phys. **128**,
-*014108* (2010) `electronic
-version <http://dx.doi.org/http://link.aip.org/link/JCPSA6/v132/i1/p014108/s1>`_.
-
-<#_ref-knecht:thesis_0>`_ S. R. Knecht, *`PhD
-thesis <http://dirac.chem.sdu.dk/thesis/>`_*, University of
-Düsseldorf (Germany) '***, '** (2009)* .
-
-<#_ref-fleig:habthesis_0>`_ T. Fleig, *`Habilitation
-thesis <http://dirac.chem.sdu.dk/thesis/>`_*, University of
-Düsseldorf (Germany) '***, '** (2006)* .
-
-
 Manual:KR-CI properties
 =======================
 
@@ -366,8 +319,7 @@ Manual:KR-CI properties
 Stefan Knecht and Hans Joergen Aa. Jensen, parallelization by Stefan
 Knecht
 
-The KR-CI property module 
-[1] <#_note-knecht:thesis>`_`\  
+The KR-CI property module [Knecht2009]_
 takes
 advantage of the 2- and 4-component KR-CI module. It can be used for the
 computation of:
@@ -424,10 +376,4 @@ electronic state.
 ::
 
     Note: this applies only to linear molecules.
-
-References
-==========
-
-<#_ref-knecht:thesis_0>`_ S. R. Knecht, *PhD thesis*, University
-of Duesseldorf (Germany) '***, '** (2009)* .
 

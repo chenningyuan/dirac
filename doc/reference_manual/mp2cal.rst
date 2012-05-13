@@ -4,8 +4,7 @@
 This section gives directives for the integral-direct closed-shell MP2
 calculation. The default algorithm is described
 `here <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_ and
-is a modification of the original algorithm published here.
-.. \ :sup:``[1] <#_note-saue:TlAt>`_`\ 
+is a modification of the original algorithm published in Ref. [Laerdahl1997]_.
 
 .OCCUPIED
 ---------
@@ -26,8 +25,6 @@ For each fermion irrep, give an `orbital
 string </dirac/index.php/Manual:Orbital_strings>`_ of active orbitals.
 
 *Default:* All the unoccupied virtual solutions.
-
-`|image0| </dirac/index.php/Image:Dirac.png>`_
 
 **Advanced options**
 
@@ -55,8 +52,6 @@ A negative number deactivates screening.
 
     .SCREEN
      1.0D-14
-
-`|image1| </dirac/index.php/Image:HJAaJ.png>`_
 
 **Programmers options**
 
@@ -111,8 +106,7 @@ batches will be written to disk.
 .ORGALG
 -------
 
-Use original alorithm as described in
-.. \ :sup:``[1] <#_note-saue:TlAt>`_`\ .
+Use original alorithm as described in Ref. [Laerdahl1997]_.
 
 *Default:* Use `new
 algorithm <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_.
@@ -145,13 +139,4 @@ the active space need not be consecutive.
     1 1 0
     .IJTSK
     10
-
-References
-----------
-
-#. ↑ \ :sup:``1.0 <#_ref-saue:TlAt_0>`_`\ 
-   \ :sup:``1.1 <#_ref-saue:TlAt_1>`_`\  J. K. Lærdahl, T. Saue and K.
-   Fægri, *Direct relativistic MP2: Properties of ground state CuF, AgF
-   and AuF*, {Theor. Chem. Acc. **97**, *177* (1997) `electronic
-   version <http://dx.doi.org/10.1007/s002140050251>`_.
 

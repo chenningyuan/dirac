@@ -148,8 +148,8 @@ functionals together with their weights:
 *Exchange functionals:*
 
 -  LDA exchange  [Dirac1930]_
--  Becke 1988 [Becke1998]_
--  The correction term to LDA proposed by Becke [Becke1998]_
+-  Becke 1988 [Becke1988]_
+-  The correction term to LDA proposed by Becke [Becke1988]_
 -  Perdew-Wang 1986 [Perdew1986]_
 
 *Correlation functionals:*

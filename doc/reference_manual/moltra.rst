@@ -3,8 +3,7 @@
 
 This module transforms integrals from the scalar AO basis to integrals
 in the molecular spinor basis. The algorithm is not yet described in
-detail but it may be helpful to read Ref.
-[1] <#_note-visscher:jcc-overview>
+detail but it may be helpful to read Ref. [Visscher2002]_
 to find information
 about the double quaternion formalism that is used. This module is
 usually invoked by one of the correlation modules but can also be run as
@@ -44,8 +43,6 @@ irrep.
 ::
 
     energy -20.0 10.0 1.0
-
-`|image0| </dirac/index.php/Image:Dirac.png>`_
 
 **Advanced options**
 
@@ -108,7 +105,7 @@ advantage that the full size of the problem is exactly divided between
 processes - so the larger the number of MPI processes, the less disk
 space is used per process.
 
- **(Not part of the Dirac08 release)** In connection to scheme 6 the
+**(Not part of the Dirac08 release)** In connection to scheme 6 the
 user can also choose whether or perform an intermediate sorting step
 prior to the second half-transformation step, via the keyword
 **.HTSORT**. In this step the 1HT entities on disk are rearranged from
@@ -326,15 +323,6 @@ working for parallel distributions.
 
     .PAR4BAS
      -1
-
-References
-----------
-
-<#_ref-visscher:jcc-overview_0>`_ L. Visscher, *The Dirac equation
-in quantum chemistry: strategies to overcome the current
-computational problems*, J. Comput. Chem. **23**, *759* (2002)
-`electronic version <http://dx.doi.org/10.1002/jcc.10036>`_.
-
 
 \*PRPTRA -- Property integrals transformation
 =============================================
