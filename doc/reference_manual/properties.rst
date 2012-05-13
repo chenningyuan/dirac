@@ -1,5 +1,5 @@
-Manual:PROPERTIES
-=================
+PROPERTIES
+===========
 
 This section allows for the evaluation of a large number of molecular
 properties. Available properties include:
@@ -618,8 +618,7 @@ Employ imaginary frequencies.
 .ALLCMB
 -------
 
-Form all possible 
-..|\\langle\\langle A ; B \\rangle\\rangle\_\\omega|
+Form all possible  \|\\langle\\langle A ; B \\rangle\\rangle\_\\omega|
 even if imaginary.
 
 *Default:* Deactivated.
@@ -1139,12 +1138,9 @@ Give the number of "left" and "right" states in each boson symmetry.
     5 5 5 5
     0 0 0 0
 
-Compute the transition moments 
-..|\\langle i\|\\hat{A}\|i\\rangle|
-, where
-i goes from 1 to 5 in each symmetry (four symmetries in this case). The
-zeros can be substituted for positive integers to generate elements
-..|\\langle i\|\\hat{A}\|j\\rangle|.
+Compute the transition moments \|\\langle i\|\\hat{A}\|i\\rangle|, 
+where i goes from 1 to 5 in each symmetry (four symmetries in this case). The
+zeros can be substituted for positive integers to generate elements \|\\langle i\|\\hat{A}\|j\\rangle|.
 
 Control variational parameters
 ==============================
@@ -1279,7 +1275,7 @@ classes whose residual has a norm that is larger than a fraction
     .RESFAC
      1000.0
 
-Manual:PROPERTIES:STEX
+PROPERTIES:STEX
 ======================
 
 \*STEX - Core excitation spectra in the Static Exchange approximation
@@ -1330,29 +1326,4 @@ files.\
  
 please provide an
    example !
-
-
-Manual:PROPERTIES:Sample inputs
-===============================
-
-Calculation of NMR parameters:
-
-::
-
-    **PROPERTIES
-    .NMR
-
-Calculation of frequency-dependent polarizabilities, skipping rotations
-between occupied positive-energy and virtual negative-energy orbitals:
-
-::
-
-    **PROPERTIES
-    .POLARI
-    *LINEAR RESPONSE
-    .B FREQ
-     3
-     0.0 0.1 0.2
-    .SKIPEP
-
 

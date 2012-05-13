@@ -21,7 +21,7 @@ requirement precludes the introduction of external magnetic fields.
 This keyword gives Dirac-Coulomb Hamiltonian in which (SS\|SS) integrals
 are neglected and replaced by an interatomic SS correction (calculated
 as a classical repulsion term of (tabulated) small component atomic
-charges) [Visscher1997a]_
+charges) [Visscher1997a]_ .
 
 This is currently the most economical and accurate approximation to the
 full Dirac-Coulomb Hamiltonian and can certainly be used for the
@@ -65,7 +65,7 @@ interaction.
 ----
 
 Keyword referring to the new module for the *E* xact *Two*- *C* omponent
-relativistic Hamiltonian [Ilias2007]_,[Knecht2010]_.
+relativistic Hamiltonian [Ilias2007]_, [Knecht2010]_.
 
 DIRAC runs in 2-component mode. One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
@@ -77,7 +77,7 @@ specified. See also the warning there.
 
 Keyword referring to the 2-component molecular-mean-field Hamiltonian
 apporach within the new module for the *E* xact *Two*- *C* omponent
-relativistic Hamiltonian [Sikkema2009]_,[Knecht2010]_
+relativistic Hamiltonian [Sikkema2009]_, [Knecht2010]_.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to
 2-component mode (based on the converged Fock operator) prior to a
@@ -93,9 +93,8 @@ page </dirac/index.php/FAQ>`_.
 .SPINFREE
 ---------
 
-Use Dyall's spinfree Hamiltonian [Dyall1994]_
-to
-obtain results without spin-orbit coupling for the four-component
+Use Dyall's spinfree Hamiltonian [Dyall1994]_ 
+to obtain results without spin-orbit coupling for the four-component
 Hamiltonian in the default restricted kinetic balance scheme. This
 keyword works also for two-component relativistic Hamiltonians where one
 can choose between two spin-free schemes - see the `.BSS <#.BSS>`_
@@ -205,7 +204,7 @@ spin-orbit operator AMFI is added in the development version unless
 .X2C4
 -----
 
-One-step Exact (infinite order) 2-Component relativistic Hamiltonian [Ilias2007]_
+One-step Exact (infinite order) 2-Component relativistic Hamiltonian [Ilias2007]_ .
 
 DIRAC runs in the 4-component mode. This mode is useful if you wish to
 restart from a previous 4-component calculation and vice versa. AMFI is
@@ -1055,58 +1054,4 @@ Data import options
 -------
 
 Specifies the name of the file containing the embedding potential.
-
-
-Manual:HAMILTONIAN:Sample inputs
-================================
-
-Some examples of the Hamiltonian input.
-
-Add dipole perturbation of strength 0.01 au in the z-direction to the
-nonrelativistic Lévy-Leblond Hamiltonian:
-
-::
-
-    **HAMILTONIAN
-    .LEVY-LEBLOND
-    .OPERATOR
-     ZDIPLEN
-     COMFACTOR
-     0.01
-
-Do a 4-component B3LYP calculation with high precision in the radial
-grid:
-
-::
-
-    **DIRAC
-    .WAVE FUNCTIONS
-    **WAVE FUNCTIONS
-    .DHF
-    **HAMILTONIAN
-    .DFT
-     B3LYP
-    *DFT
-    .RADINT
-     1.0D-15
-
-A functional can also be specified manually through the GGAKEY keyword.
-In the next input example we use the PW86X and P86C functionals for
-exchange and correlation respectively. We also tighten the angular grid
-and make the pruning less pronounced:
-
-::
-
-    **DIRAC
-    .WAVE FUNCTIONS
-    **WAVE FUNCTIONS
-    .DHF
-    **HAMILTONIAN
-    .DFT
-     GGAKEY PW86X=1.0 P86C=1.0
-    *DFT
-    .ANGINT
-     53
-    .ANGMIN
-     15
 

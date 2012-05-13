@@ -11,7 +11,7 @@ in another "same-author-same-year" entries attach "a","b", "c"... after the year
 
 Whenever possible, cited works are to be provided with a valid URL link. 
 For scientific papers this can be the permanent DOI web-link,
-for books you are adviced to use (Google-shortened) Google-Books links.
+for books we advice you to use (preferably Google-shortened) Google Books URL links.
 
 .. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
 
@@ -47,7 +47,7 @@ for books you are adviced to use (Google-shortened) Google-Books links.
 
 .. [Dyall2007] K. G. Dyall and K. Fægri jr., *Introduction to Relativistic Quantum
    Chemistry*, Oxford University Press, New York, 2007
-   `URL <http://books.google.sk/books?id=k8gDJm1t2q4C&lpg=PA509&dq=K.%20G.%20Dyall%20and%20K.%20F%C3%A6gri%20jr.%2C%20*Introduction%20to%20Relativistic%20Quantum%20%20%20%20Chemistry*%2C%20Oxford%20University%20Press%2C%20New%20York%2C%202007&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+   `Google Books URL <http://books.google.sk/books?id=k8gDJm1t2q4C&lpg=PA509&dq=K.%20G.%20Dyall%20and%20K.%20F%C3%A6gri%20jr.%2C%20*Introduction%20to%20Relativistic%20Quantum%20%20%20%20Chemistry*%2C%20Oxford%20University%20Press%2C%20New%20York%2C%202007&hl=sk&pg=PP1#v=onepage&q&f=false>`_
 
 .. [Ekstrom2005] Ulf Ekstrom and Patrick Norman and Antonio Rizzo, 
    *Four-component Hartree--Fock calculations of
@@ -199,7 +199,7 @@ for books you are adviced to use (Google-shortened) Google-Books links.
 .. [Moss1973]  R. E. Moss, *Advanced Molecular Quantum Mechanics: An Introduction to
    Relativistic Quantum Mechanics and the Quantum Theory of Radiation*,
    Chapman and Hall, London, 1973
-   `URL <http://goo.gl/11Esq>`_
+   `Google Boooks URL <http://goo.gl/11Esq>`_
 
 .. [Olsen1990] J. Olsen and P. Joergensen and J. Simons,
    *Passing the one-billion limit in Full CI calculations*, 
@@ -238,7 +238,7 @@ for books you are adviced to use (Google-shortened) Google-Books links.
    <http://dx.doi.org/10.1002/jcc.540030413>
 
 .. [Reiher2009] M. Reiher and A. Wolf, *Relativistic Quantum Chemistry*, Wiley-VCH, Weinheim 2009
-   `URL <http://books.google.sk/books?id=u47v2YmR-P8C&lpg=PA611&ots=2OK6t2Mavd&dq=M.%20Reiher%20and%20A.%20Wolf%2C%20*Relativistic%20Quantum%20Chemistry*%2C%20Wiley-VCH%2C%20%20%20%20Weinheim%202009&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+   `Google Books URL <http://books.google.sk/books?id=u47v2YmR-P8C&lpg=PA611&ots=2OK6t2Mavd&dq=M.%20Reiher%20and%20A.%20Wolf%2C%20*Relativistic%20Quantum%20Chemistry*%2C%20Wiley-VCH%2C%20%20%20%20Weinheim%202009&hl=sk&pg=PP1#v=onepage&q&f=false>`_
 
 .. [Saue1997] T. Saue, K. Fægri, T. Helgaker, and O. Gropen, 
    *Principles of direct 4-component relativistic SCF: Application to cesium auride*,
@@ -279,11 +279,11 @@ for books you are adviced to use (Google-shortened) Google-Books links.
 
 .. [Schwerdtfeger2002] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
    Part 1: Fundamentals*, Elsevier, Amsterdam, 2002
-   `URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
+   `Google Books URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
 
 .. [Schwerdtfeger2002a] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
    Part 2: Applications*, Elsevier, Amsterdam, 2002.
-   `URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
+   `Google Books URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
 
 .. [Sikkema2009] J. Sikkema, L. Visscher, T. Saue, and M. Ilias, 
    *The molecular mean-field approach for correlated relativistic calculations*, 
@@ -292,7 +292,7 @@ for books you are adviced to use (Google-shortened) Google-Books links.
 
 .. [Strange1998] P. Strange, *Relativistic Quantum Mechanics: with applications in
    condensed matter and atomic physics*, Cambridge University Press, Cambridge, 1998
-   `URL <http://books.google.sk/books?id=sdVrBM2w0OwC&lpg=PR6&ots=MYEjcoTosy&dq=P.%20Strange%2C%20*Relativistic%20Quantum%20Mechanics%3A%20with%20applications%20in%20%20%20%20condensed%20matter%20and%20atomic%20physics*%2C%20Cambridge%20University%20Press%2C%20%20%20%20Cambridge%2C%201998&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+   `Google Books URL <http://books.google.sk/books?id=sdVrBM2w0OwC&lpg=PR6&ots=MYEjcoTosy&dq=P.%20Strange%2C%20*Relativistic%20Quantum%20Mechanics%3A%20with%20applications%20in%20%20%20%20condensed%20matter%20and%20atomic%20physics*%2C%20Cambridge%20University%20Press%2C%20%20%20%20Cambridge%2C%201998&hl=sk&pg=PP1#v=onepage&q&f=false>`_
 
 .. [Sultzer2011]       http://dx.doi.org/10.1039/C1CP22457C
 

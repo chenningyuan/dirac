@@ -55,6 +55,9 @@ First steps in DIRAC territory
 
    tutorials/getting_started.rst
    tutorials/faq.rst
+   tutorials/general_sample.rst
+   tutorials/integr_sample.rst
+   tutorials/scf_sample.rst
 
 
 Menu of 2- and 4-component Hamiltonians
@@ -63,6 +66,7 @@ Menu of 2- and 4-component Hamiltonians
 .. toctree::
    :maxdepth: 1
 
+   tutorials/ham_sample.rst
    tutorials/ham2c.rst
    tutorials/amfi.rst
 
@@ -88,6 +92,26 @@ DFT and TDDFT
    tutorials/bsse.rst
    tutorials/dft_cam.rst
 
+Calculating the properties
+============================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/prop_sample.rst
+
+Correlated calculations
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/mp2cal_sample.rst
+   tutorials/moltra_sample.rst
+   tutorials/lucita_sample.rst
+   tutorials/relccsd_sample.rst
+   tutorials/reladc_sample.rst
+
 
 Modeling the solvent
 ====================
@@ -105,13 +129,15 @@ How to tackle open-shell systems
    :maxdepth: 1
 
    tutorials/terminology.rst
+   tutorials/dirrci_sample.rst
+   tutorials/goscip_sample.rst
    tutorials/open_shells.rst
    tutorials/niobium.rst
    tutorials/scf_conv.rst
 
 
-Visualization
-=============
+Visualization & Analysis
+========================
 
 .. toctree::
    :maxdepth: 1
@@ -119,6 +145,7 @@ Visualization
    tutorials/visualize.rst
    tutorials/plotting_orbital_densities.rst
    tutorials/magn_curr_den.rst
+   tutorials/analyze_sample.rst
 
 
 Getting help

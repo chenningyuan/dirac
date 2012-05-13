@@ -1,10 +1,5 @@
-Manual:GENERAL
-==============
-
 \*\*GENERAL -- General input
 ============================
-
-..`|image0| </dirac/index.php/Image:Dirac.png>`_
 
 **Advanced options**
 
@@ -136,8 +131,6 @@ With the keyword you can set the threshold for projection.
     .PRJTHR
     1.0D-5
 
-`|image1| </dirac/index.php/Image:HJAaJ.png>`_
-
 **Programmers options**
 
 .PRINT
@@ -175,8 +168,6 @@ issues.
 
 \*PARALLEL -- Parallelization directives
 ========================================
-
-.. `|image0| </dirac/index.php/Image:HJAaJ.png>`_
 
 **Programmers options**
 
@@ -217,25 +208,3 @@ option should be used with some care, as too large tasks may cause the
 dynamical load balancing to fail, giving an overall decrease in
 efficiency. The parallelization is also very coarse grained, so that the
 amount of communication seldom represents any significant problem.
-
-Sample inputs
-=============
-
-Use a reduced value for the speed of light to amplify the effect of
-relativity (for testing):
-
-::
-
-    **GENERAL
-    .CVALUE
-     50.0
-
-Very often one needs to export or to read formatted file with orbital
-coefficients - DFPCMO. Therefore the user should provide
-
-::
-    **GENERAL
-    .PCMOUT
-
-for the export.
-

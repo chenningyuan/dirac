@@ -25,29 +25,8 @@ symmetry groups *without* inversion symmetry, there is only one
 fermion irrep, and you need only to specify the number of
 electrons.
 
-*Example:* Minimum wave function input for water (the
-*C*\ :sub:`2*v*`\  point group):
-
-::
-
-    **WAVE FUNCTION
-    .SCF
-    *SCF
-    .CLOSED SHELL
-     10
-
 For symmetry groups *with* inversion symmetry, you need to specify
-the distribution of the electrons in the two fermion irreps [Saue2000]_
-
-*Example:* Minimum wave function input for the Neon atom:
-
-::
-
-    **WAVE FUNCTION
-    .SCF
-    *SCF
-    .CLOSED SHELL
-     4 6
+the distribution of the electrons in the two fermion irreps [Saue2000]_.
 
 .OPEN SHELL
 -----------
@@ -69,7 +48,7 @@ active spinors.
 irrep 2. Thus, the fractional occupation is 5/6.
 
 The open shell module in DIRAC is based on
-average-of-configurations [Thyssen1998]_
+average-of-configurations [Thyssen1998]_ .
 The simplest case is one electron in two spinors (= one Kramers
 pair). For this special case the average-of-configuration
 calculation gives the same result as the usual restricted
@@ -747,25 +726,4 @@ Freeze orbitals (must only be used in conjunction with
 For each fermion irrep, give an
 `orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
 orbitals to freeze.
-
-Sample input
-============
-
-::
-
-    *SCF
-    .PRINT
-     1
-    .NELECT
-     10 0
-    .MAXITR
-     30
-    .EVCCNV
-     1.0D-6
-    .MXDIIS
-     10
-    .CNVINT
-     1.0D-2 1.0D-4
-    .EIGPRI
-     1 0
 
