@@ -1,13 +1,8 @@
 References
 ============
 
-radovan->miro: we should not have an extra document
-for references, this is not convenient, the easiest
-is IMO to make a direct hyperlink to the doi reference.
-see how i link to pages in programmers/documentation_howto.rst
-
-List of published papers documenting i) the development of various
-features of Dirac and ii) some interesting applications.
+List of published papers and other sources (books, thesis) documenting the development of various
+features of DIRAC, its related references and also  some interesting applications. 
 
 References are sorted (by hand) alphabetically according to the first author's 
 family name with the year of publishing.
@@ -15,11 +10,10 @@ If the first author has more publications in the same year,
 in another "same-author-same-year" entries attach "a","b", "c"... after the year.
 
 Whenever possible, cited works are to be provided with a valid URL link. 
-For scientific papers this can be the permannet DOI web-link,
-for books you may use (semipermanent) Google-Books references.
+For scientific papers this can be the permanent DOI web-link,
+for books you may use (semipermanent) Google-Books links.
 
-
-.. [Bast2011]          http://dx.doi.org/10.1039/c0cp01483d
+.. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
 
 .. [Becke1998]  A. D. Becke, 
    *Density-Functional Exchange-Energy Approximation With Correct Asymptotic Behavior*,
@@ -29,11 +23,21 @@ for books you may use (semipermanent) Google-Books references.
    Phenomena in the Thomas Atom*, Proc. Roy. Soc. London **26**, *376*
    (1930) . ELVERSION???
 
+.. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue
+   and K.Fægri, *Bonding analysis using localized relativistic orbitals:
+   Water, the ultrarelativistic case and the heavy homologues
+   H\ :sub:`2`\ X (X=Te, Po, eka-Po)*, J. Chem. Phys. **124**, *154307* (2006)
+   <http://dx.doi.org/10.1063/1.2187001>
 
 .. [Dyall1994]    K. G. Dyall, *An exact separation of the
    spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
    hamiltonian*, J. Chem. Phys. **100**, *2118* (1994) 
    <http://dx.doi.org/10.1063/1.466508>
+
+.. [Faegri2001]  K. Fægri and T. Saue, *Diatomic molecules
+   between very heavy elements of group 13 and group 17: A study of
+   relativistic effects on bonding*, J. Chem. Phys. **115**, *2456*
+   (2001) <http://dx.doi.org/10.1063/1.1385366>
 
 .. [Fossgaard2003] O. Fossgaard, O. Gropen, M.
    Corral Valero, and T. Saue, *On the performance of four-component
@@ -86,6 +90,11 @@ for books you may use (semipermanent) Google-Books references.
    particles and wave equations*, Commun. Math. Phys. **6**, *286* (1967)
    <http://dx.doi.org/10.1007/BF01646020>
 
+.. [Mulliken1955] R. S. Mulliken, *Electronic Population
+   Analysis on LCAO-MO Molecular Wave Functions. I*, 
+   J. Chem. Phys. **23**, *1833* (1955)
+   <http://dx.doi.org/10.1063/1.1740588>
+
 .. [Mayer1996]  M. Mayer and O. D. Häberlen and N.
    Rösch, *Relevance of relativistic exchange-correlation functionals
    and of finite nuclei in molecular density-functional calulations*,
@@ -96,6 +105,11 @@ for books you may use (semipermanent) Google-Books references.
    *Accurate and Simple Density Functional for the Electronic Exchange Energy: 
    Generalized Gradient Approximation*, Phys. Rev. B **33**, *8800* (1986) 
    <http://dx.doi.org/10.1103/PhysRevB.33.8800>
+
+.. [Pernpointner2003] M. Pernpointner and L. Visscher,
+   *Parallelization of four-component calculations. II. Symmetry- driven
+   parallelization of the 4-spinor CCSD algorithm*, J. Comput. Chem. **24**, *754* (2003)
+   <http://dx.doi.org/10.1002/jcc.10215>
 
 .. [Pernpointner2004] M. Pernpointner, *The
    one-particle Green's function method in the Dirac–Hartree–Fock
@@ -169,14 +183,28 @@ for books you may use (semipermanent) Google-Books references.
    calculations of heavy diatomic molecules*, J. Chem. Phys. **112**, *3499* (2000)
    <http://dx.doi.org/10.1063/1.480934>
 
-.. [Vies2012]          http://dx.doi.org/10.1103/PhysRevA.85.030304
+.. [Vies2012] http://dx.doi.org/10.1103/PhysRevA.85.030304
+
+.. [Visscher1996]      L. Visscher, T. J. Lee, and K. G.
+   Dyall, *Formulation and implementation of a relativistic unrestricted
+   coupled cluster method including noniterative connected triples*, J.
+   Chem. Phys. **105**, *8769* (1996) 
+   <http://dx.doi.org/10.1063/1.472655>
 
 .. [Visscher1997]      http://dx.doi.org/10.1063/1.472655
  
-.. [Visscher1997a]     L. Visscher, *Approximate molecular Dirac-Coulomb calculations using a simple Coulombic correction*,
+.. [Visscher1997a]  L. Visscher, *Approximate molecular Dirac-Coulomb calculations using a simple Coulombic correction*,
    Theor. Chem. Acc. **98**, *68* (1997) <http://dx.doi.org/10.1007/s002140050280>
 
-.. [Visscher2000]     L. Visscher and T. Saue, *Approximate relativistic electronic structure methods based on the quaternion modified Dirac equation*, J. Chem. Phys. **113**, *3996* (2000)  <http://dx.doi.org/10.1063/1.1288371>
+.. [Visscher2000] L. Visscher and T. Saue, 
+   *Approximate relativistic electronic structure methods based on the quaternion modified Dirac equation*, 
+   J. Chem. Phys. **113**, *3996* (2000)  
+   <http://dx.doi.org/10.1063/1.1288371>
+
+.. [Visscher2001] L. Visscher, E. Eliav, and U. Kaldor,
+   *Formulation and implementation of the relativistic Fock-space coupled cluster method for molecules*,
+   J. Chem. Phys. **115**, *9720* (2001)
+   <http://dx.doi.org/10.1063/1.1415746>
 
 .. [Vosko1980] S. J. Vosko, L. Wilk, and M. Nusair, *Accurate
    Spin-Dependent Electron Liquid Correlation Energies for Local Spin

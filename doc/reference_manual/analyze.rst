@@ -71,8 +71,7 @@ Print level.
 .MULPOP
 -------
 
-Perform Mulliken population analysis.
-[1] <#_note-mulliken-popana> 
+Perform Mulliken population analysis [Mulliken1955]_
 Continues to
 `\*MULPOP </dirac/index.php/Manual:ANALYZE:MULPOP>`_ subsection.
 
@@ -170,8 +169,7 @@ Print level.
 .PROJEC
 -------
 
-Perform projection analysis.
-[2] <#_note-saue-faegri-01>`
+Perform projection analysis [Faegri2001]_
 Activates the
 `\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_ subsection.
 
@@ -182,8 +180,7 @@ The current solution may be projected down onto another set of
 coefficients generated from the basis, e.g. one may project molecular
 solutions down onto atomic solutions in order to evaluate atomic
 contributions. The coefficients of the fragments are read simultaneously
-and the overlap between them is taken into account
-[1] <#_note-saue:TlAt>
+and the overlap between them is taken into account [Faegri2001]_ .
 
 The projection analysis can be thought of as a Mulliken analysis based
 on the atomic (fragment) orbitals; it is therefore very much less
@@ -290,15 +287,6 @@ Print level.
 
     .PRINT
      0
-
-References
-----------
-
-#. `↑ <#_ref-saue:TlAt_0>`_ K. Fægri and T. Saue, *Diatomic molecules
-   between very heavy elements of group 13 and group 17: A study of
-   relativistic effects on bonding*, J. Chem. Phys. **115**, *2456*
-   (2001) `electronic version <http://dx.doi.org/10.1063/1.1385366>`_.
-
 
 .DENSIT
 -------
@@ -443,8 +431,7 @@ Print level.
 .LOCALI
 -------
 
-Localize orbitals using the Pipek-Mezey criterion.
-[3] <#_note-dubillard-saue-06>
+Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
 
 Continues to the activated
 `\*LOCALIZATION </dirac/index.php/Manual:ANALYZE:LOCALIZATION>`_
@@ -543,24 +530,6 @@ Print level.
      1
 
 
-References
-----------
-
-#. ` <#_ref-mulliken-popana_0>`_ R. S. Mulliken, *Electronic Population
-   Analysis on LCAO-MO Molecular Wave Functions. I*, J. Chem. Phys.
-   **23**, *1833* (1955) `electronic
-   version <http://dx.doi.org/10.1063/1.1740588>`_.
-#. ` <#_ref-saue-faegri-01_0>`_ K.Fægri and T. Saue, *Diatomic
-   molecules between very heavy elements of group 13 and group 17 - a
-   study of relativistic effects on bonding*, J. Chem. Phys. **115**,
-   *2456* (2001) `electronic
-   version <http://dx.doi.org/10.1063/1.1385366>`_.
-#. ` <#_ref-dubillard-saue-06_0>`_ S. Dubillard, J.-B. Rota, T. Saue
-   and K.Fægri, *Bonding analysis using localized relativistic orbitals:
-   Water, the ultrarelativistic case and the heavy homologues
-   H\ :sub:`2`\ X (X=Te, Po, eka-Po)*, J. Chem. Phys. **124**, *154307*
-   (2006) `electronic version <http://dx.doi.org/10.1063/1.2187001>`_.
-
 
 Manual:ANALYZE:VISUAL
 =====================
@@ -617,7 +586,7 @@ Step length for grid.
      0.01
 
 
-Manual:ANALYZE:Sample inputs
+ANALYZE:Sample inputs
 ============================
 
 Print all orbitals in fermion irrep 1 and some in irrep 2, large

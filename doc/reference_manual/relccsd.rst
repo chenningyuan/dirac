@@ -5,16 +5,12 @@ Manual:RELCCSD
 
 This section specifies the input necessary for relativistic Coupled
 Cluster calculations. The program is currently capable of doing energy
-calculations at the MP2, CCSD, and CCSD(T) levels of theory
-[1]<#_note-visscher:relccsd1>`_`\ 
-[2] <#_note-pernpointner:relccsd3>`_`\ , 
-
+calculations at the MP2, CCSD, and CCSD(T) levels of theory [Visscher1996]_ , [Pernpointner2003]_  ,
 while first order
 properties are available only at the MP2 level of theory.
 
 Open shell states can be calculated also via the Fock space Coupled
-Cluster method
-[3] <#_note-visscher:relccsd2>`_`\  
+Cluster method [Visscher2001]_
 in which
 electrons are added to or subtracted from a closed shell core. All
 sectors that involve no more than 2 replacements are available.
@@ -103,7 +99,9 @@ occupations the open shell electrons (see below for an example).
 *Default:* Active electrons in these irreps (written by
 `\*\*MOLTRA </dirac/index.php/Manual:MOLTRA>`_).
 
- A simple example is the oxygen molecule in which the 1s electrons are
+Example
+---------
+A simple example is the oxygen molecule in which the 1s electrons are
 kept frozen. The active space then consists of 12 electrons, of which
 there are 10 closed shell electrons. The closed shell electrons go in
 the nonbonding 2s σ\ :sub:`g`\  and σ\ :sub:`u`\  orbitals and the
@@ -152,7 +150,7 @@ group.
 *Default:* Values set by `\*\*MOLTRA </dirac/index.php/Manual:MOLTRA>`_
 or `NELEC <#NELEC>`_.
 
- Coming back to the example given above, the oxygen molecule, we now
+Coming back to the example given above, the oxygen molecule, we now
 show how this is done with the keywords given above. We again want to
 take the M\_S=1 state as our reference. The irreps of Dinfh\* are
 ordered as 1/2,-1/2,3/2,-3/2,.... so we need to consider the omega value
@@ -295,8 +293,7 @@ DOCCSDT
 -------
 
 Calculate the CCSD(T) energy. The program calculates three different
-non-iterative triple corrections
-.. \ :sup:``[1] <#_note-visscher:relccsd1>`_`\ .
+non-iterative triple corrections [Visscher1996]_
 
 *Default:*
 
@@ -1109,25 +1106,4 @@ primary (Pm) space.
 Maximum orbital energy of virtual orbitals forming the auxiliary (Pi)
 space. Orbitals with energies higher than this energy are taken in the
 secundary (Q) space and do not contribute to the model space.
-
-
-
-References
-----------
-
-#. `↑ <#_ref-visscher:relccsd1_0>`_ L. Visscher, T. J. Lee, and K. G.
-   Dyall, *Formulation and implementation of a relativistic unrestricted
-   coupled cluster method including noniterative connected triples*, J.
-   Chem. Phys. **105**, *8769* (1996) `electronic
-   version <http://dx.doi.org/10.1063/1.472655>`_.
-#. `↑ <#_ref-pernpointner:relccsd3_0>`_ M. Pernpointner and L. Visscher,
-   *Parallelization of four-component calculations. II. Symmetry- driven
-   parallelization of the 4-spinor CCSD algorithm*, J. Comput. Chem.
-   **24**, *754* (2003) `electronic
-   version <http://dx.doi.org/10.1002/jcc.10215>`_.
-#. `↑ <#_ref-visscher:relccsd2_0>`_ L. Visscher, E. Eliav, and U.
-   Kaldor, *Formulation and implementation of the relativistic
-   Fock-space coupled cluster method for molecules*, J. Chem. Phys.
-   **115**, *9720* (2001) `electronic
-   version <http://dx.doi.org/10.1063/1.1415746>`_.
 
