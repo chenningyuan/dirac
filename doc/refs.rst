@@ -97,6 +97,16 @@ for books you may use (semipermanent) Google-Books references.
    Generalized Gradient Approximation*, Phys. Rev. B **33**, *8800* (1986) 
    <http://dx.doi.org/10.1103/PhysRevB.33.8800>
 
+.. [Pernpointner2004] M. Pernpointner, *The
+   one-particle Green's function method in the Dirac–Hartree–Fock
+   framework. II. Third-order valence ionization energies of the noble
+   gases, CO and ICN*, J. Chem. Phys. **121**, *8782* (2004) ADDELV
+
+.. [Pernpointner2010] M. Pernpointner, *The
+   four-component two-particle propagator for the calculation of double
+   ionization spectra of heavy-element compounds I. Method.*, J. Phys. B
+   **43**, *205102* (2010) ADDEL VE
+
 .. [Pulay1980] P. Pulay,
    *Convergence acceleration of iterative sequences. The case of SCF iteration*,
    Chem. Phys. Lett. **73**, *393* (1980) 
@@ -121,6 +131,11 @@ for books you may use (semipermanent) Google-Books references.
    a statistical average of orbital model exchange-correlation
    potentials*, J. Chem. Phys. **112**, *1344* (2000) 
    <http://dx.doi.org/10.1063/1.480688>
+
+.. [Schirmer1983]  J. Schirmer and L. S. Cederbaum and O. Walter,
+   *New approach to the one-particle Green's function for finite Fermi systems*,
+   Phys. Rev. A **28**, *1237* (1983) ADD_EL_V
+
 
 .. [Sikkema2009] J. Sikkema, L. Visscher, T. Saue, and M. Ilias, 
    *The molecular mean-field approach for correlated relativistic calculations*, 

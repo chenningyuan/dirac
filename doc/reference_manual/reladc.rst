@@ -1,5 +1,5 @@
-Manual:RELADC
-=============
+RELADC
+=======
 
 *Relativistic Green's function (propagator) module RELADC* written by
 Markus Pernpointner.
@@ -10,9 +10,7 @@ energies, double ionization energies and so forth. The mathematical form
 of the propagator reveals the type of physical property which is
 described but does not necessarily point to an efficient solution
 strategy. One way to achieve this is the method of (A)lgebraic
-(D)iagrammatic (C)onstruction originally formulated by Schirmer
-
-.. \ :sup:``[1] <#_note-schirmer:adc>`_`\ . 
+(D)iagrammatic (C)onstruction originally formulated by Schirmer [Schirmer1983]_
 
 Hereby the diagonal
 representation of the propagator is transformed to a nondiagonal form by
@@ -26,11 +24,9 @@ the ADC matrix. The final diagonalization of the ADC matrix then yields
 the desired eigenvalues (poles) and eigenvectors (spectral intensities).
 
 In the current version of DIRAC a four-component realization of ADC
-providing single 
-.. \ :sup:``[2] <#_note-pernpointner:dhfadc2>`_`\  
+providing single [Pernpointner2004]_
 and
-double 
-.. \ :sup:``[3] <#_note-pernpointner:dhfadc3>`_`\  
+double [Pernpointner2010]_
 ionization
 potentials (SIPs and DIPs) is available starting from a \*closed shell\*
 reference determinant. Open-shell ADC based on a single reference (e.g.
@@ -233,24 +229,6 @@ ionized state (coming soon).
 ::
 
     SIPEIGV(*)=0
-
-`Examples </dirac/index.php/Manual:RELADC:Sample_inputs>`_
-==========================================================
-
-References
-==========
-
-#. `↑ <#_ref-schirmer:adc_0>`_ J. Schirmer and L. S. Cederbaum and O.
-   Walter, *New approach to the one-particle Green's function for finite
-   Fermi systems*, Phys. Rev. A **28**, *1237* (1983) .
-#. `↑ <#_ref-pernpointner:dhfadc2_0>`_ M. Pernpointner, *The
-   one-particle Green's function method in the Dirac–Hartree–Fock
-   framework. II. Third-order valence ionization energies of the noble
-   gases, CO and ICN*, J. Chem. Phys. **121**, *8782* (2004) .
-#. `↑ <#_ref-pernpointner:dhfadc3_0>`_ M. Pernpointner, *The
-   four-component two-particle propagator for the calculation of double
-   ionization spectra of heavy-element compounds I. Method.*, J. Phys. B
-   **43**, *205102* (2010) .
 
 
 Manual:RELADC:Sample inputs
