@@ -538,6 +538,7 @@ class run:
          # run the launcher
          if program_is_dirac:
              launcher = os.path.join(root_directory, "pam")
+             #print  "launcher=",launcher
              command = 'python ' + launcher + ' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.launcher_flags)
          if program_is_dalton:
              if options.launcher:
@@ -558,7 +559,7 @@ class run:
                                                              self.mol,            \
                                                              output_prefix,       \
                                                              output_prefix)
-
+           			 
          if program_is_dirac:
              if sys.platform != 'win32':
                  p = subprocess.Popen(shlex.split(command),
@@ -566,7 +567,7 @@ class run:
                                       stdout=subprocess.PIPE,
                                       preexec_fn=os.setsid)
              else:
-                 p = subprocess.Popen(shlex.split(command),
+                 p = subprocess.Popen(command,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE)
              pgid_dirac = p.pid # save DIRAC process group id for latter killing of subprocesses

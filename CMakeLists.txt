@@ -24,6 +24,7 @@ option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecu
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
+option(ENABLE_GEN1INT         "Enable Gen1Int"                                            OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 
@@ -55,22 +56,25 @@ include(ConfigParallelEnvironment)
 
 set(LIBS "stdc++")
 
-include(ConfigExternal)
+if(ENABLE_GEN1INT)
+    include(ConfigExternal)
 
-# set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DBUILD_OPENRSP -DVAR_DALTON")
-set(ExternalProjectCMakeArgs
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX=${PROJECT_SOURCE_DIR}/external
-    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/src/include
-    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
-    -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-    )
+    # set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DBUILD_OPENRSP -DVAR_DALTON")
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_SOURCE_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/src/include
+        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+        )
 
-add_external(gen1int)
+    add_external(gen1int)
+    set(LIBS ${LIBS} ${PROJECT_SOURCE_DIR}/external/lib/libgen1int.a)
+endif()
 
 include(ConfigMath)
 include(ConfigGPUMath)
@@ -199,7 +203,9 @@ add_library(
     ${GENERATED_FILES}
     )
 
-add_dependencies(dirac gen1int)
+if(ENABLE_GEN1INT)
+    add_dependencies(dirac gen1int)
+endif()
 
 # get size of static allocations
 add_custom_target(
@@ -244,7 +250,6 @@ foreach(
         ${EXECUTABLE}
         dirac
         ${LIBS}
-        ${PROJECT_SOURCE_DIR}/external/lib/libgen1int.a
         )
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)

@@ -7,9 +7,7 @@ are expanded using distinct large and small component basis sets. In the
 transformation to an orthogonal basis set one may, however, combine
 large and small component functions and/or functions of different
 symmetry in order to obtain a matrix expansion of e.g. the spinfree
-modified Dirac equation or the Lévy-Leblond equation
-
-.. \ :sup:``[1] <#_note-visscher-saue-00>`_` \
+modified Dirac equation or the Lévy-Leblond equation [Visscher2000]_.
 
 In addition one can also modify the Hamiltonian by introduction of an
 additional operator, e.g. describing an external field. Any additional
@@ -23,8 +21,7 @@ requirement precludes the introduction of external magnetic fields.
 This keyword gives Dirac-Coulomb Hamiltonian in which (SS\|SS) integrals
 are neglected and replaced by an interatomic SS correction (calculated
 as a classical repulsion term of (tabulated) small component atomic
-charges)
-.. \ :sup:``[2] <#_note-visscher-97>`_`\ .
+charges) [Visscher1997a]_ .
 
 This is currently the most economical and accurate approximation to the
 full Dirac-Coulomb Hamiltonian and can certainly be used for the
@@ -67,10 +64,8 @@ interaction.
 .X2C
 ----
 
-Keyword referring to the new module for the *E*xact *Two*-*C*omponent
-relativistic Hamiltonian. 
-.. \ :sup:``[3] <#_note-ilias:iotc>`_`\ 
-.. \ :sup:``[4] <#_note-knecht:x2c_mod>`_`\ .
+Keyword referring to the new module for the *E* xact *Two*- *C* omponent
+relativistic Hamiltonian [Ilias2007]_, [Knecht2010]_.
 
 DIRAC runs in 2-component mode. One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
@@ -81,10 +76,8 @@ specified. See also the warning there.
 -------
 
 Keyword referring to the 2-component molecular-mean-field Hamiltonian
-apporach within the new module for the *E*xact *Two*-*C*omponent
-relativistic Hamiltonian. 
-.. \ :sup:``[5] <#_note-sikkema_mmf>`_`\ 
-.. \ :sup:``[4] <#_note-knecht:x2c_mod>`_`\ .
+apporach within the new module for the *E* xact *Two*- *C* omponent
+relativistic Hamiltonian [Sikkema2009]_, [Knecht2010]_.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to
 2-component mode (based on the converged Fock operator) prior to a
@@ -100,10 +93,8 @@ page </dirac/index.php/FAQ>`_.
 .SPINFREE
 ---------
 
-Use Dyall's spinfree Hamiltonian
-.. \ :sup:``[6] <#_note-dyall-94>`_`\ 
-to
-obtain results without spin-orbit coupling for the four-component
+Use Dyall's spinfree Hamiltonian [Dyall1994]_ 
+to obtain results without spin-orbit coupling for the four-component
 Hamiltonian in the default restricted kinetic balance scheme. This
 keyword works also for two-component relativistic Hamiltonians where one
 can choose between two spin-free schemes - see the `.BSS <#.BSS>`_
@@ -116,8 +107,7 @@ contributions. Add more...
 .LEVY-LEBLOND
 -------------
 
-Use the nonrelativistic Lévy-Leblond Hamiltonian
-.. \ :sup:``[7] <#_note-levy-leblond-67>`_`\ .
+Use the nonrelativistic Lévy-Leblond Hamiltonian [Levy1967]_.
 
 Use this option before any additional one-electron operators are
 specified, because it redefines the metric used in the calculation.
@@ -156,23 +146,16 @@ functionals together with their weights:
 
 *Exchange functionals:*
 
--  LDA exchange 
-.. \ :sup:``[8] <#_note-lda:exchange>`_`\ : SLATER
--  Becke 1988 
-.. \ :sup:``[9] <#_note-gga:B88>`_`\ : BECKE
--  The correction term to LDA proposed by Becke
-..   \ :sup:``[9] <#_note-gga:B88>`_`\ : B88CORR
--  Perdew-Wang 1986 
-.. \ :sup:``[10] <#_note-gga:pw86x>`_`\ : PW86X
+-  LDA exchange  [Dirac1930]_
+-  Becke 1988 [Becke1988]_
+-  The correction term to LDA proposed by Becke [Becke1988]_
+-  Perdew-Wang 1986 [Perdew1986]_
 
 *Correlation functionals:*
 
--  The Vosko-Wilk-Nusair LDA correlation energy (VWN5)
-..   \ :sup:``[11] <#_note-lda:vwn>`_`\ : VWN
--  The Lee-Yang-Parr functional 
-.. \ :sup:``[12] <#_note-gga:lyp>`_`\ : LYP
--  Perdew 1986 
-.. \ :sup:``[13] <#_note-gga:p86c>`_`\ : P86C
+-  The Vosko-Wilk-Nusair LDA correlation energy (VWN5) [Vosko1980]_
+-  The Lee-Yang-Parr functional  [Lee1988]_
+-  Perdew 1986 [Perdew1986]_
 
 *Some of the predefined combinations (see the `Dalton
 manual <http://www.daltonprogram.org>`_ for a more complete list):*
@@ -193,8 +176,6 @@ Perform a Kohn-Sham calculation using functionals provided by the XCFun
 library. In the following line you must specify the desired DFT
 functional.
 
-`|image0| </dirac/index.php/Image:Dirac.png>`_
-
 **Advanced options**
 
 .LVNEW
@@ -210,8 +191,7 @@ in the core region.)
 .X2COLD
 -------
 
-One-step Exact (infinite order) 2-Component relativistic Hamiltonian
-.. \ :sup:``[3] <#_note-ilias:iotc>`_`\ .
+One-step Exact (infinite order) 2-Component relativistic Hamiltonian [Ilias2007]_
 
 **note: in the previous release version Dirac2008 this keyword is called
 .X2C.**: DIRAC runs in the (memory saving) 2-component mode. Note that
@@ -224,8 +204,7 @@ spin-orbit operator AMFI is added in the development version unless
 .X2C4
 -----
 
-One-step Exact (infinite order) 2-Component relativistic Hamiltonian
-.. \ :sup:``[3] <#_note-ilias:iotc>`_`\ .
+One-step Exact (infinite order) 2-Component relativistic Hamiltonian [Ilias2007]_ .
 
 DIRAC runs in the 4-component mode. This mode is useful if you wish to
 restart from a previous 4-component calculation and vice versa. AMFI is
@@ -293,8 +272,7 @@ include):
 
 Use the 2-component relativistic Hamiltonian obtained after the
 Barysz-Sadlej-Snijders transformation of the Dirac Hamiltonian in the
-finite basis set.
-.. \ :sup:``[14] <#_note-ilias:pbo>`_`\ .
+finite basis set, [Ilias2005]_.
 
 Calculations using the 2-component BSS Hamiltonian are running only with
 large component basis functions.
@@ -360,14 +338,10 @@ second-order scalar relativistic effects:*
     .BSS
      022
 
-`|image1| </dirac/index.php/Image:Dirac.png>`_
-
 **Only in the development version of DIRAC**
 
 In this two-component variational scheme is possible to combine external
-AMFI spin-orbit terms
-.. \ :sup:``[15] <#_note-ilias:amfi>`_`\
-
+AMFI spin-orbit terms, [Ilias2001]_,
 together
 with BSS integrals - see the
 `\*AMFI </dirac/index.php/Manual:HAMILTONIAN:AMFI>`_ section. Note that
@@ -491,8 +465,6 @@ one-electron terms only, without two-electron shielding.
 .DO2C4C
 -------
 
-`|image2| </dirac/index.php/Image:Dirac.png>`_
-
 **Only in the development version of DIRAC**
 
 After iterations at the two-component level *ascend* to the
@@ -501,8 +473,6 @@ four-component level.
 .DO4C2C
 -------
 
-`|image3| </dirac/index.php/Image:Dirac.png>`_
-
 **Only in the development version of DIRAC**
 
 After iterations at the four-component level do the relativistic
@@ -510,8 +480,6 @@ transformation to the two-component level.
 
 .USE\_DF
 --------
-
-`|image4| </dirac/index.php/Image:Dirac.png>`_
 
 **Only in the development version of DIRAC**
 
@@ -523,8 +491,6 @@ Used only with keyword `.DO4C2C <#.DO4C2C>`_.
 
 .CONT2C
 -------
-
-`|image5| </dirac/index.php/Image:Dirac.png>`_
 
 **Only in the development version of DIRAC**
 
@@ -543,10 +509,8 @@ Integer (3,4,5) should be specified in free format on the line following
 .ZORA
 -----
 
-Use the zeroth-order regular approximation
-.. \ :sup:``[16] <#_note-lenthe:zora1>`_`\ 
-.. \ :sup:``[17] <#_note-lenthe:zora2>`_`\ 
-.. \ :sup:``[1] <#_note-visscher-saue-00>`_`\  of the Dirac Hamiltonian in
+Use the zeroth-order regular approximation [vanLenthe1994]_,[vanLenthe1996]_,[Visscher2000]_,
+of the Dirac Hamiltonian in
 the Hartree-Fock procedure. Works only for closed-shell systems. The
 implementation offers only little computational advantages and is
 intended chiefly for comparisons of methodology. Note that the
@@ -579,13 +543,11 @@ Activates the frozen density embedding (FDE) functionality. Options can
 be specified under the \*FDE menu.
 
 In order to use FDE, the user must generated an embedding potential with
-the ADF code (see the developer's website [`[2] <http://www.scm.com>`_]
+the ADF code (see the developer's website http://www.scm.com
 for further information).
 
 .NOSFMU
 -------
-
-`|image6| </dirac/index.php/Image:Dirac.png>`_
 
 **Only in the development version of DIRAC**
 
@@ -593,8 +555,6 @@ In spinfree correlated calculations group multiplication tables are by
 default set up as direct products of spatial and spin symmetries. This
 flag turns off this, and so the spinfree case is treated similar to the
 spin-orbit case.
-
-`|image7| </dirac/index.php/Image:HJAaJ.png>`_
 
 **Programmers options**
 
@@ -719,22 +679,17 @@ Single line following .SAOP : asymptotic potential (currently LB94 or
 LBalpha).
 
 
- The specification of the functional is described in connection with the
-`.DFT option in the
+The specification of the functional is described in connection with the
+.DFT option in the
 \*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN#.DFT>`_ section
 
-The DFT module is described in references
-
-.. \ :sup:``[1] <#_note-Schipper:2000:jchemphys>`_`\ 
-.. \ :sup:``[2] <#_note-Saue:2002:jcomputchem>`_`\ 
-.. \ :sup:``[3] <#_note-Fossgaard:2003:jchemphys>`_`\ .
+The DFT module is described in references [Schipper2000]_,
+[Saue2002]_,
+[Fossgaard2003]_.
 
 It uses standard non-relativistic functionals. This is justified in many
-cases since various studies
-
-.. \ :sup:``[4] <#_note-Varga:2000:jchemphys>`_`\ 
-.. \ :sup:``[5] <#_note-Varga:1999:physreva>`_`\ 
-.. \ :sup:``[6] <#_note-Mayer:1996:physreva>`_`\  indicate that
+cases since various studies, like refs. [Varga1999]_, [Varga2000]_, [Mayer1996]_,
+indicate that
 relativistic corrections to the exchange-correlation functionals have a
 negligible effect on spectroscopic constants; however, for example for
 core properties further studies are necessary.
@@ -779,19 +734,17 @@ Asymptotic correction
 .GRAC
 -----
 
-Activate the gradient regulated asymptotic correction scheme (GRAC)
-\ :sup:``[7] <#_note-Gruning:2001:jchemphys>`_`\ , followed by two lines
-of input.
+Activate the gradient regulated asymptotic correction scheme (GRAC), [Gruning2001]_,
+followed by two lines of input.
 
 First line: Asymptotic potential (currently LB94 or LBalpha).
 
-Second line (free format): Parameters α and β (see reference
-\ :sup:``[7] <#_note-Gruning:2001:jchemphys>`_`\ ), the ionization
+Second line (free format): Parameters α and β (see reference [Gruning2001]_)
+the ionization
 potential, and the threshold for difference in HOMO eigenvalue below
 which asymptotic correction is switched on. A sufficiently converged
 density is needed before the correction is activated (before the bulk
-potential is shifted in order to reproduce the desired IP (see reference
-\ :sup:``[7] <#_note-Gruning:2001:jchemphys>`_`\ ).
+potential is shifted in order to reproduce the desired IP (see reference [Gruning2001]_)
 
 *Typical input (here correcting PBE0):*
 
@@ -809,8 +762,8 @@ potential is shifted in order to reproduce the desired IP (see reference
 ------
 
 Activate the statistical averaging of (model) orbital potentials (SAOP)
-as defined in reference
-\ :sup:``[8] <#_note-Gritsenko:2000:jchemphys>`_`\ . This implies (and
+as defined in reference [Schipper2000]_.
+This implies (and
 activates) the ALDA kernel. The functional under
 `.DFT </dirac/index.php/Manual:HAMILTONIAN#.DFT>`_ is expected to be
 GLLBhole. The asymptotic potential is LBalpha.
@@ -869,26 +822,24 @@ instead of the default noncollinear definition
    :alt:  s = \\vert \\mathbf{m} \\vert
 
     s = \\vert \\mathbf{m} \\vert
+
 .BETASIGMA
 ----------
 
 use
 
    :align: center
-   :alt:  \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\beta
-   \\boldsymbol{\\Sigma} \\phi\_i
+   :alt:  \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\beta \\boldsymbol{\\Sigma} \\phi\_i
 
-    \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\beta
-   \\boldsymbol{\\Sigma} \\phi\_i
+    \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\beta \\boldsymbol{\\Sigma} \\phi\_i
+
 instead of the default
 
 
    :align: center
-   :alt:  \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\boldsymbol{\\Sigma}
-   \\phi\_i
+   :alt:  \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\boldsymbol{\\Sigma} \\phi\_i
 
-    \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\boldsymbol{\\Sigma}
-   \\phi\_i
+   \\mathbf{m} = \\sum\_i \\phi\_i^\\dagger \\boldsymbol{\\Sigma} \\phi\_i
 
 Adiabatic local density approximation (ALDA)
 ============================================
@@ -937,8 +888,6 @@ part (density contribution).
 Other functionality
 ===================
 
-`|image0| </dirac/index.php/Image:HJAaJ.png>`_
-
 **Programmers options**
 
 .GAUNTSCALE
@@ -951,57 +900,6 @@ interaction at all. If this option is not given the Gaunt integrals will
 be included to 100%, meaning that even an LDA calculation will include
 full Hartree-Fock Gaunt interaction when the .GAUNT keyword is given in
 `\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
-References
-----------
-
-#. `↑ <#_ref-Schipper:2000:jchemphys_0>`_ P. R. T. Schipper, O. V.
-   Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends, *Molecular
-   calculations of excitation energies and (hyper)polarizabilities with
-   a statistical average of orbital model exchange-correlation
-   potentials*, J. Chem. Phys. **112**, *1344* (2000) `electronic
-   version <http://dx.doi.org/10.1063/1.480688>`_.
-#. `↑ <#_ref-Saue:2002:jcomputchem_0>`_ T. Saue and T. Helgaker,
-   *Four-component relativistic Kohn-Sham theory*, J. Comput. Chem.
-   **23**, *814* (2002) `electronic
-   version <http://dx.doi.org/10.1002/jcc.10066>`_.
-#. `↑ <#_ref-Fossgaard:2003:jchemphys_0>`_ O. Fossgaard, O. Gropen, M.
-   Corral Valero, and T. Saue, *On the performance of four-component
-   relativistic density functional theory: Spectroscopic constants and
-   dipole moments of the diatomics HX and XY (X, Y = F, Cl, Br and I)*,
-   J. Chem. Phys. **118**, *10418* (2003) `electronic
-   version <http://dx.doi.org/10.1063/1.1574317>`_.
-#. `↑ <#_ref-Varga:2000:jchemphys_0>`_ S. Varga, B. Fricke, H.
-   Nakaamatsu, T. Mukoyama, J. Anton, D. Geschke, A. Heitmann, E. Engel,
-   and T. Bastug, *Four-component relativistic density functional
-   calculations of heavy diatomic molecules*, J. Chem. Phys. **112**,
-   *3499* (2000) `electronic
-   version <http://dx.doi.org/10.1063/1.480934>`_.
-#. `↑ <#_ref-Varga:1999:physreva_0>`_ S. Varga, E. Engel, W.-D. Sepp,
-   and B. Fricke, *Systematic study of the Ib diatomic molecules
-   Cu\ :sub:`2`\ , Ag\ :sub:`2`\ , and Au\ :sub:`2`\  using advanced
-   relativistic density functionals*, Phys. Rev. A **59**, *4288* (1999)
-   `electronic version <http://dx.doi.org/10.1103/PhysRevA.59.4288>`_.
-#. `↑ <#_ref-Mayer:1996:physreva_0>`_ M. Mayer and O. D. Häberlen and N.
-   Rösch, *Relevance of relativistic exchange-correlation functionals
-   and of finite nuclei in molecular density-functional calulations*,
-   Phys. Rev. A **54**, *4775* (54) `electronic
-   version <http://dx.doi.org/10.1103/PhysRevA.54.4775>`_.
-#. ↑ \ :sup:``7.0 <#_ref-Gruning:2001:jchemphys_0>`_`\ 
-   \ :sup:``7.1 <#_ref-Gruning:2001:jchemphys_1>`_`\ 
-   \ :sup:``7.2 <#_ref-Gruning:2001:jchemphys_2>`_`\  M. Grüning, O. V.
-   Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends, *Shape
-   corrections to exchange-correlation potentials by gradient-regulated
-   seamless connection of model potentials for inner and outer region*,
-   J. Chem. Phys. **114**, *652* (2001) `electronic
-   version <http://dx.doi.org/10.1063/1.1327260>`_.
-#. `↑ <#_ref-Gritsenko:2000:jchemphys_0>`_ P. R. T. Schipper, O. V.
-   Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends, *Molecular
-   calculations of excitation energies and (hyper)polarizabilities with
-   a statistical average of orbital model exchange-correlation
-   potentials*, J. Chem. Phys. **112**, *1344* (2000) `electronic
-   version <http://dx.doi.org/10.1063/1.480688>`_.
-
 
 
 Manual:HAMILTONIAN:AMFI
@@ -1156,136 +1054,4 @@ Data import options
 -------
 
 Specifies the name of the file containing the embedding potential.
-
-
-Manual:HAMILTONIAN:Sample inputs
-================================
-
-Some examples of the Hamiltonian input.
-
-Add dipole perturbation of strength 0.01 au in the z-direction to the
-nonrelativistic Lévy-Leblond Hamiltonian:
-
-::
-
-    **HAMILTONIAN
-    .LEVY-LEBLOND
-    .OPERATOR
-     ZDIPLEN
-     COMFACTOR
-     0.01
-
-Do a 4-component B3LYP calculation with high precision in the radial
-grid:
-
-::
-
-    **DIRAC
-    .WAVE FUNCTIONS
-    **WAVE FUNCTIONS
-    .DHF
-    **HAMILTONIAN
-    .DFT
-     B3LYP
-    *DFT
-    .RADINT
-     1.0D-15
-
-A functional can also be specified manually through the GGAKEY keyword.
-In the next input example we use the PW86X and P86C functionals for
-exchange and correlation respectively. We also tighten the angular grid
-and make the pruning less pronounced:
-
-::
-
-    **DIRAC
-    .WAVE FUNCTIONS
-    **WAVE FUNCTIONS
-    .DHF
-    **HAMILTONIAN
-    .DFT
-     GGAKEY PW86X=1.0 P86C=1.0
-    *DFT
-    .ANGINT
-     53
-    .ANGMIN
-     15
-
-
-References
-----------
-
-  \ :sup:``1.0 <#_ref-visscher-saue-00_0>`_`\ 
-
-   \ :sup:``1.1 <#_ref-visscher-saue-00_1>`_`\  L. Visscher and T. Saue,
-   *Approximate relativistic electronic structure methods based on the
-   quaternion modified Dirac equation*, J. Chem. Phys. **113**, *3996*
-   (2000) `electronic version <http://dx.doi.org/10.1063/1.1288371>`_.
-#. `↑ <#_ref-visscher-97_0>`_ L. Visscher, *Approximate molecular
-   Dirac-Coulomb calculations using a simple Coulombic correction*,
-   Theor. Chem. Acc. **98**, *68* (1997) `electronic
-   version <http://dx.doi.org/10.1007/s002140050280>`_.
-#. ↑ \ :sup:``3.0 <#_ref-ilias:iotc_0>`_`\ 
-   \ :sup:``3.1 <#_ref-ilias:iotc_1>`_`\ 
-   \ :sup:``3.2 <#_ref-ilias:iotc_2>`_`\  M. Iliaš and T. Saue, *An
-   infinite-order two-component relativistic Hamiltonian by a simple
-   one-step transformation*, J. Chem. Phys. **126**, *064102* (2007)
-   `electronic version <http://dx.doi.org/10.1063/1.2436882>`_.
-#. ↑ \ :sup:``4.0 <#_ref-knecht:x2c_mod_0>`_`\ 
-   \ :sup:``4.1 <#_ref-knecht:x2c_mod_1>`_`\  S. Knecht and T. Saue,
-   *tba*, xxx **xxx**, *Universities of Strasbourg and Odense*
-   (2010-2011) .
-#. `↑ <#_ref-sikkema_mmf_0>`_ J. Sikkema, L. Visscher, T. Saue, and M.
-   Iliaš, *The molecular mean-field approach for correlated relativistic
-   calculations*, J. Chem. Phys. **131**, *124116* (2009) .
-#. `↑ <#_ref-dyall-94_0>`_ K. G. Dyall, *An exact separation of the
-   spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
-   hamiltonian*, J. Chem. Phys. **100**, *2118* (1994) `electronic
-   version <http://dx.doi.org/10.1063/1.466508>`_.
-#. `↑ <#_ref-levy-leblond-67_0>`_ J.-M. Lévy-Leblond, *Nonrelativistic
-   particles and wave equations*, Commun. Math. Phys. **6**, *286*
-   (1967) `electronic version <http://dx.doi.org/10.1007/BF01646020>`_.
-#. `↑ <#_ref-lda:exchange_0>`_ P. A. M. Dirac, *Note on Exchange
-   Phenomena in the Thomas Atom*, Proc. Roy. Soc. London **26**, *376*
-   (1930) .
-#. ↑ \ :sup:``9.0 <#_ref-gga:B88_0>`_`\ 
-   \ :sup:``9.1 <#_ref-gga:B88_1>`_`\  A. D. Becke, *Density-Functional
-   Exchange-Energy Approximation With Correct Asymptotic Behavior*,
-   Phys. Rev. A **38**, *3098* (1988) `electronic
-   version <http://dx.doi.org/10.1103/PhysRevA.38.3098>`_.
-#. `↑ <#_ref-gga:pw86x_0>`_ J. P. Perdew and Y. Wang, *Accurate and
-   Simple Density Functional for the Electronic Exchange Energy:
-   Generalized Gradient Approximation*, Phys. Rev. B **33**, *8800*
-   (1986) `electronic
-   version <http://dx.doi.org/10.1103/PhysRevB.33.8800>`_.
-#. `↑ <#_ref-lda:vwn_0>`_ S. J. Vosko, L. Wilk, and M. Nusair, *Accurate
-   Spin-Dependent Electron Liquid Correlation Energies for Local Spin
-   Density Calculations: A Critical Analysis*, Can. J. Phys. **58**,
-   *1200* (1980) .
-#. `↑ <#_ref-gga:lyp_0>`_ C. Lee, W. Yang, and R. G. Parr, *Development
-   of the Colle-Salvetti Correlation-Energy Formula into a Functional of
-   the Electron Density*, Phys. Rev. B **37**, *785* (1988) `electronic
-   version <http://dx.doi.org/10.1103/PhysRevB.37.785>`_.
-#. `↑ <#_ref-gga:p86c_0>`_ J. P. Perdew, *Density-Functional
-   Approximation for the Correlation Energy of the Inhomogenous Electron
-   Gas*, Phys. Rev. B **33**, *8822* (1986) `electronic
-   version <http://dx.doi.org/10.1103/PhysRevB.33.8822>`_.
-#. `↑ <#_ref-ilias:pbo_0>`_ M. Iliaš and H. J. Aa. Jensen and V. Kello
-   and B. O. Roos and M. Urban, *Theoretical study of PbO and the PbO
-   anion*, Chem.Phys.Lett. **408**, *210* (2005) `electronic
-   version <http://dx.doi.org/doi:10.1016/j.cplett.2005.04.027>`_.
-#. `↑ <#_ref-ilias:amfi_0>`_ M. Iliaš and V. Kello and L. Visscher and
-   B. Schimmelpfennig, *Inclusion of mean-field spin–orbit effects based
-   on all-electron two-component spinors: Pilot calculations on atomic
-   and molecular properties*, J.Chem.Phys. **115**, *9667* (2001)
-   `electronic version <http://dx.doi.org/DOI:10.1063/1.1413510>`_.
-#. `↑ <#_ref-lenthe:zora1_0>`_ E. van Lenthe, E. J. Baerends, and J. G.
-   Snijders, *Relativistic total energies using regular approximations*,
-   J. Chem. Phys. **101**, *9783* (1994) `electronic
-   version <http://dx.doi.org/10.1063/1.467943>`_.
-#. `↑ <#_ref-lenthe:zora2_0>`_ E. van Lenthe, J. G. Snijders, and E. J.
-   Baerends, *The zero-order regular approximation for relativistic
-   effects: The effect of spin-orbit coupling in closed shell
-   molecules*, J. Chem. Phys. **105**, *6505* (1996) `electronic
-   version <http://dx.doi.org/10.1063/1.472460>`_.
 

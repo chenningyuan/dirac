@@ -85,8 +85,6 @@ By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
 `\*\*MOLTRA </dirac/index.php/Manual:MOLTRA>`_ section.
 
-`|image0| </dirac/index.php/Image:Dirac.png>`_
-
 **Pre-SCF orbital manipulations**
 
 .REORDER MO'S
@@ -113,8 +111,6 @@ On the line following the keyword, give first the rotation angle, then
 on the following line(s) for each fermion irrep, give an `orbital
 string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to
 rotate.
-
-`|image1| </dirac/index.php/Image:Dirac.png>`_
 
 **Post-SCF orbital manipulations**
 
@@ -160,6 +156,4 @@ for the calculation of ground and excited states at the CI level.
 Activates the `Kramers-restricted
 MCSCF </dirac/index.php/Manual:KR-MCSCF>`_ module for the calculation of
 ground and excited states at the CI level.
-
-
 
