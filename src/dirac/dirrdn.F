@@ -3861,7 +3861,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.POLTST','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.POLTST','.POLNRM','.REMREF','.ATOMS '/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -3885,6 +3885,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
+      PATOMS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
       POLTST = .FALSE.
@@ -3966,7 +3967,7 @@ C&&& POLREF: Polarize reference orbitals
                GO TO 100
  9             CONTINUE
 C&&& POLTST: Check if polarization contributions are spanned by
-C            polarizaed atomic orbitals
+C            polarized atomic orbitals
                   POLTST = .TRUE.
                   POLNRM = .TRUE.
                GO TO 100
@@ -3979,6 +3980,20 @@ C&&& REMREF: Project out reference orbitals from polarized orbitals
                   REMREF = .TRUE.
                GO TO 100
  12            CONTINUE
+C&&& ATOMS : Do projection analysis using atomic fragments
+                  PATOMS = .TRUE.
+                  IF(NONTYP.GT.MAXREF) THEN
+                    WRITE(LUPRI,'(A,I5)')
+     &         '* Number of atomic types specified  :',NONTYP,
+     &         '* Current maximum no. of fragments  :',MAXREF
+                    CALL QUIT('*PROJECT input: Too many fragments !')
+                  ENDIF
+                  DO J = 1,NONTYP
+                    READ(LUCMD,'(A6)') REFFIL(J)
+                    NPROJNUC(J)=1
+                    READ(LUCMD,'(A72)') VECREF(1,J)
+                 ENDDO
+                  REFFIL(NONTYP+1) = 'Polari'
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -4063,6 +4078,13 @@ C
      &      '* Test if polarization contributions are spanned by ',
      &      ' polarized reference orbitals.'
         ENDIF
+      ELSEIF(PATOMS) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Projection analysis based on atomic fragments, ',
+     &   '  calculated in their individual bases'
+        DO I = 1,NONTYP
+          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(I),VECREF(1,I)
+        ENDDO
       ELSE
         IF(POLREF.OR.POLTST) THEN
           CALL QUIT
