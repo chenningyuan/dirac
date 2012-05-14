@@ -236,4 +236,4 @@ Bibliography
 .. toctree::
    :maxdepth: 1
    
-   refs.rst
+   bib.rst
