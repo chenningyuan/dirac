@@ -7,8 +7,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/pamadm)
        EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/pamadm-flags")
        # they exist, read previously used flags from "pamadm-flags"
        file(READ ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/pamadm-flags PAMADM_FLAGS)
-       message("-- Read previous pamadm flags from file, these are: ${PAMADM_FLAGS}")
-       # miro: inserted check for Windows
+       # check for Windows
        if (PAMADM_FLAGS STREQUAL "") 
            message(FATAL_ERROR "No pamadm flags in the read file !")
        endif()
@@ -23,7 +22,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/pamadm)
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_QUIET
     )
-    #miro: tweak null device for Windows & Unix
+    # tweak null device for Windows & Unix
     if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         set(NULL_DEVICE "/dev/null")
     else()
