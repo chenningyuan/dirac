@@ -1,17 +1,13 @@
 References
 ============
 
-List of published papers and other sources (books, thesis) documenting the development of various
-features of DIRAC, its related references and also  some interesting applications. 
+List of published papers and other sources (books, theses) documenting the
+development of various features of DIRAC, its related references and also some
+interesting applications. 
 
-References are sorted (by hand) alphabetically according to the first author's 
-family name with the year of publishing.
-If the first author has more publications in the same year,
-in another "same-author-same-year" entries attach "a","b", "c"... after the year.
-
-Whenever possible, cited works are to be provided with a valid URL link. 
-For scientific papers this can be the permanent DOI web-link,
-for books we advice you to use (preferably Google-shortened) Google Books URL links.
+References are sorted alphabetically according to the first author's family
+name with the year of publishing.  If the first author has more publications in
+the same year, attach "a", "b", "c", etc. after the year.
 
 .. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
 
