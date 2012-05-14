@@ -80,11 +80,17 @@ C  /* Deck dirctl */
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
+      use dirac_cfg
 
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "dcbgen.h"
-      DIMENSION WORK(LWORK)
+#include "dcbham.h"
+#include "dgroup.h"
+
+      integer :: LWORK
+      real(8) :: WORK(LWORK)
 C
       CALL QENTER('DIRCTL')
 C
@@ -117,6 +123,23 @@ C***********************************************************************
       call interface_ao_write()
       call interface_mo_write()
 
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+! Quit if symmetry or X2C are requested.
+        if (nbsym > 1) then
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle symmetry!')
+        end if
+        if (bss.or.x2c) then
+          call quit('Polarizable Continuum Model calculation not '//
+     & 'working with X2C Hamiltonian!')
+        end if
+        call init_pcm 
+        print *, 'after pcm init'
+      end if
+#endif
+
+
 C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************
 C***********************************************************************
@@ -133,6 +156,12 @@ C***********************************************************************
 C*****  T  E  R  M  I  N  A  T  I  O  N  *******************************
 C***********************************************************************
 C
+
+#ifdef BUILD_GEN1INT
+!     clean up Gen1Int interface
+      call gen1int_ifc_clean()
+#endif
+
       if (doxml) then
          call xml_end('output')
          call xml_end('task') ! started om dirrdn.F
@@ -167,7 +196,7 @@ C***********************************************************************
 C*****  Read (C1/formatted) MO coefficients   **************************
 C***********************************************************************
 C
-      IF(DOPIN.or.dopin_i3) CALL PCMOIN(WORK,LWORK)
+      CALL PCMOIN(WORK,LWORK)
       IF(DOACIN) CALL ACMOIN(WORK,LWORK)
 C
 C     Extend RKB coeffcients with complementary UKB space
@@ -751,18 +780,77 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "maxash.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
 #include "dcbdhf.h"
+      integer :: nasht_tmp, igas_tmp, accum_act(2)
 C
       CALL QENTER('TKRMCORB')
 C
 C
       NGAS_DC= NKRMCGAS
       MK2REF = NKRMC_MK2REF
+
+!     set active spaces and other derived variables for the full CI option
+      if(KRMC_full_ci)then
+        nasht_tmp = 0
+        DO I = 1,NFSYM
+          NKRMCASH(I) = NESH(I) - NKRMCISH(I)
+          nasht_tmp   = NESH(I) - NKRMCISH(I) + nasht_tmp
+        END DO
+        NKRMC_MAXMK2 = 2*MIN(NKRMCAELEC,nasht_tmp) - NKRMCAELEC
+        NKRMC_MINMK2 = NKRMCAELEC-2*MIN(NKRMCAELEC,nasht_tmp)
+        NKRMC_MK2DEL = NKRMC_MAXMK2
+        igas_tmp     = 0
+        accum_act(1) = 0
+        accum_act(2) = 0
+        do 
+          igas_tmp = igas_tmp + 1
+          if(NKRMCGSH(1,igas_tmp) == -9999)then
+            do i = 1, nfsym
+              NKRMCGSH(I,igas_tmp) = NKRMCASH(I) - accum_act(i)
+            end do
+            exit
+          else
+            do i = 1, nfsym
+              accum_act(i) = accum_act(i) + NKRMCGSH(I,igas_tmp)
+            end do
+          end if
+        end do
+!       print some extra info
+        write(lupri,*) 
+     &  '  *** extra info from TKRMCORB for full CI option ***'
+        write(lupri,*) 
+     &  '  ---------------------------------------------------'
+        write(lupri,*) 
+     &  '     total # of active orbitals: ', nasht_tmp
+
+        do i = 1, ngas_dc
+          WRITE(LUPRI,'(A,I3,A,2I4)')
+     &         '   - GAS space ',I,'       : ',
+     &         (NKRMCGSH(J,I),J=1,NFSYM)
+          WRITE(LUPRI,'(A,I3,A1,I3,A)')
+     &    '    (constraints: min/max active electrons after space : ',
+     &         NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
+        end do
+        write(lupri,*) 
+     &  '  ---------------------------------------------------'
+
+!       test for maximum # of orbitals
+!       if(nasht_tmp > 5)then
+        if(nasht_tmp > MAXASH)then
+          WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &         ' *** ERROR in *TKRMCORB *** Too many active orbitals: ',
+     &         nasht_tmp, ' -- max is ',MAXASH
+          CALL QUIT('*** ERROR in *TKRMCORB: Too many active orbitals!')
+        end if
+
+      end if ! full ci option
+
       MK2DEL = NKRMC_MK2DEL
       MINMK2 = NKRMC_MINMK2
       MAXMK2 = NKRMC_MAXMK2

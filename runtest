@@ -511,8 +511,10 @@ class run:
                      os.killpg(pgid_dirac,signum_kill) 
                  else: 
                      kill_win(pgid_dirac)
-                 #miro: important to have short time delay !
-                 time.sleep(2)
+                 if not executed_from_subdir:
+                     # time delay for killing
+                     # don't delay if this is interactive run from subdir
+                     time.sleep(2)
              sys.exit()
 			 
          if sys.platform != 'win32':
@@ -536,12 +538,13 @@ class run:
          # run the launcher
          if program_is_dirac:
              launcher = os.path.join(root_directory, "pam")
+             #print  "launcher=",launcher
              command = 'python ' + launcher + ' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.launcher_flags)
          if program_is_dalton:
              if options.launcher:
                  launcher = options.launcher
              else:
-                 launcher = os.path.join(root_directory, '../build/dalton')
+                 launcher = os.path.join(root_directory, '../../build/dalton')
              # verify that launcher really exists
              if not os.path.isfile(launcher):
                  error_message = 'error: launcher not found in %s' % launcher
@@ -556,7 +559,7 @@ class run:
                                                              self.mol,            \
                                                              output_prefix,       \
                                                              output_prefix)
-
+           			 
          if program_is_dirac:
              if sys.platform != 'win32':
                  p = subprocess.Popen(shlex.split(command),
@@ -564,7 +567,7 @@ class run:
                                       stdout=subprocess.PIPE,
                                       preexec_fn=os.setsid)
              else:
-                 p = subprocess.Popen(shlex.split(command),
+                 p = subprocess.Popen(command,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE)
              pgid_dirac = p.pid # save DIRAC process group id for latter killing of subprocesses

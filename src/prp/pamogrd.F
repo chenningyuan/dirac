@@ -224,7 +224,8 @@ C  /* Deck fgen_pv */
       SUBROUTINE FGEN_PV(FC,FQ,DV,FGEN,IPQ,IPRINT)
 C***********************************************************************
 C
-C     Calculate \sum_u F^C_{pu} D_{uv}^* + F^Q_{pv}
+C     Calculate (4.57:ii) of jth thesis
+C               \sum_u F^C_{pu} D_{uv}^* + F^Q_{pv}
 C               = (F^C * D^t + F^Q)_{pv}
 C
 C     Input:

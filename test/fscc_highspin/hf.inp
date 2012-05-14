@@ -3,8 +3,9 @@
 !
 **DIRAC
 .TITLE
-Moelcular oxygen. Ground state.
+Molecular oxygen. Ground state.
 .WAVE F
+.ANALYZE
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
@@ -16,5 +17,10 @@ Moelcular oxygen. Ground state.
 .OPEN SHELL
 1
 2/4,0
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all
+all
 *END OF
-

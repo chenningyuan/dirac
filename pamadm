@@ -355,6 +355,13 @@ dirac_modules[this_module] = dirac_module('mcscf_sf', 'spinfree MCSCF module')
 dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
 dirac_modules[this_module].take_out_of_release()
 
+this_module = 'gen1int'
+dirac_modules[this_module] = dirac_module('gen1int', 'Generalized One-electron Integral module')
+dirac_modules[this_module].add_cppflag('BUILD_GEN1INT')
+dirac_modules[this_module].add_directory('src/gen1int')
+dirac_modules[this_module].take_out_of_release()
+dirac_modules[this_module].take_out_of_adm()
+
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
@@ -370,6 +377,14 @@ dirac_modules[this_module].add_test('fde_response_autodiff')
 dirac_modules[this_module].add_test('fde_export_density')
 dirac_modules[this_module].add_test('london_properties_symmetry')
 dirac_modules[this_module].take_out_of_release()
+
+this_module = 'pcm'
+dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model through PCMSolver')
+dirac_modules[this_module].add_cppflag('PCM_MODULE')
+dirac_modules[this_module].add_directory('src/pcm')
+dirac_modules[this_module].add_test('pcm_energy')
+dirac_modules[this_module].take_out_of_release()
+dirac_modules[this_module].take_out_of_adm()
 
 # define input options
 
