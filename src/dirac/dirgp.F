@@ -1142,7 +1142,6 @@ C
             DO 10 I=IRNGE1,IRNGE2
               IF (I.EQ.0) GOTO 10
               IC = IC + 1
-C              IF (IC.GT.NLIST) GOTO 930
  10         CONTINUE
           ELSE
             DO 11 I=IRNGE1,IRNGE2

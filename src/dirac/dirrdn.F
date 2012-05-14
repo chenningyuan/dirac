@@ -3895,7 +3895,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -3969,18 +3969,21 @@ C&&& REMREF: Project out reference orbitals from polarized orbitals
  12            CONTINUE
 C&&& ATOMS : Do projection analysis using atomic fragments
                   PATOMS = .TRUE.
-                  IF(NONTYP.GT.MAXREF) THEN
+                  NREFS=NUCDEP
+                  IF(NREFS.GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
-     &         '* Number of atomic types specified  :',NONTYP,
+     &         '* Number of atomic types specified  :',NREFS,
      &         '* Current maximum no. of fragments  :',MAXREF
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
-                  DO J = 1,NONTYP
-                    READ(LUCMD,'(A6)') REFFIL(J)
-                    NPROJNUC(J)=1
-                    READ(LUCMD,'(A72)') VECREF(1,J)
-                 ENDDO
-                  REFFIL(NONTYP+1) = 'Polari'
+                  ICENT=1
+                  DO IATOM = 1,NONTYP
+                    READ(LUCMD,'(A6)') REFFIL(ICENT)
+                    NPROJNUC(ICENT)=1
+                    READ(LUCMD,'(A72)') VECREF(1,ICENT)
+                    ICENT = ICENT+NONT(IATOM)
+                  ENDDO
+                  REFFIL(ICENT+1) = 'Polari'
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -4069,8 +4072,10 @@ C
         WRITE(LUPRI,'(1X,A)')
      &   '* Projection analysis based on atomic fragments, ',
      &   '  calculated in their individual bases'
-        DO I = 1,NONTYP
-          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(I),VECREF(1,I)
+        ICENT=1
+        DO IATOM = 1,NONTYP
+          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(ICENT),VECREF(1,ICENT)
+          ICENT = ICENT + NONT(IATOM)
         ENDDO
       ELSE
         IF(POLREF.OR.POLTST) THEN
