@@ -1121,6 +1121,24 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anaprj */
       SUBROUTINE ANAPRJ(WORK,LWORK)
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbprj.h"
+      DIMENSION WORK(LWORK)
+      CALL TITLER('Projection analysis','*',122)
+      IF(PATOMS) THEN
+C.....Use atomic fragments in C1 basis
+        CALL ANAAOB(WORK,LWORK)
+      ELSE
+C.....Use symmetry-adapted fragments
+        CALL ANASOB(WORK,LWORK)
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck anasob */
+      SUBROUTINE ANASOB(WORK,LWORK)
 C***********************************************************************
 C
 C     Written by T.Saue March 26 1999
@@ -1147,7 +1165,6 @@ C
 C
 #include "memint.h"
       KFRSAV = KFREE
-      CALL TITLER('Projection analysis','*',122)
 C
 C     Find total numbers of reference orbitals;
 C     first scan coefficient files for NPSH/NESH;
@@ -1332,7 +1349,7 @@ C
         CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
-      CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('PRJSOB',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
  10   CONTINUE
       CALL QUIT('ANAPRJ: END OF FILE reading TEXT')
