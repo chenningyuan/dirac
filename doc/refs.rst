@@ -107,6 +107,26 @@ for books we advice you to use (preferably Google-shortened) Google Books URL li
    J. Chem. Phys. **84**, *5728* (1986) 
    <http://dx.doi.org/10.1063/1.449880>
 
+.. [Hughes1992] S. R. Hughes and Uzi Kaldor,
+   *High sectors in the Fock space coupled-cluster method*, 
+   Chem.Phys.Lett., **194**, *99-104* (1992)
+   <http://dx.doi.org/10.1016/0009-2614(92)85749-Z> 
+
+.. [Hughes1993]  S. R. Hughes and Uzi Kaldor,
+   *The coupled-cluster method with full inclusion of single, double and triple excitations applied to high sectors of the Fock space*,
+   Chem.Phys.Lett., **204**, *339-342* (1993),
+   <http://dx.doi.org/10.1016/0009-2614(93)90019-W> 
+ 
+.. [Hughes1993a] S. R. Hughes and Uzi Kaldor,
+   *Fock-space coupled-cluster method: The (1,2) sector*,
+   Phys. Rev. A, **47**, *4705-4712* (1993)
+   <http://dx.doi.org/10.1103/PhysRevA.47.4705>
+
+.. [Hughes1995] S. R. Hughes and Uzi Kaldor,
+   *The coupled-cluster method in high sectors of the Fock space*,
+   Int.J.Quant.Chem., **55**, *127-132* (1995) 
+   <http://dx.doi.org/10.1002/qua.560550207>
+
 .. [Ilias2001] M. Iliaš and V. Kello and L. Visscher and
    B. Schimmelpfennig, *Inclusion of mean-field spin–orbit effects based
    on all-electron two-component spinors: Pilot calculations on atomic
