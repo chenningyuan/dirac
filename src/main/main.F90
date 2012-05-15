@@ -37,11 +37,13 @@ program dirprg
   use interface_ao
   use interface_mo
 
-#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
   use mpi
-#endif
-
   implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
