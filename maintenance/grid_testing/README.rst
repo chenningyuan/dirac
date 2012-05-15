@@ -1,5 +1,5 @@
-Launching  DIRAC in grid environment
-======================================
+Launching DIRAC in the grid environment
+=======================================
 
 Testing of the DIRAC program suite in the grid enviroment.
 
@@ -24,9 +24,11 @@ Making Python static
 
 Download Python-2.7.2
 
+::
+
   $./configure --prefix=/home/ilias/bin/python_static  LDFLAGS="-static -static-libgcc" CPPFLAGS="-static"
 
-put "*static*" into Modules/Setup.local
+put "\*static\*" into Modules/Setup.local
 
 Currently I (MI) wasn't able to get static version due to compilation problems...
 
@@ -35,32 +37,50 @@ Data management
 ------------------
 
 Accesible nodes/storage space:
-lcg-infosites -vo compchem se
-lcg-infosites -vo compchem all
+
+::
+
+  lcg-infosites -vo compchem se
+  lcg-infosites -vo compchem all
 
 VOCE:
 -----
 What you have in your VOCE space:
-lcg-ls -l  lfn://grid/voce/ilias/
+
+::
+
+  lcg-ls -l  lfn://grid/voce/ilias/
 
 COMPCHEM:
 ---------
 What you have in your COMPCHEM space:
  list of all subdirectories: lcg-ls lfn://grid/compchem
 
- your own space:  lcg-ls lfn://grid/compchem/ilias
-                  lcg-ls lfn://grid/compchem/ilias/dirac_space
+ your own space: 
+
+ ::
+    lcg-ls lfn://grid/compchem/ilias
+    lcg-ls lfn://grid/compchem/ilias/dirac_space
 
  copy executable to your compchem space:
-lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  dirac.x
-guid:9198887f-a283-486e-af4f-fb0ed4649dab
+
+:: 
+
+  lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  dirac.x
+  guid:9198887f-a283-486e-af4f-fb0ed4649dab
 
 even better:
-lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  ../../build/dirac.x
-guid:e3b25fad-ad2a-4a01-9b9b-dd2472e86f0c
+
+::
+
+  lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  ../../build/dirac.x
+  guid:e3b25fad-ad2a-4a01-9b9b-dd2472e86f0c
 
 Delete from the SE space:
- lcg-del -a   lfn:/grid/compchem/ilias/dirac.x
+
+::
+
+  lcg-del -a   lfn:/grid/compchem/ilias/dirac.x
 
 Working with the "gLite" middleware
 -----------------------------------
@@ -70,14 +90,19 @@ Some "gLite" howtos :
  http://iag.iucc.ac.il/workshop/complex_jobs.htm
 
 Submit job script: 
+
 ::
+
  glite-wms-job-submit -o <JOB_ID_file> -a submit.jdl
 
 Get job status:
+
 :: 
+
  glite-wms-job-status  -i <JOB_ID_file>
 
-Get job files back:
-::
- glite-wms-job-output -i <JOB_ID_file>
+Get job files back
 
+::
+
+ glite-wms-job-output -i <JOB_ID_file>

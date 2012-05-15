@@ -1,4 +1,6 @@
-!
+TEST: Spin-orbit states of the Fluorine atom
+============================================
+
 ! This test calculates the spin-orbit components of the 2P state of Fluorine,
 ! using a COSCI wavefunction and few different Hamiltonians.
 !
