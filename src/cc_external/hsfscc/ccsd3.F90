@@ -301,12 +301,11 @@
 135   continue
 
       else if (iopt(19).ne.7) then
-
-        ! ... get in new GAMESS integrals ...
-        call get_gamess_ints(nort,eps,nn,ind,v,nint)
-
+        call quit('GAMESS connection deactivated !')
+        ! ... get in new GAMESS integrals ... 
+        !call get_gamess_ints(nort,eps,nn,ind,v,nint)
         if (iopt(1).ge.5) then ! control prinout
-          write(LUPRI,'(/,2x,a,i5)')                                    &
+          write(LUPRI,'(/,2x,a,i5)')                 &
      'after call get_gamess_ints, nint=',nint
           write(LUPRI,*) 'after, nort=',nort
           write(LUPRI,*) '         nn=',nn
