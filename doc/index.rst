@@ -7,6 +7,7 @@ Welcome
    :maxdepth: 1
 
    welcome/features.rst
+   welcome/succes_stories.rst
    welcome/citing.rst
    welcome/changelog.rst
    welcome/dirac08_issues.rst
@@ -55,6 +56,7 @@ First steps in DIRAC territory
 
    tutorials/getting_started.rst
    tutorials/faq.rst
+   tutorials/terminology.rst
    tutorials/general_sample.rst
    tutorials/integr_sample.rst
    tutorials/scf_sample.rst
@@ -128,7 +130,6 @@ How to tackle open-shell systems
 .. toctree::
    :maxdepth: 1
 
-   tutorials/terminology.rst
    tutorials/dirrci_sample.rst
    tutorials/goscip_sample.rst
    tutorials/open_shells.rst
