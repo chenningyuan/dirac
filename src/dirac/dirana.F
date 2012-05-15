@@ -3567,43 +3567,50 @@ C
 C
 C     Find total number of reference orbitals
 C     =======================================
+C     ININD runs over symmetry independent centers
+C     INDEP runs over symmetry dependent centers
       NVECS(1)=0
-      ICENT=1
-      DO IATOM = 1,NONTYP
+      INDEP=1
+      ININD=1
+      DO ITYP = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
-        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
+        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
-        CALL OPNFIL(LUCOEF,REFFIL(ICENT),'OLD','PRJAOB')        
+        CALL OPNFIL(LUCOEF,REFFIL(INDEP),'OLD','PRJAOB')        
         READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &        NSTR(2,ICENT),NSTR(1,ICENT),NAO(ICENT),DUM
+     &        NSTR(2,INDEP),NSTR(1,INDEP),NAO(INDEP),DUM
 C.............NPSH............NESH............NBAS...........TOTERG
         CLOSE(LUCOEF,STATUS='KEEP')
 CTROND
         WRITE(6,'(A/2(A,2I5/))') 
      &   'Output from PRJAOB:',
-     &   '  NPSH/NESH       :',NSTR(2,ICENT),NSTR(1,ICENT),
-     &   '  Basis set size  :',MBAS,NAO(ICENT)
-        IF(NAO(ICENT).NE.MBAS) THEN
+     &   '  NPSH/NESH       :',NSTR(2,INDEP),NSTR(1,INDEP),
+     &   '  Basis set size  :',MBAS,NAO(INDEP)
+        IF(NAO(INDEP).NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'Atomic projection analysis: ',
-     &     '  Wrong number of basis function for atomic type ',IATOM,
+     &     '  Wrong number of basis function for atomic type ', ITYP,
      &     '  Correct number                               : ', MBAS,
      &     '  Number read from                     ',
-     &     REFFIL(ICENT),' : '  ,NBAS
+     &     REFFIL(INDEP),' : '  ,NBAS
            CALL QUIT
      &     ('PRJAOB: Wrong number of basis functions !')
         ENDIF
 C.......Count the number of orbitals to read
-        NSTR(0,ICENT)=0
-        NDIM=NSTR(2,ICENT)+NSTR(1,ICENT)+1
+        NSTR(0,INDEP)=0
+        NDIM=NSTR(2,INDEP)+NSTR(1,INDEP)+1
         CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
-        CALL NUMLS1(VECREF(1,ICENT),IDUM,IDUM,
-     &       -NSTR(2,ICENT),NSTR(1,ICENT),
-     &       NSTR(0,ICENT),WORK(KITMP))
-        NVECS(1) = NVECS(1) + NSTR(0,ICENT)
+        CALL NUMLS1(VECREF(1,INDEP),IDUM,IDUM,
+     &       -NSTR(2,INDEP),NSTR(1,INDEP),
+     &       NSTR(0,INDEP),WORK(KITMP))
         CALL MEMREL('PRJAOB.ref',WORK,1,KITMP,KFREE,LFREE)
-        CALL MEMGET('INTE',KVEC(ICENT),NSTR(0,ICENT),WORK,KFREE,LFREE)
-        ICENT = ICENT+NONT(IATOM)
+        CALL MEMGET('INTE',KVEC(INDEP),NSTR(0,INDEP),WORK,KFREE,LFREE)
+        NN = INDEP
+        DO J = 0,NONT(ITYP)-1
+          INDEP = INDEP + NUCDEG(ININD+J)
+        ENDDO
+        NVECS(1) = NVECS(1) + (INDEP-NN)*NSTR(0,NN)
+        ININD = ININD+NONT(ITYP)
       ENDDO
 C
 C     Find number of molecular orbitals to analyze
@@ -3623,21 +3630,26 @@ C     Calculate dimension of arrays
 C     =============================
 C
       NVECS(0) = NVECS(1) + NVECS(2)
+CTROND
+      WRITE(6,*) 'TESTa ',NVECS(0),NVECS(1),NVECS(2)
       CALL MEMGET('REAL',KE,NVECS(0),WORK,KFREE,LFREE)
-      NQ = NTBAS(0)*NVECS(0)*NZC1      
+CTROND
+      WRITE(6,*) 'TEST ',NQ,NTBAS(0),NVECS(0),NZC1
+      NQ = NTBAS(0)*NVECS(0)*NZC1
       CALL MEMGET('REAL',KQ,NQ      ,WORK,KFREE,LFREE)
 C
 C     Select atomic coefficients
 C     ==========================
-      ICENT=1
-      JVEC =1
-      DO IATOM = 1,NONTYP
+      JVEC = 1
+      INDEP= 1
+      ININD= 1
+      DO ITYP = 1,NONTYP
 C.......Read C1 coefficients, orbitalenergies and boson irreps
-        CALL OPNFIL(LUCOEF,REFFIL(ICENT),'OLD','PRJAOB')        
+        CALL OPNFIL(LUCOEF,REFFIL(INDEP),'OLD','PRJAOB')        
         READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &        NNEG,NPOS,NAO(ICENT),DUM
+     &        NNEG,NPOS,NAO(INDEP),DUM
         NTOT = NNEG+NPOS
-        NQA  = NAO(ICENT)*NTOT*NZC1
+        NQA  = NAO(INDEP)*NTOT*NZC1
         CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
         CALL READT(LUCOEF,NQA ,WORK(KQA))
         CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
@@ -3646,22 +3658,32 @@ C.......Read C1 coefficients, orbitalenergies and boson irreps
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1
         CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
-        CALL NUMLS1(VECREF(1,ICENT),WORK(KVEC(ICENT)),NSTR(0,ICENT),
-     &       -NNEG,NPOS,NSTR(0,ICENT),WORK(KITMP))
+        CALL NUMLS1(VECREF(1,INDEP),WORK(KVEC(INDEP)),NSTR(0,INDEP),
+     &       -NNEG,NPOS,NSTR(0,INDEP),WORK(KITMP))
         CALL MEMREL('PRJAOB.refsel',WORK,1,KITMP,KFREE,LFREE)
-        CALL ORBCNT(WORK(KVEC(ICENT)),NSTR(0,ICENT),NNEG,NPOS,
-     &             NSTR(2,ICENT),NSTR(1,ICENT))
+        CALL ORBCNT(WORK(KVEC(INDEP)),NSTR(0,INDEP),NNEG,NPOS,
+     &             NSTR(2,INDEP),NSTR(1,INDEP))
 C.....Extract coefficients and orbital energies
         CALL SELATOM(WORK(KQ),WORK(KE),NTBAS(0),NVECS(0),NZC1,
-     &               WORK(KQA),WORK(KEA),NAO(ICENT),NTOT,NNEG,NPOS,
-     &               ICENT,NONT(IATOM),NUCDEG(ICENT),
-     &               WORK(KVEC(ICENT)),NSTR(2,ICENT),NSTR(1,ICENT),JVEC,
+     &               WORK(KQA),WORK(KEA),NAO(INDEP),NTOT,NNEG,NPOS,
+     &               ININD,NONT(ITYP),NUCDEG(ININD),
+     &               WORK(KVEC(INDEP)),NSTR(2,INDEP),NSTR(1,INDEP),JVEC,
      &               WORK,KFREE,LFREE)
-        ICENT = ICENT+NONT(IATOM)
+        DO J = 0,NONT(ITYP)-1
+          INDEP = INDEP + NUCDEG(ININD+J)
+        ENDDO
+        ININD = ININD+NONT(ITYP)
       ENDDO
+CTROND
+      WRITE(6,*) 'Selected coefficients:'
+      CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS(1),NTBAS(0),NVECS(0),NZC1,
+     &            IQDEF,LUPRI)
+      WRITE(6,*) 'Selected eigenvalues:'
+      CALL PRQMAT(WORK(KE),NVECS(1),1,NVECS(1),1,1,IQDEF,LUPRI)
+
 C
  100  CONTINUE
-      CALL MEMREL('PRJAOB',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('PRJAOB.end',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
  10   CONTINUE
       CALL QUIT('PRJAOB: END OF FILE reading TEXT')
@@ -3670,7 +3692,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selatom */
-      SUBROUTINE SELATOM(CMO,EIG,NBM,NRM,NCM,NZ,
+      SUBROUTINE SELATOM(CMO,EIG,NRM,NCM,NZ,
      &                   ACMO,AEIG,NRA,NCA,NNEG,NPOS,
      &                   INUC,NONT,NDEG,
      &                   IVEC,NEVEC,NPVEC,JVEC,
@@ -3684,16 +3706,16 @@ C***********************************************************************
 #include "priunit.h"
       DIMENSION CMO(NRM,NCM,NZ),EIG(*),ACMO(NRA,NCA,NZ),AEIG(*),
      &          NDEG(*),IVEC(*),WORK(*)
-      CALL MEMGET('INTE',KMOL,NBM,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KMOL ,NRM,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KATOM,NRA,WORK,KFREE,LFREE)
       NVEC=NEVEC+NPVEC
-      ICENT = INUC      
+      ININD = INUC      
       DO ITYP = 1,NONT
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(MBAS,WORK(KMOL),NBM,1,-1,ICENT,IDEG,-1)
+          CALL LABCOUNT(MBAS,WORK(KMOL),NRM,1,-1,ININD,IDEG,-1)
 C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KMOL),NBM,WORK(KATOM),NBA)
+          CALL REVINDEX(WORK(KMOL),NRM,WORK(KATOM),NRA)
 C.........Extract coefficients
           CALL SELOWC(NZ,ACMO,NRA,NCA,NNEG,NPOS,
      &                CMO(1,JVEC,1),NRM,NCM,
@@ -3703,7 +3725,7 @@ C.........Extract orbital energies
      &                EIG(JVEC),IVEC,NPVEC,NEVEC)
           JVEC = JVEC + NVEC
         ENDDO
-        ICENT = ICENT + 1
+        ININD = ININD + 1
       ENDDO
 C
       RETURN
