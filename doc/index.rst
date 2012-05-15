@@ -10,7 +10,6 @@ Welcome
    welcome/success_stories.rst
    welcome/citing.rst
    welcome/changelog.rst
-   welcome/dirac08_issues.rst
 
 
 Installing DIRAC
@@ -25,7 +24,6 @@ Installing DIRAC
    installation/windows.rst
    installation/tests.rst
    installation/walkthroughs.rst
-   installation/bugs.rst
 
 Installing and configuring libraries used by DIRAC
 ==================================================
@@ -36,7 +34,6 @@ Installing and configuring libraries used by DIRAC
    installation/math_int64.rst
    installation/mpi_int64.rst
    installation/mkl.rst
-.. include:: ../maintenance/grid_testing/README.rst
 
 Basis sets
 ==========
@@ -70,7 +67,6 @@ Menu of 2- and 4-component Hamiltonians
    tutorials/ham_sample.rst
    tutorials/ham2c.rst
    tutorials/amfi.rst
-.. include:: ../test/molecular_mean_field_hamiltonian_schemes/README.rst
 
 
 Restarting calculations and multi-step jobs
@@ -157,6 +153,7 @@ Getting help
 
    getting_help/memory.rst
    getting_help/known_problems.rst
+   getting_help/known_bugs.rst
 
 
 Reference manual
