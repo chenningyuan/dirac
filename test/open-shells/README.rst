@@ -36,8 +36,8 @@ and remaining two unpaired electrons are distributed over four  2p32 spinors.
 The second configuration [He] 2s(2) 2p12(1) 2p32(3) has two open-shells with one unpaired electron averaged over
 two 2p12 shells and three electron over four 2p32 shells.
 
- F
------
+F
+--
 
 The converged ground state X ^2P_3/2 is achieved with the help of the .OLEVEL keyword.
 To get the first excited state ^2P_1/2 one resorts to the reordering of the valence molecular spinors,
