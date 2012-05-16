@@ -225,6 +225,7 @@ For DIRAC programmers
    programmers/int8.rst
    programmers/grasp.rst
    programmers/screening.rst
+   programmers/dfcoef.rst
    programmers/standalones.rst
    programmers/shell_prog.rst
 
