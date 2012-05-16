@@ -3652,8 +3652,16 @@ C.......Read C1 coefficients, orbitalenergies and boson irreps
         NQA  = NAO(INDEP)*NTOT*NZC1
         CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
         CALL READT(LUCOEF,NQA ,WORK(KQA))
+CTROND
+        WRITE(6,*) '* Atomic coefficients: ',ITYP,NAO(INDEP),NTOT,NZC1
+        CALL PRQMAT(WORK(KQA),NAO(INDEP),NTOT,NAO(INDEP),NTOT,NZC1,
+     &            IQDEF,LUPRI)
         CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
         CALL READT(LUCOEF,NTOT,WORK(KEA))
+CTROND
+        WRITE(6,*) '* Atomic orbital energies: ',ITYP
+        CALL PRQMAT(WORK(KEA),NTOT,1,NTOT,1,1,
+     &            IQDEF,LUPRI)
         CLOSE(LUCOEF,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1
@@ -3669,6 +3677,7 @@ C.....Extract coefficients and orbital energies
      &               ININD,NONT(ITYP),NUCDEG(ININD),
      &               WORK(KVEC(INDEP)),NSTR(2,INDEP),NSTR(1,INDEP),JVEC,
      &               WORK,KFREE,LFREE)
+        CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
         DO J = 0,NONT(ITYP)-1
           INDEP = INDEP + NUCDEG(ININD+J)
         ENDDO
