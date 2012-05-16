@@ -42,8 +42,11 @@ program dirprg
   implicit none
 #else
   implicit none
+#ifdef VAR_MPI
 #include "mpif.h"
 #endif
+#endif
+
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
