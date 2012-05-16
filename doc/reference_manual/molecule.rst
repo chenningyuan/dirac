@@ -1,5 +1,3 @@
-
-
 .. _molecule:
 
 \**MOLECULE -- Specify the basis for the corresponding xyz file

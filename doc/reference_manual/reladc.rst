@@ -1,3 +1,5 @@
+.. _reladc:
+
 RELADC
 =======
 
@@ -54,10 +56,8 @@ RELADC similar to many post-DHF programs sets out from the transformed
 totally antisymmetric two-electron integrals 
 \\langle ij\|\|kl\\rangle.
 
-Therefore the
-`\*\*MOLTRA </dirac/index.php/Manual:MOLTRA>`_ step is required and
+Therefore the :ref:`moltra` step is required and
 automatically invoked if the .4INDEX keyword is not given.
-
 
 &RELADC &END -- Control propagator calculation
 ==============================================

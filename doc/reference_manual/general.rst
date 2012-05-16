@@ -1,5 +1,9 @@
-\*\*GENERAL -- General input
-============================
+.. _general:
+
+\*\*GENERAL 
+===========
+
+General input specification.
 
 **Advanced options**
 
@@ -166,8 +170,10 @@ This is mainly useful for programmers or for solving out-of-memory
 issues.
 
 
-\*PARALLEL -- Parallelization directives
-========================================
+\*PARALLEL 
+==========
+
+Parallelization directives.
 
 **Programmers options**
 

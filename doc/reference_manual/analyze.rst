@@ -1,5 +1,11 @@
-\*\*ANALYZE -- analyzing tools
-==============================
+
+
+.. _analyze:
+
+\*\*ANALYZE 
+===========
+
+Wave function analyzing tool.
 
 This section is aimed to analyze the final Hartree-Fock wave function by
 using one or more analysis modules. By default none of them is
@@ -531,10 +537,6 @@ ANALYZE:VISUAL
 =====================
 
 this page moved to...which is also empty
-
-
-ANALYZE:RHO1
-===================
 
 \*RHO1 -- Print density along lines between atomic centers
 ==========================================================
