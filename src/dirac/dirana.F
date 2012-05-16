@@ -3637,6 +3637,7 @@ CTROND
       WRITE(6,*) 'TEST ',NQ,NTBAS(0),NVECS(0),NZC1
       NQ = NTBAS(0)*NVECS(0)*NZC1
       CALL MEMGET('REAL',KQ,NQ      ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KQ),NQ)
 C
 C     Select atomic coefficients
 C     ==========================
@@ -3675,7 +3676,7 @@ C.....Extract coefficients and orbital energies
         CALL SELATOM(WORK(KQ),WORK(KE),NTBAS(0),NVECS(0),NZC1,
      &               WORK(KQA),WORK(KEA),NAO(INDEP),NTOT,NNEG,NPOS,
      &               ININD,NONT(ITYP),NUCDEG(ININD),
-     &               WORK(KVEC(INDEP)),NSTR(2,INDEP),NSTR(1,INDEP),JVEC,
+     &               WORK(KVEC(INDEP)),NSTR(1,INDEP),NSTR(2,INDEP),JVEC,
      &               WORK,KFREE,LFREE)
         CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
         DO J = 0,NONT(ITYP)-1
@@ -3718,6 +3719,9 @@ C***********************************************************************
       CALL MEMGET('INTE',KMOL ,NRM,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KATOM,NRA,WORK,KFREE,LFREE)
       NVEC=NEVEC+NPVEC
+CTROND
+      WRITE(6,*) 'SELATOM:',NVEC,NEVEC,NPVEC,NRM,NCM,NRA,NCA
+      WRITE(6,*) 'IVEC:',(IVEC(I),I=1,NVEC)
       ININD = INUC      
       DO ITYP = 1,NONT
         DO IDEG = 1,NDEG(ITYP)
