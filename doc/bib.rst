@@ -9,6 +9,12 @@ References are sorted alphabetically according to the first author's family
 name with the year of publishing.  If the first author has more publications in
 the same year, attach "a", "b", "c", etc. after the year.
 
+.. [Amovilli1998] C. Amovilli, V. Barone, R. Cammi, E. Cancès, M. Cossi, 
+   B. Mennucci, C. S. Pomelli and J .Tomasi;
+   *Recent Advances in the Description of Solvent Effects with the Polarizable Continuum Model*,
+   Adv. Quantum Chem. **32**, 227 (1998)
+   <http://dx.doi.org/10.1016/S0065-3276(08)60416-5>
+
 .. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
 
 .. [Bauschlicher1980] C. W. Bauschlicher, Jr.,
@@ -212,6 +218,10 @@ the same year, attach "a", "b", "c", etc. after the year.
    Phys. Rev. A **54**, *4775* (54) 
    <http://dx.doi.org/10.1103/PhysRevA.54.4775>
 
+.. [Mennucci2007] B. Mennucci, R. Cammi (eds.);
+   *Continuum Solvation Models in Chemical Physics*,
+   Wiley, New York (2007)
+
 .. [Moss1973]  R. E. Moss, *Advanced Molecular Quantum Mechanics: An Introduction to
    Relativistic Quantum Mechanics and the Quantum Theory of Radiation*,
    Chapman and Hall, London, 1973
@@ -229,17 +239,19 @@ the same year, attach "a", "b", "c", etc. after the year.
 
 .. [Pernpointner2003] M. Pernpointner and L. Visscher,
    *Parallelization of four-component calculations. II. Symmetry- driven
-   parallelization of the 4-spinor CCSD algorithm*, J. Comput. Chem. **24**, *754* (2003)
+   parallelization of the 4-spinor CCSD algorithm*, 
+   J. Comput. Chem. **24**, *754* (2003)
    <http://dx.doi.org/10.1002/jcc.10215>
 
 .. [Pernpointner2004] M. Pernpointner, *The
    one-particle Green's function method in the Dirac–Hartree–Fock
    framework. II. Third-order valence ionization energies of the noble
-   gases, CO and ICN*, J. Chem. Phys. **121**, *8782* (2004) 
+   gases, CO and ICN*, 
+   J. Chem. Phys. **121**, *8782* (2004) 
    <http://dx.doi.org/10.1063/1.1802792>
 
-.. [Pernpointner2010] M. Pernpointner, *The
-   four-component two-particle propagator for the calculation of double
+.. [Pernpointner2010] M. Pernpointner,
+   *The four-component two-particle propagator for the calculation of double
    ionization spectra of heavy-element compounds I. Method.*, 
    J. Phys. B **43**, *205102* (2010)
    <http://dx.doi.org/10.1088/0953-4075/43/20/205102>
@@ -324,8 +336,19 @@ the same year, attach "a", "b", "c", etc. after the year.
    J. Chem. Phys. **129**, *034109* (2008)
    <http://link.aip.org/link/doi/10.1063/1.2943670>
 
-.. [vanLenthe1994]  E. van Lenthe, E. J. Baerends, and J. G.
-   Snijders, *Relativistic total energies using regular approximations*,
+.. [Tomasi1994] J. Tomasi and M. Persico;
+   *Molecular Interactions in Solution: An Overview of Methods
+   Based on Continuous Distributions of the Solvent*,
+   Chem. Rev. **94**, 2027 (1994)
+   <http://dx.doi.org/10.1021/cr00031a013>
+
+.. [Tomasi2005] J. Tomasi, B. Mennucci, R. Cammi;
+   *Quantum Mechanical Continuum Solvation Models*,
+   Chem. Rev. **105**, 2999 (2005)
+   <http://www.ncbi.nlm.nih.gov/pubmed/16092826>
+
+.. [vanLenthe1994]  E. van Lenthe, E. J. Baerends, and J. G. Snijders,
+   *Relativistic total energies using regular approximations*,
    J. Chem. Phys. **101**, *9783* (1994) 
    <http://dx.doi.org/10.1063/1.467943>
 
