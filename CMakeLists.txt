@@ -150,6 +150,7 @@ add_custom_target(dirac_interfaces
 # set definitions
 
 add_definitions(-DPRG_DIRAC)
+add_definitions(-DBUILD_GEN1INT)
 set(WORK_MEM_WORDS
     "64000000"
     CACHE STRING
@@ -227,6 +228,8 @@ foreach(
     target_link_libraries(
         ${EXECUTABLE}
         dirac
+        gen1int_interface
+        ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
         ${LIBS}
         )
     if(ENABLE_PCMMOD)

@@ -3,14 +3,12 @@ add_definitions(-DPRG_DIRAC)
 
 add_library(
     gen1int_interface
-    dalton_shell.F90
     dirac_gen1int_interface.F90
+    gen1int_api.F90
     gen1int_cube.F90
-    gen1int_interface.F90
+    gen1int_host.F90
     gen1int_matrix.F90
     gen1int_shell.F90
-    get_ao_dens.F90
-    reorder_p_sgto.F90
     )
 
 # set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DBUILD_OPENRSP -DVAR_DALTON")
@@ -29,5 +27,3 @@ set(ExternalProjectCMakeArgs
 add_external(gen1int)
 
 add_dependencies(gen1int_interface gen1int)
-
-set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a)
