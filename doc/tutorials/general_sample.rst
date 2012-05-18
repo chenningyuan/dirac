@@ -18,9 +18,10 @@ Very often one needs to export or to read formatted file with orbital
 coefficients - DFPCMO. Therefore the user should provide
 
 ::
+
     **GENERAL
     .PCMOUT
 
-for the export.
+for export of the molecular orbitals (spinors).
 
 

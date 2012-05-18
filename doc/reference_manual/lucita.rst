@@ -1,3 +1,5 @@
+.. _lucita:
+
 LUCITA
 ========
 
@@ -19,8 +21,7 @@ a basically arbitrary number (save for an upper limit) of subspaces with
 arbitrary occupation constraints. This is the most general approach to
 orbital space subdivisions. The program uses DIRAC orbitals from either
 a closed- or an open-shell calculation in a spin-free relativistic
-formalism or the non-relativistic Lévy-Leblond formalism (see
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+formalism or the non-relativistic Lévy-Leblond formalism (see :ref:`hamiltonian`).
 
 The technical limitations are roughly set by several 100 million
 determinants in the CI expansion on PCs and common computing clusters
@@ -57,7 +58,7 @@ Please add the lines
     .SCHEME
      4
 
-to your `MOLTRA </dirac/index.php/Manual:MOLTRA>`_ input section for the
+to your :ref:`moltra` input section for the
 integral transformation.
 
 Mandatory keywords

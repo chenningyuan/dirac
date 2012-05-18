@@ -1,5 +1,9 @@
-\*\*HAMILTONIAN -- Specification of the Hamiltonian
-===================================================
+.. _hamiltonian:
+
+\*\*HAMILTONIAN
+===============
+
+Specification of the Hamiltonian.
 
 This section defines the electronic Hamiltonian that is to be used.
 Internally the program will always work with 4-component operators that
@@ -1054,4 +1058,3 @@ Data import options
 -------
 
 Specifies the name of the file containing the embedding potential.
-

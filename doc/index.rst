@@ -7,9 +7,9 @@ Welcome
    :maxdepth: 1
 
    welcome/features.rst
+   welcome/success_stories.rst
    welcome/citing.rst
    welcome/changelog.rst
-   welcome/dirac08_issues.rst
 
 
 Installing DIRAC
@@ -24,8 +24,6 @@ Installing DIRAC
    installation/windows.rst
    installation/tests.rst
    installation/walkthroughs.rst
-   installation/bugs.rst
-
 
 Installing and configuring libraries used by DIRAC
 ==================================================
@@ -36,7 +34,6 @@ Installing and configuring libraries used by DIRAC
    installation/math_int64.rst
    installation/mpi_int64.rst
    installation/mkl.rst
-
 
 Basis sets
 ==========
@@ -55,6 +52,7 @@ First steps in DIRAC territory
 
    tutorials/getting_started.rst
    tutorials/faq.rst
+   tutorials/terminology.rst
    tutorials/general_sample.rst
    tutorials/integr_sample.rst
    tutorials/scf_sample.rst
@@ -128,7 +126,6 @@ How to tackle open-shell systems
 .. toctree::
    :maxdepth: 1
 
-   tutorials/terminology.rst
    tutorials/dirrci_sample.rst
    tutorials/goscip_sample.rst
    tutorials/open_shells.rst
@@ -156,6 +153,7 @@ Getting help
 
    getting_help/memory.rst
    getting_help/known_problems.rst
+   getting_help/known_bugs.rst
 
 
 Reference manual
@@ -227,6 +225,7 @@ For DIRAC programmers
    programmers/int8.rst
    programmers/grasp.rst
    programmers/screening.rst
+   programmers/dfcoef.rst
    programmers/standalones.rst
    programmers/shell_prog.rst
 

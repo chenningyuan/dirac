@@ -159,7 +159,7 @@ C
 
 #ifdef BUILD_GEN1INT
 !     clean up Gen1Int interface
-      call gen1int_ifc_clean()
+      call gen1int_host_finalize()
 #endif
 
       if (doxml) then

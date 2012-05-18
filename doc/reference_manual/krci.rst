@@ -1,5 +1,7 @@
-Manual:KR-CI
-============
+.. _krci:
+
+KR-CI
+=====
 
 *2- and 4-component relativistic GASCI module* written by Timo Fleig
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht

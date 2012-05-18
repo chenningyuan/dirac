@@ -1,5 +1,9 @@
-\*\*MOLTRA -- Integral transformation module
-============================================
+.. _moltra:
+
+\*\*MOLTRA 
+==========
+
+Integral transformation module.
 
 This module transforms integrals from the scalar AO basis to integrals
 in the molecular spinor basis. The algorithm is not yet described in

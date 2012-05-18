@@ -24,4 +24,5 @@ test directory:
      &GOSCIP NELACT=5, IPRNT=1 &END
      &POPANA THRESH=1.0D-4, DEGEN=1.0D-12, SELPOP=50.0 &END
 
+.. include:: ../../test/cosci_energy/README.rst
 

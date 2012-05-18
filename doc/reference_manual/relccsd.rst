@@ -1,5 +1,7 @@
-Manual:RELCCSD
-==============
+.. _relccsd:
+
+RELCCSD
+=======
 
 *Relativistic Coupled Cluster module RELCCSD* written by Lucas Visscher
 

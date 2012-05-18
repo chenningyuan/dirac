@@ -1,10 +1,14 @@
-\*\*INTEGRALS -- Integral directives
-====================================
+.. _integrals:
+
+\*\*INTEGRALS 
+=============
+
+Set directives for integrals.
 
 .NUCMOD
 -------
 
-Nuclear model.
+Specify nuclear model.
 
 *Point nucleus:*
 
@@ -28,8 +32,8 @@ methods should give precisely the same energies.
 
 For the Gaussian charge distribution the default exponents are in
 accordance with values proposed by Visscher and Dyall [Visscher1997b]_
-see also the web-site
-`[1] <http://dirac.chem.sdu.dk/doc/FiniteNuclei/FiniteNuclei.shtml>`_.
+see also the 
+`web-site <http://dirac.chem.sdu.dk/doc/FiniteNuclei/FiniteNuclei.shtml>`_.
 If desired, other exponents may be specified in the `basis
 file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_.
 
@@ -132,9 +136,6 @@ Print level in one-electron integral routines (abacus).
 `\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
 
 
-Manual:INTEGRALS:READIN
-=======================
-
 \*READIN -- Reading basis set file
 ==================================
 
@@ -177,9 +178,6 @@ Maximum number of primitive functions in a given block in basis file.
      22
 
 
-Manual:INTEGRALS:TWOINT
-=======================
-
 \*TWOINT -- Two-electron integrals
 ==================================
 
@@ -192,8 +190,7 @@ matrices, such as screening.
 .SCREEN
 -------
 
-Screening threshold for integral direct calculations of Fock matrices
-[1] <#_note-saue:csau>
+Screening threshold for integral direct calculations of Fock matrices [Saue1997]_.
 
 *Default:*
 

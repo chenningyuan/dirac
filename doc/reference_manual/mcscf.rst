@@ -1,3 +1,5 @@
+.. _krmcscf:
+
 KR-MCSCF
 =========
 
