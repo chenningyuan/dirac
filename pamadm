@@ -303,12 +303,6 @@ this_module = 'hscc'
 dirac_modules[this_module] = dirac_module('hscc','interface for the (external) HSMRCC code together with its objects')
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_dependency('oof')
-# include dynamic version, not static !
-# dirac_modules[this_module].add_dependency('hsfsdyn')
-#dirac_modules[this_module].add_directory('src/hsmrcc')
-#dirac_modules[this_module].add_directory('src/hsmrcc/second_quant')
-#dirac_modules[this_module].add_directory('src/hsmrcc/interface')
-#dirac_modules[this_module].add_directory('src/hsmrcc/hsmrcc_external/modules')
 dirac_modules[this_module].add_directory('src/cc_external/hsmrcc')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
@@ -317,8 +311,8 @@ this_module = 'hsfs'
 dirac_modules[this_module] = dirac_module('hsfs', 'Higher sectors FSCC codes, old static version')
 dirac_modules[this_module].add_cppflag('MOD_HSFS')
 dirac_modules[this_module].add_dependency('oof')
-dirac_modules[this_module].add_dependency('hscc')
-dirac_modules[this_module].add_directory('src/hsmrcc/high_sect_fscc_external')
+dirac_modules[this_module].add_directory('src/cc_external/interface')
+dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
 dirac_modules[this_module].add_test('fscc_high_sect')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
@@ -328,12 +322,10 @@ this_module = 'hsfsdyn'
 dirac_modules[this_module] = dirac_module('hsfsdyn', 'High sectors FSCC codes, dynamic memory version')
 dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
 dirac_modules[this_module].add_cppflag('MOD_HSFS')
-#dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_directory('src/cc_external/interface')
 dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
-#dirac_modules[this_module].add_dependency('oof')
-#dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].add_test('fscc_high_sect')
+dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'magnetiz'
@@ -442,7 +434,6 @@ if options.release:
 for module in dirac_modules:
     if dirac_modules[module].is_included:
        for need_module in dirac_modules[module].depends_on:
-           print need_module, dirac_modules[need_module].is_included
            if not dirac_modules[need_module].is_included:
               if options.auto:
 #                user wants to include them automatically

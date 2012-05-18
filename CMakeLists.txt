@@ -215,6 +215,7 @@ if(ENABLE_UTILITIES)
     compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(secquant.x                utils/sec_quant.F90               "${LIST_OF_EXECUTABLES}")
 endif()
 foreach(
     EXECUTABLE
