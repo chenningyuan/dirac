@@ -20,27 +20,755 @@
 !dirac_copyright_end
 
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module control_print
+!-----------------------------------------------------------
+!  Contains printing varible for control printouts
+! throughout the code.
+!-----------------------------------------------------------
+!use mystring
+integer, private :: iprint = 0
+contains
+subroutine set_iprint(i)
+integer, intent(in) :: i
+iprint = i
+end subroutine set_iprint
+function get_iprint() result(i)
+   i = iprint
+end function get_iprint
+end module control_print
+
+Module KroneckerDelta
+use Control_print
+type, public :: KronDelta
+ !private
+  !integer(kind=4) :: p=0, q=0
+  integer :: p=0, q=0
+ ! type(KronDelta), pointer :: next => null()
+end type KronDelta
+contains
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_kd(self)
+!------------------------------------------------------------------
+!    prints out  kronecker delta 
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(KronDelta), pointer :: self
+if (.not.associated(self)) then
+  write(LUPRI,'(/,2x,a)')  &
+  'print_kd: entering pointer "self" NOT allocated !'
+  call Quit('print_kd: entering pointer "self" NOT allocated !')
+else
+  write(LUPRI,'(3x,a,2i3)') 'kronecker delta, indexes #:',self%p,self%q
+endif
+end subroutine print_kd
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function make_kron_delta(i,j) result(this)
+!------------------------------------------------------------------
+!  creates pure Kronecker delta by allocating it in the memmory 
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer,intent(in) :: i,j
+type(KronDelta), pointer :: this
+nullify(this) ; allocate(this, stat=ierr) 
+if (ierr /= 0) then
+  write(LUPRI,'(2x,a)')  &
+  'make_kron_delta: memory allocation error; ierr=',ierr
+  call Quit('make_kron_delta: memory allocation error !')
+endif
+
+if (i>0 .and. j>0) then
+  this%p = i; this%q = j
+else 
+  write(LUPRI,'(/,2x,a,2i3)')  &
+  'make_kron_delta: entering parameters for KD: p,q=',p,q
+  write(LUPRI,'(2x,a)')  &
+  'entering parameters for kronecker delta must be > 0 !'
+  call Quit('entering parameters for kronecker delta must be > 0 !')
+endif
+
+if (get_iprint() >= 15) then
+  write(LUPRI,'(2x,a,$)') &
+  'make_kron_delta: created (allocated) "KronDelta" type'
+  call print_kd(this)
+endif
+end function make_kron_delta
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine deallocate_kd(this)
+!------------------------------------------------------------------
+!  deallocated Krond.delta
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(KronDelta), pointer :: this
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)')  &
+  'deallocate_kd: entering pointer "this" NOT allocated !'
+  call Quit('deallocate_kd: entering pointer "this" NOT allocated !')
+else
+
+ if ( get_iprint() >= 8 )  then
+   write(LUPRI,'(/,2x,a)')   & 
+   '*** deallocate_kd: going to deallocate this Kron.delta:'
+   call print_kd(this)
+ endif
+
+ deallocate(this, stat=ierr)
+ if (ierr /= 0) then
+    write(LUPRI,'(2x,a)')  &
+   'deallocate_kd: memory deallocation error; ierr=',ierr
+    call Quit('deallocate_kd: memory deallocation error !')
+ endif
+ nullify(this)
+endif
+end subroutine deallocate_kd
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine copy_kd(source, dest)
+!------------------------------------------------------------------
+!      copy Kronecker deltas:  source -> dest
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(KronDelta), pointer :: source, dest
+if (.not.associated(source).or..not.associated(dest)) then
+  call Quit('copy_kd: "source" or "dest" NOT allocated !')
+endif
+
+dest%p = source%p
+dest%q = source%q
+
+if ( get_iprint() >=8 ) then
+ write(LUPRI,'(/,2x,a)') '*** copy_kd: source'
+ call print_kd(source)
+ write(LUPRI,'(/,2x,a)') '*** copy_kd: destination'
+ call print_kd(dest)
+endif
+end subroutine copy_kd
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function equal_KD(kd1,kd2) result(equal)
+!------------------------------------------------------------------
+!          Compare two Kronecker deltas, "kd1", "kd2"
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(KronDelta), pointer :: kd1,kd2
+logical :: equal
+equal = .false.
+if (associated(kd1).and.associated(kd2)) then
+   if ( (kd1%p==kd2%p).and.(kd1%q==kd2%q)) equal = .true.
+endif
+end function equal_KD
+End Module KroneckerDelta
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+Module SecQuantOperator
+use control_print
+type, public :: SQOper
+ !private
+  ! ... index 
+   integer :: p = 0
+   logical :: is_creation_oper = .false.
+!  ... operator type; 1-general, 2-occupied, 3-virtual
+   integer :: op_type = 1 ! default - general
+end type SQOper
+character*8, dimension(3) :: op_label = (/"general ","occupied","virtual "/) 
+ contains
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function make_sqo(i,is_creat,is_occup) result (this)
+!----------------------------------------------------------------------------
+!      Returns pointer "this" to ALLOCATED second quantized operator
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: i
+logical, optional, intent(in) :: is_creat,is_occup
+type(SQOper), pointer :: this 
+if (get_iprint() > 70) then
+!if (get_iprint() > 7) then
+ write(LUPRI,'(2x,a,i3,a,l1)')   &
+ 'make_sqo: entering i=',i,' entering is_creat=',is_creat
+ if ( present(is_occup) ) then
+   write(LUPRI,'(2x,a,i3,a,l1)')   &
+   'make_sqo: also entering is_occup=',is_occup
+ endif
+endif
+nullify(this); allocate(this, stat=ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(/,2x,a,i3)')  &
+  'make_sqo: memory allocation error; aborting; ierr=',ierr
+  call Quit('make_sqo: memory allocation error !')
+endif
+  
+if (i>0) then
+  this%p = i
+  if ( present(is_creat) ) then
+    this%is_creation_oper = is_creat
+  else
+    ! ... by default ...
+    this%is_creation_oper = .FALSE.
+  endif
+
+  if ( present(is_occup) ) then
+    if (is_occup) then
+      this%op_type = 2 ! ... occupied (i,j,k,...)
+    else
+      this%op_type = 3 ! ... virtual (a,b,c,...) / otherwise general (=1)
+    endif
+  else
+    ! ... by default ...
+    this%op_type = 1 ! ... otherwise general
+  endif
+else
+   call Quit('make_sqo: bad entering parameter i !')
+endif
+end function make_sqo
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine copy_sqo(source, dest)
+!----------------------------------------------------------------------------
+!                copy SQoperators: source -> dest
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(SQOper), pointer :: source, dest
+if (.not.associated(source).or..not.associated(dest)) then
+  call Quit('copy_sqo: "source" or "dest" NOT associated !')
+endif
+dest%p = source%p
+dest%is_creation_oper = source%is_creation_oper
+dest%op_type = source%op_type
+
+if (get_iprint() >= 9) then
+   write(LUPRI,'(/,2x,a)') 'copy_sqo: source'
+   call print_sqo(source)
+   write(LUPRI,'(/,2x,a)') 'copy_sqo: copied'
+   call print_sqo(dest)
+endif
+end subroutine copy_sqo
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine deallocate_sqo(this)
+!----------------------------------------------------------------------------
+!          DEALLOCATE entering sec.quantized operator, "this"
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(SQOper), pointer :: this
+
+if (get_iprint() >=8 ) then
+  write(LUPRI,'(/,2x,a)')  &
+  '*** deallocate_sqo: going to deallocate this sqo : '
+  call print_sqo(this)
+endif
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)')  &
+  'deallocate_sqo: entering pointer NOT associated ! Abort !'
+  call Quit('deallocate_sqo: entering pointer NOT associated !')
+else
+  deallocate(this, stat = ierr)
+  if (ierr /= 0) then
+   write(LUPRI,'(/,2x,a)')  &
+   'deallocate_sqo: deallocation error !'
+   call Quit('deallocate_sqo: deallocation error !')
+  endif
+  nullify(this)
+endif
+
+end subroutine deallocate_sqo
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_sqo(this)
+!----------------------------------------------------------------------------
+!
+!    print attributes of the entering second quantization operator "this"
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+!type(SQOper), intent(in) :: this
+type(SQOper), pointer :: this
+call QEnter('print_sqo')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(2x,a)') 'print_sqo: operator NOT allocated !' 
+  call Quit('print_sqo: operator NOT allocated !')
+else
+  write(LUPRI,'(2x,a,i3,$)') ' sec.quant.oper. - index no',this%p
+  if (this%is_creation_oper) then
+   ! write(LUPRI,*) ',creation oper.; ',op_label(this%op_type)
+    write(LUPRI,*) op_label(this%op_type),' creation operator'
+  else 
+   ! write(LUPRI,*) ',anihilation oper.; ',op_label(this%op_type)
+    write(LUPRI,*) op_label(this%op_type),' anihilation operator'
+  endif
+endif
+
+call QExit('print_sqo')
+end subroutine print_sqo
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function is_sqo_filled(this) result(is)
+!----------------------------------------------------------------------------
+!
+!    returns info if the second quantization operator is properly filled
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(SQOper), pointer :: this
+logical :: is 
+call QEnter('is_sqo_filled')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(2x,a)') 'is_sqo_filled: operator NOT allocated ! Abort !'
+  call Quit('is_sqo_filled: operator NOT allocated ! Abort !')
+else
+  is = .false.
+  if (this%p > 0) is = .true.
+endif
+
+call QExit('is_sqo_filled')
+end function is_sqo_filled
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function equal_SQ_operators(oper1,oper2) result (equal)
+!----------------------------------------------------------------------------
+!
+!         Compare two SQ operators - their all three attributes
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(SQOper), pointer :: oper1,oper2
+logical :: equal
+call QEnter('equal_SQ_operators')
+
+equal = .false.
+
+if ( associated(oper1) .and. associated(oper2) ) then
+
+  if  (  (oper1%p == oper2%p)   .and.   &
+      ( (oper1%is_creation_oper .and. oper2%is_creation_oper) .or.    &
+        (.not.oper1%is_creation_oper .and. .not.oper2%is_creation_oper) ) .and.  &
+       (oper1%op_type == oper2%op_type) ) then
+
+       equal = .true.
+
+ endif
+
+else
+  call Quit('equal_SQ_operators: entering operators NOT associated !')
+endif
+call QExit('equal_SQ_operators')
+end function equal_SQ_operators
+End Module SecQuantOperator
+
+Module Indexed_Quantities
+!#if !defined (VAR_IFORT)
+!----------------------------------------------------------------------------
+!
+!       Module for handling various indexed tems (quantities)
+!
+!----------------------------------------------------------------------------
+
+use mystring
+use control_print
+
+type indexed_term
+! assigned unique ID, for instance 1 - Fij, 2 - Tij, 3 - Vpqrs, 4 - Tijab ... 
+integer :: id = -1
+! ... store the selected name of undexed quantity (like T_ij^ab, F_pq,...)
+!character(len=20) :: it_name
+type(string), dimension(1) :: it_name
+! ... number of indexes (2,4,6...) - must be even number
+integer :: nindx 
+! ... array for indexes of indexes 
+integer, allocatable, dimension(:) :: indxs
+
+end type indexed_term
+
+! ... common name
+interface fill_indexes
+  module  procedure fill_indexes_2
+  module  procedure fill_indexes_4
+!  module  procedure fill_indexes_6
+!  module  procedure fill_indexes_8
+  module  procedure fill_indexes_array
+end interface
+
+contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function make_it(id_in, nindx_in, it_name_in ) result(this)
+!----------------------------------------------------------------------------
+!
+!                 Returns ALLOCATED indexed quantity
+!
+! Entering: id_in - unique ID
+!           nindx_in - number of indexes (even number)
+!           it_name_in - string to be attached
+!
+!                  Like  T_ij, Zijab, Xpq, Y_abi ....
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: id_in, nindx_in
+character(len=*),optional, intent(in) :: it_name_in
+type(indexed_term), pointer :: this
+
+call QEnter('make_it')
+
+if (get_iprint() > 70) then
+ write(LUPRI,'(2x,a,i3,a,i3)')   &
+  'make_it: entering id=',id_in,' entering nindx=',nindx_in
+   if ( present(it_name_in) ) then
+     write(LUPRI,'(2x,a,a)')   &
+     'make_it: also entering name=',it_name_in
+   endif
+endif
+
+nullify(this)
+allocate(this, stat=ierr)
+
+if (ierr /= 0) then
+  write(LUPRI,'(2x,a)') 'make_it: error in "indexed_term" cell allocation !'
+  call Quit('make_it: error in in "indexed_term" cell allocation !')
+endif
+
+! ... check even number of indexes
+if ( MOD(nindx_in,2) /= 0) then
+  write(LUPRI,'(2x,a,i3)')  &
+  'number of indexes NOT even number !, nindx_in=',nindx_in
+  call Quit('make_it: number of indexes NOT even number !')
+endif
+this%nindx = nindx_in
+
+this%id = id_in
+
+allocate(this%indxs(this%nindx),stat=ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(2x,a)') 'error in allocation of "this%indxs(nindx)" !'
+  call Quit('make_it: error in allocation of  "this%indxs(nindx)" !')
+endif
+
+this%indxs = -1 
+
+! ... if present string on parameter list, treat it 
+if ( present(it_name_in) ) then
+   call cancel_string(this%it_name)
+   call make_string(this%it_name,it_name_in)
+endif
+
+call QExit('make_it')
+end function  make_it
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine copy_it(source, dest)
+!----------------------------------------------------------------------------
+!
+! Copy indexed term : source -> dest, where "source" is completely allocated,
+! and "dest" needs allocate some of its attributes.
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(indexed_term), pointer :: source, dest
+call QEnter('copy_it')
+
+if (.not.associated(source).or..not.associated(dest)) then
+ call Quit('copy_it: "source" or "dest" NOT associated !')
+endif
+
+if (get_iprint() >=8) then
+  write(LUPRI,'(/,4x,a)') 'copy_it: going to copy from "source":'
+  call print_it(source)
+endif
+
+dest%id = source%id
+dest%nindx = source%nindx
+
+if (.not.allocated(source%indxs)) then
+  call Quit('copy_it: indexes of "source" it NOT allocated ! Wrong !')
+else
+  allocate(dest%indxs(dest%nindx),stat=ierr)
+  if (ierr /= 0) then
+    write(LUPRI,'(/,2x,a)') 'copy_it: error in allocation of "this%indxs(nindx)" !'
+    call Quit('copy_it: error in allocation of  "this%indxs(nindx)" !')
+  endif
+  ! ... copy indexes 
+  do i = 1, dest%nindx
+     dest%indxs(i) = source%indxs(i)
+  enddo
+endif
+
+! ... now take care of the label if exists
+if ( is_string(source%it_name) )  then
+ !call cancel_string(dest%it_name)
+! ... perhaps it will work ?
+ !call make_string(dest%it_name,source%it_name)    
+ !call make_string(dest%it_name, get_string(source%it_name) ) 
+ call copy_strings(source%it_name, dest%it_name) 
+endif
+
+if (get_iprint() >=8) then
+  write(LUPRI,'(/,4x,a)') 'copy_it: copied from "source" to "dest":'
+  call print_it(dest)
+endif
+
+call QExit('copy_it')
+end subroutine copy_it
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine cancel_it(this)
+!----------------------------------------------------------------------------
+!
+!   completely deallocates entering indexed term pointed with "this"
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(indexed_term), pointer :: this
+call QEnter('cancel_it')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)') 'cancel_it: entering pointer NOT associated !  '
+  call Quit('cancel_it: entering pointer NOT associated !')
+endif
+
+if (get_iprint() >= 8) then
+  write(LUPRI,'(/,2x,a)')   &
+  '*** cancel_it: going to deallocate this indexed term :'
+  call print_it(this)
+endif
+
+if (is_string(this%it_name)) then
+ ! ... deallocate the attached string first
+ call cancel_string(this%it_name)
+endif
+
+if (allocated(this%indxs)) then
+  ! ... deallocates indexes
+  deallocate(this%indxs,stat=ierr)
+  if (ierr /= 0) then
+    call Quit('cancel_it: error in deallocation of indexes !')
+  endif
+else
+ ! ... required indexes NOT allocated; return hard exit 
+ call print_it(this)
+ write(LUPRI,'(2x,a)') 'cancel_it: NO allocated indexes !' & 
+                       //'These are required ! Quit!'
+ call Quit('cancel_it: NO allocated indexes ! Quit!')
+endif
+
+! ... now deallocate the whole cell associated with the entering pointer
+deallocate(this,stat=ierr)
+if (ierr /= 0) then
+ call Quit('cancel_it: error in deallocation of "this" !')
+endif
+nullify(this)
+
+call QExit('cancel_it')
+end subroutine cancel_it
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine fill_indexes_array(this,indxs_array)
+!----------------------------------------------------------------------------
+!
+!      fills indexed term indexes numbers from array
+!
+!  entering "indxs_array" contains indexes
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(indexed_term), pointer :: this
+integer, intent(in) :: indxs_array(:)
+call QEnter('fill_indexes_array')
+
+if (.not.associated(this)) then
+ call Quit('fill_indexes: pointer NOT associated !')
+endif
+
+if (size(indxs_array) /= this%nindx) then
+ call Quit('fill_indexes: no indexes !')
+endif
+
+do i = 1, this%nindx
+   this%indxs(i) = indxs_array(i)
+   if (indxs_array(i)<=0) then
+     write(LUPRI,'(2x,a,i6)')   &
+     'fill_indexes:   something wrong ...indxs_array(i)=', &
+     indxs_array(i)
+     call Quit('fill_indexes: index <= 0 !')
+   endif
+enddo
+
+if (get_iprint() > 70) then
+  write(LUPRI,'(2x,a,i3)') 'fill_indexes:indexes numbers: ',  &
+                           (this%indxs(i),i=1,this%nindx )
+endif
+
+call QExit('fill_indexes_array')
+end subroutine fill_indexes_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine fill_indexes_2(this,indx1,indx2)
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(indexed_term), pointer :: this
+integer, intent(in) :: indx1,indx2
+call QEnter('fill_indexes_2')
+
+if (.not.associated(this)) then
+ call Quit('fill_indexes_2: entering pointer NOT associated !')
+endif
+
+if (this%nindx /= 2) then
+ call Quit('fill_indexes_2: wrong number of indexes !')
+endif
+
+this%indxs(1) = indx1
+this%indxs(2) = indx2
+
+call QExit('fill_indexes_2')
+end subroutine fill_indexes_2
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine fill_indexes_4(this,indx1,indx2,indx3,indx4)
+!----------------------------------------------------------------------------
+!
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(indexed_term), pointer :: this
+integer, intent(in) :: indx1,indx2,indx3,indx4
+call QEnter('fill_indexes_4')
+
+if (.not.associated(this)) then
+ call Quit('fill_indexes_4: entering pointer NOT associated !')
+endif
+
+if (this%nindx /= 4) then
+ write(LUPRI,'(2x,a,i8)') 'fill_indexes_4: wrong "this%nindx" =',this%nindx 
+ call Quit('fill_indexes_4: wrong number of indexes !')
+endif
+
+this%indxs(1) = indx1
+this%indxs(2) = indx2
+this%indxs(3) = indx3
+this%indxs(4) = indx4
+
+call QExit('fill_indexes_4')
+end subroutine fill_indexes_4
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_it(this)
+!----------------------------------------------------------------------------
+!
+!        prints allocated scalar indexed quantity - all attributes
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(indexed_term), pointer :: this
+call QEnter('print_it')
+
+if (.not.associated(this)) then
+ write(LUPRI,'(/,2x,a,/)')    & 
+ 'fill_indexes: pointer of "type(indexed_term)" NOT associated !'
+ call Quit('fill_indexes: pointer of "type(indexed_term)" NOT associated !')
+else
+ write(LUPRI,'(3x,a,i1,a,i1,1x,$)')  'indx.term (ID:',this%id,  &
+ '); # indexes:',this%nindx
+ !write(LUPRI,'(1x,a,6i2,a,$)') ' ::',( this%indxs(i),i=1,this%nindx )
+ if (this%nindx == 2) then
+   write(LUPRI,'(1x,a,2i2,1x,a,$)') '>>',( this%indxs(i),i=1,this%nindx ),  &
+   'label:'
+ else if (this%nindx == 4) then
+   write(LUPRI,'(1x,a,4i2,1x,a,$)') '>>',( this%indxs(i),i=1,this%nindx ),  &
+   'label:'
+ else if (this%nindx == 6) then
+   write(LUPRI,'(1x,a,6i2,1x,a,$)') '>>',( this%indxs(i),i=1,this%nindx ),  &
+   'label:'
+ else
+   write(LUPRI,'(2x,a,i6)') 'print_it: dead branch; "this%nindx"=',this%nindx
+   call Quit('print_it: dead branch for the printout...')
+ endif
+
+ if (is_string(this%it_name)) then
+   !write(LUPRI,'(3x,a,$)') 'indexed_quantity text description:'
+   ! write(LUPRI,'(12x,a,$)') 'label:'
+   call print_string(this%it_name)
+ endif
+ 
+endif
+
+call QExit('print_it')
+end subroutine print_it
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function equal_IndxTerms(it1,it2) result(equal)
+!----------------------------------------------------------------------------
+!
+!     Compare two indexed terms. Returns ".true." if they are equal.
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(indexed_term), pointer :: it1, it2
+logical :: equal, equal_indxs 
+call QEnter('equal_IndxTerms')
+
+equal = .false.
+
+if (associated(it1).and. associated(it2)) then
+
+ if (it1%id==it2%id.and.it1%nindx==it2%nindx) then
+   if (allocated(it1%indxs).and.allocated(it2%indxs)) then
+     equal_indxs = .true.
+     do i = 1, it1%nindx
+        if (it1%indxs(i)==it2%indxs(i)) then
+            equal_indxs = equal_indxs .and. .true.
+        else
+            equal_indxs = equal_indxs .and. .false.
+        endif
+     enddo
+     equal = equal_indxs
+   endif
+ endif
+
+endif
+
+call QExit('equal_IndxTerms')
+end function equal_IndxTerms
+!#endif
+End Module Indexed_Quantities
+
 Module Operators_string
 ! deactivated for ifort 10.1.015, higher versions working...
-#if !defined (VAR_IFORT)
-!
+!#if !defined (VAR_IFORT)
 ! ... string of operators ... 
 ! ... kronecker deltas, creation/anihilation operators, indexed terms
 ! ...  
-
 use KroneckerDelta
 use SecQuantOperator
 use Indexed_Quantities
-
-!use SpinorsSpecification
 use Control_print
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 type string_member
 !---------------------------------------------------------------------------------
-!
 ! ... one string member (creat/anihil. operator, Kronecker delta, indexed term...)
-!
 !---------------------------------------------------------------------------------
   type(SQOper),       pointer ::    pSQOper => null()
   type(KronDelta),    pointer :: pKronDelta => null()
@@ -109,9 +837,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function make_sqo_cell(i,is_creat) result (this)
 !----------------------------------------------------------------------------
-!
-!           Returns ALLOCATED second quantized operator cell
-!
+!       Returns ALLOCATED second quantized operator cell
 !----------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
@@ -876,10 +1602,8 @@ end subroutine process_strings
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function is_rearranged_string(this) result(is)
 !------------------------------------------------------------------------
-!
-! Check whether the string is rearranged, ie all creation operators 
+! Check whether the string is rearranged: check if  all creation operators 
 ! are on the left, all anihilation on the right
-!
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
@@ -1399,62 +2123,46 @@ end subroutine duplicate_string
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine insert_member(member_exist,member_new)
 !------------------------------------------------------------------------
-!
-! Allocated dll_member "member_new" and copies "member_exist" into it.
-!
+! Allocates dll_member "member_new" and copies "member_exist" into it.
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(dll_member), pointer :: member_exist, member_new
 logical :: is_operator,  is_term 
-call QEnter('insert_member')
-
 if (get_iprint() >= 37) then
   write(LUPRI,'(/,2x,a)') 'insert_member: duplicating string elements'
 endif
-
 if (.not.associated(member_exist)) then
    write(LUPRI,'(/,2x,a)') 'insert_member: entering element does NOT exist !'
    call Quit('insert_member: entering element does NOT exist !')
 endif
-
 allocate(member_new,stat=ierr)
 if (ierr /= 0) then
   write(LUPRI,'(/,2x,a,i4)')  &
   'insert_member: "member_new" allocation error ! ierr=',ierr
   call Quit('insert_member: "member_new" allocation error !')
 endif
-
 ! duplicated dll_member
 call duplicate_dll_member(member_exist,member_new)
-
 if (get_iprint() >= 37) then
    write(LUPRI,'(/,2x,a,$)') 'insert_member: old member element:'
    call print_one_member(member_exist)
    write(LUPRI,'(2x,a,$)') '           the same new member element:'
    call print_one_member(member_new)
 endif
-
 !call quit('insert_member')
-call QExit('insert_member')
 end subroutine insert_member
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine duplicate_dll_member(member_exist,member_new)
 !------------------------------------------------------------------------
-!
 !          copies dll_member:   member_exist -> member_new
-!
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(dll_member), pointer :: member_exist, member_new
-call QEnter('duplicate_dll_member')
-
 if (.not.associated(member_exist).or..not.associated(member_new)) then
  call Quit('duplicate_dll_member: member_exist or member_new NOT associated !')
 endif
-
 if (associated(member_exist%member%pSQOper)) then
     allocate(member_new%member%pSQOper,stat=ierr)
     call copy_sqo(member_exist%member%pSQOper,member_new%member%pSQOper)
@@ -1467,8 +2175,6 @@ else if (associated(member_exist%member%pIndxTerm)) then
 else
   call Quit('duplicate_dll_member: dead branch !')
 endif
-
-call QExit('duplicate_dll_member')
 end subroutine duplicate_dll_member
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1662,19 +2368,16 @@ end subroutine move_element_beg
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine remove_element(this_string,i)
 !------------------------------------------------------------------------
-!
 !  remove i-th element from the entering string
 !
 !  On input: this_string - pointer to the string
 !             i - position
-!
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(one_string), pointer :: this_string
 integer, intent(in) :: i
 type(dll_member), pointer :: temp, temp1, temp2
-call QEnter('remove_element')
 
 call get_string_element(this_string,i,temp)
 
@@ -1730,8 +2433,6 @@ if (get_iprint() >= 25) then
   'remove_element: printed updated string with removed element:'
   call print_string_elem(this_string)
 endif
-
-call QExit('remove_element')
 end subroutine remove_element
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1865,36 +2566,26 @@ end subroutine exchange_string_elements
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine get_string_element(this_string,i,temp)
 !------------------------------------------------------------------------
-!
 !        returns pointer to the i-th element in the string
-!
 !------------------------------------------------------------------------
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 type(one_string), pointer :: this_string
 integer, intent(in) :: i
+integer :: j
 type(dll_member), pointer :: temp
-call QEnter('get_string_element')
-
 call check_string(this_string,i)
-
 j = 1
 temp => this_string%head
-
 do while (j < i)
-
   if (get_iprint() >= 35) then
     write(LUPRI,'(2x,a,i3,a)') 'get_string_element:',j, &
     '. element processed in the string'
     call print_one_member(temp)
   endif
-
   temp => temp%next
   j = j + 1
-
 enddo
-
-call QExit('get_string_element')
 end subroutine get_string_element
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2220,5 +2911,392 @@ endif
 call QExit('equal_elements')
 end function equal_elements
 
-#endif
+!#endif
 End Module Operators_string
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module Evaluate_strings
+!#if !defined (VAR_IFORT)
+!------------------------------------------------------------------------
+!
+!     Module for evaluating expect. value of all strings
+!
+!   <0| strings |0> where |0> is one Slater determinant
+!
+!------------------------------------------------------------------------
+
+ use Operators_string
+ use control_print
+
+  logical, private :: evaluate = .false.
+
+ contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine set_evaluate(log_value)
+!------------------------------------------------------------------------
+! set the value of "evaluate"
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+logical :: log_value
+evaluate = log_value
+if (get_iprint() >= 8) then
+  write(LUPRI,'(2x,a,l1)') 'set_evaluate: "evaluate" set to:',evaluate 
+endif
+end subroutine set_evaluate
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function do_evaluate() result(eval)
+!------------------------------------------------------------------------
+!           returns the proctected value of "evaluate"
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+logical :: eval
+  eval = evaluate
+end function do_evaluate
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine process_exp_val_strings(heads)
+!------------------------------------------------------------------------
+!
+!  Process all strings for the expectation value. 
+!
+!  Called when "evaluate" is .TRUE.
+!
+!
+!
+!
+!
+!
+!------------------------------------------------------------------------
+!  use Operators_string
+#include "implicit.h"
+#include "priunit.h"
+type(heads_list), intent(inout) :: heads
+type(head_cell), pointer :: temp, temp_prev
+logical :: do_process_strings = .true., do_process_strings_prev = .false.
+call QEnter('process_exp_val_strings')
+
+if (get_iprint() >=7) then
+  call Header('*** Output from "process_exp_val_strings" ***',-1)
+endif
+
+i=1
+do while (do_process_strings.and..not.do_process_strings_prev)
+ do_process_strings_prev = do_process_strings
+ write(LUPRI,*) 'in evaluate_string_exp_val cycle'
+ call evaluate_string_exp_val(heads, do_process_strings)
+ i = i + 1
+enddo
+
+!temp => heads%main_head; i=1
+!do while  (associated(temp))
+!  temp_prev => temp 
+!  call evaluate_string_exp_val(temp%p_string)
+!  temp => temp%next 
+!  i = i + 1
+!enddo
+
+call quit('in process_exp_val_strings')
+
+call QExit('process_exp_val_strings')
+end subroutine process_exp_val_strings
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine evaluate_string_exp_val(heads,process)
+!------------------------------------------------------------------------
+!                      string must be rearranged 
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(heads_list), intent(inout) :: heads
+logical, intent(inout) :: process
+call QEnter('evaluate_string_exp_val')
+
+if (get_iprint()>=8) then
+   write(LUPRI,'(/,2x,a)') 'evaluate_string_exp_val'
+endif
+
+!
+! ... search for mixed Kron.deltas, test. presence of sec.quant.op...
+!
+
+! VERY COMPLICATED !!!
+
+process = .false.
+call QExit('evaluate_string_exp_val')
+end subroutine evaluate_string_exp_val
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine change_orbital_index(heads,i_this,i_new,is_occup)
+!------------------------------------------------------------------------
+!
+!   Change the index of general (must be) orbital (spinor) throughout all strings
+! 
+! 
+!                     i_this  -------->   i_new
+!                   (general)        (occupied or virtual - when changing
+!                                                       creat/anihil. operator)
+!
+!
+!      For instance:    d_ip ----> d_ii
+!
+!                       X_jq ----> X_ji 
+!
+!                    p+ q+ jl ---> p+ i+ jl
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: i_this,i_new
+logical, intent(in) :: is_occup
+type(heads_list), intent(inout) :: heads
+type(head_cell), pointer :: temp
+
+! ... perhaps check of existence of general i_this in the heads list
+
+! ... go string after string, and then element after element and replace
+temp => heads%main_head
+do while (associated(temp))
+
+  call change_orbital_index_string(temp%p_string,i_this,i_new,is_occup)
+
+  temp => temp%next ! ... next string in the list
+
+enddo
+end subroutine change_orbital_index
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine change_orbital_index_string(this,i_this,i_new,is_occup)
+!------------------------------------------------------------------------
+!  change orbital(spinor) index in the string of elements;
+!  called from "change_orbital_index"
+!------------------------------------------------------------------------
+#include "priunit.h"
+type(one_string), pointer :: this
+integer, intent(in) :: i_this,i_new
+logical, intent(in) :: is_occup
+type(dll_member), pointer :: temp
+if (.not.associated(this).or..not.associated(this%head)) then
+ call Quit('change_orbital_index_string: string pointer/head NOT associated !')
+endif
+temp => this%head
+do while (associated(temp))
+  if      (associated(temp%member%pSQOper)) then
+     !   call change_orbital_index_sqo(temp%member%pSQOper,i_this,i_new,is_occup)     
+  else if (associated(temp%member%pKronDelta)) then
+     !   call change_orbital_index_kd(temp%member%pKronDelta,i_this,i_new,is_occup)     
+  else if (associated(temp%member%pIndxTerm)) then
+     !   call change_orbital_index_it(temp%member%pIndxTerm,i_this,i_new,is_occup)     
+  else
+     call Quit('change_orbital_index_string: dead branch !')
+  endif
+  temp => temp%next
+enddo
+end subroutine change_orbital_index_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine Xevaluate_string_exp_val(this)
+!------------------------------------------------------------------------
+!
+!   evaluate <0| operators_string |0>,
+! where |0> is Slater determinant ("Fermi vacuum")
+!
+!------------------------------------------------------------------------
+  use Operators_string
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this
+logical :: rearranged
+
+if (get_iprint() >= 8) then
+  write(LUPRI,'(/,2x,a)') 'evaluate_string_exp_val:'
+endif
+
+if (.not.associated(this)) then
+  write(LUPRI,'(2x,a)') 'evaluate_string_exp_val: string NOT allocated !'
+  call Quit('evaluate_string_exp_val: string NOT allocated !')
+endif
+
+if (get_iprint() >= 8) then
+  write(LUPRI,'(/,2x,a)') 'this string:'
+  call print_string_elem(this)
+endif
+
+rearranged = is_rearranged_string(this)
+if (rearranged) then
+  if (get_iprint() >= 8) then
+    write(LUPRI,'(8x,a)') '...this string is rearranged...'
+  endif
+endif
+end subroutine Xevaluate_string_exp_val
+
+end module Evaluate_strings
+
+
+#if !defined SECQUANT_ROUTINE
+Program TEST_SEC_QUANT
+#else
+subroutine TEST_SEC_QUANT
+#endif
+ use Operators_string
+ use Evaluate_strings
+#include "priunit.h"
+  type(KronDelta), pointer :: d_ij, d_ab
+  type(SQOper), pointer :: i,j,a,b,o1,o2,o3,o4
+  type(indexed_term), pointer :: Tia, h_pq, Tijab, Xib
+  type(dll_member), pointer :: head => null(), k, d_ik
+  type(heads_list) :: HL
+  type(head_cell), pointer :: pSH
+  type(one_string), pointer ::  pos
+
+!  type(one_string), target ::  os
+ ! call set_iprint(10)
+
+  !allocate(d_ij)
+  !d_ij => make_kron_delta(1,2); ! call print_kd(d_ij)
+
+  !allocate(d_ab)
+ ! d_ab => make_kron_delta(3,4); ! call print_kd(d_ab)
+
+   Tia => make_it(2,2,'Tia')
+   !call fill_indexes(Tia,2,3)
+   call fill_indexes(Tia,4,3)
+   call print_it(Tia)  ; !call quit('here')
+
+   h_pq => make_it(1,2,'h_pq')
+   !call fill_indexes(Tia,2,3)
+   call fill_indexes(h_pq,1,2)
+   call print_it(h_pq)  ; !call quit('here')
+
+  !allocate(i)
+  !allocate(o3)
+  !i = make_sqo(1,.true.); ! call print_sqo(i)
+  !o3 = make_sqo(3); ! call print_sqo(i)
+
+  o4 => make_sqo(4,.false.,.true.)
+  o3 => make_sqo(3,.true.,.false.); ! call print_sqo(i)
+
+  o2 => make_sqo(2,.false.); ! call print_sqo(i)
+ ! o2 => make_sqo(2,.true.); ! call print_sqo(i)
+
+  !o1 = make_sqo(1,.true.);
+  o1 => make_sqo(1,.true.);
+
+!  call print_sqo(a)
+
+  !allocate(pos)
+ ! pos = create_string(head,0.50D0)
+  pos => create_string(head)
+
+  allocate(pSH)
+
+  pSH%p_string => pos 
+
+ ! pSH%previous => null(); pSH%next => null()
+
+  HL%main_head=>pSH
+  pos%head => head 
+
+  call Insert_IndxTerm_end(pos,h_pq)
+  call Insert_SQOp_end(pos,o1)
+  call Insert_SQOp_end(pos,o2)
+
+  call Insert_IndxTerm_end(pos,Tia)
+  call Insert_SQOp_end(pos,o3)
+  call Insert_SQOp_end(pos,o4)
+
+ ! call Insert_KD_end(pos,d_ij)
+ ! call Insert_KD_end(pos,d_ab)
+
+ ! write(LUPRI,'(/,2x,a)') '*** printing full string:'
+ ! call print_string(pos)
+ ! call quit('end here...')
+
+  !call print_all_strings(HL)
+
+!  call rearrange_string(pos)
+ ! call print_string(pos)
+
+  call set_iprint(10)
+
+ ! call set_upper_occ(2)
+  call set_evaluate(.true.)
+  call process_strings(HL)
+
+ ! if (do_evaluate()) call process_exp_val_strings(HL)
+
+  call cancel_strings(HL)
+
+ ! call exchange_string_elements(pos,1,3)
+ ! call print_string(pos)
+
+ ! call exchange_string_elements(pos,5,3)
+ ! call print_string(pos)
+
+ ! call set_iprint(10)
+
+ ! call rearrange_string(pos)
+ ! call print_string(pos)
+
+ ! call remove_element(pos,5)
+ ! call remove_element(pos,4)
+ ! call remove_element(pos,3)
+ ! call print_string(pos)
+
+ ! call rearrange_string(pos)
+  !call move_element_beg(pos,3)
+  !call print_string(pos)
+
+  !call rearrange_string(pos)
+  !call print_string(pos)
+
+ ! call move_element_beg(pos,2)
+ ! call move_element_beg(pos,5)
+
+!  call remove_element(pos,2)
+!  call remove_element(pos,1)
+!  call remove_element(pos,1)
+!  call remove_element(pos,1)
+!  call remove_element(pos,1)
+
+ !call exchange_string_elements(pos,1,3)
+ !call exchange_string_elements(pos,2,3)
+ ! call exchange_string_elements(pos,1,2)
+ !call print_string(pos)
+
+ !allocate(k); allocate(d_ik)
+ !k = make_sqo_cell(3); call print_one_member(k)
+ !d_ik = make_kd_cell(1,3); call print_one_member(d_ik)
+ !call  insert_element(pos,3,k)
+ !call  insert_element(pos,1,d_ik)
+
+ !call print_string(pos)
+
+ !call remove_element(pos,1)
+ !call remove_element(pos,1)
+ !call Insert_SQOp_end(pos,i)
+ !call remove_element(pos,1)
+ !call remove_element(pos,1)
+ !call exchange_string_elements(pos,1,2)
+ !call exchange_string_elements(pos,1,2)
+
+ !call print_string(pos)
+ !call print_all_strings(HL)
+
+ !call process_strings(HL)
+! call process_strings(HL)
+
+!#else
+! write(6,*) "Deactivated for ifort compiler version lower than 10.1.015 "
+!#endif
+
+#if !defined SECQUANT_ROUTINE
+End Program TEST_SEC_QUANT
+#else
+end subroutine TEST_SEC_QUANT
+#endif
+
