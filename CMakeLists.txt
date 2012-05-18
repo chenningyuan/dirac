@@ -185,6 +185,7 @@ add_library(
     ${DIRAC_SOURCES}
     ${GENERATED_FILES}
     )
+add_dependencies(dirac gen1int_interface)
 
 # get size of static allocations
 add_custom_target(
