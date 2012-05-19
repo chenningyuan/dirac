@@ -105,7 +105,7 @@ with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig, O.
 Fossgaard, T. Helgaker, J. Lærdahl, C. V. Larsen, P. Norman, J. Olsen,
 M. Pernpointner, J. K. Pedersen, K. Ruud, P. Sałek, J. N. P. van
 Stralen, J. Thyssen, O. Visser, and T. Winther (see
-http://dirac.chem.sdu.dk).
+http://dirac.chem.sdu.dk).*
 
 bibtex entry::
 

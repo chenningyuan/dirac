@@ -41,6 +41,7 @@ Basis sets
    :maxdepth: 1
 
    basis_sets/basis.rst
+   basis_sets/howto_uncontract.rst
 
 
 First steps in DIRAC territory
@@ -50,10 +51,17 @@ First steps in DIRAC territory
    :maxdepth: 1
 
    tutorials/getting_started.rst
+   tutorials/reproducing_nr_results.rst
+
+
+Everything below this line needs rework (outdated, double, incomplete)
+======================================================================
+
+.. toctree::
+   :maxdepth: 1
+
    tutorials/faq.rst
-   tutorials/terminology.rst
    tutorials/general_sample.rst
-   tutorials/integr_sample.rst
    tutorials/scf_sample.rst
 
 
