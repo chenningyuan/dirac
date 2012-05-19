@@ -54,8 +54,10 @@ First steps in DIRAC territory
    tutorials/reproducing_nr_results.rst
 
 
-Everything below this line needs rework (outdated, double, incomplete)
-======================================================================
+.. warning::
+
+   Everything below this line needs rework (outdated, double, incomplete)
+
 
 .. toctree::
    :maxdepth: 1
