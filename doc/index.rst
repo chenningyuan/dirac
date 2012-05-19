@@ -7,7 +7,6 @@ Welcome
    :maxdepth: 1
 
    welcome/features.rst
-   welcome/success_stories.rst
    welcome/citing.rst
    welcome/changelog.rst
 
