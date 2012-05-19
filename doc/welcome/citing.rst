@@ -17,7 +17,7 @@ Coming soon to stores near you.
 DIRAC11
 -------
 
-DIRAC, a relativistic ab initio electronic structure program, Release
+*DIRAC, a relativistic ab initio electronic structure program, Release
 DIRAC11 (2011), written by R. Bast, H. J. Aa. Jensen, T. Saue, and L.
 Visscher, with contributions from V. Bakken, K. G. Dyall, S. Dubillard,
 U. Ekström, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard, A. S. P.
@@ -26,7 +26,7 @@ Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak,
 J. Olsen, J. K. Pedersen, M. Pernpointner, K. Ruud, P. Sałek, B.
 Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, J. van
 Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto (see
-`http://dirac.chem.vu.nl <http://dirac.chem.vu.nl>`_).
+http://dirac.chem.vu.nl).*
 
 bibtex entry::
 
@@ -49,14 +49,14 @@ bibtex entry::
 DIRAC10
 -------
 
-DIRAC, a relativistic ab initio electronic structure program, Release
+*DIRAC, a relativistic ab initio electronic structure program, Release
 DIRAC10 (2010), written by T. Saue, L. Visscher and H. J. Aa. Jensen,
 with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav,
 T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Iliaš, Ch. R.
 Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen, M. Pernpointner,
 K. Ruud, B. Schimmelpfennig, J. Sikkema, A. Thorvaldsen, J. Thyssen, S.
 Villaume, and S. Yamamoto (see
-`http://dirac.chem.vu.nl <http://dirac.chem.vu.nl>`_).
+http://dirac.chem.vu.nl).*
 
 bibtex entry::
 
@@ -75,13 +75,13 @@ bibtex entry::
 DIRAC08
 -------
 
-DIRAC, a relativistic ab initio electronic structure program, Release
+*DIRAC, a relativistic ab initio electronic structure program, Release
 DIRAC08 (2008), written by L. Visscher, H. J. Aa. Jensen, and T. Saue,
 with new contributions from R. Bast, S. Dubillard, K. G. Dyall, U.
 Ekström, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker, J.
 Henriksson, M. Iliaš, Ch. R. Jacob, S. Knecht, P. Norman, J. Olsen, M.
 Pernpointner, K. Ruud, P. Sałek, and J. Sikkema (see
-`http://dirac.chem.sdu.dk <http://dirac.chem.sdu.dk>`_).
+http://dirac.chem.sdu.dk).*
 
 bibtex entry::
 
@@ -99,13 +99,13 @@ bibtex entry::
 DIRAC04
 -------
 
-DIRAC, a relativistic ab initio electronic structure program, Release
+*DIRAC, a relativistic ab initio electronic structure program, Release
 DIRAC04 (2004), written by H. J. Aa. Jensen, T. Saue, and L. Visscher,
 with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig, O.
 Fossgaard, T. Helgaker, J. Lærdahl, C. V. Larsen, P. Norman, J. Olsen,
 M. Pernpointner, J. K. Pedersen, K. Ruud, P. Sałek, J. N. P. van
 Stralen, J. Thyssen, O. Visser, and T. Winther (see
-`http://dirac.chem.sdu.dk <http://dirac.chem.sdu.dk>`_).
+http://dirac.chem.sdu.dk).
 
 bibtex entry::
 
@@ -119,4 +119,3 @@ bibtex entry::
              J.~N.~P.~van Stralen, J.~Thyssen, O.~Visser, and T.~Winther
              (see http://dirac.chem.sdu.dk)"
     }
-

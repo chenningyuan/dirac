@@ -8,7 +8,6 @@ Welcome
 
    welcome/features.rst
    welcome/citing.rst
-   welcome/changelog.rst
 
 
 Installing DIRAC
@@ -22,7 +21,7 @@ Installing DIRAC
    installation/installation.rst
    installation/windows.rst
    installation/tests.rst
-   installation/walkthroughs.rst
+
 
 Installing and configuring libraries used by DIRAC
 ==================================================
@@ -33,6 +32,7 @@ Installing and configuring libraries used by DIRAC
    installation/math_int64.rst
    installation/mpi_int64.rst
    installation/mkl.rst
+
 
 Basis sets
 ==========
@@ -89,6 +89,7 @@ DFT and TDDFT
    tutorials/bsse.rst
    tutorials/dft_cam.rst
 
+
 Calculating the properties
 ============================
 
@@ -96,6 +97,7 @@ Calculating the properties
    :maxdepth: 1
 
    tutorials/prop_sample.rst
+
 
 Correlated calculations
 =======================
@@ -227,6 +229,7 @@ For DIRAC programmers
    programmers/dfcoef.rst
    programmers/standalones.rst
    programmers/shell_prog.rst
+
 
 Bibliography
 ============
