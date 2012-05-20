@@ -54,9 +54,19 @@ First steps in DIRAC territory
    tutorials/reproducing_nr_results.rst
 
 
+Restarting and multi-step jobs
+==============================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/restart.rst
+
+
 .. warning::
 
-   Everything below this line needs rework (outdated, double, incomplete)
+   Everything below this line needs massive rework
+   (outdated, double, incomplete, broken links, wrong place, simply wrong, ...)
 
 
 .. toctree::
@@ -76,17 +86,6 @@ Menu of 2- and 4-component Hamiltonians
    tutorials/ham_sample.rst
    tutorials/ham2c.rst
    tutorials/amfi.rst
-
-
-Restarting calculations and multi-step jobs
-===========================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/restart.rst
-   tutorials/x2c.rst
-   tutorials/steps.rst
 
 
 DFT and TDDFT
