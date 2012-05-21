@@ -4479,3 +4479,55 @@ C
       CALL QEXIT('GETACORD')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Selcmo_ao */
+      SUBROUTINE SELCMO_AO(CMO,NBAS1,NORB1,CSEL,NBAS2,IFRP,
+     &                     IVEC,NVEC,NPVEC,NEVEC,
+     &                     IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+      DIMENSION CMO(NBAS1,NORB1,NZ),CSEL(NBAS2,NVEC,4),
+     &          IVEC(NVEC),WORK(*)
+      IF(NVEC.EQ.NORB1) THEN
+C.....All coefficients selected
+        IF(NBSYM.EQ.1) THEN
+C.......C1 case: just copy
+          CALL CFSORT(CSEL,CMO,NVEC,IFRP,NBAS1)
+        ELSE
+C.......Higher symmetry: Expand to quaternion format and transform to AO
+          NCBF = NBAS1*NVEC*4
+          CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+          CALL CFSORT(WORK(KCBF),CMO,NVEC,IFRP,NBAS1)
+          CALL WTSOAO(WORK(KCBF),CSEL,IFRP,NBAS1,NBAS2,NVEC*4,IPRINT)
+          CALL MEMREL('SELCMO.AOa',WORK,1,KCBF,KFREE,LFREE)
+        ENDIF
+      ELSEIF(NVEC.LT.NORB1) THEN
+C.....Not all coefficients selected
+        NCBF = NBAS2*NVEC*4
+        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        LCB = NPVEC+NEVEC
+        IF(NBSYM.EQ.1) THEN
+C.........C1 case: select coefficients and copy
+          CALL SELCFS(CMO,IFRP,WORK(KCBF),
+     &                LCB,IVEC,NPVEC,NEVEC,
+     &                NBAS1,NORB1)
+          CALL CFSORT(CSEL,WORK(KCBF),NVEC,IFRP,NBAS1)
+        ELSE
+C.........Higher symmetry: select, expand and transform
+          CALL SELCFS(CMO,IFRP,CSEL,LCB,IVEC,NPVEC,NEVEC,
+     &                NBAS1,NORB1)
+          CALL CFSORT(WORK(KCBF),CSEL,NVEC,IFRP,NBAS1)
+          CALL WTSOAO(WORK(KCBF),CSEL,IFRP,
+     &                NBAS1,NBAS2,NVEC*4,IPRINT)
+        ENDIF
+        CALL MEMREL('SELCMO.AOb',WORK,1,KCBF,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+

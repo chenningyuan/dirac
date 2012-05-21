@@ -3630,11 +3630,7 @@ C     Calculate dimension of arrays
 C     =============================
 C
       NVECS(0) = NVECS(1) + NVECS(2)
-CTROND
-      WRITE(6,*) 'TESTa ',NVECS(0),NVECS(1),NVECS(2)
       CALL MEMGET('REAL',KE,NVECS(0),WORK,KFREE,LFREE)
-CTROND
-      WRITE(6,*) 'TEST ',NQ,NTBAS(0),NVECS(0),NZC1
       NQ = NTBAS(0)*NVECS(0)*NZC1
       CALL MEMGET('REAL',KQ,NQ      ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KQ),NQ)
@@ -3672,7 +3668,7 @@ C.......Make pointer array to selected reference orbitals
         CALL MEMREL('PRJAOB.refsel',WORK,1,KITMP,KFREE,LFREE)
         CALL ORBCNT(WORK(KVEC(INDEP)),NSTR(0,INDEP),NNEG,NPOS,
      &             NSTR(2,INDEP),NSTR(1,INDEP))
-C.....Extract coefficients and orbital energies
+C.....Extract coefficients and orbital energies (JVEC updated inside)
         CALL SELATOM(WORK(KQ),WORK(KE),NTBAS(0),NVECS(0),NZC1,
      &               WORK(KQA),WORK(KEA),NAO(INDEP),NTOT,NNEG,NPOS,
      &               ININD,NONT(ITYP),NUCDEG(ININD),
@@ -3692,6 +3688,20 @@ CTROND
       CALL PRQMAT(WORK(KE),NVECS(1),1,NVECS(1),1,1,IQDEF,LUPRI)
 
 C
+C     Select molecular coefficients
+C     =============================
+C
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
+C
+C     Read coefficients
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRJAOB')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),DUM,
+     &            TOTERG,7,WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL MEMREL('PRJAOB.mol',WORK,1,KCMO,KFREE,LFREE)
  100  CONTINUE
       CALL MEMREL('PRJAOB.end',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
@@ -3719,9 +3729,6 @@ C***********************************************************************
       CALL MEMGET('INTE',KMOL ,NRM,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KATOM,NRA,WORK,KFREE,LFREE)
       NVEC=NEVEC+NPVEC
-CTROND
-      WRITE(6,*) 'SELATOM:',NVEC,NEVEC,NPVEC,NRM,NCM,NRA,NCA
-      WRITE(6,*) 'IVEC:',(IVEC(I),I=1,NVEC)
       ININD = INUC      
       DO ITYP = 1,NONT
         DO IDEG = 1,NDEG(ITYP)

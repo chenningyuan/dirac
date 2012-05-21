@@ -246,46 +246,11 @@ C       Extract/expand coefficients in AO-basis
 C       =======================================
 C
           NCBAS = NTBAS(0)
-          IF(NVEC.EQ.NORB(IFRP)) THEN
-            IF(NBSYM.EQ.1) THEN
-              NCBF1 = NTBAS(0)*NVEC*4
-              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KCBF2,NCBF1,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-            ELSE
-              NCBF1 = NTBAS(0)*NVEC*4
-              NCBF2 = NFBAS(IFRP,0)*NVEC*4
-              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
-              CALL MEMREL('PRCOEF.AO',WORK,1,KCBF2,KFREE,LFREE)
-            ENDIF
-          ELSE
-            NCBF1 = NTBAS(0)*NVEC*4
-            NCBF2 = NTBAS(0)*NVEC*4
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-            LCB = NPVEC+NEVEC
-            IF(NBSYM.EQ.1) THEN
-              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
-     &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-            ELSE
-              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
-     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
-     &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
-            ENDIF
-          ENDIF
+          NCBF1 = NTBAS(0)*NVEC*4
+          CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
+          CALL SELCMO_AO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &                   WORK(KCBF1),NTBAS(0),IFRP,WORK(KJVEC),
+     &                   NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
         ELSE
 C
 C       Extract/expand coefficients in SO-basis
