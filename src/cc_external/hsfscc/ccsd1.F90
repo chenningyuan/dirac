@@ -1690,8 +1690,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(8),ib(10000),ibe(0:10000)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
+  ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       !call check_modules
@@ -1810,7 +1809,7 @@
 !
 !   multiplication of 2 diagrams: name2 x name3 -> namet
 !
-! where mmm is type ofmultiplication, mmm of 3 digits m1m2m3
+! where "mmm" is type of the multiplication, mmm cosists of 3 digits m1m2m3
 !
 ! m1- how many free lines in name2 (are not participating in multiplication)
 ! m2 -                       name3
@@ -1865,8 +1864,7 @@
       ! find diagram "name2", fill cij2 common block,returns number ntape2
       call files_ccsd(name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (LUPRI,'(2x,a,a4)')                                       &
-   ' mult input tape does not exist, ',name2
+        write (LUPRI,'(2x,a,a4)') ' mult input tape does not exist, ',name2
         call abext('mult    ')
       endif
 
@@ -1879,8 +1877,7 @@
 
       ! check if 2 multiplying files fit each other
       n=10**m3
-      if (((iii2-n*(iii2/n)).ne.(iii3-n*(iii3/n))).or.                  &
-     ((iiv2-n*(iiv2/n)).ne.(iiv3-n*(iiv3/n)))) then
+      if (((iii2-n*(iii2/n)).ne.(iii3-n*(iii3/n))).or.((iiv2-n*(iiv2/n)).ne.(iiv3-n*(iiv3/n)))) then
         write (6,*) 'Contracted indices do not match in mult'
         write (6,*) 'iii2, iii3, iiv2, iiv3 = '
         write (6,*) iii2,iii3,iiv2,iiv3
@@ -1898,6 +1895,7 @@
       istrt22=nstrt(2,ntape2-1)
       istrt31=nstrt(1,ntape3-1)+2*nij3+4
       istrt32=nstrt(2,ntape3-1)
+
       nsize1=ije1(nij1) ! how many values in resulting diagram
       nsize2=ije2(nij2) !                in 1 diagram
       nsize3=ije3(nij3) !                in 2 diagram
@@ -1906,10 +1904,8 @@
         write(LUPRI,*) 'mult: istrt11,istrt12:',istrt11,istrt12
         write(LUPRI,*) 'mult: istrt21,istrt22:',istrt21,istrt22
         write(LUPRI,*) 'mult: istrt31,istrt32:',istrt31,istrt32
-        write(LUPRI,*) 'mult: nij1,nij2,nij3:',                         &
-                   nij1,nij2,nij3
-        write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',                   &
-                   nsize1,nsize2,nsize3
+        write(LUPRI,*) 'mult: nij1,nij2,nij3:',nij1,nij2,nij3
+        write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',nsize1,nsize2,nsize3
       endif
 !
       if (m3.ne.2) then
@@ -1968,8 +1964,7 @@
       n2=ije2(kbb)-ije2(kbb-1)
       if (ije3(kcc)-ije3(kcc-1).ne.n2) then
         write (*,2100) ij2(kbb),ij3(kcc),name2,name3
-2100    format('mismatch in length of records',2(1x,z6),                &
-   ' of files ',2a8,'. check isym.')
+2100    format('mismatch in length of records',2(1x,z6),' of files ',2a8,'. check isym.')
         write (*,2200) n2,(igen(istrt21+i),i=ije2(kbb-1)+1,ije2(kbb))
         n3=ije3(kcc)-ije3(kcc-1)
         write (*,2200) n3,(igen(istrt31+i),i=ije3(kcc-1)+1,ije3(kcc))
@@ -1980,8 +1975,7 @@
       n20=istrt22+ije2(kbb-1)+1
       n30=istrt32+ije3(kcc-1)+1
 
-      gen(istrt12+i1)=ddot(n2,gen(n20),1,                               &
-  gen(n30),1)
+      gen(istrt12+i1)=ddot(n2,gen(n20),1,gen(n30),1)
 
       if (getiprint().ge.13) then
        write(LUPRI,*) 'mult: istrt12+i1,n20,n30,n2:',                   &
@@ -2048,8 +2042,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ipack2(i,j)=ior(ishft(i,8),j)
       ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
+      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
@@ -2973,6 +2966,7 @@
 
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
  ior(ishft(k,8),l))
+
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) 'dge5n2 input tape does not exist, ',name2

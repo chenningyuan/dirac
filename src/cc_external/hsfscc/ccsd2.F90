@@ -1803,7 +1803,9 @@
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      integer*4 ch1,ch2
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
+
       if (id1.gt.id2) then
         imax=1
       else if (id2.gt.id1) then
@@ -1857,7 +1859,9 @@
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #endif
-      integer*4 ch1,ch2
+
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
 
       nija=igen(nstrt(1,ntapef-1)+1)
 
@@ -1992,10 +1996,14 @@
 ! makes some sorting
 !
 !--------------------------------------------------------
+!     miro: replace with implicit none !!!
       IMPLICIT INTEGER (A-Z)
 #include "priunit.h"
-      INTEGER*4  ivec(*),TEMP,N8
+      !INTEGER*4  ivec(*),TEMP,N8
+
+      INTEGER  ivec(*),TEMP,N8
       integer lftbit,nx4,n
+
 !
       !if (iopt(1).ge.5) then
 !      if (iopt(1).ge.4) then
@@ -2099,8 +2107,14 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function lftbit(n)
-      integer*4 n,i,ipos
-      integer*4 nlim(32)
+!
+! Bit manipulating function
+!
+      !integer*4 n,i,ipos
+      integer :: n,i,ipos
+      !integer*4 nlim(32)
+      integer :: nlim(32)
+
       data nlim/   o'0',o'1',o'2',o'4',                                 &
               o'10',o'20',o'40',                                        &
               o'100',o'200',o'400',                                     &
@@ -2272,7 +2286,8 @@
 #endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! dynamic alloc !!!!!!!!!!!!!!!!!!!!!!!!!!!!
       double precision r(31,31),z(31),a(31),rcond,rmult
-      integer*4 ipvt(31)
+      !integer*4 ipvt(31)
+      integer :: ipvt(31)
       dimension iopa(4),name(4)
 
       call prtime ("rle in  ",0,0)
@@ -2559,9 +2574,14 @@
 !
 !
 !--------------------------------------------------------------------------------
-      IMPLICIT INTEGER*4 (A-Z)
-      INTEGER*4  ivec(*),TEMP
-      integer*4 N8
+      !IMPLICIT INTEGER*4 (A-Z)
+      IMPLICIT INTEGER (A-Z)
+! miro: changed to integer
+      !INTEGER*4  ivec(*),TEMP
+      INTEGER ::  ivec(*),TEMP
+      !integer*4 N8
+      integer :: N8
+
       real*8 rlvec(*),rltemp
 !C      integer lftbit,nx4,n
 !C

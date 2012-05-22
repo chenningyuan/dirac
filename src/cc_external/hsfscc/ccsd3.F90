@@ -137,7 +137,9 @@
 ! called from all executables !
 !
 !---------------------------------------------------------------------------
-      use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
+     ! miro : deactivate
+     ! use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
+
 #if defined HSFS_DYN_ALLOC
       use dat_mod 
       use sym_mod 
@@ -301,7 +303,9 @@
 135   continue
 
       else if (iopt(19).ne.7) then
-        call quit('GAMESS connection deactivated !')
+
+        call quit('GAMESS connection deactivated for now ...')
+
         ! ... get in new GAMESS integrals ... 
         !call get_gamess_ints(nort,eps,nn,ind,v,nint)
         if (iopt(1).ge.5) then ! control prinout
@@ -526,7 +530,8 @@
 !     common /i/ igen(nbig)
 #endif
 
-      integer*4 ch1,ch2
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
 
       if (getiprint() >= 5) then
         call header("Output from files_ccsd",-1)
@@ -552,19 +557,16 @@
 !  next lines for case where temp file reopened with same name,
 !  different type (must be sn files). iii=-1 means ignore iii.
       if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num))))then
-
            if (getiprint() >= 5) then
              write(LUPRI,*) '1) num,iiia(num)=',num,iiia(num),          &
         '...iiva(num)=',iiva(num)
            endif
-
 ! Gal 95
            itmp=4H       
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (namefl(num), z'000000ff')
            isaa = ior (ch1, ch2)
-
 #if defined VAR_IFORT
           if (isaa.ne.4hs   ) then
 #else
@@ -578,7 +580,6 @@
        endif
 
        if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num))))then
-
           if (getiprint() >= 5) then
              write(LUPRI,*) '2) num,iiia(num)=',num,iiia(num),          &
         '...iiva(num)=',iiva(num)
@@ -2505,7 +2506,8 @@
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 #endif
 
-      integer*4 ch1,ch2
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
 
 !     4-indexes (up 256) packed into one number
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                  &
@@ -2752,7 +2754,8 @@
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 #endif
 
-      integer*4 ch1,ch2
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
 
       ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
@@ -2931,7 +2934,9 @@
 !      common /dpd/ nir,igmt(8,8),ici(200)
 #endif
 
-      integer*4 ch1,ch2
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
+
 !!! miro - into module !!!
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                  &
  ior(ishft(k,8),l))
@@ -3118,7 +3123,8 @@
 !     common /idv/ iv(200),nvalo
 #endif
 
-      integer*4 ch1,ch2
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
 
 !!!!!!!!!!!!!!!! assign own dynamic allocation !!!!!!!!!!!!!!!!!!
       dimension icsym(200)
@@ -3241,7 +3247,7 @@
       if (isaa.eq.4hs   ) then
 #else
       i_4hs=4hs
-      if (isaa.eq.i_4hs ) thena
+      if (isaa.eq.i_4hs ) then
 #endif
 
         call dimx (nt-nt0,ndp3,"tmplt s ")
@@ -3293,13 +3299,14 @@
 !     common /idv/ iv(200),nvalo
 #endif
 
-      integer*4 ch1,ch2
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
 
 !!!!!!!!!!!!!!!! miro: need replace !!!!!!!!!!!!!!!!!!!
       dimension icsym(200)
 
-      ipack(i,j,k,l,m,n)=ior(ior(ishft(i,20),ishft(j,16)),              &
- ior(ior(ishft(k,12),ishft(l,8)),ior(ishft(m,4),n)))
+      ipack(i,j,k,l,m,n)=ior(ior(ishft(i,20),ishft(j,16)),  &
+                         ior(ior(ishft(k,12),ishft(l,8)),ior(ishft(m,4),n)))
 
       iii=6
       iiv=1
@@ -4094,7 +4101,7 @@
 !
 !           change nf-index grouping to nt-index grouping
 !
-! entering arrays: ij, ije
+!           entering integer arrays: ij, ije
 !
 !------------------------------------------------------------------------
       use print_level
@@ -4102,7 +4109,8 @@
       use cfiles_mod
       use gen_mod
       use hsfs_parameters
-#include "implicit.h"
+!#include "implicit.h"
+      implicit none
 #include "priunit.h"
 ! ... needed for static alloc ij(nij),ije...
 !#include "param_ccsd.h"
@@ -4119,18 +4127,25 @@
 !      common /i/ igen(nbig)
 #endif
 
+   integer :: nij,nt,nf
+   integer :: ntapef
+   integer :: nij1,iirp,i,i12,istrt,nsize
+
 !     dimension ij(nij),ije(0:nij)
 ! mi - to fix index leak 
-      dimension ij(*),ije(0:*)
-
+      !dimension ij(*),ije(0:*)
+       integer :: ij(*),ije(0:*)
 !!!!!!!!!!!!!! needs dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
-      dimension ij1(ndij),ije1(0:ndij)
+      !dimension ij1(ndij),ije1(0:ndij)
+      integer :: ij1(ndij),ije1(0:ndij)
 
-      integer*4 ch1,ch2
+!!!! miro: changed to general integer !!!
+      !integer*4 ch1,ch2
+      integer :: ch1,ch2
 
       if (getiprint() >= 5) then ! control printout
-        call header('Output from "tmpcng"',-1)
-        write(LUPRI,*) 'nij,nt,nf:',nij,nt,nf
+        !call header('Output from "tmpcng"',-1)
+        write(LUPRI,*) 'Output from "tmpcng" - nij,nt,nf:',nij,nt,nf
         write(LUPRI,*) 'ntapef=',ntapef
       endif
       
@@ -4156,8 +4171,7 @@
 
 ! miro: important printout to check arrays !
       if (getiprint() >= 15) then 
-       write(LUPRI,*) 'i,ij(i),nij1,ije(i-1)',                          &
-                  i,ij(i),nij1,ije(i-1)
+        write(LUPRI,*) 'i,ij(i),nij1,ije(i-1)',i,ij(i),nij1,ije(i-1)
       endif
 
 160   continue

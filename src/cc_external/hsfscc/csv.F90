@@ -1762,7 +1762,8 @@
 #include "dat.h"
 #endif
 
-      integer*4 ipvt
+      !integer*4 ipvt
+      integer :: ipvt
 
 !!!!!!!!!!!!!!!!!!! needed dynamic allocation !!!!!!!!!!!!!!!!!!!!!!!
       dimension a(100,100),ipvt(100),z(100),iord(100)
