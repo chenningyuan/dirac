@@ -21,16 +21,18 @@ Making Python static
 --------------------
 
  http://stackoverflow.com/questions/1150373/compile-the-python-interpreter-statically
+ http://bugs.python.org/msg161300
 
-Download Python-2.7.2
+Download Python-2.7.3
 
 ::
 
   $./configure --prefix=/home/ilias/bin/python_static  LDFLAGS="-static -static-libgcc" CPPFLAGS="-static"
 
-put "\*static\*" into Modules/Setup.local
+put "\*static\*" into Modules/Setup.dist and type ::
 
-Currently I (MI) wasn't able to get static version due to compilation problems...
+  $ make -i install
+  $ make install
 
 ------------------
 Data management

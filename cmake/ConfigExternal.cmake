@@ -1,7 +1,9 @@
+include(FindGit)
+
 add_custom_target(
     git_update
-    COMMAND git submodule init
-    COMMAND git submodule update
+    COMMAND ${GIT_EXECUTABLE} submodule init
+    COMMAND ${GIT_EXECUTABLE} submodule update
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
 
@@ -10,7 +12,7 @@ include(ExternalProject)
 macro(add_external _project)
 
     if(DEVELOPMENT_CODE)
-        set(UPDATE_COMMAND git submodule update)
+        set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
     else()
         set(UPDATE_COMMAND echo)
     endif()

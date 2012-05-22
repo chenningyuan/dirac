@@ -10,15 +10,8 @@ and subsequently compiled using make or gmake.
 Dependencies
 ------------
 
-The configuration/compilation step requires:
-CMake  >= 2.6.3
-
-The configuration/compilation step using setup script requires:
-CMake  >= 2.6.3
-python >= 2.4.0
-
-The run script pam and the testing script runtest require:
-python >= 2.4.0
+To compile and run DIRAC you need CMake 2.8 or higher
+and python 2.4 or higher.
 
 
 What to do if CMake is not available or too old?
@@ -38,7 +31,7 @@ If it is a cluster, but you prefer to install it yourself (it's easy):
 1. Download the latest tarball from http://www.cmake.org/cmake/resources/software.html
 2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
 
-Now you can enjoy your CMake instead of the old one::
+Now you can enjoy your new CMake instead of the old one::
 
   $ ./setup [other flags] --cmake=~/cmake-2.8.5-Linux-i386/bin/cmake
 
@@ -48,7 +41,7 @@ Basic installation using the setup script
 
 DIRAC is configured using CMake.
 The setup script is a useful front-end to CMake.
-It does nothing else than creating the directory "build" and calling
+It does nothing else than create the directory "build" and call
 CMake with appropriate environment variables and flags::
 
   $ ./setup [--flags]
@@ -69,7 +62,7 @@ and use it directly to call CMake without setup.
 Most typical examples
 ---------------------
 
-In order to get familiar with the new configuration setup, let us demonstrate
+In order to get familiar with the configuration setup, let us demonstrate
 some of the most typical configuration scenarios.
 
 Configure for parallel compilation using MPI (make sure to properly export MPI
@@ -89,18 +82,20 @@ Configure for sequential compilation using gfortran/gcc::
 
   $ ./setup --fc=gfortran --cc=gcc
 
-You get the idea. The configuration is pretty good at detecting math libraries
-automatically, provided you export proper paths, see "Linking to external math
-libraries".
+You get the idea. The configuration is normally pretty good at detecting math libraries
+automatically, provided you export proper paths, see :ref:`linking_math`.
 
 
 Out of source compilation
 -------------------------
 
 By default CMake builds out of source.  This means that all object files and
-the final binary are generated outside of the source root.  Typically the build
-directory is called "build", but you can modify this default behavior using the
---build flag.  The out of source compilation is in contrast to previous DIRAC
+the final binary are generated outside of the src/ directory.  Typically the
+build directory is called "build", but you can modify this default behavior::
+
+  $ .setup [--flags] alternative-build-path
+
+The out of source compilation is in contrast to previous DIRAC
 releases.  This strategy offers several advantages. One obvious advantage is
 that you can now build several binaries with the same source::
 
@@ -161,6 +156,8 @@ You can do this instead::
   $ make
 
 
+.. _linking_math:
+
 Linking to external math libraries
 ----------------------------------
 
@@ -213,7 +210,7 @@ You may have to install cmake-gui for it, on debian/ubuntu::
 Running tests
 -------------
 
-You can run the test suite with::
+You can (and should) run the test suite with::
 
   $ make test
 
@@ -288,11 +285,9 @@ Either use setup::
   $ cd build
   $ make
 
-Or use Cmake directly (default here is debug mode)::
+Or use CMake directly (default here is debug mode)::
 
   $ mkdir build
   $ cd build
   $ [FC=ifort CC=icc] cmake ..
   $ make
-
-If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or cmake/CCompilers.cmake.
