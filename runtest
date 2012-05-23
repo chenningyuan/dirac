@@ -11,6 +11,7 @@ import string
 import subprocess
 import shlex
 import time
+import shutil
 import signal
 from optparse import OptionParser, OptionGroup
 
@@ -693,6 +694,8 @@ class run:
 
      def is_shell_command(self):
          return False
+     def is_python_command(self):
+         return False
      def is_run(self):
          return True
 
@@ -705,6 +708,55 @@ class shell_command:
          os.system(self.command)
      def is_shell_command(self):
          return True
+     def is_run(self):
+         return False
+
+class python_command:
+     def __init__(self, test, line):
+         self.test    = test
+         self.command_args = line[2:]
+         self.command = line[:2]
+         #print 'initialize: ',self.test,self.command_args,self.command
+     def execute(self):
+         os.chdir(self.test)
+         #print 'to execute:',self.command,self.command_args
+         if self.command == 'cp' :
+             src=self.command_args.split()[0]
+             dest=self.command_args.split()[1]
+             if len(self.command_args.split()) != 2:
+                 sys.exit("must be two arguments for copying command! you have"+self.command_args)
+             if os.path.isfile(src):
+                 pass
+                 print 'copying command...',src,dest
+                 shutil.copy(src, dest)
+             else:
+                 sys.exit("error in copying: file "+src+" does not exist!")
+         elif self.command == 'rm' :
+             print 'removing command...',self.command_args.split()
+             for dirac_file  in self.command_args.split():
+                if os.path.isfile(dirac_file):
+                    print 'going to remove...',dirac_file
+                    os.remove(dirac_file)
+                else:
+                    sys.exit("File for removing "+dirac_file+"does not exist! check menu presciption:"+self.command+" "+self.command_args)
+         elif self.command == 'mv' :
+             src=self.command_args.split()[0]
+             dest=self.command_args.split()[1]
+             if len(self.command_args.split()) != 2:
+                 sys.exit("must be two arguments for moving command!")
+             if os.path.isfile(src):
+                 pass
+                 shutil.move(src, dest)
+                 print 'moving command...',src, dest
+             else:
+                 sys.exit("error in move command: source file "+src+" does not exist! check menu presciption:"+self.command+" "+self.command_args)
+         else:
+             print 'wrong command in menu:',self.command
+             sys.exit("Wrong meta-command in menu ! Can be only rm/cp/mv ! check menu presciption:"+self.command+" "+self.command_args)
+     def is_python_command(self):
+         return True
+     def is_shell_command(self):
+         return False 
      def is_run(self):
          return False
 
@@ -729,7 +781,7 @@ def get_current_section(line, current_section):
     return current_section
 
 def line_is_keyword(line):
-    return line.split()[0] in ['sh', 'quick', 'regular', 'benchmark']
+    return line.split()[0] in ['sh', 'quick', 'regular', 'benchmark', 'cp', 'mv', 'rm']
 
 # main function
 def main(*args):
@@ -749,6 +801,15 @@ def main(*args):
                         if use_this_line(current_section):
                             if line[0:2] == 'sh':
                                 l.append(shell_command(test, line))
+                            elif line[0:2] == 'cp':
+                                l.append(python_command(test, line))
+                                pass
+                            elif line[0:2] == 'mv':
+                                l.append(python_command(test, line))
+                                pass
+                            elif line[0:2] == 'rm':
+                                l.append(python_command(test, line))
+                                pass
                             else:
                                 if not line_is_keyword(line):
                                     l.append(run(test, line, current_section[0]))
@@ -782,7 +843,7 @@ def main(*args):
     global_elapsed   = 0.0
 
     for task in l:
-        if task.is_shell_command():
+        if task.is_shell_command() or task.is_python_command():
             task.execute()
         else:
             nr_of_tests_done += 1
