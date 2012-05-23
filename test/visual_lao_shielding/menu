@@ -23,4 +23,4 @@ noref rsp_dc_lao_g123.inp                    hf.mol --get="DFCOEF PAMXVC TBMO"
 vis_dc_lao_reorth_g123_select_all.inp  hf.mol --put="DFCOEF PAMXVC TBMO"
 vis_dc_lao_reorth_g123_select_35.inp   hf.mol --put="DFCOEF PAMXVC TBMO"
 
-sh rm DFCOEF PAMXVC TBMO
+rm DFCOEF PAMXVC TBMO
