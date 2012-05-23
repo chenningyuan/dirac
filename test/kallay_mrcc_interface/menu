@@ -4,7 +4,8 @@ sh ../../utils/dirac_mointegral_export.x
 # adapt location of the binaries
 sh ../../goldstone
 sh ../../mrcc
-sh rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
+#sh rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
+rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
 
 benchmark
 ccsd.inp CO_C2v.mol --mw=600 --noarch --get="MRCONEE MDCINT"
@@ -12,4 +13,5 @@ sh ../../utils/dirac_mointegral_export.x
 # adapt location of the binaries
 sh ../../goldstone
 sh ../../mrcc
-sh rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
+#sh rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
+rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface

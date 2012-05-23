@@ -727,18 +727,20 @@ class python_command:
                  sys.exit("must be two arguments for copying command! you have"+self.command_args)
              if os.path.isfile(src):
                  pass
-                 print 'copying command...',src,dest
+                 #print 'copying command...',src,dest
                  shutil.copy(src, dest)
              else:
-                 sys.exit("error in copying: file "+src+" does not exist!")
+                 #sys.exit("error in copying: file "+src+" does not exist!")
+                 print "warning: copied file "+src+" does not exist!"
          elif self.command == 'rm' :
-             print 'removing command...',self.command_args.split()
+             #print 'removing command...',self.command_args.split()
              for dirac_file  in self.command_args.split():
                 if os.path.isfile(dirac_file):
-                    print 'going to remove...',dirac_file
+                    #print 'going to remove...',dirac_file
                     os.remove(dirac_file)
                 else:
-                    sys.exit("File for removing "+dirac_file+"does not exist! check menu presciption:"+self.command+" "+self.command_args)
+                    #sys.exit("File for removing "+dirac_file+"does not exist! check menu presciption:"+self.command+" "+self.command_args)
+                    print "File for removing "+dirac_file+"does not exist! check menu presciption:"+self.command+" "+self.command_args
          elif self.command == 'mv' :
              src=self.command_args.split()[0]
              dest=self.command_args.split()[1]
@@ -747,9 +749,10 @@ class python_command:
              if os.path.isfile(src):
                  pass
                  shutil.move(src, dest)
-                 print 'moving command...',src, dest
+                 #print 'moving command...',src, dest
              else:
-                 sys.exit("error in move command: source file "+src+" does not exist! check menu presciption:"+self.command+" "+self.command_args)
+                 #sys.exit("error in move command: source file "+src+" does not exist! check menu presciption:"+self.command+" "+self.command_args)
+                 print "warning:  source file "+src+" does not exist for move! check menu presciption:"+self.command+" "+self.command_args
          else:
              print 'wrong command in menu:',self.command
              sys.exit("Wrong meta-command in menu ! Can be only rm/cp/mv ! check menu presciption:"+self.command+" "+self.command_args)

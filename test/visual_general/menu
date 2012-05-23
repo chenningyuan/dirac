@@ -12,4 +12,4 @@ visual_1z_bz_only_para_dc.inp co_c1.mol  --incmo  --copy=PAMXVC
 noref response_1z_2z_dc.inp         co_c1.mol  --outcmo --get=PAMXVC
 visual_1z_2z_dc.inp           co_c1.mol  --incmo  --copy=PAMXVC
 
-sh rm DFCOEF PAMXVC
+rm DFCOEF PAMXVC
