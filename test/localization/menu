@@ -1,6 +1,6 @@
 # get input files
 #sh tar xzf cf.tgz
-sh python -c 'import tarfile;tar=tarfile.open("cf.tgz");tar.extractall();tar.close()' 
+sh python -c "import tarfile; tar=tarfile.open('cf.tgz'); tar.extractall(); tar.close()" 
 cp cf.H DFH1AT
 cp cf.H DFH2AT
 cp cf.H DFH3AT
