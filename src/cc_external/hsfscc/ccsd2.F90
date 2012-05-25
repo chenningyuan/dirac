@@ -475,7 +475,7 @@
       subroutine eneru2 (egr0,nval,ihp,ipr)
 !--------------------------------------------------------------------------------
 !
-!
+!      Calculates resulting energy levels by diagonalization
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC

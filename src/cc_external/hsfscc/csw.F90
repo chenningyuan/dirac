@@ -1,7 +1,7 @@
       subroutine csw                     
 !---------------------------------------------------------------------
 !
-! (0,3) sector...
+!            (0,3) sector...
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -231,14 +231,13 @@
         end if
       else
         !
-        write(LUPRI,*) '=== no iterations ==='
+        write(LUPRI,*) '=== no iterations in (0,3) sector ==='
         write(LUPRI,*) ' iopt(17)=',iopt(17)
       end if
 
 #if defined HSFS_DYN_ALLOC
       call check_modules
 #endif
-
       call endiag_csw 
       call eneru2 (egr0,1,3,max(1,iopt(1)))
       call eneru2 (egr0,2,3,max(1,iopt(1)))
@@ -249,11 +248,8 @@
         call prt6 ("t33 ","t33 ",0)
         call wrtfile (59,1,"t33 ")
       end if
-
-      write (LUPRI,*) nstrt(1,nflcur),' words used in igen,',           &
- nstrt(2,nflcur),' words used in gen'
+      write (LUPRI,*) nstrt(1,nflcur),' words used in "igen", and ',nstrt(2,nflcur),' words used in "gen"'
       call prtime ("end ",0,0)
-!      stop
       end
 ! ********************************************************************
       subroutine ordv_csw

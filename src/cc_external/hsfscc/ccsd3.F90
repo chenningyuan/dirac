@@ -3546,8 +3546,6 @@
 !------------------------------------------------------------------------
 !
 !
-!
-!
 !------------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
@@ -3588,8 +3586,6 @@
       data ia / 5,1,1,0,0,1,5,2,0,0,2,2,5,0,0,                          &
            6,3,3,0,0,3,6,4,0,0,4,4,6,0,0 /
 
-      !  call check_modules
-
       call files_ccsd (name3,ntape3,new,1,-1,-1)
       if (new.ne.0) then
         write (LUPRI,*) ' t3 file in t1t2 does not exist'
@@ -3599,8 +3595,13 @@
       call files_ccsd (names,ntapes,new,1,-1,-1)
       istrt11=nstrt(1,ntapes-1)+2*nij1+4
       istrt12=nstrt(2,ntapes-1)
+
       call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1) 
+
+      ! miro - problematic call here ... SIGSEGV
+      continue
       call tchng6 (nij1,ij1,ije1,ntapes,2)
+
       do 60 i=1,nij1
         ninds(i)=0
 60    continue
@@ -3943,8 +3944,10 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tchng6 (nij,ij,ije,ntapef,iparm) 
 !------------------------------------------------------------------------
-!
-! entering arrays ij(*),ije(*)
+! 
+! what does it do ? 
+! 
+!   entering arrays ij(*),ije(*)
 !
 !------------------------------------------------------------------------
       use print_level
@@ -3968,11 +3971,12 @@
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
 #endif
+      !dimension ij(ndij),ije(0:ndij) ! entering !!!
+      dimension ij(*),ije(0:*) ! entering !!!
 
-      dimension ij(ndij),ije(0:ndij)
 !!!!!!!!! needs own dynamic allocation for ij1,ije1, itmp !!!!!!!!!!!!!!!!!
-!     dimension ij1(ndij),ije1(0:ndij),itmp(ndij)
-      dimension ij1(ndij),ije1(0:ndij)
+     !dimension ij1(ndij),ije1(0:ndij),itmp(ndij)
+      dimension ij1(ndij),ije1(0:ndij) ! note: itmp not used here ! 
 
       if (getiprint() >= 5) then ! control printout
         call header('Output from "tchng6"',-1)
@@ -4018,11 +4022,9 @@
         call kcopy (nij,ij1(1),ij(1))
         call kcopy (nij+1,ije1(0),ije(0))
       end if
-
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) 'nij,ij(nij),ije(nij)=',nij,ij(nij),ije(nij)
       endif
-
       return
       end subroutine tchng6
 
