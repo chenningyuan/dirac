@@ -38,8 +38,16 @@ C*****************************************************************************
 #include "dcborb.h"
 C
       DIMENSION WORK(LWORK)
+      logical :: file_is_there
       CALL QENTER('PCMOIN')
 #include "memint.h"
+
+      ! check whether DFPCMO is there, if not, simply return quietly
+      inquire(file='DFPCMO', exist=file_is_there)
+      if (.not. file_is_there) then
+         call qexit('PCMOIN')
+         return
+      end if
 C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -519,6 +527,9 @@ C
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
+
+      integer :: itest, ierr
+
 C
 C     Get coefficients from DFPCMO
 C
@@ -528,44 +539,93 @@ C
      &      'PCMOIN: Formatted file DFPCMO not found !'
           CALL QUIT('PCMOIN: Formatted file DFPCMO not found !')
       ENDIF
+
       WRITE(LUPRI,'(2X,A,$)') 'Reading formatted DFPCMO file...'
       CALL FLUSH(LUPRI)
+
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
      +     ACCESS='SEQUENTIAL')
-      READ (LUCOEF,'(A74)',IOSTAT=IOS) TEXT
-      READ (LUCOEF,'(I4,6I10)',IOSTAT=IOS) 
-     &      NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM)
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (I4,6I10)')
-      ENDIF
-      READ (LUCOEF,'(D24.16)',IOSTAT=IOS) TOTERG
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (D24.16)')
-      ENDIF
-      READ (LUCOEF,'(6F22.16)',IOSTAT=IOS) (CMO(I),I=1,NCMOTQ)
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (6F22.16)')
-      ENDIF
-      READ (LUCOEF,'(6D22.12)',IOSTAT=IOS) (EIG(I),I=1,NORBT)
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (6D22.12)')
-      ENDIF
 
-      IF (.NOT.DOPIN_I3) THEN
-        READ (LUCOEF,'(66I2)',IOSTAT=IOS) (IBEIG(I),I=1,NORBT)
-        IF (IOS.NE.0) THEN
-          WRITE(LUPRI,*) 
-          WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
-          CALL QUIT('PCMOI1: error in IBEIG(DFPCMO) reading (66I2)')
-        ENDIF
-      ELSE
-        READ (LUCOEF,'(66I3)',IOSTAT=IOS) (IBEIG(I),I=1,NORBT)
-        IF (IOS.NE.0) THEN
-          WRITE(LUPRI,*) 
-          WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
-          CALL QUIT('PCMOI1: error in IBEIG(DFPCMO) reading (66I3)')
-        ENDIF
-      ENDIF
+      rewind lucoef
+
+      ! read title line
+      read(lucoef, *, iostat=ierr) text
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: title line')
+      end if
+
+      read(lucoef, *, iostat=ierr) itest
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: symmetry information')
+      end if
+      backspace lucoef
+
+      read(lucoef, *, iostat=ierr) nsym, ((idim(i,j),i = 1,3),j=1,itest)
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: symmetry information')
+      end if
+
+      read(lucoef, *, iostat=ierr) toterg
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: energy')
+      end if
+
+      n = ncmotq
+      l = 6
+      k = 0 
+      ! read full lines
+      do i = 1, int(n/l)
+         read(lucoef, *, iostat=ierr) cmo(k+1:k+l)
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: coefficients')
+         end if
+         k = k + l
+      end do
+      if (mod(n, l) > 0) then
+         ! read incomplete line
+         read(lucoef, *, iostat=ierr) cmo(k+1:k+mod(n, l))
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: coefficients')
+         end if
+      end if
+
+      n = norbt
+      l = 6
+      k = 0 
+      ! read full lines
+      do i = 1, int(n/l)
+         read(lucoef, *, iostat=ierr) eig(k+1:k+l)
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: eigenvalues')
+         end if
+         k = k + l
+      end do
+      if (mod(n, l) > 0) then
+         ! read incomplete line
+         read(lucoef, *, iostat=ierr) eig(k+1:k+mod(n, l))
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: eigenvalues')
+         end if
+      end if
+
+      n = norbt
+      l = 66
+      k = 0 
+      ! read full lines
+      do i = 1, int(n/l)
+         read(lucoef, *, iostat=ierr) ibeig(k+1:k+l)
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: ibeig')
+         end if
+         k = k + l
+      end do
+      if (mod(n, l) > 0) then
+         ! read incomplete line
+         read(lucoef, *, iostat=ierr) ibeig(k+1:k+mod(n, l))
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: ibeig')
+         end if
+      end if
 
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A)') 'Done.'
@@ -617,7 +677,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL TOBE, TOBEK, I3_IBEIG
+      LOGICAL TOBE, TOBEK
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
@@ -667,13 +727,6 @@ C       ... set to zero
 C
 C     Write coefficients to DFPCMO
 C
-      I3_IBEIG=.FALSE. 
-      DO I=1,NORBT
-       IF (IABS(IBEIG(I)).GE.10) THEN
-         I3_IBEIG=.TRUE.
-         EXIT ! exit cycle
-       ENDIF
-      ENDDO
       DO I = 1,NFSYM
         IDIM(1,I) = NPSH(I)
         IDIM(2,I) = NESH(I)
@@ -683,21 +736,13 @@ C
      &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
-! miro: watch up formats of data, beacause for very larges systems one
-! might get ** due to size overflow
       WRITE(LUCOEF,'(A74)') TEXT
-      WRITE(LUCOEF,'(I4,6I10)') NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM)
-      WRITE(LUCOEF,'(D24.16)') TOTERG
+      WRITE(LUCOEF,'((XI0),6(XI0))') NFSYM,((IDIM(I,J),I = 1,3),
+     &                                                  J=1,NFSYM)
+      WRITE(LUCOEF,'(E24.16)') TOTERG
       WRITE(LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
-      WRITE(LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
-      IF (I3_IBEIG) THEN
-        WRITE(LUCOEF,'(66I3)') (IBEIG(I),I=1,NORBT)
-        WRITE(LUPRI,'(2X,A)') 'DFPCMO: IBEIG written in 66I3 format,'
-     &  //' use .PCMOI3 for reading.'
-      ELSE
-        WRITE(LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
-        WRITE(LUPRI,'(2X,A)') 'DFPCMO: IBEIG written in 66I2 format'
-      ENDIF
+      WRITE(LUCOEF,'(6E22.12)') (EIG(I),I=1,NORBT)
+      WRITE(LUCOEF,'(66(XI0))') (IBEIG(I),I=1,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -4387,4 +4432,51 @@ C
       DeAllocate (Buffer)
 
       End
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck getacord */
+      SUBROUTINE GETACORD(COORA)
+C*****************************************************************************
+C
+C    GETACORD : Make list atomic coordinates
+C
+C               Written oct.2001 by Jesper Kielberg Pedersen
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+      PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0 , D2 = 2.0D0)
+      DIMENSION COORA(3,*)
+      CALL QENTER('GETACORD')
+C
+C     Make the full matrix of cartisian coordinates from CORD(NUCIND)
+C
+      JATOM = 0
+      DO 100 ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         IF (MULT(MULCNT) .EQ. 1) THEN
+            JATOM = JATOM + 1
+            COORA(1,JATOM) = CORD(1,ICENT)
+            COORA(2,JATOM) = CORD(2,ICENT)
+            COORA(3,JATOM) = CORD(3,ICENT)
+         ELSE
+            DO 200 ISYMOP = 0, MAXOPR
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  JATOM = JATOM + 1
+                  COORA(1,JATOM) = 
+     &                 PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+                  COORA(2,JATOM) = 
+     &                 PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+                  COORA(3,JATOM) = 
+     &                 PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               END IF
+  200       CONTINUE
+         END IF
+  100 CONTINUE
+      CALL QEXIT('GETACORD')
+      RETURN
+      END

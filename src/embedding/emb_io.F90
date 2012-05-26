@@ -128,6 +128,7 @@ module fde_io
 
     if (associated(points)) nullify(points)
     call allocp(points,4,npoints, id="grid_points")
+    if (associated(properties)) nullify(properties)
     call allocp(properties,nprop,npoints, id="properties_on_grid")
 
     DO i=1,npoints

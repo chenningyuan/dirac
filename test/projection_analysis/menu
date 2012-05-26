@@ -1,13 +1,13 @@
-noref H.inp H.mol --outcmo
-sh mv DFCOEF cf.H
-sh ln -s cf.H DFHAT1
-sh ln -s cf.H DFHAT2
-sh ln -s cf.H DFHAT3
-sh ln -s cf.H DFHAT4
+noref H.inp H.mol --get=DFACMO
+mv DFACMO ac.H
+cp ac.H DFHAT1
+cp ac.H DFHAT2
+cp ac.H DFHAT3
+cp ac.H DFHAT4
 
-noref C.inp C.mol --outcmo
-sh mv DFCOEF cf.C
-sh ln -s cf.C DFCAT
+noref C.inp C.mol --get=DFACMO
+mv DFACMO ac.C
+cp ac.C DFCAT
 
 CH4.inp CH4.mol --copy="DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4"
-sh rm DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4 cf.H cf.C
+rm DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4 ac.H ac.C

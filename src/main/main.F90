@@ -37,11 +37,16 @@ program dirprg
   use interface_ao
   use interface_mo
 
-#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
   use mpi
+  implicit none
+#else
+  implicit none
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
 #endif
 
-  implicit none
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
@@ -146,6 +151,7 @@ program dirprg
      write(lupri, *)
 
      call print_binary_info()
+     call print_additional_binary_info()
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info

@@ -49,7 +49,8 @@ module dirac_cfg
 !                    embedding module
   logical, public :: dirac_cfg_fde                = .false.
   logical, public :: dirac_cfg_fde_response       = .false.
-
+!                    Polarizable Continuum Model module
+  logical, public :: dirac_cfg_pcm                = .false.
   private
 
 end module

@@ -312,7 +312,7 @@ C
           LCMBSPC(ICISPC) = 1
           ICMBSPC(1,ICISPC) = ICISPC
         END DO
-        LCSBLK = 100000
+        LCSBLK = 5000000
 C
 C     Print section
 C     =============

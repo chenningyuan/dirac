@@ -511,7 +511,7 @@ C
      &                          VMUUUU(KTR,L,I,JTR,1)
      &                          + VMUUUU(L,KTR,JTR,I,1)
      &                          + VMUUUU(I,JTR,KTR,L,1)
-     &                          + VMUUUU(I,JTR,L,KTR,1)
+     &                          + VMUUUU(JTR,I,L,KTR,1)
                         END IF
                      ELSE
                         IF (KSYMM) THEN
@@ -530,22 +530,22 @@ C
      &                          + VMUUUU(KTR,LTR,ITR,JTR,1)
                            VDUUUU(KK,LL,IJ,1,2) =
      $                          VMUUUU(K,LTR,I,JTR,1)
-     $                          + VMUUUU(I,JTR,K,LTR,1)
+     $                          + VMUUUU(LTR,K,JTR,I,1)
      $                          - VMUUUU(L,KTR,I,JTR,1)
-     $                          - VMUUUU(I,JTR,L,KTR,1)
+     $                          - VMUUUU(KTR,L,JTR,I,1)
      $                          - VMUUUU(K,LTR,J,ITR,1)
-     $                          - VMUUUU(J,ITR,K,LTR,1)
+     $                          - VMUUUU(LTR,K,ITR,J,1)
      $                          + VMUUUU(L,KTR,J,ITR,1)
-     $                          + VMUUUU(J,ITR,L,KTR,1)
+     $                          + VMUUUU(KTR,L,ITR,J,1)
                            VDUUUU(KK,LL,IJ,1,3) =
      $                          VMUUUU(KTR,L,I,JTR,1)
-     $                          + VMUUUU(I,JTR,KTR,L,1)
+     $                          + VMUUUU(L,KTR,JTR,I,1)
      $                          - VMUUUU(LTR,K,I,JTR,1)
-     $                          - VMUUUU(I,JTR,LTR,K,1)
+     $                          - VMUUUU(K,LTR,JTR,I,1)
      $                          - VMUUUU(KTR,L,J,ITR,1)
-     $                          - VMUUUU(J,ITR,KTR,L,1)
+     $                          - VMUUUU(L,KTR,ITR,J,1)
      $                          + VMUUUU(LTR,K,J,ITR,1)
-     $                          + VMUUUU(J,ITR,LTR,K,1)
+     $                          + VMUUUU(K,LTR,ITR,J,1)
                         ELSE
 C
 C                          (1) Symm. transition density matrix
@@ -714,14 +714,14 @@ C
      $                             - VMUUUU(J,I,L,K,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      &                             VMUUUU(K,LTR,I,JTR,2)
-     &                             - VMUUUU(LTR,K,JTR,I,1)
+     &                             - VMUUUU(LTR,K,JTR,I,2)
      &                             + VMUUUU(I,JTR,K,LTR,2)
-     &                             - VMUUUU(JTR,I,LTR,K,1)
+     &                             - VMUUUU(JTR,I,LTR,K,2)
                               VDUUUU(KK,LL,IJ,2,3) =
      &                             VMUUUU(KTR,L,I,JTR,2)
      &                             - VMUUUU(L,KTR,JTR,I,2)
      &                             + VMUUUU(I,JTR,KTR,L,2)
-     &                             - VMUUUU(I,JTR,L,KTR,2)
+     &                             - VMUUUU(JTR,I,L,KTR,2)
                            END IF
                         ELSE
                            IF (KSYMM) THEN
@@ -740,22 +740,22 @@ C
      &                             - VMUUUU(KTR,LTR,ITR,JTR,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      $                             VMUUUU(K,LTR,I,JTR,2)
-     $                             - VMUUUU(I,JTR,K,LTR,2)
+     $                             - VMUUUU(LTR,K,JTR,I,2)
      $                             - VMUUUU(L,KTR,I,JTR,2)
-     $                             + VMUUUU(I,JTR,L,KTR,2)
+     $                             + VMUUUU(KTR,L,JTR,I,2)
      $                             - VMUUUU(K,LTR,J,ITR,2)
-     $                             + VMUUUU(J,ITR,K,LTR,2)
+     $                             + VMUUUU(LTR,K,ITR,J,2)
      $                             + VMUUUU(L,KTR,J,ITR,2)
-     $                             - VMUUUU(J,ITR,L,KTR,2)
+     $                             - VMUUUU(KTR,L,ITR,J,2)
                               VDUUUU(KK,LL,IJ,2,3) =
      $                             VMUUUU(KTR,L,I,JTR,2)
-     $                             - VMUUUU(I,JTR,KTR,L,2)
+     $                             - VMUUUU(L,KTR,JTR,I,2)
      $                             - VMUUUU(LTR,K,I,JTR,2)
-     $                             + VMUUUU(I,JTR,LTR,K,2)
+     $                             + VMUUUU(K,LTR,JTR,I,2)
      $                             - VMUUUU(KTR,L,J,ITR,2)
-     $                             + VMUUUU(J,ITR,KTR,L,2)
+     $                             + VMUUUU(L,KTR,ITR,J,2)
      $                             + VMUUUU(LTR,K,J,ITR,2)
-     $                             - VMUUUU(J,ITR,LTR,K,2)
+     $                             - VMUUUU(K,LTR,ITR,J,2)
                            ELSE
 C
 C                            (1) Symm. transition density matrix
@@ -765,7 +765,7 @@ C
      $                             - VMUUUU(L,K,J,I,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      &                             VMUUUU(K,LTR,I,JTR,2)
-     &                             - VMUUUU(LTR,K,JTR,I,1)
+     &                             - VMUUUU(LTR,K,JTR,I,2)
                               VDUUUU(KK,LL,IJ,2,3) =
      &                             VMUUUU(KTR,L,I,JTR,2)
      &                             - VMUUUU(L,KTR,JTR,I,2)

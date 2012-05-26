@@ -183,3 +183,19 @@ C
       RETURN
       END
 *
+      SUBROUTINE COP_SCA_VEC(VECOUT,VECIN,FACTOR,NDIM)
+*
+* Copy and scale a vector
+*
+* VECOUT = FACTOR*VECIN
+*
+#include "implicit.inc"
+*
+      DIMENSION VECOUT(NDIM),VECIN(NDIM)
+*
+      DO I=1,NDIM
+        VECOUT(I) = FACTOR*VECIN(I)
+      END DO
+*
+      RETURN
+      END

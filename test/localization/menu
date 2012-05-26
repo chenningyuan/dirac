@@ -1,25 +1,26 @@
 # get input files
-sh tar xzf cf.tgz
-sh ln -f -s cf.H DFH1AT
-sh ln -f -s cf.H DFH2AT
-sh ln -f -s cf.H DFH3AT
-sh ln -f -s cf.H DFH4AT
-sh ln -f -s cf.C DFC1AT
-sh ln -f -s cf.O DFO1AT
+#sh tar xzf cf.tgz
+sh python -c "import tarfile; tar=tarfile.open('cf.tgz'); tar.extractall(); tar.close()" 
+cp cf.H DFH1AT
+cp cf.H DFH2AT
+cp cf.H DFH3AT
+cp cf.H DFH4AT
+cp cf.C DFC1AT
+cp cf.O DFO1AT
 
 # CH4
-sh ln -f -s cf.CH4 DFPCMO
+cp cf.CH4 DFPCMO
 CH4locmul_full.inp CH4.mol --copy="DFPCMO"
 CH4locprj_full.inp CH4.mol --copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"  
 CH4locprj_comb.inp CH4.mol --copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"  
 CH4locprj_diag.inp CH4.mol --copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"  
 
 # H2O
-sh ln -f -s cf.H2O DFPCMO
+cp cf.H2O DFPCMO
 H2Olocmul_full.inp H2O.mol --copy="DFPCMO"
 H2Olocprj_full.inp H2O.mol --copy="DFPCMO DFO1AT DFH1AT DFH2AT"
 H2Olocprj_comb.inp H2O.mol --copy="DFPCMO DFO1AT DFH1AT DFH2AT"
 H2Olocprj_diag.inp H2O.mol --copy="DFPCMO DFO1AT DFH1AT DFH2AT"
 
 # Clean after yourself
-sh rm -f cf.C cf.H cf.O cf.CH4 cf.H2O DFC1AT DFO1AT DFH1AT DFH2AT DFH3AT DFH4AT DFPCMO
+rm cf.C cf.H cf.O cf.CH4 cf.H2O DFC1AT DFO1AT DFH1AT DFH2AT DFH3AT DFH4AT DFPCMO

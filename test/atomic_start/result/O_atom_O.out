@@ -1,4 +1,4 @@
-DIRAC pam run in /home/saue/Dirac/test/atomic_start
+DIRAC pam run in /home/bast/dirac/develop/test/atomic_start
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -148,44 +148,45 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
-
-
+ 
+ 
 Binary information
 ------------------
-
- Who compiled             | saue@dirac
- System                   | Linux-3.0.0-16-generic
+ 
+ Who compiled             | bast@lpqlx131
+ System                   | Linux-2.6.32-5-amd64
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
- Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -O3 -funroll-all-loops
+ Fortran compiler         | /opt/intel/bin/ifort
+ Fortran compiler version | ifort (IFORT) 12.1.0 20110811
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
  C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
- C flags                  | -g -O2 -Wno-unused
- BLAS                     | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
-                          | e/libf77blas.so;/usr/lib/atlas-base/atlas/libblas.
-                          | so
- LAPACK                   | /usr/lib/atlas-base/liblapack_atlas.so;/usr/lib/at
-                          | las-base/atlas/liblapack.so
+ C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
+ C flags                  | -g -O0
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
+                          | thread.so;/usr/lib/libpthread.so;/usr/lib/libm.so;
+                          | /opt/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-l
+                          | iomp5;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_lapack95_lp64.a;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | efe30d6
- Configuration time       | 2012-03-13 21:18:38.669663
+ Last Git revision        | 35140a5
+ Configuration time       | 2012-05-08 10:39:35.318956
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Mar 13 21:25:03 2012
+     Date and time (Linux)  : Tue May  8 11:06:20 2012
      Host name              : not found                               
-
-
+ 
+ 
 Contents of the input file
 --------------------------
-
+ 
 **DIRAC                                                                                             
 .WAVE FUNCTION                                                                                      
 **GENERAL                                                                                           
@@ -212,11 +213,11 @@ DFOXXX 2
 3..5                                                                                                
 0.33                                                                                                
 **END OF                                                                                            
-
-
+ 
+ 
 Contents of the molecule file
 -----------------------------
-
+ 
 INTGRL                                                                                              
 Water                                                                                               
 cc-pVDZ basis (note that a tight p has NOT been added)                                              
@@ -467,7 +468,7 @@ Represented as: D2h
   -------------------------------------------
 
     1
-
+ 
 O      0.0000000000   0.0000000000   0.0000000000
 
 
@@ -757,12 +758,12 @@ O      0.0000000000   0.0000000000   0.0000000000
    10. iteration,  total energy:           -74.786187641305
    11. iteration,  total energy:           -74.786187650828
    12. iteration,  total energy:           -74.786187651488
-   13. iteration,  total energy:           -74.786187656171
+   13. iteration,  total energy:           -74.786187656172
    13. iteration,  total energy:           -74.786187651537
   ### NON-RELATIVISTIC APPROX. ###
         13      -0.7478618765D+02      -0.1495722830D+03       0.7478609539D+02      -0.2000001234D+01
     1. iteration,  total energy:           -74.834671965474
-    2. iteration,  total energy:           -74.838229600652
+    2. iteration,  total energy:           -74.838229600651
     3. iteration,  total energy:           -74.838230705343
     4. iteration,  total energy:           -74.838230772078
     5. iteration,  total energy:           -74.838230780591
@@ -770,7 +771,7 @@ O      0.0000000000   0.0000000000   0.0000000000
     7. iteration,  total energy:           -74.838230776966
     8. iteration,  total energy:           -74.838230776970
     9. iteration,  total energy:           -74.838230781551
-    9. iteration,  total energy:           -74.838230776970
+    9. iteration,  total energy:           -74.838230776971
   ### EV  OPERATOR RESULT      ###
          9      -0.7483823078D+02      -0.1497856723D+03       0.7494744149D+02      -0.1998542836D+01
       *** AMFIIN: ADDING nucleus    1 with charge   8 to the BSSn Hamiltonian.
@@ -780,7 +781,7 @@ O      0.0000000000   0.0000000000   0.0000000000
                    ***       Calculation continues in two-component mode.        ***
                    *****************************************************************
 
- >>> Time used in mk_h2c is   0.22 seconds
+ >>> Time used in mk_h2c is   0.32 seconds
 
   Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
 
@@ -841,7 +842,7 @@ O      0.0000000000   0.0000000000   0.0000000000
 No. of electronic orbitals (NESH):    14      12      26
 No. of positronic orbitals (NPSH):     0       0       0
 Total no. of orbitals      (NORB):    14      12      26
- >>> Time used in PAMSET is   0.26 seconds
+ >>> Time used in PAMSET is   0.47 seconds
 
 
  *******************************************************************************
@@ -849,7 +850,7 @@ Total no. of orbitals      (NORB):    14      12      26
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   1 ##########   Tue May  8 11:06:21 2012
 
 
 
@@ -857,36 +858,37 @@ Total no. of orbitals      (NORB):    14      12      26
                                    ------------
 
  O   DFOXXX
- DIRAC: No title specified !!!                     Tue Mar 13 21:25:03 2012           1           0          26          27  -73.078713778442506     
+ DIRAC: No title specified !!!                     Tue May  8 11:06:20 2012
+           1           0          26          27  -74.7977651064103     
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    0.65%    3.05%   27.90%   0.00400099s
+SOfock:LL  1.00D-12    2.85%    0.70%    3.05%   27.85%   0.01600099s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -72.459808379441625
+Total electronic energy            :   -72.341761116273602
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -72.459808379441625
+Total energy                       :   -72.341761116273602
  cp DFCOEF DFCOEF.BEST
    * Real diagonalization      (CPU): 0.00000000s
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -72.45980837944      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.01200101s   LL             Tue Mar 13
+It.    1    -72.34176111627      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.04400301s   LL             Tue May  8
 
-########## START ITERATION NO.   2 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   2 ##########   Tue May  8 11:06:21 2012
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    0.63%   20.01%   54.17%   0.00400001s
+SOfock:LL  1.00D-12    2.85%    0.63%   20.01%   54.17%   0.01200098s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -71.046612912481550
+Total electronic energy            :   -71.076569014490445
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -71.046612912481550
+Total energy                       :   -71.076569014490445
 
 
                                Output from DIISD1:
@@ -895,29 +897,29 @@ Total energy                       :   -71.046612912481550
 * DIIS iteration no.:         1
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
-   * Two-electron Fock matrix  (CPU): 0.00400001s
+   * Two-electron Fock matrix  (CPU): 0.01600099s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00800002s
+>>> Total CPU-time : 0.02000099s
 
-########## END ITERATION NO.   2 ##########   Tue Mar 13 21:25:03 2012
+########## END ITERATION NO.   2 ##########   Tue May  8 11:06:21 2012
 
-It.    2    -71.04661291248     -1.41D+00 -1.43D+00  4.57D-01               0.00800002s   LL             Tue Mar 13
+It.    2    -71.07656901449     -1.27D+00 -1.13D+00  3.60D-01               0.02000099s   LL             Tue May  8
 
-########## START ITERATION NO.   3 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   3 ##########   Tue May  8 11:06:21 2012
 
-    3 *** Differential density matrix. DCOVLP     = 1.0678
-    3 *** Differential density matrix. DVOVLP( 1) = 1.0010
+    3 *** Differential density matrix. DCOVLP     = 1.0670
+    3 *** Differential density matrix. DVOVLP( 1) = 1.0206
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    0.73%   20.01%   54.08%   0.00400001s
+SOfock:LL  1.00D-12    2.85%    0.73%   20.01%   54.08%   0.01600099s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -71.128330999818829
+Total electronic energy            :   -71.129371582523419
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -71.128330999818829
+Total energy                       :   -71.129371582523419
 
 
                                Output from DIISD1:
@@ -925,36 +927,36 @@ Total energy                       :   -71.128330999818829
 
 * DIIS iteration no.:         2
 * B matrix dimension:         3
-* B matrix condition: 5.108D-02
+* B matrix condition: 2.947D-02
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.716D-03
-         2     -2.338D-03
-         3      1.002D+00
-   * Two-electron Fock matrix  (CPU): 0.00400001s
+     lambda     2.289D-03
+         2     -3.884D-02
+         3      1.039D+00
+   * Two-electron Fock matrix  (CPU): 0.01600099s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00400001s
+>>> Total CPU-time : 0.02800196s
 
-########## END ITERATION NO.   3 ##########   Tue Mar 13 21:25:03 2012
+########## END ITERATION NO.   3 ##########   Tue May  8 11:06:21 2012
 
-It.    3    -71.12833099982      8.17D-02  2.78D-01  6.10D-02   DIIS   2    0.00400001s   LL             Tue Mar 13
+It.    3    -71.12937158252      5.28D-02  2.22D-01  4.97D-02   DIIS   2    0.02800196s   LL             Tue May  8
 
-########## START ITERATION NO.   4 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   4 ##########   Tue May  8 11:06:21 2012
 
-    4 *** Differential density matrix. DCOVLP     = 1.0056
-    4 *** Differential density matrix. DVOVLP( 1) = 1.0168
+    4 *** Differential density matrix. DCOVLP     = 1.0066
+    4 *** Differential density matrix. DVOVLP( 1) = 1.0146
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    1.07%   19.96%   53.86%   0.00400099s
+SOfock:LL  1.00D-12    2.85%    1.07%   19.96%   53.86%   0.02000099s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -71.130728256861090
+Total electronic energy            :   -71.130809988277946
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -71.130728256861090
+Total energy                       :   -71.130809988277946
 
 
                                Output from DIISD1:
@@ -962,37 +964,37 @@ Total energy                       :   -71.130728256861090
 
 * DIIS iteration no.:         3
 * B matrix dimension:         4
-* B matrix condition: 3.952D-04
+* B matrix condition: 2.522D-04
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     4.960D-05
-         2      1.231D-02
-         3     -2.447D-01
-         4      1.232D+00
-   * Two-electron Fock matrix  (CPU): 0.00400099s
+     lambda     2.348D-05
+         2      1.447D-02
+         3     -2.064D-01
+         4      1.192D+00
+   * Two-electron Fock matrix  (CPU): 0.02000099s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00800100s
+>>> Total CPU-time : 0.02000099s
 
-########## END ITERATION NO.   4 ##########   Tue Mar 13 21:25:03 2012
+########## END ITERATION NO.   4 ##########   Tue May  8 11:06:21 2012
 
-It.    4    -71.13072825686      2.40D-03  2.17D-02  1.41D-02   DIIS   3    0.00800100s   LL             Tue Mar 13
+It.    4    -71.13080998828      1.44D-03  1.88D-02  9.29D-03   DIIS   3    0.02000099s   LL             Tue May  8
 
-########## START ITERATION NO.   5 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   5 ##########   Tue May  8 11:06:21 2012
 
-    5 *** Differential density matrix. DCOVLP     = 0.9991
-    5 *** Differential density matrix. DVOVLP( 1) = 1.0046
+    5 *** Differential density matrix. DCOVLP     = 0.9994
+    5 *** Differential density matrix. DVOVLP( 1) = 1.0030
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    1.26%   19.89%   53.72%   0.00399998s
+SOfock:LL  1.00D-12    2.85%    1.28%   19.89%   53.69%   0.01600105s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -71.130868749613825
+Total electronic energy            :   -71.130869659238513
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -71.130868749613825
+Total energy                       :   -71.130869659238513
 
 
                                Output from DIISD1:
@@ -1000,38 +1002,38 @@ Total energy                       :   -71.130868749613825
 
 * DIIS iteration no.:         4
 * B matrix dimension:         5
-* B matrix condition: 3.348D-06
+* B matrix condition: 1.656D-06
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     2.292D-07
-         2      5.331D-05
-         3      2.278D-02
-         4     -2.289D-01
-         5      1.206D+00
-   * Two-electron Fock matrix  (CPU): 0.00799999s
+     lambda     1.226D-07
+         2      1.201D-04
+         3      1.355D-02
+         4     -2.219D-01
+         5      1.208D+00
+   * Two-electron Fock matrix  (CPU): 0.01600105s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00799999s
+>>> Total CPU-time : 0.02800202s
 
-########## END ITERATION NO.   5 ##########   Tue Mar 13 21:25:03 2012
+########## END ITERATION NO.   5 ##########   Tue May  8 11:06:21 2012
 
-It.    5    -71.13086874961      1.40D-04 -5.25D-03  1.86D-03   DIIS   4    0.00799999s   LL             Tue Mar 13
+It.    5    -71.13086965924      5.97D-05 -2.91D-03  1.37D-03   DIIS   4    0.02800202s   LL             Tue May  8
 
-########## START ITERATION NO.   6 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   6 ##########   Tue May  8 11:06:21 2012
 
-    6 *** Differential density matrix. DCOVLP     = 0.9996
+    6 *** Differential density matrix. DCOVLP     = 0.9997
     6 *** Differential density matrix. DVOVLP( 1) = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    1.48%   19.82%   53.57%   0.00400001s
+SOfock:LL  1.00D-12    2.85%    1.55%   19.82%   53.51%   0.01600099s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -71.130870841530879
+Total electronic energy            :   -71.130870842087205
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -71.130870841530879
+Total energy                       :   -71.130870842087205
 
 
                                Output from DIISD1:
@@ -1039,39 +1041,39 @@ Total energy                       :   -71.130870841530879
 
 * DIIS iteration no.:         5
 * B matrix dimension:         6
-* B matrix condition: 1.575D-08
+* B matrix condition: 8.411D-09
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.099D-10
-         2      1.203D-05
-         3     -9.792D-04
-         4      1.130D-02
-         5     -8.825D-02
+     lambda     2.059D-10
+         2      9.525D-06
+         3     -6.254D-04
+         4      1.122D-02
+         5     -8.842D-02
          6      1.078D+00
-   * Two-electron Fock matrix  (CPU): 0.00400001s
+   * Two-electron Fock matrix  (CPU): 0.01600099s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00800100s
+>>> Total CPU-time : 0.02000099s
 
-########## END ITERATION NO.   6 ##########   Tue Mar 13 21:25:03 2012
+########## END ITERATION NO.   6 ##########   Tue May  8 11:06:21 2012
 
-It.    6    -71.13087084153      2.09D-06 -8.26D-04  6.04D-05   DIIS   5    0.00800100s   LL             Tue Mar 13
+It.    6    -71.13087084209      1.18D-06 -5.80D-04  4.50D-05   DIIS   5    0.02000099s   LL             Tue May  8
 
-########## START ITERATION NO.   7 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   7 ##########   Tue May  8 11:06:21 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
     7 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    3.78%   19.52%   52.63%   0.00000000s
+SOfock:LL  1.00D-12    2.85%    4.31%   19.49%   52.42%   0.01600099s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -71.130870842851905
+Total electronic energy            :   -71.130870842850754
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -71.130870842851905
+Total energy                       :   -71.130870842850754
 
 
                                Output from DIISD1:
@@ -1079,48 +1081,48 @@ Total energy                       :   -71.130870842851905
 
 * DIIS iteration no.:         6
 * B matrix dimension:         7
-* B matrix condition: 1.976D-11
+* B matrix condition: 1.310D-11
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.423D-13
-         2     -2.140D-07
-         3      5.759D-05
-         4     -7.680D-04
-         5      7.534D-03
-         6     -1.037D-01
-         7      1.097D+00
-   * Two-electron Fock matrix  (CPU): 0.00000000s
+     lambda     2.021D-13
+         2      2.133D-07
+         3      2.885D-05
+         4     -7.032D-04
+         5      7.414D-03
+         6     -1.047D-01
+         7      1.098D+00
+   * Two-electron Fock matrix  (CPU): 0.02000099s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
+>>> Total CPU-time : 0.02400100s
 
-########## END ITERATION NO.   7 ##########   Tue Mar 13 21:25:03 2012
+########## END ITERATION NO.   7 ##########   Tue May  8 11:06:21 2012
 
-It.    7    -71.13087084285      1.32D-09 -2.20D-05  1.91D-06   DIIS   6    0.00000000s   LL             Tue Mar 13
+It.    7    -71.13087084285      7.64D-10 -1.85D-05  1.60D-06   DIIS   6    0.02400100s   LL             Tue May  8
 
-########## START ITERATION NO.   8 ##########   Tue Mar 13 21:25:03 2012
+########## START ITERATION NO.   8 ##########   Tue May  8 11:06:21 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    8.94%   18.23%   50.54%   0.00400001s
+SOfock:LL  1.00D-12    2.85%    9.25%   18.15%   50.42%   0.01600099s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -71.130870842855387
+Total electronic energy            :   -71.130870842853355
 Nuclear potential energy           :     0.000000000000000
-Total energy                       :   -71.130870842855387
-   * Two-electron Fock matrix  (CPU): 0.00400001s
+Total energy                       :   -71.130870842853355
+   * Two-electron Fock matrix  (CPU): 0.01600099s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00400001s
+>>> Total CPU-time : 0.02400202s
 
-########## END ITERATION NO.   8 ##########   Tue Mar 13 21:25:03 2012
+########## END ITERATION NO.   8 ##########   Tue May  8 11:06:21 2012
 
-It.    8    -71.13087084286      3.48D-12  5.92D-07  5.06D-08   DIIS   6    0.00400001s   LL             Tue Mar 13
+It.    8    -71.13087084285      2.60D-12  5.45D-07  3.80D-08   DIIS   6    0.02400202s   LL             Tue May  8
 
 
                                    SCF - CYCLE
@@ -1136,14 +1138,14 @@ It.    8    -71.13087084286      3.48D-12  5.92D-07  5.06D-08   DIIS   6    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -72.45980837944      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.01200101s   LL             Tue Mar 13
-It.    2    -71.04661291248     -1.41D+00 -1.43D+00  4.57D-01               0.00800002s   LL             Tue Mar 13
-It.    3    -71.12833099982      8.17D-02  2.78D-01  6.10D-02   DIIS   2    0.00400001s   LL             Tue Mar 13
-It.    4    -71.13072825686      2.40D-03  2.17D-02  1.41D-02   DIIS   3    0.00800100s   LL             Tue Mar 13
-It.    5    -71.13086874961      1.40D-04 -5.25D-03  1.86D-03   DIIS   4    0.00799999s   LL             Tue Mar 13
-It.    6    -71.13087084153      2.09D-06 -8.26D-04  6.04D-05   DIIS   5    0.00800100s   LL             Tue Mar 13
-It.    7    -71.13087084285      1.32D-09 -2.20D-05  1.91D-06   DIIS   6    0.00000000s   LL             Tue Mar 13
-It.    8    -71.13087084286      3.48D-12  5.92D-07  5.06D-08   DIIS   6    0.00400001s   LL             Tue Mar 13
+It.    1    -72.34176111627      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.04400301s   LL             Tue May  8
+It.    2    -71.07656901449     -1.27D+00 -1.13D+00  3.60D-01               0.02000099s   LL             Tue May  8
+It.    3    -71.12937158252      5.28D-02  2.22D-01  4.97D-02   DIIS   2    0.02800196s   LL             Tue May  8
+It.    4    -71.13080998828      1.44D-03  1.88D-02  9.29D-03   DIIS   3    0.02000099s   LL             Tue May  8
+It.    5    -71.13086965924      5.97D-05 -2.91D-03  1.37D-03   DIIS   4    0.02800202s   LL             Tue May  8
+It.    6    -71.13087084209      1.18D-06 -5.80D-04  4.50D-05   DIIS   5    0.02000099s   LL             Tue May  8
+It.    7    -71.13087084285      7.64D-10 -1.85D-05  1.60D-06   DIIS   6    0.02400100s   LL             Tue May  8
+It.    8    -71.13087084285      2.60D-12  5.45D-07  3.80D-08   DIIS   6    0.02400202s   LL             Tue May  8
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    8 iterations.
 * Average elapsed time per iteration: 
@@ -1153,13 +1155,13 @@ It.    8    -71.13087084286      3.48D-12  5.92D-07  5.06D-08   DIIS   6    0.00
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -71.130870842855387
+   Electronic energy                        :    -71.130870842853355
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -71.130870842855387
+   Total energy                             :    -71.130870842853355
 
 
                                    Eigenvalues
@@ -1168,43 +1170,43 @@ It.    8    -71.13087084286      3.48D-12  5.92D-07  5.06D-08   DIIS   6    0.00
 
 * Block   1 in E1g:  Omega =  1/2
   * Closed shell, f = 1.0000
-   -23.36250601574  ( 2)       -3.24544503610  ( 2)
+   -23.36250601032  ( 2)       -3.24544503696  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    -0.37531655429  ( 2)        0.93808711915  ( 2)        0.93833890217  ( 2)       10.08854211144  ( 2)       58.42538568529  ( 2)
-   227.49343560062  ( 2)      848.99766366561  ( 2)     3406.99899851777  ( 2)    15463.51411316134  ( 2)
+    -0.37531655607  ( 2)        0.93808711792  ( 2)        0.93833890095  ( 2)       10.08854211286  ( 2)       58.42538569012  ( 2)
+   227.49343560855  ( 2)      848.99766367551  ( 2)     3406.99899852868  ( 2)    15463.51411317255  ( 2)
 
 * Block   2 in E1g:  Omega =  3/2
   * Virtual eigenvalues, f = 0.0000
-     0.93808711915  ( 2)        0.93833890217  ( 2)
+     0.93808711792  ( 2)        0.93833890095  ( 2)
 
 * Block   3 in E1g:  Omega =  5/2
   * Virtual eigenvalues, f = 0.0000
-     0.93833890217  ( 2)
+     0.93833890095  ( 2)
 
 * Block   1 in E1u:  Omega =  1/2
   * Open shell #1, f = 0.1667
-    -2.85210141183  ( 2)       -2.85024165109  ( 2)
+    -2.85210141509  ( 2)       -2.85024165437  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    -0.44340031996  ( 2)       -0.44273430738  ( 2)        3.78402724193  ( 2)        3.78866183265  ( 2)       30.64327166388  ( 2)
-    30.68775196003  ( 2)
+    -0.44340030177  ( 2)       -0.44273429004  ( 2)        3.78402723749  ( 2)        3.78866182789  ( 2)       30.64327166783  ( 2)
+    30.68775196395  ( 2)
 
 * Block   2 in E1u:  Omega =  3/2
   * Open shell #1, f = 0.1667
-    -2.85024165109  ( 2)
+    -2.85024165437  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    -0.44273430738  ( 2)        3.78866183265  ( 2)       30.68775196003  ( 2)
+    -0.44273429004  ( 2)        3.78866182789  ( 2)       30.68775196395  ( 2)
 
 * Occupation in fermion symmetry E1g
   * Inactive orbitals
      1/2 1/2
   * Virtual orbitals
-     1/2 3/2 1/2 5/2 3/2 1/2 1/2 1/2 1/2 1/2 1/2 1/2
+     1/2 1/2 3/2 1/2 3/2 5/2 1/2 1/2 1/2 1/2 1/2 1/2
 
 * Occupation in fermion symmetry E1u
   * Active orbitals
      1/2 3/2 1/2
   * Virtual orbitals
-     1/2 1/2 3/2 1/2 1/2 3/2 1/2 3/2 1/2
+     1/2 1/2 3/2 1/2 3/2 1/2 1/2 1/2 3/2
 
 * Occupation of subblocks
                        E1g:  1/2  3/2  5/2                                                                  
@@ -1221,10 +1223,10 @@ tot.num. of pos.erg shells:    8    4
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :    -0.44340032 au (symmetry E1u)
+    E(LUMO) :    -0.44340030 au (symmetry E1u)
   - E(HOMO) :    -2.85024165 au (symmetry E1u)
   ------------------------------------------
-    gap     :     2.40684133 au
+    gap     :     2.40684135 au
 
 ===========================================================================
 * ACMOU1: Coefficients read from unformatted DFCOEF 
@@ -1232,10 +1234,8 @@ tot.num. of pos.erg shells:    8    4
 ===========================================================================
 
  
-     Date and time (Linux)  : Tue Mar 13 21:25:03 2012
+     Date and time (Linux)  : Tue May  8 11:06:21 2012
      Host name              : not found                               
->>>> Node 0, utime: 0, stime: 0, minflt: 4612, majflt: 0, nvcsw: 1, nivcsw: 28, maxrss: 16900
->>>> Total WALL time used in DIRAC: 0s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
@@ -1246,21 +1246,23 @@ tot.num. of pos.erg shells:    8    4
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
-        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+      488.28 Mb at subroutine MAIN__+0x95b                               for work array at main                        
+        0.28 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
+        0.28 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
+        0.28 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
+        0.28 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
+        0.07 Mb at subroutine dirx2c_mp_x2c_driver_+0x1989               for unnamed variable                          
+        0.07 Mb at subroutine dirx2c_mp_x2c_driver_+0x74b                for unnamed variable                          
+        0.07 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
+        0.07 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
+        0.07 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
   
   Peak memory usage    (Mb) :       489.00
-       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+       reached at subroutine : x2c_amfi_interface_mp_x2c_interface2old_am
               for variable   : unnamed variable                          
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+>>>> Node 0, utime: 0, stime: 0, minflt: 6769, majflt: 0, nvcsw: 18, nivcsw: 85, maxrss: 24720
+>>>> Total WALL time used in DIRAC: 1s

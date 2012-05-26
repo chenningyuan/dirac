@@ -126,3 +126,20 @@ C=======================================================================
 
       RETURN
       END
+
+      subroutine print_additional_binary_info()
+      ! Print out additional infos which is not given in the 'Binary output'.
+      ! This includes versions of specific libraries, if they are defined by macros
+#if defined VAR_IFORT
+! usually placed in /opt/intel/mkl/include
+! as, for example, "!DEC$ DEFINE INTEL_MKL_VERSION = 100309"
+      include "mkl.fi"
+#endif
+#include "priunit.h"
+#if defined VAR_IFORT
+!DEC$IF DEFINED(INTEL_MKL_VERSION)
+      write(LUPRI,'(/,1X,A,I9)') 'Intel MKL version        |',
+     & INTEL_MKL_VERSION
+!DEC$ENDIF
+#endif
+      end

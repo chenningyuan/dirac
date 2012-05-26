@@ -609,12 +609,11 @@ C     SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
 **.3 : Static memory for string information
 *
       CALL MEMSTR_GAS_KRCC(WORK,KFREE,LFREE)
-      print*,'after MEMSTR_GAS_KRCC'
 *
 ** 4 : Info about group of strings
 *
 *.First free address
-      IDUMMY  = 6000
+      IDUMMY  = 60000
       KFREEL = 0
       CALL MEMGET('INTE',KFREEL,IDUMMY,WORK,KFREE,LFREE)
       if (NTEST.ge.1) then
@@ -636,8 +635,7 @@ C     KFREEL2=KFREEL!+2
         write(6,*)
         write(6,*) '======================================='
       end if
-C     print*,'before it all'
-      CALL MEMCHK_KRCC(WORK)
+*
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
@@ -733,7 +731,7 @@ C     print*,'before it all'
         write(6,*)
         write(6,*) '======================================='
       end if
-      CALL MEMCHK_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
@@ -755,7 +753,7 @@ C     print*,'before it all'
         CALL WEIGHT_KRCC(WORK(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
      &                  MNRS1X,MXRS1X,MNRS3X,MXRS3X,
      &                  WORK(KFREEL),IPRNT)
-        CALL MEMCHK_KRCC(WORK)
+C       CALL MEMCHK_KRCC(WORK)
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS_KRCC(IEL,NORB1,NORB2,NORB3,
      &                      MNRS1X,MXRS1X,MNRS3X,MXRS3X,
@@ -1161,6 +1159,7 @@ C
       DO IGRP = 1, NGRP
         NSTRIN = NSTFGP(IGRP)
         LSTRIN = NSTRIN*NELFGP(IGRP)
+        print*,'NSTRIN,LSTRIN',NSTRIN,LSTRIN
         CALL MEMGET('INTE',KOCSTR(IGRP),LSTRIN,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KSTREO(IGRP),NSTRIN,WORK,KFREE,LFREE)
         IF(PNTGRP.GE.5) THEN
@@ -1269,7 +1268,7 @@ C
      &WRITE(6,*) ' Last word with string information',KSTINE-1
       IF( NTEST .NE. 0 ) THEN
         WRITE(6,*) ' R*8 words used for storing Strinformation ',
-     &               KSTINE - KSTINF
+     &               KSTINE - KSTINF - 1
       END IF
 *
       RETURN
@@ -1379,7 +1378,7 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
       DIMENSION IOC(*),NSTASO(NSMST,*),ISTASO(NSMST,*)
 *
       CALL ISETVC(NSTASO(1,IOTYP),0,NSMST)
-      NTESTL = 10
+      NTESTL = 0
       NTEST = MAX(IPRNT,NTESTL)
       NSTRIN = 0
       IORB1F = 1
@@ -1534,12 +1533,12 @@ C
 *.Scratch arrays
       DIMENSION IOC(*),LSTASO(NOCTYP,NSMST)
 *
-      print*,'printing input'
-      print*,'NSMST,NACOB,NEL',NSMST,NACOB,NEL
-      print*,'istaso'
-      CALL IWRTMA(ISTASO,1,NSMST,1,10)
-      print*,'Z'
-      CALL IWRTMA(Z,1,NACOB,1,NEL)
+C     print*,'printing input'
+C     print*,'NSMST,NACOB,NEL',NSMST,NACOB,NEL
+C     print*,'istaso'
+C     CALL IWRTMA(ISTASO,1,NSMST,1,10)
+C     print*,'Z'
+C     CALL IWRTMA(Z,1,NACOB,1,NEL)
 *
       CALL ISETVC(LSTASO,0,NOCTYP*NSMST)
 *
@@ -2222,7 +2221,7 @@ C#include "memint.h"
       IFLAG = 1
       CALL GET_HX_RELA_FOR_NEWCCV(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
-     &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                 DUMMY,JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
 C     print*,'NSPOBEX_TP',NSPOBEX_TP
@@ -2230,6 +2229,7 @@ C     print*,'NSPOBEX_TP',NSPOBEX_TP
 *. and the actual spin-orbital excitations
       CALL MEMGET('INTE',KLSOBEX,4*NGAS*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLIHIND,4*NSPOBEX_TP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLIHINDOP,4*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSIGNNHX,NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLABEXTP,4*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLOP_REO,4*NSPOBEX_TP,WORK,KFREE,LFREE)
@@ -2238,9 +2238,12 @@ C     print*,'NSPOBEX_TP',NSPOBEX_TP
       IZERO = 0
       CALL ISETVC(WORK(KINC_HX),IZERO,NHX)
       IFLAG = 0
+* Notice KLIHINDOP becomes IHINDX and KLIHIND IHINDXOP
+* It is KLIHIND that is used later in the code!!!
       CALL GET_HX_RELA_FOR_NEWCCV(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
-     &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
+     &                 WORK(KLSOBEX),WORK(KLIHINDOP),WORK(KLIHIND),
+     &                 WORK(KSIGNNHX),
      &                 WORK(KLABEXTP),WORK(KLOP_REO),
      &                 WORK(KSIOPREO),WORK(KINC_HX),JCMBSPC,IPRNT)
 *
@@ -3162,7 +3165,8 @@ C     print*,'NHX at the end',NHX
       END
 *
       SUBROUTINE GET_HX_RELA_FOR_NEWCCV(IFLAG,IHTYPE,NOBPT,NHX,
-     &                       IFTONE,IFTTWO,ILTTWO,IHX_LOC,IHX,IHINDX,
+     &                       IFTONE,IFTTWO,ILTTWO,IHX_LOC,IHX,
+     &                       IHINDX,IHINDXOP,
      &                       SIGN_NHX,LABEL,IOP_REO,SIGN_OPREO,
      &                       INCLUDED_HX,JCMBSPC,IPRNT)
 *
@@ -3214,7 +3218,8 @@ C     print*,'NHX at the end',NHX
 *. input
       dimension NOBPT(NGAS)
 *. output
-      INTEGER IHX(NGAS,4,*),IHINDX(4,*),LABEL(4,*),IOP_REO(4,*)
+      INTEGER IHX(NGAS,4,*),IHINDX(4,*),IHINDXOP(4,*)
+      INTEGER LABEL(4,*),IOP_REO(4,*)
       INTEGER INCLUDED_HX(*)
       dimension SIGN_NHX(*),SIGN_OPREO(*)
 *. Local scratch
@@ -3274,6 +3279,10 @@ C              print*,'INSIDE if block.'
                   IHINDX(2,NHX) = 2
                   IHINDX(3,NHX) = 0
                   IHINDX(4,NHX) = 0
+                  IHINDXOP(1,NHX) = 1
+                  IHINDXOP(2,NHX) = 2
+                  IHINDXOP(3,NHX) = 0
+                  IHINDXOP(4,NHX) = 0
                   SIGN_NHX(NHX) = ONE
                   LABEL(IHINDX(1,NHX),NHX) = 1
                   LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3312,6 +3321,10 @@ C              print*,'INSIDE if block.'
                   IHINDX(2,NHX) = 2
                   IHINDX(3,NHX) = 0
                   IHINDX(4,NHX) = 0
+                  IHINDXOP(1,NHX) = 1
+                  IHINDXOP(2,NHX) = 2
+                  IHINDXOP(3,NHX) = 0
+                  IHINDXOP(4,NHX) = 0
                   SIGN_NHX(NHX) = ONE
                   LABEL(IHINDX(1,NHX),NHX) = -1
                   LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3385,6 +3398,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3423,6 +3440,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3486,6 +3507,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = -1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3516,6 +3541,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 3
+                    IHINDXOP(4,NHX) = 4
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = -1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3563,6 +3592,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 4
+                    IHINDXOP(4,NHX) = 3
                     SIGN_NHX(NHX) = -1.D0 * ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3593,6 +3626,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IHINDX(2,NHX) = 3
                     IHINDX(3,NHX) = 4
                     IHINDX(4,NHX) = 2
+                    IHINDXOP(1,NHX) = 1
+                    IHINDXOP(2,NHX) = 2
+                    IHINDXOP(3,NHX) = 4
+                    IHINDXOP(4,NHX) = 3
                     SIGN_NHX(NHX) = -1.D0 * ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3832,6 +3869,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 4
                       IHINDX(4,NHX) = 2
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = 1
                       LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3862,6 +3903,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 4
                       IHINDX(4,NHX) = 2
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = 1
                       LABEL(IHINDX(2,NHX),NHX) = 1
@@ -3925,6 +3970,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 2
                       IHINDX(4,NHX) = 4
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = -1
                       LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3955,6 +4004,10 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                       IHINDX(2,NHX) = 3
                       IHINDX(3,NHX) = 2
                       IHINDX(4,NHX) = 4
+                      IHINDXOP(1,NHX) = 1
+                      IHINDXOP(2,NHX) = 2
+                      IHINDXOP(3,NHX) = 3
+                      IHINDXOP(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = -1
                       LABEL(IHINDX(2,NHX),NHX) = -1
@@ -3992,7 +4045,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
 *
         WRITE(6,*) ' Hamiltonian classes included '
         DO I = 1,NHX
-          WRITE(6,*) INCLUDED_HX(I)
+          WRITE(6,*) INCLUDED_HX(I), ' Hamiltonian number = ',I 
         END DO
         end if
       end if
@@ -4045,6 +4098,7 @@ C     INTEGER NSTFGS(MXPNGAS), IBSTFGS(MXPNGAS), ISTRNM(MXPNGAS)
       DIMENSION WORK(*)
 *
 *. Number of strings per GAS space
+C     CALL MEMCHK_KRCC(WORK)
       DO IGAS = 1, NGAS
         NSTFGS(IGAS)  = NNSTSGP(ISMFGS(IGAS),IGAS)
         IBSTFGS(IGAS) = IISTSGP(ISMFGS(IGAS),IGAS)
@@ -4120,7 +4174,7 @@ CTI  Set following stuff to zero in such cases.
             KOCSTR_ADD = KOCSTR2(ITPFGS(IGAS))
           END IF
 *
-          call memchk_KRCC(WORK)
+C         call memchk_KRCC(WORK)
 *
           NSTI = NSTFGS(IGAS)
           CALL ADD_STR_GROUP_KRCC(NSTI,IBSTFGS(IGAS),WORK(KOCSTR_ADD),
@@ -4147,6 +4201,7 @@ CTI  Set following stuff to zero in such cases.
         WRITE(6,*) ' Strings generated '
         CALL PRTSTR(ISTROC,NEL,NSTR)
       END IF
+C     CALL MEMCHK_KRCC(WORK)
 *
       RETURN
       END
@@ -4396,7 +4451,7 @@ CTI  Set following stuff to zero in such cases.
       DIMENSION WORK(*)
 *
       CALL QENTER('GETST')
-      NTEST = 00
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ================================= '
@@ -4419,7 +4474,7 @@ CTI  Set following stuff to zero in such cases.
           CALL IWRTMA(IZ,NORBT,NEL,NORBT,NEL)
         END IF
       END IF
-      call memchk_KRCC(WORK)
+C     CALL MEMCHK_KRCC(WORK)
 *. Absolut number of this supergroup
 *. Occupation per gasspace
 *. Largest occupied space
@@ -4448,7 +4503,7 @@ CTI  Set following stuff to zero in such cases.
 *
       IF(NTEST.GE.200) THEN
         WRITE(6,*) ' Write out NNSTSGP '
-        CALL IWRTMA(NNSTSGP,1,NGAS,1,NGAS)
+        CALL IWRTMA(NNSTSGP,1,NSMST,1,NGAS)
         DO I=1,NSMST
          DO J=1,NGAS
            print*,'NNSTSGP,I,J',NNSTSGP(I,J),I,J
@@ -4473,6 +4528,8 @@ CTI  Set following stuff to zero in such cases.
          CALL IWRTMA(NELFGS,1,NGAS,1,NGAS)
          call memchk_KRCC(WORK)
       END IF
+C     print*,'in the middle'
+C     CALL MEMCHK_KRCC(WORK)
 *
 *. Loop over symmetries of each GAS
 *
@@ -4517,6 +4574,9 @@ CTI  Set following stuff to zero in such cases.
      &                              NSTR,NEL,
      &                              NNSTSGP,IISTSGP,IUB,
      &                              WORK,KFREE,LFREE)
+C       print*,'right arfter'
+C     CALL MEMCHK_KRCC(WORK)
+C     print*,'jijiji'
 *. Reorder Info : Lexical => actual number
         IF(IDOREO.NE.0) THEN
 *. Lexical number of NEL electrons
@@ -4557,6 +4617,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
         END IF
       END IF
 *
+C     CALL MEMCHK_KRCC(WORK)
       CALL QEXIT('GETST')
       RETURN
       END
@@ -4643,6 +4704,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
+#include "lucinp.inc"
 #include "ctcc.inc"
 #include "ctccp.inc"
 #include "cgas.inc"
@@ -4653,9 +4715,10 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
 * Choosing same dimension for all cluster and intermediate operators
 *
-      IMAXKRFLIP = MIN(3*MK2DEL,MX_EXC_LEVEL)
-      IMUBMAX = MX_EXC_LEVEL
+      IMAXKRFLIP = NACTEL !MIN(3*MK2DEL,MX_EXC_LEVEL)
+      IMUBMAX = NACTEL !MX_EXC_LEVEL
       IDIMINDX = (MX_EXC_LEVEL+1)*(2*IMAXKRFLIP+1)*(2*IMUBMAX+1)
+      print*,'IDIMINDX',IDIMINDX
 *
 * First cluster operator (could perhaps be done before (see if this
 * needs to mve later on)
@@ -4672,7 +4735,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
       CALL SORT_OP_3_INDEX(WORK(KLSOBEX_CC),NSPOBEX_TPE,NGAS,
-     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KT_IDXS),WORK(KT_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
 *
@@ -4695,7 +4758,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
       CALL SORT_OP_3_INDEX(WORK(KINTM01),NINTER01,NGAS,
-     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT01_IDXS),WORK(KINT01_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
 *
@@ -4718,7 +4781,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
       CALL SORT_OP_3_INDEX(WORK(KINTM10),NINTER10,NGAS,
-     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT10_IDXS),WORK(KINT10_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
 *
@@ -4741,7 +4804,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
       CALL SORT_OP_3_INDEX(WORK(KINTM11),NINTER11,NGAS,
-     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT11_IDXS),WORK(KINT11_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
 *
@@ -4764,7 +4827,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
       CALL SORT_OP_3_INDEX(WORK(KINTM02),NINTER02,NGAS,
-     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT02_IDXS),WORK(KINT02_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
 *
@@ -4787,7 +4850,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
       CALL SORT_OP_3_INDEX(WORK(KINTM20),NINTER20,NGAS,
-     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT20_IDXS),WORK(KINT20_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
 *
@@ -4810,7 +4873,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
       CALL SORT_OP_3_INDEX(WORK(KINTM12),NINTER12,NGAS,
-     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT12_IDXS),WORK(KINT12_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
 *
@@ -5127,7 +5190,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *. Scratch
       INTEGER ITEMP(2*NGAS,NOBEX_TP)
 *
-      NTEST = 00
+      NTEST = 100
 *
 * First find number of different creation and annihilation types
 *
@@ -5206,7 +5269,7 @@ C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
 *      
       DO
         ICOUNT = ICOUNT + 1
-        IF(ICOUNT.GE.NABOBEX) EXIT
+        IF(ICOUNT.GT.NABOBEX) EXIT
         IF(ISCR(1,ICOUNT-1).EQ.0) CYCLE
         DO I =ICOUNT,NABOBEX
           IF(ISCR(1,I).EQ.0) CYCLE
@@ -5225,7 +5288,7 @@ C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
 *      
       DO
         ICOUNT = ICOUNT + 1
-        IF(ICOUNT.GE.NABOBEX) EXIT
+        IF(ICOUNT.GT.NABOBEX) EXIT
         IF(ISCR(2,ICOUNT-1).EQ.0) CYCLE
         DO I =ICOUNT,NABOBEX
           IF(ISCR(2,I).EQ.0) CYCLE
@@ -5268,11 +5331,23 @@ C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
             WRITE(6,*) (IABOBEX(J,I),J=1,NGAS)
           END DO
         END IF
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The creator types '
+          DO I =1,NC
+            WRITE(6,*) (IOUT(J,I),J=1,NGAS)
+          END DO
+        END IF
         WRITE(6,*) ' Number of unique annihilators ',NA
         IF(INI.EQ.1) THEN
           WRITE(6,*) ' The annihilator types '
           DO I =1,NA
             WRITE(6,*) (IABOBEX(J+NGAS,I),J=1,NGAS)
+          END DO
+        END IF  
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The annihilator types '
+          DO I =1,NA
+            WRITE(6,*) (IOUT(J+NGAS,I),J=1,NGAS)
           END DO
         END IF  
       END IF
