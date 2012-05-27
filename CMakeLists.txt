@@ -58,6 +58,7 @@ include(ConfigSafeGuards)
 include(ConfigTesting)
 include(ConfigVersion)
 include(GenericMacros)
+include(BinaryInfo)
 
 add_custom_command(
     OUTPUT
@@ -120,8 +121,6 @@ if(ENABLE_PCMMOD)
         ${LIBS}
         )
 endif()
-
-include(BinaryInfo)
 
 # copy pam to build dir as pam and pam-dirac
 configure_file(
