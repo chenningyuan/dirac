@@ -32,14 +32,20 @@ the same year, attach "a", "b", "c", etc. after the year.
    J. Chem. Phys. **88**, *2547* (1988) 
    <http://dx.doi.org/10.1063/1.454033>
 
-.. [Dirac1930] P. A. M. Dirac, *Note on Exchange
-   Phenomena in the Thomas Atom*, Proc. Roy. Soc. London **26**, *376*
-   (1930) . ELVERSION???
+.. [Borschevsky2012] A.Borschevsky, M.Ilias, V.A.Dzuba, K.Beloy, V.V.Flambaum, P.Schwerdtfeger,
+   P-odd interaction constant :math:`W_A` from relativistic *ab initio* calculations of diatomic molecules,
+   Phys. Rev. A **85**, *052509* (2012)
+   <http://dx.doi.org/10.1103/PhysRevA.85.052509>
 
-.. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue
-   and K.Fægri, *Bonding analysis using localized relativistic orbitals:
-   Water, the ultrarelativistic case and the heavy homologues
-   H\ :sub:`2`\ X (X=Te, Po, eka-Po)*, J. Chem. Phys. **124**, *154307* (2006)
+.. [Dirac1930] P. A. M. Dirac, 
+   *Note on Exchange Phenomena in the Thomas Atom*,
+   Math Proc Cambridge  **26**, *376* (1930) 
+   <http://dx.doi.org/10.1017/S0305004100016108> 
+
+.. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue and K.Fægri,
+   Bonding analysis using localized relativistic orbitals:
+   Water, the ultrarelativistic case and the heavy homologues :math:`H_{2}X` (X=Te, Po, eka-Po),
+   J. Chem. Phys. **124**, *154307* (2006)
    <http://dx.doi.org/10.1063/1.2187001>
 
 .. [Dyall1994] K. G. Dyall, *An exact separation of the
@@ -49,7 +55,7 @@ the same year, attach "a", "b", "c", etc. after the year.
 
 .. [Dyall2007] K. G. Dyall and K. Fægri jr., *Introduction to Relativistic Quantum
    Chemistry*, Oxford University Press, New York, 2007
-   `Google Books URL <http://books.google.sk/books?id=k8gDJm1t2q4C&lpg=PA509&dq=K.%20G.%20Dyall%20and%20K.%20F%C3%A6gri%20jr.%2C%20*Introduction%20to%20Relativistic%20Quantum%20%20%20%20Chemistry*%2C%20Oxford%20University%20Press%2C%20New%20York%2C%202007&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+   `Google Books URL <http://books.google.sk/books?id=k8gDJm1t2q4C&printsec=frontcover&hl=sk&redir_esc=y#v=onepage&q&f=false>`_
 
 .. [Ekstrom2005] Ulf Ekstrom and Patrick Norman and Antonio Rizzo, 
    *Four-component Hartree--Fock calculations of
