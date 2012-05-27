@@ -39,23 +39,20 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     )
 
-include(ConfigVersion)
-include(ConfigSafeGuards)
-include(ConfigPamadm)
-
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
+set(LIBS "stdc++")
+
+include(ConfigVersion)
+include(ConfigSafeGuards)
+include(ConfigPamadm)
 include(ConfigTesting)
-include(DefinitionsList)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigParallelEnvironment)
-
-set(LIBS "stdc++")
-
 include(ConfigExternal)
 include(ConfigMath)
 include(ConfigGPUMath)
@@ -91,10 +88,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     )
 
 add_subdirectory(src/xcfun)
-set(LIBS
-    xcfun
-    ${LIBS}
-    )
+set(LIBS xcfun ${LIBS})
 
 add_subdirectory(src/gen1int)
 
@@ -149,6 +143,8 @@ add_custom_target(dirac_interfaces
 )
 
 # set definitions
+
+include(DefinitionsList)
 
 add_definitions(-DPRG_DIRAC)
 add_definitions(-DBUILD_GEN1INT)
@@ -267,7 +263,6 @@ if(ENABLE_TESTS)
         dirac
         ${LIBS}
         )
-    # configure unit testing
     include(ConfigUnitTesting)
 endif()
 
