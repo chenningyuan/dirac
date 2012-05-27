@@ -56,6 +56,7 @@ include(ConfigParallelEnvironment)
 include(ConfigExternal)
 include(ConfigMath)
 include(ConfigGPUMath)
+include(GenericMacros)
 
 add_custom_command(
     OUTPUT
