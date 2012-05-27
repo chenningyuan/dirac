@@ -1,6 +1,3 @@
-
-
-
 Restarting SCF calculations
 ===========================
 
@@ -32,7 +29,7 @@ Here we will show how one can run a Hartree-Fock (HF) calculation in
 restart a property calculation at the HF level in a second run without
 the need to re-do the X2C transformation.
 
-For the initial SCF step we use the following input file (``scf\_x2c.inp``)::
+For the initial SCF step we use the following input file (copy the content below into the ``scf_x2c.inp`` file)::
 
   **DIRAC
   .WAVE FUNCTION
@@ -53,7 +50,7 @@ For the initial SCF step we use the following input file (``scf\_x2c.inp``)::
   .SCF
   *END OF
 
-together with the following molecule file (``br2.xyz``)::
+together with the following molecule file (copy it into the ``br2.xyz`` file)::
 
   2
   Br 0.0 0.0  1.244
@@ -75,12 +72,12 @@ We run the initial SCF step using::
 
   pam --inp=scf_x2c.inp --mol=br2.xyz --get="X2CMAT AOMOMAT DFCOEF" 
 
-The output will be written to the file ``scf\_x2c\_br2.out``, which can be
+The output will be written to the file ``scf_x2c_br2.out``, which can be
 monitored during the calculation.
 
 In order to proceed in a second step with a property calculation of,
 e.g. the contact density at the Br nucleus at the HF level, we use the following
-input file (``property_x2c.inp``)::
+input file (copy and paste it into the ``property_x2c.inp`` input file)::
 
   **DIRAC
   .PROPERTIES
@@ -108,9 +105,8 @@ restart the calculation using::
 
   pam --inp=property_x2c.inp --mol=br2.xyz --put="X2CMAT AOMOMAT DFCOEF" 
 
-
-How to run a coupled-cluster calculation in separate steps
-==========================================================
+How to run a Coupled-Cluster calculations in separate steps
+===========================================================
 
 Most of the time there are no problems in executing the three steps in a
 coupled-cluster calculation with RELCCSD: 1) the Hartree-Fock calculation, 2)
