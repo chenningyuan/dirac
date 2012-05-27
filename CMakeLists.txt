@@ -46,16 +46,17 @@ endif()
 
 set(LIBS "stdc++")
 
-include(ConfigVersion)
-include(ConfigSafeGuards)
-include(ConfigPamadm)
-include(ConfigTesting)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
-include(ConfigParallelEnvironment)
+include(ConfigDocumentation)
 include(ConfigExternal)
-include(ConfigMath)
 include(ConfigGPUMath)
+include(ConfigMath)
+include(ConfigPamadm)
+include(ConfigParallelEnvironment)
+include(ConfigSafeGuards)
+include(ConfigTesting)
+include(ConfigVersion)
 include(GenericMacros)
 
 add_custom_command(
@@ -254,9 +255,6 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-include(ConfigPackaging)
-include(ConfigDocumentation)
-
 # build unit tests
 if(ENABLE_TESTS)
     # set unit test libs
@@ -273,3 +271,5 @@ if(ENABLE_UNIT_TESTS)
 else()
     execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR})
 endif()
+
+include(ConfigPackaging)
