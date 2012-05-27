@@ -99,7 +99,7 @@ macro(find_acml)
 endmacro()
 
 macro(find_atlas)
-    set(MATH_LIBRARY_PATH_SUFFIXES 
+    set(MATH_LIBRARY_PATH_SUFFIXES
         atlas atlas-base atlas-base/atlas)
     set(MATH_INCLUDE_PATH_SUFFIXES atlas)
     if (MATH_LANG STREQUAL "C")
@@ -108,7 +108,7 @@ macro(find_atlas)
     else()
         find_math_libs(blas f77blas cblas atlas)
     endif()
-    cache_math_result(blas Atlas) 
+    cache_math_result(blas Atlas)
 endmacro()
 
 macro(find_mkl)

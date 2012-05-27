@@ -102,7 +102,7 @@ macro(find_acml)
 endmacro()
 
 macro(find_atlas)
-    set(MATH_LIBRARY_PATH_SUFFIXES 
+    set(MATH_LIBRARY_PATH_SUFFIXES
         atlas atlas-base atlas-base/atlas)
     set(MATH_INCLUDE_PATH_SUFFIXES atlas)
 
@@ -111,7 +111,7 @@ macro(find_atlas)
         find_math_libs(lapack lapack_atlas lapack)
     endif()
     find_math_libs(lapack lapack_atlas lapack)
-    cache_math_result(lapack Atlas) 
+    cache_math_result(lapack Atlas)
 endmacro()
 
 macro(find_mkl)
@@ -142,7 +142,7 @@ macro(find_mkl)
     endif()
 
     if (LAPACK_LIBRARIES)
-        set(LAPACK_LIBRARIES 
+        set(LAPACK_LIBRARIES
             -Wl,--start-group ${LAPACK_LIBRARIES} -Wl,--end-group)
     endif()
     cache_math_result(lapack MKL)
