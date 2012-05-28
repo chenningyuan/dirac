@@ -9,13 +9,25 @@ References are sorted alphabetically according to the first author's family
 name with the year of publishing.  If the first author has more publications in
 the same year, attach "a", "b", "c", etc. after the year.
 
+Please always provide citation entry with permanent URL-link, the best is the DOI web identity.
+
 .. [Amovilli1998] C. Amovilli, V. Barone, R. Cammi, E. Cancès, M. Cossi, 
    B. Mennucci, C. S. Pomelli and J .Tomasi;
    *Recent Advances in the Description of Solvent Effects with the Polarizable Continuum Model*,
    Adv. Quantum Chem. **32**, 227 (1998)
    <http://dx.doi.org/10.1016/S0065-3276(08)60416-5>
 
+.. [Autschbach2012] J. Autschbach, *Perspective: Relativistic effects*,
+   J. Chem. Phys. **136**, 150902 (2012)
+   <http://dx.doi.org/10.1063/1.3702628>
+
 .. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
+
+.. [Barysz2010]  Barysz, Maria; Ishikawa, Yasuyuki (Eds.),
+   *Relativistic Methods for Chemists*,
+   Series: Challenges and Advances in Computational Chemistry and Physics, Vol. 10,
+   1st Edition., 2010, XIV, 613 p.
+   <http://dx.doi.org/10.1007/978-1-4020-9975-5>
 
 .. [Bauschlicher1980] C. W. Bauschlicher, Jr.,
    *The construction of modified virtual orbitals (MVO's) which are suited
@@ -158,7 +170,7 @@ the same year, attach "a", "b", "c", etc. after the year.
 .. [Jensen1996] H. J. Aa. Jensen and K. G. Dyall and T. Saue and K. Fægri jr.,
    *`Relativistic 4-component Multi-Configurational Self-Consistent Field Theory for Molecules: Formalism*
    J. Chem. Phys. **104**, *4083* (1996)
-   <http://link.aip.org/link/doi/10.1063/1.471644>
+   <http://dx.doi.org/10.1063/1.471644>
 
 .. [Knecht2008] S. Knecht and H. J. Aa. Jensen and T. Fleig, 
    *Large-Scale Parallel Configuration Interaction.
@@ -280,9 +292,10 @@ the same year, attach "a", "b", "c", etc. after the year.
    <http://dx.doi.org/10.1080/002689797171058>
 
 .. [Saue2000] T. Saue and H. J. Aa. Jensen,
-   *Quaternion symmetry of the Dirac equation*, in
-   *Mathematical Methods for Ab Initio Quantum Chemistry*, edited by
-   M. Defrancheschi and C. Le Bris, Springer, Berlin, 2000., LINK?
+   *Quaternion symmetry of the Dirac equation*, 
+   in *Mathematical Methods for Ab Initio Quantum Chemistry*,
+   edited by M. Defrancheschi and C. Le Bris, Springer, Berlin, 2000,
+   <http://dx.doi.org/10.1007/978-3-642-57237-1_11>
 
 .. [Saue2002] T. Saue and T. Helgaker,
    *Four-component relativistic Kohn-Sham theory*, 
@@ -292,7 +305,8 @@ the same year, attach "a", "b", "c", etc. after the year.
 .. [Saue2002a] T.Saue,
    *Post Dirac-Hartree-Fock methods - Properties*,
    in *Relativistic Electronic Structure Theory - Part 1: Fundamentals*,
-   edited by P. Schwerdtfeger, Elsevier, Amsterdam, 2002.
+   edited by P. Schwerdtfeger, Elsevier, Amsterdam, 2002
+   <http://dx.doi.org/10.1016/S1380-7323(02)80033-4>
 
 .. [Saue2003] T. Saue and H. J. Aa. Jensen,
    *Linear response at the 4-component relativistic level:
@@ -309,11 +323,12 @@ the same year, attach "a", "b", "c", etc. after the year.
 .. [Schirmer1983]  J. Schirmer and L. S. Cederbaum and O. Walter,
    *New approach to the one-particle Green's function for finite Fermi systems*,
    Phys. Rev. A **28**, *1237* (1983) 
-   <http://link.aps.org/doi/10.1103/PhysRevA.28.1237>
+   <http://dx.doi.org/10.1103/PhysRevA.28.1237>
 
 .. [Schwerdtfeger2002] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
    Part 1: Fundamentals*, Elsevier, Amsterdam, 2002
    `Google Books URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
+   <http://www.sciencedirect.com/science/bookseries/13807323/11>
 
 .. [Schwerdtfeger2002a] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
    Part 2: Applications*, Elsevier, Amsterdam, 2002.

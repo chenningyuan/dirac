@@ -176,10 +176,11 @@ In the second input:
      1
      10/12,0
 
-we distribute the same ten electrons in all 12 spinors. This gives
+we distribute the same ten electrons  over all 12 spinors. This gives
 a total of
 
 .. math::
+
  \left(\begin{array}{c} 12 \\ 10 \end{array}\right) = 66
 
 states, which are a mixture of one *s*\ :sup:`0`\ *d*\ :sup:`10`\
