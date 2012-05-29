@@ -1,4 +1,4 @@
-if (NOT DEFINED DEFAULT_CXX_FLAGS_SET OR ResetFLAGS)
+if (NOT DEFINED DEFAULT_CXX_FLAGS_SET OR RESET_FLAGS)
 if (CMAKE_COMPILER_IS_GNUCXX)
     set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused")
     set (CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -DDEBUG")
