@@ -503,8 +503,11 @@
       use cfiles_mod 
       use gen_mod 
       use hsfs_parameters
-#include "implicit.h"
+!#include "implicit.h"
+ implicit none
 #include "priunit.h"
+ integer :: name, num, new, ijnum, iii, iiv, i
+ integer :: i_4hs, isaa, itmp, jtmp, k, nija
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -552,14 +555,13 @@
 10    if (name.eq.namefl(i)) num=i
 
       if (num.le.nflcur) then
-        new=0 ! diagram already exists
+           new=0 ! diagram already exists
 
 !  next lines for case where temp file reopened with same name,
 !  different type (must be sn files). iii=-1 means ignore iii.
-      if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num))))then
+      if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num)))) then
            if (getiprint() >= 5) then
-             write(LUPRI,*) '1) num,iiia(num)=',num,iiia(num),          &
-        '...iiva(num)=',iiva(num)
+             write(LUPRI,*) '1) num,iiia(num)=',num,iiia(num),'...iiva(num)=',iiva(num)
            endif
 ! Gal 95
            itmp=4H       
@@ -573,11 +575,12 @@
           i_4hs=4hs 
           if (isaa.ne.i_4hs) then
 #endif
+            write(LUPRI,*) 
             write(LUPRI,*) "error exit ! isaa, i_4hs=",isaa,i_4hs
             write(LUPRI,*) 'ch1=',ch1,' ch2=',ch2
             write (LUPRI,120) name,iii,iiv,iiia(num),iiva(num)
 120         format(' file ',a8,' with iii iiv',2i5,' previously',2i5)
-            call abext('files   ') ! interrupts
+            call abext('files   ') 
           endif
        endif
 
@@ -723,8 +726,7 @@
             write(LUPRI,*) 'nija,iii6,iiv6:',nija,iii6,iiv6
           endif
         else
-          write (LUPRI,*)                                               &
-     'ccsd_files called with incorrect ijnum, ',ijnum
+          write (LUPRI,*) 'ccsd_files called with incorrect ijnum, ',ijnum
           call abext('ccsd_files   ')
         endif
 
