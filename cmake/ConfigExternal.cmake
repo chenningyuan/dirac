@@ -1,11 +1,15 @@
 include(FindGit)
 
-add_custom_target(
-    git_update
-    COMMAND ${GIT_EXECUTABLE} submodule init
-    COMMAND ${GIT_EXECUTABLE} submodule update
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+if (GIT_FOUND)
+    add_custom_target(
+        git_update
+        COMMAND ${GIT_EXECUTABLE} submodule init
+        COMMAND ${GIT_EXECUTABLE} submodule update
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
+else()
+    message(FATAL_ERROR "The git command for the git_update target not found !")
+endif()
 
 include(ExternalProject)
 
