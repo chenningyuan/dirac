@@ -175,11 +175,9 @@
         else
           fnew=fnew-5.d0
         endif
-        call add("tnew",fnew/(1.d0+fnew),"tu  ",                        &
-   1.d0/(1.d0+fnew),"tnew")
+        call add("tnew",fnew/(1.d0+fnew),"tu  ",1.d0/(1.d0+fnew),"tnew")
         if (iopt(17).ne.0) then
-          call add("t3nw",fnew/(1.d0+fnew),"t32 ",                      &
-     1.d0/(1.d0+fnew),"t3nw")
+          call add("t3nw",fnew/(1.d0+fnew),"t32 ",1.d0/(1.d0+fnew),"t3nw")
         end if
         write (6,'('' t averaged with fnew '',f7.3)') fnew
       endif

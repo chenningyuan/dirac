@@ -573,6 +573,8 @@
           i_4hs=4hs 
           if (isaa.ne.i_4hs) then
 #endif
+            write(LUPRI,*) "error exit ! isaa, i_4hs=",isaa,i_4hs
+            write(LUPRI,*) 'ch1=',ch1,' ch2=',ch2
             write (LUPRI,120) name,iii,iiv,iiia(num),iiva(num)
 120         format(' file ',a8,' with iii iiv',2i5,' previously',2i5)
             call abext('files   ') ! interrupts
@@ -3945,9 +3947,9 @@
       subroutine tchng6 (nij,ij,ije,ntapef,iparm) 
 !------------------------------------------------------------------------
 ! 
-! what does it do ? 
+!    what does it do ? 
 ! 
-!   entering arrays ij(*),ije(*)
+!   entering arrays ij(*),ije(0:*)
 !
 !------------------------------------------------------------------------
       use print_level
