@@ -43,7 +43,7 @@ C
 #include "dcbesr.h"
 #include "orgcom.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 11)
+      PARAMETER (NTABLE = 12)
       LOGICAL SET, NEWDEF, RESET, GORG
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
@@ -51,7 +51,7 @@ C
       SAVE SET
       DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
-     &            '.THRCVE','.THRCI ','.SDTCI '/
+     &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -84,7 +84,7 @@ C     variables for spin polarization in CI
       NCESR(2)  = 0
       NVESR(1)  = 0
       NVESR(2)  = 0
-      LVL_CIESR = 0
+      LVL_CIESR(:) = 0
 C
 C     Initialize orgcom.h
 C     ===================
@@ -110,7 +110,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -145,13 +145,13 @@ C Read multiplicity
                GO TO 100
     5          CONTINUE ! .SPINPOL
 C&&&& SPINPOLARIZATION (= SCI)
-                  LVL_CIESR = 1
+                  LVL_CIESR(:) = 1
                   READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
                   READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
                GO TO 100
     6          CONTINUE ! .SDCI
 C&&&& Singles and doubles CI
-                  LVL_CIESR = 2
+                  LVL_CIESR(:) = 2
                   READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
                   READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
                GO TO 100
@@ -175,7 +175,14 @@ C&&&& Convergence threshold for CI
                GO TO 100
    11          CONTINUE ! .SDTCI
 C&&&& Singles doubles triples CI
-                  LVL_CIESR = 3
+                  LVL_CIESR(:) = 3
+                  READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
+               GO TO 100
+   12          CONTINUE ! .SDT*CI
+C&&&& MR-CI-SDT/SD
+                  LVL_CIESR(1) = 3
+                  LVL_CIESR(2) = 2
                   READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
                   READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
                GO TO 100
@@ -204,21 +211,31 @@ C
          WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP not (correctly) specified'
          INPERR = INPERR + 1
       END IF
-      IF (LVL_CIESR .GT. 0) THEN
+      LVL_CIESR_T = LVL_CIESR(1) + LVL_CIESR(2)
+      IF (LVL_CIESR_T .GT. 0) THEN
          WRITE (LUPRI,'(/A)') ' * Spin polarization included with'
-         IF (LVL_CIESR .EQ. 1) THEN
-            WRITE (LUPRI,'(A)') '   - singles CI'
-         ELSE IF (LVL_CIESR .EQ. 2) THEN
-            WRITE (LUPRI,'(A)') '   - singles and doubles CI'
-         ELSE IF (LVL_CIESR .EQ. 3) THEN
-            WRITE (LUPRI,'(A)') '   - CISDT'
+         IF (LVL_CIESR(1) .EQ. 1) THEN
+            WRITE (LUPRI,'(A)') '   - singles CI from core orbitals:'
+         ELSE IF (LVL_CIESR(1) .EQ. 2) THEN
+            WRITE (LUPRI,'(A)')
+     &         '   - singles and doubles CI from core orbitals:'
+         ELSE IF (LVL_CIESR(1) .EQ. 3) THEN
+            WRITE (LUPRI,'(A)') '   - CISDT from core orbitals:'
          ELSE
-            call quit('only SCI and SDCI implemented so far')
+            call quit('only SCI, SDCI, SDTCI implemented so far')
          END IF
-         WRITE (LUPRI,'(A,2I5)')'     from core orbitals: ',
-     &      (NCESR(I),I=1,NFSYM)
-         WRITE (LUPRI,'(A,2I5)')'     to virtual orbitals:',
-     &      (NVESR(I),I=1,NFSYM)
+         WRITE (LUPRI,'(2I5)') (NCESR(I),I=1,NFSYM)
+         IF (LVL_CIESR(2) .EQ. 1) THEN
+            WRITE (LUPRI,'(A)') '   - singles CI to virtual orbitals:'
+         ELSE IF (LVL_CIESR(2) .EQ. 2) THEN
+            WRITE (LUPRI,'(A)')
+     &         '   - singles and doubles CI to virtual orbitals:'
+         ELSE IF (LVL_CIESR(2) .EQ. 3) THEN
+            WRITE (LUPRI,'(A)') '   - CISDT to virtual orbitals:'
+         ELSE
+            call quit('only SCI, SDCI, SDTCI implemented so far')
+         END IF
+         WRITE (LUPRI,'(2I5)') (NVESR(I),I=1,NFSYM)
       END IF
       IF (GORG) THEN
          CALL PRSYMB(LUPRI,'=',75,0)

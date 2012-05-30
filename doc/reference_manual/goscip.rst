@@ -1,5 +1,9 @@
-&GOSCIP -- Specify the CI space
-===============================
+.. _goscip:
+
+&GOSCIP 
+=======
+
+Specify the CI space.
 
 NELEC
 -----
@@ -38,9 +42,12 @@ Print level.
 
     IPRNT=0
 
+.. _popana:
 
-&POPANA -- Analyze the CI wave function
-==========================================
+&POPANA 
+=======
+
+Analyze the CI wave function.
 
 **Advanced options**
 

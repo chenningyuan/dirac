@@ -61,38 +61,6 @@ Dirac run:
 -  BASDIR
 -  PATH
 
-General run information
-^^^^^^^^^^^^^^^^^^^^^^^
-
-How can I restart from the MO coefficients file DFCOEF?
-                                                       
-
-Simply copy DFCOEF to the scratch directory using the pam script. If
-DIRAC finds DFCOEF in the scratch directory it will automatically try to
-restart from it.
-
-Can I move the DFCOEF file from one machine to another and restart from it?
-                                                                           
-
-In general no, unless it is the same architecture.
-
-What you can do instead is to export the DFCOEF in a machine independent
-format using the .PCMOUT keyword. This creates a file called DFPCMO.
-Copy DFPCMO to the other machine, make it avaliable in the scratch
-directory using the pam script, then restart from it using .PCMOIN.
-
-**Note:** if you are running a calculation in linear symmetry you will
-find an indication in the DIRAC output (.PCMOUT run) of whether you need
-the keyword .PCMOIN or .PCMOI3 for the restart. This is connected to the
-formatted writing of DFCOEF and the space needed to store the mj-value
-of each spinor.
-
-I tried to restart but get the error "Incompatible number of basis functions" - what does it mean?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This probably means that you have changed the basis set. Presently DIRAC
-cannot restart from DFCOEF if the basis set changes (more correctly if
-matrix dimensions change).
 
 I would like to use the 2c-molecular-mean-field Hamiltonian (X2Cmmf) for my post-HF (Coupled-Cluster [CC], Fock-Space CC, KR-MCSCF or KR-CI) calculations - what do i need to consider?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

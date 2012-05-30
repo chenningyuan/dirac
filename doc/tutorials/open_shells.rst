@@ -3,10 +3,7 @@ Examples of open-shell systems
 
 Here we provide few examples of open-shell systems.
 
-.. toctree::
-   :maxdepth: 1
-
-   .. include:: ../test/open-shells/README.rst
+.. include:: ../../test/open-shells/README.rst
 
 Boron atom: open-shell SCF and small CI relativistic calculations
 -----------------------------------------------------------------------
@@ -47,7 +44,7 @@ we get the value of 17.179488 cm-1 and in the outputs we see the proper
 degeneracy of resulting total CI energies - 2 and 4.
 
 By averaging the COSCI energies of the ground and the states we get the
-total SCF energy of the average occupation;
+total SCF energy of the average occupation
 
 ::
 

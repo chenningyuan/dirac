@@ -8,8 +8,6 @@ Welcome
 
    welcome/features.rst
    welcome/citing.rst
-   welcome/changelog.rst
-   welcome/dirac08_issues.rst
 
 
 Installing DIRAC
@@ -23,8 +21,6 @@ Installing DIRAC
    installation/installation.rst
    installation/windows.rst
    installation/tests.rst
-   installation/walkthroughs.rst
-   installation/bugs.rst
 
 
 Installing and configuring libraries used by DIRAC
@@ -45,6 +41,7 @@ Basis sets
    :maxdepth: 1
 
    basis_sets/basis.rst
+   basis_sets/howto_uncontract.rst
 
 
 First steps in DIRAC territory
@@ -54,11 +51,29 @@ First steps in DIRAC territory
    :maxdepth: 1
 
    tutorials/getting_started.rst
-   tutorials/faq.rst
-   tutorials/general_sample.rst
-   tutorials/integr_sample.rst
-   tutorials/scf_sample.rst
+   tutorials/reproducing_nr_results.rst
 
+
+Restarting and multi-step jobs
+==============================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/restart.rst
+
+
+.. warning::
+
+   Everything below this line needs massive rework
+   (outdated, double, incomplete, broken links, wrong place, simply wrong, ...)
+
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/faq.rst
+   tutorials/general_scf_sample.rst
 
 Menu of 2- and 4-component Hamiltonians
 =======================================
@@ -71,17 +86,6 @@ Menu of 2- and 4-component Hamiltonians
    tutorials/amfi.rst
 
 
-Restarting calculations and multi-step jobs
-===========================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/restart.rst
-   tutorials/x2c.rst
-   tutorials/steps.rst
-
-
 DFT and TDDFT
 =============
 
@@ -92,6 +96,7 @@ DFT and TDDFT
    tutorials/bsse.rst
    tutorials/dft_cam.rst
 
+
 Calculating the properties
 ============================
 
@@ -99,6 +104,7 @@ Calculating the properties
    :maxdepth: 1
 
    tutorials/prop_sample.rst
+
 
 Correlated calculations
 =======================
@@ -128,7 +134,6 @@ How to tackle open-shell systems
 .. toctree::
    :maxdepth: 1
 
-   tutorials/terminology.rst
    tutorials/dirrci_sample.rst
    tutorials/goscip_sample.rst
    tutorials/open_shells.rst
@@ -156,6 +161,7 @@ Getting help
 
    getting_help/memory.rst
    getting_help/known_problems.rst
+   getting_help/known_bugs.rst
 
 
 Reference manual
@@ -227,8 +233,10 @@ For DIRAC programmers
    programmers/int8.rst
    programmers/grasp.rst
    programmers/screening.rst
+   programmers/dfcoef.rst
    programmers/standalones.rst
    programmers/shell_prog.rst
+
 
 Bibliography
 ============
@@ -236,4 +244,4 @@ Bibliography
 .. toctree::
    :maxdepth: 1
    
-   refs.rst
+   bib.rst

@@ -17,7 +17,7 @@ Dependencies
 The user has to provide his Windows machine with this software:
 1. CMake (www.cmake.org).
 2. The MinGW program suite ("Minimalist GNU for Windows") with GNU compilers and Linux commands  (www.mingw.org).
-3. The Python programming language (www.python.org).
+3. The Python programming language of version at least 2.7 (www.python.org).
 4. In addtion, the developper has to install also the Git suite (http://git-scm.com)
 
 The CMake suite can not be used when shell command (sh.exe) in the same %PATH% enviroment variable.
@@ -29,6 +29,16 @@ The MinGW (GNU) compilers and related tools are reachable through the system %PA
 the same for Python and CMake.
 See also http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues
 
+Documentation
+--------------
+
+To be able to generate documentation, one has to download the *Sphinx* (http://sphinx.pocoo.org/) 
+package for Windows. Sphinx can be installed with the help of Python *setuptools* (http://pypi.python.org/pypi/setuptools).
+
+Likewise we recommend to install the 32-bit version of Python also on 64-bit machines 
+as you will also need *matplotlib* (http://matplotlib.sourceforge.net/)
+and *numpy* (http://numpy.scipy.org/) packages 
+which might not be at disposal for  64-bit version.
 
 Git & PuTTy (developpers)
 --------------------------

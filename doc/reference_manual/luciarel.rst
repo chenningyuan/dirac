@@ -1,3 +1,5 @@
+.. _luciarel:
+
 Manual:LUCIAREL
 ===============
 
@@ -23,8 +25,7 @@ a basically arbitrary number (save for an upper limit) of subspaces with
 arbitrary occupation constraints. This is the most general approach to
 orbital space subdivisions. The program uses DIRAC Kramers pairs from
 either a closed- or an open-shell calculation in a relativistic two- and
-four-componenet formalism (see
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+four-component formalism (see :ref:`hamiltonian`).
 
 The technical limitations are roughly set by several 100 million
 determinants in the CI expansion on PCs and common computing clusters

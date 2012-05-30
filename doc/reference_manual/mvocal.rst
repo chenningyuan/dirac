@@ -1,5 +1,9 @@
-\*MVOCAL -- Modified virtual orbitals
-=====================================
+.. _mvocal:
+
+\*MVOCAL 
+========
+
+Modified virtual orbitals.
 
 The virtual canonical Hartree-Fock orbitals are not the optimal choice
 for correlated calculations in which the virtual space is truncated; the

@@ -1,7 +1,7 @@
 LUCITA:Sample inputs
 ====================
 
-SDCI:
+Perform SDCI calculations:
 
 ::
 
@@ -14,7 +14,7 @@ SDCI:
       3
     *END OF
 
-GASCI:
+Perform GASCI calculations:
 
 ::
 
@@ -44,4 +44,14 @@ GASCI:
      11 13
      13 13
     *END OF
+
+In addition, for we provide three LUCITA input templates with increasing complexity:
+
+-  :download:`novice <lucita_templates/lucita.novice>`
+
+-  :download:`expert <lucita_templates/lucita.expert>`
+
+-  :download:`wizard <lucita_templates/lucita.wizard>`
+
+The user can download and modify them according to his needs.
 

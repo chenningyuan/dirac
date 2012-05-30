@@ -1,5 +1,8 @@
+
+
 Features in DIRAC |version|
 ===========================
+
 
 New features in DIRAC11 (released 11/11/11)
 -------------------------------------------
@@ -78,8 +81,8 @@ New features in DIRAC11 (released 11/11/11)
       pre-installed)
 
 
-New features in DIRAC10 (released 10/10/10)
--------------------------------------------
+New features in DIRAC10
+-----------------------
 
 -  Methods:
 
@@ -165,4 +168,3 @@ Features in DIRAC08
    -  Analysis by means of fragment orbitals
    -  New parallelization of the MOLTRA module with reduced I/O
    -  Parallelization of the LUCITA CI module
-

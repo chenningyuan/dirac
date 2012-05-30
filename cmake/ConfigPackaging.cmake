@@ -97,7 +97,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external/gen1int             ${EXPORT_DIR}/external
+        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external                     ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
