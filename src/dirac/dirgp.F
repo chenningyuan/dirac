@@ -2002,7 +2002,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER(DM1 = -1.0D0)
 C
 #include "dcbpsi.h"
 #include "dcbgen.h"
@@ -2124,12 +2123,6 @@ C
         I1 = I1 + NTBAS(0)*NORB(IFRP)
         I2 = I2 + NTBAS(0)*NORB(IFRP)*4
       ENDDO
-C
-C     In CFSORT the BR matrix is scaled by -1. Scale back
-C     ===================================================
-C
-      I1 = 1 + NTBAS(0)*NORBT*2
-      CALL DSCAL(NTBAS(0)*NORBT,DM1,CMO1(I1),1)
 C
 C     Get correct column ordering
 C     ===========================
@@ -3617,7 +3610,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER(DM1 = -1.0D0)
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -3934,7 +3926,7 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DM1 = -1.0D0)
+C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -4480,12 +4472,60 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck Selcmo */
+      SUBROUTINE SELCMO(ILABDF,IFRP,CMO,KCBF,NCBAS,IVEC,
+     &                  NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C     Select coefficients from CMO according to pointer index IVEC
+C       ILABDF = 1: AO-basis
+C       ILABDF = 2: SO-basis
+C     The selected coefficients are stored in WORK(KCBF) and returned
+C     together with NCBAS which is its row-dimension.
+C
+C     Written by T. Saue May 30 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+      DIMENSION CMO(*),IVEC(NVEC),WORK(*)
+      IF(ILABDF.EQ.1) THEN
+C
+C     Extract/expand coefficients in AO-basis
+C     =======================================
+C
+        NCBAS = NTBAS(0)
+        NCBF  = NCBAS*NVEC*4
+        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        CALL SELCMO_AO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &                 WORK(KCBF),NTBAS(0),IFRP,IVEC,
+     &                 NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
+      ELSE
+C
+C     Extract/expand coefficients in SO-basis
+C     =======================================
+C
+        NCBAS = NFBAS(IFRP,0)
+        NCBF  = NCBAS*NVEC*4
+        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        CALL SELCMO_SO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &                 WORK(KCBF),IFRP,IVEC,NVEC,NPVEC,NEVEC,IPRINT,
+     &                 WORK,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Selcmo_ao */
       SUBROUTINE SELCMO_AO(CMO,NBAS1,NORB1,CSEL,NBAS2,IFRP,
      &                     IVEC,NVEC,NPVEC,NEVEC,
      &                     IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
+C     Select coefficients according to IVEC and
+C     extract/expand in AO-basis
 C
+C     Written by T. Saue May 30 2012
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4526,6 +4566,38 @@ C.........Higher symmetry: select, expand and transform
      &                NBAS1,NBAS2,NVEC*4,IPRINT)
         ENDIF
         CALL MEMREL('SELCMO.AOb',WORK,1,KCBF,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Selcmo_ao */
+      SUBROUTINE SELCMO_SO(CMO,NBAS,NORB,CSEL,IFRP,
+     &                     IVEC,NVEC,NPVEC,NEVEC,
+     &                     IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Select coefficients according to IVEC and
+C     extract/expand in SO-basis
+C
+C     Written by T. Saue May 30 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+      DIMENSION CMO(NBAS,NORB,NZ),CSEL(NBAS,NVEC,4),IVEC(NVEC),WORK(*)
+
+      IF(NVEC.EQ.NORB) THEN
+        CALL CFSORT(CSEL,CMO,NVEC,IFRP,NBAS)
+      ELSE
+        NCBF  = NBAS*NVEC*NZ
+        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        LCB = NPVEC+NEVEC
+        CALL SELCFS(CMO,IFRP,WORK(KCBF),LCB,IVEC,NPVEC,NEVEC,
+     &              NBAS,NORB)
+        CALL CFSORT(CSEL,WORK(KCBF),NVEC,IFRP,NBAS1)
+        CALL MEMREL('SELCMO_SO',WORK,1,KCBF,KFREE,LFREE)
       ENDIF
 C
       RETURN

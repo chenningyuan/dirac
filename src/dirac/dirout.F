@@ -238,51 +238,14 @@ C
      &              -NPSH(IFRP),NESH(IFRP),IFRP,NVEC)
         CALL ORBCNT(WORK(KJVEC),NVEC,NPSH(IFRP),NESH(IFRP),NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
-C
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
-        IF(ILABDF.EQ.1) THEN
-C
-C       Extract/expand coefficients in AO-basis
-C       =======================================
-C
-          NCBAS = NTBAS(0)
-          NCBF1 = NTBAS(0)*NVEC*4
-          CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-          CALL SELCMO_AO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
-     &                   WORK(KCBF1),NTBAS(0),IFRP,WORK(KJVEC),
-     &                   NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
-        ELSE
-C
-C       Extract/expand coefficients in SO-basis
-C       =======================================
-C
-          NCBAS = NFBAS(IFRP,0)
-          IF(NVEC.EQ.NORB(IFRP)) THEN
-            NCBF  = NFBAS(IFRP,0)*NVEC
-            NCBF1 = NCBF*4
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                  IFRP,NFBAS(IFRP,0))
-          ELSE
-            NCBF  = NFBAS(IFRP,0)*NVEC
-            NCBF1 = NCBF*4
-            NCBF2 = NCBF*NZ
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-            LCB = NPVEC+NEVEC
-            CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                  LCB,WORK(KJVEC),NPVEC,NEVEC,
-     &                  NFBAS(IFRP,0),NORB(IFRP))
-            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
-     &                  IFRP,NFBAS(IFRP,0))
-            CALL MEMREL('PRCOEF.SO',WORK,1,KCBF2,KFREE,LFREE)
-          ENDIF
-        ENDIF
+        CALL SELCMO(ILABDF,IFRP,CMO,KCBF,NCBAS,WORK(KJVEC),
+     &              NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
 C
 C       Print coefficients
 C       ==================
 C
-        CALL PRCOE1(WORK(KCBF1),EIG(IORB(IFRP)+1),IFRP,WORK(KJVEC),
+        CALL PRCOE1(WORK(KCBF),EIG(IORB(IFRP)+1),IFRP,WORK(KJVEC),
      &              NPVEC,NEVEC,NCBAS,IPREIG,IPRCMP,ILABDF)
  20     CONTINUE
         CALL MEMREL('PRCOEF',WORK,1,KWORK,KFREE,LFREE)
@@ -302,12 +265,18 @@ C  /* Deck prcoe1 */
 C***********************************************************************
 C
 C     Print vectors (AO/SO-basis)
+C     The coefficients, whether in AO- or SO-basis, are provided on 
+C     quaternion (NZ=4) form, which corresponds to
+C  
+C       C^Q = C^a - C^b* = C^a_R + C^a_I - C^b_R + C^b_I
+C
+C     It can be seen that the part C^b_R should be multiplied by -1.
+C     
 C     Written by T.Saue May 6 1996
-C     Last revision: May 6 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10)
+      PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
 #include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -323,6 +292,10 @@ C
       DIMENSION CMO(NCBAS,NPVEC+NEVEC,4),EIG(*),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
+      NTOT = NVEC*NCBAS
+C
+C.....Properly scale C^b_R
+      CALL DSCAL(NTOT,DM1,CMO(1,1,3),1)
 C
 C     Print vectors in AO-basis
 C     =========================
@@ -416,6 +389,8 @@ C           IP is gerade(1)/ungerade(2) !
           ENDDO
         ENDDO
       ENDIF
+C.....Rescale C^b_R
+      CALL DSCAL(NTOT,DM1,CMO(1,1,3),1)
 C
       RETURN
  100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
@@ -434,7 +409,7 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DM1 = -1.0D0)
+C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -477,7 +452,7 @@ C.....III is the symmety of XYZ for the small components
           ENDDO
         ENDDO
       ENDDO
-      CALL DSCAL(NTOT,DM1,CBUF(1,1,3),1)
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -637,111 +612,6 @@ C
         WRITE(LUPRI,'(6X,I5,2F18.8)')
      *     ((NVAL-I),EIG(NVAL-I),EIG(NVAL-I)-GAP,I=0,(NGAP-1))
       ENDIF
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck caosrt */
-      SUBROUTINE CAOSRT(CAO,CMO,JVEC,NPVEC,NEVEC,IFRP,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Expand coefficients to unsorted quaternion matrix
-C
-C     Written by T.Saue May 1996
-C     Last revision: Jan 7 1997
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-      DIMENSION CMO(*),CAO(*),JVEC(NPVEC+NEVEC),WORK(LWORK)
-      CALL QENTER('CAOSRT')
-#include "memint.h"
-      NDIM  = NTBAS(0)
-      NVEC  = NPVEC + NEVEC
-      NTOT  = NVEC*NDIM
-      NTOTZ = NTOT*NZ
-      CALL MEMGET('REAL',KCBUF,NTOTZ,WORK,KFREE,LFREE)
-      CALL CAOSR1(CAO,CMO,WORK(KCBUF),JVEC,NVEC,IFRP,
-     &            NFBAS(IFRP,0),NORB(IFRP),NTBAS(0),IPRINT)
-      CALL MEMREL('CAOSRT.CAOSR1',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('CAOSRT')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck caosr1 */
-      SUBROUTINE CAOSR1(CAO,CMO,CBUF,NVEC,IVEC,IFRP,
-     &                  KNFBAS,KNORB,NBAST,IPRINT)
-C***********************************************************************
-C
-C     Expand coefficients to unsorted quaternion matrix
-C
-C     Written by T.Saue May 1996
-C     Last revision: May 6 1996
-C***********************************************************************
-      use quaternion_algebra
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(DM1 = -1.0D0)
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-C
-#include "dcblab.h"
-#include "dgroup.h"
-#include "symmet.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-C
-C     KNFBAS = NFBAS(IFRP,0)
-C     KNORB  = NORB(IFRP)
-C     NBAST  = NTBAS(0)
-C
-      DIMENSION CMO(KNFBAS,KNORB,NZ),
-     &          CBUF(NBAST,NVEC,NZ),CAO(NBAST,NVEC,4)
-#include "dcbibt.h"
-C
-      NTOT = NVEC*NTBAS(0)
-      NTOTZ = NTOT*4
-      IF(NBSYM.EQ.1) THEN
-        DO IZ = 1,4
-          CALL DCOPY(NTOT,CMO(1,IVEC+1,IZ),1,CAO(1,1,IZ),1)
-        ENDDO
-      ELSE
-        CALL DZERO(CBUF,NTOTZ)
-        DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ,0)
-C
-C         IS - index of sorted basis
-C         IU - index of unsorted basis
-C
-          NBRP     = 4/NZ
-          DO IC = 1,2
-C           IP is gerade(1)/ungerade(2) !
-            IP    = MOD(IFRP+IC,2) + 1
-            DO ISYM = 1,NBRP
-              IBSYM = JFSYM(ISYM,IP)
-              IBREP = IBSYM - 1
-              DO I = 1,NBBAS(IBREP,IC)
-                IU    = ICOS(IBSYM,IC)  + I
-                IS    = IBBAS(IBREP,IC) - IBAS(IFRP) + I
-                CALL DCOPY(NVEC,CMO(IS,IVEC+1,IZ),NFBAS(IFRP,0),
-     &                    CBUF(IU,1,IQ),NTBAS(0))
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDDO
-C
-C     Transform to AO basis
-C
-        DO IZ = 1,4
-          CALL VTSOAO(CBUF(1,1,IZ),CAO(1,1,IZ),NTBAS(0),
-     &              NVEC,IPRINT)
-        ENDDO
-      ENDIF
-      CALL DSCAL(NTOT,DM1,CAO(1,1,3),1)
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

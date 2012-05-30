@@ -407,95 +407,24 @@ C
 C       Find number of electronic/positronic vectors
 C       ============================================
 C
-        NVECS = 1
+        NVEC = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL NUMLST(VECPOP(IFRP),WORK(KJVEC),NORB(IFRP),
-     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS)
-        CALL ORBCNT(WORK(KJVEC),NVECS,NPSH(IFRP),NESH(IFRP),
-     &              NPVECS,NEVECS)
-        IF(NVECS.EQ.0) GOTO 20
+     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVEC)
+        CALL ORBCNT(WORK(KJVEC),NVEC,NPSH(IFRP),NESH(IFRP),
+     &              NPVEC,NEVEC)
+        IF(NVEC.EQ.0) GOTO 20
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
-C
-        IF(ILABDF.EQ.1) THEN
-C
-C       Extract/expand coefficients in AO-basis
-C       =======================================
-C
-          NCBAS = NTBAS(0)
-          IF(NVECS.EQ.NORB(IFRP)) THEN
-            IF(NBSYM.EQ.1) THEN
-              NCBF1 = NTBAS(0)*NVECS*4
-              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVECS,IFRP,
-     &                    NFBAS(IFRP,0))
-            ELSE
-              NCBF1 = NTBAS(0)*NVECS*4
-              NCBF2 = NFBAS(IFRP,0)*NVECS*4
-              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVECS,IFRP,
-     &                    NFBAS(IFRP,0))
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVECS*4,IPRPOP)
-              CALL MEMREL('MULPO1.AO',WORK,1,KCBF2,KFREE,LFREE)
-            ENDIF
-          ELSE
-            NCBF1 = NTBAS(0)*NVECS*4
-            NCBF2 = NTBAS(0)*NVECS*4
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-            LCB = NPVECS+NEVECS
-            IF(NBSYM.EQ.1) THEN
-              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                    LCB,WORK(KJVEC),NPVECS,NEVECS,
-     &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVECS,IFRP,
-     &                    NFBAS(IFRP,0))
-            ELSE
-              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
-     &                    LCB,WORK(KJVEC),NPVECS,NEVECS,
-     &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVECS,IFRP,
-     &                    NFBAS(IFRP,0))
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVECS*4,IPRPOP)
-            ENDIF
-          ENDIF
-        ELSE
-C
-C       Extract/expand coefficients in SO-basis
-C       =======================================
-C
-          NCBAS = NFBAS(IFRP,0)
-          IF(NVECS.EQ.NORB(IFRP)) THEN
-            NCBF  = NFBAS(IFRP,0)*NVECS
-            NCBF1 = NCBF*4
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVECS,IFRP,
-     &                  NFBAS(IFRP,0))
-          ELSE
-            NCBF  = NFBAS(IFRP,0)*NVECS
-            NCBF1 = NCBF*4
-            NCBF2 = NCBF*NZ
-            LCB = NPVECS+NEVECS
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-            CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                  LCB,WORK(KJVEC),NPVECS,NEVECS,
-     &                  NFBAS(IFRP,0),NORB(IFRP))
-            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVECS,IFRP,
-     &                  NFBAS(IFRP,0))
-            CALL MEMREL('MULPO1.SO',WORK,1,KCBF2,KFREE,LFREE)
-          ENDIF
-        ENDIF
+        CALL SELCMO(ILABDF,IFRP,CMO,KCBF,NCBAS,WORK(KJVEC),
+     &              NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
 C
 C       Perform Mulliken population analysis
 C       ====================================
 C
-        CALL MEMGET('REAL',KOCC2,NVECS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KOCC2,NVEC,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
      &              IBEIG(IORB(IFRP)+1),
-     &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
+     &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVEC,NEVEC,NCBAS,
      &              WORK(KJVEC),OCC,WORK(KOCC2),WORK(KFREE),LFREE,
      &              KRMC_FLG)
         CALL MEMREL('MULPO1.occ',WORK,KOCC2,KOCC2,KFREE,LFREE)
