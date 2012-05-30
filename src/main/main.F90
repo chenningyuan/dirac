@@ -151,7 +151,6 @@ program dirprg
      write(lupri, *)
 
      call print_binary_info()
-     call print_additional_binary_info()
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info

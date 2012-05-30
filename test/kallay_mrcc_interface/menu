@@ -4,7 +4,6 @@ sh ../../utils/dirac_mointegral_export.x
 # adapt location of the binaries
 sh ../../goldstone
 sh ../../mrcc
-#sh rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
 rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
 
 benchmark
@@ -13,5 +12,4 @@ sh ../../utils/dirac_mointegral_export.x
 # adapt location of the binaries
 sh ../../goldstone
 sh ../../mrcc
-#sh rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
 rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface

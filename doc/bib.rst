@@ -9,13 +9,25 @@ References are sorted alphabetically according to the first author's family
 name with the year of publishing.  If the first author has more publications in
 the same year, attach "a", "b", "c", etc. after the year.
 
+Please always provide citation entry with permanent URL-link, the best is the DOI web identity.
+
 .. [Amovilli1998] C. Amovilli, V. Barone, R. Cammi, E. Cancès, M. Cossi, 
    B. Mennucci, C. S. Pomelli and J .Tomasi;
    *Recent Advances in the Description of Solvent Effects with the Polarizable Continuum Model*,
    Adv. Quantum Chem. **32**, 227 (1998)
    <http://dx.doi.org/10.1016/S0065-3276(08)60416-5>
 
+.. [Autschbach2012] J. Autschbach, *Perspective: Relativistic effects*,
+   J. Chem. Phys. **136**, 150902 (2012)
+   <http://dx.doi.org/10.1063/1.3702628>
+
 .. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
+
+.. [Barysz2010]  Barysz, Maria; Ishikawa, Yasuyuki (Eds.),
+   *Relativistic Methods for Chemists*,
+   Series: Challenges and Advances in Computational Chemistry and Physics, Vol. 10,
+   1st Edition., 2010, XIV, 613 p.
+   <http://dx.doi.org/10.1007/978-1-4020-9975-5>
 
 .. [Bauschlicher1980] C. W. Bauschlicher, Jr.,
    *The construction of modified virtual orbitals (MVO's) which are suited
@@ -32,14 +44,20 @@ the same year, attach "a", "b", "c", etc. after the year.
    J. Chem. Phys. **88**, *2547* (1988) 
    <http://dx.doi.org/10.1063/1.454033>
 
-.. [Dirac1930] P. A. M. Dirac, *Note on Exchange
-   Phenomena in the Thomas Atom*, Proc. Roy. Soc. London **26**, *376*
-   (1930) . ELVERSION???
+.. [Borschevsky2012] A.Borschevsky, M.Ilias, V.A.Dzuba, K.Beloy, V.V.Flambaum, P.Schwerdtfeger,
+   P-odd interaction constant :math:`W_A` from relativistic *ab initio* calculations of diatomic molecules,
+   Phys. Rev. A **85**, *052509* (2012)
+   <http://dx.doi.org/10.1103/PhysRevA.85.052509>
 
-.. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue
-   and K.Fægri, *Bonding analysis using localized relativistic orbitals:
-   Water, the ultrarelativistic case and the heavy homologues
-   H\ :sub:`2`\ X (X=Te, Po, eka-Po)*, J. Chem. Phys. **124**, *154307* (2006)
+.. [Dirac1930] P. A. M. Dirac, 
+   *Note on Exchange Phenomena in the Thomas Atom*,
+   Math Proc Cambridge  **26**, *376* (1930) 
+   <http://dx.doi.org/10.1017/S0305004100016108> 
+
+.. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue and K.Fægri,
+   Bonding analysis using localized relativistic orbitals:
+   Water, the ultrarelativistic case and the heavy homologues :math:`H_{2}X` (X=Te, Po, eka-Po),
+   J. Chem. Phys. **124**, *154307* (2006)
    <http://dx.doi.org/10.1063/1.2187001>
 
 .. [Dyall1994] K. G. Dyall, *An exact separation of the
@@ -49,7 +67,7 @@ the same year, attach "a", "b", "c", etc. after the year.
 
 .. [Dyall2007] K. G. Dyall and K. Fægri jr., *Introduction to Relativistic Quantum
    Chemistry*, Oxford University Press, New York, 2007
-   `Google Books URL <http://books.google.sk/books?id=k8gDJm1t2q4C&lpg=PA509&dq=K.%20G.%20Dyall%20and%20K.%20F%C3%A6gri%20jr.%2C%20*Introduction%20to%20Relativistic%20Quantum%20%20%20%20Chemistry*%2C%20Oxford%20University%20Press%2C%20New%20York%2C%202007&hl=sk&pg=PP1#v=onepage&q&f=false>`_
+   `Google Books URL <http://books.google.sk/books?id=k8gDJm1t2q4C&printsec=frontcover&hl=sk&redir_esc=y#v=onepage&q&f=false>`_
 
 .. [Ekstrom2005] Ulf Ekstrom and Patrick Norman and Antonio Rizzo, 
    *Four-component Hartree--Fock calculations of
@@ -152,7 +170,7 @@ the same year, attach "a", "b", "c", etc. after the year.
 .. [Jensen1996] H. J. Aa. Jensen and K. G. Dyall and T. Saue and K. Fægri jr.,
    *`Relativistic 4-component Multi-Configurational Self-Consistent Field Theory for Molecules: Formalism*
    J. Chem. Phys. **104**, *4083* (1996)
-   <http://link.aip.org/link/doi/10.1063/1.471644>
+   <http://dx.doi.org/10.1063/1.471644>
 
 .. [Knecht2008] S. Knecht and H. J. Aa. Jensen and T. Fleig, 
    *Large-Scale Parallel Configuration Interaction.
@@ -274,9 +292,10 @@ the same year, attach "a", "b", "c", etc. after the year.
    <http://dx.doi.org/10.1080/002689797171058>
 
 .. [Saue2000] T. Saue and H. J. Aa. Jensen,
-   *Quaternion symmetry of the Dirac equation*, in
-   *Mathematical Methods for Ab Initio Quantum Chemistry*, edited by
-   M. Defrancheschi and C. Le Bris, Springer, Berlin, 2000., LINK?
+   *Quaternion symmetry of the Dirac equation*, 
+   in *Mathematical Methods for Ab Initio Quantum Chemistry*,
+   edited by M. Defrancheschi and C. Le Bris, Springer, Berlin, 2000,
+   <http://dx.doi.org/10.1007/978-3-642-57237-1_11>
 
 .. [Saue2002] T. Saue and T. Helgaker,
    *Four-component relativistic Kohn-Sham theory*, 
@@ -286,7 +305,8 @@ the same year, attach "a", "b", "c", etc. after the year.
 .. [Saue2002a] T.Saue,
    *Post Dirac-Hartree-Fock methods - Properties*,
    in *Relativistic Electronic Structure Theory - Part 1: Fundamentals*,
-   edited by P. Schwerdtfeger, Elsevier, Amsterdam, 2002.
+   edited by P. Schwerdtfeger, Elsevier, Amsterdam, 2002
+   <http://dx.doi.org/10.1016/S1380-7323(02)80033-4>
 
 .. [Saue2003] T. Saue and H. J. Aa. Jensen,
    *Linear response at the 4-component relativistic level:
@@ -303,11 +323,12 @@ the same year, attach "a", "b", "c", etc. after the year.
 .. [Schirmer1983]  J. Schirmer and L. S. Cederbaum and O. Walter,
    *New approach to the one-particle Green's function for finite Fermi systems*,
    Phys. Rev. A **28**, *1237* (1983) 
-   <http://link.aps.org/doi/10.1103/PhysRevA.28.1237>
+   <http://dx.doi.org/10.1103/PhysRevA.28.1237>
 
 .. [Schwerdtfeger2002] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
    Part 1: Fundamentals*, Elsevier, Amsterdam, 2002
    `Google Books URL <http://books.google.sk/books?id=VEKdnHFK3J8C&lpg=PA473&dq=P.%20Schwerdtfeger%2C%20Relativistic%20Electronic%20Structure%20Theory%2C%20%20%20%20Part%201%3A%20Fundamentals*%2C%20Elsevier%2C%20Amsterdam%2C%202002&hl=sk&pg=PP1#v=onepage&q=P.%20Schwerdtfeger,%20Relativistic%20Electronic%20Structure%20Theory,%20%20%20%20Part%201:%20Fundamentals*,%20Elsevier,%20Amsterdam,%202002&f=false>`_
+   <http://www.sciencedirect.com/science/bookseries/13807323/11>
 
 .. [Schwerdtfeger2002a] P. Schwerdtfeger (ed.), *Relativistic Electronic Structure Theory,
    Part 2: Applications*, Elsevier, Amsterdam, 2002.

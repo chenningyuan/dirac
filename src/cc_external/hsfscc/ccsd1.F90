@@ -2452,8 +2452,12 @@
       use cij2_mod
       use cij3_mod
       use hsfs_parameters
-#include "implicit.h"
+!#include "implicit.h"
+ implicit none
 #include "priunit.h"
+ integer :: name1,name2,namet
+ real*8 :: f1,f2
+ integer :: new, nsize,ntape1,ntape2,ntapet,i
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2498,11 +2502,10 @@
         write(LUPRI,'('' add input file does not exist '',a8)') name2
         call abext('add     ')
       endif
+
       ! ......   error trap
       if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3))) then
-
         write (LUPRI,'(/,2x,a)') 'add: added files do not match ! compared variables:'  
-!!    &  ' added files do not match. names iii iiv nsize='         
         write (LUPRI,*) 'iii2,iii3:',iii2,iii3
         write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
         write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
@@ -2570,10 +2573,6 @@
           endif
         endif
       endif
-
-!      if (getiprint()>=5) then
-!        write(LUPRI,'(2x,a,/)') '...end of add'
-!      endif
 
       return
       end subroutine add

@@ -298,8 +298,7 @@
 !     write(LUPRI,*) abs(diff),abs(diff1),abs(df3),abs(df4) ! control printout
 
 !  ----   if end of convergence, jump out
-      if (max(abs(diff),abs(diff1),                                     &
-  abs(df3),abs(df4)).lt.convrg) go to 910
+      if (max(abs(diff),abs(diff1),abs(df3),abs(df4)).lt.convrg) go to 910
 
       call wrtfile (51,0,"tc  ")
       call wrtfile (51,1,"t1c ")

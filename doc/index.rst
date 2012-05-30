@@ -73,9 +73,7 @@ Restarting and multi-step jobs
    :maxdepth: 1
 
    tutorials/faq.rst
-   tutorials/general_sample.rst
-   tutorials/scf_sample.rst
-
+   tutorials/general_scf_sample.rst
 
 Menu of 2- and 4-component Hamiltonians
 =======================================
