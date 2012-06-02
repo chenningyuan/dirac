@@ -8,14 +8,14 @@ if (GIT_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
 else()
-    message(FATAL_ERROR "The git command for the git_update target not found !")
+    message("-- Warning: Git command for the target git_update not found. No submodule update.")
 endif()
 
 include(ExternalProject)
 
 macro(add_external _project)
 
-    if(DEVELOPMENT_CODE)
+    if(DEVELOPMENT_CODE AND GIT_FOUND)
         set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
     else()
         set(UPDATE_COMMAND echo)
