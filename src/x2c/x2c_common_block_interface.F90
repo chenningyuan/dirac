@@ -350,7 +350,7 @@ contains
          close(fh,status='delete')
 !
 !        initialize sub-block diagonalization in DFDIAG
-         if(linear) sub_bl = .true.
+         if(linear .or. spinfr) sub_bl = .true.
        end if
 
 !      step 2: recalculate offsets and globally used pointers
