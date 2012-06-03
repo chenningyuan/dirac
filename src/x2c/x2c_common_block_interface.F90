@@ -187,8 +187,8 @@ contains
          if(x2c_4c_fock_mtx_defh1)then
 !          converged 4c-Fock-Dirac operator
            x2c_is_defining_h1mat      =  2
-           scf_iter_counter           = -1
-           diis_counter               = -1
+           scf_iter_counter           = niter
+           diis_counter               = mxdiis
            nr_2e_fock_matrices        = nfmat
            file_name_1e_fock_matrix   = 'DFFCK1'
            file_name_2e_fock_matrices = 'DFFCK2'
