@@ -4473,13 +4473,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck Selcmo */
-      SUBROUTINE SELCMO(ILABDF,IFRP,CMO,KCBF,NCBAS,IVEC,
-     &                  NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE SELCMO(ILABDF,IFRP,CMO,IVEC,NVEC,NPVEC,NEVEC,
+     &                  CSEL,LRSEL,LCSEL,NCBAS,
+     &                  IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C     Select coefficients from CMO according to pointer index IVEC
 C       ILABDF = 1: AO-basis
 C       ILABDF = 2: SO-basis
-C     The selected coefficients are stored in WORK(KCBF) and returned
+C     The selected coefficients are stored in CSEL and returned
 C     together with NCBAS which is its row-dimension.
 C
 C     Written by T. Saue May 30 2012
@@ -4489,36 +4490,31 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcborb.h"
-      DIMENSION CMO(*),IVEC(NVEC),WORK(*)
+      DIMENSION CMO(*),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
       IF(ILABDF.EQ.1) THEN
 C
 C     Extract/expand coefficients in AO-basis
 C     =======================================
 C
-        NCBAS = NTBAS(0)
-        NCBF  = NCBAS*NVEC*4
-        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
         CALL SELCMO_AO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
-     &                 WORK(KCBF),NTBAS(0),IFRP,IVEC,
+     &                 CSEL,LRSEL,LCSEL,NTBAS(0),IFRP,IVEC,
      &                 NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
       ELSE
 C
 C     Extract/expand coefficients in SO-basis
 C     =======================================
 C
-        NCBAS = NFBAS(IFRP,0)
-        NCBF  = NCBAS*NVEC*4
-        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
         CALL SELCMO_SO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
-     &                 WORK(KCBF),IFRP,IVEC,NVEC,NPVEC,NEVEC,IPRINT,
-     &                 WORK,KFREE,LFREE)
+     &                 CSEL,LRSEL,LCSEL,IFRP,
+     &                 IVEC,NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
       ENDIF
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Selcmo_ao */
-      SUBROUTINE SELCMO_AO(CMO,NBAS1,NORB1,CSEL,NBAS2,IFRP,
+      SUBROUTINE SELCMO_AO(CMO,NBAS1,NORB1,
+     &                     CSEL,LRSEL,LCSEL,NBAS2,IFRP,
      &                     IVEC,NVEC,NPVEC,NEVEC,
      &                     IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -4531,7 +4527,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-      DIMENSION CMO(NBAS1,NORB1,NZ),CSEL(NBAS2,NVEC,4),
+      DIMENSION CMO(NBAS1,NORB1,NZ),CSEL(LRSEL,LCSEL,4),
      &          IVEC(NVEC),WORK(*)
       IF(NVEC.EQ.NORB1) THEN
 C.....All coefficients selected
@@ -4572,7 +4568,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Selcmo_ao */
-      SUBROUTINE SELCMO_SO(CMO,NBAS,NORB,CSEL,IFRP,
+      SUBROUTINE SELCMO_SO(CMO,NBAS,NORB,CSEL,LRSEL,LCSEL,IFRP,
      &                     IVEC,NVEC,NPVEC,NEVEC,
      &                     IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -4586,7 +4582,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-      DIMENSION CMO(NBAS,NORB,NZ),CSEL(NBAS,NVEC,4),IVEC(NVEC),WORK(*)
+      DIMENSION CMO(NBAS,NORB,NZ),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
 
       IF(NVEC.EQ.NORB) THEN
         CALL CFSORT(CSEL,CMO,NVEC,IFRP,NBAS)
