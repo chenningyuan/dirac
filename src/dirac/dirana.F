@@ -3606,7 +3606,7 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
           CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS(1),NTBAS(0),NVECS(0),NZC1,
      &                IQDEF,LUPRI)
           WRITE(6,*) 'Selected eigenvalues:'
-          CALL PRQMAT(WORK(KE),NVECS(1),1,NVECS(1),1,1,IQDEF,LUPRI)
+          CALL OUTPUT(WORK(KE),NVECS(1),1,NVECS(1),1,-1,LUPRI)
         ENDIF
         DO J = 0,NONT(ITYP)-1
           INDEP = INDEP + NUCDEG(ININD+J)
