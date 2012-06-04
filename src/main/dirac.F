@@ -1108,19 +1108,23 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
-#include "implicit.h"
+      implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 #include "infpar.h"
       DIMENSION ISTAT(df_mpi_status_size)
       LOGICAL NEWTASK
+      integer :: MWORK, LWORK, KWORK, LFREE, KFREE
+      integer :: IMPARID, INUMNOD, IMYTID, ITASK, ICHECK_MPI2, IPARCAL
+      real*8 :: CPU1, WALL1
 C
 C
-      DIMENSION WORK(MWORK)
+      real*8 WORK(MWORK)
       integer :: sleep_time=15
-C
+
       CALL QENTER('DIRNOD')
+C
       LWORK = MWORK
 #include "memint.h"
 C

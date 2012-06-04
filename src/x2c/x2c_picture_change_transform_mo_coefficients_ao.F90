@@ -198,6 +198,7 @@ contains
                                                     is_fragment_tot,              &
                                                     linear_sym,                   &
                                                     print_lvl)   
+!                                                   3)   
        end select
 
 !      step 2: release memory
@@ -643,13 +644,20 @@ contains
        end do
        call alloc(original_eigen_values,l)
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
+!      call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
+       call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,15)
        close(fh,status='keep')
        offset_1 = 1
        offset_2 = 1
        do i = 1, nfsym
          call dcopy(nesh_dim(i),original_eigen_values(offset_1+norb_dim(i)-nesh_dim(i)),1,scratch4(offset_2),1) 
          call dcopy(nesh_dim(i),scratch4(offset_2),1,original_eigen_values(offset_2),1)
+         if(print_lvl > 2)then
+           do l = 1, nesh_dim(i) 
+             print *, ' orig boson irrep val of element # ',offset_1+norb_dim(i)-nesh_dim(i)+l-1, & 
+                        scratch5(offset_1+norb_dim(i)-nesh_dim(i)+l-1)
+           end do
+         end if
          offset_1 = offset_1 + norb_dim(i)
          offset_2 = offset_2 + nesh_dim(i)
        end do
@@ -695,6 +703,11 @@ contains
            call newlab12(flabel,x2c_file_glb,6)
            call writi(x2c_file_glb,nesh_dim(i),scratch5(offset_1))
            call newlab12('EOFLABEL-x2c',x2c_file_glb,6)
+         end if
+         if(print_lvl > 2)then
+           do l = 1, nesh_dim(i) 
+             print *, ' boson irrep val of element # ',offset_1+l-1,scratch5(offset_1+l-1)
+           end do
          end if
 
 !        c. 2c-MO coefficients in MO reference basis
