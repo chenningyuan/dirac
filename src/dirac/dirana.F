@@ -758,7 +758,6 @@ C
 C     Generate population matrix for basis
 C     ====================================
 C
-C     IPRINT = 4
       SUMA = D0
       SUMB = D0
       IOFF = IBAS(IFRP)
@@ -850,7 +849,6 @@ C
      &                1,NGLAB,NGLAB,NGLAB,1,LUPRI)
         ENDIF
       ENDIF
-C     IPRINT = 0
 C
       RETURN
 C
@@ -1457,11 +1455,6 @@ C
       CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,2)),WORK(KI(IFRP,2)),NSTR,
      &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL,IOPT)
-C
-C     Löwdin type population analysis
-C
-CTROND      IF(DOPOP) CALL ANAPR3(AMAT,BVEC,NMOL,NREF,NTOT,WORK(KE(IFRP,1)),
-CTROND     &                      JREF,GVEC,WORK,KFREE,LFREE)
       CALL MEMREL('PRJAN1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -3484,6 +3477,7 @@ C
 #include "mxcent.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbprj.h"
 #include "nuclei.h"
 #include "dcbbas.h"
@@ -3496,6 +3490,7 @@ C
 #include "memint.h"
       KFRSAV = KFREE
       IF(IPRINT.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
+      WRITE(6,*) 'TEST3..',KFREE,LFREE
       CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C
 C     Find total number of reference orbitals
@@ -3646,6 +3641,26 @@ C.....read coefficients
       ENDIF
       ENDDO
       CALL MEMREL('PRJAOB.mol',WORK,1,KCMO,KFREE,LFREE)
+C
+C     Get overlap matrix
+C     ==================
+C
+      CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
+      CALL GET_OVERLAP_AO(WORK(KSMAT),SSMTRC,IPRPRJ,WORK,KFREE,LFREE)
+C
+C     Carry out projection analysis
+C     =============================
+C     
+      WRITE(6,*) 'TEST2..',KFREE,LFREE
+      NAMAT=NVECS(0)*NVECS(0)*NZC1
+      NBVEC=NVECS(0)*NVECS(2)*NZC1
+      CALL MEMGET('REAL',KAMAT,NAMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBVEC,NBVEC,WORK,KFREE,LFREE)
+      PTOL = PROTHR*1.0D-2
+      CALL PRJANA_MOD(WORK(KQ),IQDEF,NZC1,WORK(KAMAT),WORK(KBVEC),
+     &                IQDEF,NZC1,SMAT,NTBAS(0),NTBAS(0),IQDEF,1,
+     &                NTBAS(0),NVECS(0),NVECS(1),NVECS(2),PTOL,
+     &                IPRPRJ,WORK,KFREE,LFREE)
  100  CONTINUE
       CALL MEMREL('PRJAOB.end',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
@@ -3692,5 +3707,102 @@ C.........Extract orbital energies
         ININD = ININD + 1
       ENDDO
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prjana_mod */
+      SUBROUTINE PRJANA_MOD(CSEL,IPQSEL,NZC,AMAT,BVEC,IPQBVC,NZB,
+     &                      SMAT,LRSMT,LCSMT,IPQSMT,NZS,
+     &                      NBAS,NTOT,NREF,NMOL,PTOL,
+     &                      IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Projection analysis for fermion ircop IFRP
+C
+C     INPUT:
+C       CSEL(NBAS,NTOT,NZC) contains reference and molecular coeffients
+C     OUTPUT:
+C       AMAT(NTOT,NTOT,NZB) contains overlap matrix in fragment basis
+C       BVEC(NTOT,NMOL) contains solution vector
+C       CSEL(NBAS,NTOT,NZC) contains reference and polarization coefficients
+C
+C     Written by T.Saue June 5 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,DM1=-1.0D0)
+C
+      DIMENSION CSEL(NBAS,NTOT,NZC),SMAT(LRSMT,LCSMT,NZS),
+     &          AMAT(NTOT,NTOT,NZB),BVEC(NTOT,NMOL,NZB),
+     &          WORK(*)
+C
+      KFRSAV = KFREE
+      KREF   = 1
+      KMOL   = KREF + NREF
+C
+C     Make projection vector  BVEC = <\psi^B_j1\psi^{MO}_i>
+C
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NMOL,
+     &            SMAT,LRSMT,LCSMT,NZS,IPQSMT,
+     &            BVEC,NTOT ,NMOL ,NZB,IPQBVC,
+     &            CSEL(KREF,1,1),NBAS,NTOT,NZC,IPQSEL,
+     &            CSEL(KMOL,1,1),NBAS,NTOT,NZC,IPQSEL,
+     &            WORK(KFREE),LFREE,IPRINT)
+C
+C     Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
+C
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NMOL,
+     &            SMAT,LRSMT,LCSMT,NZS,IPQSMT,
+     &            AMAT,NTOT ,NTOT ,NZB,IPQBVC,
+     &            CSEL(KREF,1,1),NBAS,NTOT,NZC,IPQSEL,
+     &            CSEL(KREF,1,1),NBAS,NTOT,NZC,IPQSEL,
+     &            WORK(KFREE),LFREE,IPRINT)
+C
+C     Print overlaps
+C
+C     ...write me...
+C
+C     Solve linear system by Cholesky decomposition
+C     with full pivoting
+C
+      JOB = 1
+      CALL MEMGET('REAL',KB1,NREF,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KB2,NREF,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIP,NREF,WORK,KFREE,LFREE)
+      CALL QCHOLD(AMAT,NREF,NZB,NTOT,NTOT,WORK(KB1),
+     &            PTOL,NEFF,JOB,WORK(KIP))
+      CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZB,NTOT,NTOT,WORK(KB1),
+     &            BVEC,NTOT,NMOL,BVEC,NTOT,NMOL,
+     &            JOB,WORK(KIP),WORK(KB2))
+      IF(NEFF.LT.NREF) THEN
+        WRITE(LUPRI,'(A,A)') '* WARNING: ',
+     &   ' linear dependencies detected in Cholesky decomposition'
+        WRITE(LUPRI,'(11X,A,I5,A,I5)') 
+     &   ' Reduced dimensionality: ',NREF,' --> ',NEFF
+      ENDIF
+      CALL MEMREL('PRJANA_MOD',WORK,1,KFRSAV,KFREE,LFREE)
+C
+C     Calculate polarization contribution;
+C     overwrites molecular coefficients
+C
+      CALL DUNIT2(BVEC(NREF+1,1,1),NMOL,NTOT,NMOL,NZB)
+      CALL QGEMM(NBAS,NMOL,NREF,DM1,
+     &           'N','N',IPQSEL,CSEL(KREF,1,1),NBAS,NTOT,NZC,
+     &           'N','N',IPQBVC,BVEC,NTOT,NMOL,NZB,
+     &                D1,IPQSEL,CSEL(KMOL,1,1),NBAS,NTOT,NZC)
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('Polarization vectors',0)
+      ENDIF      
+C
+C     Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
+C     but now with polarization contributions included
+C
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NTOT,NTOT,
+     &           SMAT,LRSMT,LCSMT,NZS,IPQSMT,
+     &           AMAT,NTOT,NTOT,NZB,IPQBVC,
+     &           CSEL,NBAS,NTOT,NZC,IPQSEL,
+     &           CSEL,NBAS,NTOT,NZC,IPQSEL,
+     &           WORK(KFREE),LFREE,IPRINT)
       RETURN
       END
