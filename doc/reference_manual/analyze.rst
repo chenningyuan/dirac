@@ -1,5 +1,3 @@
-
-
 .. _analyze:
 
 \*\*ANALYZE 
@@ -14,12 +12,11 @@ activated.
 .PRIVEC
 -------
 
-Print vectors. Activates the
-`\*PRIVEC </dirac/index.php/Manual:ANALYZE:PRIVEC>`_ subsection.
+Print vectors. Activates the `\*PRIVEC`_ subsection.
 
 
-\*PRIVEC -- Print vectors
-=========================
+`\*PRIVEC`_ 
+===========
 
 Print vectors read from DFCOEF.
 
