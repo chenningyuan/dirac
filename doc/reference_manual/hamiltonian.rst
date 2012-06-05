@@ -19,8 +19,10 @@ operator defined in this section must be totally symmetric under both
 the molecular point group and time reversal symmetry. The latter
 requirement precludes the introduction of external magnetic fields.
 
-`.LVCORR`_
------------
+.. _.LVCORR:
+
+.LVCORR
+-------
 
 This keyword gives Dirac-Coulomb Hamiltonian in which (SS|SS) integrals
 are neglected and replaced by an interatomic SS correction (calculated
@@ -182,8 +184,10 @@ functional.
 
 **Advanced options**
 
-`.LVNEW`_
----------
+.. _.LVNEW:
+
+.LVNEW
+------
 
 Modification of :ref:`.LVCORR` that obtains the atomic small
 component charge via a Mulliken analysis instead of the original table
