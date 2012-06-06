@@ -3806,8 +3806,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck OVLFRAG */
-      SUBROUTINE OVLFRAG(AMAT,NVECS,NZ,NONTYP,REFFIL,NCATOM,NAO,
-     &                   CSEL,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE OVLFRAG(AMAT,NVECS,NONTYP,REFFIL,NCATOM,NATOMS,
+     &                   CSEL,NBAS,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Starting from selected atomic coefficients in C1 symmetry,
@@ -3818,8 +3818,47 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0,DM1=-1.0D0)
+#include "dcbham.h"
+#include "dgroup.h"
       CHARACTER*6 REFFIL(NONTYP)
-      DIMENSION AMAT(NVECS,NVECS,NZ),WORK(*)
+      DIMENSION AMAT(NVECS,NVECS,NZC1),NCATOM(0:2,NONTYP),
+     &          NATOMS(NONTYP),CSEL(NBAS,NVECS,NZC1),WORK(*)
+      KFRSAV = KFREE
+      CALL MEMGET('REAL',KSMAT,NBAS*NBAS,WORK,KFREE,LFREE)
+      CALL GET_OVERLAP_AO(WORK(KSMAT),SSMTRC,IPRINT,WORK,KFREE,LFREE)
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NVECS,NVECS,
+     &           WORK(KSMAT),NBAS,NBAS,1,1,
+     &           AMAT,NVECS,NVECS,NZC1,IQDEF,
+     &           CSEL,NBAS,NVECS,NZC1,IQDEF,
+     &           CSEL,NBAS,NVECS,NZC1,IQDEF,
+     &           WORK(KFREE),LFREE,IPRINT)
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,*) '** Output from OVLFRAG **'
+        KJJ = 1
+        DO J = 1,NONTYP
+          DO JJ = 1,1,NATOMS(J)
+            KII = 1
+            DO I = 1,J
+              IF(I.EQ.J) THEN
+                IIEND = JJ-1
+              ELSE
+                IIEND = NATOMS(I)
+              ENDIF
+              DO II = 1,IIEND
+                WRITE(LUPRI,*) ' * Overlap ',REFFIL(I),II,REFFIL(J),JJ
+                CALL PRQMAT(AMAT(KII,KJJ,1),NCATOM(0,I),NCATOM(0,J),
+     &                      NVECS,NVECS,NZC1,IQDEF,LUPRI)
+                KII = KII + NCATOM(0,I)
+              ENDDO
+            ENDDO
+            KJJ = KJJ + NCATOM(0,J)
+          ENDDO
+        ENDDO
+      ENDIF
+      WRITE(LUPRI,*) '* Total overlap matrix'
+      CALL PRQMAT(AMAT,NVECS,NVECS,NVECS,NVECS,NZC1,IQDEF,LUPRI)
+      CALL MEMREL('OVLFRAG',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 

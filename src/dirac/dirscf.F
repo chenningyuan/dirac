@@ -462,10 +462,13 @@ C     ========================================
       DOSEL = .FALSE.
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
+      IF(ATHUCK) THEN
+        CALL ADHOC(IPRSCF,WORK,KFREE,LFREE)
+        STOP 'End of test'
 C
-C     1) - atomic start
+C     2) - atomic start
 C     -------------------------
-      IF(ATOMST) THEN
+      ELSEIF(ATOMST) THEN
 C.......In the open-shell case use fractional occupation in first iteration; reset at the end
         AOCBUF   = AOC
         AOC      = .FALSE.
@@ -5410,8 +5413,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/*Deck Adhoc */
-      SUBROUTINE ADHOC(WORK,KFREE,LFREE)
+      SUBROUTINE ADHOC(IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Atomic Huckel start
@@ -5429,13 +5431,15 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 C
+#include "nuclei.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbhoc.h"
 #include "dcbbas.h"
-#include "nuclei.h"
 #include "dgroup.h"
+      CHARACTER TEXT*74
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
-     &          NATOMS(MAXHOC),WORK(*)
+     &          NATDEG(MAXHOC),WORK(*)
       KFRSAV = KFREE
       CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C
@@ -5456,11 +5460,12 @@ C.......Read information from coefficient file
 C.............NPSH............NESH............NBAS...........TOTERG
         CLOSE(LUCOEF,STATUS='KEEP')
         IF(NAO(ITYP).NE.MBAS) THEN
-           WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
-     &     'Atomic Huckel start: ',
+           WRITE(LUPRI,'(A/A,I6/A,A6,A,I6)') 
+     &     '* Atomic Huckel start: ',
      &     '  Wrong number of basis function for atomic type ', ITYP,
      &     '  Number read from                     ',
-     &     HOCFIL(ITYP),' : '  ,MBAS
+     &     HOCFIL(ITYP),' : '  ,NAO(ITYP),
+     &     '  Expected                             ',MBAS
            CALL QUIT
      &     ('ADHOC: Wrong number of basis functions !')
         ENDIF
@@ -5478,8 +5483,8 @@ C.......Count the number of orbitals to read
         DO J = 0,NONT(ITYP)-1
           INDEP = INDEP + NUCDEG(ININD+J)
         ENDDO
-        NATOMS(ITYP) = INDEP - NN
-        NVECS = NVECS + NATOMS(ITYP)*NCATOM(0,NN)
+        NATDEG(ITYP) = INDEP - NN
+        NVECS = NVECS + NATDEG(ITYP)*NCATOM(0,NN)
         ININD = ININD+NONT(ITYP)
       ENDDO
 C
@@ -5528,29 +5533,86 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
      &     '  Atomic type ',ITYP,'  ',HOCFIL(ITYP),
      &     '  NPSH/NESH       :',NCATOM(2,ITYP),NCATOM(1,ITYP),
      &     '  Basis set size  :',NAO(ITYP)
-          WRITE(6,*) 'Selected coefficients:'
-          CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS,NTBAS(0),NVECS,NZC1,
-     &                IQDEF,LUPRI)
-          WRITE(6,*) 'Selected eigenvalues:'
-          CALL OUTPUT(WORK(KE),NVECS,1,NVECS,1,-1,LUPRI)
         ENDIF
         ININD = ININD+NONT(ITYP)
       ENDDO
+      WRITE(6,*) 'Selected coefficients:'
+      CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS,NTBAS(0),NVECS,NZC1,
+     &                IQDEF,LUPRI)
+      WRITE(6,*) 'Selected eigenvalues:'
+      CALL OUTPUT(WORK(KE),1,NVECS,1,1,NVECS,1,-1,LUPRI)
 C
 C     Get overlap matrix in fragment basis
 C     ====================================
 C
       CALL MEMGET('REAL',KAMAT,NVECS*NVECS*NZC1,WORK,KFREE,LFREE)
-      CALL OVLFRAG(WORK(KAMAT),NVECS,NZC1,NONTYP,HOCFIL,NCATOM,NAO,
-     &             IPRINT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
-      CALL GET_OVERLAP_AO(WORK(KSMAT),SSMTRC,IPRPRJ,WORK,KFREE,LFREE)
+      CALL OVLFRAG(WORK(KAMAT),NVECS,NONTYP,HOCFIL,NCATOM,NATDEG,
+     &             WORK(KQ),NTBAS(0),IPRINT,WORK,KFREE,LFREE)
+C
+C     Do extended Huckel
+C
+      CALL EHUCKEL(WORK(KAMAT),WORK(KE),HUCPAR,NVECS,NZC1,IQDEF,
+     &             NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
       RETURN
  10   CONTINUE
       CALL QUIT('ADHOC: END OF FILE reading TEXT')
  20   CONTINUE
       CALL QUIT('ADHOC: ERROR reading TEXT')
       END
-
-
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ehuckel */
+      SUBROUTINE EHUCKEL(HMAT,EIG,HUCPAR,NVECS,NZ,IPQ,NONTYP,HOCFIL,
+     &           NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Extended Huckel module
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DP5=0.5D0)
+      CHARACTER*6 HOCFIL(NONTYP)
+      DIMENSION HMAT(NVECS,NVECS,NZ),EIG(NVECS),
+     &          NCATOM(0:2,NONTYP),NATDEG(NONTYP),WORK(*)
+      KFRSAV=KFREE
+      N2DIM=NVECS*NVECS*NZ
+      CALL MEMGET('REAL',KSMAT,N2DIM,WORK,KFREE,LFREE)
+      CALL DCOPY(N2DIM,HMAT,1,WORK(KSMAT),1)
+C.....Construct extended Huckel Hamiltonian; hermiticity not exploited
+      JAT = 0
+      JOF = 0
+      DO J = 1,NONTYP
+      DO JJ = 1,NATDEG(J)
+        JAT = JAT + 1
+        IAT = 0
+        IOF = 0
+        DO I = 1,NONTYP
+        DO II = 1,NATDEG(I)
+          IAT = IAT + 1
+          IF(IAT.EQ.JAT) THEN
+            DO K = 1,NCATOM(0,I)
+              HMAT(IOF+K,IOF+K,1) = EIG(IOF+K)
+            ENDDO
+          ELSE
+            DO L = 1,NCATOM(0,J)
+              DO K = 1,NCATOM(0,I)
+                FAC = DP5*HUCPAR*(EIG(IOF+K)+EIG(JOF+L))
+                DO IZ = 1,NZ
+                  HMAT(IOF+K,JOF+L,IZ) = FAC*HMAT(IOF+K,JOF+L,IZ)
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDIF
+          IOF = IOF + NCATOM(0,I)
+        ENDDO
+        ENDDO
+        JOF = JOF + NCATOM(0,J)
+      ENDDO
+      ENDDO
+C
+      WRITE(6,*) 'Total extended Huckel matrix'
+      CALL PRQMAT(HMAT,NVECS,NVECS,NVECS,NVECS,NZ,IPQ,LUPRI)
+C
+      CALL MEMREL('EHUCKEL',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
