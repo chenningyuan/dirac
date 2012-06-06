@@ -1,5 +1,7 @@
 .. _hamiltonian:
 
+.. _\*\*HAMILTONIAN:
+
 \*\*HAMILTONIAN
 ===============
 
@@ -35,6 +37,8 @@ calculation of spectroscopic constants and valence properties; for core
 properties testing is recommended (see also :ref:`.LVNEW`). This
 is the default Hamiltonian choice in DIRAC11.
 
+.. _.GAUNT:
+
 .GAUNT
 ------
 
@@ -49,8 +53,7 @@ manual. Transformation of the Gaunt part of the two electron operator to
 the MO basis is not yet implemented, for this purpose we recommend the
 use of the molecular mean field approximation. This can be used for
 example in MP2/CC/FSCC/IHFSCC calculations with RELCCSD by means of the
-:ref:`.X2Cmmf` Hamiltonian (see also our FAQ page:
-`[1] <http://tinyurl.com/cu8gomm>`_).
+:ref:`.X2Cmmf` Hamiltonian (see also our FAQ/Tutorial pages)
 
 For the relativistic two-component mode (see :ref:`.X2C` keyword)
 with AMFI contributions it uses both spin-same and spin-other orbit
@@ -67,23 +70,27 @@ high-accuracy calculations, preferably in conjunction with the .GAUNT
 keyword to also include the Gaunt correction to the two-electron
 interaction.
 
-`.X2C`_
--------
+.. _.X2C:
+
+.X2C
+----
 
 Keyword referring to the new module for the *E* xact *Two*- *C* omponent
-relativistic Hamiltonian [Ilias2007]_, [Knecht2010]_.
+relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
 
 DIRAC runs in 2-component mode. One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
-default in the development version unless :ref:`.NOAMFI`
-specified. See also the warning there.
+default in the development version unless :ref:`.NOAMFI` specified. 
+See also the warning there.
 
-`.X2Cmmf`_
-----------
+.. _.X2Cmmf:
+
+.X2Cmmf
+-------
 
 Keyword referring to the 2-component molecular-mean-field Hamiltonian
 apporach within the new module for the *E* xact *Two*- *C* omponent
-relativistic Hamiltonian [Sikkema2009]_, [Knecht2010]_.
+relativistic Hamiltonian, Refs. [Sikkema2009]_, [Knecht2010]_.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to
 2-component mode (based on the converged Fock operator) prior to a
@@ -92,9 +99,12 @@ with the .GAUNT keyword which activates the inclusion of
 spin-other-orbit contributions in the Hamiltonian. The
 X2Cmmf-Hamiltonian can at present (DIRAC11 release) only be used for
 post-HF calculation within the RELCCSD module. Patches for other
-correlation modules in DIRAC are planned to be released soon. For
-further information and a detailed guideline please consult our `FAQ
-page </dirac/index.php/FAQ>`_.
+correlation modules in DIRAC are planned to be released soon. 
+
+For further information and a detailed guideline please consult our FAQ
+page.
+
+.. _.SPINFREE:
 
 .SPINFREE
 ---------
@@ -110,8 +120,10 @@ Note that this option should not be used for response calculations with
 time-antisymmetric (magnetic) operators as it will eliminate important
 contributions. Add more...
 
-`.LEVY-LEBLOND`_
-----------------
+.. _.LEVY-LEBLOND:
+
+.LEVY-LEBLOND
+-------------
 
 Use the nonrelativistic Lévy-Leblond Hamiltonian [Levy1967]_.
 
@@ -119,17 +131,20 @@ Use this option before any additional one-electron operators are
 specified, because it redefines the metric used in the calculation.
 Lévy-Leblond provides nonrelativistic mode in DIRAC.
 
+.. _.NONREL:
+
 .NONREL
 -------
 
 Standard nonrelativistic calculation based on the Schrodinger equation.
-Should give identical energy results as with the
-:ref:`.LEVY-LEBLOND` keyword.
+Should give identical energy results as with the :ref:`.LEVY-LEBLOND` keyword.
 
-DIRAC runs in the 2-component mode.
+DIRAC runs in the 2-component spinfree mode, what in fact represents traditional one-component mode.
 
-`.DFT`_
--------
+.. _.DFT:
+
+.DFT
+----
 
 Perform a Kohn-Sham calculation. In the following line you must specify
 the desired DFT functional.
@@ -201,7 +216,7 @@ in the core region.)
 
 One-step Exact (infinite order) 2-Component relativistic Hamiltonian [Ilias2007]_.
 
-**note: in the previous release version Dirac2008 this keyword is called .X2C.**
+**note:** in the previous release version Dirac2008 this keyword is called .X2C.
 
 DIRAC runs in the (memory saving) 2-component mode. Note that
 one should combine this option with the SPINFREE option as X2C will only
@@ -209,6 +224,8 @@ provide an unscreened (bare nucleus) spin-orbit operator that gives
 unphysically large spin-orbit contributions. To get a realistic screened
 spin-orbit operator AMFI is added in the development version unless
 :ref:`.NOAMFI` specified. See also the warning there.
+
+.. _.X2C4:
 
 .X2C4
 -----
@@ -223,7 +240,7 @@ See also the warning there.
 .NOSPIN
 -------
 
-Implies .SPINFREE, but also remove all spin-symmetry-breaking
+Implies :ref:`.SPINFREE`, but also remove all spin-symmetry-breaking
 (quaternion "imaginary" or "triplet" terms) from property gradients in
 response calculations. Used for analyzing magnetic properties similarly
 to how it is done with non-relativistic methods.
@@ -246,8 +263,7 @@ Weight of exchange in Fock matrix construction.
 Invoke the adiabatic LDA approximation: anything beyond the Kohn-Sham
 functional (exchange-correlation kernel etc.) is approximated by LDA
 (exchange switched off in hybrid functionals). In the development
-version this keyword has been moved after
-`\*DFT </dirac/index.php/Manual:HAMILTONIAN:DFT>`_.
+version this keyword has been moved after :ref:`.DFT`.
 
 .OPERATOR
 ---------
@@ -261,6 +277,8 @@ more than one operator.
 See the `specification of one-electron
 operators </dirac/index.php/Manual:One-electron_operators>`_ section for
 more information and explicit examples.
+
+.. _.INTFLG:
 
 .INTFLG
 -------
@@ -276,180 +294,17 @@ include):
     .INTFLG
      1 1 0
 
-`.BSS`_
--------
+.. _.BSS:
+
+.BSS
+-----
 
 Use the 2-component relativistic Hamiltonian obtained after the
 Barysz-Sadlej-Snijders transformation of the Dirac Hamiltonian in the
-finite basis set, see Ref. [Ilias2005]_.
-
-Calculations using the 2-component BSS Hamiltonian are running only with
+finite basis set, see Ref. [Ilias2005]_. Calculations using the 2-component BSS Hamiltonian are running only with
 large component basis functions.
 
-The user can select order of scalar and spin-orbit terms in the BSS
-Hamiltonian.
-
-*Both scalar and spin-orbit relativistic effects up to infinite order:*
-
-::
-
-    .BSS
-     099
-
-*Scalar relativistic effects of type "from the beginning" up to the
-infinite order, no spin-orbit interaction:*
-
-::
-
-    .SPINFREE
-    .BSS
-     109
-
-*Scalar relativistic effects "from the end" up to the infinite order:*
-
-::
-
-    .SPINFREE
-    .BSS
-     009
-
-*Traditional scalar relativistic "from the beginning" second-order
-Douglas-Kroll-Hess Hamiltonian:*
-
-::
-
-    .SPINFREE
-    .BSS
-     102
-
-*Scalar relativistic "from the end" second-order Douglas-Kroll-Hess
-Hamiltonian:*
-
-::
-
-    .SPINFREE
-    .BSS
-     002
-
-*Douglas-Kroll-Hess Hamiltonian with first-order spin-orbit and
-second-order scalar relativistic effects:*
-
-::
-
-    .BSS
-     012
-
-*Douglas-Kroll-Hess Hamiltonian with second-order spin-orbit and
-second-order scalar relativistic effects:*
-
-::
-
-    .BSS
-     022
-
-**Only in the development version of DIRAC**
-
-In this two-component variational scheme is possible to combine external
-AMFI spin-orbit terms, [Ilias2001]_,
-together
-with BSS integrals - see the
-`\*AMFI </dirac/index.php/Manual:HAMILTONIAN:AMFI>`_ section. Note that
-AMFI provides only one-center integrals.
-
-*Infinite order scalar and spin-orbit terms, (one-electron) mean-field
-spin-same-orbit (MFSSO2) from AMFI*
-
-::
-
-    .BSS
-    2999
-
-This is in fact the 'maximum' of two-component relativity, resembling
-Dirac-Coulomb Hamiltonian.
-
-*Second-order Douglas-Kroll-Hess spin-free from 'the beginning' with
-first order spin-orbit (SO1) term plus mean-field spin-same-orbit
-(MFSSO) from AMFI*
-
-::
-
-    .BSS
-    2112
-
-SO1 may come either from BSS-transformation or from AMFI. In the latter
-case it is only for one-center and for point nucleus.
-
-*Infinite order scalar and spin-orbit terms, (one-electron) mean-field
-spin-same and spin-other-orbit (MFSO2) from AMFI*
-
-::
-
-    .BSS
-    3999
-
-This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit
-comes from the Gaunt interaction term.
-
-DIRAC enables switching-off AMFI spin-orbit contributions from various
-centers. See keyword
-:ref:`.NOAMFIC`.
-
-*Infinite order scalar terms "from the beginning", (one-electron) spin
-orbit (SO1) and the mean-field spin-same-orbit (MFSSO2) terms
-exclusively from AMFI*
-
-::
-
-    .BSS
-    4109
-
-*Second order (DKH) scalar terms "from the beginning", (one-electron)
-spin orbit (SO1) and the mean-field spin-same-orbit (MFSSO2) terms
-exclusively from AMFI*
-
-::
-
-    .BSS
-    4102
-
-*Infinite order scalar terms "from the end", (one-electron) spin orbit
-(SO1) and the mean-field spin-same-orbit and spin-other-orbit (MFSO2)
-terms from AMFI*
-
-::
-
-    .BSS
-    5009
-
-*Infinite order scalar terms "from the end", and the (one-electron) spin
-orbit term (SO1) from AMFI*
-
-::
-
-    .BSS
-    6009
-
-AMFI one-electron spin-orbit terms - SO1 - are currently for the point
-nucleus.
-
-For the BSS value 'axyz' of y=0, DIRAC employs spin-free picture change
-transformation of property operators, although the system is not in the
-boson (spin-free) symmetry for a>1.
-
-*Rough first order, DKH1 (not recommended for practical calculations)*
-
-::
-
-    .BSS
-    111
-
-For comparison only between BSS-SO1 and AMFI-SO1 integrals (point
-nucleus only) use
-
-::
-
-    .BSS
-    001
+For more see tutorial.
 
 .ONESTEP
 --------
@@ -458,8 +313,10 @@ Together with the :ref:`.BSS` keyword - for the infinite order only
 - invokes the one-step infinite order method (which is otherwise called
 by :ref:`.X2C`, :ref:`.X2C4` keywords).
 
-`.NOAMFI`_
-----------
+.. _.NOAMFI:
+
+.NOAMFI
+-------
 
 Do not include the AMFI contribution in the development version where
 AMFI is the default. This holds also for keywords :ref:`.X2C` and
@@ -479,6 +336,8 @@ one-electron terms only, without two-electron shielding.
 After iterations at the two-component level *ascend* to the
 four-component level.
 
+.. _.DO4C2C:
+
 .DO4C2C
 -------
 
@@ -496,7 +355,9 @@ After the four-component DC-SCF method do the infinite order
 transformation (either one- or two-step) upon the Fock-Dirac matrix.
 Otherwise it is transforming Dirac bare nucleus.
 
-Used only with keyword `.DO4C2C <#.DO4C2C>`_.
+Used only with keyword :ref:`.DO4C2C`.
+
+.. _.CONT2C:
 
 .CONT2C
 -------
@@ -505,15 +366,17 @@ Used only with keyword `.DO4C2C <#.DO4C2C>`_.
 
 After four-component DC-SCF continue with two-component iterations.
 
-Used only with keyword `.DO4C2C <#.DO4C2C>`_.
+Used only with keyword :ref:`.DO4C2C`.
 
 Integer (3,4,5) should be specified in free format on the line following
-`.CONT2C <#.CONT2C>`_:
+:ref:`.CONT2C`:
 
 ::
 
     .CONT2C
      3
+
+.. _.ZORA:	 
 
 .ZORA
 -----
@@ -523,10 +386,10 @@ of the Dirac Hamiltonian in
 the Hartree-Fock procedure. Works only for closed-shell systems. The
 implementation offers only little computational advantages and is
 intended chiefly for comparisons of methodology. Note that the
-combination `.SPINFREE <#.SPINFREE>`_ and `.ZORA <#.ZORA>`_ gives a
+combination :ref:`.SPINFREE` and :ref:`.ZORA` gives a
 spinfree formalism that differs from the conventional spinfree ZORA
 formulation. Two integers should be specified in free format on the line
-following `.ZORA <#.ZORA>`_:
+following :ref:`.ZORA`:
 
 ::
 
@@ -641,13 +504,10 @@ molecular gradient.
     .ONECNV
      THRESHOLD
 
-Employ the one-center model as given by `.ONECAP <#.ONECAP>`_ until
+Employ the one-center model as given by :ref:`.ONECAP` until
 convergence to a specified THRESHOLD, whereafter the full set of
 two-electron integrals will be used. This threshold applies to whatever
-convergence criteria has been selected
-(`.EVCCNV </dirac/index.php/Manual:WAVE_FUNCTION:DHFCAL#.EVCCNV>`_,
-`.ERGCNV </dirac/index.php/Manual:WAVE_FUNCTION:DHFCAL#.ERGCNV>`_, or
-`.FCKCNV </dirac/index.php/Manual:WAVE_FUNCTION:DHFCAL#.FCKCNV>`_).
+convergence criteria has been selected (:ref:`.EVCCNV`, :ref:`.ERGCNV` or :ref:`.FCKCNV`).
 
 .CMPEIG
 -------
@@ -661,8 +521,10 @@ eigenvalues are identical with four-component Dirac counterparts. For
 the second-order (and lower order) Douglas-Krol-Hess Hamiltonian they
 slightly differ.
 
-`\*DFT`_
-========
+.. _\*DFT:
+
+\*DFT
+=====
 
 In this link the directives for modifying the DFT calculation are
 described (e.g. modifying grid, using ALDA and much more)
@@ -686,12 +548,9 @@ LBalpha).
 
 
 The specification of the functional is described in connection with the
-.DFT option in the
-\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN#.DFT>`_ section
+.DFT option in the :ref:`.DFT` section
 
-The DFT module is described in references [Schipper2000]_,
-[Saue2002]_,
-[Fossgaard2003]_.
+The DFT module is described in references [Schipper2000]_, [Saue2002]_, [Fossgaard2003]_.
 
 It uses standard non-relativistic functionals. This is justified in many
 cases since various studies, like refs. [Varga1999]_, [Varga2000]_, [Mayer1996]_,
@@ -764,14 +623,15 @@ potential is shifted in order to reproduce the desired IP (see reference [Grunin
     LB94
     0.5 40.0 0.79248 1.0D-6
 
+.. _.SAOP!:
+	
 .SAOP!
 ------
 
 Activate the statistical averaging of (model) orbital potentials (SAOP)
 as defined in reference [Schipper2000]_.
 This implies (and
-activates) the ALDA kernel. The functional under
-`.DFT </dirac/index.php/Manual:HAMILTONIAN#.DFT>`_ is expected to be
+activates) the ALDA kernel. The functional under :ref:`.DFT` is expected to be
 GLLBhole. The asymptotic potential is LBalpha.
 
 *Recommended input:*
@@ -787,7 +647,7 @@ GLLBhole. The asymptotic potential is LBalpha.
 .SAOP
 -----
 
-The more general version of `.SAOP! <#.SAOP.21>`_
+The more general version of :ref:`.SAOP!`
 
 Followed by a single line of input: asymptotic potential (currently LB94
 or LBalpha).
@@ -845,6 +705,8 @@ instead of the default
 Adiabatic local density approximation (ALDA)
 ============================================
 
+.. _.ALDA:
+
 .ALDA
 -----
 
@@ -852,37 +714,39 @@ Approximate all functional derivatives beyond the xc potential by SVWN
 derivatives. For hybrid functionals exact exchange is switched off in
 the solution of the response equation.
 
+.. _.XALDA:
+
 .XALDA
 ------
 
-Same as `.ALDA <#.ALDA>`_ but keep the fraction of exact exchange of the
-xc functional under `.DFT </dirac/index.php/Manual:HAMILTONIAN#.DFT>`_.
+Same as :ref:`.ALDA` but keep the fraction of exact exchange of the
+xc functional under :ref:`.DFT`.
 
 .ALDA+
 ------
 
-Use `.ALDA <#.ALDA>`_ only for the Hermitian contribution (density
+Use :ref:`.ALDA` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 .ALDA-
 ------
 
-Use `.ALDA <#.ALDA>`_ only for the anti-Hermitian contribution (spin
+Use :ref:`.ALDA` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
 .XALDA+
 -------
 
-Use `.XALDA <#.XALDA>`_ only for the Hermitian contribution (density
+Use :ref:`.XALDA` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 .XALDA-
 -------
 
-Use `.XALDA <#.XALDA>`_ only for the anti-Hermitian contribution (spin
+Use :ref:`.XALDA` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
@@ -900,8 +764,9 @@ fractional HF Gaunt interaction, and pure functionals no HF Gaunt
 interaction at all. If this option is not given the Gaunt integrals will
 be included to 100%, meaning that even an LDA calculation will include
 full Hartree-Fock Gaunt interaction when the .GAUNT keyword is given in
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+:ref:`\*\*HAMILTONIAN`.
 
+.. _\*AMFI:
 
 \*AMFI 
 ======
@@ -996,8 +861,10 @@ Example:
 The user can check the mean-field occupation/charge of each handled atom
 in the AMFI/RELSCF output, together with the RELSCF convergence status.
 
+.. _.NOAMFC:
+
 .NOAMFC
--------
+--------
 
 Discard selected centers from AMFI calculations. Related the
 :ref:`.BSS` keyword, whose

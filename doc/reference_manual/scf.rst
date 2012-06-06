@@ -1,15 +1,16 @@
-.. _scf:
+﻿.. _scf:
 
 SCF & DFT
 ============
 
 This section gives directives for Hartree-Fock calculations.
 Kohn-Sham calculations are performed by invoking the keyword
-`.DFT </dirac/index.php/Manual:HAMILTONIAN#.DFT>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+:ref:`.DFT` under :ref:`\*\*HAMILTONIAN`.
+
 Open-shell calculations correspond to either
-average-of-configurations (`.AOC <#.AOC>`_) or fractional
-occupation (`.FOCC <#.FOCC>`_). The former is the default for
+average-of-configurations (:ref:`.AOC`) or fractional
+occupation (:ref:`.FOCC`). 
+The former is the default for
 Hartree-Fock calculations, whereas the latter is default for
 Kohn-Sham calculations. Note that average-of-configurations
 Kohn-Sham calculations are not well defined.
@@ -153,21 +154,16 @@ that is, the lowest molecular orbitals are doubly occupied, the
 next ones are occupied with the electrons of open shell no. 1,
 etc.
 
-Other orderings can be achieved by using
-`.REORDER MO'S </dirac/index.php/Manual:WAVE_FUNCTION#.REORDER_MO.27S>`_
-and `.OVLSEL <#.OVLSEL>`_.
+Other orderings can be achieved by using :ref:`.REORDER MO'S` 
+and :ref:`.OVLSEL`.
 
 To get the energies of the individual states present in the
-average-of-configurations, specify
-`.RESOLVE </dirac/index.php/Manual:WAVE_FUNCTION#.RESOLVE>`_ (see
-also
-`\*RESOLVE </dirac/index.php/Manual:WAVE_FUNCTION:RESOLVE>`_).
+average-of-configurations, specify :ref:`.RESOLVE` (see also
+:ref:`\*RESOLVE`).
 
 To get the energies of (some) of the individual states present in
 the average of configurations, you can use the
-`GOSCIP module </dirac/index.php/Manual:GOSCIP>`_, the
-`DIRRCI module </dirac/index.php/Manual:DIRRCI>`_, or the
-`LUCITA module </dirac/index.php/Manual:LUCITA>`_.
+:ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`LUCITA`.
 
 .BOSONS
 -------
@@ -183,11 +179,15 @@ Occupation of MJ-splitted fermion irreps (only for the linear
 symmetry). Next line contains sequence of occupation numbers, see
 the SCF output for how many.
 
+.. _.AOC:
+
 .AOC
 ----
 
 Average-of-configuration calculation (default for open-shell
 Hartree-Fock).
+
+.. _.FOCC:
 
 .FOCC
 -----
@@ -195,11 +195,11 @@ Hartree-Fock).
 Fractional occupation (default for open-shell
 Kohn-Sham) CLARIFY
 
-`.FOCC <#.FOCC>`_ calculations are less memory-intensive than
-`.AOC <#.AOC>`_ calculations. In the latter case one additional
+:ref:`.FOCC` calculations are less memory-intensive than
+:ref:`.AOC` calculations. In the latter case one additional
 AO-Fock matrix is generated for each open shell.
 
-`.FOCC <#.FOCC>`_ calculations are therefore an interesting option
+:ref:`.FOCC` calculations are therefore an interesting option
 for generating start orbitals for MCSCF as well as initial
 convergence in open-shell Hartree-Fock.
 
@@ -209,8 +209,7 @@ convergence in open-shell Hartree-Fock.
 Program is allowed to change occupation during SCF cycles. This is
 deactivated by default. However, the program will still try to do
 an automatic initial occupation if neither
-`.CLOSED SHELL <#.CLOSED_SHELL>`_ nor `.OPEN SHELL <#.OPEN_SHELL>`_
-is given.
+:ref:`.CLOSED SHELL` nor :ref:`.OPEN SHELL` is given.
 
 Trial function
 ==============
@@ -238,15 +237,11 @@ Switch off the bare nucleus correction. This correction is on per
 default and improves the screening of the nuclei by estimating
 two-electron repulsion via nuclear-attraction type integrals:
 
-   :align: center
-   :alt: 
+.. :math: 
 
-\\langle X\_{A} \\vert \\sum\_{C}\\frac{-Z\_{C}\\cdot \\sum\_j a\_j e^{(-\\alpha^C\_j r\_{C}^{2})}}{r\_{C}} \\vert X\_{B} \\rangle~~,~~X = L,S
+ \langle X_{A} \vert \sum_{C} \frac{-Z_{C} \cdot \sum_j a_j e^{(-\alpha^C_j r_{C}^{2})}}{r_{C}} \vert X_{B} \rangle~~,~~X = L,S
 
-   
-\\langle X\_{A} \\vert \\sum\_{C}\\frac{-Z\_{C}\\cdot \\sum\_j a\_j e^{(-\\alpha^C\_j r\_{C}^{2})}}{r\_{C}} \\vert X\_{B} \\rangle~~,~~X = L,S
-
-
+ 
 The coefficients *a*\ :sub:`*j*`\  and the exponents \\alpha^C\_j|
 in this expression are chosen according to Slater's rules to obtain
 an approximate atomic electronic density for the initial guess. For
@@ -377,11 +372,15 @@ This may be achieved by convergence acceleration schemes:
 -  **Damping:** The simplest scheme is damping of the Fock matrix
    that may remove oscillations. In iteration *n* + 1 the Fock matrix
    to be diagonalized is:
-   \\mathbf{F}' = (1-c) \\mathbf{F}\_{n+1} + c \\mathbf{F}\_n|, where
-   *c* is the damping factor.
+
+.. :math:
+
+   \mathbf{F}' = (1-c) \mathbf{F}_{n+1} + c \mathbf{F}_n , 
+   
+   where*c* is the damping factor.
+   
 -  **DIIS:** Direct inversion of iterative subspaces [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_
-   may be thought of as
-   generalized damping involving Fock matrices from many iterations.
+   may be thought of as generalized damping involving Fock matrices from many iterations.
    Damping factors are obtained by solving a simple matrix equation
    involving the B-matrix constructed from error vectors (approximate
    gradients). Linear dependent columns in the B-matrix is removed.
@@ -417,7 +416,7 @@ Maximum dimension of B-matrix in the DIIS module.
 -------
 
 Activate DIIS in orthogonal basis (MO) with the error vector as
-described above (image6|).
+described above.
 
 .DIISAO
 -------
@@ -426,14 +425,15 @@ Activate
 `DALTON <http://www.kjemi.uio.no/software/dalton/dalton.html>`_-like
 DIIS using AO-basis. The error vector is
 
-\\mathbf{e} = \\mathbf{f} - \\mathbf{f}^{\\dagger}|
+.. :math:
 
-where \\mathbf{f}| is given by
+ \mathbf{e} = \mathbf{f} - \mathbf{f}^{\dagger}|
 
-   :align: center
-   :alt: \\mathbf{f} = \\mathbf{C}^\\dagger \\cdot \\mathbf{S}\_\\text{AO} \\cdot \\biggl[ \\mathbf{D}^{C}\_\\text{AO} \\cdot \\mathbf{F}^{D}\_\\text{AO} + \\sum\_{O \\in \\mathcal{O}} f\_{O} \\cdot \\mathbf{D}^{O}\_\\text{AO} \\cdot \\bigl( \\mathbf{F}^{D}\_\\text{AO} + ( a\_O - 1 ) \\mathbf{Q}^{V,O}\_\\text{AO} \\bigr) \\biggr] \\mathbf{C}
-   
-   \\mathbf{f} = \\mathbf{C}^\\dagger \\cdot \\mathbf{S}\_\\text{AO} \\cdot \\biggl[ \\mathbf{D}^{C}\_\\text{AO} \\cdot \\mathbf{F}^{D}\_\\text{AO} + \\sum\_{O \\in \\mathcal{O}} f\_{O} \\cdot \\mathbf{D}^{O}\_\\text{AO} \\cdot \\bigl( \\mathbf{F}^{D}\_\\text{AO} + ( a\_O - 1 ) \\mathbf{Q}^{V,O}\_\\text{AO} \\bigr) \\biggr] \\mathbf{C}
+where \mathbf{f} is given by
+
+.. :math:
+
+   \mathbf{f} = \mathbf{C}^\dagger \cdot \mathbf{S}_\text{AO} \cdot \biggl[ \mathbf{D}^{C}_\text{AO} \cdot \mathbf{F}^{D}_\text{AO} + \sum_{O \in \mathcal{O}} f_{O} \cdot \mathbf{D}^{O}_\text{AO} \cdot \bigl( \mathbf{F}^{D}_\text{AO} + ( a_O - 1 ) \mathbf{Q}^{V,O}_\text{AO} \bigr) \biggr] \mathbf{C}
 
 .NODIIS
 -------
@@ -532,8 +532,8 @@ number of integrals to be processed in each iteration:
 
 
 -  **Screening on integrals:** Thresholds may be set to eliminate
-   integrals below the threshold value
-   [6] <#_note-saue:csau>`_`\ . The threshold for LL
+   integrals below the threshold value, see [Saue1997]_.
+   . The threshold for LL
    integrals is set in the basis file, but this threshold may be
    adjusted for SL and SS integrals by threshold factors set in the
    `\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_ section.
@@ -599,11 +599,9 @@ SCF-iterations.
 -------
 
 Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+:ref:`.INTFLG` under :ref:`\*\*HAMILTONIAN`).
 
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_
-from `\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+*Default:* :ref:`.INTFLG` from :ref:`\*\*HAMILTONIAN`.
 
 Output control
 ==============
@@ -723,9 +721,8 @@ symmetry independent nuclei in the DIRAC basis file.
 -------
 
 Freeze orbitals (must only be used in conjunction with
-`.PROJECT <#.PROJECT>`_).
+:ref:`.PROJECT`).
 
-For each fermion irrep, give an
-`orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
+For each fermion irrep, give an `orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
 orbitals to freeze.
 
