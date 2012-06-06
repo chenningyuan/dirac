@@ -60,6 +60,9 @@ Please always provide citation entry with permanent URL-link, the best is the DO
    J. Chem. Phys. **124**, *154307* (2006)
    <http://dx.doi.org/10.1063/1.2187001>
 
+.. [Dunning1989] T. H. Dunning, *bla*, J. Chem. Phys. **106**, *0* (1989) 
+   <http://dx.doi.org/10.1007/s002140100263>
+
 .. [Dyall1994] K. G. Dyall, *An exact separation of the
    spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
    hamiltonian*, J. Chem. Phys. **100**, *2118* (1994) 

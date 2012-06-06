@@ -43,7 +43,7 @@ Specification of open shell(s).
 For each open shell give the number of electrons and the number of
 active spinors.
 
-*Example:*
+*Short example:*
 
 ::
 
@@ -164,6 +164,7 @@ iteration.
 Switch off the bare nucleus correction. This correction is on per
 default and improves the screening of the nuclei by estimating
 two-electron repulsion via nuclear-attraction type integrals:
+
 .. math::
 
  \langle X_{A} \vert \sum_{C} \frac{-Z_{C} \cdot \sum_j a_j e^{(-\alpha^C_j r_{C}^{2})}}{r_{C}} \vert X_{B} \rangle ~~, ~~X = L,S
@@ -365,7 +366,7 @@ where the :math:`\mathbf{f}` is given by
 
 .. math::
 
-   \mathbf{f}=\mathbf{C}^\dagger\cdot\mathbf{S}_{\text{AO}}\cdot\biggl[\mathbf{D}^{C}_{\text{AO}}\cdot\mathbf{F}^{D}_\text{AO}+\\
+   \mathbf{f}=\mathbf{C}^{\dagger}\cdot\mathbf{S}_{\text{AO}}\cdot\biggl[\mathbf{D}^{C}_{\text{AO}}\cdot\mathbf{F}^{D}_\text{AO}+\\
    \sum_{O\in\mathcal{O}}f_{O}\cdot\mathbf{D}^{O}_{\text{AO}}\cdot\bigl(\mathbf{F}^{D}_{\text{AO}}+\\
    (a_{O}-1)\mathbf{Q}^{V,O}_{\text{AO}}\bigr)\biggr]\mathbf{C}
 
