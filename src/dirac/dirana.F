@@ -3490,7 +3490,6 @@ C
 #include "memint.h"
       KFRSAV = KFREE
       IF(IPRINT.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
-      WRITE(6,*) 'TEST3..',KFREE,LFREE
       CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C
 C     Find total number of reference orbitals
@@ -3513,9 +3512,8 @@ C.............NPSH............NESH............NBAS...........TOTERG
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'Atomic projection analysis: ',
      &     '  Wrong number of basis function for atomic type ', ITYP,
-     &     '  Correct number                               : ', MBAS,
      &     '  Number read from                     ',
-     &     REFFIL(INDEP),' : '  ,NBAS
+     &     REFFIL(INDEP),' : '  ,MBAS
            CALL QUIT
      &     ('PRJAOB: Wrong number of basis functions !')
         ENDIF
@@ -3806,3 +3804,22 @@ C
      &           WORK(KFREE),LFREE,IPRINT)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck OVLFRAG */
+      SUBROUTINE OVLFRAG(AMAT,NVECS,NZ,NONTYP,REFFIL,NCATOM,NAO,
+     &                   CSEL,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Starting from selected atomic coefficients in C1 symmetry,
+C     generate overlap matrix in fragment basis
+C
+C     Written by T. Saue June 6 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER*6 REFFIL(NONTYP)
+      DIMENSION AMAT(NVECS,NVECS,NZ),WORK(*)
+      RETURN
+      END
+

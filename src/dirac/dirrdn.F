@@ -909,6 +909,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbatom.h"
+#include "dcbhoc.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -921,7 +922,7 @@ C
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',
-     &            '.ATOMST','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.ATOMST','.AD HOC','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
@@ -997,7 +998,8 @@ C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
-      ATOMST=.FALSE.
+      ATOMST = .FALSE.
+      ATHUCK = .FALSE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1573,6 +1575,18 @@ C&&& ATOMST: Atomic start
                ENDDO              
                GOTO 100
  52            CONTINUE
+C&&& AD HOC: extended Huckel based on atomic fragments
+               ATHUCK = .TRUE.
+               IF(NONTYP.GT.MAXHOC) THEN
+                 WRITE(LUPRI,'(A,I5)')
+     &           '* Number of atomic types specified  :',NONTYP,
+     &           '* Current maximum no. of types      :',MAXHOC
+                 CALL QUIT('*AD HOC input: Too many atom types !')
+               ENDIF
+               DO ITYP = 1,NONTYP
+                 READ(LUCMD,'(A6)')  HOCFIL(ITYP)
+                 READ(LUCMD,'(A72)') VECHOC(ITYP)
+               ENDDO
                GOTO 100
  53            CONTINUE
                GOTO 100

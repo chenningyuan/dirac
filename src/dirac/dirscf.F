@@ -5409,8 +5409,148 @@ C.........Create reverse pointer atom->mol
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/*Deck Adhoc */
+      SUBROUTINE ADHOC(WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Atomic Huckel start
+C     The basic theory is given here
+C       R. Hoffmann, J. Chem. Phys. 39 (1963) 1397
+C     This work was further motivated by 
+C       P. Norman and H. J. Aa. Jensen, Chem. Phys. 531 (2012) 229
+C     The particularity of the present approach is to employ 
+C     pre-calculated atomic fragments
+C
+C     Written by Trond Saue June 5 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbgen.h"
+#include "dcbhoc.h"
+#include "dcbbas.h"
+#include "nuclei.h"
+#include "dgroup.h"
+      DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
+     &          NATOMS(MAXHOC),WORK(*)
+      KFRSAV = KFREE
+      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+C
+C     Find total number of reference orbitals
+C     =======================================
+C     ININD runs over symmetry independent centers
+C     INDEP runs over symmetry dependent centers
+      NVECS=0
+      INDEP=1
+      ININD=1
+      DO ITYP = 1,NONTYP
+C.......Find the total number of basis functions for this atom type
+        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
+C.......Read information from coefficient file
+        CALL OPNFIL(LUCOEF,HOCFIL(ITYP),'OLD','ADHOC')        
+        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+     &        NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
+C.............NPSH............NESH............NBAS...........TOTERG
+        CLOSE(LUCOEF,STATUS='KEEP')
+        IF(NAO(ITYP).NE.MBAS) THEN
+           WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
+     &     'Atomic Huckel start: ',
+     &     '  Wrong number of basis function for atomic type ', ITYP,
+     &     '  Number read from                     ',
+     &     HOCFIL(ITYP),' : '  ,MBAS
+           CALL QUIT
+     &     ('ADHOC: Wrong number of basis functions !')
+        ENDIF
+C.......Count the number of orbitals to read
+        NCATOM(0,ITYP)=0
+        NDIM=NCATOM(2,TYP)+NCATOM(1,ITYP)+1
+        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL NUMLS1(VECHOC(ITYP),IDUM,IDUM,
+     &       -NCATOM(2,ITYP),NCATOM(1,ITYP),
+     &       NCATOM(0,ITYP),WORK(KITMP))
+        CALL MEMREL('ADHOC.ref',WORK,1,KITMP,KFREE,LFREE)
+        CALL MEMGET('INTE',KCATOM(ITYP),NCATOM(0,ITYP),
+     &              WORK,KFREE,LFREE)
+        NN = INDEP
+        DO J = 0,NONT(ITYP)-1
+          INDEP = INDEP + NUCDEG(ININD+J)
+        ENDDO
+        NATOMS(ITYP) = INDEP - NN
+        NVECS = NVECS + NATOMS(ITYP)*NCATOM(0,NN)
+        ININD = ININD+NONT(ITYP)
+      ENDDO
+C
+C     Calculate dimension of arrays
+C     =============================
+C
+      CALL MEMGET('REAL',KE,NVECS,WORK,KFREE,LFREE)
+      NQ = NTBAS(0)*NVECS*NZC1
+      CALL MEMGET('REAL',KQ,NQ      ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KQ),NQ)
+C
+C     Select atomic coefficients
+C     ==========================
+C
+      JVEC = 1
+      ININD= 1
+      DO ITYP = 1,NONTYP
+C.......Read C1 coefficients and orbitalenergies
+        CALL OPNFIL(LUCOEF,HOCFIL(ITYP),'OLD','PRJAOB')        
+        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+     &        NNEG,NPOS,NAO(ITYP),DUM
+        NTOT = NNEG+NPOS
+        NQA  = NAO(ITYP)*NTOT*NZC1
+        CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
+        CALL READT(LUCOEF,NQA ,WORK(KQA))
+        CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
+        CALL READT(LUCOEF,NTOT,WORK(KEA))
+        CLOSE(LUCOEF,STATUS='KEEP')
+C.......Make pointer array to selected reference orbitals
+        NDIM = NTOT+1
+        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL NUMLS1(VECHOC(ITYP),WORK(KCATOM(ITYP)),NCATOM(0,ITYP),
+     &       -NNEG,NPOS,NCATOM(0,ITYP),WORK(KITMP))
+        CALL MEMREL('ADHOC.refsel',WORK,1,KITMP,KFREE,LFREE)
+        CALL ORBCNT(WORK(KCATOM(ITYP)),NCATOM(0,ITYP),NNEG,NPOS,
+     &             NCATOM(2,ITYP),NCATOM(1,ITYP))
+C.....Extract coefficients and orbital energies (JVEC updated inside)
+        CALL SELATOM(WORK(KQ),WORK(KE),NTBAS(0),NVECS,NZC1,
+     &               WORK(KQA),WORK(KEA),NAO(ITYP),NTOT,NNEG,NPOS,
+     &               ININD,NONT(ITYP),NUCDEG(ININD),
+     &               WORK(KCATOM(ITYP)),NCATOM(1,ITYP),
+     &               NCATOM(2,ITYP),JVEC,WORK,KFREE,LFREE)
+        CALL MEMREL('ADHOC.atom',WORK,1,KQA,KFREE,LFREE)
+        IF(IPRINT.GE.2) THEN
+          WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
+     &     '  Atomic type ',ITYP,'  ',HOCFIL(ITYP),
+     &     '  NPSH/NESH       :',NCATOM(2,ITYP),NCATOM(1,ITYP),
+     &     '  Basis set size  :',NAO(ITYP)
+          WRITE(6,*) 'Selected coefficients:'
+          CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS,NTBAS(0),NVECS,NZC1,
+     &                IQDEF,LUPRI)
+          WRITE(6,*) 'Selected eigenvalues:'
+          CALL OUTPUT(WORK(KE),NVECS,1,NVECS,1,-1,LUPRI)
+        ENDIF
+        ININD = ININD+NONT(ITYP)
+      ENDDO
+C
+C     Get overlap matrix in fragment basis
+C     ====================================
+C
+      CALL MEMGET('REAL',KAMAT,NVECS*NVECS*NZC1,WORK,KFREE,LFREE)
+      CALL OVLFRAG(WORK(KAMAT),NVECS,NZC1,NONTYP,HOCFIL,NCATOM,NAO,
+     &             IPRINT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
+      CALL GET_OVERLAP_AO(WORK(KSMAT),SSMTRC,IPRPRJ,WORK,KFREE,LFREE)
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('ADHOC: END OF FILE reading TEXT')
+ 20   CONTINUE
+      CALL QUIT('ADHOC: ERROR reading TEXT')
+      END
 
 
-      
 
-      
