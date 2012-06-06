@@ -8,12 +8,15 @@ Here we provide few examples of open-shell systems.
 Boron atom: open-shell SCF and small CI relativistic calculations
 -----------------------------------------------------------------------
 
+An example of one electron in two spinors is the Boron atom.
+
 We seek to get the first excited state, 2P\ :sub:`3/2`\ , of B (X
 2P\ :sub:`1/2`\ ), and find out the 2P\ :sub:`1/2`\ -2P\ :sub:`3/2`\
 fine structure splitting.
 
 We select the Dirac-Coulomb Hamiltonian and neglect the (SS\|SS) class
 of integrals.
+
 
 Complete open-shell CI
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -111,6 +114,7 @@ Conclusion
 Further quality improvement of the theoretical data would be in
 enlarging basis set. The current one, decontracted STO-3G, is too small
 and is chosen for demonstrative purposes only.
+
 
 
 Nitrogen atom open-shell atomic calculations

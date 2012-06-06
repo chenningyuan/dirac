@@ -18,6 +18,8 @@ Kohn-Sham calculations are not well defined.
 Occupation
 ==========
 
+.. _.CLOSED SHELL:
+
 .CLOSED SHELL
 -------------
 
@@ -30,6 +32,8 @@ electrons.
 
 For symmetry groups *with* inversion symmetry, you need to specify
 the distribution of the electrons in the two fermion irreps [Saue2000]_.
+
+.. _.OPEN SHELL:
 
 .OPEN SHELL
 -----------
@@ -57,83 +61,7 @@ pair). For this special case the average-of-configuration
 calculation gives the same result as the usual restricted
 open-shell Hartree-Fock. For all other cases the calculation gives
 the average energy of many states.
-
-An example of one electron in two spinors is the Boron atom:
-
-::
-
-    **WAVE FUNCTION
-    .SCF
-    *SCF
-    .CLOSED SHELL
-     4 0
-    .OPEN SHELL
-     1
-     1/0,2
-
-The input is interpreted in the following way: We have 4 inactive
-electrons (in the 1*s* and 2*s* orbitals) and one open shell, where
-1 electron is in two spinors (the 2*p*\ :sub:`1 / 2`\  and
-2\\bar{p}\_{1/2}| spinors) in irrep 2. This calculation would give
-you the *P*\ :sub:`1 / 2`\  energy of Boron. We could also do a
-calculation with
-
-::
-
-    **WAVE FUNCTION
-    .SCF
-    *SCF
-    .CLOSED SHELL
-     4 0
-    .OPEN SHELL
-     1 
-     1/0,6
-
-where we have the active electrons distributed in all six
-*p*-orbitals. This would give us the average energy of six states:
-
-   :align: center
-   :alt: 
-
-\\frac{2\\cdot E\_{P\_{1/2}} + 4\\cdot E\_{P\_{3/2}}}{6}
    
-\\frac{2\\cdot E\_{P\_{1/2}} + 4\\cdot E\_{P\_{3/2}}}{6}
-
-It is also possible to specify more than one open shell. Let us
-take a look at two different inputs for the open shells of the
-Platinum atom (6*s*\ :sup:`1`\ 5*d*\ :sup:`9`\ ):
-
-In the first example:
-
-::
-
-    .OPEN SHELL
-     2
-     9/10,0
-     1/2,0
-
-we get the average energy of 20 states:
-
-\\left(\\begin{array}{c} 10 \\\\ 9 \\end{array}\\right)\\cdot
-\\left(\\begin{array}{c} 2 \\\\ 1 \\end{array}\\right)\\cdot=10\\cdot 2=20|.
-
-All 20 states are *s*\ :sup:`1`\ *d*\ :sup:`9`\  states.
-
-In the second input:
-
-::
-
-    .OPEN SHELL
-     1
-     10/12,0
-
-we distribute the same ten electrons in all 12 spinors. This gives
-a total of
-\\left(\\begin{array}{c} 12 \\\\ 10 \\end{array}\\right) = 66|
-states, which are a mixture of one *s*\ :sup:`0`\ *d*\ :sup:`10`\ 
-state, 20 *s*\ :sup:`1`\ *d*\ :sup:`9`\  and 45
-*s*\ :sup:`2`\ *d*\ :sup:`8`\  states.
-
 Note that the order of closed and open shells are assumed to be as
 in the following scheme:
 
@@ -148,8 +76,8 @@ Fractionally occupied
 Fractionally occupied
 
 **Closed shell**
-Doubly occupied
 
+Doubly occupied;
 that is, the lowest molecular orbitals are doubly occupied, the
 next ones are occupied with the electrons of open shell no. 1,
 etc.
@@ -236,13 +164,11 @@ iteration.
 Switch off the bare nucleus correction. This correction is on per
 default and improves the screening of the nuclei by estimating
 two-electron repulsion via nuclear-attraction type integrals:
+.. math::
 
-.. :math: 
-
- \langle X_{A} \vert \sum_{C} \frac{-Z_{C} \cdot \sum_j a_j e^{(-\alpha^C_j r_{C}^{2})}}{r_{C}} \vert X_{B} \rangle~~,~~X = L,S
-
+ \langle X_{A} \vert \sum_{C} \frac{-Z_{C} \cdot \sum_j a_j e^{(-\alpha^C_j r_{C}^{2})}}{r_{C}} \vert X_{B} \rangle ~~, ~~X = L,S
  
-The coefficients *a*\ :sub:`*j*`\  and the exponents \\alpha^C\_j|
+The coefficients *a*\ :sub:`*j*`\  and the exponents :math:`\alpha^{C_j}`
 in this expression are chosen according to Slater's rules to obtain
 an approximate atomic electronic density for the initial guess. For
 example, with one heavy element and without this correction (that
@@ -267,19 +193,19 @@ Three different criteria for convergence may be chosen:
 
 
 -  The norm of the DIIS error vector
-   \\mathbf{e} = [\\mathbf{F}, \\mathbf{D}]| (in MO basis). This
+   :math:`\mathbf{e} = [\mathbf{F}, \mathbf{D}]` (in MO basis). This
    corresponds to the norm of the electronic gradient and is the
    recommended convergence criterion. When you are only interested in
-   the energy `.EVCCNV <#.EVCCNV>`_ = 1.0D-5 is usually sufficient.
+   the energy :ref:`.EVCCNV` = 1.0D-5 is usually sufficient.
    For properties and correlated methods you should converge to
-   `.EVCCNV <#.EVCCNV>`_ = 1.0D-9. Large negative energy eigenvalues
+   :ref:`.EVCCNV` = 1.0D-9. Large negative energy eigenvalues
    lead to a loss of precision that might lead to convergence
    problems. Remember also that a too loose screening threshold (too
    many integrals neglected) will hinder convergence. You should
    modify
-   `.SCREEN </dirac/index.php/Manual:INTEGRALS:TWOINT#.SCREEN>`_ under
-   `\*TWOINT </dirac/index.php/Manual:INTEGRALS:TWOINT>`_ if you
-   modify `.EVCCNV <#.EVCCNV>`_ or one of the other two convergence
+   :ref:`.SCREEN` under
+   :ref:`\*TWOINT` if you
+   modify :ref:`.EVCCNV` or one of the other two convergence
    criteria.
 -  The difference in total energy between two consecutive
    iterations.
@@ -323,6 +249,8 @@ convergence thresholds. By properly set desired and allowed
 thresholds one can have exact number of iterations specified by
 *.MAXITR*.
 
+.. _.EVCCNV:
+
 .EVCCNV
 -------
 
@@ -335,6 +263,8 @@ Converge on error vector (electronic gradient).
     .EVCCNV
      desired threshold allowed threshold
 
+.. _.ERGCNV:
+
 .ERGCNV
 -------
 
@@ -346,6 +276,8 @@ Threshold for convergence on total energy.
 
     .ERGCNV
      desired threshold allowed threshold
+
+.. _.FCKCNV:
 
 .FCKCNV
 -------
@@ -372,14 +304,10 @@ This may be achieved by convergence acceleration schemes:
 -  **Damping:** The simplest scheme is damping of the Fock matrix
    that may remove oscillations. In iteration *n* + 1 the Fock matrix
    to be diagonalized is:
-
-.. :math:
-
-   \mathbf{F}' = (1-c) \mathbf{F}_{n+1} + c \mathbf{F}_n , 
+   :math:`\mathbf{F}\'=(1-c)\mathbf{F}_{n+1}+c\mathbf{F}_{n}`, 
+   where *c* is the damping factor.
    
-   where*c* is the damping factor.
-   
--  **DIIS:** Direct inversion of iterative subspaces [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_
+-  **DIIS:** Direct inversion of iterative subspaces, Refs. [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_,
    may be thought of as generalized damping involving Fock matrices from many iterations.
    Damping factors are obtained by solving a simple matrix equation
    involving the B-matrix constructed from error vectors (approximate
@@ -412,11 +340,15 @@ Maximum dimension of B-matrix in the DIIS module.
     .MXDIIS
      10
 
+.. _.DIISMO:
+
 .DIISMO
 -------
 
 Activate DIIS in orthogonal basis (MO) with the error vector as
 described above.
+
+.. _.DIISAO:
 
 .DIISAO
 -------
@@ -425,22 +357,26 @@ Activate
 `DALTON <http://www.kjemi.uio.no/software/dalton/dalton.html>`_-like
 DIIS using AO-basis. The error vector is
 
-.. :math:
+.. math::
 
  \mathbf{e} = \mathbf{f} - \mathbf{f}^{\dagger}|
 
-where \mathbf{f} is given by
+where the :math:`\mathbf{f}` is given by
 
-.. :math:
+.. math::
 
-   \mathbf{f} = \mathbf{C}^\dagger \cdot \mathbf{S}_\text{AO} \cdot \biggl[ \mathbf{D}^{C}_\text{AO} \cdot \mathbf{F}^{D}_\text{AO} + \sum_{O \in \mathcal{O}} f_{O} \cdot \mathbf{D}^{O}_\text{AO} \cdot \bigl( \mathbf{F}^{D}_\text{AO} + ( a_O - 1 ) \mathbf{Q}^{V,O}_\text{AO} \bigr) \biggr] \mathbf{C}
+   \mathbf{f}=\mathbf{C}^\dagger\cdot\mathbf{S}_{\text{AO}}\cdot\biggl[\mathbf{D}^{C}_{\text{AO}}\cdot\mathbf{F}^{D}_\text{AO}+\\
+   \sum_{O\in\mathcal{O}}f_{O}\cdot\mathbf{D}^{O}_{\text{AO}}\cdot\bigl(\mathbf{F}^{D}_{\text{AO}}+\\
+   (a_{O}-1)\mathbf{Q}^{V,O}_{\text{AO}}\bigr)\biggr]\mathbf{C}
+
+.. _.NODIIS:
 
 .NODIIS
 -------
 
 Do not perform DIIS. The default is to activate
-`.DIISMO <#.DIISMO>`_ for closed-shell calculations, and to
-activate `.DIISAO <#.DIISAO>`_ for average-of-configurations
+:ref:`.DIISMO` for closed-shell calculations, and to
+activate :ref:`.DIISAO` for average-of-configurations
 calculations.
 
 .DAMPFC
@@ -490,15 +426,16 @@ previous iteration is used as the criterion. For the first
 iteration either restart vectors or vectors generated by the bare
 nucleus approach (not*recommended) are used.*
 
-If `.NODYNSEL <#.NODYNSEL>`_ is given, either the restart vectors
+If :ref:`.NODYNSEL` is given, either the restart vectors
 or the bare nucleus vectors are used, i.e. the overlap selection
 vectors are *not* updated in each iteration. Please note, that
 overlap selection based on vectors from the bare nucleus approach
 is not recommended.
 
 Overlap selection is very useful together with
-`.REORDER MO'S </dirac/index.php/Manual:WAVE_FUNCTION#.REORDER_MO.27S>`_.
+:ref:`.REORDER MO'S`.
 This will reshuffle the vectors within the restart coefficients.
+
 Example: First one might do a open shell calculation on Boron, this
 would give the *P*\ :sub:`1 / 2`\  state. But if we restart on the
 *P*\ :sub:`1 / 2`\  coefficients, interchange the
@@ -509,14 +446,17 @@ request overlap selection, we can converge to the
 There also exists a keyword for reordering the converged SCF
 orbitals. This is useful for reordering the orbitals for the
 4-index transformation and subsequent correlation calculations
-(CCSD, CI etc.) (see
-`.POST DHF REORDER MO'S </dirac/index.php/Manual:WAVE_FUNCTION#.POST_DHF_REORDER_MO.27S>`_).
+(CCSD, CI etc.) (see :ref:`.POST DHF REORDER MO'S`).
+
+.. _.OVLSEL:
 
 .OVLSEL
 -------
 
 Activate dynamic overlap selection. The default is no overlap
 selection.
+
+.. _.NODYNSEL:
 
 .NODYNSEL
 ---------
@@ -536,19 +476,18 @@ number of integrals to be processed in each iteration:
    . The threshold for LL
    integrals is set in the basis file, but this threshold may be
    adjusted for SL and SS integrals by threshold factors set in the
-   `\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_ section.
-
+   :ref:`\*\*INTEGRALS` section.
 
 -  **Screening on density:** In direct mode further reductions are
-   obtained by screening on the density matrix as well
-   [6] <#_note-saue:csau>`_`\ . This becomes even more
+   obtained by screening on the density matrix as well, see Ref. [Saue1997]_.
+   This becomes even more
    effective if one employs *differential densities*, that is
-   \\Delta \\mathbf{D} = \\mathbf{D}\_{n+1} - \\alpha \\cdot \\mathbf{D}\_n|.
-   The default value for α is
-   \\alpha=\\frac{ \\mathbf{D}\_{n+1} \\cdot \\mathbf{D}\_n }{ \\mathbf{D}\_{n}   \\cdot \\mathbf{D}\_n }|
+   :math:`\Delta \mathbf{D} = \mathbf{D}_{n+1} - \alpha \cdot \mathbf{D}_n`.
+   The default value for :math:`alpha` is
+   :math:`\alpha=\frac{ \mathbf{D}_{n+1} \cdot \mathbf{D}_n }{ \mathbf{D}_{n}  \cdot \mathbf{D}_n }`
    which corresponds to a Gram-Schmidt orthogonalization. As SCF
-   converges, α goes towards 1, but α can also explicitly be set equal
-   to 1 with `.FIXDIF <#.FIXDIF>`_.
+   converges, :math:`alpha` goes towards 1, but  :math:`alpha` can also explicitly be set equal
+   to 1 with :ref:`.FIXDIF`.
 
 
 -  **Neglect of integrals:** The number of integrals to be
@@ -564,10 +503,12 @@ Do not perform SCF-iterations with differential density matrix.
 
 *Default:* Use differential density matrix in direct SCF.
 
+.. _.FIXDIF:
+
 .FIXDIF
 -------
 
-Set α equal to 1.
+Set :math:`alpha` equal to 1.
 
 .CNVINT
 -------
@@ -687,7 +628,7 @@ matrix to orthonormal basis.
 Then for each fragment read name PRJFIL of the coefficient file
 followed by the number of symmetry-independent nuclei in this
 fragment followed by an
-`orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
+:ref:`orb_strings` of
 selected orbitals for each fermion irrep.
 
 ::

@@ -177,13 +177,7 @@ In the second input:
      10/12,0
 
 we distribute the same ten electrons  over all 12 spinors. This gives
-a total of
-
-.. math::
-
- \left(\begin{array}{c} 12 \\ 10 \end{array}\right) = 66
-
+a total of :math:`\left(\begin{array}{c}{12}\\{10}\end{array}\right)=66` 
 states, which are a mixture of one *s*\ :sup:`0`\ *d*\ :sup:`10`\
 state, 20 *s*\ :sup:`1`\ *d*\ :sup:`9`\  and 45
 *s*\ :sup:`2`\ *d*\ :sup:`8`\  states.
-
