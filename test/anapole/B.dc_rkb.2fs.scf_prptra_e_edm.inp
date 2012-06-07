@@ -27,7 +27,7 @@
 *SCF
 # 1s(2) 2s(2)
 .CLOSED SHELL
-2 0 
+4 0 
 # 2p12(1)
 .OPEN SHELL
 1
@@ -46,7 +46,7 @@ all
 **MOLTRA
 .SCHEME
 6
-# take all occupied shells
+# take all occupied shells 
 .ACTIVE
 1..4
 1..6
