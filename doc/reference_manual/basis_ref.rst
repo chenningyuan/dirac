@@ -38,10 +38,7 @@ This situations has dramatically improved in recent years, notably with
 the work of K. G. Dyall, and Dirac users are strongly advised to use
 Dyall's basis sets whenever they are available. These sets follow
 roughly the "correlation-consisten" philosophy introduced by Dunning and
-coworkers
-[1] <#_note-dunninc:cc:1> 
-, so they already
-contain polarization functions.
+coworkers [Dunning1989]_, so they already contain polarization functions.
 
 At the time of writing, these are avaiable from Ga onwards, and a
 detailed description can be found at the dirac website, under the "Basis
@@ -82,11 +79,6 @@ balance prescription, but can (by experienced users) also be specified
 explicitly. Try this only if you have studied the theory and know what
 the criteria for small component basis sets are, there are many pitfalls
 that one needs to be aware of!
-
-<#_ref-dunninc:cc:1_0>`_ T. H. Dunning, *bla*, J. Chem. Phys.
-**106**, *0* (1989) `electronic
-version <http://dx.doi.org/10.1007/s002140100263>`_.
-
 
 Atomic coordinates
 ------------------
@@ -435,12 +427,11 @@ column of the orbital exponents blank.
 Specification of how to generate small component functions by kinetic
 balance. If no number or a 0 is given, the small component functions are
 generated both upwards and downwards, e.g 
-*p* \\rightarrow| *s, d*. 
-If
-the number is 1, the small component functions are generated upwards,
-e.g *p* -->  *d*. 
+:math:`p \rightarrow s, d`. 
+If the number is 1, the small component functions are generated upwards,
+e.g :math:`p \rightarrow  d`. 
 If the number is 2, the small component functions
-are generated downwards, e.g *p* -->  *s*.
+are generated downwards, e.g :math:`p \rightarrow s`.
 
 For other values no small components functions generated.
 

@@ -1,4 +1,4 @@
-
+﻿
 Installation on Windows 7
 =========================
 
@@ -39,6 +39,9 @@ Likewise we recommend to install the 32-bit version of Python also on 64-bit mac
 as you will also need *matplotlib* (http://matplotlib.sourceforge.net/)
 and *numpy* (http://numpy.scipy.org/) packages 
 which might not be at disposal for  64-bit version.
+
+Make sure that the *Path* Windows environmental variable cpoints to Python and its related scripts,
+for example ...C:\Python27;C:\Python27\Scripts;...
 
 Git & PuTTy (developpers)
 --------------------------

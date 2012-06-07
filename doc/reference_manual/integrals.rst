@@ -1,5 +1,7 @@
 .. _integrals:
 
+.. _\*\*INTEGRALS:
+
 \*\*INTEGRALS 
 =============
 
@@ -133,7 +135,7 @@ determine what integrals to calculate.
 Print level in one-electron integral routines (abacus).
 
 *Default:* Print level taken from
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+:ref:`\*\*INTEGRALS`.
 
 
 \*READIN -- Reading basis set file
@@ -162,8 +164,7 @@ decontracted basis set.
 
 Print level in the reading of the basis file.
 
-*Default:* Print level from
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+*Default:* Print level from :ref:`\*\*INTEGRALS`.
 
 .MAXPRI
 -------
@@ -219,6 +220,8 @@ convergence process.
 
     .ICEDIF
      1 1
+
+.. _.THRFAC:
 
 .THRFAC
 -------
