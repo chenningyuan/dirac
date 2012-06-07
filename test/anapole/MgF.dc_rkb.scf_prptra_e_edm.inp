@@ -42,28 +42,48 @@
 **MOLTRA
 .SCHEME
 6
-# pick up only the valence open-shell spinor of interest
+# take shells of interest - here all OCCUPIED SHELLS
 .ACTIVE
-11
+1..11
 .PRPTRA
 *PRPTRA
-# we need this print level to get matrix elements
+# we need this print level to get desired matrix elements
 .PRINT
 3
 .OPERATOR
- 'e_EDM x' 
+ 'e_EDM x F' 
  XSIGMA
  'NEF 001'
  COMFACTOR
- 1.00D0
+ 2.00D0
 .OPERATOR
- 'e_EDM y' 
+ 'e_EDM y F' 
  YSIGMA
  'NEF 002'
+ COMFACTOR
+ 2.00D0
 .OPERATOR
- 'e_EDM z' 
+ 'e_EDM z F' 
  ZSIGMA
  'NEF 003'
  COMFACTOR
- 1.00D0
+ 2.00D0
+.OPERATOR
+ 'e_EDM x Mg' 
+ XSIGMA
+ 'NEF 004'
+ COMFACTOR
+ 2.00D0
+.OPERATOR
+ 'e_EDM y Mg' 
+ YSIGMA
+ 'NEF 005'
+ COMFACTOR
+ 2.00D0
+.OPERATOR
+ 'e_EDM z Mg' 
+ ZSIGMA
+ 'NEF 006'
+ COMFACTOR
+ 2.00D0
 *END OF
