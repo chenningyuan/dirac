@@ -1,3 +1,7 @@
+Weak interactions in atoms and molecules
+========================================
+
+
 P-odd interaction constants
 ---------------------------
 
@@ -6,4 +10,37 @@ for small diatomic molecule.
 
 For more details see Ref. [Borschevsky2012]_ .
 
+
+Other interactions
+-------------------
+
 Also experimental tests of the e_EDM property.
+
+
+B atom 
+~~~~~~~
+
+4s2p STO-2G decontracted basis set
+
+seeking <1s_1/2|H_e_EDM|2p_12> elements
+
+D2h:
+Au, x, (1,9)             :  0.0003366642        0.0000000000
+Au, y, (1,9)             :  0.0003366642        0.0000000000
+Au, z, (1,9)             :  0.0003366642        0.0000000000
+
+C2v:
+B2, x, (1,13) -> (1a,7a) :  0.0000000000       -0.0003366642
+A1, y, (1,3)             : -0.0003366642        0.0000000000
+B1, z, (1,13)            :  0.0003366642        0.0000000000
+
+C2:
+x, (1,2)                 :  0.0003354219        0.0000288954 => sqrt(re*re+im*im)=0.0003366642
+y, (1,13)                :  0.0000288954       -0.0003354219
+z, (1,3)                 : -0.0000288954        0.0003354219
+
+C1: 
+x, (1,3)                 : -0.0001381189       -0.0002682541  => sqrt(re*re+im*im)=.000301723 ?!
+y, (1,3)                 : -0.0001381189       -0.0002682541
+z, (1,3)                 : -0.0001381189       -0.0002682541
+

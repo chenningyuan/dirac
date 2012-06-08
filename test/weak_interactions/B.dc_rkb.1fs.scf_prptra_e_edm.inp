@@ -45,14 +45,14 @@ all
 **MOLTRA
 .SCHEME
 6
-# take all occupied shells 1s(2) 2s(2) 2p1/2(1) into consideration
+# take all shells into consideration
 .ACTIVE
-1..5
+all
 .PRPTRA
 *PRPTRA
 # we need this print level to get all operator matrix elements
 .PRINT
-3
+2
 .OPERATOR
  'e_EDM x' 
  XSIGMA

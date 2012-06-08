@@ -28,7 +28,7 @@
 # 1s(2) 2s(2)
 .CLOSED SHELL
 4 0 
-# 2p12(1)
+# 2p_12(1)
 .OPEN SHELL
 1
 1/0,2
@@ -46,15 +46,15 @@ all
 **MOLTRA
 .SCHEME
 6
-# take all occupied shells 
+# take all shells 
 .ACTIVE
-1..4
-1..6
+all
+all
 .PRPTRA
 *PRPTRA
 # we need this print level to get all operator matrix elements
 .PRINT
-3
+2
 .OPERATOR
  'e_EDM x' 
  XSIGMA
