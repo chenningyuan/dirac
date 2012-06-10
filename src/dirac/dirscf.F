@@ -463,8 +463,9 @@ C     ========================================
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
-        CALL ADHOC(IPRSCF,WORK,KFREE,LFREE)
-        STOP 'End of test'
+        CALL ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRSCF,WORK,KFREE,LFREE)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,EIGSUM)
+        GOTO 100
 C
 C     2) - atomic start
 C     -------------------------
@@ -750,6 +751,7 @@ CMI        ... MAXITER is what does the SCF procedure end !!
         ENDIF
       ENDIF
 C
+ 100  CONTINUE
       CALL GETTIM(CTIDEND,WTIDEND)
       CTIDTOT = CTIDEND - CTIDSTR
       WTIDTOT = WTIDEND - WTIDSTR
@@ -762,6 +764,7 @@ C
         IF(NZ.EQ.4) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Quaternion diagonalization(CPU):',CPUTID
       ENDIF
+C
       IF(ONESYS) THEN
         IF(PHCOEF) THEN
           DO I = 1,NFSYM
@@ -5413,7 +5416,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADHOC(IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Atomic Huckel start
@@ -5439,7 +5442,7 @@ C
 #include "dgroup.h"
       CHARACTER TEXT*74
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
-     &          NATDEG(MAXHOC),WORK(*)
+     &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
       CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C
@@ -5572,7 +5575,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(DP5=0.5D0)
       CHARACTER*6 HOCFIL(NONTYP)
-      DIMENSION HMAT(NVECS,NVECS,NZ),EIG(NVECS),
+      DIMENSION HMAT(NVECS,NVECS,NZ),EIG(NVECS),IPQ(NZ),
      &          NCATOM(0:2,NONTYP),NATDEG(NONTYP),WORK(*)
       KFRSAV=KFREE
       N2DIM=NVECS*NVECS*NZ
@@ -5613,6 +5616,8 @@ C
       WRITE(6,*) 'Total extended Huckel matrix'
       CALL PRQMAT(HMAT,NVECS,NVECS,NVECS,NVECS,NZ,IPQ,LUPRI)
 C
+      CALL GEIGSOLV(HMAT,WORK(KSMAT),EIG,NVECS,NVECS,NVECS,NZ,IPQ,
+     &              IPRINT,WORK,KFREE,LFREE)
       CALL MEMREL('EHUCKEL',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END

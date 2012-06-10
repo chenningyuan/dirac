@@ -4216,3 +4216,83 @@ C     Free the memory
       DEALLOCATE (CMO)
 
       END
+C***********************************************************************
+C/* Deck Geigsolv */
+      SUBROUTINE GEIGSOLV(AMAT,SMAT,EIG,N,LRM,LCM,NZ,IPQ,
+     &                    IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Solve general Hermitian eigenvalue problem
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(STOL=1.0D-6,D0=0.0D0,D1=1.0D0)
+      DIMENSION AMAT(LRM,LCM,NZ),SMAT(LRM,LCM,NZ),EIG(N),IPQ(*),WORK(*)
+C
+      KFRSAV=KFREE
+C.....Get canonical orthogonalization matrix
+      CALL MEMGET('REAL',KVMAT,N*N*NZ,WORK,KFREE,LFREE)
+      CALL QLOWDIN(WORK(KVMAT),N,N,SMAT,LRM,LCM,EIG,N,NEFF,NZ,STOL,
+     &             WORK,KFREE,LFREE)
+C.....Transform AMAT to orthonormal basis; store result in SMAT
+      CALL QTRANS('AOMO','S',D0,N,N,NEFF,NEFF,
+     &            AMAT,LRM,LCM,NZ,IPQ,SMAT,LRM,LCM,NZ,IPQ,
+     &            WORK(KVMAT),N,N,NZ,IPQ,WORK(KVMAT),N,N,NZ,IPQ,
+     &            WORK(KFREE),LFREE,IPRINT)
+C.....Diagonalize AMAT(SMAT) in orthonormal basis; vectors stored in AMAT
+      CALL QDIAG(NZ,NEFF,SMAT,LRM,LCM,EIG,1,AMAT,LRM,LCM,
+     &           WORK(KFREE),LFREE,IERR)
+      WRITE(LUPRI,*) 'GEIGSOLV: Eigenvalues...'
+      DO I = 1,NEFF
+        WRITE(6,*) I,EIG(I)
+      ENDDO
+C.....Backtransform eigenvectors -> store in SMAT
+      CALL QGEMM(N,NEFF,NEFF,D1,
+     &           'N','N',IPQ,WORK(KVMAT),N,N,NZ,
+     &           'N','N',IPQ,AMAT,LRM,LCM,NZ,
+     &                D0,IPQ,SMAT,LRM,LCM,NZ)
+      WRITE(LUPRI,*) 'GEIGSOLV: Eigenvectors....'
+      CALL PRQMAT(SMAT,N,NEFF,LRM,LCM,NZ,IPQ,LUPRI)
+      CALL MEMREL('GEIGSOLV',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Qlowdin */
+      SUBROUTINE QLOWDIN(VMAT,LRV,LCV,SMAT,LRS,LCS,EIG,N,NV,NZ,STOL,
+     &                   WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for the generation of Lowdin canonical orthogonalization
+C     Written by Trond Saue June 10 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0,DM1=-1.0D0)
+      DIMENSION VMAT(LRV,LCV,NZ),SMAT(LRS,LCS,NZ),EIG(N),WORK(*)
+      NSDIM=LRS*LCS*NZ
+C.....Scale overlap matrix to get eigenvalues in the correct order
+C     QDIAG gives ascending and we want descending....
+      CALL DSCAL(NSDIM,DM1,SMAT,1)
+      CALL QDIAG(NZ,N,SMAT,LRS,LCS,EIG,1,VMAT,LRV,LCV,
+     &           WORK(KFREE),LFREE,IERR)
+      WRITE(LUPRI,*) 'QLOWDIN: Eigenvalues...'
+      DO I = 1,N
+        WRITE(6,*) I,EIG(I)
+      ENDDO
+      NV = 0
+      DO I = 1,N
+        TMP = DABS(EIG(I))
+        IF(TMP.LE.STOL) GOTO 10
+        NV  = NV + 1
+        FAC = D1/SQRT(TMP)
+        DO IZ = 1,NZ
+          CALL DSCAL(N,FAC,VMAT(1,I,IZ),1)
+        ENDDO
+      ENDDO
+ 10   CONTINUE
+C
+      RETURN
+      END
+
