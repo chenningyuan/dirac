@@ -4218,11 +4218,17 @@ C     Free the memory
       END
 C***********************************************************************
 C/* Deck Geigsolv */
-      SUBROUTINE GEIGSOLV(AMAT,SMAT,EIG,N,LRM,LCM,NZ,IPQ,
+      SUBROUTINE GEIGSOLV(AMAT,SMAT,EIG,N,NEFF,LRM,LCM,NZ,IPQ,
      &                    IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Solve general Hermitian eigenvalue problem
+C     Solve general Hermitian eigenvalue problem: Ac = eSc
+C     INPUT:
+C        AMAT - Hermitian A
+C        SMAT - Hermitian metric S
+C     OUTPUT:  
+C        AMAT - scramble
+C        SMAT - eigenvectors
 C
 C***********************************************************************
 #include "implicit.h"

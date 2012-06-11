@@ -464,7 +464,7 @@ C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
         CALL ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRSCF,WORK,KFREE,LFREE)
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,EIGSUM)
+        STOP 'End of test'
         GOTO 100
 C
 C     2) - atomic start
@@ -5432,6 +5432,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -5554,8 +5555,27 @@ C
 C
 C     Do extended Huckel
 C
-      CALL EHUCKEL(WORK(KAMAT),WORK(KE),HUCPAR,NVECS,NZC1,IQDEF,
+      CALL EHUCKEL(WORK(KAMAT),WORK(KE),HUCPAR,NVECS,NEFF,NZC1,IQDEF,
      &             NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
+C     Construct extended Huckel molecular orbitals (C1 for now)
+      CALL QGEMM(NTBAS(0),NEFF,NVECS,D1,
+     &       'N','N',IQDEF,WORK(KQ),NTBAS(0),NVECS,NZC1,
+     &       'N','N',IQDEF,WORK(KAMAT),NVECS,NEFF,NZC1,
+     &            D0,IQDEF,CMO,NTBAS(0),NEFF,NZC1)
+C     Write coefficients to file
+      EIGSUM=D2*DSUM(NVECS,WORK(KE),1)
+      TEXT='Extended Huckel using atomic fragment             '
+      CALL GTINFO(TEXT(51:74))
+      NSYM = 1
+      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','ADHOC')        
+      WRITE(LUCOEF) TEXT,1,0,NEFF,NTBAS(0),EIGSUM
+      NDIM = NTBAS(0)*NEFF*NZC1
+      CALL IZERO(IBEIG,NEFF)
+      CALL WRITT(LUCOEF,NDIM,CMO)
+      CALL WRITT(LUCOEF,NEFF,WORK(KE))
+      CALL WRITI(LUCOEF,NEFF,IBEIG)
+ 137  CONTINUE
+      CALL MEMREL('ADHOC',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
  10   CONTINUE
       CALL QUIT('ADHOC: END OF FILE reading TEXT')
@@ -5564,11 +5584,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck ehuckel */
-      SUBROUTINE EHUCKEL(HMAT,EIG,HUCPAR,NVECS,NZ,IPQ,NONTYP,HOCFIL,
-     &           NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE EHUCKEL(HMAT,EIG,HUCPAR,NVECS,NEFF,NZ,IPQ,
+     &           NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Extended Huckel module
+C     INPUT:
+C       HMAT - overlap matrix in fragment basis
+C     OUTPUT:
+C       HMAT - eigenvectors of extended Huckel problem
 C
 C***********************************************************************
 #include "implicit.h"
@@ -5615,9 +5639,11 @@ C.....Construct extended Huckel Hamiltonian; hermiticity not exploited
 C
       WRITE(6,*) 'Total extended Huckel matrix'
       CALL PRQMAT(HMAT,NVECS,NVECS,NVECS,NVECS,NZ,IPQ,LUPRI)
-C
-      CALL GEIGSOLV(HMAT,WORK(KSMAT),EIG,NVECS,NVECS,NVECS,NZ,IPQ,
+C     Solve general eigenvalue problem; coefficients stored in SMAT
+      CALL GEIGSOLV(HMAT,WORK(KSMAT),EIG,NVECS,NEFF,NVECS,NVECS,NZ,IPQ,
      &              IPRINT,WORK,KFREE,LFREE)
+      CALL DCOPY(N2DIM,WORK(KSMAT),1,HMAT,1)
+C
       CALL MEMREL('EHUCKEL',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
