@@ -456,7 +456,7 @@ CMI   g_tensors operator centers might be changed
 !     set compulsory default values for X2C module.
       if(x2c)then
         DOPCT = .true.
-        NOPCT = .false.
+!       NOPCT = .false.
       end if
 
       IF (DOPCT) THEN
