@@ -1100,10 +1100,10 @@ C     continue in inquiring:
           WRITE(LUPRI,"(/2A/2A)")
      &     "Info: used proper basis set name: ",BASNAM,
      &     "Info: instead of                : ",STRING
-          USE_BASNAM=.TRUE.
 #ifdef VAR_MPI
           end if
 #endif
+          USE_BASNAM=.TRUE.
         ENDIF
       ENDIF
         
