@@ -479,63 +479,6 @@ Manual:PROPERTIES:LINEAR RESPONSE
 
 Linear Response module written by T. Saue and H. J. Aa. Jensen [Saue2003]_.
 
-The general form of a linear response function in the random phase
-approximation (RPA) is [Saue2003]_, [Saue2002a]_
-
-   :align: center
-   :alt:  \\langle\\langle A ; B \\rangle\\rangle\_{\\omega} = -\\mathbf{E}\_A^{[1]\\dagger} \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr)^{-1} \\mathbf{E}\_B^{[1]}
-    \\langle\\langle A ; B \\rangle\\rangle\_{\\omega} = -\\mathbf{E}\_A^{[1]\\dagger} \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr)^{-1} \\mathbf{E}\_B^{[1]}
-
-where 
-\|\\mathbf{E}\_A^{[1]}| 
-and 
-\|\\mathbf{E}\_B^{[1]}| 
-are property
-gradients corresponding to properties A and B, *E*\ :sup:`[2]`\  is the
-molecular Hessian, *S*\ :sup:`[2]`\  is the metric, and ω is a
-frequency.
-
-The dimension of *E*\ :sup:`[2]`\  does in general not allow an explicit
-inversion of the resolvent | \\bigl( E^{[2]} - \\omega S^{[2]}
-\\bigr)^{-1} |
-
-so one resorts to iterative techniques.
-
-We write:
-
-   :align: center
-   :alt:  \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr)^{-1} \\mathbf{E}\_B^{[1]} = \\mathbf{X}
-
-    \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr)^{-1} \\mathbf{E}\_B^{[1]}  = \\mathbf{X}
-
-By a slight rearrangement we arrive at the linear response equations:
-
-   :align: center
-   :alt:  \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr) \\mathbf{X} = \\mathbf{E}\_B^{[1]}
-
-    \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr) \\mathbf{X} = \\mathbf{E}\_B^{[1]}
-
-The RPA equation is solved by expanding 
-\|\\mathbf{X}| 
-in a set of trial
-vectors:
-
-   :align: center
-   :alt:  \\mathbf{X} = \\sum\_{i=1} \\mathbf{b}\_i a\_i; Y = [\\mathbf{b}\_1 \\mathbf{b}\_2 \\cdots \\mathbf{b}\_n]
-
-    \\mathbf{X} = \\sum\_{i=1} \\mathbf{b}\_i a\_i; Y = [\\mathbf{b}\_1 \\mathbf{b}\_2 \\cdots \\mathbf{b}\_n]
-
-and solving the reduced equation:
-
-   :align: center
-   :alt:  \\bigl( \\tilde{E}^{[2]} - \\omega \\tilde{S}^{[2]} \\bigr) \\mathbf{a} = \\tilde{\\mathbf{E}}\_B^{[1]}
-
-    \\bigl( \\tilde{E}^{[2]} - \\omega \\tilde{S}^{[2]} \\bigr) \\mathbf{a} = \\tilde{\\mathbf{E}}\_B^{[1]}
-
-in which appear: 
-| \\tilde{E}^{[2]} = Y^\\dagger E^{[2]} Y;
-\\tilde{S}^{[2]} = Y^\\dagger S^{[2]} Y; \\tilde{\\mathbf{E}}\_B^{[1]} =
-Y^\\dagger \\mathbf{E}\_B^{[1]} |
 
 General control statements
 ==========================
@@ -582,10 +525,9 @@ details).
 
 Enforce triangularity of response function.
 
-   :align: center
-   :alt: \\langle\\langle A ; B \\rangle\\rangle\_\\omega \\equiv \\langle\\langle B ; A \\rangle\\rangle\_\\omega
+.. math::
 
-   \\langle\\langle A ; B \\rangle\\rangle\_\\omega \\equiv \\langle\\langle B ; A \\rangle\\rangle\_\\omega
+  \langle\langle A; B \rangle\rangle_\omega = \langle\langle B; A \rangle\rangle_\omega
 
 Only one function is calculated.
 
@@ -622,7 +564,7 @@ Employ imaginary frequencies.
 .ALLCMB
 -------
 
-Form all possible  \|\\langle\\langle A ; B \\rangle\\rangle\_\\omega|
+Form all possible combinations
 even if imaginary.
 
 *Default:* Deactivated.
@@ -820,8 +762,13 @@ one-index transformed densities [Saue2003]_.
 .STERNHEIM
 ----------
 
-Set diagonal elements of orbital part of Hessian equal to −
-2*m**c*\ :sup:`2`\  for rotations between occupied positive-energy and
+Set diagonal elements of orbital part of Hessian equal to
+
+.. math::
+
+  -2 m c^2
+
+for rotations between occupied positive-energy and
 virtual negative-energy orbitals.
 
 *Default:* Deactivated.
@@ -837,7 +784,13 @@ specialists !), you should run with print level 2 under properties.
 Then you can do a sequence of calculations: 1) .SKIPEP 2) .STERNH 3)
 .STERNC The diamagnetic contribution of 1) is the non-relativistic
 expectation value, whereas 2) is the Sternheim approximation, that is
-replacing orbital energy differences with − 2*m**c*\ :sup:`2`\ . With no
+replacing orbital energy differences with
+
+.. math::
+
+  -2 m c^2
+
+With no
 basis set incompleteness the sum of the diamagnetic contribution 2) and
 the paramagnetic contribution 3) should equal the diamagnetic
 contribution of 1).
@@ -1033,9 +986,8 @@ Manual:PROPERTIES:QUADRATIC RESPONSE
 ====================================
 
 This section gives directives for the calculation of quadratic response
-functions [Saue2002a]_, 
+functions [Saue2002a]_.
 
-\|\\langle\\langle A ; B , C \\rangle\\rangle\_{\\omega\_1,\\omega\_2}|
 
 General control statements
 ==========================
@@ -1289,7 +1241,7 @@ A well known limitation of the time dependent Hartree-Fock approximation
 is that electronic relaxation is not accounted for in the calculation of
 excitation energies. This relaxation can be understood as a correlation
 effect, since it is due to the simultaneous excitation of an electron
-and the relaxation of the remaining *N* − 1 electrons (or rather
+and the relaxation of the remaining N-1 electrons (or rather
 orbitals) due to the "hole" left behind by the excited electron. On the
 other hand the relaxation is well described already at the Hartree-Fock
 level when the excited states are optimized separately, in the so-called

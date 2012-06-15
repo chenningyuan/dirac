@@ -64,11 +64,11 @@ the program
     * Atomic number:               17.0
     * Number of grid points:       1995
     * First grid point:       0.588E-07
-    * Grid step size :        0.100E-01
+    * Grid step size:        0.100E-01
       
     * Number of orbitals read:        7
       
-    Do you want info on orbitals (y/n) ?
+    Do you want info on orbitals (y/n)?
     y
      1  1S       -105.291114936211
      2  2S        -10.675917467977
@@ -77,15 +77,15 @@ the program
      5  3S         -1.079593288072
      6  3P-        -0.509246554903
      7  3P         -0.504056491673
-    Do you want some orbitals printed (y/n) ?
+    Do you want some orbitals printed (y/n)?
     y
     Name atom (A3)
     Cl
-    RMAX = :   26.877
+    RMAX =:   26.877
     Give index of orbital to print(-1 to quit):
     3
-       PMIN :0.0000E+00   PMAX :0.1520E+01
-       QMIN :-.3800E-02   QMAX :0.5684E-01
+       PMIN:0.0000E+00   PMAX:0.1520E+01
+       QMIN:-.3800E-02   QMAX:0.5684E-01
     Give index of orbital to print(-1 to quit):
     -1
     *** EXITING ORBPRI ***
