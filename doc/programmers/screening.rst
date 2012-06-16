@@ -1,8 +1,8 @@
 Notes on screening
 ==================
 
-We have some number of old density matrices *D*\ :sub:`*k* −
-1`\ ,*D*\ :sub:`*k* − 2`\  etc, and want to write the new density matrix
+We have some number of old density matrices *D*\ :sub:`*k* -
+1`\ ,*D*\ :sub:`*k* - 2`\  etc, and want to write the new density matrix
 as
 
 ..figure:: /dirac/images/math/6/c/8/6c86ef3df163c5e325edbc447abb31d9.png
@@ -15,8 +15,8 @@ screening. Currently we are minimizing the Frobenius norm (sum of
 squares of elements) of Δ*D*, using one old density matrix. In the
 general case we have to solve *S**c* = *y*, where
 
-*S*\ :sub:`*i**j*`\  = (*D*\ :sub:`*k* − *i*`\ ,*D*\ :sub:`*k* − *j*`\ )
-and *y*\ :sub:`*i*`\  = (*D*\ :sub:`*k*`\ ,*D*\ :sub:`*k* − *i*`\ ).
+*S*\ :sub:`*i**j*`\  = (*D*\ :sub:`*k* - *i*`\ ,*D*\ :sub:`*k* - *j*`\ )
+and *y*\ :sub:`*i*`\  = (*D*\ :sub:`*k*`\ ,*D*\ :sub:`*k* - *i*`\ ).
 
 Here "(\cdot,\\cdot)"(FIX) is the inner product between the *D* "vectors".
 However, the use of the Frobenius norm gives the larges weight to the

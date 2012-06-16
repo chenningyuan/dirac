@@ -6111,7 +6111,11 @@ CMI  ... reading input routine for AMFI+RELSCF
 
 !       *ECP
     8 CONTINUE
+#ifdef MOD_ECP
         CALL RECP_LNK_RDMENU(WORD)
+#else
+        CALL quit('*ECP not available in this version')
+#endif
         GO TO 200
 C
     1 CONTINUE

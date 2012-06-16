@@ -305,7 +305,7 @@ This may be achieved by convergence acceleration schemes:
 -  **Damping:** The simplest scheme is damping of the Fock matrix
    that may remove oscillations. In iteration *n* + 1 the Fock matrix
    to be diagonalized is:
-   :math:`\mathbf{F}\'=(1-c)\mathbf{F}_{n+1}+c\mathbf{F}_{n}`, 
+   :math:`\mathbf{F}'=(1-c)\mathbf{F}_{n+1}+c\mathbf{F}_{n}`, 
    where *c* is the damping factor.
    
 -  **DIIS:** Direct inversion of iterative subspaces, Refs. [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_,

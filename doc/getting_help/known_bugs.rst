@@ -395,7 +395,7 @@ to the **configure** script if you use the xlf compiler:
      # IBM's xlf should be comma delimited, the others take spaces
           IBMMOD=1
     +     cpp_f90="$cpp_f90 `getmods`"
-          ;;
+         ;;
         *)
 
 Parallel 64-bit integer code

@@ -47,7 +47,7 @@ does *not* mean that only triplet states are solved for.
     .EVCCNV
      1.0D-9 1.0D-6
     .CLOSED
-     18 12      !zinc atom
+     18 12      !zinc atom
     **PROPERTIES
     *EXCITATION ENERGIES
     .TRIPLET
@@ -70,7 +70,7 @@ does *not* mean that only triplet states are solved for.
     *MULPOP
     .VECPOP
      1..oo
-     1..oo      !remove this line if there is only one Fermion irreducible corepresentation
+     1..oo      !remove this line if there is only one Fermion irreducible corepresentation
     *END OF
 
 With

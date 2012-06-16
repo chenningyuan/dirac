@@ -52,6 +52,7 @@ module x2c_cb_interface
 contains
 
   subroutine init_x2c_cb(init_x2c_cb_blocks,   &
+                         prop_op_nopct,        &
                          prop_op_dgsym,        &
                          prop_op_trsym,        &
                          prop_op_name)
@@ -74,6 +75,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     logical, intent(in)                         :: init_x2c_cb_blocks
+    logical, optional, intent(out)              :: prop_op_nopct
     integer, optional, intent(out)              :: prop_op_dgsym(*)
     integer, optional, intent(out)              :: prop_op_trsym(*)
     character (len=16), optional, intent(out)   :: prop_op_name(*)
@@ -213,6 +215,7 @@ contains
              prop_op_trsym(i) = iprptim(i)
              prop_op_name(i)  = prpnam(i)
            end do
+           prop_op_nopct      = nopct
          end if
 
        end if ! initialize x2c information from Dirac common blocks
