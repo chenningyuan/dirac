@@ -4583,7 +4583,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
-
       IF(NVEC.EQ.NORB) THEN
         CALL CFSORT(CSEL,CMO,NVEC,IFRP,NBAS)
       ELSE
@@ -4592,7 +4591,7 @@ C
         LCB = NPVEC+NEVEC
         CALL SELCFS(CMO,IFRP,WORK(KCBF),LCB,IVEC,NPVEC,NEVEC,
      &              NBAS,NORB)
-        CALL CFSORT(CSEL,WORK(KCBF),NVEC,IFRP,NBAS1)
+        CALL CFSORT(CSEL,WORK(KCBF),NVEC,IFRP,NBAS)
         CALL MEMREL('SELCMO_SO',WORK,1,KCBF,KFREE,LFREE)
       ENDIF
 C
