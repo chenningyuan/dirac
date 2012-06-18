@@ -463,8 +463,7 @@ C     ========================================
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
-        CALL ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRSCF,WORK,KFREE,LFREE)
-        STOP 'End of test'
+        CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
         GOTO 100
 C
 C     2) - atomic start
@@ -1323,8 +1322,6 @@ C
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
-
-
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -1458,7 +1455,6 @@ C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
-
 C        
 C        Calculate correction according to the One-center app. models 
 C        ============================================================
@@ -1528,7 +1524,11 @@ C                BMAT - DIIS matrix
 C        Output: CMO  - MO-coefficients for current iteration
 C
 CMI    ... we may get the DHFEXIT  
-         ICHKCNV = 1
+         IF(ATHUCK.AND.(NITER.EQ.2)) THEN
+           ICHKCNV=0
+         ELSE
+           ICHKCNV = 1
+         ENDIF
          CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &               OVLSEL,DOLEVEL,WORK(KFREE),LFREE)
 
@@ -1843,7 +1843,6 @@ CMI      ... print out matrixes ...
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
-         write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
 #if defined SYS_WINDOWS
          call system('copy DFCOEF DFCOEF.BEST')
 #else

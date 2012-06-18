@@ -1578,6 +1578,8 @@ C&&& ATOMST: Atomic start
  52            CONTINUE
 C&&& AD HOC: extended Huckel based on atomic fragments
                ATHUCK = .TRUE.
+               BNCRON = .FALSE.
+               DHF_INTTYP='Atom. Huckel'
                IF(NONTYP.GT.MAXHOC) THEN
                  WRITE(LUPRI,'(A,I5)')
      &           '* Number of atomic types specified  :',NONTYP,
