@@ -13,9 +13,9 @@ Projection analysis for CH4
 *SCF
 .CLOSED SHELL
  2
-.NODIIS
-.PRINT
-10
+#.NODIIS
+#.PRINT
+#10
 .AD HOC
 DFHXXX
 1

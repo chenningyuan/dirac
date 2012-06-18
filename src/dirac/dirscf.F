@@ -463,6 +463,7 @@ C     ========================================
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
+        DHF_INTTYP='Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
         GOTO 100
 C
@@ -5439,6 +5440,7 @@ C
 #include "dcbham.h"
 #include "dcbhoc.h"
 #include "dcbbas.h"
+#include "dcborb.h"
 #include "dgroup.h"
       CHARACTER TEXT*74
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
@@ -5474,7 +5476,7 @@ C.............NPSH............NESH............NBAS...........TOTERG
         ENDIF
 C.......Count the number of orbitals to read
         NCATOM(0,ITYP)=0
-        NDIM=NCATOM(2,TYP)+NCATOM(1,ITYP)+1
+        NDIM=NCATOM(2,ITYP)+NCATOM(1,ITYP)+1
         CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
         CALL NUMLS1(VECHOC(ITYP),IDUM,IDUM,
      &       -NCATOM(2,ITYP),NCATOM(1,ITYP),
@@ -5487,7 +5489,7 @@ C.......Count the number of orbitals to read
           INDEP = INDEP + NUCDEG(ININD+J)
         ENDDO
         NATDEG(ITYP) = INDEP - NN
-        NVECS = NVECS + NATDEG(ITYP)*NCATOM(0,NN)
+        NVECS = NVECS + NATDEG(ITYP)*NCATOM(0,ITYP)
         ININD = ININD+NONT(ITYP)
       ENDDO
 C
@@ -5557,10 +5559,12 @@ C
       CALL EHUCKEL(WORK(KAMAT),WORK(KE),HUCPAR,NVECS,NEFF,NZC1,IQDEF,
      &             NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
 C     Construct extended Huckel molecular orbitals (C1 for now)
+      IFRP=1
+      CALL DZERO(CMO,NCMOQ(IFRP))
       CALL QGEMM(NTBAS(0),NEFF,NVECS,D1,
      &       'N','N',IQDEF,WORK(KQ),NTBAS(0),NVECS,NZC1,
      &       'N','N',IQDEF,WORK(KAMAT),NVECS,NEFF,NZC1,
-     &            D0,IQDEF,CMO,NTBAS(0),NEFF,NZC1)
+     &            D0,IQDEF,CMO,NFBAS(IFRP,0),NORB(IFRP),NZ)
 C     Write coefficients to file
       EIGSUM=D2*DSUM(NVECS,WORK(KE),1)
       TEXT='Extended Huckel using atomic fragment             '
