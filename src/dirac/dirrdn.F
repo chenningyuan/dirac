@@ -321,6 +321,7 @@ C
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
 #include "logging.h"
+#include "infpar.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
@@ -540,7 +541,8 @@ C
      &  ' * Running in four-component mode'
       ENDIF
 
-      IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
+      IF(PARCAL) WRITE(LUPRI,'(A,I0,A)')
+     &   ' * Parallel run with ',NUMNOD,' slaves.'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
      +    'the following two-electron integrals:'
