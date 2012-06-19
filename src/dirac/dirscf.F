@@ -465,6 +465,7 @@ C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
       IF(ATHUCK) THEN
         DHF_INTTYP='Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         GOTO 100
 C
 C     2) - atomic start
@@ -1417,7 +1418,6 @@ C
         
         tdfde= second()
         call interface_mo_write()
-
 #ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
@@ -5455,15 +5455,16 @@ C     INDEP runs over symmetry dependent centers
       NVECS=0
       INDEP=1
       ININD=1
+      LUHOC=137
       DO ITYP = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
-        CALL OPNFIL(LUCOEF,HOCFIL(ITYP),'OLD','ADHOC')        
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')        
+        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
      &        NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
 C.............NPSH............NESH............NBAS...........TOTERG
-        CLOSE(LUCOEF,STATUS='KEEP')
+        CLOSE(LUHOC,STATUS='KEEP')
         IF(NAO(ITYP).NE.MBAS) THEN
            WRITE(LUPRI,'(A/A,I6/A,A6,A,I6)') 
      &     '* Atomic Huckel start: ',
@@ -5508,16 +5509,16 @@ C
       ININD= 1
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
-        CALL OPNFIL(LUCOEF,HOCFIL(ITYP),'OLD','PRJAOB')        
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
+        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
      &        NNEG,NPOS,NAO(ITYP),DUM
         NTOT = NNEG+NPOS
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL READT(LUCOEF,NQA ,WORK(KQA))
+        CALL READT(LUHOC,NQA ,WORK(KQA))
         CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL READT(LUCOEF,NTOT,WORK(KEA))
-        CLOSE(LUCOEF,STATUS='KEEP')
+        CALL READT(LUHOC,NTOT,WORK(KEA))
+        CLOSE(LUHOC,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1
         CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
@@ -5560,23 +5561,16 @@ C
      &             NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
 C     Construct extended Huckel molecular orbitals (C1 for now)
       IFRP=1
+CTROND
       CALL DZERO(CMO,NCMOQ(IFRP))
+      IOFF=NPSH(IFRP)*NFBAS(IFRP,0)+1
       CALL QGEMM(NTBAS(0),NEFF,NVECS,D1,
      &       'N','N',IQDEF,WORK(KQ),NTBAS(0),NVECS,NZC1,
      &       'N','N',IQDEF,WORK(KAMAT),NVECS,NEFF,NZC1,
-     &            D0,IQDEF,CMO,NFBAS(IFRP,0),NORB(IFRP),NZ)
+     &            D0,IQDEF,CMO(IOFF),NFBAS(IFRP,0),NORB(IFRP),NZC1)
+      CALL DCOPY(NEFF,WORK(KE),1,EIG(NPSH(IFRP)+1),1)
 C     Write coefficients to file
       EIGSUM=D2*DSUM(NVECS,WORK(KE),1)
-      TEXT='Extended Huckel using atomic fragment             '
-      CALL GTINFO(TEXT(51:74))
-      NSYM = 1
-      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','ADHOC')        
-      WRITE(LUCOEF) TEXT,1,0,NEFF,NTBAS(0),EIGSUM
-      NDIM = NTBAS(0)*NEFF*NZC1
-      CALL IZERO(IBEIG,NEFF)
-      CALL WRITT(LUCOEF,NDIM,CMO)
-      CALL WRITT(LUCOEF,NEFF,WORK(KE))
-      CALL WRITI(LUCOEF,NEFF,IBEIG)
  137  CONTINUE
       CALL MEMREL('ADHOC',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
