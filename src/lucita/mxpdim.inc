@@ -19,14 +19,14 @@ CSK      parameter (MXTSOB = 50)
       PARAMETER (MXPL = 20)
       PARAMETER (MXPXT = 25)
       PARAMETER (MXPICI = 10)
-      PARAMETER (MXPSTT = 1000)
+      PARAMETER (MXPSTT = 200)
       PARAMETER (MXPCSM = 20)
       PARAMETER (MXPCTP = 30)
       PARAMETER (MXCNSM = 8)
       PARAMETER (MTYP = 30)
 *. Note : MXPNGAS = MXPR4T+6 !!
 *. Required in order to handle GAS and RAS within /LUCINP/   
-      PARAMETER (MXPNGAS = 16)
+      PARAMETER (MXPNGAS = 8)
       PARAMETER(MXPNSMST = 8)
 *. Largest allowed division of space for perturbation operator
       PARAMETER (MXPPTSPC=20)
