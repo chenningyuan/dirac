@@ -1213,7 +1213,9 @@ CSK...6-jul-07 new
       L3BLOCK = MIN(LBLOCK,L3BLOCK)
 CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
 !u2T  LSCR12 = MAX(LBLOCK,2*LSCR2)
-      LSCR12 = MAX(LBLOCK,2*LSCR2,lcsblk)
+!     LSCR12 = MAX(LBLOCK,2*LSCR2,lcsblk)
+!     this ought to be fine ; no lcsblk
+      LSCR12 = MAX(LBLOCK,2*LSCR2)
       LCJRES_SAVE = LSCR12
 C     
 #if defined LUCI_DEBUG
