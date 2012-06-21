@@ -67,21 +67,3 @@ The electrostatic term is, usually, the largest contribution to the solvation en
 **exclusively** be concerned with its calculation (see also [Amovilli1998]_ for a discussion of the other terms).
 In CSMs the calculation of this term requires the solution of the classical Poisson problem nested within the
 QM calculation.
-
-.. [Tomasi1994] J. Tomasi and M. Persico; 
-   *Molecular Interactions in Solution: An Overview of Methods Based on Continuous Distributions of the Solvent* 
-   Chem. Rev. **94**, 2027 (1994)
-
-.. [Mennucci2007] B. Mennucci, R. Cammi (eds.);
-   *Continuum Solvation Models in Chemical Physics*
-   Wiley, New York (2007)
-
-.. [Tomasi2005] J. Tomasi, B. Mennucci, R. Cammi;
-   *Quantum Mechanical Continuum Solvation Models*
-   Chem. Rev. **105**, 2999 (2005)
-
-.. [Amovilli1998] C. Amovilli, V. Barone, R. Cammi, E. Cancès, M. Cossi, B. Mennucci, C. S. Pomelli and J .Tomasi;
-   *Recent Advances in the Description of Solvent Effects with the Polarizable Continuum Model*
-   Adv. Quantum Chem. **32**, 227 (1998)
-
-

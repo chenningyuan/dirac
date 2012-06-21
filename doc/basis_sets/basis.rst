@@ -1,3 +1,5 @@
+
+
 Pick the right basis for your calculation
 =========================================
 
@@ -9,7 +11,6 @@ in the directory **basis\_dalton** of the DIRAC distribution.
 
 These basis sets are not all suitable for relativistic calculations,
 especially not for the heavier elements.
-
 Basis sets developed for full relativistic calculations (including
 spin-orbit coupling) can be found in the directory **basis**.
 
@@ -22,9 +23,9 @@ repository <http://dirac.chem.sdu.dk/basisarchives/dyall/index.html>`_
 for the latest updates by Ken Dyall and the appropriate basis set
 references.
 
-We recommend that the Dyall basis sets
+We recommend that you use Dyall basis sets
 (see, for instance http://dirac.chem.sdu.dk/basisarchives/dyall/index.html)
-are used in DIRAC calculations whenever they are available for the
+whenever they are available for the
 elements of interest. In order to make that usage as convenient as possible,
 the following files, containing all sets currently available at the
 URL above (published or to be published), are made available:

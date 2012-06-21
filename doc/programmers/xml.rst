@@ -33,7 +33,7 @@ The next thing to be done is to declare a pointer to an XML document.
 
 ::
 
-    type(xml_tag) :: tag
+    type(xml_tag):: tag
 
 Then the following functions can be called:
 
@@ -69,7 +69,7 @@ the tag 'grid' it's sufficient to use:
 
 ::
 
-    type(xml_tag),pointer :: tag
+    type(xml_tag),pointer:: tag
     !
     tag=>open('xmlfile')
     do while(xml_tag_next(tag,'grid'))
@@ -96,8 +96,8 @@ is stored in the tag pointed to by xml\_tag. So usage could be
 
 ::
 
-    character,pointer :: char_data(:)
-    real,pointer :: real_data(:,:)
+    character,pointer:: char_data(:)
+    real,pointer:: real_data(:,:)
     !
     ... some code ...
     char_data=>xml_get_data(tag)
@@ -113,9 +113,9 @@ pointed to by xml\_tag. So usage could be
 
 ::
 
-    character(len=...),pointer :: char_data(:)
-    character(len=...) :: string
-    real :: real_data(:,:)
+    character(len=...),pointer:: char_data(:)
+    character(len=...):: string
+    real:: real_data(:,:)
     !
     ... some code ...
     call xml_add_data(tag,char_data)
@@ -147,7 +147,7 @@ table:
 ::
 
     use xml_parser
-    type(xml_tag),pointer :: tag
+    type(xml_tag),pointer:: tag
     !
     tag=>xml_open('mydoc.xml')
     tag=>xml_tag_open(tag,'table')
@@ -176,9 +176,9 @@ bunch of atoms:
 ::
 
     use xml_parser
-    type(xml_tag),pointer :: tag
-    real,pointer :: coordinates(:,:)
-    character(len=...) :: atom_name
+    type(xml_tag),pointer:: tag
+    real,pointer:: coordinates(:,:)
+    character(len=...):: atom_name
     !
     tag=>xml_open('mydoc.xml')
     tag=>xml_read('mydoc.xml')
@@ -187,7 +187,7 @@ bunch of atoms:
       do while(xml_get_next(tag))
         if (xml_name(tag)=='coordinates') then
           coordinates=>xml_get_data(tag)
-          write(*,*) 'Coordinates of ',atom_name,' :',coordinates
+          write(*,*) 'Coordinates of ',atom_name,':',coordinates
         end if
       end do
     end do

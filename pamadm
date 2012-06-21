@@ -180,7 +180,9 @@ list_of_tests.append('xyz_input')
 list_of_tests.append('zora')
 
 # list of directories and files
-# that are never compiled as part of DIRAC main executable
+# that are never compiled as part of the "dirac" library
+# first list individual files
+# then list directories that are to be skipped as whole
 
 files_never_compiled = []
 files_never_compiled.append('src/argosecp/argos_input.F')
@@ -198,17 +200,26 @@ files_never_compiled.append('src/relccsd/quit.F')
 files_never_compiled.append('src/main/main.F90')
 files_never_compiled.append('src/dirrci/cimain.F')
 files_never_compiled.append('src/xcfun/fortran/example.F90')
-files_never_compiled.append('src/fmm/mm_standalone_drv.f90')
-files_never_compiled.append('src/fmm/mm_standalone_aux.F')
 files_never_compiled.append('src/interest/selftest/module_interest_selftest.f90')
 files_never_compiled.append('src/interest/selftest/main_interest_selftest.f90')
 files_never_compiled.append('src/xcint/src/test_driver.F90')
 files_never_compiled.append('src/xcint/src/fake_input.F90')
 
-files_never_compiled.append('utils/gen_fortran_interface_h.c')
-files_never_compiled.append('cmake/test-MPI-2-compatibility.F90')
-files_never_compiled.append('cmake/test-MPI-compiler-compatibility.F90')
-files_never_compiled.append('cmake/test-MPI-itype-compatibility.F90')
+directories_never_compiled = []
+directories_never_compiled.append('utils')
+directories_never_compiled.append('cmake')
+directories_never_compiled.append('src/gen1int')
+
+for directory in directories_never_compiled:
+    for file in glob.glob('%s/*.F90' % directory):
+        files_never_compiled.append(file)
+    for file in glob.glob('%s/*.f90' % directory):
+        files_never_compiled.append(file)
+    for file in glob.glob('%s/*.F' % directory):
+        files_never_compiled.append(file)
+    for file in glob.glob('%s/*.c' % directory):
+        files_never_compiled.append(file)
+
 
 # definition of modules
 
@@ -228,15 +239,6 @@ dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_directory('src/densfit')
 dirac_modules[this_module].add_test('integrals_densfit')
 dirac_modules[this_module].add_test('integrals_jengine')
-dirac_modules[this_module].take_out_of_release()
-
-this_module = 'fmm'
-dirac_modules[this_module] = dirac_module('fmm', 'fast multipole method - not compilable ! fix it !')
-dirac_modules[this_module].add_cppflag('MOD_FMM')
-dirac_modules[this_module].add_dependency('eri')
-dirac_modules[this_module].add_dependency('densfit')
-dirac_modules[this_module].add_directory('src/fmm')
-dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'esr'
@@ -298,36 +300,31 @@ dirac_modules[this_module].add_directory('src/cap')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hscc'
-dirac_modules[this_module] = dirac_module('hscc', 'interface for the (external) HSMRCC code together with its objects')
+dirac_modules[this_module] = dirac_module('hscc','interface for the (external) HSMRCC code together with its objects')
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_dependency('oof')
-# include dynamic version, not static !
-dirac_modules[this_module].add_dependency('hsfsdyn')
-dirac_modules[this_module].add_directory('src/hsmrcc')
-dirac_modules[this_module].add_directory('src/hsmrcc/second_quant')
-dirac_modules[this_module].add_directory('src/hsmrcc/interface')
-dirac_modules[this_module].add_directory('src/hsmrcc/hsmrcc_external/modules')
-dirac_modules[this_module].add_directory('src/hsmrcc/hsmrcc_external/source')
+dirac_modules[this_module].add_directory('src/cc_external/hsmrcc')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hsfs'
-dirac_modules[this_module] = dirac_module('hsfs', 'Higher sectors FSCC codes')
+dirac_modules[this_module] = dirac_module('hsfs', 'Higher sectors FSCC codes, old static version')
 dirac_modules[this_module].add_cppflag('MOD_HSFS')
 dirac_modules[this_module].add_dependency('oof')
-dirac_modules[this_module].add_dependency('hscc')
-dirac_modules[this_module].add_directory('src/hsmrcc/high_sect_fscc_external')
+dirac_modules[this_module].add_directory('src/cc_external/interface')
+dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
 dirac_modules[this_module].add_test('fscc_high_sect')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 # hsfs and hsfsdyn are mutually exclusive
 this_module = 'hsfsdyn'
-dirac_modules[this_module] = dirac_module('hsfsdyn', 'Higher sectors FSCC codes- dynamic allocation version.')
+dirac_modules[this_module] = dirac_module('hsfsdyn', 'High sectors FSCC codes, dynamic memory version')
 dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
-dirac_modules[this_module].add_directory('src/hsmrcc/high_sect_fscc_external')
-dirac_modules[this_module].add_dependency('oof')
-dirac_modules[this_module].add_dependency('hscc')
+dirac_modules[this_module].add_cppflag('MOD_HSFS')
+dirac_modules[this_module].add_directory('src/cc_external/interface')
+dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
+dirac_modules[this_module].add_test('fscc_high_sect')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
@@ -354,13 +351,6 @@ this_module = 'mcscf_sf'
 dirac_modules[this_module] = dirac_module('mcscf_sf', 'spinfree MCSCF module')
 dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
 dirac_modules[this_module].take_out_of_release()
-
-this_module = 'gen1int'
-dirac_modules[this_module] = dirac_module('gen1int', 'Generalized One-electron Integral module')
-dirac_modules[this_module].add_cppflag('BUILD_GEN1INT')
-dirac_modules[this_module].add_directory('src/gen1int')
-dirac_modules[this_module].take_out_of_release()
-dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
@@ -454,8 +444,6 @@ for module in dirac_modules:
                  sys.exit(error_message)
 
 # report on screen
-
-print
 
 #  there are no modules
 if (len(sys.argv) == 1):
@@ -573,7 +561,7 @@ f.close()
 f = open('cmake/pamadm-generated/TestsList.cmake', 'w')
 f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
 for test in list_of_tests:
-    f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} ${RUNTEST_FLAG_BINARY} --tests=%s)\n' % (test, test))
+    f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --binary=${PROJECT_BINARY_DIR}/dirac.x --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} ${RUNTEST_FLAG_BINARY} --tests=%s)\n' % (test, test))
 f.close()
 
 # write pamadm flags to file

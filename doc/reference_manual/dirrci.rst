@@ -1,21 +1,20 @@
-Manual:DIRRCI
-=============
+.. _dirrci:
+
+DIRRCI
+======
 
 *Relativistic RASCI module* written by Lucas Visscher
 
 This section allows for relativistic configuration interaction
 calculations.
 
-Note that when the namelist
-`&GOSCIP </dirac/index.php/Manual:GOSCIP:GOSCIP>`_ is also present in
-the input, `GOSCIP </dirac/index.php/Manual:GOSCIP>`_ will be called
-instead of **DIRRCI**!
+Note that when the namelist :ref:`goscip`
+is also present in
+the input, **GOSCIP**  will be called
+instead of **DIRRCI** !
 
 The input should be given in namelist form.
 
-
-Manual:DIRRCI:CIROOT
-====================
 
 &CIROOT -- Select the state to converge on
 ==========================================
@@ -91,9 +90,6 @@ function.
     SELECT=F
 
 
-Manual:DIRRCI:DIRECT
-====================
-
 &DIRECT -- Convergence control
 ==============================
 
@@ -155,9 +151,6 @@ Maximum amount of CPU-seconds to be used.
     CPUMAX=604800
 
 
-Manual:DIRRCI:LEADDET
-=====================
-
 &LEADDET -- Analyze the CI wave function
 ========================================
 
@@ -187,9 +180,6 @@ coefficients is larger than COMIN.
     COMIN=0.1
 
 
-Manual:DIRRCI:OPTIM
-===================
-
 &OPTIM -- Fine tuning of the algorithm
 ======================================
 
@@ -210,10 +200,6 @@ Calculate coupling coefficients when needed:
 
     IGENEX=1
 
-
-
-Manual:DIRRCI:RASORB
-====================
 
 &RASORB -- Specify the type of CI and the active space
 ======================================================
@@ -272,20 +258,3 @@ Maximum number of electrons in RAS3 spinors.
 ::
 
     MAXE3=0
-
-
-Manual:DIRRCI:Sample inputs
-===========================
-
-Calculate the spin-orbit components of the 2P ground state of the
-fluorine atom using a CISD wavefunction.
-
-The full calculation is given as input example 5.cisd.energy REF? in the test
-directory:
-
-::
-
-     &RASORB  NELEC=7, NRAS1=1,1, NRAS2=2*0,3,3, MAXH1=2, MAXE3=2  &END
-     &CIROOT IREPNA=' 1Eu', NROOTS=3 &END
-     &DIRECT  MAXITER=15 &END
-

@@ -1,13 +1,16 @@
-Manual:INTEGRALS
-================
+.. _integrals:
 
-\*\*INTEGRALS -- Integral directives
-====================================
+.. _\*\*INTEGRALS:
+
+\*\*INTEGRALS 
+=============
+
+Set directives for integrals.
 
 .NUCMOD
 -------
 
-Nuclear model.
+Specify nuclear model.
 
 *Point nucleus:*
 
@@ -30,10 +33,9 @@ code, e.g.
 methods should give precisely the same energies.
 
 For the Gaussian charge distribution the default exponents are in
-accordance with values proposed by Visscher and Dyall
-[1] <#_note-visscher-dyall:nucmod>`_`\ , 
-see also the web-site
-`[1] <http://dirac.chem.sdu.dk/doc/FiniteNuclei/FiniteNuclei.shtml>`_.
+accordance with values proposed by Visscher and Dyall [Visscher1997b]_
+see also the 
+`web-site <http://dirac.chem.sdu.dk/doc/FiniteNuclei/FiniteNuclei.shtml>`_.
 If desired, other exponents may be specified in the `basis
 file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_.
 
@@ -118,19 +120,6 @@ General print level in HERMIT.
     .PRINT
      1
 
-References
-----------
-
-#. ` <#_ref-visscher-dyall:nucmod_0>`_ L. Visscher and K. G. Dyall,
-   *Dirac-Fock atomic electronic structure calculations using different
-   nuclear charge distributions*, At. Data Nucl. Data Tabl. **67**,
-   *207* (1997) `electronic
-   version <http://dx.doi.org/10.1006/adnd.1997.0751>`_.
-
-
-Manual:INTEGRALS:ONEINT
-=======================
-
 \*ONEINT -- One-electron integrals
 ==================================
 
@@ -146,11 +135,8 @@ determine what integrals to calculate.
 Print level in one-electron integral routines (abacus).
 
 *Default:* Print level taken from
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+:ref:`\*\*INTEGRALS`.
 
-
-Manual:INTEGRALS:READIN
-=======================
 
 \*READIN -- Reading basis set file
 ==================================
@@ -178,8 +164,7 @@ decontracted basis set.
 
 Print level in the reading of the basis file.
 
-*Default:* Print level from
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+*Default:* Print level from :ref:`\*\*INTEGRALS`.
 
 .MAXPRI
 -------
@@ -194,9 +179,6 @@ Maximum number of primitive functions in a given block in basis file.
      22
 
 
-Manual:INTEGRALS:TWOINT
-=======================
-
 \*TWOINT -- Two-electron integrals
 ==================================
 
@@ -209,8 +191,7 @@ matrices, such as screening.
 .SCREEN
 -------
 
-Screening threshold for integral direct calculations of Fock matrices
-[1] <#_note-saue:csau>
+Screening threshold for integral direct calculations of Fock matrices [Saue1997]_.
 
 *Default:*
 
@@ -229,8 +210,7 @@ completely off.
 .ICEDIF
 -------
 
-Separate screening of Coulomb and exchange contributions
-[1] <#_note-saue:csau>
+Separate screening of Coulomb and exchange contributions [Saue1997]_.
 Useful for fine regulation of the
 convergence process.
 
@@ -240,6 +220,8 @@ convergence process.
 
     .ICEDIF
      1 1
+
+.. _.THRFAC:
 
 .THRFAC
 -------
@@ -296,50 +278,4 @@ integrals are printed.
 -----
 
 Give detailed timing for integral calculation.
-
-References
-----------
-
-1.0 <#_ref-saue:csau_0>`_`\ 
-1.1 <#_ref-saue:csau_1>
-T. Saue, K. Fægri, T. Helgaker,
-and O. Gropen, *Principles of direct 4-component relativistic SCF:
-Application to cesium auride*, Mol. Phys. **91**, *937* (1997)
-`electronic version <http://dx.doi.org/10.1080/002689797171058>`_.
-
-
-Manual:INTEGRALS:Sample inputs
-==============================
-
-Use the point nucleus model to compare with nonrelativistic programs
-(most of them use point nucleus):
-
-::
-
-    **DIRAC
-    .TITLE
-      INTEGRALS sample input 1
-    .WAVE FUNCTION
-    **INTEGRALS
-    .NUCMOD
-     1
-     [...]
-
- Read very large contracted basis set (from a basis set file, for
-example) as uncontracted.
-
-::
-
-    **DIRAC
-    .TITLE
-      INTEGRALS sample input 2
-    .WAVE FUNCTION
-    **INTEGRALS
-    *READIN
-    .UNCONTRACT
-    ! comment: for demonstration we have 30s25p18d/22s18p12d...
-    ! ...consumes a lot of memory
-    .MAXPRI
-     30 
-     [...]
 

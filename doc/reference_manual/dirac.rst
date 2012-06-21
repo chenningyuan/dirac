@@ -1,4 +1,4 @@
-
+.. _dirac:
 
 \*\*DIRAC -- Job specification
 ==============================
@@ -14,8 +14,8 @@ package if you want to e.g. save the two-electron integrals to disk for
 another purpose, this is not possible with DIRAC.
 
 
-.WAVE FUNCTION
---------------
+`.WAVE FUNCTION`_
+-----------------
 
 Activates the wave function module(s).  This activates the reading of the
 :ref:`wave_function` section, where the desired wave function type(s) must be
@@ -83,7 +83,9 @@ integral transformation.
 .TITLE
 ------
 
-Title line (max. 50 characters). Example::
+Title line (max. 50 characters). 
+
+Example::
 
   .TITLE
    my first DIRAC calculation

@@ -1,11 +1,17 @@
-Manual:PROPERTIES
-=================
+
+
+.. _properties:
+
+PROPERTIES
+===========
 
 This section allows for the evaluation of a large number of molecular
 properties. Available properties include:
 
 -  Expectation values (e.g. dipole moment and electric field gradients).
+
 -  Linear response properties (e.g. polarizability and NMR parameters).
+
 -  Quadratic response properties (e.g. hyperpolarizabilities).
 
 For convenience some common properties can be specified directly in this
@@ -104,8 +110,7 @@ dipole polarizability.
 .VERDET
 -------
 
-Evaluate Verdet constants
-..[1] <#_note-ekstrom:verdet>`_`\ 
+Evaluate Verdet constants [Ekstrom2005]_
 (quadratic response) for a dynamic electric field corresponding to Ruby
 laser wavelength of 694 nm and a static magnetic field along the
 propagation direction of the light beam (in this case, the default
@@ -204,7 +209,7 @@ Evaluate the molecular gradient, i.e.
 
 ..|{\\frac{{\\partial E}}{{\\partial X\_A}}}|
 
- where *X*\ :sub:`*A*`\  are the coordinates of the nuclei. This
+where *X*\ :sub:`*A*`\  are the coordinates of the nuclei. This
 is an expectation value of one- and two-electron operators. Normally the
 molecular gradient evaluation is not invoked explicitly with this
 keyword but rather implicitly in the geometry optimization module.
@@ -214,8 +219,7 @@ keyword but rather implicitly in the geometry optimization module.
 
 Calculate matrix elements over the nuclear spin-independent
 parity-violating operator, e.g. calculate energy differences between
-enantiomers 
-.. \ :sup:``[2] <#_note-laerdahl:epv>`_`\ .
+enantiomers, see [Laerdahl1999]_ .
 
 .RHONUC
 -------
@@ -230,33 +234,11 @@ Atomic centers may be restricted with
 -------
 
 Calculate effective electronic density at the
-nucleus(nuclei).
-[3] <#_note-sknecht:mossbauer>
+nucleus(nuclei), [Knecht2011]_.
 
 Atomic centers may be restricted with
 `.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
 `\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
-
-References
-==========
-
-#. `↑ <#_ref-ekstrom:verdet_0>`_ Ulf Ekstrom and Patrick Norman and
-   Antonio Rizzo, *Four-component Hartree--Fock calculations of
-   magnetic-field induced circular birefringence---Faraday effect---in
-   noble gases and dihalogens*, The Journal of Chemical Physics **122**,
-   *074321* (2005) `electronic
-   version <http://dx.doi.org/10.1063/1.1849167>`_.
-#. `↑ <#_ref-laerdahl:epv_0>`_ J. K. Lærdahl and P. Schwerdtfeger,
-   *Fully relativistic ab initio calculations of the energies of chiral
-   molecules including partiy-violating weak interactions*, Phys. Rev. A
-   **60**, *4439* (1999) `electronic
-   version <http://dx.doi.org/10.1103/PhysRevA.60.4439>`_.
-#. `↑ <#_ref-sknecht:mossbauer_0>`_ S. Knecht, S. Fux, R. van Meer, L.
-   Visscher, M. Reiher, T. Saue, *Mössbauer spectroscopy for heavy
-   elements: a relativistic benchmark study of mercury*, Theor. Chem.
-   Acc. **129**, *631-650* (2011) `electronic
-   version <http://dx.doi.org/10.1007/s00214-011-0911-2>`_.
-
 
 
 Manual:PROPERTIES:EXCITATION ENERGIES
@@ -438,24 +420,13 @@ small systems !
 -------
 
 Only call FMOLI in sigmavector routine: only generate one-index
-transformed Fock matrix 
-
-.. \ :sup:``[1] <#_note-saue-jensen:linres>`_`\ .
+transformed Fock matrix  [Saue2003]_.
 
 .ONLYSG
 -------
 
 Only call FMOLI in sigmavector routine: 2-electron Fock matrices using
-one-index transformed densities
-
-.. \ :sup:``[1] <#_note-saue-jensen:linres>`_`\ .
-
-References
-==========
-
-#. `<#_ref-saue-jensen:linres_1>`_ **Cite error: Invalid ``<ref>``
-   tag; no text was provided for refs named ``saue-jensen:linres``**
-
+one-index transformed densities [Saue2003]_.
 
 \*EXPECTATION VALUE -- Evaluate expectation values
 ==================================================
@@ -506,90 +477,8 @@ Print level.
 Manual:PROPERTIES:LINEAR RESPONSE
 =================================
 
-Linear Response module written by T. Saue and H. J. Aa. Jensen
-.. \ :sup:``[1] <#_note-saue-jensen:linres>`_`\ .
+Linear Response module written by T. Saue and H. J. Aa. Jensen [Saue2003]_.
 
-The general form of a linear response function in the random phase
-approximation (RPA) is 
-.. \ :sup:``[1] <#_note-saue-jensen:linres>`_`\ 
-.. \ :sup:``[2] <#_note-saue:properties>`_`\ 
-
- ..figure:: /dirac/images/math/3/3/a/33ad8ef666cb0f7d49ecd15b16261f82.png
-
-   :align: center
-   :alt:  \\langle\\langle A ; B \\rangle\\rangle\_{\\omega} =
-   -\\mathbf{E}\_A^{[1]\\dagger} \\bigl( E^{[2]} - \\omega S^{[2]}
-   \\bigr)^{-1} \\mathbf{E}\_B^{[1]}
-
-    \\langle\\langle A ; B \\rangle\\rangle\_{\\omega} =
-   -\\mathbf{E}\_A^{[1]\\dagger} \\bigl( E^{[2]} - \\omega S^{[2]}
-   \\bigr)^{-1} \\mathbf{E}\_B^{[1]}
-
-where 
-..|\\mathbf{E}\_A^{[1]}| 
-and 
-..|\\mathbf{E}\_B^{[1]}| 
-are property
-gradients corresponding to properties A and B, *E*\ :sup:`[2]`\  is the
-molecular Hessian, *S*\ :sup:`[2]`\  is the metric, and ω is a
-frequency.
-
-The dimension of *E*\ :sup:`[2]`\  does in general not allow an explicit
-inversion of the resolvent | \\bigl( E^{[2]} - \\omega S^{[2]}
-\\bigr)^{-1} |
-
-so one resorts to iterative techniques.
-
-We write:
-
-..figure:: /dirac/images/math/e/5/8/e589ae342edd882b5ae789f3aec83ddc.png
-
-   :align: center
-   :alt:  \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr)^{-1}
-   \\mathbf{E}\_B^{[1]} = \\mathbf{X}
-
-    \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr)^{-1} \\mathbf{E}\_B^{[1]}
-   = \\mathbf{X}
-
-By a slight rearrangement we arrive at the linear response equations:
-
- ..figure:: /dirac/images/math/2/1/b/21b88e00d350c78835867c666a7b7015.png
-
-   :align: center
-   :alt:  \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr) \\mathbf{X} =
-   \\mathbf{E}\_B^{[1]}
-
-    \\bigl( E^{[2]} - \\omega S^{[2]} \\bigr) \\mathbf{X} =
-   \\mathbf{E}\_B^{[1]}
-
-The RPA equation is solved by expanding 
-..|\\mathbf{X}| 
-in a set of trial
-vectors:
-
- ..figure:: /dirac/images/math/0/7/b/07bb04070d9439e9ff637776dcd5b50b.png
-
-   :align: center
-   :alt:  \\mathbf{X} = \\sum\_{i=1} \\mathbf{b}\_i a\_i; Y =
-   [\\mathbf{b}\_1 \\mathbf{b}\_2 \\cdots \\mathbf{b}\_n]
-
-    \\mathbf{X} = \\sum\_{i=1} \\mathbf{b}\_i a\_i; Y = [\\mathbf{b}\_1
-   \\mathbf{b}\_2 \\cdots \\mathbf{b}\_n]
-
-and solving the reduced equation:
-
-..figure:: /dirac/images/math/e/1/1/e11f9a918dde36f49e11ade054b1fb3e.png
-
-   :align: center
-   :alt:  \\bigl( \\tilde{E}^{[2]} - \\omega \\tilde{S}^{[2]} \\bigr)
-   \\mathbf{a} = \\tilde{\\mathbf{E}}\_B^{[1]}
-
-    \\bigl( \\tilde{E}^{[2]} - \\omega \\tilde{S}^{[2]} \\bigr)
-   \\mathbf{a} = \\tilde{\\mathbf{E}}\_B^{[1]}
-
-in which appear: | \\tilde{E}^{[2]} = Y^\\dagger E^{[2]} Y;
-\\tilde{S}^{[2]} = Y^\\dagger S^{[2]} Y; \\tilde{\\mathbf{E}}\_B^{[1]} =
-Y^\\dagger \\mathbf{E}\_B^{[1]} |
 
 General control statements
 ==========================
@@ -636,14 +525,10 @@ details).
 
 Enforce triangularity of response function.
 
- ..figure:: /dirac/images/math/2/d/1/2d1ea5d63545e45170ec9f8b4f399a1b.png
+.. math::
 
-   :align: center
-   :alt: \\langle\\langle A ; B \\rangle\\rangle\_\\omega \\equiv
-   \\langle\\langle B ; A \\rangle\\rangle\_\\omega
+  \langle\langle A; B \rangle\rangle_\omega = \langle\langle B; A \rangle\rangle_\omega
 
-   \\langle\\langle A ; B \\rangle\\rangle\_\\omega \\equiv
-   \\langle\\langle B ; A \\rangle\\rangle\_\\omega
 Only one function is calculated.
 
 *Default:* Deactivated.
@@ -679,8 +564,7 @@ Employ imaginary frequencies.
 .ALLCMB
 -------
 
-Form all possible 
-..|\\langle\\langle A ; B \\rangle\\rangle\_\\omega|
+Form all possible combinations
 even if imaginary.
 
 *Default:* Deactivated.
@@ -849,8 +733,7 @@ necessary.
 -------
 
 Normalize trial vectors. Using normalized trial vectors will reduce
-efficiency of screening.\ :sup:`[*please
-`clarify </dirac/index.php/Clarify>`_*]`\ 
+efficiency of screening. CLARIFY!
 
 *Default:* Use un-normalized vectors.
 
@@ -868,21 +751,24 @@ small systems !
 -------
 
 Only call FMOLI in sigmavector routine: only generate one-index
-transformed Fock matrix 
-.. \ :sup:``[1] <#_note-saue-jensen:linres>`_`\ .
+transformed Fock matrix [Saue2003]_.
 
 .ONLYSG
 -------
 
 Only call FMOLI in sigmavector routine: 2-electron Fock matrices using
-one-index transformed densities
-.. \ :sup:``[1] <#_note-saue-jensen:linres>`_`\ .
+one-index transformed densities [Saue2003]_.
 
 .STERNHEIM
 ----------
 
-Set diagonal elements of orbital part of Hessian equal to −
-2*m**c*\ :sup:`2`\  for rotations between occupied positive-energy and
+Set diagonal elements of orbital part of Hessian equal to
+
+.. math::
+
+  -2 m c^2
+
+for rotations between occupied positive-energy and
 virtual negative-energy orbitals.
 
 *Default:* Deactivated.
@@ -898,7 +784,13 @@ specialists !), you should run with print level 2 under properties.
 Then you can do a sequence of calculations: 1) .SKIPEP 2) .STERNH 3)
 .STERNC The diamagnetic contribution of 1) is the non-relativistic
 expectation value, whereas 2) is the Sternheim approximation, that is
-replacing orbital energy differences with − 2*m**c*\ :sup:`2`\ . With no
+replacing orbital energy differences with
+
+.. math::
+
+  -2 m c^2
+
+With no
 basis set incompleteness the sum of the diamagnetic contribution 2) and
 the paramagnetic contribution 3) should equal the diamagnetic
 contribution of 1).
@@ -938,25 +830,6 @@ classes whose residual has a norm that is larger than a fraction
 
     .RESFAC
      1000.0
-
-References
-==========
-
-..   \ :sup:``1.0 <#_ref-saue-jensen:linres_0>`_`\ 
-   \ :sup:``1.1 <#_ref-saue-jensen:linres_1>`_`\ 
-   \ :sup:``1.2 <#_ref-saue-jensen:linres_2>`_`\ 
-
-..   \ :sup:``1.3 <#_ref-saue-jensen:linres_3>`_`\  T. Saue and H. J. Aa.
-   Jensen, *Linear response at the 4-component relativistic level:
-   Application to the frequency-dependent dipole polarizabilities of the
-   coinage metal dimers*, J. Chem. Phys. **118**, *522* (2003)
-   `electronic version <http://dx.doi.org/10.1063/1.449880>`_.
-
-.. ` <#_ref-saue:properties_0>`_ T. Saue, *Post Dirac-Hartree-Fock
-   methods - Properties*, in *Relativistic Electronic Structure Theory -
-   Part 1: Fundamentals*, edited by P. Schwerdtfeger, Elsevier,
-   Amsterdam, 2002.
-
 
 \*MOLGRD -- Controls evaluation of the molecular gradient
 =========================================================
@@ -1113,11 +986,8 @@ Manual:PROPERTIES:QUADRATIC RESPONSE
 ====================================
 
 This section gives directives for the calculation of quadratic response
-functions
-.. \ :sup:``[1] <#_note-saue:properties>`_`\ 
+functions [Saue2002a]_.
 
- |\\langle\\langle
-A ; B , C \\rangle\\rangle\_{\\omega\_1,\\omega\_2}|
 
 General control statements
 ==========================
@@ -1224,12 +1094,9 @@ Give the number of "left" and "right" states in each boson symmetry.
     5 5 5 5
     0 0 0 0
 
-Compute the transition moments 
-..|\\langle i\|\\hat{A}\|i\\rangle|
-, where
-i goes from 1 to 5 in each symmetry (four symmetries in this case). The
-zeros can be substituted for positive integers to generate elements
-..|\\langle i\|\\hat{A}\|j\\rangle|.
+Compute the transition moments \|\\langle i\|\\hat{A}\|i\\rangle|, 
+where i goes from 1 to 5 in each symmetry (four symmetries in this case). The
+zeros can be substituted for positive integers to generate elements \|\\langle i\|\\hat{A}\|j\\rangle|.
 
 Control variational parameters
 ==============================
@@ -1364,16 +1231,7 @@ classes whose residual has a norm that is larger than a fraction
     .RESFAC
      1000.0
 
-References
-==========
-
-#. `↑ <#_ref-saue:properties_0>`_ T. Saue, *Post Dirac-Hartree-Fock
-   methods - Properties*, in *Relativistic Electronic Structure Theory -
-   Part 1: Fundamentals*, edited by P. Schwerdtfeger, Elsevier,
-   Amsterdam, 2002.
-
-
-Manual:PROPERTIES:STEX
+PROPERTIES:STEX
 ======================
 
 \*STEX - Core excitation spectra in the Static Exchange approximation
@@ -1383,7 +1241,7 @@ A well known limitation of the time dependent Hartree-Fock approximation
 is that electronic relaxation is not accounted for in the calculation of
 excitation energies. This relaxation can be understood as a correlation
 effect, since it is due to the simultaneous excitation of an electron
-and the relaxation of the remaining *N* − 1 electrons (or rather
+and the relaxation of the remaining N-1 electrons (or rather
 orbitals) due to the "hole" left behind by the excited electron. On the
 other hand the relaxation is well described already at the Hartree-Fock
 level when the excited states are optimized separately, in the so-called
@@ -1403,47 +1261,25 @@ A STEX calculation typically proceeds in the following way:
 
 #. The Hartree-Fock groundstate is calculated with Dirac, and the
    wavefunction saved in the ``DFCOEF`` file.
+
 #. The groundstate output is examined and the indices of the core
-   orbital of interest are noted.
-   If the core orbitals are not well localized to individual atoms it
-   may be necessary to add a small
+orbital of interest are noted.
+If the core orbitals are not well localized to individual atoms it
+may be necessary to add a small
 fractional charge to break a symmetry of the molecule. This change
-   can then be removed in the final calculation.
+can then be removed in the final calculation.
+
 #. An average-of-configuration open shell Hartree-Fock calculation is
-   performed to get an approximate wavefunction of the core
+performed to get an approximate wavefunction of the core
 ionized molecule. This wavefunction should then be saved to a file
-   ``DFCOEF.ION``.
-   In order for the core ionized state to converge it is necessary to
-   use overlap selection and possibly orbital freezing.
+``DFCOEF.ION``.
+In order for the core ionized state to converge it is necessary to
+use overlap selection and possibly orbital freezing.
+
 #. The STEX calculation is run with the specified hole orbitals,
-   starting from the previously calculated ``DFCOEF`` and ``DFCOEF.ION``
-   files.\
+starting from the previously calculated ``DFCOEF`` and ``DFCOEF.ION``
+files.\
  
 please provide an
-   example </dirac/index.php/ExampleNeeded>
-
-
-Manual:PROPERTIES:Sample inputs
-===============================
-
-Calculation of NMR parameters:
-
-::
-
-    **PROPERTIES
-    .NMR
-
-Calculation of frequency-dependent polarizabilities, skipping rotations
-between occupied positive-energy and virtual negative-energy orbitals:
-
-::
-
-    **PROPERTIES
-    .POLARI
-    *LINEAR RESPONSE
-    .B FREQ
-     3
-     0.0 0.1 0.2
-    .SKIPEP
-
+   example !
 

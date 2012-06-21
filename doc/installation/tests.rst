@@ -10,10 +10,9 @@ To get documentation on the test set, run::
 
   ./runtest --help
 
-As a starter try the quick test that covers most of the standard run
-types::
+With the following command you run the entire test set::
 
-  ./runtest --quick
+  ./runtest --all
 
 If everything goes well the script will report calculations completed
 and provide a summary::
@@ -29,7 +28,4 @@ with::
   ./runtest --tests="test1 test2"
 
 where test1 and test2 should be replaced by the name(s) of the test(s)
-that you want to rerun. When everything seems fine try also the complete
-test set::
-
-  ./runtest --all
+that you want to rerun.

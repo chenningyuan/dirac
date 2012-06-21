@@ -1,3 +1,5 @@
+.. _luciarel:
+
 Manual:LUCIAREL
 ===============
 
@@ -9,16 +11,13 @@ available in your version of DIRAC.**
 *2- and 4-component relativistic GASCI module* written by Timo Fleig
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht
 
-`Template:LUCIAREL </dirac/index.php?title=Template:LUCIAREL&action=edit>`_
-is a string-based Hamiltonian-direct configuration interaction (CI)
-program, based on the LUCIA code 
-[1] <#_note-olsen:lucia>
+LUCIAREL is a string-based Hamiltonian-direct configuration interaction (CI)
+program, based on the LUCIA code  [Olsen1990]_.
 It is capable of doing efficient CI computations at arbitrary excitation
 level, e.g. FCI, SDCI, RASCI, and MRCI using general active spaces. The
 code is interfaced to molecular integrals obtained in the relativistic
 2c- and 4-component framework and uses double-point group symmetry. It
-is implemented as a full parallel version
-[2] <#_note-knecht-jensen-fleig:lupar2>
+is implemented as a full parallel version [Knecht2010]_.
 
 A central feature of the program is the Generalized Active Space (GAS)
 concept, in which the underlying total orbital space is subdivided into
@@ -26,17 +25,14 @@ a basically arbitrary number (save for an upper limit) of subspaces with
 arbitrary occupation constraints. This is the most general approach to
 orbital space subdivisions. The program uses DIRAC Kramers pairs from
 either a closed- or an open-shell calculation in a relativistic two- and
-four-componenet formalism (see
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+four-component formalism (see :ref:`hamiltonian`).
 
 The technical limitations are roughly set by several 100 million
 determinants in the CI expansion on PCs and common computing clusters
 and several billions of determinants on supercomputers with ample
 memory. For calculations involving more than 500.000 determinants and in
 particular higher than double excitations it is strongly recommended to
-use
-`Template:Luciarel </dirac/index.php?title=Template:Luciarel&action=edit>`_
-in 2c- and 4c applications.
+use Luciarel in 2c- and 4c applications.
 
 If desired, the program also computes 1- and 2-particle densities from
 optimized CI wave functions. The density matrices may be printed along
@@ -349,18 +345,4 @@ more advanced and efficient distribution routine:
      2
 
 *Default:* 2
-
-References
-==========
-
-<#_ref-olsen:lucia_0>`_ J. Olsen and P. Joergensen and J. Simons,
-*Passing the one-billion limit in Full CI calculations*, Chem. Phys.
-Lett. **169**, *463* (1990) .
-
-<#_ref-knecht-jensen-fleig:lupar2_0>`_ S. Knecht and H. J. Aa.
-Jensen and T. Fleig, *Large-Scale Parallel Configuration Interaction.
-II. Two- and 4-Component Double-Group General Active Space
-Implementation with Application to BiH.*, J. Chem. Phys. **128**,
-*014108* (2010) `electronic
-version <http://dx.doi.org/http://link.aip.org/link/JCPSA6/v132/i1/p014108/s1>`_.
 

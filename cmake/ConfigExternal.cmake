@@ -1,16 +1,22 @@
-add_custom_target(
-    git_update
-    COMMAND git submodule init
-    COMMAND git submodule update
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+include(FindGit)
+
+if (GIT_FOUND)
+    add_custom_target(
+        git_update
+        COMMAND ${GIT_EXECUTABLE} submodule init
+        COMMAND ${GIT_EXECUTABLE} submodule update
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
+else()
+    message("-- Warning: Git command for the target git_update not found. No submodule update.")
+endif()
 
 include(ExternalProject)
 
 macro(add_external _project)
 
-    if(DEVELOPMENT_CODE)
-        set(UPDATE_COMMAND git submodule update)
+    if(DEVELOPMENT_CODE AND GIT_FOUND)
+        set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
     else()
         set(UPDATE_COMMAND echo)
     endif()
@@ -20,14 +26,16 @@ macro(add_external _project)
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
         PREFIX ${PROJECT_SOURCE_DIR}/external
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
-        BINARY_DIR ${PROJECT_SOURCE_DIR}/external/${_project}-build
-        INSTALL_DIR ${PROJECT_SOURCE_DIR}/external
+        BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
+        STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+        TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
+        INSTALL_DIR ${PROJECT_BINARY_DIR}/external
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
-    include_directories(${PROJECT_SOURCE_DIR}/external/${_project}-build)
-    include_directories(${PROJECT_SOURCE_DIR}/external/${_project}-build/modules)
-    link_directories(${PROJECT_SOURCE_DIR}/external/lib)
-    link_directories(${CMAKE_SOURCE_DIR}/external/${_project}/external/lib)
+    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
+    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
+    link_directories(${PROJECT_BINARY_DIR}/external/lib)
+    link_directories(${PROJECT_BINARY_DIR}/external/${_project}/external/lib)
     if(DEVELOPMENT_CODE)
         add_dependencies(${_project} git_update)
     endif()
@@ -36,7 +44,7 @@ macro(add_external _project)
   # add_custom_command(
   #     TARGET ${_project}
   #     PRE_BUILD
-  #     COMMAND rm -rf ${PROJECT_SOURCE_DIR}/external/src/${_project}-stamp
-  #     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  #     COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/src/${_project}-stamp
+  #     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   #     )
 endmacro()

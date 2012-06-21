@@ -317,9 +317,9 @@ C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
-     &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
+     &             '.PRINT ','.XXXXXX','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.PCMOI3','.FAMILY',
+     &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -420,9 +420,6 @@ C           and used in some abacus routines. /hjaaj aug 2005
             USRIPR = .TRUE.
             GO TO 100
   106    CONTINUE
-C&&&& PCMOIN: Read coefficients from formatted DFPCMO and
-C             write to unformatted DFCOEF
-            DOPIN = .TRUE.
             GO TO 100
   107    CONTINUE
 C&&&& PCMOUT: Write coefficients to formatted DFPCMO
@@ -460,9 +457,7 @@ C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
   114    CONTINUE
             DOACIN = .TRUE.
             GO TO 100
-!&&&& .PCMOI3 : in DFPCMO use format I3 of IBEIG reading
   115    CONTINUE
-            DOPIN_I3 = .TRUE.
             GO TO 100
   116    CONTINUE
 C&&&& FAMILY: Family basis (Not yet implemented)
@@ -580,14 +575,6 @@ C
      &    '* Matrix diagonalization by the quaternion Jacobi method '//
      &    'for real, complex and quaternion groups (only in LINSYM).'
 
-      IF(DOPIN) WRITE(LUPRI,'(1X,A,A)')
-     &     '* MO-coefficients read from formatted file ',
-     &     ' DFPCMO and written to DFCOEF'
-      IF (DOPIN_I3) THEN
-       WRITE(LUPRI,'(1X,A)') 'DFPCMO: IBEIG read in I3 format.'
-      ELSE
-       WRITE(LUPRI,'(1X,A)') 'DFPCMO: IBEIG read in I2 format.'
-      ENDIF
       IF(DOPUT) WRITE(LUPRI,'(1X,A,A)')
      &     '* MO-coefficients written to formatted file DFPCMO'
       IF(DOACUT) WRITE(LUPRI,'(1X,A,A)')
@@ -4315,8 +4302,6 @@ C
       DOHEINZ  = .FALSE.
       DOHRM    = .FALSE.
       DOJACO   = .FALSE.
-      DOPIN    = .FALSE.
-      DOPIN_I3 = .FALSE.
       DOPUT    = .FALSE.
       DOACUT   = .FALSE.
       DOACIN   = .FALSE.
@@ -6126,7 +6111,11 @@ CMI  ... reading input routine for AMFI+RELSCF
 
 !       *ECP
     8 CONTINUE
+#ifdef MOD_ECP
         CALL RECP_LNK_RDMENU(WORD)
+#else
+        CALL quit('*ECP not available in this version')
+#endif
         GO TO 200
 C
     1 CONTINUE

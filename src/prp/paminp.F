@@ -146,8 +146,10 @@ CMI Activate the  picture change transformations
 C   of four-component property matrixes 
 C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
+!     set compulsory default values for X2C module.
       NOPCT = .FALSE.
-      IF (BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.IBSS.GE.109)) THEN
+      IF(X2C.or.(BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.
+     &   IBSS.GE.109)))THEN
         DOPCT = .TRUE.
 C       ... by default DO the picture change transformation
         NOPCT = .FALSE.
@@ -156,6 +158,7 @@ C       ... by default DO the picture change transformation
       ELSE
         DOPCT = .FALSE.
       ENDIF
+
 C
 C     Read menu file
 C     ==============
@@ -452,12 +455,6 @@ CMI   g_tensors operator centers might be changed
       GAGORGX = GAGORG(1)
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
-
-!     set compulsory default values for X2C module.
-      if(x2c)then
-        DOPCT = .true.
-        NOPCT = .false.
-      end if
 
       IF (DOPCT) THEN
        IF (.NOT.NOPCT) THEN

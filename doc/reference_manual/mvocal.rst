@@ -1,5 +1,9 @@
-\*MVOCAL -- Modified virtual orbitals
-=====================================
+.. _mvocal:
+
+\*MVOCAL 
+========
+
+Modified virtual orbitals.
 
 The virtual canonical Hartree-Fock orbitals are not the optimal choice
 for correlated calculations in which the virtual space is truncated; the
@@ -8,8 +12,7 @@ system. One may exploit the freedom of rotation amongst the virtual
 orbitals to obtain orbitals better suited for correlated calculations.
 The default option in DIRAC is to generate the modified virtual orbitals
 by construction of a Fock operator for the system with some electrons
-removed, as first proposed by Bauschlicher
-.. \ :sup:``[1] <#_note-bauschlicher:mvo>`_`\ . 
+removed, as first proposed by Bauschlicher [Bauschlicher1980]_.
 The orbital string
 specified with `.MVOVEC <#.MVOVEC>`_ indicates what occupied orbitals to
 remove in the construction of the Hartree-Fock potential.
@@ -48,13 +51,4 @@ of the modified virtual orbitals (see
 
 *Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
 `\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
-References
-----------
-
-#. `↑ <#_ref-bauschlicher:mvo_0>`_ C. W. Bauschlicher, Jr., *The
-   construction of modified virtual orbitals (MVO's) which are suited
-   for configuration interaction calculations*, J. Chem. Phys. **72**,
-   *880* (1980) `electronic
-   version <http://dx.doi.org/10.1063/1.439243>`_.
 

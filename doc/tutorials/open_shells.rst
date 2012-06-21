@@ -3,13 +3,12 @@ Examples of open-shell systems
 
 Here we provide few examples of open-shell systems.
 
-.. toctree::
-   :maxdepth: 1
-
-   .. include:: ../test/open-shells/README.rst
+.. include:: ../../test/open-shells/README.rst
 
 Boron atom: open-shell SCF and small CI relativistic calculations
 -----------------------------------------------------------------------
+
+An example of one electron in two spinors is the Boron atom.
 
 We seek to get the first excited state, 2P\ :sub:`3/2`\ , of B (X
 2P\ :sub:`1/2`\ ), and find out the 2P\ :sub:`1/2`\ -2P\ :sub:`3/2`\
@@ -17,6 +16,7 @@ fine structure splitting.
 
 We select the Dirac-Coulomb Hamiltonian and neglect the (SS\|SS) class
 of integrals.
+
 
 Complete open-shell CI
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -47,7 +47,7 @@ we get the value of 17.179488 cm-1 and in the outputs we see the proper
 degeneracy of resulting total CI energies - 2 and 4.
 
 By averaging the COSCI energies of the ground and the states we get the
-total SCF energy of the average occupation;
+total SCF energy of the average occupation
 
 ::
 
@@ -99,12 +99,12 @@ Regarding total energies we get
 
     SCF energy 2_P1/2: -24.249116730391307
     SCF energy 2_P3/2: -24.249038454664991
-    FSS : (-24.249116730391307+24.249038454664991)*219474.631280634 cm-1 = 17.179536 cm-1
+    FSS : (-24.249116730391307+24.249038454664991)*219474.631280634 cm-1 = 17.179536 cm-1
 
 what is very close to the above given COSCI value of 17.179488 cm-1.
 
 Correlated calculations
------------------------
+=======================
 
 ... to add ...
 
@@ -114,6 +114,7 @@ Conclusion
 Further quality improvement of the theoretical data would be in
 enlarging basis set. The current one, decontracted STO-3G, is too small
 and is chosen for demonstrative purposes only.
+
 
 
 Nitrogen atom open-shell atomic calculations
@@ -219,7 +220,7 @@ With the resulting spin-free SCF (and COSCI) energy of
      -75.446280480624 (   4 * ).
 
 Mj selection
-~~~~~~~~~~~~
+------------
 
 For this heteronuclear diatomic molecule one has the advantage of using
 the omega-number occupation of shells. One can even place one electron
@@ -263,14 +264,14 @@ giving total SCF energies of the ground and the excited states:
 
 ::
 
-    X 2Pi_3/2 :  -75.446717125968732
-    A 2Pi_1/2 :  -75.446063726708829
+    X 2Pi_3/2 :  -75.446717125968732
+    A 2Pi_1/2 :  -75.446063726708829
 
 The fine-structure splitting then makes
 
 ::
 
-    FSS : (-75.446717125968732+75.446063726708829)*219474.631280634 = 143.404561 cm-1
+    FSS : (-75.446717125968732+75.446063726708829)*219474.631280634 = 143.404561 cm-1
 
 which is very close to the above given COSCI value of 143.842458 cm-1.
 
@@ -278,25 +279,25 @@ Energy order of spinors for the OH "X 2Pi\_3/2" ground state is:
 
 ::
 
-    1: -20.623437096718       (Occupation : f = 1.0000)  m_j=  1/2 ; 1s_sig(2)
-    2: -1.2970494235574       (Occupation : f = 1.0000)  m_j=  1/2 ; 2s_sig(2)
-    3: -0.6455362075645       (Occupation : f = 1.0000)  m_j=  1/2 ; 2pz_sig(2)
-    4: -0.5439526090110       (Occupation : f = 1.0000)  m_j=  1/2 ; 2pxy_pi_1/2(2)
-    5: -0.5863405891346       (Occupation : f = 0.5000)  m_j= -3/2 ; 2pxy_pi_3/2(1)
+    1: -20.623437096718       (Occupation: f = 1.0000)  m_j=  1/2; 1s_sig(2)
+    2: -1.2970494235574       (Occupation: f = 1.0000)  m_j=  1/2; 2s_sig(2)
+    3: -0.6455362075645       (Occupation: f = 1.0000)  m_j=  1/2; 2pz_sig(2)
+    4: -0.5439526090110       (Occupation: f = 1.0000)  m_j=  1/2; 2pxy_pi_1/2(2)
+    5: -0.5863405891346       (Occupation: f = 0.5000)  m_j= -3/2; 2pxy_pi_3/2(1)
 
 While for the first excited "A 2Pi\_1/2" state of the OH radical we have
 this order:
 
 ::
 
-    1: -20.623901392971       (Occupation : f = 1.0000)  m_j=  1/2  ;  1s_sig(2)
-    2: -1.2971646385507       (Occupation : f = 1.0000)  m_j=  1/2  ;  2s_sig(2)
-    3: -0.6456515101399       (Occupation : f = 1.0000)  m_j=  1/2  ;  2pz_sig(2)
-    4: -0.5431435116553       (Occupation : f = 1.0000)  m_j= -3/2  ;  2pxy_pi_3/2(2)
-    5: -0.5874674338778       (Occupation : f = 0.5000)  m_j=  1/2  ;  2pxy_pi_1/2(1)
+    1: -20.623901392971       (Occupation: f = 1.0000)  m_j=  1/2 ;  1s_sig(2)
+    2: -1.2971646385507       (Occupation: f = 1.0000)  m_j=  1/2 ;  2s_sig(2)
+    3: -0.6456515101399       (Occupation: f = 1.0000)  m_j=  1/2 ;  2pz_sig(2)
+    4: -0.5431435116553       (Occupation: f = 1.0000)  m_j= -3/2 ;  2pxy_pi_3/2(2)
+    5: -0.5874674338778       (Occupation: f = 0.5000)  m_j=  1/2 ;  2pxy_pi_1/2(1)
 
 Correlated approach
-~~~~~~~~~~~~~~~~~~~
+--------------------
 
 The user can try to approach experimental
 `data <http://webbook.nist.gov/cgi/cbook.cgi?ID=C3352576&Units=SI&Mask=1000#Diatomic>`_.
@@ -352,7 +353,4 @@ Fock space CCSD method
 The starting system is always closed shell. One can add one or
 two-electrons to the N-electron system to iterate into N+1 and/or N+2
 systems.
-
-
-
 
