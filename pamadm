@@ -374,7 +374,6 @@ dirac_modules[this_module].add_cppflag('PCM_MODULE')
 dirac_modules[this_module].add_directory('src/pcm')
 dirac_modules[this_module].add_test('pcm_energy')
 dirac_modules[this_module].take_out_of_release()
-dirac_modules[this_module].take_out_of_adm()
 
 # define input options
 

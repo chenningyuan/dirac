@@ -23,7 +23,7 @@ option(ENABLE_UTILITIES       "Enable utilities"                                
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
-option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
+option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      ON)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 
