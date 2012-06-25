@@ -8,7 +8,9 @@ if (GIT_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
 else()
-    message("-- Warning: Git command for the target git_update not found. No submodule update.")
+    if(DEVELOPMENT_CODE)
+        message("-- Git not found. You need Git for the Git submodule mechanism to work.")
+    endif()
 endif()
 
 include(ExternalProject)
