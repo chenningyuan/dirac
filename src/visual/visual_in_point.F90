@@ -22,7 +22,7 @@
 module visual_in_point
 
   use memory_allocator
-  use vc_grid
+  use electrostatic_potential
   use interface_ao
   use visual_cfg
   use visual_london
@@ -30,10 +30,8 @@ module visual_in_point
   use ao_eval
   use density_eval
   use matrix_defop
-#ifdef MOD_UNRELEASED
   use visual_london
   use xc_london_c1
-#endif
 
   implicit none
 
@@ -295,7 +293,6 @@ contains
                              buffer,       &
                              ao)
                end if
-#ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
                      call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
@@ -312,7 +309,6 @@ contains
                   end if
                   v = v + v2
                end if
-#endif
                result(1:3) = result(1:3) + v(1:3)
             end if
             
@@ -365,7 +361,6 @@ contains
                            buffer,       &
                            ao)
 
-#ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
                      print *, 'error: Levy-Leblond divj and rotj not implemented'
@@ -381,7 +376,6 @@ contains
                   end if
                   matrix_33 = matrix_33 + temp_33
                end if
-#endif
 
                if (visual_cfg_property(imat) == iq_divj) then
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
@@ -486,7 +480,6 @@ contains
                              buffer,       &
                              ao)
                end if
-#ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
                      call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
@@ -503,7 +496,6 @@ contains
                   end if
                   v = v + v2
                end if
-#endif
             
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))
                ry = py - cord(2, visual_cfg_ref_nucleus(imat))
@@ -527,7 +519,6 @@ contains
                 (visual_cfg_property(imat) == iq_ndipydia) .or. &
                 (visual_cfg_property(imat) == iq_ndipzdia)) then
 
-#ifdef MOD_UNRELEASED
                call j_dia(matrix_33,               &
                           visual_cfg_london,       &
                           visual_cfg_gauge_origin, &
@@ -535,9 +526,6 @@ contains
                           D(imat)%elms,            &
                           ao,                      &
                           (/px, py, pz/))
-#else
-               call quit('ndip dia not part of this released version')
-#endif
 
                if (visual_cfg_property(imat) == iq_ndipxdia) i = 1
                if (visual_cfg_property(imat) == iq_ndipydia) i = 2

@@ -91,7 +91,7 @@ be deleted at the end of a run.
     W.tmppath = options.tmppath
     W.tmpbase = options.tmpbase
     W.keeptmp = options.keeptmp
-    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP']
+    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP','cavity.off','PEDRA.OUT', 'PCM_mep_asc']
 
     # Detect file types in args from the file names, set up job name
     molpath = None
@@ -265,8 +265,8 @@ class Wrapper:
 	    self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver']) 
 	else:
             self.copyin.append(['pcmsolver','pcmsolver'])
-        self.archpatterns.append('PEDRA.OUT')
-        self.archpatterns.append('cavity.off')
+#        self.archpatterns.append('PEDRA.OUT')
+#        self.archpatterns.append('cavity.off')
         self.do_pcm = True
 
     def setup(self):

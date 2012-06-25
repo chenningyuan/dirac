@@ -97,15 +97,19 @@ add_subdirectory(src/gen1int)
 
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
-        -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
         -DCBLAS_ROOT=${CBLAS_ROOT}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
-        )
-
+        -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
+    )
+    
     add_external(pcmsolver)
 
     set(LIBS
