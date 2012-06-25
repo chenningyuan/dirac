@@ -6,13 +6,12 @@ module fde_eval_dirac
    use fde_data
    use fde_io
    use fde_integrate
-   use vc_grid
+   use electrostatic_potential
    use density_eval
    use ao_eval
    use interface_ao
    use interface_mo_specific
    use xc_max_block_length
-   use vc_grid
 
    implicit none
 
@@ -69,7 +68,7 @@ module fde_eval_dirac
          
          call alloc(work,work_dim, id="scratch space emb_vc")
          write (*,*) 'Generating the Coulomb potential ...'
-         call emb_vc(size(grid, 2), dmat,grid,vc,iprint,WORK,work_dim) 
+         call get_mep(size(grid, 2), grid, vc, dmat, WORK, work_dim, iprint)
          write (*,*) 'done!'
          call dealloc(work)
                            

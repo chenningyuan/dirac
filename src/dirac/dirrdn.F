@@ -41,6 +41,10 @@ C***********************************************************************
       use interface_functional_read
       use x2cmod_cfg
       use xmlout
+#ifdef PCM_MODULE
+      use pcmmod_cfg
+      use pcm_write
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -207,6 +211,7 @@ C
 !     **RELCC
 !     *OPENRSP
 !     *X2C
+!     *PCM
 !     ignores rest
       call read_input()
 
@@ -224,6 +229,12 @@ C
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
       end if
+! RDR Polarizable Continuum Model calculation
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+         call report_after_pcm_input() 
+      end if
+#endif
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
 C
@@ -672,7 +683,7 @@ C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
-     &             '.XMLOUT','.EXTPCM'/
+     &             '.XMLOUT','.xxxxxx'/
 C
       NJOBS = 0
       NOSFCRASH=.FALSE.
@@ -770,13 +781,8 @@ C     XMLOUT: Write output in xml format to separate file
          call xml_open_file('dirac.xml')
          GOTO 100
 
-!        pcm module
+!       xxxxxx keyword 
  114     continue
-#ifdef PCM_MODULE
-         dirac_cfg_pcm = .true.
-#else
-         call quit('.EXTPCM not included in this version')
-#endif
          goto 100
 
 
@@ -2309,6 +2315,7 @@ C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
       use dirac_cfg
+      use input_reader
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -4394,11 +4401,14 @@ C***********************************************************************
       use interface_functional_read
       use input_reader
       use x2cmod_cfg
+#ifdef PCM_MODULE
+      use pcmmod_cfg
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 64,NDIR = 8)
+      PARAMETER (NTABLE = 64,NDIR = 9)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4429,7 +4439,8 @@ C
 C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
-     &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   '/
+     &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
+     &             '*PCM   '/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4460,7 +4471,7 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
-     &            '.xxxxxx','.HFXATT','.xB    ','.xC    ',
+     &            '.PCM   ','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
      &            '.ECP   ','.X2Cmmf','.DOSSSS','.xxxxxx'/
       DATA SETFUN/.FALSE./
@@ -5087,7 +5098,9 @@ C               using LL integrals only that is ^4 DC(G)**.
 CMI&& activate 4c-2c MO transformation 
           TRMO4C2C=.TRUE.
           GOTO 100
+! .PCM
   157     CONTINUE
+          dirac_cfg_pcm = .true.
           GOTO 100
 ! .HFXATT
   158     CONTINUE
@@ -6052,7 +6065,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8), I
+               GO TO (1,2,3,4,5,6,7,8,9), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6117,6 +6130,13 @@ CMI  ... reading input routine for AMFI+RELSCF
         CALL quit('*ECP not available in this version')
 #endif
         GO TO 200
+  
+!       *PCM
+    9 continue
+      ! this is a cheat so that *PCM section is parsed
+      ! by new input reader
+        call move_to_next_star(word)
+        go to 200
 C
     1 CONTINUE
 

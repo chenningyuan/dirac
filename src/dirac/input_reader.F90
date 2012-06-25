@@ -118,6 +118,9 @@ contains
 
                      case ('*CCIH  ')
                         call read_input_ccih(word, kw_section)
+                     
+                     case ('*PCM   ')
+                        call read_input_pcm(word, kw_section)
 
                      case ('*END OF')
                         go to 1
@@ -1192,7 +1195,7 @@ contains
 
       if (kw_matches(word, '.DOSS  ')) then
 !         Do not use precomputed small charges
-!         pcmmod_doss = .true.
+         pcmmod_doss = .true.
       end if
 
       if (kw_matches(word, '.SEPARA')) then
