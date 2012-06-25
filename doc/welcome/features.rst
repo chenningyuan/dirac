@@ -4,8 +4,8 @@ Features in DIRAC |version|
 ===========================
 
 
-New features
-------------
+New features in DIRAC12 (released 12/12/12)
+-------------------------------------------
 
 -  Improved interface with PyADF (distributed separately) - in particular to allow automatized "atomic start guess" SCF runs (DFT and HF)
 -  Overlap diagnostic
@@ -24,16 +24,14 @@ New features
 -  XCInt/XCGrid (Tentative)
 -  ECP? (we did not discuss this but we should discuss it)
 
+-  New defaults
 
-New defaults
-------------
-
--  New input style for RELCC and RELADC
--  Changed level shift
--  Changed bare nucleus corrections (new parameters)
--  New MPI 64/32-interface
--  Improved start guess and improved SCF convergence
--  Changed open-shell energy definition
+   -  New input style for RELCC and RELADC
+   -  Changed level shift
+   -  Changed bare nucleus corrections (new parameters)
+   -  New MPI 64/32-interface
+   -  Improved start guess and improved SCF convergence
+   -  Changed open-shell energy definition
 
 
 New features in DIRAC11 (released 11/11/11)
