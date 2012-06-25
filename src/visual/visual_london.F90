@@ -21,7 +21,6 @@
 
 module visual_london
 
-#ifdef MOD_UNRELEASED
   use memory_allocator
   use visual_cfg
   use matrix_defop
@@ -351,5 +350,4 @@ contains
 
   end subroutine
 
-#endif /* #ifdef MOD_UNRELEASED */
 end module
