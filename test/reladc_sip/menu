@@ -1,0 +1,11 @@
+quick
+
+adclevel3_real.inp ne_d2h.mol
+adclevel3_complex.inp ne_cs.mol
+
+regular
+
+adclevel1_real.inp ne_d2h.mol
+adclevel2_real.inp ne_d2h.mol
+adclevel1_complex.inp ne_cs.mol
+adclevel2_complex.inp ne_cs.mol
