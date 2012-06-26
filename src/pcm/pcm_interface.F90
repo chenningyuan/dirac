@@ -84,7 +84,8 @@ module pcm_interface
    real(8), allocatable :: potentials(:)
    real(8), allocatable :: tess_cent(:, :)
    real(8)              :: pcm_energy
-   integer              :: nr_points = -1
+! nr_points is 32 bit to avoid mess in passing it from C++ to FORTRAN
+   integer(4)           :: nr_points = -1
 
    contains 
 
