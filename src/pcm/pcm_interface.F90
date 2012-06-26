@@ -153,7 +153,7 @@ module pcm_interface
 
    end subroutine
    
-   subroutine pcm_fock_driver(fock, dmat, work, lwork)
+   subroutine pcm_fock_driver(fock, dmat, factor, work, lwork)
 !
 ! Polarizable Continuum Model.
 ! Driver routine for Fock matrix contributions, j and X(D).
@@ -164,12 +164,13 @@ module pcm_interface
 ! Passed variables
       real(8)              :: fock(*)
       real(8)              :: dmat(*)
+      real(8)              :: factor
       real(8)              :: work(*)
       integer              :: lwork
-
+      
       if (nr_points <= 0) call pcm_initialize(dmat, work, lwork)
 ! Update Fock matrix with PCM contribution
-      call pcm_fock(fock, work, lwork)
+      call pcm_fock(fock, factor, work, lwork)
 ! Free temporary allocated memory
       call pcm_finalize
 
@@ -217,7 +218,7 @@ module pcm_interface
       real(8)              :: factor = 1.0d0
       character(7)         :: potName, potName1, potName2
       character(7)         :: chgName, chgName1, chgName2
-
+      
       if (.not.(pcmmod_separate)) then 
 ! Compute MEP @tesserae centers
          potName = 'TotPot'//char(0)
@@ -329,13 +330,14 @@ module pcm_interface
 
    end subroutine
 
-   subroutine pcm_fock(fock, work, lwork)
+   subroutine pcm_fock(fock, factor, work, lwork)
 
 #include "dcbbas.h"
 #include "dgroup.h"
 
 ! Passed variables
       real(8), intent(out) :: fock(*)
+      real(8)              :: factor
       real(8)              :: work(*)
       integer              :: lwork
 
@@ -361,11 +363,19 @@ module pcm_interface
         end do
       end do
        
-!      print *, "FOCK_PCM"
-!      call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
-!                       nz, ipqtoq(1,0), 6)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+!     print *, "FOCK BEFORE PCM"
+!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+
 ! Add fock_pcm to Fock matrix
-      call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+      call daxpy(n2bbasx, factor, fock_pcm, 1, fock, 1)
+
+!     print *, "FOCK AFTER PCM"
+!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
 
       deallocate(fock_pcm)
 

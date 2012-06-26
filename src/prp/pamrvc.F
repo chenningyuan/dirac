@@ -4127,7 +4127,7 @@ C
      &               'b-transformed polarization charges.'
 ! fmo is actually the perturbed ao density matrix
 ! fao is really fao (confusing naming reuses memory)
-           call pcm_fock_driver(fao, fmo, work(kfree), lfree)
+            call pcm_fock_driver(fao, fmo, +1.0d0, work(kfree), lfree)
         endif 
 #endif      
  

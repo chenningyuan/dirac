@@ -738,10 +738,11 @@ CJTH check this
 #ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
+           call genden(fao, cmo, 1, iprint)
            write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
      &                    'J + X(D) contribution.'
 ! fmo is the Fock matrix in AO basis, fao is the density matrix
-           call pcm_fock_driver(fmo, fao, work(kfree), lfree)
+           call pcm_fock_driver(fmo, fao, -1.0d0, work(kfree), lfree)
         endif 
 #endif       
 
