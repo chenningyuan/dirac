@@ -28,9 +28,7 @@ module visual_integrate
    use visual_in_point
    use interface_grid
    use file_units
-#ifdef MOD_UNRELEASED
    use visual_london
-#endif
 
   public visual_integration
 

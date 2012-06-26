@@ -143,7 +143,8 @@ C***********************************************************************
      & 'working with X2C Hamiltonian!')
         end if
         call init_pcm 
-        print *, 'after pcm init'
+        call print_pcm
+        print *, 'PCMSolver initialized.'
       end if
 #endif
 

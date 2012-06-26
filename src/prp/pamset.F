@@ -543,6 +543,10 @@ C***********************************************************************
        use fde_integrate
        use num_grid_gen
        use num_grid_cfg
+#ifdef PCM_MODULE
+       use pcm_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -729,7 +733,18 @@ C        CALL DENSTY(FAO,CMO,IPRINT)
 CJTH check this
         NF = 1
         CALL SOLFCK(FMO,FAO,NF,ESOLVE,ESOLVN,WORK(KFREE),LFREE,IPRSOL)
-      ENDIF           
+      ENDIF          
+
+#ifdef PCM_MODULE
+! Insert safeguards against symmetry and X2C?
+        if (dirac_cfg_pcm) then
+           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
+     &                    'J + X(D) contribution.'
+! fmo is the Fock matrix in AO basis, fao is the density matrix
+           call pcm_fock_driver(fmo, fao, work(kfree), lfree)
+        endif 
+#endif       
+
 C
 C     3. Get one-electron Fock matrix
 C     ===============================

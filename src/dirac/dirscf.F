@@ -657,11 +657,21 @@ C
         END IF
 
 #ifdef PCM_MODULE
-         if (dirac_cfg_pcm) then
+        if (dirac_cfg_pcm) then
+           do ifock = 1, n2bbasxq
+              if (fock(ifock) /= fock(ifock)) then
+                 call quit('NaN found in Fock matrix')
+              end if 
+           end do
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, work, lwork)
-       endif 
+           call pcm_fock_driver(fock, dmat, work(kfree), lfree)
+           do ifock = 1, n2bbasxq
+              if (fock(ifock) /= fock(ifock)) then
+                 call quit('NaN found in Fock matrix after pcm_fock')
+              end if 
+           end do
+        endif 
 #endif       
 
 CMI      ... add 1-electron Fock matrix into the total Fock matrix ...
@@ -1255,7 +1265,8 @@ C
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
 #ifdef PCM_MODULE
-      integer :: printlevel
+      real(8) :: time_pcm_fock
+      character(12) :: pcm_cputid
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1471,7 +1482,9 @@ C
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, work, lwork)
+           time_pcm_fock = second()
+           call pcm_fock_driver(fock, dmat, work(kfree), lfree)
+           time_pcm_fock = second() - time_pcm_fock
          endif 
 #endif     
  
@@ -1530,6 +1543,13 @@ CMI    ... we may get the DHFEXIT
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
+#ifdef PCM_MODULE
+         if (dirac_cfg_pcm) then
+           pcm_cputid = sectid(time_pcm_fock) 
+           write(lupri,'(3X,A,A12)')
+     &      '* PCM Fock matrix contribution  (CPU):', pcm_cputid
+         endif 
+#endif     
           CPUTID = SECTID(TDDG)
           IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Real diagonalization      (CPU):',CPUTID
@@ -1740,6 +1760,7 @@ C
         ERGSOL = ESOLVE + ESOLVN
         DHFERG = DHFERG + ERGSOL
       ENDIF
+
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 

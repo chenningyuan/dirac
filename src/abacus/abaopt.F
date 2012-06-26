@@ -2306,6 +2306,7 @@ C
 #include "dcbgen.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"
+#include "dcbham.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -2386,6 +2387,24 @@ ckr#endif
 !        get a new grid at new geometry
          call reset_num_grid()
       end if
+
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+! Quit if symmetry or X2C are requested.
+        if (nbsym > 1) then
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle symmetry!')
+        end if
+        if (bss.or.x2c) then
+          call quit('Polarizable Continuum Model calculation not '//
+     & 'working with X2C Hamiltonian!')
+        end if
+        call init_pcm
+        call print_pcm 
+        print *, 'PCMSolver re-initialized.'
+      end if
+#endif
+
 C
 C     Geometry optimization for Dirac
 C
@@ -2401,6 +2420,10 @@ C
             ENERGY = EMP2+DHFERG
          ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
+#ifdef PCM_MODULE
+         else if (dirac_cfg_pcm) then
+            energy = dhferg
+#endif
          ELSE
             call quit('no wave function...')
          END IF
@@ -2447,6 +2470,9 @@ C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
+#ifdef PRG_DIRAC
+      use dirac_cfg
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2484,6 +2510,13 @@ C
 C
 C     Calculate gradient
 C
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+         write(lupri, *), 'Forcing numerical evaluation of molecular '// 
+     &   'gradient for PCM.'
+         dongrd = .true.
+      end if
+#endif
       IF(DONGRD) THEN
          CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
       ELSE
