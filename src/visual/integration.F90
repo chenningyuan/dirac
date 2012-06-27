@@ -22,7 +22,7 @@
 module visual_integrate
 
    use dirac_interface
-   use matrix_defop
+   use matrix_defop_old
    use memory_allocator
    use visual_cfg
    use visual_in_point

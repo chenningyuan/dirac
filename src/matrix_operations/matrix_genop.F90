@@ -3,19 +3,19 @@
 ! GNU Lesser General Public License.
 
 !> @file
-!> Contains module matrix_defop
+!> Contains module matrix_defop_old
 
-!> module matrix_genop contains slightly generalized
+!> module matrix_genop_old contains slightly generalized
 !> versions of the operations in DALTON-linsca-ng's module
 !> matrix_operations (Dalton)
 !>
 !> written by Andreas J. Thorvaldsen
 !> radovan.bast@uit.no (2009-02-18): generalized for DIRAC
 !>
-!> mainly intended as hidden back-end for matrix_defop
+!> mainly intended as hidden back-end for matrix_defop_old
 !> mat_init is generalized so that another matrix can fill
 !> the role of nrow and ncol
-module matrix_genop
+module matrix_genop_old
 
 #ifdef DALTON_AO_RSP
   use xmatrix,                               &
@@ -600,7 +600,7 @@ contains
       if (present(braces)) then
          siz = len(braces)
          if (siz<1 .or. siz>4) &
-            call quit('matrix_genop.mat_print: Argument braces has wrong length')
+            call quit('matrix_genop_old.mat_print: Argument braces has wrong length')
          brac = braces
          if (siz==1) brac(2:2) = ','
          if (siz<=2) &

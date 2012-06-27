@@ -2,7 +2,7 @@ module openrsp_interface_1el
 
    use dirac_interface
    use openrsp_cfg
-   use matrix_defop
+   use matrix_defop_old
    use memory_allocator
    use character_processing
 

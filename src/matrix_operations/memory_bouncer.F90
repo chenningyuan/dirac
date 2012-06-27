@@ -1,6 +1,6 @@
 module memory_bouncer
 
-   use matrix_defop
+   use matrix_defop_old
    use matrix_stat
 
    implicit none

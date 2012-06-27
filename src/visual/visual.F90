@@ -26,8 +26,8 @@ module visual
   use codata
   use ao_eval
   use interface_ao
-  use matrix_defop
-  use matrix_genop, only: copy_matrix_sym
+  use matrix_defop_old
+  use matrix_genop_old, only: copy_matrix_sym
   use dirac_interface
   use visual_london
   use xc_london_c1

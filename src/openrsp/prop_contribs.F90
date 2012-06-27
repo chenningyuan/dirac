@@ -10,7 +10,7 @@
 !> and perturbed Fock matrices. 
 module prop_contribs
 
-   use matrix_defop
+   use matrix_defop_old
    use fc
 
 #ifdef PRG_DIRAC
