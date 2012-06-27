@@ -1018,7 +1018,7 @@ C
       RETURN
       END
 C  /* Deck hernod */
-      SUBROUTINE HERNOD(WORK,MWORK)
+      SUBROUTINE HERNOD()
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
@@ -1030,6 +1030,9 @@ C
 CMI called from DIRNOD,DIRNOD2 (main/dirac.F)
 C
 CMI  TEC changes for LAO (2003,2006)
+
+      use memory_allocator
+      use allocator_cfg
       use interface_to_mpi
 #include "implicit.h"
 C
@@ -1052,8 +1055,12 @@ C
 #include "energy.h"
 #endif
 C
-      DIMENSION WORK(MWORK),DINTSKP(14*3*3)
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+      DIMENSION DINTSKP(14*3*3)
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+C
+      real(8), allocatable :: WORK(:)
+      LWORK = WORK_memsize
+      call alloc(WORK,LWORK,id='WORK in HERNOD')
 C
       CALL QENTER('HERNOD')
       LWORK = MWORK
@@ -1173,6 +1180,7 @@ C
 C
  999  CONTINUE
 C
+      call dealloc(WORK)
       CALL QEXIT('HERNOD')
       END
 C  /* Deck rvinit */

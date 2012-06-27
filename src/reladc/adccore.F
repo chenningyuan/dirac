@@ -25,7 +25,7 @@
 #define zdotc z_dot_c
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PAMADC (CC,MAXCOR)
+      SUBROUTINE PAMADC ()
 !
 !---------------Description-----------------------------------------------
 !
@@ -55,7 +55,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Local variables--------------------------------------
 !
-      REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
@@ -121,7 +120,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !     Enter the generic ADCMAIN routine (master becomes now primus inter pares)
 !
-      CALL ADCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
+      CALL ADCMAIN(IN,IW,CA,INTFCE)
 !
 !     Return the slaves to the general menu routine.
 !
@@ -140,9 +139,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCMAIN (CC,MAXCORE,IN123,IW123,CA,INTFCE)
+      SUBROUTINE ADCMAIN (IN123,IW123,CA,INTFCE)
 !
       use memory_allocator
+      use allocator_cfg
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
 
@@ -160,8 +160,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Calling variables--------------------------------------
 !
-      INTEGER MAXCORE
-      REAL*8 CC(MAXCORE)
       INTEGER IN123,IW123
       LOGICAL CA
       CHARACTER*10 INTFCE
@@ -191,6 +189,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer(kind=klongint) :: mword_limit
       real(kind=kreal) :: total_mem_new = 0
       real(kind=kreal) :: new_mword_limit = 0
+
+      integer :: MAXCORE
+      real(8), allocatable :: CC(:)
+
+      MAXCORE = WORK_memsize
+      call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
 
 !
 !---------------Executable code--------------------------------------

@@ -21,7 +21,7 @@
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PAMCCM (CC,MAXCOR)
+      SUBROUTINE PAMCCM ()
 C
 C---------------Description-----------------------------------------------
 C
@@ -41,7 +41,10 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
+      use memory_allocator
+      use allocator_cfg
       use interface_to_mpi
+
 #include "implicit.h"
 #include "maxorb.h"
 #include "priunit.h"
@@ -56,10 +59,13 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
+      real(8), allocatable :: CC(:)
+C
+      MAXCOR = WORK_memsize
+      call alloc(CC,MAXCOR,id='CC  work space in PAMCCM')
 C
 C---------------Executable code--------------------------------------
 C
@@ -131,6 +137,7 @@ C
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC
       WRITE (IW,'(//80A1)') ('#',I=1,80)
       CLOSE(LUCMD)
+      call dealloc(CC)
 C
  1000 FORMAT (//' CPU time (seconds) used in RELCCSD:',T50,F14.4/
      & ' CPU time (seconds) used before RELCCSD:',T50,F14.4/
@@ -201,7 +208,10 @@ C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
+      use allocator_cfg
       use interface_to_mpi
+
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcbham.h"
@@ -217,7 +227,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       CHARACTER*10 INTFCE, MP2NOF
       LOGICAL CA,CCEND
 C
-      DIMENSION CC(MAXCOR)
+      real(8), allocatable :: CC(:)
+      MAXCOR = WORK_memsize
+      call alloc(CC,MAXCOR,id='CC work space in CCNOD')
 C
 C     arrange for the MPI stuff and correct node number
 C     to the total number of running invocations.
@@ -337,6 +349,7 @@ C
       CALL interface_MPI_RECV(NTEST,1,MPARID,30,global_communicator)
 #endif
 C
+      call dealloc(CC)
       RETURN
       END
 #endif    /* ifdef VAR_MPI */

@@ -2013,7 +2013,7 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCIAREL_NODE(WORK,LWORK)
+      SUBROUTINE LUCIAREL_NODE()
 C
 C     KRMC-LUCIAREL driver routine for the slaves
 C
@@ -2024,12 +2024,13 @@ C
 C     Last revision: S. Knecht           - Nov  2008
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      IMPLICIT REAL*8(A-H,O-Z)
+      use memory_allocator
+      use allocator_cfg
 C
+#include "implicit.h"
 #include "priunit.h"
 #include "infpar.h"
 #include "parluci.h"
-      DIMENSION WORK(LWORK)
       LOGICAL LUEND
       CHARACTER LUCITABASF_REL*12, LUCIFILN_REL*16
       CHARACTER CIRUN*6
@@ -2042,6 +2043,11 @@ C
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
+
+      real(8), allocatable :: WORK(:)
+      LWORK = WORK_memsize
+      call alloc(WORK,LWORK,id='WORK in LUCIAREL_NODE')
+
 #include "memint.h"
 C
       KFRSAV = KFREE
@@ -2282,6 +2288,7 @@ C     LUCIAREL run is finished for the slaves ...
 
       lupri = lupri_save
 C
+      call dealloc(WORK)
       END
 #endif    /* ifdef VAR_MPI2 */
 C --- end of krmcluci.F ---

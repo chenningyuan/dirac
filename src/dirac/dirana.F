@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paman */
-      SUBROUTINE PAMANA(WORK,LWORK)
+      SUBROUTINE PAMANA()
 C***********************************************************************
 C
 C     Analyze Dirac-Fock wavefunction
@@ -34,6 +34,8 @@ C***********************************************************************
 
       use dirac_cfg
       use second_order_minimization
+      use memory_allocator
+      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -42,13 +44,16 @@ C
 #include "dcbana.h"
 #include "dcbbas.h"
 #include "dcbrho.h"
+      real(8), allocatable :: WORK(:)
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP
 C  DCBBAS: N2BBASX
 C
-      DIMENSION WORK(LWORK)
 C
       CALL QENTER('PAMANA')
+
+      LWORK = WORK_memsize
+      call alloc(WORK,LWORK,id='WORK in PAMANA')
 C
 C***********************************************************************
 C*****  V E C T O R    P R I N T ***************************************
@@ -118,6 +123,7 @@ C
 C
 C
 C
+      call dealloc(WORK)
 C
       CALL QEXIT('PAMANA')
 C

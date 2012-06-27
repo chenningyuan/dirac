@@ -1251,8 +1251,13 @@ C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
       END
 
 C  /* Deck optmin */
-      SUBROUTINE OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE OPTMIN()
+!
+!     Driver for geometry optimization (including minimization)
+!
 
+      use memory_allocator
+      use allocator_cfg
       use interface_to_mpi
 
 #include "implicit.h"
@@ -1266,9 +1271,16 @@ C  /* Deck optmin */
 #endif
 #include "optinf.h"
 #include "cbiher.h"
-      DIMENSION WORK(LWORK)
       LOGICAL TSTIN
+
+      integer, parameter   :: IWOFF = 0
+      real(8), parameter   :: WRKDLM = -123456789.0D0
+      real(8), allocatable :: WORK(:)
+
       CALL QENTER('OPTMIN')
+      LWORK = WORK_memsize
+      call alloc(WORK,LWORK,id='WORK in OPTMIN')
+
       IF (NEWTON) THEN
          CALL TITLER('2nd Order Geometry Optimization','>',110)
       ELSE
@@ -1309,8 +1321,7 @@ C     the program stops.
 C
          IF (FINDRE .AND. (.NOT. VISUAL)) THEN
             CALL TITLER('Coordinates determined','#',103)
-            CALL QEXIT('OPTMIN')
-            RETURN
+            GO TO 9999
          END IF
       ELSE
          KATARR = IWOFF  + 2
@@ -1326,8 +1337,7 @@ C
       IF (VISUAL) THEN
          CALL VISULZ(WORK,LWORK,IWOFF,WRKDLM)
          CALL TITLER('End of visualization','#',103)
-         CALL QEXIT('OPTMIN')
-         RETURN
+         GO TO 9999
       END IF
 C
       KGRAD  = IWOFF + 1
@@ -1359,7 +1369,6 @@ C
 #if defined (SYS_CONVEX)  || defined (SYS_HAL) || defined (VAR_G77)
       IWOFF  = IWSAV
 #endif
-      CALL QEXIT('OPTMIN')
 #ifndef PRG_DIRAC
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
@@ -1369,6 +1378,12 @@ C
       END IF
 #endif      
 #endif 
+
+ 9999 CONTINUE
+
+      call dealloc(WORK)
+
+      CALL QEXIT('OPTMIN')
       RETURN
       END
 
@@ -2392,7 +2407,7 @@ C
 C     Execute Dirac, and retrieve energy.
 C
       IF ( .NOT. EXSIR ) THEN
-         CALL EXEDIR(WORK(IWOFF+1),LWORK)
+         CALL EXEDIR()
          IF (DOCCM) THEN
             ENERGY = RGETCCSD()
          ELSE IF (DOCIM) THEN

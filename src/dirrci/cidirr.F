@@ -20,8 +20,12 @@
 !dirac_copyright_end
 
 C
-      SUBROUTINE PAMCIM (CI,MCORE)
+      SUBROUTINE PAMCIM ()
 C
+
+      use memory_allocator
+      use allocator_cfg
+
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 C     ====================================================================
@@ -108,6 +112,11 @@ C
 #include "files.inc"
 #include "param.inc"
       LOGICAL DONE
+
+      real(8), allocatable :: CI(:)
+
+      MCORE = WORK_memsize
+      call alloc(CI,MCORE,id='CI work space in CIDIRR')
 C
       MAXCORE = MCORE
 #if defined (SYS_CRAY) || defined (SYS_T3D)
@@ -120,6 +129,7 @@ C
       IF (DONE) RETURN
       CALL DRIVER  (CI)
       CALL USEROUT (CI)
+      call dealloc(CI)
 C
 C     Clean up : Throw away Scratch Files 
 C
@@ -141,9 +151,9 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "general.inc"
-#include "memory.inc"
 #include "mempoint.inc"
 C
+      REAL*8 CI(*)
       CHARACTER*8 TIMEX,DATEX*10
       LOGICAL DONE
 C
@@ -291,9 +301,9 @@ C
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
-#include "memory.inc"
 #include "mempoint.inc"
 C
+      real*8  CI(*)
       LOGICAL ENDRUN
 c
       MVEC = 0
@@ -3551,9 +3561,10 @@ C
 #include "symm.inc"
 #include "files.inc"
 #include "iterat.inc"
-#include "memory.inc"
 #include "mempoint.inc"
 C
+      REAL*8 CI(*)
+
       DIMENSION OV(N2)
 C
       CALL REAVEC (CI(IPVR),CI(IPVI),CI(IPDR),CI(IPDI),CI(IPIL))

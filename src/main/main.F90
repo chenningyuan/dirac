@@ -27,15 +27,16 @@
 subroutine dirprg
 #else
 ! default executable - dirac.x
-program dirprg
+program DIRAC12_PROGRAM
 #endif
 
-  use memory_allocator
   use os_utils
   use dft_cfg
   use xmlout
   use interface_ao
   use interface_mo
+  use memory_allocator
+  use allocator_cfg
 
 #ifdef USE_MPI_MOD_F90
   use mpi
@@ -51,11 +52,14 @@ program dirprg
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
+
   real(kind=8), allocatable :: memory(:)
-  integer :: memsize, iparcal, status, length, ios, idummy, ierr
+
+  integer :: iparcal, status, length, ios, idummy, ierr
   integer(kind=8) :: maxsize = -1
-  integer :: iscr_mem
+  integer(kind=8) :: iscr_mem
   integer :: high_water_mark
+
 ! initialize common variables (parallel and sequential run)
   mytid   = 0
   mparid  = 0
@@ -81,22 +85,27 @@ program dirprg
   if (parcal) iparcal = 1
 
   if (mytid == 0) then
-     memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
+     iscr_mem     = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
+     WORK_memsize = iscr_mem
+     if (WORK_memsize .ne. iscr_mem) then
+        print *,'Problem reading DIRWRK:',WORK_memsize,iscr_mem
+        call quit('Invalid entry in environment variable DIRWRK')
+     end if
      maxsize = get_environment_integer('DIRMAX',maxsize)
 
   else
-!    memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
+!    WORK_memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
 !    SK - Sep 08: DIRNOD is passed to slaves in mpixinit and 
 !                 stored on common block GNCPAM (dcbgen.h)
      if( CDIRNOD(1:LENDND) .eq. ' ' )then
-       memsize = INSTALL_WRKMEM
+       WORK_memsize = INSTALL_WRKMEM
      else
        read (CDIRNOD(1:LENDND),*,iostat=ios) iscr_mem
        if(ios/=0)then
          print *,'Warning: Cannot parse environment variable DIRNOD'
          print *,'         Will use the default value:',INSTALL_WRKMEM
        else
-         memsize = iscr_mem
+         WORK_memsize = iscr_mem
        endif
      endif
      maxsize = get_environment_integer('DIRMAX',maxsize)
@@ -106,13 +115,13 @@ program dirprg
   if (parcal) then
     call allocator_init()
     call allocator_set_max(maxsize)
-    call sync_nodes(int(memsize,8),0)
+    call sync_nodes(WORK_memsize,0)
     call sync_nodes(maxsize,2)
   else
 !   iparex <= 0
     call allocator_init()
     call allocator_set_max(maxsize)
-    print '(a,i20,a,i14,a)', 'DIRAC serial starts by allocating ',memsize,' words (',memsize/2**17,' MB)'
+    print '(a,i20,a,i14,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB)'
     if (maxsize.gt.0) then
        print '(a,i20,a,i14,a)', '             of memory out of the allowed',  &
           maxsize,' words (',maxsize/2**17,' MB)'
@@ -122,7 +131,7 @@ program dirprg
 #else
     call allocator_init()
     call allocator_set_max(maxsize)
-    print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
+    print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB) of memory'
     if (maxsize.gt.0) then
        print '(a,i20,a,i14,a)', '             out of the allowed',  &
           maxsize,' words (',maxsize/2**17,' MB)'
@@ -137,8 +146,9 @@ program dirprg
   endif
 #endif
   if (mytid == 0) then
-     call alloc(memory,memsize, id="work array at main")
-     call set_mem_start(memory)
+     ! test if memory is available by allocating and deallocating
+     call alloc(memory,WORK_memsize, id="test allocation of work array in DIRAC main program")
+     call dealloc(memory)
      call printtitle
      call printlogo
      call printsubtitle
@@ -161,11 +171,13 @@ program dirprg
      if ( parcal ) call selftest_mpi()
 #endif
 #endif
-     call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
+     call dirac(iparcal,mytid,mparid,numnod)
   else
 #ifdef VAR_MPI
-     call alloc(memory,memsize)
-     call dirnod(iparcal,mytid,mparid,numnod,memory,memsize)
+     ! test if memory is available by allocating and deallocating
+     call alloc(memory,WORK_memsize, id="test allocation of work array at main for slave")
+     call dealloc(memory)
+     call dirnod(iparcal,mytid,mparid,numnod)
 #else
      call quit('Internal error in main.F90. Quitting.')
 #endif
@@ -181,7 +193,6 @@ program dirprg
      print '(a/)','*****************************************************'
      if (doxml) call xml_close_file
   endif
-  call dealloc(memory)
 #ifdef VAR_MPI
   if (iparcal .eq. 1 ) call mpixfinalize()
 #endif
@@ -216,6 +227,6 @@ program dirprg
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 end subroutine dirprg
 #else
-end program dirprg
+end program DIRAC12_PROGRAM
 #endif
 

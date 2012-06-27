@@ -21,7 +21,7 @@
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psidhf */
-      SUBROUTINE PSIDHF(WFCONV,WORK,LWORK)
+      SUBROUTINE PSIDHF(WFCONV)
 C***********************************************************************
 C
 C     Solve DHF - equations; print results
@@ -34,9 +34,13 @@ C     Last revisions: Sep 11 1995 - tsaue
 C                     2005/6 MI to make BSS2DC/DC2BSS available
 C
 C***********************************************************************
+
+         use memory_allocator
+         use allocator_cfg
          use dirac_cfg
          use x2cmod_cfg
          use xmlout
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -56,10 +60,12 @@ C
       LOGICAL   WFCONV, DO4C2C_SAVE, EX,
      &          TRIVEC_SAVE, TRIFCK_SAVE, ERGCNV_SAVE,
      &          EVCCNV_SAVE, FCKCNV_SAVE 
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
 C
       CALL QENTER('PSIDHF')
+      LWORK = WORK_memsize
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in PSIDHF')
 C
       WFCONV = .FALSE.
       if (doxml) then
@@ -339,6 +345,7 @@ C
          call xml_end('output')
          call xml_end('task')
       endif
+      call dealloc(WORK)
       CALL QEXIT('PSIDHF')
       RETURN
 C
@@ -3003,7 +3010,7 @@ CC    CALL QEXIT('APPBOS')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mvogen */
-      SUBROUTINE MVOGEN(WORK,LWORK)
+      SUBROUTINE MVOGEN()
 C***********************************************************************
 C
 C     Generate modified virtual orbitals
@@ -3011,6 +3018,10 @@ C
 C     Written by T.Saue Sep 18 1998
 C
 C***********************************************************************
+
+      use memory_allocator
+      use allocator_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3026,9 +3037,12 @@ C
 #include "blocks.h"
 C
       LOGICAL SAVEFLAGS(4)
-      DIMENSION WORK(*)
+      real(8), allocatable :: WORK(:)
 C
+      LWORK = WORK_memsize
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in MVOGEN')
+
       CALL TITLER('Modified virtual orbitals','*',125)
 C
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -3050,6 +3064,7 @@ C
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(WORK)
 C
       IF(PARCAL) call SetTaskDistribFlags(saveflags)
 

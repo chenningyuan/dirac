@@ -23,7 +23,7 @@ C FILE    : krmcopt.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
-      SUBROUTINE PSIOPT(WFTYP,WFCONV,WORK,LWORK)
+      SUBROUTINE PSIOPT(WFTYP,WFCONV)
 C***********************************************************************
 C
 C     Driver routine to PSIOP1
@@ -34,6 +34,10 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
 C
 C***********************************************************************
+
+      use memory_allocator
+      use allocator_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -41,7 +45,6 @@ C***********************************************************************
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
-      DIMENSION WORK(LWORK)
 C
 #include "maxorb.h"
 #include "dcbidx.h"
@@ -56,8 +59,11 @@ C
 C
       LOGICAL EX
       INTEGER RENAME
+      real(8), allocatable :: WORK(:)
 C
+      LWORK = WORK_memsize
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in PSIOPT')
 C
       CALL QENTER('PSIOPT')
 C
@@ -272,6 +278,7 @@ c     CLOSE(LUKRM3,STATUS='DELETE')
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='DELETE')
       CLOSE(LUITFO,STATUS='DELETE')
 C
+      call dealloc(WORK)
       CALL QEXIT('PSIOPT')
       RETURN
       END
@@ -6246,26 +6253,31 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRMC_NODE_DRIVER(WORK,LWORK)
+      SUBROUTINE KRMC_NODE_DRIVER()
 C
 C     KR-MCSCF driver routine for the slaves
 C
 C     Last revision: S. Knecht           - June  2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      IMPLICIT REAL*8(A-H,O-Z)
+      use memory_allocator
+      use allocator_cfg
 C
+#include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "parkrmc.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION WORK(LWORK)
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER KRMC_NODEFN*17, KRMC_NODEF*13
       LOGICAL KRMCEND
+
+      real(8), allocatable :: WORK(:)
+      LWORK = WORK_memsize
+      call alloc(WORK,LWORK,id='WORK in KRMC_NODE_DRIVER')
 #include "memint.h"
 C
       KFRSAV = KFREE
@@ -6310,5 +6322,6 @@ C     LUCIAREL run is finished for the slaves ...
 C
       CLOSE (IKRMCPARF,STATUS='KEEP')
 C
+      call dealloc(WORK)
       END
 #endif

@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
-      SUBROUTINE PAMTRA(WORK,LWORK)
+      SUBROUTINE PAMTRA()
 C***********************************************************************
 C
 C     Driver routine for 4-index transformation
@@ -33,6 +33,8 @@ C     Called from main/dirac.F if DOTRA=.true.
 C
 C***********************************************************************
 
+      Use memory_allocator
+      use allocator_cfg
       Use moltra_labeling
 
 #include "implicit.h"
@@ -50,14 +52,17 @@ C
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK,TRASAM,ACTIVE
-      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
+      DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
+      real(8), allocatable :: WORK(:)
 C
       CALL QENTER('PAMTRA')
+      LWORK = WORK_memsize
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in PAMTRA')
       KFRSAV = KFREE
 C
       CALL GETTIM(CPU1,WALL1)
@@ -455,9 +460,11 @@ C
       IF (DOHSCC) CALL HSCC_STUFF(WORK,LWORK)
 #endif
 
+      call dealloc(WORK)
+
 #if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
 !     ... interface for the HSFS module
-      IF (DOHSFS) CALL HSFS_STUFF(WORK,LWORK)
+      IF (DOHSFS) CALL HSFS_STUFF()
 #endif
 
       CALL QEXIT('PAMTRA')
@@ -496,7 +503,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PSIMP2 */
-      SUBROUTINE PSIMP2(WORK,LWORK)
+      SUBROUTINE PSIMP2()
 C***********************************************************************
 C
 C     Driver routine for MP2-calculation
@@ -504,6 +511,10 @@ C
 C     Written by T.Saue, J.Laerdahl and L.Visscher Jan 1997
 C
 C***********************************************************************
+
+      use memory_allocator
+      use allocator_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -515,15 +526,18 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
       LOGICAL TOBE,TRANOP
-      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,2),KQ(2,4),KIBE(2,4),
+      DIMENSION NSTR(2,0:2,4),KVEC(2,2),KQ(2,4),KIBE(2,4),
      &          NR(2),IR(2,2),NQ(2),KE(2,4)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
 
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
+      real(8), allocatable :: WORK(:)
 C
       CALL QENTER('PSIMP2')
+      LWORK = WORK_memsize
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in PSIMP2')
       KFRSAV = KFREE
       CALL MP2HI(IPRMP2)
 C
@@ -766,6 +780,7 @@ C
 C
       CALL MEMREL('PSIMP2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
+      call dealloc(WORK)
       CALL QEXIT('PSIMP2')
 C
       RETURN
@@ -3609,7 +3624,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck RESOLV */
-      SUBROUTINE RESOLV(WORK,LWORK)
+      SUBROUTINE RESOLV()
 C***********************************************************************
 C
 C     Driver routine for 4-index transformation for
@@ -3619,6 +3634,9 @@ C     Based on PAMTRA
 C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
+
+      Use memory_allocator
+      use allocator_cfg
       Use moltra_labeling
 
 #include "implicit.h"
@@ -3637,13 +3655,16 @@ C
 #include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
-      DIMENSION WORK(*),NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
+      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
 CTROND: to fix !
       DIMENSION MINE(16),MAXE(16),NGASO(256)
+      real(8), allocatable :: WORK(:)
 C
       CALL QENTER('RESOLV')
+      LWORK = WORK_memsize
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in RESOLV')
       KFRSAV = KFREE
       CALL TITLER('Resolution of open-shell states','*',120)
 C
@@ -3923,12 +3944,14 @@ C
       ISTRAT = ISTBUF
       THROUT = THRBUF
 C
- 9999 CALL QEXIT('RESOLV')
+ 9999 CONTINUE
+      call dealloc(WORK)
+      CALL QEXIT('RESOLV')
 C
       RETURN
       END
 C/* Deck SY_COSCI */
-      SUBROUTINE SY_COSCI(WORK,LWORK)
+      SUBROUTINE SY_COSCI()
 C***********************************************************************
 C
 C     Driver routine for 4-index transformation for
@@ -3942,6 +3965,10 @@ C     Written by T.Saue Jan 18 1999
 !     Called by : PAMPSI (main/dirac.F)
 C
 C***********************************************************************
+
+      use memory_allocator
+      use allocator_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3960,16 +3987,20 @@ C
 !     ...SYA_MAXE
 #include "cossya.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
-      LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
-      DIMENSION WORK(*),NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
+      LOGICAL   TOBE,TRANOP,SKPONE,SKPTWO
+      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
 CTROND: to fix !
       DIMENSION MINE(16),MAXE(16),NGASO(256)
+      real(8), allocatable :: WORK(:)
 !----------------------------------------------------------------------
 C
 !@m   CALL QENTER('RESOLV')
       CALL QENTER('SY_COSCI')
+      LWORK = WORK_memsize
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in SY_COSCI')
+
       KFRSAV = KFREE
 !@m   CALL TITLER('Resolution of open-shell states','*',120)
       CALL TITLER('Stand-alone COS_CI','*',120)
@@ -4283,7 +4314,9 @@ C
       THROUT = THRBUF
 C
 !@m 9999 CALL QEXIT('RESOLV')
- 9999 CALL QEXIT('SY_COSCI')
+ 9999 CONTINUE
+      call dealloc(WORK)
+      CALL QEXIT('SY_COSCI')
 C
       RETURN
       END
@@ -4763,13 +4796,16 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRANOD*/
-      SUBROUTINE TRANOD(WORK,LWORK)
+      SUBROUTINE TRANOD()
 C
 C     Written by Luuk Visscher, August 1997
 C     Extensions by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
+      use allocator_cfg
       use interface_to_mpi
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4786,9 +4822,12 @@ C
 #include "blocks.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION WORK(*),DINTSKP(8),TIM1(7)
+      DIMENSION DINTSKP(8),TIM1(7)
+      real(8), allocatable :: WORK(:)
 C
       CALL QENTER('TRANOD')
+      LWORK = WORK_memsize
+      call alloc(WORK,LWORK,id='WORK in TRANOD')
 #include "memint.h"
       KFRSAV = KFREE
 C
@@ -4853,6 +4892,7 @@ C
 #endif
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
+      call dealloc(WORK)
       CALL QEXIT('TRANOD')
 C
       RETURN

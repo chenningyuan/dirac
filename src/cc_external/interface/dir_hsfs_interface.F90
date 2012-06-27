@@ -20,7 +20,7 @@
 !dirac_copyright_end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine HSFS_STUFF(WORK,LWORK)
+subroutine HSFS_STUFF()
 !----------------------------------------------------------------------------------
 !
 !  Read DIRAC-MOLTRA produced files MRCONEE/MDCINT and prepare
@@ -34,6 +34,7 @@ subroutine HSFS_STUFF(WORK,LWORK)
 !  Written by Miro Ilias, Tel Aviv/Prievidza 2009
 !
 !----------------------------------------------------------------------------------
+      use memory_allocator
 use Memory
 use io_moltra
 use DIRAC_HSFS
@@ -41,7 +42,9 @@ use DIRAC_HSFS
 #include "priunit.h"
 #include "dcbpsi.h"
 
-real*8, intent(in) :: WORK(LWORK)
+      real(8), allocatable :: WORK(:)
+      LWORK = WORK_memsize
+      call alloc(WORK,LWORK,id='WORK in HSFS_STUFF')
 
 ! ... skip if specified
 if (i_file_based) then
@@ -63,6 +66,8 @@ call scan_mdcint
 call read_mdcint_hsfs
 
 call UnstickMemory
+
+      call dealloc(WORK)
 
 end subroutine HSFS_STUFF
 
