@@ -7034,7 +7034,7 @@ C       CALL SYMCMDG_KRCC(ITASK,IOBJ,I1,I2,I12)
 *. Output
       DIMENSION IABCOMP(NCREA+NANNI,*)
 *. Local scratch
-      DIMENSION IWORK(2**MXOPEN)
+      DIMENSION IWORK(2**(NCREA+NANNI))
 *
       NTEST = 000
 C     WRITE(6,*) ' IFLAG, NAEL, NBEL at start of AB... ',
