@@ -36,7 +36,7 @@
 !>     axtpby:     Z = a * X(^T) + b * Y   (where Z may be Y)
 !>     gemm:       Y = a * X(^T) * Z(^T) + b * Y
 !>
-!> To create matrices, mat_init (from module matrix_operations) is replaced
+!> To create matrices, mat_init_old (from module matrix_operations) is replaced
 !> by a more general init_mat. This is to hide context-specific information:
 !> closed/open shell, real/complex, 1/2/4-component, full/sparse,
 !> and thus make it possible to write general code:
@@ -84,10 +84,10 @@
 !> temporary, so that it will be deleted once used.
 module matrix_defop_old
 
-   !ajt Many linsca modules propagate mat_init (no private statement).
+   !ajt Many linsca modules propagate mat_init_old (no private statement).
    !         To avoid collision, rename it to init_mat
    use matrix_genop_old, &
-         init_mat => mat_init
+         init_mat => mat_init_old
 
    implicit none
 

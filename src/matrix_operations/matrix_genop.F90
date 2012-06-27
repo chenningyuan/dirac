@@ -13,14 +13,14 @@
 !> radovan.bast@uit.no (2009-02-18): generalized for DIRAC
 !>
 !> mainly intended as hidden back-end for matrix_defop_old
-!> mat_init is generalized so that another matrix can fill
+!> mat_init_old is generalized so that another matrix can fill
 !> the role of nrow and ncol
 module matrix_genop_old
 
 #ifdef DALTON_AO_RSP
   use xmatrix,                               &
     only: matrix,                            &
-          mat_init_full    => xmatrix_set,   &
+          mat_init_old_full    => xmatrix_set,   &
           mat_free_nonzero => xmatrix_clean, &
           mat_mul          => xmatrix_gemm,  &
           mat_zero         => xmatrix_zero,  &
@@ -32,7 +32,7 @@ module matrix_genop_old
 #else
   use matrix_operations,                  &
       only: matrix,                       &
-            mat_init_full    => mat_init, &
+            mat_init_old_full    => mat_init_old, &
             mat_free_nonzero => mat_free, &
             mat_mul,                      &
             mat_zero,                     &
@@ -54,7 +54,7 @@ module matrix_genop_old
 #endif
 
    public matrix
-   public mat_init
+   public mat_init_old
    public mat_free
    public mat_same
    public mat_isdef
@@ -72,9 +72,9 @@ module matrix_genop_old
 
    private
 
-   interface mat_init
-      module procedure mat_init_full
-      module procedure mat_init_from
+   interface mat_init_old
+      module procedure mat_init_old_full
+      module procedure mat_init_old_from
    end interface
 
 #ifdef PRG_DIRAC
@@ -91,7 +91,7 @@ contains
    end subroutine
 
 
-   subroutine mat_init_from(C, A, ta, B, tb, complex, reset, zero, alias, nz)
+   subroutine mat_init_old_from(C, A, ta, B, tb, complex, reset, zero, alias, nz)
       type(matrix),           intent(inout) :: C
       type(matrix), optional, intent(in)    :: A, B
       character*1,  optional, intent(in)    :: ta, tb
@@ -101,29 +101,29 @@ contains
       logical :: taa, tbb, zer, res, cplx
       integer :: nrow, ncol
       if (present(ta) .and. .not.present(A)) &
-         call quit('mat_init input error: ta cannot be present without A')
+         call quit('mat_init_old input error: ta cannot be present without A')
       if (present(B) .and. .not.present(ta)) &
-         call quit('mat_init input error: B cannot be present without A')
+         call quit('mat_init_old input error: B cannot be present without A')
       if (present(tb) .and. .not.present(B)) &
-         call quit('mat_init input error: tb cannot be present without B')
+         call quit('mat_init_old input error: tb cannot be present without B')
       if (present(reset) .and. present(A)) &
-         call quit('mat_init input error: reset cannot be present with A')
+         call quit('mat_init_old input error: reset cannot be present with A')
       if (present(zero) .and. .not.present(A)) &
-         call quit('mat_init input error: zero cannot be present without A')
+         call quit('mat_init_old input error: zero cannot be present without A')
       if (present(alias) .and. .not.present(A)) &
-         call quit('mat_init input error: alias cannot be present without A')
+         call quit('mat_init_old input error: alias cannot be present without A')
       if (present(alias) .and. present(ta)) &
-         call quit('mat_init input error: alias cannot be present with ta')
+         call quit('mat_init_old input error: alias cannot be present with ta')
       taa = .false.
       if (present(ta)) then
          if (ta/='N' .and. ta/='T') &
-             call quit("mat_init input error: ta is not 'N' or 'T'")
+             call quit("mat_init_old input error: ta is not 'N' or 'T'")
          taa = (ta=='T')
       end if
       tbb = .false.
       if (present(tb)) then
          if (tb/='N' .and. tb/='T') &
-             call quit("mat_init input error: tb is not 'N' or 'T'")
+             call quit("mat_init_old input error: tb is not 'N' or 'T'")
          tbb = (tb=='T')
       end if
       res = .false.
@@ -191,11 +191,11 @@ contains
             end if
             C%complex = .false.
          else if (alias/='FF') then
-             call quit("mat_init input error: alias cannot be '" // alias // "'")
+             call quit("mat_init_old input error: alias cannot be '" // alias // "'")
          end if
       else
-         !print *,'mat_init',loc(C)
-         call mat_init_full(C, nrow, ncol, nz=C%nz)
+         !print *,'mat_init_old',loc(C)
+         call mat_init_old_full(C, nrow, ncol, nz=C%nz)
       end if
    end subroutine
 
@@ -383,7 +383,7 @@ contains
 #endif
       useZ = (((XisY .or. (tx .and. X%complex)) &
               .and. dimag(a) /= 0) .or. (tx .and. py))
-      if (useZ) call mat_init(Z, Y, complex=.false.)
+      if (useZ) call mat_init_old(Z, Y, complex=.false.)
       if (tx .and. py) then
          call blk_axtpy(      1d0, 1, X, trps, eqls, 1, Z) !Z  = X^T
          call blk_axtpy( dimag(a), 1, Z, norm, plus, 2, Y) !Y'+= a'* Z
@@ -480,8 +480,8 @@ contains
       first  = ((dreal(fab) /= 0 .or. (A%complex .and. dimag(fab) /= 0)) .and. B%complex)
       second = (dimag(fab) /= 0 .or. (A%complex .and. dreal(fab) /= 0))
       third  = (dimag(fab) /= 0 .or. A%complex .or. B%complex .or. C%complex)
-      if (first .or. second .or. third) call mat_init(X, A, complex=.false.)
-      if (first .or. second) call mat_init(Y, C, complex=.false.)
+      if (first .or. second .or. third) call mat_init_old(X, A, complex=.false.)
+      if (first .or. second) call mat_init_old(Y, C, complex=.false.)
       if (first) then
          call blk_axtpy( dreal(fab), 1, A, norm, eqls, 1, X)
          call blk_axtpy(-dimag(fab), 2, A, norm, plus, 1, X)
@@ -500,7 +500,7 @@ contains
       if (third) then
          call blk_axtpy( dreal(fab) + dimag(fab), 1, A, norm, eqls, 1, X)
          call blk_axtpy( dreal(fab) - dimag(fab), 2, A, norm, plus, 1, X)
-         call mat_init(Y, B, complex=.false.)
+         call mat_init_old(Y, B, complex=.false.)
          call blk_axtpy( 1d0, 1, B, norm, eqls, 1, Y)
          call blk_axtpy(-1d0, 2, B, norm, plus, 1, Y)
          call blk_gemm(1d0, 1, X, ta, 1, Y, tb, &
@@ -675,7 +675,7 @@ contains
 
 
    !> Reference the real part of another matrix (no copy)
-   !> Should eventually be replaced by more general mat_init(..)
+   !> Should eventually be replaced by more general mat_init_old(..)
    function mat_real_part(A) result(B)
       type(matrix), intent(in) :: A
       type(matrix)             :: B
@@ -690,7 +690,7 @@ contains
 
 
    !> Reference the imaginary part of another matrix (no copy)
-   !> Should eventually be replaced by more general mat_init(..)
+   !> Should eventually be replaced by more general mat_init_old(..)
    function mat_imag_part(A) result(B)
       type(matrix), intent(in) :: A
       type(matrix)             :: B

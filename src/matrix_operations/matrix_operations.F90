@@ -16,7 +16,7 @@ module matrix_operations
   implicit none
 
   public matrix
-  public mat_init
+  public mat_init_old
   public mat_free
   public mat_mul
   public mat_zero
@@ -132,7 +132,7 @@ contains
 
   end subroutine
 
-  subroutine mat_init(A, nrow, ncol, nz)
+  subroutine mat_init_old(A, nrow, ncol, nz)
 
 !   ----------------------------------------------------------------------------
     type(matrix)        :: A
