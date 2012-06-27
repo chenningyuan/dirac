@@ -907,16 +907,20 @@ C
 C
 C        MINMK2/MAXMK2 explicitly set
 C
+         NKRCI_MK2REF = 0
+         NKRCI_MK2DEL = NKRCI_MAXMK2
       ELSE
         IF(IKWSET(27) .EQ. 0 .AND. IKWSET(28) .EQ. 0)THEN
 !         Assign default values for MINMK2/MAXMK2
+          NKRCI_MAXMK2 = 2*MIN(NKRCIAELEC,NKRCIASHT) - NKRCIAELEC
+          NKRCI_MINMK2 = NKRCIAELEC-2*MIN(NKRCIAELEC,NKRCIASHT)
           NKRCI_MK2REF = 0
-          NKRCI_MK2DEL = NKRCIAELEC
+          NKRCI_MK2DEL = NKRCI_MAXMK2
+        ELSE
+!         assign MINMK2/MAXMK2 defaults
+          NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
+          NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
         END IF
-
-!       assign MINMK2/MAXMK2 defaults
-        NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
-        NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
       END IF
 C
 C     boson or fermion symmetries in the CI expansion
