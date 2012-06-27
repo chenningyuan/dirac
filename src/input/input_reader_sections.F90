@@ -65,6 +65,8 @@
       use input_reader
       use num_grid_cfg
 
+      implicit none
+
 !     ---------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
@@ -144,6 +146,8 @@
       use dirac_cfg
       use visual_cfg
       use input_reader
+
+      implicit none
 
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
@@ -420,6 +424,8 @@
       use visual_cfg
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       integer, intent(in) :: j
 !     --------------------------------------------------------------------------
@@ -446,6 +452,8 @@
       use visual_cfg
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       integer, intent(in) :: j
 !     --------------------------------------------------------------------------
@@ -467,6 +475,8 @@
       use openrsp_cfg
 #endif
       use input_reader
+
+      implicit none
 
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
@@ -683,6 +693,8 @@
       use relcc_cfg
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
@@ -750,6 +762,8 @@
       use relcc_cfg
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
@@ -797,6 +811,8 @@
 
       use relcc_cfg
       use input_reader
+
+      implicit none
 
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
@@ -854,6 +870,8 @@
       use relcc_cfg
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
@@ -879,6 +897,8 @@
 
       use relcc_cfg
       use input_reader
+
+      implicit none
 
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
@@ -976,6 +996,8 @@
       use relcc_cfg
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
@@ -1058,6 +1080,8 @@
       use x2cmod_cfg
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
@@ -1103,6 +1127,8 @@
 #endif
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
@@ -1139,6 +1165,8 @@
       use dft_cfg
       use sigma_prefactor_setting
       use input_reader
+
+      implicit none
 
 !     ---------------------------------------------------------------------------
       character(kw_length), intent(in) :: word

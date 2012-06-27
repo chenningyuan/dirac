@@ -80,6 +80,8 @@
 
       use input_reader
 
+      implicit none
+
 !     --------------------------------------------------------------------------
       character(kw_length), intent(inout) :: word_io
       integer,              intent(in)    :: file_unit
