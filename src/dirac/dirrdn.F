@@ -56,6 +56,7 @@ C***********************************************************************
       character(100)     :: line 
       integer, parameter :: file_unit = 137
       logical            :: file_exists, file_exists2
+      logical            :: input_found
 
 
 C
@@ -213,7 +214,7 @@ C
 !     *X2C
 !     *PCM
 !     ignores rest
-      call read_input()
+      call read_menu_input('ALL', input_found)
 
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
@@ -3623,7 +3624,7 @@ C
 !     *VISUAL
     9 continue
 !     this is here for backwards compatibility, *VISUAL used to be under **ANALYZE
-      call move_to_next_star(word)
+      call move_to_next_star(word, lucmd)
       go to 200
 
    10 CONTINUE
@@ -5230,7 +5231,7 @@ C
 !       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
         usedf  = .true.
       end if
-      if(find_keyword('**HAMIL')) call move_to_next_star(word)
+      if(find_keyword('**HAMIL')) call move_to_next_star(word, lucmd)
 
 CMI   ... take care of 2c-4c/4c-2c transitions !
       IF(DO2C4C.OR.DO4C2C) THEN
@@ -6087,7 +6088,7 @@ C
 !     *DFT
     3 continue
 !     this is needed until the old input scheme is replaced
-      call move_to_next_star(word)
+      call move_to_next_star(word, lucmd)
       go to 200
 
 
@@ -6119,7 +6120,7 @@ CMI  ... reading input routine for AMFI+RELSCF
 !       *X2C
     7 CONTINUE
 !       this is needed until the old input scheme is replaced
-        call move_to_next_star(word)
+        call move_to_next_star(word, lucmd)
         GO TO 200
 
 !       *ECP
@@ -6135,7 +6136,7 @@ CMI  ... reading input routine for AMFI+RELSCF
     9 continue
       ! this is a cheat so that *PCM section is parsed
       ! by new input reader
-        call move_to_next_star(word)
+        call move_to_next_star(word, lucmd)
         go to 200
 C
     1 CONTINUE

@@ -5,23 +5,71 @@ module input_reader_sections
 
    implicit none
 
-   public read_input_grid
-   public read_input_visual
-   public read_input_visual_helper
-   public read_input_visual_helper2
-   public read_input_openrsp
-   public read_input_relcc
-   public read_input_ccener
-   public read_input_ccfopr
-   public read_input_ccsort
-   public read_input_ccfspc
-   public read_input_ccih
-   public read_input_x2c
-   public read_input_pcm
+   public read_input_sections
 
    private
 
 contains
+
+   subroutine read_input_sections(word, kw_section)
+
+      use interface_input !ugly dependency to dft
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      select case (kw_section)
+
+!       case ('**METHO', '**WAVE ')
+!          call read_input_method(word, kw_section)
+
+        case ('*DFT   ')
+           call read_input_dft(word, kw_section)
+
+        case ('**GRID ')
+           call read_input_grid(word, kw_section)
+
+!       *VISUAL is for backward compatibility
+!       *VISUAL used to be under **ANALYZE
+        case ('**VISUA', '*VISUAL')
+           call read_input_visual(word, kw_section)
+
+        case ('*OPENRS')
+           call read_input_openrsp(word, kw_section)
+
+        case ('*X2C')
+           call read_input_x2c(word, kw_section)
+
+        case ('**RELCC')
+           call read_input_relcc(word, kw_section)
+
+        case ('*CCENER')
+           call read_input_ccener(word, kw_section)
+
+        case ('*CCFOPR')
+           call read_input_ccfopr(word, kw_section)
+
+        case ('*CCSORT')
+           call read_input_ccsort(word, kw_section)
+
+        case ('*CCFSPC')
+           call read_input_ccfspc(word, kw_section)
+
+        case ('*CCIH  ')
+           call read_input_ccih(word, kw_section)
+
+        case ('*PCM   ')
+           call read_input_pcm(word, kw_section)
+
+        case default
+!          activate as soon as everything is merged to here
+!          call quit('section '//kw_section//' not recognized')
+
+      end select
+
+   end subroutine
 
    subroutine read_input_grid(word, kw_section)
 
