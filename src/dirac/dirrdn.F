@@ -37,7 +37,6 @@ C***********************************************************************
 
       use dirac_cfg
       use num_grid_cfg
-      use input_reader
       use interface_functional_read
       use x2cmod_cfg
       use xmlout
@@ -214,7 +213,7 @@ C
 !     *X2C
 !     *PCM
 !     ignores rest
-      call read_menu_input('ALL', input_found)
+      call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
 
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
@@ -2316,7 +2315,6 @@ C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
       use dirac_cfg
-      use input_reader
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -3412,7 +3410,6 @@ C
 C***********************************************************************
 
       use dirac_cfg
-      use input_reader
 
 #include "implicit.h"
 #include "priunit.h"
@@ -4400,7 +4397,6 @@ C***********************************************************************
       use dft_cfg
       use xc_derv
       use interface_functional_read
-      use input_reader
       use x2cmod_cfg
 #ifdef PCM_MODULE
       use pcmmod_cfg

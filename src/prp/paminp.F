@@ -38,7 +38,6 @@ C
 C***********************************************************************
 
          use dirac_cfg
-         use input_reader
 #ifdef MOD_OPENRSP
          use dirac_interface
          use openrsp_cfg
