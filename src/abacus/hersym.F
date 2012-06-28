@@ -84,6 +84,8 @@ C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
      &                         NSYMOP,KATOM,KASYM,LENTMP,
      &                         CLASS,VRML,internal_file,WORK,LWORK)
+
+      use codata
 #include "implicit.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -169,7 +171,23 @@ C
          END IF
          IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
-            IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT , MXCENT, ATMARR)
+            if (mytid == mparid) then
+               call prnarr(text, mxcent, atmarr)
+               print *, ''
+               print *, 'Centered and rotated coordinates'
+               print *, 'in xyz format (angstrom)'
+               print *, '--------------------------------'
+               print *, ''
+               write(*, '(i0)') nuclp
+               print *, ''
+               do i = 1, nuclp
+                  write(*, '(a4, 3f14.8)') namn(atmarr(5, i)),
+     &                                     atmarr(1, i)*xtang,
+     &                                     atmarr(2, i)*xtang,
+     &                                     atmarr(3, i)*xtang
+               end do
+               print *, ''
+            end if
          ELSE
             WRITE (LUPRI,'(/A/)') 
      &  ' System could not be centered or rotated due to finite field'
