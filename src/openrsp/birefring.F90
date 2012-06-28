@@ -5,7 +5,7 @@
 !> This file is currently common to Dalton and Dirac
 module birefring
 
-   use matrix_defop      !matrix type and operators
+   use matrix_defop_old      !matrix type and operators
    use prop_contribs     !property contractions and integrals
    use rsp_equations     !response equation contractor/solver
 #ifdef PRG_DIRAC

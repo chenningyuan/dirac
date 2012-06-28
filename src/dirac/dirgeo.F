@@ -83,6 +83,7 @@ C
 C     Last revision: 1997/07/08 jth
 C
 C*****************************************************************************
+      use dirac_cfg
 #include "implicit.h"
       LOGICAL FIRST
       SAVE FIRST
@@ -91,6 +92,7 @@ C
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
+#include "dcbham.h"
 C
       CALL QENTER('EXEDIR')
 C

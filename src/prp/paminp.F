@@ -38,7 +38,6 @@ C
 C***********************************************************************
 
          use dirac_cfg
-         use input_reader
 #ifdef MOD_OPENRSP
          use dirac_interface
          use openrsp_cfg
@@ -536,7 +535,7 @@ C     *STEX
 #ifdef MOD_OPENRSP
          dirac_cfg_openrsp = .true.
          call init_dirac_interface()
-         call move_to_next_star(word)
+         call move_to_next_star(word, lucmd)
          if (openrsp_cfg_skip_1el) then
             write(*, *) 'OpenRSP: skipping calculation of 1el integrals'
          else
