@@ -27,7 +27,10 @@ if(MPI_FOUND)
         ${_source}
         MPI_COMPILER_MATCHES
         )
-    if(NOT MPI_COMPILER_MATCHES)
+    if(MPI_COMPILER_MATCHES)
+        message("-- mpi.mod matches current compiler, setting -DUSE_MPI_MOD_F90")
+        add_definitions(-DUSE_MPI_MOD_F90)
+    else()
         message("-- WARNING: mpi.mod compiled with different compiler")
     endif()
 
