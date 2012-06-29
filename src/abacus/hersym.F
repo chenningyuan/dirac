@@ -86,6 +86,7 @@ C  /* Deck fndsym */
      &                         CLASS,VRML,internal_file,WORK,LWORK)
 
       use codata
+
 #include "implicit.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -181,7 +182,8 @@ C
                write(*, '(i0)') nuclp
                print *, ''
                do i = 1, nuclp
-                  write(*, '(a4, 3f14.8)') namn(atmarr(5, i)),
+                  IZ_VAL = NINT( atmarr(5, i) )
+                  write(*, '(a4, 3f14.8)') namn(IZ_VAL),
      &                                     atmarr(1, i)*xtang,
      &                                     atmarr(2, i)*xtang,
      &                                     atmarr(3, i)*xtang
