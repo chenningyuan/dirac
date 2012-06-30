@@ -1,0 +1,8 @@
+$ERROR 1.E-5
+nlines 1:@   xx                        
+
+$ERROR 1.E-5
+nlines 1:@   yy
+
+$ERROR 1.E-5
+nlines 1:@   zz                        
