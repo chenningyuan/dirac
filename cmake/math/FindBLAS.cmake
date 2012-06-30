@@ -195,8 +195,10 @@ macro(find_mkl)
     endif()
 
     if(BLAS_LIBRARIES)
+        # ugly hack to sneak in -limf and -openmp/-fopenmp like this
+        # this should be done outside FindBLAS.cmake!
         if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-            set(BLAS_LIBRARIES -Wl,--start-group ${BLAS_LIBRARIES} -openmp -Wl,--end-group)
+            set(BLAS_LIBRARIES -Wl,--start-group -limf ${BLAS_LIBRARIES} -openmp -Wl,--end-group)
         endif()
         if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
             set(BLAS_LIBRARIES -Wl,--start-group ${BLAS_LIBRARIES} -fopenmp -Wl,--end-group)
