@@ -2333,53 +2333,68 @@ C
                         dfac = 0.5d0*dfac
                         efac = 0.5d0*efac
 
-				do imat = 1, ndmat
-
-                           dab = dfac*dmat(a, b, imat)
-                           dcd = dfac*dmat(c, d, imat)
+!                                coulomb
+!                                =======
+            
+                        dab = dfac*dmat(a, b, 1)
+                        dcd = dfac*dmat(c, d, 1)
                                                
-                           dba = dfac*dmat(b, a, imat)
-                           ddc = dfac*dmat(d, c, imat)
+                        dba = dfac*dmat(b, a, 1)
+                        ddc = dfac*dmat(d, c, 1)
 
-                           if (dabs(efac) > tiny(0.0d0)) then
-                              dac = efac*dmat(a, c, imat)
-                              dad = efac*dmat(a, d, imat)
-                              dbc = efac*dmat(b, c, imat)
-                              dbd = efac*dmat(b, d, imat)
+                        if (suscep) then
+                           do i = 1, 6
+
+                              abcd = pint(int, i)
+                              abdc = qint(int, i)
+            
+!miro/1.7.2012: optimization ifort+OMPI is hurt upon these structures, but can be 'fixed'
+!by canceling optimizations of main/main.F90
+
+             ft(a, b, 1, i) = ft(a, b, 1, i) + abcd*ddc + abdc*dcd
+             ft(c, d, 1, i) = ft(c, d, 1, i) + abcd*dba + abdc*dab
+
+             ft(b, a, 1, i) = ft(b, a, 1, i) + abcd*dcd + abdc*ddc
+             ft(d, c, 1, i) = ft(d, c, 1, i) + abcd*dab + abdc*dba
+
+                           end do
+                        else
+                           do i = 1, 3
+            
+                              abcd = pint(int, i)
+                              abdc = qint(int, i)
+            
+             ft(b, a, 1, i) = ft(b, a, 1, i) - abcd*dcd - abdc*ddc
+             ft(d, c, 1, i) = ft(d, c, 1, i) - abcd*dab + abdc*dba
+                                                                              
+             ft(a, b, 1, i) = ft(a, b, 1, i) + abcd*ddc + abdc*dcd
+             ft(c, d, 1, i) = ft(c, d, 1, i) + abcd*dba - abdc*dab
+            
+                           end do
+                        end if
+            
+!                                exchange
+!                                ========
+
+                        if (dabs(efac) > tiny(0.0d0)) then
+			do imat = 1, ndmat
+
+                           dac = efac*dmat(a, c, imat)
+                           dad = efac*dmat(a, d, imat)
+                           dbc = efac*dmat(b, c, imat)
+                           dbd = efac*dmat(b, d, imat)
                                                   
-                              dca = efac*dmat(c, a, imat)
-                              dda = efac*dmat(d, a, imat)
-                              dcb = efac*dmat(c, b, imat)
-                              ddb = efac*dmat(d, b, imat)
-                           end if
+                           dca = efac*dmat(c, a, imat)
+                           dda = efac*dmat(d, a, imat)
+                           dcb = efac*dmat(c, b, imat)
+                           ddb = efac*dmat(d, b, imat)
 
                            if (suscep) then
                               do i = 1, 6
 
                                  abcd = pint(int, i)
                                  abdc = qint(int, i)
-            
-            
-!                                coulomb
-!                                =======
-            
-                        if (imat == 1) then
-!miro/1.7.2012: optimization ifort+OMPI is hurt upon these structures, but can be 'fixed'
-!by canceling optimizations of main/main.F90
-
-             ft(a, b, imat, i) = ft(a, b, imat, i) + abcd*ddc + abdc*dcd
-             ft(c, d, imat, i) = ft(c, d, imat, i) + abcd*dba + abdc*dab
-
-             ft(b, a, imat, i) = ft(b, a, imat, i) + abcd*dcd + abdc*ddc
-             ft(d, c, imat, i) = ft(d, c, imat, i) + abcd*dab + abdc*dba
-                        end if
-
-
-!                                exchange
-!                                ========
                                 
-                                 if (dabs(efac) > tiny(0.0d0)) then
-           
                         ft(a, c, imat, i) = ft(a, c, imat, i) - abdc*dbd
                         ft(a, d, imat, i) = ft(a, d, imat, i) - abcd*dbc
                         ft(b, c, imat, i) = ft(b, c, imat, i) - abcd*dad
@@ -2390,8 +2405,6 @@ C
                         ft(c, b, imat, i) = ft(c, b, imat, i) - abcd*dda
                         ft(d, b, imat, i) = ft(d, b, imat, i) - abdc*dca
             
-                                 end if
-
                               end do
                            else
                               do i = 1, 3
@@ -2399,28 +2412,6 @@ C
                                  abcd = pint(int, i)
                                  abdc = qint(int, i)
             
-            
-!                                coulomb
-!                                =======
-            
-                        if (imat == 1) then
-                        ft(b, a, imat, i) = ft(b, a, imat, i) - abcd*dcd
-                        ft(b, a, imat, i) = ft(b, a, imat, i) - abdc*ddc
-                        ft(d, c, imat, i) = ft(d, c, imat, i) - abcd*dab
-                        ft(d, c, imat, i) = ft(d, c, imat, i) + abdc*dba
-                                                                              
-                        ft(a, b, imat, i) = ft(a, b, imat, i) + abcd*ddc
-                        ft(a, b, imat, i) = ft(a, b, imat, i) + abdc*dcd
-                        ft(c, d, imat, i) = ft(c, d, imat, i) + abcd*dba
-                        ft(c, d, imat, i) = ft(c, d, imat, i) - abdc*dab
-                        end if
-           
-           
-!                                exchange
-!                                ========
-                                
-                                 if (dabs(efac) > tiny(0.0d0)) then
-           
                         ft(c, a, imat, i) = ft(c, a, imat, i) + abdc*ddb
                         ft(d, a, imat, i) = ft(d, a, imat, i) + abcd*dcb
                         ft(c, b, imat, i) = ft(c, b, imat, i) - abcd*dda
@@ -2431,12 +2422,11 @@ C
                         ft(b, c, imat, i) = ft(b, c, imat, i) + abcd*dad
                         ft(b, d, imat, i) = ft(b, d, imat, i) + abdc*dac
             
-                                 end if
-            
                               end do
                            end if
 
                         end do
+                        end if
 
 
 
