@@ -2364,6 +2364,9 @@ C
 !                                =======
             
                         if (imat == 1) then
+!miro/1.7.2012: optimization ifort+OMPI is hurt upon these structures, but can be 'fixed'
+!by canceling optimizations of main/main.F90
+
              ft(a, b, imat, i) = ft(a, b, imat, i) + abcd*ddc + abdc*dcd
              ft(c, d, imat, i) = ft(c, d, imat, i) + abcd*dba + abdc*dab
 
