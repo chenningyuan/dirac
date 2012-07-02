@@ -22,10 +22,12 @@
 C$Id$
 C
 C#include "single.h"
-! OLD_LOG
-!950915-vebjornb: New module taking care of optimizations.
-!                 It uses both the old cbiwlk.h and the new optinf.h
-!
+C
+C FILE: abaopt.F
+C
+C 950915-vebjornb: New module taking care of optimizations.
+C                  It uses both the old cbiwlk.h and the new optinf.h
+C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
 #include "implicit.h"
@@ -187,8 +189,7 @@ C
  123  CONTINUE
 C
 #if defined (PRG_DIRAC)
-      CALL INIGRD()
-      IPRGRD = -1
+      CALL INIGRD(-1)
       DOTRCK = .TRUE.
 #endif
 C
@@ -1204,8 +1205,8 @@ C
 C     
 #if defined (PRG_DIRAC)
 C     
-      WRITE(LUPRI,'(1X,A)')
-     &     '* Contributions to the molecular gradient from'
+      WRITE(LUPRI,'(A)')
+     &     ' * Contributions to the molecular gradient from'
       IF ( LBIT( IGRD_INTFLG, 1 ) )
      &     WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
       IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
@@ -1261,9 +1262,9 @@ C  /* Deck optmin */
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "infpar.h"
 #include "gnrinf.h"
 #endif
+#include "infpar.h"
 #include "optinf.h"
 #include "cbiher.h"
       DIMENSION WORK(LWORK)
@@ -1385,7 +1386,6 @@ C  /* Deck runopt */
 #include "cbirea.h"
 #include "molinp.h"
 #include "abainf.h"
-#include "gnrinf.h"
 #include "inftap.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1395,7 +1395,10 @@ C  /* Deck runopt */
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
-#if !defined (PRG_DIRAC)
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
 #include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
@@ -1601,8 +1604,7 @@ C
      &        WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &        ACTIVE,EMOD,VECMOD)
       END IF
-      GECONV = 
-     &  MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+      GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
 C
 C     If there has been a completely failed step, the geometry has
 C     by default not converged.
@@ -1803,8 +1805,7 @@ C
      &           WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &           ACTIVE,EMOD,VECMOD)
          END IF
-         GECONV = 
-     &   MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+         GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,WORK(KTEMP1))
          CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
@@ -2090,7 +2091,11 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "priunit.h"
 #include "trkoor.h"
 #include "maxaqn.h"
@@ -2099,8 +2104,8 @@ C
 #include "nuclei.h"
       DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
       CHARACTER*1 MARK
-      LOGICAL ILL_NUMBER ! external function
-      INTEGER  START
+      LOGICAL     ILL_NUMBER ! external function
+      INTEGER     START
 C
 C     We have to construct the updated geometry before printing it
 C
@@ -2486,17 +2491,17 @@ CTROND#include "pario.h"
 #include "abainf.h"
 #include "optinf.h"
 #ifndef PRG_DIRAC
-#  include "gnrinf.h"
-#  include "maxorb.h"
-#  include "infinp.h"
-#  include "inftap.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 #else
-#  include "dcbgrd.h"
-#  include "dcbham.h"
-#  include "dcbdhf.h"
-#  include "dcbgen.h"
-#  include "dcbmp2.h"
-#  include "dcbpsi.h"
+#include "dcbgrd.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcbmp2.h"
+#include "dcbpsi.h"
 #endif
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -2570,7 +2575,6 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
-#include "gnrinf.h"
 #include "optinf.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
@@ -2641,9 +2645,6 @@ C
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
-
-      print *,'yc-INIHES',iprint
-      iprint = 12
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2970,8 +2971,6 @@ C
       LOGICAL RESET, REJLST
 C
       CALL QENTER('UPDHES')
-      print *,'yc-UPDHES',iprint
-      iprint = 12
 C
 C     If redundant internal coordinates are used, we have to transform
 C     the calculated Cartesian gradient
@@ -4928,7 +4927,11 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
 #include "cbiwlk.h"
       LOGICAL TRU, FAL
@@ -5616,7 +5619,10 @@ C
          IF ((ABS(STEP(I)) .GT. TRSTRA) .AND. (.NOT. STPSCL))
      &        STEP(I) = SIGN(TRSTRA,STEP(I))
  30   CONTINUE
+      STPNRM = SQRT(DDOT(NCRD,STEP,1,STEP,1))
       IF (IPRINT .GE. IPRDBG) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &      'RF-Step length:', STPNRM
          IF (REDINT .OR. DELINT) THEN
             CALL HEADER('RF-step in internal coordinates',-1)
          ELSE
@@ -5624,23 +5630,18 @@ C
          END IF
          CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
       END IF
-      STPNRM = SQRT(DDOT(NCRD,STEP,1,STEP,1))
 C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C
       IF ((STPNRM .GT. TRSTRA) .AND. STPSCL) THEN
          FAC = TRSTRA/STPNRM
-         IF (IPRINT .GE. IPRDBG) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-     &           'Step too long, scaling step by factor:', FAC
-            WRITE(LUPRI,*)
-         END IF
          DO 32 I = 1, NCRD
             STEP(I) = STEP(I)*FAC
  32      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
+            WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &           'Step too long, step scaled by factor:', FAC
             CALL HEADER('Scaled RF-Step',-1)
             CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
          END IF
@@ -5741,12 +5742,14 @@ C
          ELSE IF (ABS(GRDDIA(IMODE)) .LT. 1.0D-10) THEN
             IMODE = 1
          END IF
+         IF (IMODE .NE. 1) THEN
+            WRITE (LUPRI,'(A,I3,A)') ' INFO: Mode',IMODE,
+     &         ' is selected, because lower modes have zero gradient.'
+         END IF
       END IF
       IF (IPRINT .GE. IPRMAX) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Mode ',IMODE,' will be partitioned ' //
-     &        'out and maximized.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A,I3,A/)') ' Mode',IMODE,
+     &      ' will be partitioned out and maximized.'
       END IF
 C
 C     The selected mode is placed at the very end.
@@ -6178,7 +6181,11 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "priunit.h"
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
@@ -6423,7 +6430,11 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
@@ -6651,7 +6662,7 @@ C
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
       NEWSYM = .TRUE.
-      ADDSTO = .TRUE.
+      DOHUCKEL = .TRUE.
       KEEPHE = .FALSE.
       RSTARR = .TRUE.
       ERGOLD =  ENERGY
@@ -6704,7 +6715,11 @@ C  /* Deck inipre */
 #include "cbirea.h"
 #include "molinp.h"
 #include "abainf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "inftap.h"
       CHARACTER TMPLIN*80
       DIMENSION WORK(LWORK)
@@ -6768,7 +6783,11 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
@@ -6869,7 +6888,11 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "taymol.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPVC1(MXRCRD), TMPVC2(MXRCRD)
@@ -7004,7 +7027,11 @@ C
 #include "mxcent.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
       DIMENSION WORK(LWORK)
@@ -7274,7 +7301,11 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
       CHARACTER*12 FILENM
       LOGICAL :: ex
 C
@@ -7325,7 +7356,11 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "taymol.h"
 #include "symmet.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
@@ -7396,7 +7431,11 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "taymol.h"
 #include "symmet.h"
       LOGICAL HESEXS
@@ -7549,12 +7588,12 @@ C
 #include "optinf.h"
 #include "infopt.h"
 #ifdef PRG_DIRAC
-#  include "dcbdhf.h"
-#  include "dcbgen.h"
-#  include "dcbmp2.h"
-#  include "dcbpsi.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcbmp2.h"
+#include "dcbpsi.h"
 #else
-#  include "gnrinf.h"
+#include "gnrinf.h"
 #endif
 C
 #ifdef PRG_DIRAC
