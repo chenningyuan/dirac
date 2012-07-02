@@ -18,7 +18,7 @@ module  get_gamess_mo_ints
  contains
 
  subroutine open_gamess_files
-#include "implicit.h"
+!#include "implicit.h"
 #include "priunit.h"
 
   open (unit=LuHCRMO,file=FileHCRMO,form="unformatted",status="old",iostat=ios_hcrmo)
