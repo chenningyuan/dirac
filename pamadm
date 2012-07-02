@@ -309,10 +309,12 @@ dirac_modules[this_module].add_directory('src/cap')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hscc'
-dirac_modules[this_module] = dirac_module('hscc','interface for the (external) HSMRCC code together with its objects')
+dirac_modules[this_module] = dirac_module('hscc','external HSMRCC module')
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('src/cc_external/hsmrcc')
+dirac_modules[this_module].add_directory('src/cc_external/hsmrcc/modules')
+dirac_modules[this_module].add_directory('src/cc_external/hsmrcc/source')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
