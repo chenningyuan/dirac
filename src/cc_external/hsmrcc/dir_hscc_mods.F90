@@ -42,8 +42,9 @@ use io_moltra
 use Dirac_HSMRCC
 use Parameters
 use GMSMod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: numirrep_dirac,i,ii
 
 call header('Output from set_hscc_data',-1)
 
@@ -105,10 +106,11 @@ use Parameters
 ! use OrbMod ! TODO: move here print_gms_data ?
 use GMSMod
 
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 character(len=4) :: repna_temp_a, repna_temp_b
 integer :: multbs(1:8,1:8)
+integer :: numirrep_dirac,i,ii
 
 if (get_iprint() >=8) then
   write(LUPRI,'(/,4x,a,/)') "Output from fill_VINF_arrays"
@@ -247,7 +249,7 @@ use Dirac_HSMRCC
 use Parameters
 use GMSMod
 use IntGenMod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 
 !external :: get_moltra_index
@@ -259,6 +261,13 @@ integer :: StVRec,StRec, EnRec, NxtRec
 
 real*8 :: get_moltra_integral
 real*8 :: zerothrs=1.0d-14 ! to be replaced byu CUTOFF
+
+integer :: IA, IPQ, inz, IJ, IB, ii_mo, ia_mo,NZVIntBufInd, icount, II, ij_mo, ib_mo
+integer :: IC, ID, ic_mo, id_mo, IK, IL, ik_mo, il_mo
+real*8 :: SInt_ijab,SInt_ijba,ASInt_ijaba,SInt_abcd,SInt_abdc,ASInt_abcd
+real*8 :: ASInt_ijab, SInt_ijlk, SInt_ijkl, ASInt_ijkl, ASInt_ijb
+real*8 :: SInt_abij,SInt_abji,ASInt_abij,ASInt_ajib,ASInt_aibc,SInt_ajib,SInt_ajbi,SInt_aibc,SInt_aicb
+real*8 :: SInt_ijka,SInt_ijak,ASInt_ijka
 
 call print_basic_params
 call print_gms_parameters
