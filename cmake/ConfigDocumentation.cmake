@@ -1,4 +1,4 @@
-find_package(Sphinx)
+find_package(Sphinx QUIET)
 if(SPHINX_FOUND)
     add_custom_target(
         html
