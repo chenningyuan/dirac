@@ -369,14 +369,15 @@
       if (lsdet(id1).le.0) go to 390
       do 380 id2=1,ndet
       if (lsdet(id2).le.0) go to 380
-      if (ham(lsdet(id1),lsdet(id2)).eq.0.)                             &
-   ham(lsdet(id1),lsdet(id2))=hdet11(ldet,id1,id2)
+        if (ham(lsdet(id1),lsdet(id2)).eq.0.) then
+          ham(lsdet(id1),lsdet(id2))=hdet11(ldet,id1,id2)
+        endif
 380   continue
 390   continue
-      if (ipr.gt.0) write (*,3900) ngr,ndt,(i,lldet(1,i),lldet(2,i),    &
-  i=1,ndt)
-3900  format(' group',i3,'.',i4,' dets included:',8(i4,':',2i3)/        &
-  (29x,6(i4,':',2i3)))
+! printout of determinants
+      if (ipr.gt.0) write (*,3900) ngr,ndt,(i,lldet(1,i),lldet(2,i),i=1,ndt)
+3900  format(' group',i3,'.',i4,' dets included:',8(i4,':',2i3)/(29x,6(i4,':',2i3)))
+
       call dimx(ndt,60,"ndt ")
 !
       if (ipr.le.1) go to 830
@@ -402,9 +403,8 @@
       i=i1
 845   continue
       print 8400, ii,ev(i),(vec(j,i),j=1,ndt)
-8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/                &
-  (40x,7f12.7))
-!
+8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/(40x,7f12.7))
+
 !     find main determinant contributing
       cc=0
       jj=0
@@ -441,8 +441,8 @@
       igr(icol)=ngr
 849   ev(i)=10000.
 850   if (evi(i).ne.0.d0) print 8500, evi(i),(vec(j,i+1),j=1,ndt)
-8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/       &
-  (1x,10f12.7))
+8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/(1x,10f12.7))
+
 855   do 860 id=1,ndet
 860   if (lsdet(id).gt.0) lsdet(id)=0
       go to 320
@@ -459,13 +459,10 @@
       if ((2*itr+1)*iscol(i).ne.ncol(i)) itr=-1
       exc=ecol(i)*27.21
       excm=exc*8066.
-      print 8700, ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),      &
-  igr(i),idcol(1,i),idcol(2,i)
-8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,         &
-  'ev,',f8.0,'cm-1. term ',i1,a1,'. gr',i3,', major det=',2i3)
+      print 8700, ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),igr(i),idcol(1,i),idcol(2,i)
+8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,'ev,',f8.0,'cm-1. term ',i1,a1,'. gr',i3,', major det=',2i3)
 880   ecol(i)=10000.
 890   continue
-      !time=cputime(0.0)
       time=cputime(0.0d0)
 
       return
@@ -475,7 +472,7 @@
       subroutine eneru2 (egr0,nval,ihp,ipr)
 !--------------------------------------------------------------------------------
 !
-!      Calculates resulting energy levels by diagonalization
+!     Calculates resulting energy levels by diagonalization, prints them
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -741,8 +738,7 @@
 2300  format(1h0,80(1h-)/30x,i1,' valence electrons'/30x,19(1h-))
         else
           write (6,2301) nval
-2301  format(1h0,80(1h-)/22x,i2,                                        &
- ' sector excitation energies'/30x,22(1h-))
+2301  format(1h0,80(1h-)/22x,i2,' sector excitation energies'/30x,22(1h-))
         end if
       end if
       icol=0
@@ -822,8 +818,7 @@
       do 380 id2=1,ndets
       if (lsdet(id2).le.0) go to 380
       if (ham(lsdet(id1),lsdet(id2)).eq.0.d0) then
-        ham(lsdet(id1),lsdet(id2))=                                     &
-   hmatel(lstdet(id1),lstdet(id2),nval,ihp)
+        ham(lsdet(id1),lsdet(id2))=hmatel(lstdet(id1),lstdet(id2),nval,ihp)
       end if
 380   continue
 390   continue
@@ -867,10 +862,9 @@
       do 8455 j=1,ndt
 8455  vec(j,i)=vec(j,i)*fnor
       if (ipr.ne.0) write (*,8400) ii,ev(i),(vec(j,i),j=1,ndt)
-8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/                &
-  (1x,10f12.7))
-!
-!     find main determinant contributing
+8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/(1x,10f12.7))
+
+!     find main contributing determinant
       cc=0
       jj=0
       do 846 j=1,ndt
@@ -885,7 +879,8 @@
 8462  continue
 8464  continue
 !
-!     collect equal energy terms.
+!     collect equal energy terms
+!
       if (icol.eq.0) go to 848
       do 847 i1=1,icol
       if (abs(ev(i)-ecol(i1)).gt.1.d-7) go to 847
@@ -908,8 +903,9 @@
       go to 849
 847   continue
 848   icol=icol+1
-      if (icol.eq.200) write (*,*) ' ******** 200 different energies.', &
-  ' others not collected. ***********'
+      if (icol.eq.200) then
+        write (*,*) ' ******** 200 different energies. - others not collected. ***********'
+      endif
       if (icol.gt.200) go to 849
       iscol(icol)=ksp
       iddd=lstdet(idd)
@@ -930,10 +926,11 @@
       ncol(icol)=1
       if (ksp.gt.1) ncol(icol)=2
 849   ev(i)=10000.d0
-850   if (ipr.ne.0.and.evi(i).ne.0.) write (*,8500) evi(i),             &
-  (veci(j,i),j=1,ndt)
-8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/       &
-  (1x,10f12.7))
+850   continue 
+      if (ipr.ne.0.and.evi(i).ne.0.) then
+        write (*,8500) evi(i),(veci(j,i),j=1,ndt)
+      endif
+8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/(1x,10f12.7))
 855   iend=1
       do 860 id=1,ndets
       if (lsdet(id).eq.-1) iend=0
@@ -956,19 +953,15 @@
       exc=(egr0-egr)*27.21d0
       egr0=egr
       excm=exc*8066.d0
-      write (*,8600) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),   &
-  idcol(1,i),idcol(2,i)
-8600  format(' energy',i3,e16.8,'. degen',i3,'. ion pot=',f8.3,         &
-  'ev,',f9.0,'cm-1. term ',i1,a1,'. major det',6i3)
+      write (*,8600) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),idcol(1,i),idcol(2,i)
+8600  format(' energy',i3,e16.8,'. degen',i3,'. ion pot=',f8.3,'ev,',f9.0,'cm-1. term ',i1,a1,'. major det',6i3)
       if (eicol(i).ne.0.d0) write (*,8650) eicol(i)
 8650  format (1x,10(1h*),' im. energy:',e20.8)
       go to 880
 877   exc=(ecol(i)-egr)*27.21d0
       excm=exc*8066.d0
-      write (*,8700) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),   &
-  idcol(1,i),idcol(2,i)
-8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,         &
-  'ev,',f8.0,'cm-1. term ',i1,a1,'. major det',6i3)
+      write (*,8700) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),idcol(1,i),idcol(2,i)
+8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,'ev,',f8.0,'cm-1. term ',i1,a1,'. major det',6i3)
       if (eicol(i).ne.0.d0) write (*,8650) eicol(i)
 880   ecol(i)=10000.d0
 890   continue
