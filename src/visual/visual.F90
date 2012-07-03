@@ -26,13 +26,11 @@ module visual
   use codata
   use ao_eval
   use interface_ao
-  use matrix_defop
-  use matrix_genop, only: copy_matrix_sym
+  use matrix_defop_old
+  use matrix_genop_old, only: copy_matrix_sym
   use dirac_interface
-#ifdef MOD_UNRELEASED
   use visual_london
   use xc_london_c1
-#endif
   use visual_integrate
   use visual_in_point
 
@@ -231,7 +229,6 @@ contains
 
     call init_mat(D_mo, norbt, norbt)
 
-#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
 
        D_mo%elms = 0.0d0
@@ -292,7 +289,6 @@ contains
        end if
 
     end if
-#endif
 
     do imat = 1, visual_cfg_nr_dmat
 
@@ -368,7 +364,6 @@ contains
     end if
 
     do imat = 1, visual_cfg_nr_dmat
-#ifdef MOD_UNRELEASED
        if (visual_cfg_london) then
           if (visual_cfg_london_skip_kappa) then
 !            zero out kappa contribution
@@ -384,7 +379,6 @@ contains
           end if
 
        end if
-#endif
 
 !      scale density matrix
        D(imat) = 2.0d0*D(imat)
@@ -433,13 +427,11 @@ contains
     call alloc(ao,     nr_ao_slices*nr_ao_cartesian)
     call alloc(buffer, nr_ao_slices*nr_ao_cartesian)
 
-#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
        D_con_mo = 0
        D_con    = 0
        if (visual_cfg_london_none) D_con_mo_ai = 0
     end if
-#endif
 
 
 !   plot and integrate
@@ -474,11 +466,9 @@ contains
     do imat = 1, visual_cfg_nr_dmat
        D(imat) = 0
     end do
-#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
        D_con = 0
     end if
-#endif
 
     end subroutine
 

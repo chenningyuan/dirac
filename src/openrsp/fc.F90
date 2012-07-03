@@ -7,7 +7,7 @@ module fc
 
    use interface_ao
    use ao_eval
-   use matrix_defop
+   use matrix_defop_old
 
    implicit none
 

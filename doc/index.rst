@@ -203,18 +203,6 @@ Reference manual
    reference_manual/orb_strings.rst
 
 
-Relativistic community
-======================
-
-.. toctree::
-   :maxdepth: 1
-
-   community/forum.rst
-   community/developers.rst
-   community/medal.rst
-   community/reading.rst
-
-
 For DIRAC programmers
 =====================
 

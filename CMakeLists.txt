@@ -12,7 +12,7 @@ option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                          
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
-option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
+option(ENABLE_OPENMP          "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
 option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
@@ -26,6 +26,8 @@ option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"             
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      ON)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
+option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
+option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -217,7 +219,9 @@ if(ENABLE_UTILITIES)
     compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(secquant.x                utils/sec_quant.F90               "${LIST_OF_EXECUTABLES}")
+    if(ENABLE_SECQUANT)
+        compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
+    endif()
 endif()
 foreach(
     EXECUTABLE
@@ -250,6 +254,24 @@ if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUN
         # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
         target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
     endif()
+endif()
+
+#  stefan --> miro: please fix it properly or create a ticket but this is NOT
+#  OK; i encountered on some platforms severe performance
+#  degradation in parallel runs other than twoel. London integrals... (Jan
+#  2012)
+#  miro: after playing a lot with this there is no other way to fix it,
+#  I made this optimization decrease conditional in order not to affect other
+#  functionalities
+if (CMAKE_Fortran_COMPILER_ID MATCHES Intel AND CMAKE_BUILD_TYPE MATCHES
+Release AND ENABLE_MPI AND ENABLE_MAGNETIZ_FIX)
+   # message("CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE})
+   # message("CMAKE_Fortran_COMPILER_ID="${CMAKE_Fortran_COMPILER_ID})
+   # message("ENABLE_MPI=${ENABLE_MPI}")
+    message("--  main.F90 - no optimization => fix of magnetizabilities MEMCHK
+error in the slave process of abacus/her2drv.F" )
+    set_source_files_properties(src/main/main.F90 PROPERTIES COMPILE_FLAGS
+"-O0")
 endif()
 
 # forward CPP directly to the code

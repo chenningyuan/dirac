@@ -27,15 +27,16 @@
 *   collected by Timo Fleig, Jul 12 - Sep, 2002          *
 *========================================================*
 *
-      subroutine test_lucita_wrk_space_offset(work)
+      subroutine test_lucita_wrk_space_offset(work,lwork)
 !        purpose: check for integer compatibility for lucita on x86_64 systems
       implicit none
+      real(8), intent(in)  :: work(*)
+      integer, intent(in)  :: lwork
 #include "priunit.h"
       real(8)              :: workspace_lucita
       COMMON/lucita_wrk_space_test/workspace_lucita(1)
       integer(8)           :: K_OFFSET, K8BASE_LUCITA
       integer              :: KBASE_LUCITA
-      real(8), intent(in)  :: work(*)
       
 !     
       call compoff(work,workspace_lucita,k_offset)
@@ -57,6 +58,22 @@
      &  'FATAL ERROR for LUCITA runs: memory offset'//
      &  ' (dynamic memory - static memory) is too big for i*4')
       end if
+
+      k_offset = k_offset + lwork
+      kbase_lucita = k_offset
+      k8base_lucita = kbase_lucita
+      if(k8base_lucita .ne. k_offset)then
+        print *, 'controlled stop: only int64'
+        WRITE (lupri,'(/A/A,2I20//A)')
+     &  'FATAL ERROR in test_lucita_wrk_space_offset: memory offset'//
+     &  ' (dynamic memory - static memory)+lwork is too big for i*4',
+     &  'LWORK, K_OFFSET, KBASE_LUCITA:',LWORK, K_OFFSET, KBASE_LUCITA,
+     &  '(See code in gp/gplucia.F)'
+        CALL QUIT(
+     &  'FATAL ERROR for LUCITA runs: memory offset'//
+     &  ' (dynamic memory - static memory) is too big for i*4')
+      end if
+
 
       end subroutine test_lucita_wrk_space_offset
 ***********************************************************************

@@ -4,7 +4,7 @@
 !> ajt/radovan: Response-related testing routines and some calculations 
 module prop_test
 
-   use matrix_defop
+   use matrix_defop_old
    use prop_contribs
    use rsp_equations
 #ifdef PRG_DIRAC

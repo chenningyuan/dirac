@@ -114,7 +114,7 @@ subroutine prepare_dirac_HSMRCC_VINF_file
 use Memory
 use Vectors
 !use io_moltra
-#include "implicit.h"
+!#include "implicit.h"
 
 call Header('Output from "prepare_dirac_HSMRCC_VINF_file"',-1)
 

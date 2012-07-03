@@ -472,21 +472,18 @@ C
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 C
-      write(LUWRTOUT,*) ' '
-      WRITE(LUWRTOUT,'(3X,A)')
+      WRITE(LUWRTOUT,'(/3X,A)')
      & '=============================================================='
       WRITE(LUWRTOUT,'(3X,A)')
      & '==> allocation of two CI vectors and one resolution vector <=='
-      write(LUWRTOUT,*) ' '
-      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+      WRITE(LUWRTOUT,'(/3X,A,1X,I15)')
      & 'current available free memory in double words:',LMEMFREE_PTR
       WRITE(LUWRTOUT,'(3X,A,1X,I15)')
      & 'allocate two CI vectors each of length:       ',LBLOCK
       WRITE(LUWRTOUT,'(3X,A,1X,I15)')
      & 'allocate resolution vector of length:         ',LSCR2
-      WRITE(LUWRTOUT,'(3X,A)')
+      WRITE(LUWRTOUT,'(3X,A/)')
      & '=============================================================='
-      write(LUWRTOUT,*) ' '
       CALL FLSHFO(LUWRTOUT)
 C
       IF(IDIAG.EQ.2) THEN
@@ -1047,7 +1044,7 @@ CSK   IW = IUNUT
       LUCIWT = LUOUT
       LUWRT = LUOUT
 C 
-      CALL QENTER('REST ')
+      CALL QENTER('PAMLU ')
 C     No floating point underflow
       CALL XUFLOW
 C     Assign diskunits
@@ -1059,10 +1056,16 @@ C
 C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK,WORK,K_OFFSET)
-      KBASE_LUCITA = K_OFFSET
+      KBASE_LUCITA  = K_OFFSET
+      KADD          = KBASE_LUCITA + LWRK ! i*4 evaluation
+      K8BASE_LUCITA = K_OFFSET     + LWRK ! i*8 evaluation
+      IF (K8BASE_LUCITA .ne. KADD) THEN
+         CALL QUIT(
+     &   'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4')
+      END IF
 C
       MXPWRD = LWRK
-      KADD = MXPWRD
+      KADD   = MXPWRD
       CALL MEMMAN(KBASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 C     Call input conversion program MOLUC (subroutine now)
@@ -1527,7 +1530,7 @@ C     I_RESTRT_CC.EQ.1
         CALL PR_MATML_STAT
       END IF
 *
-      CALL QEXIT('REST ')
+      CALL QEXIT('PAMLU ')
 *
 *     eliminate scratch units:
       close(unit=LU91,status='DELETE')
