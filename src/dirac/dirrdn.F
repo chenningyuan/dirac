@@ -2516,7 +2516,7 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
 C&&&& LUCITA: Perform spinfree CI calculation
   103    CONTINUE
 !           stefan - nov 2011: check for integer compatibility for lucita on x86_64 systems
-            call test_lucita_wrk_space_offset(work)
+            call test_lucita_wrk_space_offset(work,lwork)
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
             NJOBS = NJOBS + 1
