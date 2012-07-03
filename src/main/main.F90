@@ -102,40 +102,25 @@ program dirprg
      maxsize = get_environment_integer('DIRMAX',maxsize)
   endif
 
+  call allocator_init()
+  call allocator_set_max(maxsize)
+
 #ifdef VAR_MPI
   if (parcal) then
-    call allocator_init()
-    call allocator_set_max(maxsize)
     call sync_nodes(int(memsize,8),0)
     call sync_nodes(maxsize,2)
-  else
-!   iparex <= 0
-    call allocator_init()
-    call allocator_set_max(maxsize)
-    print '(a,i20,a,i14,a)', 'DIRAC serial starts by allocating ',memsize,' words (',memsize/2**17,' MB)'
-    if (maxsize.gt.0) then
-       print '(a,i20,a,i14,a)', '             of memory out of the allowed',  &
-          maxsize,' words (',maxsize/2**17,' MB)'
-    else
-       print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
-    endif
-#else
-    call allocator_init()
-    call allocator_set_max(maxsize)
-    print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
-    if (maxsize.gt.0) then
-       print '(a,i20,a,i14,a)', '             out of the allowed',  &
-          maxsize,' words (',maxsize/2**17,' MB)'
-    else
-       print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
-    endif
-#endif
-    print '(a)',' '
-    print '(a)','Note: maximum allocatable memory for serial run can be set by pam --aw'
-    print '(a)',' '
-#ifdef VAR_MPI
   endif
 #endif
+  if (.not. parcal) then
+    print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
+    if (maxsize.gt.0) then
+       print '(a,i0,a,i0,a)', '             out of the allowed maximum of ',  &
+          maxsize,' words (',maxsize/2**17,' MB)'
+    else
+       print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
+    endif
+    print '(/a/)','Note: maximum allocatable memory for serial run can be set by pam --aw'
+  end if
   if (mytid == 0) then
      call alloc(memory,memsize, id="work array at main")
      call set_mem_start(memory)
@@ -144,11 +129,8 @@ program dirprg
      call printsubtitle
      call flush(lupri)
 
-     write(lupri, *)
-     write(lupri, *)
-     write(lupri, '(a)') 'Binary information'
-     write(lupri, '(a)') '------------------'
-     write(lupri, *)
+     write(lupri, '(//a)') 'Binary information'
+     write(lupri, '(a/)')  '------------------'
 
      call print_binary_info()
 
@@ -176,10 +158,14 @@ program dirprg
   endif
 #endif
   if (mytid == 0) then
+     write (lupri, '(/a)') '*****************************************************'
+     write (lupri, '(a)')  '********** E N D   of   D I R A C  output  **********'
+     write (lupri, '(a/)') '*****************************************************'
+     CALL TSTAMP(' ',LUPRI)
+     write (lupri,'()')
      call stopwatch(0,mytid)
-     print '(a)', '********** E N D   of   D I R A C  output  **********'
-     print '(a/)','*****************************************************'
      if (doxml) call xml_close_file
+     CALL FLSHFO(LUPRI)
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
@@ -188,22 +174,22 @@ program dirprg
 
  call allocator_report(mytid,0)
   if (mytid == 0) then
-      print '(A,F8.2,A)',' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
-      print '(/,a)','*****************************************************'
+      write (lupri, '(A,F8.2,A)') ' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
+      write (lupri, '(/a)' ) '*****************************************************'
   endif
 
 #ifdef MOD_HSCC 
  if (DOHSCC) then
-   print '(/,2x,a)','Continuing with the external HSCC code.'
+   print '(/a)','  Continuing with the external HSCC code.'
    call dirprg_hscc 
  endif
 #endif
 
 #if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
  if (DOHSFS) then
-   print '(/,a)','*****************************************************'
-   print '(2x,a)','Continuing with the external HighSect-FSCC code.'
-   print '(/,a)','*****************************************************'
+   print '(/a)','*****************************************************'
+   print '(a)', '  Continuing with the external HighSect-FSCC code.'
+   print '(/a)','*****************************************************'
    call HIGH_SECTOR_FSCC_METHODS
  endif
 #endif
