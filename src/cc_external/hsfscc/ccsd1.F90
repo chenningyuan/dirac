@@ -505,8 +505,11 @@
         do 180 i=1,nsize2
 !   transition from r space eliminated
         if (iopt(9).ne.0) then
-         i_4hthpf=4hthpf
-         i_4hthqf=4hthqf
+         !i_4hthpf=4hthpf
+         i_4hthpf=transfer("thpf",i_4hthpf)
+         !i_4hthqf=4hthqf
+         i_4hthqf=transfer("thqf",i_4hthqf)
+
 !        if (namef.eq.4hthpf) then
          if (namef.eq.i_4hthpf) then
           i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),             &
@@ -531,9 +534,12 @@
         i4=iand(      igen(istrt21+i)     ,z'ff')
         if ((icv(i1).eq.0).or.(icv(i2).eq.0)) go to 180
         if ((icv(i3).eq.0).or.(icv(i4).eq.0)) go to 180
+
         if (iopt(9).eq.0) go to 170
-        i_4hthpf=4hthpf
-        i_4hthqf=4hthqf
+        !i_4hthpf=4hthpf
+        i_4hthpf=transfer("thpf",i_4hthpf)
+        !i_4hthqf=4hthqf
+        i_4hthqf=transfer("thqf",i_4hthqf)
         if (namef.eq.i_4hthpf) then
           i34=iand(ishft(igen(istrt21+i),-8),z'ffff')
         else if (namef.eq.i_4hthqf) then
@@ -798,8 +804,7 @@
         stop                    
       end if
       if (iparm.eq.1) then
-        call parse8 (iiv2,ia(1),ia(2),ia(3),ia(4),                      &
-   ia(5),ia(6),ia(7),ia(8))
+        call parse8 (iiv2,ia(1),ia(2),ia(3),ia(4),ia(5),ia(6),ia(7),ia(8))
         ia(ind)=1
         iii1=iii2
         iiv1=10000000*ia(1)+1000000*ia(2)+100000*ia(3)+10000*ia(4)+     &
@@ -832,8 +837,7 @@
             if (id2.eq.id1) then
               if (ind2.eq.ind1) then
                 if (iparm.eq.1) then
-                  gen(istrt12+ije1(i-1)+j)=                             &
-             gen(istrt22+ije2(idc-1)+indc)
+                  gen(istrt12+ije1(i-1)+j)=gen(istrt22+ije2(idc-1)+indc)
                 else
                   gen(istrt22+ije2(idc-1)+indc)=                        &
              gen(istrt22+ije2(idc-1)+indc)-                             &
@@ -2452,12 +2456,12 @@
       use cij2_mod
       use cij3_mod
       use hsfs_parameters
-!#include "implicit.h"
- implicit none
+
+implicit none
 #include "priunit.h"
- integer :: name1,name2,namet
- real*8 :: f1,f2
- integer :: new, nsize,ntape1,ntape2,ntapet,i
+integer :: name1,name2,namet
+real*8 :: f1,f2
+integer :: new, nsize,ntape1,ntape2,ntapet,i
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2504,18 +2508,18 @@
       endif
 
       ! ......   error trap
-      if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3))) then
-        write (LUPRI,'(/,2x,a)') 'add: added files do not match ! compared variables:'  
-        write (LUPRI,*) 'iii2,iii3:',iii2,iii3
-        write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
-        write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
-        write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
-        write(LUPRI,*) 'name1,name2:',name1,name2
-        write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
+if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)) ) then
+  write (LUPRI,'(/,2x,a)') 'add: added files do not match ! variables:'  
+  write (LUPRI,*) 'iii2,iii3:',iii2,iii3
+  write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
+  write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
+  write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
+  write(LUPRI,*) 'name1,name2:',name1,name2
+  write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
 123     format(2a8,6i10)
         call flush(LUPRI)
         call abext('add     ')
-      endif
+endif
 
       call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
 

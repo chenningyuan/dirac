@@ -2,7 +2,7 @@
       subroutine dimx(nn,n0,na)
 !------------------------------------------------------------------------
 !
-!    check whether there is enough space of arrays (nn<=n0)
+!    check whether there is enough space for arrays (nn<=n0)
 !
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -23,20 +23,16 @@
         ! ... proper return, no overflow
         return
       else ! treat overflow
-
         write (LUPRI,10) na,nn,n0
-10      format(/,'dimx: dimension overflow at ',a8,1h:,i18,             &
-    ', size allowed (allocated):',i18,/)
-
+10      format(/,'dimx: dimension overflow at ',a8,1h:,i18,', size allowed (allocated):',i18,/)
         write(LUPRI,'(4x,a)') 'List of array consumption:'
-        do 20 i=1,nflcur
-          write (LUPRI,99) i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
-99        format (1x,i3,1x,a8,1x,i20)
-20      continue
+        do i=1,nflcur
+          write (LUPRI,"(1x,i3,1x,a8,1x,i20)") i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
+        enddo
         call abext('dimx    ')
       end if
       return
-      end
+      end subroutine dimx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine diveps(namef)
@@ -1894,7 +1890,8 @@
       call dimx(nstrt(2,ntapet),nbig,"imove2")
 
 !   special for scratch files, which start with "s".
-           itmp=4H       
+           !itmp=4H       
+           itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (namefl(ntapet), z'000000ff')
@@ -1903,7 +1900,8 @@
 #if defined VAR_IFORT
       if (isaa.eq.4hs   ) then
 #else
-      i_4hs=4hs
+      !i_4hs=4hs
+      i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
 #endif
 
