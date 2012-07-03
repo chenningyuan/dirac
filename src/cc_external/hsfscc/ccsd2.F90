@@ -886,7 +886,10 @@
       iddd=lstdet(idd)
       do 3903 iiii=0,nvalp-1
         if ((nval.eq.5).or.(nval.eq.6)) then
-          idcol(nval-iiii,i1)=ifndso(mod(iddd,16))
+!miro: fix idcol index leak...
+          if (nvalp-iiii.le.2) then
+            idcol(nval-iiii,i1)=ifndso(mod(iddd,16))
+          endif
           iddd=iddd/16
         else
 !miro: fix idcol index leak...
@@ -900,17 +903,23 @@
 847   continue
 848   icol=icol+1
       if (icol.eq.200) then
-        write (*,*) ' ******** 200 different energies. - others not collected. ***********'
+        write (*,*) "200 different energies=>others not collected"
       endif
       if (icol.gt.200) go to 849
       iscol(icol)=ksp
       iddd=lstdet(idd)
       do 3904 iiii=0,nvalp-1
         if ((nval.eq.5).or.(nval.eq.6)) then
-          idcol(nval-iiii,icol)=ifndso(mod(iddd,16))
+
+!mi: subscript #1 of the array IDCOL has value 5 which is greater than the upper bound of 2
+!mi : fix of...
+          if (nvalp-iiii.le.2) then
+            idcol(nval-iiii,icol)=ifndso(mod(iddd,16))
+          endif
+
           iddd=iddd/16
         else
-!mi: idcol first index leak, introduce "if-"fix
+!mi: idcol index leak, introduce "if-"fix
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,icol)=mod(iddd,256)
           endif
@@ -1897,13 +1906,13 @@
            ch2 = iand (namefl(ntapet), z'000000ff')
            isaa = ior (ch1, ch2)
 
-#if defined VAR_IFORT
-      if (isaa.eq.4hs   ) then
-#else
+!#if defined VAR_IFORT
+!      if (isaa.eq.4hs   ) then
+!#else
       !i_4hs=4hs
       i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-#endif
+!#endif
 
         nstrt(1,ntapet)=nstrt(1,ntapet-1)+ndp3+2*ndij+4
         nstrt(2,ntapet)=nstrt(2,ntapet-1)+ndp3
@@ -1912,8 +1921,7 @@
         call dimx(nstrt(2,ntapet),nbig,"imove2  ")
       endif
 
-      call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),         &
-  igen(nstrt(1,ntapet-1)+1))
+      call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),igen(nstrt(1,ntapet-1)+1))
 
       if (getiprint() >= 6) then
         write(LUPRI,'(4x,a)') '"imove" - on exit'
@@ -2134,8 +2142,7 @@
 !     implicit real *8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      dimension k1(6),k2(6),m1(6),m2(6),mm1(6),mm2(6),                  &
- k1save(6),k2save(6)
+      dimension k1(6),k2(6),m1(6),m2(6),mm1(6),mm2(6),k1save(6),k2save(6)
 
       do 10 i=1,nval
         k1save(i)=k1(i)  

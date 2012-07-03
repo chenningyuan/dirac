@@ -41,9 +41,9 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
  !nbig =  90000000
  !nbig  = 240000000
  !nbig  = 300000000
-  !nbig  = 600000000
+  nbig  = 600000000
   !nbig  = 1200000000
-  nbig  = 3200000000
+  !nbig  = 3200000000
 
  ndij = 960000
 
