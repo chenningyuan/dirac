@@ -8,7 +8,6 @@ Fluorine atom.
 .WAVE F
 .4INDEX
 **HAMILTONIAN
-#.LVCORR
 .BSS
 2012
 .CMPEIG
