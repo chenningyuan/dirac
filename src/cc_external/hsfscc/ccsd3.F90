@@ -503,7 +503,6 @@
       use cfiles_mod 
       use gen_mod 
       use hsfs_parameters
-!#include "implicit.h"
  implicit none
 #include "priunit.h"
  integer :: name, num, new, ijnum, iii, iiv, i
@@ -578,16 +577,16 @@
             write(LUPRI,*) 
             write(LUPRI,*) "error exit ! isaa, i_4hs=",isaa,i_4hs
             write(LUPRI,*) 'ch1=',ch1,' ch2=',ch2
+            write(LUPRI,*) 'itmp=',itmp,' jtmp=',jtmp
             write (LUPRI,120) name,iii,iiv,iiia(num),iiva(num)
 120         format(' file ',a8,' with iii iiv',2i5,' previously',2i5)
             call abext('files   ') 
           endif
-       endif
+      endif
 
        if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num))))then
           if (getiprint() >= 5) then
-             write(LUPRI,*) '2) num,iiia(num)=',num,iiia(num),          &
-        '...iiva(num)=',iiva(num)
+             write(LUPRI,*) '2) num,iiia(num)=',num,iiia(num),'...iiva(num)=',iiva(num)
           endif
 
           new=1 ! new file

@@ -10,7 +10,6 @@
 Water molecule. Restricted kinetic balance. Spin-spin couplings
 .WAVE F
 .PROPER
-#.4INDEX
 **HAMILTONIAN
 .BSS
 2999
@@ -29,7 +28,6 @@ Water molecule. Restricted kinetic balance. Spin-spin couplings
 0
 **WAVE FUNCTIONS
 .SCF
-#.RELCCSD
 **PROPERTIES
 .SPIN-SPIN
 .DSO

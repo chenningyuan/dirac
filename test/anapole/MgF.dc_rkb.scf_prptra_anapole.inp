@@ -2,7 +2,6 @@
 .TITLE
   MgF
 .WAVE F ! Activate integral and wave functions modules
-#.PROPERTIES ! Activate property module (dipole moment; polarizability...)
 .ANALYZE
 .4INDEX
 **GENERAL
@@ -18,7 +17,6 @@
 **HAMILTONIAN
 .PRINT
 2
-!.ONESYS
 .INTFLG
 1 1 0
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
