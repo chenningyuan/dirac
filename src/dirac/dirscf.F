@@ -636,12 +636,8 @@ C        ... read 1-electron Fock matrix into FOCK ...
          NELECT = NELECT_DHF
          CALL IZERO(NOCCUP,8)  ! non-rel. occupation of boson symmetries
          IF (SPINFR) NOCCUP(1:8) = NISH_BOS(1:8)
-#ifdef UNMERGED
          CALL HUCDRV(FOCK,NTBAS(0),NELECT,NOCCUP,
      &               WORK(KFREE),LFREE,IPRSCF)
-#else
-         call quit('fix call to HUCDRV, seems not compiled')
-#endif
 C
 C     4) Get one-electron Fock matrix (Bare Nuclei)
 C     --------------------------------------
