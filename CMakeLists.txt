@@ -27,6 +27,7 @@ option(ENABLE_TESTS           "Enable compilation of unit tests"                
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
+option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 
 set(CMAKE_MODULE_PATH
@@ -225,6 +226,9 @@ if(ENABLE_UTILITIES)
     endif()
     if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
         compile_standalone(hsmrcc.x src/cc_external/hsmrcc/source/hsmrmain.c "${LIST_OF_EXECUTABLES}")
+    endif()
+    if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
+        compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
 foreach(
