@@ -121,7 +121,7 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
         EVCCNV_SAVE = EVCCNV
         FCKCNV_SAVE = FCKCNV 
         MAXITR_SAVE = MAXITR
-                
+
         EVCCNV = EVCCNV2
         ERGCNV = ERGCNV2
         FCKCNV = FCKCNV2
@@ -469,6 +469,7 @@ C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
 C
 C     1) - atomic start
 C     -------------------------
+C
       IF(ATOMST) THEN
 C.......In the open-shell case use fractional occupation in first iteration; reset at the end
         AOCBUF   = AOC
@@ -587,7 +588,7 @@ C
         TDF2 = TDfde - TDF2
 
         call interface_mo_write()
-        
+
 #ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
@@ -627,24 +628,24 @@ C
 CMI       ... works only for closed-shell systems !
          CALL REAFCK(LUFCK2,FOCK,.TRUE.,NFMAT)
 C
-C     3) - Huckel start guess
+C     4) - Huckel start guess
 C     --------------------------------------
 C
       ELSE IF (DOHUCKEL) THEN
 C        ... read 1-electron Fock matrix into FOCK ...
-         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)        
+         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
          NELECT = NELECT_DHF
          CALL IZERO(NOCCUP,8)  ! non-rel. occupation of boson symmetries
          IF (SPINFR) NOCCUP(1:8) = NISH_BOS(1:8)
          CALL HUCDRV(FOCK,NTBAS(0),NELECT,NOCCUP,
      &               WORK(KFREE),LFREE,IPRSCF)
 C
-C     4) Get one-electron Fock matrix (Bare Nuclei)
+C     5) Get one-electron Fock matrix (Bare Nuclei)
 C     --------------------------------------
 C
       ELSE IF (BARNUC) THEN
 C       ... read 1-electron Fock matrix into FOCK ...
-        CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)        
+        CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
         IF(IPRSCF.GE.12) THEN
          CALL HEADER(
      &   'PREDHF: Fresh 1-electron Fock matrix within "BARNUC"',-1)
@@ -660,20 +661,21 @@ C       ... read 1-electron Fock matrix into FOCK ...
      &                 NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
         ENDIF
-      ELSE
-C
-C     panor: This part of the code is never reached...
-C
+      END IF
+
+! =======================================================================
+
+      IF (.NOT. BARNUC) THEN
 CMI     ... get 1-electron Fock matrix into CMO ...
         CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
-C        
+C
 C     Calculate correction according to the One-center app. models 
 C     ============================================================
 C
         IF (TRIVEC.OR.ATOMST) THEN
            IF (ONECAP.AND. .NOT.SMLV1C) THEN
               CALL CATCORR(CMO,FOCK,DMAT,WORK(KFREE),LFREE,IPRSCF)
-           END IF 
+           END IF
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
 
@@ -693,7 +695,7 @@ C
               end if 
            end do
         endif 
-#endif       
+#endif
 
 CMI      ... add 1-electron Fock matrix into the total Fock matrix ...
         CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
@@ -702,7 +704,7 @@ C       Add active two-electron Fock matrices
 C
         IF(AOC) THEN
           DO IOPEN = 1,NOPEN
-C  
+C
 C           The factor in only DF and not D2*DF because of the
 C           multiplication with D2 in TWOFCK.
 C
@@ -725,7 +727,7 @@ C
             END DO
           ENDIF
         END IF
-      ENDIF
+      END IF ! (.not. BARNUC)
 C
       ENDIF ! (.not. RESTFCK)
 C
@@ -961,7 +963,7 @@ CMI ==================================================================
        IF (DO4C2C) THEN
 C ...    read the FD_2c in Lowdin MO basis from the BSSMAT to 
 C       provide starting for the postDHF-BSS-SCF procedure
-        REWIND LUBSS   
+        REWIND LUBSS
         IF (FNDLAB('FD2C_LMO',LUBSS)) THEN 
           ISIZE = (NESH(1)*NESH(1)*NZ) 
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
@@ -971,19 +973,19 @@ C       provide starting for the postDHF-BSS-SCF procedure
      &  ' from the BSSMAT file(FD2C_LMO)-starting guess for BSS-SCF.'
          ELSE
            CALL QUIT('DFSOLV: FD2C_LMO label in BSSMAT not found !') 
-         END IF         
+         END IF
       ELSE  ! RESTFCK=.false., continuing with four-component DC-SCF
          IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
           ISIZE = (NORB(1)*NORB(1)*NZ) 
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
           CALL READT(LUBSS,ISIZE,FMO)
-          IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
+          IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
      &    'DFSOLV: FD_4c elements in RKB MO basis were read'// 
      &    ' from the BSSMAT file(FD4C_RKB)-starting guess for DC-SCF.'
-         ELSE                                                       
+         ELSE
            CALL QUIT('DFSOLV: FD4C_RKB  not found in BSSMAT !') 
-         END IF         
-       END IF         
+         END IF
+       END IF
         CLOSE(LUBSS,STATUS='KEEP')
         RESTFCK = .FALSE.
       ENDIF 
@@ -1450,7 +1452,7 @@ C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
 !       mi - variable initialization (otherwise runtime-check failure)
-        
+
         tdfde= second()
         call interface_mo_write()
 
@@ -1462,7 +1464,7 @@ C
            tdfde = second() - tdfde
         endif
 #endif
-        
+
         TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
@@ -1493,7 +1495,7 @@ C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 
-C        
+C
 C        Calculate correction according to the One-center app. models 
 C        ============================================================
 C
@@ -1515,8 +1517,8 @@ C
            call pcm_fock_driver(fock, dmat, work(kfree), lfree)
            time_pcm_fock = second() - time_pcm_fock
          endif 
-#endif     
- 
+#endif
+
 C
 C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
@@ -1528,7 +1530,7 @@ C        Add active two-electron Fock matrices
 C
          IF(AOC) THEN
            DO IOPEN = 1,NOPEN
-C  
+C
 C             The factor in only DF and not D2*DF because of the
 C                multiplication with D2 in TWOFCK.
 C
@@ -1578,7 +1580,7 @@ CMI    ... we may get the DHFEXIT
            write(lupri,'(3X,A,A12)')
      &      '* PCM Fock matrix contribution  (CPU):', pcm_cputid
          endif 
-#endif     
+#endif
           CPUTID = SECTID(TDDG)
           IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Real diagonalization      (CPU):',CPUTID
@@ -1668,8 +1670,8 @@ C           E(SCF) = D(IJ)(*)(F1(IJ)+0.5F2(IJ))
 C
 C     On input: 
 C        F1, F2 - one- and two-electron Fock matrixes in SA-AO basis
-C        DMAT  - density matrix in SA-AO basis          
-C          
+C        DMAT  - density matrix in SA-AO basis
+C
 C     On output: nothink, only print-out
 C
 C     Last revision: 971022-jth
@@ -1796,7 +1798,7 @@ C
         call pcm_energy_driver(pcm_energy, dmat, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
-#endif       
+#endif
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
@@ -2314,7 +2316,7 @@ C***********************************************************************
 #include "dcbbas.h"
 C
 CTROND
-      CALL DZERO(DMAT,N2BBASXQ)     
+      CALL DZERO(DMAT,N2BBASXQ)
       JOFF = NPSH(IFRP) + JVEC
       CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,D1,D0,
      &              CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),

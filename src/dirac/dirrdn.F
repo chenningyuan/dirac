@@ -1632,6 +1632,7 @@ C&&& OLEVEL: Open-shell level shifts
  51            CONTINUE
 C&&& ATOMST: Atomic start
                ATOMST=.TRUE.
+               BARNUC=.FALSE.
                TRIVEC=.FALSE.
                TRIFCK=.FALSE.
                DO IATOM = 1,NONTYP
