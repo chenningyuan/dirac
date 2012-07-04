@@ -1855,7 +1855,7 @@ C
      &       //T40,8(1X,A4))
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCSETI (ICALC,CC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+      SUBROUTINE CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
