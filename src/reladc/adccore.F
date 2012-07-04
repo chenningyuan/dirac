@@ -375,8 +375,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       IF(DOCCSETI) THEN
         MXCORR1 = 0
-        CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &               NSP,IREPSP,IREPSPI)
+        CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
         WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
@@ -422,8 +421,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       write(*,*) 'Providing ',MXCORR,' to the act. modules.'
       IF(DOSORT) THEN
-        CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &               NSP,IREPSP,IREPSPI)
+        CALL CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
       ENDIF
 
       write(*,*) 'MXCORR after allocated CCSETI:',MXCORR
