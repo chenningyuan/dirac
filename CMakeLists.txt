@@ -26,6 +26,7 @@ option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSol
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
+option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 
 set(CMAKE_MODULE_PATH
@@ -218,19 +219,29 @@ if(ENABLE_UTILITIES)
     compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(relccsd.x                 src/relccsd/ccmain.F              "${LIST_OF_EXECUTABLES}")
     if(ENABLE_SECQUANT)
         compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
+    endif()
+    if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
+        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/source/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
 foreach(
     EXECUTABLE
     ${LIST_OF_EXECUTABLES}
     )
+    if (${EXECUTABLE} STREQUAL "hsmrcc.x") # take care of non-fortran main source
+       set(EXTRA_LINK_FLAGS ${NOFORMAINF_FLAG})     
+    else()
+       set(EXTRA_LINK_FLAGS)     
+    endif()
+    #miro: changing LINK_FLAGS is overriding previous setting !
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc ${EXTRA_LINK_FLAGS}")
     endif()
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E ${EXTRA_LINK_FLAGS}")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
@@ -267,7 +278,7 @@ Release AND ENABLE_MPI AND ENABLE_MAGNETIZ_FIX)
    # message("CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE})
    # message("CMAKE_Fortran_COMPILER_ID="${CMAKE_Fortran_COMPILER_ID})
    # message("ENABLE_MPI=${ENABLE_MPI}")
-    message("--  main.F90 - no optimization => fix of magnetizabilities MEMCHK
+    message("--  main.F90 - no ifort optimization => fix of magnetizabilities MEMCHK
 error in the slave process of abacus/her2drv.F" )
     set_source_files_properties(src/main/main.F90 PROPERTIES COMPILE_FLAGS
 "-O0")

@@ -21,14 +21,7 @@
 
 ! this file by ulfek march 2008
 
-#if defined FORTRAN_MAIN_AS_SUBROUTINE
-! ... needed to get another Fortran executable 
-!     radovan: with configure perhaps but not with cmake
-subroutine dirprg
-#else
-! default executable - dirac.x
 program dirprg
-#endif
 
   use memory_allocator
   use os_utils
@@ -199,9 +192,5 @@ program dirprg
    call interface_ao_clear()
    call interface_mo_clear()
 
-#if defined FORTRAN_MAIN_AS_SUBROUTINE
-end subroutine dirprg
-#else
 end program dirprg
-#endif
 
