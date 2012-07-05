@@ -283,19 +283,10 @@ endif()
 #  functionalities
 if (CMAKE_Fortran_COMPILER_ID MATCHES Intel AND CMAKE_BUILD_TYPE MATCHES
 Release AND ENABLE_MPI AND ENABLE_MAGNETIZ_FIX)
-   # message("CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE})
-   # message("CMAKE_Fortran_COMPILER_ID="${CMAKE_Fortran_COMPILER_ID})
-   # message("ENABLE_MPI=${ENABLE_MPI}")
     message("--  main.F90 - no ifort optimization => fix of magnetizabilities MEMCHK
 error in the slave process of abacus/her2drv.F" )
     set_source_files_properties(src/main/main.F90 PROPERTIES COMPILE_FLAGS
 "-O0")
-endif()
-
-# forward CPP directly to the code
-set(CPP)
-if(NOT "${CPP}" STREQUAL "")
-    add_definitions(${CPP})
 endif()
 
 # build unit tests
