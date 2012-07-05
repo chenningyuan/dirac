@@ -29,6 +29,7 @@ option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
+option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -171,6 +172,9 @@ endif()
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
 endif()
+if(ENABLE_LAPACK_QDIAG)
+    add_definitions(-DLAPACK_QDIAG)
+endif()
 # forward CPP directly to the code
 set(CPP)
 if(NOT "${CPP}" STREQUAL "")
@@ -279,19 +283,10 @@ endif()
 #  functionalities
 if (CMAKE_Fortran_COMPILER_ID MATCHES Intel AND CMAKE_BUILD_TYPE MATCHES
 Release AND ENABLE_MPI AND ENABLE_MAGNETIZ_FIX)
-   # message("CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE})
-   # message("CMAKE_Fortran_COMPILER_ID="${CMAKE_Fortran_COMPILER_ID})
-   # message("ENABLE_MPI=${ENABLE_MPI}")
     message("--  main.F90 - no ifort optimization => fix of magnetizabilities MEMCHK
 error in the slave process of abacus/her2drv.F" )
     set_source_files_properties(src/main/main.F90 PROPERTIES COMPILE_FLAGS
 "-O0")
-endif()
-
-# forward CPP directly to the code
-set(CPP)
-if(NOT "${CPP}" STREQUAL "")
-    add_definitions(${CPP})
 endif()
 
 # build unit tests
