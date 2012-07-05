@@ -4,7 +4,7 @@ module GMSMod
 !
 !     Necessary stuff read from Gamess (integral) files
 !
-! also for DIRAC mode
+!  also for DIRAC mode
 !
 !------------------------------------------------------------------------
    use Parameters
@@ -374,19 +374,26 @@ implicit none
 
       ! ... Check for Validity of Data ...
 
-      if ((NAO <= 0).or.(NSO <= 0).or.(NFRZV < 0).or.(NSO > 2*(NAO - NFRZV)))then
-         write(UOUT,*) 'Invalid Data in File UVINF'
+      if ((NAO <= 0).or.(NSO <= 0).or.(NFRZV < 0).or.(NSO > 2*(NAO - NFRZV)))  then
+         write(UOUT,'(2X,A)') 'Invalid data in the file UVINF:'
+         write(UOUT,*) '             NAO=',NAO
+         write(UOUT,*) '             NSO=',NSO
+         write(UOUT,*) '           NFRZV=',NFRZV
+         write(UOUT,*) '2*(NAO - NFRZV)=',2*(NAO - NFRZV)
+         write(UOUT,*) '(NSO > 2*(NAO - NFRZV)) ?',(NSO > 2*(NAO - NFRZV))
          call flushout
-         call quit(': Invalid Data in File UVINF !')
+         call quit('Invalid Data in File UVINF')
       endif
 
       if (((IUNIQ.NE.0).and.(IUNIQ.NE.1)).or.              &
           ((LABELSIZE.NE.1).AND.(LABELSIZE.NE.2)).or.      &
            (NINTMX.LE.0)) then
-         write(UOUT,*) ' IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE,' NINTMX=',NINTMX
-         write(UOUT,*) 'Invalid Data in File UVINF, 2! '
+         write(UOUT,'(2X,A)') 'Invalid other Data in File UVINF : '
+         write(UOUT,*) ' IUNIQ=',IUNIQ
+         write(UOUT,*) ' LABELSIZE=',LABELSIZE
+         write(UOUT,*) ' NINTMX=',NINTMX
          call flushout
-         call quit(': Invalid Data in File UVINF 2 !')
+         call quit(' Invalid Data in File UVINF 2 !')
       endif
 
       ! mi: NTMO is zero 
@@ -560,23 +567,23 @@ subroutine InitReadMREINT
       ! ...                                                                ...
 
       if (get_iprint() >=7) then
-       write(UOUT,*) 'InitReadMRINT: going to read GAMESS integral files...'
-        write(UOUT,'(2x,a,a)') ' Going to open FileMR1EINT=',FileMR1EINT
-        write(UOUT,'(2x,a,a)') ' Going to open FileMR2EINT=',FileMR2EINT
+        write(UOUT,'(/,2x,a)') 'InitReadMRINT: going to read GAMESS integral files:'
+        write(UOUT,'(4x,a,a)') '...going to open FileMR1EINT=',FileMR1EINT
+        write(UOUT,'(4x,a,a)') '...going to open FileMR2EINT=',FileMR2EINT
       endif
 
       ! ... check the presence ...
       inquire(file=FileMR1EINT, exist=existMR1)
       inquire(file=FileMR2EINT, exist=existMR2)
       if (.not.(existMR1.or.existMR2)) then
-        call quit('Gamess integral file(s) not exist...')
+        call quit('Gamess integral file(s) do not exist !')
       endif
 
       open(UMR1EINT,file=FileMR1EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
       open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
 
       if (get_iprint() >=8) then
-        write(UOUT,*) 'InitGMSMod: files FileMR1EINT, FileMR2EINT are open'
+        write(UOUT,*) 'InitGMSMod: GAMESS files FileMR1EINT, FileMR2EINT are open'
       endif
 
       rewind(UMR1EINT)
@@ -586,7 +593,7 @@ subroutine InitReadMREINT
 
       read(UMR1EINT) j1, j2, j3, d1, d2, d3, j4, j5, j6, j7, j8, j9
 
-      ! ... Check for Validity of Data ...
+      ! ... Check for Validity of the read data ...
 
       errflag = (j1 <= 0).or.(j2 <= 0).or.(j3 < 0)
       errflag = errflag.or.(j2 > 2*(j1 - j3))
@@ -595,16 +602,26 @@ subroutine InitReadMREINT
       errflag = errflag.or.(j6.ne.(j8+j9))
 
       if (errflag) then
-         write(UOUT,*) 'Invalid Data in File UMR1EINT'
-         write(UOUT,*) "file = ",FileMR1EINT
-         write(UOUT,*) j1, j2, j3, j4, j5, j6, j7, j8, j9
+         write(UOUT,"(1x,a,a)") 'Invalid Data in File UMR1EINT, with name:',FileMR1EINT
+         write(UOUT,*) 'j1 = NAO=',j1
+         write(UOUT,*) 'j2 = NSO=',j2
+         write(UOUT,*) 'j3 = NFRZV=',j3
+         write(UOUT,*) 'd1 = TotEn=',d1
+         write(UOUT,*) 'd2 = NucEn=',d2
+         write(UOUT,*) 'd3 = TrfTol=',d3
+         write(UOUT,*) 'j4 = NTMO_GMS=',j4
+         write(UOUT,*) 'j5 = NCMO_GMS=',j5
+         write(UOUT,*) 'j6 = NVMO_GMS=',j6
+         write(UOUT,*) 'j7 = NEMO_GMS=',j7
+         write(UOUT,*) 'j8 = NHOLE_GMS=',j8
+         write(UOUT,*) 'j9 = NPTCL_GMS=',j9
          call flushout
-         call quit('Invalid Data in File UMR1EINT')
+         call quit('Invalid Data in File UMR1EINT, 1st reading !')
       endif
 
       read(UMR2EINT) j1, j2, j3, d1, d2, d3, j4, j5, j6, j7, j8, j9
 
-      ! ... Check for Validity of Data ...
+      ! ... Check for Validity of other read Data ...
 
       errflag = (j1 <= 0).or.(j2 <= 0).or.(j3 < 0)
       errflag = errflag.or.(j2 > 2*(j1 - j3))
@@ -613,14 +630,25 @@ subroutine InitReadMREINT
       errflag = errflag.or.(j6.ne.(j8+j9))
 
       if (errflag) then
-         write(UOUT,*) 'Invalid Data in File UMR1EINT'
-         write(UOUT,*) "file = ",FileMR1EINT
-         write(UOUT,*) j1, j2, j3, j4, j5, j6, j7, j8, j9
+         write(UOUT,"(1x,a,a)") 'Invalid Data in File UMR1EINT, with name:',FileMR1EINT
+         !write(UOUT,*) j1, j2, j3, j4, j5, j6, j7, j8, j9
+         write(UOUT,*) 'j1 = NAO=',j1
+         write(UOUT,*) 'j2 = NSO=',j2
+         write(UOUT,*) 'j3 = NFRZV=',j3
+         write(UOUT,*) 'd1 = TotEn=',d1
+         write(UOUT,*) 'd2 = NucEn=',d2
+         write(UOUT,*) 'd3 = TrfTol=',d3
+         write(UOUT,*) 'j4 = NTMO_GMS=',j4
+         write(UOUT,*) 'j5 = NCMO_GMS=',j5
+         write(UOUT,*) 'j6 = NVMO_GMS=',j6
+         write(UOUT,*) 'j7 = NEMO_GMS=',j7
+         write(UOUT,*) 'j8 = NHOLE_GMS=',j8
+         write(UOUT,*) 'j9 = NPTCL_GMS=',j9
          call flushout
-         call quit('errflag....Invalid Data in File UMR1EINT')
+         call quit('errflag....Invalid Data in File UMR1EINT, 2nd reading')
       endif
 
-      ! ... set the variables in module ...
+      ! ... if everything OK, set the variables in module ...
 
       NAO = j1
       NSO = j2
@@ -628,7 +656,6 @@ subroutine InitReadMREINT
       TotEn = d1
       NucEn = d2
       TrfTol = d3
-
       NTMO_GMS = j4
       NCMO_GMS = j5
       NVMO_GMS = j6
