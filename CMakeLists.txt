@@ -29,6 +29,7 @@ option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
+option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -170,6 +171,9 @@ if(ENABLE_MATLAB_LOG)
 endif()
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
+endif()
+if(ENABLE_LAPACK_QDIAG)
+    add_definitions(-DLAPACK_QDIAG)
 endif()
 # forward CPP directly to the code
 set(CPP)
