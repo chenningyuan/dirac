@@ -40,13 +40,11 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-
-      integer, parameter   :: LWORK = 1000000
-      real(8), allocatable :: WORK(:)
+      real(8), allocatable :: a_CMO(:),a_EIG(:)
+      integer, allocatable :: a_IBG(:)
       logical :: file_is_there
 
       CALL QENTER('PCMOIN')
-#include "memint.h"
 
       ! check whether DFPCMO is there, if not, simply return quietly
       inquire(file='DFPCMO', exist=file_is_there)
@@ -54,22 +52,19 @@ C
          call qexit('PCMOIN')
          return
       end if
-C
-C     Memory allocation
-      call alloc(WORK,LWORK,id='WORK in PCMOIN')
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG ,NORBT   ,WORK,KFREE,LFREE)
-C
-      CALL PCMOI1(WORK(KCMO),WORK(KEIG),WORK(KIBG),WORK(KFREE),LFREE)
-C
-C     Memory deallocation
-      CALL MEMREL('PCMOIN',WORK,KWORK,KWORK,KFREE,LFREE)
-      call dealloc(WORK)
-C
+
+      call alloc(a_CMO, N2BBASXQ, id="CMO in PCMOIN")
+      call alloc(a_EIG, NORBT,    id="EIG in PCMOIN")
+      call alloc(a_IBG, NORBT,    id="IBG in PCMOIN")
+
+      CALL PCMOI1(a_CMO, a_EIG, a_IBG)
+
+      call dealloc(a_EIG)
+      call dealloc(a_CMO)
+      call dealloc(a_IBG)
+
       CALL QEXIT('PCMOIN')
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmout */
@@ -91,24 +86,21 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-      integer, parameter   :: LWORK = 1000000
-      real(8), allocatable :: WORK(:)
+      real(8), allocatable :: a_CMO(:),a_EIG(:)
+      integer, allocatable :: a_IBG(:)
 
       CALL QENTER('PCMOUT')
-#include "memint.h"
-C
-C     Memory allocation
-      call alloc(WORK,LWORK,id='WORK in PCMOUT')
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG ,NORBT   ,WORK,KFREE,LFREE)
-C
-      CALL PCMOU1(WORK(KCMO),WORK(KEIG),WORK(KIBG),WORK(KFREE),LFREE)
-C
-C     Memory deallocation
-      CALL MEMREL('PCMOUT',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      call dealloc(WORK)
+
+      call alloc(a_CMO, N2BBASXQ, id="CMO in PCMOUT")
+      call alloc(a_EIG, NORBT,    id="EIG in PCMOUT")
+      call alloc(a_IBG, NORBT,    id="IBG in PCMOUT")
+
+      CALL PCMOU1(a_CMO, a_EIG, a_IBG)
+
+      call dealloc(a_CMO, id="CMO in PCMOUT")
+      call dealloc(a_EIG, id="EIG in PCMOUT")
+      call dealloc(a_IBG, id="IBG in PCMOUT")
+
       CALL QEXIT('PCMOUT')
 C
       RETURN
@@ -520,7 +512,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmoi1 */
-      SUBROUTINE PCMOI1(CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE PCMOI1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
 C     Read DHF/KRMCSCF-coefficients and eigenvalues from FORMATTED file
@@ -540,7 +532,7 @@ C
 #include "dgroup.h"
       LOGICAL TOBE
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
       DIMENSION IDIM(3,2)
 
       integer :: itest, ierr
@@ -674,7 +666,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmou1 */
-      SUBROUTINE PCMOU1(CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE PCMOU1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
 C     Write DHF/KRMCSCF-coefficients and eigenvalues to FORMATTED file
@@ -694,9 +686,8 @@ C
 #include "dgroup.h"
       LOGICAL TOBE, TOBEK
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
       DIMENSION IDIM(3,2)
-#include "memint.h"
 C
 C     Get coefficients from either KRMCSCF or DFCOEF 
 C
@@ -734,8 +725,7 @@ C       ... set to zero
         IREADMO = 3
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
         CLOSE(LUCOEF,STATUS='KEEP')
         IREADMO = 2
       END IF
