@@ -1063,7 +1063,6 @@ C
       call alloc(WORK,LWORK,id='WORK in HERNOD')
 C
       CALL QENTER('HERNOD')
-      print *, MWORK, LWORK
 #include "memint.h"
 C
       PARHER = .TRUE.
