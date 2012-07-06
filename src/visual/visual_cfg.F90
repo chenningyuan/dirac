@@ -25,6 +25,7 @@ module visual_cfg
 
    save
 
+   integer,      public, parameter :: max_batch_length = 500
    integer,      public, parameter :: max_para = 100
    integer,      public            :: visual_cfg_nr_dmat = 0
    character(6), public            :: visual_cfg_dmat_file(max_para)
@@ -92,6 +93,7 @@ module visual_cfg
 
 !                     visualization in 3d
    logical, public :: visual_cfg_3d         = .false.
+   logical, public :: visual_cfg_3d_fast    = .false.
    integer, public :: visual_cfg_ncube(1:3) = 0
    real(8), public :: visual_cfg_add_3d     = 4.0d0
 

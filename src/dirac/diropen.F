@@ -84,7 +84,7 @@ C     -------------------------------------------
 C
 C     Note: t stands for hermitian conjungation
 C     Fmo = FDmo + DVmo * FVmo * (DCmo - DSmo)t + H.C.
-C         = FDmo + Ct Sao [DVao FVao (beta DCao + gamma DSao)t] Sao C + H.C
+C         = FDmo + Ct Sao [DVao FVao (beta DCao + gamma DSao)t] Sao C + h.c.
 C     where beta  = alpha*f
 C     and   gamma = a-1
 C
@@ -160,10 +160,9 @@ C
          BETA  = DALPHA(IOPEN)*DF(IOPEN)
          GAMMA = DA(IOPEN)-D1
          IF (IPRSCF.GE.8) THEN
-           WRITE(LUPRI,'(A,I1,A,F10.6)') 
-     &         'MKMOFK: BETA  factor, open shell ',IOPEN,' : ',BETA
-           WRITE(LUPRI,'(A,I1,A,F10.6)') 
-     &         'MKMOFK: GAMMA factor, open shell ',IOPEN,' : ',GAMMA
+           WRITE(LUPRI,'(A,I2,A,F10.6)') 
+     &         'MKMOFK: BETA  factor, open shell',IOPEN,' : ',BETA,
+     &         'MKMOFK: GAMMA factor, open shell',IOPEN,' : ',GAMMA
          END IF
 C
 C        Get secondary density matrices as projection operator
@@ -251,10 +250,10 @@ C
                   IF (ABS(DF(IOPEN)-DF(JOPEN)).LT.DFTHR) THEN
 C
 C                    This is a tough case...
-C                    The gradient is correct, but there might1
+C                    The gradient is correct, but there might
 C                    be serious trouble converging the wave-function,
 C                    because differences of diagonal elements are not
-C                    propertional to the orbital hessian.
+C                    proportional to the orbital hessian.
 C
 C                    If fi = fj = 1 then it corresponds to inactive shells,
 C                    corresponding to case 3, that is, (3.45), 

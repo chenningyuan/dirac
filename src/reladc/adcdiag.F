@@ -32,13 +32,14 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DIAGEXE(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
+
       IMPLICIT INTEGER (A-Z)
 
-      REAL*8 CC(*)
-      LOGICAL DOINCORE
+      REAL*8  CC(*)
       INTEGER KFREE,LFREE
       INTEGER INFOHANDLE
       INTEGER IW
+      LOGICAL DOINCORE
 C
 C---------------Description--------------------------------------------
 C
@@ -53,6 +54,7 @@ c
 C  INFOHANDLE+1:   packed ADC matrix
 C  INFOHANDLE+2:   old format: ADC matrix diagonal elements.
 C  INFOHANDLE+3:   a free handle for the XLANCZOS routines
+C  INFOHANDLE+4:   a free handle
 
 C
 C---------------Local variables--------------------------------------
@@ -72,11 +74,13 @@ c *** for infofile
       INTEGER NOCC
       INTEGER NEIGENV
       REAL*8 EVLLIM
+      INTEGER IVALID   ! number of valid elements for Lanczos incore diagonalization.
 c
 c *** others
       LOGICAL ALLOC_ME,LFLAG,CARITH
       COMPLEX*16 CDUMMY
       REAL*8 RDUMMY
+      INTEGER NINCWORDS
 C
 C---------------Local variables--------------------------------------
 C
@@ -85,10 +89,10 @@ c
 C
 C---------------Executable code--------------------------------------
 C
-c     WRITE(IW,*) 'Memory pointers:',KFREE,LFREE
-      KFRSAV=1
-c     CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
-c     WRITE(IW,*) 'Memory check done.'
+      WRITE(IW,*) 'Memory pointers on DIAGEXE entry:',KFREE,LFREE
+      KFRSAV=KFREE
+      CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
+      WRITE(IW,*) 'Memory check done.'
 c
 c  read required information from info file
 c
@@ -115,10 +119,12 @@ c
       IF(IOLDNEW.EQ.1) OPEN(INFOHANDLE+2,
      %     FILE=FILEDIA,FORM='UNFORMATTED',STATUS='UNKNOWN')
 
-
-
       INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
-
+c
+c this is the absolute lower bound to which we will return as soon as the
+c diagonalization has been finished. We must not go further down because
+c some buffers are needed in the calling code.
+c
       KFREESAVE=KFREE
       ALLOC_ME=.TRUE.
       NP = NOCC
@@ -126,11 +132,21 @@ c
       IF(RCW.EQ.2) CARITH=.TRUE.
 
       CALL PST('    Initializing iterative diagonalizer+')
+!
+!  if repacking was successful we work from here with smaller ADC matrix
+!  (in the double ionization case).
+!
       IF(DOINCORE) THEN
-        WRITE(IW,*) 'Try partial incore diagonalization'
-      ELSE
-        WRITE(IW,*) 'Out of core diagonalization'
+        IF(IOLDNEW.eq.1) THEN
+          WRITE(IW,*) 'Incore calculation for the old-format'
+          WRITE(IW,*) 'ADC matrix not possible. Switching back to'
+          WRITE(IW,*) 'Out of core diagonalization'
+          DOINCORE = .FALSE.
+        ELSE
+          WRITE(IW,*) 'Trying (partial) incore diagonalization.'
+        ENDIF
       ENDIF
+
       WRITE(IW,*) 'Memory pointers:',KFREE,LFREE
       WRITE(IW,*) 'Words available:',LFREE-KFREE
 
@@ -185,19 +201,44 @@ C
       CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
       CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
       CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
+c
+c  remember memory pointers before we do the huge incore parts.
+c
       IF(DOINCORE) THEN
+        KINCSAV = KFREE
+        WRITE(IW,*) 'Memory pointers before incore diag:',
+     &               KFREE,LFREE
+        WRITE(IW,*) 'Saving free memory:',KINCSAV
         WRITE(IW,*) 'Available buffer for incore diag:'
-        WRITE(IW,*) (LFREE-1)/3,' words'
-        N=(LFREE - 1)/3
+        WRITE(IW,*) (LFREE-10),' words'
+        if(RCW.eq.1) then
+           N=(LFREE - 10)/3
+           WRITE(IW,*) 'We can store',N,' real numbers'
+        else
+           N=(LFREE - 10)/4
+           WRITE(IW,*) 'We can store',N,' complex numbers'
+        endif
         IF(N.lt.INTBUF) THEN
           WRITE(IW,*) 'Buffer for inc. diag too small!'
           WRITE(IW,*) 'Switching back to out-of-core diag.'
           DOINCORE = .FALSE.
         ELSE
-          CALL MEMOPT('REAL',WRK_IDR,N,CC,KFREE,LFREE,ALLOC_ME)
+          CALL MEMOPT('REAL',WRK_IDR,N*RCW,CC,KFREE,LFREE,ALLOC_ME)
           CALL MEMOPT('INTE',WRK_IDI,N,CC,KFREE,LFREE,ALLOC_ME)
           CALL MEMOPT('INTE',WRK_IDJ,N,CC,KFREE,LFREE,ALLOC_ME)
           CALL MEMCHK('ICD',CC,KFRSAV)
+          NINCWORDS = N
+          IF(CARITH) THEN
+            CALL INITINCORE_C(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
+     &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
+     &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
+     &                        IVALID)
+          ELSE
+            CALL INITINCORE_R(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
+     &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
+     &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
+     &                        IVALID)
+          ENDIF
         ENDIF
       ENDIF
 C
@@ -208,28 +249,43 @@ C  available
 C
       LFLAG = .FALSE.
 
-      IF(CARITH.EQV..TRUE.) THEN
-
+      IF(DOINCORE.EQV..true.) THEN
+        IF(CARITH.EQV..TRUE.) THEN
+        CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                   CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                   CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
+     &                   CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
+     &                   INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
+     &                   cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
+        CALL MEMCHK('AFTER COMPLEX INCORE-LANCZOS',CC,KFRSAV)
+        ELSE
+        CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
+     &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
+     &          INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
+     &          cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
+        CALL MEMCHK('AFTER REAL INCORE-LANCZOS',CC,KFRSAV)
+        ENDIF
+        CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
+        WRITE(IW,*)  'Memory after incore Lanczos released.'
+      ELSE 
+        IF(CARITH.EQV..TRUE.) THEN
         CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
      &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
      &          CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
      &          CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
      &          INTBUF,ITAP1, ITAP2, ITAP3)
-
-         CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
-
-      ELSE
-
+        CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
+        ELSE
         CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
      &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
      &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
      &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
      &          INTBUF,ITAP1, ITAP2, ITAP3)
-
         CALL MEMCHK('AFTER REAL LANCZOS',CC,KFRSAV)
-
+        ENDIF
       ENDIF
-
 C
 C  from here the Lanczos matrix T is available. we acquire work
 C  space for the LAPACK Band-diagonalizer.
@@ -314,21 +370,45 @@ c  file 1 and 2 (the ADC matrix/diag files) are still open.
 c
         LFLAG = .TRUE.
 
-         IF(CARITH) THEN
-           CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                      CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                      CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                      CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                      CC(WRK_EVL),LFLAG, INTBUF,
-     &                      ITAP1, ITAP2, ITAP3)
-         ELSE
-           CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                      CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                      CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                      CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                      CC(WRK_EVL),LFLAG, INTBUF,
-     &                      ITAP1, ITAP2, ITAP3)
-         ENDIF
+        IF(DOINCORE.EQV..true.) THEN
+          IF(CARITH.EQV..TRUE.) THEN
+            CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+     &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+     &                       CC(WRK_EVL),LFLAG, INTBUF,
+     &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
+     &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
+     &                       ivalid)
+          ELSE
+            CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+     &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+     &                       CC(WRK_EVL),LFLAG, INTBUF,
+     &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
+     &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
+     &                       ivalid)
+          ENDIF
+          CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
+          WRITE(IW,*)  'Memory after incore Lanczos released.'
+        ELSE
+          IF(CARITH.EQV..TRUE.) THEN
+            CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                    CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+     &                    CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+     &                    CC(WRK_EVL),LFLAG, INTBUF,
+     &                    ITAP1, ITAP2, ITAP3)
+          ELSE
+            CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                    CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+     &                    CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+     &                    CC(WRK_EVL),LFLAG, INTBUF,
+     &                    ITAP1, ITAP2, ITAP3)
+          ENDIF
+        ENDIF
       ENDIF
 c
 c  close and delete the (diag) and the packed ADC matrix file
@@ -355,14 +435,13 @@ c  on exit.
 c
       IF(NEIGENV.GT.0) THEN
         IF(CARITH) THEN
-          CALL ZADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
-     &                            nocc,irecl,filecnf,ionizlevel)
+          CALL LVECANALY_C(itap1,itap2,itap3,krep,ladc,
+     &                     nocc,irecl,filecnf,ionizlevel)
         ELSE
-          CALL RADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
-     &                            nocc,irecl,filecnf,ionizlevel)
+          CALL LVECANALY_R(itap1,itap2,itap3,krep,ladc,
+     &                     nocc,irecl,filecnf,ionizlevel)
         ENDIF
       ENDIF
-
 
       RETURN
       END
@@ -380,6 +459,7 @@ C
       REAL*8 CEVL(NITER)
       INTEGER OI(INTBUF),OJ(INTBUF)
       LOGICAL CFLAG
+      REAL*8 CPUTIM1,CPUTIM2,timer1,timer2,timertot
 C
 C---------------Description--------------------------------------------
 C
@@ -507,6 +587,12 @@ c
       DO I=1,2*NP+1
         IVX(I)=I
       ENDDO
+c
+c  ... and time count
+c
+      timertot=0.0d0
+      CALL CPUUSED(CPUTIM1)
+
 
 c----------------------------- lanczos loop start ----------------------
 
@@ -515,6 +601,11 @@ c
 c
       IF(mod(il,100).eq.0) THEN
         WRITE(IW,*) '---  Band Lanczos iteration ',IL,' of',niter
+        CALL CPUUSED(CPUTIM2)
+        timer1 = cputim2 - cputim1
+        write(*,*) 'Time per 100 iterations:',timer1
+        timertot = timertot + timer1
+        cputim1 = cputim2
       ENDIF
 c
 c  form r = Hq_i - sum t_ji*q_j
@@ -616,6 +707,9 @@ c
         WRITE(IW,*) ' ADC LONG EIGENVECTORS WRITTEN.'
       ENDIF
 
+      write(*,*) 'Total time spent in Matrix * Vector:',timertot
+      write(*,*) 'Average time for Matrix * Vector:',
+     &            timertot/dble(niter)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -664,7 +758,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      IF(IRREP.GT.8) THEN
+      IF(IRREP.GT.9) THEN
         WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',IRREP
       ELSE
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',IRREP
@@ -854,6 +948,536 @@ c
         CLOSE(IO_LAN)
         WRITE(IW,*) ' ADC LONG EIGENVECTORS WRITTEN.'
       ENDIF
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE RLANCZOS_IC(IRREP, LADC, NP, NITER, NEIGENV, IVX,
+     &                       P, T, R, DIAG, Z, AEV, BUF, OI, OJ, CEVL, 
+     &                       CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN,
+     &                       NINCW,BUFC,OIC,OJC,IVALID)
+C
+      IMPLICIT INTEGER (A-Z)
+ 
+      INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
+      INTEGER INTBUF,IO_OFF,IO_DIA,IO_LAN
+      REAL*8 P(LADC,2*NP+1), T(NP+1,NITER), R(LADC), DIAG(LADC)
+      REAL*8 Z(NITER,NITER), AEV(LADC,NEIGENV), BUF(INTBUF)
+      REAL*8 CEVL(NITER)
+      INTEGER OI(INTBUF),OJ(INTBUF)
+      LOGICAL CFLAG
+      INTEGER NINCW
+      REAL*8 BUFC(NINCW)
+      INTEGER OIC(NINCW),OJC(NINCW),IVALID
+      REAL*8 CPUTIM1,CPUTIM2,timer1,timer2,timertot
+C
+C---------------Description--------------------------------------------
+C
+C  Perform the real Lanczos iteration, generate matrix T_ij
+C  the arrays BUF,OI,OJ are buffers for the adc matrix reading process
+C  the file handles are IO_DIA and IO_OFF
+C  If only eigenvalues are to be calculated, resp. in the first call of
+C  this routine the Z-array is empty and will not be referenced !
+C  In an eigenvector run Z contains the eigenvectors of the band matrix
+C  diagonalization and is multiplied with the Lanczos vectors in order
+C  to obtain the approximative eigenvectors of the original problem.
+C  the variable .flag. determines if the additional eigenvector run
+C  should be performed which is equivalent to the presence of the Z
+C  vectors.
+C  We write out the Lanczos matrix to file because it will be needed
+C  for possible eigenvector calculations.
+C  If an eigenvalue calculation is asked for we have to read in the
+C  matrix of purged eigenvectors from ZMAT.
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
+C
+C---------------Local variables and function definitions ------------
+C
+      REAL*8 Y,DDOT,Z1
+      CHARACTER*10 LEVECFN
+      real*8 rdummy
+C
+C---------------Executable code--------------------------------------
+c
+c  create symmetry-specific name for the long eigenvector file.
+c  The eigenvector file of the Lanczos matrix needed for the
+c  creation of the long eigenvectors is generically stored.
+c
+      IF(IRREP.GT.9) THEN
+        WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',IRREP
+      ELSE
+        WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',IRREP
+      ENDIF
+
+      IF(CFLAG) THEN
+        CALL PST('Entering real IC-Lanczos for Eigenvectors+')
+      ELSE
+        CALL PST('Entering real IC-Lanczos for Eigenvalues+')
+      ENDIF
+
+      WRITE(IW,'(A40,I12)') ' Symmetry:',IRREP
+      WRITE(IW,'(A40,I12)') ' Matrix dimension:',LADC
+      WRITE(IW,'(A40,I12)') ' Band width:',NP
+      WRITE(IW,'(A40,I12)') ' Number of iterations:',NITER
+      WRITE(IW,'(A40,I12)') ' Number of words for incore:',NINCW
+      WRITE(IW,'(A40,I12)') ' Number of valid elements incore:',IVALID
+      IF(CFLAG) THEN
+        WRITE(IW,'(A30,I7)') ' Requested eigenvectors:',NEIGENV
+c       WRITE(IW,'(A30,A)') ' Long eigenvectors in:',LEVECFN
+      ENDIF
+      WRITE(IW,*)
+
+      IF(IO_DIA.ne.-255)
+     &  CALL QUIT('No incore version for old-format matrices!')
+c
+c  ... clear large eigenvector array if requested
+c
+      IF(CFLAG) THEN
+        DO I=1,NEIGENV
+          DO J=1,LADC
+            AEV(J,I)=0.0D0
+          ENDDO
+        ENDDO
+      ENDIF
+c
+c  ... read in purged eigenvector matrix TMATEVC for calculation of
+c      the long eigenvectors. These are folded into the Lanczos
+c      iterations. The third available file handle is used for that.
+c      After the read process the handle can be reused and file is
+c      deleted because this is the last position in the code where
+c      it is needed.
+c
+      IF(CFLAG) THEN
+        OPEN(IO_LAN,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        REWIND(IO_LAN)
+        READ(IO_LAN) N1
+        READ(IO_LAN) N2
+        WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
+     &              N2,' on TMATEVC'
+        IF(NEIGENV.gt.N1) THEN
+          WRITE(*,*) 'More EVCs requested than available.'
+          WRITE(*,*) 'Adjusting to the value given above.'
+          NEIGENV = N1
+        ENDIF
+        IF(N2.NE.NITER)
+     &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
+        DO I=1,NEIGENV
+          READ(IO_LAN) CEVL(I)
+          READ(IO_LAN) (Z(IX,I),IX=1,N2)
+        ENDDO
+        CLOSE(IO_LAN,STATUS='DELETE')
+      ENDIF
+
+c
+c  ... clear Lanczos matrix
+c
+      DO I=1,NITER
+        DO J=1,NP+1
+          T(J,I)=0.0D0
+        ENDDO
+      ENDDO
+c
+c  ... clear r/p-vector array and initialize cartesian start vectors
+c      start vectors are orthonormal and sit in the fields
+c      np+1,np+2,...,2*np
+c
+      DO I=1,2*NP+1
+        DO J=1,LADC
+          P(J,I)=0.0D0
+        ENDDO
+      ENDDO
+      DO J=1,LADC
+        R(J)=0.0D0
+      ENDDO
+      DO I=1,NP
+        P(I,I+NP)=1.0D0
+      ENDDO
+
+c
+c  ... initialize vector mapping array
+c
+      DO I=1,2*NP+1
+        IVX(I)=I
+      ENDDO
+c
+c  ... and time count
+c
+      timertot=0.0d0
+      CALL CPUUSED(CPUTIM1)
+
+c----------------------------- lanczos loop start ----------------------
+
+      DO 99 IL = 1,NITER
+c
+c
+      IF(mod(il,100).eq.0) THEN
+        WRITE(IW,*) '---  Band Lanczos iteration ',IL,' of',niter
+        CALL CPUUSED(CPUTIM2)
+        timer1 = cputim2 - cputim1
+        write(*,*) 'Time per 100 iterations:',timer1
+        timertot = timertot + timer1
+        cputim1 = cputim2
+      ENDIF
+c
+c  form r = Hq_i - sum t_ji*q_j
+c  the j index in the sum runs from i-p up to i-1
+c  and the loop is only executed if previous vectors exist.
+c  the actual vector to be multiplied by A always sits in
+c  P(*,np+1)
+c
+c
+c  since for the double ionization the diagonal elements are
+c  not stored separately, we define an alternative matrix-vector
+c  multiplication routine which directly multiplies the matrix.
+c  If IO_DIA has value of -255 (which is surely no valid file handle)
+c  we know that the alternative routine should be accessed.
+c
+c  att: we need the buffer number in RMATBLK_ND! In order to avoid a lot
+c  of parameter rewriting we communicate this via a common block.
+c  We transfer the huge memory chunk to the incore Mat/Vec routine.
+c
+        CALL RMATBLK_IC(LADC, P(1,IVX(NP+1)), R, BUF,
+     &                  OI, OJ, INTBUF, IO_OFF,
+     &                  NINCW,BUFC,OIC,OJC,IVALID)
+
+c  subtract all the previous components
+
+        ICC = 1
+        DO IP = MAX0(IL-NP,1), IL-1
+          ITROW = ICC+1
+          ITCOL = IL - ICC
+          DO J=1,LADC
+            R(J) = R(J)-T(ITROW,ITCOL)*P(J,IVX(NP-ICC+1))
+          ENDDO
+          ICC = ICC + 1
+        ENDDO
+c
+c  form the t_ji = q_j^+ * r and r=r-t_ji*q_j for all
+c  j=i...i+p-1
+c
+        DO IP = 1,NP
+          Y = DDOT(LADC,P(1,IVX(NP+IP)),1,R,1)
+          T(IP,IL) = Y
+          DO J=1,LADC
+            R(J) = R(J) - Y*P(J,IVX(NP+IP))
+          ENDDO
+        ENDDO
+c
+c  now r contains the whole RHS of the band-lanczos equation
+c  and will be normalized
+c  form t_i+p,i = |r|, q_i+p,i = r/|r|
+c
+        Y = DDOT(LADC,R,1,R,1)
+        Y = DSQRT(Y)
+        T(NP+1,IL) = Y
+
+        Y = 1.0d0/Y
+        DO J=1,LADC
+          P(J,IVX(2*NP+1)) = R(J) * Y
+        ENDDO
+c
+c  if applicable form the approximate eigenvector
+c  with the first Lanczos vector Q_1
+c  Important: the ith ready Lanczos vector is available at
+c  P(*,IVX(NP+1)) exactly at this position of the
+c  iteration. In case of an eigenvector run its contributions
+c  to ALL eigenvectors have to be taken into account. After
+c  cycling the contributions of the i+1. lanczos vector will
+C  be folded into the final eigenvectors
+c
+        IF(CFLAG) THEN
+          DO IOM = 1,NEIGENV
+            Z1 = Z(IL,IOM)
+            DO ICOL = 1,LADC
+              AEV(ICOL,IOM) = AEV(ICOL,IOM) + Z1*P(ICOL,IVX(NP+1))
+            ENDDO
+          ENDDO
+        ENDIF
+c
+c  now cycle the mapping array IVX
+c  and start new main iteration
+c
+        CALL IVXROT(IVX,2*NP+1)
+
+ 99   CONTINUE
+c
+c  write out long ADC eigenvectors when eigenvector run finished
+c
+      IF(CFLAG) THEN
+        OPEN(IO_LAN, FILE=LEVECFN, FORM='UNFORMATTED', 
+     &       ACCESS='SEQUENTIAL', STATUS='UNKNOWN')
+        WRITE(IO_LAN) LADC,NEIGENV
+        DO J=1,NEIGENV
+          WRITE(IO_LAN) CEVL(J)
+          WRITE(IO_LAN) (AEV(I,J),I=1,LADC)
+        ENDDO
+        CLOSE(IO_LAN)
+        WRITE(IW,*) ' ADC LONG EIGENVECTORS WRITTEN.'
+      ENDIF
+
+      write(*,*) 'Total time spent in Matrix * Vector:',timertot
+      write(*,*) 'Average time for Matrix * Vector:',
+     &            timertot/dble(niter)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ZLANCZOS_IC(IRREP, LADC, NP, NITER, NEIGENV, IVX,
+     &                       P, T, R, DIAG, Z, AEV, BUF, OI, OJ, CEVL, 
+     &                       CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN,
+     &                       NINCW,BUFC,OIC,OJC,IVALID)
+C
+      IMPLICIT INTEGER (A-Z)
+
+      INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
+      INTEGER INTBUF,IO_OFF,IO_DIA,IO_LAN
+      COMPLEX*16 P(LADC,2*NP+1), T(NP+1,NITER), R(LADC), DIAG(LADC)
+      COMPLEX*16 Z(NITER,NITER), AEV(LADC,NEIGENV), BUF(INTBUF)
+      REAL*8 CEVL(NITER)
+      INTEGER OI(INTBUF),OJ(INTBUF)
+      LOGICAL CFLAG
+      INTEGER NINCW
+      COMPLEX*16 BUFC(NINCW)
+      INTEGER OIC(NINCW),OJC(NINCW),IVALID
+      REAL*8 CPUTIM1,CPUTIM2,timer1,timer2,timertot
+
+C
+C---------------Description--------------------------------------------
+C
+C  Perform the complex Lanczos iteration, generate matrix T_ij
+C  the arrays BUF,OI,OJ are buffers for the adc matrix reading process
+C  the file handles are IO_DIA and IO_OFF
+C  If only eigenvalues are to be calculated, resp. in the first call of
+C  this routine the Z-array is empty and will not be referenced !
+C  In an eigenvector run Z contains the eigenvectors of the band matrix
+C  diagonalization and is multiplied with the Lanczos vectors in order
+C  to obtain the approximative eigenvectors of the original problem.
+C  the variable .flag. determines if the additional eigenvector run
+C  should be performed which is equivalent to the presence of the Z
+C  vectors.
+C  We write out the Lanczos matrix to file because it will be needed
+C  for possible eigenvector calculations.
+C  If an eigenvalue calculation is demanded we have to read in the
+C  matrix of purged eigenvectors from ZMAT.
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
+C
+C---------------Local variables and function definitions ------------
+C
+      COMPLEX*16 Y,ZDOTC,Z1
+      CHARACTER*10 LEVECFN
+      real*8 rdummy
+C
+C---------------Executable code--------------------------------------
+C
+      IF(IRREP.GT.9) THEN
+        WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',IRREP
+      ELSE
+        WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',IRREP
+      ENDIF
+
+      IF(CFLAG) THEN
+        CALL PST('Entering complex IC Lanczos for Eigenvectors+')
+      ELSE
+        CALL PST('Entering complex IC Lanczos for Eigenvalues+')
+      ENDIF
+
+      WRITE(IW,'(A30,I7)') ' Symmetry:',IRREP
+      WRITE(IW,'(A30,I7)') ' Matrix dimension:',LADC
+      WRITE(IW,'(A30,I7)') ' Band width:',NP
+      WRITE(IW,'(A30,I7)') ' Number of iterations:',NITER
+      WRITE(IW,'(A40,I12)') ' Number of words for incore:',NINCW
+
+      IF(CFLAG) THEN
+        WRITE(IW,'(A30,I7)') ' Requested eigenvectors:',NEIGENV
+      ENDIF
+
+      IF(IO_DIA.ne.-255)
+     &  CALL QUIT('No incore version for old-format matrices!')
+c
+c  ... clear approx eigenvector array if requested
+c
+      IF(CFLAG) THEN
+        DO I=1,NEIGENV
+          DO J=1,LADC
+            AEV(J,I)=(0.0D0,0.0D0)
+          ENDDO
+        ENDDO
+      ENDIF
+c
+c  ... read in purged eigenvector matrix TMATEVC for calculation of
+c      the long eigenvectors. These are folded into the Lanczos
+c      iterations. The third available file handle is used for that.
+c      After the read process the handle can be reused and file is
+c      deleted because this is the last position in the code where
+c      it is needed.
+c
+      IF(CFLAG) THEN
+        OPEN(IO_LAN,FILe='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        REWIND(IO_LAN)
+        READ(IO_LAN) N1
+        READ(IO_LAN) N2
+        WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
+     &              N2,' on TMATEVC'
+        IF(NEIGENV.gt.N1) THEN
+          WRITE(*,*) 'More EVCs requested than available.'
+          WRITE(*,*) 'Adjusting to the value given above.'
+          NEIGENV = N1
+        ENDIF
+        IF(N2.NE.NITER)
+     &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
+        DO I=1,NEIGENV
+          READ(IO_LAN) CEVL(I)
+          READ(IO_LAN) (Z(IX,I),IX=1,N2)
+        ENDDO
+        CLOSE(IO_LAN,STATUS='DELETE')
+      ENDIF
+c
+c  ... clear Lanczos matrix
+c
+      DO I=1,NITER
+        DO J=1,NP+1
+          T(J,I)=(0.0D0,0.0D0)
+        ENDDO
+      ENDDO
+c
+c  ... clear r/p-vector array and initialize start vectors
+c      start vectors are orthonormal and sit in the fields
+c      np+1,np+2,...,2*np
+c
+      DO I=1,2*NP+1
+        DO J=1,LADC
+          P(J,I)=(0.0D0,0.0D0)
+        ENDDO
+      ENDDO
+      DO J=1,LADC
+        R(J)=(0.0D0,0.0D0)
+      ENDDO
+      DO I=1,NP
+        P(I,I+NP)=(1.0D0,0.0D0)
+      ENDDO
+
+c
+c  ... initialize vector mapping array
+c
+      DO I=1,2*NP+1
+        IVX(I)=I
+      ENDDO
+c
+c  ... and time count
+c
+      timertot=0.0d0
+      CALL CPUUSED(CPUTIM1)
+
+c----------------------------- lanczos loop start ----------------------
+
+      DO 99 IL = 1,NITER
+c
+c
+      IF(mod(il,100).eq.0) THEN
+        WRITE(IW,*) '---  Band Lanczos iteration ',IL,' of',niter
+        CALL CPUUSED(CPUTIM2)
+        timer1 = cputim2 - cputim1
+        write(*,*) 'Time per 100 iterations:',timer1
+        timertot = timertot + timer1
+        cputim1 = cputim2
+      ENDIF
+c
+c  form r = Hq_i - sum t_ji*q_j
+c  the j index in the sum runs from i-p up to i-1
+c  and the loop is only executed if previous vectors exist.
+c  the actual vector to be multiplied by A always sits in
+c  P(*,np+1)
+c
+      CALL CMATBLK_IC(LADC, P(1,IVX(NP+1)), R, BUF,
+     &                OI, OJ, INTBUF, IO_OFF,
+     &                NINCW,BUFC,OIC,OJC,IVALID)
+
+c  subtract all the previous components
+
+        ICC = 1
+        DO IP = MAX0(IL-NP,1), IL-1
+          ITROW = ICC+1
+          ITCOL = IL - ICC
+          DO J=1,LADC
+            R(J) = R(J)-DCONJG(T(ITROW,ITCOL))*P(J,IVX(NP-ICC+1))
+          ENDDO
+          ICC = ICC + 1
+        ENDDO
+c
+c  form the t_ji = q_j^+ * r and r=r-t_ji*q_j for all
+c  j=i...i+p-1
+c
+        DO IP = 1,NP
+          Y = ZDOTC(LADC,P(1,IVX(NP+IP)),1,R,1)
+          T(IP,IL) = Y
+          DO J=1,LADC
+            R(J) = R(J) - Y*P(J,IVX(NP+IP))
+          ENDDO
+        ENDDO
+c
+c  now r contains the whole RHS of the band-lanczos equation
+c  and will be normalized
+c  form t_i+p,i = |r|, q_i+p,i = r/|r|
+c
+        Y = ZDOTC(LADC,R,1,R,1)
+c
+        Y = SQRT(Y)
+        T(NP+1,IL) = Y
+
+        Y = (1.0d0,0.0d0)/Y
+        DO J=1,LADC
+          P(J,IVX(2*NP+1)) = R(J) * Y
+        ENDDO
+c
+c  if applicable form the approximate eigenvector
+c  with the first Lanczos vector Q_1
+c  Important: the ith ready Lanczos vector is available at
+c  P(*,IVX(NP+1)) exactly at this position of the
+c  iteration. In case of an eigenvector run its contributions
+c  to ALL eigenvectors have to be taken into account. After
+c  cycling the contributions of the i+1. lanczos vector will
+C  be folded into the final eigenvectors
+c
+        IF(CFLAG) THEN
+          DO IOM = 1,NEIGENV
+            Z1 = Z(IL,IOM)
+            DO ICOL = 1,LADC
+              AEV(ICOL,IOM) = AEV(ICOL,IOM) + Z1*P(ICOL,IVX(NP+1))
+            ENDDO
+          ENDDO
+        ENDIF
+c
+c  now cycle the mapping array IVX
+c  and start new main iteration
+c
+        CALL IVXROT(IVX,2*NP+1)
+
+ 99   CONTINUE
+c
+c  write out long ADC eigenvectors when eigenvector run finished
+c
+      IF(CFLAG) THEN
+        OPEN(IO_LAN, FILE=LEVECFN, FORM='UNFORMATTED',
+     &       ACCESS='SEQUENTIAL', STATUS='UNKNOWN')
+        WRITE(IO_LAN) LADC,NEIGENV
+        DO J=1,NEIGENV
+          WRITE(IO_LAN) CEVL(J)
+          WRITE(IO_LAN) (AEV(I,J),I=1,LADC)
+        ENDDO
+        CLOSE(IO_LAN)
+        WRITE(IW,*) ' ADC LONG EIGENVECTORS WRITTEN.'
+      ENDIF
+
+      write(*,*) 'Total time spent in Matrix * Vector:',timertot
+      write(*,*) 'Average time for Matrix * Vector:',
+     &            timertot/dble(niter)
 
       RETURN
       END
@@ -1615,7 +2239,7 @@ C N is the dimension of the band matrix (not the number of sidebands!)
 
       WRITE(IW,*)
       WRITE(IW,*) '---------------------------------------------------'
-      WRITE(IW,*) 'First 60 RAW Lanczos EVAL/EVECS + intensity.'
+      WRITE(IW,*) 'First 100 RAW Lanczos EVAL/EVECS + intensity.'
       WRITE(IW,*) '---------------------------------------------------'
       WRITE(IW,*)
       WRITE(IW,*) ' No.         (a.u.)      (eV)'
@@ -1623,7 +2247,7 @@ C N is the dimension of the band matrix (not the number of sidebands!)
 
       AUEV=27.2113957D0
 
-      DO I=1,MIN(60,N)
+      DO I=1,MIN(100,N)
         Y = 0.0D0
         DO J=1,NP
           Y = Y + Z(J,I)*Z(J,I)
@@ -1703,7 +2327,7 @@ C
 
       WRITE(IW,*)
       WRITE(IW,*) '---------------------------------------------------'
-      WRITE(IW,*) 'First 60 RAW Lanczos EVAL/EVECS + intensity.'
+      WRITE(IW,*) 'First 100 RAW Lanczos EVAL/EVECS + intensity.'
       WRITE(IW,*) '---------------------------------------------------'
       WRITE(IW,*)
       WRITE(IW,*) ' No.         (a.u.)      (eV)'
@@ -1711,7 +2335,7 @@ C
 
       AUEV=27.2113957D0
 
-      DO I=1,MIN(60,N)
+      DO I=1,MIN(100,N)
         Y = (0.0D0,0.0D0)
         DO J=1,NP
           Y = Y + Z(J,I)*DCONJG(Z(J,I))
@@ -1888,6 +2512,97 @@ c  .. read off-diagonal elements and multiply on the fly
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE RMATBLK_IC(LADC,PO,PN,BUF,IOI,IOJ,INTBUF,IO_OFF,
+     &                      nincw,bufc,ioic,iojc,ivalid)
+C
+      IMPLICIT INTEGER (A-Z)
+
+      INTEGER LADC,INTBUF,IO_OFF
+      REAL*8  PO(LADC), PN(LADC)
+      REAL*8  BUF(INTBUF)
+      INTEGER IOI(INTBUF),IOJ(INTBUF)
+      integer nincw
+      real*8  bufc(nincw)
+      integer ioic(nincw),iojc(nincw),ivalid
+
+C
+C---------------Description--------------------------------------------
+C
+C  Perform the real symmetric multiplication of the ADC matrix
+C  with the Krylov vectors. Here *NO* separate diagonal entries are
+C  processed ! They are contained in the matrix already and
+C  a single multiplication suffices.
+c
+c  att! we have the icore version here.  Matmul splits in an incore
+c  part and an external part for those buffers that can not be held
+c  in memory.
+C
+C---------------Common Blocks--------------------------------------
+C
+      INTEGER NBUFS
+      COMMON/MATCHUNKS/NBUFS
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER IREC,NACT,JDUMMY,IROW,ICOL
+      REAL*8 A
+C
+C---------------Executable code--------------------------------------
+
+C  for the matrix elements we note that only the lower triangular
+C  part *AND* the diagonal of the ADC-matrix is stored. 
+C  the missing contribution is from the symmetric upper triangular part !
+
+c  the if takes care of not double counting the diagonal.
+c  since the diagonal is now *contained* in the matrix
+
+c  new vector has to be zeroed!
+
+      DO J = 1, LADC
+        PN(J) =  0.0d0
+      ENDDO
+c
+c  do incore part. In this part of the program there *IS* an
+c  incore contribution. So we do not need to check this condition
+c  any further.
+c
+      DO K = 1, IVALID
+        IROW = ioic(K)
+        ICOL = iojc(K)
+        A    = bufc(K)
+        PN(IROW) = PN(IROW) + PO(ICOL) * A
+        IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * A
+      ENDDO
+c
+c  next do out of core part (if there is any)
+c  remark: if matrix is completely incore the following loop
+c  will never be executed. (nbufs = 0).
+c  Under the IO_OFF file handle we find the *truncated* ADC
+c  matrix only containing the ooc buffers. (there is no lseek
+c  for this type of sequential files)
+c
+      REWIND(IO_OFF)
+      DO IREC = 1,NBUFS
+        READ(IO_OFF,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          PN(IROW) = PN(IROW) + PO(ICOL) * A
+          IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * A
+        ENDDO
+      ENDDO
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in RMATBLK_IC')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CMATBLK(LADC,PO,PN,DIAG,BUF,IOI,IOJ,INTBUF,
      &                   IO_DIA,IO_OFF)
 C
@@ -2025,6 +2740,96 @@ c  .. read off-diagonal elements and multiply on the fly
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CMATBLK_IC(LADC,PO,PN,BUF,IOI,IOJ,INTBUF,IO_OFF,
+     &                      nincw,bufc,ioic,iojc,ivalid)
+C
+      IMPLICIT INTEGER (A-Z)
+
+      INTEGER     LADC,INTBUF,IO_OFF
+      complex*16  PO(LADC), PN(LADC)
+      complex*16  BUF(INTBUF)
+      INTEGER     IOI(INTBUF),IOJ(INTBUF)
+      integer     nincw
+      complex*16  bufc(nincw)
+      integer     ioic(nincw),iojc(nincw),ivalid
+
+C
+C---------------Description--------------------------------------------
+C
+C  Perform the complex hermitian multiplication of the ADC matrix
+C  with the Krylov vectors. Here *NO* separate diagonal entries are
+C  processed ! They are contained in the matrix already.
+c
+c  att! we have the icore version here.  Matmul splits in an incore
+c  part and an external part for those buffers that can not be held
+c  in memory.
+C
+C---------------Common Blocks--------------------------------------
+C
+      INTEGER NBUFS
+      COMMON/MATCHUNKS/NBUFS
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER IREC,NACT,JDUMMY,IROW,ICOL
+      complex*16 A
+C
+C---------------Executable code--------------------------------------
+
+C  for the matrix elements we note that only the lower triangular
+C  part *AND* the diagonal of the ADC-matrix is stored. 
+C  the missing contribution is from the symmetric upper triangular part !
+
+c  the if takes care of not double counting the diagonal.
+c  since the diagonal is now *contained* in the matrix
+
+c  new vector has to be zeroed!
+
+      DO J = 1, LADC
+        PN(J) = (0.0d0,0.0d0)
+      ENDDO
+c
+c  do incore part. In this part of the program there *IS* an
+c  incore contribution. So we do not need to check this condition
+c  any further.
+c
+      DO K = 1, IVALID
+        IROW = ioic(K)
+        ICOL = iojc(K)
+        A    = bufc(K)
+        PN(IROW) = PN(IROW) + PO(ICOL) * A
+        IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * DCONJG(A)
+      ENDDO
+c
+c  next do out of core part (if there is any)
+c  remark: if matrix is completely incore the following loop
+c  will never be executed. (nbufs = 0).
+c  Under the IO_OFF file handle we find the *truncated* ADC
+c  matrix only containing the ooc buffers. (there is no lseek
+c  for this type of sequential files)
+c
+      REWIND(IO_OFF)
+      DO IREC = 1,NBUFS
+        READ(IO_OFF,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          PN(IROW) = PN(IROW) + PO(ICOL) * A
+          IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * DCONJG(A)
+        ENDDO
+      ENDDO
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in CMATBLK_IC')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_S(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
       IMPLICIT INTEGER (A-Z)
@@ -2062,7 +2867,13 @@ C
 c fix record length for the direct access file and set some
 c blank variables. Then open file and initialize configuration
 c counter.
- 
+c *ATT* Is has turned out advantageous that storing the *absolute*
+c spinor numbers is superior to storing the relative ones for the
+c subsequent postprocessing!
+c
+c this will be followed by the single ionization case for the moment
+c (1h and 2h1p) configurations
+c
       IRECL = 44
       BL_CONF = 0
       BL_IRNA = '    '
@@ -2079,6 +2890,7 @@ C|
         WRITE(IW,*) 'Final state symmetry: ',DESREP
 
 c ** start with 1h configurations
+c ** write absolute spinor numbers
 
         DO k=1,no(DESREP)
           koff=io(DESREP)+k
@@ -2092,6 +2904,7 @@ c ** start with 1h configurations
         ENDDO
 
 c ** continue with 2h1p configurations
+c ** write absolute spinor numbers
 
         DO 60 KLREP=1,NREP
           AREP=MULTB(DESREP,KLREP+NREP,2)
@@ -2106,10 +2919,15 @@ c ** continue with 2h1p configurations
                KOFF=IO(KREP)+K
                DO A=1,NV(AREP)
                  AOFF=IO(NREP+1)+IV(AREP)+A
+c                WRITE(FIELD44,381) 
+c    &             K,REPNA(KREP),
+c    &             L,REPNA(LREP),
+c    &             A,REPNA(AREP),
+c    &             BL_CONF,BL_IRNA
                  WRITE(FIELD44,381) 
-     &             K,REPNA(KREP),
-     &             L,REPNA(LREP),
-     &             A,REPNA(AREP),
+     &             KOFF,REPNA(KREP),
+     &             LOFF,REPNA(LREP),
+     &             AOFF,REPNA(AREP),
      &             BL_CONF,BL_IRNA
                  WRITE(LUN,REC=lcount) FIELD44
                  LCOUNT=LCOUNT+1

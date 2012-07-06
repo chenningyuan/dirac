@@ -2,7 +2,6 @@
 .TITLE
 H2O2 molecule, integral calculations with ERI in pure one-component mode 
 .WAVE F
-#.PROPERTIES
 **HAMILTONIAN
 .NONREL
 **INTEGRALS

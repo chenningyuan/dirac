@@ -25,7 +25,6 @@
 1.0E-9  1.0E-8
 .INTFLG
 1 1 0
-#.CNVINT
 #0.01 0.0001
 .CLOSED SHELL
 4
@@ -42,25 +41,17 @@ csd
 !chq
 .END
 # 
-!... 'core' or doubly occ. KU spinors
-!.NCORE
 !2
 !  ... active KU spinors (in occ and in virt space)
-!.NACT
 !4
 ! .. do not run HSCC after DIRAC calcul.
-!.NOHSDIR
 ! ... do not prepare HSMRCC files (dry run)
-!.DRYRUN
 !* something with *...
 ! .. comment 2
 .PRINT
 1  
 .CONV
 9
-!... comment 3
-!... frozen orbs
-!.NFRZV
 ###############################
 !  ... last input sequence 
 ###############################

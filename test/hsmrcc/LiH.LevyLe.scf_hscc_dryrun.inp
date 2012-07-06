@@ -5,7 +5,6 @@
 .WAVE F
 .ANALYZE
 .4INDEX
-!.NOSFCR
 **INTEGRALS
 .NUCMOD
 1
@@ -19,13 +18,11 @@
 1
 **WAVE FUNCTIONS
 .DHF
-#.RELCCSD
 *DHFCAL
 .EVCCNV
 1.0E-9  1.0E-8
 .INTFLG
 1 1 0
-#.CNVINT
 #0.01 0.0001
 .CLOSED SHELL
 4
@@ -43,7 +40,6 @@ all
 energy -1000.0   1.250  0.0001
 .HSCC
 *HSCC
-!... 'core' or doubly occ. KU spinors
 .NCORE
 2
 !  ... active KU spinors (in occ and in virt space)
@@ -55,9 +51,6 @@ energy -1000.0   1.250  0.0001
 ! .. comment 2
 .PRINT
 22
-!... comment 3
-!... frozen orbs
-!.NFRZV
 !2
 *END OF
 

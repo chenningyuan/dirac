@@ -5,7 +5,6 @@
 .WAVE F
 .ANALYZE
 .4INDEX
-!.INPTEST
 **INTEGRALS
 .PRINT
 1
@@ -13,15 +12,12 @@
 .NUCMOD
 1
 **HAMILTONIAN
-!.SPINFREE
-!.INTFLG
 !1 1 0
 .LEVY-LEBLOND
 .PRINT
 1
 **WAVE FUNCTIONS
 .SCF
-#.RELCCSD
 .HSFS
 *SCF
 .EVCCNV
@@ -56,7 +52,6 @@ hppppppppppppppvpppppppppppppvppppppppppppppppppvppppppppppppppppppppppppppp
 .VECPOP
 all
 all
-#.NETPOP
 **MOLTRA
 # 1s(2),2s(2),2p(6) are frozen
 .ACTIVE

@@ -252,7 +252,7 @@ C
 C debug TODO remove again: 
          CALL GASCIP_FULLCI(NZCONF,WORK(KZCONF),CMO,
      &                     WORK(K_EIGVAL),WORK(K_EIGVEC),ECORE,
-     &                     IPROPT,WORK(KFREE),LFREE)
+     &                     IPROPT,WORK,KFREE,LFREE)
 C         CALL GASCIP_FULLCI(NDET,IDET,CMO,EIGVAL,EIGVEC,ECORE,
 C     &                         IPRINT,WORK,LWORK)
 

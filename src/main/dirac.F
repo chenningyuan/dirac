@@ -76,8 +76,6 @@ C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
-      CALL TSTAMP(' ',LUPRI)
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C

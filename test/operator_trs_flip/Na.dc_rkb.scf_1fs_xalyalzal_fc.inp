@@ -38,7 +38,6 @@ all
 **PROPERTIES ! Calculating of properties...
 .PRINT
 2
-#.RHONUC
 *EXPECTATION
 .ORBANA
 .PRINT 

@@ -3,8 +3,7 @@
       CHARACTER VECNOSEL*72
       CHARACTER INFO_STRING*62
       CHARACTER MP2NOFN*14 
-	CHARACTER SELPOPNAT*6
-	CHARACTER VECPOP_SAVE*72
+      CHARACTER SELPOPNAT*6
 !     max. number of virt. spinors in NO-MP2 run
       INTEGER JMAXVSP,IMO_NAT,IOCC_NAT,NACTMP2NO
       PARAMETER (JMAXVSP = 200)
@@ -18,5 +17,6 @@
      &                LMP2_DEN_INP,MP2NOFN_L,IMO_NAT,IOCC_NAT,          &
      &                LUNATORB,NACTMP2NO(2)
       COMMON/CBCMP2NO/VECMP2NO(2),VECNOSEL(2),MP2NOFN,INFO_STRING(3),   &
-     &                SELPOPNAT,VECPOP_SAVE(2)
+     &                SELPOPNAT
+! -- end of dcbmp2no.h --
 

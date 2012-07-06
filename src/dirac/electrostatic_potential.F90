@@ -11,51 +11,44 @@ module electrostatic_potential
 
    contains
       
-   subroutine get_esp(esp,              &
+   subroutine get_esp(nr_points,        &
+                      esp,              &
                       irep,             &
                       mat_dim,          &
                       dmat,             &
-                      px,               &
-                      py,               &
-                      pz,               &
+                      r,                &
                       include_nuc_part, &
                       include_el_part)
 
 !  --------------------------------------------------------------------------
-   real(8), intent(out)          :: esp
+   integer, intent(in)           :: nr_points
+   real(8), intent(out)          :: esp(nr_points)
    integer, intent(in)           :: irep
    integer, intent(in)           :: mat_dim
    real(8), intent(in)           :: dmat(mat_dim, mat_dim, *)
-   real(8), intent(in)           :: px
-   real(8), intent(in)           :: py
-   real(8), intent(in)           :: pz
+   real(8), intent(in)           :: r(nr_points, 3)
    logical, intent(in), optional :: include_nuc_part
    logical, intent(in), optional :: include_el_part
 !  --------------------------------------------------------------------------
    logical                       :: nuc_part
    logical                       :: el_part
    integer, parameter            :: lwork = 10000
-   real(8)                       :: r_p(3,1), work(lwork), vc(1)
+   integer                       :: i
+   real(8)                       :: work(lwork)
 !  --------------------------------------------------------------------------
-
-   r_p(1, 1) = px
-   r_p(2, 1) = py
-   r_p(3, 1) = pz
 
    nuc_part = .true.
    if (present(include_nuc_part)) nuc_part = include_nuc_part
    el_part = .true.
    if (present(include_el_part)) el_part = include_el_part
 
-   vc = 0.0d0
+   esp = 0.0d0
    if (nuc_part) then
-      call get_nuclear_mep(1, r_p, vc, 0)
+      call get_nuclear_mep(nr_points, r, esp, 0)
    end if
    if (el_part) then
-      call get_electronic_mep(1, dmat, r_p, vc, work, lwork, 0)
+      call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0)
    end if
-
-   esp = vc(1)
 
    end subroutine
 
@@ -66,7 +59,7 @@ module electrostatic_potential
 
 ! Passed variables
       integer, intent(in)  :: nr_points
-      real(8), intent(in)  :: points(3, nr_points)
+      real(8), intent(in)  :: points(nr_points, 3)
       real(8), intent(in)  :: dmat(ntbas(0), ntbas(0), nz)
       real(8), intent(out) :: mep(nr_points)     
       real(8)              :: work(*)

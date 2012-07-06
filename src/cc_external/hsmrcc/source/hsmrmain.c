@@ -247,13 +247,9 @@ int readint(opt,val)
 
 }
 
-/*   Main program   */
+/*   Main program for the HSMRCC standalone version  */
 
-#if defined STANDALONE_HSMRCC
 int main (argc, argv) 
-#else
-int main_hsmrcc (argc, argv)  
-#endif
    int argc;
    char **argv;
 
