@@ -489,11 +489,12 @@ C---------------Local variables--------------------------------------
 C
 C------------- Execution starts -------------------------------------
 C
-      NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
+      NAMELIST/RELADC/ ADCLEVEL,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
      &                 DOCONST,DOADCPOP,DOFULL,VCONV
       NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,
-     &                 SIPPRNT,DIPPRNT,DOINCORE
+     &                 SIPPRNT,DIPPRNT,DOINCORE,DOADCHIST,
+     &                 ADCTHR
 c
 c  set input default values and read ADC input
 c  from ADC namelist input.
@@ -501,18 +502,8 @@ c  the ADC population analysis currently only refers to the
 c  two-hole part since this is of major interest!
 c
       OPEN (5,FILE='DIRAC.INP', FORM='FORMATTED')
-      ADCLEVEL = 1
-      DO IX=1,8
-        ADCPRINT(IX)=0
-      ENDDO
-      ADCPRINTNM(1)='Allocations'
-      ADCPRINTNM(2)=' '
-      ADCPRINTNM(3)=' '
-      ADCPRINTNM(4)='h/h-Block '
-      ADCPRINTNM(5)='Qkl-values'
-      ADCPRINTNM(6)='Bpq-values'
-      ADCPRINTNM(7)='SIGMA-matrix'
-      ADCPRINTNM(8)=' '
+
+      ADCLEVEL = 3
 
       DOSIPS = .FALSE.
       DODIPS = .FALSE.
@@ -564,7 +555,9 @@ c
         SIPEIGV(J) = 0
         DIPEIGV(J) = 0
       ENDDO
-      DOINCORE = .FALSE.
+      DOINCORE  = .FALSE.
+      DOADCHIST  = .FALSE.
+      ADCTHR    = 0.0d0
       REWIND (5)
       CALL LOCATE('LANINP',5,ITEST)
       IF (ITEST.GT.0) THEN
@@ -580,6 +573,11 @@ c
       GOTO 40
    39 CALL QUIT('Error exit while reading namelist LANINP')
    40 CONTINUE
+
+c
+c  if somebody erroneously gives a negative threshold:
+c
+      ADCTHR = dabs(ADCTHR)
 
       RETURN
       END
@@ -1143,6 +1141,13 @@ c
             CALL CVAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
      &                      CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
      &                 CC(EJAB),EPS,CC(ICRB),CC(VVLT),MXNV,KREP,VCONV)
+c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
+c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
+c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
+c           write(*,*)  'alternative call to CVAFFITER_IC !!'
+c           CALL CVAFFITER_IC (CC(BDIAG1),CC(BDIAG2),
+c    &                         CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
+c    &                         CC(EJAB),EPS,CC(ICRB),MXNV,KREP,VCONV)
           ELSE
             CALL VAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
      &                     CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
@@ -1579,7 +1584,8 @@ C
      
         CLOSE(ITAPADC)
 c
-c  call diagonalizer.
+c  call diagonalizer. No ADC matrix cut for the single ionizations.
+c  can be easily introduced later on.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
         CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
