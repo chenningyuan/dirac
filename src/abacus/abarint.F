@@ -3802,14 +3802,17 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONTVC(MXCENT)
@@ -4014,7 +4017,7 @@ C
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
       NEWSYM = .TRUE.
-      ADDSTO = .TRUE.
+      DOHUCKEL = .TRUE.
       RSTARR = .TRUE.
       KEEPHE = .FALSE.
       ERGOLD =  ENERGY

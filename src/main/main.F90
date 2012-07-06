@@ -21,14 +21,7 @@
 
 ! this file by ulfek march 2008
 
-#if defined FORTRAN_MAIN_AS_SUBROUTINE
-! ... needed to get another Fortran executable 
-!     radovan: with configure perhaps but not with cmake
-subroutine dirprg
-#else
-! default executable - dirac.x
 program DIRAC12_PROGRAM
-#endif
 
   use os_utils
   use dft_cfg
@@ -111,40 +104,24 @@ program DIRAC12_PROGRAM
      maxsize = get_environment_integer('DIRMAX',maxsize)
   endif
 
+  call allocator_init()
+  call allocator_set_max(maxsize)
+
 #ifdef VAR_MPI
   if (parcal) then
-    call allocator_init()
-    call allocator_set_max(maxsize)
-    call sync_nodes(WORK_memsize,0)
+    call sync_nodes(int(WORK_memsize,8),0)
     call sync_nodes(maxsize,2)
-  else
-!   iparex <= 0
-    call allocator_init()
-    call allocator_set_max(maxsize)
-    print '(a,i20,a,i14,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB)'
-    if (maxsize.gt.0) then
-       print '(a,i20,a,i14,a)', '             of memory out of the allowed',  &
-          maxsize,' words (',maxsize/2**17,' MB)'
-    else
-       print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
-    endif
-#else
-    call allocator_init()
-    call allocator_set_max(maxsize)
+#endif
+  if (.not. parcal) then
     print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB) of memory'
     if (maxsize.gt.0) then
-       print '(a,i20,a,i14,a)', '             out of the allowed',  &
+       print '(a,i0,a,i0,a)', '             out of the allowed maximum of ',  &
           maxsize,' words (',maxsize/2**17,' MB)'
     else
        print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
     endif
-#endif
-    print '(a)',' '
-    print '(a)','Note: maximum allocatable memory for serial run can be set by pam --aw'
-    print '(a)',' '
-#ifdef VAR_MPI
-  endif
-#endif
+    print '(/a/)','Note: maximum allocatable memory for serial run can be set by pam --aw'
+  end if
   if (mytid == 0) then
      ! test if memory is available by allocating and deallocating
      call alloc(memory,WORK_memsize, id="test allocation of work array in DIRAC main program")
@@ -154,11 +131,8 @@ program DIRAC12_PROGRAM
      call printsubtitle
      call flush(lupri)
 
-     write(lupri, *)
-     write(lupri, *)
-     write(lupri, '(a)') 'Binary information'
-     write(lupri, '(a)') '------------------'
-     write(lupri, *)
+     write(lupri, '(//a)') 'Binary information'
+     write(lupri, '(a/)')  '------------------'
 
      call print_binary_info()
 
@@ -188,10 +162,14 @@ program DIRAC12_PROGRAM
   endif
 #endif
   if (mytid == 0) then
+     write (lupri, '(/a)') '*****************************************************'
+     write (lupri, '(a)')  '********** E N D   of   D I R A C  output  **********'
+     write (lupri, '(a/)') '*****************************************************'
+     CALL TSTAMP(' ',LUPRI)
+     write (lupri,'()')
      call stopwatch(0,mytid)
-     print '(a)', '********** E N D   of   D I R A C  output  **********'
-     print '(a/)','*****************************************************'
      if (doxml) call xml_close_file
+     CALL FLSHFO(LUPRI)
   endif
 #ifdef VAR_MPI
   if (iparcal .eq. 1 ) call mpixfinalize()
@@ -199,22 +177,22 @@ program DIRAC12_PROGRAM
 
  call allocator_report(mytid,0)
   if (mytid == 0) then
-      print '(A,F8.2,A)',' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
-      print '(/,a)','*****************************************************'
+      write (lupri, '(A,F8.2,A)') ' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
+      write (lupri, '(/a)' ) '*****************************************************'
   endif
 
 #ifdef MOD_HSCC 
  if (DOHSCC) then
-   print '(/,2x,a)','Continuing with the external HSCC code.'
+   print '(/a)','  Continuing with the external HSCC code.'
    call dirprg_hscc 
  endif
 #endif
 
 #if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
  if (DOHSFS) then
-   print '(/,a)','*****************************************************'
-   print '(2x,a)','Continuing with the external HighSect-FSCC code.'
-   print '(/,a)','*****************************************************'
+   print '(/a)','*****************************************************'
+   print '(a)', '  Continuing with the external HighSect-FSCC code.'
+   print '(/a)','*****************************************************'
    call HIGH_SECTOR_FSCC_METHODS
  endif
 #endif
@@ -224,9 +202,5 @@ program DIRAC12_PROGRAM
    call interface_ao_clear()
    call interface_mo_clear()
 
-#if defined FORTRAN_MAIN_AS_SUBROUTINE
-end subroutine dirprg
-#else
 end program DIRAC12_PROGRAM
-#endif
-
+!  -- end of main/main.F90 for dirac --

@@ -18,6 +18,7 @@ Magnesium atom. Fockspace test calculations.
 4 6
 .LSHIFT
 0.10
+.SCFPOP
 **MOLTRA
 .ACTIVE
 energy -1000.0 1000.0 1.0

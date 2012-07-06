@@ -13,7 +13,6 @@
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *TWOINT
-#.SOFOCK
 **HAMILTONIAN
 .BSS
 2999
@@ -22,7 +21,6 @@
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .DHF
 .RELCCSD
-#.MP2
 *DHFCAL ! DHF specifications...
 .CLOSED SHELL
 4 0 

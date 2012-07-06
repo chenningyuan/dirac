@@ -18,8 +18,9 @@ module  get_gamess_mo_ints
  contains
 
  subroutine open_gamess_files
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: ios_hcrmo,ios_mulmo
 
   open (unit=LuHCRMO,file=FileHCRMO,form="unformatted",status="old",iostat=ios_hcrmo)
   open (unit=LuMULMO,file=FileMULMO,form="unformatted",status="old",iostat=ios_mulmo)
@@ -40,10 +41,11 @@ module  get_gamess_mo_ints
 !  
 ! called from readv(ccsd3.F)
 !
-#include "implicit.h"
+implicit none
 #include "priunit.h"
    real*8, intent(inout) :: eps(*), v(*)
    integer, intent(inout) :: ind(*),nint, nort
+   integer, intent(in) :: nn
 
    call open_gamess_files
 
@@ -56,10 +58,11 @@ module  get_gamess_mo_ints
 
  subroutine rd_hcrmo(eps,nort)
   use memory_allocator ! use Andre's stuff
-#include "implicit.h"
+implicit none
 #include "priunit.h"
    real*8, intent(inout) :: eps(*)
    integer, intent(inout) :: nort
+   integer :: NMO,I
 
 
 !C     THE FIRST RECORD CONTAINS INFORMATION                             
@@ -101,10 +104,12 @@ module  get_gamess_mo_ints
   use memory_allocator
   use Parameters ! from HSMRCC
   use IntGenMod ! from SHam's HSMRCC
-#include "implicit.h"
+implicit none
 #include "priunit.h"
    real*8, intent(inout) :: v(*)
    integer, intent(inout) :: ind(*),nint
+   integer :: ios,NMO,IUNIQ, LABELSIZE, NINTMX
+
 !  C     THE FIRST RECORD CONTAINS INFORMATION                             
 !      WRITE(IMULMO) NMO, IUNIQ, LABELSIZE, NINTMX
 !      WRITE(IMULMO) IOCCMO

@@ -32,18 +32,14 @@ use Memory
 use Dirac_HSMRCC
 use io_moltra
 
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dcbpsi.h"
 
-!integer,intent(in) :: LWORK
+integer,intent(in) :: LWORK
 real*8, intent(in) :: WORK(LWORK)
 logical :: check_point = .false.
-!logical :: check_point = .true.
-!integer (kind=4) :: ipos1,ipos2,ipos3,ipos4
 integer :: ipos1,ipos2,ipos3,ipos4
-
-!logical :: check_MOints = .false.
 logical :: check_MOints = .true.
 
 ! ... first run test_oof features
@@ -95,7 +91,7 @@ subroutine HSCCINP(WORD,reset)
  use Dirac_HSMRCC  ! ... parameters for the external HSMRCC code
  use Parameters ! .. from hsmrcc_external/modules
 
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 
 Logical, save :: set = .false.
@@ -274,7 +270,8 @@ function get_moltra_index(is_hole,i) result(moi)
 use io_moltra
 use Parameters
 use GMSMod
-#include "implicit.h"
+
+implicit none
 #include "priunit.h"
 
 integer, intent(in) :: i
@@ -332,11 +329,14 @@ function get_moltra_integral(i,j,k,l) result(moint)
 use io_moltra
 use Parameters
 use GMSMod
-#include "implicit.h"
+
+implicit none
 #include "priunit.h"
 
 integer, intent(in) :: i,j,k,l ! KU indexes
 !integer, intent(in) :: i_kr,j_kr,k_kr,l_kr  ! ...
+integer :: i_kr,j_kr,k_kr,l_kr
+integer :: ix,jx,kx,lx,ipos_ijkl,ipos_jilk,ipos_klij,ipos_lkji,int_jilk
 real*8 :: moint
 
 moint=0.0d0

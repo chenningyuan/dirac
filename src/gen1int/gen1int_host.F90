@@ -1066,7 +1066,7 @@
       (/INT_KIN_ENERGY, INT_OVERLAP, INT_POT_ENERGY, &    !see Gen1int library src/gen1int.F90
         INT_CART_MULTIPOLE/)
     character*8, parameter :: HERM_PROP(NUM_TEST) = &     !names of property integrals,
-      (/"KINENERG", "OVERLAP ", "POTENERG", "CARMOM  "/)  !see \fn(PR1IN1) in abacus/her1pro.F
+      (/"KINENERG", "OVERLAP ", "POTENERG", "CARMOM  "/)  !see \fn(PR1INT_1) in abacus/her1pro.F
     integer, parameter :: GTO_TYPE(NUM_TEST) = &          !
       (/NON_LAO, NON_LAO, NON_LAO, NON_LAO/)
     integer, parameter :: ORDER_MOM(NUM_TEST) = &         !order of Cartesian multipole moments
@@ -1111,7 +1111,7 @@
     integer itest                                         !incremental recorder over different tests
     integer imat                                          !incremental recorder over matrices
     integer ierr                                          !error information
-    ! variables related to \fn(PR1IN1) ...
+    ! variables related to \fn(PR1INT_1) ...
 ! uses \var(MXCENT)
 #include "mxcent.h"
 ! number of atomic centers
@@ -1122,9 +1122,9 @@
 #include "maxaqn.h"
 ! uses \var(MAXREP)
 #include "symmet.h"
-!FIXME: having problem of calling \fn(PR1IN1) with \var(GET_EXPT)=.true., which gives wrong integrals
+!FIXME: having problem of calling \fn(PR1INT_1) with \var(GET_EXPT)=.true., which gives wrong integrals
     integer size_int                                      !size of property integrals
-    integer start_herm_int, end_herm_int                  !addresses for integrals from \fn(PR1IN1)
+    integer start_herm_int, end_herm_int                  !addresses for integrals from \fn(PR1INT_1)
     logical, parameter :: GET_EXPT = .false.              !if getting expectation values back
     integer max_typ
     integer, allocatable :: int_rep(:)
@@ -1142,7 +1142,7 @@
     integer base_free                                     !base address of free Dalton/Dirac workspace
 #endif
     logical almost_equal                                  !indicates if the results from Gen1Int are
-                                                          !almost equal to those from \fn(PR1IN1)
+                                                          !almost equal to those from \fn(PR1INT_1)
 #if !defined (BUILD_OPENRSP)
     ! test suite of matrix module
     call MatTestSuite(test_failed=test_failed, io_viewer=io_viewer, &
@@ -1222,17 +1222,17 @@
       end_herm_int = size_int*NUM_INTS(itest)
       len_free = len_work-end_herm_int
       write(io_viewer,100) "gets the referenced results from HERMIT ..."
-      ! not equals to 0 so that \fn(PR1IN1) will copy the results back when first calling it
+      ! not equals to 0 so that \fn(PR1INT_1) will copy the results back when first calling it
       NCOMP = -1
       if (TRIANG(itest)) then
 #if defined(PRG_DIRAC)
-        call PR1IN1(wrk_space(end_herm_int+1:), len_free, int_rep, int_adr, lb_int,    &
+        call PR1INT_1(wrk_space(end_herm_int+1:), len_free, int_rep, int_adr, lb_int,    &
                     HERM_PROP(itest)(1:7), ORDER_MOM(itest), NUM_PQUAD, TRIANG(itest), &
                     PROP_PRINT, level_print, wrk_space(1:end_herm_int), NCOMP, TOFILE, &
                     MTFORM, DOINT)
 #else
 !FIXME: the last argument is symmetric AO density matrix
-        call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
+        call PR1INT_1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
                     int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
                     NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
                     wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &
@@ -1240,13 +1240,13 @@
 #endif
       else
 #if defined(PRG_DIRAC)
-        call PR1IN1(wrk_space(end_herm_int+1:), len_free, int_rep, int_adr, lb_int,    &
+        call PR1INT_1(wrk_space(end_herm_int+1:), len_free, int_rep, int_adr, lb_int,    &
                     HERM_PROP(itest)(1:7), ORDER_MOM(itest), NUM_PQUAD, TRIANG(itest), &
                     PROP_PRINT, level_print, wrk_space(1:end_herm_int), NCOMP, TOFILE, &
                     MTFORM, DOINT)
 #else
 !FIXME: the last argument is square AO density matrix
-        call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
+        call PR1INT_1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
                     int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
                     NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
                     wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &

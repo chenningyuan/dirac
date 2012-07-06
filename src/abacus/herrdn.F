@@ -1015,7 +1015,7 @@ C
         QEXP = D0
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
             READ(LUINFO,'(a)', ADVANCE='yes') str
             BACKSPACE(LUINFO)
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
@@ -1027,7 +1027,7 @@ C
             ENDIF
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
-            IF (ADDSTO) NSETS = 2
+            IF (DOHUCKEL) NSETS = 2
             BSET  = 'Basis'
             READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)',IOSTAT=IOS)
      &                           Q,NONT(I),
@@ -1039,7 +1039,7 @@ C
             ENDIF
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
-              ADDSTO = .FALSE.
+              DOHUCKEL = .FALSE.
 culfek: Not relevant for Dirac at this point.
 c              WRITE (LUPRI,'(/A)') ' No Huckel start guess due to '//
 c     &             'nuclear charge larger than 18'
@@ -1634,7 +1634,7 @@ C
 C              Get basis set from basis set library
 C              ===================================
 C
-               ELSE IF ((BASIS .OR. (ADDSTO .AND. J .EQ. 2))) THEN
+               ELSE IF ((BASIS .OR. (DOHUCKEL .AND. J .EQ. 2))) THEN
                   KAOVEC = KBLOCK + 1 - IBLOCK(2)
                   CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
@@ -2184,7 +2184,7 @@ C*****************************************************************************
       IF (IORBD .GT. MXCORB) GOTO 5010
       IF (IPRIM .GT. MXPRIM) GOTO 5020
 
-      IF (ADDSTO) THEN
+      IF (DOHUCKEL) THEN
          NSMLSH = ISHELL - NLRGSH
          NORBS  = IORB
          NSMALL = IORBD - NLARGE
@@ -4542,7 +4542,7 @@ C
                   IPCEN(NSORB)  = NCENT(IA)
                   ICLASS(NSORB) = IC
 #ifndef PRG_DIRAC
-                  IF (IC .EQ. 2 .AND. ADDSTO) THEN
+                  IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
                      HUCCHR = CHARGE(NCENT(IA))

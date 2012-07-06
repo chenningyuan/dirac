@@ -9,7 +9,6 @@ Fluorine atom.
 **GENERAL
 .PCMOUT
 **HAMILTONIAN
-#.LVCORR
 .BSS
 2212
 .PRINT

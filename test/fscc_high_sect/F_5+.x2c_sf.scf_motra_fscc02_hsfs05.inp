@@ -1,11 +1,9 @@
-! ....
 **DIRAC
 .TITLE
-  F_5+ ... 
+  F_5+
 .WAVE F
 .ANALYZE
 .4INDEX
-!.INPTEST
 **INTEGRALS
 .PRINT
 1
@@ -16,9 +14,6 @@
 **HAMILTONIAN
 .X2C
 .SPINFREE
-!.INTFLG
-!1 1 0
-!.LEVY-LEBLOND
 **WAVE FUNCTIONS
 .SCF
 .RELCCSD
@@ -44,7 +39,7 @@ csx
 csy
 .END
 .INPUT
- F_5+ test with DIRAC-HSFS
+ F_5+ test with DIRAC-HSFS; STO-2G basis set
   1 99 11  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
   9
 hvpvpvpvp

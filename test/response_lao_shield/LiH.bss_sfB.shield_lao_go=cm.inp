@@ -13,18 +13,15 @@
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *TWOINT
-#.SOFOCK
 **HAMILTONIAN
 .BSS
 109
 .CMPEIG
 .SPINFREE
-!.LEVY-LEBLOND
 .PRINT
 1
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
-#.MP2
 *SCF
 .CLOSED SHELL
 4 0 
@@ -32,7 +29,6 @@
 1 1 0
 .EVCCNV ! Energy convergence...
 1.0E-10  1.0D-7
-#.CNVINT
 #1.0D-4 1.0D-15
 ###########################################################
 #
@@ -48,13 +44,6 @@
 .INTFLG
 1 1 0
 .LONDON
-#.NOORTH
-#.NOONEI
-#.NOTWO
-#.SYMCON
-#.NOEPRN
-#.NOLOND
-#.GAUGEO
 #0.0  0.0  0.0         
 *LINEAR RESPONSE
 .SKIPEP

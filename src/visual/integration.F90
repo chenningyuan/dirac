@@ -132,14 +132,14 @@ contains
 
          write(lupri, *)
          write(lupri, '(6x, a)')          'plane is spanned by 3 points:'
-         write(lupri, *)                  
+         write(lupri, *)
          write(lupri, '(6x, a, 3f10.4)')  '"origin" ', visual_cfg_2d_integration_p_origin
          write(lupri, '(6x, a, 3f10.4)')  '"right"  ', visual_cfg_2d_integration_p_right
          write(lupri, '(6x, a, 3f10.4)')  '"top"    ', visual_cfg_2d_integration_p_top
-         write(lupri, *)                  
+         write(lupri, *)
          write(lupri, '(6x, a, i4)')      'nr of pieces to "right"', visual_cfg_2d_integration_nr_right
          write(lupri, '(6x, a, i4)')      'nr of pieces to "top"  ', visual_cfg_2d_integration_nr_top
-         write(lupri, *)                  
+         write(lupri, *)
          write(lupri, '(6x, a, i22)')     'order', visual_cfg_2d_integration_order
          write(lupri, *)
          write(lupri, '(a12, a25, 2a20)') 'scalar', 'x-component', 'y-component', 'z-component'

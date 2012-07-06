@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : paminp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpinp */
@@ -893,8 +894,7 @@ C
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
       CHARACTER   PLABEL(3)*8, PNAME*16
-      LOGICAL     CLABEL 
-      LOGICAL     TRS_FLIP
+      LOGICAL     CLABEL, TRS_FLIP
 C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
@@ -1085,9 +1085,9 @@ C&&&&    Read a common factor for each component, COMFACTOR, TABKW(3)
          GO TO 300
 C&&&     Multiply with current value of the speed of light, CMULT
     7    CONTINUE
-           PFAC(1) = PFAC(1)*CVAL          
-           PFAC(2) = PFAC(2)*CVAL          
-           PFAC(3) = PFAC(3)*CVAL 
+           PFAC(1) = PFAC(1)*CVAL
+           PFAC(2) = PFAC(2)*CVAL
+           PFAC(3) = PFAC(3)*CVAL
          GO TO 300
 C&&&     miro: Time-reversal symmetry flip, TRS_FLIP, as newly added operator characteristic
     8    CONTINUE
@@ -2776,7 +2776,7 @@ C
       RETURN
       END
 C  /* Deck INIGRD */
-      SUBROUTINE INIGRD
+      SUBROUTINE INIGRD(IPRGRD_inp)
 C***********************************************************************
 C
 C     Initialization for molecular gradient
@@ -2793,14 +2793,13 @@ C
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "dcbprp.h"
 C
 #include "ibtfun.h"
 C
 C     Initialize /CBIGRD/
 C     ===================
 C
-      IPRGRD = IPRPRP
+      IPRGRD = IPRGRD_inp
 C
 C     RELGRD is used in DHFGRD to control integrals
 C
@@ -2859,7 +2858,7 @@ C        hjaaj: repeated input sections give infinite loop ...
          SET = .TRUE.
       END IF
 C
-      CALL INIGRD
+      CALL INIGRD(IPRPRP)
 C
 C
 C     Process input for DCBEXP

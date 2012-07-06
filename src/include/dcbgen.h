@@ -1,5 +1,5 @@
 !
-! FILE    : dcbgen.h
+! FILE    : dcbgen.h (Dirac Common Block GENeral information)
 !
 !*** General information in DIRAC ***
 !
@@ -41,27 +41,36 @@
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
      &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET,                &
-     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO
+     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     &
+     &        QM3, QMMM, BARNUC, DOHUCKEL
+      LOGICAL OPTWLK, OPTNEW,  NMWALK
+!     hjaaj: preparing for implementation of QMMM /Jan 2010
 
-      COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
-     &                NOTRA, DOPRP, DOANA,          DOHRM, DOJACO,      &
-     &                DOFCK3,                 DORKBIMP,                 &
+      COMMON /DCBGEN_L_PAM/                                             &
+     &                FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
+     &                NOTRA, DOPRP, DOANA,    DOHRM, DOJACO,            &
+     &                DOFCK3,                 DORKBIMP,                 & 
      &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
      &                TWOCOMPBSS, DOLINK, DOFMM, NOSET,                 &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
-     &                DOQJACO
+     &                DOQJACO, QM3, QMMM, BARNUC, DOHUCKEL,             &
+     &                OPTWLK, OPTNEW, NMWALK
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND
-      COMMON /GNIPAM/ IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG,   &
+      COMMON /DCBGEN_I_PAM/                                             &
+     &                IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG,   &
      &                INTGEN, ILLDIR, ISLDIR, ISSDIR, IGTDIR, DIRSET,   &
      &                LENDND
 
+!     CVAL   : speed of light used in Dirac
+!     STOL(2): thresholds for linear dependence, large and small comp. bf.
+!     PANAS  : use Panas correlation correction to 2-electron integrals
       REAL*8 CVAL, STOL(2), PANAS
-      COMMON /GNRPAM/ CVAL, STOL, PANAS
+      COMMON /DCBGEN_R_PAM/ CVAL, STOL, PANAS
 
       INTEGER LUCOEF, LUOVLP, LUTMAT, LUPMAT, LU1INT, LUKRMC, LUKRM1,   &
      &        LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO, LUBSS,  LUX2C
@@ -70,4 +79,5 @@
      &                LUBSS,  LUX2C
 
       CHARACTER*(LBASDIR) BASDIR, CDIRNOD
-      COMMON /GNCPAM/ BASDIR, CDIRNOD
+      COMMON /DCBGEN_C_PAM/ BASDIR, CDIRNOD
+! --- end of dcbgen.h ---
