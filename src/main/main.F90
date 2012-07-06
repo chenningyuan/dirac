@@ -87,7 +87,7 @@ program DIRAC12_PROGRAM
      maxsize = get_environment_integer('DIRMAX',maxsize)
 
   else
-!    WORK_memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
+!    iscr_mem     = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
 !    SK - Sep 08: DIRNOD is passed to slaves in mpixinit and 
 !                 stored on common block GNCPAM (dcbgen.h)
      if( CDIRNOD(1:LENDND) .eq. ' ' )then
@@ -111,8 +111,10 @@ program DIRAC12_PROGRAM
   if (parcal) then
     call sync_nodes(int(WORK_memsize,8),0)
     call sync_nodes(maxsize,2)
-#endif
+  else
+#else
   if (.not. parcal) then
+#endif
     print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB) of memory'
     if (maxsize.gt.0) then
        print '(a,i0,a,i0,a)', '             out of the allowed maximum of ',  &
