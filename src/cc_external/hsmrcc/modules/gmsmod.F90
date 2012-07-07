@@ -537,7 +537,7 @@ subroutine InitReadMREINT
 !----------------------------------------------------------------------------
    implicit none
 
-   integer j1, j2, j3, j4, j5, j6, j7, j8, j9
+   integer :: j1, j2, j3, j4, j5, j6, j7, j8, j9
    double precision :: d1, d2, d3
    logical :: errflag, existMR1,existMR2
   ! integer NXX, IXX
@@ -591,7 +591,11 @@ subroutine InitReadMREINT
 
       ! ... Read First Record ...
 
-      read(UMR1EINT) j1, j2, j3, d1, d2, d3, j4, j5, j6, j7, j8, j9
+      !read(UMR1EINT) j1, j2, j3, d1, d2, d3, j4, j5, j6, j7, j8, j9
+      !miro: split reading into blocks with identical data types...
+      read(UMR1EINT) j1, j2, j3
+      read(UMR1EINT) d1, d2, d3
+      read(UMR1EINT) j4, j5, j6, j7, j8, j9
 
       ! ... Check for Validity of the read data ...
 
@@ -602,7 +606,7 @@ subroutine InitReadMREINT
       errflag = errflag.or.(j6.ne.(j8+j9))
 
       if (errflag) then
-         write(UOUT,"(1x,a,a)") 'Invalid Data in File UMR1EINT, with name:',FileMR1EINT
+         write(UOUT,"(1x,a,a)") 'Invalid Data in File UMR1EINT, with file name:',FileMR1EINT
          write(UOUT,*) 'j1 = NAO=',j1
          write(UOUT,*) 'j2 = NSO=',j2
          write(UOUT,*) 'j3 = NFRZV=',j3
