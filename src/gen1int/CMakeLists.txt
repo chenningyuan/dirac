@@ -1,9 +1,9 @@
+#add_definitions(-DBUILD_OPENRSP)
 add_definitions(-DBUILD_GEN1INT)
 add_definitions(-DPRG_DIRAC)
 
 add_library(
     gen1int_interface
-    dirac_gen1int_interface.F90
     gen1int_api.F90
     gen1int_cube.F90
     gen1int_host.F90
