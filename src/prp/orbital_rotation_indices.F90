@@ -72,6 +72,9 @@ end module
 !     Last revision: July 21 1997 - tsaue
 !
 !***********************************************************************
+
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 !
@@ -108,43 +111,60 @@ end module
 !     ***********************************
 !     *** Electron-electron rotations ***
 !     ***********************************
-!      
- 10   CONTINUE
-      IF(SKIPEE) GOTO 20
-      CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
-!     ... Unpack strings
-      CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,IPRINT)
-      ! first get length (dryrun=.true.)
-      CALL SETXEE(idummy,    IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.true.)
-      ! then fill array
-      CALL SETXEE(WORK(KBUF),IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.false.)
-      IF(NHOPE.GT.0) THEN
-        CALL MEMREL('SETXOP.e-e',WORK,1,KBUF,KFREE,LFREE)
-        CALL MEMGET('INTE',KXOPE,2*NHOPE,WORK,KFREE,LFREE)
-        NBUF = N2BBASX - 2*(NHOPE+1)
-      ENDIF
+! 
+      if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)     
+      if (skipee) then
+         allocate(orbital_rotation_indices_pp(2))
+         orbital_rotation_indices_pp = 0
+      else
+   !     CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
+!        ... Unpack strings
+         CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,IPRINT)
+         ! first get length (dryrun=.true.)
+         CALL SETXEE(idummy,    IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.true.)
+         ! then fill array
+         allocate(orbital_rotation_indices_pp(nxope*2))
+         orbital_rotation_indices_pp = 0
+         CALL SETXEE(orbital_rotation_indices_pp,IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.false.)
+!        CALL SETXEE(WORK(KBUF),IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.false.)
+     !   IF(NHOPE.GT.0) THEN
+     !     CALL MEMREL('SETXOP.e-e',WORK,1,KBUF,KFREE,LFREE)
+     !     CALL MEMGET('INTE',KXOPE,2*NHOPE,WORK,KFREE,LFREE)
+     !     NBUF = N2BBASX - 2*(NHOPE+1)
+     !   ENDIF
+      end if
 !
 !     ***********************************
 !     *** Electron-positron rotations ***
 !     ***********************************
 !      
- 20   CONTINUE
-      IF(SKIPEP) GOTO 30
-      CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
-!     ... Unpack strings
-      CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,0)
-      ! first get length (dryrun=.true.)
-      CALL SETXEP(idummy,    IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.true.)
-      ! then fill array
-      CALL SETXEP(WORK(KBUF),IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.false.)
-      CALL MEMREL('SETXOP.e-p',WORK,1,KBUF,KFREE,LFREE)
-      CALL MEMGET('INTE',KXOPP,2*NXOPP,WORK,KFREE,LFREE)
-!
- 30   CONTINUE
-!
+      if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)     
+      if (skipep) then
+         allocate(orbital_rotation_indices_pn(2))
+         orbital_rotation_indices_pn = 0
+      else
+   !     CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
+!        ... Unpack strings
+         CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,0)
+         ! first get length (dryrun=.true.)
+         CALL SETXEP(idummy,    IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.true.)
+         ! then fill array
+         allocate(orbital_rotation_indices_pn(nxopp*2))
+         orbital_rotation_indices_pn = 0
+!        CALL SETXEP(WORK(KBUF),IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.false.)
+         CALL SETXEP(orbital_rotation_indices_pn,IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.false.)
+   !     CALL MEMREL('SETXOP.e-p',WORK,1,KBUF,KFREE,LFREE)
+   !     CALL MEMGET('INTE',KXOPP,2*NXOPP,WORK,KFREE,LFREE)
+      end if
+
       deallocate(ibuf)
+      call set_as_initialized()
+
       CALL QEXIT('SETXOP')
+
       END
+
+
 
       SUBROUTINE SETXEE(JXOPE,IOPSY,NXOPE,NHOPE,IND,NIND,GAS,IPRINT,    &
                    NOROT,dryrun)

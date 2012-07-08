@@ -289,6 +289,8 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -558,7 +560,9 @@ C        *** Get Gradient **********************************
 C        ***************************************************
 C
 C
-         CALL RGRAD(CMO,CREF,ibeig,WORK(KZXOPE),WORK(KZXOPP),
+         CALL RGRAD(CMO,CREF,ibeig,
+     &              get_orbital_rotation_indices_pp(),
+     &              get_orbital_rotation_indices_pn(),
      &              GCI,GOEE,GOEP,EMY,EACTIV,DV,PV,FC,FV,FQ,
      &              FCAC,H2AC,IPROPT,WORK,KFREE,LFREE)
 C
@@ -1869,6 +1873,8 @@ C     Last revision : July 2002 hjaaj
 C                     Jan  2010 sk
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -2085,13 +2091,9 @@ C     Always totally symmetric rotations (=> JOPSY = 1)
 C
       JOPSY = 1
       GASWF = NGAS_DC.GT.1
-!     WRITE(LUPRI,*) ' now calling SETXOP from RSETWOP'
       CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
      &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
      &     WORK,KFREE,LFREE, IPROPT)
-C     CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,
-C    &     NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,
-C    &     WORK,KFREE,LFREE,IPRINT)
 C
 C
 C     MCSCF calculation in linear symmetry: remove potentially
@@ -2109,7 +2111,10 @@ C
 C       set internal control variable
         IREDJOB = 10
 C
-        CALL RESETXOP_sym(DUMMY,WORK(KZXOPE),WORK(KZXOPP),IREDJOB,1)
+        CALL RESETXOP_sym(DUMMY,
+     &                    get_orbital_rotation_indices_pp(),
+     &                    get_orbital_rotation_indices_pn(),
+     &                    IREDJOB,1)
 C
       END IF
 C
@@ -2153,6 +2158,8 @@ C
 C     Extracted from RSETWOP 9-Jul-2002 hjaaj
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2200,9 +2207,11 @@ C
       IF (LZCONF.GT.0)
      &   CALL IWRTKRMC(LUKRMC,'DET INFO',WORK(KZCONF),LZCONF)
       IF (LZXOPE.GT.0)
-     &   CALL IWRTKRMC(LUKRMC,'E-E ROT ',WORK(KZXOPE),LZXOPE)
+     &   CALL IWRTKRMC(LUKRMC,'E-E ROT ',
+     &                 get_orbital_rotation_indices_pp(),LZXOPE)
       IF (LZXOPP.GT.0)
-     &   CALL IWRTKRMC(LUKRMC,'E-P ROT ',WORK(KZXOPP),LZXOPP)
+     &   CALL IWRTKRMC(LUKRMC,'E-P ROT ',
+     &                 get_orbital_rotation_indices_pn(),LZXOPP)
 C
 C
 C     Write DCBORB parameters to KRMCSCF
@@ -4096,6 +4105,8 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4135,8 +4146,8 @@ C
       IF (IPROPT .GE. 5 .AND. NZXOPT .GT. 0) THEN
          WRITE(LUPRI,'(A)') ' (GTNORB) Kappa matrix'
          CALL RPRKAP(WORK(KKAPPA),WORK(KKAPPA+NZXOPEQ),
-     &               WORK(KZXOPE),NZXOPE,
-     &               WORK(KZXOPP),NZXOPP,
+     &               get_orbital_rotation_indices_pp(),NZXOPE,
+     &               get_orbital_rotation_indices_pn(),NZXOPP,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
       IF (IPROPT .GE. 5 .AND. NZCONF .GT. 0) THEN
@@ -4184,8 +4195,8 @@ C
       CALL DZERO(WORK(KUKAPPA),N2ORBXQ)
       CALL RUPKWOP(WORK(KKAPPA),WORK(KKAPPA+NZXOPEQ),
      &             WORK(KUKAPPA),NORBT,
-     &             WORK(KZXOPE),NZXOPE,
-     &             WORK(KZXOPP),NZXOPP,NZ)
+     &             get_orbital_rotation_indices_pp(),NZXOPE,
+     &             get_orbital_rotation_indices_pn(),NZXOPP,NZ)
       IF (IPROPT .GE. 10) THEN
          WRITE(LUPRI,'(A)') ' (GTNORB) Unpacked kappa'
          CALL PRQMAT(WORK(KUKAPPA),NORBT,NORBT,NORBT,NORBT,NZ,
