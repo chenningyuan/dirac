@@ -43,7 +43,7 @@ end module
 
       SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,           &
                    NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,                      &
-                   WORK,KFREE,LFREE,IPRINT)
+                   IPRINT)
 !***********************************************************************
 !
 !     Set orbital rotation index vectors
@@ -90,7 +90,7 @@ end module
 !
       LOGICAL SKIPEP,SKIPEE,GAS
       CHARACTER INDSTR(3,2)*72
-      DIMENSION WORK(*),NSTR(0:2,3,2)
+      DIMENSION NSTR(0:2,3,2)
       DIMENSION NOROT(*)
       integer, allocatable :: ibuf(:)
       integer              :: idummy(2)
@@ -117,7 +117,6 @@ end module
          allocate(orbital_rotation_indices_pp(2))
          orbital_rotation_indices_pp = 0
       else
-   !     CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
 !        ... Unpack strings
          CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,IPRINT)
          ! first get length (dryrun=.true.)
@@ -126,12 +125,6 @@ end module
          allocate(orbital_rotation_indices_pp(nxope*2))
          orbital_rotation_indices_pp = 0
          CALL SETXEE(orbital_rotation_indices_pp,IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.false.)
-!        CALL SETXEE(WORK(KBUF),IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.false.)
-     !   IF(NHOPE.GT.0) THEN
-     !     CALL MEMREL('SETXOP.e-e',WORK,1,KBUF,KFREE,LFREE)
-     !     CALL MEMGET('INTE',KXOPE,2*NHOPE,WORK,KFREE,LFREE)
-     !     NBUF = N2BBASX - 2*(NHOPE+1)
-     !   ENDIF
       end if
 !
 !     ***********************************
@@ -143,7 +136,6 @@ end module
          allocate(orbital_rotation_indices_pn(2))
          orbital_rotation_indices_pn = 0
       else
-   !     CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
 !        ... Unpack strings
          CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,0)
          ! first get length (dryrun=.true.)
@@ -151,10 +143,7 @@ end module
          ! then fill array
          allocate(orbital_rotation_indices_pn(nxopp*2))
          orbital_rotation_indices_pn = 0
-!        CALL SETXEP(WORK(KBUF),IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.false.)
          CALL SETXEP(orbital_rotation_indices_pn,IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.false.)
-   !     CALL MEMREL('SETXOP.e-p',WORK,1,KBUF,KFREE,LFREE)
-   !     CALL MEMGET('INTE',KXOPP,2*NXOPP,WORK,KFREE,LFREE)
       end if
 
       deallocate(ibuf)

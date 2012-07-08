@@ -2019,7 +2019,7 @@ C         Generate orbital rotation operator
             GASWF = .FALSE.
             CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,WORK(KNOROT),
      &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,IPRINT)
+     &            IPRINT)
 C           No CALL MEMREL here for KNOROT, because
 C           SETXOP defines WORK(KZXOPE) and WORK(KZXOPP) and they must
 C           be preserved!!!

@@ -894,7 +894,7 @@ C
       GASWF = .FALSE.
       CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,WORK(KNOROT),
      &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,IPRINT)
+     &            IPRINT)
 C     No CALL MEMREL here!!!!
 C     NZXOPE, NZHOPE, NZXOPP and the
 C     pointers KZXOPE and KXZOPP are defined in SETXOP

@@ -2093,7 +2093,7 @@ C
       GASWF = NGAS_DC.GT.1
       CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
      &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
-     &     WORK,KFREE,LFREE, IPROPT)
+     &     IPROPT)
 C
 C
 C     MCSCF calculation in linear symmetry: remove potentially
