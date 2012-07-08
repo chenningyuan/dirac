@@ -126,9 +126,9 @@ preprocessor statements!) shall have this form:
      contains
      subroutine f(x)
      #if defined (F_INT4)
-     integer(kind=4), intent(inout) :: x ! F90 compiler gives error !
+     integer(kind=4), intent(inout):: x! F90 compiler gives error!
      #else
-     integer(kind=8), intent(inout) :: x ! F90 compiler passed
+     integer(kind=8), intent(inout):: x! F90 compiler passed
      #endif
      print *, x
      x = 12345
@@ -136,7 +136,7 @@ preprocessor statements!) shall have this form:
      end module pass_integer
      program p
      use pass_integer
-     integer (kind=8) :: y
+     integer (kind=8):: y
      y = -1
      call f(y)
      print *,y

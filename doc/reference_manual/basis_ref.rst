@@ -463,7 +463,9 @@ Even-tempered basis sets (geometric progressions)
 
 The exponents η are generated in an even-tempered series:
 
-η\ :sub:`*N* − *k* + 1`\  = α β\ :sup:`*k* − 1`\ ; *k* = 1, ..., *N*
+.. math::
+
+  \eta_{N - k + 1} = \alpha \beta^{k - 1}; k = 1, \ldots, N
 
 ::
 
@@ -529,13 +531,13 @@ Well-tempered basis sets
 
 The exponents η are generated in an well-tempered series:
 
-η\ :sub:`*N*`\  = α
+.. math::
 
-η\ :sub:`*N* − *k* + 1`\  = η\ :sub:`*N* − *k* + 2`\  
-β 
-\\bigl[ 1 + | γ
-\\bigl( \\frac{k}{N} \\bigr)| \ :sup:`δ`\ 
-\\bigr]|; *k* = 1, ..., *N*
+  \eta_N = \alpha
+
+.. math::
+
+  \eta_{N - k + 1} = \eta_{N - k + 2} \beta [ 1 + \gamma (\frac{k}{N})^n ]; k = 1, \ldots, N
 
 ::
 
@@ -903,7 +905,7 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    3  Z  Y  X
+    C   ?    3  Z  Y  X
 
 σ(*x**y*),σ(*x**z*),σ(*y**z*)
 
@@ -911,7 +913,7 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    2XY  YZ   
+    C   ?    2XY  YZ
 
 *C*\ :sub:`2`\ (*z*),*C*\ :sub:`2`\ (*x*)
 
@@ -919,7 +921,7 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    2 Y X     
+    C   ?    2 Y X
 
 σ(*x**z*),σ(*y**z*)
 
@@ -927,7 +929,7 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    2  ZXYZ   
+    C   ?    2  ZXYZ
 
 σ(*x**y*),*i*
 
@@ -935,7 +937,7 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    1XY       
+    C   ?    1XY
 
 *C*\ :sub:`2`\ (*z*)
 
@@ -943,7 +945,7 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    1  Z      
+    C   ?    1  Z
 
 σ(*x**y*)
 
@@ -951,7 +953,7 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    1XYZ      
+    C   ?    1XYZ
 
 *i*
 
@@ -959,7 +961,8 @@ Examples for the eight binary groups:
 
 ::
 
-    C   ?    0         
+    C   ?    0
+
 
 Units of coordinates
 --------------------

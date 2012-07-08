@@ -6,11 +6,9 @@
 .4INDEX
 **HAMILTONIAN
 .LVCORR
-#.OPERATOR
 # 'EFG H'
 # DIAGONAL
 # 'H EFG ZZ'
-#.OPERATOR
 # 'EFG F'
 # DIAGONAL
 # 'ZZEFG011'
@@ -24,7 +22,6 @@
 **PROPERTIES
 .EFG
 *EXPECTATION
-#.ORBANA  #mi - deactivated to prevent crash 
 **MOLTRA
 .ACTIVE
 2..36

@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : paminp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpinp */
@@ -38,7 +39,6 @@ C
 C***********************************************************************
 
          use dirac_cfg
-         use input_reader
 #ifdef MOD_OPENRSP
          use dirac_interface
          use openrsp_cfg
@@ -146,8 +146,10 @@ CMI Activate the  picture change transformations
 C   of four-component property matrixes 
 C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
+!     set compulsory default values for X2C module.
       NOPCT = .FALSE.
-      IF (BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.IBSS.GE.109)) THEN
+      IF(X2C.or.(BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.
+     &   IBSS.GE.109)))THEN
         DOPCT = .TRUE.
 C       ... by default DO the picture change transformation
         NOPCT = .FALSE.
@@ -156,6 +158,7 @@ C       ... by default DO the picture change transformation
       ELSE
         DOPCT = .FALSE.
       ENDIF
+
 C
 C     Read menu file
 C     ==============
@@ -453,12 +456,6 @@ CMI   g_tensors operator centers might be changed
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
 
-!     set compulsory default values for X2C module.
-      if(x2c)then
-        DOPCT = .true.
-        NOPCT = .false.
-      end if
-
       IF (DOPCT) THEN
        IF (.NOT.NOPCT) THEN
          WRITE(LUPRI,'(2X,A)') 
@@ -539,7 +536,7 @@ C     *STEX
 #ifdef MOD_OPENRSP
          dirac_cfg_openrsp = .true.
          call init_dirac_interface()
-         call move_to_next_star(word)
+         call move_to_next_star(word, lucmd)
          if (openrsp_cfg_skip_1el) then
             write(*, *) 'OpenRSP: skipping calculation of 1el integrals'
          else
@@ -897,8 +894,7 @@ C
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
       CHARACTER   PLABEL(3)*8, PNAME*16
-      LOGICAL     CLABEL 
-      LOGICAL     TRS_FLIP
+      LOGICAL     CLABEL, TRS_FLIP
 C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
@@ -1089,9 +1085,9 @@ C&&&&    Read a common factor for each component, COMFACTOR, TABKW(3)
          GO TO 300
 C&&&     Multiply with current value of the speed of light, CMULT
     7    CONTINUE
-           PFAC(1) = PFAC(1)*CVAL          
-           PFAC(2) = PFAC(2)*CVAL          
-           PFAC(3) = PFAC(3)*CVAL 
+           PFAC(1) = PFAC(1)*CVAL
+           PFAC(2) = PFAC(2)*CVAL
+           PFAC(3) = PFAC(3)*CVAL
          GO TO 300
 C&&&     miro: Time-reversal symmetry flip, TRS_FLIP, as newly added operator characteristic
     8    CONTINUE
@@ -2780,7 +2776,7 @@ C
       RETURN
       END
 C  /* Deck INIGRD */
-      SUBROUTINE INIGRD
+      SUBROUTINE INIGRD(IPRGRD_inp)
 C***********************************************************************
 C
 C     Initialization for molecular gradient
@@ -2797,14 +2793,13 @@ C
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "dcbprp.h"
 C
 #include "ibtfun.h"
 C
 C     Initialize /CBIGRD/
 C     ===================
 C
-      IPRGRD = IPRPRP
+      IPRGRD = IPRGRD_inp
 C
 C     RELGRD is used in DHFGRD to control integrals
 C
@@ -2863,7 +2858,7 @@ C        hjaaj: repeated input sections give infinite loop ...
          SET = .TRUE.
       END IF
 C
-      CALL INIGRD
+      CALL INIGRD(IPRPRP)
 C
 C
 C     Process input for DCBEXP

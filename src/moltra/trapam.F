@@ -444,9 +444,9 @@ C
      &      ' Total CPU  time used in PAMTRA (master only) :',
      &      IHOURS,':',IMINS,':',ISECS
 C
-      WRITE(LUPRI,'(/A,F20.6)')
+      !WRITE(LUPRI,'(/A,F20.6)')
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
+      WRITE(LUPRI,'(/A,A24/)') ' Transformation ended at : ',DAYTID
 C
       CALL FLSHFO(LUPRI)
 

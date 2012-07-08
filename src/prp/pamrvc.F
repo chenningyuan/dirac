@@ -3959,6 +3959,9 @@ C***********************************************************************
         use fde_mod
         use fde_integrate
         use num_grid_gen
+#ifdef PCM_MODULE
+        use pcm_interface
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -4116,6 +4119,18 @@ C
          CALL SOLFCK(FAO,FMO,NDMAT,ESOLVE,ESOLVN,
      &        WORK(KFREE),LFREE,IPRSOL)
       END IF
+
+#ifdef PCM_MODULE
+! Insert safeguards against symmetry and X2C?
+        if (dirac_cfg_pcm) then
+           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
+     &               'b-transformed polarization charges.'
+! fmo is actually the perturbed ao density matrix
+! fao is really fao (confusing naming reuses memory)
+           call pcm_fock_driver(fao, fmo, work(kfree), lfree)
+        endif 
+#endif      
+ 
 C
 C
 C     *******************************************

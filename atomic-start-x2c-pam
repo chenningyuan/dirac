@@ -17,6 +17,7 @@
 #                 report problems/bugs to knecht@ifk.sdu.dk
 #
 #                 version 0.1: 03.02.2011
+#                 version 0.2: 21.06.2012 (major revision of code, switch to openbabel for standard "chemistry" support)
 #
 # Contributors :  Radovan Bast, Norway (structure adapted from runtest)
 #                 Andre Gomes,  France (thanks for the periodic table)
@@ -39,6 +40,7 @@ import stat
 import shutil
 import distutils.util
 import time
+import openbabel
 from optparse import OptionParser, OptionGroup
 
 # 'classical' function needed

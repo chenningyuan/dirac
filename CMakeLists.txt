@@ -12,7 +12,7 @@ option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                          
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
-option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
+option(ENABLE_OPENMP          "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
 option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
@@ -22,10 +22,14 @@ option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                 
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
-option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
+option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
+option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
+option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
+option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
+option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -97,15 +101,19 @@ add_subdirectory(src/gen1int)
 
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
-        -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/external
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
         -DCBLAS_ROOT=${CBLAS_ROOT}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
-        )
-
+        -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
+    )
+    
     add_external(pcmsolver)
 
     set(LIBS
@@ -164,6 +172,9 @@ endif()
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
 endif()
+if(ENABLE_LAPACK_QDIAG)
+    add_definitions(-DLAPACK_QDIAG)
+endif()
 # forward CPP directly to the code
 set(CPP)
 if(NOT "${CPP}" STREQUAL "")
@@ -213,17 +224,32 @@ if(ENABLE_UTILITIES)
     compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(secquant.x                utils/sec_quant.F90               "${LIST_OF_EXECUTABLES}")
+    compile_standalone(relccsd.x                 src/relccsd/ccmain.F              "${LIST_OF_EXECUTABLES}")
+    if(ENABLE_SECQUANT)
+        compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
+    endif()
+    if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
+        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/source/hsmrmain.c "${LIST_OF_EXECUTABLES}")
+    endif()
+    if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
+        compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
+    endif()
 endif()
 foreach(
     EXECUTABLE
     ${LIST_OF_EXECUTABLES}
     )
+    if (${EXECUTABLE} STREQUAL "hsmrcc.x") # take care of non-fortran main source
+       set(EXTRA_LINK_FLAGS ${NOFORMAINF_FLAG})     
+    else()
+       set(EXTRA_LINK_FLAGS)     
+    endif()
+    #miro: changing LINK_FLAGS is overriding previous setting !
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc ${EXTRA_LINK_FLAGS}")
     endif()
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E ${EXTRA_LINK_FLAGS}")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
@@ -248,10 +274,19 @@ if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUN
     endif()
 endif()
 
-# forward CPP directly to the code
-set(CPP)
-if(NOT "${CPP}" STREQUAL "")
-    add_definitions(${CPP})
+#  stefan --> miro: please fix it properly or create a ticket but this is NOT
+#  OK; i encountered on some platforms severe performance
+#  degradation in parallel runs other than twoel. London integrals... (Jan
+#  2012)
+#  miro: after playing a lot with this there is no other way to fix it,
+#  I made this optimization decrease conditional in order not to affect other
+#  functionalities
+if (CMAKE_Fortran_COMPILER_ID MATCHES Intel AND CMAKE_BUILD_TYPE MATCHES
+Release AND ENABLE_MPI AND ENABLE_MAGNETIZ_FIX)
+    message("--  main.F90 - no ifort optimization => fix of magnetizabilities MEMCHK
+error in the slave process of abacus/her2drv.F" )
+    set_source_files_properties(src/main/main.F90 PROPERTIES COMPILE_FLAGS
+"-O0")
 endif()
 
 # build unit tests

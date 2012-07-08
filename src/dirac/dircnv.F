@@ -103,12 +103,13 @@ C
         CALL WRTDAC(LUFOCK,N2TMOTQ,FMO,IREC)
       ENDIF
 C
+      ERGVAL = ERGBUF - DHFERG
+C
       IF (ICHKCNV .EQ. 0) RETURN
 C
 C     Check convergence
 C     =================
 C
-      ERGVAL = ERGBUF - DHFERG
 !
 !     Data for anti-oscillation test:
 !     both gradient and energy must be lower compared to the
@@ -116,9 +117,6 @@ C
 !
       ERGDIF = DHFERG - ERGOLD(N_OLD)
       EVCDIF = EVCVAL - EVCOLD(N_OLD)
-      ERGDIF = ERGDIF + 1.D-10*DHFERG
-!     ... avoid erroneous predicted energy increase (ERGVAL negative)
-!         because of round-off errors /hjaaj
       ERGOLD(N_OLD) = MIN(ERGOLD(N_OLD), ERGOLD(N_OLD-1))
       EVCOLD(N_OLD) = MIN(EVCOLD(N_OLD), EVCOLD(N_OLD-1))
       DO I = N_OLD-1,2,-1
@@ -127,13 +125,6 @@ C
       END DO
       ERGOLD(1) = DHFERG
       EVCOLD(1) = EVCVAL
-      IF (iprscf .GE. 2) THEN
-         WRITE(LUPRI,'(/A)') 'DHFCNV: anti-oscillation test data dump'
-         WRITE(LUPRI,'(A,1P,10D10.2)')
-     &      '- ERGDIF, ERGOLD(:) ',ERGDIF, ERGOLD(1:N_OLD)
-         WRITE(LUPRI,'(A,1P,10D10.2)')
-     &      '- EVCDIF, EVCOLD(:) ',EVCDIF, EVCOLD(1:N_OLD)
-      END IF
 !
       IF    (ERGCNV .AND. OLDFMO) THEN
         CONVRG = ERGVAL
@@ -216,7 +207,18 @@ C     ===============================================
 C
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL .GT. D0) THEN
+        ERGDIF = ERGDIF + 1.D-12*DHFERG
+!       ... avoid erroneous predicted energy increase (ERGDIF negative)
+!           because of round-off errors /hjaaj
+        IF (iprscf .GE. 2) THEN
+          WRITE(LUPRI,'(/A)') 'DIIS anti-oscillation test data dump'
+          WRITE(LUPRI,'(A,1P,10D10.2)')
+     &      '- ERGDIF, ERGOLD(:) ',ERGDIF, ERGOLD(1:N_OLD)
+          WRITE(LUPRI,'(A,1P,10D10.2)')
+     &      '- EVCDIF, EVCOLD(:) ',EVCDIF, EVCOLD(1:N_OLD)
+        END IF
+        IF (KITER .GE. 8 .AND. ITDIIS .GE. 4 .AND.
+     &     EVCDIF*ERGDIF .LT. D0) THEN
 C          ... often wild oscillations in the beginning,
 C              which may settle down reasonably.
            WRITE(LUPRI,'(/A/A)')

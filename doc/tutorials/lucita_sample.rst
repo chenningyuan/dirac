@@ -31,11 +31,11 @@ Perform GASCI calculations:
       13
     .GASSHE
      5
-     1,0,0,0    ! 1s
-     2,0,0,0    ! 2s3s
-     0,0,2,4    ! 2p3p
-     5,2,1,2    ! 4s5s 4p 3d
-     5,2,2,4    ! 6s7s 5p6p 4d
+     1,0,0,0   ! 1s
+     2,0,0,0   ! 2s3s
+     0,0,2,4   ! 2p3p
+     5,2,1,2   ! 4s5s 4p 3d
+     5,2,2,4   ! 6s7s 5p6p 4d
     .GASSPC
      1
       2  2

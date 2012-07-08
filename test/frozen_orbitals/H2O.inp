@@ -1,9 +1,7 @@
 **DIRAC
 .TITLE
 Water molecule. 
-#.WAVE F
 .MINIMI
-#.ANALYZE
 *OPTIMI
 .NUMGRA
 **HAMILTONIAN

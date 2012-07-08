@@ -20,17 +20,30 @@
 !dirac_copyright_end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine RADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, &
-                                    irecl,filecnf,ionizlevel)
+      subroutine LVECANALY_R(io1,io2,io3,desrep,ladc,nocc, &
+                             irecl,filecnf,ionizlevel)
 !
 ! purpose: reads in and analyzes long eigenvectors of 
 ! single/double ionization calculations depending on
 ! the value of ionizlevel.
 ! Since eigenvectors can be *very* long we restrict the
-! printout to eigenvector components largen than 0.001.
+! printout to eigenvector components larger than 0.001.
 ! Smaller ones are not considered to be relevant.
 !
-
+! Important: The old way to get rid of linearly dependent long eigenvectors 
+! as done in RADCVECANALYZE_F90
+! is questionable. Either we have true physical degeneracy or artificial degeneracy
+! due to overiteration or low symmetry intensity spreading. In all these cases a
+! Lanczos reiteration will lead to artificial long eigenvectors with high pole strength
+! but these are erroneous! We will therefore introduce a canonical orthogonalization
+! procedure for these vectors in the corresponding subspace. Remember: the spaces of
+! a possible linear dependence are in general very small so we do not produce numerical
+! overhead.
+!
+! Since possible huge memory chunks are freed at this point (incore Lanczos) we can
+! read in the long eigenvectors in memory (one is in general only interested in a very
+! small subset of eigenvectors compared to the size of the ADC matrix).
+!
       implicit none
 !
 ! transferred variables
@@ -47,23 +60,28 @@
       CHARACTER*11                :: ostr='    OCC    '
       CHARACTER*11                :: vstr='    VIR    '
       logical                     :: isthere
-      integer                     :: neigenv,j,ix,ladcx,ivcount,nv,idum
+      integer                     :: neigenv,j,ix,ladcx,ispcount,nv,idum
       integer, allocatable        :: indarr(:), indarr2(:)
-      real*8, allocatable         :: evec(:),eval(:)
+      integer, allocatable        :: irel(:)
+      integer                     :: iallocstat,k,l,koff,loff,lwork,info
+      integer                     :: ispoff,nindep,icount
+      real*8, allocatable         :: evec(:,:),eval(:),smat(:,:),work(:)
+      real*8, allocatable         :: sevl(:),evli(:,:)
       real*8                      :: enorm,polestr,polethr,diffthr,seval
       real*8                      :: autoev  = 27.2113957d0
       real*8                      :: coefthr = 0.01d0
+      real*8                      :: woutthr = 0.0001d0
 !
 ! ------------------------ execution starts ----------------------
 !
-      call pst('Analyzer for long ADC real eigenvectors+')
+      call pst('Analyzer/Purger for long ADC real eigenvectors+')
       SELECT CASE (ionizlevel)
         CASE (1)
           write(*,*) 'Analyzing single ionizations.'   
         CASE (2)
           write(*,*) 'Analyzing double ionizations.'   
         CASE DEFAULT
-          call quit('Error in selector (RADCVECANALYZE)')
+          call quit('** internal error ** ionizlevel selector')
       END SELECT
       write(*,*)
       write(*,*) 'Calling arguments:'
@@ -122,136 +140,211 @@
       OPEN(io3, FILE=ANALOUT, FORM='FORMATTED', &
           ACCESS='SEQUENTIAL', STATUS='UNKNOWN')
 
+
 ! start analysis
 
       read(io1) ladcx,neigenv
-      write(*,*) 'found',neigenv,' eigenvectors on ',levecfn
-      write(*,*) 'of length',ladcx
+      write(*,*) neigenv,' eigenvectors are stored in ',levecfn
       if(ladcx.ne.ladc) then
-        call quit('internal error in adcanalyze_f90!')
+        call quit(' ** internal error ** Length mismatch!')
       endif
 
 
-      allocate(evec(ladcx))
+      allocate(evec(ladcx,neigenv),stat=iallocstat)
+      if(iallocstat.ne.0) then
+        write(*,*) 'Not enough dynamic memory to store'
+        write(*,*) 'eigenvectors! We have to skip the analysis.'
+        return
+      endif
       allocate(eval(neigenv))
       allocate(indarr(neigenv))
 
-      polethr = 0.001d0; indarr=0; indarr(1)=1
+      polethr = 0.001d0; indarr=1
 
-! make a first browse for the polestrengths
+! read in the (reiterated) eigenvectors from file
 
-      ivcount=1
-      DO J=1,NEIGENV
-        read(io1) eval(J)
-        read(io1) (evec(ix),ix=1,LADCX)
-        enorm=dot_product(evec,evec)
-        evec=evec/sqrt(enorm)
-        polestr=dot_product(evec(1:nocc),evec(1:nocc))
-        write(*,'(A,2F16.8)') 'found eigenvector for', &
-                              eval(j)*autoev,polestr
-        IF(polestr.GE.polethr) then
-          indarr(ivcount)=J; ivcount = ivcount + 1
-!         write(*,'(A,I5,2F16.8)') '  ++++ including', &
-!               J,eval(j)*autoev,polestr
-        ENDIF
+      DO j=1,neigenv
+        read(io1) eval(j)
+        read(io1) (evec(ix,j),ix=1,LADCX)
+        enorm=dot_product(evec(:,j),evec(:,j))
+!       evec=evec/sqrt(enorm)
+        polestr=dot_product(evec(1:nocc,j),evec(1:nocc,j))
+        write(*,'(A,I5,A,3F16.8)') 'eigenvector',j,': E/PS/NRM:', &
+              eval(j)*autoev,polestr,enorm
       ENDDO
-!     write(*,'(A,I5)') '  I grabbed ',ivcount
-      nv = ivcount - 1
 
-! make a second browse through the eigenvalues for duplicates
-! and modify index array accordingly.
+! determine subspace dimensions according to eigenvalue degeneracy.
+! generate corresponding index array.
 
       diffthr = 1.0D-06
-      IF(nv.gt.1) THEN
-        allocate(indarr2(nv))
-        ivcount=1
-        DO J=1,nv-1
-!         write(*,*) 'poooo:',eval(indarr(j+1))*autoev, &
-!                             eval(indarr(j))*autoev
-          IF(dabs(eval(indarr(j+1)) - eval(indarr(j))).GE.diffthr) THEN
-            indarr2(ivcount) = indarr(J)
-            ivcount = ivcount + 1           
+      ispcount=1
+      IF(neigenv.gt.1) THEN
+        DO J=1,neigenv-1
+          IF(dabs(eval(j+1) - eval(j)).LT.diffthr) THEN
+            indarr(ispcount) = indarr(ispcount) + 1
+          ELSE
+            ispcount = ispcount + 1           
           ENDIF
         ENDDO
-        indarr2(ivcount) = indarr(J)
-        nv = ivcount
-        write(*,*) 'Finally after purging:',nv,' vectors:'
-        DO J=1,nv
-          write(*,*) j,indarr2(j),eval(indarr2(j))*autoev
+        write(*,*) 'Number of (pseudo-)subspaces in this symmetry:',&
+                   ispcount
+        ispoff=0
+        DO J=1,ispcount
+          write(*,*) ' (pseudo-)space',J,'energy',&
+                     eval(ispoff+indarr(J))*autoev, &
+                      ' dim:',indarr(J)
+          ispoff = ispoff + indarr(J)
         ENDDO
       ENDIF
 
-! now loop over all eigenvectors again and write out the relevant ones
-! whose indices are stored in indarr2.
+! now loop over all subspaces and form the corresponding set of
+! linearly independent vectors
 
-      REWIND(io1)
-      read(io1) idum,idum  ! read off the first two integers
-      ivcount=1
-      DO J=1,NEIGENV
+      ispoff = 0
+      Do 888 J=1,ispcount
+! grab energy eigenvalue in this subspace
+        seval = eval(1+ispoff)
+        write(*,*) 'Treating space',J,seval*autoev
+        nv = indarr(J)
+        If (nv.gt.1) Then
+! create overlap matrix
+          nv = indarr(J); lwork=10*nv
+          allocate(smat(nv,nv),work(lwork),sevl(nv))
+          smat=0.0d0; work=0.0d0; sevl=0.0d0
+          Do k=1,nv
+          Do l=1,nv
+            koff=ispoff+k
+            loff=ispoff+l
+            smat(k,l)=dot_product(evec(:,koff),evec(:,loff))
+          Enddo
+          Enddo
+! diagonalize overlap matrix
+          CALL DSYEV('V','U',nv,smat,nv,sevl,work,lwork,info)
+! smat now contains eigenvectors, eigenvalues are ordered
+          write(*,*)' Eigenvalues/vectors of OVL matrix:'
+          Do l=1,nv
+            write(*,*) l,sevl(l)
+            write(*,*) smat(:,l)
+          Enddo
+! determine indices of relevant eigenvectors
+          allocate(irel(nv));irel=0
+          nindep=0
+          do l=1,nv
+            if(dabs(sevl(l)).gt.0.1d0) then
+              nindep=nindep+1
+              irel(nindep)=l
+              write(*,*) '****** irel index:',l
+            endif
+          enddo
+          write(*,*) 'Found',nindep,' linearly independent eigenvecors.'
+! now form the subset of linearly independent eigenvectors
+          allocate(evli(ladc,nindep))
+          evli=0.0d0
+          do k=1,nindep
+            do l=1,nv
+              evli(:,k) = evli(:,k) + smat(l,irel(k))*evec(:,ispoff+l)
+            enddo
+          enddo
+! display norm of new eigenvectors
+          do k=1,nindep
+            write(*,*) '  Renormalizing new eigenvector:',k
+            enorm=dot_product(evli(:,k),evli(:,k))
+            evli(:,k) = evli(:,k)/sqrt(enorm)
+            polestr=dot_product(evli(1:nocc,k),evli(1:nocc,k))
+            write(*,*) '      PS of new eigenvector(s):',polestr
+          enddo
+          ispoff=ispoff+nv
+          deallocate(irel,sevl,work,smat)
+        Else 
+! we have subspace dimension 1 and transfer vector for unified writing.
+          write(*,*) 'No action taken, space is one-dimensional.'
+          ispoff=ispoff+1
+          allocate(evli(ladc,1))
+          evli(:,1)=evec(:,ispoff)
+          enorm=dot_product(evli(:,1),evli(:,1))
+          write(*,*) '   Norm of eigenvector:',enorm
+          polestr=dot_product(evli(1:nocc,1),evli(1:nocc,1))
+          write(*,*) '      PS of eigenvector:',polestr
+          nindep=1
+        Endif
 
-        read(io1) seval
-        read(io1) (evec(ix),ix=1,LADCX)
-
-        IF(J.ne.indarr2(ivcount)) CYCLE   ! skip printout if not right evec.
-
-        write(*,*) 'writing eigenvector for',seval,seval*autoev
-        write(io3,'(A,I4,A,F16.10,A)') 'Eigenvector nr. ', &
-              ivcount,'   IP = ',seval*autoev,' eV'
-        enorm=dot_product(evec,evec)
-        write(*,*) 'norm of eigenvector:',enorm
-        write(*,*) 'renormalizing eigenvector.'
-        evec=evec/sqrt(enorm)
-        polestr=dot_product(evec(1:nocc),evec(1:nocc))
-        write(io3,'(A,F16.10)') 'Pole strength: ',polestr
-        write(io3,'(A)') ' '
-        write(io3,'(A)') ' '
+        write(*,*) 'Dim. check (nv,nindep,ispoff):',nv,nindep,ispoff
 !
+! start writing of vectors
 ! branch according to ionizlevel
 !
+!______________________________________________________
+!|
+!|
+        DO 177 K=1,NINDEP
+!
+! it can happen that even a set of linearly independent vectors still does not
+! acquire polestrength. We do not write these vectors into the ouput file!
+!
+        polestr=dot_product(evli(1:nocc,k),evli(1:nocc,k))
+        if(polestr.lt.woutthr) then
+          write(*,*) 'We skip',seval*autoev, &
+                     ' due to vanishing pole strength.'
+          cycle
+        endif
+        write(*,*) 'writing eigenvector for',seval,seval*autoev
+        write(io3,'(A,F16.10,A,F16.10)') 'Eigenvector ', &
+              seval*autoev,' eV,  Pole strength: ',polestr
+
         IF(ionizlevel.eq.1) then
           write(io3,'(A8,2X,3A11,A20)') &
             'No.',ostr,ostr,vstr,' Coeff(real)'
+          write(io3,'(A)') ' '
+          icount = 1
+          DO ix=1,ladcx
+            read(io2,REC=ix) field
+            if(dabs(evli(ix,K)).gt.coefthr) then 
+              IF(ix.gt.nocc) then
+                write(io3,'(I8,2X,A33,F20.12)') icount,field,evli(ix,K)
+              ELSE
+                write(io3,'(I8,2X,3A11,F20.12)') &
+                     icount,field,blankf,blankf,evli(ix,K)
+              ENDIF
+              icount = icount + 1
+            endif
+          ENDDO
         ELSE
           write(io3,'(A8,2X,4A11,A20)') &
             'No.',ostr,ostr,ostr,vstr,'Coeff(real)'
-        ENDIF
-        write(io3,'(A)') ' '
-!
-! branch according to ionizlevel
-!
-        IF(ionizlevel.eq.1) then
+          write(io3,'(A)') ' '
+          icount = 1
           DO ix=1,ladcx
             read(io2,REC=ix) field
-            if(dabs(evec(ix)).gt.coefthr) then 
+            if(dabs(evli(ix,K)).gt.coefthr) then
               IF(ix.gt.nocc) then
-                write(io3,'(I8,2X,A33,F20.12)') ix,field,evec(ix)
+                write(io3,'(I8,2X,A44,F20.12)') icount,field,evli(ix,K)
               ELSE
-                write(io3,'(I8,2X,3A11,F20.12)') ix,field,blankf,blankf,evec(ix)
+                write(io3,'(I8,2X,A22,2A11,F20.12)') &
+                     icount,field,blankf,blankf,evli(ix,K)
               ENDIF
-            endif
-          ENDDO
-        ELSE
-          DO ix=1,ladcx
-            read(io2,REC=ix) field
-            if(dabs(evec(ix)).gt.coefthr) then
-              IF(ix.gt.nocc) then
-                write(io3,'(I8,2X,A44,F20.12)') ix,field,evec(ix)
-              ELSE
-                write(io3,'(I8,2X,A22,2A11,F20.12)') ix,field,blankf,blankf,evec(ix)
-              ENDIF
+              icount = icount + 1
             endif
           ENDDO
         ENDIF
-        ivcount = ivcount + 1
         write(io3,'(A)') ' '
         write(io3,'(A)') '--------------------------------------------'
         write(io3,'(A)') ' '
+        write(*,'(A)') ' '
+        write(*,'(A)') '--------------------------------------------'
+        write(*,'(A)') ' '
 
-      ENDDO
+ 177    CONTINUE
+!|
+!|
+!|_____________________________________________________
+
+        deallocate(evli)
+
+ 888  Continue
+
 
 ! release memory
 
-      deallocate(indarr2)
       deallocate(indarr)
       deallocate(eval)
       deallocate(evec)
@@ -261,10 +354,14 @@
       close(io3)
       
       end
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine ZADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, &
-                                    irecl,filecnf,ionizlevel)
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine LVECANALY_C(io1,io2,io3,desrep,ladc,nocc, &
+                             irecl,filecnf,ionizlevel)
+!
+!  complex counterpart of LVECANALY_R
+!  for comments, see this routine.
+!
       implicit none
 !
 ! transferred variables
@@ -278,27 +375,43 @@
       CHARACTER*10                :: LEVECFN,ANALOUT
       CHARACTER*44                :: field
       CHARACTER*11                :: blankf='           '
+      CHARACTER*11                :: ostr='    OCC    '
+      CHARACTER*11                :: vstr='    VIR    '
       logical                     :: isthere
-      integer                     :: neigenv,j,ix,ladcx,ivcount,nv,idum
+      integer                     :: neigenv,j,ix,ladcx,ispcount,nv,idum
       integer, allocatable        :: indarr(:), indarr2(:)
-      real*8, allocatable         :: eval(:)
-      complex*16, allocatable     :: evec(:)
+      integer, allocatable        :: irel(:)
+      integer                     :: iallocstat,k,l,koff,loff,lwork,info
+      integer                     :: ispoff,nindep,icount
+      complex*16, allocatable     :: evec(:,:)    !eigenvectors are now complex!
+      complex*16, allocatable     :: evli(:,:)    !aux array for final complex eigenvectors
+      real*8, allocatable         :: eval(:),smat(:,:),work(:)   !eigenvalues still real
+      real*8, allocatable         :: sevl(:)
       real*8                      :: enorm,polestr,polethr,diffthr,seval
-      real*8                      :: autoev = 27.2113957d0
-!
-!  function declaration
-!
-      real*8                      :: dot_productz
+      real*8                      :: dot_productz  !function with retun value real
+      real*8                      :: autoev  = 27.2113957d0
+      real*8                      :: coefthr = 0.01d0
+      real*8                      :: woutthr = 0.0001d0
 !
 ! ------------------------ execution starts ----------------------
 !
-      call pst('Analyzer for long ADC complex eigenvectors+')
+      call pst('Analyzer/Purger for long ADC complex eigenvectors+')
+      SELECT CASE (ionizlevel)
+        CASE (1)
+          write(*,*) 'Analyzing single ionizations.'   
+        CASE (2)
+          write(*,*) 'Analyzing double ionizations.'   
+        CASE DEFAULT
+          call quit('** internal error ** ionizlevel selector')
+      END SELECT
+      write(*,*)
       write(*,*) 'Calling arguments:'
       write(*,*) 'Symmetry of final state:',DESREP
       write(*,*) 'Length of ADC matrix:   ',LADC
       write(*,*) 'Length of main space:   ',NOCC
       write(*,*) 'Record length of config file:',IRECL
       write(*,*) 'Generic config file  name: ',FILECNF
+!     write(*,*) 'File handles: ',io1,io2,io3
 
 ! constructing eigenvector and analysis output file name
 
@@ -348,117 +461,208 @@
       OPEN(io3, FILE=ANALOUT, FORM='FORMATTED', &
           ACCESS='SEQUENTIAL', STATUS='UNKNOWN')
 
+
 ! start analysis
 
       read(io1) ladcx,neigenv
-      write(*,*) 'found',neigenv,' eigenvectors on ',levecfn
-      write(*,*) 'of length',ladcx
+      write(*,*) neigenv,' eigenvectors are stored in ',levecfn
       if(ladcx.ne.ladc) then
-        call quit('internal error in adcanalyze_f90!')
+        call quit(' ** internal error ** Length mismatch!')
       endif
 
 
-      allocate(evec(ladcx))
+      allocate(evec(ladcx,neigenv),stat=iallocstat)
+      if(iallocstat.ne.0) then
+        write(*,*) 'Not enough dynamic memory to store'
+        write(*,*) 'eigenvectors! We have to skip the analysis.'
+        return
+      endif
       allocate(eval(neigenv))
       allocate(indarr(neigenv))
 
-      polethr = 0.001d0; indarr=0; indarr(1)=1
+      polethr = 0.001d0; indarr=1
 
-! make a first browse for the polestrengths
+! read in the (reiterated) eigenvectors from file
 
-      ivcount=1
-      DO J=1,NEIGENV
-        read(io1) eval(J)
-        read(io1) (evec(ix),ix=1,LADCX)
-        enorm=dot_productz(evec,ladcx)
-        evec=evec/dcmplx(sqrt(enorm),0.0d0)
-        write(*,*) 'Normchk: ',enorm
-        polestr=dot_productz(evec,nocc)
-        write(*,'(A,2F16.8)') 'found eigenvector for', &
-                              eval(j)*autoev,polestr
-        IF(polestr.GE.polethr) then
-          indarr(ivcount)=J; ivcount = ivcount + 1
-!         write(*,'(A,I5,2F16.8)') '  ++++ including', &
-!               J,eval(j)*autoev,polestr
-        ENDIF
+      DO j=1,neigenv
+        read(io1) eval(j)
+        read(io1) (evec(ix,j),ix=1,LADCX)
+        enorm=dot_productz(evec(:,j),evec(:,j))
+!       evec=evec/sqrt(enorm)
+        polestr=dot_productz(evec(1:nocc,j),evec(1:nocc,j))
+        write(*,'(A,I5,A,3F16.8)') 'eigenvector',j,': E/PS/NRM:', &
+              eval(j)*autoev,polestr,enorm
       ENDDO
-!     write(*,'(A,I5)') '  I grabbed ',ivcount
-      nv = ivcount - 1
 
-! make a second browse through the eigenvalues for duplicates
-! and modify index array accordingly.
+! determine subspace dimensions according to eigenvalue degeneracy.
+! generate corresponding index array.
 
       diffthr = 1.0D-06
-      IF(nv.gt.1) THEN
-        allocate(indarr2(nv))
-        ivcount=1
-        DO J=1,nv-1
-!         write(*,*) 'poooo:',eval(indarr(j+1))*autoev, &
-!                             eval(indarr(j))*autoev
-          IF(dabs(eval(indarr(j+1)) - eval(indarr(j))).GE.diffthr) THEN
-            indarr2(ivcount) = indarr(J)
-            ivcount = ivcount + 1           
+      ispcount=1
+      IF(neigenv.gt.1) THEN
+        DO J=1,neigenv-1
+          IF(dabs(eval(j+1) - eval(j)).LT.diffthr) THEN
+            indarr(ispcount) = indarr(ispcount) + 1
+          ELSE
+            ispcount = ispcount + 1           
           ENDIF
         ENDDO
-        indarr2(ivcount) = indarr(J)
-        nv = ivcount
-        write(*,*) 'Finally after purging:',nv,' vectors:'
-        DO J=1,nv
-          write(*,*) j,indarr2(j),eval(indarr2(j))*autoev
+        write(*,*) 'Number of (pseudo-)subspaces in this symmetry:',&
+                   ispcount
+        ispoff=0
+        DO J=1,ispcount
+          write(*,*) ' (pseudo-)space',J,'energy',&
+                     eval(ispoff+indarr(J))*autoev, &
+                      ' dim:',indarr(J)
+          ispoff = ispoff + indarr(J)
         ENDDO
       ENDIF
 
-! now loop over all eigenvectors again and write out the relevant ones
-! whose indices are stored in indarr2.
+! now loop over all subspaces and form the corresponding set of
+! linearly independent vectors
 
-      REWIND(io1)
-      read(io1) idum,idum  ! read off the first two integers
-      ivcount=1
-      DO J=1,NEIGENV
+      ispoff = 0
+      Do 888 J=1,ispcount
+! grab energy eigenvalue in this subspace
+        seval = eval(1+ispoff)
+        write(*,*) 'Treating space',J,seval*autoev
+        nv = indarr(J)
+        If (nv.gt.1) Then
+! create overlap matrix. Is also real in the complex case <V|V> !
+          nv = indarr(J); lwork=10*nv
+          allocate(smat(nv,nv),work(lwork),sevl(nv))
+          smat=0.0d0; work=0.0d0; sevl=0.0d0
+          Do k=1,nv
+          Do l=1,nv
+            koff=ispoff+k
+            loff=ispoff+l
+            smat(k,l)=dot_productz(evec(:,koff),evec(:,loff))
+          Enddo
+          Enddo
+! diagonalize overlap matrix
+          CALL DSYEV('V','U',nv,smat,nv,sevl,work,lwork,info)
+! smat now contains eigenvectors, eigenvalues are ordered
+          write(*,*)' Eigenvalues/vectors of OVL matrix:'
+          Do l=1,nv
+            write(*,*) l,sevl(l)
+            write(*,*) smat(:,l)
+          Enddo
+! determine indices of relevant eigenvectors
+          allocate(irel(nv));irel=0
+          nindep=0
+          do l=1,nv
+            if(dabs(sevl(l)).gt.0.1d0) then
+              nindep=nindep+1
+              irel(nindep)=l
+              write(*,*) '****** irel index:',l
+            endif
+          enddo
+          write(*,*) 'Found',nindep,' linearly independent eigenvecors.'
+! now form the subset of linearly independent eigenvectors
+          allocate(evli(ladc,nindep))
+          evli=(0.0d0,0.0d0)
+          do k=1,nindep
+            do l=1,nv
+              evli(:,k) = evli(:,k) + smat(l,irel(k))*evec(:,ispoff+l)
+            enddo
+          enddo
+! display norm of new eigenvectors
+          do k=1,nindep
+            write(*,*) '  Renormalizing new eigenvector:',k
+            enorm=dot_productz(evli(:,k),evli(:,k))
+            evli(:,k) = evli(:,k)/cmplx(sqrt(enorm),0.0d0)
+            polestr=dot_productz(evli(1:nocc,k),evli(1:nocc,k))
+            write(*,*) '      PS of new eigenvectors:',polestr
+          enddo
+          ispoff=ispoff+nv
+          deallocate(irel,sevl,work,smat)
+        Else 
+! we have subspace dimension 1 and transfer vector for unified writing.
+          write(*,*) 'No action taken, space is one-dimensional.'
+          ispoff=ispoff+1
+          allocate(evli(ladc,1))
+          evli(:,1)=evec(:,ispoff)
+          enorm=dot_productz(evli(:,1),evli(:,1))
+          write(*,*) '   Norm of eigenvector:',enorm
+          polestr=dot_productz(evli(1:nocc,1),evli(1:nocc,1))
+          write(*,*) '      PS of eigenvector:',polestr
+          nindep=1
+        Endif
 
-        read(io1) seval
-        read(io1) (evec(ix),ix=1,LADCX)
+        write(*,*) 'Dim. check (nv,nindep,ispoff):',nv,nindep,ispoff
+!
+! start writing of vectors
+! branch according to ionizlevel
+!
+!______________________________________________________
+!|
+!|
+        DO 177 K=1,NINDEP
 
-        IF(J.ne.indarr2(ivcount)) CYCLE   ! skip printout if not right evec.
-
+        polestr=dot_productz(evli(1:nocc,k),evli(1:nocc,k))
+        if(polestr.lt.woutthr) then
+          write(*,*) 'We skip',seval*autoev, &
+                     ' due to vanishing pole strength.'
+          cycle
+        endif
         write(*,*) 'writing eigenvector for',seval,seval*autoev
-        write(io3,'(A,I4,A,F16.10,A)') 'Eigenvector nr. ', &
-              ivcount,'   IP = ',seval*autoev,' eV'
-        enorm=dot_productz(evec,ladcx)
-        write(*,*) 'norm of eigenvector:',enorm
-        write(*,*) 'renormalizing eigenvector.'
-        evec=evec/dcmplx(sqrt(enorm),0.0d0)
-        polestr=dot_productz(evec,nocc)
-        write(io3,'(A,F16.10)') 'Pole strength: ',polestr
-        write(io3,'(A)') ' '
-        write(io3,'(A)') ' '
-        write(io3,'(A8,2X,A33,2A20)') &
-          'No.',' 1h  and  2h1p configurations  ',' Coeff(real)', &
-          ' Coeff(imag)'
-        write(io3,'(A)') ' '
+        write(io3,'(A,F16.10,A,F16.10)') 'Eigenvector ', &
+              seval*autoev,' eV,  Pole strength: ',polestr
 
-        DO ix=1,ladcx
-          read(io2,REC=ix) field
-          IF(ix.gt.nocc) then
-!           write(*,'(I8,A33,F20.12)') ix,field,evec(ix)
-            write(io3,'(I8,2X,A33,2F20.12)') ix,field,evec(ix)
-          ELSE
-!           write(*,'(I8,3A11,F20.12)') ix,field,blankf,blankf, &
-!                                        evec(ix)
-            write(io3,'(I8,2X,3A11,2F20.12)') ix,field,blankf,blankf, &
-                                             evec(ix)
-          ENDIF
-        ENDDO
-        ivcount = ivcount + 1
+        IF(ionizlevel.eq.1) then
+          write(io3,'(A8,2X,3A11,2A20)') &
+            'No.',ostr,ostr,vstr,' Coeff(real)',' Coeff(imag)'
+          write(io3,'(A)') ' '
+          icount = 1
+          DO ix=1,ladcx
+            read(io2,REC=ix) field
+            if(abs(evli(ix,K)).gt.coefthr) then 
+              IF(ix.gt.nocc) then
+                write(io3,'(I8,2X,A33,2F20.12)') icount,field,evli(ix,K)
+              ELSE
+                write(io3,'(I8,2X,3A11,2F20.12)') &
+                     icount,field,blankf,blankf,evli(ix,K)
+              ENDIF
+              icount = icount + 1
+            endif
+          ENDDO
+        ELSE
+          write(io3,'(A8,2X,4A11,2A20)') &
+            'No.',ostr,ostr,ostr,vstr,' Coeff(real)',' Coeff(imag)'
+          write(io3,'(A)') ' '
+          icount = 1
+          DO ix=1,ladcx
+            read(io2,REC=ix) field
+            if(abs(evli(ix,K)).gt.coefthr) then
+              IF(ix.gt.nocc) then
+                write(io3,'(I8,2X,A44,2F20.12)') icount,field,evli(ix,K)
+              ELSE
+                write(io3,'(I8,2X,A22,2A11,2F20.12)') &
+                     icount,field,blankf,blankf,evli(ix,K)
+              ENDIF
+              icount = icount + 1
+            endif
+          ENDDO
+        ENDIF
         write(io3,'(A)') ' '
         write(io3,'(A)') '--------------------------------------------'
         write(io3,'(A)') ' '
+        write(*,'(A)') ' '
+        write(*,'(A)') '--------------------------------------------'
+        write(*,'(A)') ' '
 
-      ENDDO
+ 177    CONTINUE
+!|
+!|
+!|_____________________________________________________
+
+        deallocate(evli)
+
+ 888  Continue
+
 
 ! release memory
 
-      deallocate(indarr2)
       deallocate(indarr)
       deallocate(eval)
       deallocate(evec)
@@ -1073,6 +1277,194 @@
 
  555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
 
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine INITINCORE_R(ioin,ioout,nbufs,nincw,intbuf,  &
+                   buf,ioi,ioj,bufc,ioic,iojc,ivalid)
+!
+!  initialize incore Lanczos. Read in as much of the matrix as possible
+!
+      implicit none
+      integer, intent(in)      :: ioin,ioout  ! file handles for accessing ADC matrix (is open!)
+      integer, intent(inout)   :: nbufs       ! number of buffers the ADC matrix has at the moment!
+      integer, intent(in)      :: nincw       ! number of words available for incore storage
+      integer, intent(in)      :: intbuf      ! buffer size
+      real*8                   :: buf(intbuf)
+      integer                  :: ioi(intbuf),ioj(intbuf)
+      real*8                   :: bufc(nincw)
+      integer                  :: ioic(nincw),iojc(nincw)
+      integer, intent(inout)   :: ivalid      !ivalid contains the number of valid elements in the huge array.
+!
+!  local variables
+!
+      integer      :: nbufinc,nbufooc   !number of buffers in/out of core
+      integer      :: i,j,k,irec,itest,ixx,nact,jdummy
+      character*6  :: newfile='ADCXPK'
+!
+!  execution starts
+!
+      call pst('Initializing Incore(R) Lanczos. Reading matrix...+')
+      write(*,*) 'ADC matrix has',nbufs,' buffers of length',intbuf
+      write(*,*) 'Available words for incore storage:',nincw
+      nbufinc = nincw/intbuf
+      if(nbufinc.gt.nbufs) nbufinc = nbufs
+      write(*,*) 'Number of buffers held in core:',nbufinc
+      nbufooc = nbufs - nbufinc
+      write(*,*) 'Number of buffers remaining external:',nbufooc
+!
+!  read nbufinc buffer
+!
+      ivalid=0
+      REWIND(ioin)
+      DO IREC = 1,nbufinc
+        READ(ioin,iostat=itest) (BUF(IXX),IXX=1,INTBUF),  &
+                                (IOI(IXX),IXX=1,INTBUF),  &
+                                (IOJ(IXX),IXX=1,INTBUF),  &
+                                NACT,JDUMMY
+        if(itest.ne.0)  &
+          call quit('Matrix read error (1) in INITINCORE')
+        DO K = 1, nact
+          ivalid = ivalid + 1
+          ioic(ivalid) = IOI(K)
+          iojc(ivalid) = IOJ(K)
+          bufc(ivalid) = BUF(K)
+        ENDDO
+      ENDDO
+      write(*,*) nbufinc,' records read.'
+      write(*,*) 'Number of valid elements:',ivalid
+!
+!  write the remaining records in a new packed ADC matrix file
+!  and transfer control to this new file with reduced number of buffers
+!  If ADC matrix is completely incore the file disappears from disk
+!  and is never accessed for the rest of the program anymore.
+!
+      OPEN(unit=ioout,file=newfile,form='UNFORMATTED',  &
+           status='UNKNOWN')
+      DO IREC = nbufinc+1,nbufs
+        READ(ioin,iostat=itest) (BUF(IXX),IXX=1,INTBUF),  &
+                                (IOI(IXX),IXX=1,INTBUF),  &
+                                (IOJ(IXX),IXX=1,INTBUF),  &
+                                NACT,JDUMMY
+        if(itest.ne.0)  &
+          call quit('Matrix read error (2) in INITINCORE')
+        WRITE(ioout,iostat=itest) (BUF(IXX),IXX=1,INTBUF), &
+                                  (IOI(IXX),IXX=1,INTBUF), &
+                                  (IOJ(IXX),IXX=1,INTBUF), &
+                                   NACT,JDUMMY
+        if(itest.ne.0)  &
+          call quit('Matrix write error in INITINCORE')
+      ENDDO
+
+!
+!  remaining ADC file is written. The old one is deleted and
+!  buffer sizes are adjusted
+!
+      CLOSE(IOOUT)
+      CLOSE(IOIN,status='delete')
+      OPEN(unit=IOIN,file=newfile,form='UNFORMATTED',  &
+           status='UNKNOWN')
+      NBUFS = nbufooc
+      if(nbufs.eq.0) then
+        write(*,*) 'ADC matrix is completely in core.'
+      else
+        write(*,*) 'Adjusted number of buffers to',nbufs
+      endif
+
+      return
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine INITINCORE_C(ioin,ioout,nbufs,nincw,intbuf,  &
+                   buf,ioi,ioj,bufc,ioic,iojc,ivalid)
+!
+!  initialize incore Lanczos. Read in as much of the matrix as possible
+!
+      implicit none
+      integer, intent(in)      :: ioin,ioout  ! file handles for accessing ADC matrix (is open!)
+      integer, intent(inout)   :: nbufs       ! number of buffers the ADC matrix has at the moment!
+      integer, intent(in)      :: nincw       ! number of words available for incore storage
+      integer, intent(in)      :: intbuf      ! buffer size
+      complex*16               :: buf(intbuf)
+      integer                  :: ioi(intbuf),ioj(intbuf)
+      complex*16               :: bufc(nincw)
+      integer                  :: ioic(nincw),iojc(nincw)
+      integer, intent(inout)   :: ivalid      !ivalid contains the number of valid elements in the huge array.
+!
+!  local variables
+!
+      integer      :: nbufinc,nbufooc   !number of buffers in/out of core
+      integer      :: i,j,k,irec,itest,ixx,nact,jdummy
+      character*6  :: newfile='ADCXPK'
+!
+!  execution starts
+!
+      call pst('Initializing Incore(C) Lanczos. Reading matrix...+')
+      write(*,*) 'ADC matrix has',nbufs,' buffers of length',intbuf
+      write(*,*) 'Available words for incore storage:',nincw
+      nbufinc = nincw/intbuf
+      if(nbufinc.gt.nbufs) nbufinc = nbufs
+      write(*,*) 'Number of buffers held in core:',nbufinc
+      nbufooc = nbufs - nbufinc
+      write(*,*) 'Number of buffers remaining external:',nbufooc
+!
+!  read nbufinc buffer
+!
+      ivalid=0
+      REWIND(ioin)
+      DO IREC = 1,nbufinc
+        READ(ioin,iostat=itest) (BUF(IXX),IXX=1,INTBUF),  &
+                                (IOI(IXX),IXX=1,INTBUF),  &
+                                (IOJ(IXX),IXX=1,INTBUF),  &
+                                NACT,JDUMMY
+        if(itest.ne.0)  &
+          call quit('Matrix read error (1) in INITINCORE')
+        DO K = 1, nact
+          ivalid = ivalid + 1
+          ioic(ivalid) = IOI(K)
+          iojc(ivalid) = IOJ(K)
+          bufc(ivalid) = BUF(K)
+        ENDDO
+      ENDDO
+      write(*,*) nbufinc,' records read.'
+      write(*,*) 'Number of valid elements:',ivalid
+!
+!  write the remaining records in a new packed ADC matrix file
+!  and transfer control to this new file with reduced number of buffers
+!  If ADC matrix is completely incore the file disappears from disk
+!  and is never accessed for the rest of the program anymore.
+!
+      OPEN(unit=ioout,file=newfile,form='UNFORMATTED',  &
+           status='UNKNOWN')
+      DO IREC = nbufinc+1,nbufs
+        READ(ioin,iostat=itest) (BUF(IXX),IXX=1,INTBUF),  &
+                                (IOI(IXX),IXX=1,INTBUF),  &
+                                (IOJ(IXX),IXX=1,INTBUF),  &
+                                NACT,JDUMMY
+        if(itest.ne.0)  &
+          call quit('Matrix read error (2) in INITINCORE')
+        WRITE(ioout,iostat=itest) (BUF(IXX),IXX=1,INTBUF), &
+                                  (IOI(IXX),IXX=1,INTBUF), &
+                                  (IOJ(IXX),IXX=1,INTBUF), &
+                                   NACT,JDUMMY
+        if(itest.ne.0)  &
+          call quit('Matrix write error in INITINCORE')
+      ENDDO
+
+!
+!  remaining ADC file is written. The old one is deleted and
+!  buffer sizes are adjusted
+!
+      CLOSE(IOOUT)
+      CLOSE(IOIN,status='delete')
+      OPEN(unit=IOIN,file=newfile,form='UNFORMATTED',  &
+           status='UNKNOWN')
+      NBUFS = nbufooc
+      if(nbufs.eq.0) then
+        write(*,*) 'ADC matrix is completely in core.'
+      else
+        write(*,*) 'Adjusted number of buffers to',nbufs
+      endif
+
+      return
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine TWOHPOP_R(lupri,io_lan,ibeta,nrep,multb,no,noot)

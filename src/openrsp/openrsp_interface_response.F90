@@ -2,7 +2,7 @@ module openrsp_interface_response
 
    use dirac_interface
    use memory_allocator
-   use matrix_defop
+   use matrix_defop_old
    use openrsp_cfg
 
    implicit none

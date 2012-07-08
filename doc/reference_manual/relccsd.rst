@@ -474,8 +474,7 @@ the property integrals should first be defined in the
 NAOPER
 ------
 
-Number of A operators in \\langle\\langle A ; B
-\\rangle\\rangle\_\\omega|.
+Number of A operators in <<A; B>>.
 
 *Default:*
 

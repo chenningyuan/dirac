@@ -284,7 +284,7 @@ C
 C
       CALL GETTIM(CPUST,WALLST)
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')
-      WRITE(LUPRI,'(A,F14.2,A)') 
+      WRITE(LUPRI,'(/A,F14.2,A)') 
      & ' - Starting symmetrization after ',
      &  WALLST-WALLBEF,' seconds'
       CALL FLSHFO(LUPRI)
@@ -307,7 +307,7 @@ C
 C        
       CALL XTIME(4,2,' Symmetrizing MO integrals    ')
       CALL GETTIM(CPUST,WALLST)
-      WRITE(LUPRI,'(A,F14.2,A)') 
+      WRITE(LUPRI,'(A,F14.2,A/)') 
      &     ' - Finished symmetrization after ',
      &     WALLST-WALLBEF,' seconds'
       CALL FLSHFO(LUPRI)

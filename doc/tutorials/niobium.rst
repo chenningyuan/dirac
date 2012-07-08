@@ -101,7 +101,7 @@ The Mulliken population analysis for the open-shell orbitals show
 
 ::
 
-    * Electronic eigenvalue no. 10: -0.2345545198473       (Occupation : f = 0.4000)  m_j=  1/2
+    * Electronic eigenvalue no. 10: -0.2345545198473       (Occupation: f = 0.4000)  m_j=  1/2
     ==========================================================================================
 
      Gross     Total   |    s              d
@@ -109,7 +109,7 @@ The Mulliken population analysis for the open-shell orbitals show
      alpha    0.9952  |      0.5066         0.4886
      beta     0.0048  |      0.0000         0.0048
 
-    * Electronic eigenvalue no. 11: -0.2341282163131       (Occupation : f = 0.4000)  m_j= -3/2
+    * Electronic eigenvalue no. 11: -0.2341282163131       (Occupation: f = 0.4000)  m_j= -3/2
     ==========================================================================================
 
     Gross     Total   |    d
@@ -117,7 +117,7 @@ The Mulliken population analysis for the open-shell orbitals show
      alpha    0.0668  |      0.0668
      beta     0.9332  |      0.9331
 
-    * Electronic eigenvalue no. 12: -0.2196186152479       (Occupation : f = 0.4000)  m_j= -3/2
+    * Electronic eigenvalue no. 12: -0.2196186152479       (Occupation: f = 0.4000)  m_j= -3/2
     ==========================================================================================
 
     Gross     Total   |    d
@@ -125,7 +125,7 @@ The Mulliken population analysis for the open-shell orbitals show
      alpha    0.9331  |      0.9331
      beta     0.0669  |      0.0668
 
-    * Electronic eigenvalue no. 13: -0.2189244235127       (Occupation : f = 0.4000)  m_j=  5/2
+    * Electronic eigenvalue no. 13: -0.2189244235127       (Occupation: f = 0.4000)  m_j=  5/2
     ==========================================================================================
 
     Gross     Total   |    d
@@ -133,7 +133,7 @@ The Mulliken population analysis for the open-shell orbitals show
      alpha    0.9999  |      0.9999
      beta     0.0001  |      0.0000
 
-    * Electronic eigenvalue no. 14: -0.2182274767504       (Occupation : f = 0.4000)  m_j=  1/2
+    * Electronic eigenvalue no. 14: -0.2182274767504       (Occupation: f = 0.4000)  m_j=  1/2
     ==========================================================================================
 
     Gross     Total   |    s              d
@@ -141,7 +141,7 @@ The Mulliken population analysis for the open-shell orbitals show
      alpha    0.9919  |      0.4932         0.4987
      beta     0.0081  |      0.0000         0.0080
 
-    * Electronic eigenvalue no. 15: -0.2173465762720       (Occupation : f = 0.5000)  m_j=  1/2
+    * Electronic eigenvalue no. 15: -0.2173465762720       (Occupation: f = 0.5000)  m_j=  1/2
     ==========================================================================================
 
     Gross     Total   |    s              d

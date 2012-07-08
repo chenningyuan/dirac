@@ -99,7 +99,7 @@ Regarding total energies we get
 
     SCF energy 2_P1/2: -24.249116730391307
     SCF energy 2_P3/2: -24.249038454664991
-    FSS : (-24.249116730391307+24.249038454664991)*219474.631280634 cm-1 = 17.179536 cm-1
+    FSS : (-24.249116730391307+24.249038454664991)*219474.631280634 cm-1 = 17.179536 cm-1
 
 what is very close to the above given COSCI value of 17.179488 cm-1.
 
@@ -264,14 +264,14 @@ giving total SCF energies of the ground and the excited states:
 
 ::
 
-    X 2Pi_3/2 :  -75.446717125968732
-    A 2Pi_1/2 :  -75.446063726708829
+    X 2Pi_3/2 :  -75.446717125968732
+    A 2Pi_1/2 :  -75.446063726708829
 
 The fine-structure splitting then makes
 
 ::
 
-    FSS : (-75.446717125968732+75.446063726708829)*219474.631280634 = 143.404561 cm-1
+    FSS : (-75.446717125968732+75.446063726708829)*219474.631280634 = 143.404561 cm-1
 
 which is very close to the above given COSCI value of 143.842458 cm-1.
 
@@ -279,22 +279,22 @@ Energy order of spinors for the OH "X 2Pi\_3/2" ground state is:
 
 ::
 
-    1: -20.623437096718       (Occupation : f = 1.0000)  m_j=  1/2 ; 1s_sig(2)
-    2: -1.2970494235574       (Occupation : f = 1.0000)  m_j=  1/2 ; 2s_sig(2)
-    3: -0.6455362075645       (Occupation : f = 1.0000)  m_j=  1/2 ; 2pz_sig(2)
-    4: -0.5439526090110       (Occupation : f = 1.0000)  m_j=  1/2 ; 2pxy_pi_1/2(2)
-    5: -0.5863405891346       (Occupation : f = 0.5000)  m_j= -3/2 ; 2pxy_pi_3/2(1)
+    1: -20.623437096718       (Occupation: f = 1.0000)  m_j=  1/2; 1s_sig(2)
+    2: -1.2970494235574       (Occupation: f = 1.0000)  m_j=  1/2; 2s_sig(2)
+    3: -0.6455362075645       (Occupation: f = 1.0000)  m_j=  1/2; 2pz_sig(2)
+    4: -0.5439526090110       (Occupation: f = 1.0000)  m_j=  1/2; 2pxy_pi_1/2(2)
+    5: -0.5863405891346       (Occupation: f = 0.5000)  m_j= -3/2; 2pxy_pi_3/2(1)
 
 While for the first excited "A 2Pi\_1/2" state of the OH radical we have
 this order:
 
 ::
 
-    1: -20.623901392971       (Occupation : f = 1.0000)  m_j=  1/2  ;  1s_sig(2)
-    2: -1.2971646385507       (Occupation : f = 1.0000)  m_j=  1/2  ;  2s_sig(2)
-    3: -0.6456515101399       (Occupation : f = 1.0000)  m_j=  1/2  ;  2pz_sig(2)
-    4: -0.5431435116553       (Occupation : f = 1.0000)  m_j= -3/2  ;  2pxy_pi_3/2(2)
-    5: -0.5874674338778       (Occupation : f = 0.5000)  m_j=  1/2  ;  2pxy_pi_1/2(1)
+    1: -20.623901392971       (Occupation: f = 1.0000)  m_j=  1/2 ;  1s_sig(2)
+    2: -1.2971646385507       (Occupation: f = 1.0000)  m_j=  1/2 ;  2s_sig(2)
+    3: -0.6456515101399       (Occupation: f = 1.0000)  m_j=  1/2 ;  2pz_sig(2)
+    4: -0.5431435116553       (Occupation: f = 1.0000)  m_j= -3/2 ;  2pxy_pi_3/2(2)
+    5: -0.5874674338778       (Occupation: f = 0.5000)  m_j=  1/2 ;  2pxy_pi_1/2(1)
 
 Correlated approach
 --------------------
