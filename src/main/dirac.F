@@ -76,8 +76,6 @@ C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
-      CALL TSTAMP(' ',LUPRI)
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C
@@ -166,7 +164,7 @@ C*****  T  E  R  M  I  N  A  T  I  O  N  *******************************
 C***********************************************************************
 C
 
-#ifdef BUILD_GEN1INT
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif

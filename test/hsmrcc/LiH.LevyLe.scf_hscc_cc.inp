@@ -48,14 +48,13 @@ energy -1000.0   1.250  0.0001
 4
 ! .. do not run HSCC after DIRAC calcul.
 .NOHSDIR
-! ... do not prepare HSMRCC files (dry run)
+! ... do not prepare HSMRCC integrals files from DIRAC (dry run) 
 .DRYRUN
-!* something with *...
-! .. comment 2
+! .. print level
 .PRINT
-22
+20
+!.NFRZV
 !2
-.
 *END OF
 
  &RELCCSD DOFSPC=F DOENER=T  IPRNT=2 NELEC=2,2  &END

@@ -1,3 +1,5 @@
+quick
+
 noref H.inp H.mol --get=DFACMO
 mv DFACMO ac.H
 cp ac.H DFHXXX

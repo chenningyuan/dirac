@@ -1,3 +1,6 @@
- HSMRCC-DIRAC functionality; building up related tests.
+HSMRCC-DIRAC functionality
+==========================
 
- In the development.
+Building up related tests. In the development.
+
+First time used in Ref. [Eliav2009]_, interfaced with modified version of GAMESS-US.

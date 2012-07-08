@@ -1,3 +1,6 @@
+!
+! Module dealing with the generation of transformed two-electron antisymmetric integrals
+!
 module IntGenMod
 
    use Parameters
@@ -2148,9 +2151,9 @@ end subroutine check_gms_integrals
 subroutine get_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX,v,ind,nnint)
 !------------------------------------------------------------------------------------
 !
-!           open, and read GAMESS prepared integrals
+!  Read GAMESS prepared integrals
 !
-!  called from HighSect FSCC codes !
+!  Called from HighSect FSCC codes 
 !
 !------------------------------------------------------------------------------------
 !#include "implicit.h"
@@ -2347,13 +2350,17 @@ call quit('DrvIntGen_DIRAC')
 
 end subroutine DrvIntGen_DIRAC
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine control_print_VIND_VINT
 !----------------------------------------------------------------------------------
-!  ... make control print of all integrals when file is open and read  ...
+!
+! make control print of all two-electron integrals when the file is open and read  
+!
+! called from PrintRunInfo (source/runinfo.F90)
+!
 !----------------------------------------------------------------------------------
 
-call header('control printout of all integrals and their indexes',-1)
+call header('control printout of all two-electron transformed integrals and their indexes',-1)
 
 call control_print_V2H2P ! 1.
 call control_print_VPPPP ! 2. block
@@ -2814,4 +2821,3 @@ ENDDO
 end subroutine control_print_VHHHP
 
 end module IntGenMod
-

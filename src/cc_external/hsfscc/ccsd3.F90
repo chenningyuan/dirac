@@ -563,17 +563,31 @@
              write(LUPRI,*) '1) num,iiia(num)=',num,iiia(num),'...iiva(num)=',iiva(num)
            endif
 ! Gal 95
-           itmp=4H       
+           !itmp=4H       
+           itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
-           ch2 = iand (namefl(num), z'000000ff')
-           isaa = ior (ch1, ch2)
-#if defined VAR_IFORT
-          if (isaa.ne.4hs   ) then
-#else
-          i_4hs=4hs 
+           ch2 = iand(namefl(num),z'000000ff')
+           isaa = ior(ch1,ch2)
+           if (getiprint() >= 5) then
+!#if defined VAR_IFORT
+!             write(LUPRI,*) "isaa.ne.4hs ?",(isaa.ne.4hs)
+!#else
+             !i_4hs=4hs 
+             i_4hs=transfer("s   ",i_4hs)
+             write(LUPRI,*) "isaa.ne.i_4hs ?",(isaa.ne.i_4hs)
+!#endif
+             write(LUPRI,*) "ch1=",ch1," ch2=",ch2
+             write(LUPRI,*) "itmp=",itmp," jtmp=",jtmp
+           endif
+
+!#if defined VAR_IFORT
+!          if (isaa.ne.4hs   ) then
+!#else
+          !i_4hs=4hs    
+          i_4hs=transfer("s   ",i_4hs)
           if (isaa.ne.i_4hs) then
-#endif
+!#endif
             write(LUPRI,*) 
             write(LUPRI,*) "error exit ! isaa, i_4hs=",isaa,i_4hs
             write(LUPRI,*) 'ch1=',ch1,' ch2=',ch2
@@ -2485,9 +2499,13 @@
       use dat_mod
       use sym_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
-!#include "param_ccsd.h"
+integer :: i,j,k,l,ii1234,j1234,name,num,i1,i1234,i2,i3,i4
+integer :: i_4hs,ica,icb,icc,icd,ije_1,isaa,itmpx,j1,j2,j3,j4
+integer :: ja,ja1,ja2,jb,jb1,jb2,jc,jc1,jc2,jd,jd1,jd2,jtmp
+integer :: new,nt,nt0,nt00
+integer :: ipack
 #else
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2513,8 +2531,7 @@
       integer :: ch1,ch2
 
 !     4-indexes (up 256) packed into one number
-      ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                  &
-                ior(ishft(k,8),l))
+      ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       if (getiprint() >= 5) then ! control printout
         call header('Output from "tmplt"',-1)
@@ -2581,6 +2598,7 @@
       nt=nt+1
 ! mi: complain due to leak :
 ! Array reference out of bounds for array 'igen', upper bound of dimension 1 exceeded (10098089 > 9000000)
+! by changing parameters also ...upper bound of dimension 1 exceeded (1920005 > -1094967296)
       igen(nt)=ipack(ja,jb,jc,jd)
 
       if (getiprint() >= 15) then
@@ -2693,19 +2711,21 @@
 
 !   special for scratch files, which start with "s".
 !          itmp=4H       
-           itmpx=4H       
+           !itmpx=4H       
+           itmpx=transfer("    ",itmpx)
            jtmp=z'ffffff00'
 !          ch1 = iand(itmp,jtmp)
            ch1 = iand(itmpx,jtmp)
            ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
-#if defined VAR_IFORT
-     if (isaa.eq.4hs   ) then
-#else
-      i_4hs=4hs
+!#if defined VAR_IFORT
+!     if (isaa.eq.4hs   ) then
+!#else
+      !i_4hs=4hs
+      i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-#endif
+!#endif
         call dimx(nt-nt0,ndp3,"tmplt s")
         nstrt(1,num)=nstrt(1,num-1)+ndp3+2*ndij+4
         nstrt(2,num)=nstrt(2,num-1)+ndp3
@@ -2875,18 +2895,20 @@
       call dimx (nstrt(1,num),nbig,"tmplt61 ")
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 !   special for scratch files, which start with s
-           itmp=4H       
+           !itmp=4H       
+           itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
-#if defined VAR_IFORT
-      if (isaa.eq.4hs   ) then
-#else
-      i_4hs=4hs
+!#if defined VAR_IFORT
+!      if (isaa.eq.4hs   ) then
+!#else
+      !i_4hs=4hs
+      i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-#endif
+!#endif
         call dimx (nt-nt0,ndp3,"tmplt s ")
         nstrt(1,num)=nstrt(1,num-1)+ndp3+2*ndij+4
         nstrt(2,num)=nstrt(2,num-1)+ndp3
@@ -3064,18 +3086,20 @@
       call dimx (nstrt(1,num),nbig,"tmplt61 ")
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 !   special for scratch files, which start with s
-           itmp=4H      
+           itmp=transfer("    ",itmp)
+           !itmp=4H      
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
-#if defined VAR_IFORT
-      if (isaa.eq.4hs   ) then
-#else
-      i_4hs=4hs
+!#if defined VAR_IFORT
+!      if (isaa.eq.4hs   ) then
+!#else
+      !i_4hs=4hs
+      i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-#endif
+!#endif
 
         call dimx (nt-nt0,ndp3,"tmplt s ")
         nstrt(1,num)=nstrt(1,num-1)+ndp3+2*ndij+4
@@ -3240,18 +3264,20 @@
       call dimx (nstrt(1,num),nbig,"tmplt61 ")
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 !   special for scratch files, which start with s
-           itmp=4H       
+           !itmp=4H       
+           itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
-#if defined VAR_IFORT
-      if (isaa.eq.4hs   ) then
-#else
-      i_4hs=4hs
+!#if defined VAR_IFORT
+!      if (isaa.eq.4hs   ) then
+!#else
+      !i_4hs=4hs
+      i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs ) then
-#endif
+!#endif
 
         call dimx (nt-nt0,ndp3,"tmplt s ")
         nstrt(1,num)=nstrt(1,num-1)+ndp3+2*ndij+4
@@ -3396,18 +3422,20 @@
       call dimx (nstrt(1,num),nbig,"tmplt61 ")
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 !   special for scratch files, which start with s
-           itmp=4H       
+           !itmp=4H       
+           itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
-#if defined VAR_IFORT
-      if (isaa.eq.4hs   ) then
-#else
-      i_4hs=4hs
+!#if defined VAR_IFORT
+!      if (isaa.eq.4hs   ) then
+!#else
+      !i_4hs=4hs
+      i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-#endif
+!#endif
         call dimx (nt-nt0,ndp3,"tmplt s ")
         nstrt(1,num)=nstrt(1,num-1)+ndp3+2*ndij+4
         nstrt(2,num)=nstrt(2,num-1)+ndp3

@@ -225,6 +225,13 @@
                             visual_cfg_ncube(3))
       end if
 
+      if (kw_matches(word, '.3DFAST')) then
+         visual_cfg_3d_fast = .true.
+         call kw_read(word, visual_cfg_ncube(1), &
+                            visual_cfg_ncube(2), &
+                            visual_cfg_ncube(3))
+      end if
+
       if (kw_matches(word, '.3D_ADD')) then
          call kw_read(word, visual_cfg_add_3d)
       end if

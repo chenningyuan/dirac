@@ -238,7 +238,7 @@ end subroutine fill_VINF_arrays
 subroutine make_VIND_VINT_files
 !----------------------------------------------------------------
 !
-!       prepare integral&indexes files :  VINT & VIND
+!  prepare two-electron integral&indexes files : VINT & VIND
 !
 !----------------------------------------------------------------
 use Memory
@@ -252,8 +252,7 @@ use IntGenMod
 implicit none
 #include "priunit.h"
 
-!external :: get_moltra_index
-integer :: get_moltra_index
+integer, external :: get_moltra_index
 integer :: StVRec,StRec, EnRec, NxtRec
 
 !integer         , dimension(NZVINTBUFSIZE) :: NZVPkIBuf
@@ -283,6 +282,8 @@ StartRec(V2H2P) = StVRec
 EndngRec = DBLE(0)
 StartRec = StVRec
 NxtRec   = StVRec
+
+call header('two-electron MOLTRA transformed integrals types',-1)
 
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,'(/,4x,a,/)') '01. V2H2P, 1324, <IJ||AB>'
@@ -608,4 +609,3 @@ enddo
 enddo
 
 end subroutine make_VIND_VINT_files
-
