@@ -5697,8 +5697,8 @@ C
             IF (NOROT(J1) .EQ. 0 .AND. NOROT(J2) .EQ. 0 ) THEN
                II = II + 1
 C
-               JXOPE(1,II) = JXOPE(1,I)
-               JXOPE(2,II) = JXOPE(2,I)
+               JXOPP(1,II) = JXOPP(1,I)
+               JXOPP(2,II) = JXOPP(2,I)
                IOFF = KBUF-1
                JOFF = 0
                DO IZ = 1,NZ
@@ -5721,8 +5721,7 @@ C
                DTST = DC*(NXOPP-II)/NXOPP
                WRITE(LUPRI,9002) 'e-p',NXOPP,II,DTST
             ENDIF
-            NHOPE  = II
-            NXOPE  = III
+            NXOPP  = III
          ELSE
             WRITE(LUPRI,9002) 'e-p',NXOPP,NXOPP,D0
          ENDIF
