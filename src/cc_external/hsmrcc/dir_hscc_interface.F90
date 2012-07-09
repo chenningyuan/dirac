@@ -195,9 +195,9 @@ EndDo
 ! WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
 
  if (nohsccfiles) then
-  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). You might take them from GAMESS.'
+  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). Take them from GAMESS.'
  else
-  WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by Dirac.'
+  WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by DIRAC.'
  endif
 
  if (nohsccdirac) then

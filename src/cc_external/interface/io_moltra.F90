@@ -659,10 +659,10 @@ is_complex = .NOT.SPFR .AND. (NZ==2 .or. NZ==4)
 
  !call scan_mdcint(nnzi, nintbl)
  call scan_mdcint
- write(LUPRI,*) ' number of ALL nonzero 2-el MO-integrals on MDCINT=',nnzi
- write(LUPRI,*) ' number of <I J|-integral BLOCKS on MDCINT=',nintbl
 
- write(LUPRI,'(A,$)') 'Integrals have been calculated on the'
+ write(LUPRI,'(2x,a,i8)') 'number of ALL nonzero 2-el MO-integrals on MDCINT=',nnzi
+ write(LUPRI,'(2x,a,i7)') 'number of (I J|-integral BLOCKS on MDCINT=',nintbl
+ write(LUPRI,'(2x,A,$)') 'Integrals have been calculated on the'
  write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
 
 ! -----------------------------------------------------------------
@@ -717,9 +717,6 @@ Call ZeroObject(cbuf)
  call Quit('read_mdcint: quit here due to memory check !')
 endif
 
-!Call ZeroObject(indk_vect)
-!Call ZeroObject(indl_vect)
-!Call ZeroObject(cbuf_vect)
 
  !print_int = .false.
  print_int = .true.
@@ -760,7 +757,7 @@ endif
   MOINT = MOINT + NONZR
 
   if (print_batch_info) then
-    write(LUPRI,'(2x,a,i5)')  '...read <IJ|-integral block:',iblock
+    write(LUPRI,'(/,2x,a,i5)')  '...read (IJ|-integral block:',iblock
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
     write(LUPRI,'(2x,a,i6)')  ' actual number of read integrals :',MOINT
     write(LUPRI,'(2x,a,i6)')  ' position of cbuf_vect array :',icbuf
@@ -769,7 +766,7 @@ endif
 
 if (print_int) then
 
- write(LUPRI,'(/,2x,a,2i4)') 'read ( I J |... indexes',KR(IKR),KR(JKR)
+ write(LUPRI,'(2x,a,2i4)') 'read ( I J |... indexes:',KR(IKR),KR(JKR)
 
  do INZ=1, NONZR
    icount = icount + 1
@@ -793,7 +790,7 @@ endif
 
   icbuf = icbuf + NONZR
 
-  iblock = iblock + 1    ! incrememt integral block
+  iblock = iblock + 1    ! increment integral block
 
   pos_ij%p_iA3D(KR(IKR),KR(JKR),2) = iblock
 
@@ -838,18 +835,16 @@ endif
  write(LUPRI,*) 'indl_vect, indk_vect released ...'; CALL FLSHFO(LUPRI)
 
 ! ... print all NONZERO integrals in proper order
- write(LUPRI,'(/,6x,a)') '...all nonzero integrals printed again from big array...'
+ write(LUPRI,'(/,2x,a)') '*** All nonzero MOLTRA integrals in one big array ***'
 
  do i=1,2*NKR
  do j=1,2*NKR
  do k=1,2*NKR
  do l=1,2*NKR  
-
     ! must be nonzero integral 
-   ! if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 ) then 
-
-    if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_ij%p_iA3D(i,j,2).ne.0  & 
-                                   .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 ) then 
+    if ( pos_ij%p_iA3D(i,j,1).ne.0 .and.  & 
+         pos_ij%p_iA3D(i,j,2).ne.0 .and.  & 
+         pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 ) then 
 
       int_pos= ( pos_ij%p_iA3D(i,j,1)+pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)) - 1) 
 
