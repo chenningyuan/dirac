@@ -146,6 +146,7 @@
   !>       in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz), see
   !>       Gen1Int library manual, for instance Section 2.2.
   subroutine gen1int_host_get_int(gto_type, prop_name, order_mom, &
+                                  order_elec,                     &
                                   order_mag_bra, order_mag_ket,   &
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
@@ -164,6 +165,7 @@
     integer,       intent(in)    :: gto_type
     character*(*), intent(in)    :: prop_name
     integer,       intent(in)    :: order_mom
+    integer,       intent(in)    :: order_elec
     integer,       intent(in)    :: order_mag_bra
     integer,       intent(in)    :: order_mag_ket
     integer,       intent(in)    :: order_mag_total
@@ -214,6 +216,7 @@
     ! geometric derivatives on manager processor, and broadcasts other input
     ! arguments to worker processors
     call gen1int_host_prop_create(gto_type, prop_name, order_mom, &
+                                  order_elec,                     &
                                   order_mag_bra, order_mag_ket,   &
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
@@ -337,6 +340,7 @@
   !> \note please see the comments of \fn(gen1int_host_get_int) of other arguments,
   !>       \var(val_expt) should be zero by users before calculations
   subroutine gen1int_host_get_expt(gto_type, prop_name, order_mom, &
+                                   order_elec,                     &
                                    order_mag_bra, order_mag_ket,   &
                                    order_mag_total,                &
                                    order_ram_bra, order_ram_ket,   &
@@ -356,6 +360,7 @@
     integer,       intent(in)    :: gto_type
     character*(*), intent(in)    :: prop_name
     integer,       intent(in)    :: order_mom
+    integer,       intent(in)    :: order_elec
     integer,       intent(in)    :: order_mag_bra
     integer,       intent(in)    :: order_mag_ket
     integer,       intent(in)    :: order_mag_total
@@ -415,6 +420,7 @@
     ! geometric derivatives on manager processor, and broadcasts other input
     ! arguments to worker processors
     call gen1int_host_prop_create(gto_type, prop_name, order_mom, &
+                                  order_elec,                     &
                                   order_mag_bra, order_mag_ket,   &
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
@@ -1190,6 +1196,7 @@
       ! calculates integrals using Gen1Int
       call gen1int_host_get_int(GTO_TYPE(itest),                                 &
                                 trim(PROP_NAME(itest)), ORDER_MOM(itest),        &
+                                0,                                               &
                                 ORDER_MAG_BRA(itest), ORDER_MAG_KET(itest),      &
                                 ORDER_MAG_TOTAL(itest),                          &
                                 ORDER_RAM_BRA(itest), ORDER_RAM_KET(itest),      &
@@ -1308,6 +1315,7 @@
   !> \return geom_tree is the N-ary tree for total geometric derivatives
   !> \note see \fn(gen1int_host_get_int) for the explanation of other arguments
   subroutine gen1int_host_prop_create(gto_type, prop_name, order_mom, &
+                                      order_elec,                     &
                                       order_mag_bra, order_mag_ket,   &
                                       order_mag_total,                &
                                       order_ram_bra, order_ram_ket,   &
@@ -1325,6 +1333,7 @@
     integer,           intent(in)    :: gto_type
     character*(*),     intent(in)    :: prop_name
     integer,           intent(in)    :: order_mom
+    integer,           intent(in)    :: order_elec
     integer,           intent(in)    :: order_mag_bra
     integer,           intent(in)    :: order_mag_ket
     integer,           intent(in)    :: order_mag_total
@@ -1360,6 +1369,7 @@
     call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
                    MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mom,       1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_elec,      1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1383,6 +1393,7 @@
 #endif
     ! creates the operator of property integrals
     call Gen1IntAPIPropCreate(gto_type, prop_name, order_mom, &
+                              order_elec,                     &
                               order_mag_bra, order_mag_ket,   &
                               order_mag_total,                &
                               order_ram_bra, order_ram_ket,   &
@@ -1426,6 +1437,7 @@
     integer gto_type
     character(MAX_LEN_STR) prop_name
     integer order_mom
+    integer order_elec
     integer order_mag_bra
     integer order_mag_ket
     integer order_mag_total
@@ -1456,6 +1468,7 @@
     call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
                    MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mom,       1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_elec,      1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1486,6 +1499,7 @@
     call MPI_Bcast(add_london, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
     ! creates the operator of property integrals
     call Gen1IntAPIPropCreate(gto_type, prop_name, order_mom, &
+                              order_elec,                     &
                               order_mag_bra, order_mag_ket,   &
                               order_mag_total,                &
                               order_ram_bra, order_ram_ket,   &
