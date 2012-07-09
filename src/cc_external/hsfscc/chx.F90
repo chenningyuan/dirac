@@ -2,7 +2,7 @@
       subroutine chx
 !---------------------------------------------------------------------
 !
-!
+!   (4,0)
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -73,7 +73,7 @@
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
-      write (6,*) '   $$$$$$$$$   chx   $$$$$$$$$  '
+      write (6,*) '   $$$$$$$$$   chx (4,0)   $$$$$$$$$  '
       csdstim=cputime(real(0.))
       csdltim=csdstim
       call rdin

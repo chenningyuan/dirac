@@ -1202,7 +1202,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !  and is preparing 2-electron integral/indexes file for the HSMRCC run :
 !
 !  FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
-!  These are to be produced by DIRAC !
+!  These files are to be produced by DIRAC !
 !
 !  Entering: RecLen
 !            NumRec
@@ -1211,13 +1211,10 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !            RecordNumRS
 !            PackRS
 !            SetIntBuf - as SIB_Vxxxx (xxxx=2H2P,PPPP...all integral types)
-!
 !  
 !  SetIntBuf - SIB_Vxxxx routine which places integral on the buffer array  
-!  
 !   
 !  Called from: DrvIntGen ("intgenmod.F90")  
-!
 !---------------------------------------------------------------------------------------------------------
    implicit none
    ! ... Dummy Argument Variables ...
@@ -1472,9 +1469,9 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 
                      ! ... write block of integrals/indices of NZVINTBUFSIZE parameters
                      if ( NZVIntBufInd > NZVINTBUFSIZE ) then
-                        ! ...  write buffer with integrals 
+                        ! ...  write out buffer with integrals 
                         write(UVINT,rec=NxtRec) NZVIntBuf
-                        ! ...  write buffer with indexes 
+                        ! ...  write out buffer with indexes 
                         write(UVIND,rec=NxtRec) NZVPkIBuf
 
                         NxtRec = NxtRec + 1 ! shift to the next rectord
@@ -2360,7 +2357,7 @@ subroutine control_print_VIND_VINT
 !
 !----------------------------------------------------------------------------------
 
-call header('control printout of all two-electron transformed integrals and their indexes',-1)
+call header('All two-electron transformed integrals (VINT) and their indexes (VINT)',-1)
 
 call control_print_V2H2P ! 1.
 call control_print_VPPPP ! 2. block

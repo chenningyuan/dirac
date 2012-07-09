@@ -4203,13 +4203,6 @@ C
      &               IPQTOQ(1,0),LUPRI)
       END IF
 !
-!     test - deactivated for now since DELPAR is in action.
-Csk   IF( OPT_CHCKJZ .AND. LINEAR )THEN
-C       set internal control variable
-Csk     IREDJOB = 9
-Csk     CALL RESETXOP_sym(WORK(KUKAPPA),DUMMY,DUMMY,IREDJOB,IPROPT)
-Csk   END IF
-C
 C     Save old coefficients
       CALL WRTKRMC(LUKRM2,'OLDORB  ',CMO,NCMOTQ)
 C

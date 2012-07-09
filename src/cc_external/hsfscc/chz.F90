@@ -2,7 +2,7 @@
       subroutine chz
 !---------------------------------------------------------------------
 !
-!
+!           (6,0) 
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -75,7 +75,7 @@
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
-      write (6,*) '   $$$$$$$$$   chz   $$$$$$$$$  '
+      write (6,*) '   $$$$$$$$$   chz (6,0)  $$$$$$$$$  '
       csdstim=cputime(real(0.))
       csdltim=csdstim
       call rdin
@@ -147,8 +147,7 @@
       call eneru2  (egr0,5,2,max(1,iopt(1)))                         
       call eneru2  (egr0,6,2,max(1,iopt(1)))                         
       call wrtfile (62,2,"thzf")
-      write (6,*) nstrt(1,nflcur),'words used in igen,',                &
- nstrt(2,nflcur),' words used in gen'
+      write (6,*) nstrt(1,nflcur),'words used in igen,',nstrt(2,nflcur),' words used in gen'
       call prtime ("end ",0,0)
 !      stop
       end

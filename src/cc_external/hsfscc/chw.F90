@@ -2,7 +2,7 @@
       subroutine chw
 !---------------------------------------------------------------------
 !
-!
+!  (3,0) 
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -84,14 +84,13 @@
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
-      write (*,*) '   $$$$$$$$$   chw   $$$$$$$$$  '
+      write (*,*) '   $$$$$$$$$   chw (3,0)  $$$$$$$$$  '
       csdstim = cputime(real(0.))
       csdltim = csdstim
       call rdin
       call rdsym
       convrg = 10.**(-iopt(3))
-      write (6,'('' max # of iter='',i3,''. convrg='',e10.2)')          &
-  iopt(2),convrg
+      write (6,'('' max # of iter='',i3,''. convrg='',e10.2)') iopt(2),convrg
       call prtime ("rdin    ",0,0)
       nflcur=0
       nstrt(1,0)=0
