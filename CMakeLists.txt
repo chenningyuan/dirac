@@ -29,7 +29,7 @@ option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
-option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            ON)
+option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
