@@ -352,23 +352,12 @@ contains
 
     kfree = 1
     lfree = len_f77_work
-    call memget('INTE', kzxope, 2*length_pp, work, kfree, lfree)
-    call memget('INTE', kzxopp, 2*length_pn, work, kfree, lfree)
-
-    call fill_work(include_pp_rotations,                      &
-                   include_pn_rotations,                      &
-                   length_pp,                  &
-                   length_pn,                  &
-                   orbital_rotation_indices_pp, &
-                   orbital_rotation_indices_pn, &
-                   work(kzxope),               &
-                   work(kzxopp))
 
 
 !   parameters
 !   ==========
 
-    call setrsp
+    call setrsp()
 
 !   .URKBAL response with frequency=0.0 but static=.false. converges much worse
 !   than frequency=0.0 with static=.true.
@@ -768,50 +757,4 @@ contains
 
   end subroutine
 
-
-
 end module
-
-      subroutine fill_work(do_pp, &
-                           do_pn, &
-                           length_pp, &
-                           length_pn, &
-                           orbital_rotation_vector_pp, &
-                           orbital_rotation_vector_pn, &
-                           jxop_pp, &
-                           jxop_pn)
-
-      implicit none
-
-      logical   do_pp
-      logical   do_pn
-      integer   length_pp
-      integer   length_pn
-      integer   orbital_rotation_vector_pp
-      integer   orbital_rotation_vector_pn
-      integer   jxop_pp
-      integer   jxop_pn
-
-      dimension orbital_rotation_vector_pp(2, *)
-      dimension orbital_rotation_vector_pn(2, *)
-      dimension jxop_pp(2, *)
-      dimension jxop_pn(2, *)
-
-      integer   i
-
-      if (do_pp) then
-        do i = 1, length_pp
-          jxop_pp(1, i) = orbital_rotation_vector_pp(1, i)
-          jxop_pp(2, i) = orbital_rotation_vector_pp(2, i)
-        end do
-      end if
-
-      if (do_pn) then
-        do i = 1, length_pn
-          jxop_pn(1, i) = orbital_rotation_vector_pn(1, i)
-          jxop_pn(2, i) = orbital_rotation_vector_pn(2, i)
-        end do
-      end if
-
-      end
-

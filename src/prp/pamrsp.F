@@ -3262,6 +3262,9 @@ C
 C     Written by T.Saue 1996
 C
 C***********************************************************************
+
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3274,7 +3277,9 @@ C     Orbital part
 C
       IF((NZXOPE.GT.0).OR.(NZXOPP.GT.0)) THEN
         CALL E2ODIA(HEDIAG,HPDIAG,SEDIAG,SPDIAG,
-     &              WORK(KZXOPE),WORK(KZXOPP),WORK,KFREE,LFREE)
+     &              get_orbital_rotation_indices_pp(),
+     &              get_orbital_rotation_indices_pn(),
+     &              WORK,KFREE,LFREE)
       ENDIF
 C
 C     Configurational part

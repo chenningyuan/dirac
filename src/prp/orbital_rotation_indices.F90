@@ -1,30 +1,49 @@
-!dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
+module orbital_rotation_indices
 
-!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck setxop */
+   implicit none
+
+   public set_as_initialized
+   public get_orbital_rotation_indices_pp
+   public get_orbital_rotation_indices_pn
+
+   private
+
+   integer, allocatable, target, public :: orbital_rotation_indices_pp(:)
+   integer, allocatable, target, public :: orbital_rotation_indices_pn(:)
+
+   logical :: is_initialized = .false.
+
+contains
+
+   subroutine set_as_initialized()
+      is_initialized = .true.
+   end subroutine
+
+   subroutine check_if_interface_is_initialized()
+      if (.not. is_initialized) then
+         print *, 'error: you try to access orbital_rotation_indices'
+         print *, '       but this interface is not initialized'
+         stop 1
+      end if
+   end subroutine
+
+   function get_orbital_rotation_indices_pp() result(p)
+      integer, pointer :: p(:)
+      call check_if_interface_is_initialized()
+      p => orbital_rotation_indices_pp
+   end function
+
+   function get_orbital_rotation_indices_pn() result(p)
+      integer, pointer :: p(:)
+      call check_if_interface_is_initialized()
+      p => orbital_rotation_indices_pn
+   end function
+
+end module
+
       SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,           &
                    NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,                      &
-                   WORK,KFREE,LFREE,IPRINT)
+                   IPRINT)
 !***********************************************************************
 !
 !     Set orbital rotation index vectors
@@ -53,6 +72,9 @@
 !     Last revision: July 21 1997 - tsaue
 !
 !***********************************************************************
+
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 !
@@ -68,65 +90,73 @@
 !
       LOGICAL SKIPEP,SKIPEE,GAS
       CHARACTER INDSTR(3,2)*72
-      DIMENSION WORK(*),NSTR(0:2,3,2)
+      DIMENSION NSTR(0:2,3,2)
       DIMENSION NOROT(*)
+      integer, allocatable :: ibuf(:)
+      integer              :: idummy(2)
 !
       CALL QENTER('SETXOP')
-      KXOPE = KFREE
-      KXOPP = KFREE
-      NXOPE = 0
-      NXOPP = 0
-      NHOPE = 0
+      KXOPE = -1
+      KXOPP = -1
+      NXOPE =  0
+      NXOPP =  0
+      NHOPE =  0
 !
 !     Allocate buffer areas
 !     =====================
 !
       NBUF = N2BBASX
+      allocate(ibuf(mxfbas*3*nfsym))
 !
 !     ***********************************
 !     *** Electron-electron rotations ***
 !     ***********************************
-!      
- 10   CONTINUE
-      IF(SKIPEE) GOTO 20
-      CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,MXFBAS*3*NFSYM,WORK,KFREE,LFREE)
-!     ... Unpack strings
-      CALL UNPSTR(INDSTR,3,WORK(KIBUF),MXFBAS,NSTR,                     &
-             WORK,KFREE,LFREE,IPRINT)
-      CALL SETXEE(WORK(KBUF),IOPSY,NXOPE,NHOPE,WORK(KIBUF),             &
-      NSTR,GAS,IPRINT,NOROT)
-      IF(NHOPE.GT.0) THEN
-        CALL MEMREL('SETXOP.e-e',WORK,1,KBUF,KFREE,LFREE)
-        CALL MEMGET('INTE',KXOPE,2*NHOPE,WORK,KFREE,LFREE)
-        NBUF = N2BBASX - 2*(NHOPE+1)
-      ENDIF
+! 
+      if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)     
+      if (skipee) then
+         allocate(orbital_rotation_indices_pp(2))
+         orbital_rotation_indices_pp = 0
+      else
+!        ... Unpack strings
+         CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,IPRINT)
+         ! first get length (dryrun=.true.)
+         CALL SETXEE(idummy,    IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.true.)
+         ! then fill array
+         allocate(orbital_rotation_indices_pp(nhope*2))
+         orbital_rotation_indices_pp = 0
+         CALL SETXEE(orbital_rotation_indices_pp,IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.false.)
+      end if
 !
 !     ***********************************
 !     *** Electron-positron rotations ***
 !     ***********************************
 !      
- 20   CONTINUE
-      IF(SKIPEP) GOTO 30
-      CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,MXFBAS*3*NFSYM,WORK,KFREE,LFREE)
-!     ... Unpack strings
-      CALL UNPSTR(INDSTR,3,WORK(KIBUF),MXFBAS,NSTR,                     &
-             WORK,KFREE,LFREE,0)
-      CALL SETXEP(WORK(KBUF),IOPSY,NXOPP,QED,WORK(KIBUF),NSTR,IPRINT,   &
-      NOROT)
-      CALL MEMREL('SETXOP.e-p',WORK,1,KBUF,KFREE,LFREE)
-      CALL MEMGET('INTE',KXOPP,2*NXOPP,WORK,KFREE,LFREE)
-!
- 30   CONTINUE
-!
+      if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)     
+      if (skipep) then
+         allocate(orbital_rotation_indices_pn(2))
+         orbital_rotation_indices_pn = 0
+      else
+!        ... Unpack strings
+         CALL UNPSTR(INDSTR,3,IBUF,MXFBAS,NSTR,0)
+         ! first get length (dryrun=.true.)
+         CALL SETXEP(idummy,    IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.true.)
+         ! then fill array
+         allocate(orbital_rotation_indices_pn(nxopp*2))
+         orbital_rotation_indices_pn = 0
+         CALL SETXEP(orbital_rotation_indices_pn,IOPSY,NXOPP,QED,IBUF,NSTR,IPRINT,NOROT,.false.)
+      end if
+
+      deallocate(ibuf)
+      call set_as_initialized()
+
       CALL QEXIT('SETXOP')
-      RETURN
+
       END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!/* Deck setxee */
+
+
+
       SUBROUTINE SETXEE(JXOPE,IOPSY,NXOPE,NHOPE,IND,NIND,GAS,IPRINT,    &
-                   NOROT)
+                   NOROT,dryrun)
 !   
 !     Generate electron-electron rotations
 !
@@ -148,6 +178,7 @@
       DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
       DIMENSION NOROT(*)
       LOGICAL GAS
+      LOGICAL dryrun
 !
       DIMENSION JACAC(MAXASH,MAXASH)
 !
@@ -194,8 +225,10 @@
                INDA = IND(JA,1,JSYM)
                IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDA) .EQ. 0) THEN
                   NXOPE          = NXOPE + 1
-                  JXOPE(1,NXOPE) = INDI
-                  JXOPE(2,NXOPE) = INDA
+                  if (.not. dryrun) then
+                     JXOPE(1,NXOPE) = INDI
+                     JXOPE(2,NXOPE) = INDA
+                  end if
                END IF
              ENDDO
            ENDDO
@@ -218,8 +251,10 @@
                INDA = IND(JA,2,JSYM)
                IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDA) .EQ. 0) THEN
                   NXOPE          = NXOPE + 1
-                  JXOPE(1,NXOPE) = INDI
-                  JXOPE(2,NXOPE) = INDA
+                  if (.not. dryrun) then
+                     JXOPE(1,NXOPE) = INDI
+                     JXOPE(2,NXOPE) = INDA
+                  end if
                END IF
             ENDDO
          ENDDO
@@ -236,8 +271,10 @@
                INDS = IND(JS,3,JSYM)
                IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDS) .EQ. 0) THEN
                   NXOPE          = NXOPE + 1
-                  JXOPE(1,NXOPE) = INDI
-                  JXOPE(2,NXOPE) = INDS
+                  if (.not. dryrun) then
+                     JXOPE(1,NXOPE) = INDI
+                     JXOPE(2,NXOPE) = INDS
+                  end if
                END IF
             ENDDO
          ENDDO
@@ -254,8 +291,10 @@
                INDS = IND(JS,3,JSYM)
                IF (NOROT(INDA) .EQ. 0 .AND. NOROT(INDS) .EQ. 0) THEN
                   NXOPE          = NXOPE+1
-                  JXOPE(1,NXOPE) = INDA
-                  JXOPE(2,NXOPE) = INDS
+                  if (.not. dryrun) then
+                     JXOPE(1,NXOPE) = INDA
+                     JXOPE(2,NXOPE) = INDS
+                  end if
                END IF
             ENDDO
          ENDDO
@@ -274,7 +313,7 @@
 !        
 !        Find non-redundant active-active rotations.
 !        
-         CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
+         CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT,dryrun)
 !        
       END IF
 !     
@@ -302,8 +341,10 @@
                   IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.       &
                   NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
                      NHOPE = NHOPE + 1
-                     JXOPE(1,NHOPE) = IAA
-                     JXOPE(2,NHOPE) = JAA
+                     if (.not. dryrun) then
+                        JXOPE(1,NHOPE) = IAA
+                        JXOPE(2,NHOPE) = JAA
+                     end if
                   END IF
                END DO
             END DO
@@ -316,8 +357,10 @@
                   IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.       &
                   NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
                      NHOPE = NHOPE + 1
-                     JXOPE(1,NHOPE) = IAA
-                     JXOPE(2,NHOPE) = JAA
+                     if (.not. dryrun) then
+                        JXOPE(1,NHOPE) = IAA
+                        JXOPE(2,NHOPE) = JAA
+                     end if
                   END IF
                ENDDO
             ENDDO
@@ -327,26 +370,26 @@
 !     Print section
 !     =============
 !     
-      IF(IPRINT.GE.2) THEN
-        CALL HEADER('Output from SETXEE',-1)        
-        WRITE(LUPRI,'(A,I10)')                                          &
-        '# of e-e rotations (non-redundant): ',NXOPE
-        IF (IPRINT.GE.3) THEN
-          WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
-        ENDIF
-        WRITE(LUPRI,'(A,I10)') '# of extra e-e rotations (redundant): ',&
-         NHOPE - NXOPE
-        IF (IPRINT.GE.3) THEN
-          WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=NXOPE+1,NHOPE)
-        ENDIF
-      ENDIF
+      if (.not. dryrun) then
+          IF(IPRINT.GE.2) THEN
+            CALL HEADER('Output from SETXEE',-1)        
+            WRITE(LUPRI,'(A,I10)')                                          &
+            '# of e-e rotations (non-redundant): ',NXOPE
+            IF (IPRINT.GE.3) THEN
+              WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
+            ENDIF
+            WRITE(LUPRI,'(A,I10)') '# of extra e-e rotations (redundant): ',&
+             NHOPE - NXOPE
+            IF (IPRINT.GE.3) THEN
+              WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=NXOPE+1,NHOPE)
+            ENDIF
+          ENDIF
+      end if
 !     
       CALL QEXIT('SETXEE')
-      RETURN
       END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!/* Deck setxep */
-      SUBROUTINE SETXEP(JXOPP,IOPSY,NXOPP,QED,IND,NIND,IPRINT,NOROT)
+
+      SUBROUTINE SETXEP(JXOPP,IOPSY,NXOPP,QED,IND,NIND,IPRINT,NOROT,dryrun)
 !***********************************************************************
 !   
 !     Generate electron-positron rotations
@@ -361,7 +404,7 @@
 #include "dcborb.h"
 #include "dcbbas.h"
 !
-      LOGICAL QED
+      LOGICAL QED, dryrun
       DIMENSION JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
       DIMENSION NOROT(*)
 !
@@ -388,8 +431,10 @@
               INDP = IND(JP,3,JSYM)
               IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDP) .EQ. 0) THEN
                  NXOPP          = NXOPP+1
-                 JXOPP(1,NXOPP) = INDI
-                 JXOPP(2,NXOPP) = INDP
+                 if (.not. dryrun) then
+                    JXOPP(1,NXOPP) = INDI
+                    JXOPP(2,NXOPP) = INDP
+                 end if
               END IF
            ENDDO
         ENDDO
@@ -405,8 +450,10 @@
               INDP = IND(JP,3,JSYM)
               IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDP) .EQ. 0) THEN
                  NXOPP          = NXOPP+1
-                 JXOPP(1,NXOPP) = INDA
-                 JXOPP(2,NXOPP) = INDP
+                 if (.not. dryrun) then
+                    JXOPP(1,NXOPP) = INDA
+                    JXOPP(2,NXOPP) = INDP
+                 end if
               END IF
            ENDDO
         ENDDO
@@ -425,8 +472,10 @@
                  INDP = IND(JP,3,JSYM)
                  IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDP) .EQ. 0) THEN
                     NXOPP          = NXOPP+1
-                    JXOPP(1,NXOPP) = INDS
-                    JXOPP(2,NXOPP) = INDP
+                    if (.not. dryrun) then
+                       JXOPP(1,NXOPP) = INDS
+                       JXOPP(2,NXOPP) = INDP
+                    end if
                  END IF
               ENDDO
            ENDDO
@@ -437,14 +486,275 @@
 !     Print section
 !     =============
 !
-      IF(IPRINT.GE.2) THEN
-        CALL HEADER('Output from SETXEP',-1)        
-        WRITE(LUPRI,'(A,I10)') '# of e-p rotations: ',NXOPP
-        IF(IPRINT.GE.3) THEN
-          WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,NXOPP)
-        ENDIF
-      ENDIF
+      if (.not. dryrun) then
+         IF(IPRINT.GE.2) THEN
+           CALL HEADER('Output from SETXEP',-1)        
+           WRITE(LUPRI,'(A,I10)') '# of e-p rotations: ',NXOPP
+           IF(IPRINT.GE.3) THEN
+             WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,NXOPP)
+           ENDIF
+         ENDIF
+      end if
 !
       CALL QEXIT('SETXEP')
-      RETURN
+      END
+
+      SUBROUTINE UNPSTR(INDSTR,NTYP,IND,LIND,NIND,IPRINT)
+!***********************************************************************
+!
+!     General routine for unpacking of orbital strings
+!
+!     Written by T.Saue July 19 1997
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+!
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      CHARACTER INDSTR(NTYP,NFSYM)*72
+      DIMENSION IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM)
+!
+      DO IFRP = 1,NFSYM
+        DO ITYP = 1,NTYP
+          NVEC = 1
+          CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),              &
+                  NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),           &
+                  IFRP,NVEC)
+          CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,                            &
+                 NPSH(IFRP),NESH(IFRP),                                 &
+                 NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
+!
+!         Absolute indices of positronic orbitals
+!
+          IOFF = NPSH(IFRP) + 1 + IORB(IFRP)
+          DO I = 1,NIND(1,ITYP,IFRP)
+            IND(I,ITYP,IFRP) = IOFF + IND(I,ITYP,IFRP)
+          ENDDO
+!
+!         Absolute indices of electronic orbitals
+!
+          IOFF = NPSH(IFRP) + IORB(IFRP)
+          JOFF = NIND(1,ITYP,IFRP)
+          DO I = 1,NIND(2,ITYP,IFRP)
+            IND(I+JOFF,ITYP,IFRP) = IOFF + IND(I+JOFF,ITYP,IFRP)
+          ENDDO
+        ENDDO
+      ENDDO
+!
+!     Print section
+!     =============      
+!
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER('Output from UNPSTR',-1)
+        DO ITYP = 1,NTYP
+          WRITE(LUPRI,'(A,I5)') '* Orbital string no.',ITYP
+          DO IFRP = 1,NFSYM
+            WRITE(LUPRI,'(3X,A,A3)') '* Fermion ircop ',FREP(IFRP)
+            IF(NIND(1,ITYP,IFRP).EQ.0) THEN
+              WRITE(LUPRI,'(5X,A)') 'No positronic orbitals.'
+            ELSE
+              WRITE(LUPRI,'(5X,A)') 'Positronic orbitals:'
+              WRITE(LUPRI,'(8X,12I5)')                                  &
+              (IND(I,ITYP,IFRP),I=1,NIND(1,ITYP,IFRP))
+            ENDIF
+            IF(NIND(2,ITYP,IFRP).EQ.0) THEN
+              WRITE(LUPRI,'(5X,A)') 'No electronic orbitals.'
+            ELSE
+              JOFF = NIND(1,ITYP,IFRP)
+              WRITE(LUPRI,'(5X,A)') 'Electronic orbitals:'
+              WRITE(LUPRI,'(8X,12I5)')                                  &
+              (IND(I+JOFF,ITYP,IFRP),I=1,NIND(2,ITYP,IFRP))
+            ENDIF
+          ENDDO
+        ENDDO
+      ENDIF
+!
+      END
+
+      SUBROUTINE RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT,dryrun)
+!***********************************************************************
+!   
+!     Generate non-redundant active-active rotations.
+!
+!     Written by J. Thyssen - Jan 18 2001
+!
+!     Revised GAS setup, Timo Fleig, May 2002
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+!
+#include "maxorb.h"
+#include "dcbidx.h"
+#include "dcbibn.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+!
+      DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      DIMENSION JACAC(MAXASH,MAXASH)
+      DIMENSION NOROT(*)
+!
+      DIMENSION IGAS(MAXASH)
+      LOGICAL GASCAS(MXMCGAS), dryrun
+!
+!
+!     iprint = 20
+      NXOPES = NXOPE
+!
+!     Set up help arrays
+!     ------------------
+!
+!     IGAS point from active orbital to which GAS space it belongs.
+!
+      II = 0
+      DO ISYM = 1, NFSYM
+         DO I = 1, NGAS_DC
+            DO J = 1, NGSH(ISYM,I)
+               II = II + 1
+               IGAS(II) = I
+            END DO
+         END DO
+      END DO
+!
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('Output from RGASWOP',-1)
+         WRITE(LUPRI,'(1X,A)')                                          &
+         'Pointer from active orbitals to GAS spaces:'
+         DO I = 1, NASHT
+            WRITE(LUPRI,'(5X,A,I3,A,I3)')                               &
+            'Orbital ',I,' is in GAS space ',IGAS(I)
+         END DO
+      END IF
+!
+!     Determine whether a GAS space is a CAS space:
+!
+      DO I = 1, NGAS_DC
+!
+!        Number of orbitals in this GAS shell
+!
+         NGST = 0
+         DO ISYM = 1, NFSYM
+            NGST = NGST + NGSH(ISYM,I)
+         END DO
+!
+!        Minimum number of electrons in this GAS space:
+!
+         MINCAS = 2*NGST - (NGSP(2,I) - NGSP(1,I)) 
+         IF (I.EQ.NGAS_DC.AND.NGAS_DC.GT.1) THEN
+           MINCAS = NAELEC - NGSP(2,I-1)
+         ELSE IF (I.EQ.NGAS_DC.AND.NGAS_DC.EQ.1) then
+           MINCAS = NAELEC
+         END IF
+!        print*,'GAS ',I,' MINCAS,MAXCAS ',MINCAS,MAXCAS
+!
+!        Maximum number of holes in this GAS space:
+!
+         MAXCAS = 2*NGST - MINCAS
+!
+!        This is a GAS space if the minimum number of electrons 
+!        after this space is less than MINCAS - and -
+!        if the maximum number of holes in this GAS space is larger
+!        than MAXCAS:
+!
+         IF ( (NGSP(1,I) .LE. MINCAS .AND.                              &
+         (NGSP(2,I) - NGSP(1,I)) .GE. MAXCAS) .OR.                      &
+         I .EQ. NGAS_DC ) THEN
+            GASCAS(I) = .TRUE.
+         ELSE
+            GASCAS(I) = .FALSE.
+         END IF
+      END DO
+      IF (IPRINT .GE. 10) THEN
+         WRITE(LUPRI,'(1X,A)')                                          &
+         'GAS space is a CAS space?'
+         DO I = 1, NGAS_DC
+            WRITE(LUPRI,'(5X,A,I3,A,L1)')                               &
+            'GAS space ',I,' : ',GASCAS(I)
+         END DO
+      END IF
+!
+!     Algorithm:
+!     ----------
+!
+!     No inter-GAS-space active-active rotations
+!     No active-active rotations into CAS spaces
+!     No active-active rotations from a CAS space into the NEXT GAS space.
+!
+!     Active-active elements
+!     ----------------------
+!
+      DO 20 ISYM = 1,NFSYM
+         JSYM  = MOD(ISYM+IOPSY,2) + 1
+         IF (JSYM .LT. ISYM) GOTO 20
+!        
+         ISTA  = NIND(1,2,ISYM) + 1
+         IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
+!        
+         JSTA  = NIND(1,2,JSYM) + 1
+         JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
+         IF (ISYM .EQ. JSYM) THEN
+            IF (NIND(2,2,ISYM).LE.1) GO TO 20
+            DO IA = ISTA, IENDA
+               DO JA = IA + 1, IENDA
+                  IAA = IND(IA,2,ISYM)
+                  JAA = IND(JA,2,JSYM)
+                  IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.       &
+                  IGAS(IDXG2U(IAA)) .NE. IGAS(IDXG2U(JAA)) .AND.        &
+                  .NOT. GASCAS(IGAS(IDXG2U(JAA))) .AND.                 &
+                  .NOT. (                                               &
+                     GASCAS(IGAS(IDXG2U(IAA))) .AND.                    &
+                  IGAS(IDXG2U(JAA)) .LE. IGAS(IDXG2U(IAA)+1)) .AND.     &
+                  NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
+                     NXOPE = NXOPE + 1
+                     if (.not. dryrun) then
+                        JXOPE(1,NXOPE) = IAA
+                        JXOPE(2,NXOPE) = JAA
+                        JACAC(IDXG2U(IAA),IDXG2U(JAA)) = 1
+                        JACAC(IDXG2U(JAA),IDXG2U(IAA)) = 1
+                     end if
+                  END IF
+               END DO
+            END DO
+         ELSE
+            IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 20
+            DO IA = ISTA,IENDA
+               DO JA = JSTA,JENDA
+                  IAA = IND(IA,2,ISYM)
+                  JAA = IND(JA,2,JSYM)
+                  IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.       &
+                  IGAS(IDXG2U(IAA)) .NE. IGAS(IDXG2U(JAA)) .AND.        &
+                  .NOT. GASCAS(IDXG2U(JAA)) .AND.                       &
+                  .NOT. (                                               &
+                     GASCAS(IDXG2U(IAA)) .AND.                          &
+                  IGAS(IDXG2U(JAA)) .LE. IGAS(IDXG2U(IAA)+1))) THEN
+                     NXOPE = NXOPE + 1
+                     if (.not. dryrun) then
+                        JXOPE(1,NXOPE) = IAA
+                        JXOPE(2,NXOPE) = JAA
+                        JACAC(IDXG2U(IAA),IDXG2U(JAA)) = 1
+                        JACAC(IDXG2U(JAA),IDXG2U(IAA)) = 1
+                     end if
+                  END IF
+               ENDDO
+            ENDDO
+         END IF
+ 20   CONTINUE
+!
+!     
+      if (.not. dryrun) then
+         IF (IPRINT .GE. 10) THEN
+            WRITE(LUPRI,'(1X,A,I3,A)')                                     &
+            'The following ',NXOPE - NXOPES,                               &
+            ' active-active rotations were considered non-redundant: '
+            DO I = NXOPES + 1, NXOPE
+               WRITE(LUPRI,'(5X,2I4)')                                     &
+               JXOPE(1,I), JXOPE(2,I)
+            END DO
+         END IF
+      end if
+!     stop 'after GASCAS determination.'
       END

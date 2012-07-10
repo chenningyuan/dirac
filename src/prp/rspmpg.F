@@ -214,6 +214,8 @@ C
 C     REMARKS: -
 C     
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -297,7 +299,9 @@ C
                call memget('REAL',kgpop,nzxoppq,work,kfree,lfree)
                call pamgrd_mpg(indprb,work(kgpoe),
      &                         work(kgpop),jopsy,work(kzconf),
-     &                         work(kzxope),work(kzxopp),nzconf,nzxope,
+     &                         get_orbital_rotation_indices_pp(),
+     &                         get_orbital_rotation_indices_pn(),
+     &                         nzconf,nzxope,
      &                         nzxopp,XMO,work,kfree,lfree,iprxlr)
 C
 C     Check norm of gradient
@@ -651,6 +655,8 @@ C
 C     REMARKS: -
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -719,7 +725,8 @@ CMI      call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
          call getlr1(ablrf,jbendx,evecr,evalr,RCNV,
      &               IBTYP,ibevc,
      &               work(kgvec),work(kxvec),work(kbbuf),nzxope,
-     &               work(kcmo),work(kibrp),iorbcl,work(kzxope),
+     &               work(kcmo),work(kibrp),iorbcl,
+     &               get_orbital_rotation_indices_pp(),
      &               WORK(KIVEC),IDUM,IDUM,IDUM,IDUM,IDUM,DUM,DUM,
      &               work,kfree,lfree)
 C
@@ -778,7 +785,8 @@ C
 CMI      call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
          call getlr1(ablrf,jbpndx,evecr,evalr,RCNV,IBTYP,
      &               ibpvc,work(kgvec),work(kxvec),work(kbbuf),nzxopp,
-     &               work(kcmo),work(kibrp),iorbcl,work(kzxopp),
+     &               work(kcmo),work(kibrp),iorbcl,
+     &               get_orbital_rotation_indices_pn(),
      &               WORK(KIVEC),IDUM,IDUM,IDUM,IDUM,IDUM,DUM,DUM,
      &               work,kfree,lfree)
 C

@@ -861,6 +861,8 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on GETLRF
 C
 C*****************************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -935,7 +937,8 @@ C
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBEVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
-     &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,WORK(KZXOPE),
+     &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,
+     &              get_orbital_rotation_indices_pp(),
      &              WORK(KIVEC),WORK(KBMAX),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NTRMOM,ATMPPF(1,1,JSYMOP,IOFF+1),1,
@@ -963,7 +966,8 @@ C
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBPVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
-     &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,WORK(KZXOPP),
+     &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,
+     &              get_orbital_rotation_indices_pn(),
      &              WORK(KIVEC),WORK(KBMAX),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NTRMOM,ATMPPF(1,1,JSYMOP,IOFF+1),1,
