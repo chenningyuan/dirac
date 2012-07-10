@@ -96,11 +96,11 @@ end module
       integer              :: idummy(2)
 !
       CALL QENTER('SETXOP')
-      KXOPE = KFREE
-      KXOPP = KFREE
-      NXOPE = 0
-      NXOPP = 0
-      NHOPE = 0
+      KXOPE = -1
+      KXOPP = -1
+      NXOPE =  0
+      NXOPP =  0
+      NHOPE =  0
 !
 !     Allocate buffer areas
 !     =====================

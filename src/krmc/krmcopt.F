@@ -2094,6 +2094,15 @@ C
       CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
      &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
      &     IPROPT)
+      print *, 'bluxxx'
+      call flshfo(lupri)
+      CALL MEMGET('INTE',Kblubbbb,NORBT,WORK,KFREE,LFREE)
+      call izero(work(Kblubbbb),norbt)
+      print *, 'bluxxd',Kblubbbb,KZXOPE,KZXOPP,kfree,lfree
+      call flshfo(lupri)
+      CALL MEMREL('RSETWOP.LUCIAREL',WORK,1,Kblubbbb,KFREE,LFREE)
+      print *, 'bluxxy'
+      call flshfo(lupri)
 C
 C
 C     MCSCF calculation in linear symmetry: remove potentially
@@ -2141,7 +2150,7 @@ C
 C     Evaluate all derived NZX* and NZH* info in dcbopt.h;
 C     write information to LUKRMC
 C
-      CALL RSET_KRMC(WORK,KFREE,LFREE)
+      CALL RSET_KRMC(WORK)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RSETWOP')
@@ -2149,7 +2158,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rset_krmc */
-      SUBROUTINE RSET_KRMC(WORK,KFREE,LFREE)
+      SUBROUTINE RSET_KRMC(WORK)
 C***********************************************************************
 C
 C     Evaluate all derived NZX* and NZH* info in dcbopt.h;

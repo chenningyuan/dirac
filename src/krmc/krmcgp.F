@@ -1201,28 +1201,46 @@ C
 C
 C     Matrix to hold orbitals.
 C
+      print *, 'bb1'
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
+      print *, 'bb2'
       CALL GTOVLX(WORK(KSAO),D1)
+      print *, 'bb3'
       WRITE (LUPRI,'(/A)')
      &   ' -> Gram-Schmidt orthonormalizing MO coefficients.'
+      call flshfo(lupri)
 C
 C     Gram-Schmidt orthogonalize coefficients
 C
       JSAO = KSAO
       DO I = 1, NFSYM
+      print *, 'bb40'
+      call flshfo(lupri)
          NORBI = NORB(I)
+      print *, 'bb41'
+      call flshfo(lupri)
          NFBASI = NFBAS(I,0)
+      print *, 'bb4a'
+      call flshfo(lupri)
          CALL MEMGET('REAL',KSCR1,NFBASI*NZ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KSCR2,NORBI,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KSAO1,NFBASI*NFBASI,WORK,KFREE,LFREE)
+      print *, 'bb4b'
+      call flshfo(lupri)
          JSAO1 = KSAO1
          DO J = 1, NFBASI
             CALL DCOPY(NFBASI,WORK(JSAO),1,WORK(JSAO1),1)
             JSAO  = JSAO  + NTBAS(0)
             JSAO1 = JSAO1 + NFBASI
+      print *, 'bb4c',JSAO,JSAO1
+      call flshfo(lupri)
          END DO
          JSAO = JSAO + NFBASI
+      print *, 'bb4'
+      call flshfo(lupri)
          CALL MEMCHK('after copy of overlap mat',WORK,1)
+      print *, 'bb5'
+      call flshfo(lupri)
          IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,'(A,I3)')
      &        ' RGMCMO: Coefficients for symmetry ',I
@@ -1230,16 +1248,24 @@ C
      &        NFBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
          END IF
 C
+      print *, 'bb6'
+      call flshfo(lupri)
          IF ( NPSH(I) .EQ. 0) THEN
             CALL QNORM(WORK(KSAO1),CMO(1+ICMOQ(I)),NFBASI,NORBI,
      &                 NZ,IPQTOQ(1,0),IRETUR,WORK(KSCR1),WORK(KSCR2))
+      print *, 'bb7'
+      call flshfo(lupri)
          CALL MEMCHK('after first QNORM',WORK,1)
          ELSE
 C           --- change CMO order from positron,electron to
 C               electron,positron for the Gram-Schmidt
 C               orthonormalization,
 C               because we want to start with the occupied orbitals
+      print *, 'bb8'
+      call flshfo(lupri)
             CALL MEMGET('REAL',KCMO1,NFBASI*NORBI*NZ,WORK,KFREE,LFREE)
+      print *, 'bb9'
+      call flshfo(lupri)
             NPSHI = NPSH(I)
             NESHI = NESH(I)
             LPCMO = NPSHI * NFBASI
@@ -1252,8 +1278,12 @@ C               because we want to start with the occupied orbitals
                JCMO  = JCMO  + NORBI*NFBASI
                JCMO1 = JCMO1 + NORBI*NFBASI
             END DO
+      print *, 'bb10'
+      call flshfo(lupri)
             CALL QNORM(WORK(KSAO1),WORK(KCMO1),NFBASI,NORBI,
      &                 NZ,IPQTOQ(1,0),IRETUR,WORK(KSCR1),WORK(KSCR2))
+      print *, 'bb11'
+      call flshfo(lupri)
             JCMO  = 1+ICMOQ(I)
             JCMO1 = KCMO1
             DO IZ = 1,NZ
@@ -1263,8 +1293,17 @@ C               because we want to start with the occupied orbitals
                JCMO1 = JCMO1 + NORBI*NFBASI
             END DO
          END IF
+      print *, 'bb12'
+      call flshfo(lupri)
 C
+      print *, 'bb12a'
+      call flshfo(lupri)
+         CALL MEMCHK('after first QNORM',WORK,1)
+      print *, 'bb12b'
+      call flshfo(lupri)
          CALL MEMREL('RGMCMO.QNORM',WORK,KWORK,KSCR1,KFREE,LFREE)
+      print *, 'bb12c'
+      call flshfo(lupri)
 C
          IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,'(A,I3)')
@@ -1272,8 +1311,14 @@ C
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBASI,NORBI,
      &        NFBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
          END IF
+      print *, 'bb13'
+      call flshfo(lupri)
       END DO
+      print *, 'bb14'
+      call flshfo(lupri)
       CALL MEMREL('RGMCMO',WORK,KWORK,KWORK,KFREE,LFREE)
+      print *, 'bb15'
+      call flshfo(lupri)
       CALL QEXIT('RGMCMO')
       RETURN
       END

@@ -114,7 +114,7 @@ C
 C
 C     Write information to LUKRMC
 C
-      CALL RSET_KRMC(WORK,KFREE,LFREE)
+      CALL RSET_KRMC(WORK)
 C
 C     Transfer NZCONF to N_CIESR - dimension of ESR matrix
 C
