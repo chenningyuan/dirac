@@ -2094,15 +2094,6 @@ C
       CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
      &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
      &     IPROPT)
-      print *, 'bluxxx'
-      call flshfo(lupri)
-      CALL MEMGET('INTE',Kblubbbb,NORBT,WORK,KFREE,LFREE)
-      call izero(work(Kblubbbb),norbt)
-      print *, 'bluxxd',Kblubbbb,KZXOPE,KZXOPP,kfree,lfree
-      call flshfo(lupri)
-      CALL MEMREL('RSETWOP.LUCIAREL',WORK,1,Kblubbbb,KFREE,LFREE)
-      print *, 'bluxxy'
-      call flshfo(lupri)
 C
 C
 C     MCSCF calculation in linear symmetry: remove potentially
@@ -3157,8 +3148,6 @@ C
       CALL QUIT('*** ERROR in ROPTST *** No orbital start guess')
 C
  1000 CONTINUE
-      write(lupri,*) 'blubb0a'
-      call flshfo(lupri)
 C
 C     Make sure start guess orbitals are orthonormal !!!
 C
@@ -3183,8 +3172,6 @@ C
 !     intermediate step:
 !     save additional required information (integer arrays) to file KRMCSCF
 
-      write(lupri,*) 'blubb0b'
-      call flshfo(lupri)
 !     1. store mj-values (MCSCF run in linear symmetry)
 !     -------------------------------------------------
       if(.not.spinfr_krmc)then
@@ -3288,8 +3275,6 @@ C         write back on file - if not present
 !
 !     final step in orbital part: write coefficients back to file as label NEWORB
 !     ---------------------------------------------------------------------------
-      write(lupri,*) 'blubb1'
-      call flshfo(lupri)
       IF(LBIT(IWRT,1)) THEN
         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
          WRITE(LUPRI,'(/A)')
@@ -3314,8 +3299,6 @@ C     bit 1 of IRCIST:  read CREF from KRMCSCF
 C     bit 2 of IRCIST:  read CREFOLD from KRMCSCF
 C     bit 3 of IRCIST:  do MAXCIT CI iterations (MAXCIT<0 ==> full CI)
 C     bit 4 of IRCIST:  1/Hdiag
-      write(lupri,*) 'blubb'
-      call flshfo(lupri)
 C
       IF (IRCIST .EQ. 0) GOTO 2100
 C
