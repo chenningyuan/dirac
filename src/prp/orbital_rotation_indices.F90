@@ -122,7 +122,7 @@ end module
          ! first get length (dryrun=.true.)
          CALL SETXEE(idummy,    IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.true.)
          ! then fill array
-         allocate(orbital_rotation_indices_pp(nxope*2))
+         allocate(orbital_rotation_indices_pp(nhope*2))
          orbital_rotation_indices_pp = 0
          CALL SETXEE(orbital_rotation_indices_pp,IOPSY,NXOPE,NHOPE,ibuf,NSTR,GAS,IPRINT,NOROT,.false.)
       end if
