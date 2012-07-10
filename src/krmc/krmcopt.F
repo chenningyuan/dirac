@@ -3148,6 +3148,8 @@ C
       CALL QUIT('*** ERROR in ROPTST *** No orbital start guess')
 C
  1000 CONTINUE
+      write(lupri,*) 'blubb0a'
+      call flshfo(lupri)
 C
 C     Make sure start guess orbitals are orthonormal !!!
 C
@@ -3172,6 +3174,8 @@ C
 !     intermediate step:
 !     save additional required information (integer arrays) to file KRMCSCF
 
+      write(lupri,*) 'blubb0b'
+      call flshfo(lupri)
 !     1. store mj-values (MCSCF run in linear symmetry)
 !     -------------------------------------------------
       if(.not.spinfr_krmc)then
@@ -3275,6 +3279,8 @@ C         write back on file - if not present
 !
 !     final step in orbital part: write coefficients back to file as label NEWORB
 !     ---------------------------------------------------------------------------
+      write(lupri,*) 'blubb1'
+      call flshfo(lupri)
       IF(LBIT(IWRT,1)) THEN
         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
          WRITE(LUPRI,'(/A)')
@@ -3299,6 +3305,8 @@ C     bit 1 of IRCIST:  read CREF from KRMCSCF
 C     bit 2 of IRCIST:  read CREFOLD from KRMCSCF
 C     bit 3 of IRCIST:  do MAXCIT CI iterations (MAXCIT<0 ==> full CI)
 C     bit 4 of IRCIST:  1/Hdiag
+      write(lupri,*) 'blubb'
+      call flshfo(lupri)
 C
       IF (IRCIST .EQ. 0) GOTO 2100
 C
@@ -3707,6 +3715,7 @@ C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Nov 17 1998
 C
 C***********************************************************************
+      use orbital_rotation_indices
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3757,21 +3766,23 @@ C
          NZXOPEQ_SAV = NZXOPEQ
          NZHOPEQ_SAV = NZHOPEQ
          NZXOPP_SAV = NZXOPP
-         KZXOPE_SAV = KZXOPE
-         KZXOPP_SAV = KZXOPP
 
 C        Compress orbital rotations.
 C        (this will destroy GPOE and GPOP but that's OK).
 C
-         CALL MEMGET('INTE',KZXOPE,NZHOPE*2,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KZXOPP,NZXOPP*2,WORK,KFREE,LFREE)
-         CALL ICOPY(NZHOPE*2,WORK(KZXOPE_SAV),1,WORK(KZXOPE),1)
-         CALL ICOPY(NZXOPP*2,WORK(KZXOPP_SAV),1,WORK(KZXOPP),1)
+         CALL MEMGET('INTE',KZXOPE_SAV,NZHOPE*2,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KZXOPP_SAV,NZXOPP*2,WORK,KFREE,LFREE)
+         CALL ICOPY(NZHOPE*2,get_orbital_rotation_indices_pp(),1,
+     &              WORK(KZXOPE_SAV),1)
+         CALL ICOPY(NZXOPP*2,get_orbital_rotation_indices_pn(),1,
+     &              WORK(KZXOPP_SAV),1)
 C
 C        Remove rotations.
 C
-         CALL RMROT(NOROTC,GOEE,WORK(KZXOPE),NZXOPE,NZHOPE,
-     &        GOEP,WORK(KZXOPE),NZXOPP,IPROPT,WORK(KFREE),LFREE)
+         CALL RMROT(NOROTC,GOEE,get_orbital_rotation_indices_pp(),
+     &              NZXOPE,NZHOPE,
+     &              GOEP,get_orbital_rotation_indices_pn(),
+     &              NZXOPP,IPROPT,WORK(KFREE),LFREE)
 C
          NZXOPPQ = NZXOPP*NZ
          NZXOPEQ = NZXOPE*NZ
@@ -3950,11 +3961,15 @@ C
          NZXOPE = NZXOPE_SAV
          NZHOPE = NZHOPE_SAV
          NZXOPP = NZXOPP_SAV
-         KZXOPE = KZXOPE_SAV
-         KZXOPP = KZXOPP_SAV
          NZXOPPQ = NZXOPPQ_SAV
          NZXOPEQ = NZXOPEQ_SAV
          NZHOPEQ = NZHOPEQ_SAV
+
+         CALL ICOPY(NZHOPE*2,WORK(KZXOPE_SAV),1,
+     &              get_orbital_rotation_indices_pp(),1)
+         CALL ICOPY(NZXOPP*2,WORK(KZXOPP_SAV),1,
+     &              get_orbital_rotation_indices_pn(),1)
+        
 C
       END IF
 C
