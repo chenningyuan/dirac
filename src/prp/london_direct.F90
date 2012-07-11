@@ -91,15 +91,24 @@ contains
 
 
   subroutine london_twoel_hb(cmo, ibeig, work, lwork)
+
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
 
-    real(8), allocatable         :: dmat_ao(:, :)
-    real(8), allocatable, target :: fmat(:, :, :)
-    real(8), pointer             :: fmat_p(:, :, :)
+    real(8), allocatable   :: dmat_ao(:, :)
+    real(8), allocatable   :: fmat(:)
+
+!radovan: fmat has to be one dimensional
+!         first it is (n2bbasx, 4, xyz)
+!         later if nz < nr_mat is compressed to (n2bbasx, nz, xyz)
+!         keeping the array size
+
+    integer                :: i, iz, ixyz
+    integer                :: k, l
+
 !-----------------------------------------------------------------------
 
     call di_set_f77_work(work, lwork)
@@ -107,50 +116,51 @@ contains
     call initialize_direct_lao()
 
 !   density matrix
-    call alloc(dmat_ao, n2bbasx, nr_mat)
+    allocate(dmat_ao(n2bbasx, nr_mat))
     dmat_ao = 0.0d0
     call get_dmat_ao(cmo, ibeig, dmat_ao)
 
 !   fock matrix
-    call alloc(fmat, n2bbasx, nr_mat, max_nr_xyz_comp)
+    allocate(fmat(n2bbasx*nr_mat*max_nr_xyz_comp))
     fmat = 0.0d0
 
 !   get 2-electron lao-integrals 
     call get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat_ao)
 
-    call dealloc(dmat_ao)
+    deallocate(dmat_ao)
 
 !   if calculations with symmetry we have to 'pack' fmat
 !   before we add dft-lao contribution
-    if (maxrep .gt. 0) then
-
-      call sym_antisym_fock_2el_lao(fmat)
-      call ao_to_so_fock_2el_lao(fmat)
-
-      nullify(fmat_p)
-      fmat_p => fmat(:, 1:nz, :)
-
-    else
-      
-      nullify(fmat_p)
-      fmat_p => fmat
-      
+    if (maxrep > 0) then
+       call sym_antisym_fock_2el_lao(fmat)
+       call ao_to_so_fock_2el_lao(fmat)
     end if
 
+    if (nz < nr_mat) then
+       k = 0
+       l = 0
+       do ixyz = 1, max_nr_xyz_comp
+          do iz = 1, nz
+             do i = 1, n2bbasx
+                k = k + 1
+                l = l + 1
+                fmat(k) = fmat(l)
+             end do
+          end do
+          l = l + (nr_mat - nz)*n2bbasx
+       end do
+    end if
 
 !   add xc contribution if dft calculations
     if (dirac_cfg_dft_calculation) then
-      call xc_contrib_2el_lao(cmo, fmat_p)
+       call xc_contrib_2el_lao(cmo, fmat)
     end if
 
 !   transform from ao to mo basis
-    call ao_to_mo_2el_lao(cmo, ibeig, fmat_p)
-
+    call ao_to_mo_2el_lao(cmo, ibeig, fmat)
 
 !   clean
-!   -----
-    if (associated(fmat_p)) nullify(fmat_p)
-    call dealloc(fmat)
+    deallocate(fmat)
 
   end subroutine
 
