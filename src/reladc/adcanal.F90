@@ -370,6 +370,24 @@
       integer, intent(in) :: ionizlevel
       character*6, intent(in) :: filecnf
 !
+!  define function interfaces called by this subroutine
+!  Since the caller is in Fortran90 we need these interfaces.
+!  Omitting them inevitably leads to an error.
+!
+      interface
+
+         function dot_productz(a,b)
+           complex*16  dot_productz
+           complex*16, dimension(:), intent(in) :: a,b
+         end function dot_productz
+
+         function vnorm_cmplx(a)
+           real*8 vnorm_cmplx
+           complex*16, dimension(:), intent(in) :: a
+         end function vnorm_cmplx
+
+      end interface
+!
 ! local variables
 !
       CHARACTER*10                :: LEVECFN,ANALOUT
@@ -385,13 +403,16 @@
       integer                     :: ispoff,nindep,icount
       complex*16, allocatable     :: evec(:,:)    !eigenvectors are now complex!
       complex*16, allocatable     :: evli(:,:)    !aux array for final complex eigenvectors
-      real*8, allocatable         :: eval(:),smat(:,:),work(:)   !eigenvalues still real
-      real*8, allocatable         :: sevl(:)
+      complex*16, allocatable     :: smat(:,:),work(:)   !complex ovl, complex work array
+      real*8, allocatable         :: rwork(:)      ! real work array for ZHEEV
+      real*8, allocatable         :: eval(:)      !eigenvalues of read-in vectors
+      real*8, allocatable         :: sevl(:)   !  *real* eigenvalues of OVL matrix
       real*8                      :: enorm,polestr,polethr,diffthr,seval
-      real*8                      :: dot_productz  !function with retun value real
       real*8                      :: autoev  = 27.2113957d0
       real*8                      :: coefthr = 0.01d0
       real*8                      :: woutthr = 0.0001d0
+      complex*16                  :: A0
+      real*8                      :: R0
 !
 ! ------------------------ execution starts ----------------------
 !
@@ -464,6 +485,7 @@
 
 ! start analysis
 
+      A0=(0.0D0,0.0D0); R0=0.0d0
       read(io1) ladcx,neigenv
       write(*,*) neigenv,' eigenvectors are stored in ',levecfn
       if(ladcx.ne.ladc) then
@@ -487,9 +509,11 @@
       DO j=1,neigenv
         read(io1) eval(j)
         read(io1) (evec(ix,j),ix=1,LADCX)
-        enorm=dot_productz(evec(:,j),evec(:,j))
+!       write(*,*) 'waaahhhh:', &
+!         size(evec(:,j)),size(evec)
+        enorm=vnorm_cmplx(evec(:,j))
 !       evec=evec/sqrt(enorm)
-        polestr=dot_productz(evec(1:nocc,j),evec(1:nocc,j))
+        polestr=vnorm_cmplx(evec(1:nocc,j))
         write(*,'(A,I5,A,3F16.8)') 'eigenvector',j,': E/PS/NRM:', &
               eval(j)*autoev,polestr,enorm
       ENDDO
@@ -528,10 +552,10 @@
         write(*,*) 'Treating space',J,seval*autoev
         nv = indarr(J)
         If (nv.gt.1) Then
-! create overlap matrix. Is also real in the complex case <V|V> !
+! create overlap matrix. Can have complex entries but is Hermitian!
           nv = indarr(J); lwork=10*nv
-          allocate(smat(nv,nv),work(lwork),sevl(nv))
-          smat=0.0d0; work=0.0d0; sevl=0.0d0
+          allocate(smat(nv,nv),work(lwork),rwork(lwork),sevl(nv))
+          smat=A0; work=A0; rwork=R0; sevl=R0
           Do k=1,nv
           Do l=1,nv
             koff=ispoff+k
@@ -539,13 +563,16 @@
             smat(k,l)=dot_productz(evec(:,koff),evec(:,loff))
           Enddo
           Enddo
-! diagonalize overlap matrix
-          CALL DSYEV('V','U',nv,smat,nv,sevl,work,lwork,info)
+! diagonalize hermitian overlap matrix
+          CALL ZHEEV('V','U',nv,smat,nv,sevl,work,lwork,rwork,info)
 ! smat now contains eigenvectors, eigenvalues are ordered
           write(*,*)' Eigenvalues/vectors of OVL matrix:'
           Do l=1,nv
             write(*,*) l,sevl(l)
-            write(*,*) smat(:,l)
+            Do k=1,nv
+              write(*,'(2F20.10)') smat(k,l)
+            Enddo
+            write(*,*)
           Enddo
 ! determine indices of relevant eigenvectors
           allocate(irel(nv));irel=0
@@ -560,7 +587,7 @@
           write(*,*) 'Found',nindep,' linearly independent eigenvecors.'
 ! now form the subset of linearly independent eigenvectors
           allocate(evli(ladc,nindep))
-          evli=(0.0d0,0.0d0)
+          evli=A0
           do k=1,nindep
             do l=1,nv
               evli(:,k) = evli(:,k) + smat(l,irel(k))*evec(:,ispoff+l)
@@ -569,22 +596,22 @@
 ! display norm of new eigenvectors
           do k=1,nindep
             write(*,*) '  Renormalizing new eigenvector:',k
-            enorm=dot_productz(evli(:,k),evli(:,k))
+            enorm=vnorm_cmplx(evli(:,k))
             evli(:,k) = evli(:,k)/cmplx(sqrt(enorm),0.0d0)
-            polestr=dot_productz(evli(1:nocc,k),evli(1:nocc,k))
+            polestr=vnorm_cmplx(evli(1:nocc,k))
             write(*,*) '      PS of new eigenvectors:',polestr
           enddo
           ispoff=ispoff+nv
-          deallocate(irel,sevl,work,smat)
+          deallocate(irel,sevl,work,rwork,smat)
         Else 
 ! we have subspace dimension 1 and transfer vector for unified writing.
           write(*,*) 'No action taken, space is one-dimensional.'
           ispoff=ispoff+1
           allocate(evli(ladc,1))
           evli(:,1)=evec(:,ispoff)
-          enorm=dot_productz(evli(:,1),evli(:,1))
+          enorm=vnorm_cmplx(evli(:,1))
           write(*,*) '   Norm of eigenvector:',enorm
-          polestr=dot_productz(evli(1:nocc,1),evli(1:nocc,1))
+          polestr=vnorm_cmplx(evli(1:nocc,1))
           write(*,*) '      PS of eigenvector:',polestr
           nindep=1
         Endif
@@ -599,7 +626,7 @@
 !|
         DO 177 K=1,NINDEP
 
-        polestr=dot_productz(evli(1:nocc,k),evli(1:nocc,k))
+        polestr=vnorm_cmplx(evli(1:nocc,k))
         if(polestr.lt.woutthr) then
           write(*,*) 'We skip',seval*autoev, &
                      ' due to vanishing pole strength.'
@@ -1776,6 +1803,17 @@
       integer, intent(in)  :: no(nrep)    ! number of occupied orbitals in each irep
       integer, intent(in)  :: noot(nrep)  ! number of OO-combinations in each irep
 !
+!  function interface
+!
+      interface
+
+         function vnorm_cmplx(a)
+           real*8 vnorm_cmplx
+           complex*16, dimension(:), intent(in) :: a
+         end function vnorm_cmplx
+
+      end interface
+!
 !  local variables
 !
       complex*16, allocatable   :: dmn(:,:),        &
@@ -1785,7 +1823,6 @@
                                    xmnd(:,:)
       complex*16, allocatable   :: thvecs(:,:), evec(:)
       real*8, allocatable       :: cevl(:), polestr(:), dmnext(:,:,:)
-      real*8                    :: dot_productz      ! is a function
       real*8                    :: polethr = 0.001d0
       real*8                    :: autoev = 27.2113957D0
       complex*16                :: A0=(0.0d0,0.0d0), A1=(1.0d0,0.0d0)
@@ -1844,7 +1881,7 @@
         READ(IO_LAN) (evec(ix),ix=1,n2)
 !       write(*,*) 'cevl,evec:',cevl,'\\',evec
 !       pause
-        polestr(i)=dot_productz(evec,nocc)
+        polestr(i)=vnorm_cmplx(evec)
         if(polestr(i).gt.polethr) then
               write(lupri,'(A,I5,A,2F16.6,A)')           &
                   'Taking vector ',i,                    &
@@ -2116,34 +2153,63 @@
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      FUNCTION DOT_PRODUCTZ(a,n)
-      real*8 dot_productz
+      FUNCTION DOT_PRODUCTZ(a,b)
+      complex*16 dot_productz
 !
-!  This little function computes the squared norm of a *complex*
-!  vector according to
-!        Dot_productz = conjg(a) * a
-!  and therefore yields a real value.
+!  This function computes
+!        Dot_productz = conjg(a) * b
+!  and can have complex results for a.ne.b
 !
-      integer,    intent(in)    ::  n
-      complex*16, intent(in)    ::  a(n)
+      complex*16, Dimension(:), intent(in)    ::  a,b
 !
 !  local variables
 !
       complex*16 :: ca1
-      real*8     :: rsum,thrimag=1.0D-12
-      integer    :: i
+      integer    :: i,n1,n2,n
+
+      n1 = size(a)
+      n2 = size(b)
+      if(n1.ne.n2) STOP 'Vectors have different length in dot_productz!'
+      n = n1
+!     write(*,*) 'Vector length in dot_productz:',n
+
+      ca1=(0.0d0,0.0d0)
+      DO i=1,n
+        ca1 = ca1 + conjg(a(i))*b(i)
+      ENDDO
+
+      write(*,*) 'Total real part:',dble(ca1)
+      write(*,*) 'Total imag part:',imag(ca1)
+
+      dot_productz = ca1
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION vnorm_cmplx(a)
+      real*8 vnorm_cmplx
+!
+!  This function computes
+!        vnorm_cmplx = conjg(a) * a
+!  as a real value.
+!
+      complex*16, Dimension(:), intent(in)    ::  a
+!
+!  local variables
+!
+      complex*16 :: ca1
+      real*8     :: rsum
+      integer    :: i,n
 
 
       rsum=0.0d0
+
+      n = size(a)
+!     write(*,*) 'Vector length in vnorm_cmplx:',n
+
       DO i=1,n
         ca1 = conjg(a(i))*a(i)
-        if(aimag(ca1).gt.thrimag) then
-          stop 'unreasonably high imaginary part in DOT_PRODUCTZ !'
-        endif
         rsum = rsum + dble(ca1)
       ENDDO
 
-      dot_productz = rsum
+      vnorm_cmplx = rsum
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
