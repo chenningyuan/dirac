@@ -7,6 +7,10 @@
   call Init_HSFS_Modules ! initialize all modules
 #endif
 
+  print '(/a)','*****************************************************'
+  print '(a)', '  Continuing with the High Sectors-FSCC module '
+  print '(/a)','*****************************************************'
+
   call launch_hsfs_methods
 
  End Subroutine HIGH_SECTOR_FSCC_METHODS

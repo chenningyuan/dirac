@@ -1,9 +1,7 @@
-
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine dirprg_hscc
 !
-! called from DIRAC/main
+! called from  PAMHSCC
 !
 use Parameters
 use IOModule

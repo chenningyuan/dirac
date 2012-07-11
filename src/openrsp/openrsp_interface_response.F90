@@ -4,6 +4,7 @@ module openrsp_interface_response
    use memory_allocator
    use matrix_defop_old
    use openrsp_cfg
+   use orbital_rotation_indices
 
    implicit none
 
@@ -19,7 +20,7 @@ module openrsp_interface_response
 
 contains
 
-  subroutine set_orbital_rotation_indices(irep,       &
+  subroutine set_orbrot_indices(irep,       &
                                           length,     &
                                           from_block, &
                                           to_block,   &
@@ -205,7 +206,7 @@ contains
 
     call alloc(orbital_rotation_indices_pp, 2, length_pp)
     if (length_pp > 0) then
-       call set_orbital_rotation_indices(RHS%irep,  &
+       call set_orbrot_indices(RHS%irep,  &
                                          length_pp, &
                                          2,         &
                                          3,         &
@@ -214,7 +215,7 @@ contains
 
     call alloc(orbital_rotation_indices_pn, 2, length_pn)
     if (length_pn > 0) then
-       call set_orbital_rotation_indices(RHS%irep,  &
+       call set_orbrot_indices(RHS%irep,  &
                                          length_pn, &
                                          2,         &
                                          1,         &
@@ -353,6 +354,15 @@ contains
     kfree = 1
     lfree = len_f77_work
 
+    call set_orbital_rotation_indices(                             &
+                                      include_pp_rotations,        &
+                                      include_pn_rotations,        &
+                                      length_pp,                   &
+                                      length_pn,                   &
+                                      orbital_rotation_indices_pp, &
+                                      orbital_rotation_indices_pn  &
+                                     )
+    
 
 !   parameters
 !   ==========
