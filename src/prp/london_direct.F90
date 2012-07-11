@@ -97,8 +97,9 @@ contains
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
 
-    real(8), allocatable :: dmat_ao(:, :)
-    real(8), allocatable :: fmat(:, :, :)
+    real(8), allocatable         :: dmat_ao(:, :)
+    real(8), allocatable, target :: fmat(:, :, :)
+    real(8), pointer             :: fmat_p(:, :, :)
 !-----------------------------------------------------------------------
 
     call di_set_f77_work(work, lwork)
@@ -121,20 +122,34 @@ contains
 
 !   if calculations with symmetry we have to 'pack' fmat
 !   before we add dft-lao contribution
-    if (maxrep > 0) then
-       call sym_antisym_fock_2el_lao(fmat)
-       call ao_to_so_fock_2el_lao(fmat)
+    if (maxrep .gt. 0) then
+
+      call sym_antisym_fock_2el_lao(fmat)
+      call ao_to_so_fock_2el_lao(fmat)
+
+      nullify(fmat_p)
+      fmat_p => fmat(:, 1:nz, :)
+
+    else
+      
+      nullify(fmat_p)
+      fmat_p => fmat
+      
     end if
+
 
 !   add xc contribution if dft calculations
     if (dirac_cfg_dft_calculation) then
-       call xc_contrib_2el_lao(cmo, fmat)
+      call xc_contrib_2el_lao(cmo, fmat_p)
     end if
 
 !   transform from ao to mo basis
-    call ao_to_mo_2el_lao(cmo, ibeig, fmat)
+    call ao_to_mo_2el_lao(cmo, ibeig, fmat_p)
+
 
 !   clean
+!   -----
+    if (associated(fmat_p)) nullify(fmat_p)
     call dealloc(fmat)
 
   end subroutine
