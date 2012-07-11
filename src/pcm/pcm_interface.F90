@@ -487,8 +487,19 @@ module pcm_interface
         end do
       end do
        
+!     print *, "b-transformed charges"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+!     print *, "Befor adding b-transformed charges"
+!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+
 ! Add fock_pcm to Fock matrix
       call daxpy(n2bbasx, factor, fock_pcm, 1, fock, 1)
+
+!     print *, "After adding b-transformed charges"
+!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
 
       deallocate(fock_pcm)
  
