@@ -2,7 +2,7 @@
       subroutine chu 
 !------------------------------------------------------------------------
 !
-!
+! (2,0) sector
 !
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -83,7 +83,7 @@
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
-      write (*,*) '   $$$$$$$$$   chu   $$$$$$$$$  '
+      write (*,*) '   $$$$$$$$$   chu (2,0)  $$$$$$$$$  '
       csdstim = cputime(real(0.))
       csdltim = csdstim
       call rdin
@@ -95,8 +95,7 @@
         open(9,file=filenm,form='UNFORMATTED')
       endif
       convrg = 10.**(-iopt(3))
-      write (6,'('' max # of iter='',i3,''. convrg='',e10.2)')          &
-  iopt(2),convrg
+      write (6,'('' max # of iter='',i3,''. convrg='',e10.2)') iopt(2),convrg
       call prtime("rdin    ",0,0)
       if (iopt(9).ne.0) call rdrsp2
       nflcur=0

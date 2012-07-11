@@ -136,42 +136,22 @@ NEMO_DIRAC=0
 ii = 1
 
 do i=1, NSP/2
-
 ! write(LUPRI,*) 'EPS1(',i,')=',EPS1(i),EPS1(i+NSP/2)
-! OrbEnergy%p_rA1D(ii)   = EPS1(i) 
  OrbEnergy(ii)   = EPS1(i)
-! OrbEnergy%p_rA1D(ii+1) = EPS1(i+NSP/2)
  OrbEnergy(ii+1) = EPS1(i+NSP/2)
- 
  repna_temp_a = REPNA(IREPSP(i+NSP))
  repna_temp_b = REPNA(IREPSP(i+NSP/2+NSP))
-
- !write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
  write(LUPRI,'(2x,i3,1x,a4,i2,1x,a4,i2)') i, repna_temp_a,IREPSP(i), repna_temp_b, IREPSP(i+NSP/2)
-
- !IrrepOrb%p_iA1D(ii)    = IREPSP(i+NSP)
  IrrepOrb(ii)    = IREPSP(i+NSP)
-
- !read(repna_temp_a,'(a4)') IrpLabOrb%p_iA1D(ii)
  read(repna_temp_a,'(a4)') IrpLabOrb(ii)
-
-! IrrepOrb%p_iA1D(ii+1)  = IREPSP(i+NSP) ! previously saved irrep...
  IrrepOrb(ii+1)  = IREPSP(i+NSP) ! previously saved irrep...
-
- !read(repna_temp_b,'(a4)') IrpLabOrb%p_iA1D(ii+1)
  read(repna_temp_b,'(a4)') IrpLabOrb(ii+1)
-
-! SpinOfOrb%p_iA1D(ii)   = +1
  SpinOfOrb(ii)   = +1
-! SpinOfOrb%p_iA1D(ii+1) = -1
  SpinOfOrb(ii+1) = -1
 ! write(LUPRI,'(a,2i4,2f12.7)') 'orb_en:',ii,ii+1,OrbEnergy%p_rA1D(ii),OrbEnergy%p_rA1D(ii+1)
-
  MOLTRA_indx(ii)   = i
  MOLTRA_indx(ii+1) = i+(NSP/2)
- 
  ii = ii + 2
-
 enddo
 
 write(LUPRI,'(/,2x,a,i3)') 'IrrepOrb, SpinOfOrb ... arrays filled, NSP=',NSP
@@ -181,28 +161,20 @@ NEMO_DIRAC=0
 do i=1,NSP
 
  if (i<=nelec_tot) then
- ! OccGMSRef%p_iA1D(i) = 1
   OccGMSRef(i)=1
  else
-  !OccGMSRef%p_iA1D(i) = 0
   OccGMSRef(i)=0
  endif
 !
  if (i<=NCMO_DIRAC) then
- ! OrbType%p_iA1D(i) = -1
   OrbType(i) = -1
- ! OrbSpace%p_iA1D(i) = -1
   OrbSpace(i) = -1
  else if ( i>NCMO_DIRAC .and. i<=NCMO_DIRAC+NACT_DIRAC ) then
- ! OrbType%p_iA1D(i) = 0
   OrbType(i) = 0
- ! OrbSpace%p_iA1D(i) = 1
   OrbSpace(i) = 1
  else if ( i>NCMO_DIRAC+NACT_DIRAC ) then
- ! OrbType%p_iA1D(i) = 1
   OrbType(i) = 1
   NEMO_DIRAC=NEMO_DIRAC+1
- ! OrbSpace%p_iA1D(i) = -1
   OrbSpace(i) = -1
  else
   call quit('dead branch !')
@@ -238,7 +210,7 @@ end subroutine fill_VINF_arrays
 subroutine make_VIND_VINT_files
 !----------------------------------------------------------------
 !
-!       prepare integral&indexes files :  VINT & VIND
+!    prepare two-electron integral&indexes files : VINT & VIND
 !
 !----------------------------------------------------------------
 use Memory
@@ -252,8 +224,7 @@ use IntGenMod
 implicit none
 #include "priunit.h"
 
-!external :: get_moltra_index
-integer :: get_moltra_index
+integer, external :: get_moltra_index
 integer :: StVRec,StRec, EnRec, NxtRec
 
 !integer         , dimension(NZVINTBUFSIZE) :: NZVPkIBuf
@@ -284,11 +255,10 @@ EndngRec = DBLE(0)
 StartRec = StVRec
 NxtRec   = StVRec
 
-! 01. V2H2P  <IJ||AB>
+call header('two-electron MOLTRA transformed integrals sorted for HSMRCC',-1)
+
 write(LUPRI,'(/,4x,a,/)') '01. V2H2P, 1324, <IJ||AB>'
-
 icount=0 ! nonzero integrals counter
-
 do II=1,NHMO
 do IA=1,NPMO
  IPQ=RecNumHP(II,IA)
@@ -296,58 +266,44 @@ do IA=1,NPMO
  inz=0
 do IJ=1,NHMO
 do IB=1,NPMO
-
-ii_mo=MOLTRA_indx(II);      ij_mo=MOLTRA_indx(IJ); 
-ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
-
+ ii_mo=MOLTRA_indx(II);      ij_mo=MOLTRA_indx(IJ); 
+ ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
  SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo)
-
  SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)
-
  ASInt_ijab=SInt_ijab-SInt_ijba
-
  if (DABs(ASInt_ijab).gt.zerothrs) then
-
   icount = icount + 1; inz = inz + 1
-
   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
        '. 1234, <IJ||AB>, <',II,' ',IJ,'||',  & 
        IA,' ',IB,'>=',ASInt_ijab,' (ia|jb):',ii_mo,ia_mo,ij_mo,ib_mo
-
+  ! save
   NZVIntBufInd=NZVIntBufInd+1
   NZIntRec_V2H2P(IPQ)=NZIntRec_V2H2P(IPQ)+1
-
   if ( NZVIntBufInd > NZVINTBUFSIZE ) then
-
      if (.not.nohsccfiles) then
        write(UVINT,rec=NxtRec) NZVIntBuf
        write(UVIND,rec=NxtRec) NZVPkIBuf
      endif
-
      NxtRec = NxtRec + 1
      NZVIntBufInd = 1
      NZVPkIBuf = 0
      NZVIntBuf = DBLE(0) 
-
   endif 
-
   ! ... add nonzero integral into integral-buffer
   NZVIntBuf(NZVIntBufInd) = ASInt_ijab
   ! ... add packed (R,S)-indexes into index-buffer
   NZVPkIBuf(NZVIntBufInd) = PackRSHP(IJ,IB)
-
  endif
-
 enddo
 enddo
-   write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,A=',II,IA, & 
-   ' is :',inz
+   if (inz.gt.0) then
+     write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,A=',II,IA,' is :',inz
+   endif
 enddo
 enddo
 
 TotNZInt(V2H2P) = TotNZInt(V2H2P) + NZIntRec_V2H2P(IPQ)
 EndngRec(V2H2P) = NxtRec
-
 if ( TotNZInt(V2H2P) /= 0 ) then
   if (.not.nohsccfiles) then
     write(UVINT,rec=NxtRec) NZVIntBuf
@@ -367,22 +323,18 @@ do ID=1,IC-1
 
 ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
 ic_mo=MOLTRA_indx(IC+NCMO); id_mo=MOLTRA_indx(ID+NCMO)
-SInt_abcd=get_moltra_integral(ia_mo,ic_mo,ib_mo,id_mo)
-SInt_abdc=get_moltra_integral(ia_mo,id_mo,ib_mo,ic_mo)
- 
-ASInt_abcd=SInt_abcd-SInt_abdc
-
+SInt_abcd=get_moltra_integral(ia_mo,ic_mo,ib_mo,id_mo) ! (ac|bd) = <ab|cd>
+SInt_abdc=get_moltra_integral(ia_mo,id_mo,ib_mo,ic_mo) ! (ad|bc) = <ab|dc>
+ASInt_abcd=SInt_abcd-SInt_abdc ! <AB||CD>=<ab|cd>-<ab|dc>
 if (DABs(ASInt_abcd).gt.zerothrs) then
    icount = icount + 1; inz = inz + 1
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
        '. 1234, <AB||CD>, <',IA,' ',IB,'||',  & 
        IC,' ',ID,'>=',ASInt_abcd,' (ac|bd):',ia_mo,ic_mo,ib_mo,id_mo
 endif
-
 enddo
 enddo
-   write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB, & 
-   ' is :',inz
+   write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB,' is :',inz
 enddo
 enddo
 
@@ -393,7 +345,7 @@ do IJ=1,II-1
  inz=0
 do IK=2,NHMO
 do IL=1,IK-1
- ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ); ik_mo=MOLTRA_indx(IK); il_mo=MOLTRA_indx(IL)
+ ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ik_mo=MOLTRA_indx(IK);il_mo=MOLTRA_indx(IL)
  SInt_ijkl=get_moltra_integral(ii_mo,ik_mo,ij_mo,il_mo) 
  SInt_ijlk=get_moltra_integral(ii_mo,il_mo,ij_mo,ik_mo)
  ASInt_ijkl=SInt_ijkl-SInt_ijlk
@@ -405,33 +357,34 @@ do IL=1,IK-1
  endif
 enddo
 enddo
-  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ, & 
-  ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ,' is :',inz
+  endif
 enddo
 enddo
 
 write(LUPRI,'(/,4x,a,/)') '04. VHHPP  <IJ||AB>'
 icount=0
-do II=2,NHMO
-do IJ=1,II-1
+do II=2, NHMO
+do IJ=1, II-1
  inz=0
-do IA=2,NHMO
-do IB=1,IA-1
+do IA=2, NPMO
+do IB=1, IA-1
  ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ia_mo=MOLTRA_indx(NCMO+IA);ib_mo=MOLTRA_indx(NCMO+IB)
- SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo) 
- SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)
- ASInt_ijab=SInt_ijab-SInt_ijba
+ SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo) ! (ia|jb)=<ij|ab>
+ SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo) ! (ib|ja)=<ij|ab>
+ ASInt_ijab=SInt_ijab-SInt_ijba ! <ij||ab>=<ij|ab>-<ij|ba>
  if (DABs(ASInt_ijab).gt.zerothrs) then
    icount = icount + 1; inz = inz + 1
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
        '. 1234, <IJ||AB>, <',II,' ',IJ,'||',  & 
        IA,' ',IB,'>=',ASInt_ijab,' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
  endif
-
 enddo
 enddo
-  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ, & 
-  ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ,' is :',inz
+  endif
 enddo
 enddo
 
@@ -440,12 +393,12 @@ icount=0
 do II=1,NHMO
 do IJ=1,NHMO
  inz=0
-do IA=2,NHMO
+do IA=2,NPMO
 do IB=1,IA-1
  ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ia_mo=MOLTRA_indx(NCMO+IA);ib_mo=MOLTRA_indx(NCMO+IB)
- SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo) 
- SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)
- ASInt_ijab=SInt_ijab-SInt_ijba
+ SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo)  ! (ia|jb)=<ij|ab>
+ SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)  ! (ib|ja)=<ij|ba>
+ ASInt_ijab=SInt_ijab-SInt_ijba ! <ij||ab>=<ij|ab>-<ij|ba>
  if (DABs(ASInt_ijab).gt.zerothrs) then
    icount = icount + 1; inz = inz + 1
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
@@ -454,7 +407,9 @@ do IB=1,IA-1
  endif
 enddo
 enddo
-
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ,' is :',inz
+  endif
 enddo
 enddo
 
@@ -466,9 +421,9 @@ do IB=1,NPMO
 do II=2,NHMO
 do IJ=2,II-1
  ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ia_mo=MOLTRA_indx(NCMO+IA);ib_mo=MOLTRA_indx(NCMO+IB)
- SInt_abij=get_moltra_integral(ia_mo,ii_mo,ib_mo,ij_mo) 
- SInt_abji=get_moltra_integral(ia_mo,ij_mo,ib_mo,ii_mo)
- ASInt_abij=SInt_abij-SInt_abji
+ SInt_abij=get_moltra_integral(ia_mo,ii_mo,ib_mo,ij_mo) ! (ai|bj)=<ab|ij>
+ SInt_abji=get_moltra_integral(ia_mo,ij_mo,ib_mo,ii_mo) ! (aj|bi)=<ab|ji>
+ ASInt_abij=SInt_abij-SInt_abji ! <AB||IJ>
  if (DABs(ASInt_abij).gt.zerothrs) then
    icount = icount + 1; inz = inz + 1
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
@@ -477,8 +432,9 @@ do IJ=2,II-1
  endif
 enddo
 enddo
-  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB, & 
-  ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB,' is :',inz
+  endif
 enddo
 enddo
 
@@ -493,18 +449,18 @@ do IB=1, NPMO
  SInt_ajib=get_moltra_integral(ia_mo,ii_mo,ij_mo,ib_mo) 
  SInt_ajbi=get_moltra_integral(ia_mo,ib_mo,ij_mo,ii_mo) 
  ASInt_ajib=SInt_ajib-SInt_ajbi
-
  if (DABs(ASInt_ajib).gt.zerothrs) then
    icount = icount + 1; inz = inz + 1
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, & 
        '. 3124, <AJ||IB>, <',IA,' ',IJ,'||',   & 
        II,' ',IB,'>=',ASInt_ajib,' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
  endif
-
 enddo
 enddo
-  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,A=',II,IA, & 
-  ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,A=',II,IA, & 
+    ' is :',inz
+  endif
 enddo
 enddo
 
@@ -527,8 +483,10 @@ do IC=1,NPMO
  endif
 enddo
 enddo
-  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB, & 
-  ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB, & 
+    ' is :',inz
+  endif
 enddo
 enddo
 
@@ -552,8 +510,10 @@ do IC=1,IB-1
  endif
 enddo
 enddo
- write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,I=',IA,II, & 
- ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,I=',IA,II, & 
+    ' is :',inz
+  endif
 enddo
 enddo
 
@@ -574,11 +534,12 @@ do IA=1,NPMO
        '. 1324, <IJ||KA>, <',II,' ',IJ,'||',  & 
        IK,' ',IA,'>=',ASInt_ijka,' (ik|ja):',ii_mo,ik_mo,ij_mo,ia_mo
  endif
-
 enddo
 enddo
-  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,K=',II,IK, & 
-  ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,K=',II,IK, & 
+    ' is :',inz
+  endif
 enddo
 enddo
 
@@ -599,13 +560,12 @@ do IA=1,NPMO
        '. 1234, <IJ||KA>, <',II,' ',IJ,'||',  & 
        IK,' ',IA,'>=',ASInt_ijka,' (ik|ja):',ii_mo,ik_mo,ij_mo,ia_mo
  endif
-
 enddo
 enddo
-  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ, & 
-  ' is :',inz
+  if (inz.gt.0) then
+    write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ,' is :',inz
+  endif
 enddo
 enddo
 
 end subroutine make_VIND_VINT_files
-

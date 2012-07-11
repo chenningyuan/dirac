@@ -1,3 +1,6 @@
+!
+! Module dealing with the generation of transformed two-electron antisymmetric integrals
+!
 module IntGenMod
 
    use Parameters
@@ -1199,7 +1202,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !  and is preparing 2-electron integral/indexes file for the HSMRCC run :
 !
 !  FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
-!  These are to be produced by DIRAC !
+!  These files are to be produced by DIRAC !
 !
 !  Entering: RecLen
 !            NumRec
@@ -1208,13 +1211,10 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !            RecordNumRS
 !            PackRS
 !            SetIntBuf - as SIB_Vxxxx (xxxx=2H2P,PPPP...all integral types)
-!
 !  
 !  SetIntBuf - SIB_Vxxxx routine which places integral on the buffer array  
-!  
 !   
 !  Called from: DrvIntGen ("intgenmod.F90")  
-!
 !---------------------------------------------------------------------------------------------------------
    implicit none
    ! ... Dummy Argument Variables ...
@@ -1469,9 +1469,9 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 
                      ! ... write block of integrals/indices of NZVINTBUFSIZE parameters
                      if ( NZVIntBufInd > NZVINTBUFSIZE ) then
-                        ! ...  write buffer with integrals 
+                        ! ...  write out buffer with integrals 
                         write(UVINT,rec=NxtRec) NZVIntBuf
-                        ! ...  write buffer with indexes 
+                        ! ...  write out buffer with indexes 
                         write(UVIND,rec=NxtRec) NZVPkIBuf
 
                         NxtRec = NxtRec + 1 ! shift to the next rectord
@@ -2148,9 +2148,9 @@ end subroutine check_gms_integrals
 subroutine get_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX,v,ind,nnint)
 !------------------------------------------------------------------------------------
 !
-!           open, and read GAMESS prepared integrals
+!  Read GAMESS prepared integrals
 !
-!  called from HighSect FSCC codes !
+!  Called from HighSect FSCC codes 
 !
 !------------------------------------------------------------------------------------
 !#include "implicit.h"
@@ -2347,13 +2347,17 @@ call quit('DrvIntGen_DIRAC')
 
 end subroutine DrvIntGen_DIRAC
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine control_print_VIND_VINT
 !----------------------------------------------------------------------------------
-!  ... make control print of all integrals when file is open and read  ...
+!
+! make control print of all two-electron integrals when the file is open and read  
+!
+! called from PrintRunInfo (source/runinfo.F90)
+!
 !----------------------------------------------------------------------------------
 
-call header('control printout of all integrals and their indexes',-1)
+call header('All two-electron transformed integrals (VINT) and their indexes (VINT)',-1)
 
 call control_print_V2H2P ! 1.
 call control_print_VPPPP ! 2. block
@@ -2814,4 +2818,3 @@ ENDDO
 end subroutine control_print_VHHHP
 
 end module IntGenMod
-

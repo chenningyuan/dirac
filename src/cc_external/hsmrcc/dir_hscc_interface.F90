@@ -19,6 +19,15 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+subroutine PAMHSMRCC(WORK,LWORK)
+! called from main/dirac.F
+implicit none
+integer,intent(in) :: LWORK
+real*8, intent(in) :: WORK(LWORK)
+ call HSCC_STUFF(WORK,LWORK)
+ call dirprg_hscc
+end
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine HSCC_STUFF(WORK,LWORK)
 !----------------------------------------------------------------------------------
@@ -195,9 +204,9 @@ EndDo
 ! WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
 
  if (nohsccfiles) then
-  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). You might take them from GAMESS.'
+  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). Take them from GAMESS.'
  else
-  WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by Dirac.'
+  WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by DIRAC.'
  endif
 
  if (nohsccdirac) then

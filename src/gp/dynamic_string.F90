@@ -22,17 +22,24 @@
 module mystring
 !--------------------------------------------------------------------
 !
-!     Module for simple dynamic string
+!   Module for simple dynamic string.
 !
+!  Example:  
+!             use mystring
+!             type(string) :: s,s1
+!             call make_string(s,"this is my string")
+!             call copy_string(s,s1)
+!             call print_string(s1)
+!             call cancel_string(s);call cancel_string(s1) 
+! 
 !--------------------------------------------------------------------
  type string
   private
    character*1, dimension (:), pointer :: strp  => NULL()
-   logical :: is_alloc = .false. ! this default does not work for older F90 compilars !!
-   integer :: str_length = 0
+   logical :: is_alloc = .false. ! this default does not work for older F90 compilers 
+   integer :: str_length = 0 ! length of the allocated string
  end type string
  integer, private :: iprint_string = 0  ! control print-out variable
-
  contains 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -61,38 +68,27 @@ subroutine make_string(self, text)
      stop 
    endif
 
-  ! copy the text ....
+  ! copy the text-string into allocated array, pointed by strp(1)
   do i = 1, len(text)
     self(1)%strp(i) = text(i:i)
   enddo
   self(1)%is_alloc=.true.
  else
-   ! fix for older F90 compilers which do not assign default values 
- !  call FLSHFO(LUPRI)
-   !write(lupri,*) 'make_string hallooo ! size(self(1)%strp)=',size(self(1)%strp)
-  ! write(lupri,*) 'make_string hallooo ! size(self(1)%strp)=',SIZE(self)
- !  call FLSHFO(LUPRI)
- !  if ( size(self(1)%strp) > 0 ) then
      write(LUPRI,*) 'mystring/make_string: this string '// &
      'is already allocated, see: ',self(1)%strp
-  ! endif
  endif
  end subroutine make_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine cancel_string(self)
 !----------------------------------------------------------------
-!   cancel (deallocate) the string
+!   cancels (deallocates) the string
 !----------------------------------------------------------------
 #include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
- !type(string), intent(inout) :: self
-! must be kind=4 otherwise generates error !
  integer :: dealloc_stat
 
  if ( self(1)%is_alloc) then
- !    write(LUPRI,*) 'mystring:cancel_string entering string: ',self(1)%strp
- !    write(LUPRI,*) ' length of string is:',self(1)%str_length
      deallocate(self(1)%strp, stat = dealloc_stat)
      if (dealloc_stat /= 0) then
        write(LUPRI,*) 'dellocation error !, dealloc_stat=',dealloc_stat
@@ -109,8 +105,9 @@ subroutine make_string(self, text)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_string(self)
 !----------------------------------------------------------------------------
-!    print out the whole string (onto LUPRI channel)
+!    prints out the whole string (into LUPRI channel)
 !----------------------------------------------------------------------------
+implicit none
 #include "priunit.h"
 type(string), dimension(:), intent(in) :: self
   if (self(1)%is_alloc) then
@@ -130,48 +127,21 @@ end subroutine print_string
  end function is_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-function Xget_string(self) result(str_out)
-!-------------------------------------------------------------------
-!        should return the string
-!-------------------------------------------------------------------
-  type(string), dimension(:), intent(in) :: self
-  character :: str_out  !  fix for gfortran
-  !character(*) :: str_out
-  integer(kind=4) :: i
-  call QENTER('get_string')
-  if (self(1)%is_alloc) then
-   do i = 1, self(1)%str_length
-    str_out(i:i) = self(1)%strp(i)
-   enddo
-  else
-    str_out=' '
-  endif
-  call QEXIT('get_string')
-end function Xget_string
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function get_string(self) result(str_out)
 !-------------------------------------------------------------------
 !
-!             should return the string
+!   returns the string - pointer to the character array
 !
 !-------------------------------------------------------------------
+  implicit none
   type(string), dimension(:), intent(in) :: self
-  !character :: str_out  !  fix for gfortran
-  !character(len=20) :: str_out ! the rest of length is filled with rubbish
-  !character(*), allocatable(:),save :: str_out
-  !character*1, dimension (:), pointer, save :: str_out  => NULL()
-  !character*1, dimension (:), pointer :: str_out  => NULL()
   character*1, dimension (:), pointer :: str_out  
-
   integer :: i
 
-  !if ( allocated(str_out(1)) ) then
-  !if ( associated(str_out(1)) ) then
+  ! first clean returning pointer
   if ( associated(str_out) ) then
    deallocate(str_out); nullify(str_out)
   endif
-  !allocate( str_out(self(1)%str_length) )
 
   if (self(1)%is_alloc) then
    allocate( str_out(self(1)%str_length) )
@@ -190,39 +160,32 @@ subroutine copy_strings(source,dest)
 !  copy allocated "source" -> "dest"; allocate "dest" first
 !
 !-----------------------------------------------------------------------
-!#include "implicit.h"
+implicit none
 #include "priunit.h"
-!type(string), dimension(:), intent(inout) :: source, dest
-!type(string), dimension(1), intent(inout) :: source, dest
 type(string), dimension(1), intent(inout) :: source, dest
-
+integer :: ierr,i
 if (.not.source(1)%is_alloc) then
    call Quit('copy_strings: "source" is NOT allocated !')
 endif
-
 if (associated(dest(1)%strp)) then
   call cancel_string(dest)
 endif
-
 allocate( dest(1)%strp(source(1)%str_length), stat =  ierr )
 if (ierr /= 0) then
   call Quit('copy_strings: allocation error of "dest(1)%strp" !')
 endif
-
 dest(1)%is_alloc   = .true.
 dest(1)%str_length = source(1)%str_length
-
 !...copy the text
 do i = 1, dest(1)%str_length
  dest(1)%strp(i) = source(1)%strp(i)
 enddo
-
 end subroutine copy_strings
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_no_string(self)
 !------------------------------------------------------------------------
-!    sets logical flag indicated allocated string to .FALSE.
+!    sets logical flag indicating allocated string to .FALSE.
 !------------------------------------------------------------------------
  type(string), dimension(:), intent(inout) :: self
  self(1)%is_alloc = .FALSE.

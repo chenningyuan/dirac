@@ -1,7 +1,6 @@
-! ....
 **DIRAC
 .TITLE
-  F_5+ ... 
+  F_5+ up to F
 .WAVE F
 .ANALYZE
 .4INDEX
@@ -11,7 +10,6 @@
 .NUCMOD
 1
 **HAMILTONIAN
-!1 1 0
 .LEVY-LEBLOND
 **WAVE FUNCTIONS
 .SCF

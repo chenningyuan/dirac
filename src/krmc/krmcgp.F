@@ -1205,6 +1205,7 @@ C
       CALL GTOVLX(WORK(KSAO),D1)
       WRITE (LUPRI,'(/A)')
      &   ' -> Gram-Schmidt orthonormalizing MO coefficients.'
+      call flshfo(lupri)
 C
 C     Gram-Schmidt orthogonalize coefficients
 C
@@ -1264,6 +1265,7 @@ C               because we want to start with the occupied orbitals
             END DO
          END IF
 C
+         CALL MEMCHK('after first QNORM',WORK,1)
          CALL MEMREL('RGMCMO.QNORM',WORK,KWORK,KSCR1,KFREE,LFREE)
 C
          IF (IPROPT .GE. 10) THEN

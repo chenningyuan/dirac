@@ -12,12 +12,12 @@
 .NUCMOD
 1
 **HAMILTONIAN
-!1 1 0
 .LEVY-LEBLOND
 .PRINT
 1
 **WAVE FUNCTIONS
 .SCF
+.RELCCSD
 .HSFS
 *SCF
 .EVCCNV
@@ -38,8 +38,8 @@ csu
 csw
 .END
 .INPUT
- P_3+ test with DIRAC-HSFS
-  1 99 10  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+ P_3+ test with DIRAC-HSFS-CCSD
+  1 99  6  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
 76
 hppppppppppppppvpppppppppppppvppppppppppppppppppvppppppppppppppppppppppppppp
   8
@@ -61,4 +61,3 @@ energy -5.0 10000.0 1.0
 
  &RELCCSD  DOFSPC=T  DOENER=F  IPRNT=1  INTERFACE="DIRAC6"  DEBUG=F   &END
  &CCFSPC MAXIT=250, NACTH=0,0,0,0 NACTP=0,0,3,3, FSSECT=1,1,0,0,1,0    &END
-

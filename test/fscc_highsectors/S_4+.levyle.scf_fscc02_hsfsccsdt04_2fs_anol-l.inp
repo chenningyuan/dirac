@@ -1,7 +1,6 @@
-! ....
 **DIRAC
 .TITLE
- S_4+
+ S_4+ to S
 .WAVE F
 .ANALYZE
 .4INDEX
@@ -12,12 +11,12 @@
 .NUCMOD
 1
 **HAMILTONIAN
-!1 1 0
 .LEVY-LEBLOND
 .PRINT
 1
 **WAVE FUNCTIONS
 .SCF
+.RELCCSD
 .HSFS
 *SCF
 .EVCCNV
@@ -36,10 +35,11 @@ csd
 csv
 csu
 csw
+csx
 .END
 .INPUT
- test with DIRAC-HSFS; iopt(17) set to nonzero
-  1 99 08  4  2  0  0  0  0  0  0  0  0  0  0  0  1  0  7
+ test with DIRAC-HSFS-CCSDT
+  1 99 06  4  2  0  0  0  0  0  0  0  0  0  0  0  3  0  7
 76
 hppppppppppppppvpppppppppppppvppppppppppppppppppvppppppppppppppppppppppppppp
   8
@@ -60,5 +60,4 @@ energy -5.0 1000.0 1.0
 *END OF
 
  &RELCCSD  DOFSPC=T  DOENER=F  IPRNT=1  INTERFACE="DIRAC6"  DEBUG=F   &END
- &CCFSPC MAXIT=250, NACTH=0,0,0,0 NACTP=0,0,3,3, FSSECT=1,1,0,0,1,0    &END
-
+ &CCFSPC MAXIT=75, NACTH=0,0,0,0 NACTP=0,0,3,3, FSSECT=1,1,0,0,1,0    &END

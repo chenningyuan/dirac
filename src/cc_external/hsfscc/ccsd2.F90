@@ -3070,21 +3070,27 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine perm (i1,i2,isign,nval1)
+      subroutine perm (i1,i2,i_sign,nval1)
 !--------------------------------------------------------------------------------
 !
-!                         returns "isign"
+!  returns "i_sign" - sign - according to entering indexes in arrays i1,i2
 !
+!  nval1 - maximum dimension of the diagram
+!
+!miro: adapted, isign->i_sign, added implicit none
 !--------------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
-      dimension i1(6),i2(6),j1(6),j2(6)
+      integer, intent(in) :: i1(6),i2(6),nval1
+      integer, intent(out) :: i_sign
+      integer :: j1(6),j2(6),i,j,jsave,k,ksave,nflips
+
       do 10 i=1,nval1
         j1(i)=i1(i)
         j2(i)=i2(i)
 10    continue
-      isign=1
+      i_sign=1
       do 20 i=1,nval1
         do 30 j=1,nval1
           if (j1(i).eq.j2(j)) then
@@ -3096,7 +3102,7 @@
           ksave=j2(i+k)
           j2(i+k)=j2(i+k-1)
           j2(i+k-1)=ksave
-          isign=-1*isign
+          i_sign=-1*i_sign
 40      continue
 20    continue
       return
@@ -3104,22 +3110,27 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine perms(n)
-!--------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------
 !
+!  does permutations, only in this code
 !
-!--------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use prm_mod
-#include "implicit.h"
+!#include "implicit.h"
+      implicit none
 #include "priunit.h"
+      integer, intent(in) :: n
+      integer :: k1(6),k2(6),i,j,k,l,m,n1,ii
+      integer :: i_sign
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
 !     common /prm/ iperm(0:6,720)
 #include "prm.h"
-#endif
       dimension k1(6),k2(6)
+#endif
 
       if (n.eq.1) then
         iperm(0,1)=1
@@ -3147,10 +3158,8 @@
               k2(1)=i
               k2(2)=j
               k2(3)=k
-              !call perm(k1,k2,isign,3)
-              call perm(k1,k2,isign_x,3)
-              !iperm(0,ii)=isign
-              iperm(0,ii)=isign_x
+              call perm(k1,k2,i_sign,3)
+              iperm(0,ii)=i_sign
             end if
 20        continue
 10      continue
@@ -3174,8 +3183,8 @@
                   k2(2)=j
                   k2(3)=k
                   k2(4)=l
-                  call perm (k1,k2,isign_x,4)
-                  iperm(0,ii)=isign_x
+                  call perm (k1,k2,i_sign,4)
+                  iperm(0,ii)=i_sign
                 end if
 50            continue
             end if
@@ -3205,8 +3214,8 @@
                       k2(3)=k
                       k2(4)=l
                       k2(5)=m
-                      call perm(k1,k2,isign_x,5)
-                      iperm(0,ii)=isign_x
+                      call perm(k1,k2,i_sign,5)
+                      iperm(0,ii)=i_sign
                     end if
 90                continue
                 end if
@@ -3230,21 +3239,23 @@
                         if ((i.ne.m).and.(j.ne.m).and.(k.ne.m).and.     &
                    (l.ne.m)) then
                           ii=ii+1
-                          n=21-i-j-k-l-m
+
+                          n1=21-i-j-k-l-m
+
                           iperm(1,ii)=i
                           iperm(2,ii)=j
                           iperm(3,ii)=k
                           iperm(4,ii)=l
                           iperm(5,ii)=m
-                          iperm(6,ii)=n
+                          iperm(6,ii)=n1
                           k2(1)=i
                           k2(2)=j
                           k2(3)=k
                           k2(4)=l
                           k2(5)=m
-                          k2(6)=n
-                          call perm(k1,k2,isign_x,6)    
-                          iperm(0,ii)=isign_x
+                          k2(6)=n1
+                          call perm(k1,k2,i_sign,6)    
+                          iperm(0,ii)=i_sign
                         end if
 140                   continue
                     end if
@@ -3255,9 +3266,8 @@
 110       continue
 100     continue
       end if
-
       return
-      end
+      end subroutine perms
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt(name,tit,iparm)

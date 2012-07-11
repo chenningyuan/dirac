@@ -1,7 +1,6 @@
-! ....
 **DIRAC
 .TITLE
-   Ne_6+
+  Ne to Ne_6+, getting ioniz.potentials
 .WAVE F
 .ANALYZE
 .4INDEX
@@ -9,25 +8,23 @@
 .PRINT
 1
 .NUCMOD
-1
+2
 *READIN
 .UNCONTRACTED
 **HAMILTONIAN
-!1 1 0
-.LEVY-LEBLOND
+.X2C
+.SPINFREE
 **WAVE FUNCTIONS
 .SCF
 .RELCCSD
 .HSFS
 *SCF
 .EVCCNV
-1.0E-10 1.0D-8
-.ERGCNV
-1.0E-8 1.0E-6
+1.0E-10
+.CNVINT
+0.01 0.0001
 .CLOSED SHELL
-4 0
-.PRINT
-1
+4 6
 *HSFS
 .PRINT
 1
@@ -35,34 +32,36 @@
 9
 .METHOD
 csd
-csv
-csu
-csw
-csx
-csy
-csz
+chv
+chu
+chw
+chx
+chy
+chz
 .END
 .INPUT
- Ne(6+) test with DIRAC-HSFS
-  1 99 07  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
- 9
-hppvpvpvp
+ Ne test with DIRAC-HSFS; STO-2G basis set
+  1 99 11  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+  9
+hvpgpgpgp
   8
-  3  2  2  0  2  0  0  0
+  3  2  2  2  0  0  0  0
   0  0  0  0  0  0  0  0
 9
 **ANALYZE
 .MULPOP
 *MULPOP
 .VECPOP
-all  
-all 
+all   
+all   
 **MOLTRA
-# 1s(2) is frozen; all virtuals are correlated
+# 1s(2) shell frozen
 .ACTIVE
 energy -15.0 1000.0 1.0
 energy -15.0 1000.0 1.0
 *END OF
 
  &RELCCSD DOFSPC=T DOENER=F IPRNT=2 INTERFACE="DIRAC6" DEBUG=F  &END
- &CCFSPC MAXIT=50, NACTH=0,0,0,0,  NACTP=0,0,3,3, FSSECT=1,1,0,0,1,0  &END
+ &CCFSPC MAXIT=50, NACTH=0,0,3,3,  NACTP=0,0,0,0, FSSECT=1,0,1,0,0,1  &END
+
+
