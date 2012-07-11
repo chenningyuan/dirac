@@ -1,10 +1,14 @@
 module orbital_rotation_indices
 
+!  radovan: this can be improved a lot
+!           but for the moment it is working
+
    implicit none
 
    public set_as_initialized
    public get_orbital_rotation_indices_pp
    public get_orbital_rotation_indices_pn
+   public set_orbital_rotation_indices
 
    private
 
@@ -14,6 +18,46 @@ module orbital_rotation_indices
    logical :: is_initialized = .false.
 
 contains
+
+   subroutine set_orbital_rotation_indices(                            &
+                                           do_pp,                      &
+                                           do_pn,                      &
+                                           length_pp,                  &
+                                           length_pn,                  &
+                                           orbital_rotation_vector_pp, &
+                                           orbital_rotation_vector_pn  &
+                                          )
+
+      logical :: do_pp
+      logical :: do_pn
+      integer :: length_pp
+      integer :: length_pn
+      integer :: orbital_rotation_vector_pp(*)
+      integer :: orbital_rotation_vector_pn(*)
+
+      integer :: i, j
+
+      if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)
+      if (do_pp) then
+         allocate(orbital_rotation_indices_pp(length_pp*2))
+         orbital_rotation_indices_pp(1:length_pp*2) = orbital_rotation_vector_pp(1:length_pp*2)
+      else
+         allocate(orbital_rotation_indices_pp(2))
+         orbital_rotation_indices_pp = 0
+      end if
+
+      if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)
+      if (do_pn) then
+         allocate(orbital_rotation_indices_pn(length_pn*2))
+         orbital_rotation_indices_pn(1:length_pn*2) = orbital_rotation_vector_pn(1:length_pn*2)
+      else
+         allocate(orbital_rotation_indices_pn(2))
+         orbital_rotation_indices_pn = 0
+      end if
+
+      call set_as_initialized()
+
+   end subroutine
 
    subroutine set_as_initialized()
       is_initialized = .true.
@@ -56,7 +100,7 @@ end module
 !
 !     Ordering is:
 !       e-e rotations: (skipped if SKIPEE = T)
-!          IA : inactive-active   
+!          IA : inactive-active
 !          IS : inactive-secondary
 !          AS : active-secondary
 !          AB : active-active
@@ -111,8 +155,8 @@ end module
 !     ***********************************
 !     *** Electron-electron rotations ***
 !     ***********************************
-! 
-      if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)     
+!
+      if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)
       if (skipee) then
          allocate(orbital_rotation_indices_pp(2))
          orbital_rotation_indices_pp = 0
@@ -130,8 +174,8 @@ end module
 !     ***********************************
 !     *** Electron-positron rotations ***
 !     ***********************************
-!      
-      if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)     
+!
+      if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)
       if (skipep) then
          allocate(orbital_rotation_indices_pn(2))
          orbital_rotation_indices_pn = 0
@@ -157,7 +201,7 @@ end module
 
       SUBROUTINE SETXEE(JXOPE,IOPSY,NXOPE,NHOPE,IND,NIND,GAS,IPRINT,    &
                    NOROT,dryrun)
-!   
+!
 !     Generate electron-electron rotations
 !
 !     Written by T.Saue July 18 1997
@@ -192,21 +236,21 @@ end module
 !     No active-active rotations are included here,
 !     if not CAS (told with GAS variable) these are added
 !     in RASGWOP below.
-!     
+!
       NXOPE = 0
       DO 10 ISYM = 1,NFSYM
          JSYM  = MOD(ISYM+IOPSY,2) + 1
-!        
+!
          ISTI  = NIND(1,1,ISYM) + 1
          IENDI = NIND(1,1,ISYM) + NIND(2,1,ISYM)
          ISTA  = NIND(1,2,ISYM) + 1
          IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
-!        
+!
          JSTA  = NIND(1,2,JSYM) + 1
          JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
          JSTS  = NIND(1,3,JSYM) + 1
          JENDS = NIND(1,3,JSYM) + NIND(2,3,JSYM)
-!        
+!
          IF(NIND(1,1,ISYM).NE.0) THEN
             WRITE(LUPRI,'(A,I5)')                                       &
             '*** WARNING(SETXEE): Inactive positrons detected:',        &
@@ -233,10 +277,10 @@ end module
              ENDDO
            ENDDO
          ENDIF
-!        
+!
 !        Inactive - active elements
 !        ==========================
-!        
+!
  100     CONTINUE
          IF(NIND(1,2,JSYM).NE.0) THEN
             WRITE(LUPRI,'(A,I5)')                                       &
@@ -258,10 +302,10 @@ end module
                END IF
             ENDDO
          ENDDO
-!        
+!
 !        Inactive-secondary elements
 !        ===========================
-!        
+!
  200     CONTINUE
 !                 inactive               secondary
          IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 300
@@ -278,10 +322,10 @@ end module
                END IF
             ENDDO
          ENDDO
-!        
+!
 !        Active-secondary elements
 !        =========================
-!        
+!
  300     CONTINUE
 !                 active                 secondary
          IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 10
@@ -299,39 +343,39 @@ end module
             ENDDO
          ENDDO
  10   CONTINUE
-!     
-!     
+!
+!
 !     **********************************************
 !     *** Find redundant active-active rotations ***
 !     **********************************************
-!     
-!     
+!
+!
       NHOPE = NXOPE
       CALL IZERO(JACAC,MAXASH**2)
-!     
+!
       IF (GAS) THEN
-!        
+!
 !        Find non-redundant active-active rotations.
-!        
+!
          CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT,dryrun)
-!        
+!
       END IF
-!     
+!
       NHOPE = NXOPE
-!     
+!
       DO 20 ISYM = 1,NFSYM
          JSYM  = MOD(ISYM+IOPSY,2) + 1
          IF (JSYM .LT. ISYM) GOTO 20
-!        
+!
          ISTA  = NIND(1,2,ISYM) + 1
          IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
-!        
+!
          JSTA  = NIND(1,2,JSYM) + 1
          JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
-!        
+!
 !        Active-active elements
 !        ----------------------
-!        
+!
          IF (ISYM .EQ. JSYM) THEN
             IF (NIND(2,2,ISYM).LE.1) GO TO 20
             DO IA = ISTA, IENDA
@@ -366,13 +410,13 @@ end module
             ENDDO
          END IF
  20   CONTINUE
-!     
+!
 !     Print section
 !     =============
-!     
+!
       if (.not. dryrun) then
           IF(IPRINT.GE.2) THEN
-            CALL HEADER('Output from SETXEE',-1)        
+            CALL HEADER('Output from SETXEE',-1)
             WRITE(LUPRI,'(A,I10)')                                          &
             '# of e-e rotations (non-redundant): ',NXOPE
             IF (IPRINT.GE.3) THEN
@@ -385,13 +429,13 @@ end module
             ENDIF
           ENDIF
       end if
-!     
+!
       CALL QEXIT('SETXEE')
       END
 
       SUBROUTINE SETXEP(JXOPP,IOPSY,NXOPP,QED,IND,NIND,IPRINT,NOROT,dryrun)
 !***********************************************************************
-!   
+!
 !     Generate electron-positron rotations
 !
 !     Written by T.Saue July 21 1997
@@ -411,7 +455,7 @@ end module
       CALL QENTER('SETXEP')
 !
       NXOPP = 0
-      INDI  = 0 
+      INDI  = 0
       DO 10 ISYM = 1,NFSYM
         JSYM  = MOD(ISYM+IOPSY,2) + 1
 !
@@ -419,11 +463,11 @@ end module
         IENDI = NIND(1,1,ISYM) + NIND(2,1,ISYM)
         ISTA  = NIND(1,2,ISYM) + 1
         IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
-!       
+!
 !       Inactive-positronic elements
 !       ===========================
-!       
- 100    CONTINUE 
+!
+ 100    CONTINUE
         IF (NIND(2,1,ISYM).EQ.0.OR.NIND(1,3,JSYM).EQ.0) GO TO 200
         DO IN = ISTI,IENDI
            INDI =  IND(IN,1,ISYM)
@@ -438,10 +482,10 @@ end module
               END IF
            ENDDO
         ENDDO
-!       
+!
 !       Active-positronic elements
 !       ==========================
-!       
+!
  200    CONTINUE
         IF (NIND(2,2,ISYM).EQ.0.OR.NIND(1,3,JSYM).EQ.0) GO TO 300
         DO IA = ISTA,IENDA
@@ -457,10 +501,10 @@ end module
               END IF
            ENDDO
         ENDDO
-!       
+!
 !       Secondary-positronic elements
 !       =============================
-!       
+!
  300    CONTINUE
         IF (QED) THEN
            IF (NIND(1,3,ISYM).EQ.0.OR.NIND(1,3,JSYM).EQ.0) GO TO 10
@@ -480,7 +524,7 @@ end module
               ENDDO
            ENDDO
         ENDIF
-!       
+!
  10   CONTINUE
 !
 !     Print section
@@ -488,7 +532,7 @@ end module
 !
       if (.not. dryrun) then
          IF(IPRINT.GE.2) THEN
-           CALL HEADER('Output from SETXEP',-1)        
+           CALL HEADER('Output from SETXEP',-1)
            WRITE(LUPRI,'(A,I10)') '# of e-p rotations: ',NXOPP
            IF(IPRINT.GE.3) THEN
              WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,NXOPP)
@@ -544,7 +588,7 @@ end module
       ENDDO
 !
 !     Print section
-!     =============      
+!     =============
 !
       IF(IPRINT.GE.6) THEN
         CALL HEADER('Output from UNPSTR',-1)
@@ -575,7 +619,7 @@ end module
 
       SUBROUTINE RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT,dryrun)
 !***********************************************************************
-!   
+!
 !     Generate non-redundant active-active rotations.
 !
 !     Written by J. Thyssen - Jan 18 2001
@@ -643,7 +687,7 @@ end module
 !
 !        Minimum number of electrons in this GAS space:
 !
-         MINCAS = 2*NGST - (NGSP(2,I) - NGSP(1,I)) 
+         MINCAS = 2*NGST - (NGSP(2,I) - NGSP(1,I))
          IF (I.EQ.NGAS_DC.AND.NGAS_DC.GT.1) THEN
            MINCAS = NAELEC - NGSP(2,I-1)
          ELSE IF (I.EQ.NGAS_DC.AND.NGAS_DC.EQ.1) then
@@ -655,7 +699,7 @@ end module
 !
          MAXCAS = 2*NGST - MINCAS
 !
-!        This is a GAS space if the minimum number of electrons 
+!        This is a GAS space if the minimum number of electrons
 !        after this space is less than MINCAS - and -
 !        if the maximum number of holes in this GAS space is larger
 !        than MAXCAS:
@@ -690,10 +734,10 @@ end module
       DO 20 ISYM = 1,NFSYM
          JSYM  = MOD(ISYM+IOPSY,2) + 1
          IF (JSYM .LT. ISYM) GOTO 20
-!        
+!
          ISTA  = NIND(1,2,ISYM) + 1
          IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
-!        
+!
          JSTA  = NIND(1,2,JSYM) + 1
          JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
          IF (ISYM .EQ. JSYM) THEN
@@ -744,7 +788,7 @@ end module
          END IF
  20   CONTINUE
 !
-!     
+!
       if (.not. dryrun) then
          IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(1X,A,I3,A)')                                     &
