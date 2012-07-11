@@ -19,6 +19,15 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+subroutine PAMHSMRCC(WORK,LWORK)
+! called from main/dirac.F
+implicit none
+integer,intent(in) :: LWORK
+real*8, intent(in) :: WORK(LWORK)
+ call HSCC_STUFF(WORK,LWORK)
+ call dirprg_hscc
+end
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine HSCC_STUFF(WORK,LWORK)
 !----------------------------------------------------------------------------------

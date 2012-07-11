@@ -421,9 +421,9 @@ do IB=1,NPMO
 do II=2,NHMO
 do IJ=2,II-1
  ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ia_mo=MOLTRA_indx(NCMO+IA);ib_mo=MOLTRA_indx(NCMO+IB)
- SInt_abij=get_moltra_integral(ia_mo,ii_mo,ib_mo,ij_mo) 
- SInt_abji=get_moltra_integral(ia_mo,ij_mo,ib_mo,ii_mo)
- ASInt_abij=SInt_abij-SInt_abji
+ SInt_abij=get_moltra_integral(ia_mo,ii_mo,ib_mo,ij_mo) ! (ai|bj)=<ab|ij>
+ SInt_abji=get_moltra_integral(ia_mo,ij_mo,ib_mo,ii_mo) ! (aj|bi)=<ab|ji>
+ ASInt_abij=SInt_abij-SInt_abji ! <AB||IJ>
  if (DABs(ASInt_abij).gt.zerothrs) then
    icount = icount + 1; inz = inz + 1
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  

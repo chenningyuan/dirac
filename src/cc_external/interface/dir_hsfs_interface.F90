@@ -19,6 +19,15 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+subroutine PAMHSFSCC(WORK,LWORK)
+! called from main/dirac.F
+implicit none
+integer, intent(in) :: LWORK
+real*8, intent(in) :: WORK(LWORK)
+  call HSFS_STUFF(WORK,LWORK)
+  call HIGH_SECTOR_FSCC_METHODS
+end subroutine PAMHSFSCC
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine HSFS_STUFF(WORK,LWORK)
 !----------------------------------------------------------------------------------
@@ -29,10 +38,7 @@ subroutine HSFS_STUFF(WORK,LWORK)
 !  If MOLTRA section is skipped, or if .I_FILE is active in HSFS input, do
 !  not prepare the DIRAC_hsfs file
 ! 
-!  Called from PAMTRA, if defined "MOD_HSFS"
-!
 !  Written by Miro Ilias, Tel Aviv/Prievidza 2009
-!
 !----------------------------------------------------------------------------------
 use Memory
 use io_moltra
