@@ -79,8 +79,7 @@
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
 
-      write (LUPRI,'(/,2X,A)')                                          &
-     '   $$$$$$$$$   csu / (0,2)   $$$$$$$$$  '
+      write (LUPRI,'(/,2X,A)') '   $$$$$$$$$   csu / (0,2)   $$$$$$$$$  '
 
       !call check_modules
 
@@ -88,6 +87,7 @@
       csdltim = csdstim
       call rdin
       call rdsym
+
       if (iopt(10).eq.0) then
         filenm(1:1)=' '
         call getenv('tape9',filenm)
@@ -126,7 +126,6 @@
       iter=0
       ieof=0
       if (iopt(12).eq.0) then
-!       call tuinit
         call tuinit_csu
       else 
         call rdfile (54,0,"tu  ",-1)
@@ -277,15 +276,13 @@
       if (iopt(17).ne.0) then
         call wrtfile  (54,2,"t32 ")
         if (iopt(17).eq.3) then
-!         call wrtbox
           call wrtbox_csu
         end if
       end if
-      write (*,*) nstrt(1,nflcur),' words used in igen,',               &
-   nstrt(2,nflcur),' words used in gen'
+
+      write (*,*) nstrt(1,nflcur),' words used in igen,',nstrt(2,nflcur),' words used in gen'
       call prtime("end     ",iter,0)
 
-!      stop
       end
 ! *********************************************
       subroutine ordvu

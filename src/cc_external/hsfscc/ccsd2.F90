@@ -524,11 +524,10 @@
 #endif
 
       external ispin,hmatel
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TODO: replace with dyn .alloc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ecol(200),eicol(200),ncol(200),iscol(200),idcol(2,600), &
-  ntr(12)
+                ntr(12)
       dimension ev(60),evi(60)
       dimension scr(200),vec(60,60),veci(60,60),ham(60,60)
       dimension lldet(6,700),lsdet(700),list(6)
@@ -886,13 +885,13 @@
       iddd=lstdet(idd)
       do 3903 iiii=0,nvalp-1
         if ((nval.eq.5).or.(nval.eq.6)) then
-!miro: fix idcol index leak...
+          !miro: fix idcol index leak...
           if (nvalp-iiii.le.2) then
-            idcol(nval-iiii,i1)=ifndso(mod(iddd,16))
+            idcol(nvalp-iiii,i1)=ifndso(mod(iddd,16))
           endif
           iddd=iddd/16
         else
-!miro: fix idcol index leak...
+          !miro: fix idcol index leak...
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,i1)=mod(iddd,256)
           endif
@@ -913,13 +912,13 @@
 
 !mi: subscript #1 of the array IDCOL has value 5 which is greater than the upper bound of 2
 !mi : fix of...
-          if (nvalp-iiii.le.2) then
+          if (nval-iiii.le.2) then
             idcol(nval-iiii,icol)=ifndso(mod(iddd,16))
           endif
 
           iddd=iddd/16
         else
-!mi: idcol index leak, introduce "if-"fix
+          !mi: idcol index leak, introduce "if-"fix
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,icol)=mod(iddd,256)
           endif
@@ -958,11 +957,14 @@
       exc=(egr0-egr)*27.21d0
       egr0=egr
       excm=exc*8066.d0
-      write (*,8600) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),idcol(1,i),idcol(2,i)
+      write (*,8600) ii,ecol(i),ncol(i),exc,excm,iscol(i),  & 
+                        ntr(itr+2),idcol(1,i),idcol(2,i)
 8600  format(' energy',i3,e16.8,'. degen',i3,'. ion pot=',f8.3,'ev,',f9.0,'cm-1. term ',i1,a1,'. major det',6i3)
+
       if (eicol(i).ne.0.d0) write (*,8650) eicol(i)
 8650  format (1x,10(1h*),' im. energy:',e20.8)
       go to 880
+
 877   exc=(ecol(i)-egr)*27.21d0
       excm=exc*8066.d0
       write (*,8700) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),idcol(1,i),idcol(2,i)
@@ -2236,9 +2238,9 @@
       endif
       nsize=ije1(nij1)+2*nij1+4
       call kcopy(nsize,igen(nstrt(1,ntapef-1)+1),                       &
-  igen(nstrt(1,ntapet-1)+1))
+                   igen(nstrt(1,ntapet-1)+1))
       call dcopy(ije1(nij1),gen(nstrt(2,ntapef-1)+1),1,                 &
-  gen(nstrt(2,ntapet-1)+1),1)
+                    gen(nstrt(2,ntapet-1)+1),1)
       return
       end
 
@@ -2246,8 +2248,7 @@
       subroutine rle (niter,irleop,name1,name2,name3,name4,ising)
 !-----------------------------------------------------------------------
 !
-!
-! miro: please add comments...
+!    iteration speedup - reduced linear equations
 !
 !-----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2289,39 +2290,42 @@
       dimension iopa(4),name(4)
 
       call prtime ("rle in  ",0,0)
+
       name(1)=name1
       name(2)=name2
       name(3)=name3
       name(4)=name4
+
       do 10 i=1,niter
         a(i)=0.d0
         do 20 j=1,niter
           r(i,j)=0.d0
 20      continue
 10    continue
+
       call parse (irleop,iopa(1),iopa(2),iopa(3),iopa(4))
       if (iopa(1).eq.1) then
         do 41 i=1,niter
           a(i)=a(i)-ddot(isize(1),trle1(isize(1)+1),1,                  &
-     trle1((i+1)*isize(1)+1),1)
+                        trle1((i+1)*isize(1)+1),1)
 41      continue
       end if
       if (iopa(2).eq.1) then
         do 42 i=1,niter
           a(i)=a(i)-ddot(isize(2),trle2(isize(2)+1),1,                  &
-     trle2((i+1)*isize(2)+1),1)
+                         trle2((i+1)*isize(2)+1),1)
 42      continue
       end if
       if (iopa(3).eq.1) then
         do 43 i=1,niter
           a(i)=a(i)-ddot(isize(3),trle3(isize(3)+1),1,                  &
-     trle3((i+1)*isize(3)+1),1)
+                         trle3((i+1)*isize(3)+1),1)
 43      continue
       end if
       if (iopa(4).eq.1) then
         do 44 i=1,niter
           a(i)=a(i)-ddot(isize(4),trle4(isize(4)+1),1,                  &
-     trle4((i+1)*isize(4)+1),1)
+                         trle4((i+1)*isize(4)+1),1)
 44      continue
       end if
       do 150 i=1,niter
@@ -2334,15 +2338,15 @@
         do 61 i=1,niter
           do 81 k=1,lngth
             trle1((niter+3)*lngth+k)=                                   &
-       trle1((i+1)*lngth+k)*trle1(k)
+                   trle1((i+1)*lngth+k)*trle1(k)
 81        continue
           do 71 j=1,niter
             if (j.eq.1) then
               rold=ddot(lngth,trle1((niter+3)*lngth+1),1,               &
-         trle1(2*lngth+1),1)
+                         trle1(2*lngth+1),1)
             end if
             rnew=ddot(lngth,trle1((niter+3)*lngth+1),1,                 &
-       trle1((j+2)*lngth+1),1)
+                       trle1((j+2)*lngth+1),1)
             r(i,j)=r(i,j)+rold-rnew
             rold=rnew
 71        continue
@@ -2405,6 +2409,7 @@
 74        continue
 64      continue
       end if
+
       call dgeco (r,31,niter,ipvt,rcond,z)
       write (6,*) 'rcond=',real(rcond)
 
@@ -2425,22 +2430,22 @@
           if (itape.eq.1) then
             do 111 i=1,niter
               call daxpy (lngth,a(i),trle1((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                          gen(istrt+1),1)
 111         continue
           else if (itape.eq.2) then
             do 112 i=1,niter
               call daxpy (lngth,a(i),trle2((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                          gen(istrt+1),1)
 112         continue
           else if (itape.eq.3) then
             do 113 i=1,niter
               call daxpy (lngth,a(i),trle3((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                          gen(istrt+1),1)
 113         continue
           else if (itape.eq.4) then
             do 114 i=1,niter
               call daxpy (lngth,a(i),trle4((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                   gen(istrt+1),1)
 114         continue
           end if
         end if
@@ -2524,8 +2529,8 @@
       nstrt12=nstrt(2,ntapet-1)
       nstrt21=nstrt(1,ntapef-1)+2*nij2+4
       nstrt22=nstrt(2,ntapef-1)
-      call expnd(igen(nstrt11+1),igen(nstrt21+1),                       &
-   gen(nstrt12+1),gen(nstrt22+1),nsize1,nsize2)
+      call expnd(igen(nstrt11+1),igen(nstrt21+1),gen(nstrt12+1), & 
+                        gen(nstrt22+1),nsize1,nsize2)
       return
       end
 

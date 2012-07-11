@@ -39,7 +39,7 @@ csx
 .END
 .INPUT
  test with DIRAC-HSFS-CCSD
-  1 99 08  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+  1 99 06  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
 76
 hppppppppppppppvpppppppppppppvppppppppppppppppppvppppppppppppppppppppppppppp
   8
