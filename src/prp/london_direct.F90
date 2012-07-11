@@ -21,19 +21,33 @@
 
 module london_direct_hb
 
-  use memory_allocator 
-  use dirac_cfg
-  use dft_cfg
-  use num_grid_gen
-  use dirac_interface
+   use memory_allocator
+   use dirac_cfg
+   use dft_cfg
+   use num_grid_gen
+   use dirac_interface
+   use quaternion_algebra
 
-  implicit none
+   implicit none
 
-  public london_twoel_hb
+   public london_twoel_hb
 
-  save
+   save
 
-  private
+   private
+
+   integer, parameter :: max_nr_xyz_comp = 3
+!  there should be nr_mat=nzc1 (which is 4 except 2component spinfree... see dirac/dirrdn.F, grep for nzC1)
+   integer, parameter :: nr_mat = 4
+
+   integer :: isym_2el_lao(max_nr_xyz_comp)
+   integer :: irep_2el_lao(max_nr_xyz_comp)
+   integer :: iherm_2el_lao(max_nr_xyz_comp)
+   integer :: ifckop_2el_lao(max_nr_xyz_comp)
+   integer :: jbtof_2el_lao(max_nr_xyz_comp)
+
+   integer :: ifock_type(nr_mat*max_nr_xyz_comp)
+   integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
 #include "mxcent.h"
 #include "maxorb.h"
@@ -55,50 +69,30 @@ module london_direct_hb
 #include "cbihr2.h"
 #include "dcbdhf.h"
 #include "shells.h"
-
 #include "infpar.h"
-
-
-
-  integer, parameter :: max_nr_xyz_comp = 3
-! there should be nr_mat=nzc1 (which is 4 except 2component spinfree... see dirac/dirrdn.F, grep for nzC1)
-  integer, parameter :: nr_mat = 4
-
-  integer :: isym_2el_lao(max_nr_xyz_comp)
-  integer :: irep_2el_lao(max_nr_xyz_comp)
-  integer :: iherm_2el_lao(max_nr_xyz_comp)
-  integer :: ifckop_2el_lao(max_nr_xyz_comp)
-  integer :: jbtof_2el_lao(max_nr_xyz_comp)
-
-  integer :: ifock_type(nr_mat*max_nr_xyz_comp)
-  integer :: irepdm(nr_mat*max_nr_xyz_comp)
-
-
-  integer, parameter :: iqmult(4, 4, 4) = reshape((/1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 1, 2, 4, 3, 2, 1,   &
-                                                    2, 1, 4, 3, 1, 2, 3, 4, 4, 3, 2, 1, 3, 4, 1, 2,   &
-                                                    3, 4, 1, 2, 4, 3, 2, 1, 1, 2, 3, 4, 2, 1, 4, 3,   &
-                                                    4, 3, 2, 1, 3, 4, 1, 2, 2, 1, 4, 3, 1, 2, 3, 4/), &
-                                                  (/4, 4, 4/))
-
-  integer, parameter :: IQPHASE(4, 4, 4) = reshape((/1, 1, 1, 1, 1,-1,-1, 1, 1, 1,-1,-1, 1,-1, 1,-1,   &
-                                                     1,-1,-1, 1,-1,-1,-1,-1, 1,-1, 1,-1,-1,-1, 1, 1,   &
-                                                     1, 1,-1,-1,-1, 1,-1, 1,-1,-1,-1,-1, 1,-1,-1, 1,   &
-                                                     1,-1, 1,-1, 1, 1,-1,-1,-1, 1, 1,-1,-1,-1,-1,-1/), &
-                                                   (/4, 4, 4/))
-
 
 contains
 
-
   subroutine london_twoel_hb(cmo, ibeig, work, lwork)
+
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
 
-    real(8), allocatable :: dmat_ao(:, :)
-    real(8), allocatable :: fmat(:, :, :)
+    real(8), allocatable   :: dmat_ao(:, :)
+    real(8), allocatable   :: fmat(:)
+
+!radovan: fmat has to be one dimensional
+!         first it is (n2bbasx, 4, xyz)
+!         later if nz < nr_mat is compressed to (n2bbasx, nz, xyz)
+!         keeping the array size
+!         this is done in place
+
+    integer                :: i, iz, ixyz
+    integer                :: k, l
+
 !-----------------------------------------------------------------------
 
     call di_set_f77_work(work, lwork)
@@ -106,24 +100,39 @@ contains
     call initialize_direct_lao()
 
 !   density matrix
-    call alloc(dmat_ao, n2bbasx, nr_mat)
+    allocate(dmat_ao(n2bbasx, nr_mat))
     dmat_ao = 0.0d0
     call get_dmat_ao(cmo, ibeig, dmat_ao)
 
 !   fock matrix
-    call alloc(fmat, n2bbasx, nr_mat, max_nr_xyz_comp)
+    allocate(fmat(n2bbasx*nr_mat*max_nr_xyz_comp))
     fmat = 0.0d0
 
-!   get 2-electron lao-integrals 
+!   get 2-electron lao-integrals
     call get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat_ao)
 
-    call dealloc(dmat_ao)
+    deallocate(dmat_ao)
 
 !   if calculations with symmetry we have to 'pack' fmat
 !   before we add dft-lao contribution
     if (maxrep > 0) then
        call sym_antisym_fock_2el_lao(fmat)
        call ao_to_so_fock_2el_lao(fmat)
+    end if
+
+    if (nz < nr_mat) then
+       k = 0
+       l = 0
+       do ixyz = 1, max_nr_xyz_comp
+          do iz = 1, nz
+             do i = 1, n2bbasx
+                k = k + 1
+                l = l + 1
+                fmat(k) = fmat(l)
+             end do
+          end do
+          l = l + (nr_mat - nz)*n2bbasx
+       end do
     end if
 
 !   add xc contribution if dft calculations
@@ -135,7 +144,7 @@ contains
     call ao_to_mo_2el_lao(cmo, ibeig, fmat)
 
 !   clean
-    call dealloc(fmat)
+    deallocate(fmat)
 
   end subroutine
 
@@ -171,16 +180,14 @@ contains
   subroutine ao_to_so_fock_2el_lao(fmat)
 !   --------------------------------------------------------------------
     real(8), intent(inout) :: fmat(n2bbasx, nr_mat, max_nr_xyz_comp)
-    real(8), allocatable   :: fmat_help(:, :)
+    real(8), allocatable   :: buffer(:, :)
     integer :: i, icomp, iq, iz, ipq, irepd, irep, ipari, ioff, itim, ih
 !   --------------------------------------------------------------------
 
-    call alloc(fmat_help, n2bbasx, nz)
-    fmat_help = 0.0d0
+    call alloc(buffer, n2bbasx, nz)
 
     do icomp = 1, max_nr_xyz_comp
-
-      call dzero(fmat_help, n2bbasxq)
+      buffer = 0.0d0
 
       irep  = isymax(icomp, 2)
       ipari = jbtof(irep, 1)
@@ -192,27 +199,27 @@ contains
         iq    = iqmult(1, jqbas(irepd, ipari), iz)
         ipq   = iqtopq(iq, irep)
         ioff  = (iz - 1)*ntbas(0)*ntbas(0) + 1
-        call mtaoso(fmat(1, iz, icomp), fmat_help(1, ipq), ntbas(0), irepd, iprprp)
+        call mtaoso(fmat(1, iz, icomp), buffer(1, ipq), ntbas(0), irepd, iprprp)
       end do
 
 !     transform fmat from Hermit-sorted to DIRAC-sorted AO basis
 !     ----------------------------------------------------------
-      call butobs_no_work(fmat_help, nz)
+      call butobs_no_work(buffer, nz)
 
 !     insert half-phases
 !     ------------------
       if (nz .lt. 4) then
         do iz = 1, nz
           iq   = ipqtoq(iz, irep)
-          call q2bphase('F', iq, 1, fmat_help(1, iz))
+          call q2bphase('F', iq, 1, buffer(1, iz))
         end do
       end if
 
-      call dcopy(ntbas(0)*ntbas(0)*nz, fmat_help, 1, fmat(1, 1, icomp), 1)
+      call dcopy(ntbas(0)*ntbas(0)*nz, buffer, 1, fmat(1, 1, icomp), 1)
 
     end do
 
-    call dealloc(fmat_help)
+    call dealloc(buffer)
 
   end subroutine
 
@@ -227,23 +234,23 @@ contains
 
 !     symmetry info for 2-el LAO integrals
       do i = 1, max_nr_xyz_comp
-      
+
 !       old code: isymop
         isym_2el_lao(i)  = isymax(i, 2) + 1
         irep_2el_lao(i)  = isymax(i, 2)
-      
+
 !       old code: ihrmop
 !                 0 -> no symmetry
 !                 1 -> hermitian
 !                -1 -> antihermitian
         iherm_2el_lao(i) = -1
-      
+
 !       old code: ifckop:
 !                 1 -> only Coulomb
 !                 2 -> only Exchange
 !                 3 -> Coulomb+Exchange
         ifckop_2el_lao(i) = 1
-      
+
         jbtof_2el_lao(i)  = jbtof(irep_2el_lao(i), 1)
       end do
 
@@ -260,7 +267,7 @@ contains
     real(8), pointer       :: work(:)
     integer                :: lwork
 
-    integer, allocatable   :: npos(:)   
+    integer, allocatable   :: npos(:)
     integer :: i2typ
     integer :: itype, max_deriv, iatom
     logical :: nodv, nopv, nocont, retur, relcal, ddfock, fckddr, &
@@ -272,7 +279,7 @@ contains
     real(8) :: cpu1, cpu2, wall1, wall2, cputot, wlltot
 !   --------------------------------------------------------------------
 
-!   set variables used in this subroutine 
+!   set variables used in this subroutine
 !   -------------------------------------
     itype     = -5
     max_deriv = 1
@@ -287,7 +294,7 @@ contains
     london    = .true.
     first     = .true.
 
-    call setfck(ifock_type, irepdm, max_nr_xyz_comp, nr_mat, & 
+    call setfck(ifock_type, irepdm, max_nr_xyz_comp, nr_mat, &
                 isym_2el_lao, iherm_2el_lao, ifckop_2el_lao, &
                 iprprp)
 
@@ -334,14 +341,14 @@ contains
 
           lwork = len_f77_work
           call di_select_wrk(work, lwork)
-    
+
           call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &
                       (/0.0d0/), (/0/), (/0/), itype, max_deriv, iatom,   &
                       nodv, nopv, nocont, tktime, iprprp, iprnta, &
                       iprntb, iprntc, iprntd, retur, (/0/), i2typ,  &
                       (/0/), (/0.0d0/), (/0.0d0/), (/0.0d0/), (/0.0d0/),  &
                       (/0.0d0/), relcal, .false., (/0/), (/0.0d0/))
-    
+
           call di_deselect_wrk(work, lwork)
 
         end if
@@ -350,14 +357,14 @@ contains
 
           lwork = len_f77_work
           call di_select_wrk(work, lwork)
-    
+
           call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &
                       (/0.0d0/), (/0/), (/0/), itype, max_deriv, iatom,   &
                       nodv, nopv, nocont, tktime, iprprp, iprnta, &
                       iprntb, iprntc, iprntd, retur, (/0/), i2typ,  &
                       (/0/), (/0.0d0/), (/0.0d0/), (/0.0d0/), (/0.0d0/),  &
                       (/0.0d0/), relcal, .false., (/0/), (/0.0d0/))
-    
+
           call di_deselect_wrk(work, lwork)
 
 #endif
@@ -384,8 +391,6 @@ contains
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
-    real(8), pointer       :: work(:)
-    integer                :: lwork
     real(8), allocatable   :: dmat(:, :)
     integer                :: iz, irep, ipari, irepd, iq, ipq, ioff
 !   --------------------------------------------------------------------
@@ -480,10 +485,10 @@ contains
       irep = isymax(icomp, 2)
 
       call dzero(gmat, n2orbxq)
-     
+
       do ii = 1, nfsym
         iopsy = jbtof(irep, 1)
-        jj = mod(ii + iopsy, 2) + 1 
+        jj = mod(ii + iopsy, 2) + 1
 
 ! todo add qbtrans for spin-free case
 
@@ -513,7 +518,7 @@ contains
 
       end do
 
-!     write the two-electron London contribution to file   
+!     write the two-electron London contribution to file
 !     --------------------------------------------------
       call wrtdac(lutwol, n2orbxq, gmat(1), icomp)
 
