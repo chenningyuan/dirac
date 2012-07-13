@@ -182,6 +182,11 @@ C
       CALL XCOPY (NV3,A0,0,VVVOOA,1)
       CALL XCOPY (NV4,A0,0,VVOVOA,1)
 C
+      CALL DAYTIME (DATEX,TIMEX)
+      WRITE(IW,*)
+      WRITE(IW,*) 'Start sorting of integral classes at '//datex//timex
+      WRITE(IW,*)
+C
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) THEN
@@ -274,8 +279,9 @@ C
       CALL WAIO_SAVE(ITAPT+4)
       IMSTAT(1) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
+      CALL DAYTIME (DATEX,TIMEX)
       WRITE(IW,*)
-      WRITE(IW,*) 'Sorting of first 4 classes done.'
+      WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
       CALL FLSHFO (IW)
 C
       CALL WAIO_OPEN(ITAPT+5)
@@ -395,9 +401,13 @@ C
 C
 C  end of IPASS LOOP
 C ----------------------
+      CALL DAYTIME (DATEX,TIMEX)
+      WRITE(IW,*) '    step',ipass,' ended at '//datex//timex
+      CALL FLSHFO (IW)
       ENDDO
 C ----------------------
-      WRITE(IW,*) 'VOVV sorting done.'
+      CALL DAYTIME (DATEX,TIMEX)
+      WRITE(IW,*) 'VOVV sorting done at '//datex//timex
       CALL FLSHFO (IW)
 C
 C     GET THE VVVV INTEGRALS
@@ -506,11 +516,15 @@ C
 C
 C     end of IPASS loop for the VVVV
 C --------------------------
+      CALL DAYTIME (DATEX,TIMEX)
+      WRITE(IW,*) '    step',ipass,' ended at '//datex//timex
+      CALL FLSHFO (IW)
       ENDDO
 C --------------------------
 C
   500 CLOSE(MDINT)
-      WRITE(IW,*) 'VVVV sorting done.'
+      CALL DAYTIME (DATEX,TIMEX)
+      WRITE(IW,*) 'VVVV sorting done at '//datex//timex
       CALL FLSHFO (IW)
 C
 C
