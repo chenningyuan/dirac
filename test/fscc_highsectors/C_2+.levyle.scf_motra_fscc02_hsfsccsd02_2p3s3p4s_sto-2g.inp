@@ -1,0 +1,62 @@
+**DIRAC
+.TITLE
+ C_2+ to C
+.WAVE F
+.ANALYZE
+.4INDEX
+**INTEGRALS
+.PRINT
+1
+.NUCMOD
+1
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.LEVY-LEBLOND
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+.HSFS
+*SCF
+.EVCCNV
+1.0E-10
+.CNVINT
+0.01 0.0001
+.CLOSED SHELL
+4 0
+*HSFS
+.PRINT
+1
+.CONV
+9
+.METHOD
+csd
+csv
+csu
+.END
+.INPUT
+ C_2+ test with DIRAC-HSFS-CCSD, 2p3s3p4s maximum active space
+  3 99 10  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+ 10
+hhvvvvvvvv
+  8
+  4  2  2  2  0  0  0  0
+  0  0  0  0  0  0  0  0
+9
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all  
+all  
+**MOLTRA
+# no frozen spinors
+.ACTIVE
+energy -30.0 1000.0 1.0
+energy -30.0 1000.0 1.0
+*END OF
+
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=3 INTERFACE="DIRAC6" DEBUG=F &END
+ &CCENER NTOL=10 &END
+ &CCFSPC MAXIT=50, NACTH=0,0,0,0, NACTP=2,2,6,6, FSSECT=1,1,0,0,1,0  &END
+
