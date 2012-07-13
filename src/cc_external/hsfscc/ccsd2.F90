@@ -24,10 +24,12 @@
         return
       else ! treat overflow
         write (LUPRI,10) na,nn,n0
-10      format(/,'dimx: dimension overflow at ',a8,1h:,i18,', size allowed (allocated):',i18,/)
-        write(LUPRI,'(4x,a)') 'List of array consumption:'
+10      format(/,'dimx: dimension overflow at ',a8,1h:,i18, & 
+                 ',size allowed (allocated):',i18,/)
+        write(LUPRI,'(4x,a)') 'List of arrays consumption:'
         do i=1,nflcur
-          write (LUPRI,"(1x,i3,1x,a8,1x,i20)") i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
+          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  & 
+                  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
         enddo
         call abext('dimx    ')
       end if
@@ -81,8 +83,7 @@
           kb=iand(ishft(igg,-16),z'ff')
           kc=iand(ishft(igg, -8),z'ff')
           kd=iand(      igg     ,z'ff')
-          gen(istrt2+i)=gen(istrt2+i)/                                  &
-     (eps(ka)+eps(kb)-eps(kc)-eps(kd))
+          gen(istrt2+i)=gen(istrt2+i)/(eps(ka)+eps(kb)-eps(kc)-eps(kd))
         endif
 20      continue
       else
@@ -146,32 +147,31 @@
           kd=iand(ishft(ig,-16),  z'ff')
           ke=iand(ishft(ig,-8),   z'ff')
           kf=iand(ig,             z'ff')
-          if ((icv(ka).eq.1).and.(icv(kb).eq.1).and.                    &
-     (icv(kc).eq.1).and.(icv(kd).eq.1).and.                             &
-     (icv(ke).eq.1).and.(icv(kf).eq.1)) then
-            if ((ic(ka).eq.3).and.(ic(kb).eq.3).and.                    &
-       (ic(kc).eq.3).and.(ic(kd).eq.3).and.                             &
-       (ic(ke).eq.3).and.(ic(kf).eq.3)) then
-              ijump=1
-            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.               &
-       (ic(kc).eq.2).and.(ic(kd).eq.2).and.                             &
-       (ic(ke).eq.2).and.(ic(kf).eq.2)) then
-              ijump=1
-            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.               &
-       (ic(kc).eq.3).and.(ic(kd).eq.2).and.                             &
-       (ic(ke).eq.2).and.(ic(kf).eq.3)) then
-              ijump=1
-            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.               &
-       (ic(kc).eq.3).and.(ic(kd).eq.2).and.                             &
-       (ic(ke).eq.3).and.(ic(kf).eq.2)) then
-              ijump=1
+          if ((icv(ka).eq.1).and.(icv(kb).eq.1).and.               &
+              (icv(kc).eq.1).and.(icv(kd).eq.1).and.               &
+              (icv(ke).eq.1).and.(icv(kf).eq.1)) then
+            if ((ic(ka).eq.3).and.(ic(kb).eq.3).and.               &
+                (ic(kc).eq.3).and.(ic(kd).eq.3).and.               &
+                (ic(ke).eq.3).and.(ic(kf).eq.3)) then
+                     ijump=1
+            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.    &
+                     (ic(kc).eq.2).and.(ic(kd).eq.2).and.    &
+                     (ic(ke).eq.2).and.(ic(kf).eq.2)) then
+                    ijump=1
+            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.     &
+                     (ic(kc).eq.3).and.(ic(kd).eq.2).and.     &
+                     (ic(ke).eq.2).and.(ic(kf).eq.3)) then
+                    ijump=1
+            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.       &
+                     (ic(kc).eq.3).and.(ic(kd).eq.2).and.       &
+                     (ic(ke).eq.3).and.(ic(kf).eq.2)) then
+                   ijump=1
             end if
           end if
           if (ijump.eq.1) then
             ijump=0
           else
-            gen(istrt2+j)=gen(istrt2+j)/                                &
-       (eps(ka)+eps(kb)+eps(kc)-eps(kd)-eps(ke)-eps(kf))
+            gen(istrt2+j)=gen(istrt2+j)/(eps(ka)+eps(kb)+eps(kc)-eps(kd)-eps(ke)-eps(kf))
           end if
 20      continue
 10    continue
@@ -469,6 +469,8 @@
 !--------------------------------------------------------------------------------
 !
 !     Calculates resulting energy levels by diagonalization, prints them
+!
+!     Requires presence of files "tABf", AB=u,v,w,...
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -888,12 +890,16 @@
           !miro: fix idcol index leak...
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,i1)=ifndso(mod(iddd,16))
+          else
+            print *,'warning: eneru2: idcol index leak 1 treated'
           endif
           iddd=iddd/16
         else
           !miro: fix idcol index leak...
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,i1)=mod(iddd,256)
+          else
+            print *,'warning: eneru2: idcol index leak 2 treated'
           endif
           iddd=iddd/256
         end if
@@ -907,41 +913,59 @@
       if (icol.gt.200) go to 849
       iscol(icol)=ksp
       iddd=lstdet(idd)
+
       do 3904 iiii=0,nvalp-1
         if ((nval.eq.5).or.(nval.eq.6)) then
-
 !mi: subscript #1 of the array IDCOL has value 5 which is greater than the upper bound of 2
 !mi : fix of...
           if (nval-iiii.le.2) then
             idcol(nval-iiii,icol)=ifndso(mod(iddd,16))
+          else
+            print *,'warning: eneru2: idcol index leak 3 treated'
           endif
-
           iddd=iddd/16
         else
           !mi: idcol index leak, introduce "if-"fix
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,icol)=mod(iddd,256)
+          else
+            print *, & 
+         'warning: eneru2: idcol index leak 4 treated, nvalp-iiii=', & 
+                                                            nvalp-iiii
+            print *,'nvalp=',nvalp,' iiii=',iiii, & 
+                    ' mod(iddd,256)=',mod(iddd,256)
           endif
           iddd=iddd/256
         end if
 3904  continue
+
       ecol(icol)=ev(i)
       eicol(icol)=evi(i)
       ncol(icol)=1
       if (ksp.gt.1) ncol(icol)=2
 849   ev(i)=10000.d0
 850   continue 
+
+      ! print out imaginary energy contribution
       if (ipr.ne.0.and.evi(i).ne.0.) then
         write (*,8500) evi(i),(veci(j,i),j=1,ndt)
       endif
 8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/(1x,10f12.7))
+
 855   iend=1
       do 860 id=1,ndets
       if (lsdet(id).eq.-1) iend=0
 860   if (lsdet(id).gt.0) lsdet(id)=0
       if (iend.eq.0) go to 320
-!     order and write collected energies.
+
+
+!     restrict number of collected energies to 200
       if (icol.gt.200) icol=200
+
+
+      write(LUPRI,*)
+
+!     order and write collected energies.
       do 880 ii=1,icol
       e=10000.d0
       do 875 i1=1,icol
@@ -958,20 +982,24 @@
       egr0=egr
       excm=exc*8066.d0
       write (*,8600) ii,ecol(i),ncol(i),exc,excm,iscol(i),  & 
-                        ntr(itr+2),idcol(1,i),idcol(2,i)
-8600  format(' energy',i3,e16.8,'. degen',i3,'. ion pot=',f8.3,'ev,',f9.0,'cm-1. term ',i1,a1,'. major det',6i3)
+                     ntr(itr+2),idcol(1,i),idcol(2,i)
+8600  format(' energy',i3,e20.12,'. degen',i3,'. ion pot=',f8.3,'ev,',f9.0,'cm-1. term ',i1,a1,'. major det',6i3)
 
       if (eicol(i).ne.0.d0) write (*,8650) eicol(i)
-8650  format (1x,10(1h*),' im. energy:',e20.8)
+8650  format (1x,10(1h*),' got imaginary energy:',e20.8)
       go to 880
 
 877   exc=(ecol(i)-egr)*27.21d0
       excm=exc*8066.d0
-      write (*,8700) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),idcol(1,i),idcol(2,i)
-8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,'ev,',f8.0,'cm-1. term ',i1,a1,'. major det',6i3)
+      write (*,8700) ii,ecol(i),ncol(i),exc,excm,iscol(i),  & 
+                     ntr(itr+2),idcol(1,i),idcol(2,i)
+8700  format (' energy',i3,e20.12,'. degen',i3,'. exc en=',f7.3,'ev,',f8.0,'cm-1. term ',i1,a1,'. major det',6i3)
       if (eicol(i).ne.0.d0) write (*,8650) eicol(i)
 880   ecol(i)=10000.d0
 890   continue
+  
+      write(LUPRI,*) 
+
       return
       end
 
@@ -983,7 +1011,6 @@
 !   indx iwork
 !
 !--------------------------------------------------------------------------------
-
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -1178,8 +1205,8 @@
       istrt2=nstrt(2,ntapef-1)
 
       if (getiprint()>= 5) then
-       write(LUPRI,*) 'fmax: nsize=',nsize,' istrt1=',istrt1,           &
-  ' istrt2=',istrt2 
+       write(LUPRI,*) 'fmax: nsize=',nsize,' istrt1=',istrt1, & 
+                                           ' istrt2=',istrt2
       endif
 
       do 20 i=1,nsize
@@ -1240,15 +1267,15 @@
 !  calculate heff matrix elements
       hdet11=0.
       if (isign(1,ldet(1,ia))-isign(1,ldet(2,ia)).ne.                   &
-  isign(1,ldet(1,ib))-isign(1,ldet(2,ib))) return
+          isign(1,ldet(1,ib))-isign(1,ldet(2,ib))) return
       if (isign(1,ldet(1,ia)).eq.isign(1,ldet(2,ia))) then
         ii=ior(iabs(ldet(1,ia))*256**3,ior(iabs(ldet(2,ib))*256**2,     &
-    ior(iabs(ldet(2,ia))*256,iabs(ldet(1,ib)))))
+           ior(iabs(ldet(2,ia))*256,iabs(ldet(1,ib)))))
         hdet11=hdet11+find(ii,gen(istrhq2+1),igen(istrhq1+1),nszhq)
       endif
       if (isign(1,ldet(1,ia)).eq.isign(1,ldet(1,ib))) then
         ii=ior(iabs(ldet(1,ia))*256**3,ior(iabs(ldet(2,ib))*256**2,     &
-    ior(iabs(ldet(1,ib))*256,iabs(ldet(2,ia)))))
+           ior(iabs(ldet(1,ib))*256,iabs(ldet(2,ia)))))
         hdet11=hdet11-find(ii,gen(istrhp2+1),igen(istrhp1+1),nszhp)
       endif
       if (ldet(1,ia).eq.ldet(1,ib)) then
@@ -1308,8 +1335,8 @@
 #endif
 
 !!! miro: to replace by dynamic alloc ?
-      dimension k1(6),k2(6),k1s(6),k2s(6),                              &
- k1save(6),k2save(6),j1(6),j2(6)
+      dimension k1(6),k2(6),k1s(6),k2s(6),          &
+                k1save(6),k2save(6),j1(6),j2(6)
 
       if (nval.lt.12) then
         hmatel=0.d0
@@ -3988,11 +4015,9 @@
 
       if (no_inter_rd) then
        nclass=4
-       write(LUPRI,'(/,2x,a,i3)')                                       &
-  'rdsym: nclass variable set to',nclass
+       write(LUPRI,'(/,2x,a,i3)') 'rdsym: nclass variable set to',nclass
       else
         write(LUPRI,'(/,2x,a,$)') 'Reading "nclass" variable:'
-       ! read (*,1000,iostat=ios) nclass
         read (LUCMD,*,iostat=ios) nclass
         if (ios.ne.0) then
           write(LUPRI,*) 'error in reading nclass, read nclass=',nclass
@@ -4001,8 +4026,8 @@
       endif
       write(LUPRI,'(2x,a,i2)') 'read nclass=',nclass
 
-      write(LUPRI,'(/,2x,a)')                                           &
-  'Number of of orbitals (20i3) per symmetry(1-nclass):'
+      write(LUPRI,'(/,2x,a)')  & 
+        'Number of of orbitals (20i3) per symmetry(1-nclass):'
 
       if (no_inter_rd) then
         do i=1,nclass
@@ -4012,6 +4037,7 @@
         write(LUPRI,'(/,4x,a,/)') 'Hard set orbitals  7 0 1 1 now in !!'
       else
 
+!  --- read iclass in FREE-FORMAT ---
 !     read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
 !     read (LUCMD,1000,iostat=ios) (iclass(i),i=1,nclass)
       read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)
