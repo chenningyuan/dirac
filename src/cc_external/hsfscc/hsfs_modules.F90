@@ -1,6 +1,6 @@
 !
 ! ===  Modules to replace individual common blocks with dynamical allocations &
-! with  other object oriented functionalities
+!     other object oriented functionalities
 !
 
 module gen_mod
@@ -720,7 +720,6 @@ return
 
 end function check_method_name
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine launch_hsfs_methods
 !--------------------------------------------------------------------
@@ -792,6 +791,132 @@ enddo
 end subroutine launch_hsfs_methods
 
 end module high_sect_execs
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module ipack_mod
+!--------------------------------------------------------------------
+! module for integer indexes packing - ipack3, ipack4, ipack5, ipack6
+! and with some checking procedures
+!--------------------------------------------------------------------
+  implicit none
+  logical, private :: check_ipack_indexes=.false.
+  integer, parameter, private :: min_indx = 1, max_indx = 255
+  contains
+
+  subroutine set_check_ipack_indexes
+    check_ipack_indexes=.true. ! sets checking of ipack indexes
+  end subroutine set_check_ipack_indexes
+
+  subroutine unset_check_ipack_indexes
+    check_ipack_indexes=.false. ! unsets checking of ipack indexes
+  end subroutine unset_check_ipack_indexes
+
+  integer function ipack2(i,j)
+    integer, intent(in) :: i,j
+    if (check_ipack_indexes) call check_ipack2_indexes(i,j)
+    ipack2=ior(ishft(i,8),j)
+  end function ipack2
+
+  integer function ipack3(i,j,k)
+    integer, intent(in) :: i,j,k
+    if (check_ipack_indexes) call check_ipack3_indexes(i,j,k)
+    ipack3=ior(ior(ishft(i,16),ishft(j,8)),k)
+  end function ipack3
+
+  integer function ipack4(i,j,k,l)
+    integer, intent(in) :: i,j,k,l
+    if (check_ipack_indexes) call check_ipack4_indexes(i,j,k,l)
+    ipack4=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+  end function ipack4
+
+  integer function ipack5(i,j,k,l,m)
+    integer, intent(in) :: i,j,k,l,m
+    if (check_ipack_indexes) call check_ipack5_indexes(i,j,k,l,m)
+    ipack5=ior(ishft(i,16),ior(ior(ishft(j,12),ishft(k,8)),ior(ishft(l,4),m)))
+  end function ipack5
+
+  integer function ipack6(i,j,k,l,m,n)
+    integer, intent(in) :: i,j,k,l,m,n
+    if (check_ipack_indexes) call check_ipack6_indexes(i,j,k,l,m,n)
+    ipack6=ior(ior(ishft(i,20),ishft(j,16)),     &
+           ior(ior(ishft(k,12),ishft(l,8)),      & 
+               ior(ishft(m,4),n)))
+  end function ipack6
+
+  subroutine check_ipack2_indexes(i,j)
+#include "priunit.h"
+    integer, intent(in) :: i,j
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx)) then
+        write(LUPRI,*) 'ipack2: i=',i,' j=',j
+        call quit('ipack2 index out of range !')
+    endif
+  end subroutine check_ipack2_indexes 
+  subroutine check_ipack3_indexes(i,j,k)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  )) then
+        write(LUPRI,*) 'ipack3: i=',i,' j=',j,' k=',k
+        call quit('ipack3 index out of range !')
+    endif
+  end subroutine check_ipack3_indexes 
+
+  subroutine check_ipack4_indexes(i,j,k,l)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k,l
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  .and.  & 
+              l >= min_indx .and. l <= max_indx     )) then
+        write(LUPRI,*) 'ipack4: i=',i,' j=',j,' k=',k,' l=',l
+        call quit('ipack4 index out of range !')
+    endif
+  end subroutine check_ipack4_indexes 
+
+  subroutine check_ipack5_indexes(i,j,k,l,m)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k,l,m
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  .and.  & 
+              l >= min_indx .and. l <= max_indx  .and.  &
+              m >= min_indx .and. m <= max_indx   )) then
+        write(LUPRI,*) 'ipack5: i=',i,' j=',j,' k=',k,' l=',l,' m=',m
+        call quit('ipack5 index out of range !')
+    endif
+  end subroutine check_ipack5_indexes 
+
+  subroutine check_ipack6_indexes(i,j,k,l,m,n)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k,l,m,n
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  .and.  & 
+              l >= min_indx .and. l <= max_indx  .and.  &
+              m >= min_indx .and. m <= max_indx  .and.  & 
+              n >= min_indx .and. n <= max_indx  )) then
+       write(LUPRI,*) 'ipack6: i=',i,' j=',j,' k=',k,' l=',l,' m=',m,' n=',n
+       call quit('ipack6 index out of range !')
+    endif
+  end subroutine check_ipack6_indexes 
+
+  subroutine test_ipack_functions
+    ! subroutine for demonstration and testing of ipack<2-6> functions
+#include "priunit.h"
+    write(LUPRI,*) '=== Testing of ipack functions ==='
+    call set_check_ipack_indexes
+    write(LUPRI,*) 'ipack2(1,5)=',ipack2(1,5)
+    write(LUPRI,*) 'ipack3(2,8,6)=',ipack3(2,8,6)
+    write(LUPRI,*) 'ipack4(2,8,12,20)=',ipack4(2,8,12,20)
+    write(LUPRI,*) 'ipack5(2,8,12,20,11)=',ipack5(2,8,12,20,11)
+    write(LUPRI,*) 'ipack6(2,8,12,20,11,78)=',ipack6(2,8,12,20,11,78)
+    call unset_check_ipack_indexes
+  end subroutine test_ipack_functions
+
+end module ipack_mod
+
 
 subroutine check_modules
 !##########################################################################
