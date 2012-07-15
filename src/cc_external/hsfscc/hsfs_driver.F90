@@ -1,11 +1,15 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  Subroutine HIGH_SECTOR_FSCC_METHODS
+ ! subroutine handling higher sectors FSCC methods
 
   use high_sect_execs
 
 #if defined HSFS_DYN_ALLOC
   call Init_HSFS_Modules ! initialize all modules
 #endif
+
+ ! perform some tests
+   call hsfs_tests
 
   print '(/a)','*****************************************************'
   print '(a)', '  Continuing with the High Sectors-FSCC module '
@@ -86,3 +90,9 @@ Subroutine alloc_stat_check(alloc_label,istat)
     call quit('error in F90 dynamic allocation !')
   endif
 End Subroutine alloc_stat_check
+
+Subroutine hsfs_tests
+  use ipack_mod
+  call test_ipack_functions
+End Subroutine hsfs_tests
+

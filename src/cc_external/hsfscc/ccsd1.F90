@@ -132,9 +132,7 @@
 !  *******************************************************************
       function find2 (j1,j2) 
 !----------------------------------------------------------------------
-!
-!
-!
+! find and returns 2-index quantity element
 !----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -142,7 +140,6 @@
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
-!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -152,8 +149,8 @@
 !      common /i/ igen(nbig)
 #include "gen.h"
 !      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-!     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-!     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+!     1 istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!     2 nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
 #endif
 
@@ -170,8 +167,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find4(j1,j2,j3,j4)
 !--------------------------------------------------------------------------------------
-!
-!
+! find and returns 4-index quantity element
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -205,8 +201,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find6 (j1,j2,j3,j4,j5,j6)
 !--------------------------------------------------------------------------------------
-!
-!
+! find and returns 6-index quantity element
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -241,7 +236,6 @@
       lngth=ije3(isave)-ije3(isave-1)
       do 20 i=1,lngth
         ii=igen(istrt31+ije3(isave-1)+i)
-       ! if (ind.eq.iand(ii,'ffffff'x)) then
         if (ind.eq.iand(ii,z'ffffff')) then
           find6=gen(istrt32+ije3(isave-1)+i)
         end if
@@ -249,12 +243,12 @@
       return
       end
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find8 (j1,j2,j3,j4,j5,j6,j7,j8)
 !--------------------------------------------------------------------------------------
+! return particular array element (as real) according to his (entering) 8 indexes j1-j8
 !
-!
-!
+! 8 indexes mean quadruple excitations, like in sectors (40) or (04)
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -278,20 +272,32 @@
 !    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
 #endif
+      logical :: isave_set=.false.
 
       find8=0.d0
+      isave = 0 ! mi-necessary initialization, otherwise might indicate ifort runtime error
       id=ior(ior(ishft(j1,24),ishft(j2,16)),ior(ishft(j3,8),j4))
       ind=ior(ior(ishft(j5,24),ishft(j6,16)),ior(ishft(j7,8),j8))
       do 10 i=1,nij4
         if (id.eq.ij4(i)) then
           isave=i
+          isave_set=.true.
         end if
 10    continue
+
+!mi: problem - if isave not set, initial isave=0 causes negative index in ije4 !
+      if (.not.isave_set) then
+        write(LUPRI,*) 'find8: j1,j2,j3,j4:',j1,j2,j3,j4
+        write(LUPRI,*) 'find8: j5,j6,j7,j8:',j5,j6,j7,j8
+        write(LUPRI,*) 'nij4=',nij4,' id=',id,' ind=',ind
+        call quit('find8: isave not set, must stop')
+      endif
+      ! if isave=0, we get index -1 what is out-of-bounds
       lngth=ije4(isave)-ije4(isave-1)
       do 20 i=1,lngth
         if (ind.eq.igen(istrt41+ije4(isave-1)+i)) then
           find8=gen(istrt42+ije4(isave-1)+i)
-        end if
+        endif
 20    continue
       return
       end
@@ -326,9 +332,6 @@
 #endif
       dimension jj1(10),kk(10)
 
-!mi: we have ipack5    
-!     ipack (i,j,k,l,m)=ior(ishft(i,16),ior(ior(ishft(j,12),ishft(k,8)),ior(ishft(l,4),m)))
-
       find10=0.d0
       jj1(1)=ja
       jj1(2)=jb
@@ -343,9 +346,7 @@
       do 10 i=1,10
         kk(i)=ifndval(jj1(i))
 10    continue
-!     idb=ipack(kk(1),kk(2),kk(3),kk(4),kk(5))
       idb=ipack5(kk(1),kk(2),kk(3),kk(4),kk(5))
-!     ind=ipack(kk(6),kk(7),kk(8),kk(9),kk(10))
       ind=ipack5(kk(6),kk(7),kk(8),kk(9),kk(10))
       do 20 i=1,nij5
         if (idb.eq.ij5(i)) then
@@ -393,10 +394,6 @@
 #endif
       dimension jj1(12),kk(12)
 
-!     ipack (i,j,k,l,m,n)=ior(                                          &
-! ior(ishft(i,20),ior(ishft(j,16),ishft(k,12))),                         &
-! ior(ishft(l,8),ior(ishft(m,4),n)))
-
       find12=0.d0
       jj1(1)=ja
       jj1(2)=jb
@@ -413,9 +410,7 @@
       do 10 i=1,12
         kk(i)=ifndval(jj1(i))
 10    continue
-      !idb=ipack(kk(1),kk(2),kk(3),kk(4),kk(5),kk(6))
       idb=ipack6(kk(1),kk(2),kk(3),kk(4),kk(5),kk(6))
-      !ind=ipack(kk(7),kk(8),kk(9),kk(10),kk(11),kk(12))
       ind=ipack6(kk(7),kk(8),kk(9),kk(10),kk(11),kk(12))
       do 20 i=1,nij6
         if (idb.eq.ij6(i)) then
@@ -432,7 +427,6 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      subroutine fold(name2,namef)
       subroutine fold_ccsd(name2,namef)
 !-------------------------------------------------------------------------------
 !
@@ -441,7 +435,7 @@
 !  all four indices now checked. incomplete space implemented
 !  for chp, chq only for exclusion of whole symmetries.
 !
-!  Renamed from "fold(name2,namef)" due to name overlaping with relccsd routine
+!  Renamed from "subroutine fold(name2,namef)" due to name overlaping with relccsd routine
 !
 !-------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -1153,7 +1147,7 @@
 90      continue
       else if (iii3.le.33) then
         if (((iii2-100*(iii2/100)).ne.iii3).or.                         &
-       ((iiv2-100*(iiv2/100)).ne.iiv3)) then
+            ((iiv2-100*(iiv2/100)).ne.iiv3)) then
           write (6,*) 'contracted indices do not match - msub2'
           call quit('contracted indices do not match - msub2')
         end if
@@ -1932,8 +1926,8 @@
 !===============================================
       do 250 i1=1,nsize1
 
-      ib=ishft(igen(istrt11+i1),-8*m2)
-      ic=iand(igen(istrt11+i1),msk1)
+      ib=ishft(igen(istrt11+i1),-8*m2) ! get 2 indexes at once, ib
+      ic=iand(igen(istrt11+i1),msk1)   ! get 2 indexes at once, ic
 
       if (ib.eq.ib0) go to 225
       do 210 kb=kbb+1,nij2
@@ -2677,7 +2671,7 @@ endif
         istrt2=nstrt(2,ntape-1)
         do 20 i=1,isize(1)
           it=igen(istrt1+i)
-          ka=iand(ishft(it,-8),z'ff')
+          ka=iand(ishft(it,-8),z'ff') ! unpack 2 indexes - k,a
           kb=iand(it,z'ff')
           trle1(i)=-1.d0*isign*(eps(ka)-eps(kb))
           trle1(isize(1)+i)=gen(istrt2+i)

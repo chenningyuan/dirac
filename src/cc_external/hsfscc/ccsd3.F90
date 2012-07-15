@@ -831,7 +831,7 @@
 #endif
 
       dimension j(4),msk(4)
-      !data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
+      ! ff - place where indexes are placed
       data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
 
 !     character(*) namet, namef ! mi fix - data specification for prtime
@@ -894,8 +894,6 @@
       call vshfcs(lngth2,itmp(lngth2+600),8*i4-32,itmp(lngth2+600))
       call viorv(lngth2,itmp,itmp(lngth2+600),itmp)
 
-!     call check_ctmp_mod
-
 !     ... acting on gen !!!
       call dcopy(lngth2,gen(istrt22+1),1,gen(istrt12+1),1)
       call vxsort(itmp,lngth2,lngth1,gen(istrt12+1),igen(istrt11+1))
@@ -913,8 +911,7 @@
       subroutine reordx (namef,namet,iord)
 !---------------------------------------------------------------------------
 !
-!
-!
+! reordering of indexes with different kind of order
 !
 !---------------------------------------------------------------------------
       use print_level
@@ -1009,9 +1006,10 @@
       nsize=ije2(nij2)
       do 30 i=1,nsize     
         do 40 j=0,3
-          ia(4-j)=iand(ishft(itmp(i),-8*j),z'ff')
+          ia(4-j)=iand(ishft(itmp(i),-8*j),z'ff')  ! unpack 
           ia(8-j)=iand(ishft(itmp(ndp3+i),-8*j),z'ff')
 40      continue
+        ! another packing with different order
         itmp(i)=ipack4(ia(i1),ia(i2),ia(i3),ia(i4))
         itmp(ndp3+i)=ipack4(ia(i5),ia(i6),ia(i7),ia(i8))
 30    continue
@@ -1044,7 +1042,7 @@
           j=2*k
           do while (j.le.ir)
             if (j.lt.ir) then
-              ii=imax(itmp(j),itmp(ndp3+j),                             &
+              ii=imax(itmp(j),itmp(ndp3+j),           &
                       itmp(j+1),itmp(ndp3+j+1),1)
               if (ii.eq.2) then
                 j=j+1
@@ -1066,6 +1064,7 @@
           tmp(i)=vtmp   
         end if
       end do  
+
       call dcopy (nsize,tmp(1),1,gen(istrt12+1),1)
 
       return
@@ -1075,7 +1074,13 @@
       subroutine reord6 (namef,namet,iord)
 !---------------------------------------------------------------------------
 !
-! called many times like "call reord6("s1  ","t3p ",126345)"
+! used for triples
+!
+! Entering "namef" - initial diagram 
+!          namet - final, reordered diagram
+!          iord - type of reordering, like example above
+!
+! Example: call reord6("s1  ","t3p ",126345)
 !
 !---------------------------------------------------------------------------
       use print_level
@@ -1114,7 +1119,6 @@
 #endif
 
       dimension ia(6),ja(6),msk(4),igot(8)
-      ! data msk /'ff000000'x,'ff0000'x,'ff00'x,'ff'x/
       data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
 
       if (getiprint() >= 5) then
@@ -4343,7 +4347,7 @@ integer :: new,nt,nt0,nt00
       function v4det (ja,jb,jc,jd,je,jf,jg,jh) 
 !------------------------------------------------------------------------
 !
-!
+!  Calculates matrix element between two Slater determinants ???
 !
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -4382,8 +4386,8 @@ integer :: new,nt,nt0,nt00
 20      continue
         if (iflag.eq.1) then
           v4det=v4det+iperm(0,i)*find8(jj1(1),jj1(2),jj1(3),jj1(4),     &
-     jj1(iperm(1,i)+4),jj1(iperm(2,i)+4),                               &
-     jj1(iperm(3,i)+4),jj1(iperm(4,i)+4))                    
+                     jj1(iperm(1,i)+4),jj1(iperm(2,i)+4),               &
+                     jj1(iperm(3,i)+4),jj1(iperm(4,i)+4))                    
           end if
 10    continue
       return

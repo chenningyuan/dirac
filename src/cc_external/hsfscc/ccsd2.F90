@@ -343,8 +343,7 @@
       do 370 id1=1,ndet
       if (lsdet(id1).eq.0) go to 370
       if (ndt.ne.0.and.lsdet(id1).eq.-1) go to 370
-      if (ndt.eq.0) isp=iabs(isign(1,ldet(1,id1))-isign(1,ldet(2,id1))) &
-  +1
+      if (ndt.eq.0) isp=iabs(isign(1,ldet(1,id1))-isign(1,ldet(2,id1)))+1
       do 360 id2=1,ndet
       if (lsdet(id2).eq.0) go to 360
       hh=hdet11(ldet,id1,id2)
@@ -470,7 +469,7 @@
 !
 !     Calculates resulting energy levels by diagonalization, prints them
 !
-!     Requires presence of files "tABf", AB=u,v,w,...
+!     Requires presence of wave-function files "tABf", AB=u,v,w,...
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2565,7 +2564,7 @@
       subroutine vands(n,ia,is,ic)
 !------------------------------------------------------------ 
 !
-! do and() of array "ia(*)" with scalar "is"
+! do logical AND of array "ia(n)" with the scalar "is"
 !
 !------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
@@ -2578,6 +2577,9 @@
       end
 
       subroutine viorv(n,ia,ib,ic)
+!------------------------------------------------------------ 
+! do logical OR of array "ia(n)" with the array ib(n)
+!------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2588,6 +2590,9 @@
       end
 
       subroutine vshfcs(n,ia,j,ic)
+!------------------------------------------------------------ 
+! do logical OR of array "ia(n)" with the scalar "j"
+!------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
