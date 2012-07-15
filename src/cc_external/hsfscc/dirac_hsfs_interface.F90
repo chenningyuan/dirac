@@ -386,32 +386,24 @@ implicit none
 logical :: indx_found
 integer, external :: GetNBSYM
 integer :: isp, icheck,i,ik,j,k,nirp,ix
-
-write(LUPRI,*) 'get_HSFS_indexes...'
-
 !  ... allocate vectors ...
 hsfs_indx=MakeVector('INTE',NSP,'HSFS indexes')
 boson_irps_indx=MakeVector('INTE',GetNBSYM(),'array for boson irreps')
-
-write(LUPRI,*)  '... hsfs_indx vector allocated'
+write(LUPRI,*)  'get_HSFS_indexes: hsfs_indx vector allocated'
 
 do isp=1, nsp
 
-  if (iprint_hsfs >= 4) then
+  if (iprint_hsfs >= 2) then
    write (LUPRI,'(2x,a,i4,a,2i3,a,f18.10,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
    IREPSP(ISP),IREPSP(NSP+ISP),                                                      &
    ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP))
   endif
-
   if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
      boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
-
-     if (iprint_hsfs >= 6) then
-       write(LUPRI,*) 'irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
+     if (iprint_hsfs >= 2) then
+       write(LUPRI,*) '- irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
      endif
-
   endif
-
 enddo
 
 ! do the check
@@ -430,7 +422,7 @@ if (icheck /= nsp/2) then
  call quit('wrong number of spinors !')
 endif
 
-if (iprint_hsfs >= 5) then
+if (iprint_hsfs >= 2) then
 write(LUPRI,*) 'filled irreps'
 do i=1,GetNBSYM()
 ! boson_irps_indx%p_iA1D(i)=0
@@ -454,65 +446,48 @@ do j=1,nsp
 enddo
 enddo
 
-write(LUPRI,'(/,2x,a)') '* HSFS - MOLTRA integrals index mapping is ready.'
+write(LUPRI,'(/,2x,a)') '* HSFS - MOLTRA MO-integrals index mapping done.'
 
 do isp=1,nsp
-
 if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
-
-  if ( iprint_hsfs >= 6) then
+  if ( iprint_hsfs >= 2) then
     write (LUPRI,'(2x,a,i4,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
-  IREPSP(ISP),IREPSP(NSP+ISP), &
- ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+            IREPSP(ISP),IREPSP(NSP+ISP), &
+    ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
   endif
-
 endif
-
 enddo
 
- call open_dirac_hsfs_file
- rewind (luhsfs)
-
- write(LUPRI,'(/,2x,a)') 'going to write luhsfs data...'
-
+call open_dirac_hsfs_file
+rewind (luhsfs)
+write(LUPRI,'(/,2x,a)') 'going to write luhsfs data...'
  ! ... save some stuff 
- nirp=GetNBSYM()
+nirp=GetNBSYM()
 
 write(luhsfs) nirp, nsp/2
 write(LUPRI,'(2x,a,i2,a,i4)') 'written nirp=',nirp,' nort=',nsp/2
-
 write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,nirp )
-
 write(LUPRI,'(1x,a,8i4,/)') 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
-
 
 ix=0
 do isp=1,nsp
-
   indx_found=.false.
   do j=1,nsp
      if (isp == hsfs_indx%p_iA1D(j)) then
-
        if ( iprint_hsfs >= 10 ) then
          write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
        endif
-
        indx_found=.true.
        Exit
      endif
   enddo
- 
-! write(luhsfs) EPS1( hsfs_indx%p_iA1D(isp) )
-if (indx_found) then
- ix = ix + 1
- write(luhsfs) EPS1( j )
-
- if ( iprint_hsfs >= 10 ) then
-   write(LUPRI,*) isp,j,REPNA(IREPSP(NSP+j)),EPS1(j )
+  if (indx_found) then
+   ix = ix + 1
+   write(luhsfs) EPS1( j )
+   if ( iprint_hsfs >= 10 ) then
+     write(LUPRI,*) isp,j,REPNA(IREPSP(NSP+j)),EPS1(j)
+   endif
  endif
-
-endif
-
 enddo
 
 write(LUPRI,'(/,2x,a)') 'one-electron HSFS stuff written into luhsfs file'
@@ -665,20 +640,15 @@ mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
   rewind(MDINT)
   read(MDINT)
 
- ! call  set_vect_iprint(30)
   call ZeroObject(cbuf_vect)
   call ZeroObject(mdcint_vect)
-  !call ZeroObject(indx_vect)
- ! call ZeroObject(pos_ij); call ZeroObject(pos_kl)
 
   write(LUPRI,*) 'Going to read MDCINT transformed integrals'
 
   MOINT = 0
   iblock = 0
   icount = 0
-
  1 continue
-
 ! ... only real integrals !!!
    READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                               &
    ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ),          INZ=1,NONZR,1),     &
@@ -696,7 +666,7 @@ mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
     write(LUPRI,'(2x,a,i5)')  '...read <IJ|-integral block:',iblock
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
     write(LUPRI,'(2x,a,i6)')  ' actual number of read integrals :',MOINT
-    write(LUPRI,'(2x,a,i6)')  ' position of cbuf_vect array :',icbuf
+    !write(LUPRI,'(2x,a,i6)')  ' position of cbuf_vect array :',icbuf
     CALL FLSHFO(LUPRI)
   endif
 
@@ -715,18 +685,13 @@ endif
 ! ... Extract integrals, indexes determined by array position ...
 
   do INZ=1, NONZR
-
    icount = icount + 1
-  
    i1=KR(IKR); i2=KR(JKR); i3=KR(indk_vect%p_iA1D(INZ)); i4=KR(indl_vect%p_iA1D(INZ))
-
 !  (i1 i2|i3 i4)=<i1 i3|i2 i4>
    i1hsfs=hsfs_indx%p_iA1D(i1); i2hsfs=hsfs_indx%p_iA1D(i3)
    i3hsfs=hsfs_indx%p_iA1D(i2); i4hsfs=hsfs_indx%p_iA1D(i4)
-
    call permut_indxs(i1hsfs  ,i2hsfs  ,i3hsfs   ,i4hsfs  ,  & 
                      i1hsfs_p,i2hsfs_p,i3hsfs_p ,i4hsfs_p)
-
     ipos= Find_ijkl_pos(i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p,ij_store) 
 
     if (ipos > nnnn) then
@@ -745,14 +710,11 @@ endif
            i3,' ',i4,')=', &
            cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',   &  
            i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
-
   endif
 
   enddo
 
-  iblock = iblock + 1    ! incrememt integral block
-
-!!  call ZeroObject(cbuf_vect)
+  iblock = iblock + 1    ! increment integral block
 
     IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
@@ -761,7 +723,7 @@ endif
             READ (MDINT) NEXTFIL
             CLOSE (MDINT,STATUS='KEEP')
             OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
-            write(LUPRI,'(2x,a,a)') 'HSCC: proceeding to the next MDCINTxx file ',NEXTFIL
+            write(LUPRI,'(2x,a,a)') '...proceeding to the next MDCINTxx file ',NEXTFIL
             GOTO 1
          ENDIF
          !GOTO 1
@@ -786,39 +748,33 @@ endif
  ' all integrals from the MDCINT file read ...closing the file'
  CLOSE(MDINT,STATUS='KEEP')
 
- write(LUPRI,'(2x,a,/)') 'Going to to store unique integrals into the DIRAC_hsfs file...'
+ write(LUPRI,'(2x,a,/)') 'Going to to store unique MO 2-el. integrals into the DIRAC_hsfs file...'
  CALL FLSHFO(LUPRI)
 
  write(luhsfs) NKR
 
-   ic=0
+ ic=0
  do i=1,NKR
  do j=1,i
  do k=1,i
  do l=1,j
-
-    ipos= Find_ijkl_pos(i,j,k,l,ij_store)
-
-     xint=mdcint_vect%p_rA1D(ipos)
+   ipos= Find_ijkl_pos(i,j,k,l,ij_store)
+   xint=mdcint_vect%p_rA1D(ipos)
    if (dabs(xint).ge.1.0d-15) then
      ic = ic + 1
-      write(luhsfs) i,j,k,l,xint
-    if (print_int) then
-     write(LUPRI,'(i4,a,4i4,f18.12)') ic,'.<ij|kl>:',i,j,k,l,xint
+     write(luhsfs) i,j,k,l,xint
+     if (print_int) then
+       write(LUPRI,'(i4,a,4i4,f18.12)') ic,'.<ij|kl>:',i,j,k,l,xint
+     endif
    endif
-
-   endif
-
  enddo
  enddo
  enddo
  enddo
 
  write(luhsfs) 0,0,0,0,0.0d0
- 
  write(LUPRI,*) 'saved nonzero integrals & indexes :',ic
  CALL FLSHFO(LUPRI)
- !call quit('end')
 
 ! ... deallocate ...
  call DeAllocObject(mdcint_vect)
@@ -851,8 +807,7 @@ end subroutine read_mdcint_hsfs
 subroutine permut_indxs(i1hsfs  ,i2hsfs  ,i3hsfs  ,i4hsfs,  & 
                         i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
 !----------------------------------------------------------------------------------------------
-!
-! Put two-electron indexes into order:
+!       Put two-electron integrals indexes into this order:
 !
 ! <p q|r s> indexes to be permuted so that:
 !       p >= q
@@ -860,14 +815,11 @@ subroutine permut_indxs(i1hsfs  ,i2hsfs  ,i3hsfs  ,i4hsfs,  &
 !
 !       (p,q) >= (r,s)
 !
-!
 ! <p q|r s> = <p s|r q> = <r q|p s> = <r s|p q>
 !
 ! <p q|r s> = <q p|s r>
 !
-!
 ! p,q,r,s=i1hsfs,i2hsfs,i3hsfs,i4hsfs (on entry)
-!
 !----------------------------------------------------------------------------------------------
 implicit none
 #include "priunit.h"
@@ -886,23 +838,16 @@ if (i2hsfs_p < i4hsfs_p) then ! <pq|rs>=<ps|rq>
 endif
 
 if (  (i1hsfs_p < i2hsfs_p .or. i3hsfs_p < i4hsfs_p)    ) then
-  
  if ( (max(i1hsfs_p,i2hsfs_p) < max(i3hsfs_p,i4hsfs_p) ) & 
     .or.(i1hsfs_p < i2hsfs_p).or.((i1hsfs_p.eq.i2hsfs_p).and.(i3hsfs_p<i4hsfs_p))  ) then ! <pq|rs>=<qp|sr>
    ih = i1hsfs_p; i1hsfs_p=i2hsfs_p; i2hsfs_p=ih
    ih = i3hsfs_p; i3hsfs_p=i4hsfs_p; i4hsfs_p=ih
  endif
-
 endif
 
 ! Check permuted indexes of <i1 i2|i3 i4>
-if (.not.( (i1hsfs_p >= i2hsfs_p )  &   
-    ! .and. (i3hsfs_p >= i4hsfs_p)   & 
-     .and.(max(i1hsfs_p,i2hsfs_p) >= max(i3hsfs_p,i4hsfs_p))    & 
-                                                   ) ) then
-
+if (.not.((i1hsfs_p>=i2hsfs_p).and.(max(i1hsfs_p,i2hsfs_p) >= max(i3hsfs_p,i4hsfs_p)))) then
   write(LUPRI,'(a,4i3,a,4i3)') 'permut:',i1hsfs,i2hsfs,i3hsfs,i4hsfs,'->',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
-
   call quit('permut_indxs: inproper permutations !')
 endif
 
@@ -934,11 +879,11 @@ function Find_ijkl_pos(i0,j0,k0,l0,ij_store) result(ipos)
 ! based on <ij|kl> indexes find position on array (ipos)
 !
 ! cycles:  i=1,n
-!          j=1,i  (j<=j)
-!          k=1,i
-!          l=1,j
+!          j=1,i  (j<=i)
+!          k=1,i  (k<=i)
+!          l=1,j  (l<=j)
 !
-!       ...  ipos of <ij|kl> 
+!      ...  ipos of <ij|kl> 
 !
 !----------------------------------------------------------------
   use Memory

@@ -539,7 +539,7 @@
         write(LUPRI,'(4x,a)')       '>>>>> entering data:'
         write(LUPRI,'(2x,a,i7)')    'nflcur=',nflcur
         write(LUPRI,'(2x,a,a8)')    'name=',name
-        write(LUPRI,'(2x,2(a,i7))') 'num=',num,' ijnum=',ijnum
+        write(LUPRI,'(2x,2(a,i12))') 'num=',num,' ijnum=',ijnum
         write(LUPRI,'(2x,a,2i5)')   'iii,iiv=',iii,iiv
         call print_cijx_stuff
       endif
@@ -1121,6 +1121,7 @@
       dimension ia(6),ja(6),msk(4),igot(8)
       data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
 
+      ndp8=ndp3/nir
       if (getiprint() >= 5) then
         call header('Output from "reord6"',-1)
         write(LUPRI,*) 'namef=',namef
@@ -1128,10 +1129,8 @@
         write(LUPRI,*) 'iord=',iord
         write(LUPRI,*) 'ndp8=ndp3/nir=',ndp8
         write(LUPRI,*) 'ndp4=',ndp4
-        !call check_modules
       endif
 
-      ndp8=ndp3/nir
       if (ndp8.gt.ndp4) then 
        call quit('ndp8 > ndp4 !')
       endif
@@ -4515,9 +4514,7 @@ integer :: new,nt,nt0,nt00
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine print_cijx_stuff
 !---------------------------------------------------------------------------------------
-!
 !                       control printout
-!
 !---------------------------------------------------------------------------------------
 !     use print_level
 #if defined HSFS_DYN_ALLOC
@@ -4557,18 +4554,28 @@ integer :: new,nt,nt0,nt00
 !     common /i/ igen(nbig)
 #endif
         write(LUPRI,'(4x,a)') 'Content of cijn blocks/modules:'
+
+        if (nij1.ne.0) then
         write(LUPRI,*) 'nij1,ij1(nij1),ije1(nij1),iii1,iiv1=',          &
                    nij1,ij1(nij1),ije1(nij1),iii1,iiv1
+        endif
+
+        if (nij2.ne.0) then
         write(LUPRI,*) 'nij2,ij2(nij2),ije2(nij2),iii2,iiv2=',          &
                    nij2,ij2(nij2),ije2(nij2),iii2,iiv2
+        endif
+
+        if (nij3.ne.0) then
         write(LUPRI,*) 'nij3,ij3(nij3),ije3(nij3),iii3,iiv3=',          &
                    nij3,ij3(nij3),ije3(nij3),iii3,iiv3
-        write(LUPRI,*) 'nij4,ij4(nij4),ije4(nij4),iii4,iiv4=',          &
-                   nij4,ij4(nij4),ije4(nij4),iii4,iiv4
-        write(LUPRI,*) 'nij5,ij5(nij5),ije5(nij5),iii5,iiv5=',          &
-                   nij5,ij5(nij5),ije5(nij5),iii5,iiv5
-        write(LUPRI,*) 'nij6,ij6(nij6),ije6(nij6),iii6,iiv6=',          &
-                   nij6,ij6(nij6),ije6(nij6),iii6,iiv6
+        endif
+
+   !    write(LUPRI,*) 'nij4,ij4(nij4),ije4(nij4),iii4,iiv4=',          &
+   !               nij4,ij4(nij4),ije4(nij4),iii4,iiv4
+   !    write(LUPRI,*) 'nij5,ij5(nij5),ije5(nij5),iii5,iiv5=',          &
+   !               nij5,ij5(nij5),ije5(nij5),iii5,iiv5
+   !    write(LUPRI,*) 'nij6,ij6(nij6),ije6(nij6),iii6,iiv6=',          &
+   !               nij6,ij6(nij6),ije6(nij6),iii6,iiv6
 
       end subroutine print_cijx_stuff
 
