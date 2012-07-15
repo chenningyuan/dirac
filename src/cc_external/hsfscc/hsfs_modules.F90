@@ -7,6 +7,7 @@ module gen_mod
 ! to replace gen.h
 real*8, allocatable :: gen(:)
 integer, allocatable :: igen(:)
+! note: igen is storing last 3/4/5 indexes, the 1st(2nd,3rd) are stored in ij[] array
 contains
 subroutine init_gen_mod
  use hsfs_parameters
@@ -125,6 +126,8 @@ module cij1_mod
 ! ... to replace cij1.h
 integer :: nij1,iii1,iiv1
 integer, allocatable ::  ij1(:),ije1(:)
+! ij1-stores (packed) first indexes,
+! ije1 - stored information about ending of records
 contains
 subroutine init_cij1_mod
  use hsfs_parameters
@@ -939,17 +942,18 @@ module ipack_mod
 
     i0=201;j0=255;k0=12;l0=48;m0=112
     ip5=ipack5(i0,j0,k0,l0,m0)
-    i=iand(ishft(ip5,-32),z'ffff')
-    j=iand(ishft(ip5,-24),z'fff')
+    j=iand(ishft(ip5,-24),z'ff')
     k=iand(ishft(ip5,-16),z'ff')
     l=iand(ishft(ip5,-8), z'ff')
     m=iand(      ip5,     z'ff')
     write(LUPRI,'(1x,5(a,i3),a,i8,5(a,i3))')  & 
-    'ipack5(',i0,',',j0,',',k0,',',l0,',',m0,')=',ip5,'=> i=',i,' j=',j,' k=',k,' l=',l,' m=',m
+    'ipack5(',i0,',',j0,',',k0,',',l0,',',m0,')=',ip5,'=> last 4 indexes, i=',0,' j=',j,' k=',k,' l=',l,' m=',m
 
     i0=251;j0=8;k0=199;l0=20;m0=11;n0=178
     ip6=ipack6(i0,j0,k0,l0,m0,n0)
     write(LUPRI,*) 'ipack6(',i0,',',j0,',',k0,',',l0,',',m0,',',n0,')=',ip6
+
+
 
     write(LUPRI,*)
     call unset_check_ipack_indexes

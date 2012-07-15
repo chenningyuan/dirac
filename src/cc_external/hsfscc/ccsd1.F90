@@ -1800,7 +1800,9 @@
       subroutine mult(name2,name3,namet,mmm)
 !-----------------------------------------------------------------------
 !
-!   multiplication of 2 diagrams: name2 x name3 -> namet
+! Does  multiplication of 2 2-electronic diagrams: 
+!
+!                 name2 x name3 -> namet
 !
 ! where "mmm" is type of the multiplication, mmm cosists of 3 digits m1m2m3
 !
@@ -2389,6 +2391,9 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mult8 (name2,name3,namet,iparm)
 !--------------------------------------------------------------------------------------
+!
+! Multiplying of 4-index quantities
+!
 !  iparm=1 : 6x4=8
 !  iparm=2 : 8x4=4,8x2=6
 !  iparm=3 : 8x4=6
@@ -2412,8 +2417,8 @@
       else if (iparm.eq.6) then
         call msub6 (name2,name3,namet)
       else
-        write (6,*) 'mult8 called with bad value of iparm '
-        stop
+        write (6,*) 'mult8 called with bad value of iparm, iparm= ',iparm
+        call quit('mult8 called with bad value of iparm !')
       end if
       return
       end
@@ -2434,7 +2439,7 @@
       subroutine add(name1,f1,name2,f2,namet)
 !-------------------------------------------------------------
 !
-!         what does it do ?
+! Addition of two files:  f1*name1 and f2*name2 --> namet
 !
 !-------------------------------------------------------------
       use print_level
@@ -2496,19 +2501,20 @@ integer :: new, nsize,ntape1,ntape2,ntapet,i
         call abext('add     ')
       endif
 
-      ! ......   error trap
-if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)) ) then
-  write (LUPRI,'(/,2x,a)') 'add: added files do not match ! variables:'  
-  write (LUPRI,*) 'iii2,iii3:',iii2,iii3
-  write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
-  write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
-  write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
-  write(LUPRI,*) 'name1,name2:',name1,name2
-  write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
+      ! ......   error trap, comapring of the compatibility
+       if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)) ) then
+        write (LUPRI,'(/,2x,a)')  & 
+         'add: added files do not match ! variables:'  
+         write (LUPRI,*) 'iii2,iii3:',iii2,iii3
+          write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
+          write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
+           write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
+           write(LUPRI,*) 'name1,name2:',name1,name2
+            write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
 123     format(2a8,6i10)
         call flush(LUPRI)
         call abext('add     ')
-endif
+        endif
 
       call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
 
@@ -2622,10 +2628,7 @@ endif
       subroutine dbdiag (name1,name2,name3,name4,irleop,isign)
 !--------------------------------------------------------------------------------------
 !
-!
-! what does it do ?
-!
-!
+! procedure used in the "rle" iteration accelerator
 !
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
