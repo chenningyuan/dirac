@@ -526,9 +526,7 @@ endif
   endif
 
 if (print_int) then
-
  write(LUPRI,'(2x,a,2i4)') 'read ( I J |... indexes:',KR(IKR),KR(JKR)
-
  do INZ=1, NONZR
    icount = icount + 1
    if (.NOT.is_complex) then
@@ -544,20 +542,21 @@ if (print_int) then
       CALL FLSHFO(LUPRI)
    endif
  enddo
-
 endif
 
+! store block info only if we have nonzero number of integrals
+if (KR(IKR)>0.and.KR(JKR)>0) then
   pos_ij%p_iA3D(KR(IKR),KR(JKR),1) = icbuf
-
   icbuf = icbuf + NONZR
-
   iblock = iblock + 1    ! increment integral block
-
   pos_ij%p_iA3D(KR(IKR),KR(JKR),2) = iblock
+else
+  write(LUPRI,'(2x,a,/)') 'zero number of integrals, this is last integral block on file'
+endif
 
 ! save KL-indexes of a given block on a big array !
   do INZ=1,NONZR
-   ! ... store position on block array
+    ! ... store position on block array
     pos_kl%p_iA3D(KR(indk_vect%p_iA1D(INZ)),KR(indl_vect%p_iA1D(INZ)),iblock) = INZ
   enddo
 
@@ -571,12 +570,9 @@ endif
             write(LUPRI,'(2x,a,a)') 'HSCC: proceeding to the next MDCINTxx file ',NEXTFIL
             GOTO 1
          ENDIF
-         !GOTO 1
     ENDIF
 
  if (NONZR == -1) then
-  ! call Quit('NONZR == -1!')
- !  RETURN
    GoTo 2
  endif
 
@@ -587,7 +583,7 @@ endif
  2 continue
 
  write(LUPRI,'(/,2x,a,/)')  &
- ' all integrals from the MDCINT file read ...closing the file'
+ ' all integrals from the MDCINT file were read ...closing the file'
  CALL FLSHFO(LUPRI)
  CLOSE(MDINT,STATUS='KEEP')
 
