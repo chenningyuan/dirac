@@ -1035,7 +1035,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         if self.full_restart:
             copy_single_file(self.archive_name, self.archive_name)
             print '  Unpacking the archive file into the scratch directory using python tarfile module:'
-            tar = tarfile.open(self.archive_name)
+            tar = tarfile.open(self.archive_name, 'r:gz')
             print ' ',tar.getnames()
             for tar_member in tar.getnames():
                 # TarFile.extractall is from python version 2.5, but we lean on version 2.4
@@ -1548,7 +1548,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
 
         archive_name = self.output_name + '.tgz'
         archive_full_name = os.path.join(self.input_directory,archive_name)
-        tar = tarfile.open(archive_full_name,"w")
+        tar = tarfile.open(archive_full_name, 'w:gz')
 
       # select existing files in self.archive_files for the archive
 
