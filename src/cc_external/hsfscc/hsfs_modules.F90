@@ -7,6 +7,7 @@ module gen_mod
 ! to replace gen.h
 real*8, allocatable :: gen(:)
 integer, allocatable :: igen(:)
+! note: igen is storing last 3/4/5 indexes, the 1st(2nd,3rd) are stored in ij[] array
 contains
 subroutine init_gen_mod
  use hsfs_parameters
@@ -125,6 +126,8 @@ module cij1_mod
 ! ... to replace cij1.h
 integer :: nij1,iii1,iiv1
 integer, allocatable ::  ij1(:),ije1(:)
+! ij1-stores (packed) first indexes,
+! ije1 - stored information about ending of records
 contains
 subroutine init_cij1_mod
  use hsfs_parameters
@@ -852,6 +855,7 @@ module ipack_mod
         call quit('ipack2 index out of range !')
     endif
   end subroutine check_ipack2_indexes 
+
   subroutine check_ipack3_indexes(i,j,k)
 #include "priunit.h"
     integer, intent(in) :: i,j,k
@@ -904,14 +908,54 @@ module ipack_mod
 
   subroutine test_ipack_functions
     ! subroutine for demonstration and testing of ipack<2-6> functions
+    ! it packs and subsequently unpack set of indexes
 #include "priunit.h"
-    write(LUPRI,*) '=== Testing of ipack functions ==='
+    integer :: i,j,k,l,m,n
+    integer :: i0,j0,k0,l0,m0,n0
+    integer :: ip2,ip3,ip4,ip5,ip6
+
+    write(LUPRI,'(/,2x,a)') '=== Testing of ipack<2-6> index packing functions ==='
     call set_check_ipack_indexes
-    write(LUPRI,*) 'ipack2(1,5)=',ipack2(1,5)
-    write(LUPRI,*) 'ipack3(2,8,6)=',ipack3(2,8,6)
-    write(LUPRI,*) 'ipack4(2,8,12,20)=',ipack4(2,8,12,20)
-    write(LUPRI,*) 'ipack5(2,8,12,20,11)=',ipack5(2,8,12,20,11)
-    write(LUPRI,*) 'ipack6(2,8,12,20,11,78)=',ipack6(2,8,12,20,11,78)
+
+    i0=1;j0=255
+    ip2=ipack2(i0,j0) 
+    i=iand(ishft(ip2,-8),z'ff')
+    j=iand(ip2,z'ff')
+    write(LUPRI,'(1x,2(a,i3),a,i8,2(a,i3))') 'ipack2(',i0,',',j0,')=',ip2,'=> i=',i,' j=',j
+
+    i0=2;j0=232;k0=6
+    ip3=ipack3(i0,j0,k0)
+    i=iand(ishft(ip3,-16),z'ff')
+    j=iand(ishft(ip3,-8),z'ff')
+    k=iand(ip3,z'ff')
+    write(LUPRI,'(1x,3(a,i3),a,i8,3(a,i3))')  & 
+     'ipack3(',i0,',',j0,',',k0,')=',ip3,'=> i=',i,' j=',j,' k=',k
+
+    i0=2;j0=8;k0=12;l0=137
+    ip4=ipack4(i0,j0,k0,l0)
+    i=iand(ishft(ip4,-24),z'ff')
+    j=iand(ishft(ip4,-16),z'ff')
+    k=iand(ishft(ip4, -8),z'ff')
+    l=iand(      ip4,     z'ff')
+    write(LUPRI,'(1x,4(a,i3),a,i8,4(a,i3))')  & 
+    'ipack4(',i0,',',j0,',',k0,',',l0,')=',ip4,'=> i=',i,' j=',j,' k=',k,' l=',l
+
+    i0=201;j0=255;k0=12;l0=48;m0=112
+    ip5=ipack5(i0,j0,k0,l0,m0)
+    j=iand(ishft(ip5,-24),z'ff')
+    k=iand(ishft(ip5,-16),z'ff')
+    l=iand(ishft(ip5,-8), z'ff')
+    m=iand(      ip5,     z'ff')
+    write(LUPRI,'(1x,5(a,i3),a,i8,5(a,i3))')  & 
+    'ipack5(',i0,',',j0,',',k0,',',l0,',',m0,')=',ip5,'=> last 4 indexes, i=',0,' j=',j,' k=',k,' l=',l,' m=',m
+
+    i0=251;j0=8;k0=199;l0=20;m0=11;n0=178
+    ip6=ipack6(i0,j0,k0,l0,m0,n0)
+    write(LUPRI,*) 'ipack6(',i0,',',j0,',',k0,',',l0,',',m0,',',n0,')=',ip6
+
+
+
+    write(LUPRI,*)
     call unset_check_ipack_indexes
   end subroutine test_ipack_functions
 

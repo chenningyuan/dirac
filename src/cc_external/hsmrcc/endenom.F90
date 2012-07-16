@@ -1,23 +1,27 @@
-!   This subroutine applies compensation terms to residual in TRES
+!   This subroutine adds the energy
+!   denominator to TNEW/TOLD for a given
+!   vaccum. All valence parts r not
+!   affected.
 
-subroutine Compensate(TRES,TOLD,TSize,vac)
+subroutine EnDenom(T,TSize,vac)
 
    use Parameters
    use OrbMod
    use VacMod
-   use Shift
    implicit none
    integer, intent(in) :: vac
    integer, intent(in) :: TSize
-   double precision, intent(inout) :: TRES(0:TSize)
-   double precision, intent(out) :: TOLD(0:TSize)
+   double precision, intent(inout) :: T(0:TSize)
    integer :: i, j, a, b
    integer :: eq, ti, ij, ab, ix
-   double precision :: comp
+   double precision :: denom
 
-   if (IsMainVac(vac)) return
+   ! ... residual is already compensated, so here we apply shifts ...
 
-   ! ... Singles part ...
+   GenEn = OrbEn
+   if (.not.IsMainVac(vac)) GenEn = GenEn - ShiftEn
+
+   ! ... Singles part of energy denominator ...
 
    do i = 1, NHMO
       if (.not.IsHole(i,vac)) cycle
@@ -26,8 +30,8 @@ subroutine Compensate(TRES,TOLD,TSize,vac)
          if (.not.IsPtcl(a,vac)) cycle
          if (IsActHole(i-NCMO,vac).and.IsActPtcl(a,vac)) cycle
          eq = ix + a
-         comp = ShiftEn(i) - ShiftEn(a+NCMO)
-         TRES(eq) = TRES(eq) + Beeta*comp*TOLD(eq)
+         denom = GenEn(i) - GenEn(a+NCMO)
+         T(eq) = T(eq)/denom
       enddo
    enddo
 
@@ -47,8 +51,8 @@ subroutine Compensate(TRES,TOLD,TSize,vac)
                    .and.IsActPtcl(a,vac).and.IsActPtcl(b,vac)) cycle
                ab = MAXMIN(a,b)
                eq = ti + ab
-               comp = ShiftEn(i) + ShiftEn(j) - ShiftEn(a+NCMO) - ShiftEn(b+NCMO)
-               TRES(eq) = TRES(eq) + Beeta*comp*TOLD(eq)
+               denom = GenEn(i) + GenEn(j) - GenEn(a+NCMO) - GenEn(b+NCMO)
+               T(eq) = T(eq)/denom
             enddo
          enddo
       enddo
@@ -57,7 +61,8 @@ subroutine Compensate(TRES,TOLD,TSize,vac)
    return
 
 contains
-#include "../modules/maxmin.h"
+
+#include "maxmin.h"
 !include "tind.h"
 
-end subroutine Compensate
+end subroutine EnDenom

@@ -229,7 +229,7 @@ if(ENABLE_UTILITIES)
         compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
-        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/source/hsmrmain.c "${LIST_OF_EXECUTABLES}")
+        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")

@@ -343,8 +343,7 @@
       do 370 id1=1,ndet
       if (lsdet(id1).eq.0) go to 370
       if (ndt.ne.0.and.lsdet(id1).eq.-1) go to 370
-      if (ndt.eq.0) isp=iabs(isign(1,ldet(1,id1))-isign(1,ldet(2,id1))) &
-  +1
+      if (ndt.eq.0) isp=iabs(isign(1,ldet(1,id1))-isign(1,ldet(2,id1)))+1
       do 360 id2=1,ndet
       if (lsdet(id2).eq.0) go to 360
       hh=hdet11(ldet,id1,id2)
@@ -470,7 +469,7 @@
 !
 !     Calculates resulting energy levels by diagonalization, prints them
 !
-!     Requires presence of files "tABf", AB=u,v,w,...
+!     Requires presence of wave-function files "tABf", AB=u,v,w,...
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2272,10 +2271,10 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rle (niter,irleop,name1,name2,name3,name4,ising)
+      subroutine rle(niter,irleop,name1,name2,name3,name4,ising)
 !-----------------------------------------------------------------------
 !
-!    iteration speedup - reduced linear equations
+!    iteration speedup - reduced linear equations method (Bartlett et al)
 !
 !-----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2565,7 +2564,7 @@
       subroutine vands(n,ia,is,ic)
 !------------------------------------------------------------ 
 !
-! do and() of array "ia(*)" with scalar "is"
+! do logical AND of array "ia(n)" with the scalar "is"
 !
 !------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
@@ -2578,6 +2577,9 @@
       end
 
       subroutine viorv(n,ia,ib,ic)
+!------------------------------------------------------------ 
+! do logical OR of array "ia(n)" with the array ib(n)
+!------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2588,6 +2590,9 @@
       end
 
       subroutine vshfcs(n,ia,j,ic)
+!------------------------------------------------------------ 
+! do logical OR of array "ia(n)" with the scalar "j"
+!------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -3305,12 +3310,12 @@
       subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
 !
-!            prints integrals & indexes ?
+!  prints diagrams (integrals,intermediates...) & their indexes 
 !
-!  name : 4-byte (integer) character 
-!  tit  :  8-byte  (real)  character
+!  name : diagram name,  4-bytes (integer) character 
+!  tit  : title,   8-bytes  (real)  character
 !
-!  iparm : printout parameter 
+!  iparm : printout parameter - level of printing
 !
 !---------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -3374,9 +3379,9 @@
 
 !     write (LUPRI,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
       write (LUPRI,110)                                                 &
-    tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
+        tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
 110   format(' file ',a4,', size iii1 iiv1=',4i7,' ij records:'/        &
-  (8(2x,z4,i8,';')))
+           (8(2x,z4,i8,';')))
 
 !     istrt1=nstrt(1,num-1)+2*nij+4
       istrt1=nstrt(1,num-1)+2*nij1+4
@@ -3418,6 +3423,7 @@
       subroutine prt6 (name,tit,iparm)
 !--------------------------------------------------------------------------------
 !
+! Printing routine used for triples
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -3462,7 +3468,7 @@
 !     write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
       write (6,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
 99    format(' file ',a4,', size iii1 iiv1=',4i9,' ij records:'/        &
-  (3(2x,z8,i8,';')))
+             (3(2x,z8,i8,';')))
 !     istrt1=nstrt(1,num-1)+2*nij+4
       istrt1=nstrt(1,num-1)+2*nij1+4
       istrt2=nstrt(2,num-1)
@@ -3474,11 +3480,8 @@
         do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
-!             id(1)=iand(ishft(ij(i),-16),'ff'x)
               id(1)=iand(ishft(ij1(i),-16),z'ff')
-!             id(2)=iand(ishft(ij(i),-8),'ff'x)
               id(2)=iand(ishft(ij1(i),-8),z'ff')
-!             id(3)=iand(ij(i),'ff'x)
               id(3)=iand(ij1(i),z'ff')
 !             write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,3)
