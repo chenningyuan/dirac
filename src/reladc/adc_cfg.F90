@@ -23,6 +23,8 @@ module adc_cfg
 
 ! This module contains all input set by the user. Used for RELADC
 
+  save    !  if values of variables are changed they are still there after the next call 
+
 !
 !  adc control variables
 !
