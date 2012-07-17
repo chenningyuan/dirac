@@ -1,0 +1,8 @@
+INTGRL
+ C                                                                  
+ STO-2G smallest basis set for testing...
+C   1    2  X  Y  Z
+        6.    1
+C      .0000000000        0.0000000000        0.0000000000
+LARGE BASIS STO-2G
+FINISH
