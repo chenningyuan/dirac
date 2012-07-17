@@ -35,8 +35,8 @@ csv
 csu
 .END
 .INPUT
- C2+ test with DIRAC-HSFS-CCSD, 2pactive space; no frozen
-  3 80 08  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+ C2+ test with DIRAC-HSFS-CCSD, 2p active space; no frozen
+  0 80 08  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
   5
 hhvvv
   8
@@ -56,7 +56,7 @@ energy -1000.0 1000.0 1.0
 energy -1000.0 1000.0 1.0
 *END OF
 
- # active space 2p
- &RELCCSD DOFSPC=T DOENER=F IPRNT=3 INTERFACE="DIRAC6" DEBUG=F &END
+ #  active space 2p
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F &END
  &CCENER NTOL=08 &END
  &CCFSPC MAXIT=50, NACTH=0,0,0,0, NACTP=0,0,3,3, FSSECT=1,1,0,0,1,0  &END
