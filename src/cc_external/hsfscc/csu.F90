@@ -79,8 +79,7 @@
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
 
-      write (LUPRI,'(/,2X,A)')                                          &
-     '   $$$$$$$$$   csu / (0,2)   $$$$$$$$$  '
+      write (LUPRI,'(/,2X,A)') '   $$$$$$$$$   csu / (0,2)   $$$$$$$$$  '
 
       !call check_modules
 
@@ -88,6 +87,7 @@
       csdltim = csdstim
       call rdin
       call rdsym
+
       if (iopt(10).eq.0) then
         filenm(1:1)=' '
         call getenv('tape9',filenm)
@@ -126,7 +126,6 @@
       iter=0
       ieof=0
       if (iopt(12).eq.0) then
-!       call tuinit
         call tuinit_csu
       else 
         call rdfile (54,0,"tu  ",-1)
@@ -201,10 +200,13 @@
       end if
       write(6,2400) tmax,idec(itmax),t3max,idec(id3mx),idec(ind3mx)
 2400  format(' max t,t3=',f15.9,2x,i12,2x,f15.9,2x,i6,2x,i10)
+!      abort iteration process
       if (abs(tmax).gt.1.d10.or.abs(tmax).lt.1.d-10) then
         write (6,*) 'tmax=',tmax
-        write (6,*) 'csu: abort - tmax out of bounds !'
-        call abext('csu: abort - tmax out of bounds !')      
+        if (tmax.ne.0.0d0) then
+          write (6,*) 'csu: abort - tmax out of bounds !'
+          call abext('csu: abort - tmax out of bounds !')      
+        endif
       endif
 ! diis
       if (iopt(4).lt.0) then
@@ -277,15 +279,13 @@
       if (iopt(17).ne.0) then
         call wrtfile  (54,2,"t32 ")
         if (iopt(17).eq.3) then
-!         call wrtbox
           call wrtbox_csu
         end if
       end if
-      write (*,*) nstrt(1,nflcur),' words used in igen,',               &
-   nstrt(2,nflcur),' words used in gen'
+
+      write (*,*) nstrt(1,nflcur),' words used in igen,',nstrt(2,nflcur),' words used in gen'
       call prtime("end     ",iter,0)
 
-!      stop
       end
 ! *********************************************
       subroutine ordvu

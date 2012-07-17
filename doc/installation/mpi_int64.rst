@@ -39,25 +39,25 @@ Then enter the directory and configure Open MPI (edit prefix path).
 
 For Intel compilers use::
 
-  ./configure --prefix=/path/to/openmpi \
-              CXX=icpc                  \
-              CC=icc                    \
-              F77=ifort                 \
-              FC=ifort                  \
-              FFLAGS=-i8                \
-              FCFLAGS=-i8 
+  export F77=ifort
+  export FC=ifort
+  export CC=icc
+  export CXX=icpc
+  export FFLAGS=-i8
+  export FCFLAGS=-i8
+  ./configure --prefix=/path/to/openmpi
 
 For GNU compilers use::
 
-  ./configure --prefix=/path/to/openmpi          \
-              CXX=g++                            \
-              CC=gcc                             \
-              F77=gfortran                       \
-              FC=gfortran                        \
-              FFLAGS="-m64 -fdefault-integer-8"  \
-              FCFLAGS="-m64 -fdefault-integer-8" \
-              CFLAGS=-m64                        \
-              CXXFLAGS=-m64
+  export F77=gfortran
+  export FC=gfortran
+  export CC=gcc
+  export CXX=g++
+  export FFLAGS="-m64 -fdefault-integer-8"
+  export FCFLAGS="-m64 -fdefault-integer-8"
+  export CFLAGS=-m64
+  export CXXFLAGS=-m64
+  ./configure --prefix=/path/to/openmpi
 
 Once the configure step is finished (lot of output, at the end there
 should be no error), build the library::

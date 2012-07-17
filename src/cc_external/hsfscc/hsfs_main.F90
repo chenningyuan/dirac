@@ -13,7 +13,8 @@ implicit none
   write(LUPRI,*)
   write(LUPRI,'(2x,a)')  'Welcome to the standalone High Sectors Fock Space Coupled Cluster methods program'
   write(LUPRI,*)
-  write(LUPRI,'(2x,a)') ' Written by Uzi Kaldor, Bob Houghes, Ephraim Eliav, Miroslav Ilias '
+  write(LUPRI,'(2x,a)') ' Written by Uzi Kaldor, S.R. Hughes  '
+  write(LUPRI,'(2x,a)') ' Later modied and interfaced by Ephraim Eliav, Miroslav Ilias'
   write(LUPRI,*)
   write(LUPRI,'(2x,a)')  '---------------------------------------------------------------------------------'
 end subroutine print_hsfscc_header

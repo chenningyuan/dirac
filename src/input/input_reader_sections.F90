@@ -405,12 +405,12 @@
          end if
       end if
 
-#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.LONDON')) then
          visual_cfg_london = .true.
          read(get_file_unit(), *) visual_cfg_london_component
       end if
 
+#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.NONE  ')) then
          visual_cfg_london_none      = .true.
       end if
