@@ -496,7 +496,7 @@ C
      &                 DOSIPS,DODIPS,XREPS,READQKL,
      &                 DOCONST,DOADCPOP,DOFULL,VCONV
       NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,
-     &                 SIPPRNT,DIPPRNT,DOINCORE,DOADCHIST,
+     &                 SIPPRNT,DIPPRNT,DOINCORE,
      &                 ADCTHR
 c
 c  set input default values and read ADC input
@@ -559,7 +559,6 @@ c
         DIPEIGV(J) = 0
       ENDDO
       DOINCORE  = .FALSE.
-      DOADCHIST  = .FALSE.
       ADCTHR    = 0.0d0
       REWIND (5)
       CALL LOCATE('LANINP',5,ITEST)

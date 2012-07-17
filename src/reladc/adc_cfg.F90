@@ -23,29 +23,29 @@ module adc_cfg
 
 ! This module contains all input set by the user. Used for RELADC
 
-  implicit none
-! integer, dimension(1:16), public :: relcc_nelec   = 0  
-! integer, dimension(1:16), public :: relcc_nelec_f1= 0 
-! integer, dimension(1:16), public :: relcc_nelec_f2= 0 
-! integer, dimension(1:16), public :: relcc_nfroz   = 0
-! save
-
-! General control flags
-! logical, public :: nelec_input                   = .false.
-! logical, public :: relcc_debug                   = .false.
-! integer, public :: relcc_max_dimension_diis      = 8
-! integer, public :: relcc_max_iterations          = 30
-! integer, public :: relcc_desired_convergence     = 12
 !
-! Information relevant for the integral sorting and setup stage
-! logical, public :: relcc_breit                    = .false.
-! logical, public :: relcc_add_finite_field         = .false.
-! character(10), public :: relcc_fs_interface
-! character( 8), public :: relcc_ff_property_names
-
-! Information relevant for the energy calculation
-! logical, public :: relcc_do_mp2                  = .true.
-! logical, public :: relcc_do_singles              = .false.
-! logical, public :: relcc_do_doubles              = .false.
+!  adc control variables
+!
+  implicit none
+  integer, public                  :: reladc_adclevel   = 3
+  logical, public                  :: reladc_dosips     = .false.
+  logical, public                  :: reladc_dodips     = .false.
+  integer, dimension(1:32), public :: reladc_xreps      = 0  
+  logical, public                  :: reladc_readqkl    = .false.
+  logical, public                  :: reladc_doconst    = .false.
+  logical, public                  :: reladc_doadcpop   = .false.
+  logical, public                  :: reladc_dofull     = .false.
+  real*8,  public                  :: reladc_vconv      = 1.0E-06
+!
+!  lanczos control variables
+!
+  integer, public                  :: reladc_sipiter    = 500
+  integer, public                  :: reladc_dipiter    = 500
+  integer, public                  :: reladc_sipeigv    = 0
+  integer, public                  :: reladc_dipeigv    = 0
+  real*8,  public                  :: reladc_sipprnt    = 50.0
+  real*8,  public                  :: reladc_dipprnt    = 50.0
+  logical, public                  :: reladc_doincore   = .false.
+  real*8,  public                  :: reladc_adcthr     = 0.0
 
 end module
