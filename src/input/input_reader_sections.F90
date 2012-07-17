@@ -1106,8 +1106,42 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.ADCLEVEL')) then
-!        read(get_file_unit(),'(i5)') relcc_ih_scheme
+         read(get_file_unit(),'(i5)') reladc_adclevel
       end if
+
+      if (kw_matches(word, '.DOSIPS')) then
+         reladc_dosips = .true.
+      end if
+
+      if (kw_matches(word, '.DODIPS')) then
+         reladc_dodips = .true.
+      end if
+
+      if (kw_matches(word, '.XREPS')) then
+         call kw_read(word, reladc_xreps, 32)
+      end if
+
+      if (kw_matches(word, '.READQKL')) then
+         reladc_readqkl = .true.
+      end if
+
+      if (kw_matches(word, '.DOCONST')) then
+         reladc_doconst = .true.
+      end if
+
+      if (kw_matches(word, '.DOADCPOP')) then
+         reladc_doadcpop = .true.
+      end if
+
+      if (kw_matches(word, '.DOFULL')) then
+         reladc_dofull = .true.
+      end if
+
+      if (kw_matches(word, '.VCONV')) then
+         read(get_file_unit(),'(f15.8)') reladc_vconv
+      end if
+
+      call check_whether_kw_found(word, kw_section)
 
    end subroutine
 !
@@ -1129,8 +1163,38 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.SIPITER')) then
-!        read(get_file_unit(),'(i5)') relcc_ih_scheme
+         read(get_file_unit(),'(i6)') reladc_sipiter
       end if
+
+      if (kw_matches(word, '.DIPITER')) then
+         read(get_file_unit(),'(i6)') reladc_dipiter
+      end if
+
+      if (kw_matches(word, '.SIPEIGV')) then
+         call kw_read(word, reladc_sipeigv, 32)
+      end if
+
+      if (kw_matches(word, '.DIPEIGV')) then
+         call kw_read(word, reladc_dipeigv, 32)
+      end if
+
+      if (kw_matches(word, '.SIPPRNT')) then
+         read(get_file_unit(),'(f18.6)') reladc_sipprnt
+      end if
+
+      if (kw_matches(word, '.DIPPRNT')) then
+         read(get_file_unit(),'(f18.6)') reladc_dipprnt
+      end if
+
+      if (kw_matches(word, '.DOINCORE')) then
+         reladc_doincore = .true.
+      end if
+
+      if (kw_matches(word, '.ADCTHR')) then
+         read(get_file_unit(),'(f18.6)') reladc_adcthr
+      end if
+
+      call check_whether_kw_found(word, kw_section)
 
    end subroutine
 
