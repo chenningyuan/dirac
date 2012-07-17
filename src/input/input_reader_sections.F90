@@ -52,6 +52,12 @@
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
 
+        case ('*RELADC')
+           call read_input_reladc(word, kw_section)
+
+        case ('*LANCZOS')
+           call read_input_lanczos(word, kw_section)
+
         case default
 !          activate as soon as everything is merged to here
 !          call quit('section '//kw_section//' not recognized')
@@ -1079,6 +1085,52 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+!
+!  new reladc input subroutine
+!
+   subroutine read_input_reladc(word, kw_section)
+
+      use adc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.ADCLEVEL')) then
+!        read(get_file_unit(),'(i5)') relcc_ih_scheme
+      end if
+
+   end subroutine
+!
+!  new lanczos input subroutine
+!
+   subroutine read_input_lanczos(word, kw_section)
+
+      use adc_cfg   ! lanczos only used in combination with reladc. same module
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.SIPITER')) then
+!        read(get_file_unit(),'(i5)') relcc_ih_scheme
+      end if
 
    end subroutine
 
