@@ -11,6 +11,7 @@ integer, allocatable :: igen(:)
 contains
 subroutine init_gen_mod
  use hsfs_parameters
+implicit none
 #include "priunit.h"
 integer :: istat
  allocate(gen(nbig),stat=istat)
@@ -26,9 +27,11 @@ subroutine dealloc_gen_mod
 end subroutine dealloc_gen_mod
 
 subroutine  check_gen_mod
-  use hsfs_parameters
-#include "implicit.h"
+ use hsfs_parameters
+implicit none
 #include "priunit.h"
+integer :: isize_gen, isize_igen, itemp1, itemp2
+real*8 :: temp1,temp2
 if (allocated(gen).and.allocated(igen)) then
 isize_gen=size(gen); isize_igen=size(igen)
 temp1=gen(1);temp2=gen(nbig)
@@ -140,8 +143,9 @@ end subroutine init_cij1_mod
 
 subroutine check_cij1_mod
  use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer ::  itemp1,itemp2,itemp3,itemp4
 itemp1=ij1(1);itemp2=ij1(ndij)
 itemp3=ije1(0);itemp4=ije1(ndij)
 end subroutine check_cij1_mod
@@ -414,16 +418,16 @@ subroutine init_dat_mod
 
 if (.not.dat_mod_initialized) then
 !
-allocate(ic(1:dat_size))
-allocate(icv(1:dat_size))
-allocate(eps(1:dat_size))
-allocate(iopt(1:iopt_size))
+  allocate(ic(1:dat_size))
+  allocate(icv(1:dat_size))
+  allocate(eps(1:dat_size))
+  allocate(iopt(1:iopt_size))
 !
- dat_mod_initialized = .true.
- write(LUPRI,*) 'dat_mod initialized'
+  dat_mod_initialized = .true.
+  write(LUPRI,*) 'dat_mod initialized'
 !
 else
- write(LUPRI,*) 'dat_mod was already initialized'
+  write(LUPRI,*) 'dat_mod was already initialized'
 endif
 end subroutine init_dat_mod
 
@@ -434,8 +438,10 @@ write(LUPRI,*) 'iopt(1,3,17,19):',iopt(1),iopt(3),iopt(17),iopt(19)
 end subroutine print_dat_iopt
 
 subroutine check_dat_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2,itemp3,itemp4
+real*8 :: temp1,temp2
 if (dat_mod_initialized) then
 itemp1=ic(1);itemp2=ic(int(dat_size))
 temp1=eps(1); temp2=eps(int(dat_size))
@@ -449,11 +455,6 @@ subroutine dealloc_dat_mod
  deallocate(eps)
  deallocate(iopt)
 end subroutine dealloc_dat_mod
-
-subroutine check_dat
-#include "implicit.h"
-#include "priunit.h"
-end subroutine check_dat
 
 end module dat_mod
 
@@ -471,8 +472,9 @@ write(LUPRI,*) 'idv_mod initialized'
 end subroutine init_idv_mod
 
 subroutine check_idv_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2
 if (allocated(iv)) then
 !itemp1=iv(1);itemp2=iv(int(idv_size))
 itemp1=iv(1)
@@ -507,8 +509,9 @@ subroutine dealloc_prm_mod
 end subroutine dealloc_prm_mod
 
 subroutine check_prm_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2,itemp3,itemp4
 if (allocated(iperm)) then
 itemp1=iperm(0,1); itemp2=iperm(0,720)
 itemp3=iperm(6,1); itemp4=iperm(6,720)
@@ -540,8 +543,9 @@ endif
 end subroutine init_sym_mod
 
 subroutine check_sym_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer ::  itemp1,itemp2,itemp3,itemp4,itemp5,itemp6,itemp7,itemp8
 if (sym_mod_initialized) then
   itemp1=iclass(1); itemp2=iclass(16)
   itemp3=isym(1,1); itemp4=isym(16,1);itemp5=isym(1,8);itemp6=isym(16,8)
@@ -564,6 +568,7 @@ integer, allocatable  :: ijtmp1(:)
 contains
 subroutine init_ijtemp_mod
  use hsfs_parameters
+ implicit none
 #include "priunit.h"
 !#include "param_ccsd.h"
 allocate(ijtmp1(1:ndp6))
@@ -572,8 +577,9 @@ end subroutine init_ijtemp_mod
 
 subroutine check_ijtemp_mod
  use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2
 itemp1=ijtmp1(1);itemp2=ijtmp1(ndp6)
 end subroutine check_ijtemp_mod
 
@@ -587,6 +593,7 @@ module tv2_mod
 real*8, allocatable :: a(:,:)
 contains
 subroutine init_tv2_mod
+implicit none
 #include "priunit.h"
 integer, parameter :: tv2_size=500
  allocate (a(tv2_size,tv2_size))
@@ -598,8 +605,9 @@ subroutine dealloc_tv2_mod
 end subroutine dealloc_tv2_mod
 end module tv2_mod
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
+! module for handling print level, and thus amount of printed data
  integer, private :: iprint=0
  logical(kind=1), private :: print_level_read=.false.
  !logical :: print_level_read = .false.
@@ -607,11 +615,16 @@ contains
 
 subroutine extract_print_level
 ! extract print level from the common block variable
-#include "priunit.h"
+#if defined HSFS_DYN_ALLOC
+use dat_mod
+#else
 #include "dat.h"
+#endif
+implicit none
+#include "priunit.h"
  if (.not.print_level_read) then
   iprint = iopt(1)
-  write(LUPRI,'(2X,A,I3)') 'print level set to:',iprint
+  write(LUPRI,'(2X,A,I3)') 'print level, iopt(1), set to:',iprint
  else
   write(LUPRI,'(2X,A,I3)') 'print level was already set before to:',iprint
  endif
@@ -619,6 +632,7 @@ subroutine extract_print_level
 end subroutine extract_print_level
 
 subroutine set_print_level(ipr)
+implicit none
 #include "priunit.h"
  integer, intent(in) :: ipr
  iprint=ipr
