@@ -52,10 +52,10 @@
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
 
-        case ('*RELADC')
+        case ('**RELAD')
            call read_input_reladc(word, kw_section)
 
-        case ('*LANCZOS')
+        case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
 
         case default
@@ -1101,11 +1101,14 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
+      integer                          :: user_req_symmetries
+!     --------------------------------------------------------------------------
 
+!     write(*,*) 'In reladc input reader:',word,kw_section,len(word)
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.ADCLEVEL')) then
+      if (kw_matches(word, '.ADCLEV')) then
          read(get_file_unit(),'(i5)') reladc_adclevel
       end if
 
@@ -1117,19 +1120,20 @@
          reladc_dodips = .true.
       end if
 
-      if (kw_matches(word, '.XREPS')) then
-         call kw_read(word, reladc_xreps, 32)
+      if (kw_matches(word, '.XREPS ')) then
+         call kw_read(word, user_req_symmetries)
+         call kw_read(word, reladc_xreps, user_req_symmetries)
       end if
 
-      if (kw_matches(word, '.READQKL')) then
+      if (kw_matches(word, '.READQK')) then
          reladc_readqkl = .true.
       end if
 
-      if (kw_matches(word, '.DOCONST')) then
+      if (kw_matches(word, '.DOCONS')) then
          reladc_doconst = .true.
       end if
 
-      if (kw_matches(word, '.DOADCPOP')) then
+      if (kw_matches(word, '.DOADCP')) then
          reladc_doadcpop = .true.
       end if
 
@@ -1137,7 +1141,7 @@
          reladc_dofull = .true.
       end if
 
-      if (kw_matches(word, '.VCONV')) then
+      if (kw_matches(word, '.VCONV ')) then
          read(get_file_unit(),'(f15.8)') reladc_vconv
       end if
 
@@ -1158,24 +1162,28 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
+      integer                          :: user_req_symmetries
+!     --------------------------------------------------------------------------
 
 
       call reset_available_kw_list()
 
       if (kw_matches(word, '.SIPITER')) then
-         read(get_file_unit(),'(i6)') reladc_sipiter
+         read(get_file_unit(),'(i8)') reladc_sipiter
       end if
 
       if (kw_matches(word, '.DIPITER')) then
-         read(get_file_unit(),'(i6)') reladc_dipiter
+         read(get_file_unit(),'(i8)') reladc_dipiter
       end if
 
       if (kw_matches(word, '.SIPEIGV')) then
-         call kw_read(word, reladc_sipeigv, 32)
+         read(get_file_unit(),'(i8)') user_req_symmetries
+         call kw_read(word, reladc_sipeigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.DIPEIGV')) then
-         call kw_read(word, reladc_dipeigv, 32)
+         read(get_file_unit(),'(i8)') user_req_symmetries
+         call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.SIPPRNT')) then

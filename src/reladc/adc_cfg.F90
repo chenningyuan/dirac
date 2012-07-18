@@ -23,10 +23,14 @@ module adc_cfg
 
 ! This module contains all input set by the user. Used for RELADC
 
+
 !
 !  adc control variables
 !
   implicit none
+
+  save    !  if values of variables are changed they are still there after the next call 
+
   integer, public                  :: reladc_adclevel   = 3
   logical, public                  :: reladc_dosips     = .false.
   logical, public                  :: reladc_dodips     = .false.
