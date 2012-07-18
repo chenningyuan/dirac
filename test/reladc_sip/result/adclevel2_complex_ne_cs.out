@@ -1,9 +1,9 @@
 DIRAC pam run in /home/elke/dirac/test/reladc_sip
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
- 
-Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
- 
+
+Note: maximum allocatable memory for serial run can be set by pam --aw
+
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -81,33 +81,45 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
  *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions since the DIRAC08 release from:                  *
+ *    with contributions from:                                                *
  *                                                                            *
- *    Radovan Bast             University of Tromsoe,            Norway       *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
  *    Ulf Ekstroem             University of Oslo                Norway       *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
  *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
  *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
  *    Johan Henriksson         Linkoeping University             Sweden       *
  *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
  *    Stefan Knecht            University of Southern Denmark    Denmark      *
- *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linkoeing University              Sweden       *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe,            Norway       *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
  *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas Thorvaldsen      University of Tromsoe,            Norway       *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
  *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
  *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
@@ -124,45 +136,65 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC10 (2010),                                                 *
- *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
- *    with new contributions from R. Bast, K. G. Dyall, U. Ekstroem, E. Eliav,*
- *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
- *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
- *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
- *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
- *    (see http://dirac.chem.vu.nl).                                          *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
- 
- 
-Compilation info
-----------------
- 
- Version           : Dirac 10.0 (patchlevel 0) 
- Hostname          : cluster-pci
- Operating system  : Linux 2.6.18-194.17.4.el5
- Machine           : x86_64
- Run               : Sequential
- Last compilation  : 00:23:57 Sep 30 2011 (by elke@cluster-pci.cvos.cluster:/home/elke/dirac)
- FORTRAN compiler  : /cvos/shared/apps/intel/Compiler/11.1.046/bin/intel64/ifort -O3 -ip  -g -fpp1 -w -assume byterecl -traceback -i8 -Iinclude -module modules -DINT_STAR8 -DVAR_IFORT -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MKL -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF   
- C compiler        : /cvos/shared/apps/intel/Compiler/11.1.046/bin/intel64/icc -O3 -ip -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DINT_STAR8 -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries: -L/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t -lmkl_intel_ilp64 -lmkl_lapack -lmkl_sequential -lmkl_core -lguide 
- Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
- ILP data model    : ILP64 
+
+
+Binary information
+------------------
+
+ Who compiled             | elke@cluster-pci
+ System                   | Linux-2.6.18-194.17.4.el5
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | ON
+ MPI                      | OFF
+ Fortran compiler         | /cvos/shared/apps/intel/Compiler/11.1.046/bin/inte
+                          | l64/ifort
+ Fortran compiler version | ifort (IFORT) 11.1 20090630
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -i8 
+                          | -O3 -ip
+ C compiler               | /cvos/shared/apps/intel/Compiler/11.1.046/bin/inte
+                          | l64/icc
+ C compiler version       | icc (ICC) 11.1 20090630
+ C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
+                          | 7 -O2
+ BLAS                     | -Wl,--start-group;-limf;/cvos/shared/apps/intel/mk
+                          | l/10.1.3.027/lib/em64t/libmkl_core.so;/cvos/shared
+                          | /apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_intel_
+                          | thread.so;/cvos/shared/apps/intel/mkl/10.1.3.027/l
+                          | ib/em64t/libguide.so;/usr/lib64/libpthread.so;/usr
+                          | /lib64/libm.so;/cvos/shared/apps/intel/mkl/10.1.3.
+                          | 027/lib/em64t/libmkl_intel_ilp64.so;-openmp;-Wl,--
+                          | end-group
+ LAPACK                   | -Wl,--start-group;/cvos/shared/apps/intel/mkl/10.1
+                          | .3.027/lib/em64t/libmkl_lapack.so;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | 2de16d3
+ Configuration time       | 2012-07-18 14:20:50.643640
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Sun Jul  8 11:16:28 2012
+     Date and time (Linux)  : Wed Jul 18 14:28:25 2012
      Host name              : cluster-pci                             
- 
- 
+
+
 Contents of the input file
 --------------------------
- 
+
 **DIRAC                                                                                             
 .TITLE                                                                                              
  Valence ionization of the Neon atom                                                                
@@ -185,11 +217,11 @@ energy  -2.0 2.5 0.1
  $RELADC DOSIPS=T, ADCLEVEL=2, XREPS=1 $END                                                         
  $LANINP SIPITER=100 SIPPRNT=20.0 $END                                                              
                                                                                                     
- 
- 
+
+
 Contents of the molecule file
 -----------------------------
- 
+
 INTGRL                                                                                              
                                                                                                     
                                                                                                     
@@ -229,7 +261,6 @@ FINISH
  * Thresholds for linear dependence:
    Large components:   1.00D-06
    Small components:   1.00D-08
- DFPCMO: IBEIG read in I2 format.
  * General print level   :   0
 
 
@@ -237,12 +268,6 @@ FINISH
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
- Settings for FCK3 calculation:
- ------------------------------
-
-Dynamical threshold is not (yet) implemented in DIRAC
 
 
     *************************************************************************
@@ -349,7 +374,6 @@ Point group: Cs
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
   References for the basis sets
@@ -523,13 +547,12 @@ Ne     0.0000000000   0.0000000000   0.0000000000
  SCFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
- * Closed shell SCF calculation with   10 electrons in
-       5 orbitals in Fermion irrep 1
+ * Closed shell SCF calculation with    10 electrons in    5 orbitals.
  * Bare nucleus screening correction used for start guess
  * General print level   :   0
- ***** TRIAL FUNCTION *****
+ ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
- ***** CONVERGENCE CRITERIA *****
+ ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on total Fock matrix.
    Desired convergence:5.000D-05
    Allowed convergence:5.000D-05
@@ -616,6 +639,7 @@ Ne     0.0000000000   0.0000000000   0.0000000000
    L   A"    * Deleted:          0(Proj:          0, Lindep:          0)
    S   A'    * Deleted:          6(Proj:          6, Lindep:          0)
    S   A"    * Deleted:          1(Proj:          1, Lindep:          0)
+ >>> Time used in Lwdn_a is   0.15 seconds
 
 
                                 Output from MODHAM
@@ -631,6 +655,7 @@ Ne     0.0000000000   0.0000000000   0.0000000000
 No. of positive energy orbitals (NESH):    14
 No. of negative energy orbitals (NPSH):    14
 Total no. of orbitals           (NORB):    28
+ >>> Time used in PAMSET is   0.20 seconds
 
 
    ****************************************************************************
@@ -642,94 +667,96 @@ Total no. of orbitals           (NORB):    28
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Sun Jul  8 11:16:28 2012
+########## START ITERATION NO.   1 ##########   Wed Jul 18 14:28:25 2012
 
-It.   1    -65.05161215502      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Sun Jul  8
 
-########## START ITERATION NO.   2 ##########   Sun Jul  8 11:16:28 2012
+=> Calculating sum of orbital energies
+It.    1    -65.05161215481      0.00D+00  0.00D+00  0.00D+00               0.04000001s   Scr. nuclei    Wed Jul 18
+
+########## START ITERATION NO.   2 ##########   Wed Jul 18 14:28:25 2012
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    4.87%   47.47%   16.51%   14.27%   0.00000000s
-SOfock:SL  1.00D-12   12.53%   41.72%   15.73%   17.90%   0.01000000s
+SOfock:LL  1.00D-12   16.19%   42.07%   16.14%   19.29%   0.01000002s
+SOfock:SL  1.00D-12   12.71%   41.70%   15.74%   17.82%   0.11000001s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03000000s
+>>> Total CPU time : 0.63000000s
 
-########## END ITERATION NO.   2 ##########   Sun Jul  8 11:16:28 2012
+########## END ITERATION NO.   2 ##########   Wed Jul 18 14:28:25 2012
 
-It.   2    -128.6044881309      6.36D+01  5.49D+00  5.13D-01               0.03000000s   LL SL          Sun Jul  8
+It.    2    -128.6044881309      6.36D+01  5.49D+00  5.13D-01               0.63000000s   LL SL          Wed Jul 18
 
-########## START ITERATION NO.   3 ##########   Sun Jul  8 11:16:28 2012
+########## START ITERATION NO.   3 ##########   Wed Jul 18 14:28:25 2012
 
     3 *** Differential density matrix. DCOVLP     = 0.9026
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    4.87%   47.47%   13.55%   10.42%   0.01000000s
-SOfock:SL  1.00D-12   12.60%   42.07%   13.15%   17.79%   0.00000000s
+SOfock:LL  1.00D-12    4.87%   46.06%    9.39%   10.17%   0.06000000s
+SOfock:SL  1.00D-12   12.50%   42.22%   10.04%   17.82%   0.10999995s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.01000000s
+>>> Total wall time: 1.00000000s
+>>> Total CPU time : 0.63000000s
 
-########## END ITERATION NO.   3 ##########   Sun Jul  8 11:16:28 2012
+########## END ITERATION NO.   3 ##########   Wed Jul 18 14:28:25 2012
 
-It.   3    -128.6263617174      2.19D-02 -4.28D-01  2.13D-01   DIIS   2    0.01000000s   LL SL          Sun Jul  8
+It.    3    -128.6263617174      2.19D-02 -4.28D-01  2.13D-01   DIIS   2    0.63000000s   LL SL          Wed Jul 18
 
-########## START ITERATION NO.   4 ##########   Sun Jul  8 11:16:28 2012
+########## START ITERATION NO.   4 ##########   Wed Jul 18 14:28:26 2012
 
     4 *** Differential density matrix. DCOVLP     = 1.0337
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.04%   41.18%   16.06%   13.46%   0.01000000s
-SOfock:SL  1.00D-12   12.67%   42.50%   14.58%   17.68%   0.00000000s
+SOfock:LL  1.00D-12    4.87%   47.47%    7.93%   12.57%   0.01999998s
+SOfock:SL  1.00D-12   12.50%   42.64%    9.87%   17.76%   0.10000002s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.02000000s
+>>> Total CPU time : 0.28999996s
 
-########## END ITERATION NO.   4 ##########   Sun Jul  8 11:16:28 2012
+########## END ITERATION NO.   4 ##########   Wed Jul 18 14:28:26 2012
 
-It.   4    -128.6317813495      5.42D-03  1.39D-01  9.77D-03   DIIS   3    0.02000000s   LL SL          Sun Jul  8
+It.    4    -128.6317813495      5.42D-03  1.39D-01  9.77D-03   DIIS   3    0.28999996s   LL SL          Wed Jul 18
 
-########## START ITERATION NO.   5 ##########   Sun Jul  8 11:16:28 2012
+########## START ITERATION NO.   5 ##########   Wed Jul 18 14:28:26 2012
 
     5 *** Differential density matrix. DCOVLP     = 0.9990
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    4.87%   48.18%    7.65%   10.29%   0.00000000s
-SOfock:SL  1.00D-12   11.47%   44.77%    9.35%   17.28%   0.01000001s
+SOfock:LL  1.00D-12    9.04%   41.18%   16.06%   13.46%   0.02000010s
+SOfock:SL  1.00D-12   12.67%   43.99%   14.06%   17.41%   0.12000000s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.01000001s
+>>> Total CPU time : 0.48000002s
 
-########## END ITERATION NO.   5 ##########   Sun Jul  8 11:16:28 2012
+########## END ITERATION NO.   5 ##########   Wed Jul 18 14:28:26 2012
 
-It.   5    -128.6317956241      1.43D-05 -5.98D-03  1.11D-03   DIIS   4    0.01000001s   LL SL          Sun Jul  8
+It.    5    -128.6317956241      1.43D-05 -5.98D-03  1.11D-03   DIIS   4    0.48000002s   LL SL          Wed Jul 18
 
-########## START ITERATION NO.   6 ##########   Sun Jul  8 11:16:28 2012
+########## START ITERATION NO.   6 ##########   Wed Jul 18 14:28:26 2012
 
     6 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    4.87%   48.18%    7.95%   11.18%   0.00000000s
-SOfock:SL  1.00D-12   12.50%   45.46%    9.24%   16.86%   0.01000000s
+SOfock:LL  1.00D-12    4.87%   48.04%   15.64%   10.36%   0.01999998s
+SOfock:SL  1.00D-12   11.51%   45.95%   13.59%   17.04%   0.11000013s
  cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.01000000s
+>>> Total CPU time : 0.47000003s
 
-########## END ITERATION NO.   6 ##########   Sun Jul  8 11:16:28 2012
+########## END ITERATION NO.   6 ##########   Wed Jul 18 14:28:26 2012
 
-It.   6    -128.6317957819      1.58D-07  3.35D-04  1.62D-05   DIIS   5    0.01000000s   LL SL          Sun Jul  8
+It.    6    -128.6317957819      1.58D-07  3.35D-04  1.62D-05   DIIS   5    0.47000003s   LL SL          Wed Jul 18
 
-########## START ITERATION NO.   7 ##########   Sun Jul  8 11:16:28 2012
+########## START ITERATION NO.   7 ##########   Wed Jul 18 14:28:26 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    4.87%   47.47%   14.74%   12.86%   0.00000000s
-SOfock:SL  1.00D-12   12.50%   50.76%   10.82%   14.55%   0.01000000s
+SOfock:LL  1.00D-12    4.87%   48.18%    7.65%    9.77%   0.01999998s
+SOfock:SL  1.00D-12   11.47%   51.47%    8.26%   14.43%   0.12000012s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.02000000s
+>>> Total wall time: 1.00000000s
+>>> Total CPU time : 0.45000005s
 
-########## END ITERATION NO.   7 ##########   Sun Jul  8 11:16:28 2012
+########## END ITERATION NO.   7 ##########   Wed Jul 18 14:28:26 2012
 
-It.   7    -128.6317957819      6.41D-11  3.35D-06  4.72D-06   DIIS   5    0.02000000s   LL SL          Sun Jul  8
+It.    7    -128.6317957819      6.37D-11  3.35D-06  4.72D-06   DIIS   5    0.45000005s   LL SL          Wed Jul 18
 
 
                                    SCF - CYCLE
@@ -745,31 +772,31 @@ It.   7    -128.6317957819      6.41D-11  3.35D-06  4.72D-06   DIIS   5    0.020
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -65.05161215502      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Sun Jul  8
-It.   2    -128.6044881309      6.36D+01  5.49D+00  5.13D-01               0.03000000s   LL SL          Sun Jul  8
-It.   3    -128.6263617174      2.19D-02 -4.28D-01  2.13D-01   DIIS   2    0.01000000s   LL SL          Sun Jul  8
-It.   4    -128.6317813495      5.42D-03  1.39D-01  9.77D-03   DIIS   3    0.02000000s   LL SL          Sun Jul  8
-It.   5    -128.6317956241      1.43D-05 -5.98D-03  1.11D-03   DIIS   4    0.01000001s   LL SL          Sun Jul  8
-It.   6    -128.6317957819      1.58D-07  3.35D-04  1.62D-05   DIIS   5    0.01000000s   LL SL          Sun Jul  8
-It.   7    -128.6317957819      6.41D-11  3.35D-06  4.72D-06   DIIS   5    0.02000000s   LL SL          Sun Jul  8
+It.    1    -65.05161215481      0.00D+00  0.00D+00  0.00D+00               0.04000001s   Scr. nuclei    Wed Jul 18
+It.    2    -128.6044881309      6.36D+01  5.49D+00  5.13D-01               0.63000000s   LL SL          Wed Jul 18
+It.    3    -128.6263617174      2.19D-02 -4.28D-01  2.13D-01   DIIS   2    0.63000000s   LL SL          Wed Jul 18
+It.    4    -128.6317813495      5.42D-03  1.39D-01  9.77D-03   DIIS   3    0.28999996s   LL SL          Wed Jul 18
+It.    5    -128.6317956241      1.43D-05 -5.98D-03  1.11D-03   DIIS   4    0.48000002s   LL SL          Wed Jul 18
+It.    6    -128.6317957819      1.58D-07  3.35D-04  1.62D-05   DIIS   5    0.47000003s   LL SL          Wed Jul 18
+It.    7    -128.6317957819      6.37D-11  3.35D-06  4.72D-06   DIIS   5    0.45000005s   LL SL          Wed Jul 18
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    7 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL        :    0.00000000s
+      LL SL        :    0.33333333s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -128.63179578194229
+   Electronic energy                        :    -128.63179578194192
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
    SS Coulombic correction                  :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -128.63179578194229
+   Total energy                             :    -128.63179578194192
 
 
                                    Eigenvalues
@@ -778,9 +805,9 @@ It.   7    -128.6317957819      6.41D-11  3.35D-06  4.72D-06   DIIS   5    0.020
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--32.81796514878010  ( 2)    -1.92411053118386  ( 2)    -0.83437974115105  ( 2)    -0.83026641181282  ( 4)
+-32.81796514880363  ( 2)    -1.92411053121388  ( 2)    -0.83437974117549  ( 2)    -0.83026641177711  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.69051203730070  ( 2)     1.69503369773550  ( 4)     2.15590682666727  ( 2)     5.19643860440202  ( 4)     5.19758179025880  ( 6)
+  1.69051203729417  ( 2)     1.69503369770768  ( 4)     2.15590682666428  ( 2)     5.19643860439906  ( 4)     5.19758179025703  ( 6)
 * HOMO - LUMO gap:
 
     E(LUMO) :     1.69051204 au (symmetry E1 )
@@ -806,10 +833,10 @@ It.   7    -128.6317957819      6.41D-11  3.35D-06  4.72D-06   DIIS   5    0.020
      ************************************************************************
 
 
- Transformation started at : Sun Jul  8 11:16:28 2012
+ Transformation started at : Wed Jul 18 14:28:27 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -128.631795781878139
-* Heading : Valence ionization of the Neon atom              Sun Jul  8 11:16:28 2012
+* REACMO: Coefficients read from file DFCOEF - Total energy: -128.631795781878225
+* Heading : Valence ionization of the Neon atom              Wed Jul 18 14:28:26 2012
      Energy selection of active orbitals :       -2.00 < Eps. <         2.50 with a mininum gap of     0.1000 au.
      Energy selection of active orbitals :       -2.00 < Eps. <         2.50 with a mininum gap of     0.1000 au.
      Energy selection of active orbitals :       -2.00 < Eps. <         2.50 with a mininum gap of     0.1000 au.
@@ -857,16 +884,16 @@ It.   7    -128.6317957819      6.41D-11  3.35D-06  4.72D-06   DIIS   5    0.020
        ********************************************************************
 
 
- Transformation started at : Sun Jul  8 11:16:28 2012
+ Transformation started at : Wed Jul 18 14:28:27 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -128.631795781878139
-* Heading : Valence ionization of the Neon atom              Sun Jul  8 11:16:28 2012
+* REACMO: Coefficients read from file DFCOEF - Total energy: -128.631795781878225
+* Heading : Valence ionization of the Neon atom              Wed Jul 18 14:28:26 2012
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   81.13%    8.71%    5.18%   11.62%   0.00000000s
-SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
+SOfock:LL  1.00D-12   81.13%    8.71%    5.18%   11.62%   0.01999998s
+SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.07999992s
 
-* REAFCK: Fock matrix read from file /tmp/elke/DIRAC_adclevel2_complex_ne_cs_9851/DFFCK1         
-* Heading : Valence ionization of the Neon atom              Sun Jul  8 11:16:28 2012
+* REAFCK: Fock matrix read from file /tmp/elke/DIRAC_adclevel2_complex_ne_cs_9978/DFFCK1         
+* Heading : Valence ionization of the Neon atom              Wed Jul 18 14:28:25 2012
 
 
  Core energy (includes nuclear repulsion) :            -93.9684922113
@@ -887,13 +914,13 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
    - Beginning task   7 of   8 after      0. seconds and      0. CPU-seconds
    - Beginning task   8 of   8 after      0. seconds and      0. CPU-seconds
 
- Node    0 finished first half transformation          127198 HT integrals written ( 40.30%,      0.00 GB)
+ Node    0 finished first half transformation          127920 HT integrals written ( 40.53%,      0.00 GB)
   
  <<< Starting 2HT on node                      0
   
   
  >>> Finished 2HT on node                      0
- >>> Time used in 2HT_all is   0.44 seconds
+ >>> Time used in 2HT_all is   2.87 seconds
   
  - Binary  file MDCINT was written.
 * Screening statistics:
@@ -903,16 +930,15 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformati       0.220 seconds
- Time in  Second halftransformat       0.440 seconds
+ Time in  First halftransformation            1.470 seconds
+ Time in  Second halftransformation           2.870 seconds
 
 
- Total wall time used in PAMTRA :   00:00:01
- Total CPU  time used in PAMTRA (master only) :   00:00:01
+ Total wall time used in PAMTRA :   00:00:00
+ Total CPU  time used in PAMTRA (master only) :   00:00:05
 
+ Transformation ended at : Wed Jul 18 14:28:27 2012
 
-
- Transformation ended at : Sun Jul  8 11:16:29 2012
 
 
 
@@ -921,6 +947,9 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
           ****       FOUR-COMPONENT                   ****
           ****      PROPAGATOR MODULE                 ****
           ****                                        ****
+          ****        New features (Jul 2012):        ****
+          ****  *)  Partial incore Lanczos            ****
+          ****  *)  Improved eigenvector analysis     ****
           ************************************************
 
 
@@ -935,11 +964,13 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
 
 ---< Process     1 of     1----<
 
- Numbers of words given to ADC:              64000000
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 
  Total memory provided:                                 64000000 Words        488 MB
+ temporary maxcor:              64000000
+ (Attributed due to static memory usage)
+ Total avail. memory (MB):                   488
 
  Configuration in highest pointgroup
 
@@ -961,30 +992,36 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
 
         *** GENERAL JOB SPECIFICATION ***
 
- Calculate Single ionization spectra : T
- Calculate double ionization spectra : F
- Perform integral sorting (if necc.) : T
+ Calculate Single ionization spectra:            T
+ Calculate double ionization spectra:            F
+ Perform integral sorting           :            T
+ Use orbital energies from HF calc. :            T
+ Recalculating of Fock matrix forbidden:         F
 
- Memory for reading and sorting integrals :           54667 8-byte words
-  *** Overview memory pointers: ***
-  *** KFREE:                    290781
-  *** LFREE:                  63709220
-  *** NDIMTV:                 63709210
-  *** IVMAX:                         0
-  *** MXCORR:                   290781
-  *** VREMAIN:                63709210
- MWORDS allocated for the <VV|VV>/<VO|VV> class:                     0
- MWORDS available for additional buffering:                    60
- Core used for SIPS calculation:                     290781 words
- Memory used for active modules :                    290781 8-byte words
+ Memory limit (MWORD):        -8796093022208
+ Memory for reading and sorting integrals :           54626 8-byte words
+ Memory requirements of CCSETI:                 54626
+ -------------------------------------------
+ -- ADC memory usage summary
+ -------------------------------------------
+ 
+ Allocation status:                     1
+ Static memory provided during calc:              21000175
+ Words requd. static+ integrals:              21000175
+ Words available:              42999826
+ Available for buffering with integrals:              42999826
+ Available for buffering without integrals:              42999826
+ Memory requments for Single-ionization spectra:              21000175
+ Memory used for active modules :                  21000175 8-byte words
+ Providing               21000175  to the act. modules.
 
  Expanding and sorting integrals to unique types :
- Type OOOO :       400 integrals
- Type VOOO :       896 integrals
- Type VVOO :       400 integrals
- Type VOVO :      2048 integrals
- Type VOVV :       896 integrals
- Type VVVV :       400 integrals
+ Type OOOO :             400 integrals
+ Type VOOO :             896 integrals
+ Type VVOO :             400 integrals
+ Type VOVO :            2048 integrals
+ Type VOVV :             896 integrals
+ Type VVVV :             400 integrals
  
  Sorting of first 4 classes done.
 
@@ -995,9 +1032,9 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
  VVVV sorting done.
 
  Reading Coulomb integrals :
- File date :       8Jul12  
- File time :       11:16:28
- # of integrals           13452
+ File date :      18Jul12  
+ File time :       14:28:27
+ # of integrals               13652
 
  Finished sorting of integrals
 
@@ -1032,11 +1069,23 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
  The missing terms may be important !
 
 
- Nuclear repulsion + core energy :           -93.968492211288648
- Zero order electronic energy :               -8.838045343012153
- First order electronic energy :             -25.825258227641541
- Electronic energy :                         -34.663303570653696
- SCF energy :                               -128.631795781942344
+ Nuclear repulsion + core energy :           -93.968492211287995
+ Zero order electronic energy :               -8.838045343029121
+ First order electronic energy :             -25.825258227624680
+ Electronic energy :                         -34.663303570653802
+ SCF energy :                               -128.631795781941804
+ MXCORR after allocated CCSETI:                 54626
+ We give the FULL memory to the ADC modules.
+ -------------------------------------------
+ -- ADC memory usage summary
+ -------------------------------------------
+ 
+ Allocation status:                     2
+ Static memory provided during calc:                 54626
+ Words requd. static+ integrals:              21000175
+ Words available:              42999826
+ Available for buffering with integrals:              42999826
+ Available for buffering without integrals:              42999826
  
  
  ###############################                                 
@@ -1078,11 +1127,11 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
  ###
  #####################################################           
  
- Imaginary part of the VOOO integrals:  0.140931765003683     
+ Imaginary part of the VOOO integrals:  0.851328097601894     
  ADC2 h/h2p chksum (c) in symmetry                     1
- (1.62262001981192,0.000000000000000E+000)
+ (1.62262001981093,0.000000000000000E+000)
  Number of buffers after 1h/2h-1p:                     0
- Buffer pointer after 1h/2h-1p:                      445
+ Buffer pointer after 1h/2h-1p:                      448
  
  ##########################################                      
  ###
@@ -1090,21 +1139,25 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
  ###
  ##########################################                      
  
- Length of write buffers:      65536
+ Length of write buffers:    5242880
  Number of buffers written:       1
- Total number of elements in Offdiag-file:      3707
+ Total number of elements in Offdiag-file:      3705
  ADC hole space configurations written to ADCCNF
  Number of chunks in ADC matfile:                              1
  Writing SIP configs to ADCCNF
  Final state symmetry:                      1
  Record length determined by WCONDAT_S:                         44
+ Memory pointers on DIAGEXE entry:              21000175              42999826
+ Memory check done.
  
- ##########################################                      
+ ###########################################                     
  ###
- ###     Interfacing iterative diagonalizer                      
+ ###     Initializing iterative diagonalizer                     
  ###
- ##########################################                      
+ ###########################################                     
  
+ Memory pointers:              21000175              42999826
+ Words available:              21999651
  
  ADC matrix is (1=SIP,2=DIP):                           1
  Final states have symmetry:                            1
@@ -1136,70 +1189,110 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
  ---  Band Lanczos iteration                    100  of                   100
  
  ---------------------------------------------------
- First 60 RAW Lanczos EVAL/EVECS + intensity.
+ First 100 RAW Lanczos EVAL/EVECS + intensity.
  ---------------------------------------------------
  
   No.         (a.u.)      (eV)
-    1      0.730936   19.889793   mean-res      0.0037
-    2      0.730936   19.889793   mean-res      0.9547
-    3      0.730936   19.889793   mean-res      0.0001
-    4      0.730936   19.889793   mean-res      0.9582
-    5      0.734344   19.982536   mean-res      0.0000
-    6      0.734344   19.982536   mean-res      0.9581
-    7      1.807171   49.175657   mean-res      0.9551
-    8      1.807171   49.175657   mean-res      0.0000
+    1      0.730936   19.889793   mean-res      0.0000
+    2      0.730936   19.889793   mean-res      0.9583
+    3      0.730936   19.889793   mean-res      0.9558
+    4      0.730936   19.889793   mean-res      0.0025
+    5      0.734344   19.982536   mean-res      0.9581
+    6      0.734344   19.982536   mean-res      0.0000
+    7      1.807171   49.175657   mean-res      0.9517
+    8      1.807171   49.175657   mean-res      0.0034
     9      2.596576   70.656458   mean-res      0.0000
    10      2.597117   70.671184   mean-res      0.0000
    11      2.597117   70.671184   mean-res      0.0000
-   12      2.597596   70.684216   mean-res      0.0000
-   13      2.612171   71.080819   mean-res      0.0000
+   12      2.597345   70.677379   mean-res      0.0000
+   13      2.597596   70.684216   mean-res      0.0000
    14      2.656616   72.290231   mean-res      0.0006
    15      2.657796   72.322338   mean-res      0.0006
    16      2.657796   72.322338   mean-res      0.0006
-   17      2.689824   73.193878   mean-res      0.0000
+   17      2.689654   73.189237   mean-res      0.0000
    18      2.690714   73.218095   mean-res      0.0000
    19      2.690714   73.218095   mean-res      0.0000
    20      2.691036   73.226839   mean-res      0.0000
-   21      2.771226   75.408918   mean-res      0.0000
-   22      2.773487   75.470466   mean-res      0.0000
+   21      2.755174   74.972136   mean-res      0.0000
+   22      2.773531   75.471645   mean-res      0.0000
    23      2.777301   75.574238   mean-res      0.0000
    24      2.777301   75.574238   mean-res      0.0000
    25      2.791955   75.972991   mean-res      0.0000
    26      2.791974   75.973498   mean-res      0.0000
    27      2.791974   75.973498   mean-res      0.0000
-   28      2.802750   76.266750   mean-res      0.0000
-   29      2.876841   78.282850   mean-res      0.0000
+   28      2.802558   76.261519   mean-res      0.0000
+   29      2.881851   78.419174   mean-res      0.0000
    30      2.881851   78.419174   mean-res      0.0000
-   31      2.881851   78.419174   mean-res      0.0000
-   32      2.882913   78.448090   mean-res      0.0000
+   31      2.881958   78.422097   mean-res      0.0000
+   32      2.882896   78.447630   mean-res      0.0000
    33      2.941941   80.054317   mean-res      0.0002
    34      2.944313   80.118869   mean-res      0.0002
    35      2.944313   80.118869   mean-res      0.0002
-   36      3.026540   82.356383   mean-res      0.0000
-   37      3.031024   82.478405   mean-res      0.0000
-   38      3.033120   82.535438   mean-res      0.0000
+   36      2.974309   80.935096   mean-res      0.0000
+   37      3.025299   82.322596   mean-res      0.0000
+   38      3.031133   82.481369   mean-res      0.0000
    39      3.034672   82.577673   mean-res      0.0000
-   40      3.074542   83.662592   mean-res      0.0000
-   41      3.212698   87.421987   mean-res      0.0000
-   42      3.214037   87.458443   mean-res      0.0000
-   43      3.214149   87.461490   mean-res      0.0000
-   44      3.216304   87.520123   mean-res      0.0000
-   45      3.245953   88.326907   mean-res      0.0000
-   46      3.246528   88.342562   mean-res      0.0000
+   40      3.035020   82.587128   mean-res      0.0000
+   41      3.160575   86.003655   mean-res      0.0000
+   42      3.213522   87.444413   mean-res      0.0000
+   43      3.214101   87.460162   mean-res      0.0000
+   44      3.214277   87.464954   mean-res      0.0000
+   45      3.239794   88.159316   mean-res      0.0000
+   46      3.245829   88.323540   mean-res      0.0000
    47      3.248742   88.402793   mean-res      0.0000
    48      3.332494   90.681822   mean-res      0.0039
    49      3.502356   95.304004   mean-res      0.0262
    50      3.502356   95.304004   mean-res      0.0262
    51      3.506919   95.428169   mean-res      0.0263
-   52      3.557461   96.803481   mean-res      0.0000
-   53      3.586537   97.594670   mean-res      0.0000
-   54      3.659129   99.570019   mean-res      0.0000
-   55      3.659511   99.580410   mean-res      0.0000
-   56      3.660180   99.598612   mean-res      0.0000
-   57      3.660364   99.603618   mean-res      0.0000
-   58      3.780324  102.867893   mean-res      0.0000
-   59      3.781119  102.889537   mean-res      0.0000
-   60      3.787036  103.050523   mean-res      0.0000
+   52      3.521826   95.833797   mean-res      0.0000
+   53      3.557487   96.804199   mean-res      0.0000
+   54      3.621425   98.544041   mean-res      0.0000
+   55      3.658820   99.561587   mean-res      0.0000
+   56      3.659235   99.572896   mean-res      0.0000
+   57      3.660180   99.598612   mean-res      0.0000
+   58      3.669377   99.848857   mean-res      0.0000
+   59      3.780248  102.865833   mean-res      0.0000
+   60      3.781119  102.889537   mean-res      0.0000
+   61      3.782508  102.927335   mean-res      0.0000
+   62      3.802381  103.468098   mean-res      0.0000
+   63      3.807647  103.611398   mean-res      0.0000
+   64      3.808611  103.637632   mean-res      0.0000
+   65      3.811961  103.728778   mean-res      0.0000
+   66      3.851767  104.811957   mean-res      0.0005
+   67      3.921274  106.703346   mean-res      0.0000
+   68      4.029045  109.635928   mean-res      0.0000
+   69      4.094576  111.419141   mean-res      0.0000
+   70      4.096888  111.482030   mean-res      0.0000
+   71      4.096888  111.482030   mean-res      0.0000
+   72      4.098290  111.520202   mean-res      0.0000
+   73      4.133995  112.491776   mean-res      0.0000
+   74      4.134918  112.516885   mean-res      0.0000
+   75      4.135008  112.519350   mean-res      0.0000
+   76      4.161615  113.243353   mean-res      0.0000
+   77      4.162336  113.262978   mean-res      0.0000
+   78      4.162609  113.270414   mean-res      0.0000
+   79      4.427703  120.483983   mean-res      0.0000
+   80      4.432421  120.612368   mean-res      0.0000
+   81      4.434479  120.668352   mean-res      0.0000
+   82      4.434808  120.677316   mean-res      0.0032
+   83      4.434880  120.679279   mean-res      0.0033
+   84      4.434880  120.679279   mean-res      0.0033
+   85      4.612749  125.519329   mean-res      0.0000
+   86      4.612787  125.520380   mean-res      0.0000
+   87      4.612813  125.521079   mean-res      0.0113
+   88      4.612813  125.521079   mean-res      0.0113
+   89      4.615750  125.601005   mean-res      0.0000
+   90      4.615779  125.601795   mean-res      0.0115
+   91      4.835693  131.585947   mean-res      0.0000
+   92      4.835693  131.585947   mean-res      0.0325
+   93      5.143418  139.959570   mean-res      0.0000
+   94      5.143418  139.959570   mean-res      0.0000
+   95      5.145673  140.020946   mean-res      0.0000
+   96      5.145673  140.020946   mean-res      0.0000
+   97      5.145673  140.020946   mean-res      0.0000
+   98      5.145673  140.020946   mean-res      0.0000
+   99      5.678332  154.515326   mean-res      0.0002
+  100      5.678332  154.515326   mean-res      0.0078
  Complete set of Lanczos eigenvectors saved to TMATEVC
  
  #####################################                           
@@ -1215,14 +1308,14 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
 
   Information on purging:
     There are   48 relevant residues out of  100   ( 48%)
-    N_spurios =   47      N_multiple =    5
+    N_spurios =   46      N_multiple =    6
 
 
   ------------------------------------------------------------
   no.    eigenvalue (eV)   mean-res.   error estimate
   ------------------------------------------------------------
 
-    1@     19.88979283      0.9583       1.04E-13  (    1)
+    1@     19.88979283      0.9583       1.33E-14  (    1)
        1       2       3       4
   0.0000  0.0000  0.0000  0.9583
 
@@ -1231,7 +1324,7 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
   no.    eigenvalue (eV)   mean-res.   error estimate
   ------------------------------------------------------------
 
-    2@     19.88979283      0.9583       4.66E-14  (    3)
+    2@     19.88979283      0.9583       2.49E-13  (    3)
        1       2       3       4
   0.0000  0.0000  0.9583  0.0000
 
@@ -1240,7 +1333,7 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
   no.    eigenvalue (eV)   mean-res.   error estimate
   ------------------------------------------------------------
 
-    3@     19.98253615      0.9581       6.77E-17  (    6)
+    3@     19.98253615      0.9581       7.26E-17  (    5)
        1       2       3       4
   0.0000  0.9581  0.0000  0.0000
  
@@ -1263,45 +1356,48 @@ SOfock:SL  1.00D-12   63.54%   17.05%    7.98%   11.42%   0.01000001s
  average I/O speed for read  (Mb/s)                   0.000
 
 
- CPU time (seconds) used in RELADC:                      0.4800
- CPU time (seconds) used before RELADC:                  0.8300
- CPU time (seconds) used in total sofar:                 1.3100
+ CPU time (seconds) used in RELADC:                     46.6100
+ CPU time (seconds) used before RELADC:                  7.9000
+ CPU time (seconds) used in total sofar:                54.5100
 
   --- Normal end of RELADC Run ---
 
 
 ################################################################################
 
- 
-     Date and time (Linux)  : Sun Jul  8 11:16:29 2012
-     Host name              : cluster-pci                             
+*****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Jul 18 14:29:13 2012
+     Host name              : cluster-pci                             
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         1.81
+  Mean allocation size (Mb) :         1.59
   
   Largest                    10  allocations
   
-      488.28 Mb at subroutine MAIN__+0x574                               for work array at main                        
+      488.28 Mb at subroutine MAIN__+0x4f1                               for work array at main                        
+        0.22 Mb at subroutine ccseti_+0xbe3                              for ibuf                                      
+        0.22 Mb at subroutine ccseti_+0xbe3                              for ibuf                                      
+        0.06 Mb at subroutine ccseti_+0xf18                              for vta                                       
+        0.06 Mb at subroutine ccseti_+0xef0                              for vt                                        
+        0.06 Mb at subroutine ccseti_+0xf18                              for vta                                       
+        0.06 Mb at subroutine ccseti_+0xef0                              for vt                                        
         0.05 Mb at subroutine butobs_no_work_+0xfb                       for buf in butobs                             
         0.05 Mb at subroutine lowdi1_+0x1c5                              for unnamed variable                          
         0.03 Mb at subroutine gtovlx_+0xd9                               for unnamed variable                          
-        0.03 Mb at subroutine lowdi1_+0x1b1                              for unnamed variable                          
-        0.01 Mb at subroutine trdr6t_+0x4e6                              for node_for_buffer                           
-        0.00 Mb at subroutine symfint_+0x4e4                             for unnamed variable                          
-        0.00 Mb at subroutine symfint_+0x4c6                             for unnamed variable                          
-        0.00 Mb at subroutine symfint_+0x4e4                             for unnamed variable                          
-        0.00 Mb at subroutine symfint_+0x4c6                             for unnamed variable                          
   
-  Peak memory usage    (Mb) :       488.00
-       reached at subroutine : lowdi1_+0x1c5                             
-              for variable   : unnamed variable                          
+  Peak memory usage    (Mb) :       489.00
+       reached at subroutine : ccseti_+0xf18                             
+              for variable   : vta                                       
   
- MEMGET high-water mark:     2.05 MB
+ MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 1, stime: 0, minflt: 31715, majflt: 0, nvcsw: 9, nivcsw: 31, maxrss: 0
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 42, stime: 11, minflt: 156321, majflt: 0, nvcsw: 438, nivcsw: 1623, maxrss: 0
+>>>> Total WALL time used in DIRAC: 48s
