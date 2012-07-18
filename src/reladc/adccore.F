@@ -145,6 +145,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
+      use adc_cfg    !  in the general input reader the user data are provided.
 
       IMPLICIT INTEGER (A-Z)
 !
@@ -232,9 +233,80 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      10X,"****  For the 2P propagator cite: "/
      &      10X,"****  M. Pernpointner, 
      &       J. Phys. B 43, 205102 (2010)."//)
+!
+!  For abandoning namelist reading clear this GOTO
+!
+      goto 844
+!
+!  first transfer interface variables to internal ADC variables
+! ___________________________________________________________
+!|
+!|
+!|
+      adclevel =   reladc_adclevel
+      dosips   =   reladc_dosips  
+      dodips   =   reladc_dodips  
+      do i=1,32
+         xreps(i) =   reladc_xreps(i)
+      enddo
+      readqkl  =   reladc_readqkl 
+      doconst  =   reladc_doconst 
+      doadcpop =   reladc_doadcpop
+      dofull   =   reladc_dofull  
+      vconv    =   reladc_vconv   
+
+      sipiter  = reladc_sipiter 
+      dipiter  = reladc_dipiter 
+      do i=1,32
+        sipeigv(i)  = reladc_sipeigv(i) 
+        dipeigv(i)  = reladc_dipeigv(i) 
+      enddo
+      sipprnt  = reladc_sipprnt 
+      dipprnt  = reladc_dipprnt 
+      doincore = reladc_doincore
+      adcthr   = reladc_adcthr  
+!|
+!|
+!|___________________________________________________________
+!
+! print overall job specification for the propagator run.
+!
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(5X,A)') '**** Propagator JOB CONTROL DATA:  ****'
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(10X,A,T50,I3)') 'Level of perturb. treatment:',adclevel
+      write(IW,'(10X,A,T50,L1)') 'Calc. single ioniz. spectrum',dosips
+      write(IW,'(10X,A,T50,L1)') 'Calc. double ioniz. spectrum',dodips
+      write(IW,'(10X,A)') 'Requested symmetries (XREPS):'
+      write(IW,'(10X,16I4)') (xreps(i),i=1,16)
+      write(IW,'(10X,16I4)') (xreps(i),i=17,32)
+      write(IW,'(10X,A,T50,L1)') 'Read prev. calc. Qkl data:',readqkl
+      write(IW,'(10X,A,T50,L1)') 'Incl. const. diagr. in ADC-3:',doconst
+      write(IW,'(10X,A,T50,L1)') 'Do adv. final state anal.:',doadcpop
+      write(IW,'(10X,A,T50,L1)') 'Do full diag. (max. 5000):',dofull
+      write(IW,'(10X,A,T50,F18.6)') 'Conv. of constant diagrams:',vconv
+      write(IW,'(10X,A,T50,I7)') 'Number of iter. in SIP calc:',sipiter
+      write(IW,'(10X,A,T50,I7)') 'Number of iter. in DIP calc:',dipiter
+      write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
+      write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
+      write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
+      write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
+      write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
+      write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for SIP scr. output:',sipprnt
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP scr. output:',dipprnt
+      write(IW,'(10X,A,T50,L1)') 'Do incore Lanczos diag.:',doincore
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for matrix elements:',adcthr
+!
+!  end of job control output
+!
+
+  844 continue
+
       WRITE (IW,1011) MYPROC+1,NMPROC
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
-
 !
 !     Initialize low-level I/O
 !
@@ -253,11 +325,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call allocator_get_available_mem(total_mem_new)
       maxcor = nint((total_mem_new/8.0d0),kind(8))
       mword_limit = maxcor / (1024*1024)
-
-!     WRITE(IW,*) 'Status variables from allocator:'
-!     WRITE(IW,*) 'total_mem_new: ',total_mem_new
-!     WRITE(IW,*) 'maxcor: ',maxcor
-!     WRITE(IW,*) 'mword_limit: ',mword_limit
 
       MXCORR = 0
 !
@@ -336,7 +403,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       WRITE (IW,*) '       *** GENERAL JOB SPECIFICATION ***'
       WRITE (IW,1006) DOSIPS,DODIPS,DOSORT,USEOE,NORECMP
-1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
+ 1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
      &        /" Calculate double ionization spectra:",T50,L1
      &        /" Perform integral sorting           :",T50,L1
      &        /" Use orbital energies from HF calc. :",T50,L1
