@@ -1765,7 +1765,7 @@
 !
 !  parameters: iparm - printing level for "prt"
 !
-! Important: integrals must be unique ! No repeating
+! Important: integrals must be unique in mulliken notation ! No repeating
 !
 !------------------------------------------------------------------------
       use print_level
@@ -1867,9 +1867,7 @@
       if (iv3.eq.1) nv=nv+1
       if (i4.eq.2) nh=nh+1
       if (iv4.eq.1) nv=nv+1
-      !i1234=ipack(i1,i2,i3,i4)
       i1234=ipack4(i1,i2,i3,i4)
-      !iv1234=ipack(iv1,iv2,iv3,iv4)
       iv1234=ipack4(iv1,iv2,iv3,iv4)
 
       nout=0
@@ -1883,8 +1881,8 @@
       j4=iand(      iint(i),     z'ff')
 
       if (getiprint() >= 5) then ! control printout
-         write(LUPRI,'(1x,i5,a,i10,a,4i4,a,f18.12)')                    &
-    i,'-',iint(i),' -',j1,j2,j3,j4,' :',vint(i)
+         write(LUPRI,'(1x,i5,a,i10,a,4i4,a,f18.12)')   &
+         i,'-',iint(i),' -',j1,j2,j3,j4,' :',vint(i)
       endif
 
       njh=0
@@ -2009,12 +2007,11 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j2,j1,j4,j3)
+      ! <pq|rs> = <qp|sr>
       itmp(nout)=ipack4(j2,j1,j4,j3)
 
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        !call check_modules
       endif
 
 150   if (j1.eq.j3) go to 160
@@ -2031,7 +2028,7 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j2,j3,j4,j1)
+      ! ....
       itmp(nout)=ipack4(j2,j3,j4,j1)
 
       if (getiprint() >= 5) then ! control printout
@@ -2053,7 +2050,6 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j4,j1,j2,j3)
       itmp(nout)=ipack4(j4,j1,j2,j3)
 
       if (getiprint() >= 5) then ! control printout
@@ -2115,7 +2111,7 @@
       subroutine selt1(iii,iiv,name,iparm)
 !------------------------------------------------------------------------------
 !
-!
+! Extracts and expands Fock matrix elements into gen,igen.
 !
 !------------------------------------------------------------------------------
       use ipack_mod, only: ipack2
@@ -2210,7 +2206,8 @@
       nout=nout+1
       gen(istrt2+nout)=fock(i)
       itmp(nout)=ipack2(j2,j1)
-190   continue
+190   continue ! end of cycle i=1,nfock
+
 !     call vxsort(itmp,nout,ije(nij),gen(istrt2+1),
       call vxsort(itmp,nout,ije1(nij1),gen(istrt2+1),igen(istrt1+1))
 
@@ -3170,6 +3167,7 @@ integer :: new,nt,nt0,nt00
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
       isum=0
+      ! make symmetry table
       do 10 i=1,nclass
         do 20 j=1,iclass(i)
           icsym(isum+j)=i

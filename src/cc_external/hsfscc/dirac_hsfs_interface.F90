@@ -519,9 +519,6 @@ integer :: icbuf,ic
 integer, external :: Find_ijkl_pos
 real*8 :: xint
 
-! function definition - packing of indexes - to be replaced by module file !
-  !ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
-
 Call Header('MDCINT control print-out',-1)
 
 ! ... check if memory block is present
@@ -535,15 +532,16 @@ endif
 print_batch_info = ( iprint_hsfs >= 8 )
        print_int = ( iprint_hsfs >= 14 )
 
-write(LUPRI,*) 'print_batch_info=',print_batch_info
-write(LUPRI,*) '       print_int=',print_int
+!print_batch_info = .true.
+!print_int = .true.
+
+write(LUPRI,*) ' print MDCINT integrals batches info:',print_batch_info
+write(LUPRI,*) '          print all MDCINT integrals:',print_int
 
 ! ... check if MRCONEE was read 
 if (.NOT.mrconee_read) then
  write(LUPRI,*) 'read_mdcint: MRCONEE file was not read before !' 
  call Quit('read_mdcint: MRCONEE file was not read before !  ')
-!else
-! write(LUPRI,*) 'read_mdcint: memory sticked !' 
 endif
 
 inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call Quit('No MDCINT file!')
@@ -663,7 +661,7 @@ mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
   MOINT = MOINT + NONZR
 
   if (print_batch_info) then
-    write(LUPRI,'(2x,a,i5)')  '...read <IJ|-integral block:',iblock
+    write(LUPRI,'(2x,a,i5)')  '...read (IJ|-integral block:',iblock
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
     write(LUPRI,'(2x,a,i6)')  ' actual number of read integrals :',MOINT
     !write(LUPRI,'(2x,a,i6)')  ' position of cbuf_vect array :',icbuf
@@ -673,11 +671,13 @@ mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
 if (print_int) then
  write(LUPRI,'(/,2x,a,2i4)') 'read ( I J |... indexes:',KR(IKR),KR(JKR)
  do INZ=1, NONZR
+   i1=KR(IKR); i2=KR(JKR); i3=KR(indk_vect%p_iA1D(INZ)); i4=KR(indl_vect%p_iA1D(INZ))
    icount = icount + 1
-   !  ... unique, KU indexes ... 
-   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12)') icount,'. (',KR(IKR),' ',KR(JKR),'|', & 
-           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
-           cbuf_vect%p_rA1D(INZ)
+   !  ... unique, KU indexes ... (i1 i2|i3 i4)=<i1 i3|i2 i4>
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,i3,a,i3,a,i3,a,i3,a)')  & 
+           icount,'. (',KR(IKR),' ',KR(JKR),'|',                                   & 
+           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=',           &
+           cbuf_vect%p_rA1D(INZ),' = <',i1,' ',i3,'|',i2,' ',i4,'>'
      CALL FLSHFO(LUPRI)
  enddo
 endif
@@ -705,11 +705,11 @@ endif
     mdcint_vect%p_rA1D(ipos)= cbuf_vect%p_rA1D(INZ)
 
   if (print_int) then
-   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3,a,4i3)')  & 
-           icount,'. (',i1,' ',i2,'|',  & 
-           i3,' ',i4,')=', &
-           cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',   &  
-           i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
+    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3,a,2i3,a,2i3,a,i4)')  & 
+          icount,'. (',i1,' ',i2,'|',  & 
+          i3,' ',i4,')=', &
+          cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,' :p <',   &  
+          i1hsfs_p,i2hsfs_p,'|',i3hsfs_p,i4hsfs_p,'>; pos',ipos
   endif
 
   enddo
@@ -750,9 +750,7 @@ endif
 
  write(LUPRI,'(2x,a,/)') 'Going to to store unique MO 2-el. integrals into the DIRAC_hsfs file...'
  CALL FLSHFO(LUPRI)
-
  write(luhsfs) NKR
-
  ic=0
  do i=1,NKR
  do j=1,i
@@ -773,7 +771,7 @@ endif
  enddo
 
  write(luhsfs) 0,0,0,0,0.0d0
- write(LUPRI,*) 'saved nonzero integrals & indexes :',ic
+ write(LUPRI,*) 'saved nonzero integrals & their indexes :',ic
  CALL FLSHFO(LUPRI)
 
 ! ... deallocate ...
@@ -807,17 +805,15 @@ end subroutine read_mdcint_hsfs
 subroutine permut_indxs(i1hsfs  ,i2hsfs  ,i3hsfs  ,i4hsfs,  & 
                         i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
 !----------------------------------------------------------------------------------------------
-!       Put two-electron integrals indexes into this order:
+!       Put two-electron <pq|rs >integrals indexes into this order:
 !
-! <p q|r s> indexes to be permuted so that:
-!       p >= q
-!       r >= s  
+!    <p q|r s> indexes to be permuted so that:
 !
-!       (p,q) >= (r,s)
+!       p >= q and (p,q) >= (r,s)
 !
 ! <p q|r s> = <p s|r q> = <r q|p s> = <r s|p q>
 !
-! <p q|r s> = <q p|s r>
+! <p q|r s> = <q p|s r> = <q r|s p> = <s r|q p> = <s p|q r>
 !
 ! p,q,r,s=i1hsfs,i2hsfs,i3hsfs,i4hsfs (on entry)
 !----------------------------------------------------------------------------------------------
@@ -881,7 +877,7 @@ function Find_ijkl_pos(i0,j0,k0,l0,ij_store) result(ipos)
 ! cycles:  i=1,n
 !          j=1,i  (j<=i)
 !          k=1,i  (k<=i)
-!          l=1,j  (l<=j)
+!          l=1,j  
 !
 !      ...  ipos of <ij|kl> 
 !
@@ -892,7 +888,9 @@ function Find_ijkl_pos(i0,j0,k0,l0,ij_store) result(ipos)
   integer, intent (in) :: i0,j0,k0,l0
   integer :: ipos,kl,i,j,is,ij,ij0
   type(Array2Dim), intent(in) :: ij_store
+
   kl=(k0-1)*j0 + l0
+
   ij0 = (i0*(i0-1)/2) + j0
   is =0
   do ij=1,ij0-1
