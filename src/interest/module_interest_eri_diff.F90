@@ -252,9 +252,9 @@ CONTAINS
 
 
 iloop: do i=1,nr_shells
-         li =       gto(i)%lvalue
-         oi =       gto(i)%offset
-         ni =       gto(i)%cdegen
+         li =       gto(i)%lvalue   !s=1, p=2, d=3 (l+1)
+         oi =       gto(i)%offset   !example: two p functions, offsets are [0, 3]
+         ni =       gto(i)%cdegen   !cartesian degenracy s=1, p=3, d=6, f=10
          ei =       gto(i)%exponent(1)
          xi = atom( gto(i)%origin )%coordinate_x
          yi = atom( gto(i)%origin )%coordinate_y
@@ -291,7 +291,14 @@ lloop:       do l=1,nr_shells
                zl   = atom( gto(l)%origin )%coordinate_z
                cl   =       gto(l)%coefficient(1)
                fijkl= 1.0d0 
-       
+
+               ! fijkl is scaling constant
+               ! gout  is output (integrals)
+               ! [ij|kl] [electron1|electron2]
+               ! gout = (ncc(k), ncc(l), ncc(i), ncc(j))
+               ! example: [sp|df]: [6, 10, 1, 3] this is the layout in mem
+               ! limitation: up to h functions (incl)
+
                !> call InteRest library routine for a given batch
                call interest_eri_basic(fijkl,gout,nint,  &
                                        li,ei,xi,yi,zi,ci,&
