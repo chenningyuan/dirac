@@ -1,5 +1,5 @@
 subroutine print_interest_git_revision_info()
-    write(6, '(a)') '  Last commit rev         | fad685ea6d00cd21667255a5dddca164ef5d0189'
+    write(6, '(a)') '  Last commit rev         | eef444ad9befe3ac4deafcfe8ec431615c4bd7f6'
     write(6, '(a)') '  Last commit author      | Michal Repisky '
-    write(6, '(a)') '  Last commit time        | Sun Feb 12 18:58:26 2012 +0100'
+    write(6, '(a)') '  Last commit time        | Wed Jul 18 19:40:55 2012 +0200'
 end subroutine

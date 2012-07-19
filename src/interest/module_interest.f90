@@ -578,8 +578,8 @@
     endif
 
   end subroutine
-
-! -------------------------------------------------------------------------
+! --------------------------------------------------------------------------
+!>
   subroutine interest_dipole(rkb,                    &
                              fintx,finty,fintz,nint, &
                              la,alpha,ax,ay,az,anorm,&
