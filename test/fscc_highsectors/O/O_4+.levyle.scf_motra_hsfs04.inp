@@ -1,0 +1,60 @@
+! ....
+**DIRAC
+.TITLE
+  O_4+ ... 
+.WAVE F
+.ANALYZE
+.4INDEX
+**INTEGRALS
+.PRINT
+1
+.NUCMOD
+1
+**HAMILTONIAN
+!1 1 0
+.LEVY-LEBLOND
+**WAVE FUNCTIONS
+.SCF
+.HSFS
+*SCF
+.EVCCNV
+1.0E-10
+.CNVINT
+0.01 0.0001
+.CLOSED SHELL
+4 0
+*HSFS
+.PRINT
+1
+.CONV
+9
+.METHOD
+csd
+csv
+csu
+csw
+csx
+.END
+.INPUT
+ F_5+ test with DIRAC-HSFS
+  1 99 06  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+68
+hpppppppppppppppppppppppppvppppppppppppvppppppppppppvppppppppppppppp
+  8
+ 14  4  4  4 13 13 13  3
+  0  0  0  0  0  0  0  0
+9
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all   
+all
+**MOLTRA
+.ACTIVE
+energy -15.0 1000.0 1.0
+energy -15.0 1000.0 1.0
+*END OF
+
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F  &END
+ &CCFSPC MAXIT=50, NACTH=0,0,0,0, NACTP=0,0,3,3, FSSECT=1,1,0,0,1,0  &END

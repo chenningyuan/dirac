@@ -29,7 +29,7 @@ module visual_in_point
   use codata
   use ao_eval
   use density_eval
-  use matrix_defop
+  use matrix_defop_old
   use visual_london
   use xc_london_c1
 
@@ -81,7 +81,7 @@ contains
       real(8)              :: matrix_33(3, 3)
       real(8)              :: temp_33(3, 3)
       real(8)              :: elf_chi, tau
-      real(8)              :: density, esp
+      real(8)              :: density, esp(1)
       real(8)              :: density_gradient(3)
       real(8)              :: density_gradient_squared
       real(8)              :: b, f, distance_to_origin
@@ -104,7 +104,7 @@ contains
                                ao)
                result(0) = result(0) + density
             end if
-            
+
 !           electron density
             if (visual_cfg_property(imat) == iq_density) then
                call get_n(density,       &
@@ -115,7 +115,7 @@ contains
                           ao)
                result(0) = result(0) + density
             end if
-            
+
 !           elf: electron localization function
             if (visual_cfg_property(imat) == iq_elf) then
                call get_kin_tau(tau,          &
@@ -131,42 +131,38 @@ contains
                            D(imat)%elms,     &
                            buffer,           &
                            ao)
-              
+
                density_gradient_squared = density_gradient(1)*density_gradient(1) &
                                         + density_gradient(2)*density_gradient(2) &
                                         + density_gradient(3)*density_gradient(3)
-              
+
                b = density_gradient_squared/(8.0d0*density)
-              
+
 !                  2.87123400018819d0 = 0.3d0*((3.0d0*pi*pi)**(2.0d0/3.0d0))
                f = 2.87123400018819d0*(density**(5.0d0/3.0d0))
                elf_chi = (tau - b)/f
-              
+
                result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
             end if
-           
+
 !           electrostatic potential - total
             if ((visual_cfg_property(imat) == iq_esp) .or. &
                 (visual_cfg_property(imat) == iq_esprho)) then
-               call get_esp(esp,          &
+               call get_esp(1, esp,          &
                             D(imat)%irep, &
                             D(imat)%nrow, &
                             D(imat)%elms, &
-                            px,           &
-                            py,           &
-                            pz)
+                            (/px, py, pz/))
             end if
 
 !           electrostatic potential - electronic part
             if ((visual_cfg_property(imat) == iq_espe) .or. &
                 (visual_cfg_property(imat) == iq_esperho)) then
-               call get_esp(esp,                      &
-                            D(imat)%irep,             &
-                            D(imat)%nrow,             &
-                            D(imat)%elms,             &
-                            px,                       &
-                            py,                       &
-                            pz,                       &
+               call get_esp(1, esp,          &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            (/px, py, pz/), &
                             include_nuc_part=.false., &
                             include_el_part=.true.)
             end if
@@ -174,13 +170,11 @@ contains
 !           electrostatic potential - nuclear part
             if ((visual_cfg_property(imat) == iq_espn) .or. &
                 (visual_cfg_property(imat) == iq_espnrho)) then
-               call get_esp(esp,                     &
-                            D(imat)%irep,            &
-                            D(imat)%nrow,            &
-                            D(imat)%elms,            &
-                            px,                      &
-                            py,                      &
-                            pz,                      &
+               call get_esp(1, esp,          &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            (/px, py, pz/), &
                             include_nuc_part=.true., &
                             include_el_part=.false.)
             end if
@@ -195,12 +189,12 @@ contains
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
-               result(0) = result(0) + density*esp
+               result(0) = result(0) + density*esp(1)
             else if ((visual_cfg_property(imat) == iq_esp)  .or. &
                      (visual_cfg_property(imat) == iq_espe) .or. &
                      (visual_cfg_property(imat) == iq_espn)) then
 !              just the electrostatic potential
-               result(0) = result(0) +         esp
+               result(0) = result(0) +         esp(1)
             end if
 
             if (visual_cfg_property(imat) == iq_kin) then
@@ -311,7 +305,7 @@ contains
                end if
                result(1:3) = result(1:3) + v(1:3)
             end if
-            
+
 !           spin density: \psi^\dag \Sigma \psi
             if (visual_cfg_property(imat) == iq_s) then
                call get_s(v,            &
@@ -322,7 +316,7 @@ contains
                           ao)
                result(1:3) = result(1:3) + v(1:3)
             end if
-            
+
 !           divergence or curl of spin density
             if ((visual_cfg_property(imat) == iq_divs) .or. &
                 (visual_cfg_property(imat) == iq_rots)) then
@@ -342,7 +336,7 @@ contains
                   result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
                end if
             end if
-            
+
 !           divergence or curl of current density
             if ((visual_cfg_property(imat) == iq_divj) .or. &
                 (visual_cfg_property(imat) == iq_rotj)) then
@@ -386,7 +380,7 @@ contains
                   result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
                end if
             end if
-            
+
 !           nonrel diamagnetic current density (hardcoded for B along z)
             if (visual_cfg_property(imat) == iq_jdia) then
                call get_n(density,      &
@@ -395,21 +389,21 @@ contains
                           D(imat)%elms, &
                           buffer,       &
                           ao)
-            
+
                rx = px - visual_cfg_gauge_origin(1)
                ry = py - visual_cfg_gauge_origin(2)
                rz = pz - visual_cfg_gauge_origin(3)
-            
+
                result(1) = result(1) + 0.5d0*ry*density
                result(2) = result(2) - 0.5d0*rx*density
                result(3) = result(3) - 0.0d0
             end if
-            
+
 !           responding operator is electric dipole
             if ((visual_cfg_property(imat) == iq_edipx) .or. &
                 (visual_cfg_property(imat) == iq_edipy) .or. &
                 (visual_cfg_property(imat) == iq_edipz)) then
-            
+
                call get_n(density,      &
                           D(imat)%irep, &
                           D(imat)%nrow, &
@@ -426,12 +420,12 @@ contains
                   result(0) = result(0) + pz*density
                end if
             end if
-            
+
 !           responding operator is magnetic dipole
             if ((visual_cfg_property(imat) == iq_bdipx) .or. &
                 (visual_cfg_property(imat) == iq_bdipy) .or. &
                 (visual_cfg_property(imat) == iq_bdipz)) then
-            
+
                call get_j(v,            &
                           cval,         &
                           D(imat)%irep, &
@@ -439,13 +433,13 @@ contains
                           D(imat)%elms, &
                           buffer,       &
                           ao)
-            
+
                rx = px - visual_cfg_gauge_origin(1)
                ry = py - visual_cfg_gauge_origin(2)
                rz = pz - visual_cfg_gauge_origin(3)
-            
+
                f = -0.5d0
-               
+
                if (visual_cfg_property(imat) == iq_bdipx) then
                   result(0) = result(0) + f*(ry*v(3) - rz*v(2))
                end if
@@ -456,7 +450,7 @@ contains
                   result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
             end if
-            
+
 !           responding operator is nuclear magnetic dipole
             if ((visual_cfg_property(imat) == iq_ndipx) .or. &
                 (visual_cfg_property(imat) == iq_ndipy) .or. &
@@ -496,13 +490,13 @@ contains
                   end if
                   v = v + v2
                end if
-            
+
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))
                ry = py - cord(2, visual_cfg_ref_nucleus(imat))
                rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
-               
+
                f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
-               
+
                if (visual_cfg_property(imat) == iq_ndipx) then
                   result(0) = result(0) + f*(ry*v(3) - rz*v(2))
                end if
@@ -513,7 +507,7 @@ contains
                   result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
             end if
-            
+
 !           responding operator is nuclear magnetic dipole
             if ((visual_cfg_property(imat) == iq_ndipxdia) .or. &
                 (visual_cfg_property(imat) == iq_ndipydia) .or. &
@@ -542,7 +536,7 @@ contains
                v2(1) = r(2)*v(3) - r(3)*v(2)
                v2(2) = r(3)*v(1) - r(1)*v(3)
                v2(3) = r(1)*v(2) - r(2)*v(1)
-               
+
                f = -1.0d0/((r(1)*r(1) + r(2)*r(2) + r(3)*r(3))**1.5d0)
                result(0) = result(0) + f*v2(i)
 

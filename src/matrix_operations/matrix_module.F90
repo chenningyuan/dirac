@@ -13,7 +13,7 @@
 !>       matrix. \n
 !> BUT type(Matrix) :: A,B; A = B SHOULD copy the matrix elements from matrix B to A
 !>     see mat_assign. \n
-!> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init
+!> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init_old
 !>
 MODULE Matrix_module
 !> Logical unit number of file DALTON.OUT used by matrix operation modules

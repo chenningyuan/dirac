@@ -1,15 +1,17 @@
 !
 ! ===  Modules to replace individual common blocks with dynamical allocations &
-! with  other object oriented functionalities
+!     other object oriented functionalities
 !
 
 module gen_mod
 ! to replace gen.h
 real*8, allocatable :: gen(:)
 integer, allocatable :: igen(:)
+! note: igen is storing last 3/4/5 indexes, the 1st(2nd,3rd) are stored in ij[] array
 contains
 subroutine init_gen_mod
  use hsfs_parameters
+implicit none
 #include "priunit.h"
 integer :: istat
  allocate(gen(nbig),stat=istat)
@@ -25,9 +27,11 @@ subroutine dealloc_gen_mod
 end subroutine dealloc_gen_mod
 
 subroutine  check_gen_mod
-  use hsfs_parameters
-#include "implicit.h"
+ use hsfs_parameters
+implicit none
 #include "priunit.h"
+integer :: isize_gen, isize_igen, itemp1, itemp2
+real*8 :: temp1,temp2
 if (allocated(gen).and.allocated(igen)) then
 isize_gen=size(gen); isize_igen=size(igen)
 temp1=gen(1);temp2=gen(nbig)
@@ -125,6 +129,8 @@ module cij1_mod
 ! ... to replace cij1.h
 integer :: nij1,iii1,iiv1
 integer, allocatable ::  ij1(:),ije1(:)
+! ij1-stores (packed) first indexes,
+! ije1 - stored information about ending of records
 contains
 subroutine init_cij1_mod
  use hsfs_parameters
@@ -137,8 +143,9 @@ end subroutine init_cij1_mod
 
 subroutine check_cij1_mod
  use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer ::  itemp1,itemp2,itemp3,itemp4
 itemp1=ij1(1);itemp2=ij1(ndij)
 itemp3=ije1(0);itemp4=ije1(ndij)
 end subroutine check_cij1_mod
@@ -411,16 +418,16 @@ subroutine init_dat_mod
 
 if (.not.dat_mod_initialized) then
 !
-allocate(ic(1:dat_size))
-allocate(icv(1:dat_size))
-allocate(eps(1:dat_size))
-allocate(iopt(1:iopt_size))
+  allocate(ic(1:dat_size))
+  allocate(icv(1:dat_size))
+  allocate(eps(1:dat_size))
+  allocate(iopt(1:iopt_size))
 !
- dat_mod_initialized = .true.
- write(LUPRI,*) 'dat_mod initialized'
+  dat_mod_initialized = .true.
+  write(LUPRI,*) 'dat_mod initialized'
 !
 else
- write(LUPRI,*) 'dat_mod was already initialized'
+  write(LUPRI,*) 'dat_mod was already initialized'
 endif
 end subroutine init_dat_mod
 
@@ -431,8 +438,10 @@ write(LUPRI,*) 'iopt(1,3,17,19):',iopt(1),iopt(3),iopt(17),iopt(19)
 end subroutine print_dat_iopt
 
 subroutine check_dat_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2,itemp3,itemp4
+real*8 :: temp1,temp2
 if (dat_mod_initialized) then
 itemp1=ic(1);itemp2=ic(int(dat_size))
 temp1=eps(1); temp2=eps(int(dat_size))
@@ -446,11 +455,6 @@ subroutine dealloc_dat_mod
  deallocate(eps)
  deallocate(iopt)
 end subroutine dealloc_dat_mod
-
-subroutine check_dat
-#include "implicit.h"
-#include "priunit.h"
-end subroutine check_dat
 
 end module dat_mod
 
@@ -468,8 +472,9 @@ write(LUPRI,*) 'idv_mod initialized'
 end subroutine init_idv_mod
 
 subroutine check_idv_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2
 if (allocated(iv)) then
 !itemp1=iv(1);itemp2=iv(int(idv_size))
 itemp1=iv(1)
@@ -504,8 +509,9 @@ subroutine dealloc_prm_mod
 end subroutine dealloc_prm_mod
 
 subroutine check_prm_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2,itemp3,itemp4
 if (allocated(iperm)) then
 itemp1=iperm(0,1); itemp2=iperm(0,720)
 itemp3=iperm(6,1); itemp4=iperm(6,720)
@@ -537,8 +543,9 @@ endif
 end subroutine init_sym_mod
 
 subroutine check_sym_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer ::  itemp1,itemp2,itemp3,itemp4,itemp5,itemp6,itemp7,itemp8
 if (sym_mod_initialized) then
   itemp1=iclass(1); itemp2=iclass(16)
   itemp3=isym(1,1); itemp4=isym(16,1);itemp5=isym(1,8);itemp6=isym(16,8)
@@ -561,6 +568,7 @@ integer, allocatable  :: ijtmp1(:)
 contains
 subroutine init_ijtemp_mod
  use hsfs_parameters
+ implicit none
 #include "priunit.h"
 !#include "param_ccsd.h"
 allocate(ijtmp1(1:ndp6))
@@ -569,8 +577,9 @@ end subroutine init_ijtemp_mod
 
 subroutine check_ijtemp_mod
  use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
+integer :: itemp1,itemp2
 itemp1=ijtmp1(1);itemp2=ijtmp1(ndp6)
 end subroutine check_ijtemp_mod
 
@@ -584,6 +593,7 @@ module tv2_mod
 real*8, allocatable :: a(:,:)
 contains
 subroutine init_tv2_mod
+implicit none
 #include "priunit.h"
 integer, parameter :: tv2_size=500
  allocate (a(tv2_size,tv2_size))
@@ -595,8 +605,9 @@ subroutine dealloc_tv2_mod
 end subroutine dealloc_tv2_mod
 end module tv2_mod
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
+! module for handling print level, and thus amount of printed data
  integer, private :: iprint=0
  logical(kind=1), private :: print_level_read=.false.
  !logical :: print_level_read = .false.
@@ -604,11 +615,16 @@ contains
 
 subroutine extract_print_level
 ! extract print level from the common block variable
-#include "priunit.h"
+#if defined HSFS_DYN_ALLOC
+use dat_mod
+#else
 #include "dat.h"
+#endif
+implicit none
+#include "priunit.h"
  if (.not.print_level_read) then
   iprint = iopt(1)
-  write(LUPRI,'(2X,A,I3)') 'print level set to:',iprint
+  write(LUPRI,'(2X,A,I3)') 'print level, iopt(1), set to:',iprint
  else
   write(LUPRI,'(2X,A,I3)') 'print level was already set before to:',iprint
  endif
@@ -616,6 +632,7 @@ subroutine extract_print_level
 end subroutine extract_print_level
 
 subroutine set_print_level(ipr)
+implicit none
 #include "priunit.h"
  integer, intent(in) :: ipr
  iprint=ipr
@@ -720,7 +737,6 @@ return
 
 end function check_method_name
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine launch_hsfs_methods
 !--------------------------------------------------------------------
@@ -792,6 +808,207 @@ enddo
 end subroutine launch_hsfs_methods
 
 end module high_sect_execs
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module ipack_mod
+!--------------------------------------------------------------------
+! module for integer indexes packing - ipack3, ipack4, ipack5, ipack6
+! and with some checking procedures
+!--------------------------------------------------------------------
+  implicit none
+  logical, private :: check_ipack_indexes=.false.
+  integer, parameter, private :: min_indx = 1, max_indx = 255
+  !private :: set_check_ipack_indexes, unset_check_ipack_indexes
+  contains
+
+  subroutine set_check_ipack_indexes
+    check_ipack_indexes=.true. ! sets checking of ipack indexes
+  end subroutine set_check_ipack_indexes
+
+  subroutine unset_check_ipack_indexes
+    check_ipack_indexes=.false. ! unsets checking of ipack indexes
+  end subroutine unset_check_ipack_indexes
+
+  integer function ipack2(i,j)
+    integer, intent(in) :: i,j
+    if (check_ipack_indexes) call check_ipack2_indexes(i,j)
+    ipack2=ior(ishft(i,8),j)
+  end function ipack2
+
+  integer function ipack3(i,j,k)
+    integer, intent(in) :: i,j,k
+    if (check_ipack_indexes) call check_ipack3_indexes(i,j,k)
+    ipack3=ior(ior(ishft(i,16),ishft(j,8)),k)
+  end function ipack3
+
+  integer function ipack4(i,j,k,l)
+    integer, intent(in) :: i,j,k,l
+    if (check_ipack_indexes) call check_ipack4_indexes(i,j,k,l)
+    ipack4=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+  end function ipack4
+
+  integer function i1unpack4(ii)
+  ! unpack 1st index
+    integer, intent(in) :: ii
+    i1unpack4=iand(ishft(ii,-24),z'ff')
+  end function i1unpack4
+
+  integer function i2unpack4(ii)
+  ! unpack 2. index
+    integer, intent(in) :: ii
+    i2unpack4=iand(ishft(ii,-16),z'ff')
+  end function i2unpack4
+
+  integer function i3unpack4(ii)
+  ! unpack 3. index
+    integer, intent(in) :: ii
+    i3unpack4=iand(ishft(ii,-8),z'ff')
+  end function i3unpack4
+
+  integer function i4unpack4(ii)
+  ! unpack 4. index
+    integer, intent(in) :: ii
+    i4unpack4=iand(ii,z'ff')
+  end function i4unpack4
+
+  integer function ipack5(i,j,k,l,m)
+    integer, intent(in) :: i,j,k,l,m
+    if (check_ipack_indexes) call check_ipack5_indexes(i,j,k,l,m)
+    ipack5=ior(ishft(i,16),ior(ior(ishft(j,12),ishft(k,8)),ior(ishft(l,4),m)))
+  end function ipack5
+
+  integer function ipack6(i,j,k,l,m,n)
+    integer, intent(in) :: i,j,k,l,m,n
+    if (check_ipack_indexes) call check_ipack6_indexes(i,j,k,l,m,n)
+    ipack6=ior(ior(ishft(i,20),ishft(j,16)),     &
+           ior(ior(ishft(k,12),ishft(l,8)),      & 
+               ior(ishft(m,4),n)))
+  end function ipack6
+
+  subroutine check_ipack1_indexes(i)
+#include "priunit.h"
+    integer, intent(in) :: i
+    if (.not.(i >= min_indx .and. i <= max_indx )) then
+        write(LUPRI,*) 'ipack1: i=',i
+        call quit('ipack1 index out of range !')
+    endif
+  end subroutine check_ipack1_indexes 
+
+  subroutine check_ipack2_indexes(i,j)
+#include "priunit.h"
+    integer, intent(in) :: i,j
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx)) then
+        write(LUPRI,*) 'ipack2: i=',i,' j=',j
+        call quit('ipack2 index out of range !')
+    endif
+  end subroutine check_ipack2_indexes 
+
+  subroutine check_ipack3_indexes(i,j,k)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  )) then
+        write(LUPRI,*) 'ipack3: i=',i,' j=',j,' k=',k
+        call quit('ipack3 index out of range !')
+    endif
+  end subroutine check_ipack3_indexes 
+
+  subroutine check_ipack4_indexes(i,j,k,l)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k,l
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  .and.  & 
+              l >= min_indx .and. l <= max_indx     )) then
+        write(LUPRI,*) 'ipack4: i=',i,' j=',j,' k=',k,' l=',l
+        call quit('ipack4 index out of range !')
+    endif
+  end subroutine check_ipack4_indexes 
+
+  subroutine check_ipack5_indexes(i,j,k,l,m)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k,l,m
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  .and.  & 
+              l >= min_indx .and. l <= max_indx  .and.  &
+              m >= min_indx .and. m <= max_indx   )) then
+        write(LUPRI,*) 'ipack5: i=',i,' j=',j,' k=',k,' l=',l,' m=',m
+        call quit('ipack5 index out of range !')
+    endif
+  end subroutine check_ipack5_indexes 
+
+  subroutine check_ipack6_indexes(i,j,k,l,m,n)
+#include "priunit.h"
+    integer, intent(in) :: i,j,k,l,m,n
+    if (.not.(i >= min_indx .and. i <= max_indx  .and.  & 
+              j >= min_indx .and. j <= max_indx  .and.  & 
+              k >= min_indx .and. k <= max_indx  .and.  & 
+              l >= min_indx .and. l <= max_indx  .and.  &
+              m >= min_indx .and. m <= max_indx  .and.  & 
+              n >= min_indx .and. n <= max_indx  )) then
+       write(LUPRI,*) 'ipack6: i=',i,' j=',j,' k=',k,' l=',l,' m=',m,' n=',n
+       call quit('ipack6 index out of range !')
+    endif
+  end subroutine check_ipack6_indexes 
+
+  subroutine test_ipack_functions
+    ! subroutine for demonstration and testing of ipack<2-6> functions
+    ! it packs and subsequently unpack set of indexes
+#include "priunit.h"
+    integer :: i,j,k,l,m,n
+    integer :: i0,j0,k0,l0,m0,n0
+    integer :: ip2,ip3,ip4,ip5,ip6
+
+    write(LUPRI,'(/,2x,a)') '=== Testing of ipack<2-6> index packing functions ==='
+    call set_check_ipack_indexes
+
+    i0=1;j0=255
+    ip2=ipack2(i0,j0) 
+    i=iand(ishft(ip2,-8),z'ff')
+    j=iand(ip2,z'ff')
+    write(LUPRI,'(1x,2(a,i3),a,i8,2(a,i3))') 'ipack2(',i0,',',j0,')=',ip2,'=> i=',i,' j=',j
+
+    i0=2;j0=232;k0=6
+    ip3=ipack3(i0,j0,k0)
+    i=iand(ishft(ip3,-16),z'ff')
+    j=iand(ishft(ip3,-8),z'ff')
+    k=iand(ip3,z'ff')
+    write(LUPRI,'(1x,3(a,i3),a,i8,3(a,i3))')  & 
+     'ipack3(',i0,',',j0,',',k0,')=',ip3,'=> i=',i,' j=',j,' k=',k
+
+    i0=2;j0=8;k0=12;l0=137
+    ip4=ipack4(i0,j0,k0,l0)
+    i=iand(ishft(ip4,-24),z'ff')
+    j=iand(ishft(ip4,-16),z'ff')
+    k=iand(ishft(ip4, -8),z'ff')
+    l=iand(      ip4,     z'ff')
+    write(LUPRI,'(1x,4(a,i3),a,i8,4(a,i3))')  & 
+    'ipack4(',i0,',',j0,',',k0,',',l0,')=',ip4,'=> i=',i,' j=',j,' k=',k,' l=',l
+
+    i0=201;j0=255;k0=12;l0=48;m0=112
+    ip5=ipack5(i0,j0,k0,l0,m0)
+    j=iand(ishft(ip5,-24),z'ff')
+    k=iand(ishft(ip5,-16),z'ff')
+    l=iand(ishft(ip5,-8), z'ff')
+    m=iand(      ip5,     z'ff')
+    write(LUPRI,'(1x,5(a,i3),a,i8,5(a,i3))')  & 
+    'ipack5(',i0,',',j0,',',k0,',',l0,',',m0,')=',ip5,'=> last 4 indexes, i=',0,' j=',j,' k=',k,' l=',l,' m=',m
+
+    i0=251;j0=8;k0=199;l0=20;m0=11;n0=178
+    ip6=ipack6(i0,j0,k0,l0,m0,n0)
+    write(LUPRI,*) 'ipack6(',i0,',',j0,',',k0,',',l0,',',m0,',',n0,')=',ip6
+
+
+
+    write(LUPRI,*)
+    call unset_check_ipack_indexes
+  end subroutine test_ipack_functions
+
+end module ipack_mod
+
 
 subroutine check_modules
 !##########################################################################

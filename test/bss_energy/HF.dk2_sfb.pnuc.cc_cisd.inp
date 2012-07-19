@@ -2,7 +2,6 @@
 .TITLE
   LiH
 .WAVE F ! Activate integral and wave functions modules
-!.PROPERTIES ! Activate property module (dipole moment; polarizability...)
 **GENERAL
 ! Direct evaluation of two-electron integrals
 .DIRECT
@@ -16,7 +15,6 @@
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 1
 *TWOINT
-#.SOFOCK
 **HAMILTONIAN
 .SPINFREE
 .BSS

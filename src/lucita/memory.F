@@ -205,7 +205,8 @@ CADDE
 * is tranferred to static memory
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KBASE, KFREES, KFREEL, NWORD, IMARK, IBASE, JBASE,
+      INTEGER   KBASE, KADD
+      INTEGER*8 KFREES, KFREEL, NWORD, IMARK, IBASE, JBASE,
      &          JBASEN, IBASE_L
 !               for addressing of WORK
       CHARACTER*6 TASK,IDENT,IIDENT,MARKC

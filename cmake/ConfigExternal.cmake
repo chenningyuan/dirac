@@ -8,7 +8,9 @@ if (GIT_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
 else()
-    message("-- Warning: Git command for the target git_update not found. No submodule update.")
+    if(DEVELOPMENT_CODE)
+        message("-- Git not found. You need Git for the Git submodule mechanism to work.")
+    endif()
 endif()
 
 include(ExternalProject)
@@ -44,7 +46,7 @@ macro(add_external _project)
   # add_custom_command(
   #     TARGET ${_project}
   #     PRE_BUILD
-  #     COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/src/${_project}-stamp
+  #     COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/${_project}-stamp
   #     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   #     )
 endmacro()
