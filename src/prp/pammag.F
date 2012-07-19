@@ -2986,7 +2986,7 @@ C      gradient matrix, PRPMO for LAO-PDBS
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
         WRITE(LUPRI,'(A)')
-     &'WARNING from GETDHB: The total propery gradient'
+     &'WARNING from GETDHB: The total property gradient'
      &//'matrix dH/dB for LAO-PDBS is not (fully?) symmetric !'
       ENDIF
 
