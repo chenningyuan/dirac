@@ -1255,6 +1255,113 @@ C
 C
  999  CALL QEXIT('DIRNOD')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIRNOD2()
+C***********************************************************************
+C
+C     Another menu file for slave nodes. This can be used to change the type
+C     of work during a calculation (i.e. : if one parallel module calls the
+C     other like in RELCCSD when doing the AO Lagrangian).
+C
+C***********************************************************************
+      use interface_to_mpi
+#include "implicit.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "priunit.h"
+C
+#include "infpar.h"
+      LOGICAL NEWTASK
+C
+C
+      CALL QENTER('DIRNOD2')
+C
+ 100  CONTINUE
+C
+      CALL interface_MPI_RECV(ITASK,1,MPARID,27,
+     &                        global_communicator)
+C
+C     check for proper LUCITA / LUCIAREL installation
+C
+      ICHECK_MPI2 = - 1 
+#if defined (VAR_MPI2)
+      ICHECK_MPI2 =   0
+#endif
+C
+      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or. 
+     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+        WRITE(6,*) ' fatal error in starting a parallel LUCITA / 
+     & LUCIAREL run; you do not have a MPI-2 library installed'
+       CALL Abend2('error in DIRNOD2: missing MPI-2 library functions')
+      END IF
+C
+C
+C     ***************************************************
+C     ***** Receive initialization data from master *****
+C     ***************************************************
+C
+      IF (ITASK .LT. 0) THEN
+C
+C        Global end of program : go up for MPI_FINALIZE
+C
+         GOTO 999
+      ELSE IF (ITASK .EQ. 0) THEN
+C
+C        Nothing to be done at the moment. Go to sleep.
+C
+         CONTINUE
+      ELSE IF (ITASK .EQ. 1) THEN
+C
+C        Start calculating integrals for Fock matrices.
+C
+         CALL HERNOD()
+      ELSE IF (ITASK .EQ. 2) THEN
+C
+C        Start calculating integrals for MOLTRA.
+C
+          CALL TRANOD()
+      ELSE IF (ITASK .EQ. 3) THEN
+C
+C        Start coupled cluster calculation.
+C
+         CALL CCNOD()
+      ELSE IF (ITASK .EQ. 4) THEN
+C        Enter the DFT module
+         call xcint_launch_slave_process()
+
+#if defined (VAR_MPI2)
+      ELSE IF (ITASK .EQ. 5) THEN
+C
+C        Enter the LUCITA module
+C
+         CALL LUCITA_NODE()
+      ELSE IF (ITASK .EQ. 6) THEN
+C
+C        start KRMC-LUCIAREL calculation.
+C
+         CALL LUCIAREL_NODE()
+      ELSE IF (ITASK .EQ. 7) THEN
+C
+C        start KR-MCSCF calculation.
+C
+         CALL KRMC_NODE_DRIVER()
+#endif /* VAR_MPI2 */
+      ELSE
+C
+C        Unknown task. Abort execution.
+C
+         WRITE(LUPRI,'(A,I5)')
+     &     '*** ERROR *** DIRNOD: Unknown task ITASK = ',ITASK
+         CALL QUIT(' Unknown task in DIRNOD')
+      END IF
+C
+C     We want the slave program to go until there is nothing
+C     more to calculate, K.Ruud, May-95
+C
+      GOTO 100
+C
+ 999  CALL QEXIT('DIRNOD2')
+      END
 #endif /* VAR_MPI */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirac_parctl */

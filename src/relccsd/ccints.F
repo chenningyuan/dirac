@@ -25,8 +25,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  BUF1,BUF2,IREPSP,IREPSPI,
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
-     &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC,
-     &                  CC)
+     &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC)
 C
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)

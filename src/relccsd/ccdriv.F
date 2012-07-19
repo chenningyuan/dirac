@@ -2023,7 +2023,7 @@ C
      &            IREPSPI,a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
      &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
-     &            a_FVV,BREIT,SRTALL,INTERFACE,CC)
+     &            a_FVV,BREIT,SRTALL,INTERFACE)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
@@ -2056,7 +2056,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
-
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2239,6 +2238,8 @@ C
          WRITE (IW,1008) MXITCC,MXDIMCC,10.0D0**(-NTOLCC)
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
+
+
          TOL = 10.0D0**(-NTOLCC)
 C
 C        Initialize T1 and T2 amplitudes
@@ -2299,7 +2300,6 @@ C
          ENDIF
 C
  421     CONTINUE
-         call dealloc(a_S2  )
          call dealloc(a_AZ  )
          call dealloc(a_H   )
          call dealloc(a_HO  )
@@ -2381,6 +2381,7 @@ C
       call dealloc(a_T1  , id="fvo")
       call dealloc(a_T2  , id="fvo")
       call dealloc(a_S1  , id="s1")
+      call dealloc(a_S2  , id="s2")
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -2699,7 +2700,7 @@ C
 C         this means that, for the time being, we can deallocate everything? 
 #if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
-             IF (ICALC.EQ.2) CALL DIRNOD()
+             IF (ICALC.EQ.2) CALL DIRNOD2()
              RETURN
           ENDIF
 #endif
@@ -3265,7 +3266,6 @@ C
 C     Allocate the work array
 C
       call alloc( a_BUF3 , NBUF3*RCW , id="buf3")
-      write (*,*) 'debug, kind buf3 :',kind(a_BUF3)
 
       call allocator_get_available_mem(total_mem_new)
       mxcorr= nint((total_mem_new/kind(a_BUF3)),kind(8))

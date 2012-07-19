@@ -41,14 +41,12 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-      PARAMETER (MAXCOR = 60 000 000)
 #include "files.inc"
 #include "ccpar.inc"
 #include "infpar.h"
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
