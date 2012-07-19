@@ -13,8 +13,8 @@ C-----For the LANCZOS diagonalizer
       INTEGER SIPITER,DIPITER,SIPEIGV(32),DIPEIGV(32)
       COMMON/LANCZR/SIPPRNT,DIPPRNT,ADCTHR
       REAL*8 SIPPRNT,DIPPRNT,ADCTHR
-      COMMON/LANCZL/DOINCORE,DOADCHIST
-      LOGICAL DOINCORE,DOADCHIST
+      COMMON/LANCZL/DOINCORE
+      LOGICAL DOINCORE
 C -- if no LANC diagonalization is chosen these values
 C -- are filled with zeros and are never accessed anyway
 

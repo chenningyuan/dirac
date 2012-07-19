@@ -2950,6 +2950,9 @@ C
             print *, 'controlled stop: only sequential'
             call quit ('RELADC not parallelized')
          endif
+! MP for test purposes we comment out the default call of adcinpt
+! If you want to avoid namelist reading comment out the next 3 lines.
+!
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL ADCINPT(LUCMD,LUPRI)
          CLOSE(LUCMD)

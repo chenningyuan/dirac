@@ -183,22 +183,6 @@ program DIRAC12_PROGRAM
       write (lupri, '(/a)' ) '*****************************************************'
   endif
 
-#ifdef MOD_HSCC 
- if (DOHSCC) then
-   print '(/a)','  Continuing with the external HSCC code.'
-   call dirprg_hscc 
- endif
-#endif
-
-#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
- if (DOHSFS) then
-   print '(/a)','*****************************************************'
-   print '(a)', '  Continuing with the external HighSect-FSCC code.'
-   print '(/a)','*****************************************************'
-   call HIGH_SECTOR_FSCC_METHODS
- endif
-#endif
-
    call allocator_cleanup()
 
    call interface_ao_clear()

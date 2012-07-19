@@ -20,7 +20,6 @@ option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                             
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
-option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
@@ -29,7 +28,7 @@ option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
-option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            ON)
+option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -163,9 +162,6 @@ set(WORK_MEM_WORDS
     "Work memory in words"
     )
 add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
-if(ENABLE_LARGE_MOLECULES)
-    add_definitions(-DLARGE_MOLECULES)
-endif()
 if(ENABLE_MATLAB_LOG)
     add_definitions(-DMOD_MATLAB_LOG)
 endif()
@@ -229,7 +225,7 @@ if(ENABLE_UTILITIES)
         compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
-        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/source/hsmrmain.c "${LIST_OF_EXECUTABLES}")
+        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")

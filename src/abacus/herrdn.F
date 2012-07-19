@@ -729,7 +729,7 @@ C
 #endif
      &            DOOWN,blk)
 
-#ifdef BUILD_GEN1INT
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
      &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,

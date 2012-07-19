@@ -4,6 +4,7 @@ module openrsp_interface_response
    use memory_allocator
    use matrix_defop_old
    use openrsp_cfg
+   use orbital_rotation_indices
 
    implicit none
 
@@ -19,7 +20,7 @@ module openrsp_interface_response
 
 contains
 
-  subroutine set_orbital_rotation_indices(irep,       &
+  subroutine set_orbrot_indices(irep,       &
                                           length,     &
                                           from_block, &
                                           to_block,   &
@@ -205,7 +206,7 @@ contains
 
     call alloc(orbital_rotation_indices_pp, 2, length_pp)
     if (length_pp > 0) then
-       call set_orbital_rotation_indices(RHS%irep,  &
+       call set_orbrot_indices(RHS%irep,  &
                                          length_pp, &
                                          2,         &
                                          3,         &
@@ -214,7 +215,7 @@ contains
 
     call alloc(orbital_rotation_indices_pn, 2, length_pn)
     if (length_pn > 0) then
-       call set_orbital_rotation_indices(RHS%irep,  &
+       call set_orbrot_indices(RHS%irep,  &
                                          length_pn, &
                                          2,         &
                                          1,         &
@@ -352,23 +353,21 @@ contains
 
     kfree = 1
     lfree = len_f77_work
-    call memget('INTE', kzxope, 2*length_pp, work, kfree, lfree)
-    call memget('INTE', kzxopp, 2*length_pn, work, kfree, lfree)
 
-    call fill_work(include_pp_rotations,                      &
-                   include_pn_rotations,                      &
-                   length_pp,                  &
-                   length_pn,                  &
-                   orbital_rotation_indices_pp, &
-                   orbital_rotation_indices_pn, &
-                   work(kzxope),               &
-                   work(kzxopp))
-
+    call set_orbital_rotation_indices(                             &
+                                      include_pp_rotations,        &
+                                      include_pn_rotations,        &
+                                      length_pp,                   &
+                                      length_pn,                   &
+                                      orbital_rotation_indices_pp, &
+                                      orbital_rotation_indices_pn  &
+                                     )
+    
 
 !   parameters
 !   ==========
 
-    call setrsp
+    call setrsp()
 
 !   .URKBAL response with frequency=0.0 but static=.false. converges much worse
 !   than frequency=0.0 with static=.true.
@@ -768,50 +767,4 @@ contains
 
   end subroutine
 
-
-
 end module
-
-      subroutine fill_work(do_pp, &
-                           do_pn, &
-                           length_pp, &
-                           length_pn, &
-                           orbital_rotation_vector_pp, &
-                           orbital_rotation_vector_pn, &
-                           jxop_pp, &
-                           jxop_pn)
-
-      implicit none
-
-      logical   do_pp
-      logical   do_pn
-      integer   length_pp
-      integer   length_pn
-      integer   orbital_rotation_vector_pp
-      integer   orbital_rotation_vector_pn
-      integer   jxop_pp
-      integer   jxop_pn
-
-      dimension orbital_rotation_vector_pp(2, *)
-      dimension orbital_rotation_vector_pn(2, *)
-      dimension jxop_pp(2, *)
-      dimension jxop_pn(2, *)
-
-      integer   i
-
-      if (do_pp) then
-        do i = 1, length_pp
-          jxop_pp(1, i) = orbital_rotation_vector_pp(1, i)
-          jxop_pp(2, i) = orbital_rotation_vector_pp(2, i)
-        end do
-      end if
-
-      if (do_pn) then
-        do i = 1, length_pn
-          jxop_pn(1, i) = orbital_rotation_vector_pn(1, i)
-          jxop_pn(2, i) = orbital_rotation_vector_pn(2, i)
-        end do
-      end if
-
-      end
-

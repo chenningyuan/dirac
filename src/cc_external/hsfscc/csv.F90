@@ -2,7 +2,7 @@
       subroutine csv
 !-------------------------------------------------------------------------------------
 !
-!
+!  (0,1) sector
 !
 !-------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -76,7 +76,7 @@
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
-      write (*,*) '   $$$$$$$$$   csv   $$$$$$$$$  '
+      write (*,*) '   $$$$$$$$$   csv (0,1)  $$$$$$$$$  '
       csdstim = cputime(real(0.))
       csdltim = csdstim
 
@@ -107,14 +107,11 @@
         end if
       end if
       call t1sqr("t1c ","t1c ","tc  ","tcm ")
-!     call ordvv
       call ordvv_csv
       call calvv0_csv
-!     call pdiag
       call pdiag_csv
       iter=0
       ieof=0
-!     call tvinit
       call tvinit_csv
       call prt ("tv  ","tv      ",2)
       call fmax ("tv  ",tmax,itmax)
@@ -137,7 +134,6 @@
 220   iter=iter+1
       call prtime("strt itr",iter,0)
       call flush (6)
-!     call ordtva
       call ordtva_csv
       if (iopt(17).ne.0) then
         call caltv3_csv
@@ -282,16 +278,15 @@
           call wrtbox_csv
         end if
       end if
+
       egr0=0.d0
       call eneru2 (egr0,1,3,max(1,iopt(1)))
 
-      write (*,*) nstrt(1,nflcur),' words used in igen,',               &
-   nstrt(2,nflcur),' words used in gen'
+      write (*,*) nstrt(1,nflcur),' words used in igen,',nstrt(2,nflcur),' words used in gen'
 
       call prtime("end",iter,0)
       call flush (6)
 
-!      stop
       end
 
 ! *********************************************

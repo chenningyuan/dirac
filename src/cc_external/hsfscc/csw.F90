@@ -4,6 +4,7 @@
 !            (0,3) sector...
 !
 !---------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use cint_mod
@@ -132,7 +133,12 @@
       call ordv_csw
       call ordta0_csw
 
-      ! miro: no convergence for CCSD/CCSDT, fix needed
+      if (getiprint() >= 5) then
+        !write(LUPRI,'(/,2x,a)') 'csw: energy control printout 0.023'
+        !call eneru2 (egr0,3,3,max(1,iopt(1)))
+      endif
+
+      ! miro: no convergence for CCSD, converging only for CCSDT-x group of methods
       if (iopt(17).ne.0) then
         call calvw0_csw
         call move     ("v30 ","t33 ")
@@ -238,18 +244,22 @@
 #if defined HSFS_DYN_ALLOC
       call check_modules
 #endif
+
       call endiag_csw 
       call eneru2 (egr0,1,3,max(1,iopt(1)))
       call eneru2 (egr0,2,3,max(1,iopt(1)))
       call eneru2 (egr0,3,3,max(1,iopt(1)))
       call prt6 ("twf ","twf ",0)
       call wrtfile (59,0,"twf ")
+
       if (iopt(17).gt.0) then
         call prt6 ("t33 ","t33 ",0)
         call wrtfile (59,1,"t33 ")
       end if
+
       write (LUPRI,*) nstrt(1,nflcur),' words used in "igen", and ',nstrt(2,nflcur),' words used in "gen"'
       call prtime ("end ",0,0)
+
       end
 ! ********************************************************************
       subroutine ordv_csw
@@ -476,9 +486,10 @@
       subroutine endiag_csw
 !-----------------------------------------------------------------------
 !
-!
+! 'Last' subroutine in csw before calculating effective Hamiltonian eigenvalues
 !
 !-----------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use dat_mod
 #include "implicit.h"
@@ -508,6 +519,10 @@
 #if defined HSFS_DYN_ALLOC
       call check_modules
 #endif
+if (getiprint() >= 5) then
+ ! write(LUPRI,'(/,2x,a)') 'endiag_csw: energy control printout 0.04'
+  !call eneru2 (egr0,3,3,max(1,iopt(1)))
+endif
 
 !   diag 2
       call fold4      ("tv1 ","s1  ",2,4)
@@ -516,6 +531,15 @@
       call add        ("s2  ",2.d0,"s3  ",-1.d0,"s2  ")
       call mult       ("s1  ","s2  ","s3  ",222)
       call add        ("s3  ",1.d0,"box1",1.d0,"box1")
+
+      if (getiprint() >= 5) then
+        write(LUPRI,'(/,2x,a)') 'endiag_csw: energy control printout after diag2'
+       ! call fold4      ("tu  ","s1  ",3,4)
+       ! call mult6      ("s1  ","box1","s2ne",1) ! s2ne is newly defined...
+       ! call reord6     ("s2ne","twf ",124365)
+       ! call eneru2 (egr0,3,3,max(1,iopt(1)))
+      endif
+
 !   diag 3
       call fold4      ("tvm2","s1  ",2,4)
       call reorder    ("ppvh","s2  ",3142,4)
@@ -526,9 +550,6 @@
       call mult       ("s1  ","s2  ","s3  ",222)
       call reorder    ("s3  ","s1  ",1324,4)
       call add        ("s1  ",-1.d0,"box1",1.d0,"box1")
-
-      !call check_modules
-
 !   diag 5
       call reorder    ("vhhp","s1  ",1432,4)
       call fold4      ("tcm ","s2  ",3,4)
@@ -572,6 +593,16 @@
       call mult       ("s1  ","s2  ","s3  ",311)
       call reorder    ("s3  ","s1  ",1243,4)
       call add        ("s1  ",-1.d0,"box1",1.d0,"box1")
+
+      if (getiprint() >= 5) then
+        ! hurts code flow afterwards
+        !write(LUPRI,'(/,2x,a)') 'endiag_csw: energy control printout after diag8'
+       ! call fold4      ("tu  ","s1  ",3,4)
+       ! call mult6      ("s1  ","box1","s2ne",1) ! s2ne is newly defined...
+       ! call reord6     ("s2ne","twf ",124365)
+       ! call eneru2 (egr0,3,3,max(1,iopt(1)))
+      endif
+
 !  diag 9
       call reorder    ("vphv","s1  ",1423,4)
       call mult       ("s1  ","s2  ","s3  ",311)
@@ -589,13 +620,21 @@
       else if (iopt(17).eq.3) then
         call wrtfile    (23,0,"box1")
       end if
+
+        ! make control diagonalization for iprint
+      if (getiprint() >= 5) then
+        write(LUPRI,'(/,2x,a)') 'endiag_csw: energy control printout 0.08'
+        !print *,getiprint()
+        call eneru2 (egr0,3,3,max(1,iopt(1)))
+      endif
+
 !  GROUP II
 !   diag 1
       call cmult      ("vvvh",-1.d0,"box2")
 ! v1 Feb 95 UK hp diagram
       call fold4      ("tu  ","s1  ",3,4)
       call mult       ("s1  ","hp  ","s2  ",311)
-      call add        ("box2",1.d0,"s2  ",-.5d0,"box2")
+      call add        ("box2",1.d0,"s2  ",-0.5d0,"box2")
 !uk
 !   diag 2
       call fold4      ("tv1 ","s1  ",2,4)
@@ -652,18 +691,18 @@
       call reorder    ("s2  ","s1  ",2143,4)
       call add        ("s1  ",1.d0,"box2",1.d0,"box2")
 
-      !call check_modules
-!
       if (iopt(17).lt.3) then
         call fold4      ("tv  ","s1  ",3,4)
         call fold4      ("s1  ","s2  ",4,4)
         call reorder    ("s2  ","s1  ",1432,4)
         call mult6      ("box2","s1  ","s2  ",1)
         call reord6     ("s2  ","s1  ",124356)
-        call add        ("s1  ",1.d0,"twf ",1.d0,"twf ")
+        call add        ("s1  ",1.d0,"twf ",1.d0,"twf ") ! added to the final wave-function
       else if (iopt(17).eq.3) then
         call wrtfile    (23,1,"box2")
       end if
+
+      ! for CCSDT-x
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 !  diag e1
         call fold6    ("t32 ","s1  ",4,1)
@@ -704,7 +743,6 @@
         call add      ("s3  ",0.5d0,"twf ",1.d0,"twf ")
       end if
       if (iopt(17).ne.3) then
-        !call check_modules
         call sqr3     ("twf ")
       end if
       call prtime     ("endiag  ",0,0)
@@ -712,8 +750,7 @@
       end
 !  ********************************************************************
       subroutine rdbox_csw
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
       call rdfile  (20,6,"bx7 ",-1)
       call rdfile  (21,0,"bx12",-1)

@@ -371,18 +371,6 @@ c  release all memory needed for satellite construction.
 c
         CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
         CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
-c
-c   generate histogram for ADC Matrix (in the two-particle case only)
-c   not yet functional! Do not activate since the cutadc routine does
-c   not exist!
-c
-c     IF(DOADCHIST) THEN
-c       WRITE(IW,*) 'Generating histogram for ADC matrix'
-c       CALL CUTADC(INFOHANDLE+1,INFOHANDLE+4,FILEADC,
-c    &              INTBUF,NBUFS,CARITH,ADCTHR)
-c     ENDIF
-
-
 C
 C  write general matrix control file and perform Lanczos diagonalization
 C  for each symmetry immediately.

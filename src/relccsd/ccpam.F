@@ -259,7 +259,6 @@ C
      &                 global_communicator)
       END IF
 #endif
-      print *, 'slave: CA, IAOMOSCHEME',CA, IAOMOSCHEME,INTFCE
 C
 C     create a node-unique filename as output file. Important on
 C     shared file systems. Otherwise all the output gets mingled in one
