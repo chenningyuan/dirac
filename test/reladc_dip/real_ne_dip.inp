@@ -1,0 +1,26 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ Valence ionization of the Neon atom                                                      
+.WAVE FUNCTION                                                                                      
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**HAMILTONIAN                                                                                       
+.LVCORR                                                                                             
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+.RELADC                                                                                             
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+ 4 6                                                                                                
+.FCKCNV                                                                                             
+5.0E-08                                                                                             
+**MOLTRA                                                                                            
+.ACTIVE                                                                                             
+energy  -2.0 2.5 0.1                                                                                
+energy  -2.0 2.5 0.1                                                                                
+*END OF                                                                                             
+                                                                                                    
+ $RELADC DODIPS=T, XREPS=1 $END                                                         
+ $LANINP DIPITER=100 SIPPRNT=20.0 $END                                                              
+                                                                                                    

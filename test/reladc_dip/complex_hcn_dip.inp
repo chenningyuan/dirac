@@ -1,7 +1,10 @@
 **DIRAC                                                                                             
 .TITLE                                                                                              
- Valence ionization of the Neon atom                                                      
+ Valence ionization of HCN in a bent structure                                                      
 .WAVE FUNCTION                                                                                      
+**INTEGRALS
+*READIN
+.UNCONTRACT
 **HAMILTONIAN                                                                                       
 .LVCORR                                                                                             
 **WAVE FUNCTIONS                                                                                    
@@ -9,14 +12,14 @@
 .RELADC                                                                                             
 *SCF                                                                                                
 .CLOSED SHELL                                                                                       
- 10                                                                                                 
+ 14                                                                                                 
 .FCKCNV                                                                                             
-5.0E-05                                                                                             
+5.0E-08                                                                                             
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
-energy  -2.0 2.5 0.1                                                                                
+energy  -2.0 1.0 0.1                                                                                
 *END OF                                                                                             
                                                                                                     
- $RELADC DOSIPS=T, ADCLEVEL=1, XREPS=1 $END                                                         
- $LANINP SIPITER=100 SIPPRNT=20.0 $END                                                              
+ $RELADC DODIPS=T, XREPS=1 $END                                                         
+ $LANINP DIPITER=100 SIPPRNT=15.0 $END                                                              
                                                                                                     
