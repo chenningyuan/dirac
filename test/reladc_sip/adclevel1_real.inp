@@ -2,6 +2,9 @@
 .TITLE                                                                                              
  Valence ionization of the Neon atom                                                      
 .WAVE FUNCTION                                                                                      
+**INTEGRALS
+*READIN
+.UNCONTRACT
 **HAMILTONIAN                                                                                       
 .LVCORR                                                                                             
 **WAVE FUNCTIONS                                                                                    
