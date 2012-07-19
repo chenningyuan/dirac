@@ -145,6 +145,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
+      use adc_cfg    !  in the general input reader the user data are provided.
 
       IMPLICIT INTEGER (A-Z)
 !
@@ -219,6 +220,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      10X,"****       FOUR-COMPONENT         ",10X,"****"/
      &      10X,"****      PROPAGATOR MODULE       ",10X,"****"/
      &      10X,"****",40X,"****"/
+     &      10X,"****        New features (Jul 2012):",8X,"****"/
+     &      10X,"****  *)  Partial incore Lanczos",12X,"****"/
+     &      10X,"****  *)  Improved eigenvector analysis",5X,"****"/
      &      10X,"************************************************"///
      &      10X,"****  written by"/
      &      10X,"****  M. Pernpointner
@@ -229,9 +233,80 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      10X,"****  For the 2P propagator cite: "/
      &      10X,"****  M. Pernpointner, 
      &       J. Phys. B 43, 205102 (2010)."//)
+!
+!  For abandoning namelist reading clear this GOTO
+!
+      goto 844
+!
+!  first transfer interface variables to internal ADC variables
+! ___________________________________________________________
+!|
+!|
+!|
+      adclevel =   reladc_adclevel
+      dosips   =   reladc_dosips  
+      dodips   =   reladc_dodips  
+      do i=1,32
+         xreps(i) =   reladc_xreps(i)
+      enddo
+      readqkl  =   reladc_readqkl 
+      doconst  =   reladc_doconst 
+      doadcpop =   reladc_doadcpop
+      dofull   =   reladc_dofull  
+      vconv    =   reladc_vconv   
+
+      sipiter  = reladc_sipiter 
+      dipiter  = reladc_dipiter 
+      do i=1,32
+        sipeigv(i)  = reladc_sipeigv(i) 
+        dipeigv(i)  = reladc_dipeigv(i) 
+      enddo
+      sipprnt  = reladc_sipprnt 
+      dipprnt  = reladc_dipprnt 
+      doincore = reladc_doincore
+      adcthr   = reladc_adcthr  
+!|
+!|
+!|___________________________________________________________
+!
+! print overall job specification for the propagator run.
+!
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(5X,A)') '**** Propagator JOB CONTROL DATA:  ****'
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(5X,A)') '****                               ****' 
+      write(IW,'(10X,A,T50,I3)') 'Level of perturb. treatment:',adclevel
+      write(IW,'(10X,A,T50,L1)') 'Calc. single ioniz. spectrum',dosips
+      write(IW,'(10X,A,T50,L1)') 'Calc. double ioniz. spectrum',dodips
+      write(IW,'(10X,A)') 'Requested symmetries (XREPS):'
+      write(IW,'(10X,16I4)') (xreps(i),i=1,16)
+      write(IW,'(10X,16I4)') (xreps(i),i=17,32)
+      write(IW,'(10X,A,T50,L1)') 'Read prev. calc. Qkl data:',readqkl
+      write(IW,'(10X,A,T50,L1)') 'Incl. const. diagr. in ADC-3:',doconst
+      write(IW,'(10X,A,T50,L1)') 'Do adv. final state anal.:',doadcpop
+      write(IW,'(10X,A,T50,L1)') 'Do full diag. (max. 5000):',dofull
+      write(IW,'(10X,A,T50,F18.6)') 'Conv. of constant diagrams:',vconv
+      write(IW,'(10X,A,T50,I7)') 'Number of iter. in SIP calc:',sipiter
+      write(IW,'(10X,A,T50,I7)') 'Number of iter. in DIP calc:',dipiter
+      write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
+      write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
+      write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
+      write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
+      write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
+      write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for SIP scr. output:',sipprnt
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP scr. output:',dipprnt
+      write(IW,'(10X,A,T50,L1)') 'Do incore Lanczos diag.:',doincore
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for matrix elements:',adcthr
+!
+!  end of job control output
+!
+
+  844 continue
+
       WRITE (IW,1011) MYPROC+1,NMPROC
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
-
 !
 !     Initialize low-level I/O
 !
@@ -250,11 +325,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call allocator_get_available_mem(total_mem_new)
       maxcor = nint((total_mem_new/8.0d0),kind(8))
       mword_limit = maxcor / (1024*1024)
-
-!     WRITE(IW,*) 'Status variables from allocator:'
-!     WRITE(IW,*) 'total_mem_new: ',total_mem_new
-!     WRITE(IW,*) 'maxcor: ',maxcor
-!     WRITE(IW,*) 'mword_limit: ',mword_limit
 
       MXCORR = 0
 !
@@ -333,7 +403,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       WRITE (IW,*) '       *** GENERAL JOB SPECIFICATION ***'
       WRITE (IW,1006) DOSIPS,DODIPS,DOSORT,USEOE,NORECMP
-1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
+ 1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
      &        /" Calculate double ionization spectra:",T50,L1
      &        /" Perform integral sorting           :",T50,L1
      &        /" Use orbital energies from HF calc. :",T50,L1
@@ -489,11 +559,12 @@ C---------------Local variables--------------------------------------
 C
 C------------- Execution starts -------------------------------------
 C
-      NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
+      NAMELIST/RELADC/ ADCLEVEL,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
      &                 DOCONST,DOADCPOP,DOFULL,VCONV
       NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,
-     &                 SIPPRNT,DIPPRNT,DOINCORE
+     &                 SIPPRNT,DIPPRNT,DOINCORE,
+     &                 ADCTHR
 c
 c  set input default values and read ADC input
 c  from ADC namelist input.
@@ -501,18 +572,8 @@ c  the ADC population analysis currently only refers to the
 c  two-hole part since this is of major interest!
 c
       OPEN (5,FILE='DIRAC.INP', FORM='FORMATTED')
-      ADCLEVEL = 1
-      DO IX=1,8
-        ADCPRINT(IX)=0
-      ENDDO
-      ADCPRINTNM(1)='Allocations'
-      ADCPRINTNM(2)=' '
-      ADCPRINTNM(3)=' '
-      ADCPRINTNM(4)='h/h-Block '
-      ADCPRINTNM(5)='Qkl-values'
-      ADCPRINTNM(6)='Bpq-values'
-      ADCPRINTNM(7)='SIGMA-matrix'
-      ADCPRINTNM(8)=' '
+
+      ADCLEVEL = 3
 
       DOSIPS = .FALSE.
       DODIPS = .FALSE.
@@ -564,7 +625,8 @@ c
         SIPEIGV(J) = 0
         DIPEIGV(J) = 0
       ENDDO
-      DOINCORE = .FALSE.
+      DOINCORE  = .FALSE.
+      ADCTHR    = 0.0d0
       REWIND (5)
       CALL LOCATE('LANINP',5,ITEST)
       IF (ITEST.GT.0) THEN
@@ -580,6 +642,11 @@ c
       GOTO 40
    39 CALL QUIT('Error exit while reading namelist LANINP')
    40 CONTINUE
+
+c
+c  if somebody erroneously gives a negative threshold:
+c
+      ADCTHR = dabs(ADCTHR)
 
       RETURN
       END
@@ -1143,6 +1210,13 @@ c
             CALL CVAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
      &                      CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
      &                 CC(EJAB),EPS,CC(ICRB),CC(VVLT),MXNV,KREP,VCONV)
+c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
+c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
+c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
+c           write(*,*)  'alternative call to CVAFFITER_IC !!'
+c           CALL CVAFFITER_IC (CC(BDIAG1),CC(BDIAG2),
+c    &                         CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
+c    &                         CC(EJAB),EPS,CC(ICRB),MXNV,KREP,VCONV)
           ELSE
             CALL VAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
      &                     CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
@@ -1579,7 +1653,8 @@ C
      
         CLOSE(ITAPADC)
 c
-c  call diagonalizer.
+c  call diagonalizer. No ADC matrix cut for the single ionizations.
+c  can be easily introduced later on.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
         CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)

@@ -1,8 +1,7 @@
 module dirac_interface
 
    use memory_allocator
-   use matrix_defop
-   use character_processing
+   use matrix_defop_old
    use dirac_cfg
    use num_grid_gen
 

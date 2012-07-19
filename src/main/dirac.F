@@ -76,8 +76,6 @@ C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
-      CALL TSTAMP(' ',LUPRI)
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C
@@ -143,7 +141,8 @@ C***********************************************************************
      & 'working with X2C Hamiltonian!')
         end if
         call init_pcm 
-        print *, 'after pcm init'
+        call print_pcm
+        print *, 'PCMSolver initialized.'
       end if
 #endif
 
@@ -165,7 +164,7 @@ C*****  T  E  R  M  I  N  A  T  I  O  N  *******************************
 C***********************************************************************
 C
 
-#ifdef BUILD_GEN1INT
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
@@ -418,6 +417,17 @@ C***** R E L C C S D  M O D U L E **************************************
 C***********************************************************************
 C
       IF(DOCCM.AND.DOPSI) CALL PAMCCM(WORK,LWORK)
+
+#if defined (MOD_HSCC)
+!     Hilbert Space Coupled Cluster module
+      IF (DOHSCC.AND.DOPSI) CALL PAMHSMRCC(WORK,LWORK)
+#endif
+
+#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
+!     High Sectors Fock Space Coupled Cluster module
+      IF (DOHSFS.AND.DOPSI) CALL PAMHSFSCC(WORK,LWORK)
+#endif
+
 C
 C***********************************************************************
 C***** D I R R C I   M O D U L E ***************************************
@@ -504,19 +514,6 @@ C
 #endif
       END IF
 C
-
-C
-C***********************************************************************
-C***** High Sect F S C C  M O D U L E **********************************
-C***********************************************************************
-C
-#ifdef MOD_HSFS
-!     ... interface from HSFS module
-      IF (DOHSFS) THEN
-        CALL HSFS_STUFF(WORK,LWORK)
-      ENDIF
-#endif
-
       CALL QEXIT('PAMPSI')
       RETURN
 C
@@ -1108,19 +1105,23 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
-#include "implicit.h"
+      implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 #include "infpar.h"
       DIMENSION ISTAT(df_mpi_status_size)
       LOGICAL NEWTASK
+      integer :: MWORK, LWORK, KWORK, LFREE, KFREE
+      integer :: IMPARID, INUMNOD, IMYTID, ITASK, ICHECK_MPI2, IPARCAL
+      real*8 :: CPU1, WALL1
 C
 C
-      DIMENSION WORK(MWORK)
+      real*8 WORK(MWORK)
       integer :: sleep_time=15
-C
+
       CALL QENTER('DIRNOD')
+C
       LWORK = MWORK
 #include "memint.h"
 C

@@ -309,6 +309,8 @@ C
          IOFF2 = IOFF2 + 2*NASH(IFSYM)
          IOFF3 = IOFF3 + NASH(IFSYM)
       ENDDO
+
+#ifdef LINSYM_DEBUG
 !     
 !     linear symmetry - make sure only proper <mj|mj> off-diagonal terms
 !     enter the KR-MCSCF machinery... (get rid off numerical noise)
@@ -334,6 +336,7 @@ C
         call dealloc(mjvec)
 
       end if
+#endif
 !
 !     print section
 !     IPRINT = 30

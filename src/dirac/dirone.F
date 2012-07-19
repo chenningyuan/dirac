@@ -430,7 +430,7 @@ C
 C     Generate integrals in abacus
 C
 C     ... calling of ../abacus/her1pro.F
-      CALL PR1IN1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
+      CALL PR1INT_1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,MTFORM, 
      &            DOINT)
@@ -2277,13 +2277,13 @@ C
 C
 C     Calculate integrals in abacus part
 C
-      CALL PR1IN1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
+      CALL PR1INT_1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,OP1INT,NCOMP,TOFILE,MXFORM,DOINT)
 C
 C     Memory deallocation
 C
-      CALL MEMREL('RGETINT.PR1IN1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('RGETINT.PR1INT_1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('RGETINT')
       RETURN
@@ -3371,10 +3371,12 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
         CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
 
 !       save matrices on file to be re-used in the x2c-module
-!       MO2MO lin
-        call writt(99,ISIZE2,TBUF)
-!       AO2MO lin
-        call writt(99,ISIZE, TMAT)
+        if(.not.spinfr)then
+!         MO2MO lin
+          call writt(99,ISIZE2,TBUF)
+!         AO2MO lin
+          call writt(99,ISIZE, TMAT)
+        end if
 !       AO2MO
         call writt(99,ISIZE, WORK(KBUF1))
 

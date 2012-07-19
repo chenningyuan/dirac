@@ -8,14 +8,16 @@ if (GIT_FOUND)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
 else()
-    message(FATAL_ERROR "The git command for the git_update target not found !")
+    if(DEVELOPMENT_CODE)
+        message("-- Git not found. You need Git for the Git submodule mechanism to work.")
+    endif()
 endif()
 
 include(ExternalProject)
 
 macro(add_external _project)
 
-    if(DEVELOPMENT_CODE)
+    if(DEVELOPMENT_CODE AND GIT_FOUND)
         set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
     else()
         set(UPDATE_COMMAND echo)
@@ -35,7 +37,7 @@ macro(add_external _project)
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
-    link_directories(${PROJECT_BINARY_DIR}/external/${_project}/external/lib)
+    link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
     if(DEVELOPMENT_CODE)
         add_dependencies(${_project} git_update)
     endif()
@@ -44,7 +46,7 @@ macro(add_external _project)
   # add_custom_command(
   #     TARGET ${_project}
   #     PRE_BUILD
-  #     COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/src/${_project}-stamp
+  #     COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/${_project}-stamp
   #     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   #     )
 endmacro()

@@ -3262,6 +3262,9 @@ C
 C     Written by T.Saue 1996
 C
 C***********************************************************************
+
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3274,7 +3277,9 @@ C     Orbital part
 C
       IF((NZXOPE.GT.0).OR.(NZXOPP.GT.0)) THEN
         CALL E2ODIA(HEDIAG,HPDIAG,SEDIAG,SPDIAG,
-     &              WORK(KZXOPE),WORK(KZXOPP),WORK,KFREE,LFREE)
+     &              get_orbital_rotation_indices_pp(),
+     &              get_orbital_rotation_indices_pn(),
+     &              WORK,KFREE,LFREE)
       ENDIF
 C
 C     Configurational part
@@ -4104,6 +4109,7 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dgroup.h"
       LOGICAL FNDLAB16
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       DIMENSION RSPVEC(LEN),JXOP(2,LEN)
@@ -4117,7 +4123,10 @@ CHJ TODO: note that ERGRSP was not defined, what is the idea ????
      &          JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
      &          ERGRSP,NTBAS(0),NORBT
         CALL WRITT(LU,LEN,RSPVEC)
-        CALL WRITI(LU,2*LEN,JXOP)
+!radovan: this was previously LEN but this goes out of bounds!
+!         the length of the orbital rotation index vector is 2*LEN/NZ
+!       CALL WRITI(LU,2*LEN,JXOP)
+        CALL WRITI(LU,2*LEN/NZ,JXOP)
         WRITE(LU) 'END_OF_THIS_FILE'
       ELSE
         WRITE(LUPRI,'(A)') 'WRTRSP: EOF flag not found !'

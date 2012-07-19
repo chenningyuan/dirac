@@ -1138,13 +1138,14 @@ C     CI root selection based on the omega value
         do i = 1, nkrci_max_sym
           if(nkrci_selom(i).gt.0)then
             selected = .false.
-            do j = 1, nkrci_ciroots(i)
-             iom_val_tmp = iabs(iomval(iroot_cnt+j))
+!           do j = 1, nkrci_ciroots(i)
+             iom_val_tmp = iabs(iomval(iroot_cnt+NOMEGASEL_statenr))
              if((iom_val_tmp.eq.nkrci_selom(i)).and.(.not.selected))then
-                call krci_cp_sel_root(xsymflab(i),j,mz,iom_val_tmp)
+                call krci_cp_sel_root(xsymflab(i),NOMEGASEL_statenr,
+     &                                mz,iom_val_tmp)
                 selected = .true.
              end if
-            end do
+!           end do
           end if
           iroot_cnt = iroot_cnt + nkrci_ciroots(i)
         end do

@@ -83,7 +83,9 @@ integral transformation.
 .TITLE
 ------
 
-Title line (max. 50 characters). Example::
+Title line (max. 50 characters). 
+
+Example::
 
   .TITLE
    my first DIRAC calculation

@@ -260,10 +260,6 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
 
       IF (GORG) THEN
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(3X,A)')
-     &   'NMRINP: Input for London magnetic field gradient'//
-     &   '(NMR shieldings, magnetizabilities).'
-         CALL PRSYMB(LUPRI,'=',75,0)
          WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
      &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
 

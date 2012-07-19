@@ -132,9 +132,7 @@
 !  *******************************************************************
       function find2 (j1,j2) 
 !----------------------------------------------------------------------
-!
-!
-!
+! find and returns 2-index quantity element
 !----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -142,7 +140,6 @@
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
-!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -152,8 +149,8 @@
 !      common /i/ igen(nbig)
 #include "gen.h"
 !      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-!     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-!     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+!     1 istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!     2 nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
 #endif
 
@@ -170,8 +167,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find4(j1,j2,j3,j4)
 !--------------------------------------------------------------------------------------
-!
-!
+! find and returns 4-index quantity element
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -205,8 +201,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find6 (j1,j2,j3,j4,j5,j6)
 !--------------------------------------------------------------------------------------
-!
-!
+! find and returns 6-index quantity element
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -241,7 +236,6 @@
       lngth=ije3(isave)-ije3(isave-1)
       do 20 i=1,lngth
         ii=igen(istrt31+ije3(isave-1)+i)
-       ! if (ind.eq.iand(ii,'ffffff'x)) then
         if (ind.eq.iand(ii,z'ffffff')) then
           find6=gen(istrt32+ije3(isave-1)+i)
         end if
@@ -249,12 +243,12 @@
       return
       end
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find8 (j1,j2,j3,j4,j5,j6,j7,j8)
 !--------------------------------------------------------------------------------------
+! return particular array element (as real) according to his (entering) 8 indexes j1-j8
 !
-!
-!
+! 8 indexes mean quadruple excitations, like in sectors (40) or (04)
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -278,20 +272,32 @@
 !    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
 #endif
+      logical :: isave_set=.false.
 
       find8=0.d0
+      isave = 0 ! mi-necessary initialization, otherwise might indicate ifort runtime error
       id=ior(ior(ishft(j1,24),ishft(j2,16)),ior(ishft(j3,8),j4))
       ind=ior(ior(ishft(j5,24),ishft(j6,16)),ior(ishft(j7,8),j8))
       do 10 i=1,nij4
         if (id.eq.ij4(i)) then
           isave=i
+          isave_set=.true.
         end if
 10    continue
+
+!mi: problem - if isave not set, initial isave=0 causes negative index in ije4 !
+      if (.not.isave_set) then
+        write(LUPRI,*) 'find8: j1,j2,j3,j4:',j1,j2,j3,j4
+        write(LUPRI,*) 'find8: j5,j6,j7,j8:',j5,j6,j7,j8
+        write(LUPRI,*) 'nij4=',nij4,' id=',id,' ind=',ind
+        call quit('find8: isave not set, must stop')
+      endif
+      ! if isave=0, we get index -1 what is out-of-bounds
       lngth=ije4(isave)-ije4(isave-1)
       do 20 i=1,lngth
         if (ind.eq.igen(istrt41+ije4(isave-1)+i)) then
           find8=gen(istrt42+ije4(isave-1)+i)
-        end if
+        endif
 20    continue
       return
       end
@@ -302,6 +308,7 @@
 !
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack5
 #if defined HSFS_DYN_ALLOC
       use gen_mod
       use cij5_mod
@@ -323,10 +330,8 @@
 !    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
 #endif
-
       dimension jj1(10),kk(10)
-      ipack (i,j,k,l,m)=ior(ishft(i,16),                                &
- ior(ior(ishft(j,12),ishft(k,8)),ior(ishft(l,4),m)))
+
       find10=0.d0
       jj1(1)=ja
       jj1(2)=jb
@@ -341,8 +346,8 @@
       do 10 i=1,10
         kk(i)=ifndval(jj1(i))
 10    continue
-      idb=ipack(kk(1),kk(2),kk(3),kk(4),kk(5))
-      ind=ipack(kk(6),kk(7),kk(8),kk(9),kk(10))
+      idb=ipack5(kk(1),kk(2),kk(3),kk(4),kk(5))
+      ind=ipack5(kk(6),kk(7),kk(8),kk(9),kk(10))
       do 20 i=1,nij5
         if (idb.eq.ij5(i)) then
           isave=i
@@ -361,7 +366,10 @@
       function find12 (ja,jb,jc,jd,je,jf,jg,jh,ji,jj,jk,jl)
 !--------------------------------------------------------------------------------------
 !
+!
+!
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack6
 #if defined HSFS_DYN_ALLOC
       use gen_mod
       use cij6_mod
@@ -385,9 +393,7 @@
 #include "strt.h"
 #endif
       dimension jj1(12),kk(12)
-      ipack (i,j,k,l,m,n)=ior(                                          &
- ior(ishft(i,20),ior(ishft(j,16),ishft(k,12))),                         &
- ior(ishft(l,8),ior(ishft(m,4),n)))
+
       find12=0.d0
       jj1(1)=ja
       jj1(2)=jb
@@ -404,8 +410,8 @@
       do 10 i=1,12
         kk(i)=ifndval(jj1(i))
 10    continue
-      idb=ipack(kk(1),kk(2),kk(3),kk(4),kk(5),kk(6))
-      ind=ipack(kk(7),kk(8),kk(9),kk(10),kk(11),kk(12))
+      idb=ipack6(kk(1),kk(2),kk(3),kk(4),kk(5),kk(6))
+      ind=ipack6(kk(7),kk(8),kk(9),kk(10),kk(11),kk(12))
       do 20 i=1,nij6
         if (idb.eq.ij6(i)) then
           isave=i
@@ -420,18 +426,18 @@
       return
       end
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-! renamed due to name overlaping with relccsd routine
-!      subroutine fold(name2,namef)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine fold_ccsd(name2,namef)
-!----------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 !
-!c  two-electron part modified to include chp, chq.
-!c  880922.
-!c  all four indices now checked. incomplete space implemented
-!c  for chp, chq only for exclusion of whole symmetries.
+!  two-electron part modified to include chp, chq.
+!  880922.
+!  all four indices now checked. incomplete space implemented
+!  for chp, chq only for exclusion of whole symmetries.
 !
-!----------------------------------------------------------------------------
+!  Renamed from "subroutine fold(name2,namef)" due to name overlaping with relccsd routine
+!
+!-------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -505,8 +511,11 @@
         do 180 i=1,nsize2
 !   transition from r space eliminated
         if (iopt(9).ne.0) then
-         i_4hthpf=4hthpf
-         i_4hthqf=4hthqf
+         !i_4hthpf=4hthpf
+         i_4hthpf=transfer("thpf",i_4hthpf)
+         !i_4hthqf=4hthqf
+         i_4hthqf=transfer("thqf",i_4hthqf)
+
 !        if (namef.eq.4hthpf) then
          if (namef.eq.i_4hthpf) then
           i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),             &
@@ -531,9 +540,12 @@
         i4=iand(      igen(istrt21+i)     ,z'ff')
         if ((icv(i1).eq.0).or.(icv(i2).eq.0)) go to 180
         if ((icv(i3).eq.0).or.(icv(i4).eq.0)) go to 180
+
         if (iopt(9).eq.0) go to 170
-        i_4hthpf=4hthpf
-        i_4hthqf=4hthqf
+        !i_4hthpf=4hthpf
+        i_4hthpf=transfer("thpf",i_4hthpf)
+        !i_4hthqf=4hthqf
+        i_4hthqf=transfer("thqf",i_4hthqf)
         if (namef.eq.i_4hthpf) then
           i34=iand(ishft(igen(istrt21+i),-8),z'ffff')
         else if (namef.eq.i_4hthqf) then
@@ -560,8 +572,10 @@
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine fold4 (nameu,namef,ind,ninds)
 !--------------------------------------------------------------------------------------
+!
 !
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -748,7 +762,7 @@
               end if
               if (j2.gt.nsizeu) then
                 write (6,*) 'folded not found - fold6'
-                stop                       
+                call quit('folded not found - fold6!')                
               end if
             end if
           end do
@@ -758,6 +772,7 @@
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine fold8 (nameu,namef,ind,iparm)
 !--------------------------------------------------------------------------------------
 !
@@ -794,22 +809,21 @@
       dimension ia(8)
       call files_ccsd (nameu,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'fold8 input tape does not exist, '
-        stop                    
+        write (6,*) 'fold8 input tape does not exist, nameu=',nameu
+        call quit('fold8 input tape nameu does not exist!')
       end if
       if (iparm.eq.1) then
-        call parse8 (iiv2,ia(1),ia(2),ia(3),ia(4),                      &
-   ia(5),ia(6),ia(7),ia(8))
+        call parse8(iiv2,ia(1),ia(2),ia(3),ia(4),ia(5),ia(6),ia(7),ia(8))
         ia(ind)=1
         iii1=iii2
-        iiv1=10000000*ia(1)+1000000*ia(2)+100000*ia(3)+10000*ia(4)+     &
-   1000*ia(5)+100*ia(6)+10*ia(7)+ia(8)
+        iiv1=10000000*ia(1)+1000000*ia(2)+100000*ia(3)+10000*ia(4)+   &
+                 1000*ia(5)+100*ia(6)+10*ia(7)+ia(8)
         call tmplt8 (iii1,iiv1,namef,ntape1)
       else if (iparm.eq.2) then
         call files_ccsd (namef,ntape1,new,1,-1,-1)
         if (new.ne.0) then
-          write (6,*) 'fold8 input tape does not exist, '
-          stop                    
+          write (6,*) 'fold8 input tape does not exist, namef=',namef
+          call quit('fold8 input tape namef does not exist!') 
         end if
       end if
       istrt11=nstrt(1,ntape1-1)+2*nij1+4
@@ -832,12 +846,11 @@
             if (id2.eq.id1) then
               if (ind2.eq.ind1) then
                 if (iparm.eq.1) then
-                  gen(istrt12+ije1(i-1)+j)=                             &
-             gen(istrt22+ije2(idc-1)+indc)
+                  gen(istrt12+ije1(i-1)+j)=gen(istrt22+ije2(idc-1)+indc)
                 else
-                  gen(istrt22+ije2(idc-1)+indc)=                        &
-             gen(istrt22+ije2(idc-1)+indc)-                             &
-             gen(istrt12+ije1(i-1)+j)
+                  gen(istrt22+ije2(idc-1)+indc)=           &
+                       gen(istrt22+ije2(idc-1)+indc)-      &
+                       gen(istrt12+ije1(i-1)+j)
                 end if
                 ididit=1
               else if (ind2.lt.ind1) then
@@ -845,7 +858,7 @@
                 ind2=igen(istrt21+ije2(idc-1)+indc)
               else
                 write (6,*) 'folded not found - fold8 '
-                stop
+                call quit('folded not found - fold8')
               end if
             else if (id2.lt.id1) then
               idc=idc+1
@@ -853,7 +866,7 @@
               indc=0
             else
               write (6,*) 'folded not found - fold8 '
-              stop
+              call quit('folded not found - fold8')
             end if
           end do
 20      continue
@@ -868,6 +881,7 @@
 !        special type of diagrams
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
       use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
@@ -910,9 +924,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !mi TODO: include file with generalized function
-      ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
+!     ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
 #if defined HSFS_DYN_ALLOC
       call check_modules
@@ -920,26 +933,26 @@
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub1 input file does not exist'
-        stop                       
+        write (6,*) 'msub1 input file does not exist, name2=',name2
+        call quit('msub1 input file name2 does not exist!')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub1 input file does not exist'
-        stop                       
+        write (6,*) 'msub1 input file does not exist, name3=',name3
+        call quit('msub1 input file name3 does not exist!')
       end if
-      if (((iii2-10*(iii2/10)).ne.(iii3-10*(iii3/10))).or.              &
-     ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
+      if (((iii2-10*(iii2/10)).ne.(iii3-10*(iii3/10))).or.       &
+         ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
         write (6,*) 'contracted indices do not match - msub1'
-        stop
+        call quit('contracted indices do not match - msub1!')
       end if
       if ((iii2.lt.222222).or.(iii2.gt.333333)) then
-        write (6,*) 'msub1 called with inconsistent iii2'
-        stop
+        write (6,*) 'msub1 called with inconsistent iii2=',iii2
+        call quit('msub1 called with inconsistent iii2!')
       end if
       if ((iii3.lt.2222).or.(iii3.gt.3333)) then
-        write (6,*) 'msub1 called with inconsistent iii3'
-        stop
+        write (6,*) 'msub1 called with inconsistent iii3=',iii3
+        call quit('msub1 called with inconsistent iii3!')
       end if
       iii1=1000*(iii2/10)+iii3/10
       iiv1=1000*(iiv2/10)+iiv3/10
@@ -994,7 +1007,7 @@
                 call quit('mismatch in block lengths - msub1')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,     &
-         gen(istrt32+ije3(k-1)+1),1)
+                         gen(istrt32+ije3(k-1)+1),1)
               idnew=ipack4(ia(1),ia(2),ia(3),ia(4))
               indnew=ipack4(ia(5),ia(6),ia(7),ia(8))
               iquit=0
@@ -1008,7 +1021,6 @@
                   indold=0
                 else
                   write (6,*) 'msub1 - label not in template'
-                  !stop
                   call quit('msub1 - label not in template')
                 end if
               end do
@@ -1022,7 +1034,6 @@
                 else
                   write (6,*) 'msub1 - label not in template 2'
                   call quit('msub1 - label not in template 2')
-                  !stop
                 end if
               end do
               gen(istrt12+ije1(idc-1)+indc)=elnew
@@ -1030,9 +1041,6 @@
 60        continue
 50      continue
 10    continue
-
-      !call check_modules
-
       return
       end
 
@@ -1082,31 +1090,29 @@
       dimension ia(8),ib(10000),ibe(0:10000)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      !call check_modules
-
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) 'msub2 input file does not exist'
-        stop                       
+        call quit('msub2 input file does not exist')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
         write (6,*) 'msub2 input file does not exist'
-        stop                       
+        call quit('msub2 input file does not exist')
       end if
       if ((iii2.lt.22222222).or.(iii2.gt.33333333)) then
         write (6,*) 'msub2 called with inconsistent iii2'
-        stop
+        call quit('msub2 called with inconsistent iii2')
       end if
       if (iii3.gt.3333) then
         write (6,*) 'msub2 called with inconsistent iii3'
-        stop
+        call quit('msub2 called with inconsistent iii3')
       end if
       if (iii3.gt.33) then
-        if (((iii2-10000*(iii2/10000)).ne.iii3).or.                     &
-       ((iiv2-10000*(iiv2/10000)).ne.iiv3)) then
+        if (((iii2-10000*(iii2/10000)).ne.iii3).or.           &
+            ((iiv2-10000*(iiv2/10000)).ne.iiv3)) then
           write (6,*) 'contracted indices do not match - msub2'
-          stop
+          call quit('contracted indices do not match - msub2')
         end if
         iii1=iii2/10000 
         iiv1=iiv2/10000 
@@ -1129,7 +1135,7 @@
               id=ij2(idc)
             else
               write (6,*) 'msub2 - id not in template'
-              stop
+              call quit('msub2 - id not in template')
             end if
           end do
           if (ije3(nij3).ne.(ije2(idc)-ije2(idc-1))) then
@@ -1137,13 +1143,13 @@
             call quit('mismatch in block lengths - msub2')
           end if
           gen(istrt12+i)=ddot(ije3(nij3),gen(istrt22+ije2(idc-1)+1),1,  &
-     gen(istrt32+1),1)
+                                         gen(istrt32+1),1)
 90      continue
       else if (iii3.le.33) then
         if (((iii2-100*(iii2/100)).ne.iii3).or.                         &
-       ((iiv2-100*(iiv2/100)).ne.iiv3)) then
+            ((iiv2-100*(iiv2/100)).ne.iiv3)) then
           write (6,*) 'contracted indices do not match - msub2'
-          stop
+          call quit('contracted indices do not match - msub2')
         end if
         iii1=iii2/100 
         iiv1=iiv2/100 
@@ -1172,7 +1178,7 @@
                 ind4=itmp(ndp3+imark)
               else if (ii.eq.2) then
                 write (6,*) 'msub2 - label not in template'
-                stop
+                call quit('msub2 - label not in template')
               end if
             end do
             lngth=ije2(imark)-ije2(imark-1)
@@ -1180,14 +1186,12 @@
               write (LUPRI,*) 'mismatch in block lengths - msub2'
               call quit('mismatch in block lengths - msub2')
             end if
-            gen(istrt12+ije1(i-1)+j)=ddot(lngth,                        &
-       gen(istrt22+ije2(imark-1)+1),1,gen(istrt32+1),1)
+            gen(istrt12+ije1(i-1)+j)=ddot(lngth,   &
+                    gen(istrt22+ije2(imark-1)+1),1,gen(istrt32+1),1)
 210       continue
 200     continue
       end if
      
-      !call check_modules
-
       return
       end
 
@@ -1198,6 +1202,7 @@
 !
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1236,34 +1241,31 @@
       dimension ia(8),ib(10000),ibe(0:10000)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
-
-      !call check_modules
+!     ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub3 input file does not exist'
-        stop                       
+        write (6,*) 'msub3 input file does not exist, name2=',name2
+        call quit('msub3 input file name2 does not exist!')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub3 input file does not exist'
-        stop                       
+        write (6,*) 'msub3 input file does not exist, name3=',name3
+        call quit('msub3 input file name3 does not exist !')
       end if
       if (((iii2-1000*(iii2/1000)).ne.(iii3-1000*(iii3/1000))).or.      &
-     ((iiv2-1000*(iiv2/1000)).ne.(iiv3-1000*(iiv3/1000)))) then
+         ((iiv2-1000*(iiv2/1000)).ne.(iiv3-1000*(iiv3/1000)))) then
         write (6,*) 'contracted indices do not match - msub3'
-        stop
+        call quit('contracted indices do not match - msub3')
       end if
       if ((iii2.lt.22222222).or.(iii2.gt.33333333)) then
-        write (6,*) 'msub3 called with inconsistent iii2'
-        stop
+        write (6,*) 'msub3 called with inconsistent iii2,iii2=',iii2
+        call quit('msub3 called with inconsistent iii2!')
       end if
       if ((iii3.lt.2222).or.(iii3.gt.3333)) then
-        write (6,*) 'msub3 called with inconsistent iii3'
-        stop
+        write (6,*) 'msub3 called with inconsistent iii3, iii3=',iii3
+        call quit('msub3 called with inconsistent iii3!')
       end if
       iii1=10*(iii2/1000)+iii3/1000
       iiv1=10*(iiv2/1000)+iiv3/1000
@@ -1315,7 +1317,7 @@
                 call quit('mismatch in block lengths - msub3')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,     &
-         gen(istrt32+ije3(k-1)+1),1)
+                         gen(istrt32+ije3(k-1)+1),1)
               idnew=ipack3(ia(1),ia(2),ia(3))
               indnew=ipack3(ia(4),ia(5),ia(6))
               iquit=0
@@ -1351,8 +1353,6 @@
 150     continue
 110   continue
 
-      !call check_modules
-
       return
       end
 
@@ -1362,6 +1362,7 @@
 !
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1397,34 +1398,33 @@
       dimension ia(8),ib(10000),ibe(0:10000)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
+!      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub4 input file does not exist'
-        stop                       
+        write (6,*) 'msub4 input file does not exist, name2=',name2
+        call quit('msub4 input file name2 does not exist!')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub4 input file does not exist'
-        stop                       
+        write (6,*) 'msub4 input file does not exist,name3=',name3
+        call quit('msub4 input file name3 does not exist!')
       end if
-      if (((iii2-100*(iii2/100)).ne.(iii3-100*(iii3/100))).or.          &
-     ((iiv2-100*(iiv2/100)).ne.(iiv3-100*(iiv3/100)))) then
-        write (6,*) 'contracted indices do not match - msub4'
-        stop
+      if (((iii2-100*(iii2/100)).ne.(iii3-100*(iii3/100))).or.      &
+         ((iiv2-100*(iiv2/100)).ne.(iiv3-100*(iiv3/100)))) then
+         write (6,*) 'contracted indices do not match - msub4'
+         call quit('contracted indices do not match - msub4!')
       end if
       if ((iii2.lt.22222222).or.(iii2.gt.33333333)) then
-        write (6,*) 'msub4 called with inconsistent iii2'
-        stop
+        write (6,*) 'msub4 called with inconsistent iii2=',iii2
+        call quit('msub4 called with inconsistent iii2')
       end if
       if ((iii3.lt.2222).or.(iii3.gt.3333)) then
-        write (6,*) 'msub4 called with inconsistent iii3'
-        stop
+        write (6,*) 'msub4 called with inconsistent iii3=',iii3
+        call quit('msub4 called with inconsistent iii3!')
       end if
-      iii1=100*(iii2/100)+iii3/100
-      iiv1=100*(iiv2/100)+iiv3/100
+      iii1=100*(iii2/100)+(iii3/100)
+      iiv1=100*(iiv2/100)+(iiv3/100)
       call tmplt8 (iii1,iiv1,namet,ntapet)
       istrt11=nstrt(1,ntapet-1)+2*nij1+4
       istrt12=nstrt(2,ntapet-1)
@@ -1476,7 +1476,7 @@
                 call quit('mismatch in block lengths - msub4')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,     &
-         gen(istrt32+ije3(k-1)+1),1)
+                         gen(istrt32+ije3(k-1)+1),1)
               idnew=ipack4(ia(1),ia(2),ia(3),ia(4))
               indnew=ipack4(ia(5),ia(6),ia(7),ia(8))
               iquit=0
@@ -1512,6 +1512,7 @@
 !
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1550,35 +1551,32 @@
       dimension ia(8),ib(10000),ibe(0:10000)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       !call check_modules
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub5 input file does not exist'
-        stop                       
+        write (6,*) 'msub5 input file does not exist, name2=',name2
+        call quit('msub5 input file name2 does not exist!')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub5 input file does not exist'
-        stop                       
+        write (6,*) 'msub5 input file does not exist,name3=',name3
+        call quit('msub5 input file name3 does not exist!')
       end if
-      if (((iii2-100*(iii2/100)).ne.(iii3-100*(iii3/100))).or.          &
-     ((iiv2-100*(iiv2/100)).ne.(iiv3-100*(iiv3/100)))) then
+      if (((iii2-100*(iii2/100)).ne.(iii3-100*(iii3/100))).or.      &
+         ((iiv2-100*(iiv2/100)).ne.(iiv3-100*(iiv3/100)))) then
         write (6,*) 'contracted indices do not match - msub5'
-        stop
+        call quit('contracted indices do not match - msub5!')
       end if
       if ((iii2.lt.222222).or.(iii2.gt.333333)) then
-        write (6,*) 'msub5 called with inconsistent iii2'
-        stop
+        write (6,*) 'msub5 called with inconsistent iii2=',iii2
+        call quit('msub5 called with inconsistent iii2!')
       end if
       if ((iii3.lt.222222).or.(iii3.gt.333333)) then
-        write (6,*) 'msub5 called with inconsistent iii3'
-        stop
+        write (6,*) 'msub5 called with inconsistent iii3=',iii3
+        call quit('msub5 called with inconsistent iii3!')
       end if
       iii1=10000*(iii2/100)+iii3/100
       iiv1=10000*(iiv2/100)+iiv3/100
@@ -1617,8 +1615,8 @@
               write (LUPRI,*) 'mismatch in block lengths - msub5'
               call quit('mismatch in block lengths - msub5')
             end if
-            elnew=ddot(lngth,gen(istrt22+ije2(i-1)+1),1,                &
-       gen(istrt32+ije3(j-1)+1),1)
+            elnew=ddot(lngth,gen(istrt22+ije2(i-1)+1),1,       &
+                       gen(istrt32+ije3(j-1)+1),1)
             idnew=ipack4(ia(1),ia(2),ia(3),ia(4))
             indnew=ipack4(ia(5),ia(6),ia(7),ia(8))
             iquit=0
@@ -1643,8 +1641,6 @@
 430     continue
 410   continue
 
-      !call check_modules
-
       return
       end
 
@@ -1654,6 +1650,7 @@
 !
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1689,34 +1686,32 @@
 #endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(8),ib(10000),ibe(0:10000)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       !call check_modules
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub6 input file does not exist'
-        stop                       
+        write (6,*) 'msub6 input file does not exist, name2=',name2
+        call quit('msub6 input file name2 does not exist!')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'msub6 input file does not exist'
-        stop                       
+        write (6,*) 'msub6 input file does not exist, name3=',name3
+        call quit('msub6 input file name3 does not exist!')
       end if
-      if (((iii2-10*(iii2/10)).ne.(iii3-10*(iii3/10))).or.              &
-     ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
+      if (((iii2-10*(iii2/10)).ne.(iii3-10*(iii3/10))).or.       &
+          ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
         write (6,*) 'contracted indices do not match - msub6'
-        stop
+        call quit('contracted indices do not match - msub6!')
       end if
       if ((iii2.lt.22222222).or.(iii2.gt.33333333)) then
-        write (6,*) 'msub6 called with inconsistent iii2'
-        stop
+        write (6,*) 'msub6 called with inconsistent iii2=',iii2
+        call quit('msub6 called with inconsistent iii2!')
       end if
       if (iii3.gt.33) then
-        write (6,*) 'msub6 called with inconsistent iii3'
-        stop
+        write (6,*) 'msub6 called with inconsistent iii3=',iii3
+        call quit('msub6 called with inconsistent iii3!')
       end if
       iii1=10*(iii2/10)+iii3/10
       iiv1=10*(iiv2/10)+iiv3/10
@@ -1772,7 +1767,7 @@
                 call quit('mismatch in block lengths - msub6')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,     &
-         gen(istrt32+ije3(k-1)+1),1)
+                         gen(istrt32+ije3(k-1)+1),1)
               idnew=ipack4(ia(1),ia(2),ia(3),ia(4))
               indnew=ipack4(ia(5),ia(6),ia(7),ia(8))
               iquit=0
@@ -1798,8 +1793,6 @@
 150     continue
 110   continue
 
-      !call check_modules
-
       return
       end
 
@@ -1807,7 +1800,9 @@
       subroutine mult(name2,name3,namet,mmm)
 !-----------------------------------------------------------------------
 !
-!   multiplication of 2 diagrams: name2 x name3 -> namet
+! Does  multiplication of 2 2-electronic diagrams: 
+!
+!                 name2 x name3 -> namet
 !
 ! where "mmm" is type of the multiplication, mmm cosists of 3 digits m1m2m3
 !
@@ -1933,8 +1928,8 @@
 !===============================================
       do 250 i1=1,nsize1
 
-      ib=ishft(igen(istrt11+i1),-8*m2)
-      ic=iand(igen(istrt11+i1),msk1)
+      ib=ishft(igen(istrt11+i1),-8*m2) ! get 2 indexes at once, ib
+      ic=iand(igen(istrt11+i1),msk1)   ! get 2 indexes at once, ic
 
       if (ib.eq.ib0) go to 225
       do 210 kb=kbb+1,nij2
@@ -2006,6 +2001,7 @@
 !
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack2,ipack3,ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -2040,20 +2036,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(8),itc(10000),itce(0:10000)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      ipack2(i,j)=ior(ishft(i,8),j)
-      ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+!   ipack2(i,j)=ior(ishft(i,8),j)
+!   ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+!    ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'mult6 input tape does not exist, ',name2
-        stop                      
+        write (6,*) 'mult6 input tape does not exist, name2=',name2
+        call quit('mult6 input tape name2 does not exist!')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'mult6 input tape does not exist, ',name3
-        stop                       
+        write (6,*) 'mult6 input tape does not exist, name3=',name3
+        call quit('mult6 input tape name3 does not exist!')
       end if
       istrt21=nstrt(1,ntape2-1)+2*nij2+4
       istrt22=nstrt(2,ntape2-1)
@@ -2064,11 +2059,11 @@
       if ((id.ne.0).and.(id.ne.5)) then
         if (id.eq.1) then
           if (((iii2-10*(iii2/10)).ne.(iii3-10*(iii3/10))).or.          &
-         ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
+             ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
             write (6,*) 'contracted indices do not match - mult6'
             write (6,*) 'iii2=',iii2,' iii3=',iii3
-           write (6,*) 'iiv2=',iiv2,' iiv3=',iiv3
-            stop
+            write (6,*) 'iiv2=',iiv2,' iiv3=',iiv3
+            call quit('contracted indices do not match - mult6')
           end if
           call tmpcng (nij2,ij2,ije2,ntape2,2,3)
           call tmpcng (nij3,ij3,ije3,ntape3,2,3)
@@ -2081,11 +2076,11 @@
           msk2=z'ffffff'
         else if (id.eq.2) then
           if (((iii2-1000*(iii2/1000)).ne.(iii3-1000*(iii3/1000))).or.  &
-         ((iiv2-1000*(iiv2/1000)).ne.(iiv3-1000*(iiv3/1000)))) then
+              ((iiv2-1000*(iiv2/1000)).ne.(iiv3-1000*(iiv3/1000)))) then
             write (6,*) 'contracted indices do not match - mult6'
             write (6,*) 'iii2=',iii2,' iii3=',iii3
             write (6,*) 'iiv2=',iiv2,' iiv3=',iiv3
-            stop
+            call quit('contracted indices do not match - mult6')
           end if
           if (iii2.gt.3333) then
             call tmpcng (nij3,ij3,ije3,ntape3,2,1)
@@ -2110,11 +2105,11 @@
           end if
         else if (id.eq.3) then
           if (((iii2-100*(iii2/100)).ne.(iii3-100*(iii3/100))).or.      &
-        ((iiv2-100*(iiv2/100)).ne.(iiv3-100*(iiv3/100)))) then
+             ((iiv2-100*(iiv2/100)).ne.(iiv3-100*(iiv3/100)))) then
             write (6,*) 'contracted indices do not match - mult6'
             write (6,*) 'iii2=',iii2,' iii3=',iii3
             write (6,*) 'iiv2=',iiv2,' iiv3=',iiv3
-            stop
+            call quit('contracted indices do not match - mult6, id=3')  
           end if
           if (iii2.gt.3333) then
             call tchng6 (nij2,ij2,ije2,ntape2,4)
@@ -2143,7 +2138,7 @@
             write (6,*) 'contracted indices do not match - mult6'
             write (6,*) 'iii2=',iii2,' iii3=',iii3
             write (6,*) 'iiv2=',iiv2,' iiv3=',iiv3
-            stop
+            call quit('contracted indices do not match - mult6,id=4')
           end if
           iii1=1000*(iii2/1000)+iii3/1000
           iiv1=1000*(iiv2/1000)+iiv3/1000
@@ -2211,11 +2206,11 @@
                 if (n2.ne.n3) then
                   write (6,96) ij2(kbsave),ij3(kcsave),name2,name3
 96                format ('mismatch in length of records',2(1x,z6),     &
-             ' of files ',2a8,'.check isym.')
+                          ' of files ',2a8,'.check isym.')
                   write (6,95) n2,(igen(istrt21+im),                    &
              im=ije2(kbsave-1)+1,ije2(kbsave))
 95                format (' length and indices',i5/(10(1x,z8)))
-                  stop                     
+                  call quit('mismatch in length of records')    
                 end if
                 n20=istrt22+ije2(kbsave-1)+1
                 n30=istrt32+ije3(kcsave-1)+1
@@ -2228,11 +2223,11 @@
       else if (id.eq.0) then
         if (iii3.gt.33) then
           if (((iii2-10000*(iii2/10000)).ne.iii3).or.                   &
-         ((iiv2-10000*(iiv2/10000)).ne.iiv3)) then
+              ((iiv2-10000*(iiv2/10000)).ne.iiv3)) then
             write (6,*) 'contracted indices do not match - mult6'
             write (6,*) 'iii2=',iii2,' iii3=',iii3
             write (6,*) 'iiv2=',iiv2,' iiv3=',iiv3
-            stop
+            call quit('contracted indices do not match - mult6,id=0')
           end if
           call tchng6 (nij2,ij2,ije2,ntape2,2)       
           iii1=iii2/10000
@@ -2266,11 +2261,11 @@
           end do   
         else if (iii3.le.33) then
           if (((iii2-100*(iii2/100)).ne.iii3).or.                       &
-         ((iii2-100*(iii2/100)).ne.iii3)) then
+              ((iii2-100*(iii2/100)).ne.iii3)) then
             write (6,*) 'contracted indices do not match - mult6'
             write (6,*) 'iii2=',iii2,' iii3=',iii3
             write (6,*) 'iiv2=',iiv2,' iiv3=',iiv3
-            stop
+            call quit('contracted indices do not match - mult6,iii3')
           end if
           call tchng6 (nij2,ij2,ije2,ntape2,4)       
           iii1=iii2/100
@@ -2305,9 +2300,9 @@
         end if
       else if (id.eq.5) then
         if (((iii2-10*(iii2/10)).ne.(iii3-10*(iii3/10))).or.            &
-       ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
-          write (6,*) 'contracted indices do not match - mult6'
-          stop
+           ((iiv2-10*(iiv2/10)).ne.(iiv3-10*(iiv3/10)))) then
+          write (6,*) 'contracted indices do not match - mult6,id=5'
+          call quit('contracted indices do not match - mult6')
         end if
         iii1=10*(iii2/10)+iii3/10
         iiv1=10*(iiv2/10)+iiv3/10
@@ -2354,7 +2349,7 @@
                     call quit('mismatch in block lengths - mult6')
                   end if
                   elnew=ddot(lngth,gen(istrt22+ije2(i-1)+itce(j-1)+1),1,&
-             gen(istrt32+ije3(k-1)+1),1)
+                             gen(istrt32+ije3(k-1)+1),1)
                   idnew=ipack3(ia(1),ia(2),ia(3))
                   indnew=ipack4(ia(3),ia(4),ia(5),ia(6))
                   iquit=0
@@ -2368,7 +2363,7 @@
                       indold=0
                     else
                       write (6,*) 'mult6 - label not in template'
-                      stop
+                      call quit('mult6 - label not in template')
                     end if
                   end do
                   iquit=0
@@ -2396,6 +2391,9 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mult8 (name2,name3,namet,iparm)
 !--------------------------------------------------------------------------------------
+!
+! Multiplying of 4-index quantities
+!
 !  iparm=1 : 6x4=8
 !  iparm=2 : 8x4=4,8x2=6
 !  iparm=3 : 8x4=6
@@ -2419,8 +2417,8 @@
       else if (iparm.eq.6) then
         call msub6 (name2,name3,namet)
       else
-        write (6,*) 'mult8 called with bad value of iparm '
-        stop
+        write (6,*) 'mult8 called with bad value of iparm, iparm= ',iparm
+        call quit('mult8 called with bad value of iparm !')
       end if
       return
       end
@@ -2441,7 +2439,7 @@
       subroutine add(name1,f1,name2,f2,namet)
 !-------------------------------------------------------------
 !
-!         what does it do ?
+! Addition of two files:  f1*name1 and f2*name2 --> namet
 !
 !-------------------------------------------------------------
       use print_level
@@ -2452,12 +2450,12 @@
       use cij2_mod
       use cij3_mod
       use hsfs_parameters
-!#include "implicit.h"
- implicit none
+
+implicit none
 #include "priunit.h"
- integer :: name1,name2,namet
- real*8 :: f1,f2
- integer :: new, nsize,ntape1,ntape2,ntapet,i
+integer :: name1,name2,namet
+real*8 :: f1,f2
+integer :: new, nsize,ntape1,ntape2,ntapet,i
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2503,25 +2501,26 @@
         call abext('add     ')
       endif
 
-      ! ......   error trap
-      if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3))) then
-        write (LUPRI,'(/,2x,a)') 'add: added files do not match ! compared variables:'  
-        write (LUPRI,*) 'iii2,iii3:',iii2,iii3
-        write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
-        write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
-        write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
-        write(LUPRI,*) 'name1,name2:',name1,name2
-        write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
+      ! ......   error trap, comapring of the compatibility
+       if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)) ) then
+        write (LUPRI,'(/,2x,a)')  & 
+         'add: added files do not match ! variables:'  
+         write (LUPRI,*) 'iii2,iii3:',iii2,iii3
+          write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
+          write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
+           write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
+           write(LUPRI,*) 'name1,name2:',name1,name2
+            write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
 123     format(2a8,6i10)
         call flush(LUPRI)
         call abext('add     ')
-      endif
+        endif
 
       call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
 
       nsize=ije2(nij2) ! picks up nsize
 
-      if (getiprint() >= 5) then
+      if (getiprint() >= 15) then
         write(LUPRI,*) 'add: nsize=ije2(nij2)=',nsize
        write(LUPRI,'(2x,3(a,a8))') 'name1=',name1,' name2=',name2,      &
                               ' namet=',namet
@@ -2529,13 +2528,13 @@
 
       if (name1.eq.namet) then
         if (f1.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),     &
-   f1,gen(nstrt(2,ntape1-1)+1))
+                                    f1,gen(nstrt(2,ntape1-1)+1))
         call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),                   &
-   1,gen(nstrt(2,ntape1-1)+1),1)
+                   1,gen(nstrt(2,ntape1-1)+1),1)
         if (getiprint()>=5) then
           write(LUPRI,*) 'add: name1.eq.namet, f1,f2=',f1,f2
           write(LUPRI,*) 'add: nstrt(2,ntape1-1)+1:',nstrt(2,ntape1-1)+1
-          if (getiprint()>=10) then
+          if (getiprint()>=18) then
             do i=1,nsize
                write(LUPRI,*) 'i=',i,'. gen(nstrt(2,ntape1-1)+1+i)=',   &
           gen(nstrt(2,ntape1-1)+1+i)
@@ -2544,13 +2543,13 @@
         endif
       elseif (name2.eq.namet) then
         if (f2.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape2-1)+1),     &
-   f2,gen(nstrt(2,ntape2-1)+1))
+                                    f2,gen(nstrt(2,ntape2-1)+1))
         call daxpy(nsize,f1,gen(nstrt(2,ntape1-1)+1),                   &
-   1,gen(nstrt(2,ntape2-1)+1),1)
-        if (getiprint() >= 5) then
+                   1,gen(nstrt(2,ntape2-1)+1),1)
+        if (getiprint() >= 15) then
           write(LUPRI,*) 'add: name2.eq.namet, f1,f2=',f1,f2
           write(LUPRI,*) 'add: nstrt(2,ntape2-1)+1:',nstrt(2,ntape2-1)+1
-          if (getiprint()>=10) then
+          if (getiprint()>=18) then
             do i=1,nsize
                write(LUPRI,*) 'i=',i,' gen(nstrt(2,ntape2-1)+1+i)=',    &
           gen(nstrt(2,ntape1-1)+1+i)
@@ -2559,13 +2558,13 @@
         endif
       else
         call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),                     &
-   f1,gen(nstrt(2,ntapet-1)+1))
+                     f1,gen(nstrt(2,ntapet-1)+1))
         call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),                   &
-   1,gen(nstrt(2,ntapet-1)+1),1)
-        if (getiprint() >= 5) then
+                   1,gen(nstrt(2,ntapet-1)+1),1)
+        if (getiprint() >= 15) then
           write(LUPRI,*) 'add: else branch, f1,f2=',f1,f2
           write(LUPRI,*) 'add: nstrt(2,ntapet-1)+1:',nstrt(2,ntapet-1)+1
-          if (getiprint()>=10) then
+          if (getiprint()>=18) then
             do i=1,nsize
               write(LUPRI,*) 'i=',i,'. gen(nstrt(2,ntapet-1)+1+i)=',    &
          gen(nstrt(2,ntapet-1)+1+i)
@@ -2629,10 +2628,7 @@
       subroutine dbdiag (name1,name2,name3,name4,irleop,isign)
 !--------------------------------------------------------------------------------------
 !
-!
-! what does it do ?
-!
-!
+! procedure used in the "rle" iteration accelerator
 !
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2678,7 +2674,7 @@
         istrt2=nstrt(2,ntape-1)
         do 20 i=1,isize(1)
           it=igen(istrt1+i)
-          ka=iand(ishft(it,-8),z'ff')
+          ka=iand(ishft(it,-8),z'ff') ! unpack 2 indexes - k,a
           kb=iand(it,z'ff')
           trle1(i)=-1.d0*isign*(eps(ka)-eps(kb))
           trle1(isize(1)+i)=gen(istrt2+i)
@@ -2928,6 +2924,7 @@
 !--------------------------------------------------------------------------------------
 !c         6x6=10
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -2963,8 +2960,7 @@
       dimension ia(8),save1(1000),save2(1000),iord(10)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
@@ -3036,8 +3032,7 @@
               write (LUPRI,*) 'mismatch in lengths of records - dge5n2'
               call quit('mismatch in lengths of records - dge5n2')
             else  
-              gen(istrt12+ije1(i-1)+j)=                                 &
-         ddot(nel1,save1,1,save2,1)  
+              gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
             end if
           end if
 20      continue
@@ -3052,6 +3047,7 @@
 !c      6x8=12
 !
 !-----------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -3088,19 +3084,18 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !  todo: own module !
-      ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
+      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+      !ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'dge6n2 input tape does not exist, ',name2
-        stop                      
+        write (6,*) 'dge6n2 input tape does not exist, name2=',name2
+        call quit('dge6n2 input tape name2 does not exist')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'dge6n2 input tape does not exist, ',name3
-        stop                       
+        write (6,*) 'dge6n2 input tape does not exist, name3=',name3
+        call quit('dge6n2 input tape name3 does not exist')
       end if
       istrt21=nstrt(1,ntape2-1)+2*nij2+4
       istrt22=nstrt(2,ntape2-1)
@@ -3175,9 +3170,10 @@
       subroutine diage5 (name2,name3,name4,namet,iord)
 !-------------------------------------------------------------------------------------
 !
-!c                  6x(4+4)=10
+!                  6x(4+4)=10
 !
 !-------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -3215,24 +3211,23 @@
       dimension iord(10),ia(10)
 
 !todo: into module !
-      ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-      ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),                 &
- ior(ishft(k,8),l))
+!     ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'diage5 input tape does not exist, ',name2
-        stop                       
+        write (6,*) 'diage5 input tape does not exist, name2=',name2
+        call quit("diage5: input tape name2 does not exist !")
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
         write (6,*) 'diage5 input tape does not exist, ',name3
-        stop                  
+        call quit('diage5: input tape name3 does not exist !')
       end if
       call files_ccsd (name4,ntape4,new,4,-1,-1)
       if (new.ne.0) then
         write (6,*) 'diage5 input tape does not exist, ',name4
-        stop                      
+        call quit('diage5: input tape name4 does not exist')
       end if
       istrt21=nstrt(1,ntape2-1)+2*nij2+4
       istrt22=nstrt(2,ntape2-1)
@@ -3240,7 +3235,9 @@
       istrt32=nstrt(2,ntape3-1)
       istrt41=nstrt(1,ntape4-1)+2*nij4+4
       istrt42=nstrt(2,ntape4-1)
+
       call tmplt10 (namet,ntapet)
+
       istrt11=nstrt(1,ntapet-1)+2*nij1+4
       istrt12=nstrt(2,ntapet-1)
       call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
@@ -3311,9 +3308,10 @@
       subroutine diage6 (name2,name3,name4,name5,namet,iord)
 !--------------------------------------------------------------------------------------
 !
-!c   6x(4+4+4)=12
+!                  6x(4+4+4)=12
 !
 !--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -3350,30 +3348,30 @@
 !     common /idv/ iv(200),nvalo
 #include "idv.h"
 #endif
-
       dimension iord(12),ia(12)
 
-      ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+      ! store into module....
+      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'diage6 input tape does not exist, ',name2
-        stop                       
+        write (6,*) 'diage6: input tape does not exist, name2=',name2
+        call quit('diage6: input tape name2 does not exist !')
       end if
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'diage6 input tape does not exist, ',name3
-        stop                  
+        write (6,*) 'diage6: input tape does not exist, name3=',name3
+        call quit('diage6: input tape name3 does not exist !')
       end if
       call files_ccsd (name4,ntape4,new,4,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'diage6 input tape does not exist, ',name4
-        stop                      
+        write (6,*) 'diage6 input tape does not exist, name4=',name4
+        call quit('diage6: input tape name4 does not exist !')
       end if
       call files_ccsd (name5,ntape5,new,5,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'diage6 input tape does not exist, ',name5
-        stop                      
+        write (6,*) 'diage6: input tape does not exist, name5=',name5
+        call quit('diage6: input tape name5 does not exist!')
       end if
       istrt21=nstrt(1,ntape2-1)+2*nij2+4
       istrt22=nstrt(2,ntape2-1)
@@ -3433,8 +3431,7 @@
               igot5=1
             end if
 120       continue
-          if ((igot2.eq.1).and.(igot3.eq.1).and.                        &
-     (igot4.eq.1).and.(igot5.eq.1)) then
+          if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1).and.(igot5.eq.1)) then
             sum=0.d0
             do 90 k=1,ije3(k3save)-ije3(k3save-1)
               ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
@@ -3477,7 +3474,7 @@
       subroutine diis(iter,icnvg,i12,name1n,name1o,name2n,name2o)
 !-----------------------------------------------------------------------------
 !
-! Iteration speed up
+! DIIS convergence accelerator (there is also RLE in the code).
 !
 ! Entering parameters:  
 !           iter - actual iteration
@@ -3574,8 +3571,8 @@
         do i=1,id
           call files_ccsd(name2di(i),ntape2,new,2,-1,-1)
           istrt2=nstrt(2,ntape2-1)
-          r(i,id)=r(i,id)+ddot(nsize,gen(istrt1+1),1,                   &
-      gen(istrt2+1),1)
+          r(i,id)=r(i,id)+ddot(nsize,gen(istrt1+1),1,   &
+                               gen(istrt2+1),1)
 !         write(*,1100) i,(gen(istrt1+j),j=1,nsize)
 1100      format('diis vector2',i4/(5f12.6))
           r(id,i)=r(i,id)
@@ -3666,7 +3663,6 @@
 ! old diis_o.f file
       subroutine diis_notused(iter,i12,name1n,name1o,name2n,name2o)
 !
-!
 ! miro : when not used, should it be deleted ?
 !
       implicit real*8 (a-h,o-z)
@@ -3682,12 +3678,12 @@
       dimension r(20,20),rr(22,22),vec(400)
 
       character*4 name1di(20),name2di(20)
-      data name1di /"t101","t102","t103","t104","t105","t106",          &
-  "t107","t108","t109","t110","t111","t112","t113","t114",              &
-  "t115","t116","t117","t118","t119","t120"/
-      data name2di /"td01","td02","td03","td04","td05","td06",          &
-  "td07","td08","td09","td10","td11","td12","td13","td14",              &
-  "td15","td16","td17","td18","td19","td20"/
+      data name1di /"t101","t102","t103","t104","t105","t106",       &
+      "t107","t108","t109","t110","t111","t112","t113","t114",       &
+      "t115","t116","t117","t118","t119","t120"/
+      data name2di /"td01","td02","td03","td04","td05","td06",       &
+      "td07","td08","td09","td10","td11","td12","td13","td14",       &
+      "td15","td16","td17","td18","td19","td20"/
       maxdim=20
       if (iter.eq.1) then
         idim=0

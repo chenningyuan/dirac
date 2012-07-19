@@ -21,10 +21,9 @@
 
 module visual_london
 
-#ifdef MOD_UNRELEASED
   use memory_allocator
   use visual_cfg
-  use matrix_defop
+  use matrix_defop_old
 
   implicit none
 
@@ -79,7 +78,7 @@ contains
     read(file_unit) D_con_mo%elms
 
     if (nr_xyz_comp > 1) then
-!      for example after calculating full shielding tensor in preceding response 
+!      for example after calculating full shielding tensor in preceding response
 !      there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
 !      read here the requested one:
        if (visual_cfg_london_component == 'Y') then
@@ -97,7 +96,7 @@ contains
        end if
     end if
 
-2   continue 
+2   continue
 
     close(file_unit, status = 'keep')
 
@@ -263,7 +262,7 @@ contains
                  T_ai(i, j, iz) = 0.0d0
               end do
            end do
-     
+
         end do
      end do
 
@@ -287,7 +286,7 @@ contains
                  T_ji(i, j, iz) = 0.0d0
               end do
            end do
-     
+
         end do
      end do
 
@@ -333,7 +332,7 @@ contains
 
     else
 !      symmetric or natural connection used in preceding response run
-!      "-" is because dag() does only transposition and T^B is antihermitian 
+!      "-" is because dag() does only transposition and T^B is antihermitian
 
        if (nfsym == 2) then
           D_con = C*(D_con_mo*dag(Cig)) &
@@ -351,5 +350,4 @@ contains
 
   end subroutine
 
-#endif /* #ifdef MOD_UNRELEASED */
 end module

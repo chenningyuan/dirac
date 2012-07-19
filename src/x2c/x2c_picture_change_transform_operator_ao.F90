@@ -107,6 +107,7 @@ contains
      character (len=6), intent(in)   :: file_name_2e_fock_matrices
 !----------------------------------------------------------------------
      logical                         :: op_2c_ll
+     logical                         :: prop_op_nopct
      integer, allocatable            :: prop_op_dgsym(:)
      integer, allocatable            :: prop_op_trsym(:)
      integer                         :: is_fragment_tot
@@ -175,6 +176,7 @@ contains
 
 !      initialize property operator attributes
        call init_x2c_cb(.false.,           &
+                        prop_op_nopct,     &
                         prop_op_dgsym,     &
                         prop_op_trsym,     &
                         prop_op_name)
@@ -199,6 +201,7 @@ contains
                                        num_prp_op,          &
                                        is_len_wrk,          &
                                        op_2c_ll,            &
+                                       prop_op_nopct,       &
                                        spherical_on,        &
                                        print_lvl)
 
@@ -227,6 +230,7 @@ contains
                                         num_prp_op,          &
                                         is_len_wrk,          &
                                         op_2c_ll,            &
+                                        prop_op_nopct,       &
                                         spherical_on,        &
                                         print_lvl)   
 !**********************************************************************
@@ -258,6 +262,7 @@ contains
      integer, intent(in)            :: is_len_wrk
      integer, intent(in)            :: print_lvl
      logical, intent(in)            :: op_2c_ll
+     logical, intent(in)            :: prop_op_nopct
      logical, intent(in)            :: spherical_on
      character (len=16), intent(in) :: prop_op_name(num_prp_op)
 !----------------------------------------------------------------------
@@ -363,6 +368,8 @@ contains
 !        decide if a pct is needed based on the database in "decidepctr"
          call decidepctr(do_pct_prp_op,prop_op_name(i),print_lvl)
          scr_mat2 = 0
+ 
+         if(prop_op_nopct) do_pct_prp_op = .false.
 
          if(do_pct_prp_op)then
 

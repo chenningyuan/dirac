@@ -454,6 +454,8 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision Aug 2 1996 - tsaue
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -579,7 +581,9 @@ C        read orbital symmetry info
 C
          CALL RGETH2TX(WORK(KFQX),WORK(KFQT),WORK(KH2ACX),
      &        work(kibeig),WORK(KPV),WORK(KPVT),
-     &        BEVEC,BPVEC,WORK(KZXOPE),WORK(KZXOPP),
+     &        BEVEC,BPVEC,
+     &        get_orbital_rotation_indices_pp(),
+     &        get_orbital_rotation_indices_pn(),
      &        IBEVC,IBPVC,IBTYP,IPRXRS,
      &        WORK(KFREE),LFREE)
 C
@@ -607,7 +611,8 @@ C
 C
       IF ( NCSIM .GT. 0 ) THEN
          CALL RSIGOC(SEVEC,SPVEC,WORK(KDVT),WORK(KF),WORK(KFQT),
-     &        WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
+     &        get_orbital_rotation_indices_pp(),NZXOPE,
+     &        get_orbital_rotation_indices_pn(),NZXOPP,
      &        IBCVC,IBTYP,WORK(KFREE),LFREE)
       END IF
 C
@@ -620,12 +625,14 @@ C
       IF ( NOSIM .GT. 0 ) THEN
          CALL RSIGOO(SEVEC,SPVEC,WORK(KF+NCSIM * N2ORBXQ),
      &        WORK(KFQX),WORK(KDV),
-     &        WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
+     &        get_orbital_rotation_indices_pp(),NZXOPE,
+     &        get_orbital_rotation_indices_pn(),NZXOPP,
      &        IBEVC,IBPVC,IBTYP,WORK(KFREE),LFREE)
          IF (FKRMC) THEN
             CALL RSIGOOGB(SEVEC,SPVEC,
      &           GPOE,GPOP,BEVEC,BPVEC,
-     &           WORK(KZXOPE),WORK(KZXOPP),
+     &           get_orbital_rotation_indices_pp(),
+     &           get_orbital_rotation_indices_pn(),
      &           WORK(KFREE),LFREE)
          END IF
       END IF
@@ -889,6 +896,8 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -937,7 +946,8 @@ C        Scatter BVEC into BMAT
 C        ----------------------
 C
          CALL DZERO(BMAT,N2ORBXQ)
-         CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
+         CALL XOPSCT(BEVEC(IBOFF),get_orbital_rotation_indices_pp(),
+     &               NZXOPE,BMAT,NORBT,NZ)
 C
 C        Construct full BMAT
 C        -------------------
@@ -990,7 +1000,8 @@ C           Scatter BVEC into BMAT
 C           ----------------------
 C
             CALL DZERO(BMAT,N2ORBXQ)
-            CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,BMAT,NORBT,NZ)
+            CALL XOPSCT(BEVEC(IBOFF),get_orbital_rotation_indices_pp(),
+     &                  NZXOPE,BMAT,NORBT,NZ)
 C
 C           Construct full BMAT
 C           -------------------
@@ -1055,7 +1066,8 @@ C        Scatter BVEC into BMAT
 C        ----------------------
 C
          CALL DZERO(BMAT,N2ORBXQ)
-         CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
+         CALL XOPSCT(BPVEC(IBOFF),get_orbital_rotation_indices_pn(),
+     &               NZXOPP,BMAT,NORBT,NZ)
 C
 C        Construct full BMAT
 C        -------------------
@@ -1105,7 +1117,8 @@ C           Scatter BVEC into BMAT
 C           ----------------------
 C
             CALL DZERO(BMAT,N2ORBXQ)
-            CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,BMAT,NORBT,NZ)
+            CALL XOPSCT(BPVEC(IBOFF),get_orbital_rotation_indices_pn(),
+     &                  NZXOPP,BMAT,NORBT,NZ)
 C
 C           Construct full BMAT
 C           -------------------
@@ -1580,6 +1593,8 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision Oct 15 1996 - tsaue
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, DM1 = -1.0D00)
@@ -1639,7 +1654,8 @@ C        Construct full matrix
 C        ---------------------
 C
          CALL DZERO(WORK(KUBVEC),N2ORBXQ)
-         CALL XOPSCT(BEVEC(1,I),WORK(KZXOPE),NZXOPE,
+         CALL XOPSCT(BEVEC(1,I),get_orbital_rotation_indices_pp(),
+     &               NZXOPE,
      &               WORK(KUBVEC),NORBT,NZ)
 
          IF (IPRXRS .GE. 100) THEN
@@ -1667,7 +1683,8 @@ C        Calculate contribution to tau vector
 C        ------------------------------------
 C
          CALL DZERO(WORK(KOP),NZXOPEQ)
-         CALL PRPORB(WORK(KOP),WORK(KZXOPE),NZXOPE,WORK(KUBVEC),
+         CALL PRPORB(WORK(KOP),get_orbital_rotation_indices_pp(),
+     &               NZXOPE,WORK(KUBVEC),
      &               NORBT,WORK(KDV),NZ,IHH,IPRXRS)
 C
 C
@@ -1703,7 +1720,8 @@ C        Construct full matrix
 C        ---------------------
 C
          CALL DZERO(WORK(KUBVEC),N2ORBXQ)
-         CALL XOPSCT(BPVEC(1,I),WORK(KZXOPP),NZXOPP,
+         CALL XOPSCT(BPVEC(1,I),get_orbital_rotation_indices_pn(),
+     &               NZXOPP,
      &               WORK(KUBVEC),NORBT,NZ)
 
          IF (IPRXRS .GE. 100) THEN
@@ -1731,7 +1749,8 @@ C        Calculate contribution to tau vector
 C        ------------------------------------
 C
          CALL DZERO(WORK(KOP),NZXOPPQ)
-         CALL PRPORB(WORK(KOP),WORK(KZXOPP),NZXOPP,WORK(KUBVEC),
+         CALL PRPORB(WORK(KOP),get_orbital_rotation_indices_pn(),
+     &               NZXOPP,WORK(KUBVEC),
      &               NORBT,WORK(KDV),NZ,IHH,IPRXRS)
 C
 C
@@ -3959,6 +3978,11 @@ C***********************************************************************
         use fde_mod
         use fde_integrate
         use num_grid_gen
+#ifdef PCM_MODULE
+        use pcm_interface
+#endif
+        use orbital_rotation_indices
+
 
 #include "implicit.h"
 #include "priunit.h"
@@ -4116,6 +4140,18 @@ C
          CALL SOLFCK(FAO,FMO,NDMAT,ESOLVE,ESOLVN,
      &        WORK(KFREE),LFREE,IPRSOL)
       END IF
+
+#ifdef PCM_MODULE
+! Insert safeguards against symmetry and X2C?
+        if (dirac_cfg_pcm) then
+           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
+     &               'b-transformed polarization charges.'
+! fmo is actually the perturbed ao density matrix
+! fao is really fao (confusing naming reuses memory)
+           call pcm_fock_driver(fao, fmo, work(kfree), lfree)
+        endif 
+#endif      
+ 
 C
 C
 C     *******************************************
@@ -4161,7 +4197,9 @@ C
       IBOFF =  1
       DO I = 1, NESIM
          IF(SPINFR .AND. (JTIMOP .EQ. 1)) THEN
-           CALL SPFEXC(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,IBEIG,JZ,JREP)
+           CALL SPFEXC(BEVEC(IBOFF),
+     &                 get_orbital_rotation_indices_pp(),
+     &                 NZXOPE,IBEIG,JZ,JREP)
            IBOFF = IBOFF + NZXOPEQ
          ENDIF
           IMOMAT = IMOMAT + 1
@@ -4204,7 +4242,8 @@ C
       IBOFF =  1
       DO I = 1, NPSIM
          IF(SPINFR .AND. (JTIMOP .EQ. 1)) THEN
-           CALL SPFEXC(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,IBEIG,JZ,JREP)
+           CALL SPFEXC(BPVEC(IBOFF),get_orbital_rotation_indices_pn(),
+     &                 NZXOPP,IBEIG,JZ,JREP)
            IBOFF = IBOFF + NZXOPPQ
          ENDIF
          IMOMAT = IMOMAT + 1
@@ -4296,6 +4335,8 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Replaces DMOLI2 by T. Saue Aug 1996
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4391,7 +4432,9 @@ C
 C           Scatter BVEC into BMAT
 C
             CALL DZERO(BMAT,N2ORBXQ)
-            CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,
+            CALL XOPSCT(BEVEC(IBOFF),
+     &                  get_orbital_rotation_indices_pp(),
+     &                  NZXOPE,
      &           BMAT,NORBT,NZ)
 C
 C           Take symmetric/antisymmetric combinations to form BMAT
@@ -4452,7 +4495,8 @@ C
             CALL MEMGET('REAL',KBTMP,N2ORBXQ,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KDVF,N2ORBXQ,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KBTMP),N2ORBXQ)
-            CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,WORK(KBTMP),
+            CALL XOPSCT(BEVEC(IBOFF),get_orbital_rotation_indices_pp(),
+     &                  NZXOPE,WORK(KBTMP),
      &           NORBT,NZ)
 C
 C           Take symmetric/antisymmetric combinations to form BMAT
@@ -4560,7 +4604,8 @@ C
 C           Scatter BVEC into BMAT
 C
             CALL DZERO(BMAT,N2ORBXQ)
-            CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,
+            CALL XOPSCT(BPVEC(IBOFF),get_orbital_rotation_indices_pn(),
+     &                  NZXOPP,
      &           BMAT,NORBT,NZ)
 C
 C           Take symmetric/antisymmetric combinations to form BMAT
@@ -4613,7 +4658,8 @@ C
             CALL MEMGET('REAL',KBTMP,N2ORBXQ,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KDVF,N2ORBXQ,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KBTMP),N2ORBXQ)
-            CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,WORK(KBTMP),
+            CALL XOPSCT(BPVEC(IBOFF),get_orbital_rotation_indices_pn(),
+     &                  NZXOPP,WORK(KBTMP),
      &           NORBT,NZ)
 C
 C           Take symmetric/antisymmetric combinations to form BMAT

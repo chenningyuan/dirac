@@ -2,7 +2,7 @@
       subroutine dimx(nn,n0,na)
 !------------------------------------------------------------------------
 !
-!    check whether there is enough space of arrays (nn<=n0)
+!    check whether there is enough space for arrays (nn<=n0)
 !
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -23,20 +23,18 @@
         ! ... proper return, no overflow
         return
       else ! treat overflow
-
         write (LUPRI,10) na,nn,n0
-10      format(/,'dimx: dimension overflow at ',a8,1h:,i18,             &
-    ', size allowed (allocated):',i18,/)
-
-        write(LUPRI,'(4x,a)') 'List of array consumption:'
-        do 20 i=1,nflcur
-          write (LUPRI,99) i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
-99        format (1x,i3,1x,a8,1x,i20)
-20      continue
+10      format(/,'dimx: dimension overflow at ',a8,1h:,i18, & 
+                 ',size allowed (allocated):',i18,/)
+        write(LUPRI,'(4x,a)') 'List of arrays consumption:'
+        do i=1,nflcur
+          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  & 
+                  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
+        enddo
         call abext('dimx    ')
       end if
       return
-      end
+      end subroutine dimx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine diveps(namef)
@@ -85,8 +83,7 @@
           kb=iand(ishft(igg,-16),z'ff')
           kc=iand(ishft(igg, -8),z'ff')
           kd=iand(      igg     ,z'ff')
-          gen(istrt2+i)=gen(istrt2+i)/                                  &
-     (eps(ka)+eps(kb)-eps(kc)-eps(kd))
+          gen(istrt2+i)=gen(istrt2+i)/(eps(ka)+eps(kb)-eps(kc)-eps(kd))
         endif
 20      continue
       else
@@ -150,32 +147,31 @@
           kd=iand(ishft(ig,-16),  z'ff')
           ke=iand(ishft(ig,-8),   z'ff')
           kf=iand(ig,             z'ff')
-          if ((icv(ka).eq.1).and.(icv(kb).eq.1).and.                    &
-     (icv(kc).eq.1).and.(icv(kd).eq.1).and.                             &
-     (icv(ke).eq.1).and.(icv(kf).eq.1)) then
-            if ((ic(ka).eq.3).and.(ic(kb).eq.3).and.                    &
-       (ic(kc).eq.3).and.(ic(kd).eq.3).and.                             &
-       (ic(ke).eq.3).and.(ic(kf).eq.3)) then
-              ijump=1
-            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.               &
-       (ic(kc).eq.2).and.(ic(kd).eq.2).and.                             &
-       (ic(ke).eq.2).and.(ic(kf).eq.2)) then
-              ijump=1
-            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.               &
-       (ic(kc).eq.3).and.(ic(kd).eq.2).and.                             &
-       (ic(ke).eq.2).and.(ic(kf).eq.3)) then
-              ijump=1
-            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.               &
-       (ic(kc).eq.3).and.(ic(kd).eq.2).and.                             &
-       (ic(ke).eq.3).and.(ic(kf).eq.2)) then
-              ijump=1
+          if ((icv(ka).eq.1).and.(icv(kb).eq.1).and.               &
+              (icv(kc).eq.1).and.(icv(kd).eq.1).and.               &
+              (icv(ke).eq.1).and.(icv(kf).eq.1)) then
+            if ((ic(ka).eq.3).and.(ic(kb).eq.3).and.               &
+                (ic(kc).eq.3).and.(ic(kd).eq.3).and.               &
+                (ic(ke).eq.3).and.(ic(kf).eq.3)) then
+                     ijump=1
+            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.    &
+                     (ic(kc).eq.2).and.(ic(kd).eq.2).and.    &
+                     (ic(ke).eq.2).and.(ic(kf).eq.2)) then
+                    ijump=1
+            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.     &
+                     (ic(kc).eq.3).and.(ic(kd).eq.2).and.     &
+                     (ic(ke).eq.2).and.(ic(kf).eq.3)) then
+                    ijump=1
+            else if ((ic(ka).eq.2).and.(ic(kb).eq.2).and.       &
+                     (ic(kc).eq.3).and.(ic(kd).eq.2).and.       &
+                     (ic(ke).eq.3).and.(ic(kf).eq.2)) then
+                   ijump=1
             end if
           end if
           if (ijump.eq.1) then
             ijump=0
           else
-            gen(istrt2+j)=gen(istrt2+j)/                                &
-       (eps(ka)+eps(kb)+eps(kc)-eps(kd)-eps(ke)-eps(kf))
+            gen(istrt2+j)=gen(istrt2+j)/(eps(ka)+eps(kb)+eps(kc)-eps(kd)-eps(ke)-eps(kf))
           end if
 20      continue
 10    continue
@@ -347,8 +343,7 @@
       do 370 id1=1,ndet
       if (lsdet(id1).eq.0) go to 370
       if (ndt.ne.0.and.lsdet(id1).eq.-1) go to 370
-      if (ndt.eq.0) isp=iabs(isign(1,ldet(1,id1))-isign(1,ldet(2,id1))) &
-  +1
+      if (ndt.eq.0) isp=iabs(isign(1,ldet(1,id1))-isign(1,ldet(2,id1)))+1
       do 360 id2=1,ndet
       if (lsdet(id2).eq.0) go to 360
       hh=hdet11(ldet,id1,id2)
@@ -369,14 +364,15 @@
       if (lsdet(id1).le.0) go to 390
       do 380 id2=1,ndet
       if (lsdet(id2).le.0) go to 380
-      if (ham(lsdet(id1),lsdet(id2)).eq.0.)                             &
-   ham(lsdet(id1),lsdet(id2))=hdet11(ldet,id1,id2)
+        if (ham(lsdet(id1),lsdet(id2)).eq.0.) then
+          ham(lsdet(id1),lsdet(id2))=hdet11(ldet,id1,id2)
+        endif
 380   continue
 390   continue
-      if (ipr.gt.0) write (*,3900) ngr,ndt,(i,lldet(1,i),lldet(2,i),    &
-  i=1,ndt)
-3900  format(' group',i3,'.',i4,' dets included:',8(i4,':',2i3)/        &
-  (29x,6(i4,':',2i3)))
+! printout of determinants
+      if (ipr.gt.0) write (*,3900) ngr,ndt,(i,lldet(1,i),lldet(2,i),i=1,ndt)
+3900  format(' group',i3,'.',i4,' dets included:',8(i4,':',2i3)/(29x,6(i4,':',2i3)))
+
       call dimx(ndt,60,"ndt ")
 !
       if (ipr.le.1) go to 830
@@ -402,9 +398,8 @@
       i=i1
 845   continue
       print 8400, ii,ev(i),(vec(j,i),j=1,ndt)
-8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/                &
-  (40x,7f12.7))
-!
+8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/(40x,7f12.7))
+
 !     find main determinant contributing
       cc=0
       jj=0
@@ -441,8 +436,8 @@
       igr(icol)=ngr
 849   ev(i)=10000.
 850   if (evi(i).ne.0.d0) print 8500, evi(i),(vec(j,i+1),j=1,ndt)
-8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/       &
-  (1x,10f12.7))
+8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/(1x,10f12.7))
+
 855   do 860 id=1,ndet
 860   if (lsdet(id).gt.0) lsdet(id)=0
       go to 320
@@ -459,13 +454,10 @@
       if ((2*itr+1)*iscol(i).ne.ncol(i)) itr=-1
       exc=ecol(i)*27.21
       excm=exc*8066.
-      print 8700, ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),      &
-  igr(i),idcol(1,i),idcol(2,i)
-8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,         &
-  'ev,',f8.0,'cm-1. term ',i1,a1,'. gr',i3,', major det=',2i3)
+      print 8700, ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),igr(i),idcol(1,i),idcol(2,i)
+8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,'ev,',f8.0,'cm-1. term ',i1,a1,'. gr',i3,', major det=',2i3)
 880   ecol(i)=10000.
 890   continue
-      !time=cputime(0.0)
       time=cputime(0.0d0)
 
       return
@@ -475,7 +467,9 @@
       subroutine eneru2 (egr0,nval,ihp,ipr)
 !--------------------------------------------------------------------------------
 !
-!      Calculates resulting energy levels by diagonalization
+!     Calculates resulting energy levels by diagonalization, prints them
+!
+!     Requires presence of wave-function files "tABf", AB=u,v,w,...
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -531,11 +525,10 @@
 #endif
 
       external ispin,hmatel
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TODO: replace with dyn .alloc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ecol(200),eicol(200),ncol(200),iscol(200),idcol(2,600), &
-  ntr(12)
+                ntr(12)
       dimension ev(60),evi(60)
       dimension scr(200),vec(60,60),veci(60,60),ham(60,60)
       dimension lldet(6,700),lsdet(700),list(6)
@@ -741,8 +734,7 @@
 2300  format(1h0,80(1h-)/30x,i1,' valence electrons'/30x,19(1h-))
         else
           write (6,2301) nval
-2301  format(1h0,80(1h-)/22x,i2,                                        &
- ' sector excitation energies'/30x,22(1h-))
+2301  format(1h0,80(1h-)/22x,i2,' sector excitation energies'/30x,22(1h-))
         end if
       end if
       icol=0
@@ -822,8 +814,7 @@
       do 380 id2=1,ndets
       if (lsdet(id2).le.0) go to 380
       if (ham(lsdet(id1),lsdet(id2)).eq.0.d0) then
-        ham(lsdet(id1),lsdet(id2))=                                     &
-   hmatel(lstdet(id1),lstdet(id2),nval,ihp)
+        ham(lsdet(id1),lsdet(id2))=hmatel(lstdet(id1),lstdet(id2),nval,ihp)
       end if
 380   continue
 390   continue
@@ -867,10 +858,9 @@
       do 8455 j=1,ndt
 8455  vec(j,i)=vec(j,i)*fnor
       if (ipr.ne.0) write (*,8400) ii,ev(i),(vec(j,i),j=1,ndt)
-8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/                &
-  (1x,10f12.7))
-!
-!     find main determinant contributing
+8400  format (' energy',i3,1h:,e20.8,'. vector:',7f12.7/(1x,10f12.7))
+
+!     find main contributing determinant
       cc=0
       jj=0
       do 846 j=1,ndt
@@ -885,7 +875,8 @@
 8462  continue
 8464  continue
 !
-!     collect equal energy terms.
+!     collect equal energy terms
+!
       if (icol.eq.0) go to 848
       do 847 i1=1,icol
       if (abs(ev(i)-ecol(i1)).gt.1.d-7) go to 847
@@ -895,12 +886,19 @@
       iddd=lstdet(idd)
       do 3903 iiii=0,nvalp-1
         if ((nval.eq.5).or.(nval.eq.6)) then
-          idcol(nval-iiii,i1)=ifndso(mod(iddd,16))
+          !miro: fix idcol index leak...
+          if (nvalp-iiii.le.2) then
+            idcol(nvalp-iiii,i1)=ifndso(mod(iddd,16))
+          else
+            print *,'warning: eneru2: idcol index leak 1 treated'
+          endif
           iddd=iddd/16
         else
-!miro: fix idcol index leak...
+          !miro: fix idcol index leak...
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,i1)=mod(iddd,256)
+          else
+            print *,'warning: eneru2: idcol index leak 2 treated'
           endif
           iddd=iddd/256
         end if
@@ -908,39 +906,65 @@
       go to 849
 847   continue
 848   icol=icol+1
-      if (icol.eq.200) write (*,*) ' ******** 200 different energies.', &
-  ' others not collected. ***********'
+      if (icol.eq.200) then
+        write (*,*) "200 different energies=>others not collected"
+      endif
       if (icol.gt.200) go to 849
       iscol(icol)=ksp
       iddd=lstdet(idd)
+
       do 3904 iiii=0,nvalp-1
         if ((nval.eq.5).or.(nval.eq.6)) then
-          idcol(nval-iiii,icol)=ifndso(mod(iddd,16))
+!mi: subscript #1 of the array IDCOL has value 5 which is greater than the upper bound of 2
+!mi : fix of...
+          if (nval-iiii.le.2) then
+            idcol(nval-iiii,icol)=ifndso(mod(iddd,16))
+          else
+            print *,'warning: eneru2: idcol index leak 3 treated'
+          endif
           iddd=iddd/16
         else
-!mi: idcol first index leak, introduce "if-"fix
+          !mi: idcol index leak, introduce "if-"fix
           if (nvalp-iiii.le.2) then
             idcol(nvalp-iiii,icol)=mod(iddd,256)
+          else
+            print *, & 
+         'warning: eneru2: idcol index leak 4 treated, nvalp-iiii=', & 
+                                                            nvalp-iiii
+            print *,'nvalp=',nvalp,' iiii=',iiii, & 
+                    ' mod(iddd,256)=',mod(iddd,256)
           endif
           iddd=iddd/256
         end if
 3904  continue
+
       ecol(icol)=ev(i)
       eicol(icol)=evi(i)
       ncol(icol)=1
       if (ksp.gt.1) ncol(icol)=2
 849   ev(i)=10000.d0
-850   if (ipr.ne.0.and.evi(i).ne.0.) write (*,8500) evi(i),             &
-  (veci(j,i),j=1,ndt)
-8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/       &
-  (1x,10f12.7))
+850   continue 
+
+      ! print out imaginary energy contribution
+      if (ipr.ne.0.and.evi(i).ne.0.) then
+        write (*,8500) evi(i),(veci(j,i),j=1,ndt)
+      endif
+8500  format (1x,10(1h*),' im.energy:',e20.8,'. im. vec:',5f12.7/(1x,10f12.7))
+
 855   iend=1
       do 860 id=1,ndets
       if (lsdet(id).eq.-1) iend=0
 860   if (lsdet(id).gt.0) lsdet(id)=0
       if (iend.eq.0) go to 320
-!     order and write collected energies.
+
+
+!     restrict number of collected energies to 200
       if (icol.gt.200) icol=200
+
+
+      write(LUPRI,*)
+
+!     order and write collected energies.
       do 880 ii=1,icol
       e=10000.d0
       do 875 i1=1,icol
@@ -956,22 +980,25 @@
       exc=(egr0-egr)*27.21d0
       egr0=egr
       excm=exc*8066.d0
-      write (*,8600) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),   &
-  idcol(1,i),idcol(2,i)
-8600  format(' energy',i3,e16.8,'. degen',i3,'. ion pot=',f8.3,         &
-  'ev,',f9.0,'cm-1. term ',i1,a1,'. major det',6i3)
+      write (*,8600) ii,ecol(i),ncol(i),exc,excm,iscol(i),  & 
+                     ntr(itr+2),idcol(1,i),idcol(2,i)
+8600  format(' energy',i3,e20.12,'. degen',i3,'. ion pot=',f8.3,'ev,',f9.0,'cm-1. term ',i1,a1,'. major det',6i3)
+
       if (eicol(i).ne.0.d0) write (*,8650) eicol(i)
-8650  format (1x,10(1h*),' im. energy:',e20.8)
+8650  format (1x,10(1h*),' got imaginary energy:',e20.8)
       go to 880
+
 877   exc=(ecol(i)-egr)*27.21d0
       excm=exc*8066.d0
-      write (*,8700) ii,ecol(i),ncol(i),exc,excm,iscol(i),ntr(itr+2),   &
-  idcol(1,i),idcol(2,i)
-8700  format (' energy',i3,e16.8,'. degen',i3,'. exc en=',f7.3,         &
-  'ev,',f8.0,'cm-1. term ',i1,a1,'. major det',6i3)
+      write (*,8700) ii,ecol(i),ncol(i),exc,excm,iscol(i),  & 
+                     ntr(itr+2),idcol(1,i),idcol(2,i)
+8700  format (' energy',i3,e20.12,'. degen',i3,'. exc en=',f7.3,'ev,',f8.0,'cm-1. term ',i1,a1,'. major det',6i3)
       if (eicol(i).ne.0.d0) write (*,8650) eicol(i)
 880   ecol(i)=10000.d0
 890   continue
+  
+      write(LUPRI,*) 
+
       return
       end
 
@@ -983,7 +1010,6 @@
 !   indx iwork
 !
 !--------------------------------------------------------------------------------
-
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -1178,8 +1204,8 @@
       istrt2=nstrt(2,ntapef-1)
 
       if (getiprint()>= 5) then
-       write(LUPRI,*) 'fmax: nsize=',nsize,' istrt1=',istrt1,           &
-  ' istrt2=',istrt2 
+       write(LUPRI,*) 'fmax: nsize=',nsize,' istrt1=',istrt1, & 
+                                           ' istrt2=',istrt2
       endif
 
       do 20 i=1,nsize
@@ -1240,15 +1266,15 @@
 !  calculate heff matrix elements
       hdet11=0.
       if (isign(1,ldet(1,ia))-isign(1,ldet(2,ia)).ne.                   &
-  isign(1,ldet(1,ib))-isign(1,ldet(2,ib))) return
+          isign(1,ldet(1,ib))-isign(1,ldet(2,ib))) return
       if (isign(1,ldet(1,ia)).eq.isign(1,ldet(2,ia))) then
         ii=ior(iabs(ldet(1,ia))*256**3,ior(iabs(ldet(2,ib))*256**2,     &
-    ior(iabs(ldet(2,ia))*256,iabs(ldet(1,ib)))))
+           ior(iabs(ldet(2,ia))*256,iabs(ldet(1,ib)))))
         hdet11=hdet11+find(ii,gen(istrhq2+1),igen(istrhq1+1),nszhq)
       endif
       if (isign(1,ldet(1,ia)).eq.isign(1,ldet(1,ib))) then
         ii=ior(iabs(ldet(1,ia))*256**3,ior(iabs(ldet(2,ib))*256**2,     &
-    ior(iabs(ldet(1,ib))*256,iabs(ldet(2,ia)))))
+           ior(iabs(ldet(1,ib))*256,iabs(ldet(2,ia)))))
         hdet11=hdet11-find(ii,gen(istrhp2+1),igen(istrhp1+1),nszhp)
       endif
       if (ldet(1,ia).eq.ldet(1,ib)) then
@@ -1308,8 +1334,8 @@
 #endif
 
 !!! miro: to replace by dynamic alloc ?
-      dimension k1(6),k2(6),k1s(6),k2s(6),                              &
- k1save(6),k2save(6),j1(6),j2(6)
+      dimension k1(6),k2(6),k1s(6),k2s(6),          &
+                k1save(6),k2save(6),j1(6),j2(6)
 
       if (nval.lt.12) then
         hmatel=0.d0
@@ -1901,18 +1927,20 @@
       call dimx(nstrt(2,ntapet),nbig,"imove2")
 
 !   special for scratch files, which start with "s".
-           itmp=4H       
+           !itmp=4H       
+           itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (namefl(ntapet), z'000000ff')
            isaa = ior (ch1, ch2)
 
-#if defined VAR_IFORT
-      if (isaa.eq.4hs   ) then
-#else
-      i_4hs=4hs
+!#if defined VAR_IFORT
+!      if (isaa.eq.4hs   ) then
+!#else
+      !i_4hs=4hs
+      i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-#endif
+!#endif
 
         nstrt(1,ntapet)=nstrt(1,ntapet-1)+ndp3+2*ndij+4
         nstrt(2,ntapet)=nstrt(2,ntapet-1)+ndp3
@@ -1921,8 +1949,7 @@
         call dimx(nstrt(2,ntapet),nbig,"imove2  ")
       endif
 
-      call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),         &
-  igen(nstrt(1,ntapet-1)+1))
+      call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),igen(nstrt(1,ntapet-1)+1))
 
       if (getiprint() >= 6) then
         write(LUPRI,'(4x,a)') '"imove" - on exit'
@@ -2143,8 +2170,7 @@
 !     implicit real *8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      dimension k1(6),k2(6),m1(6),m2(6),mm1(6),mm2(6),                  &
- k1save(6),k2save(6)
+      dimension k1(6),k2(6),m1(6),m2(6),mm1(6),mm2(6),k1save(6),k2save(6)
 
       do 10 i=1,nval
         k1save(i)=k1(i)  
@@ -2238,18 +2264,17 @@
       endif
       nsize=ije1(nij1)+2*nij1+4
       call kcopy(nsize,igen(nstrt(1,ntapef-1)+1),                       &
-  igen(nstrt(1,ntapet-1)+1))
+                   igen(nstrt(1,ntapet-1)+1))
       call dcopy(ije1(nij1),gen(nstrt(2,ntapef-1)+1),1,                 &
-  gen(nstrt(2,ntapet-1)+1),1)
+                    gen(nstrt(2,ntapet-1)+1),1)
       return
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rle (niter,irleop,name1,name2,name3,name4,ising)
+      subroutine rle(niter,irleop,name1,name2,name3,name4,ising)
 !-----------------------------------------------------------------------
 !
-!
-! miro: please add comments...
+!    iteration speedup - reduced linear equations method (Bartlett et al)
 !
 !-----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2291,39 +2316,42 @@
       dimension iopa(4),name(4)
 
       call prtime ("rle in  ",0,0)
+
       name(1)=name1
       name(2)=name2
       name(3)=name3
       name(4)=name4
+
       do 10 i=1,niter
         a(i)=0.d0
         do 20 j=1,niter
           r(i,j)=0.d0
 20      continue
 10    continue
+
       call parse (irleop,iopa(1),iopa(2),iopa(3),iopa(4))
       if (iopa(1).eq.1) then
         do 41 i=1,niter
           a(i)=a(i)-ddot(isize(1),trle1(isize(1)+1),1,                  &
-     trle1((i+1)*isize(1)+1),1)
+                        trle1((i+1)*isize(1)+1),1)
 41      continue
       end if
       if (iopa(2).eq.1) then
         do 42 i=1,niter
           a(i)=a(i)-ddot(isize(2),trle2(isize(2)+1),1,                  &
-     trle2((i+1)*isize(2)+1),1)
+                         trle2((i+1)*isize(2)+1),1)
 42      continue
       end if
       if (iopa(3).eq.1) then
         do 43 i=1,niter
           a(i)=a(i)-ddot(isize(3),trle3(isize(3)+1),1,                  &
-     trle3((i+1)*isize(3)+1),1)
+                         trle3((i+1)*isize(3)+1),1)
 43      continue
       end if
       if (iopa(4).eq.1) then
         do 44 i=1,niter
           a(i)=a(i)-ddot(isize(4),trle4(isize(4)+1),1,                  &
-     trle4((i+1)*isize(4)+1),1)
+                         trle4((i+1)*isize(4)+1),1)
 44      continue
       end if
       do 150 i=1,niter
@@ -2336,15 +2364,15 @@
         do 61 i=1,niter
           do 81 k=1,lngth
             trle1((niter+3)*lngth+k)=                                   &
-       trle1((i+1)*lngth+k)*trle1(k)
+                   trle1((i+1)*lngth+k)*trle1(k)
 81        continue
           do 71 j=1,niter
             if (j.eq.1) then
               rold=ddot(lngth,trle1((niter+3)*lngth+1),1,               &
-         trle1(2*lngth+1),1)
+                         trle1(2*lngth+1),1)
             end if
             rnew=ddot(lngth,trle1((niter+3)*lngth+1),1,                 &
-       trle1((j+2)*lngth+1),1)
+                       trle1((j+2)*lngth+1),1)
             r(i,j)=r(i,j)+rold-rnew
             rold=rnew
 71        continue
@@ -2407,6 +2435,7 @@
 74        continue
 64      continue
       end if
+
       call dgeco (r,31,niter,ipvt,rcond,z)
       write (6,*) 'rcond=',real(rcond)
 
@@ -2427,22 +2456,22 @@
           if (itape.eq.1) then
             do 111 i=1,niter
               call daxpy (lngth,a(i),trle1((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                          gen(istrt+1),1)
 111         continue
           else if (itape.eq.2) then
             do 112 i=1,niter
               call daxpy (lngth,a(i),trle2((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                          gen(istrt+1),1)
 112         continue
           else if (itape.eq.3) then
             do 113 i=1,niter
               call daxpy (lngth,a(i),trle3((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                          gen(istrt+1),1)
 113         continue
           else if (itape.eq.4) then
             do 114 i=1,niter
               call daxpy (lngth,a(i),trle4((i+1)*lngth+1),1,            &
-         gen(istrt+1),1)
+                   gen(istrt+1),1)
 114         continue
           end if
         end if
@@ -2526,8 +2555,8 @@
       nstrt12=nstrt(2,ntapet-1)
       nstrt21=nstrt(1,ntapef-1)+2*nij2+4
       nstrt22=nstrt(2,ntapef-1)
-      call expnd(igen(nstrt11+1),igen(nstrt21+1),                       &
-   gen(nstrt12+1),gen(nstrt22+1),nsize1,nsize2)
+      call expnd(igen(nstrt11+1),igen(nstrt21+1),gen(nstrt12+1), & 
+                        gen(nstrt22+1),nsize1,nsize2)
       return
       end
 
@@ -2535,7 +2564,7 @@
       subroutine vands(n,ia,is,ic)
 !------------------------------------------------------------ 
 !
-! do and() of array "ia(*)" with scalar "is"
+! do logical AND of array "ia(n)" with the scalar "is"
 !
 !------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
@@ -2548,6 +2577,9 @@
       end
 
       subroutine viorv(n,ia,ib,ic)
+!------------------------------------------------------------ 
+! do logical OR of array "ia(n)" with the array ib(n)
+!------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2558,6 +2590,9 @@
       end
 
       subroutine vshfcs(n,ia,j,ic)
+!------------------------------------------------------------ 
+! do logical OR of array "ia(n)" with the scalar "j"
+!------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -3072,21 +3107,27 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine perm (i1,i2,isign,nval1)
+      subroutine perm (i1,i2,i_sign,nval1)
 !--------------------------------------------------------------------------------
 !
-!                         returns "isign"
+!  returns "i_sign" - sign - according to entering indexes in arrays i1,i2
 !
+!  nval1 - maximum dimension of the diagram
+!
+!miro: adapted, isign->i_sign, added implicit none
 !--------------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
-      dimension i1(6),i2(6),j1(6),j2(6)
+      integer, intent(in) :: i1(6),i2(6),nval1
+      integer, intent(out) :: i_sign
+      integer :: j1(6),j2(6),i,j,jsave,k,ksave,nflips
+
       do 10 i=1,nval1
         j1(i)=i1(i)
         j2(i)=i2(i)
 10    continue
-      isign=1
+      i_sign=1
       do 20 i=1,nval1
         do 30 j=1,nval1
           if (j1(i).eq.j2(j)) then
@@ -3098,7 +3139,7 @@
           ksave=j2(i+k)
           j2(i+k)=j2(i+k-1)
           j2(i+k-1)=ksave
-          isign=-1*isign
+          i_sign=-1*i_sign
 40      continue
 20    continue
       return
@@ -3106,22 +3147,27 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine perms(n)
-!--------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------
 !
+!  does permutations, only in this code
 !
-!--------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use prm_mod
-#include "implicit.h"
+!#include "implicit.h"
+      implicit none
 #include "priunit.h"
+      integer, intent(in) :: n
+      integer :: k1(6),k2(6),i,j,k,l,m,n1,ii
+      integer :: i_sign
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
 !     common /prm/ iperm(0:6,720)
 #include "prm.h"
-#endif
       dimension k1(6),k2(6)
+#endif
 
       if (n.eq.1) then
         iperm(0,1)=1
@@ -3149,10 +3195,8 @@
               k2(1)=i
               k2(2)=j
               k2(3)=k
-              !call perm(k1,k2,isign,3)
-              call perm(k1,k2,isign_x,3)
-              !iperm(0,ii)=isign
-              iperm(0,ii)=isign_x
+              call perm(k1,k2,i_sign,3)
+              iperm(0,ii)=i_sign
             end if
 20        continue
 10      continue
@@ -3176,8 +3220,8 @@
                   k2(2)=j
                   k2(3)=k
                   k2(4)=l
-                  call perm (k1,k2,isign_x,4)
-                  iperm(0,ii)=isign_x
+                  call perm (k1,k2,i_sign,4)
+                  iperm(0,ii)=i_sign
                 end if
 50            continue
             end if
@@ -3207,8 +3251,8 @@
                       k2(3)=k
                       k2(4)=l
                       k2(5)=m
-                      call perm(k1,k2,isign_x,5)
-                      iperm(0,ii)=isign_x
+                      call perm(k1,k2,i_sign,5)
+                      iperm(0,ii)=i_sign
                     end if
 90                continue
                 end if
@@ -3232,21 +3276,23 @@
                         if ((i.ne.m).and.(j.ne.m).and.(k.ne.m).and.     &
                    (l.ne.m)) then
                           ii=ii+1
-                          n=21-i-j-k-l-m
+
+                          n1=21-i-j-k-l-m
+
                           iperm(1,ii)=i
                           iperm(2,ii)=j
                           iperm(3,ii)=k
                           iperm(4,ii)=l
                           iperm(5,ii)=m
-                          iperm(6,ii)=n
+                          iperm(6,ii)=n1
                           k2(1)=i
                           k2(2)=j
                           k2(3)=k
                           k2(4)=l
                           k2(5)=m
-                          k2(6)=n
-                          call perm(k1,k2,isign_x,6)    
-                          iperm(0,ii)=isign_x
+                          k2(6)=n1
+                          call perm(k1,k2,i_sign,6)    
+                          iperm(0,ii)=i_sign
                         end if
 140                   continue
                     end if
@@ -3257,20 +3303,19 @@
 110       continue
 100     continue
       end if
-
       return
-      end
+      end subroutine perms
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
 !
-!            prints integrals & indexes ?
+!  prints diagrams (integrals,intermediates...) & their indexes 
 !
-!  name : 4-byte (integer) character 
-!  tit  :  8-byte  (real)  character
+!  name : diagram name,  4-bytes (integer) character 
+!  tit  : title,   8-bytes  (real)  character
 !
-!  iparm : printout parameter 
+!  iparm : printout parameter - level of printing
 !
 !---------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -3334,9 +3379,9 @@
 
 !     write (LUPRI,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
       write (LUPRI,110)                                                 &
-    tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
+        tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
 110   format(' file ',a4,', size iii1 iiv1=',4i7,' ij records:'/        &
-  (8(2x,z4,i8,';')))
+           (8(2x,z4,i8,';')))
 
 !     istrt1=nstrt(1,num-1)+2*nij+4
       istrt1=nstrt(1,num-1)+2*nij1+4
@@ -3378,6 +3423,7 @@
       subroutine prt6 (name,tit,iparm)
 !--------------------------------------------------------------------------------
 !
+! Printing routine used for triples
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -3422,7 +3468,7 @@
 !     write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
       write (6,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
 99    format(' file ',a4,', size iii1 iiv1=',4i9,' ij records:'/        &
-  (3(2x,z8,i8,';')))
+             (3(2x,z8,i8,';')))
 !     istrt1=nstrt(1,num-1)+2*nij+4
       istrt1=nstrt(1,num-1)+2*nij1+4
       istrt2=nstrt(2,num-1)
@@ -3434,11 +3480,8 @@
         do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
-!             id(1)=iand(ishft(ij(i),-16),'ff'x)
               id(1)=iand(ishft(ij1(i),-16),z'ff')
-!             id(2)=iand(ishft(ij(i),-8),'ff'x)
               id(2)=iand(ishft(ij1(i),-8),z'ff')
-!             id(3)=iand(ij(i),'ff'x)
               id(3)=iand(ij1(i),z'ff')
 !             write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,3)
@@ -3975,11 +4018,9 @@
 
       if (no_inter_rd) then
        nclass=4
-       write(LUPRI,'(/,2x,a,i3)')                                       &
-  'rdsym: nclass variable set to',nclass
+       write(LUPRI,'(/,2x,a,i3)') 'rdsym: nclass variable set to',nclass
       else
         write(LUPRI,'(/,2x,a,$)') 'Reading "nclass" variable:'
-       ! read (*,1000,iostat=ios) nclass
         read (LUCMD,*,iostat=ios) nclass
         if (ios.ne.0) then
           write(LUPRI,*) 'error in reading nclass, read nclass=',nclass
@@ -3988,8 +4029,8 @@
       endif
       write(LUPRI,'(2x,a,i2)') 'read nclass=',nclass
 
-      write(LUPRI,'(/,2x,a)')                                           &
-  'Number of of orbitals (20i3) per symmetry(1-nclass):'
+      write(LUPRI,'(/,2x,a)')  & 
+        'Number of of orbitals (20i3) per symmetry(1-nclass):'
 
       if (no_inter_rd) then
         do i=1,nclass
@@ -3999,6 +4040,7 @@
         write(LUPRI,'(/,4x,a,/)') 'Hard set orbitals  7 0 1 1 now in !!'
       else
 
+!  --- read iclass in FREE-FORMAT ---
 !     read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
 !     read (LUCMD,1000,iostat=ios) (iclass(i),i=1,nclass)
       read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)

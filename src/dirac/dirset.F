@@ -41,9 +41,6 @@ C***********************************************************************
 #ifdef MOD_CAP
       use memory
 #endif
-#ifdef BUILD_GEN1INT
-      use dirac_gen1int_interface
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -105,7 +102,6 @@ C
 !     test suite of gen1int interface
       if (test_gen1int) then
          call gen1int_host_test(lwork, work, lupri, iprdef)
-         call get_1el_integrals(lupri)
       end if
 #endif
 

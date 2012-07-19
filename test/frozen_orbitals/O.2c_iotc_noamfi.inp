@@ -4,8 +4,6 @@ Oxygen atom
 .WAVE F
 .ANALYZE
 **HAMILTONIAN
-#.LVCORR
-#.IOTC ! deprecated
 .X2COLD
 .NOAMFI
 .CMPEIG

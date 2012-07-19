@@ -4695,6 +4695,7 @@ Caspg     write (6,*) 'debug: setting centers'
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SET_AOBATCH_CLASS(I2TYP)
 #include "implicit.h"
+#include "priunit.h"
 #include "cbieri.h"
 C
 C     note: the variables are in the CBIERI common block 
@@ -4718,6 +4719,18 @@ C       (SS|SS)-integrals
         ICLASSES(2) = 2
         ICLASSES(3) = 2
         ICLASSES(4) = 2
+      ELSEIF(I2TYP.EQ.4) THEN
+C       (SL|SL)-integrals (Gaunt integrals)
+        ICLASSES(1) = 2
+        ICLASSES(2) = 1
+        ICLASSES(3) = 2
+        ICLASSES(4) = 1
+! hjaaj May 2012: I have just defined ICLASSES for Gaunt (preceeding four lines)
+!   now quit until someone verifies that Gaunt is OK in ERI
+        call quit('Gaunt integrals not implemented in ERI yet')
+      ELSE
+        write(lupri,*) 'Unknown I2TYP in SET_AOBATCH_CLASS',I2TYP
+        call quit('Unknown I2TYP in SET_AOBATCH_CLASS')
       ENDIF
       RETURN
       END
