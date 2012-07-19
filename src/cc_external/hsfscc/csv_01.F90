@@ -1035,21 +1035,20 @@ implicit none
       return
       end
 ! *************************************************
-      subroutine diag7_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine diag7_csv
+  implicit none
 #include "priunit.h"
 !   diag7 in two parts, as only half of pppp collected
-      call mult("pppp","tm  ","s2  ",222)
-      call add("tb4 ",1.d0,"s2  ",1.d0,"tb4 ")
-      call reorder("tm  ","s2  ",2143,4)
-      call mult("pppp","s2  ","s3  ",222)
-      call reorder("s3  ","s2  ",2143,4)
-      call add("tb4 ",1.d0,"s2  ",1.d0,"tb4 ")
-      call prt("s2  ","diag7   ",3)
-      call prtime("diag7_csv",0,1)
-      return
-      end
+    call mult("pppp","tm  ","s2  ",222)
+    call add("tb4 ",1.d0,"s2  ",1.d0,"tb4 ")
+    call reorder("tm  ","s2  ",2143,4)
+    call mult("pppp","s2  ","s3  ",222)
+    call reorder("s3  ","s2  ",2143,4)
+    call add("tb4 ",1.d0,"s2  ",1.d0,"tb4 ")
+    call prt("s2  ","diag7   ",3)
+    call prtime("diag7_csv",0,1)
+    return
+end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine diag3a_csv
 implicit none
@@ -1061,9 +1060,8 @@ implicit none
 return
 end subroutine
 ! ***************************************************
-      subroutine diag2a_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine diag2a_csv
+implicit none
 #include "priunit.h"
 
 !   incl 2a, 2b, 3b
@@ -1080,25 +1078,20 @@ end subroutine
       call add("tb2 ",1.d0,"s2  ",-1.d0,"tb2 ")
       call prt("s2  ","diag3b  ",3)
       call prtime("diag2a  ",0,1)
-      return
-      end
+end subroutine
 ! ******************************************************
-      subroutine diag4a_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine diag4a_csv
+  implicit none
 #include "priunit.h"
-
-      call add("va1 ",2.d0,"hphp",-1.d0,"s2  ")
-      call mult("ta1 ","s2  ","s3  ",222)
-      call add("tb1 ",1.d0,"s3  ",1.d0,"tb1 ")
-      call prt("s3  ","diag4a  ",3)
-      call prtime("diag4a  ",0,1)
-      return
-      end
+   call add("va1 ",2.d0,"hphp",-1.d0,"s2  ")
+   call mult("ta1 ","s2  ","s3  ",222)
+   call add("tb1 ",1.d0,"s3  ",1.d0,"tb1 ")
+   call prt("s3  ","diag4a  ",3)
+   call prtime("diag4a  ",0,1)
+end subroutine
 ! *****************************************************
-      subroutine diag4b_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine diag4b_csv
+  implicit none
 #include "priunit.h"
 
       call add("vva1",2.d0,"vphp",-1.d0,"s2  ")
@@ -1106,35 +1099,28 @@ end subroutine
       call add("tb1 ",1.d0,"s3  ",1.d0,"tb1 ")
       call prt("s3  ","diag4b  ",3)
       call prtime("diag4b  ",0,1)
-      return
-      end
+end subroutine
 ! ********************************************
-      subroutine diag5a_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine diag5a_csv
+implicit none
 #include "priunit.h"
-
-      call mult("tm2 ","va1 ","s3  ",222)
-      call add("tb1 ",1.d0,"s3  ",-1.d0,"tb1 ")
-      call prt("s3  ","-diag5a ",3)
-      call prtime("diag5a  ",0,1)
-      return
-      end
+  call mult("tm2 ","va1 ","s3  ",222)
+  call add("tb1 ",1.d0,"s3  ",-1.d0,"tb1 ")
+  call prt("s3  ","-diag5a ",3)
+  call prtime("diag5a_csv",0,1)
+end subroutine
 ! *********************************************************
       subroutine diag5b_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
       call mult("vva1","tcm2","s3  ",222)
       call add("tb1 ",1.d0,"s3  ",-1.d0,"tb1 ")
       call prt("s3  ","-diag5b ",3)
-      call prtime("diag5b  ",0,1)
-      return
-      end
+      call prtime("diag5b_csv",0,1)
+end subroutine
 ! *******************************************************
       subroutine diag6a_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
       call mult("tm2 ","hphp","s3  ",222)
       call add("tb15",1.d0,"s3  ",-1.d0,"tb15")
@@ -1636,7 +1622,7 @@ implicit none
       call mult("t1v ","pdg1n10 ","s2  ",111)
       call add("t1nw",1.d0,"s2  ",1.d0,"t1nw")
       call prt("s2  ","dg1n10  ",3)
-      call prtime("dg1n10  ",0,1)
+      call prtime("dg1n10_csv",0,1)
       return
       end
 ! ****************************************************
@@ -1654,15 +1640,13 @@ implicit none
       end
 ! **********************************************************
       subroutine dg1n11_csv
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
-
       call add("ta1 ",-2.d0,"ta2 ",1.d0,"s2  ")
       call mult("s2  ","p111","s3  ",202)
       call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
       call prt("s3  ","dg1n11  ",3)
-      call prtime("dg1n11  ",0,1)
+      call prtime("dg1n11_csv",0,1)
       return
       end
 ! **************************************************

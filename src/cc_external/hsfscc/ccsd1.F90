@@ -2428,13 +2428,13 @@
 !--------------------------------------------------------
 !  ... exit routine, extended by DIRAC quit
 !--------------------------------------------------------
+      implicit none
 #include "priunit.h"
-      character(*) aa
-      write(LUPRI,*) 'abext: aborted from ',aa
+      character(*), intent(in) ::  aa
+      write(LUPRI,*) 'abext: aborted with text:',aa
       call flush(LUPRI)
       call quit(aa)
-      end
-
+      end subroutine abext
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine add(name1,f1,name2,f2,namet)
 !-------------------------------------------------------------

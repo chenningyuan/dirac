@@ -818,6 +818,7 @@ module ipack_mod
   implicit none
   logical, private :: check_ipack_indexes=.false.
   integer, parameter, private :: min_indx = 1, max_indx = 255
+  !private :: set_check_ipack_indexes, unset_check_ipack_indexes
   contains
 
   subroutine set_check_ipack_indexes
@@ -846,6 +847,30 @@ module ipack_mod
     ipack4=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
   end function ipack4
 
+  integer function i1unpack4(ii)
+  ! unpack 1st index
+    integer, intent(in) :: ii
+    i1unpack4=iand(ishft(ii,-24),z'ff')
+  end function i1unpack4
+
+  integer function i2unpack4(ii)
+  ! unpack 2. index
+    integer, intent(in) :: ii
+    i2unpack4=iand(ishft(ii,-16),z'ff')
+  end function i2unpack4
+
+  integer function i3unpack4(ii)
+  ! unpack 3. index
+    integer, intent(in) :: ii
+    i3unpack4=iand(ishft(ii,-8),z'ff')
+  end function i3unpack4
+
+  integer function i4unpack4(ii)
+  ! unpack 4. index
+    integer, intent(in) :: ii
+    i4unpack4=iand(ii,z'ff')
+  end function i4unpack4
+
   integer function ipack5(i,j,k,l,m)
     integer, intent(in) :: i,j,k,l,m
     if (check_ipack_indexes) call check_ipack5_indexes(i,j,k,l,m)
@@ -859,6 +884,15 @@ module ipack_mod
            ior(ior(ishft(k,12),ishft(l,8)),      & 
                ior(ishft(m,4),n)))
   end function ipack6
+
+  subroutine check_ipack1_indexes(i)
+#include "priunit.h"
+    integer, intent(in) :: i
+    if (.not.(i >= min_indx .and. i <= max_indx )) then
+        write(LUPRI,*) 'ipack1: i=',i
+        call quit('ipack1 index out of range !')
+    endif
+  end subroutine check_ipack1_indexes 
 
   subroutine check_ipack2_indexes(i,j)
 #include "priunit.h"
