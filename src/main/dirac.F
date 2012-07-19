@@ -30,12 +30,20 @@ C
 C
 #include "infpar.h"
 #include "dgroup.h"
+#ifdef VAR_OMP
+      INTEGER omp_get_num_procs
+#endif
 C
       DIMENSION WORK(LWORK)
 C
 C     Set up basic information for parallel execution, to be stored in the
 C     common block infpar
 C
+#ifdef VAR_OMP
+         write(lupri,'(//A,I5)')
+     &   ' * openMP activated, number of threads:',
+     &   omp_get_num_procs()
+#endif
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
@@ -159,7 +167,7 @@ C
 
 #ifdef BUILD_GEN1INT
 !     clean up Gen1Int interface
-      call gen1int_ifc_clean()
+      call gen1int_host_finalize()
 #endif
 
       if (doxml) then
@@ -651,7 +659,7 @@ C
          NGAS_DC = 0
          IF (NCESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR)
+            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
             NGSP(2,NGAS_DC) = 2*NCESRT
             DO I = 1,NFSYM
                NGSH(I,NGAS_DC) = NCESR(I)
@@ -669,7 +677,7 @@ Cxx      XELEC = D2*NCESRT
 Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
 Cxx         NGSP(1,NGAS_DC) = NINT(XELEC)
 Cxx         NGSP(2,NGAS_DC) = NINT(XELEC)
-            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR)
+            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
             NGSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
 Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
@@ -686,7 +694,7 @@ Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
                NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             END DO
          ELSE
-            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NALEL-LVL_CIESR if not virt gas space
+            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
 C
 C        reset number of active orbitals

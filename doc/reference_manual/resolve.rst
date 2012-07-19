@@ -1,8 +1,9 @@
-Manual:WAVE FUNCTION:RESOLVE
-============================
+.. _resolve:
 
-\*RESOLVE -- Resolve open-shell states
-======================================
+\*RESOLVE 
+=========
+
+Resolve open-shell states.
 
 The individual electronic states of an average-of-configurations
 calculation are resolved by a full CI in the small open-shell
@@ -54,8 +55,7 @@ A negative number deactivates screening.
 .SCHEME
 -------
 
-Integral transformation algorithm.\ :sup:`[*please
-`clarify </dirac/index.php/Clarify>`_*]`\ 
+Choose integral transformation algorithm (PLEASE CLARIFY!)
 
 *Default:*
 
@@ -63,4 +63,3 @@ Integral transformation algorithm.\ :sup:`[*please
 
     .SCHEME
      4
-

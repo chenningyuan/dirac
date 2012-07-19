@@ -1,3 +1,4 @@
+.. _one_el_op:
 
 One-electron operators
 ======================
@@ -8,162 +9,72 @@ Syntax for the specification of one-electron operators
 A general property operator in 4-component calculations is generated
 from linear combinations of the basic form
 
-..figure:: /dirac/images/math/4/4/d/44d4fd16bd6198c74c77c33ee41cd9a3.png
-   :align: center
-   :alt:  \\hat{P} = f M\_{4 \\times 4} \\Omega
+.. math::
 
-\\hat{P} = f M\_{4 \\times 4} \\Omega
-with the scalar factor *f* and the scalar operator Ω, and where 
-M\_{4 \\times 4}|
-is one of the following 4 \\times| 4 matrices:
+  \hat{P} = f M_{4 \times 4} \Omega
 
-..figure:: /dirac/images/math/c/0/c/c0ce829776217dff5580bfeee7b6ab94.png
-   :align: center
-   :alt:  I\_{4 \\times 4}, \\gamma\_5,
+with the scalar factor :math:`f`  and the scalar operator :math:`\Omega`, and where 
 
-    I\_{4 \\times 4}, \\gamma\_5,
-α\ :sub:`*x*`\ ,α\ :sub:`*y*`\ ,α\ :sub:`*z*`\ ,
+.. math::
 
-Σ\ :sub:`*x*`\ ,Σ\ :sub:`*y*`\ ,Σ\ :sub:`*z*`\ ,
+  M_{4 \times 4}
 
-βΣ\ :sub:`*x*`\ ,βΣ\ :sub:`*y*`\ ,βΣ\ :sub:`*z*`\ ,
+is one of the following :math:`4 \times 4`  matrices:
 
-*i*βα\ :sub:`*x*`\ ,*i*βα\ :sub:`*y*`\ ,*i*βα\ :sub:`*y*`\ 
+.. math::
+
+  I_{4 \times 4}, \gamma_5,
+
+  \alpha_x, \alpha_y, \alpha_z
+
+  \Sigma_x, \Sigma_y,  \Sigma_z
+
+  \beta \Sigma_x, \beta \Sigma_y, \beta \Sigma_z
+
+  i \beta \alpha_x, i \beta \alpha_y, i \beta \alpha_z
+
 
 Operator types
 ~~~~~~~~~~~~~~
 
 There is 19 basic operator types used in DIRAC.
 
-*Operator types*
++------------------+------------------------------------------+----------------+
+|      Keyword     |                           Operator form  | Nr. Factors    | 
++==================+==========================================+================+
+|  DIAGONAL        | :math:`f I_{4 \times 4} \Omega`          |    1           |
++------------------+------------------------------------------+----------------+
+|    GAMMA5        | :math:`f \gamma_5 \Omega`                |    1           |
++------------------+------------------------------------------+----------------+
+|     XALPHA       | :math:`f \alpha_x \Omega`                |    1           | 
++------------------+------------------------------------------+----------------+
+|    YALPHA        | :math:`f \alpha_y \Omega`                |    1           |
++------------------+------------------------------------------+----------------+
+|   ZALPHA         | :math:`f \alpha_z \Omega`                |    1           |
++------------------+------------------------------------------+----------------+
+|   XSIGMA         | :math:`f \Sigma_x \Omega`                |    1           |
++------------------+------------------------------------------+----------------+
+|    YSIGMA        | :math:`f \Sigma_y \Omega`                |    1           |
++------------------+------------------------------------------+----------------+
+|    ZSIGMA        | :math:`f \Sigma_z \Omega`                             | 1 |
++------------------+------------------------------------------+----------------+
+|  XAVECTOR        | :math:`f_1 \alpha_y \Omega_z - f_2 \alpha_z \Omega_y` | 2 |
++------------------+------------------------------------------+----------------+
+|  YAVECTOR        | :math:`f_1 \alpha_z \Omega_x - f_2 \alpha_x \Omega_z` | 2 |
++------------------+------------------------------------------+----------------+
+|  ZAVECTOR        | :math:`f_1 \alpha_x \Omega_y - f_2 \alpha_y \Omega_x` | 2 |
++------------------+--------------------------------------------------------------------------------+------+
+|  ALPHADOT        | :math:`f_1 \alpha_x \Omega_x + f_2 \alpha_y \Omega_y + f_3 \alpha_z \Omega_z ` |  3   |
++------------------+--------------------------------------------------------------------------------+------+
+|    XBETASIG      |        :math:`f \beta \Sigma_x \Omega  `   | 1 |
+|    YBETASIG      |        :math:`f \beta \Sigma_y \Omega  `   | 1 |   
+|    ZBETASIG      |        :math:`f \beta \Sigma_z \Omega  `   | 1 |
+|    XiBETAAL      |   :math:`f i \beta \alpha_x \Omega  `   | 1 |
+|    YiBETAAL      |    :math:`f i \beta \alpha_y \Omega  `   | 1 |
+|    ZiBETAAL      |    :math:`f i \beta \alpha_z \Omega  `   | 1 |
+|   BETAGAMMA5     |   :math:`f i \beta \gamma_5 \Omega `   | 1 |
++------------------+--------------------------------------------------------------------------------+------+
 
-**Keyword**
-
-**Operator form**
-
-**Nr. Factors**
-
-DIAGONAL
-
-..figure:: /dirac/images/math/c/b/6/cb65c6e8a7fe29140e2b4e7c9c3e7fab.png
-   :align: center
-   :alt:  f I\_{4 \\times 4} \\Omega
-
-    f I\_{4 \\times 4} \\Omega
-1
-
-GAMMA5
-
-*f*γ\ :sub:`5`\ Ω
-
-1
-
-XALPHA
-
-*f*α\ :sub:`*x*`\ Ω
-
-1
-
-YALPHA
-
-*f*α\ :sub:`*y*`\ Ω
-
-1
-
-ZALPHA
-
-*f*α\ :sub:`*z*`\ Ω
-
-1
-
-XSIGMA
-
-*f*Σ\ :sub:`*x*`\ Ω
-
-1
-
-YSIGMA
-
-*f*Σ\ :sub:`*y*`\ Ω
-
-1
-
-ZSIGMA
-
-*f*Σ\ :sub:`*z*`\ Ω
-
-1
-
-XAVECTOR
-
-*f*\ :sub:`1`\ α\ :sub:`*y*`\ Ω\ :sub:`*z*`\  −
-*f*\ :sub:`2`\ α\ :sub:`*z*`\ Ω\ :sub:`*y*`\ 
-
-2
-
-YAVECTOR
-
-*f*\ :sub:`1`\ α\ :sub:`*z*`\ Ω\ :sub:`*x*`\  −
-*f*\ :sub:`2`\ α\ :sub:`*x*`\ Ω\ :sub:`*z*`\ 
-
-2
-
-ZAVECTOR
-
-*f*\ :sub:`1`\ α\ :sub:`*x*`\ Ω\ :sub:`*y*`\  −
-*f*\ :sub:`2`\ α\ :sub:`*y*`\ Ω\ :sub:`*x*`\ 
-
-2
-
-ALPHADOT
-
-*f*\ :sub:`1`\ α\ :sub:`*x*`\ Ω\ :sub:`*x*`\  +
-*f*\ :sub:`2`\ α\ :sub:`*y*`\ Ω\ :sub:`*y*`\  +
-*f*\ :sub:`3`\ α\ :sub:`*z*`\ Ω\ :sub:`*z*`\ 
-
-3
-
-XBETASIG
-
-*f*βΣ\ :sub:`*x*`\ Ω
-
-1
-
-YBETASIG
-
-*f*βΣ\ :sub:`*y*`\ Ω
-
-1
-
-ZBETASIG
-
-*f*βΣ\ :sub:`*z*`\ Ω
-
-1
-
-XiBETAAL
-
-*f**i*βα\ :sub:`*x*`\ Ω
-
-1
-
-YiBETAAL
-
-*f**i*βα\ :sub:`*y*`\ Ω
-
-1
-
-ZiBETAAL
-
-*f**i*βα\ :sub:`*z*`\ Ω
-
-1
-
-BETAGAMMA5
-
-*f**i*βγ\ :sub:`5`\ Ω*
-
-1
 
 Operator specification
 ~~~~~~~~~~~~~~~~~~~~~~

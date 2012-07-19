@@ -1,14 +1,13 @@
-Manual:KR-MCSCF
-===============
+.. _krmcscf:
 
+KR-MCSCF
+=========
 
 *2- and 4-component relativistic KR-MCSCF module*
 
-[1] <#_note-jensen:mcscf>`_`\ 
-[2] <#_note-thyssen:thesis>`_`\ 
-[3] <#_note-thyssen:mcscf>`_`\ 
-[4] <#_note-knecht:thesis>`_`\  
-original implementation written
+See works [Jensen1996]_, [Thyssen2004]_ , [Thyssen2008]_, [Knecht2009]_.
+
+Original implementation written
 by Joern Thyssen, Timo Fleig and Hans Joergen Aagaard Jensen,
 parallelization and continuous improvement by Stefan Knecht and Hans
 Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and
@@ -294,27 +293,4 @@ determinant above a given threshold.
 ::
 
     do not analyze the final CI wave function.
-
-References
-==========
-
-<#_ref-jensen:mcscf_0>`_ H. J. Aa. Jensen and K. G. Dyall and T.
-Saue and K. Fægri jr., *`Relativistic 4-component
-Multi-Configurational Self-Consistent Field Theory for Molecules:
-Formalism <http://link.aip.org/link/doi/10.1063/1.471644>`_*, J.
-Chem. Phys. **104**, *4083* (1996) .
-
-<#_ref-thyssen:thesis_0>`_ J. Thyssen, *`PhD
-thesis <http://dirac.chem.sdu.dk/thesis/thesis-jth2001.pdf>`_*,
-University of Southern Denmark (Denmark) '***, '** (2004)* .
-
-<#_ref-thyssen:mcscf_0>`_ J. Thyssen and T. Fleig and H. J. Aa.
-Jensen, *`A Direct Relativistic Four-Component Multi-Configuration
-Self-Consistent-Field Method for
-Molecules <http://link.aip.org/link/doi/10.1063/1.2943670>`_*, J.
-Chem. Phys. **129**, *034109* (2008) .
-
-<#_ref-knecht:thesis_0>`_ S. R. Knecht, *`PhD
-thesis <http://dirac.chem.sdu.dk/thesis/09.PhD.StefanKnecht.pdf>`_*,
-University of Duesseldorf (Germany) '***, '** (2009)* .
 

@@ -8,8 +8,6 @@ Welcome
 
    welcome/features.rst
    welcome/citing.rst
-   welcome/changelog.rst
-   welcome/dirac08_issues.rst
 
 
 Installing DIRAC
@@ -23,8 +21,6 @@ Installing DIRAC
    installation/installation.rst
    installation/windows.rst
    installation/tests.rst
-   installation/walkthroughs.rst
-   installation/bugs.rst
 
 
 Installing and configuring libraries used by DIRAC
@@ -45,6 +41,7 @@ Basis sets
    :maxdepth: 1
 
    basis_sets/basis.rst
+   basis_sets/howto_uncontract.rst
 
 
 First steps in DIRAC territory
@@ -54,8 +51,29 @@ First steps in DIRAC territory
    :maxdepth: 1
 
    tutorials/getting_started.rst
-   tutorials/faq.rst
+   tutorials/reproducing_nr_results.rst
 
+
+Restarting and multi-step jobs
+==============================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/restart.rst
+
+
+.. warning::
+
+   Everything below this line needs massive rework
+   (outdated, double, incomplete, broken links, wrong place, simply wrong, ...)
+
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/faq.rst
+   tutorials/general_scf_sample.rst
 
 Menu of 2- and 4-component Hamiltonians
 =======================================
@@ -63,19 +81,9 @@ Menu of 2- and 4-component Hamiltonians
 .. toctree::
    :maxdepth: 1
 
+   tutorials/ham_sample.rst
    tutorials/ham2c.rst
    tutorials/amfi.rst
-
-
-Restarting calculations and multi-step jobs
-===========================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/restart.rst
-   tutorials/x2c.rst
-   tutorials/steps.rst
 
 
 DFT and TDDFT
@@ -87,6 +95,28 @@ DFT and TDDFT
    tutorials/tddft.rst
    tutorials/bsse.rst
    tutorials/dft_cam.rst
+
+
+Calculating the properties
+============================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/prop_sample.rst
+
+
+Correlated calculations
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/mp2cal_sample.rst
+   tutorials/moltra_sample.rst
+   tutorials/lucita_sample.rst
+   tutorials/relccsd_sample.rst
+   tutorials/reladc_sample.rst
 
 
 Modeling the solvent
@@ -104,14 +134,15 @@ How to tackle open-shell systems
 .. toctree::
    :maxdepth: 1
 
-   tutorials/terminology.rst
+   tutorials/dirrci_sample.rst
+   tutorials/goscip_sample.rst
    tutorials/open_shells.rst
    tutorials/niobium.rst
    tutorials/scf_conv.rst
 
 
-Visualization
-=============
+Visualization & Analysis
+========================
 
 .. toctree::
    :maxdepth: 1
@@ -119,6 +150,7 @@ Visualization
    tutorials/visualize.rst
    tutorials/plotting_orbital_densities.rst
    tutorials/magn_curr_den.rst
+   tutorials/analyze_sample.rst
 
 
 Getting help
@@ -129,6 +161,7 @@ Getting help
 
    getting_help/memory.rst
    getting_help/known_problems.rst
+   getting_help/known_bugs.rst
 
 
 Reference manual
@@ -200,5 +233,15 @@ For DIRAC programmers
    programmers/int8.rst
    programmers/grasp.rst
    programmers/screening.rst
+   programmers/dfcoef.rst
    programmers/standalones.rst
    programmers/shell_prog.rst
+
+
+Bibliography
+============
+
+.. toctree::
+   :maxdepth: 1
+   
+   bib.rst

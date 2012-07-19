@@ -2,8 +2,10 @@
 
 .. _optimize:
 
-\*OPTIMIZE -- Geometry optimization directives
-==============================================
+\*OPTIMIZE 
+==========
+
+Geometry optimization directives.
 
 This section controls the geometry optimization. The geometry
 optimization algorithm is based on the one of

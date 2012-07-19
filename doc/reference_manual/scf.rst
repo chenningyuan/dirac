@@ -1,5 +1,7 @@
-Manual:WAVE FUNCTION:SCF
-========================
+.. _scf:
+
+SCF & DFT
+============
 
 This section gives directives for Hartree-Fock calculations.
 Kohn-Sham calculations are performed by invoking the keyword
@@ -25,30 +27,8 @@ symmetry groups *without* inversion symmetry, there is only one
 fermion irrep, and you need only to specify the number of
 electrons.
 
-*Example:* Minimum wave function input for water (the
-*C*\ :sub:`2*v*`\  point group):
-
-::
-
-    **WAVE FUNCTION
-    .SCF
-    *SCF
-    .CLOSED SHELL
-     10
-
 For symmetry groups *with* inversion symmetry, you need to specify
-the distribution of the electrons in the two fermion irreps
-[1] <#_note-saue-jensen:qsym2>`_`\ .
-
-*Example:* Minimum wave function input for the Neon atom:
-
-::
-
-    **WAVE FUNCTION
-    .SCF
-    *SCF
-    .CLOSED SHELL
-     4 6
+the distribution of the electrons in the two fermion irreps [Saue2000]_.
 
 .OPEN SHELL
 -----------
@@ -70,8 +50,7 @@ active spinors.
 irrep 2. Thus, the fractional occupation is 5/6.
 
 The open shell module in DIRAC is based on
-average-of-configurations 
-[2] <#_note-thyssen-98>`_`\ .
+average-of-configurations [Thyssen1998]_ .
 The simplest case is one electron in two spinors (= one Kramers
 pair). For this special case the average-of-configuration
 calculation gives the same result as the usual restricted
@@ -112,15 +91,12 @@ calculation with
 where we have the active electrons distributed in all six
 *p*-orbitals. This would give us the average energy of six states:
 
-..figure:: /dirac/images/math/e/7/8/e78f850c2be2f3bdd9d29321da2a7556.png
    :align: center
    :alt: 
-  \\frac{2\\cdot E\_{P\_{1/2}} + 4\\cdot E\_{P\_{3/2}}}{6}
 
+\\frac{2\\cdot E\_{P\_{1/2}} + 4\\cdot E\_{P\_{3/2}}}{6}
    
-   
-  \\frac{2\\cdot E\_{P\_{1/2}} + 4\\cdot E\_{P\_{3/2}}}{6}
-
+\\frac{2\\cdot E\_{P\_{1/2}} + 4\\cdot E\_{P\_{3/2}}}{6}
 
 It is also possible to specify more than one open shell. Let us
 take a look at two different inputs for the open shells of the
@@ -217,7 +193,7 @@ Hartree-Fock).
 -----
 
 Fractional occupation (default for open-shell
-Kohn-Sham).\ :sup:`[*please `clarify </dirac/index.php/Clarify>`_*]`\ 
+Kohn-Sham) CLARIFY
 
 `.FOCC <#.FOCC>`_ calculations are less memory-intensive than
 `.AOC <#.AOC>`_ calculations. In the latter case one additional
@@ -262,14 +238,13 @@ Switch off the bare nucleus correction. This correction is on per
 default and improves the screening of the nuclei by estimating
 two-electron repulsion via nuclear-attraction type integrals:
 
-.. figure:: /dirac/images/math/6/1/b/61bb629da10a6bdd5f78bac3ad516a20.png
    :align: center
    :alt: 
-  \\langle X\_{A} \\vert \\sum\_{C}\\frac{-Z\_{C}\\cdot \\sum\_j a\_j e^{(-\\alpha^C\_j r\_{C}^{2})}}{r\_{C}} \\vert X\_{B} \\rangle~~,~~X = L,S
+
+\\langle X\_{A} \\vert \\sum\_{C}\\frac{-Z\_{C}\\cdot \\sum\_j a\_j e^{(-\\alpha^C\_j r\_{C}^{2})}}{r\_{C}} \\vert X\_{B} \\rangle~~,~~X = L,S
 
    
-   
-  \\langle X\_{A} \\vert \\sum\_{C}\\frac{-Z\_{C}\\cdot \\sum\_j a\_j e^{(-\\alpha^C\_j r\_{C}^{2})}}{r\_{C}} \\vert X\_{B} \\rangle~~,~~X = L,S
+\\langle X\_{A} \\vert \\sum\_{C}\\frac{-Z\_{C}\\cdot \\sum\_j a\_j e^{(-\\alpha^C\_j r\_{C}^{2})}}{r\_{C}} \\vert X\_{B} \\rangle~~,~~X = L,S
 
 
 The coefficients *a*\ :sub:`*j*`\  and the exponents \\alpha^C\_j|
@@ -332,10 +307,7 @@ as first or *desired* convergence criterion but can be made lower
 to make sure that a calculation does not abort when the convergence
 is slightly above threshold.
 
-For more detailed help see
-`SCF convergence troubleshooting </dirac/index.php/SCF_convergence_troubleshooting>`_
-or
-`here </dirac/index.php/Drawbacks_and_difficult_cases_in_DIRAC#Hf2_.2B_.2C_Ta3_.2B_.2C_W4_.2B_with_broken_orbital_degeneracies>`_.
+For more detailed help see SCF help on convergence troubleshooting  and related pages.
 
 .MAXITR
 -------
@@ -407,10 +379,8 @@ This may be achieved by convergence acceleration schemes:
    to be diagonalized is:
    \\mathbf{F}' = (1-c) \\mathbf{F}\_{n+1} + c \\mathbf{F}\_n|, where
    *c* is the damping factor.
--  **DIIS:** Direct inversion of iterative subspaces
-   [3] <#_note-pulay:diis1>`_`\ 
-   [4] <#_note-pulay:diis2>`_`\ 
-   [5] <#_note-pulay:diis3>`_`\  may be thought of as
+-  **DIIS:** Direct inversion of iterative subspaces [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_
+   may be thought of as
    generalized damping involving Fock matrices from many iterations.
    Damping factors are obtained by solving a simple matrix equation
    involving the B-matrix constructed from error vectors (approximate
@@ -460,7 +430,6 @@ DIIS using AO-basis. The error vector is
 
 where \\mathbf{f}| is given by
 
-..figure:: /dirac/images/math/4/8/d/48d4ca3b3a40eaa082bddb4ccf98e1a9.png
    :align: center
    :alt: \\mathbf{f} = \\mathbf{C}^\\dagger \\cdot \\mathbf{S}\_\\text{AO} \\cdot \\biggl[ \\mathbf{D}^{C}\_\\text{AO} \\cdot \\mathbf{F}^{D}\_\\text{AO} + \\sum\_{O \\in \\mathcal{O}} f\_{O} \\cdot \\mathbf{D}^{O}\_\\text{AO} \\cdot \\bigl( \\mathbf{F}^{D}\_\\text{AO} + ( a\_O - 1 ) \\mathbf{Q}^{V,O}\_\\text{AO} \\bigr) \\biggr] \\mathbf{C}
    
@@ -683,8 +652,7 @@ The use of frozen orbitals is demonstrated in test/33.frozen: When
 the geometry of the water molecule is optimized with the oxygen 1s
 and 2s orbitals frozen, a bond angle of 96.242 degrees is found,
 contrary to the 90 degrees one might have expected when s-p
-hybridization is thus blocked
-7] <#_note-kutzelnigg:maingroup>`_`\ .
+hybridization is thus blocked [Kutzelnigg1984]_.
 
 The elimination of orbitals is achieved by projecting the selected
 orbitals out of the transformation matrix to orthonormal basis. The
@@ -760,64 +728,4 @@ Freeze orbitals (must only be used in conjunction with
 For each fermion irrep, give an
 `orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
 orbitals to freeze.
-
-Sample input
-============
-
-::
-
-    *SCF
-    .PRINT
-     1
-    .NELECT
-     10 0
-    .MAXITR
-     30
-    .EVCCNV
-     1.0D-6
-    .MXDIIS
-     10
-    .CNVINT
-     1.0D-2 1.0D-4
-    .EIGPRI
-     1 0
-
-References
-==========
-
-
-<#_ref-saue-jensen:qsym2_0>`_ T. Saue and H. J. Aa. Jensen,
-*Quaternion symmetry of the Dirac equation*, in
-*Mathematical Methods for Ab Initio Quantum Chemistry*, edited by
-M. Defrancheschi and C. Le Bris, Springer, Berlin, 2000.
-
-<#_ref-thyssen-98_0>`_ J. Thyssen and H. J. Aa. Jensen,
-*Average-of-configurations SCF manuscript*, unpublished (1998).
-
-<#_ref-pulay:diis1_0>`_ P. Pulay,
-*Convergence acceleration of iterative sequences. The case of SCF iteration*,
-Chem. Phys. Lett. **73**, *393* (1980)
-`electronic version <http://dx.doi.org/10.1016/0009-2614(80)80396-4>`_.
-
-<#_ref-pulay:diis2_0>`_ P. Pulay,
-*Improved SCF acceleration*, J. Comput. Chem. **3**, *556* (1982)
-`electronic version <http://dx.doi.org/10.1002/jcc.540030413>`_.
-
-<#_ref-pulay:diis3_0>`_ T. Hamilton and P. Pulay,
-*Direct inversion in the iterative subspace (DIIS) optmization of open-shell, excited-state, and small multiconfiguration SCF wave functions*,
-
-J. Chem. Phys. **84**, *5728* (1986)
-`electronic version <http://dx.doi.org/10.1063/1.449880>`_.
-6.0 <#_ref-saue:csau_0>`_`\ 
-6.1 <#_ref-saue:csau_1>`_`\  T. Saue, K. Fægri, T.
-Helgaker, and O. Gropen,
-*Principles of direct 4-component relativistic SCF: Application to cesium auride*,
-Mol. Phys. **91**, *937* (1997)
-`electronic version <http://dx.doi.org/10.1080/002689797171058>`_.
-
-<#_ref-kutzelnigg:maingroup_0>`_ W. Kutzelnigg,
-*Chemical Bonding in the Higher Main Group Elements*, Angew. Chem.
-Int. Ed. Engl. **23**, *272* (1984)
-`electronic version <http://dx.doi.org/10.1002/anie.198402721>`_.
-
 

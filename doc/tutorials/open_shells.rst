@@ -3,10 +3,7 @@ Examples of open-shell systems
 
 Here we provide few examples of open-shell systems.
 
-.. toctree::
-   :maxdepth: 1
-
-   .. include:: ../test/open-shells/README.rst
+.. include:: ../../test/open-shells/README.rst
 
 Boron atom: open-shell SCF and small CI relativistic calculations
 -----------------------------------------------------------------------
@@ -47,7 +44,7 @@ we get the value of 17.179488 cm-1 and in the outputs we see the proper
 degeneracy of resulting total CI energies - 2 and 4.
 
 By averaging the COSCI energies of the ground and the states we get the
-total SCF energy of the average occupation;
+total SCF energy of the average occupation
 
 ::
 
@@ -104,7 +101,7 @@ Regarding total energies we get
 what is very close to the above given COSCI value of 17.179488 cm-1.
 
 Correlated calculations
------------------------
+=======================
 
 ... to add ...
 
@@ -219,7 +216,7 @@ With the resulting spin-free SCF (and COSCI) energy of
      -75.446280480624 (   4 * ).
 
 Mj selection
-~~~~~~~~~~~~
+------------
 
 For this heteronuclear diatomic molecule one has the advantage of using
 the omega-number occupation of shells. One can even place one electron
@@ -296,7 +293,7 @@ this order:
     5: -0.5874674338778       (Occupation : f = 0.5000)  m_j=  1/2  ;  2pxy_pi_1/2(1)
 
 Correlated approach
-~~~~~~~~~~~~~~~~~~~
+--------------------
 
 The user can try to approach experimental
 `data <http://webbook.nist.gov/cgi/cbook.cgi?ID=C3352576&Units=SI&Mask=1000#Diatomic>`_.
@@ -352,7 +349,4 @@ Fock space CCSD method
 The starting system is always closed shell. One can add one or
 two-electrons to the N-electron system to iterate into N+1 and/or N+2
 systems.
-
-
-
 
