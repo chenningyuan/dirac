@@ -29,7 +29,6 @@ program DIRAC12_PROGRAM
   use interface_ao
   use interface_mo
   use memory_allocator
-  use allocator_cfg
 
 #ifdef USE_MPI_MOD_F90
   use mpi
@@ -49,6 +48,7 @@ program DIRAC12_PROGRAM
   real(kind=8), allocatable :: memory(:)
 
   integer :: iparcal, status, length, ios, idummy, ierr
+  integer :: WORK_memsize
   integer(kind=8) :: maxsize = -1
   integer(kind=8) :: iscr_mem
   integer :: high_water_mark
@@ -97,6 +97,7 @@ program DIRAC12_PROGRAM
        if(ios/=0)then
          print *,'Warning: Cannot parse environment variable DIRNOD'
          print *,'         Will use the default value:',INSTALL_WRKMEM
+         WORK_memsize = INSTALL_WRKMEM
        else
          WORK_memsize = iscr_mem
        endif
@@ -111,10 +112,12 @@ program DIRAC12_PROGRAM
   if (parcal) then
     call sync_nodes(int(WORK_memsize,8),0)
     call sync_nodes(maxsize,2)
+    call legacy_lwork_set(WORK_memsize)
   else
 #else
   if (.not. parcal) then
 #endif
+    call legacy_lwork_set(WORK_memsize)
     print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB) of memory'
     if (maxsize.gt.0) then
        print '(a,i0,a,i0,a)', '             out of the allowed maximum of ',  &

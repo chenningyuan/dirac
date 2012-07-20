@@ -12,7 +12,6 @@ C common blocks needs cleaning!!!!!!!!!!!!!!!!
 C
 C***********************************************************************
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -35,7 +34,7 @@ C
 
       CALL QENTER('KRCC ')
 C
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PAMKRCC')

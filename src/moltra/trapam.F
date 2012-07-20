@@ -34,7 +34,6 @@ C
 C***********************************************************************
 
       Use memory_allocator
-      use allocator_cfg
       Use moltra_labeling
 
 #include "implicit.h"
@@ -60,7 +59,7 @@ C
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('PAMTRA')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PAMTRA')
       KFRSAV = KFREE
@@ -501,7 +500,6 @@ C
 C***********************************************************************
 
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -523,7 +521,7 @@ C
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('PSIMP2')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PSIMP2')
       KFRSAV = KFREE
@@ -3624,7 +3622,6 @@ C
 C***********************************************************************
 
       Use memory_allocator
-      use allocator_cfg
       Use moltra_labeling
 
 #include "implicit.h"
@@ -3650,7 +3647,7 @@ CTROND: to fix !
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('RESOLV')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in RESOLV')
       KFRSAV = KFREE
@@ -3955,7 +3952,6 @@ C
 C***********************************************************************
 
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3985,7 +3981,7 @@ CTROND: to fix !
 C
 !@m   CALL QENTER('RESOLV')
       CALL QENTER('SY_COSCI')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
@@ -4791,7 +4787,6 @@ C     Extensions by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use allocator_cfg
       use interface_to_mpi
 
 #include "implicit.h"
@@ -4814,7 +4809,7 @@ C
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('TRANOD')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in TRANOD')
 #include "memint.h"
       KFRSAV = KFREE

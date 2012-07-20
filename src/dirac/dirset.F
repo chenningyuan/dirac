@@ -34,7 +34,6 @@ C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
       use memory_allocator
-      use allocator_cfg
       use visual_cfg
       use x2cmod_cfg
 #ifdef MOD_CAP
@@ -63,7 +62,7 @@ C
       real(8), allocatable :: WORK(:)
 
       CALL QENTER('PAMSET')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in PAMSET')
 
       CALL TIMER('START ',TIMSTR,TIMEND)

@@ -1004,7 +1004,6 @@ C
       use interface_to_mpi
 
       use memory_allocator
-      use allocator_cfg
 
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
@@ -1039,7 +1038,7 @@ C     character line and machinename
 
       real(8), allocatable :: WRK(:)
 C
-      LWRK = WORK_memsize
+      call legacy_lwork_get(LWRK)
       call alloc(WRK,LWRK,id='WRK in PAMLU')
 C
       MIN_ONE    = - 1

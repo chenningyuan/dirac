@@ -40,9 +40,6 @@
          real(kind=kreal), save :: max_mem_soft = -1
          real(kind=kreal), save :: max_mem_hard = -1
 
-         integer(kind=kint), public, save :: WORK_memsize = -1
-
- 
          logical, save :: verbose = .false.
          integer(kind=kint), save :: verbosity_level = 1
 

@@ -2399,7 +2399,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
 C
       use memory_allocator
-      use allocator_cfg
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
 C
@@ -2469,10 +2468,12 @@ C
       integer(kind=klongint) :: mxcr    = 0
       integer(kind=klongint) :: mxcorr
       integer                :: freemem = 0
+      integer                :: work_memsize
 C
 C---------------Executable code--------------------------------------
 C
       call allocator_get_words_inuse(start_mem_use)
+      call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
          WRITE (IW,*) ' CCSD gradient not yet implemented,'

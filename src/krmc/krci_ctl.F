@@ -1225,7 +1225,6 @@ C     Last revision :
 C
 C***********************************************************************
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1255,7 +1254,7 @@ C
 
       CALL QENTER('KRCI_CALC')
 
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
 C
       call alloc(WORK,LWORK,id='WORK in KRCI_CALC')

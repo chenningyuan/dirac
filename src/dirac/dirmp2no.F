@@ -310,7 +310,6 @@ C
 C***********************************************************************
 
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -333,7 +332,7 @@ C
       CHARACTER CTMP*1, LABEL*8
       real(8), allocatable :: WORK(:)
       CALL QENTER('MP2NOGE1')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in MVOGE1')
 C

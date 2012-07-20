@@ -142,7 +142,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCMAIN (IN123,IW123,CA,INTFCE)
 !
       use memory_allocator
-      use allocator_cfg
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
       use adc_cfg    !  in the general input reader the user data are provided.
@@ -194,7 +193,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer :: MAXCORE
       real(8), allocatable :: CC(:)
 
-      MAXCORE = WORK_memsize
+      call legacy_lwork_get(MAXCORE)
       call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
 
 !

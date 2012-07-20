@@ -119,7 +119,6 @@ C
 C***********************************************************************
 
       use memory_allocator
-      use allocator_cfg
       use dirac_cfg
 #ifdef MOD_OPENRSP
       use openrsp_main
@@ -145,7 +144,7 @@ C
 C
       CALL QENTER('PAMPRP_1')
 C
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PAMPRP_1')
 C

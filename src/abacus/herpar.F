@@ -1032,7 +1032,6 @@ C
 CMI  TEC changes for LAO (2003,2006)
 
       use memory_allocator
-      use allocator_cfg
       use interface_to_mpi
 #include "implicit.h"
 C
@@ -1059,7 +1058,7 @@ C
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
 C
       real(8), allocatable :: WORK(:)
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in HERNOD')
 C
       CALL QENTER('HERNOD')

@@ -1258,7 +1258,6 @@ C  /* Deck optmin */
 !
 
       use memory_allocator
-      use allocator_cfg
       use interface_to_mpi
 
 #include "implicit.h"
@@ -1279,7 +1278,7 @@ C  /* Deck optmin */
       real(8), allocatable :: WORK(:)
 
       CALL QENTER('OPTMIN')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in OPTMIN')
 
       IF (NEWTON) THEN

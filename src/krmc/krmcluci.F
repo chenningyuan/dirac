@@ -2025,7 +2025,6 @@ C     Last revision: S. Knecht           - Nov  2008
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use allocator_cfg
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -2045,7 +2044,7 @@ C
 #include "dgroup.h"
 
       real(8), allocatable :: WORK(:)
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in LUCIAREL_NODE')
 
 #include "memint.h"

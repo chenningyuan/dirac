@@ -36,7 +36,6 @@ C
 C***********************************************************************
 
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -61,7 +60,7 @@ C
       INTEGER RENAME
       real(8), allocatable :: WORK(:)
 C
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PSIOPT')
 C
@@ -6271,7 +6270,6 @@ C     Last revision: S. Knecht           - June  2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use allocator_cfg
 C
 #include "implicit.h"
 #include "infpar.h"
@@ -6286,7 +6284,7 @@ C
       LOGICAL KRMCEND
 
       real(8), allocatable :: WORK(:)
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in KRMC_NODE_DRIVER')
 #include "memint.h"
 C

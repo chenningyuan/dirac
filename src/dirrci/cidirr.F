@@ -24,7 +24,6 @@ C
 C
 
       use memory_allocator
-      use allocator_cfg
 
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -115,7 +114,7 @@ C
 
       real(8), allocatable :: CI(:)
 
-      MCORE = WORK_memsize
+      call legacy_lwork_get(MCORE)
       call alloc(CI,MCORE,id='CI work space in CIDIRR')
 C
       MAXCORE = MCORE

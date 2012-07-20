@@ -36,7 +36,6 @@ C
 C***********************************************************************
 
          use memory_allocator
-         use allocator_cfg
          use dirac_cfg
          use x2cmod_cfg
          use xmlout
@@ -63,7 +62,7 @@ C
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('PSIDHF')
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PSIDHF')
 C
@@ -3072,7 +3071,6 @@ C
 C***********************************************************************
 
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3091,7 +3089,7 @@ C
       LOGICAL SAVEFLAGS(4)
       real(8), allocatable :: WORK(:)
 C
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in MVOGEN')
 

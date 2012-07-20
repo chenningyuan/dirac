@@ -35,7 +35,6 @@ C***********************************************************************
       use dirac_cfg
       use second_order_minimization
       use memory_allocator
-      use allocator_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -52,7 +51,7 @@ C
 C
       CALL QENTER('PAMANA')
 
-      LWORK = WORK_memsize
+      call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in PAMANA')
 C
 C***********************************************************************
