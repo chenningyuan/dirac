@@ -230,6 +230,7 @@ if(ENABLE_UTILITIES)
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
+    compile_standalone(qjaco.x                   utils/qjaco.F90                   "${LIST_OF_EXECUTABLES}")
 endif()
 foreach(
     EXECUTABLE
