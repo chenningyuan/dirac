@@ -139,12 +139,6 @@ deactivated by default. However, the program will still try to do
 an automatic initial occupation if neither
 :ref:`.CLOSED SHELL` nor :ref:`.OPEN SHELL` is given.
 
-.DEF11
-------
-
-Use 2011 definition of open shells which was changed after DIRAC11.
-
-
 Trial function
 ==============
 
