@@ -12,7 +12,6 @@ In the case of a parallel DIRAC nightly run, you may have to set up more
 parameters, like::
 
   --machfile=$PBS_NODEFILE
-  --scratch=/your/scratch/path
   --global-scratch-disk
 
 It is very easy to contribute to the
