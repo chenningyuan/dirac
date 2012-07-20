@@ -729,7 +729,7 @@ C
 C
       IF (DOSOPR) THEN
          MXCORR1 = 0
-         CALL CCHESS (ICALC,EPS,NSP,IREPSPI)
+         CALL CCHESS (ICALC,MXCORR1,EPS,NSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
@@ -2399,6 +2399,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
 C
       use memory_allocator
+      use allocator_cfg
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
 C
@@ -2568,7 +2569,12 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-      NBUF3 = freemem / RCW
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+      NBUF3 = (freemem - work_memsize) / RCW
 C
 C     Allocate now also this remaining work array
 C
@@ -2675,7 +2681,12 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-      NBUF3 = freemem / RCW
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+      NBUF3 = (freemem - work_memsize) / RCW 
 C
 C     Allocate now also this remaining work array
 C
@@ -2697,7 +2708,7 @@ C         this means that, for the time being, we can deallocate everything?
 #if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
              IF (ICALC.EQ.2) CALL DIRNOD2()
-             RETURN
+             goto 431
           ENDIF
 #endif
 C
