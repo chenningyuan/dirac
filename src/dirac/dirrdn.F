@@ -928,7 +928,7 @@ C
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
-     &            '.ATOMST','.SCFPOP','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.ATOMST','.SCFPOP','.DEF11 ','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
@@ -1015,6 +1015,7 @@ C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
       ATOMST=.FALSE.
+      def11 = .false. !by default do not use 2011 definition
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1114,7 +1115,7 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52), I
+     &                     51,52,53), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1647,8 +1648,12 @@ C&&& ATOMST: Atomic start
 C&&& SCFPOP: population analysis in each SCF iteration
                SCFPOP = .TRUE.
                GOTO 100
- 53            CONTINUE
-               GOTO 100
+
+ 53            continue
+               ! use 2011 definition of open shells
+               def11 = .true.
+               go to 100
+
  54            CONTINUE
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
