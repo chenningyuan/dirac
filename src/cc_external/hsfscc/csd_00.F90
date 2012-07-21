@@ -1,6 +1,6 @@
       subroutine csd
 !---------------------------------------------------------------------
-!               closed shell CCSD method
+!       closed shell CC method (CCSD, CCSDT-1,...), 00 sector
 !---------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
@@ -11,13 +11,12 @@
       use cij1_mod
       use cij2_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "csdtime.h"
 #include "dbg.h"
 #else
-!      implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "gen.h"
@@ -39,7 +38,11 @@
 #include "dbg.h"
 !     common /dbg/ iter,idebug
 #endif
-      character*256 filenm,filenm51,filenm6,filenm20
+character*256 :: filenm,filenm51,filenm6,filenm20
+real(kind=8)::convrg,tmax,t1max,t3max,t4max, diff,df3,df4,fnew,diff1
+integer::ntape4,new,itmax,it1max,id3mx,ind3mx,id4mx,ind4mx, & 
+         iddf3,inddf3,idiff,ising,icnvg,inddf4,idiff1,itr1,iddf4
+integer, external :: idec
 
 !     iopt(1) - print.
 !     iopt(2) - no. of iterations.
@@ -395,10 +398,9 @@
     nstrt(1,nflcur),' words used in igen,',                             &
     nstrt(2,nflcur),' words used in gen.'
 
-      call prtime ("end",0,0)
-      !call prtime ("end     ",0,0)
+  call prtime ("end     ",0,0)
 
-      end ! of program/routine csd
+  end ! of program/routine csd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ordv_csd
@@ -425,16 +427,15 @@
 !
 !-------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cint_mod
-      use dat_mod
-      use fock_mod
-      use hsfs_parameters
-#include "implicit.h"
+ use cint_mod
+ use dat_mod
+ use fock_mod
+ use hsfs_parameters
+implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
 !     implicit real*8 (a-h,o-z)
-#include "priunit.h"
+implicit none
 #include "param_ccsd.h"
 #include "cint.h"
 !     common /cint/ nint,idum1,vint(ndint),iint(ndint)
@@ -450,24 +451,15 @@
 
       call readv (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
 
-      if (iopt(1).ge.5) then
-        write(LUPRI,'(/,2x,a,i7,1x,i7)')                                &
-   'ordv after readv: nint,ndint=',nint,ndint
-        write(LUPRI,*) 'packed indexes & integrals: '
-        do i=1,nint
-          write(LUPRI,*) i,'. iint(i)=',iint(i),' vint(i)=',vint(i)
-        enddo
-      endif
-
       call prtime   ("readv   ",nint,0)
 
-      print *,"**************************"
+      !print *,"**************************"
       call seltyp   (2233,0,"hhpp",4)
       call seltyp   (2333,0,"hppp",4)
       call seltyp   (2323,0,"hphp",4)
       call seltyp   (2222,0,"hhhh",4)
       call seltyp   (2223,0,"hhhp",4)
-       print *,"**************************"
+       !print *,"**************************"
       call seltyp4  (3333,0,"pppp",4)
       call reorder  ("hhpp","va1 ",1324,4)
       call reorder  ("hhpp","va2 ",1423,4)
@@ -488,7 +480,7 @@
       call selt1    (33,0,"pp  ",0)
       call selt1    (32,0,"ph  ",0)
 !
-      if (iopt(17).ne.0) then
+      if (iopt(17).ne.0) then ! for CCSDT-x 
         call reorder  ("hppp","ve1 ",2431,4)
         call reorder  ("hppp","ve2 ",2341,4)
         call reorder  ("hhpp","ve3 ",1342,4)
