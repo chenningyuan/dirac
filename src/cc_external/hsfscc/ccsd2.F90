@@ -1,58 +1,55 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dimx(nn,n0,na)
+subroutine dimx(nn,n0,na)
 !------------------------------------------------------------------------
-!
-!    check whether there is enough space for arrays (nn<=n0)
-!
+!  check whether there is enough space for records (nn<=n0)
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-#include "implicit.h"
+  use cfiles_mod
+  implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 #endif
+  character(*), intent(in) :: na
+  integer, intent(in) :: nn, n0
+  integer :: i
 
-      character*8 na
-
-      if (nn.le.n0) then   
+  if (nn.le.n0) then   
         ! ... proper return, no overflow
         return
-      else ! treat overflow
+  else ! treat overflow
         write (LUPRI,10) na,nn,n0
-10      format(/,'dimx: dimension overflow at ',a8,1h:,i18, & 
+10      format(/,'dimx: dimension overflow at ',a,1h:,i18, & 
                  ',size allowed (allocated):',i18,/)
         write(LUPRI,'(4x,a)') 'List of arrays consumption:'
         do i=1,nflcur
-          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  & 
-                  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
+          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
         enddo
-        call abext('dimx    ')
-      end if
-      return
-      end subroutine dimx
+        call abext('dimx: dimension overflow!')
+  end if
+end subroutine dimx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine diveps(namef)
+subroutine diveps(namef)
 !--------------------------------------------------------------------------------
-!
-!
+! divide entering diagram "namef" by denominators, holds for 1- and 2-electron
+! quantities
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use dat_mod
-      use cij1_mod
-      use hsfs_parameters
-#include "implicit.h"
+  use cfiles_mod
+  use gen_mod
+  use dat_mod
+  use cij1_mod
+  use hsfs_parameters
+implicit none
 #include "priunit.h"
 #else
+implicit none
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -66,17 +63,21 @@
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #endif
+  character*4, intent(in) :: namef
+  integer :: ntapef,new,nsize,istrt1,istrt2,i,igg
+  integer :: ka, kb, kc, kd
 
-      call files_ccsd(namef,ntapef,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) ' file for diveps not found'
-        call abext('diveps  ')
-      endif
-      nsize=ije1(nij1)
-      istrt1=nstrt(1,ntapef-1)+2*nij1+4
-      istrt2=nstrt(2,ntapef-1)
-      if (iii1.gt.100) then
-        do 20 i=1,nsize
+  call files_ccsd(namef,ntapef,new,1,-1,-1)
+  if (new.ne.0) then
+      write (LUPRI,*) 'diveps: file namef not found ! namef=',namef
+      call abext('diveps: file namef not found!')
+  endif
+  nsize=ije1(nij1) ! size of the record
+  istrt1=nstrt(1,ntapef-1)+2*nij1+4 ! position of the last previous record on gen
+  istrt2=nstrt(2,ntapef-1)          ! position of the last previous record on igen 
+  if (iii1.gt.100) then
+      ! 2-electron terms
+      do i=1,nsize
         if (gen(istrt2+i).ne.0.) then
           igg=igen(istrt1+i)
           ka=iand(ishft(igg,-24),z'ff')
@@ -85,21 +86,22 @@
           kd=iand(      igg     ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/(eps(ka)+eps(kb)-eps(kc)-eps(kd))
         endif
-20      continue
-      else
-        do 25 i=1,nsize
+      enddo
+  else
+      ! 1-electron terms
+      do i=1,nsize
         if (gen(istrt2+i).ne.0.d0) then
           kc=iand(ishft(igen(istrt1+i),-8),z'ff')
           kd=iand(      igen(istrt1+i)    ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/(eps(kc)-eps(kd))
         endif
-25      continue
-      endif
-      return
-      end
+      enddo
+  endif
+  return
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dveps6 (name)           
+subroutine dveps6 (name)           
 !------------------------------------------------------------------------
 !
 !
@@ -110,10 +112,11 @@
       use dat_mod
       use cij1_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
+implicit none
 #include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
@@ -128,12 +131,14 @@
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #endif
+  character*4, intent(in) :: name
+  integer :: ntape,new,istrt1,istrt2,ijump,i,j,ig,ka,kb,kc,kd,ke,kf
 
-      call files_ccsd (name,ntape,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'file for dveps6 not found'
-        stop                       
-      end if
+  call files_ccsd (name,ntape,new,1,-1,-1)
+  if (new.ne.0) then
+       write (LUPRI,*) 'dveps: file name not found, name=',name
+       call quit('dveps6: file name not found !')                 
+  end if
       istrt1=nstrt(1,ntape-1)+2*nij1+4
       istrt2=nstrt(2,ntape-1)
       ijump=0
@@ -176,10 +181,10 @@
 20      continue
 10    continue
       return
-      end
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dveps8 (name) 
+subroutine dveps8 (name) 
 !--------------------------------------------------------------------------------
 !
 !
@@ -190,11 +195,10 @@
       use dat_mod
       use cij1_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -208,33 +212,32 @@
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij1.h"
 #endif
-
-      call files_ccsd (name,ntape,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'file for dveps8 not found'
-        stop                       
-      end if
-      istrt1=nstrt(1,ntape-1)+2*nij1+4
-      istrt2=nstrt(2,ntape-1)
-      do 10 i=1,nij1
-        id=ij1(i)
-        ka=iand(ishft(id,-24),  z'ff')
-        kb=iand(ishft(id,-16),  z'ff')
-        kc=iand(ishft(id,-8),   z'ff')
-        kd=iand(id,             z'ff')
-        do 20 j=ije1(i-1)+1,ije1(i)
-          ind=igen(istrt1+j)
-          ke=iand(ishft(ind,-24),  z'ff')
-          kf=iand(ishft(ind,-16),  z'ff')
-          kg=iand(ishft(ind,-8),   z'ff')
-          kh=iand(ind,             z'ff')
-            gen(istrt2+j)=gen(istrt2+j)/                                &
-       (eps(ka)+eps(kb)+eps(kc)+eps(kd)                                 &
-       -eps(ke)-eps(kf)-eps(kg)-eps(kh))
-20      continue
-10    continue
-      return
-      end
+  character*4, intent(in) :: name
+  integer :: ntape,new,istrt1,istrt2,i,j,id,ka,kb,kc,kd,ke,kf,kg,kh,ind
+  call files_ccsd (name,ntape,new,1,-1,-1)
+  if (new.ne.0) then
+    write (LUPRI,*) 'dveps8: file name not found; name=',name
+    call quit('dveps8: file  name not found !')
+  end if
+  istrt1=nstrt(1,ntape-1)+2*nij1+4
+  istrt2=nstrt(2,ntape-1)
+  do i=1,nij1
+    id=ij1(i)
+    ka=iand(ishft(id,-24),  z'ff')
+    kb=iand(ishft(id,-16),  z'ff')
+    kc=iand(ishft(id,-8),   z'ff')
+    kd=iand(id,             z'ff')
+    do j=ije1(i-1)+1,ije1(i)
+      ind=igen(istrt1+j)
+      ke=iand(ishft(ind,-24),  z'ff')
+      kf=iand(ishft(ind,-16),  z'ff')
+      kg=iand(ishft(ind,-8),   z'ff')
+      kh=iand(ind,             z'ff')
+      gen(istrt2+j)=gen(istrt2+j)/      &
+        (eps(ka)+eps(kb)+eps(kc)+eps(kd)-eps(ke)-eps(kf)-eps(kg)-eps(kh))
+    enddo           
+  enddo            
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ehp(ipr)
@@ -279,7 +282,6 @@
       dimension ecol(400),ncol(400),iscol(400),idcol(2,400),ntr(12)
       dimension igr(400)
 
-      ! mi: must set for g95
       real*4 time,cputime
 
       data ntr /1hx,1hs,1hp,1hd,1hf,1hg,1hh,1hi,1hk,1hl,1hm,1hn/
@@ -1931,20 +1933,16 @@
       call dimx(nstrt(2,ntapet),nbig,"imove2")
 
 !   special for scratch files, which start with "s".
-           !itmp=4H       
+           !take care of itmp=4H       
            itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (namefl(ntapet), z'000000ff')
            isaa = ior (ch1, ch2)
 
-!#if defined VAR_IFORT
-!      if (isaa.eq.4hs   ) then
-!#else
-      !i_4hs=4hs
+      !take care of i_4hs=4hs
       i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-!#endif
 
         nstrt(1,ntapet)=nstrt(1,ntapet-1)+ndp3+2*ndij+4
         nstrt(2,ntapet)=nstrt(2,ntapet-1)+ndp3
@@ -1954,11 +1952,6 @@
       endif
 
       call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),igen(nstrt(1,ntapet-1)+1))
-
-      if (getiprint() >= 6) then
-        write(LUPRI,'(4x,a)') '"imove" - on exit'
-        call print_cijx_stuff
-      endif
 
       return
       end subroutine imove
@@ -2829,11 +2822,11 @@
       use cfiles_mod
       use gen_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -2843,6 +2836,7 @@
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #endif
+   integer :: nt, nrec,i,name, ntape,new,nstr2,nij,nsize,nstr1
 
       rewind nt
       if (nrec.gt.0) then
@@ -2933,7 +2927,7 @@
 14      continue
       end if
       return     
-      end 
+      end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine zero (name)
@@ -3074,6 +3068,7 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse6 (ii,i1,i2,i3,i4,i5,i6)
+! extracts 6 digits from the 6-digit integer number
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -3316,11 +3311,14 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
-! Main printing subroutine:
+! Main printing subroutine for 1 and 2-electronical records
+!
+! 1-electronic records have first two indexes zero - TODO: avoid their printout
+!
 !  prints diagrams (integrals,intermediates...) & their indexes 
 !
 !  name : diagram name,  4-bytes (integer) character 
-!  tit  : title,   8-bytes  character
+!  tit  : title,   any-bytes  character
 !
 !  iparm : printout parameter - level of printing, for the moment, deactivated
 !---------------------------------------------------------------------------------
@@ -3352,9 +3350,9 @@ subroutine prt(name,tit,iparm)
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-!miro: try eliminate non-ascii characters from routine name by explicit declaration
  character(*), intent(in) :: tit
- integer, intent(in) :: iparm, name
+ character*4, intent(in) :: name
+ integer, intent(in) :: iparm
  real(kind=8) :: a(6), flim
  integer :: ind(4,6),i,ii,jj,io,num,new,nsize,istrt1,istrt2
 
@@ -3411,7 +3409,7 @@ end subroutine prt
       subroutine prt6 (name,tit,iparm)
 !--------------------------------------------------------------------------------
 !
-! Printing routine used for triples
+!      Printing routine used for triples
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC

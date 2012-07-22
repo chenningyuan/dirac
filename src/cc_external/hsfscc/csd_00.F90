@@ -108,9 +108,7 @@ integer, external :: idec
 
       ! convergence criterium 
       convrg = 10.d0**(-iopt(3))
-
-      write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)')      &
-  iopt(2),convrg
+      write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)') iopt(2),convrg
 
       call prtime("rdin",0,0)
 
@@ -118,7 +116,7 @@ integer, external :: idec
 
       iter=0
 
-      call tinit
+      call tinit ! initialization of amplitudes
 
       if (iopt(17).ne.0) then
         call files_ccsd ("t30 ",ntape4,new,1,-1,-1)
@@ -394,9 +392,10 @@ integer, external :: idec
         end if
       end if
 
-      write (LUPRI,'(/,i8,a,i8,a)')                                     &
-    nstrt(1,nflcur),' words used in igen,',                             &
-    nstrt(2,nflcur),' words used in gen.'
+   !   write (LUPRI,'(/,i8,a,i8,a)')                                     &
+   ! nstrt(1,nflcur),' words used in igen,',                             &
+   ! nstrt(2,nflcur),' words used in gen.'
+    call space_usage
 
   call prtime ("end     ",0,0)
 
@@ -491,29 +490,27 @@ implicit none
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine tinit
+subroutine tinit
 !------------------------------------------------------------------------
+!  Initialize amplitudes.
 !
-!  Initialize amplitudes ...
-!
+!   tc = hhpp / eps; t1c = hp/eps
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+  use dat_mod
+implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
+implicit none
 !      implicit real*8 (a-h,o-z)
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-! calc tinit = hhpp / eps
       if (iopt(20).ne.0) then
        call rdfile (51,0,"tc  ",-1)
        call rdfile (51,1,"t1c ",-1)
-       if ((iopt(17).ne.0).and.(iopt(20).eq.1))                         &
-   call rdfile (51,2,"t30 ",-1)
+       if ((iopt(17).ne.0).and.(iopt(20).eq.1)) call rdfile (51,2,"t30 ",-1)
       else
        call move     ("hhpp","tc  ")
        call diveps   ("tc  ")
@@ -527,15 +524,13 @@ implicit none
           call clear8("t40 ",22223333,0)
         end if
       end if
-
-      return
-      end
+end subroutine
 
 !**************************************************************
       subroutine ener(id)
 !--------------------------------------------------------------
 !
-!            Calculate CCSD correlation energy
+!  Calculates CCSD correlation energy
 !
 !   id parameter : 2 - final correlation energy
 !        er than 1,2 - iteration correl.energy
@@ -615,7 +610,6 @@ implicit none
 !
 ! does reordering 
 !
-!
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use dat_mod
@@ -637,6 +631,7 @@ implicit none
       call reorder("tc  ","ta4 ",3412,4)
       call reorder("tm  ","tm4 ",3412,4)
       call reorder("t1c ","t1or",1243,4)
+      ! hhpp=tc
       call reorder("tc  ","ta5 ",1342,4)
       call clear("tb1 ",2323,0)
       call clear("tb4 ",3322,0)
@@ -649,23 +644,22 @@ implicit none
       return
       end
 ! ******************************************************
-      subroutine ordtb
+  subroutine ordtb
 !---------------------------------------------------------------------
 !
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+    use dat_mod
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
       call diveps    ("t1nw")
       call reorder("tb1  ","s2  ",1324,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -691,97 +685,72 @@ implicit none
       end if
       call prtime("ordtb   ",0,1)
       return
-      end
+ end subroutine
 ! **********************************************************
-      subroutine calt1
+ subroutine calt1
 !-----------------------------------------------------------
-!
-!
+!  calculate T1 amplitudes within 9 diagrams, 
+! dg1n2_csd ... dg1n11_csd
 !-----------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+  use dat_mod
+implicit none
 #include "priunit.h"
 #else
+implicit none
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
       call move("hp  ","t1nw")
-!     call dg1n2
       call dg1n2_csd
-!     call dg1n3
       call dg1n3_csd
-!     call dg1n5
       call dg1n5_csd
-!     call dg1n6
       call dg1n6_csd
-!     call dg1n7
       call dg1n7_csd
-!     call dg1n8
       call dg1n8_csd
-!     call dg1n9
       call dg1n9_csd
-      call dg1n10
-!     call dg1n11
+      call dg1n10_csd
       call dg1n11_csd
       call prtime    ("calt1   ",0,1)
-      return
-      end
+ end subroutine
 ! ****************************************************
-      subroutine calt2
+ subroutine calt2
 !--------------------------------------------------------------------------
-!
+! Calculates T2 aplitudes in 17 diagrams (CCSD)
 !
 !--------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+   use dat_mod
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
       call cmult("hhpp",0.5d0,"tnew")
-!     call diag4
       call diag4_csd
-!     call diag5
       call diag5_csd
-!     call diag6
       call diag6_csd
-!     call diag7
       call diag7_csd
-!     call diag8
       call diag8_csd
-!      call diag9
       call diag9_csd
-!      call diag11
       call diag11_csd
-!     call diag12
       call diag12_csd
-!      call diag15
       call diag15_csd
-!     call diag13
       call diag13_csd
-!     call diag14
       call diag14_csd
-!     call diag16
       call diag16_csd
       call diag21_csd
-!     call diag2
       call diag2_csd
       call diag3_csd
       call dgt1p3_csd
-!     call dgt1p4
       call dgt1p4_csd
-      if (iopt(17).ge.4) then
+      if (iopt(17).ge.4) then ! CCSDTQ case...
 !  diags 40,41
         call reordx   ("t40 ","s1  ",12563478)
         call reordx   ("t40 ","s2  ",12573468)
@@ -795,24 +764,21 @@ implicit none
         call add      ("s2  ",0.5d0,"tnew",1.d0,"tnew")
       end if
       call prtime    ("calt2   ",0,1)
-      return
-      end subroutine calt2
+ end subroutine calt2
 ! *******************************************************
       subroutine calt3
 !---------------------------------------------------------------------
-!
-!
-!
+! Calculates T3 aplitudes (for CCSDTx like methods)
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use dat_mod
       use cfiles_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dbg.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -822,7 +788,6 @@ implicit none
 #include "dbg.h"
 !     common /dbg/ iter,idebug
 #endif
-
       if (iopt(17).ge.1) then
 !  dg1n13
         call reord6    ("t30 ","s1  ",124356)
@@ -1044,25 +1009,22 @@ implicit none
         call reord6   ("s2  ","s1  ",126345)
         call add      ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
       end if
-      call prtime   ("calt3   ",0,1) 
-      return
-      end
+ call prtime   ("calt3   ",0,1) 
+end subroutine
 
 ! *******************************************************
-      subroutine calt4
-!---------------------------------------------------------------------
-!
-!
-!
-!---------------------------------------------------------------------
+ subroutine calt4
+!>---------------------------------------------------------------------
+!> Calculates T4 amplitudes (for CCSDTQ)
+!>--------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+  use dat_mod
+implicit none
 #include "priunit.h"
 #include "dbg.h"
 #else
-#include "implicit.h"
 #include "priunit.h"
+implicit none
 !     implicit real*8 (a-h,o-z)
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -1198,21 +1160,22 @@ implicit none
       return
       end
 !  ******************************************************
-!     subroutine diag2
-      subroutine diag2_csd
-#include "implicit.h"
+ subroutine diag2_csd
+!
+! 
+! called from calt2
+ implicit none
 #include "priunit.h"
-!     implicit real*8 (a-h,o-z)
-      call mult("tc  ","pp  ","s2  ",311)
-      call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call prt("s2  ","diag2   ",3)
-      call prtime("diag2   ",0,1)
-      return
-      end
+    call mult("tc  ","pp  ","s2  ",311)
+    call add("tnew",1.d0,"s2  ",1.d0,"tnew")
+    call prt("s2  ","diag2_csd ",3)
+    call prtime("diag2_csd ",0,1)
+ end subroutine
 ! *******************************************************
       subroutine diag3_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+!
+!
+implicit none
 #include "priunit.h"
 !   incl diags 3 28
 !   diag 28
@@ -1222,8 +1185,8 @@ implicit none
 ! ----------------------------------
       call mult("s2  ","ta3 ","s3  ",131)
       call add("tnew",1.d0,"s3  ",-1.d0,"tnew")
-      call prt("s3  ","-diag3  ",3)
-      call prtime("diag3   ",0,1)
+      call prt("s3  ","-diag3_csd",3)
+      call prtime("diag3_csd",0,1)
       return
       end
 ! **********************************************
@@ -1451,31 +1414,36 @@ implicit none
       return
       end
 ! *************************************************
-!     subroutine dg1n2
-      subroutine dg1n2_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine dg1n2_csd
+! called from calt1 as the 1st step
+! dg1 - 1el.diagrams, n2 - second diagram in Uzi's list,
+!
+! cross - antisymmetric diagram, what means 2*Coulomb - Exchange (2 diagrams)
+!
+! diagram: h1
+!
+implicit none
 #include "priunit.h"
-      call add("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
-      call mult("tm1 ","s1  ","s3  ",113)
-      call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
-      call prt("s3  ","dg1n2   ",3)
-      call prtime("dg1n2   ",0,1)
-      return
-      end
+  ! 2*hppp(2413) - hppp(2314) = s1, what is spin-adapted antisymmetrised integral
+  call add("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
+  ! note: "tm" means tc; s3 final diagram
+  call mult("tm1 ","s1  ","s3  ",113)
+  ! adding results to t1 amplitudes
+  call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
+  call prt("s3  ","dg1n2_csd",3)
+  call prtime("dg1n2_csd",0,1)
+end subroutine
 ! **********************************************************
-!     subroutine dg1n3
-      subroutine dg1n3_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine dg1n3_csd
+! called from calt1
+implicit none
 #include "priunit.h"
-      call add("ta1 ",2.d0,"tm2 ",-1.d0,"s2  ")
-      call mult("s2  ","hp  ","s3  ",202)
-      call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
-      call prt("s3  ","dg1n3   ",3)
-      call prtime("dg1n3   ",0,1)
-      return
-      end
+  call add("ta1 ",2.d0,"tm2 ",-1.d0,"s2  ")
+  call mult("s2  ","hp  ","s3  ",202)
+  call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
+  call prt("s3  ","dg1n3_csd",3)
+  call prtime("dg1n3_csd",0,1)
+end subroutine
 ! **********************************************************
 !     subroutine dg1n5
       subroutine dg1n5_csd
@@ -1527,23 +1495,20 @@ implicit none
       return
       end
 ! ******************************************************************
-!     subroutine dg1n9
       subroutine dg1n9_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
       call add("hhpp",-2.d0,"va6 ",1.d0,"s2  ")
       call mult("tc  ","s2  ","s3  ",113)
       call mult("s3  ","t1or","s2  ",111)
       call add("t1nw",1.d0,"s2  ",1.d0,"t1nw")
-      call prt("s2  ","dg1n9   ",3)
-      call prtime("dg1n9   ",0,1)
+      call prt("s2  ","dg1n9_csd",3)
+      call prtime("dg1n9_csd",0,1)
       return
       end
 ! ****************************************************************
-      subroutine dg1n10
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+      subroutine dg1n10_csd
+implicit none
 #include "priunit.h"
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
       call mult("tm4 ","s2  ","s3  ",113)
@@ -1554,10 +1519,8 @@ implicit none
       return
       end
 ! ***************************************************************
-!     subroutine dg1n11
       subroutine dg1n11_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
@@ -1570,8 +1533,7 @@ implicit none
       end
 ! *****************************************************
       subroutine dgt1p3_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !   compensates for overcounting t1**3
       call mult("t1c ","vd14","s2  ",131)
@@ -1583,10 +1545,8 @@ implicit none
       return
       end
 ! ****************************************
-!     subroutine dgt1p4
       subroutine dgt1p4_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !   compensates for overcounting t1**4
       call mult("t1c ","hhpp","s3  ",131)
@@ -1600,8 +1560,7 @@ implicit none
       end
 !  ********************************************************************
       subroutine box1 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1
       call reorder  ("hppp","bx1 ",1342,4)
@@ -1655,8 +1614,7 @@ implicit none
       end 
 !  *******************************************************************
       subroutine box2 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1
       call reorder  ("hhhp","s1  ",2143,4)
@@ -1708,8 +1666,7 @@ implicit none
       end 
 !  *******************************************************************
       subroutine box3 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call add      ("va1 ",2.d0,"hphp",-1.d0,"bx3 ")
@@ -1735,8 +1692,7 @@ implicit none
       end
 !  *******************************************************************
       subroutine box4 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call cmult    ("va1 ",-1.d0,"bx4 ")
@@ -1759,8 +1715,7 @@ implicit none
       end 
 !  *******************************************************************
       subroutine box5 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call cmult    ("hphp",-1.d0,"bx5 ")
@@ -1779,8 +1734,7 @@ implicit none
       end
 !  *******************************************************************
       subroutine box6 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call cmult    ("hhhh",0.5d0,"bx6 ")
@@ -1794,8 +1748,7 @@ implicit none
       end 
 !  *******************************************************************
       subroutine box7
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call add      ("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
@@ -1812,8 +1765,7 @@ implicit none
       end
 !  *******************************************************************
       subroutine box8
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call add      ("vc9 ",-2.d0,"vc10",1.d0,"s1  ")
