@@ -4,8 +4,7 @@ RELADC & LANCZOS
 ================
 
 This section lists the available keywords for RELADC and the closely connected
-iterative LANCZOS diagonalizer in the new input format uniquely maintained in
-DIRAC.
+iterative LANCZOS diagonalizer in the new input format maintained in DIRAC.
 
 If you want to perform RELADC/LANCZOS calculations for the one- and two-particle
 propagator you invoke both by setting the .RELADC keyword in the \*\*WAVE FUNCTION
@@ -27,7 +26,7 @@ Closely related to SIP calculations is the keyword
 .ADCLEVEL
 ---------
 
-Here you determine the perturbational order for the SIP calculations.
+Here you determine the perturbational order for a SIP calculation.
 
 ::
 
@@ -39,7 +38,7 @@ Here you determine the perturbational order for the SIP calculations.
 
 ::
 
-    ADCLEVEL = 3 including constant diagrams
+    ADCLEVEL = 3 (including constant diagrams)
 
 *Input example:*
 
@@ -56,14 +55,14 @@ Integer array of length 32. Specifies the symmetries of the one-hole
 final states (SIP) to be calculated. If you do not enter this array
 all symmetries are checked for possible final states and those are 
 calculated in the respective perturbational order. You can also specify
-symmetries individually if you are interested only in a few by giving the
-number of requested symmetries followd by the irrep numbers.
+symmetries individually if you are interested only in a few by listing the
+number of requested symmetries followed by the individual irrep numbers.
 
 *Default:*
 
 ::
 
-    SIPREPS(1:32) = 0  no symmetries preselected, all are calculated.
+    SIPREPS(1:32) = 0  (no symmetries preselected, all are calculated)
 
 *Input example:*
 
@@ -78,21 +77,22 @@ number of requested symmetries followd by the irrep numbers.
 --------
 
 Read back previously calculated constant diagrams in SIP runs. This is a restart
-option to avoid the most time consuming step in SIP runs.
+option to avoid the most time consuming step in SIP runs. The constant diagrams
+for all symmetries are stored in the file QKLVAL.
 
 .NOCONS
 -------
 
 Block calculation of constant diagrams in third-order SIP calculations.
 ADC is still executed up to third order but in the hole/hole block the (time consuming)
-constant diagrams are not added. Absence of constant diagrams reduces accuracy but
+constant diagrams are omitted. Skipping constant diagrams reduces accuracy but
 increases speed considerably. Not recommended for production runs.
 
 .VCONV
 ------
 
 Determines convergence of the inverse iteration in the calculation of 
-the constant diagrams. If iterations take much time you can reduce
+the constant diagrams. If these iterations take much time you can reduce
 tightness by setting VCONV to 1.0E-05, 1.0E-04 asf. Check accuracy
 of results when you activate this option.
 
@@ -130,7 +130,7 @@ for test purposes only.
 
 Do Double Ionization Potentials. 
 If you intend to do double ionization spectra calculations then set this keyword.
-The keyword .ADCLVEL does not apply to DIP runs because the perturbational order
+The keyword .ADCLEVEL does not apply to DIP runs because the perturbational order
 is set fixed to 'extended second order'.
 
 *Default:*
@@ -146,13 +146,14 @@ Integer array of length 32. Specifies the symmetries of the two-hole
 final states (DIP) to be calculated. If you do not enter this array
 all symmetries are checked for possible final states and those are 
 calculated in the respective perturbational order. You can also specify
-symmetries individually if you are interested only in a few.
+symmetries individually if you are interested only in a few. Input is
+analogous to SIPREPS.
 
 *Default:*
 
 ::
 
-    DIPREPS(*) = 0  no symmetries preselected, all are calculated.
+    DIPREPS(1:32) = 0  (no symmetries preselected, all are calculated)
 
 
 \*\*LANCZOS
@@ -166,7 +167,7 @@ and the error estimate are written in a line terminated by the '@' for
 grep purposes. Immediately after this line follows the (indented)
 configuration information belonging to this final state. This is
 imaginable as a one-hole or two-hole Slater-determinant forming this
-state in zeroth order. Strictly speaking the configuration coefficients
+state in zeroth order. Strictly speaking, the configuration coefficients
 refer to the intermediate state basis.
 
 .SIPITER, .DIPITER
@@ -294,7 +295,7 @@ Perform accuracy tests for production runs since the behavior is system-dependen
 
 ::
 
-    ADCTHR = 0.0 (all nonzero metrix elements are written to disk)
+    ADCTHR = 0.0 (all nonzero matrix elements are written to disk)
 
 *Input example:*
 
