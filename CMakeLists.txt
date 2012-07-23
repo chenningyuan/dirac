@@ -50,6 +50,7 @@ endif()
 
 set(LIBS "stdc++")
 
+include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigDocumentation)
@@ -60,7 +61,6 @@ include(ConfigPamadm)
 include(ConfigParallelEnvironment)
 include(ConfigSafeGuards)
 include(ConfigTesting)
-include(ConfigVersion)
 include(GenericMacros)
 include(BinaryInfo)
 

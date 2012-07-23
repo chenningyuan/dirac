@@ -1001,8 +1001,6 @@ module ipack_mod
     ip6=ipack6(i0,j0,k0,l0,m0,n0)
     write(LUPRI,*) 'ipack6(',i0,',',j0,',',k0,',',l0,',',m0,',',n0,')=',ip6
 
-
-
     write(LUPRI,*)
     call unset_check_ipack_indexes
   end subroutine test_ipack_functions
@@ -1040,3 +1038,20 @@ call check_ijtemp_mod
  write(LUPRI,*) 'no checking of modules, this is nasty STATIC version.'
 #endif
 end subroutine check_modules
+
+subroutine space_usage
+!> at the end of some method print out info 
+!! about the consumed space of gen & igen arrays
+!! TODO: compare to the size of allocations
+#if defined HSFS_DYN_ALLOC
+use cfiles_mod
+implicit none
+#else
+implicit none
+#include "cfiles.h"
+!common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,iiia(200),iiva(200)
+#endif
+#include "priunit.h"
+write (LUPRI,'(/,i8,a,i8,a)') nstrt(1,nflcur),' words used in igen,', & 
+                              nstrt(2,nflcur),' words used in gen.'
+end subroutine

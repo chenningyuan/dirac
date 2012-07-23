@@ -1,7 +1,11 @@
 #!/bin/bash
 
-export PATH=$PATH':/home/bast/openmpi/gfortran-i4/bin'
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/gfortran-i4/lib'
+export MKL_NUM_THREADS=N
+export MKL_DYNAMIC=FALSE
+export OMP_NUM_THREADS=1
+
+export PATH=$PATH':/home/bast/openmpi/gfortran/bin'
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/gfortran/lib'
 
 TMP_DIR=/scratch/scratch-nightly-compile
 SCRATCH_DIR=/scratch/scratch-nightly-run
@@ -15,8 +19,8 @@ mkdir build
 cd build
 cmake ..
 make release
-tar xvzf DIRAC-11.0.2-Source.tar.gz
-cd DIRAC-11.0.2-Source
+tar xvzf DIRAC-12.0.0-Source.tar.gz
+cd DIRAC-12.0.0-Source
 
 ./setup --fc=mpif90 --cc=mpicc --int64 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8_mpi" -D RUNTEST_NR_PROC=2
 cd build

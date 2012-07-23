@@ -837,9 +837,6 @@
 !     character(*) namet, namef ! mi fix - data specification for prtime
       character*4 namet, namef ! mi fix - data specification for prtime
 
-!   reorder from file namef (info in /cij2/) to namet (/cij1/)
-      !ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
-
       if (getiprint() >= 5) then
         call header('Output from "reorder"',-1)
         write(LUPRI,*) 'namef=',namef
@@ -876,10 +873,6 @@
       lngth1=ije1(nij1)
       lngth2=ije2(nij2)
 
-!    miro: set up temporarily primitive error trap for HSFS_dynamic
-!   ... this works for gfortran/gdb; however, ifort/idb gives other error...
-!     call check_ctmp_mod
-
 !miro: "lngth2+600" could cause index leak for "itmp" array ???
 ! todo: replace 600 with  some internal parameter ...
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
@@ -898,10 +891,9 @@
       call dcopy(lngth2,gen(istrt22+1),1,gen(istrt12+1),1)
       call vxsort(itmp,lngth2,lngth1,gen(istrt12+1),igen(istrt11+1))
 
-!     call check_ctmp_mod
-
-       ! ... print out
-      call prt(namet,namet,iparm)
+      ! ... print out ...
+      !call prt(namet,namet,iparm)
+      call prt(namet,"reorder",iparm)
       call prtime(namet,ije1(nij1),1)
 
       return
@@ -983,7 +975,7 @@
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) 'reordx input tape does not exist, ',name2
-        stop                      
+        call quit('reordx input tape name2 does not exist')
       end if
       call parse8 (iord,i1,i2,i3,i4,i5,i6,i7,i8)
       call parse8 (iii2,ia(1),ia(2),ia(3),ia(4),ia(5),ia(6),ia(7),ia(8))
@@ -1807,7 +1799,7 @@ implicit none
 #endif
 
 !    ... miro: introduced to have strings clean, without garbage
-      character(*), intent(in) :: name
+      character*4, intent(in) :: name
       integer, intent(in):: iparm
       integer, intent(in) :: iii, iiv
 
@@ -1818,23 +1810,8 @@ implicit none
       integer :: num,lngth,istrt1,istrt2,i1,i2,i3,i4,iv1,iv2,iv3,iv4
       integer :: nh,nv,i1234,nout,i,j1,j2,j3,j4,njh,njv,j12,ii,iv1234
 
-      if (getiprint() >= 5) then ! control printout
-        call header('Output from "seltyp"',-1)
-        write(LUPRI,'(2x,a,a4,a,i5,a,i5,a,i2)') 'name=',name,'iii=',iii,'iiv=',iiv,'iparm=',iparm
-     !   write(LUPRI,'(2x,a,i6)') 'nflcur=',nflcur
-     !   write(LUPRI,*)
-      endif
-
       ! call template function
       call tmplt(iii,iiv,name,num)
-
-      if (getiprint() >= 5) then ! control printout
-    !    write(LUPRI,'(/,2x,a,i6)') 'after tmplt, nint=',nint
-!       write(LUPRI,'(2x,a,i6)')   '              nij=',nij
-     !   write(LUPRI,'(2x,a,i6)')   '              nij1=',nij1
-     !   write(LUPRI,'(2x,a,i6)')   '           nflcur=',nflcur
-     !   write(LUPRI,*)
-      endif
 
 !        ... assumes ije1(:) is filled
 !     lngth=ije(nij)
@@ -1950,7 +1927,7 @@ implicit none
       itmp(nout)=ipack4(j1,j4,j3,j2)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,j1,j4,j3,j2,gen(istrt2+nout)
+        write(LUPRI,*) nout,'-',j1,j4,j3,j2,gen(istrt2+nout)
       endif
 
 130   if ((j1.eq.j3).or.(j2.eq.j4)) go to 140
@@ -2067,8 +2044,7 @@ implicit none
 !     write (LUPRI,1900) ije(nij),iii,iiv
       write (LUPRI,1900) ije1(nij1),iii,iiv
 1900  format(1x,'seltyp collected ',i9,' integrals of type ',2i6)
-
-      call prt(name,name,iparm) ! ... print integrals ...
+      call prt(name,'seltyp',iparm) ! ... print integrals ...
 
 !     call prtime(name,ije(nij),0) ! ... print time ...
       call prtime(name,ije1(nij1),0) ! ... print time ...
@@ -2182,11 +2158,11 @@ implicit none
 
 !     write (6,1900) ije(nij),iii,iiv
       write (6,1900) ije1(nij1),iii,iiv
-1900  format('collected ',i9,' integrals of type ',2i6)
+1900  format('selt1 collected ',i9,' integrals of type ',2i6)
 
       call check_modules
 
-      call prt(name,name,iparm)
+      call prt(name,'selt1 ',iparm)
 !     call prtime(name,ije(nij),0)
       call prtime(name,ije1(nij1),0)
 
@@ -2194,7 +2170,7 @@ implicit none
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine seltyp4(iii,iiv,name,iparm)
+ subroutine seltyp4(iii,iiv,name,iparm)
 !---------------------------------------------------------------------------------
 !
 !  this routine for pppp only. integrals <ij|kl> collected, i.ge.j .
@@ -2328,17 +2304,14 @@ implicit none
 !  indices not retained for pppp.
       nstrt(1,nflcur)=nstrt(1,nflcur)-lngth
       write (6,1900) lngth,iii,iiv
-1900  format('collected ',i9,' integrals of type ',2i6)
+1900  format('seltyp4 collected ',i9,' integrals of type ',2i6)
       if (iopt(10).eq.0) call wrtfile(9,0,"pppp")
 
-      call check_modules
-
-      call prt(name,name,iparm)
-
+      call prt(name,'seltyp4 ',iparm)
       call prtime(name,lngth,0)
 
-      return
-      end
+ return
+ end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine sqr3 (name) 
@@ -2440,21 +2413,20 @@ implicit none
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine sqr(namef,names)
+  subroutine sqr(namef,names)
 !--------------------------------------------------------------------------------
 !
-! symmetrization; "namef" name of the nonsymmetrized diagram to be symmterized 
+! symmetrization; "namef" name of the nonsymmetrized diagram to be symmetrized 
 ! into "names"
 !
 !--------------------------------------------------------------------------------
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
-      character*4 namef,names
+      character*4, intent(in) :: namef,names
       call reorder(namef,names,2143,5) ! switch indexes
       call add(namef,1.d0,names,1.d0,namef)
       return
-      end
+ end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tmplt(ii1234,j1234,name,num)

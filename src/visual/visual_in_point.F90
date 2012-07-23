@@ -383,20 +383,18 @@ contains
 
 !           nonrel diamagnetic current density (hardcoded for B along z)
             if (visual_cfg_property(imat) == iq_jdia) then
-               call get_n(density,      &
-                          D(imat)%irep, &
-                          D(imat)%nrow, &
-                          D(imat)%elms, &
-                          buffer,       &
-                          ao)
+               call j_dia(matrix_33,               &
+                          visual_cfg_london,       &
+                          visual_cfg_gauge_origin, &
+                          D(imat)%irep,            &
+                          D(imat)%nrow,            &
+                          D(imat)%elms,            &
+                          ao,                      &
+                          (/px, py, pz/))
 
-               rx = px - visual_cfg_gauge_origin(1)
-               ry = py - visual_cfg_gauge_origin(2)
-               rz = pz - visual_cfg_gauge_origin(3)
-
-               result(1) = result(1) + 0.5d0*ry*density
-               result(2) = result(2) - 0.5d0*rx*density
-               result(3) = result(3) - 0.0d0
+               result(1) = matrix_33(1, 3)
+               result(2) = matrix_33(2, 3)
+               result(3) = matrix_33(3, 3)
             end if
 
 !           responding operator is electric dipole
@@ -516,6 +514,7 @@ contains
                call j_dia(matrix_33,               &
                           visual_cfg_london,       &
                           visual_cfg_gauge_origin, &
+                          D(imat)%irep,            &
                           D(imat)%nrow,            &
                           D(imat)%elms,            &
                           ao,                      &
