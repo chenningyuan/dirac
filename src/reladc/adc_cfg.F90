@@ -34,9 +34,10 @@ module adc_cfg
   integer, public                  :: reladc_adclevel   = 3
   logical, public                  :: reladc_dosips     = .false.
   logical, public                  :: reladc_dodips     = .false.
-  integer, dimension(1:32), public :: reladc_xreps      = 0  
+  integer, dimension(1:32), public :: reladc_sipreps    = 0  
+  integer, dimension(1:32), public :: reladc_dipreps    = 0  
   logical, public                  :: reladc_readqkl    = .false.
-  logical, public                  :: reladc_doconst    = .false.
+  logical, public                  :: reladc_doconst    = .true.
   logical, public                  :: reladc_doadcpop   = .false.
   logical, public                  :: reladc_dofull     = .false.
   real*8,  public                  :: reladc_vconv      = 1.0E-06

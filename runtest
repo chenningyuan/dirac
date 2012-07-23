@@ -602,6 +602,9 @@ class run:
                  if 'controlled stop: only int64' in line:
                     if int32_run(s):
                         exit = 'SKIP'
+                 if 'controlled stop: only int32' in line:
+                    if not int32_run(s):
+                        exit = 'SKIP'
              f.close()
              return exit
      def print_result(self, progress, result_text, elapsed):

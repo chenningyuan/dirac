@@ -14,13 +14,23 @@
 .CLOSED SHELL                                                                                       
  4 6                                                                                                
 .FCKCNV                                                                                             
-5.0E-07                                                                                             
+5.0E-06                                                                                             
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
 energy  -2.0 2.5 0.1                                                                                
 energy  -2.0 2.5 0.1                                                                                
+**RELADC
+.DOSIPS
+.SIPREPS
+ 1
+ 3
+.ADCLEVEL
+ 2
+**LANCZOS
+.SIPITER
+ 20
+.SIPPRNT
+ 30.0
 *END OF                                                                                             
                                                                                                     
- $RELADC DOSIPS=T, ADCLEVEL=2, XREPS=3 $END                                                         
- $LANINP SIPITER=100 SIPPRNT=30.0 $END                                                              
                                                                                                     
