@@ -1,0 +1,25 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ Valence ionization of the HCN-molecule + long eigenvectors                                                  
+.WAVE FUNCTION                                                                                      
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**HAMILTONIAN                                                                                       
+.LVCORR                                                                                             
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+.RELADC                                                                                             
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+ 14                                                                                                 
+.FCKCNV                                                                                             
+5.0E-05                                                                                             
+**MOLTRA                                                                                            
+.ACTIVE                                                                                             
+energy  -2.0 2.5 0.1                                                                                
+*END OF                                                                                             
+                                                                                                    
+ $RELADC DOSIPS=T, ADCLEVEL=3, XREPS=1 $END                                                         
+ $LANINP SIPITER=100, SIPPRNT=20.0, SIPEIGV(1)=10 $END                                                              
+                                                                                                    

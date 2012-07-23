@@ -1,58 +1,55 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dimx(nn,n0,na)
+subroutine dimx(nn,n0,na)
 !------------------------------------------------------------------------
-!
-!    check whether there is enough space for arrays (nn<=n0)
-!
+!  check whether there is enough space for records (nn<=n0)
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-#include "implicit.h"
+  use cfiles_mod
+  implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 #endif
+  character(*), intent(in) :: na
+  integer, intent(in) :: nn, n0
+  integer :: i
 
-      character*8 na
-
-      if (nn.le.n0) then   
+  if (nn.le.n0) then   
         ! ... proper return, no overflow
         return
-      else ! treat overflow
+  else ! treat overflow
         write (LUPRI,10) na,nn,n0
-10      format(/,'dimx: dimension overflow at ',a8,1h:,i18, & 
+10      format(/,'dimx: dimension overflow at ',a,1h:,i18, & 
                  ',size allowed (allocated):',i18,/)
         write(LUPRI,'(4x,a)') 'List of arrays consumption:'
         do i=1,nflcur
-          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  & 
-                  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
+          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
         enddo
-        call abext('dimx    ')
-      end if
-      return
-      end subroutine dimx
+        call abext('dimx: dimension overflow!')
+  end if
+end subroutine dimx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine diveps(namef)
+subroutine diveps(namef)
 !--------------------------------------------------------------------------------
-!
-!
+! divide entering diagram "namef" by denominators, holds for 1- and 2-electron
+! quantities
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use dat_mod
-      use cij1_mod
-      use hsfs_parameters
-#include "implicit.h"
+  use cfiles_mod
+  use gen_mod
+  use dat_mod
+  use cij1_mod
+  use hsfs_parameters
+implicit none
 #include "priunit.h"
 #else
+implicit none
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -66,17 +63,21 @@
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #endif
+  character*4, intent(in) :: namef
+  integer :: ntapef,new,nsize,istrt1,istrt2,i,igg
+  integer :: ka, kb, kc, kd
 
-      call files_ccsd(namef,ntapef,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) ' file for diveps not found'
-        call abext('diveps  ')
-      endif
-      nsize=ije1(nij1)
-      istrt1=nstrt(1,ntapef-1)+2*nij1+4
-      istrt2=nstrt(2,ntapef-1)
-      if (iii1.gt.100) then
-        do 20 i=1,nsize
+  call files_ccsd(namef,ntapef,new,1,-1,-1)
+  if (new.ne.0) then
+      write (LUPRI,*) 'diveps: file namef not found ! namef=',namef
+      call abext('diveps: file namef not found!')
+  endif
+  nsize=ije1(nij1) ! size of the record
+  istrt1=nstrt(1,ntapef-1)+2*nij1+4 ! position of the last previous record on gen
+  istrt2=nstrt(2,ntapef-1)          ! position of the last previous record on igen 
+  if (iii1.gt.100) then
+      ! 2-electron terms
+      do i=1,nsize
         if (gen(istrt2+i).ne.0.) then
           igg=igen(istrt1+i)
           ka=iand(ishft(igg,-24),z'ff')
@@ -85,21 +86,22 @@
           kd=iand(      igg     ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/(eps(ka)+eps(kb)-eps(kc)-eps(kd))
         endif
-20      continue
-      else
-        do 25 i=1,nsize
+      enddo
+  else
+      ! 1-electron terms
+      do i=1,nsize
         if (gen(istrt2+i).ne.0.d0) then
           kc=iand(ishft(igen(istrt1+i),-8),z'ff')
           kd=iand(      igen(istrt1+i)    ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/(eps(kc)-eps(kd))
         endif
-25      continue
-      endif
-      return
-      end
+      enddo
+  endif
+  return
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dveps6 (name)           
+subroutine dveps6 (name)           
 !------------------------------------------------------------------------
 !
 !
@@ -110,10 +112,11 @@
       use dat_mod
       use cij1_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
+implicit none
 #include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
@@ -128,12 +131,14 @@
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #endif
+  character*4, intent(in) :: name
+  integer :: ntape,new,istrt1,istrt2,ijump,i,j,ig,ka,kb,kc,kd,ke,kf
 
-      call files_ccsd (name,ntape,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'file for dveps6 not found'
-        stop                       
-      end if
+  call files_ccsd (name,ntape,new,1,-1,-1)
+  if (new.ne.0) then
+       write (LUPRI,*) 'dveps: file name not found, name=',name
+       call quit('dveps6: file name not found !')                 
+  end if
       istrt1=nstrt(1,ntape-1)+2*nij1+4
       istrt2=nstrt(2,ntape-1)
       ijump=0
@@ -176,10 +181,10 @@
 20      continue
 10    continue
       return
-      end
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dveps8 (name) 
+subroutine dveps8 (name) 
 !--------------------------------------------------------------------------------
 !
 !
@@ -190,11 +195,10 @@
       use dat_mod
       use cij1_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -208,33 +212,32 @@
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij1.h"
 #endif
-
-      call files_ccsd (name,ntape,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'file for dveps8 not found'
-        stop                       
-      end if
-      istrt1=nstrt(1,ntape-1)+2*nij1+4
-      istrt2=nstrt(2,ntape-1)
-      do 10 i=1,nij1
-        id=ij1(i)
-        ka=iand(ishft(id,-24),  z'ff')
-        kb=iand(ishft(id,-16),  z'ff')
-        kc=iand(ishft(id,-8),   z'ff')
-        kd=iand(id,             z'ff')
-        do 20 j=ije1(i-1)+1,ije1(i)
-          ind=igen(istrt1+j)
-          ke=iand(ishft(ind,-24),  z'ff')
-          kf=iand(ishft(ind,-16),  z'ff')
-          kg=iand(ishft(ind,-8),   z'ff')
-          kh=iand(ind,             z'ff')
-            gen(istrt2+j)=gen(istrt2+j)/                                &
-       (eps(ka)+eps(kb)+eps(kc)+eps(kd)                                 &
-       -eps(ke)-eps(kf)-eps(kg)-eps(kh))
-20      continue
-10    continue
-      return
-      end
+  character*4, intent(in) :: name
+  integer :: ntape,new,istrt1,istrt2,i,j,id,ka,kb,kc,kd,ke,kf,kg,kh,ind
+  call files_ccsd (name,ntape,new,1,-1,-1)
+  if (new.ne.0) then
+    write (LUPRI,*) 'dveps8: file name not found; name=',name
+    call quit('dveps8: file  name not found !')
+  end if
+  istrt1=nstrt(1,ntape-1)+2*nij1+4
+  istrt2=nstrt(2,ntape-1)
+  do i=1,nij1
+    id=ij1(i)
+    ka=iand(ishft(id,-24),  z'ff')
+    kb=iand(ishft(id,-16),  z'ff')
+    kc=iand(ishft(id,-8),   z'ff')
+    kd=iand(id,             z'ff')
+    do j=ije1(i-1)+1,ije1(i)
+      ind=igen(istrt1+j)
+      ke=iand(ishft(ind,-24),  z'ff')
+      kf=iand(ishft(ind,-16),  z'ff')
+      kg=iand(ishft(ind,-8),   z'ff')
+      kh=iand(ind,             z'ff')
+      gen(istrt2+j)=gen(istrt2+j)/      &
+        (eps(ka)+eps(kb)+eps(kc)+eps(kd)-eps(ke)-eps(kf)-eps(kg)-eps(kh))
+    enddo           
+  enddo            
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ehp(ipr)
@@ -279,7 +282,6 @@
       dimension ecol(400),ncol(400),iscol(400),idcol(2,400),ntr(12)
       dimension igr(400)
 
-      ! mi: must set for g95
       real*4 time,cputime
 
       data ntr /1hx,1hs,1hp,1hd,1hf,1hg,1hh,1hi,1hk,1hl,1hm,1hn/
@@ -1749,10 +1751,14 @@
       end
  
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      function idec(ihex)
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+      integer function idec(ihex)
+!---------------------------------------------------------------------------------
+! Turn hexadecimal number into decimal.
+!---------------------------------------------------------------------------------
+      implicit none
 #include "priunit.h"
+      integer, intent(in) :: ihex
+      integer :: i1,i2,i3,i4
 
       i1=iand(ishft(ihex,-24),  z'ff')
       i2=iand(ishft(ihex,-16),  z'ff')
@@ -1764,7 +1770,7 @@
         idec=i1*1000000+i2*10000+i3*100+i4
       endif
       return
-      end
+      end function idec
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function ifndso(ii)
@@ -1927,20 +1933,16 @@
       call dimx(nstrt(2,ntapet),nbig,"imove2")
 
 !   special for scratch files, which start with "s".
-           !itmp=4H       
+           !take care of itmp=4H       
            itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (namefl(ntapet), z'000000ff')
            isaa = ior (ch1, ch2)
 
-!#if defined VAR_IFORT
-!      if (isaa.eq.4hs   ) then
-!#else
-      !i_4hs=4hs
+      !take care of i_4hs=4hs
       i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-!#endif
 
         nstrt(1,ntapet)=nstrt(1,ntapet-1)+ndp3+2*ndij+4
         nstrt(2,ntapet)=nstrt(2,ntapet-1)+ndp3
@@ -1950,11 +1952,6 @@
       endif
 
       call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),igen(nstrt(1,ntapet-1)+1))
-
-      if (getiprint() >= 6) then
-        write(LUPRI,'(4x,a)') '"imove" - on exit'
-        call print_cijx_stuff
-      endif
 
       return
       end subroutine imove
@@ -2507,12 +2504,13 @@
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      subroutine unfold(namef,namet,iline)
       subroutine unfold_ccsd(namef,namet,iline)
 !--------------------------------------------------------------------------------
 !
-!c   expand file namef to namet, turning line iline from valence
-!c   to general. (iline=4 is last line).
+!  Under old name  "subroutine unfold(namef,namet,iline)"
+!
+!   expand file namef to namet, turning line iline from valence
+!   to general. (iline=4 is last line).
 !
 !
 !--------------------------------------------------------------------------------
@@ -2649,7 +2647,7 @@
             rlvec(j+i) = rlvec(j+i+d)
             rlvec(j+i+d) = rltemp
         Else If ((ishft(ivec(j+i),-1).eq.ishft(ivec(j+i+d),-1))         &
-   .AND. (iabs(ivec(j+i)).gt.iabs(ivec(j+i+d)))) then
+          .AND. (iabs(ivec(j+i)).gt.iabs(ivec(j+i+d)))) then
             temp       = ivec(j+i)
             ivec(j+i)   = ivec(j+i+d)
             ivec(J+I+D) = TEMP
@@ -2691,8 +2689,8 @@
             rltemp     = rlvec(j+r)
             rlvec(j+r) = rlvec(j+r+d)
             rlvec(j+r+d) = rltemp
-        Else If ((ishft(ivec(j+r),-1).eq.ishft(ivec(j+r+d),-1))         &
-   .AND. (iabs(ivec(j+r)).gt.iabs(ivec(j+r+d)))) then
+        Else If ((ishft(ivec(j+r),-1).eq.ishft(ivec(j+r+d),-1)).and.  &
+                  (iabs(ivec(j+r)).gt.iabs(ivec(j+r+d)))) then
             temp       = ivec(j+r)
             ivec(j+r)   = ivec(j+r+d)
             ivec(J+R+D) = TEMP
@@ -2718,11 +2716,9 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vxsort(itmp,ntmp,nt,t,it)
 !---------------------------------------------------------------------------------------
-!  ...  what does it do ?
+!  sort according to indexes in "itmp", expand to "it" and gather in "t" accordingly.
 !
-!  sort according indexes in "itmp", expand to "it", gather "t" accordingly.
-!
-!  t, it is usually gen, igen
+!  "t", "it" is usually entring as  gen, igen
 !
 !  checks nt,ntmp
 !
@@ -2731,11 +2727,17 @@
 !---------------------------------------------------------------------------------------
       use print_level
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+!#include "implicit.h"
+      implicit none
 #include "priunit.h"
 ! miro : watch up for array leaks !
-      dimension itmp(ntmp),t(nt),it(nt)
+      !dimension itmp(ntmp),t(nt),it(nt)
 !     dimension itmp(*),t(nt),it(nt)
+      integer, intent(in) :: ntmp,nt
+      integer, intent(inout) :: itmp(ntmp),it(nt)
+      real*8, intent(inout) :: t(nt)
+      integer :: lt, ltmp, i
+      integer, external :: idec
 
       if (getiprint() >= 5) then
        call header('Output from vxsort',-1)
@@ -2756,8 +2758,7 @@
           call zeroup(ntmp,itmp,t,5.d-6)
           write (LUPRI,*) ntmp,' integrals left'
           if (ntmp.gt.nt) then
-            write (LUPRI,'(2x,a,2i5)')                                  &
-       ' vxsort. ntmp still gt nt ',ntmp,nt
+            write (LUPRI,'(2x,a,2i5)') ' vxsort. ntmp still gt nt ',ntmp,nt
             call abext('vxsort  ')
           endif
         endif
@@ -2778,10 +2779,10 @@
           t(lt)=t(ltmp)
           lt=lt-1
           ltmp=ltmp-1
-        elseif ((ltmp.eq.0).or.                                         &
-     (ishft(itmp(ltmp),-1).lt.ishft(it(lt),-1)).or.                     &
-     ((ishft(itmp(ltmp),-1).eq.ishft(it(lt),-1)).and.                   &
-     (iabs(itmp(ltmp)).lt.iabs(it(lt)))))  then
+        elseif ((ltmp.eq.0).or.                                 &
+      (ishft(itmp(ltmp),-1).lt.ishft(it(lt),-1)).or.            &
+      ((ishft(itmp(ltmp),-1).eq.ishft(it(lt),-1)).and.          &
+      (iabs(itmp(ltmp)).lt.iabs(it(lt)))))  then
           t(lt)=0.d0
           lt=lt-1
         elseif (abs(t(ltmp)).lt.2.d-5) then
@@ -2791,8 +2792,8 @@
          Do i=-20,20
           write (LUPRI,100) lt,nt,ltmp+i,ntmp+i,idec(itmp(ltmp+i)),     &
                        idec(it(ntmp+i)),t(ltmp+i)
-100       format(' label not in tmplt!; lt nt ltmp ntmp itmp it t=',    &
-     4i7,1x,2i9,e12.4)
+100       format(' label not in tmplt!; lt nt ltmp ntmp itmp it t=', & 
+                 4i7,1x,2i9,e12.4)
          EndDo
          call abext('vxsort  ')   
         endif
@@ -2800,7 +2801,6 @@
 !       if (lt.gt.0) go to 20
         if (lt.gt.0.and.ltmp.gt.0) go to 20
       endif ! of ntmp < nt
-
       return
       end subroutine vxsort
 
@@ -2808,25 +2808,25 @@
       subroutine wrtfile(nt,nrec,name)
 !----------------------------------------------------------------------------------
 !
-!c  write internal file "name" on tape nt, skipping nrec records.
-!c  disk file structure for tc etc:
-!c  1. nij (# of subblocks)
-!c  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
-!c  3. ia(1:ije1(nij)), indices.
-!c  4. a(1:ije1(nij)), actual values.
-!c    nt.eq.9 = file witout indices (pppp).
-!c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
+!  write internal file "name" on tape nt, skipping nrec records.
+!  disk file structure for tc etc:
+!  1. nij (# of subblocks)
+!  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
+!  3. ia(1:ije1(nij)), indices.
+!  4. a(1:ije1(nij)), actual values.
+!    nt.eq.9 = file witout indices (pppp).
+!  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
 !
 !----------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -2836,6 +2836,7 @@
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #endif
+   integer :: nt, nrec,i,name, ntape,new,nstr2,nij,nsize,nstr1
 
       rewind nt
       if (nrec.gt.0) then
@@ -2926,7 +2927,7 @@
 14      continue
       end if
       return     
-      end 
+      end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine zero (name)
@@ -3067,6 +3068,7 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse6 (ii,i1,i2,i3,i4,i5,i6)
+! extracts 6 digits from the 6-digit integer number
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -3307,28 +3309,31 @@
       end subroutine perms
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine prt(name,tit,iparm)
+subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
+! Main printing subroutine for 1 and 2-electronical records
+!
+! 1-electronic records have first two indexes zero - TODO: avoid their printout
 !
 !  prints diagrams (integrals,intermediates...) & their indexes 
 !
 !  name : diagram name,  4-bytes (integer) character 
-!  tit  : title,   8-bytes  (real)  character
+!  tit  : title,   any-bytes  character
 !
-!  iparm : printout parameter - level of printing
-!
+!  iparm : printout parameter - level of printing, for the moment, deactivated
 !---------------------------------------------------------------------------------
+  use print_level, only: getiprint
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use dat_mod
-      use cij1_mod
-      use hsfs_parameters
-#include "implicit.h"
+  use cfiles_mod
+  use gen_mod
+  use dat_mod
+  use cij1_mod
+  use hsfs_parameters
+  implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -3345,85 +3350,66 @@
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
+ character(*), intent(in) :: tit
+ character*4, intent(in) :: name
+ integer, intent(in) :: iparm
+ real(kind=8) :: a(6), flim
+ integer :: ind(4,6),i,ii,jj,io,num,new,nsize,istrt1,istrt2
 
-      dimension a(6),ind(4,6)
-!miro: try eliminate non-ascii characters from routine name by declaration
-      character(*) tit
+ !if (iparm.gt.iopt(1)) return
 
-      if (iopt(1).ge.5) then
-        call header('Output from "prt"',-1)
-        write(LUPRI,'(2x,a,a8)') 'tit=',tit
-        write(LUPRI,'(2x,a,i5)') 'iparm=',iparm
-        write(LUPRI,'(2x,a,a4)') 'name=',name
-      endif
+ flim=10.d0**(-iopt(5)) ! printout limit
+ if (iopt(5).le.0) flim=0.d0
 
-      if (iparm.gt.iopt(1)) return
+ call files_ccsd(name,num,new,1,-1,-1)
+ if (new.ne.0) then
+   write (LUPRI,*) 'prt tried to read nonexistent file, name=', name
+   call abext('prt tried to read nonexistent file!')
+ endif
 
-      flim=10.d0**(-iopt(5))
-      if (iopt(5).le.0) flim=0.d0
+ if (getiprint() >=2) then
+   nsize=ije1(nij1)
+   ! print out basic info - header -  about the indexed data
+   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
+   110 format(1x,'prt: title=',a,' id:',a,', size=',i7,' iii1=',i7,' iiv1=',i7,' nij1=',i7, & 
+             ' ij records:'/(8(2x,z4,i8,';')))
+   call flush(LUPRI)
+ endif
 
-      call files_ccsd(name,num,new,1,-1,-1)
-
-      if (iopt(1).ge.5) then
-        write(LUPRI,*) 'prt: flim=',flim
-        write(LUPRI,*) 'prt: num=',num
-      endif
-
-      if (new.ne.0) then
-        write (LUPRI,*) ' prt tried to read nonexistent file'
-        call abext('prt     ')
-      endif
-
-!     nsize=ije(nij)
-      nsize=ije1(nij1)
-
-!     write (LUPRI,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
-      write (LUPRI,110)                                                 &
-        tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
-110   format(' file ',a4,', size iii1 iiv1=',4i7,' ij records:'/        &
-           (8(2x,z4,i8,';')))
-
-!     istrt1=nstrt(1,num-1)+2*nij+4
-      istrt1=nstrt(1,num-1)+2*nij1+4
-      istrt2=nstrt(2,num-1)
-      io=0
-      do 30 i=1,nsize
-      if (abs(gen(istrt2+i)).ge.flim) then
-        io=io+1
-        a(io)=gen(istrt2+i)
-        ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
-        ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
-        ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
-        ind(4,io)=iand(           igen(istrt1+i),z'ff')
-        if (io.eq.6) then
-          write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
-          io=0
-        endif
-
-!       ... mi:  printout/error trap !
-!       if (dabs(a(io)).gt.1.0d+7) then
-!        write(LUPRI,*) 'error ! big value ! index istrt2+i=',istrt2+i
-!        write(LUPRI,*) 'istrt1=nstrt(1,num-1)+2*nij+4,where num=',num
-!        write(LUPRI,*) 'a(io)=gen(istrt2+i)=',gen(istrt2+i)
-!        call quit('prt: big values of integral!')
-!       endif
-
-      endif
-30    continue
-
-      if (io.gt.0) then
-        write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,io)
-140     format(1x,6(1x,4i2,'=',d11.5))
-      endif
-
-      return
-      end subroutine prt
+ if (getiprint() >=3) then
+   istrt1=nstrt(1,num-1)+2*nij1+4 ! position of indexes on array igen
+   istrt2=nstrt(2,num-1)          ! position of indexed data on array gen
+   io=0
+   iloop: do i=1,nsize
+     if (abs(gen(istrt2+i)).ge.flim) then ! get if greater than limit
+       io=io+1
+       a(io)=gen(istrt2+i)
+       ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
+       ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
+       ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
+       ind(4,io)=iand(           igen(istrt1+i),z'ff')
+       if (io.eq.6) then ! print out indexed data
+         write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
+         call flush(LUPRI)
+         io=0 ! zero the counter
+       endif
+     endif
+   enddo iloop
+   ! print the remaining indexed data
+   if (io.gt.0) then
+      write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,io)
+      140 format(1x,6(1x,4i2,'=',d11.5))
+      call flush(LUPRI)
+   endif
+ endif
+return
+end subroutine prt
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt6 (name,tit,iparm)
 !--------------------------------------------------------------------------------
 !
-! Printing routine used for triples
+!      Printing routine used for triples
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -3513,9 +3499,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt8 (name,tit,iparm)
 !--------------------------------------------------------------------------------
-!
-!
-!
+! Printing routine for quadruples
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
@@ -3607,22 +3591,17 @@
       return
       end 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine prtime(tit,n,iparm)
-!--------------------------------------------------------------------------
-!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine prtime(tit,n,iparm)
+!-------------------------------------------------------------------------------
 !  print time using system specific routine
-!
 !  tit - "title" of the routine, entering as the string among parameters list
-!
 !  n - hm, like additional specifikation number  (?)
-!  
-!  iparm - parameter, which must be lower than printing value
-!
-!--------------------------------------------------------------------------
+!  iparm - parameter, which must be lower than printing value, but deactivated
+!-------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+  use dat_mod
+  implicit none
 #include "priunit.h"
 #include "csdtime.h"
 #else
@@ -3634,66 +3613,25 @@
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
-!mi: warning - sometimes I could have to deactivate it otherwise getting crash in printout
-      character(*) tit ! to cut off trash characters
-
-      real*4 cputime
-      CHARACTER*8  TIMEX,DATEX*10
-      character*12 temp
-
-      ! generalized function
-!      real*4 cputime
-
-!       ... return if "param > print level"
-      if (iparm.gt.iopt(1)) return
-
-      t=cputime(real(0.0))
-!      t=cputime(double(0.0))
-!     t = mclock()/1000000.
-
-      diff = t - csdltim
-      acum = t - csdstim
-
-!mi: take DIRAC general routine ( gp/gpluuk.F )
-      CALL DAYTIME(DATEX,TIMEX)
-
-!      write(LUPRI,*)        ' * tit=',tit
-!      write(LUPRI,*)        ' * adjustl(tit)=',adjustl(tit)
-!      write(LUPRI,'(a,a8)') 'a8 tit=',tit
-!      write(LUPRI,'(a,a8)') 'a8 temp_tit=',temp_tit
-
-!     print 900,tit,acum,diff,n,clockx
-!900   format (' time aft ',a8,f10.3,';added ',
-!     1 f8.3,' n=',i8,'. ',a24)
-
-!     temp=tit
-!     call clean_string(temp)
-      !call clean_string(tit)
-
-!      write(LUPRI,*) 'prtime....'
-!      write(LUPRI,*) 'len(tit)=',len(tit)
-!      write(LUPRI,*) 'trim(tit)=',trim(tit)
-!     temp=tit
-!     call flush(LUPRI)
-!     write(LUPRI,'(a,a9)') 'temp=',temp
-      call flush(LUPRI)
-!     write(LUPRI,'(a,a9)') 'tit=',tit
-!     write(LUPRI,*) 'diff=',diff
-!     write(LUPRI,*) 'n=',n
-!     write(LUPRI,*) 'datex=',datex
-!     write(LUPRI,*) 'timex=',timex
-
-!!!! might be prioblem...
-!     print 900,temp,acum,diff,n,datex,timex
-      print 900,tit,acum,diff,n,datex,timex
-900   format (' time after :',a9,1x,f10.3,'; added ',f10.3,'. n=',i8,'. ',2A12)
-
-      csdltim = t
-      call flush (LUPRI)
-
-      return
-      end subroutine prtime
+  character(*), intent(in) :: tit 
+  integer,intent(in) :: n,iparm
+  character*8 :: timex,datex*10
+  real (kind=8) :: t, diff, acum
+  real (kind=4), external :: cputime
+! ... return if "param > print level"
+  if (iparm.gt.iopt(1)) return
+  t=cputime(real(0.0))
+  diff = t - csdltim
+  acum = t - csdstim
+  call daytime(datex,timex)
+  write(LUPRI,'(1x,a,a9,a,f10.3,a,f10.3,a,2a9)')  & 
+  'time after:',tit,' spent:',diff,'s, total:',acum,'s, ',datex,timex
+  !print 900,tit,acum,diff,n,datex,timex
+  !900   format (' time after :',a9,1x,f10.3,'; added ',f10.3,'. n=',i8,'. ',2A12)
+  csdltim = t ! save last time
+  call flush(LUPRI)
+return
+end subroutine prtime
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       subroutine clean_string(temp)
@@ -3739,8 +3677,9 @@
 
 ! *************************************************
 !     function cputime(x)
-!     real*8 function cputime(x)
       real*4 function cputime(x)
+! http://gcc.gnu.org/onlinedocs/gfortran/SECOND.html
+! Returns a REAL(4) value representing the elapsed CPU time in seconds.
 !DEC  Real*8 Runsec
       Real*8 Runsec
       real*8 x

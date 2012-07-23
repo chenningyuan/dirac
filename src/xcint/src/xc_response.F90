@@ -110,6 +110,14 @@ contains
     real(8)                :: xcfun_in(5, max_block_length)
 !   ----------------------------------------------------------------------------
 
+#ifdef INT_STAR8
+    if (use_gga) then
+       print *, 'controlled stop: only int32'
+       print *, 'index integer type conversion fails with int64 for GGA'
+       stop 1
+    end if
+#endif
+
 !   get perturbed densities
 !   get perturbed densitiy gradients and gradient norms
 
