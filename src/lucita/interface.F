@@ -6127,7 +6127,7 @@ CC        IVFLEV = 1               ! could be made more flexible
       do ISP=1,NIRR_PN,1
         if (NTEST.ge.10) write(LUWRT,*) 'ISP =',ISP
         NSP=IQISYM(ISP)
-        if (NSP.eq.0.and.NTEST.ge.1) then
+        if (NSP.eq.0)then
           write(LUWRT,*) 'Number of symm for P is  ',NSP
           write(LUWRT,*) 'Skipping two-el. int. read.'
           goto 333

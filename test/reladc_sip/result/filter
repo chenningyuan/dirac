@@ -1,4 +1,4 @@
-$ERROR 1.E-6
+$ERROR 1.E-4
 
-Nlines 10:First 100 RAW Lanczos EVAL
+Nlines 5:no.    eigenvalue (eV)   mean-res.
 

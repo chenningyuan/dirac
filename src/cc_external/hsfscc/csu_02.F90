@@ -9,6 +9,7 @@
       use cfiles_mod
       use cint_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "csdtime.h"

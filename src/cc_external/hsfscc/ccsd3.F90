@@ -837,9 +837,6 @@
 !     character(*) namet, namef ! mi fix - data specification for prtime
       character*4 namet, namef ! mi fix - data specification for prtime
 
-!   reorder from file namef (info in /cij2/) to namet (/cij1/)
-      !ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
-
       if (getiprint() >= 5) then
         call header('Output from "reorder"',-1)
         write(LUPRI,*) 'namef=',namef
@@ -876,10 +873,6 @@
       lngth1=ije1(nij1)
       lngth2=ije2(nij2)
 
-!    miro: set up temporarily primitive error trap for HSFS_dynamic
-!   ... this works for gfortran/gdb; however, ifort/idb gives other error...
-!     call check_ctmp_mod
-
 !miro: "lngth2+600" could cause index leak for "itmp" array ???
 ! todo: replace 600 with  some internal parameter ...
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
@@ -898,10 +891,9 @@
       call dcopy(lngth2,gen(istrt22+1),1,gen(istrt12+1),1)
       call vxsort(itmp,lngth2,lngth1,gen(istrt12+1),igen(istrt11+1))
 
-!     call check_ctmp_mod
-
-       ! ... print out
-      call prt(namet,namet,iparm)
+      ! ... print out ...
+      !call prt(namet,namet,iparm)
+      call prt(namet,"reorder",iparm)
       call prtime(namet,ije1(nij1),1)
 
       return
@@ -983,7 +975,7 @@
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) 'reordx input tape does not exist, ',name2
-        stop                      
+        call quit('reordx input tape name2 does not exist')
       end if
       call parse8 (iord,i1,i2,i3,i4,i5,i6,i7,i8)
       call parse8 (iii2,ia(1),ia(2),ia(3),ia(4),ia(5),ia(6),ia(7),ia(8))
@@ -1765,10 +1757,10 @@
 !
 !  parameters: iparm - printing level for "prt"
 !
-! Important: integrals must be unique in mulliken notation ! No repeating
+!  Important: integrals must be unique in Dirac notation ! No repeating
 !
 !------------------------------------------------------------------------
-      use print_level
+      use print_level, only:getiprint
       use ipack_mod, only: ipack4
 #if defined HSFS_DYN_ALLOC
       use ctmp_mod 
@@ -1779,7 +1771,7 @@
       use rsp2_mod 
       use cint_mod 
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !      implicit real*8 (a-h,o-z)
@@ -1807,37 +1799,19 @@
 #endif
 
 !    ... miro: introduced to have strings clean, without garbage
-      character(*) :: name
-      logical lrsp
-      data zero / 1.d-13/ ! miro: to generalize in a module
+      character*4, intent(in) :: name
+      integer, intent(in):: iparm
+      integer, intent(in) :: iii, iiv
 
-!     .. function definition - on 32bit ! TODO: replace with module file
-     ! ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4) )
+      logical :: lrsp
+      !data zero / 1.d-13/ ! miro: to generalize in a module
+      real*8, parameter :: zero=1.0d-13
 
-      if (getiprint() >= 5) then ! control printout
-        call header('Output from "selftyp"',-1)
-        write(LUPRI,'(2x,a,a4)') 'name=',name
-        write(LUPRI,'(2x,a,i7)') 'iii=',iii
-        write(LUPRI,'(2x,a,i7)') 'iiv=',iiv
-        write(LUPRI,'(2x,a,i7)') 'iparm=',iparm
+      integer :: num,lngth,istrt1,istrt2,i1,i2,i3,i4,iv1,iv2,iv3,iv4
+      integer :: nh,nv,i1234,nout,i,j1,j2,j3,j4,njh,njv,j12,ii,iv1234
 
-        write(LUPRI,'(2x,a,i6)') 'nint=',nint
-!       write(LUPRI,'(2x,a,i6)') 'nij=',nij
-        write(LUPRI,'(2x,a,i6)') 'nij1=',nij1
-        write(LUPRI,'(2x,a,i6)') 'nflcur=',nflcur
-        write(LUPRI,*)
-        !call check_modules
-      endif
-
+      ! call template function
       call tmplt(iii,iiv,name,num)
-
-      if (getiprint() >= 5) then ! control printout
-        write(LUPRI,'(/,2x,a,i6)') 'after tmplt, nint=',nint
-!       write(LUPRI,'(2x,a,i6)')   '              nij=',nij
-        write(LUPRI,'(2x,a,i6)')   '              nij1=',nij1
-        write(LUPRI,'(2x,a,i6)')   '           nflcur=',nflcur
-        write(LUPRI,*)
-      endif
 
 !        ... assumes ije1(:) is filled
 !     lngth=ije(nij)
@@ -1847,7 +1821,6 @@
       istrt2=nstrt(2,num-1)
 
       if (getiprint() >= 5) then ! control printout
-!     if (iopt(1).ge.5) then ! ... control printout
         write(LUPRI,'(/,2x,a,i5)') 'seltyp, lngth=',lngth
         write(LUPRI,'(2x,a,i5)')   '       istrt1=',istrt1
         write(LUPRI,'(2x,a,i5)')   '       istrt2=',istrt2
@@ -1855,6 +1828,7 @@
 
       call parse(iii,i1,i2,i3,i4)
       call parse(iiv,iv1,iv2,iv3,iv4)
+
 
       lrsp=(iopt(9).ne.0).and.(iv1.eq.1).and.(iv2.eq.1)
       nh=0
@@ -1897,11 +1871,8 @@
       if (icv(j4).eq.1) njv=njv+1
       if (njh.ne.nh) go to 190
       if (njv.lt.nv) go to 190
-      !if (ipack(ic(j1),ic(j2),ic(j3),ic(j4)).ne.i1234) go to 110
       if (ipack4(ic(j1),ic(j2),ic(j3),ic(j4)).ne.i1234) go to 110
-      !if (iand(ipack(icv(j1),icv(j2),icv(j3),icv(j4)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j1),icv(j2),icv(j3),icv(j4)),iv1234).ne.iv1234)&
-  go to 110
+      if (iand(ipack4(icv(j1),icv(j2),icv(j3),icv(j4)),iv1234).ne.iv1234) go to 110
 
       if (lrsp) then
         j12=ior(ishft(j1,8),j2)
@@ -1911,20 +1882,17 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j1,j2,j3,j4)
+      ! <j1 j2|j3 j4> = <j1 j2|j3 j4>
       itmp(nout)=ipack4(j1,j2,j3,j4)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+        write(LUPRI,*) nout,j1,j2,j3,j4,gen(istrt2+nout)
       endif
 
 110   if (j1.eq.j3) go to 120
 
-      !if (ipack(ic(j3),ic(j2),ic(j1),ic(j4)).ne.i1234) go to 120
       if (ipack4(ic(j3),ic(j2),ic(j1),ic(j4)).ne.i1234) go to 120
-      !if (iand(ipack(icv(j3),icv(j2),icv(j1),icv(j4)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j3),icv(j2),icv(j1),icv(j4)),iv1234).ne.iv1234)&
-          go to 120
+      if (iand(ipack4(icv(j3),icv(j2),icv(j1),icv(j4)),iv1234).ne.iv1234) go to 120
 
       if (lrsp) then
         j12=ior(ishft(j3,8),j2)
@@ -1934,22 +1902,18 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j3,j2,j1,j4)
+      !<j1 j2|j3 j4>=<j3 j2|j1 j4>
       itmp(nout)=ipack4(j3,j2,j1,j4)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        !call check_modules
+        write(LUPRI,*) nout,j3,j2,j1,j4,gen(istrt2+nout)
       endif
 
 
 120   if (j2.eq.j4) go to 130
-      !if (ipack(ic(j1),ic(j4),ic(j3),ic(j2)).ne.i1234) go to 130
       if (ipack4(ic(j1),ic(j4),ic(j3),ic(j2)).ne.i1234) go to 130
 
-      !if (iand(ipack(icv(j1),icv(j4),icv(j3),icv(j2)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j1),icv(j4),icv(j3),icv(j2)),iv1234).ne.iv1234)&
-              go to 130
+      if (iand(ipack4(icv(j1),icv(j4),icv(j3),icv(j2)),iv1234).ne.iv1234) go to 130
 
       if (lrsp) then
         j12=ior(ishft(j1,8),j4)
@@ -1959,21 +1923,18 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j1,j4,j3,j2)
+      ! <j1 j2 |j3 j4> = <j1 j4|j3 j2>
       itmp(nout)=ipack4(j1,j4,j3,j2)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        !call check_modules
+        write(LUPRI,*) nout,'-',j1,j4,j3,j2,gen(istrt2+nout)
       endif
 
 130   if ((j1.eq.j3).or.(j2.eq.j4)) go to 140
-      !if (ipack(ic(j3),ic(j4),ic(j1),ic(j2)).ne.i1234) go to 140
       if (ipack4(ic(j3),ic(j4),ic(j1),ic(j2)).ne.i1234) go to 140
 
-      !if (iand(ipack(icv(j3),icv(j4),icv(j1),icv(j2)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j3),icv(j4),icv(j1),icv(j2)),iv1234).ne.iv1234)&
-         go to 140
+      if (iand(ipack4(icv(j3),icv(j4),icv(j1),icv(j2)),iv1234).ne.iv1234) go to 140
+
       if (lrsp) then
         j12=ior(ishft(j3,8),j4)
         do 135 ii=1,nrsp2
@@ -1982,22 +1943,18 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j3,j4,j1,j2)
+      ! <j1 j2 |j3 j4> = <j3 j4|j1 j2>
       itmp(nout)=ipack4(j3,j4,j1,j2)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        !call check_modules
+        write(LUPRI,*) nout,j3,j4,j1,j2,gen(istrt2+nout)
       endif
 
 140   if ((j1.eq.j2).and.(j3.eq.j4)) go to 190
 
-      !if (ipack(ic(j2),ic(j1),ic(j4),ic(j3)).ne.i1234) go to 150
       if (ipack4(ic(j2),ic(j1),ic(j4),ic(j3)).ne.i1234) go to 150
 
-      !if (iand(ipack(icv(j2),icv(j1),icv(j4),icv(j3)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j2),icv(j1),icv(j4),icv(j3)),iv1234).ne.iv1234)&
-          go to 150
+      if (iand(ipack4(icv(j2),icv(j1),icv(j4),icv(j3)),iv1234).ne.iv1234) go to 150
 
       if (lrsp) then
        j12=ior(ishft(j2,8),j1)
@@ -2007,19 +1964,17 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      ! <pq|rs> = <qp|sr>
+      ! <j1 j2 |j3 j4> = <j2 j1|j4 j3>
       itmp(nout)=ipack4(j2,j1,j4,j3)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+        write(LUPRI,*) nout,'-',j2,j1,j4,j3,gen(istrt2+nout)
       endif
 
 150   if (j1.eq.j3) go to 160
-      !if (ipack(ic(j2),ic(j3),ic(j4),ic(j1)).ne.i1234) go to 160
       if (ipack4(ic(j2),ic(j3),ic(j4),ic(j1)).ne.i1234) go to 160
-      !if (iand(ipack(icv(j2),icv(j3),icv(j4),icv(j1)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j2),icv(j3),icv(j4),icv(j1)),iv1234).ne.iv1234)&
-  go to 160
+      if (iand(ipack4(icv(j2),icv(j3),icv(j4),icv(j1)),iv1234).ne.iv1234) go to 160
+
       if (lrsp) then
         j12=ior(ishft(j2,8),j3)
         do 155 ii=1,nrsp2
@@ -2028,20 +1983,16 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      ! ....
+      ! <j1 j2 |j3 j4> = <j2 j3|j4 j1>
       itmp(nout)=ipack4(j2,j3,j4,j1)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        !call check_modules
+        write(LUPRI,*) nout,'-',j2,j3,j4,j1,gen(istrt2+nout)
       endif
 
 160   if (j2.eq.j4) go to 170
-      !if (ipack(ic(j4),ic(j1),ic(j2),ic(j3)).ne.i1234) go to 170
       if (ipack4(ic(j4),ic(j1),ic(j2),ic(j3)).ne.i1234) go to 170
-      !if (iand(ipack(icv(j4),icv(j1),icv(j2),icv(j3)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j4),icv(j1),icv(j2),icv(j3)),iv1234).ne.iv1234)&
-  go to 170
+      if (iand(ipack4(icv(j4),icv(j1),icv(j2),icv(j3)),iv1234).ne.iv1234)  go to 170
       if (lrsp) then
         j12=ior(ishft(j4,8),j1)
         do 165 ii=1,nrsp2
@@ -2050,19 +2001,17 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
+      ! <j1 j2 |j3 j4> = <j4 j1|j2 j3>
       itmp(nout)=ipack4(j4,j1,j2,j3)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+        write(LUPRI,*) nout,'-',j4,j1,j2,j3,gen(istrt2+nout)
         call check_modules
       endif
 
 170   if ((j1.eq.j3).or.(j2.eq.j4)) go to 190
-      !if (ipack(ic(j4),ic(j3),ic(j2),ic(j1)).ne.i1234) go to 190
       if (ipack4(ic(j4),ic(j3),ic(j2),ic(j1)).ne.i1234) go to 190
-      !if (iand(ipack(icv(j4),icv(j3),icv(j2),icv(j1)),iv1234).ne.iv1234)&
-      if (iand(ipack4(icv(j4),icv(j3),icv(j2),icv(j1)),iv1234).ne.iv1234)&
-            go to 190
+      if (iand(ipack4(icv(j4),icv(j3),icv(j2),icv(j1)),iv1234).ne.iv1234) go to 190
       if (lrsp) then
         j12=ior(ishft(j4,8),j3)
         do 175 ii=1,nrsp2
@@ -2071,22 +2020,19 @@
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-      !itmp(nout)=ipack(j4,j3,j2,j1)
+      ! <j1 j2 |j3 j4> = <j4 j3|j2 j1>
       itmp(nout)=ipack4(j4,j3,j2,j1)
 
       if (getiprint() >= 5) then ! control printout
-        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
-        call check_modules
+        write(LUPRI,*) nout,'-',j4,j3,j2,j1,gen(istrt2+nout)
       endif
 
 190   continue ! end of cycle
 
-
 !  control printout before calling vxort
-      if (getiprint() >= 5) then ! control printout
+      if (getiprint() >= 7) then ! control printout
        write(LUPRI,'(/,2x,a,i6)')   &
             'seltyp-before calling vxsort, nout=',nout
-!      write(LUPRI,'(2x,a,i6)') 'ije(nij)=',ije(nij)
        write(LUPRI,'(2x,a,i6)') 'ije1(nij1)=',ije1(nij1)
        write(LUPRI,'(2x,a,i6)') 'istrt2+1=',istrt2+1
        write(LUPRI,'(2x,a,i6)') 'istrt1+1=',istrt1+1
@@ -2097,15 +2043,14 @@
 
 !     write (LUPRI,1900) ije(nij),iii,iiv
       write (LUPRI,1900) ije1(nij1),iii,iiv
-1900  format('seltyp collected ',i9,' integrals of type ',2i6)
-
-      call prt(name,name,iparm) ! ... print integrals ...
+1900  format(1x,'seltyp collected ',i9,' integrals of type ',2i6)
+      call prt(name,'seltyp',iparm) ! ... print integrals ...
 
 !     call prtime(name,ije(nij),0) ! ... print time ...
       call prtime(name,ije1(nij1),0) ! ... print time ...
 
       return
-      end
+      end subroutine seltyp
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine selt1(iii,iiv,name,iparm)
@@ -2213,11 +2158,11 @@
 
 !     write (6,1900) ije(nij),iii,iiv
       write (6,1900) ije1(nij1),iii,iiv
-1900  format('collected ',i9,' integrals of type ',2i6)
+1900  format('selt1 collected ',i9,' integrals of type ',2i6)
 
       call check_modules
 
-      call prt(name,name,iparm)
+      call prt(name,'selt1 ',iparm)
 !     call prtime(name,ije(nij),0)
       call prtime(name,ije1(nij1),0)
 
@@ -2225,7 +2170,7 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine seltyp4(iii,iiv,name,iparm)
+ subroutine seltyp4(iii,iiv,name,iparm)
 !---------------------------------------------------------------------------------
 !
 !  this routine for pppp only. integrals <ij|kl> collected, i.ge.j .
@@ -2359,17 +2304,14 @@
 !  indices not retained for pppp.
       nstrt(1,nflcur)=nstrt(1,nflcur)-lngth
       write (6,1900) lngth,iii,iiv
-1900  format('collected ',i9,' integrals of type ',2i6)
+1900  format('seltyp4 collected ',i9,' integrals of type ',2i6)
       if (iopt(10).eq.0) call wrtfile(9,0,"pppp")
 
-      call check_modules
-
-      call prt(name,name,iparm)
-
+      call prt(name,'seltyp4 ',iparm)
       call prtime(name,lngth,0)
 
-      return
-      end
+ return
+ end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine sqr3 (name) 
@@ -2471,21 +2413,20 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine sqr(namef,names)
+  subroutine sqr(namef,names)
 !--------------------------------------------------------------------------------
 !
-! symmetrization; "namef" name of the nonsymmetrized diagram to be symmterized 
+! symmetrization; "namef" name of the nonsymmetrized diagram to be symmetrized 
 ! into "names"
 !
 !--------------------------------------------------------------------------------
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
-      character*4 namef,names
+      character*4, intent(in) :: namef,names
       call reorder(namef,names,2143,5) ! switch indexes
       call add(namef,1.d0,names,1.d0,namef)
       return
-      end
+ end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tmplt(ii1234,j1234,name,num)

@@ -87,6 +87,7 @@ contains
 
     integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
     type(matrix) :: D_mo_dagger, TP, TM, T
+    logical, allocatable :: matrix_is_unperturbed(:)
 !   ----------------------------------------------------------------------------
 
     max_ao_g_order = 0
@@ -290,9 +291,13 @@ contains
 
     end if
 
+    allocate(matrix_is_unperturbed(visual_cfg_nr_dmat))
+    matrix_is_unperturbed = .false.
+
     do imat = 1, visual_cfg_nr_dmat
 
        if (visual_cfg_dmat_file(imat) == 'DFCOEF') then
+          matrix_is_unperturbed(imat) = .true.
 !         get unperturbed density matrix
 
           D_mo%elms = 0.0d0
@@ -375,7 +380,10 @@ contains
 !            dirty trick add D_con on top of D
 !            on trunk we will have to check that this only
 !            happes to the current, mag field, and so on
-             D(imat) = D(imat) + D_con
+             if (.not. matrix_is_unperturbed(imat)) then
+                ! don't do it with unp matrices, otherwise double counting
+                D(imat) = D(imat) + D_con
+             end if
           end if
 
        end if
@@ -405,6 +413,7 @@ contains
 !   deallocate various things
 !   =========================
 
+    deallocate(matrix_is_unperturbed)
     call dealloc(occupation)
 
     C    = 0

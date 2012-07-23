@@ -818,6 +818,7 @@ module ipack_mod
   implicit none
   logical, private :: check_ipack_indexes=.false.
   integer, parameter, private :: min_indx = 1, max_indx = 255
+  !private :: set_check_ipack_indexes, unset_check_ipack_indexes
   contains
 
   subroutine set_check_ipack_indexes
@@ -846,6 +847,30 @@ module ipack_mod
     ipack4=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
   end function ipack4
 
+  integer function i1unpack4(ii)
+  ! unpack 1st index
+    integer, intent(in) :: ii
+    i1unpack4=iand(ishft(ii,-24),z'ff')
+  end function i1unpack4
+
+  integer function i2unpack4(ii)
+  ! unpack 2. index
+    integer, intent(in) :: ii
+    i2unpack4=iand(ishft(ii,-16),z'ff')
+  end function i2unpack4
+
+  integer function i3unpack4(ii)
+  ! unpack 3. index
+    integer, intent(in) :: ii
+    i3unpack4=iand(ishft(ii,-8),z'ff')
+  end function i3unpack4
+
+  integer function i4unpack4(ii)
+  ! unpack 4. index
+    integer, intent(in) :: ii
+    i4unpack4=iand(ii,z'ff')
+  end function i4unpack4
+
   integer function ipack5(i,j,k,l,m)
     integer, intent(in) :: i,j,k,l,m
     if (check_ipack_indexes) call check_ipack5_indexes(i,j,k,l,m)
@@ -859,6 +884,15 @@ module ipack_mod
            ior(ior(ishft(k,12),ishft(l,8)),      & 
                ior(ishft(m,4),n)))
   end function ipack6
+
+  subroutine check_ipack1_indexes(i)
+#include "priunit.h"
+    integer, intent(in) :: i
+    if (.not.(i >= min_indx .and. i <= max_indx )) then
+        write(LUPRI,*) 'ipack1: i=',i
+        call quit('ipack1 index out of range !')
+    endif
+  end subroutine check_ipack1_indexes 
 
   subroutine check_ipack2_indexes(i,j)
 #include "priunit.h"
@@ -967,8 +1001,6 @@ module ipack_mod
     ip6=ipack6(i0,j0,k0,l0,m0,n0)
     write(LUPRI,*) 'ipack6(',i0,',',j0,',',k0,',',l0,',',m0,',',n0,')=',ip6
 
-
-
     write(LUPRI,*)
     call unset_check_ipack_indexes
   end subroutine test_ipack_functions
@@ -1006,3 +1038,20 @@ call check_ijtemp_mod
  write(LUPRI,*) 'no checking of modules, this is nasty STATIC version.'
 #endif
 end subroutine check_modules
+
+subroutine space_usage
+!> at the end of some method print out info 
+!! about the consumed space of gen & igen arrays
+!! TODO: compare to the size of allocations
+#if defined HSFS_DYN_ALLOC
+use cfiles_mod
+implicit none
+#else
+implicit none
+#include "cfiles.h"
+!common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,iiia(200),iiva(200)
+#endif
+#include "priunit.h"
+write (LUPRI,'(/,i8,a,i8,a)') nstrt(1,nflcur),' words used in igen,', & 
+                              nstrt(2,nflcur),' words used in gen.'
+end subroutine
