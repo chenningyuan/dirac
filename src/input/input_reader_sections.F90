@@ -1120,12 +1120,12 @@
          reladc_dodips = .true.
       end if
 
-      if (kw_matches(word, '.SIPREPS')) then
+      if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
          call kw_read(word, reladc_sipreps, user_req_symmetries)
       end if
 
-      if (kw_matches(word, '.DIPREPS')) then
+      if (kw_matches(word, '.DIPREP')) then
          call kw_read(word, user_req_symmetries)
          call kw_read(word, reladc_dipreps, user_req_symmetries)
       end if
