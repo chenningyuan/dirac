@@ -1120,17 +1120,22 @@
          reladc_dodips = .true.
       end if
 
-      if (kw_matches(word, '.XREPS ')) then
+      if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
-         call kw_read(word, reladc_xreps, user_req_symmetries)
+         call kw_read(word, reladc_sipreps, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.DIPREP')) then
+         call kw_read(word, user_req_symmetries)
+         call kw_read(word, reladc_dipreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.READQK')) then
          reladc_readqkl = .true.
       end if
 
-      if (kw_matches(word, '.DOCONS')) then
-         reladc_doconst = .true.
+      if (kw_matches(word, '.NOCONS')) then
+         reladc_doconst = .false.
       end if
 
       if (kw_matches(word, '.DOADCP')) then
