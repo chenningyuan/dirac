@@ -1822,7 +1822,7 @@ C
      &               global_communicator)
       call interface_mpi_bcast_r1_work_f77(T2,NDIMT2*RCW,MASTER,
      &               global_communicator)
-      call interface_mpi_BCAST(RMS,1,MASTER,
+      call interface_mpi_bcast_r1_work_f77(RMS,1,MASTER,
      &               global_communicator)
 #endif
       RETURN
