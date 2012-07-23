@@ -1,6 +1,6 @@
 **DIRAC                                                                                             
 .TITLE                                                                                              
- Valence ionization of the HCN-molecule                                                   
+ Valence ionization of the HCN-molecule + long eigenvectors                                                  
 .WAVE FUNCTION                                                                                      
 **INTEGRALS
 *READIN

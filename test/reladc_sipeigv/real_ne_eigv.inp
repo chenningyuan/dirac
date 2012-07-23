@@ -1,6 +1,6 @@
 **DIRAC                                                                                             
 .TITLE                                                                                              
- Valence ionization of the Neon atom                                                      
+ Valence ionization of the Neon atom + long eigenvectors
 .WAVE FUNCTION                                                                                      
 **INTEGRALS
 *READIN
@@ -22,5 +22,5 @@ energy  -2.0 2.5 0.1
 *END OF                                                                                             
                                                                                                     
  $RELADC DOSIPS=T, ADCLEVEL=3, XREPS=3 $END                                                         
- $LANINP SIPITER=100, SIPPRNT=30.0, SIPEIGV(3)=10 $END                                                              
+ $LANINP SIPITER=100, SIPPRNT=30.0, SIPEIGV(1)=10 $END                                                              
                                                                                                     
