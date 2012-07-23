@@ -14,7 +14,7 @@
 .CLOSED SHELL                                                                                       
  14                                                                                                 
 .FCKCNV                                                                                             
-5.0E-07                                                                                             
+5.0E-06                                                                                             
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
 energy  -2.0 1.0 0.1                                                                                
@@ -27,7 +27,7 @@ energy  -2.0 1.0 0.1
  2
 **LANCZOS
 .SIPITER
- 100
+ 20
 .SIPPRNT
  15.0
 *END OF                                                                                             
