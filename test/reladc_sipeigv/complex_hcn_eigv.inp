@@ -18,8 +18,21 @@
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
 energy  -2.0 2.5 0.1                                                                                
+**RELADC
+.DOSIPS
+.ADCLEVEL
+ 3
+.SIPREPS
+ 1
+ 1
+**LANCZOS
+.SIPITER
+ 100
+.SIPPRNT
+ 20.0
+.SIPEIGV
+ 1
+ 10
 *END OF                                                                                             
                                                                                                     
- $RELADC DOSIPS=T, ADCLEVEL=3, XREPS=1 $END                                                         
- $LANINP SIPITER=100, SIPPRNT=20.0, SIPEIGV(1)=10 $END                                                              
                                                                                                     
