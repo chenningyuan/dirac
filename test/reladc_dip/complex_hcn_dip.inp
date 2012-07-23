@@ -18,8 +18,13 @@
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
 energy  -2.0 1.0 0.1                                                                                
+**RELADC
+.DODIPS
+**LANCZOS
+.DIPITER
+ 100
+.DIPPRNT
+ 40.0
 *END OF                                                                                             
                                                                                                     
- $RELADC DODIPS=T, XREPS=1 $END                                                         
- $LANINP DIPITER=100 DIPPRNT=40.0 $END                                                              
                                                                                                     
