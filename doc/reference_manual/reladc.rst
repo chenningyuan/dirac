@@ -1,152 +1,100 @@
 .. _reladc:
 
-RELADC
-=======
+RELADC & LANCZOS
+================
 
-*Relativistic Green's function (propagator) module RELADC* written by
-Markus Pernpointner.
+This section lists the available keywords for RELADC and the closely connected
+iterative LANCZOS diagonalizer in the new input format uniquely maintained in
+DIRAC.
 
-Propagators (Green's functions) are a very useful tool for the
-calculation of ionization energies, electron affinities, excitation
-energies, double ionization energies and so forth. The mathematical form
-of the propagator reveals the type of physical property which is
-described but does not necessarily point to an efficient solution
-strategy. One way to achieve this is the method of (A)lgebraic
-(D)iagrammatic (C)onstruction originally formulated by Schirmer [Schirmer1983]_.
+If you want to perform RELADC/LANCZOS calculations for the one- and two-particle
+propagator you invoke both by setting the .RELADC keyword in the \*\*WAVE FUNCTION
+Section. 
 
-Hereby the diagonal
-representation of the propagator is transformed to a nondiagonal form by
-formally inserting a completeness relation in an arbitrary basis which
-does not have to be specified further because this is just a formal
-step. But now the nondiagonal form is expanded into orders of
-perturbation theory and compared to the known diagrammatic expansion of
-the propagator order by order. By this procedure the matrix entries of
-the nondiagonal expansion can be determined and calculated resulting in
-the ADC matrix. The final diagonalization of the ADC matrix then yields
-the desired eigenvalues (poles) and eigenvectors (spectral intensities).
+The RELADC/LANCZOS calculation is then individually controlled in the 
+\*\*RELADC and \*\*LANCZOS input sections.
 
-In the current version of DIRAC a four-component realization of ADC
-providing single [Pernpointner2004]_
-and
-double [Pernpointner2010]_
-ionization
-potentials (SIPs and DIPs) is available starting from a \*closed shell\*
-reference determinant. Open-shell ADC based on a single reference (e.g.
-high-spin states) can be done in principle but the theoretical basis is
-not very sound for this. The four-component ADC is based on the
-Dirac-Coulomb operator and officially termed as DC-ADC. Be aware that
-for the moment RELADC has to be compiled with the -i8 compiler flag that
-means 64bit Integers are required. This will soon be abandoned.
+\*\*RELADC
+==========
 
-The following perturbational orders are implemented in DC-ADC:
+.DOSIPS
+-------
 
-**SIPs:** strict second order (ADC-2), extended second order (ADC-2e)
-and third order (ADC-3); **DIPs:** extended second order (ADC-2e).
+Do Single Ionization Potentials. 
+If you intend to do single ionization spectra calculations then set this keyword.
+Closely related to SIP calculations is the keyword
 
-Only little input is needed for program control and is given via a
-&RELADC &END Namelist directive. It should be mentioned that as in any
-method treating electron correlation the active orbital space also in
-this case determines the quality of the results. Since after
-construction of the ADC matrix a final diagonalization is required for
-obtaining the total spectrum (in the space of active occupied orbitals,
-of course) a Lanczos diagonalizer is invoked as well. Controlling the
-diagonalizer also occurs via Namelist starting with &LANINP &END.
+.ADCLEVEL
+---------
 
-RELADC similar to many post-DHF programs sets out from the transformed
-totally antisymmetric two-electron integrals 
-\\langle ij\|\|kl\\rangle.
-
-Therefore the :ref:`moltra` step is required and
-automatically invoked if the .4INDEX keyword is not given.
-
-&RELADC &END -- Control propagator calculation
-==============================================
-
-DOSIPS,DODIPS
--------------
-
-Logical variables. These invoke the main tasks of calculating Single
-Ionization Potentials via DOSIPS=T and/or Double ionization potentials
-via DODIPS=T. Either of them can be specified individually or
-simultaneously.
-
-*Default:*
-
-::
-
-    DOSIPS = F, DODIPS = F
-
-ADCLEVEL
---------
-
-Integer variable. Specifies the perturbational order for the SIP
-calculation only. Remember: the order for DIPs is always extended second
-order.
+Here you determine the perturbational order for the SIP calculations.
 
 ::
 
      ADCLEVEL = 1  strict second order
-     ADCLEVEL = 2  extended second order 
+     ADCLEVEL = 2  extended second order
      ADCLEVEL = 3  third order + constant diagrams
 
 *Default:*
 
 ::
 
-    ADCLEVEL = 3
+    ADCLEVEL = 3 including constant diagrams
 
-XREPS
------
+*Input example:*
+
+::
+
+   .ADCLEVEL
+   2
+
+
+.SIPREPS
+---------
 
 Integer array of length 32. Specifies the symmetries of the one-hole
-final states (SIP) to be calculated. Individual specification is useful
-if one is interested in a few symmetries only. However, for the double
-ionizations (DIPs) the determination of final state symmetries is more
-complicated and done automatically by the program. Therefore the XREPS
-directive has no influence on DIP calculations and all DIP final states
-are calculated in whatever symmetry they may occur.
+final states (SIP) to be calculated. If you do not enter this array
+all symmetries are checked for possible final states and those are 
+calculated in the respective perturbational order. You can also specify
+symmetries individually if you are interested only in a few by giving the
+number of requested symmetries followd by the irrep numbers.
 
 *Default:*
 
 ::
 
-    XREPS(*) = 0  no symmetries preselected.
+    SIPREPS(1:32) = 0  no symmetries preselected, all are calculated.
 
-READQKL
+*Input example:*
+
+::
+
+   .SIPREPS
+   8
+   1,3,5,7,17,19,21,23
+
+
+.READQKL
+--------
+
+Read back previously calculated constant diagrams in SIP runs. This is a restart
+option to avoid the most time consuming step in SIP runs.
+
+.NOCONS
 -------
 
-Logical variable. If the constant diagrams were calculated in a previous
-ADC(3) run (time consuming step) they can be read back in via the file
-QKLVAL. If this file does not exist an automatic recalculation is
-performed.
+Block calculation of constant diagrams in third-order SIP calculations.
+ADC is still executed up to third order but in the hole/hole block the (time consuming)
+constant diagrams are not added. Absence of constant diagrams reduces accuracy but
+increases speed considerably. Not recommended for production runs.
 
-*Default:*
+.VCONV
+------
 
-::
-
-    READQKL = F
-
-DOCONST
--------
-
-Logical variable. Turns off the calculation of constant diagrams in an
-ADC(3) run (if DOCONST = F). All other perturbational orders of the
-matrix blocks are retained. This option is be useful for the precise
-analysis of individual contributions.
-
-*Default:*
-
-::
-
-    DOCONST = T
-
-VCONV
------
-
-Double precision variable. Determines convergence of the inverse
-iteration in the calculation of the constant diagrams. The threshold is
-set to 1.0E-06 being sufficent regarding the overall methodological
-accuracy.
+Determines convergence of the inverse iteration in the calculation of 
+the constant diagrams. If iterations take much time you can reduce
+tightness by setting VCONV to 1.0E-05, 1.0E-04 asf. Check accuracy
+of results when you activate this option.
 
 *Default:*
 
@@ -154,25 +102,79 @@ accuracy.
 
     VCONV=1.0E-06
 
-&LANINP &END -- Control Lanczos diagonalizer
-============================================
+*Input example:*
 
-This is a second Namelist controlling the Lanczos diagonalizer. The
-spectral information is written to the files SSPEC.#irrep (SIPs) and
-DSPEC.#irrep (DIPs). Hereby the ionization potential, the pole strength
+::
+    .VCONV
+    1.0E-04
+
+
+.DOADCP
+-------
+
+Execute automatic eigenvector population analysis. Requires the activation of long eigenvector
+calculation via .SIPEIGV. The final states which are represented by the ADC eigenvectors are
+analyzed with respect to atomic contributions to individual states. Can be further processed
+by GNUPLOT (this module is work in progress and will be finished soon).
+
+.DOFULL
+-------
+
+Lanczos is automatically invoked when RELADC is active. If you want to invoke an additional
+full diagonalizer set this keyword. Attention: ADC matrices can become very large. A full
+diagonalization is therefore supported only for matrix dimensions up to 5000 x 5000 and is useful
+for test purposes only. 
+
+.DODIPS
+-------
+
+Do Double Ionization Potentials. 
+If you intend to do double ionization spectra calculations then set this keyword.
+The keyword .ADCLVEL does not apply to DIP runs because the perturbational order
+is set fixed to 'extended second order'.
+
+*Default:*
+
+::
+
+    DODIPS = F
+
+.DIPREPS
+---------
+
+Integer array of length 32. Specifies the symmetries of the two-hole
+final states (DIP) to be calculated. If you do not enter this array
+all symmetries are checked for possible final states and those are 
+calculated in the respective perturbational order. You can also specify
+symmetries individually if you are interested only in a few.
+
+*Default:*
+
+::
+
+    DIPREPS(*) = 0  no symmetries preselected, all are calculated.
+
+
+\*\*LANCZOS
+===========
+
+Once the ADC matrices are stored in packed form on disk they are diagonalized 
+by the iterative Lanczos algorithm. The spectral information is written to 
+the files SSPEC.#irrep (SIPs) and DSPEC.#irrep (DIPs). 
+Hereby the ionization potential, the pole strength
 and the error estimate are written in a line terminated by the '@' for
 grep purposes. Immediately after this line follows the (indented)
 configuration information belonging to this final state. This is
-imaginable as the one-hole or two-hole Slater-determinant forming this
-state in zeroth order. The suffix #irrep corresponds to the final state
-symmetry. For each symmetry calculated one therefore gets one (DS)SPEC
-file.
+imaginable as a one-hole or two-hole Slater-determinant forming this
+state in zeroth order. Strictly speaking the configuration coefficients
+refer to the intermediate state basis.
 
-SIPITER,DIPITER
----------------
+.SIPITER, .DIPITER
+-------------------
 
-Integer variables. Determines the number of Lanczos iterations in a SIP
-or DIP calculation. There is no need to specify the number of iterations
+Determines the number of Lanczos iterations in a SIP
+or DIP calculation for all symmetries. 
+There is no need to specify the number of iterations
 per symmetry because the convergence behaviour is similar within a
 specific ionization class. However, DIP calculations can require
 substantially more iterations for a comparable accuracy. Due to the
@@ -189,12 +191,22 @@ accordingly.
 
     SIPITER = 500, DIPITER = 500.
 
-SIPPRNT,DIPPRNT
----------------
 
-Real variables. These two variables only control *Screen output* of the
+*Input example:*
+
+::
+
+    .SIPITER
+    1000
+    .DIPITER
+    2500
+
+.SIPPRNT, .DIPPRNT
+------------------
+
+Real values. These two variables only control screen output of the
 calculated eigenvalues and have no influence on the results in the
-(DS)SPEC files! You can enter the threshold in eV up to which computed
+(DS)SPEC files. You can enter the threshold in eV up to which computed
 IPs (SIPs or DIPs) will be printed on screen. Sometimes one is only
 interested in a few lowest IPs and the screen output suffices.
 
@@ -204,28 +216,89 @@ interested in a few lowest IPs and the screen output suffices.
 
     SIPPRNT = 50.0, DIPPRNT = 50.0.
 
-SIPEIGV
--------
 
-Integer array of length 32 with the same structure as XREPS. For each
-chosen symmetry in XREPS you specify here the number of requested *long*
-eigenvectors corresponding to the ADC matrix.
+*Input example:*
 
-The following files are created by activating long eigenvector
-calculation: a) LONGEVC.#irrep: it contains the number of requested
-eigenvectors in binary format (real or complex) for a specific irrep and
-is used in subsequent lifetime calculations. b) the file EVCANAL.#irrep:
-it is generated in human readable form and contains the same information
-as LONGEVC.#irrep but with all the contributing configurations (main and
-satellite contributions to a specific final state). The creation of long
-eigenvectors invokes a second set of Lanczos iterations. The usual hole
-analysis and spectrum generation is not affected and long eigenvectors
-are only needed if one wants to analyze the satellite structure of a
-specific singly ionized final state or for lifetime calculations of the
-ionized state (coming soon).
+::
+
+    .SIPPRNT
+    20.0 
+    .DIPPRNT
+    100.0
+
+.SIPEIGV
+--------
+
+Integer array of length 32. For each chosen symmetry given in SIPREPS
+you specify here the number of requested *long*
+eigenvectors in the same order of symmetries. No long eigenvectors are
+calculated by default because the 1h components normally provide
+enough first information. The calculation of long eigenvectors invokes a second
+Lanczos run and is therefore a bit time consuming.
+
 
 *Default:*
 
 ::
 
-    SIPEIGV(*)=0
+    SIPEIGV(1:32) = 0   (no eigenvectors calculated)
+
+
+*Input example:*
+
+::
+
+    .SIPEIGV
+    5
+    20,20,30,30,10
+
+If you have given explicit symmetries in SIPREPS according to
+.SIPREPS
+ 8
+1,3,5,7,17,19,21,23
+then 20 eigenvectors are calculated for irrep 1, 20 for 3, 30 for 5, 30 for 7,
+10 for 17 and none for the remaining symmetries.
+
+
+.DIPEIGV
+--------
+
+Everything that is mentioned in .SIPEIGV refers here to the eigenvectors for the
+doubly ionized final states. Same default and same input with reference to the
+DIPREPS array, of course.
+
+
+.DOINCORE
+---------
+
+This keyword activates an incore Lanczos diagonalization. If you run jobs on machines with 
+large core memory you can speed up the diagonalization considerably by transferring large parts
+of the ADC matrix to memory. This is especially noticeable in DIP jobs because the matrices
+are much larger than in the single ionization case. 
+Attention: Be aware that the operating system allows you to allocate as much memory as you want.
+If there is not enough physical memory the OS starts to swap portions of the memory to disk.
+You have to avoid this situation since your job will not terminate in time. Check carefully that
+the memory you request is physically available! In later realizations the amount of physically
+available memory will be checked by the program itself.
+
+
+.ADCTHR
+--------
+
+Only matrix elements larger in amount than ADCTHR will be written to disk. Especially useful
+in combination with double ionization spectra. Tests have shown that you can reduce matrix
+size by a factor of two setting ADCTHR to 1.0E-05 with a loss of accuracy in the meV region.
+Perform accuracy tests for production runs since the behavior is system-dependent. 
+
+*Default:*
+
+::
+
+    ADCTHR = 0.0 (all nonzero metrix elements are written to disk)
+
+*Input example:*
+
+::
+
+    .ADCTHR
+    1.0E-05
