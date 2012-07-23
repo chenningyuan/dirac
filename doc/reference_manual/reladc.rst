@@ -155,6 +155,28 @@ analogous to SIPREPS.
 
     DIPREPS(1:32) = 0  (no symmetries preselected, all are calculated)
 
+.ADCTHR
+--------
+
+In DIP calculations only matrix elements whose amount is larger than ADCTHR 
+will be written to disk. This is due to the large matrices occurring in DIP
+runs. Tests have shown that you can reduce matrix
+size by a factor of two setting ADCTHR to 1.0E-05 with an accuracy loss
+in the meV region. Perform accuracy tests for production runs since 
+the behavior is system-dependent. 
+
+*Default:*
+
+::
+
+    ADCTHR = 0.0 (all nonzero matrix elements are written to disk)
+
+*Input example:*
+
+::
+
+    .ADCTHR
+    1.0E-05
 
 \*\*LANCZOS
 ===========
@@ -254,9 +276,13 @@ Lanczos run and is therefore a bit time consuming.
     20,20,30,30,10
 
 If you have given explicit symmetries in SIPREPS according to
-.SIPREPS
- 8
-1,3,5,7,17,19,21,23
+
+::
+
+    .SIPREPS
+    8
+    1,3,5,7,17,19,21,23
+
 then 20 eigenvectors are calculated for irrep 1, 20 for 3, 30 for 5, 30 for 7,
 10 for 17 and none for the remaining symmetries.
 
@@ -282,24 +308,3 @@ You have to avoid this situation since your job will not terminate in time. Chec
 the memory you request is physically available! In later realizations the amount of physically
 available memory will be checked by the program itself.
 
-
-.ADCTHR
---------
-
-Only matrix elements larger in amount than ADCTHR will be written to disk. Especially useful
-in combination with double ionization spectra. Tests have shown that you can reduce matrix
-size by a factor of two setting ADCTHR to 1.0E-05 with a loss of accuracy in the meV region.
-Perform accuracy tests for production runs since the behavior is system-dependent. 
-
-*Default:*
-
-::
-
-    ADCTHR = 0.0 (all nonzero matrix elements are written to disk)
-
-*Input example:*
-
-::
-
-    .ADCTHR
-    1.0E-05
