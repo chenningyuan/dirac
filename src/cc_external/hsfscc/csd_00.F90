@@ -1942,3 +1942,545 @@ implicit none
       return
       end 
 !  *******************************************************************
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine dge5n2 (name2,name3,namet,iord)
+!--------------------------------------------------------------------------------------
+!c         6x6=10
+!--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack4
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /idv/ iv(200) ,nvalo
+#include "idv.h"
+#endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension ia(8),save1(1000),save2(1000),iord(10)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge5n2 input tape does not exist, ',name2
+        stop                      
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge5n2 input tape does not exist, ',name3
+        stop                       
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      call tchng6 (nij2,ij2,ije2,ntape2,4)
+      call tchng6 (nij3,ij3,ije3,ntape3,4)
+      call tmplt10 (namet,ntapet)                    
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      do 10 i=1,nij1
+        do 60 k=4,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(5-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=4,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(10-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack4(ia(iord(6)),ia(iord(7)),ia(iord(8)),ia(iord(9)))
+          do 40 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+40        continue
+          if ((igot2.eq.1).and.(igot3.eq.1)) then
+            nel1=0
+            do 50 k=1,ije2(k2save)-ije2(k2save-1)
+              ii=igen(istrt21+ije2(k2save-1)+k)
+              if (ia(iord(5)).eq.iand(ishft(ii,-8),z'ff')) then
+                nel1=nel1+1
+                call dimx (nel1,1000,'dge5n2')
+                save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
+              end if
+50          continue 
+            nel2=0
+            do 80 k=1,ije3(k3save)-ije3(k3save-1)
+              ii=igen(istrt31+ije3(k3save-1)+k)
+              if (ia(iord(10)).eq.iand(ishft(ii,-8),z'ff')) then
+                nel2=nel2+1
+                call dimx (nel2,1000,'dge5n2')
+                save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
+              end if
+80          continue 
+            if (nel1.ne.nel2) then  
+              write (LUPRI,*) 'mismatch in lengths of records - dge5n2'
+              call quit('mismatch in lengths of records - dge5n2')
+            else  
+              gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
+            end if
+          end if
+20      continue
+10    continue
+      return
+      end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine dge6n2 (name2,name3,namet,iord)
+!-----------------------------------------------------------------------------
+!
+!c      6x8=12
+!
+!-----------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /idv/ iv(200),nvalo
+#include "idv.h"
+#endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension save1(1000),save2(1000),ia(12),iord(12)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!  todo: own module !
+      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+      !ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge6n2 input tape does not exist, name2=',name2
+        call quit('dge6n2 input tape name2 does not exist')
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge6n2 input tape does not exist, name3=',name3
+        call quit('dge6n2 input tape name3 does not exist')
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      call tmplt12 (namet,ntapet)
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      call tchng6 (nij3,ij3,ije3,ntape3,4)
+      do 10 i=1,nij1
+        do 60 k=5,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(6-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=5,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(12-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack4(ia(iord(8)),ia(iord(9)),ia(iord(10)),ia(iord(11)))
+          do 50 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+50        continue
+          if ((igot2.eq.1).and.(igot3.eq.1)) then
+            nel1=0
+            ii=ipack3(ia(iord(5)),ia(iord(6)),ia(iord(7)))
+            do 40 k=1,ije2(k2save)-ije2(k2save-1)
+              jj=igen(istrt21+ije2(k2save-1)+k)
+              if (ii.eq.iand(ishft(jj,-8),z'ffffff')) then
+                nel1=nel1+1
+                save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
+                call dimx (nel1,1000,'dge6n2')
+              end if
+40          continue
+            nel2=0
+            ii=ia(iord(12))  
+            do 80 k=1,ije3(k3save)-ije3(k3save-1)
+              jj=igen(istrt31+ije3(k3save-1)+k)
+              if (ii.eq.iand(ishft(jj,-8),z'ff')) then
+                nel2=nel2+1
+                save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
+                call dimx (nel2,1000,'dge6n2')
+              end if
+80          continue
+            if (nel1.ne.nel2) then
+              write (LUPRI,*) 'length mismatch in dge6n2'
+              call quit('length mismatch in dge6n2')
+            else
+              gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
+            end if
+          end if
+20      continue
+10    continue
+      return
+      end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine diage5 (name2,name3,name4,namet,iord)
+!-------------------------------------------------------------------------------------
+!
+!                  6x(4+4)=10
+!
+!-------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use cij4_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
+#include "cij4.h"
+!     common /idv/ iv(200),nvalo
+#include "idv.h"
+#endif
+
+      dimension iord(10),ia(10)
+
+!todo: into module !
+!     ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage5 input tape does not exist, name2=',name2
+        call quit("diage5: input tape name2 does not exist !")
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage5 input tape does not exist, ',name3
+        call quit('diage5: input tape name3 does not exist !')
+      end if
+      call files_ccsd (name4,ntape4,new,4,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage5 input tape does not exist, ',name4
+        call quit('diage5: input tape name4 does not exist')
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      istrt41=nstrt(1,ntape4-1)+2*nij4+4
+      istrt42=nstrt(2,ntape4-1)
+
+      call tmplt10 (namet,ntapet)
+
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      call tchng6 (nij2,ij2,ije2,ntape2,4)
+      call tmpcng (nij3,ij3,ije3,ntape3,2,3)
+      call tmpcng (nij4,ij4,ije4,ntape4,2,3)
+      do 10 i=1,nij1
+        do 60 k=4,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(5-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=4,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(10-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          igot4=0
+          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack3(ia(iord(5)),ia(iord(6)),ia(iord(7)))
+          do 50 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+50        continue
+          ii=ipack3(ia(iord(8)),ia(iord(9)),ia(iord(10)))
+          do 80 k=1,nij4
+            if (ij4(k).eq.ii) then
+              k4save=k
+              igot4=1
+            end if
+80        continue
+          if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1)) then
+            sum=0.d0
+            do 90 k=1,ije3(k3save)-ije3(k3save-1)
+              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
+              do 100 l=1,ije4(k4save)-ije4(k4save-1)
+                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
+                kk=ior(ishft(ii,8),jj)
+                do 110 m=1,ije2(k2save)-ije2(k2save-1)
+                  if (kk.eq.                                            &
+             iand(igen(istrt21+ije2(k2save-1)+m),z'ffff')) then
+                    sum=sum+                                            &
+               gen(istrt22+ije2(k2save-1)+m)*                           &
+               gen(istrt32+ije3(k3save-1)+k)*                           &
+               gen(istrt42+ije4(k4save-1)+l)
+                  end if
+110             continue
+100           continue
+90          continue
+            gen(istrt12+ije1(i-1)+j)=sum
+          end if
+20      continue
+10    continue
+      return
+      end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine diage6 (name2,name3,name4,name5,namet,iord)
+!--------------------------------------------------------------------------------------
+!
+!                  6x(4+4+4)=12
+!
+!--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use cij4_mod
+      use cij5_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
+#include "cij4.h"
+!     common /cij5/ nij5,ij5(ndij),ije5(0:ndij),iii5,iiv5
+#include "cij5.h"
+!     common /idv/ iv(200),nvalo
+#include "idv.h"
+#endif
+      dimension iord(12),ia(12)
+
+      ! store into module....
+      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6: input tape does not exist, name2=',name2
+        call quit('diage6: input tape name2 does not exist !')
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6: input tape does not exist, name3=',name3
+        call quit('diage6: input tape name3 does not exist !')
+      end if
+      call files_ccsd (name4,ntape4,new,4,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6 input tape does not exist, name4=',name4
+        call quit('diage6: input tape name4 does not exist !')
+      end if
+      call files_ccsd (name5,ntape5,new,5,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6: input tape does not exist, name5=',name5
+        call quit('diage6: input tape name5 does not exist!')
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      istrt41=nstrt(1,ntape4-1)+2*nij4+4
+      istrt42=nstrt(2,ntape4-1)
+      istrt51=nstrt(1,ntape5-1)+2*nij5+4
+      istrt52=nstrt(2,ntape5-1)
+      call tmplt12 (namet,ntapet)
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      call tmpcng (nij3,ij3,ije3,ntape3,2,3)
+      call tmpcng (nij4,ij4,ije4,ntape4,2,3)
+      call tmpcng (nij5,ij5,ije5,ntape5,2,3)
+      do 10 i=1,nij1
+        do 60 k=5,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(6-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=5,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(12-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          igot4=0
+          igot5=0
+          ii=ipack3(ia(iord(1)),ia(iord(2)),ia(iord(3)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack3(ia(iord(4)),ia(iord(5)),ia(iord(6)))
+          do 50 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+50        continue
+          ii=ipack3(ia(iord(7)),ia(iord(8)),ia(iord(9)))
+          do 80 k=1,nij4
+            if (ij4(k).eq.ii) then
+              k4save=k
+              igot4=1
+            end if
+80        continue
+          ii=ipack3(ia(iord(10)),ia(iord(11)),ia(iord(12)))
+          do 120 k=1,nij5
+            if (ij5(k).eq.ii) then
+              k5save=k
+              igot5=1
+            end if
+120       continue
+          if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1).and.(igot5.eq.1)) then
+            sum=0.d0
+            do 90 k=1,ije3(k3save)-ije3(k3save-1)
+              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
+              do 100 l=1,ije4(k4save)-ije4(k4save-1)
+                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
+                do 130 m=1,ije5(k5save)-ije5(k5save-1)
+                  kk=iand(igen(istrt51+ije5(k5save-1)+l),z'ff')
+                  ll=ipack3(ii,jj,kk)
+                  do 110 n=1,ije2(k2save)-ije2(k2save-1)
+                    if (ll.eq.                                          &
+               iand(igen(istrt21+ije2(k2save-1)+n),z'ffffff')) then
+                      sum=sum+                                          &
+                 gen(istrt22+ije2(k2save-1)+n)*                         &
+                 gen(istrt32+ije3(k3save-1)+k)*                         &
+                 gen(istrt42+ije4(k4save-1)+l)*                         &
+                 gen(istrt52+ije5(k5save-1)+m)
+                    end if
+110               continue
+130             continue
+100           continue
+90          continue
+            gen(istrt12+ije1(i-1)+j)=sum
+          end if
+20      continue
+10    continue
+      return
+      end
+!-------------------------------------------------------------------------------------------
