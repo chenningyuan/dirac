@@ -260,10 +260,6 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
 
       IF (GORG) THEN
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(3X,A)')
-     &   'NMRINP: Input for London magnetic field gradient'//
-     &   '(NMR shieldings, magnetizabilities).'
-         CALL PRSYMB(LUPRI,'=',75,0)
          WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
      &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
 
@@ -2990,7 +2986,7 @@ C      gradient matrix, PRPMO for LAO-PDBS
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
         WRITE(LUPRI,'(A)')
-     &'WARNING from GETDHB: The total propery gradient'
+     &'WARNING from GETDHB: The total property gradient'
      &//'matrix dH/dB for LAO-PDBS is not (fully?) symmetric !'
       ENDIF
 

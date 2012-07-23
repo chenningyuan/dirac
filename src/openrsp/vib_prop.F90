@@ -2,7 +2,7 @@ module vib_prop
 !Calculation and outputting of vibrational (optical) properties.
 !This file is currently common to Dalton and Dirac
 
-   use matrix_defop
+   use matrix_defop_old
    use rsp_equations
    use prop_contribs
    use openrsp_cfg

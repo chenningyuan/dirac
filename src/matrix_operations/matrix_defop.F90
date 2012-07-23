@@ -3,11 +3,11 @@
 ! GNU Lesser General Public License.
 
 !> @file
-!> Contains module matrix_defop
+!> Contains module matrix_defop_old
 
 !> radovan: this file is generic for both DALTON and DIRAC
-!>          DALTON or DIRAC specific things are in matrix_genop
-!>          which is the backend to matrix_defop
+!>          DALTON or DIRAC specific things are in matrix_genop_old
+!>          which is the backend to matrix_defop_old
 !> 
 !> Defined operators for type(matrix)
 !> (which in linsca comes from module matrix_operations).
@@ -36,7 +36,7 @@
 !>     axtpby:     Z = a * X(^T) + b * Y   (where Z may be Y)
 !>     gemm:       Y = a * X(^T) * Z(^T) + b * Y
 !>
-!> To create matrices, mat_init (from module matrix_operations) is replaced
+!> To create matrices, mat_init_old (from module matrix_operations) is replaced
 !> by a more general init_mat. This is to hide context-specific information:
 !> closed/open shell, real/complex, 1/2/4-component, full/sparse,
 !> and thus make it possible to write general code:
@@ -82,12 +82,12 @@
 !> In order to have type(matrix) as the result of a function, mat_fix_result(X)
 !> should be called before returning from the function. This sets X's status as
 !> temporary, so that it will be deleted once used.
-module matrix_defop
+module matrix_defop_old
 
-   !ajt Many linsca modules propagate mat_init (no private statement).
+   !ajt Many linsca modules propagate mat_init_old (no private statement).
    !         To avoid collision, rename it to init_mat
-   use matrix_genop, &
-         init_mat => mat_init
+   use matrix_genop_old, &
+         init_mat => mat_init_old
 
    implicit none
 
@@ -117,7 +117,7 @@ module matrix_defop
    public mat_fix_arg
    public mat_unfix_arg
    public mat_fix_result
-   public matrix_defop_debug
+   public matrix_defop_old_debug
    private
 
    interface assignment(=)
@@ -197,7 +197,7 @@ module matrix_defop
    integer                   :: top_tmp = 0 !0 as "before index 1, thus empty"
 
    !> for switching debugging on and off
-   logical :: matrix_defop_debug = .false.
+   logical :: matrix_defop_old_debug = .false.
 
 contains
 
@@ -229,7 +229,7 @@ contains
       type(tmp_mat),pointer :: T
       integer               :: i
       if (top_tmp==max_tmp) then
-         print '(a)','error: tmp(1:max_tmp) in linears/matrix_defop.f90 is full'
+         print '(a)','error: tmp(1:max_tmp) in linears/matrix_defop_old.f90 is full'
          print '(a,i2,a)','       increase max_tmp=',max_tmp,' and recompile'
          call quit('matrix new_tmp : tmp(1:max_tmp) is full')
       end if
@@ -271,7 +271,7 @@ contains
    !> then delete (or not) T%X,T%Z,T%Y, then del_tmp(T)
    subroutine zero_tmp(T)
       type(tmp_mat),intent(inout) :: T
-      !if (matrix_defop_debug) print *,'zero_tmp',loc(T%A),T%A%nrow,T%A%ncol
+      !if (matrix_defop_old_debug) print *,'zero_tmp',loc(T%A),T%A%nrow,T%A%ncol
       if (T%A%nrow==-1 .and. T%A%ncol/=-1) T%A%ncol = -1
       if (isdef(T%A)) then
          if (.not.iszero(T%A)) call mat_free(T%A)
@@ -295,9 +295,9 @@ contains
       type(tmp_mat),intent(inout) :: T
       logical             :: Azero, complex, fits
       type(matrix),target :: dupA
-      !if (matrix_defop_debug) print *,'eval_tmp',loc(T%A),' =',loc(T%X) &
+      !if (matrix_defop_old_debug) print *,'eval_tmp',loc(T%A),' =',loc(T%X) &
       !                                     ,' *',loc(T%Z),' +',loc(T%Y)
-      !if (matrix_defop_debug) print *, 'fx=', T%fx, ' tx=', T%tx, ' tz=', T%tz, &
+      !if (matrix_defop_old_debug) print *, 'fx=', T%fx, ' tx=', T%tx, ' tz=', T%tz, &
       !                                ' dx=', T%dx, ' dz=', T%dz, ' dy=', T%dy 
       !hack: remove the T-reference from A%ncol
       if (T%A%nrow==-1 .and. T%A%ncol/=-1 &
@@ -391,7 +391,7 @@ contains
       type(matrix),       intent(in)    :: B
       type(tmp_mat),pointer             :: T
       logical                           :: defB
-      !if (matrix_defop_debug) print *, 'mat_eq_mat', loc(A), ' =', &
+      !if (matrix_defop_old_debug) print *, 'mat_eq_mat', loc(A), ' =', &
       !                  loc(B), B%nrow, B%ncol, associated(B%elms)
       T => find_tmp(B, 'matrix A = B : B undefined')
       if (associated(T)) then
@@ -426,11 +426,11 @@ contains
       C%ncol = -1
 #endif
 
-      !if (matrix_defop_debug) print *, 'mat_plus_minus_mat', loc(A), &
+      !if (matrix_defop_old_debug) print *, 'mat_plus_minus_mat', loc(A), &
       !                                 merge(' + ',' - ',plus), loc(B), ' => ', loc(C)
-      !if (matrix_defop_debug) print *, 'A%nrow=', A%nrow, ' A%ncol=', A%ncol, &
+      !if (matrix_defop_old_debug) print *, 'A%nrow=', A%nrow, ' A%ncol=', A%ncol, &
       !                                 ' A%elms=', associated(A%elms)
-      !if (matrix_defop_debug) print *, 'B%nrow=', B%nrow, ' B%ncol=', B%ncol, &
+      !if (matrix_defop_old_debug) print *, 'B%nrow=', B%nrow, ' B%ncol=', B%ncol, &
       !                                 ' B%elms=', associated(B%elms)
       TA => find_tmp(A, 'matrix A + B : A undefined')
       TB => find_tmp(B, 'matrix A + B : B undefined')
@@ -536,7 +536,7 @@ contains
       type(matrix), target             :: C
       type(tmp_mat), pointer           :: TA, TB, TC
       logical                          :: zeroA, zeroB
-      !if (matrix_defop_debug) print *, 'mat_times_mat', loc(A), &
+      !if (matrix_defop_old_debug) print *, 'mat_times_mat', loc(A), &
       !                            ' *', loc(B), ' => ', loc(C)
 
 #ifdef PRG_DIRAC
@@ -607,7 +607,7 @@ contains
       B%ncol = -1
 #endif
 
-      !if (matrix_defop_debug) print *,'real_times_mat',r,' *',loc(A),' =>',loc(B)
+      !if (matrix_defop_old_debug) print *,'real_times_mat',r,' *',loc(A),' =>',loc(B)
       TA => find_tmp(A, 'matrix r * A : A undefined')
       if (associated(TA)) then
          if (.not.associated(TA%Y)) then
@@ -670,7 +670,7 @@ contains
       B%ncol = -1
 #endif
 
-      !if (matrix_defop_debug) print *,'mat_dagger',loc(A),' => ',loc(B)
+      !if (matrix_defop_old_debug) print *,'mat_dagger',loc(A),' => ',loc(B)
       TA => find_tmp(A,'matrix dag(A) : A undefined')
       if (.not.associated(TA)) then
          TB => new_tmp(B, X=A, tx=.true.)
@@ -700,7 +700,7 @@ contains
       complex(8)                        :: r
       type(tmp_mat),pointer             :: TA, TB
       logical                           :: zeroA, zeroB, trps, delA, delB
-      !if (matrix_defop_debug) print *, 'mat_prod_trace/mat_dot_prod' , &
+      !if (matrix_defop_old_debug) print *, 'mat_prod_trace/mat_dot_prod' , &
       !                                 loc(A), loc(B), A%complex, B%complex
       TA => find_tmp(A,'matrix dot/tr(A,B) : A undefined')
       zeroA = .false.
@@ -800,7 +800,7 @@ contains
       type(matrix),intent(inout) :: A
       integer,intent(in)         :: zero
       type(matrix)               :: B
-      !if (matrix_defop_debug) print *,'mat_eq_zero A=',loc(A),' elms=',loc(A%elms)
+      !if (matrix_defop_old_debug) print *,'mat_eq_zero A=',loc(A),' elms=',loc(A%elms)
       if (zero/=0) call quit('matrix A = z: z must be 0')
       if (.not.isdef(A)) call quit('A = 0: A undefined')
       call init_mat(B, A, alias='FF')

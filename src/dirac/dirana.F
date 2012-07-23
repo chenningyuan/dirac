@@ -21,7 +21,7 @@
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck paman */
+C  /* Deck pamana */
       SUBROUTINE PAMANA(WORK,LWORK)
 C***********************************************************************
 C
@@ -76,7 +76,7 @@ C
          IF (NCUBORB(1).EQ.0.AND.NCUBORB(2).EQ.0) THEN
 C     Total density
             CALL GT3RHO(WORK,LWORK)
-         ELSE      
+         ELSE
 C     Density of individual orbitals
             CALL WRITE_ORB_CUBES(NCUBORB(1),NCUBORB(2),
      &           ICUBORB,WORK,LWORK)
@@ -124,6 +124,110 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck scf_mulpop */
+      SUBROUTINE SCF_MULPOP(CMO,EIG,IBEIG,WORK,LWORK)
+C***********************************************************************
+C
+C     Mulliken population analysis in each SCF iteration
+C
+C     Written by H.J.Aa.Jensen and P.Norman, Jan. 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+C
+C Used from COMMON blocks:
+C  DCBBAS: N2BBASX
+C  LABELS: NLAB
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbpop.h"
+#include "dgroup.h"
+C
+      DIMENSION CMO(*), EIG(*), IBEIG(*), WORK(LWORK)
+      LOGICAL DONETP_M,ADD_ALL_M,ADDSML_M,LABDEF_M
+C
+      CALL QENTER('SCF_MULPOP')
+#include "memint.h"
+C
+CHJ   CALL TITLER('Mulliken population analysis','*',122)
+C
+C     save possible user input (for default Mull. pop) and set
+C     SCF_MULPOP default values
+      IPRPOP_M = IPRPOP
+      ILABDF_M = ILABDF
+      DONETP_M = DONETP
+      ADD_ALL_M = ADD_ALL
+!     ADDSML_M = ADDSML
+      LABDEF_M = LABDEF
+C
+      IPRPOP   = -1 ! suppress normal MULPOP output
+      ILABDF   =  1 ! select AO basis for easy summing for an atom
+      DONETP   = .FALSE. ! no net populations
+      ADD_ALL  = .TRUE.  ! only total charges for each atom
+!     ADDSML   = .TRUE.  ! only total small charge for each atom
+!                          (irrelevant when ADD_ALL is true)
+      LABDEF   = .FALSE. ! labels not already defined
+      DO_SCFPOP = .TRUE. ! select SCFPOP special output
+C
+      KRMC_FLG = 0
+C
+      DO I = 1, NFSYM
+         VECPOP_SAVE(I) = VECPOP(I)
+         NOCCI = NOCC(I)
+         IF (NOCCI .eq. 0) THEN
+            VECPOP(I) = '   '
+         ELSE IF( NOCCI .eq. 1 )THEN
+            VECPOP(I) = '1  '
+         ELSE
+            WRITE(VECPOP(I),'(A3,I4)') '1..',NOCCI
+         END IF
+      END DO
+C
+C     Dummy memory allocation
+      CALL MEMGET('REAL',KOCC ,0       ,WORK,KFREE,LFREE)
+C
+C     Get labels for population analysis
+C
+      CALL GETPLB(IPRPOP)
+C
+C     Memory allocation
+      NNLAB = (NPOPLAB*(NPOPLAB+1))/2
+      N2LAB = NPOPLAB*NPOPLAB
+      CALL MEMGET('INTE',KIPGR ,NTBAS(0)     ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,N2LAB*2      ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSMAT ,N2BBASX      ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPOPG ,NPOPLAB*2    ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIEFF ,NPOPLAB      ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPGTOT,NPOPLAB*NFSYM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPNTOT,N2LAB*NFSYM  ,WORK,KFREE,LFREE)
+C
+      CALL MULPOP_1(WORK(KPMAT),WORK(KSMAT),CMO,EIG,
+     &            WORK(KOCC),IBEIG,WORK(KIPGR),WORK(KPOPG),
+     &            WORK(KIEFF),WORK(KPGTOT),WORK(KPNTOT),WORK(KFREE),
+     &            LFREE,KRMC_FLG)
+C
+C     Memory deallocation
+      CALL MEMREL('SCF_MULPOP',WORK,KWORK,KWORK,KFREE,LFREE)
+C     restore user input for Mull. pop. ana.
+      IPRPOP   = IPRPOP_M
+      ILABDF   = ILABDF_M
+      DONETP   = DONETP_M
+!     ADDSML   = ADDSML_M
+      ADD_ALL  = ADD_ALL_M
+      LABDEF   = LABDEF_M
+      DO I = 1, NFSYM
+         VECPOP(I) = VECPOP_SAVE(I)
+      END DO
+      DO_SCFPOP = .FALSE.
+C
+      CALL QEXIT('SCF_MULPOP')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpop */
       SUBROUTINE MULPOP(WORK,LWORK)
 C***********************************************************************
@@ -148,7 +252,7 @@ C  LABELS: NLAB
 #include "dgroup.h"
 #include "dcbmp2no.h"
 C
-      LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M,ORBDEF_M,ORBDEF
+      LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M
       LOGICAL FNDLAB,CINATORB
       LOGICAL MJVEC_AVAIL
       CHARACTER FILELABEL*8
@@ -159,6 +263,8 @@ C
 C
       CALL TITLER('Mulliken population analysis','*',122)
 C
+      DO_SCFPOP = .FALSE.
+C
       IF( MP2NATPOP )THEN
 C       set-up analysis string
         DO I = 1, NFSYM
@@ -166,11 +272,11 @@ C       set-up analysis string
           NOCCI = NACTMP2NO(I)
           IF( SELPOPNAT .eq. 'all' ) NOCCI = NESH(I)
           IF (NOCCI .eq. 0) THEN
-             VECPOP(I) = '   '
+            VECPOP(I) = '   '
           ELSE IF( NOCCI .eq. 1 )THEN
-             WRITE(VECPOP(I),'(I4)') 1
+            VECPOP(I) = '1  '
           ELSE
-             WRITE(VECPOP(I),'(I4,A2,I4)') 1,'..',NOCCI
+            WRITE(VECPOP(I),'(A3,I4)') '1..',NOCCI
           END IF
         END DO
 C       save possible user input (for default Mull. pop) and set
@@ -179,17 +285,27 @@ C       MP2-NO default values
         ILABDF_M = ILABDF
         DONETP_M = DONETP
         ADDSML_M = ADDSML
-!radovan: ORBDEF is not initialized!
-        ORBDEF_M = ORBDEF
         LABDEF_M = LABDEF
 C
         IPRPOP   = IPRMP2NO
         ILABDF   = 2
         DONETP   = .FALSE.
         ADDSML   = .TRUE.
-        ORBDEF   = .TRUE.
         LABDEF   = .FALSE.
 C
+      ELSE
+        DO I = 1, NFSYM
+          IF (VECPOP(I)(1:9).eq.'UNDEFINED') THEN
+            NOCCI = NOCC(I)
+            IF (NOCCI .eq. 0) THEN
+              VECPOP(I) = '   '
+            ELSE IF( NOCCI .eq. 1 )THEN
+              VECPOP(I) = '1  '
+            ELSE
+              WRITE(VECPOP(I),'(A3,I4)') '1..',NOCCI
+            END IF
+          END IF
+        END DO
       END IF
 C
 C     Check if coefficients are on file
@@ -204,15 +320,15 @@ C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C...  may be oversized when not all orbitals are investigated
       CALL MEMGET('REAL',KOCC ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C
       CALL IZERO(WORK(KBEIG),NORBT)
       CALL DZERO(WORK(KCMO),N2BBASXQ)
       CALL DZERO(WORK(KOCC),NORBT)
 C
-C     Read coefficients, eigenvalues and 
+C     Read coefficients, eigenvalues and
 C     irrep identification + restart info
 C
       IF (TOBEK) THEN
@@ -307,7 +423,7 @@ C     Memory allocation
       CALL MEMGET('REAL',KPGTOT,NPOPLAB*NFSYM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPNTOT,N2LAB*NFSYM  ,WORK,KFREE,LFREE)
 C
-      CALL MULPO1(WORK(KPMAT),WORK(KSMAT),WORK(KCMO),WORK(KEIG),
+      CALL MULPOP_1(WORK(KPMAT),WORK(KSMAT),WORK(KCMO),WORK(KEIG),
      &            WORK(KOCC),WORK(KBEIG),WORK(KIPGR),WORK(KPOPG),
      &            WORK(KIEFF),WORK(KPGTOT),WORK(KPNTOT),WORK(KFREE),
      &            LFREE,KRMC_FLG)
@@ -320,7 +436,6 @@ C     restore user input for Mull. pop. ana.
         ILABDF   = ILABDF_M
         DONETP   = DONETP_M
         ADDSML   = ADDSML_M
-        ORBDEF   = ORBDEF_M
         LABDEF   = LABDEF_M
         DO I = 1, NFSYM
           VECPOP(I) = VECPOP_SAVE(I)
@@ -334,8 +449,8 @@ C     restore user input for Mull. pop. ana.
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck mulpo1 */
-      SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,OCC,IBEIG,IPGRS,POPG,IEFF,
+C  /* Deck MULPOP_1 */
+      SUBROUTINE MULPOP_1(PMAT,SMAT,CMO,EIG,OCC,IBEIG,IPGRS,POPG,IEFF,
      &                  PGTOT,PNTOT,WORK,LWORK,KRMC_FLG)
 C***********************************************************************
 C
@@ -373,7 +488,7 @@ C
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
 C
-      CALL QENTER('MULPO1')
+      CALL QENTER('MULPOP_1')
 #include "memint.h"
 C
       N2LAB = NPOPLAB*NPOPLAB
@@ -399,13 +514,16 @@ C
         CALL MEMGET('REAL',KBUF ,N2BBASX ,WORK,KFREE,LFREE)
         CALL MTBSBU(SMAT,WORK(KBUF))
         CALL MTSOAO(WORK(KBUF),SMAT,NTBAS(0),0,IPRPOP)
-        CALL MEMREL('MULPOP.MULPO1',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('MULPOP.MULPOP_1',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
 C
 C     Loop over fermion ircops
 C     ========================
 C
-      DO 10 IFRP = 1,NFSYM
+      DO IFRP = 1,NFSYM
+        IF (IPRPOP .GE. 0)
+     &     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
+        IF (IPRPOP .GE. 2) WRITE(LUPRI,*) 'vecpop : ',vecpop(ifrp)
 C
 C       Find number of electronic/positronic vectors
 C       ============================================
@@ -417,7 +535,6 @@ C
         CALL ORBCNT(WORK(KJVEC),NVECS,NPSH(IFRP),NESH(IFRP),
      &              NPVECS,NEVECS)
         IF(NVECS.EQ.0) GOTO 20
-        CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
 C
         IF(ILABDF.EQ.1) THEN
 C
@@ -440,7 +557,7 @@ C
      &                    NFBAS(IFRP,0))
               CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
      &                    NFBAS(IFRP,0),NTBAS(0),NVECS*4,IPRPOP)
-              CALL MEMREL('MULPO1.AO',WORK,1,KCBF2,KFREE,LFREE)
+              CALL MEMREL('MULPOP_1.AO',WORK,1,KCBF2,KFREE,LFREE)
             ENDIF
           ELSE
             NCBF1 = NTBAS(0)*NVECS*4
@@ -488,7 +605,7 @@ C
      &                  NFBAS(IFRP,0),NORB(IFRP))
             CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVECS,IFRP,
      &                  NFBAS(IFRP,0))
-            CALL MEMREL('MULPO1.SO',WORK,1,KCBF2,KFREE,LFREE)
+            CALL MEMREL('MULPOP_1.SO',WORK,1,KCBF2,KFREE,LFREE)
           ENDIF
         ENDIF
 C
@@ -496,41 +613,46 @@ C       Perform Mulliken population analysis
 C       ====================================
 C
         CALL MEMGET('REAL',KOCC2,NVECS,WORK,KFREE,LFREE)
-        CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
+        CALL MULPOP_2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
      &              IBEIG(IORB(IFRP)+1),
      &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
      &              WORK(KJVEC),OCC,WORK(KOCC2),WORK(KFREE),LFREE,
      &              KRMC_FLG)
-        CALL MEMREL('MULPO1.occ',WORK,KOCC2,KOCC2,KFREE,LFREE)
+        CALL MEMREL('MULPOP_1.occ',WORK,KOCC2,KOCC2,KFREE,LFREE)
  20     CONTINUE
-        CALL MEMREL('MULPO1',WORK,1,KWORK,KFREE,LFREE)
- 10   CONTINUE
+        CALL MEMREL('MULPOP_1',WORK,1,KWORK,KFREE,LFREE)
+      END DO ! IFRP = 1, NFSYM
 C
 C     Write out total populations
-C     ==========================
+C     ===========================
 C
-      IF(NFSYM.GT.1) THEN
+      IF (NFSYM.GT.1) CALL DAXPY(NPOPLAB,D1,PGTOT(1,2),1,PGTOT(1,1),1)
+      IF (DO_SCFPOP) THEN
+!       calculate net atomic charge
+        DO I = 1, NPOPLAB
+           PGTOT(I,1) = ICHRG(I) - PGTOT(I,1)
+        END DO
+        CALL WR_MULCHRG(PGTOT(1,1),POPLAB,NPOPLAB)
+      ELSE
         WRITE(LUPRI,'(//A)') '*** Total gross population ***'
-        CALL DAXPY(NPOPLAB,D1,PGTOT(1,2),1,PGTOT(1,1),1)        
-        CALL WRPOPT(PGTOT(1,1),POPLAB,NPOPLAB,IEFF)                
+        CALL WRPOPT(PGTOT(1,1),POPLAB,NPOPLAB,IEFF)
         IF(DONETP) THEN
           CALL DAXPY(N2LAB,D1,PNTOT(1,1,2),1,PNTOT(1,1,1),1)
           WRITE(LUPRI,'(//A)') '*** Total net population ***'
           CALL WRPOPN(PNTOT(1,1,1),PGTOT(1,1),
      &                POPLAB,NPOPLAB,IEFF,'total')
         ENDIF
-      ENDIF
-C
+      END IF
 C     Memory deallocation
-      CALL MEMREL('MULPO1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('MULPOP_1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      CALL QEXIT('MULPO1')
+      CALL QEXIT('MULPOP_1')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck mulpo2 */
-      SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IBEIG,IPGRS,POPG,IEFF,
+C  /* Deck MULPOP_2 */
+      SUBROUTINE MULPOP_2(PMAT,IFRP,SMAT,CMO,EIG,IBEIG,IPGRS,POPG,IEFF,
      &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,OCC2,WORK,
      &           LWORK,KRMC_FLG)
 C***********************************************************************
@@ -544,7 +666,7 @@ C     PGRS - gross population
 C     SMAT - overlap matrix
 C     COEF - coefficients
 C
-C     KRMC_FLG = 2: Orbitals and occupancies read from 
+C     KRMC_FLG = 2: Orbitals and occupancies read from
 C                   label NEWNATOB/MP2NOOCC on file KRMCOLD
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
@@ -552,7 +674,7 @@ C     KRMC_FLG = 0  Orbitals read from DFCOEF
 C
 C     Written by T.Saue July 24 1994
 C     Revised       : Jan 7 1998 - jth LINUX
-C     Last revision : Aug 20 2002 - jkp (take fractional occ. into 
+C     Last revision : Aug 20 2002 - jkp (take fractional occ. into
 C                                        account)
 C***********************************************************************
 #include "implicit.h"
@@ -574,7 +696,7 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbdhf.h"
-C 
+C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,NBAST)
@@ -583,13 +705,13 @@ C
 #endif
       CHARACTER FMT*6,MXFORM*6,SYMLAB*9
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),OCC2(*),
-     &          CMO(NCBAS,NPVECS+NPVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
+     &          CMO(NCBAS,NPVECS+NEVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
       DATA SYMLAB/'         '/
 C
-      CALL QENTER('MULPO2')
+      CALL QENTER('MULPOP_2')
 #include "memint.h"
 C
       N2LAB = NPOPLAB*NPOPLAB
@@ -601,20 +723,22 @@ c
 c       Find fractional occupation for each requested orbital string
 c
         IF (KRMC_FLG.EQ.0) THEN
-        NVORB =  NISH(IFRP)
-        DO IOPEN=1,NOPEN
-c     ... open shell
-          NVORB =  NVORB + NACSH(IFRP,IOPEN)
-          IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
-            OCC2(I) = DF(IOPEN)
-            GO TO 100
-          ENDIF
-        END DO
-        IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
-c     ... closed shell
-          OCC2(I) = DF(0)
-        ENDIF
-100     CONTINUE
+C       ... SCF-NOs
+          IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
+c         ... closed shell
+            OCC2(I) = DF(0)
+          ELSE
+c         ... test open shell(s)
+            NVORB =  NISH(IFRP)
+            DO IOPEN=1,NOPEN
+              NVORB =  NVORB + NACSH(IFRP,IOPEN)
+              IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
+                OCC2(I) = DF(IOPEN)
+                GO TO 100
+              ENDIF
+            END DO
+  100       CONTINUE
+          END IF
         ELSE IF(KRMC_FLG.EQ.2) THEN
 C       ... MP2-NOs
            OCC2(I) = OCC(NPSH(IFRP)+IORB(IFRP)+JVEC(I))
@@ -624,6 +748,7 @@ C       ... CI-NOs
         END IF
 CSKdebug CALL WRTMATMN(OCC,1,NORBT,1,NORBT,LUPRI)
 c
+       IF (IPRPOP .GE. 0) THEN
         IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
@@ -677,6 +802,7 @@ C             ... CI-NOs, MP2-NOs,...
           END IF
         END IF
         CALL PRSYMB(LUPRI,'=',90,0)
+       END IF ! (IPRPOP .GE. 0)
 C
 C       Calculate SO population matrix
 C       ==============================
@@ -721,35 +847,29 @@ C
           CALL DAXPY(N2LAB,D2,PMAT(1,1,2),1,PNTOT(1,1,IFRP),1)
         ENDIF
  1001   CONTINUE
-      ENDDO
+      ENDDO ! I = 1,NVEC
 C
 C     Write out total populations
 C     ==========================
 C
-      IF(NFSYM.EQ.1) THEN
-        WRITE(LUPRI,'(//A)') '*** Total gross population ***'
-      ELSE
-        WRITE(LUPRI,'(//A,A3,A)') 
+      IF(NFSYM.GT.1 .AND. IPRPOP .GE. 0) THEN
+        WRITE(LUPRI,'(//A,A3,A)')
      &    '** Total gross population of fermion ircop ',
      &    FREP(IFRP),' **'
-      ENDIF
-      CALL WRPOPT(PGTOT(1,IFRP),POPLAB,NPOPLAB,IEFF)                
-      IF(DONETP) THEN
-        IF(NFSYM.EQ.1) THEN
-          WRITE(LUPRI,'(//A)') '*** Total net population ***'
-        ELSE
-          WRITE(LUPRI,'(//A,A3,A)') 
+        CALL WRPOPT(PGTOT(1,IFRP),POPLAB,NPOPLAB,IEFF)
+        IF(DONETP) THEN
+          WRITE(LUPRI,'(//A,A3,A)')
      &      '** Total net population of fermion ircop ',
      &      FREP(IFRP),' **'
+          CALL WRPOPN(PNTOT(1,1,IFRP),PGTOT(1,IFRP),
+     &                POPLAB,NPOPLAB,IEFF,'total')
         ENDIF
-        CALL WRPOPN(PNTOT(1,1,IFRP),PGTOT(1,IFRP),
-     &              POPLAB,NPOPLAB,IEFF,'total')
       ENDIF
 
  9999 CONTINUE
-      CALL MEMREL('MULPO2.POPMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('MULPOP_2.POPMAT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      CALL QEXIT('MULPO2')
+      CALL QEXIT('MULPOP_2')
       RETURN
 C
       END
@@ -780,19 +900,19 @@ C
 C     Memory allocation
       CALL MEMGET('REAL',KPBUF,2*N2BBASX,WORK,KFREE,LFREE)
 C
-      CALL POPMA1(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,WORK(KPBUF),
+      CALL POPMAT_1(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,WORK(KPBUF),
      &     IGLAB,NGLAB,NCBAS,IPRINT)
 C
 C     Memory deallocation
-      CALL MEMREL('POPMAT.POPMA1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('POPMAT.POPMAT_1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('POPMAT')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck popma1 */
-      SUBROUTINE POPMA1(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,PBUF,
+C  /* Deck POPMAT_1 */
+      SUBROUTINE POPMAT_1(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,PBUF,
      &                  IGLAB,NGLAB,NCBAS,IPRINT)
 C***********************************************************************
 C
@@ -829,7 +949,7 @@ C
 C     Generate population matrix for basis
 C     ====================================
 C
-C     IPRINT = 4
+C     IPRINT = 4 ! dbg
       SUMA = D0
       SUMB = D0
       IOFF = IBAS(IFRP)
@@ -838,10 +958,10 @@ C     IPRINT = 4
         DO J = 1,NTBAS(0)
           DO I = 1,NTBAS(0)
             PBUF(I,J,1) = (CMO(I,IVEC,1)*CMO(J,IVEC,1)+
-     &                    CMO(I,IVEC,2)*CMO(J,IVEC,2))*SMAT(I,J)
+     &                     CMO(I,IVEC,2)*CMO(J,IVEC,2))*SMAT(I,J)
             SUMA = SUMA + PBUF(I,J,1)
             PBUF(I,J,2) = (CMO(I,IVEC,3)*CMO(J,IVEC,3)+
-     &                    CMO(I,IVEC,4)*CMO(J,IVEC,4))*SMAT(I,J)
+     &                     CMO(I,IVEC,4)*CMO(J,IVEC,4))*SMAT(I,J)
             SUMB = SUMB + PBUF(I,J,2)
           ENDDO
         ENDDO
@@ -897,14 +1017,14 @@ C
       CALL GATMAT(1,NTBAS(0),NTBAS(0),PBUF(1,1,2),PMAT(1,1,2),
      &            IGLAB,NGLAB)
       IF(IPRINT.GE.2) THEN
-        WRITE(LUPRI,'(3X,A)') 'POPMAT: labels'
+        WRITE(LUPRI,'(3X,A,I5)') 'POPMAT: labels',NGLAB
         SUMA = D0
         DO J = 1,NGLAB
           DO I = 1,NGLAB
             SUMA = SUMA + PMAT(I,J,1)
           ENDDO
         ENDDO
-        WRITE(LUPRI,'(6X,A,F9.4)') 'alpha-part:',SUMA
+        WRITE(LUPRI,'(6X,A,F9.4)') 'Sum alpha-part:',SUMA
         IF(IPRINT.GE.3) THEN
           CALL OUTPUT(PMAT(1,1,1),1,NGLAB,
      &                1,NGLAB,NGLAB,NGLAB,1,LUPRI)
@@ -915,7 +1035,7 @@ C
             SUMB = SUMB + PMAT(I,J,2)
           ENDDO
         ENDDO
-        WRITE(LUPRI,'(6X,A,F9.4)') 'beta-part :',SUMB
+        WRITE(LUPRI,'(6X,A,F9.4)') 'Sum beta-part :',SUMB
         IF(IPRINT.GE.3) THEN
           CALL OUTPUT(PMAT(1,1,2),1,NGLAB,
      &                1,NGLAB,NGLAB,NGLAB,1,LUPRI)
@@ -982,12 +1102,14 @@ C
 C     Write out nonzero contributions
 C     ===============================
 C
+      IF (IPRINT .LT. 0) GO TO 9999
+C
       NROW = (NEFF+1)/8
       IF(MOD((NEFF+1),8).GT.0) NROW = NROW + 1
       NPRI = MIN(NEFF+1,8)
       NFMT = 8 + 15*NPRI
       NPRI = NPRI - 1
-        WRITE(LUPRI,'(/A,F8.5)') '* Gross populations greater than',DTOL
+      WRITE(LUPRI,'(/A,F8.5)') '* Gross populations greater than',DTOL
       WRITE(FMT,'(A1,I3,A3)') '(',NFMT,'A1)'
       WRITE(LUPRI,'(/A8,2X,A6,2X,A1,4X,7(A12,3X))')
      &     'Gross   ','Total ','|',(LAB(IEFF(I)),I=1,NPRI)
@@ -1011,12 +1133,14 @@ C
         NOFF = NOFF + NPRI
       ENDDO
 C
-      IF(IPRINT.GE.1) THEN
+      IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/A)') '* Gross populations (all):'
         DO I = 1,NLAB
           WRITE(LUPRI,'(A12,1P,2E16.8)') LAB(I),POPG(I,1),POPG(I,2)
         ENDDO
       ENDIF
+C
+ 9999 CONTINUE
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1158,7 +1282,7 @@ C     this is needed in the case when 'all' or 'oo'
 C     is used in the orbital strings
 C
       DO I = 1,NREFS
-        CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','ANAPRJ')        
+        CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','ANAPRJ')
         READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
      &       (NSTR(J,2,I),NSTR(J,1,I),IDUM,J=1,NSYM),DUM
         CLOSE(LUCOEF,STATUS='KEEP')
@@ -1167,7 +1291,7 @@ C
         NVECS(IFRP,1) = 0
         DO I = 1,NREFS
           CALL ORBNUM(VECREF(IFRP,I),IFRP,KVEC(IFRP,I),NSTR(1,0,I),
-     &                WORK,KFREE,LFREE)     
+     &                WORK,KFREE,LFREE)
           NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
         ENDDO
       ENDDO
@@ -1178,7 +1302,7 @@ C
         NSTR(IFRP,1,0) = NESH(IFRP)
         NSTR(IFRP,2,0) = NPSH(IFRP)
         CALL ORBNUM(VECPRJ(IFRP),IFRP,KVEC(IFRP,0),NSTR(1,0,0),
-     &              WORK,KFREE,LFREE)     
+     &              WORK,KFREE,LFREE)
         NVECS(IFRP,2) = NSTR(IFRP,0,0)
       ENDDO
 C
@@ -1195,14 +1319,14 @@ C
       KI(1,2) = KI(1,1) + NVECS(1,1)
 C
 C     Calculate dimensions of coefficient arrays:
-C      reference orbitals ............... KQ(IFRP,1) 
+C      reference orbitals ............... KQ(IFRP,1)
 C      are followed by molecular ones ... KQ(IFRP,2)
 C
       NCDIM = 0
       DO IFRP = 1,NFSYM
         NQ(IFRP) = NFBAS(IFRP,0)*NVECS(IFRP,0)*NZ
         NCDIM    = NCDIM + NQ(IFRP)
-      ENDDO       
+      ENDDO
       CALL MEMGET('REAL',KQ(1,1),NCDIM,WORK,KFREE,LFREE)
       KQ(1,2)   = KQ(1,1) + NFBAS(1,0)*NVECS(1,1)
       IF(NFSYM.EQ.2) THEN
@@ -1273,7 +1397,7 @@ C
       NBDIM = 0
       DO IFRP = 1,NFSYM
         NBDIM = NBDIM + NVECS(IFRP,0)*NVECS(IFRP,2)*NZ
-      ENDDO       
+      ENDDO
       CALL MEMGET('REAL',KBV(1),NBDIM,WORK,KFREE,LFREE)
       IF(NFSYM.EQ.2) THEN
         KBV(2)   = KBV(1) + NVECS(1,0)*NVECS(1,2)*NZ
@@ -1300,7 +1424,7 @@ C.....Projection coefficients
 C
       IF(POLTST) THEN
         CALL HEADER('Testing polarization contribution',-1)
-        WRITE(6,'(3X,A)') 
+        WRITE(6,'(3X,A)')
      &  '* Projection analysis of polarization contributions ',
      &  '  using polarized reference orbitals'
         CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
@@ -1313,7 +1437,7 @@ C
 C
 C     If requested, do phase transformation of molecule coefficients
 C     using a selected reference orbital for alignment
-C     ==============================================================     
+C     ==============================================================
 C
       IF(PRJADJ) THEN
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRJANA')
@@ -1324,7 +1448,7 @@ C
      &              TOTERG,14,WORK,KFREE,LFREE)
 
         DO IFRP = 1,NFSYM
-          
+
           CALL PRJPHA(IREFADJ(IFRP),IFRP,
      &                WORK(KCMO+ICMOQ(IFRP)),NFBAS(IFRP,0),NORB(IFRP),
      &                WORK(KBV(IFRP)),NVECS(IFRP,0),NVECS(IFRP,2),
@@ -1401,7 +1525,7 @@ C
 C       If requested , print raw projection coefficients
 C
         IF(IPRPRJ.GE.3) THEN
-          WRITE(LUPRI,'(A,A3)') 
+          WRITE(LUPRI,'(A,A3)')
      &     '* Raw projection coefficients for fermion ircop ',FREP(IFRP)
           CALL ANAPR2(IFRP,.FALSE.,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,2)),WORK(KI(IFRP,2)),NSTR,
@@ -1465,7 +1589,7 @@ C
         IF(NEFF.LT.NREF) THEN
           WRITE(LUPRI,'(A,A)') '* WARNING: ',
      &     ' linear dependencies detected in Cholesky decomposition'
-          WRITE(LUPRI,'(11X,A,I5,A,I5)') 
+          WRITE(LUPRI,'(11X,A,I5,A,I5)')
      &     ' Reduced dimensionality: ',NREF,' --> ',NEFF
         ENDIF
       ENDIF
@@ -1482,7 +1606,7 @@ C
         CALL HEADER('Polarization vectors',0)
         CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
      &                NMOL,NFBAS(IFRP,0),NTOT)
-      ENDIF      
+      ENDIF
 C
 C     Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
 C     but now with polarization contributions included
@@ -1527,7 +1651,7 @@ C/* Deck prjinf */
       SUBROUTINE PRJINF(JREF,IFRP,I,IVEC,NSTR,KREF)
 C***********************************************************************
 C
-C     Make pointer vector of reference orbital information for use 
+C     Make pointer vector of reference orbital information for use
 C     in projection analysis.
 C
 C     Wrintten by T.Saue March 31 1999
@@ -1542,7 +1666,7 @@ C
 C
 C     Positrons
 C
-      IP = 2      
+      IP = 2
       DO J = 1,NSTR(IFRP,2,I)
         JREF(1,IVEC+J) = NPSH(IFRP)+1+KREF(J)
         JREF(2,IVEC+J) = IP
@@ -1620,11 +1744,11 @@ C
       CALL DZERO(OCC,NMOL)
 !
 !     copy MCSCF-NO occupancies
-      Dno_occ = D1
+      Dno_occ = D2
       IF( IOPT .eq. 14 ) THEN 
         CALL DCOPY(NMOL,EMOL,1,OCC,1)
 !       set scaling factor for Gross population calculation
-        Dno_occ = D1/D2
+        Dno_occ = D1
       END IF
 !
       DO 10 K = 1,NMOL
@@ -1734,7 +1858,7 @@ C
                 IF(CW.GT.D0) THEN
                  GVEC(J,2) = GVEC(J,2) + D2*(PMAT(J,J)/CW)*PMAT(I,J)
                  GVEC(I,2) = GVEC(I,2) + D2*(PMAT(I,I)/CW)*PMAT(I,J)
-                ENDIF              
+                ENDIF
               ENDDO
             ENDDO
           ELSE
@@ -1765,11 +1889,11 @@ C
         ENDIF
         WRITE(LUPRI,'(A)') '* Gross contributions:'
         CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
-        FACTOR  = D2*OCC(K)*Dno_occ
+        FACTOR  = OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
   10  CONTINUE
       CALL PRSYMB(LUPRI,'=',48,0)
-      WRITE(LUPRI,'(/A)') 
+      WRITE(LUPRI,'(/A)')
      &    '* Total reference orbital contributions:'
       DO I = 1,NREF
         KORB = JREF(1,I)
@@ -1779,7 +1903,7 @@ C
      &   REFFIL(KREF),OTYP(KTYP),KORB,GVEC(I,1),EREF(I)
       ENDDO
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
-      TOTM = D2*Dno_occ*DSUM(NMOL,OCC,1)
+      TOTM = Dno_occ*DSUM(NMOL,OCC,1)
       CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
       POL = GVEC(NMOL+1,1)
 C
@@ -1805,8 +1929,27 @@ C
 #include "maxorb.h"
 #include "dcbpop.h"
 C
+#include "mxcent.h"
+#include "nuclei.h"
+C
 #include "dcbibt.h"
 C
+      IF (ADD_ALL) THEN
+C- combine all large and small component types for each center
+        DO I = 1, NPLAB(0)
+          ICENT = JGET(IATTR(I,ILABDF))
+          IDEG  = KGET(IATTR(I,ILABDF))
+          ICENT_DEP = NUCPRE(ICENT) + IDEG
+          IPOPLAB(I) = ICENT_DEP
+          ICHRG(ICENT_DEP) = NINT(CHARGE(ICENT))
+        END DO
+        NPOPLAB = NUCDEP
+        DO I = 1,NPOPLAB
+           POPLAB(I) = '    '//NAMDEP(I)
+        END DO
+        GO TO 8000
+      END IF
+C- large component types
       IF(.NOT.LABDEF) THEN
         DO I = 1,NPLAB(1)
           POPLAB(I) = PLABEL(I,ILABDF)
@@ -1815,6 +1958,7 @@ C
         NPOPLAB = NPLAB(1)
       ENDIF
       IF(ADDSML) THEN
+C- combine all small component types for each center
         JCENT = 0
         JDEG  = 0
         DO I = NPLAB(1)+1,NPLAB(0)
@@ -1829,6 +1973,7 @@ C
           IPOPLAB(I) = NPOPLAB
         ENDDO
       ELSE
+C- individual small component types
         IF(.NOT.LABDEF) THEN
           DO I = NPLAB(1)+1,NPLAB(0)
             POPLAB(I) = PLABEL(I,ILABDF)
@@ -1841,7 +1986,7 @@ C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.2) THEN
+ 8000 IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from GETPLB: Group labels',-1)
         WRITE(LUPRI,'(A,I5)') '* Total number : ',NPOPLAB
         WRITE(LUPRI,'(6(3X,I3,2X,A12))') (I,POPLAB(I),I=1,NPOPLAB)
@@ -2016,6 +2161,39 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck WR_MULCHRG */
+      SUBROUTINE WR_MULCHRG(POPG,LAB,NLAB)
+C***********************************************************************
+C
+C     Output routine for Mulliken atomic charges
+C
+C     Written by H. J. Aa. Jensen, Jan 2010, based on WRPOPT
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER LAB(NLAB)*12,FMT*10
+      DIMENSION POPG(NLAB)
+      PARAMETER (NCOL = 12, LCOL=10)
+C
+C     ===============================
+C
+      WRITE(LUPRI,'(A)') '* Mulliken charges:'
+      NROW = 1 + (NLAB-1)/NCOL
+      NOFF = 0
+      DO J = 1,NROW
+        NPRI = MIN(NLAB-NOFF,NCOL)
+        NFMT = LCOL*NPRI - 2
+        WRITE(FMT,'(A4,I3,A3)') '(2X,',NFMT,'A1)'
+        IF (J .EQ. 1) WRITE(LUPRI,FMT) ('-',I=1,NFMT)
+        WRITE(LUPRI,'(20A10)') (LAB(NOFF+I)(1:10),I=1,NPRI)
+        WRITE(LUPRI,'(20F10.3)') (POPG(NOFF+I),I=1,NPRI)
+        WRITE(LUPRI,FMT) ('-',I=1,NFMT)
+        NOFF = NOFF + NPRI
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck grossc */
       SUBROUTINE GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC,NSTR,REFFIL)
 C***********************************************************************
@@ -2122,7 +2300,7 @@ C     Be aware: Both density matrices are normed to 1
 C     Coeffients may now be deallocated.....
 C
       CALL DENMAT(WORK(KDMAT),WORK(KCMO),IPRHO1)
-      IF(IOPTDD.NE.0) 
+      IF(IOPTDD.NE.0)
      &  CALL ATTACHMENT_DENSITY(WORK(KDMAT),IOPTDD,IPRHO1,
      &                          WORK,KFREE,LFREE)
       CALL DSCAL(N2BBASXQ,D2,WORK(KDMAT),1)
@@ -2171,14 +2349,14 @@ C
          COORD(3,1) = CORD(3,ICENTA)
          DO ICENTB = ICENTA+1, NUCIND
            MULB = ISTBNU(ICENTB)
-           IDEGB = 0 
+           IDEGB = 0
            DO ISYMOP = 0, MAXOPR
              IF (IBTAND(ISYMOP,MULB) .EQ. 0) THEN
                IDEGB = IDEGB + 1
                COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
                COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
                COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
-               WRITE(FILNAM,'(A2,2(A3,I1))') 
+               WRITE(FILNAM,'(A2,2(A3,I1))')
      &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTB),IDEGB
                DO I = 1,10
                  IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
@@ -2199,7 +2377,7 @@ C
                COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
                COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
                COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
-               WRITE(FILNAM,'(A2,2(A3,I1))') 
+               WRITE(FILNAM,'(A2,2(A3,I1))')
      &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTA),IDEGB
                DO I = 1,10
                  IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
@@ -2211,7 +2389,7 @@ C
                CLOSE(LURHO,STATUS='KEEP')
               ENDIF
            ENDDO
-         ENDIF 
+         ENDIF
       ENDDO
 C
       END
@@ -2254,11 +2432,11 @@ C
 C
 C     Calculate density along between centers:
 C     If bond distance is 2R, then points are calculated between (-R,3R)
-C 
+C
       IP1 = -NPOINT/2
-      IP2 = NPOINT - IP1 
+      IP2 = NPOINT - IP1
       DO IP = IP1,IP2
-        PP  = dble(IP)*ASTEP
+        PP  = IP*ASTEP
         PX  = COORD(1,1) + PP*DX
         PY  = COORD(2,1) + PP*DY
         PZ  = COORD(3,1) + PP*DZ
@@ -2311,18 +2489,18 @@ C
 C
       IF(LEVYLE) ILSCUB = 1
       IF(LBIT(ILSCUB,1)) THEN
-         WRITE(LUPRI,'(A)') 
+         WRITE(LUPRI,'(A)')
      &   ' GT3RHO : Gaussian cube file generated for large component.'
          LUCUBE(1) = 11
          OPEN(LUCUBE(1),FILE='rhoL.cube',STATUS='NEW',
-     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')
       ENDIF
       IF (LBIT(ILSCUB,2)) THEN
-         WRITE(LUPRI,'(A)') 
+         WRITE(LUPRI,'(A)')
      &   ' GT3RHO : Gaussian cube file generated for small component.'
          LUCUBE(2) = 12
          OPEN(LUCUBE(2),FILE='rhoS.cube',STATUS='NEW',
-     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')
       ENDIF
       CALL MEMGET('REAL',KATOM,4*NUCDEP,WORK,KFREE,LFREE)
 C     Get cube parameters
@@ -2367,9 +2545,9 @@ C
 C     Memory deallocation
       CALL MEMREL('GT3RHO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-c    
+c
 c     Stop timer
-c           
+c
       TIMEND = SECOND()
       TIME   = TIMEND - TIMSTR
       CALL TIMTXT('>>> Time used in GT3RHO is',TIME,LUPRI)
@@ -2381,8 +2559,8 @@ c
 C
       END
       SUBROUTINE WRITE_ORB_CUBES(N1,N2,ORBS,WORK,LWORK)
-c     Write cube files for gerade orbitals orbs(1,1)..orbs(N1,1) 
-c     and ungerade orbitals orbs(1,2)..orbs(N2,2). 
+c     Write cube files for gerade orbitals orbs(1,1)..orbs(N1,1)
+c     and ungerade orbitals orbs(1,2)..orbs(N2,2).
 c     orbital indices are defined so that 1 is first occupied.
 c     Based on GT3RHO, this one by ulfek.
 #include "implicit.h"
@@ -2442,11 +2620,11 @@ C     Get cube parameters
          else
             write(filename,'(A,I4.4,A)') 'rhoL',orbs(i-N1,2),'u.cube'
          endif
-         WRITE(LUPRI,'(A)') 
+         WRITE(LUPRI,'(A)')
      &   ' GT3RHO : Gaussian cube file generated for large component.'
          LUCUBE(1) = 11
          OPEN(LUCUBE(1),FILE=filename,STATUS='NEW',
-     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')
       ENDIF
       IF (LBIT(ILSCUB,2)) THEN
          if (i.le.n1) then
@@ -2458,7 +2636,7 @@ C     Get cube parameters
      &   ' GT3RHO : Gaussian cube file generated for small component.'
          LUCUBE(2) = 12
          OPEN(LUCUBE(2),FILE=filename,STATUS='NEW',
-     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')
       ENDIF
 C     Write header for cube file
       DO IC = 1,2
@@ -2488,9 +2666,9 @@ C     Coeffients may now be deallocated.....
 C     Memory deallocation
       CALL MEMREL('GT3RHO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-c    
+c
 c     Stop timer
-c           
+c
       TIMEND = SECOND()
       TIME   = TIMEND - TIMSTR
       CALL TIMTXT('>>> Time used in GT3RHO is',TIME,LUPRI)
@@ -2524,7 +2702,7 @@ C
 #include "dcbham.h"
 #include "dcbrho.h"
 C
-C     
+C
       DO I1 = 1,NCUBE(1)
         DO I2 = 1,NCUBE(2)
           DO I3 = 1,NCUBE(3)
@@ -2613,7 +2791,7 @@ C        Loop over all centers
          IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
            JCENT = JCENT + 1
            DO I = 1,3
-             ATOMS(I,JCENT) = 
+             ATOMS(I,JCENT) =
      &             PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
              CUBE(I,0) = MIN(CUBE(I,0),ATOMS(I,JCENT))
              CUBE(I,I) = MAX(CUBE(I,I),ATOMS(I,JCENT))
@@ -2621,7 +2799,7 @@ C        Loop over all centers
            ATOMS(4,JCENT)=CHARGE(ICENT)
          ENDIF
          ENDDO
-      ENDDO      
+      ENDDO
 C     Add some space, calculate step sizes and convert step vectors to Angstrom
       DO I = 1,3
         CUBE(I,0) = CUBE(I,0)  - CUBADJ(1)
@@ -2653,7 +2831,7 @@ C
       WRITE(LUCUBE,10) 'Total density'
       DO I = 0,3
         WRITE(LUCUBE,20) NCUBE(I),(CUBE(J,I),J=1,3)
-      ENDDO      
+      ENDDO
       DO I = 1,NUCDEP
         WRITE(LUCUBE,20) NINT(ATOMS(4,I)),ATOMS(4,I),
      &                   (ATOMS(J,I),J=1,3)
@@ -2707,16 +2885,16 @@ C
      &           'H','N',IPQTOQ(1,0),WORK(KCVEC),NTOT,NMOL,NZ,
      &           D0,IPQTOQ(1,0),AMAT,NTOT,NTOT,NZ)
       IF(IPRPRJ.GE.2) THEN
-        WRITE(LUPRI,'(/A/)') 
+        WRITE(LUPRI,'(/A/)')
      &   'Coefficients in symmetry orthonormalized basis:'
         CALL PRQMAT(WORK(KCVEC),NTOT,NMOL,NTOT,NMOL,NZ,
      &              IPQTOQ(1,0),LUPRI)
-        WRITE(LUPRI,'(/A/)') 
+        WRITE(LUPRI,'(/A/)')
      &  'Density matrix in symmetry orthonormalized basis:'
         CALL PRQMAT(AMAT,NTOT,NTOT,NTOT,NTOT,NZ,
      &            IPQTOQ(1,0),LUPRI)
       ENDIF
-      WRITE(LUPRI,'(/A)') 
+      WRITE(LUPRI,'(/A)')
      &   '* Occupations in symmetry orthonormalized basis:'
       CALL DZERO(PSUM,NREFS)
       DO I = 1,NREF
@@ -2727,7 +2905,7 @@ C
      &   REFFIL(KREF),OTYP(KTYP),KORB,D2*AMAT(I,I,1),EREF(I)
         PSUM(KREF) = PSUM(KREF) + D2*AMAT(I,I,1)
       ENDDO
-      WRITE(LUPRI,'(/A)') 
+      WRITE(LUPRI,'(/A)')
      &   '* Fragment occupations in symmetry orthonormalized basis:'
       DO I = 1,NREFS
         WRITE(LUPRI,'(3X,A6,8X,3X,F7.4)')
@@ -2795,7 +2973,7 @@ C
       DIMENSION CMO(NBAS,NVEC,NZ),BVEC(NTOT,NMOL,NZ),JVEC(NMOL)
       DIMENSION A(4),B(4)
       IF(NZ.EQ.1) THEN
-        IF(BVEC(ISEL,IB,1).LT.D0) CALL DSCAL(NBAS,DM1,CMO(1,IC,1),1)        
+        IF(BVEC(ISEL,IB,1).LT.D0) CALL DSCAL(NBAS,DM1,CMO(1,IC,1),1)
       ELSEIF(NZ.EQ.2) THEN
         DB = PYTHAG(BVEC(ISEL,IB,1),BVEC(ISEL,IB,2))
         IF(DB.GT.D0) THEN
@@ -2905,18 +3083,18 @@ C
 C.......Reading AO-Fock matrices implies restricting to closed-shell
 C.......Read one-electron Fock matrix into CBUF
         CALL OPNFIL(LUCOEF,'DFFCK1','OLD','POLARIZE_REF')
-        CALL REAFCK(LUCOEF,CBUF,.TRUE.,1)        
+        CALL REAFCK(LUCOEF,CBUF,.TRUE.,1)
         CLOSE(LUCOEF,STATUS='KEEP')
 C.......Read two-electron Fock matrice into buffer space, then add
         CALL MEMGET('REAL',KFBUF,N2BBASXQ,WORK,KFREE,LFREE)
         CALL OPNFIL(LUCOEF,'DFFCK2','OLD','POLARIZE_REF')
-        CALL REAFCK(LUCOEF,WORK(KFBUF),.TRUE.,1)        
+        CALL REAFCK(LUCOEF,WORK(KFBUF),.TRUE.,1)
         CLOSE(LUCOEF,STATUS='KEEP')
         CALL DAXPY(N2BBASXQ,D1,WORK(KFBUF),1,CBUF,1)
         CALL MEMREL('POLREF.aofck',WORK,KFRSAV,KFBUF,KFREE,LFREE)
 C
         DO IFRP = 1,NFSYM
-C.........Allocate space for atomic Fock matrices 
+C.........Allocate space for atomic Fock matrices
 C.........as well as eigenvectors/values
           NDIM = NSTR(IFRP,1)*NSTR(IFRP,1)*NZ
           CALL MEMGET('REAL',KFBUF,NDIM,WORK,KFREE,LFREE)
@@ -3074,7 +3252,7 @@ C/* Deck Normpol */
 C***********************************************************************
 C
 C     Normalize polarization contributions
-C     POLVEC contains 
+C     POLVEC contains
 C       NREF reference orbitals + NMOL polarization contributions
 C
 C***********************************************************************
@@ -3095,7 +3273,7 @@ C
       DO J = 1,NMOL
         FAC = D1/SQRT(AMAT(NREF+J,NREF+J,1))
         DO IZ = 1,NZ
-          CALL DSCAL(NBAS,FAC,POLVEC(1,NREF+J,IZ),1)   
+          CALL DSCAL(NBAS,FAC,POLVEC(1,NREF+J,IZ),1)
         ENDDO
         BVEC(NREF+J,J,1)=D1/FAC
       ENDDO
@@ -3108,7 +3286,7 @@ C***********************************************************************
 C
 C     Project out the original reference orbitals
 C     in order to better see polarization
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -3122,10 +3300,10 @@ C
       KFRSAV = KFREE
 C
       CALL OPNFIL(LUCOEF,'DFPRJC','UNKNOWN','PRJANA')
-      READ(LUCOEF) 
+      READ(LUCOEF)
       NCDIM = 0
       DO IFRP = 1,NFSYM
-        READ(LUCOEF) 
+        READ(LUCOEF)
         NCDIM    = NCDIM + NFBAS(IFRP,0)*LCC(IFRP)*NZ
       ENDDO
       CALL MEMGET('REAL',KCBUF,NCDIM,WORK,KFREE,LFREE)
@@ -3237,7 +3415,7 @@ C=======================================================================
       LU_PROJ = 13
       CALL OPNFIL(LU_PROJ,'DFPRJC','OLD','MAINNN')
       READ(LU_PROJ)
-      READ(LU_PROJ) 
+      READ(LU_PROJ)
       READ(LU_PROJ)
       READ(LU_PROJ) BVEC
       CLOSE(LU_PROJ,STATUS = 'KEEP')
@@ -3375,11 +3553,11 @@ C
           JCENTD = JCENTD + 1
           NAORB = 0
           DO ISHELL = 1,NLRGSH
-            ICENT = NCENT(ISHELL)
-            LVAL  = NHKT(ISHELL)
+            ICENT  = NCENT(ISHELL)
+            LVAL   = NHKT(ISHELL)
             NDEGI  = NUCDEG(ICENT)
             DO IDEG = 1,NDEGI
-              DO ICOMP = 1,KHK(LVAL)
+              DO ICOMP = 1,KHKT(ISHELL)
                 NAORB = NAORB + 1
                 IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
                    NAORBC = NAORBC + 1
@@ -3398,13 +3576,13 @@ C
         NDEGJ = NUCDEG(JCENT)
         DO JDEG = 1, NDEGJ
           JCENTD = JCENTD + 1
-          NAORB = NAORBL
+          NAORB  = NAORBL
           DO ISHELL = NLRGSH+1,KMAX
-            ICENT = NCENT(ISHELL)
-            LVAL  = NHKT(ISHELL)
+            ICENT  = NCENT(ISHELL)
+            LVAL   = NHKT(ISHELL)
             NDEGI  = NUCDEG(ICENT)
             DO IDEG = 1,NDEGI
-              DO ICOMP = 1,KHK(LVAL)
+              DO ICOMP = 1,KHKT(ISHELL)
                 NAORB = NAORB + 1
                 IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
                    NAORBC = NAORBC + 1
@@ -3526,3 +3704,4 @@ c     P = vec*vec' for vectors n-nvec+1 .. n
       deallocate( vec )
       deallocate( val )
       end
+! --- end of dirac/dirana.F ---

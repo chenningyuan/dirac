@@ -222,8 +222,10 @@ C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
 C     some scratch
-      IKRCI_SYMSEL   = 0 
-      NOMEGASEL_KRCI = 0
+      IKRCI_SYMSEL      = 0 
+      NOMEGASEL_KRCI    = 0
+      NOMEGASEL_statenr = 1
+
 
       if(IDOPARIO_KRCI .ne. 0 .or. IDOPARIO_KRCI.ne. 1)then
 !       fall back to default: 0
@@ -660,7 +662,8 @@ C              subsequent MCSCF...
                STATE_SELECT_KRCI = .TRUE.
                DOPROP_KRCI       = .TRUE.
                DOJZEXP           = .TRUE.
-               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI
+               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI, 
+     &                       NOMEGASEL_statenr
                IF (IKRCI_SYMSEL .LE. MAX_NKRCI_MAX_SYM .AND.
      &            IKRCI_SYMSEL .GT. 0) THEN
                   NKRCI_SELOM(IKRCI_SYMSEL) = NOMEGASEL_KRCI
@@ -914,16 +917,20 @@ C
 C
 C        MINMK2/MAXMK2 explicitly set
 C
+         NKRCI_MK2REF = 0
+         NKRCI_MK2DEL = NKRCI_MAXMK2
       ELSE
         IF(IKWSET(27) .EQ. 0 .AND. IKWSET(28) .EQ. 0)THEN
 !         Assign default values for MINMK2/MAXMK2
+          NKRCI_MAXMK2 = 2*MIN(NKRCIAELEC,NKRCIASHT) - NKRCIAELEC
+          NKRCI_MINMK2 = NKRCIAELEC-2*MIN(NKRCIAELEC,NKRCIASHT)
           NKRCI_MK2REF = 0
-          NKRCI_MK2DEL = NKRCIAELEC
+          NKRCI_MK2DEL = NKRCI_MAXMK2
+        ELSE
+!         assign MINMK2/MAXMK2 defaults
+          NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
+          NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
         END IF
-
-!       assign MINMK2/MAXMK2 defaults
-        NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
-        NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
       END IF
 C
 C     boson or fermion symmetries in the CI expansion
@@ -1188,6 +1195,12 @@ C
             if(nkrci_ciroots(ikrci_symmetry) .le. 0)then
               call quit(' *** error in KRCI_INP: 
      &                    CI root selection for inactive symmetry. ***')
+            end if
+            if(nkrci_ciroots(ikrci_symmetry) .lt. 
+     &         NOMEGASEL_statenr)then
+              call quit(' *** error in KRCI_INP: 
+     &                    CI root selection for state > # of roots in'//
+     &                  ' in this symmetry. ***')
             end if
             write(lupri,'(/a,a5,a,i4,a)') 
      &      ' *** symmetry:',xrepeig(ikrci_symmetry),

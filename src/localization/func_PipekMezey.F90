@@ -2335,7 +2335,7 @@ contains
   integer :: idum, iworkdum, info, llwork, lilwork
   real*8  :: ddum, workdum
 
-  integer :: lenid, lwork, ier
+  integer :: lenid, lwork, ier, m
   real*8, allocatable :: work(:)
 
   !------------------------------------------------------------------------------!

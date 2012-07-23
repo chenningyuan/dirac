@@ -73,11 +73,11 @@ IF( IPAREX .gt. 0 )THEN
       ' kind =',sizeof(ierr),' MPI library --> kind = ',integer_kind_in_mpi
       print '(A/)', '  ** interface to 32-bit integer MPI enabled **'
     else
-      if(sizeof(ierr) == 4)then
-        print '(A/)', '  ** interface to 32-bit integer MPI enabled **'
-      else
-        print '(A/)', '  ** interface to 64-bit integer MPI enabled **'
-      end if
+#ifdef INT_STAR8
+      print '(A/)', '  ** interface to 64-bit integer MPI enabled **'
+#else
+      print '(A/)', '  ** interface to 32-bit integer MPI enabled **'
+#endif
     end if
 !
   end if

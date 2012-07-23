@@ -90,6 +90,11 @@ C
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
 #include "onecom.h"
 #include "orgcom.h"
 #include "lmns.h"
@@ -566,7 +571,7 @@ C
       IF (INTTYP .EQ. 45) IBCNT = 2
       IORBA = 0
       CALL IZERO(ISOFRA, 8)
-      IF (ADDSTO .AND. INTTYP .EQ. 1) THEN
+      IF (DOHUCKEL .AND. INTTYP .EQ. 1) THEN
          KMAXT = NSMLSH + NLRGSH
       ELSE
          KMAXT = KMAX
@@ -777,11 +782,16 @@ C
      &          INTADR(*), JSYMC(*), JCENTC(*), GEXP(*)
       integer :: ncentc(*)
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
 #include "onecom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "huckel.h"
 #include "symmet.h"
+#include "huckel.h"
 C
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -907,7 +917,7 @@ C     Scale overlap integrals for the Huckel matrix part
 C
          HUCFAC = 1.0D0
          IF (LCLASS(ISHELA) .EQ. 2 .AND. LCLASS(ISHELB) .EQ. 2 .AND.
-     &       INTTYP .EQ. 1.AND.ADDSTO) THEN
+     &       INTTYP .EQ. 1 .AND. DOHUCKEL) THEN
             IHUCA = IHUCPT(ISHELA)
             IF (ISHELA .EQ. ISHELB .AND. DISTAB .LT. 1.0D-3) THEN
                HUCFAC = HUCEXC(IHUCA)
@@ -1135,7 +1145,11 @@ C
 C
 #include "onecom.h"
 #include "orgcom.h"
-#include "huckel.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
 #include "nuclei.h"
 #include "primit.h"
 C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)

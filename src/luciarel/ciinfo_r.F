@@ -595,7 +595,7 @@ C
       character (len=4),  allocatable   :: conf_string_b(:)
       character (len=10), allocatable   :: stringa(:)
       character (len=10), allocatable   :: stringb(:)
-      logical fndlab
+      logical fndlab, ex, ex_open
 *
       NTESTL = 0000
       NTEST = max(IPRNT,NTESTL)
@@ -616,11 +616,16 @@ C
         allocate(stringb(10*100))
         allocate(mjorb_vec(norbt))
         mjorb_vec = 0
-        luxxx = 99
-        call opnfil(luxxx,'KRMCSCF','OLD','ana mj')
+        luxxx = -1
+        INQUIRE(FILE='KRMCSCF',opened=EX_open,number=luxxx)
+        print *, 'ex, ex_open is ...',ex, ex_open, luxxx
+        IF( .not. EX_open)THEN
+          luxxx = 98
+          CALL OPNFIL(luxxx,'KRMCSCF','UNKNOWN','ana mj')
+        END IF
         rewind(luxxx)
         call ireakrmc(luxxx,'MJVEC   ',mjorb_vec,norbt)
-        close(luxxx,status="keep")
+        IF( .not. EX_open) close(luxxx,status="keep")
       end if
 !     do i = 1, nfsym
 !       write(6,'(/a,i3)') 

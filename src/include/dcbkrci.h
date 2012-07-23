@@ -28,7 +28,7 @@
      &        NKRCI_MAX_SYM, MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS, IPRKRCI, &
      &        MAXCIT_KRCI, MXCIV_KRCI,               IANACI_KRCI,       &
      &        KTRLVL_KRCI, IRESTRK_KRCI, IDOPARIO_KRCI, IKRCI_MEMFAC,   &
-     &        NKRCI_SELOM
+     &        NKRCI_SELOM, NOMEGASEL_statenr
       PARAMETER (MAX_NKRCI_MAX_SYM = 128)
       COMMON /DCIKRCI/ NKRCIISH, NKRCIASH, NKRCISSH, NKRCIGSH, NKRCIGSP,&
      &                 NKRCIESH, NKRCIPSH, NKRCIFRO, NKRCIAELEC,        &
@@ -39,8 +39,8 @@
      &                 NKRCI_CIROOTS(MAX_NKRCI_MAX_SYM), IPRKRCI,       &
      &                 MAXCIT_KRCI, MXCIV_KRCI,                         &
      &                 IANACI_KRCI, KTRLVL_KRCI, IRESTRK_KRCI,          &
-     &                 IDOPARIO_KRCI, IKRCI_MEMFAC,                     &
-     &                 NKRCI_SELOM(MAX_NKRCI_MAX_SYM), IKRCI_SVRONO
+     &                 IDOPARIO_KRCI, IKRCI_MEMFAC, IKRCI_SVRONO,       &
+     &                 NKRCI_SELOM(MAX_NKRCI_MAX_SYM),NOMEGASEL_statenr
 !
       REAL*8 DKRCI_CNVINT(2), DKRCI_THRPCI
       COMMON /DCRKRCI/ DKRCI_CNVINT, DKRCI_THRPCI

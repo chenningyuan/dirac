@@ -8,4 +8,4 @@
 !     and then rebuild the program using the command "make".
 !
       INTEGER MXATOM, MXCENT, MXCOOR
-      PARAMETER (MXATOM=60, MXCENT = 600, MXCOOR = 3*MXCENT)
+      PARAMETER (MXATOM=20, MXCENT = 300, MXCOOR = 3*MXCENT)

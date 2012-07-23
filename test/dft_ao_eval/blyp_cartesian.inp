@@ -17,4 +17,5 @@
  4              !we stop after 4 iterations
 .EVCCNV
  1.0D-9 1.0D8   !and set the accepted threshold to a large number
+.SCFPOP
 *END OF
