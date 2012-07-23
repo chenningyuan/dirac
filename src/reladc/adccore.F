@@ -1586,7 +1586,7 @@ C
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
 
         WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
-        WRITE(ITAPADC,'(I2)')  KREP               !KREP
+        WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
         WRITE(ITAPADC,'(I1)')  RCW                !RCW
         N=1
         WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
@@ -1599,7 +1599,7 @@ C
         WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
         WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
         WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
-        WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !NEIGENV
+        WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
      
         CLOSE(ITAPADC)
