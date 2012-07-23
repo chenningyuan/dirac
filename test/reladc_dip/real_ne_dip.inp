@@ -22,5 +22,5 @@ energy  -2.0 2.5 0.1
 *END OF                                                                                             
                                                                                                     
  $RELADC DODIPS=T, XREPS=1 $END                                                         
- $LANINP DIPITER=100 SIPPRNT=20.0 $END                                                              
+ $LANINP DIPITER=100 DIPPRNT=65.0 $END                                                              
                                                                                                     
