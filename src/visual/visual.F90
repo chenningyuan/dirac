@@ -241,52 +241,53 @@ contains
        D_0 = C*(D_mo*dag(C))
        D_0 = 2.0d0*D_0
 
+       if (.not. visual_cfg_london_skip_ro) then
+          ! get T^B matrix in MO basis
 
-!      get T^B matrix in MO basis
+          call init_mat(D_con_mo, norbt, norbt)
+          D_con_mo%elms = 0.0d0
 
-       call init_mat(D_con_mo, norbt, norbt)
-       D_con_mo%elms = 0.0d0
+          if (visual_cfg_london_none) then
 
-       if (visual_cfg_london_none) then
+             call init_mat(D_con_mo_ai, norbt, norbt)
+             D_con_mo_ai%elms = 0.0d0
 
-          call init_mat(D_con_mo_ai, norbt, norbt)
-          D_con_mo_ai%elms = 0.0d0
+             call get_d_con_mo(D_con_mo, &
+                               D_con_mo_ai = D_con_mo_ai)
 
-          call get_d_con_mo(D_con_mo, &
-                            D_con_mo_ai = D_con_mo_ai)
+             call copy_matrix_sym(D_con_mo_ai, D_con_mo)
 
-          call copy_matrix_sym(D_con_mo_ai, D_con_mo)
+          else
 
-       else
+             call get_d_con_mo(D_con_mo)
 
-          call get_d_con_mo(D_con_mo)
+          end if
 
-       end if
-
-       if (.not. levyle) then
-!         radovan: magic factor for levyle
-!                  need to find the reason for it
-          D_con_mo = 0.5d0*D_con_mo
-          if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
-       end if
+          if (.not. levyle) then
+!            radovan: magic factor for levyle
+!                     need to find the reason for it
+             D_con_mo = 0.5d0*D_con_mo
+             if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
+          end if
 
 
-!      build 'modified' (by T^B) density matrices:
+!         build 'modified' (by T^B) density matrices:
 
-       call init_mat(D_con, norbt, norbt)
-       D_con%elms = 0.0d0
-       call copy_matrix_sym(D_con, D_con_mo)
+          call init_mat(D_con, norbt, norbt)
+          D_con%elms = 0.0d0
+          call copy_matrix_sym(D_con, D_con_mo)
 
-       if (nfsym == 2) then
-          call get_mdm_con(D_con,                     &
-                           D_con_mo,                  &
-                           C, Cig, Csg,               &
-                           Ciu = Ciu,                 &
-                           Csu = Csu)
-       else
-          call get_mdm_con(D_con,                     &
-                           D_con_mo,                  &
-                           C, Cig, Csg)
+          if (nfsym == 2) then
+             call get_mdm_con(D_con,                     &
+                              D_con_mo,                  &
+                              C, Cig, Csg,               &
+                              Ciu = Ciu,                 &
+                              Csu = Csu)
+          else
+             call get_mdm_con(D_con,                     &
+                              D_con_mo,                  &
+                              C, Cig, Csg)
+          end if
        end if
 
     end if
@@ -437,9 +438,11 @@ contains
     call alloc(buffer, nr_ao_slices*nr_ao_cartesian*max_batch_length)
 
     if (visual_cfg_london) then
-       D_con_mo = 0
-       D_con    = 0
-       if (visual_cfg_london_none) D_con_mo_ai = 0
+       if (.not. visual_cfg_london_skip_ro) then
+          D_con_mo = 0
+          D_con    = 0
+          if (visual_cfg_london_none) D_con_mo_ai = 0
+       end if
     end if
 
 
@@ -475,9 +478,6 @@ contains
     do imat = 1, visual_cfg_nr_dmat
        D(imat) = 0
     end do
-    if (visual_cfg_london) then
-       D_con = 0
-    end if
 
     end subroutine
 
