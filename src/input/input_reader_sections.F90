@@ -159,11 +159,17 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
-      integer                          :: i
-      real(8)                          :: s, v_12(3), v_13(3)
+      integer                          :: i, j
+      integer                          :: isym, istart, iend
+      real(8)                          :: f, s, v_12(3), v_13(3)
+      integer                          :: nr_lines
+      character(100)                   :: line
+      character(80), allocatable       :: word_array(:)
+      integer                          :: nr_words
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
+#include "maxorb.h"
 
       call reset_available_kw_list()
 
@@ -397,12 +403,55 @@
          visual_cfg_force_small_ao = .true.
       end if
 
-      if (kw_matches(word, '.ORBSTR')) then
+      if (kw_matches(word, '.OCCUPA')) then
          visual_cfg_use_orbital_string = .true.
-         call kw_read(word, visual_cfg_orbital_string(1))
-         if (nfsym > 1) then
-            call kw_read(word, visual_cfg_orbital_string(2))
-         end if
+         allocate(visual_cfg_occupation(mxprim, 2))
+         ! read nr of lines
+         call kw_read(word, nr_lines)
+         print *, 'reading .OCCUPATION, nr lines:', nr_lines
+         do i = 1, nr_lines
+            ! read each line
+            read(get_file_unit(), '(a)') line
+            nr_words = word_count(line)
+            allocate(word_array(nr_words))
+            ! cut into words
+            read(line, *) (word_array(j), j = 1, nr_words)
+            ! read ifsym
+            read(word_array(1), *) isym
+            ! find '-'
+            j = index(word_array(2), '-')
+            if (j > 0) then
+               ! read start orbital
+               read(word_array(2)(1:j-1), *) istart
+               ! read end orbital
+               read(word_array(2)(j+1:len(word_array(2))), *) iend
+            else
+               ! start and end orbital are the same
+               read(word_array(2), *) istart
+               iend = istart
+            end if
+            ! sanity check
+            if (istart < 1) then
+               print *, 'ERROR: start orbital should be larger than 0'
+               stop 1
+            end if
+            if (iend > mxprim) then
+               print *, 'ERROR: end orbital higher than max nr of orbitals'
+               stop 1
+            end if
+            ! read occupation
+            read(word_array(3), *) f
+            ! update occupation vector
+            do j = istart, iend 
+               visual_cfg_occupation(j, isym) = f
+            end do
+            ! print confirmation to screen
+            print *, 'occupy symmetry      = ', isym
+            print *, '       start orbital = ', istart
+            print *, '       end orbital   = ', iend
+            print *, '       occupation    = ', f
+            deallocate(word_array)
+         end do
       end if
 
       if (kw_matches(word, '.LONDON')) then

@@ -228,7 +228,7 @@ implicit none
 !   with rle
 260   continue
       itr1=mod(iter-1,iopt(4))+1
-      call wrtrle  ("t1v ",1,itr1+1)
+      call wrtrle  ("t1v ",1,itr1+1) ! save diagram for rle
       call wrtrle  ("tv  ",2,itr1+1)
       if (iopt(17).ne.0) then
         call wrtrle  ("t31 ",3,itr1+1)
@@ -253,6 +253,8 @@ implicit none
           go to 220
         endif
       endif
+      ! construct tm from t1v(1el diag,01),t1c(1el diag,00) and tv(2el diag)
+      ! for comp. efficiency only we handle corresponding diagrams
       call t1sqr("t1v ","t1c ","tv  ","tm  ")
       call wrtrle ("t1v ",1,1)
       call wrtrle ("tv  ",2,1)
@@ -1025,11 +1027,17 @@ implicit none
         call mult6     ("s1  ","s2  ","s3  ",0)
         call add       ("s3  ",1.d0,"t1nw",1.d0,"t1nw")
       end if
-!
+
+      ! prepare Heff(0,1) (tvf) from T1 amplitudes (t1nw)
       call fold_ccsd("t1nw","tvf ")
-      call heff1_csv
+      call heff1_csv ! correction of Heff for incomplete model space
+
+      ! construct folded diagrams for T1
       call dfold1_csv
+
+      ! divide by denominators
       call diveps("t1nw")
+
       call prtime     ("caltv1_csv",0,1)
 ! 
  end subroutine
@@ -1634,7 +1642,7 @@ implicit none
       return
       end
 ! **************************************************
-      subroutine dfold1_csv
+subroutine dfold1_csv
 #if defined HSFS_DYN_ALLOC
       use dat_mod
 implicit none
@@ -1656,6 +1664,7 @@ implicit none
       if (iopt(9).ne.0) call fold_ccsd("s2  ","s3  ")
       call add("t1nw",1.d0,"s2  ",-1.d0,"t1nw")
       call prt("s2  ","dfold1   ",3)
+
       if (iopt(17).eq.3) then
 !  diag f1
         call reord7   ("t31 ","s1  ",231456)
@@ -1666,15 +1675,14 @@ implicit none
         call dveps6   ("s1  ")
         call add      ("s1  ",-1.d0,"t3nw",1.d0,"t3nw")
       end if
-      call prt("s2  ","dfold1  ",3)
-      call prtime("dfold1  ",0,1)
+      call prt("s2  ","dfold1_csv",3)
+      call prtime("dfold1_csv",0,1)
       return
-      end
-!  *********************************************************************
-      subroutine heff1_csv
+end subroutine
+
+!*************************************************************************************
+subroutine heff1_csv
 !-------------------------------------------------------------------------------------
-!
-!
 !
 !-------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -1684,11 +1692,11 @@ implicit none
       use cij2_mod
       use rsp1_mod
       use dat_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -1707,13 +1715,15 @@ implicit none
 #include "dat.h"
 #endif
 
-      !integer*4 ipvt
-      integer :: ipvt
+!!!!!!!!!!!!!!!!!!! needs dynamic allocation !!!!!!!!!!!!!!!!!!!!!!!
+  real(kind=8) :: a(100,100),z(100),rcond
+  integer  :: ipvt(100),iord(100) ! note: previously ipvt was declared as 4-byte integer
+  integer :: io,jo,i,j,itt,nsize,istrt11,istrt12,ntapev,nsizev
+  integer :: istrtv1,istrtv2,ntapef,new,ir,nsizeo
+  real(kind=8), external :: find
 
-!!!!!!!!!!!!!!!!!!! needed dynamic allocation !!!!!!!!!!!!!!!!!!!!!!!
-      dimension a(100,100),ipvt(100),z(100),iord(100)
+  if (iopt(9).eq.0) return
 
-      if (iopt(9).eq.0) return
       call prt("tvf ","oldtvf  ",1)
       call files("tvf ",ntapef,new,1,-1,-1)
       if (new.ne.0) then
@@ -1758,8 +1768,8 @@ implicit none
 70    a(io,jo)=a(iord(io),iord(jo))
       call dgeco(a,100,nsizeo,ipvt,rcond,z)
       if (rcond+1.0.eq.1.0) then
-        write (6,*) ' singular lin eqs in heff1'
-        call abext('heff1')
+        write (LUPRI,*) ' singular lin eqs in heff1'
+        call abext('heff1_csv: singular lin eqs in heff1!')
       endif
       call dgesl(a,100,nsizeo,ipvt,gen(istrt12+1),0)
 !   expand back to original tf
@@ -1770,7 +1780,7 @@ implicit none
 80    gen(istrt12+iord(io))=z(io)
       call prt("tvf ","newtvf  ",1)
       return
-      end
+end subroutine
 
 !  *********************************************************************
 subroutine rdbox_csv
@@ -1781,7 +1791,7 @@ subroutine rdbox_csv
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+ implicit none
 #include "priunit.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"

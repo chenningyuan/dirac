@@ -2805,7 +2805,7 @@ end subroutine
       end subroutine vxsort
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine wrtfile(nt,nrec,name)
+subroutine wrtfile(nt,nrec,name)
 !----------------------------------------------------------------------------------
 !
 !  write internal file "name" on tape nt, skipping nrec records.
@@ -2862,7 +2862,7 @@ implicit none
       endif
       rewind nt
       return
-      end
+ end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine wrtrle (name,itape,loc) 
@@ -3023,27 +3023,31 @@ implicit none
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine zeroup(ntmp,itmp,t,zero)
+subroutine zeroup(ntmp,itmp,t,zero)
 !--------------------------------------------------------------------------------
 !
 !       moves 'zero' elements & their indexes at the end of the array
 !
 !--------------------------------------------------------------------------------
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
-      dimension itmp(ntmp),t(ntmp)
-      nn=0
-      do 120 i=1,ntmp
+  integer, intent(inout) :: ntmp, itmp(ntmp)
+  real(kind=8), intent(inout) :: t(ntmp)
+  real(kind=8), intent(in) :: zero
+  integer :: nn,i
+  nn=0
+  do 120 i=1,ntmp
       if (abs(t(i)).ge.zero) then
+  ! start placing nonzero elements and their indexes from the beginning of array
         nn=nn+1
         itmp(nn)=itmp(i)
         t(nn)=t(i)
       endif
-120   continue
-      ntmp=nn
-      return
-      end subroutine zeroup
+  120 continue
+! refresh the ntmp value, what is number of elements on array
+   ntmp=nn
+   return
+end subroutine zeroup
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse(ii,i1,i2,i3,i4)
@@ -3064,7 +3068,7 @@ implicit none
       i2=mod(ia,10)
       i1=ia/10
       return
-      end
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse6 (ii,i1,i2,i3,i4,i5,i6)
@@ -3311,9 +3315,9 @@ implicit none
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
-! Main printing subroutine for 1 and 2-electronical records
+!  Main printing subroutine for 1 and 2-electronical records
 !
-! 1-electronic records have first two indexes zero - TODO: avoid their printout
+!  1-electronic records have first two indexes zero - TODO: avoid their printout
 !
 !  prints diagrams (integrals,intermediates...) & their indexes 
 !
@@ -3555,13 +3559,9 @@ end subroutine prt
         do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
-!             id(1)=iand(ishft(ij(i),-24),'ff'x)
               id(1)=iand(ishft(ij1(i),-24),z'ff')
-!             id(2)=iand(ishft(ij(i),-16),'ff'x)
               id(2)=iand(ishft(ij1(i),-16),z'ff')
-!             id(3)=iand(ishft(ij(i),-8),'ff'x)
               id(3)=iand(ishft(ij1(i),-8),z'ff')
-!             id(4)=iand(ij(i),'ff'x)
               id(4)=iand(ij1(i),z'ff')
               write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,4)
@@ -3605,7 +3605,7 @@ subroutine prtime(tit,n,iparm)
 #include "priunit.h"
 #include "csdtime.h"
 #else
-#include "implicit.h"
+  implicit none
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
 #include "csdtime.h"
