@@ -300,6 +300,7 @@ C
       NSEC5 = 1
       N5L = 0
       WRITE (IW,1005) NPASS,'VOVV'
+      WRITE(IW,*) 
       CALL FLSHFO (IW)
 C
       IF (.NOT.SRTALL) GOTO 600
@@ -402,11 +403,12 @@ C
 C  end of IPASS LOOP
 C ----------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,*) '    step',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
       CALL FLSHFO (IW)
       ENDDO
 C ----------------------
       CALL DAYTIME (DATEX,TIMEX)
+      WRITE(IW,*) 
       WRITE(IW,*) 'VOVV sorting done at '//datex//timex
       CALL FLSHFO (IW)
 C
@@ -418,6 +420,7 @@ C
       NSEC6 = 1
       N6L = 0
       WRITE (IW,1005) NPASS,'VVVV'
+      WRITE(IW,*) 
       CALL FLSHFO (IW)
 C
 C    start of IPASS loop for the VVVV
@@ -517,13 +520,14 @@ C
 C     end of IPASS loop for the VVVV
 C --------------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,*) '    step',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
       CALL FLSHFO (IW)
       ENDDO
 C --------------------------
 C
   500 CLOSE(MDINT)
       CALL DAYTIME (DATEX,TIMEX)
+      write(iw,*)
       WRITE(IW,*) 'VVVV sorting done at '//datex//timex
       CALL FLSHFO (IW)
 C
