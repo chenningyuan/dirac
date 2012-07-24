@@ -252,14 +252,14 @@ contains
              call init_mat(D_con_mo_ai, norbt, norbt)
              D_con_mo_ai%elms = 0.0d0
 
-             call get_d_con_mo(D_con_mo, &
+             call get_d_con_mo(D_con_mo, occupation, &
                                D_con_mo_ai = D_con_mo_ai)
 
              call copy_matrix_sym(D_con_mo_ai, D_con_mo)
 
           else
 
-             call get_d_con_mo(D_con_mo)
+             call get_d_con_mo(D_con_mo, occupation)
 
           end if
 
@@ -958,63 +958,41 @@ contains
    end subroutine
 
 
-      subroutine setup_orbital_string(occupation)
+   subroutine setup_orbital_string(occupation)
 
-      real(8)              :: occupation(norbt)
+      ! this routine will set up occupation vector
+      ! based on **VISUAL
+      !          .OCCUPATION
+      ! if this is not given, then it will occupy all
+      ! "occupied" electrons with 1.0
+      real(8) :: occupation(norbt)
 
-      integer, allocatable :: kvec(:)
-      integer              :: i, ifsym, nvec, ioff, ishift
+      integer :: i, ifsym, ioff
 
       occupation = 0.0d0
 
       ioff = 0
-
       do ifsym = 1, nfsym
-
-        ioff = ioff + npsh(ifsym)
-
-        if (visual_cfg_use_orbital_string) then
-
-          call alloc(kvec, norb(ifsym))
-          kvec = 0
-          nvec = 1
-
-          call numlst(visual_cfg_orbital_string(ifsym), &
-     &                kvec, &
-     &                norb(ifsym), &
-     &               -npsh(ifsym), &
-     &                nesh(ifsym), &
-     &                ifsym, &
-     &                nvec)
-
-          write(*, *) '--------------------------------------------------------------'
-          write(*, *) 'visual.F90: selected orbitals (in solution vector)'
-          write(*, *) 'in fermion symmetry: ', ifsym
-          write(*, *) 'electronic index, (absolute index): '
-          do i = 1, nvec
-            ishift = kvec(i)
-            if (ishift < 0) ishift = ishift + 1
-            occupation(ioff + ishift) = 1.0d0
-            write(*, *) ishift, '(', ioff + ishift, ')'
-          end do
-          write(*, *) '--------------------------------------------------------------'
-
-          call dealloc(kvec)
-
-
-        else
-
-          do i = 1, nish(ifsym)
-            occupation(ioff + i) = 1.0d0
-          end do
-
-        end if
-
-        ioff = ioff + nesh(ifsym)
-
+         ioff = ioff + npsh(ifsym)
+         if (visual_cfg_use_orbital_string) then
+            do i = 1, nish(ifsym) + nash(ifsym) + nssh(ifsym)
+               occupation(ioff + i) = visual_cfg_occupation(i, ifsym)
+            end do
+         else
+            if (nash(ifsym) > 0) then
+               print *, 'ERROR: with open shells you should use .OCCUPATION'
+               print *, '       otherwise occupation will be wrong'
+               print *, '       so we better stop here'
+               stop 1
+            end if
+            do i = 1, nish(ifsym)
+               occupation(ioff + i) = 1.0d0
+            end do
+         end if
+         ioff = ioff + nesh(ifsym)
       end do
 
-      end subroutine
+   end subroutine
 
       SUBROUTINE SETUP_FO_DMAT_AO(IXVECTOR, &
      &                            STRING, D_mo)
