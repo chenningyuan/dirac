@@ -38,7 +38,7 @@ csv
 .END
 .INPUT
  B+ test with DIRAC-HSFS-CCSD, 2p active space; no frozen
-  3 80 08  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+  3 80 08  4  0  0  0  0  0  0  0  0  0  0  0  0  0  0  7
   5
 hhvvv
   8
