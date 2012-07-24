@@ -183,7 +183,38 @@ C |
         WRITE(IW,*) 'A threshold of',ADCTHR,' will be applied to'
         WRITE(IW,*) 'the 2P ADC matrix.'
       ENDIF
-        
+!
+! determine symmetries to be calculated
+!
+      n = 0
+      do i = 1,nrep
+        n = n + dipreps(i)
+      enddo
+      if(n.eq.0) then
+        write(iw,*) 'User has not given explicit symmetries.'
+        write(iw,*) 'Program calculates the following DIP symmetries:'
+        write(iw,*)
+        icount=1
+        do i=1,nrep
+          dipreps(icount) = i
+          write(iw,*) '   No: ',icount,'  symmetry: ',i
+          icount = icount + 1
+        enddo
+        write(iw,*)
+      else
+        write(iw,*) 'User has made explicit symmetry choices.'
+        write(iw,*) 'Program calculates the following DIP symmetries:'
+        write(iw,*)
+        icount=1
+        do i=1,nrep
+          if(dipreps(i).ne.0) then
+            write(iw,*) '   No: ',icount,'  symmetry: ',dipreps(i)
+            icount = icount + 1
+          endif
+        enddo
+        write(iw,*) 'Program calculates',icount,' symmetries.'
+      endif
+      write(iw,*)
 C |
 C |
 C |
@@ -244,7 +275,17 @@ CTROND          II=IREPSPI(I,IREP,1)
 CTROND          WRITE(6,*) "TEST..IREPSPI ",IREP,II,REPNA(IREP),EPS(J)
 CTROND        ENDDO
 CTROND      ENDDO
-      DO 200 DESREP = 1,NREP
+
+      DO 200 IRPLOOP = 1,NREP
+        IF(dipreps(IRPLOOP).EQ.0) GOTO 200
+        IF(dipreps(IRPLOOP).GT.NREP) THEN
+           WRITE(IW,*) 'Chosen Symmetry',dipreps(IRPLOOP),
+     &     ' does not exist and is skipped!'
+           GOTO 200
+        ENDIF
+
+        DESREP = dipreps(IRPLOOP)
+
         ICOLLEN(DESREP) = 0
         IF(NOOT(DESREP).GT.0) THEN
           WRITE(IW,'(A,I4)') 
@@ -330,7 +371,16 @@ c  att2: it was observed that the ADC2 matrices get very large and
 c  therefore a diagonalization is required immediately after the
 c  SAT block construction!
 c      
-      DO 300 DESREP = 1,NREP
+      DO 300 IRPLOOP = 1,NREP
+        IF(dipreps(IRPLOOP).EQ.0) GOTO 300
+        IF(dipreps(IRPLOOP).GT.NREP) THEN
+           WRITE(IW,*) 'Chosen Symmetry',dipreps(IRPLOOP),
+     &     ' does not exist and is skipped!'
+           GOTO 300
+        ENDIF
+
+        DESREP = dipreps(IRPLOOP)
+
         IF(NOOT(DESREP).EQ.0) GOTO 300
         WRITE(IW,*) ' *** Found final states in symm.',DESREP
 
@@ -371,18 +421,6 @@ c  release all memory needed for satellite construction.
 c
         CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
         CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
-c
-c   generate histogram for ADC Matrix (in the two-particle case only)
-c   not yet functional! Do not activate since the cutadc routine does
-c   not exist!
-c
-c     IF(DOADCHIST) THEN
-c       WRITE(IW,*) 'Generating histogram for ADC matrix'
-c       CALL CUTADC(INFOHANDLE+1,INFOHANDLE+4,FILEADC,
-c    &              INTBUF,NBUFS,CARITH,ADCTHR)
-c     ENDIF
-
-
 C
 C  write general matrix control file and perform Lanczos diagonalization
 C  for each symmetry immediately.

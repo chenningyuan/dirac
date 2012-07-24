@@ -2952,9 +2952,13 @@ C
             print *, 'controlled stop: only sequential'
             call quit ('RELADC not parallelized')
          endif
-         OPEN(LUCMD,FILE = 'DIRAC.INP')
-         CALL ADCINPT(LUCMD,LUPRI)
-         CLOSE(LUCMD)
+!
+! MP we now comment out the default call of adcinpt since we have the
+! new input structure.
+!
+!        OPEN(LUCMD,FILE = 'DIRAC.INP')
+!        CALL ADCINPT(LUCMD,LUPRI)
+!        CLOSE(LUCMD)
       ENDIF
 !
 !     Input of COSCI module

@@ -241,17 +241,6 @@ This way everything (binary, scripts, basis sets) will be at the right place
 under /install/path and $PATH should contain /install/path.
 
 
-How can I compile DIRAC for large molecules?
---------------------------------------------
-
-Set ENABLE_LARGE_MOLECULES to ON via ccmake::
-
-  $ cd build
-  $ ccmake ..
-
-Then (re)build the binary
-
-
 Compiling in verbose mode
 -------------------------
 

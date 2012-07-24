@@ -52,6 +52,12 @@
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
 
+        case ('**RELAD')
+           call read_input_reladc(word, kw_section)
+
+        case ('**LANCZ')
+           call read_input_lanczos(word, kw_section)
+
         case default
 !          activate as soon as everything is merged to here
 !          call quit('section '//kw_section//' not recognized')
@@ -1076,6 +1082,129 @@
 
       if (kw_matches(word, '.NACTPI')) then
          call kw_read(word, relcc_ih_nactpi, 2*NFSYM)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+!
+!  new reladc input subroutine
+!
+   subroutine read_input_reladc(word, kw_section)
+
+      use adc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: user_req_symmetries
+!     --------------------------------------------------------------------------
+
+!     write(*,*) 'In reladc input reader:',word,kw_section,len(word)
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.ADCLEV')) then
+         read(get_file_unit(),'(i5)') reladc_adclevel
+      end if
+
+      if (kw_matches(word, '.DOSIPS')) then
+         reladc_dosips = .true.
+      end if
+
+      if (kw_matches(word, '.DODIPS')) then
+         reladc_dodips = .true.
+      end if
+
+      if (kw_matches(word, '.SIPREP')) then
+         call kw_read(word, user_req_symmetries)
+         call kw_read(word, reladc_sipreps, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.DIPREP')) then
+         call kw_read(word, user_req_symmetries)
+         call kw_read(word, reladc_dipreps, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.READQK')) then
+         reladc_readqkl = .true.
+      end if
+
+      if (kw_matches(word, '.NOCONS')) then
+         reladc_doconst = .false.
+      end if
+
+      if (kw_matches(word, '.DOADCP')) then
+         reladc_doadcpop = .true.
+      end if
+
+      if (kw_matches(word, '.DOFULL')) then
+         reladc_dofull = .true.
+      end if
+
+      if (kw_matches(word, '.VCONV ')) then
+         read(get_file_unit(),'(f15.8)') reladc_vconv
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+!
+!  new lanczos input subroutine
+!
+   subroutine read_input_lanczos(word, kw_section)
+
+      use adc_cfg   ! lanczos only used in combination with reladc. same module
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: user_req_symmetries
+!     --------------------------------------------------------------------------
+
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.SIPITER')) then
+         read(get_file_unit(),'(i8)') reladc_sipiter
+      end if
+
+      if (kw_matches(word, '.DIPITER')) then
+         read(get_file_unit(),'(i8)') reladc_dipiter
+      end if
+
+      if (kw_matches(word, '.SIPEIGV')) then
+         read(get_file_unit(),'(i8)') user_req_symmetries
+         call kw_read(word, reladc_sipeigv, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.DIPEIGV')) then
+         read(get_file_unit(),'(i8)') user_req_symmetries
+         call kw_read(word, reladc_dipeigv, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.SIPPRNT')) then
+         read(get_file_unit(),'(f18.6)') reladc_sipprnt
+      end if
+
+      if (kw_matches(word, '.DIPPRNT')) then
+         read(get_file_unit(),'(f18.6)') reladc_dipprnt
+      end if
+
+      if (kw_matches(word, '.DOINCORE')) then
+         reladc_doincore = .true.
+      end if
+
+      if (kw_matches(word, '.ADCTHR')) then
+         read(get_file_unit(),'(f18.6)') reladc_adcthr
       end if
 
       call check_whether_kw_found(word, kw_section)
