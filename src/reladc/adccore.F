@@ -256,6 +256,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       doadcpop =   reladc_doadcpop
       dofull   =   reladc_dofull  
       vconv    =   reladc_vconv   
+      adcthr   = reladc_adcthr  
 
       sipiter  = reladc_sipiter 
       dipiter  = reladc_dipiter 
@@ -266,7 +267,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       sipprnt  = reladc_sipprnt 
       dipprnt  = reladc_dipprnt 
       doincore = reladc_doincore
-      adcthr   = reladc_adcthr  
 !|
 !|
 !|___________________________________________________________
@@ -275,7 +275,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       write(IW,'(5X,A)') '****                               ****' 
       write(IW,'(5X,A)') '****                               ****' 
-      write(IW,'(5X,A)') '**** Propagator JOB CONTROL DATA:  ****'
+      write(IW,'(5X,A)') '****   Propagator and Lanczos      ****'
+      write(IW,'(5X,A)') '****      JOB CONTROL DATA:        ****'
       write(IW,'(5X,A)') '****                               ****' 
       write(IW,'(5X,A)') '****                               ****' 
       write(IW,'(10X,A,T50,I3)') 'Order of SIP treatment:',adclevel
@@ -309,6 +310,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write(IW,'(10X,A,T50,L1)') 'Do adv. final state anal.:',doadcpop
       write(IW,'(10X,A,T50,L1)') 'Do full diag. (max. 5000):',dofull
       write(IW,'(10X,A,T50,F18.6)') 'Conv. of constant diagrams:',vconv
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP matrix elements:',
+     & adcthr
       write(IW,'(10X,A,T50,I7)') 'Number of iter. in SIP calc:',sipiter
       write(IW,'(10X,A,T50,I7)') 'Number of iter. in DIP calc:',dipiter
       write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
@@ -338,7 +341,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write(IW,'(10X,A,T50,F18.6)') 'Thr. for SIP scr. output:',sipprnt
       write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP scr. output:',dipprnt
       write(IW,'(10X,A,T50,L1)') 'Do incore Lanczos diag.:',doincore
-      write(IW,'(10X,A,T50,F18.6)') 'Thr. for matrix elements:',adcthr
 !
 !  end of job control output
 !
