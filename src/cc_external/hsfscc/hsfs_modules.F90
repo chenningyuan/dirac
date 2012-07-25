@@ -824,17 +824,17 @@ module ipack_mod
 
   subroutine set_check_ipack_indexes
     check_ipack_indexes=.true. ! sets checking of ipack indexes
-  end subroutine set_check_ipack_indexes
+  end subroutine 
 
   subroutine unset_check_ipack_indexes
     check_ipack_indexes=.false. ! unsets checking of ipack indexes
-  end subroutine unset_check_ipack_indexes
+  end subroutine 
 
   integer function ipack2(i,j)
     integer, intent(in) :: i,j
     if (check_ipack_indexes) call check_ipack2_indexes(i,j)
     ipack2=ior(ishft(i,8),j)
-  end function ipack2
+  end function 
 
   integer function i1unpack2(ii)
   ! retreive 1st index from the packed index of two
@@ -854,13 +854,13 @@ module ipack_mod
     integer, intent(in) :: i,j,k
     if (check_ipack_indexes) call check_ipack3_indexes(i,j,k)
     ipack3=ior(ior(ishft(i,16),ishft(j,8)),k)
-  end function ipack3
+  end function 
 
   integer function ipack4(i,j,k,l)
     integer, intent(in) :: i,j,k,l
     if (check_ipack_indexes) call check_ipack4_indexes(i,j,k,l)
     ipack4=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
-  end function ipack4
+  end function 
 
   integer function i1unpack4(ii)
   ! unpack 1st index of packed index of four

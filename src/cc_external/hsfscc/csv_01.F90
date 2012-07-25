@@ -548,6 +548,7 @@ end subroutine
 subroutine pdiag_csv
 !-----------------------------------------
 ! previously known as "subroutine pdiag"
+! handle various intermediate diagrams
 !-----------------------------------------
 implicit none
 #include "priunit.h"
@@ -1528,8 +1529,8 @@ implicit none
       call add("vd14",2.d0,"vd12",-1.d0,"s2  ")
       call mult("tm  ","s2  ","s3  ",113)
       call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
-      call prt("s3  ","dg1n2   ",3)
-      call prtime("dg1n2   ",0,1)
+      call prt("s3  ","dg1n2_csv",3)
+      call prtime("dg1n2_csv",0,1)
       return
       end
 ! ***************************************************
@@ -1540,8 +1541,8 @@ implicit none
       call add("ta1 ",2.d0,"tm2 ",-1.d0,"s2  ")
       call mult("s2  ","hp  ","s3  ",202)
       call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
-      call prt("s3  ","dg1n3   ",3)
-      call prtime("dg1n3   ",0,1)
+      call prt("s3  ","dg1n3_csv",3)
+      call prtime("dg1n3_csv",0,1)
       return
  end
 ! ****************************************************
@@ -1550,7 +1551,7 @@ implicit none
 #include "priunit.h"
       call mult("t1v ","pp  ","s2  ",111)
       call add("t1nw",1.d0,"s2  ",1.d0,"t1nw")
-      call prt("s2  ","dg1n5   ",3)
+      call prt("s2  ","dg1n5_csv",3)
       call prtime("dg1n5_csv",0,1)
       return
       end
@@ -1656,16 +1657,20 @@ implicit none
 #endif
 
       call reorder("tv  ","s2  ",2341,5)
+
       call mult("tvf ","s2  ","s3  ",131)
+
       call add("tnew",1.d0,"s3  ",-1.d0,"tnew")
-      call prt("s3  ","dfold1  ",3)
+      call prt("s3  ","dfold1_csv",3)
 ! --------------------------
       call mult("tvf ","t1or","s2  ",111)
-      if (iopt(9).ne.0) call fold_ccsd("s2  ","s3  ")
-      call add("t1nw",1.d0,"s2  ",-1.d0,"t1nw")
-      call prt("s2  ","dfold1   ",3)
 
-      if (iopt(17).eq.3) then
+      if (iopt(9).ne.0) call fold_ccsd("s2  ","s3  ")
+
+      call add("t1nw",1.d0,"s2  ",-1.d0,"t1nw")
+      call prt("s2  ","dfold1_csv",3)
+
+      if (iopt(17).eq.3) then ! CCSDT-like diagrams
 !  diag f1
         call reord7   ("t31 ","s1  ",231456)
         call reord6   ("s1  ","s2  ",124563)
@@ -1675,7 +1680,6 @@ implicit none
         call dveps6   ("s1  ")
         call add      ("s1  ",-1.d0,"t3nw",1.d0,"t3nw")
       end if
-      call prt("s2  ","dfold1_csv",3)
       call prtime("dfold1_csv",0,1)
       return
 end subroutine
