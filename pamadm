@@ -186,7 +186,7 @@ list_of_tests.append('visual_general')
 list_of_tests.append('visual_lao_current')
 list_of_tests.append('visual_lao_shielding')
 list_of_tests.append('visual_lao_symmetry')
-list_of_tests.append('visual_virtual_density')
+list_of_tests.append('visual_frac_occupation')
 list_of_tests.append('xyz_input')
 list_of_tests.append('zora')
 
