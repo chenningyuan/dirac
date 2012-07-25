@@ -756,8 +756,8 @@ C     couplings and active-active block.
 C
 CSK   DONE! July 2008
 C
-!     ipropt_save = ipropt
-!     ipropt      = 10
+      ipropt_save = ipropt
+!     ipropt      = 10 ! debug
 
       IF (IPROPT .GE. 5) THEN
          DO I = 1, NFSYM
@@ -1210,7 +1210,7 @@ C     CALL RTRACI(CREF,WORK(KEIGVC))
 C
  2000 CONTINUE
       CALL QEXIT('KRMCCNO')
-!     ipropt = ipropt_save
+      ipropt = ipropt_save
 C
       RETURN
       END
