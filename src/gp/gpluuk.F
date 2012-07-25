@@ -687,8 +687,8 @@ CMI  ... printout with symmetry classification ...real energies only...
  1025 FORMAT(//' Relative real eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
      +       //' Level  eigenvalue (eV) ',
-     +      ' Eigenvalue (cm-1)',2X,8A4/)
- 1030 FORMAT(I5,F19.9,F18.6,8(I4))
+     +      ' Eigenvalue (cm-1)',2X,8(A4,'|')/)
+ 1030 FORMAT(I5,F19.9,F18.6,2X,8(I4,'|'))
 
       CALL FLSHFO(LUPRI)
       RETURN
@@ -902,7 +902,7 @@ C
      +       ' Classification in the Abelian subgroup',
      +       //' Level  eigenvalue (eV) ',
      +      ' Eigenvalue (cm-1)',2X,8A4/)
- 1030 FORMAT(I5,F19.9,F18.6,8(I4))
+ 1030 FORMAT(I5,F19.9,F18.6,2X,8I4)
  1035 FORMAT(/'Real Vector:',/(1x,6f12.7))
  1055 FORMAT(//'Energy ',I5,':',F12.9,' (au)',3X,F12.5,' (eV)',3X,F19.5
      +       ,' (cm-1)')
