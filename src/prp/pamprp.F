@@ -1382,13 +1382,22 @@ C
         CALL DEF_BLAO(WORK, LWORK, IPRPRP)
       ENDIF
 C
-C     Effective electronic densities at the nuclei
+C     Effective electronic densities at the nuclei - new code
 C
       IF(EFFDEN) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
+C
+C     Effective electronic densities at the nuclei - old code
+C
+      IF(EFFDE2) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 
       RETURN
@@ -8496,7 +8505,7 @@ C
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
 C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
@@ -8513,13 +8522,13 @@ C
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     (-99: accept .SELECT specification)
       CALL SETATM(WORK(KDATOM),NATOM,-99)
-      CALL DEF_EFF_DENS1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+      CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_EFF_DENS',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN  
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DENS1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
+      SUBROUTINE DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
      &               IPRINT)
 C**********************************************************
 C     Define effective density operator
@@ -8566,3 +8575,109 @@ C
   100 CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_EFFDEN */
+      SUBROUTINE DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for effective density at nuclei
+C     see S. Knecht, S. Fux, R. van Meer, L. Visscher, M. Reiher 
+C     and T. Saue, Theor. Chem. Acc. 129 (2011) 631
+C     Based on DEF_PVC
+C
+C     Written by T. Saue July 25 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     PVC: INTTYP = 62
+C     (-62: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-62)
+      CALL DEF_EFFDEN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_EFFDEN',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_effden1 */
+      SUBROUTINE DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for parity violation - chirality
+C
+C     Written by J. Thyssen - Oct 7 1999
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "gfac.h"
+#include "pi.h"
+      PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+C
+      ITYP = 0
+      IPTYP     = 1
+      NPCOMP    = 1
+      IF(GAUNUC) THEN
+        PFAC(1) = D1
+      ELSE
+        WRITE(6,*) 'WARNING: Effective density at nucleus is not'//
+     &       'well defined for point nucleus,',
+     &       'due to singularity in the relativistic case. Skipping.'
+        RETURN        
+      ENDIF
+      DO 100 IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+            DO 200 IREP = 0, MAXREP
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  PNAME = 'EFFD:'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  CALL OP1IND('PVC   '
+     &                 ,IPEFFDEN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+               END IF
+  200       CONTINUE
+         END IF
+  100 CONTINUE
+C
+      IF(IPRINT.GE.1) THEN
+        DO I = 1,ITYP
+          INDXPR = LEXPP(IPEFFDEN(I))
+          CALL PRSYMB(LUPRI,'.',75,0)
+          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &       'Component no.',I,':',PRPNAM(INDXPR)
+          CALL PRSYMB(LUPRI,'.',75,0)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

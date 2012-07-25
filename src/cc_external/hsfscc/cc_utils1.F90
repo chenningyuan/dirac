@@ -1888,7 +1888,7 @@ subroutine mult(name2,name3,namet,mmm)
 !  make characteristic of the final diagram "namet"
   iii=10**m2*(iii2/10**m3)+iii3/10**m3
   iiv=10**m2*(iiv2/10**m3)+iiv3/10**m3
-!    create structure of the final diagram
+!  create structure of the final diagram
   call tmplt(iii,iiv,namet,ntapet)
   istrt11=nstrt(1,ntapet-1)+2*nij1+4 
   istrt12=nstrt(2,ntapet-1)
@@ -1966,6 +1966,9 @@ subroutine mult(name2,name3,namet,mmm)
       gen(istrt12+i1)=ddot(n2,gen(n20),1,gen(n30),1)
 
 250   continue ! end of the cycle "i1"
+
+! print out the resulting diagram "namet"
+  call prt(namet,"mult: final namet",0)
 
 end subroutine mult
 

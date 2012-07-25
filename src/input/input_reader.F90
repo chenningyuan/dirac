@@ -9,6 +9,7 @@ module input_reader
    public lowercase
    public uppercase
    public word_contains
+   public word_count
    public reset_available_kw_list
    public check_whether_kw_found
    public kw_matches
