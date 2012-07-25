@@ -790,7 +790,7 @@
       end subroutine files_ccsd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine reorder(namef,namet,iord,iparm)
+subroutine reorder(namef,namet,iord,iparm)
 !---------------------------------------------------------------------------------------------------
 !
 !  iparm - print level
@@ -809,11 +809,11 @@
       use cij1_mod 
       use cij2_mod 
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "ctmp.h"
@@ -830,34 +830,27 @@
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
 #endif
 
-      dimension j(4),msk(4)
-      ! ff - place where indexes are placed
-      data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
+  character*4, intent(in) :: namet, namef 
+  integer, intent(in) ::  iord, iparm
 
-!     character(*) namet, namef ! mi fix - data specification for prtime
-      character*4 namet, namef ! mi fix - data specification for prtime
+  integer ::  j(4),msk(4),ntapef,ntapet,new,i1,i2,i3,i4
+  integer ::  istrt11,istrt12,istrt21,istrt22,lngth1,lngth2
 
-      if (getiprint() >= 5) then
-        call header('Output from "reorder"',-1)
-        write(LUPRI,*) 'namef=',namef
-        write(LUPRI,*) 'namet=',namet
-        write(LUPRI,*) 'iord=',iord
-        write(LUPRI,*) 'iparm=',iparm
-        ! call check_ctmp_mod
-         call print_cijx_stuff
-      endif
+  ! ff - place where indexes are placed
+  data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
 
-      call files_ccsd(namef,ntapef,new,2,-1,-1)
-      if (new.ne.0) then
-        write (6,10) namef
-10      format(' reorder input tape ',a6,' does not exist.')
-        call abext('reorder ')
-      endif
+ if (getiprint() >= 3) then
+   write(LUPRI,'(1x,a,a4,a,a4,a,i4,a)') &
+   'reorder [namef --> namet]: ',namef,'-->',namet,' (',iord,')'
+   call flush(LUPRI)
+ endif
 
-      if (getiprint() >= 5) then
-         write(LUPRI,'(4x,a)') 'reorder: cijn printout:'
-         call print_cijx_stuff
-      endif
+ call files_ccsd(namef,ntapef,new,2,-1,-1)
+ if (new.ne.0) then
+        write (LUPRI,10) namef
+10      format(' reorder input tape namef= ',a6,' does not exist!')
+        call abext('reorder input tape namef does not exist! ')
+ endif
 
       call parse(iord,i1,i2,i3,i4)
       call parse(iii2,j(1),j(2),j(3),j(4))
@@ -873,8 +866,9 @@
       lngth1=ije1(nij1)
       lngth2=ije2(nij2)
 
-!miro: "lngth2+600" could cause index leak for "itmp" array ???
-! todo: replace 600 with  some internal parameter ...
+!miro: "lngth2+600" could cause index leak for "itmp" array !!!
+! todo: replace 600 with  some internal parameter, always check there is no
+! index out-of-bounds !
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
       call vshfcs(lngth2,itmp,8*i1-8,itmp)
       call vands(lngth2,igen(istrt21+1),msk(i2),itmp(lngth2+600))
@@ -892,12 +886,10 @@
       call vxsort(itmp,lngth2,lngth1,gen(istrt12+1),igen(istrt11+1))
 
       ! ... print out ...
-      !call prt(namet,namet,iparm)
-      call prt(namet,"reorder",iparm)
-      call prtime(namet,ije1(nij1),1)
+  call prt(namet,"reorder: final namet",iparm)
+  call prtime(namet,ije1(nij1),1)
 
-      return
-      end subroutine reorder
+end subroutine reorder
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine reordx (namef,namet,iord)
@@ -1621,8 +1613,6 @@
 
       call prtime ("reord12  ",0,1)
 
-      !call check_modules
-
       return
       end
 
@@ -1737,8 +1727,6 @@
 10    continue
       call dcopy (k,tmp,1,gen(istrtt2+1),1)   
 
-      !call check_modules
-
       call prtime ("reord13 ",0,2)
       return
       end
@@ -1775,7 +1763,7 @@ implicit none
 #include "priunit.h"
 #else
 !      implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "ctmp.h"
@@ -1799,19 +1787,19 @@ implicit none
 #endif
 
 !    ... miro: introduced to have strings clean, without garbage
-      character*4, intent(in) :: name
-      integer, intent(in):: iparm
-      integer, intent(in) :: iii, iiv
+  character*4, intent(in) :: name
+  integer, intent(in):: iparm
+  integer, intent(in) :: iii, iiv
 
-      logical :: lrsp
-      !data zero / 1.d-13/ ! miro: to generalize in a module
-      real*8, parameter :: zero=1.0d-13
+  logical :: lrsp
+  !data zero / 1.d-13/ ! miro: to generalize in a module
+  real*8, parameter :: zero=1.0d-13
 
-      integer :: num,lngth,istrt1,istrt2,i1,i2,i3,i4,iv1,iv2,iv3,iv4
-      integer :: nh,nv,i1234,nout,i,j1,j2,j3,j4,njh,njv,j12,ii,iv1234
+  integer :: num,lngth,istrt1,istrt2,i1,i2,i3,i4,iv1,iv2,iv3,iv4
+  integer :: nh,nv,i1234,nout,i,j1,j2,j3,j4,njh,njv,j12,ii,iv1234
 
-      ! call template function
-      call tmplt(iii,iiv,name,num)
+  ! call template function
+  call tmplt(iii,iiv,name,num)
 
 !        ... assumes ije1(:) is filled
 !     lngth=ije(nij)

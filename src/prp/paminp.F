@@ -85,7 +85,7 @@ C
 !                    33        34        35        36
      &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.XXXXXX','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.EFFDE2','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -140,6 +140,7 @@ C
       BYLAO        = .FALSE.
       BZLAO        = .FALSE.
       EFFDEN       = .FALSE.
+      EFFDE2       = .FALSE.
 
 
 CMI Activate the  picture change transformations
@@ -418,6 +419,9 @@ C&&&& EFFDEN; calculate effective electronic densities at the nuclei
             EFFDEN = .TRUE. 
             GO TO 100
   139    CONTINUE
+C&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
+            DOEXP  = .TRUE.
+            EFFDE2 = .TRUE. 
          GO TO 100
   140    CONTINUE
 C&&&& XXXXXX
@@ -2155,7 +2159,7 @@ C
         ANTI      = .FALSE.
         IORDER    = 0
         CALL SETATM(DOATOM,NATOM,-99)
-        CALL EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
+        CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
       ELSE
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.

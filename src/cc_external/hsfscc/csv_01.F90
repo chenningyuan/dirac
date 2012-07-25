@@ -396,10 +396,10 @@ end subroutine
 subroutine calvv0_csv
 !-------------------------------------------------------------------------------------
 !
-! Calculate first bunch of diagrams. Distinguish between CCSD and CCSDT-variants.
+! Calculate first bunch of diagrams. Distinguish between CCSD and CCSDT-x variants.
 !
 ! Diagrams: diag3a_csv,diag4b_csv,diag5b_csv,diag6b_csv,diag8_csv,diag20b_csv,diag18b_csv,
-!           diag22a_csv,diag26a_csv
+!           diag22a_csv,diag26a_csv...
 !
 !-------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -1812,12 +1812,12 @@ subroutine rdbox_csv
 return
 end subroutine rdbox_csv
 !  *******************************************************************
-      subroutine box12_csv (iparm)
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine box12_csv (iparm)
+!
+  implicit none
 #include "priunit.h"
-
-      if (iparm.eq.0) then
+  integer, intent(in) :: iparm
+  if (iparm.eq.0) then
 !  diag 1
         call move     ("vppp","s3  ")
 !  diag 5
@@ -1834,7 +1834,7 @@ end subroutine rdbox_csv
         call reorder  ("s2  ","s1  ",1243,4)
         call add      ("s1  ",-1.d0,"s3  ",1.d0,"s3  ")
         call reorder  ("s3  ","bx12",1342,4)
-      else if (iparm.eq.1) then
+  else if (iparm.eq.1) then
 !  diag 6
         call cmult    ("t1c ",0.5d0,"s1  ")
         call t1t2     ("s1  ","tv  ","t31 ","s2  ",123456,2)
@@ -1870,16 +1870,14 @@ end subroutine rdbox_csv
         call add      ("s1  ",1.d0,"s3  ",1.d0,"s3  ")
 !
         call move     ("s3  ","bx12")
-      end if
-      return
-      end
+  end if
+end subroutine
 !  *******************************************************************
-      subroutine box13_csv (iparm)
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine box13_csv (iparm)
+  implicit none
 #include "priunit.h"
-
-      if (iparm.eq.0) then
+  integer, intent(in) :: iparm
+  if (iparm.eq.0) then
 !  diag 1
         call cmult    ("vvc1",-1.d0,"s3  ")
 !  diag 2
@@ -1899,7 +1897,7 @@ end subroutine rdbox_csv
         call add      ("s2  ",1.d0,"s3  ",1.d0,"s3  ")
 !
         call reorder  ("s3  ","bx13",1342,4)
-      else if (iparm.eq.1) then
+  else if (iparm.eq.1) then
 !  diag 6
         call cmult    ("t1c ",0.5d0,"s1  ")
         call t1t2     ("s1  ","tv  ","t31 ","s2  ",123456,3)
@@ -1929,16 +1927,14 @@ end subroutine rdbox_csv
         call add      ("s1  ",-1.d0,"s3  ",1.d0,"s3  ")
 !
         call move     ("s3  ","bx13") 
-      end if
-      return
-      end 
+  end if
+end subroutine
 !  *******************************************************************
-      subroutine box14_csv (iparm)
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine box14_csv (iparm)
+  implicit none
 #include "priunit.h"
-
-      if (iparm.eq.0) then
+  integer, intent(in) :: iparm
+  if (iparm.eq.0) then
 !  diag 1
         call cmult    ("vhph",-1.d0,"bx14")
 !  diag 4
@@ -1954,7 +1950,7 @@ end subroutine rdbox_csv
         call mult     ("s1  ","t1cr","s2  ",311)
         call reorder  ("s2  ","s1  ",1243,4)
         call add      ("s1  ",1.d0,"bx14",1.d0,"bx14")
-      else if (iparm.eq.1) then
+  else if (iparm.eq.1) then
 !  diag 6
         call cmult    ("t1c ",0.5d0,"s1  ")
         call t1t2     ("s1  ","tv  ","t31 ","s2  ",123456,3)
@@ -1989,14 +1985,13 @@ end subroutine rdbox_csv
         call add      ("s1  ",-1.d0,"s3  ",1.d0,"s3  ")
 !
         call move     ("s3  ","bx14")  
-      end if
-      return
-      end
+  end if
+end subroutine
 !  *******************************************************************
-      subroutine box15_csv (iparm)
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine box15_csv (iparm)
+  implicit none
 #include "priunit.h"
+  integer, intent(in) :: iparm
 
       if (iparm.eq.0) then
 !  diag 1
@@ -2024,7 +2019,7 @@ end subroutine rdbox_csv
         call move     ("s3  ","bx15") 
       end if
       return
-      end
+end subroutine
 !  *******************************************************************
       subroutine box16_csv (iparm)
 implicit none
@@ -2103,19 +2098,19 @@ implicit none
       return
       end
 !  ******************************************************************
-      subroutine box19_csv (iparm)
+subroutine box19_csv (iparm)
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
+  integer, intent(in) :: iparm
 
-      if (iparm.eq.0) then
+  if (iparm.eq.0) then
 !  diag 1
         call add      ("vvc1",-2.d0,"vhhp",1.d0,"s1  ")
         call mult     ("s1  ","t1c ","bx19",202)
 ! v1 Feb 95
         call add      ("bx19",1.d0,"vh  ",-1.d0,"bx19")
-
-      else if (iparm.eq.1) then
+  else if (iparm.eq.1) then
 !  diag 2
         call add      ("hhpp",-2.d0,"va6 ",1.d0,"s1  ")
         call mult     ("tm  ","s1  ","s3  ",113)
@@ -2124,9 +2119,8 @@ implicit none
         call add      ("s3  ",1.d0,"s1  ",-1.d0,"s3  ")
 
         call move     ("s3  ","bx19")  
-      end if
-      return
-      end
+  endif
+end subroutine
 !  *******************************************************************
 subroutine wrtbox_csv
 implicit none
