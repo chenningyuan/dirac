@@ -4166,7 +4166,9 @@ CMI .. mover before diagonalization which can destroy SMAT
 C
 C     Diagonalize overlap matrix
 C
+#ifdef MOD_UNRELEASED
       IF (.NOT.DOQJACO) THEN
+#endif
          IF (LOWJACO) THEN
             CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
          ELSE
@@ -4179,6 +4181,7 @@ c    It would be better to rewrite the code below instead..
                CALL QUIT('Diagonalization of overlap matrix failed')
             ENDIF
          ENDIF
+#ifdef MOD_UNRELEASED
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
@@ -4203,7 +4206,7 @@ CMI   ... (quaternion) Jacobi diagonalization routine
         CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1) ! resort
         CALL MEMREL('LOWGEN',WORK,KSMAT,KSMAT,KFREE,LFREE)
       ENDIF
-
+#endif
 !    ... ensure V_ij = U_ij/SQRT(s_j)
       NV = 0
       DO I = 1,NS
@@ -6044,7 +6047,9 @@ C
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
 
+#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
+#endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL),WORK(KFREE),LFREE)
@@ -6060,12 +6065,14 @@ C
      &        'LINSYM: Errorneous QDIAG diagonalization of Jz_LL !')
               ENDIF
             ENDIF
+#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,IDUMMY,.TRUE.,2)
             DO II=1,NL
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
+#endif
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6093,7 +6100,9 @@ C
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
+#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
+#endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS),WORK(KFREE),LFREE)
@@ -6109,12 +6118,14 @@ C
      &        'LINSYM: Errorneous QDIAG diagonalization of Jz_SS !')
               ENDIF
             ENDIF
+#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,.TRUE.,2)
             DO II=1,NS
               EIG(IEIGP+II-1)=WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
+#endif
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
