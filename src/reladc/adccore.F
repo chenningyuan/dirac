@@ -235,10 +235,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      10X,"****  M. Pernpointner, 
      &       J. Phys. B 43, 205102 (2010)."//)
 !
-!  For abandoning namelist reading clear this GOTO
-!
-!     goto 844
-!
 !  first transfer interface variables to internal ADC variables
 ! ___________________________________________________________
 !|
@@ -344,9 +340,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  end of job control output
 !
-
-! 844 continue
-
       WRITE (IW,1011) MYPROC+1,NMPROC
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
 !
@@ -1325,7 +1318,6 @@ c
           write(iw,*) '   No: ',icount,'  symmetry: ',i
           icount = icount + 1
         enddo
-        write(iw,*)
       else
         write(iw,*) 'User has made explicit symmetry choices.'
         write(iw,*) 'Program calculates the following SIP symmetries:'
@@ -1337,8 +1329,8 @@ c
             icount = icount + 1
           endif
         enddo
-        write(iw,*) 'Program calculates',icount,' symmetries.'
       endif
+      write(iw,*) 'Program calculates',icount-1,' symmetries.'
       write(iw,*)
       
       DO 900 IRPLOOP=1,NREP
