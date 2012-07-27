@@ -529,6 +529,7 @@ integer, allocatable  :: iclass(:),isym(:,:),ibias(:)
 logical :: sym_mod_initialized = .false.
 contains
 subroutine init_sym_mod
+implicit none
 #include "priunit.h"
 if (.not.sym_mod_initialized) then
 allocate(iclass(1:16))
@@ -719,10 +720,10 @@ function check_method_name(what_method) result (found_method)
 !--------------------------------------------------------------
 !   checks method name entering in "what_method"
 !--------------------------------------------------------------
+implicit none
 character(len=4), intent(in) :: what_method
 integer :: i
 logical :: found_method
-
 found_method=.false.
 do i=1,size(hs_method_name)
  if (what_method==hs_method_name(i)) then
@@ -730,11 +731,9 @@ do i=1,size(hs_method_name)
    Exit
  endif
 enddo
-
 ! mi: now skip checking
 found_method=.true.
 return
-
 end function check_method_name
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -802,7 +801,6 @@ do i=1, num_methods
       write(LUPRI,*) method_name(i),' is not in the list !'
       call quit('launch_hsfs_methods')
   endif
-
 enddo
 
 end subroutine launch_hsfs_methods
