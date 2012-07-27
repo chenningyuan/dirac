@@ -2805,7 +2805,7 @@ end subroutine
       end subroutine vxsort
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine wrtfile(nt,nrec,name)
+subroutine wrtfile(nt,nrec,name)
 !----------------------------------------------------------------------------------
 !
 !  write internal file "name" on tape nt, skipping nrec records.
@@ -2862,7 +2862,7 @@ implicit none
       endif
       rewind nt
       return
-      end
+ end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine wrtrle (name,itape,loc) 
@@ -3023,27 +3023,31 @@ implicit none
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine zeroup(ntmp,itmp,t,zero)
+subroutine zeroup(ntmp,itmp,t,zero)
 !--------------------------------------------------------------------------------
 !
 !       moves 'zero' elements & their indexes at the end of the array
 !
 !--------------------------------------------------------------------------------
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
-      dimension itmp(ntmp),t(ntmp)
-      nn=0
-      do 120 i=1,ntmp
+  integer, intent(inout) :: ntmp, itmp(ntmp)
+  real(kind=8), intent(inout) :: t(ntmp)
+  real(kind=8), intent(in) :: zero
+  integer :: nn,i
+  nn=0
+  do 120 i=1,ntmp
       if (abs(t(i)).ge.zero) then
+  ! start placing nonzero elements and their indexes from the beginning of array
         nn=nn+1
         itmp(nn)=itmp(i)
         t(nn)=t(i)
       endif
-120   continue
-      ntmp=nn
-      return
-      end subroutine zeroup
+  120 continue
+! refresh the ntmp value, what is number of elements on array
+   ntmp=nn
+   return
+end subroutine zeroup
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse(ii,i1,i2,i3,i4)
@@ -3064,7 +3068,7 @@ implicit none
       i2=mod(ia,10)
       i1=ia/10
       return
-      end
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse6 (ii,i1,i2,i3,i4,i5,i6)
@@ -3311,11 +3315,10 @@ implicit none
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
-! Main printing subroutine for 1 and 2-electronical records
-!
-! 1-electronic records have first two indexes zero - TODO: avoid their printout
-!
+!  Main printing subroutine for 1 and 2-electron records,
 !  prints diagrams (integrals,intermediates...) & their indexes 
+!
+!  1-electronic records have first two indexes zero (TODO: avoid their printout)
 !
 !  name : diagram name,  4-bytes (integer) character 
 !  tit  : title,   any-bytes  character
@@ -3323,6 +3326,7 @@ subroutine prt(name,tit,iparm)
 !  iparm : printout parameter - level of printing, for the moment, deactivated
 !---------------------------------------------------------------------------------
   use print_level, only: getiprint
+  use ipack_mod
 #if defined HSFS_DYN_ALLOC
   use cfiles_mod
   use gen_mod
@@ -3367,16 +3371,17 @@ subroutine prt(name,tit,iparm)
    call abext('prt tried to read nonexistent file!')
  endif
 
- if (getiprint() >=2) then
+ if (getiprint()>=2) then
    nsize=ije1(nij1)
    ! print out basic info - header -  about the indexed data
-   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
-   110 format(1x,'prt: title=',a,' id:',a,', size=',i7,' iii1=',i7,' iiv1=',i7,' nij1=',i7, & 
-             ' ij records:'/(8(2x,z4,i8,';')))
+   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1,(i1unpack2(ij1(i)),i2unpack2(ij1(i)),ije1(i-1)+1,ije1(i),i=1,nij1)
+   110 format(1x,'prt: title="',a,'" id:"',a,'", size=',i7,' iii1=',i4,' iiv1=',i4,' nij1=',i7, & 
+             ' ij records:'/(5(2x,2i2,' #',i5,'...',i5,';')))
    call flush(LUPRI)
  endif
 
  if (getiprint() >=3) then
+   write(LUPRI,'(3x,a,d8.3)') 'printout limit:',flim
    istrt1=nstrt(1,num-1)+2*nij1+4 ! position of indexes on array igen
    istrt2=nstrt(2,num-1)          ! position of indexed data on array gen
    io=0
@@ -3384,10 +3389,14 @@ subroutine prt(name,tit,iparm)
      if (abs(gen(istrt2+i)).ge.flim) then ! get if greater than limit
        io=io+1
        a(io)=gen(istrt2+i)
-       ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
-       ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
-       ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
-       ind(4,io)=iand(           igen(istrt1+i),z'ff')
+       !ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
+       ind(1,io)=i1unpack4(igen(istrt1+i))
+       !ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
+       ind(2,io)=i2unpack4(igen(istrt1+i))
+       !ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
+       ind(3,io)=i3unpack4(igen(istrt1+i))
+       !ind(4,io)=iand(           igen(istrt1+i),z'ff')
+       ind(4,io)=i4unpack4(igen(istrt1+i))
        if (io.eq.6) then ! print out indexed data
          write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
          call flush(LUPRI)
@@ -3406,7 +3415,7 @@ return
 end subroutine prt
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine prt6 (name,tit,iparm)
+subroutine prt6 (name,tit,iparm)
 !--------------------------------------------------------------------------------
 !
 !      Printing routine used for triples
@@ -3418,11 +3427,11 @@ end subroutine prt
       use cij1_mod
       use dat_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -3438,7 +3447,12 @@ end subroutine prt
 #include "dat.h"
 !      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-      dimension a(4),id(3),ind(3,4)
+ character(*), intent(in) :: tit
+ character*4, intent(in) :: name
+ integer, intent(in) :: iparm
+ real(kind=8) :: a(4), flim
+ integer :: id(3),ind(3,4),num,new,i,nsize,istrt1,istrt2,iflag
+ integer :: io,j,k,ii,m,n
 
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
@@ -3452,7 +3466,7 @@ end subroutine prt
 !     nsize=ije(nij)  
       nsize=ije1(nij1)
 !     write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
-      write (6,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
+      write (LUPRI,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
 99    format(' file ',a4,', size iii1 iiv1=',4i9,' ij records:'/        &
              (3(2x,z8,i8,';')))
 !     istrt1=nstrt(1,num-1)+2*nij+4
@@ -3466,35 +3480,37 @@ end subroutine prt
         do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
+              !  take out first three indexes
               id(1)=iand(ishft(ij1(i),-16),z'ff')
               id(2)=iand(ishft(ij1(i),-8),z'ff')
               id(3)=iand(ij1(i),z'ff')
 !             write (6,*) ' ' 
-              write (6,98) i,(id(k),k=1,3)
+              write (LUPRI,98) i,(id(k),k=1,3)
 98            format ('record no. ',i6,' is ',3i2)
 !             write (6,*) ' '
               iflag=0
             end if
             io=io+1
             a(io)=gen(istrt2+j)
+            ! take out 3 last indexes from igen
             ii=igen(istrt1+j)
             ind(1,io)=iand(ishft(ii,-16),z'ff')
             ind(2,io)=iand(ishft(ii,-8),z'ff')
             ind(3,io)=iand(ii,z'ff')
             if (io.eq.4) then
-              write (6,97) ((ind(m,n),m=1,3),a(n),n=1,4)
+              write (LUPRI,97) ((ind(m,n),m=1,3),a(n),n=1,4)
               io=0
             endif
           endif
 30      continue
         if (io.gt.0) then
-          write (6,97) ((ind(m,n),m=1,3),a(n),n=1,io)
+          write (LUPRI,97) ((ind(m,n),m=1,3),a(n),n=1,io)
         end if
 97      format (1x,4(1x,3i2,'=',f11.7))
 40    continue
       write (6,*) ' ' 
       return
-      end 
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt8 (name,tit,iparm)
@@ -3507,11 +3523,11 @@ end subroutine prt
       use cij1_mod
       use dat_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -3527,8 +3543,12 @@ end subroutine prt
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
-      dimension a(4),id(4),ind(4,4)
+ character(*), intent(in) :: tit
+ character*4, intent(in) :: name
+ integer, intent(in) :: iparm
+ real(kind=8) :: a(4), flim
+ integer :: id(4),ind(4,4),num,new,nsize,istrt1,istrt2
+ integer :: i,j,k,m,n,iflag,io,ii
 
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
@@ -3555,13 +3575,9 @@ end subroutine prt
         do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
-!             id(1)=iand(ishft(ij(i),-24),'ff'x)
               id(1)=iand(ishft(ij1(i),-24),z'ff')
-!             id(2)=iand(ishft(ij(i),-16),'ff'x)
               id(2)=iand(ishft(ij1(i),-16),z'ff')
-!             id(3)=iand(ishft(ij(i),-8),'ff'x)
               id(3)=iand(ishft(ij1(i),-8),z'ff')
-!             id(4)=iand(ij(i),'ff'x)
               id(4)=iand(ij1(i),z'ff')
               write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,4)
@@ -3605,7 +3621,7 @@ subroutine prtime(tit,n,iparm)
 #include "priunit.h"
 #include "csdtime.h"
 #else
-#include "implicit.h"
+  implicit none
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
 #include "csdtime.h"
@@ -3624,7 +3640,7 @@ subroutine prtime(tit,n,iparm)
   diff = t - csdltim
   acum = t - csdstim
   call daytime(datex,timex)
-  write(LUPRI,'(1x,a,a9,a,f10.3,a,f10.3,a,2a9)')  & 
+  write(LUPRI,'(1x,a,a,a,f10.3,a,f10.3,a,2a9)')  & 
   'time after:',tit,' spent:',diff,'s, total:',acum,'s, ',datex,timex
   !print 900,tit,acum,diff,n,datex,timex
   !900   format (' time after :',a9,1x,f10.3,'; added ',f10.3,'. n=',i8,'. ',2A12)
@@ -3633,51 +3649,8 @@ subroutine prtime(tit,n,iparm)
 return
 end subroutine prtime
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
-      subroutine clean_string(temp)
-! ... to cut off trash characters      
-#include "implicit.h"
-#include "priunit.h"
-      character(*) temp
-
-      !write(LUPRI,*) 'string length:',sizeof(temp)
-!      write(LUPRI,'(a,i4)') 'string length:',len_trim(temo)
-      !write(LUPRI,'(a,i4)') 'string length:',len(temp)
-      !write(LUPRI,*) 'string length:',len(temp)
-
-      do i=1,len(temp)
-        ia=iachar(temp(i:i))
-        ! could get problem with printout !
-        !write(LUPRI,*) i,"ascii=",ia,' char=',char(ia)
-
-        !write(LUPRI,*) i,"ascii=",ia
-
-       if (.not.( (ia.ge.48.and.ia.le.57).or.                           &
-             (ia.ge.65.and.ia.le.90).or.                                &
-             (ia.ge.97.and.ia.le.122).or.(ia.eq.32)  )) then 
-
-          !tit(i:i)=char(32,kind=1) ! place 'space'
-          !tit(i:i)=" " ! place 'space'
-          !s=tit(i:i); write(LUPRI,*) s
-          !s=char(32); write(LUPRI,*) s
-          !write(LUPRI,*) 'trim:',trim(tit)
-          !write(tit(i:i),'(a1)') char(32)
-          !write(tit(i:i),'(a)') s
-          !tit=trim(tit)
-           !temp(i:i)=char(32,kind=1)
-           temp(i:i)='\0' ! NULL terminating character
-           !write(LUPRI,*) 'added null terminating character !'
-
-       endif
-       !write(LUPRI,'(a1,4x,i4)') tit(i:i),iachar(tit(i:i))
-      enddo
-      !write(LUPRI,*) 'tit=',temp
-
-      end subroutine clean_string
-
 ! *************************************************
-!     function cputime(x)
-      real*4 function cputime(x)
+real(kind=4) function cputime(x)
 ! http://gcc.gnu.org/onlinedocs/gfortran/SECOND.html
 ! Returns a REAL(4) value representing the elapsed CPU time in seconds.
 !DEC  Real*8 Runsec
@@ -3694,12 +3667,10 @@ end subroutine prtime
 !
 !mi   - old version 
 !     t = mclock()/1000000.
-      return
-      end
-! *************************************************
+end function
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rdin
+subroutine rdin
 !--------------------------------------------------------------------------------
 !
 !   input reading routine called from each method routine (formerly executable)
@@ -3797,14 +3768,13 @@ end subroutine prtime
       end subroutine rdin
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rdfile(nt,nrec,name,ieof)
+subroutine rdfile(nt,nrec,name,ieof)
 !-------------------------------------------------------------------------------------
-!
 !
 !  read file "nt", skipping "nrec" records, to internal file number
 !  "nflcur"+1, calling it "name".
 !
-!  disk file structure for tc etc:
+!  disk file structure of records:
 !
 !  1. nij (# of subblocks)
 !  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
@@ -3834,34 +3804,18 @@ end subroutine prtime
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-! mi: added for control printouts
-!#include "dat.h"
-!     logical :: is_open,is_present
 #endif
 
-! mi: it's useless
-!     inquire(unit=nt,exist=is_present,opened=is_open,recl=irecl )
-
-      if (getiprint().ge.5) then
-        call header('Output from rdfile',-1)
-        write(LUPRI,'(2x,a,i5)') 'file nt=',nt
-        write(LUPRI,'(2x,a,i5)') 'nrec=',nrec
-        write(LUPRI,'(2x,a,a4)') 'name=',name
-      endif
-
-      ! write(LUPRI,*) 'rdile:',is_present,is_open,irecl 
-
-!     if (.not.(is_present.or.is_open.or.irecl==0)) then
-!       call quit('rdfile: file tapeXX is NOT present ! ')
-!     endif
-
+      ! bring nt logical unit file to the beginning
       rewind nt
 
+      ! skip 4*nrec 
       if (nrec.gt.0) then
         do 10 i=1,4*nrec
 10      read (nt)
       endif
 
+      ! read the 1st part of the record - dimension of ij(:),ije(:)
       read (nt,end=190) nij
 
       nflcur=nflcur+1
@@ -3869,6 +3823,7 @@ end subroutine prtime
       nstr2=nstrt(2,nflcur-1)
       igen(nstr1+1)=nij
 
+ ! read the 2nd part of the record
       read (nt) (igen(nstr1+i),i=2,2*nij+4)
       iiia(nflcur)=igen(nstr1+2*nij+3)
       iiva(nflcur)=igen(nstr1+2*nij+4)
@@ -3876,31 +3831,24 @@ end subroutine prtime
       nsize=igen(nstr1+2*nij+2)
 
       if (nt.ne.9) then
+      ! read file with indexes
         read (nt) (igen(nstr1+2*nij+4+i),i=1,nsize)
         read (nt) (gen(nstr2+i),i=1,nsize)
         nstrt(1,nflcur)=nstr1+2*nij+4+nsize
         nstrt(2,nflcur)=nstr2+nsize
       else
+      ! read pppp file without indexes
         read (nt) (gen(nstr2+i),i=1,nsize)
         nstrt(1,nflcur)=nstr1+2*nij+4
         nstrt(2,nflcur)=nstr2+nsize
       endif
 
-      if (getiprint() >= 8) then
-       write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
-       write(LUPRI,'(2x,a,i7)') 'nstr2=',nstr2
-       ! print out extra big values 
-       do i=1,nsize
-         if (dabs(gen(nstr2+i)).ge.1.0d+5) then
-           write(LUPRI,*) nstr2+i,gen(nstr2+i)
-         endif
-       enddo
-      endif
-
       call dimx(nstrt(1,nflcur),nbig,"rdfile1")
       call dimx(nstrt(2,nflcur),nbig,"rdfile2")
+
       return
 
+! handle error in file reading
 190   if (ieof.eq.0) then
         ieof=1
         return
@@ -3908,12 +3856,12 @@ end subroutine prtime
         write (LUPRI,*) 'rdfile encountered eof'
         write (LUPRI,110) nt,nrec,name
 110     format(' nt nrec name=',i5,i4,2x,a8)
-        call abext('rdfile  ')
+        call abext('rdfile: encountered eof')
       endif
-      end subroutine rdfile
+end subroutine rdfile
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rdsym
+subroutine rdsym
 !----------------------------------------------------------------------------
 !
 !  continue the reading from  the input file "input"
@@ -4056,5 +4004,5 @@ end subroutine prtime
        ! write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
 
       return
-      end subroutine rdsym
+end subroutine rdsym
 

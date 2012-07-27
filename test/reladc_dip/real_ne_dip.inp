@@ -23,7 +23,7 @@ energy  -2.0 2.5 0.1
 .DODIPS
 **LANCZOS
 .DIPITER
- 100
+ 30
 .DIPPRNT
  65.0
 *END OF                                                                                             
