@@ -3737,6 +3737,7 @@ subroutine rdin
 !     read (5,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       read (LUCMD,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       write(LUPRI,'(4x,a,i3)') "norb read in, norb=",norb
+      write(LUPRI,'(2x,a,200a1)') 'orbital types:',(cc(i),i=1,norb)
 
       do 110 i=1,norb
       do 105 j=1,5
