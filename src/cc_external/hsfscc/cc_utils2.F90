@@ -3374,14 +3374,17 @@ subroutine prt(name,tit,iparm)
  if (getiprint()>=2) then
    nsize=ije1(nij1)
    ! print out basic info - header -  about the indexed data
-   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1,(i1unpack2(ij1(i)),i2unpack2(ij1(i)),ije1(i-1)+1,ije1(i),i=1,nij1)
-   110 format(1x,'prt: title="',a,'" id:"',a,'", size=',i7,' iii1=',i4,' iiv1=',i4,' nij1=',i7, & 
-             ' ij records:'/(5(2x,2i2,' #',i5,'...',i5,';')))
+   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1
+   110 format(1x,'prt: title="',a,'" id:"',a,'", size=',i7,' iii1=',i4,' iiv1=',i4,' nij1=',i7)
    call flush(LUPRI)
  endif
 
  if (getiprint() >=3) then
-   write(LUPRI,'(3x,a,d8.3)') 'printout limit:',flim
+   ! first print out ij records - first two indexes 
+   write (LUPRI,111) (i1unpack2(ij1(i)),i2unpack2(ij1(i)),ije1(i-1)+1,ije1(i),i=1,nij1)
+   111 format(2x,'ij records:',(5(2x,2i2,' #',i5,'...',i5,';')))
+   call flush(LUPRI)
+   write(LUPRI,'(3x,a,d8.3,a)') 'printout limit:',flim,' of indexed quantities:'
    istrt1=nstrt(1,num-1)+2*nij1+4 ! position of indexes on array igen
    istrt2=nstrt(2,num-1)          ! position of indexed data on array gen
    io=0
@@ -3389,14 +3392,10 @@ subroutine prt(name,tit,iparm)
      if (abs(gen(istrt2+i)).ge.flim) then ! get if greater than limit
        io=io+1
        a(io)=gen(istrt2+i)
-       !ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
-       ind(1,io)=i1unpack4(igen(istrt1+i))
-       !ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
-       ind(2,io)=i2unpack4(igen(istrt1+i))
-       !ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
-       ind(3,io)=i3unpack4(igen(istrt1+i))
-       !ind(4,io)=iand(           igen(istrt1+i),z'ff')
-       ind(4,io)=i4unpack4(igen(istrt1+i))
+       ind(1,io)=i1unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-24),z'ff')
+       ind(2,io)=i2unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-16),z'ff')
+       ind(3,io)=i3unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-8) ,z'ff')
+       ind(4,io)=i4unpack4(igen(istrt1+i)) ! instead of iand(           igen(istrt1+i),z'ff')
        if (io.eq.6) then ! print out indexed data
          write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
          call flush(LUPRI)
