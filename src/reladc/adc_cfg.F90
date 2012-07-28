@@ -41,6 +41,7 @@ module adc_cfg
   logical, public                  :: reladc_doadcpop   = .false.
   logical, public                  :: reladc_dofull     = .false.
   real*8,  public                  :: reladc_vconv      = 1.0E-06
+  real*8,  public                  :: reladc_adcthr     = 0.0
 !
 !  lanczos control variables
 !
@@ -51,6 +52,5 @@ module adc_cfg
   real*8,  public                  :: reladc_sipprnt    = 50.0
   real*8,  public                  :: reladc_dipprnt    = 50.0
   logical, public                  :: reladc_doincore   = .false.
-  real*8,  public                  :: reladc_adcthr     = 0.0
 
 end module

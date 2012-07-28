@@ -529,6 +529,7 @@ integer, allocatable  :: iclass(:),isym(:,:),ibias(:)
 logical :: sym_mod_initialized = .false.
 contains
 subroutine init_sym_mod
+implicit none
 #include "priunit.h"
 if (.not.sym_mod_initialized) then
 allocate(iclass(1:16))
@@ -719,10 +720,10 @@ function check_method_name(what_method) result (found_method)
 !--------------------------------------------------------------
 !   checks method name entering in "what_method"
 !--------------------------------------------------------------
+implicit none
 character(len=4), intent(in) :: what_method
 integer :: i
 logical :: found_method
-
 found_method=.false.
 do i=1,size(hs_method_name)
  if (what_method==hs_method_name(i)) then
@@ -730,11 +731,9 @@ do i=1,size(hs_method_name)
    Exit
  endif
 enddo
-
 ! mi: now skip checking
 found_method=.true.
 return
-
 end function check_method_name
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -802,7 +801,6 @@ do i=1, num_methods
       write(LUPRI,*) method_name(i),' is not in the list !'
       call quit('launch_hsfs_methods')
   endif
-
 enddo
 
 end subroutine launch_hsfs_methods
@@ -824,17 +822,17 @@ module ipack_mod
 
   subroutine set_check_ipack_indexes
     check_ipack_indexes=.true. ! sets checking of ipack indexes
-  end subroutine set_check_ipack_indexes
+  end subroutine 
 
   subroutine unset_check_ipack_indexes
     check_ipack_indexes=.false. ! unsets checking of ipack indexes
-  end subroutine unset_check_ipack_indexes
+  end subroutine 
 
   integer function ipack2(i,j)
     integer, intent(in) :: i,j
     if (check_ipack_indexes) call check_ipack2_indexes(i,j)
     ipack2=ior(ishft(i,8),j)
-  end function ipack2
+  end function 
 
   integer function i1unpack2(ii)
   ! retreive 1st index from the packed index of two
@@ -854,13 +852,13 @@ module ipack_mod
     integer, intent(in) :: i,j,k
     if (check_ipack_indexes) call check_ipack3_indexes(i,j,k)
     ipack3=ior(ior(ishft(i,16),ishft(j,8)),k)
-  end function ipack3
+  end function 
 
   integer function ipack4(i,j,k,l)
     integer, intent(in) :: i,j,k,l
     if (check_ipack_indexes) call check_ipack4_indexes(i,j,k,l)
     ipack4=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
-  end function ipack4
+  end function 
 
   integer function i1unpack4(ii)
   ! unpack 1st index of packed index of four

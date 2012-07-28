@@ -1199,6 +1199,10 @@
          read(get_file_unit(),'(f15.8)') reladc_vconv
       end if
 
+      if (kw_matches(word, '.ADCTHR')) then
+         read(get_file_unit(),'(f18.6)') reladc_adcthr
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
@@ -1250,10 +1254,6 @@
 
       if (kw_matches(word, '.DOINCORE')) then
          reladc_doincore = .true.
-      end if
-
-      if (kw_matches(word, '.ADCTHR')) then
-         read(get_file_unit(),'(f18.6)') reladc_adcthr
       end if
 
       call check_whether_kw_found(word, kw_section)
