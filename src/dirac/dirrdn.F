@@ -4996,7 +4996,11 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
+#if defined MOD_UNRELEASED
              BLOCKD = .TRUE.
+#else
+             call quit('block diagonalizing feature not in release!')
+#endif
             GO TO 100
   131     CONTINUE
 C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.mode...

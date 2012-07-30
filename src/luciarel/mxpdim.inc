@@ -22,7 +22,7 @@
 !     MXINT_DIA == max. number of diagonal integrals  
 !     decrease/increase when running smaller/larger systems
       INTEGER MXINT_DIA
-      PARAMETER (MXINT_DIA = 125 000)
+      PARAMETER (MXINT_DIA = 130 000)
 
       PARAMETER (MXPICI = 10  )
 !
