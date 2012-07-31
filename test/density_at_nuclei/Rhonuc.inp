@@ -1,37 +1,22 @@
 **DIRAC
 .WAVE FUNCTION
-.ANALYZE
 .PROPERTIES
 **INTEGRALS
 *READIN
 .UNCONTRACT
 **HAMILTONIAN
-.LVCORR
-.DFT
- LDA
+.DFTAUTO
+PBE
 **GRID
-.ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **WAVE FUNCTIONS
 .SCF
 *SCF
 .CLOSED SHELL
  14
-.MAXITR
- 5              !we stop after 5 iterations
-.EVCCNV
- 1.0D-9 1.0D8   !and set the accepted threshold to a large number
 **PROPERTIES
 .RHONUC
+.EFFDENS
 *EXPECTATION VALUE
 .ORBANA
-**ANALYZE
-.RHO1
-! get a formatted file RHC__1F__1
-! of the electronic density along a line through the CO bond
-! Four columns: 1) Coordinate in Angstrom
-!               2) Total density
-!               3) Large component density
-!               4) Small component density
-.MULPOP
 *END OF

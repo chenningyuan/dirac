@@ -7,10 +7,10 @@ if(DEVELOPMENT_CODE)
             COMMAND ${GIT_EXECUTABLE} rev-list --abbrev-commit --max-count=1 HEAD
             OUTPUT_VARIABLE GIT_REVISION
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            ERROR_QUIET
             )
-        string(STRIP
-            ${GIT_REVISION}
-            GIT_REVISION
-            )
+        if(NOT ${GIT_REVISION} STREQUAL "")
+            string(STRIP ${GIT_REVISION} GIT_REVISION)
+        endif()
     endif()
 endif()

@@ -190,8 +190,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
-      real(kind=kreal) :: total_mem_new = 0
-      real(kind=kreal) :: new_mword_limit = 0
+      real(kind=kreal)       :: total_mem_new = 0
+      real(kind=kreal)       :: new_mword_limit = 0
+      integer                :: n,i,ntotsymm
 
 !
 !---------------Executable code--------------------------------------
@@ -234,10 +235,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      10X,"****  M. Pernpointner, 
      &       J. Phys. B 43, 205102 (2010)."//)
 !
-!  For abandoning namelist reading clear this GOTO
-!
-      goto 844
-!
 !  first transfer interface variables to internal ADC variables
 ! ___________________________________________________________
 !|
@@ -247,13 +244,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       dosips   =   reladc_dosips  
       dodips   =   reladc_dodips  
       do i=1,32
-         xreps(i) =   reladc_xreps(i)
+         sipreps(i) =   reladc_sipreps(i)
+         dipreps(i) =   reladc_dipreps(i)
       enddo
       readqkl  =   reladc_readqkl 
       doconst  =   reladc_doconst 
       doadcpop =   reladc_doadcpop
       dofull   =   reladc_dofull  
       vconv    =   reladc_vconv   
+      adcthr   = reladc_adcthr  
 
       sipiter  = reladc_sipiter 
       dipiter  = reladc_dipiter 
@@ -264,7 +263,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       sipprnt  = reladc_sipprnt 
       dipprnt  = reladc_dipprnt 
       doincore = reladc_doincore
-      adcthr   = reladc_adcthr  
 !|
 !|
 !|___________________________________________________________
@@ -273,38 +271,75 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       write(IW,'(5X,A)') '****                               ****' 
       write(IW,'(5X,A)') '****                               ****' 
-      write(IW,'(5X,A)') '**** Propagator JOB CONTROL DATA:  ****'
+      write(IW,'(5X,A)') '****   Propagator and Lanczos      ****'
+      write(IW,'(5X,A)') '****      JOB CONTROL DATA:        ****'
       write(IW,'(5X,A)') '****                               ****' 
       write(IW,'(5X,A)') '****                               ****' 
-      write(IW,'(10X,A,T50,I3)') 'Level of perturb. treatment:',adclevel
+      write(IW,'(10X,A,T50,I3)') 'Order of SIP treatment:',adclevel
+      write(IW,'(10X,A,T50,I3)') 'Order of DIP always ADC-2x !'
       write(IW,'(10X,A,T50,L1)') 'Calc. single ioniz. spectrum',dosips
       write(IW,'(10X,A,T50,L1)') 'Calc. double ioniz. spectrum',dodips
-      write(IW,'(10X,A)') 'Requested symmetries (XREPS):'
-      write(IW,'(10X,16I4)') (xreps(i),i=1,16)
-      write(IW,'(10X,16I4)') (xreps(i),i=17,32)
+      write(IW,'(10X,A)') 'Requested SIP symmetries (sipreps):'
+      n=0
+      do i=1,32
+        n=n+sipreps(i)
+      enddo
+      if(n.eq.0) then
+        write(IW,'(10X,A)') 'None. Program will do it automatically.'
+      else
+        write(IW,'(10X,16I4)') (sipreps(i),i=1,16)
+        write(IW,'(10X,16I4)') (sipreps(i),i=17,32)
+      endif
+      write(IW,'(10X,A)') 'Requested DIP symmetries (dipreps):'
+      n=0
+      do i=1,32
+        n=n+dipreps(i)
+      enddo
+      if(n.eq.0) then
+        write(IW,'(10X,A)') 'None. Program will do it automatically.'
+      else
+        write(IW,'(10X,16I4)') (dipreps(i),i=1,16)
+        write(IW,'(10X,16I4)') (dipreps(i),i=17,32)
+      endif
       write(IW,'(10X,A,T50,L1)') 'Read prev. calc. Qkl data:',readqkl
       write(IW,'(10X,A,T50,L1)') 'Incl. const. diagr. in ADC-3:',doconst
       write(IW,'(10X,A,T50,L1)') 'Do adv. final state anal.:',doadcpop
       write(IW,'(10X,A,T50,L1)') 'Do full diag. (max. 5000):',dofull
       write(IW,'(10X,A,T50,F18.6)') 'Conv. of constant diagrams:',vconv
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP matrix elements:',
+     & adcthr
       write(IW,'(10X,A,T50,I7)') 'Number of iter. in SIP calc:',sipiter
       write(IW,'(10X,A,T50,I7)') 'Number of iter. in DIP calc:',dipiter
       write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
-      write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
-      write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
+      write(IW,'(10X,A)') '(corresponding to valid entries in SIPREPS)'
+      n=0
+      do i=1,32
+        n=n+sipeigv(i)
+      enddo
+      if(n.eq.0) then
+        write(IW,'(10X,A)') 'None.'
+      else
+        write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
+        write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
+      endif
       write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
-      write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
-      write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
+      write(IW,'(10X,A)') '(corresponding to valid entries in DIPREPS)'
+      n=0
+      do i=1,32
+        n=n+dipeigv(i)
+      enddo
+      if(n.eq.0) then
+        write(IW,'(10X,A)') 'None.'
+      else
+        write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
+        write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
+      endif
       write(IW,'(10X,A,T50,F18.6)') 'Thr. for SIP scr. output:',sipprnt
       write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP scr. output:',dipprnt
       write(IW,'(10X,A,T50,L1)') 'Do incore Lanczos diag.:',doincore
-      write(IW,'(10X,A,T50,F18.6)') 'Thr. for matrix elements:',adcthr
 !
 !  end of job control output
 !
-
-  844 continue
-
       WRITE (IW,1011) MYPROC+1,NMPROC
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
 !
@@ -344,10 +379,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 !
-!     Read ADC input and set IPRNT variable =2 for CCSETI in order
-!     to print out the recomputed orbital energies and orbital numbers
+!     we now do no longer read in the NAMELIST RELADC/LANCZOS
 !
-      CALL ADCINPT (IN,IW)
+!     CALL ADCINPT (IN,IW)
+
       IPRNT = 2   ! print orbital and recalc. orbital energies
 !
 !     Number of integer words for REAL*8 and 
@@ -388,10 +423,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1/)
 
-      IF(DOSIPS.OR.DODIPS) then
-         DOCCSETI=.TRUE.
-         DOSORT  =.TRUE.
-      ENDIF
 !
 !  initialize USEOE=T default also for RELADC
 !  because it relies on CCSETI and needs the orbital
@@ -400,14 +431,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  The NORECMP parameter is irrelevant
 !
       USEOE = .TRUE.
+      WRITE (IW,*) 'Orbital energies from HF are used'
 
-      WRITE (IW,*) '       *** GENERAL JOB SPECIFICATION ***'
-      WRITE (IW,1006) DOSIPS,DODIPS,DOSORT,USEOE,NORECMP
- 1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
-     &        /" Calculate double ionization spectra:",T50,L1
-     &        /" Perform integral sorting           :",T50,L1
-     &        /" Use orbital energies from HF calc. :",T50,L1
-     &        /" Recalculating of Fock matrix forbidden:",T50,L1/)
+      IF(DOSIPS.OR.DODIPS) then
+         DOCCSETI=.TRUE.
+         DOSORT  =.TRUE.
+      ENDIF
 
       if(maxcor .gt. 0) then
         write(iw,*) 'Memory limit (MWORD):',mword_limit
@@ -530,127 +559,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCINPT (IN,IW)
-C
-      IMPLICIT INTEGER(A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     DHF-ADC(3) Input routine
-C
-C     Reads the user-defined ADC input
-C        and optional input for a specific diagonalizer
-C
-C---------- Calling variables -----------------------------------------
-
-      INTEGER IN,IW
-C
-C---------------Common Blocks--------------------------------------
-C
-#include  "adcinpt.inc"
-#include "../relccsd/inpt.inc"
-C
-C  relccsd/inpt.inc is included because the NELEC array can also be 
-C  modified in the RELADC code. This corresponds to an open-shell
-C  single-reference calculation. From the NELEC array the corresponding
-C  occupied/virtual pointers and arrays are determined.
-C
-C---------------Local variables--------------------------------------
-C
-C------------- Execution starts -------------------------------------
-C
-      NAMELIST/RELADC/ ADCLEVEL,
-     &                 DOSIPS,DODIPS,XREPS,READQKL,
-     &                 DOCONST,DOADCPOP,DOFULL,VCONV
-      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,
-     &                 SIPPRNT,DIPPRNT,DOINCORE,
-     &                 ADCTHR
-c
-c  set input default values and read ADC input
-c  from ADC namelist input.
-c  the ADC population analysis currently only refers to the
-c  two-hole part since this is of major interest!
-c
-      OPEN (5,FILE='DIRAC.INP', FORM='FORMATTED')
-
-      ADCLEVEL = 3
-
-      DOSIPS = .FALSE.
-      DODIPS = .FALSE.
-
-      DO IX=1,32
-        XREPS(IX)=0
-      ENDDO
-      READQKL  = .FALSE.
-      DOCONST  = .TRUE.
-      VCONV    = 1.0D-06
-      DOADCPOP = .FALSE.
-      DOFULL   = .FALSE.
-c 
-c  next read in actual parameters from ADC input
-c
-      REWIND (5)
-      CALL LOCATE('RELADC',5,ITEST)
-      IF (ITEST.GT.0) THEN
-         READ (5,RELADC,ERR=19)
-      ELSE
-         WRITE(IW,*)
-         WRITE(IW,*) ' +++   W A R N I N G                 +++'
-         WRITE(IW,*) ' +++ Namelist $RELADC $END not found +++'
-         WRITE(IW,*) ' +++ Resorting to defaults           +++'
-         WRITE(IW,*)
-         GOTO 20
-      ENDIF
-      GOTO 20
-   19 CALL QUIT('Error exit while reading namelist RELADC')
-   20 CONTINUE
-c
-c  check consistencies
-c
-      IF( (ADCLEVEL.LT.1).OR.(ADCLEVEL.GT.3))
-     &  CALL QUIT('Illegal ADC level for SIPS in namelist RELADC')
-c
-c  set Lanczos defaults and read input from DIRAC.INP
-c  * A minimum of 500 iterations
-c  * defaulting to the number of occupied orbitals
-c  * no eigenvector calculation
-c  * upper limit of printed eigenvalues is 50 electronvolt
-c  * the threshold for eigenvector printing is 0.0d0
-c
-      SIPITER=500
-      DIPITER=500
-      SIPPRNT = 50.0d0
-      DIPPRNT = 50.0d0
-      DO J=1,32
-        SIPEIGV(J) = 0
-        DIPEIGV(J) = 0
-      ENDDO
-      DOINCORE  = .FALSE.
-      ADCTHR    = 0.0d0
-      REWIND (5)
-      CALL LOCATE('LANINP',5,ITEST)
-      IF (ITEST.GT.0) THEN
-         READ (5,LANINP,ERR=39)
-      ELSE
-         WRITE(IW,*)
-         WRITE(IW,*) ' +++   W A R N I N G                 +++'
-         WRITE(IW,*) ' +++ Namelist $LANINP $END not found +++'
-         WRITE(IW,*) ' +++ Resorting to defaults           +++'
-         WRITE(IW,*)
-         GOTO 40
-      ENDIF
-      GOTO 40
-   39 CALL QUIT('Error exit while reading namelist LANINP')
-   40 CONTINUE
-
-c
-c  if somebody erroneously gives a negative threshold:
-c
-      ADCTHR = dabs(ADCTHR)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCSNGL_MAIN(ICALC,CC,KFREE,LFREE,
      &                        MXCORR,NSP,IREPSPI,EPS)
 C
@@ -709,6 +617,7 @@ C
       INTEGER IRPLOOP,NBUFS,IBUFPOS
       REAL*8 ASYM,LANTHR,EVLLIM,THRVEC
       INTEGER SYMMITER,IONIZLEVEL,IRECL
+      INTEGER nsipsymms
 
       real*8 ddot
       logical done
@@ -1199,6 +1108,7 @@ c
 c
 c  UAFFHO/UIONPA are for VAFFITER/VIONITER
 c  and need to be complex conjugated for the correct BKC !
+c  for VAFFITER an incore version is not feasible, we tried....
 c
           NX = NO(KREP)*NOVVT(KREP)
           IF(CARITH) CALL CONJUGA(NX,CC(BUFU1),1)
@@ -1210,13 +1120,6 @@ c
             CALL CVAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
      &                      CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
      &                 CC(EJAB),EPS,CC(ICRB),CC(VVLT),MXNV,KREP,VCONV)
-c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
-c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
-c           write(*,*)  'z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*z*'
-c           write(*,*)  'alternative call to CVAFFITER_IC !!'
-c           CALL CVAFFITER_IC (CC(BDIAG1),CC(BDIAG2),
-c    &                         CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
-c    &                         CC(EJAB),EPS,CC(ICRB),MXNV,KREP,VCONV)
           ELSE
             CALL VAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
      &                     CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
@@ -1379,6 +1282,14 @@ C  from here all the blocks for the ADC(2) and ADC(2x) calculations
 C  are generated and combined (if requested) with the previously
 C  Sigma(infty) contributions.
 C  the loop is over the user-requested symmetries !
+C
+C  hereby we have a little change in the very latest RELADC for DIRAC12:
+C
+C  If the user does not enter any specific symmetries,
+C  RELADC determines all symmetries there is work to be done for. Only if user
+C  specifies symmetries explicitly these ones are then calculated in the ordinary
+C  way.
+C
 C  Diagonalization is done immediately after matrix construction
 C  As a consequence, filenames for the diag/matrix file are not
 C  labeled by symmetry number anymore.
@@ -1389,17 +1300,51 @@ C                  ******* LOOP OVER USER-DEFINED SYMMETRIES *******
 C                  ******* LOOP OVER USER-DEFINED SYMMETRIES *******
 C                  *************************************************
 C
+c
+c determine if user has given explicit symmetries
+c
+      n = 0
+      do i = 1,nrep
+        n = n + sipreps(i)
+      enddo
+      if(n.eq.0) then
+        write(iw,*) 'User has not given explicit symmetries.'
+        write(iw,*) 'Kramers degeneracy counter:',symmiter
+        write(iw,*) 'Program calculates the following SIP symmetries:'
+        write(iw,*)
+        icount=1
+        do i=1,nrep,symmiter
+          sipreps(icount) = i
+          write(iw,*) '   No: ',icount,'  symmetry: ',i
+          icount = icount + 1
+        enddo
+      else
+        write(iw,*) 'User has made explicit symmetry choices.'
+        write(iw,*) 'Program calculates the following SIP symmetries:'
+        write(iw,*)
+        icount=1
+        do i=1,nrep
+          if(sipreps(i).ne.0) then
+            write(iw,*) '   No: ',icount,'  symmetry: ',sipreps(i)
+            icount = icount + 1
+          endif
+        enddo
+      endif
+      write(iw,*) 'Program calculates',icount-1,' symmetries.'
+      write(iw,*)
+      
       DO 900 IRPLOOP=1,NREP
-        IF(XREPS(IRPLOOP).EQ.0) GOTO 900
-        IF(XREPS(IRPLOOP).GT.NREP) THEN
-           WRITE(IW,*) 'Illegal Symmetry number',
-     &        XREPS(IRPLOOP),' Skipping!'
+        IF(sipreps(IRPLOOP).EQ.0) GOTO 900
+        IF(sipreps(IRPLOOP).GT.NREP) THEN
+           WRITE(IW,*) 'Chosen Symmetry',sipreps(IRPLOOP),
+     &     ' does not exist and is skipped!'
            GOTO 900
         ENDIF
 c
-c in KREP is the considered symmetry.
+c now we actually found a symmetry and start. Further tests
+c avoid crashing. KREP is the considered symmetry.
 c
-        KREP=XREPS(IRPLOOP)
+        KREP=sipreps(IRPLOOP)
 c
         IF(NO(KREP).EQ.0) THEN
           WRITE(IW,290) KREP
@@ -1635,7 +1580,7 @@ C
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
 
         WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
-        WRITE(ITAPADC,'(I2)')  KREP               !KREP
+        WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
         WRITE(ITAPADC,'(I1)')  RCW                !RCW
         N=1
         WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
@@ -1648,7 +1593,7 @@ C
         WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
         WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
         WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
-        WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !NEIGENV
+        WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
      
         CLOSE(ITAPADC)

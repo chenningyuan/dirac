@@ -19,53 +19,25 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C
-C  Program for testing (and improving) the quaternion Jacobi (block) diagonalization procedure.
-C
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-!> Program for testing (and improving) the quaternion Jacobi (block)
-!! diagonalization procedure
-      Program QJACOBITEST
-      PARAMETER(MAXMTX=900000,MAXBL=400)
-#include"implicit.h"
-#include"priunit.h"
+!> Program for testing (and improving) the quaternion matrix Jacobi (block) diagonalization procedure
+!> written by Miro ILIAS, Strasbourg,2005, improved in Tel Aviv, 2012
+module qjacobi_mod
       !> process also eigenvectors
-      LOGICAL DOEVE 
-      !> check the presence of the file
-      LOGICAL ISFILE 
-      DIMENSION A(MAXMTX),EV(MAXMTX),IBL(MAXBL)
+      LOGICAL :: DOEVE 
+      !> check the presence of the file with input data
+      LOGICAL::  ISFILE 
+      LOGICAL :: FROMFILE
+      real(kind=8), allocatable :: A(:,:,:),EV(:,:,:)
+      integer, allocatable :: IBL(:,:)
+      integer :: N,NZ,NBL,IPRINT
+      integer, parameter :: LUF=10
+      real*8, PARAMETER :: D0=0.0D0
+contains
 
-     
-C    ... get N,NZ from the file
-      CALL GETNNZ(N,NZ,NBL,LUF,ISFILE,IPRINT)
-      IF (MAXMTX.LT.N*N*NZ) CALL QUIT('too big N! increase the MAXMTX!')
-
-C       ... prepare a hermitian (quaternion) matrix
-      CALL PREPMATRIX(A,N,NZ,NBL,IBL,DOEVE,IPRINT,LUF,ISFILE)
- 
-C     ... call of the main routine ...
-      CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
-
-      STOP "QJACOBI test finished"
-      END
-
-C *******************************************************************8
-C
-C  Get basic date: N,NZ,NBL,IPRINT
-C
-C *******************************************************************8
-!> get the basic variables:  N,NZ,NBL,IPRINT
-      SUBROUTINE GETNNZ(N,NZ,NBL,LUF,ISFILE,IPRINT)
-#include"implicit.h"
-      PARAMETER (D0=0.0D0)
+subroutine GET_N_NZ
+!> get in the basic variables:  N,NZ,NBL,IPRINT
+implicit none
 #include"priunit.h"
-      LOGICAL DOEVE,ISFILE,FROMFILE
-
-      luf = 10
       INQUIRE(FILE="matrix_input",EXIST=ISFILE)
       IF (ISFILE) THEN
          write(lupri,*) '...going to read the "matrix_input" file' 
@@ -77,43 +49,30 @@ C *******************************************************************8
          read(luf,*)
          read(luf,*) NBL
       ELSE
-         write(lupri,*) 'No matrix input file !'
-         write(lupri,*) 'Enter the N,NZ :'
-         read(*,*) N,NZ
+         write(lupri,*) 'No "matrix_input" file found, reading in from terminal.'
+         write(lupri,*) 'Enter the N>0,NZ=1,2 or 4 :'
+         read(*,*) N,NZ ! TODO: verify entering data
          NBL = 0
-         write(lupri,*) 'Enter the NBL :'
+         write(lupri,*) 'Enter the NBL (zero for no blocks) :'
          read(*,*) NBL
-         write(lupri,*) 'Enter IPRINT :'
+         write(lupri,*) 'Enter IPRINT, print level :'
          read(*,*) IPRINT
       ENDIF
+end subroutine
 
-      RETURN
-      END    
-C ============================================================
-C            ... prepare testing matrix
-C ============================================================
-!> ... prepare the testing matrix
-      SUBROUTINE PREPMATRIX(A,N,NZ,NBL,IBL,DOEVE,IPRINT,LUF,ISFILE)
-#include"implicit.h"
-      PARAMETER (D0=0.0D0)
+subroutine PREPMATRIX
+!> ... prepare the testing matrix - allocate
+implicit none
 #include"priunit.h"
-      !> matrix to be diagonalized
-      DIMENSION A(N,N,NZ) 
-      !> blocks positions in the matrix to be diagonalized
-      INTEGER IBL(NBL,1:4)
-      !> function for getting randon numbers
-      REAL*8  RANDOMNUMBER  !< random number ...
-      LOGICAL DOEVE, !< process eigenvactors
-     &        ISFILE, !< check presence of file
-     &        FROMFILE !< somethink...
-
+ integer :: I,J,IBL1,IBL2,IBL3,IBL4,I1,J1,IZ,istat
+ real(kind=8) :: AR, AI,AJ,AK
       FROMFILE=.FALSE.
       DOEVE = .TRUE.
       IF (ISFILE) THEN
          write(lupri,*) 'PRINT level=',IPRINT
          write(lupri,*) 'Number of blocks=',NBL
          IF (NBL.GT.0) THEN
-C         ... read the indexes of blocks
+!         ... read the indexes of blocks
           DO I = 1, NBL
            read(luf,*) IBL1,IBL2,IBL3,IBL4
               IBL(I,1) = IBL1
@@ -121,8 +80,8 @@ C         ... read the indexes of blocks
               IBL(I,3) = IBL3 
               IBL(I,4) = IBL4
            IF (IPRINT.GE.2) THEN
-            write(lupri,*) 'Read block coordinates:',
-     &      IBL(I,1),IBL(I,2),IBL(I,3),IBL(I,4)
+            write(lupri,*) 'Read block coordinates:', & 
+            IBL(I,1),IBL(I,2),IBL(I,3),IBL(I,4)
            ENDIF
           ENDDO
          ENDIF
@@ -130,7 +89,6 @@ C         ... read the indexes of blocks
          read(luf,*) FROMFILE
          read(luf,*)
       ELSE
-         IPRINT = 1
          IF (NBL.GT.0) THEN
           DO I=1,NBL
             write(*,*) 'Enter ',I,'. block coordinates:'
@@ -169,7 +127,7 @@ C         ... read the indexes of blocks
              ENDIF
             ENDIF
           ELSE
-C          ... fill with random numbers
+!          ... fill with random numbers
            IF (I.NE.J) THEN
             AR = RANDOMNUMBER(I,J)
             AI = RANDOMNUMBER(I,J)
@@ -183,7 +141,7 @@ C          ... fill with random numbers
            ENDIF
           ENDIF
 
-C       ....now fill the matrix 
+!       ....now fill the whole matrix 
           IF (NZ.EQ.1) THEN
             A(I,J,1) = AR
             A(J,I,1) = AR
@@ -202,30 +160,54 @@ C       ....now fill the matrix
             A(I,J,4) =  AK
             A(J,I,4) = -AK
             if (IPRINT.GE.10) then
-             write(lupri,*) 'A filled:',
-     &       I,J,':',A(I,J,1),A(I,J,2),A(I,J,3),A(I,J,4)
+             write(lupri,*) 'A filled:', & 
+             I,J,':',A(I,J,1),A(I,J,2),A(I,J,3),A(I,J,4)
             endif
           ENDIF
-          IF (IPRINT.GE.2) THEN
-            write(lupri,*)
-     &     'filled ready matrix element A(',I,';',J,')=',
-     &     (A(I,J,IZ),IZ=1,NZ)
+          IF (IPRINT.GE.3) THEN
+            write(lupri,'(a,i3,a,i3,a,4d12.5)')  & 
+           'random number in matrix element A(',I,';',J,')=',  & 
+           (A(I,J,IZ),IZ=1,NZ)
           ENDIF
       ENDDO 
       ENDDO 
-
       IF (ISFILE) CLOSE(LUF,STATUS='KEEP')
+end subroutine
 
-      RETURN
-      END
-
-      REAL*8 FUNCTION RANDOMNUMBER(I,J)
-!> Function used to generate numbers to filling the matrix with them
-#include"implicit.h"
+REAL*8 FUNCTION RANDOMNUMBER(I,J)
+!> Function used to generate pseudorandom numbers, also according to 
+!> entering indexes I,J
+! See also http://gcc.gnu.org/onlinedocs/gfortran/RAND.html
+implicit none
 #include"priunit.h"
-C     RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND(0) 
-      !> get the random number
-      RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND() !< restriction...
-      RETURN
-      END
+integer, intent(in) :: I,J
+integer (kind=4) :: rand_param=1
+real(kind=8), external :: RAND
+  !print *,'rand=',RAND(rand_param)
+  !RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND(rand_param) 
+ ! miro: deactivated RAND, as this is not universally working
+  RANDOMNUMBER = DFLOAT(3*I+4*J)
+END FUNCTION
+end module qjacobi_mod
 
+Program QJACOBITEST
+use qjacobi_mod
+implicit none
+#include"priunit.h"
+integer :: istat
+  ! ... get N,NZ from the file
+  CALL GET_N_NZ
+  !> allocate matrix to be diagonalized
+  allocate(A(N,N,NZ),stat=istat)
+  allocate(EV(N,N,NZ),stat=istat) !> space for eigenvectors (if desired)
+  !> allocate space for blocks positions in the matrix to be diagonalized
+  allocate(IBL(NBL,1:4),stat=istat)
+  ! ... fill hermitian (real, quaternion) matrix
+  CALL PREPMATRIX
+  ! ... call of the external diagonalization routine ...
+#ifdef MOD_UNRELEASED
+  CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
+#else
+  CALL QUIT('QJACOI is not in this version !')
+#endif
+END PROGRAM

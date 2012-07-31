@@ -3350,11 +3350,13 @@ C
 C
       DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
+      integer :: lfmo
 C
       CALL QENTER('E2ODIA')
 
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KFMO,NFOCKMAT*N2BBASXQ,WORK,KFREE,LFREE)
+      lfmo = max(NFOCKMAT*N2BBASXQ,2*N2ORBXQ)
+      CALL MEMGET('REAL',KFMO,lfmo,WORK,KFREE,LFREE)
       KFC = KFMO
       KFV = KFMO + N2ORBXQ
 C
@@ -4391,6 +4393,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dcborb.h"
       DIMENSION A(LDA,N),WORK(*)
       DIMENSION INERT(3),DET(2)
 C
@@ -4402,17 +4405,20 @@ C
       CALL DSPFA (WORK(KAN),N,WORK(KPVT),INFO)
       CALL DSPDI(WORK(KAN),N,WORK(KPVT),DET,INERT,WORK(KFREE),100)
       IPAR = INERT(2) - NEPROT
-      IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
-        WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-        WRITE(LUPRI,'(4(5X,A,I5)/)')
-     &      '* Number of positive eigenvalues:',INERT(1),
-     &      '* Number of zero     eigenvalues:',INERT(3),
-     &      '* Number of negative eigenvalues:',INERT(2),
-     &      '  number of +- (ep) trial vectors:',NEPROT
-        IF(IPAR.GT.0) THEN
-          WRITE(LUPRI,'(/A)')
-     &      '*** WARNING - Possible instability detected '//
-     &      'in reduced system !'
+!     stefan: reduce output for mcscf - FIXME: find a better solution to handle the quantity of output...
+      if(nasht .le. 0)then
+        IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
+          WRITE(LUPRI,'(3X,A,F12.5)') '* Reduced matrix. Frequency:',W
+          WRITE(LUPRI,'(4(5X,A,I5))')
+     &        '* Number of positive eigenvalues:',INERT(1),
+     &        '* Number of zero     eigenvalues:',INERT(3),
+     &        '* Number of negative eigenvalues:',INERT(2),
+     &        '  number of +- (ep) trial vectors:',NEPROT
+          IF(IPAR.GT.0.and. iprint >= 5) THEN
+            WRITE(LUPRI,'(A)')
+     &        '*** WARNING - Possible instability detected '//
+     &        'in reduced system !'
+          ENDIF
         ENDIF
       ENDIF
       CALL MEMREL('XRSSTAB',WORK,1,KFRSAV,KFREE,LFREE)

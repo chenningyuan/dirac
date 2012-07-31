@@ -1,58 +1,55 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dimx(nn,n0,na)
+subroutine dimx(nn,n0,na)
 !------------------------------------------------------------------------
-!
-!    check whether there is enough space for arrays (nn<=n0)
-!
+!  check whether there is enough space for records (nn<=n0)
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-#include "implicit.h"
+  use cfiles_mod
+  implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 #endif
+  character(*), intent(in) :: na
+  integer, intent(in) :: nn, n0
+  integer :: i
 
-      character*8 na
-
-      if (nn.le.n0) then   
+  if (nn.le.n0) then   
         ! ... proper return, no overflow
         return
-      else ! treat overflow
+  else ! treat overflow
         write (LUPRI,10) na,nn,n0
-10      format(/,'dimx: dimension overflow at ',a8,1h:,i18, & 
+10      format(/,'dimx: dimension overflow at ',a,1h:,i18, & 
                  ',size allowed (allocated):',i18,/)
         write(LUPRI,'(4x,a)') 'List of arrays consumption:'
         do i=1,nflcur
-          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  & 
-                  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
+          write (LUPRI,"(1x,i3,1x,a8,1x,i20)")  i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
         enddo
-        call abext('dimx    ')
-      end if
-      return
-      end subroutine dimx
+        call abext('dimx: dimension overflow!')
+  end if
+end subroutine dimx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine diveps(namef)
+subroutine diveps(namef)
 !--------------------------------------------------------------------------------
-!
-!
+! divide entering diagram "namef" by denominators, holds for 1- and 2-electron
+! quantities
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use dat_mod
-      use cij1_mod
-      use hsfs_parameters
-#include "implicit.h"
+  use cfiles_mod
+  use gen_mod
+  use dat_mod
+  use cij1_mod
+  use hsfs_parameters
+implicit none
 #include "priunit.h"
 #else
+implicit none
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -66,17 +63,21 @@
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #endif
+  character*4, intent(in) :: namef
+  integer :: ntapef,new,nsize,istrt1,istrt2,i,igg
+  integer :: ka, kb, kc, kd
 
-      call files_ccsd(namef,ntapef,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) ' file for diveps not found'
-        call abext('diveps  ')
-      endif
-      nsize=ije1(nij1)
-      istrt1=nstrt(1,ntapef-1)+2*nij1+4
-      istrt2=nstrt(2,ntapef-1)
-      if (iii1.gt.100) then
-        do 20 i=1,nsize
+  call files_ccsd(namef,ntapef,new,1,-1,-1)
+  if (new.ne.0) then
+      write (LUPRI,*) 'diveps: file namef not found ! namef=',namef
+      call abext('diveps: file namef not found!')
+  endif
+  nsize=ije1(nij1) ! size of the record
+  istrt1=nstrt(1,ntapef-1)+2*nij1+4 ! position of the last previous record on gen
+  istrt2=nstrt(2,ntapef-1)          ! position of the last previous record on igen 
+  if (iii1.gt.100) then
+      ! 2-electron terms
+      do i=1,nsize
         if (gen(istrt2+i).ne.0.) then
           igg=igen(istrt1+i)
           ka=iand(ishft(igg,-24),z'ff')
@@ -85,21 +86,22 @@
           kd=iand(      igg     ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/(eps(ka)+eps(kb)-eps(kc)-eps(kd))
         endif
-20      continue
-      else
-        do 25 i=1,nsize
+      enddo
+  else
+      ! 1-electron terms
+      do i=1,nsize
         if (gen(istrt2+i).ne.0.d0) then
           kc=iand(ishft(igen(istrt1+i),-8),z'ff')
           kd=iand(      igen(istrt1+i)    ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/(eps(kc)-eps(kd))
         endif
-25      continue
-      endif
-      return
-      end
+      enddo
+  endif
+  return
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dveps6 (name)           
+subroutine dveps6 (name)           
 !------------------------------------------------------------------------
 !
 !
@@ -110,10 +112,11 @@
       use dat_mod
       use cij1_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
+implicit none
 #include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
@@ -128,12 +131,14 @@
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #endif
+  character*4, intent(in) :: name
+  integer :: ntape,new,istrt1,istrt2,ijump,i,j,ig,ka,kb,kc,kd,ke,kf
 
-      call files_ccsd (name,ntape,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'file for dveps6 not found'
-        stop                       
-      end if
+  call files_ccsd (name,ntape,new,1,-1,-1)
+  if (new.ne.0) then
+       write (LUPRI,*) 'dveps: file name not found, name=',name
+       call quit('dveps6: file name not found !')                 
+  end if
       istrt1=nstrt(1,ntape-1)+2*nij1+4
       istrt2=nstrt(2,ntape-1)
       ijump=0
@@ -176,10 +181,10 @@
 20      continue
 10    continue
       return
-      end
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dveps8 (name) 
+subroutine dveps8 (name) 
 !--------------------------------------------------------------------------------
 !
 !
@@ -190,11 +195,10 @@
       use dat_mod
       use cij1_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -208,33 +212,32 @@
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij1.h"
 #endif
-
-      call files_ccsd (name,ntape,new,1,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'file for dveps8 not found'
-        stop                       
-      end if
-      istrt1=nstrt(1,ntape-1)+2*nij1+4
-      istrt2=nstrt(2,ntape-1)
-      do 10 i=1,nij1
-        id=ij1(i)
-        ka=iand(ishft(id,-24),  z'ff')
-        kb=iand(ishft(id,-16),  z'ff')
-        kc=iand(ishft(id,-8),   z'ff')
-        kd=iand(id,             z'ff')
-        do 20 j=ije1(i-1)+1,ije1(i)
-          ind=igen(istrt1+j)
-          ke=iand(ishft(ind,-24),  z'ff')
-          kf=iand(ishft(ind,-16),  z'ff')
-          kg=iand(ishft(ind,-8),   z'ff')
-          kh=iand(ind,             z'ff')
-            gen(istrt2+j)=gen(istrt2+j)/                                &
-       (eps(ka)+eps(kb)+eps(kc)+eps(kd)                                 &
-       -eps(ke)-eps(kf)-eps(kg)-eps(kh))
-20      continue
-10    continue
-      return
-      end
+  character*4, intent(in) :: name
+  integer :: ntape,new,istrt1,istrt2,i,j,id,ka,kb,kc,kd,ke,kf,kg,kh,ind
+  call files_ccsd (name,ntape,new,1,-1,-1)
+  if (new.ne.0) then
+    write (LUPRI,*) 'dveps8: file name not found; name=',name
+    call quit('dveps8: file  name not found !')
+  end if
+  istrt1=nstrt(1,ntape-1)+2*nij1+4
+  istrt2=nstrt(2,ntape-1)
+  do i=1,nij1
+    id=ij1(i)
+    ka=iand(ishft(id,-24),  z'ff')
+    kb=iand(ishft(id,-16),  z'ff')
+    kc=iand(ishft(id,-8),   z'ff')
+    kd=iand(id,             z'ff')
+    do j=ije1(i-1)+1,ije1(i)
+      ind=igen(istrt1+j)
+      ke=iand(ishft(ind,-24),  z'ff')
+      kf=iand(ishft(ind,-16),  z'ff')
+      kg=iand(ishft(ind,-8),   z'ff')
+      kh=iand(ind,             z'ff')
+      gen(istrt2+j)=gen(istrt2+j)/      &
+        (eps(ka)+eps(kb)+eps(kc)+eps(kd)-eps(ke)-eps(kf)-eps(kg)-eps(kh))
+    enddo           
+  enddo            
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ehp(ipr)
@@ -279,7 +282,6 @@
       dimension ecol(400),ncol(400),iscol(400),idcol(2,400),ntr(12)
       dimension igr(400)
 
-      ! mi: must set for g95
       real*4 time,cputime
 
       data ntr /1hx,1hs,1hp,1hd,1hf,1hg,1hh,1hi,1hk,1hl,1hm,1hn/
@@ -1931,20 +1933,16 @@
       call dimx(nstrt(2,ntapet),nbig,"imove2")
 
 !   special for scratch files, which start with "s".
-           !itmp=4H       
+           !take care of itmp=4H       
            itmp=transfer("    ",itmp)
            jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
            ch2 = iand (namefl(ntapet), z'000000ff')
            isaa = ior (ch1, ch2)
 
-!#if defined VAR_IFORT
-!      if (isaa.eq.4hs   ) then
-!#else
-      !i_4hs=4hs
+      !take care of i_4hs=4hs
       i_4hs=transfer("s   ",i_4hs)
       if (isaa.eq.i_4hs) then
-!#endif
 
         nstrt(1,ntapet)=nstrt(1,ntapet-1)+ndp3+2*ndij+4
         nstrt(2,ntapet)=nstrt(2,ntapet-1)+ndp3
@@ -1954,11 +1952,6 @@
       endif
 
       call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),igen(nstrt(1,ntapet-1)+1))
-
-      if (getiprint() >= 6) then
-        write(LUPRI,'(4x,a)') '"imove" - on exit'
-        call print_cijx_stuff
-      endif
 
       return
       end subroutine imove
@@ -2812,7 +2805,7 @@
       end subroutine vxsort
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine wrtfile(nt,nrec,name)
+subroutine wrtfile(nt,nrec,name)
 !----------------------------------------------------------------------------------
 !
 !  write internal file "name" on tape nt, skipping nrec records.
@@ -2829,11 +2822,11 @@
       use cfiles_mod
       use gen_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -2843,6 +2836,7 @@
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #endif
+   integer :: nt, nrec,i,name, ntape,new,nstr2,nij,nsize,nstr1
 
       rewind nt
       if (nrec.gt.0) then
@@ -2868,7 +2862,7 @@
       endif
       rewind nt
       return
-      end
+ end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine wrtrle (name,itape,loc) 
@@ -2933,7 +2927,7 @@
 14      continue
       end if
       return     
-      end 
+      end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine zero (name)
@@ -3029,27 +3023,31 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine zeroup(ntmp,itmp,t,zero)
+subroutine zeroup(ntmp,itmp,t,zero)
 !--------------------------------------------------------------------------------
 !
 !       moves 'zero' elements & their indexes at the end of the array
 !
 !--------------------------------------------------------------------------------
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+  implicit none
 #include "priunit.h"
-      dimension itmp(ntmp),t(ntmp)
-      nn=0
-      do 120 i=1,ntmp
+  integer, intent(inout) :: ntmp, itmp(ntmp)
+  real(kind=8), intent(inout) :: t(ntmp)
+  real(kind=8), intent(in) :: zero
+  integer :: nn,i
+  nn=0
+  do 120 i=1,ntmp
       if (abs(t(i)).ge.zero) then
+  ! start placing nonzero elements and their indexes from the beginning of array
         nn=nn+1
         itmp(nn)=itmp(i)
         t(nn)=t(i)
       endif
-120   continue
-      ntmp=nn
-      return
-      end subroutine zeroup
+  120 continue
+! refresh the ntmp value, what is number of elements on array
+   ntmp=nn
+   return
+end subroutine zeroup
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse(ii,i1,i2,i3,i4)
@@ -3070,10 +3068,11 @@
       i2=mod(ia,10)
       i1=ia/10
       return
-      end
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse6 (ii,i1,i2,i3,i4,i5,i6)
+! extracts 6 digits from the 6-digit integer number
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -3316,15 +3315,18 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
-! Main printing subroutine:
+!  Main printing subroutine for 1 and 2-electron records,
 !  prints diagrams (integrals,intermediates...) & their indexes 
 !
+!  1-electronic records have first two indexes zero (TODO: avoid their printout)
+!
 !  name : diagram name,  4-bytes (integer) character 
-!  tit  : title,   8-bytes  character
+!  tit  : title,   any-bytes  character
 !
 !  iparm : printout parameter - level of printing, for the moment, deactivated
 !---------------------------------------------------------------------------------
   use print_level, only: getiprint
+  use ipack_mod
 #if defined HSFS_DYN_ALLOC
   use cfiles_mod
   use gen_mod
@@ -3352,9 +3354,9 @@ subroutine prt(name,tit,iparm)
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-!miro: try eliminate non-ascii characters from routine name by explicit declaration
  character(*), intent(in) :: tit
- integer, intent(in) :: iparm, name
+ character*4, intent(in) :: name
+ integer, intent(in) :: iparm
  real(kind=8) :: a(6), flim
  integer :: ind(4,6),i,ii,jj,io,num,new,nsize,istrt1,istrt2
 
@@ -3369,16 +3371,20 @@ subroutine prt(name,tit,iparm)
    call abext('prt tried to read nonexistent file!')
  endif
 
- if (getiprint() >=2) then
+ if (getiprint()>=2) then
    nsize=ije1(nij1)
    ! print out basic info - header -  about the indexed data
-   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
-   110 format(1x,'prt: title=',a,' id:',a,', size=',i7,' iii1=',i7,' iiv1=',i7,' nij1=',i7, & 
-             ' ij records:'/(8(2x,z4,i8,';')))
+   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1
+   110 format(1x,'prt: title="',a,'" id:"',a,'", size=',i7,' iii1=',i4,' iiv1=',i4,' nij1=',i7)
    call flush(LUPRI)
  endif
 
  if (getiprint() >=3) then
+   ! first print out ij records - first two indexes 
+   write (LUPRI,111) (i1unpack2(ij1(i)),i2unpack2(ij1(i)),ije1(i-1)+1,ije1(i),i=1,nij1)
+   111 format(2x,'ij records:',(5(2x,2i2,' #',i5,'...',i5,';')))
+   call flush(LUPRI)
+   write(LUPRI,'(3x,a,d8.3,a)') 'printout limit:',flim,' of indexed quantities:'
    istrt1=nstrt(1,num-1)+2*nij1+4 ! position of indexes on array igen
    istrt2=nstrt(2,num-1)          ! position of indexed data on array gen
    io=0
@@ -3386,10 +3392,10 @@ subroutine prt(name,tit,iparm)
      if (abs(gen(istrt2+i)).ge.flim) then ! get if greater than limit
        io=io+1
        a(io)=gen(istrt2+i)
-       ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
-       ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
-       ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
-       ind(4,io)=iand(           igen(istrt1+i),z'ff')
+       ind(1,io)=i1unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-24),z'ff')
+       ind(2,io)=i2unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-16),z'ff')
+       ind(3,io)=i3unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-8) ,z'ff')
+       ind(4,io)=i4unpack4(igen(istrt1+i)) ! instead of iand(           igen(istrt1+i),z'ff')
        if (io.eq.6) then ! print out indexed data
          write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
          call flush(LUPRI)
@@ -3408,10 +3414,10 @@ return
 end subroutine prt
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine prt6 (name,tit,iparm)
+subroutine prt6 (name,tit,iparm)
 !--------------------------------------------------------------------------------
 !
-! Printing routine used for triples
+!      Printing routine used for triples
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -3420,11 +3426,11 @@ end subroutine prt
       use cij1_mod
       use dat_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -3440,7 +3446,12 @@ end subroutine prt
 #include "dat.h"
 !      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-      dimension a(4),id(3),ind(3,4)
+ character(*), intent(in) :: tit
+ character*4, intent(in) :: name
+ integer, intent(in) :: iparm
+ real(kind=8) :: a(4), flim
+ integer :: id(3),ind(3,4),num,new,i,nsize,istrt1,istrt2,iflag
+ integer :: io,j,k,ii,m,n
 
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
@@ -3454,7 +3465,7 @@ end subroutine prt
 !     nsize=ije(nij)  
       nsize=ije1(nij1)
 !     write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
-      write (6,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
+      write (LUPRI,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
 99    format(' file ',a4,', size iii1 iiv1=',4i9,' ij records:'/        &
              (3(2x,z8,i8,';')))
 !     istrt1=nstrt(1,num-1)+2*nij+4
@@ -3468,35 +3479,37 @@ end subroutine prt
         do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
+              !  take out first three indexes
               id(1)=iand(ishft(ij1(i),-16),z'ff')
               id(2)=iand(ishft(ij1(i),-8),z'ff')
               id(3)=iand(ij1(i),z'ff')
 !             write (6,*) ' ' 
-              write (6,98) i,(id(k),k=1,3)
+              write (LUPRI,98) i,(id(k),k=1,3)
 98            format ('record no. ',i6,' is ',3i2)
 !             write (6,*) ' '
               iflag=0
             end if
             io=io+1
             a(io)=gen(istrt2+j)
+            ! take out 3 last indexes from igen
             ii=igen(istrt1+j)
             ind(1,io)=iand(ishft(ii,-16),z'ff')
             ind(2,io)=iand(ishft(ii,-8),z'ff')
             ind(3,io)=iand(ii,z'ff')
             if (io.eq.4) then
-              write (6,97) ((ind(m,n),m=1,3),a(n),n=1,4)
+              write (LUPRI,97) ((ind(m,n),m=1,3),a(n),n=1,4)
               io=0
             endif
           endif
 30      continue
         if (io.gt.0) then
-          write (6,97) ((ind(m,n),m=1,3),a(n),n=1,io)
+          write (LUPRI,97) ((ind(m,n),m=1,3),a(n),n=1,io)
         end if
 97      format (1x,4(1x,3i2,'=',f11.7))
 40    continue
       write (6,*) ' ' 
       return
-      end 
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt8 (name,tit,iparm)
@@ -3509,11 +3522,11 @@ end subroutine prt
       use cij1_mod
       use dat_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -3529,8 +3542,12 @@ end subroutine prt
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
-      dimension a(4),id(4),ind(4,4)
+ character(*), intent(in) :: tit
+ character*4, intent(in) :: name
+ integer, intent(in) :: iparm
+ real(kind=8) :: a(4), flim
+ integer :: id(4),ind(4,4),num,new,nsize,istrt1,istrt2
+ integer :: i,j,k,m,n,iflag,io,ii
 
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
@@ -3557,13 +3574,9 @@ end subroutine prt
         do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
-!             id(1)=iand(ishft(ij(i),-24),'ff'x)
               id(1)=iand(ishft(ij1(i),-24),z'ff')
-!             id(2)=iand(ishft(ij(i),-16),'ff'x)
               id(2)=iand(ishft(ij1(i),-16),z'ff')
-!             id(3)=iand(ishft(ij(i),-8),'ff'x)
               id(3)=iand(ishft(ij1(i),-8),z'ff')
-!             id(4)=iand(ij(i),'ff'x)
               id(4)=iand(ij1(i),z'ff')
               write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,4)
@@ -3607,7 +3620,7 @@ subroutine prtime(tit,n,iparm)
 #include "priunit.h"
 #include "csdtime.h"
 #else
-#include "implicit.h"
+  implicit none
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
 #include "csdtime.h"
@@ -3626,7 +3639,7 @@ subroutine prtime(tit,n,iparm)
   diff = t - csdltim
   acum = t - csdstim
   call daytime(datex,timex)
-  write(LUPRI,'(1x,a,a9,a,f10.3,a,f10.3,a,2a9)')  & 
+  write(LUPRI,'(1x,a,a,a,f10.3,a,f10.3,a,2a9)')  & 
   'time after:',tit,' spent:',diff,'s, total:',acum,'s, ',datex,timex
   !print 900,tit,acum,diff,n,datex,timex
   !900   format (' time after :',a9,1x,f10.3,'; added ',f10.3,'. n=',i8,'. ',2A12)
@@ -3635,51 +3648,8 @@ subroutine prtime(tit,n,iparm)
 return
 end subroutine prtime
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
-      subroutine clean_string(temp)
-! ... to cut off trash characters      
-#include "implicit.h"
-#include "priunit.h"
-      character(*) temp
-
-      !write(LUPRI,*) 'string length:',sizeof(temp)
-!      write(LUPRI,'(a,i4)') 'string length:',len_trim(temo)
-      !write(LUPRI,'(a,i4)') 'string length:',len(temp)
-      !write(LUPRI,*) 'string length:',len(temp)
-
-      do i=1,len(temp)
-        ia=iachar(temp(i:i))
-        ! could get problem with printout !
-        !write(LUPRI,*) i,"ascii=",ia,' char=',char(ia)
-
-        !write(LUPRI,*) i,"ascii=",ia
-
-       if (.not.( (ia.ge.48.and.ia.le.57).or.                           &
-             (ia.ge.65.and.ia.le.90).or.                                &
-             (ia.ge.97.and.ia.le.122).or.(ia.eq.32)  )) then 
-
-          !tit(i:i)=char(32,kind=1) ! place 'space'
-          !tit(i:i)=" " ! place 'space'
-          !s=tit(i:i); write(LUPRI,*) s
-          !s=char(32); write(LUPRI,*) s
-          !write(LUPRI,*) 'trim:',trim(tit)
-          !write(tit(i:i),'(a1)') char(32)
-          !write(tit(i:i),'(a)') s
-          !tit=trim(tit)
-           !temp(i:i)=char(32,kind=1)
-           temp(i:i)='\0' ! NULL terminating character
-           !write(LUPRI,*) 'added null terminating character !'
-
-       endif
-       !write(LUPRI,'(a1,4x,i4)') tit(i:i),iachar(tit(i:i))
-      enddo
-      !write(LUPRI,*) 'tit=',temp
-
-      end subroutine clean_string
-
 ! *************************************************
-!     function cputime(x)
-      real*4 function cputime(x)
+real(kind=4) function cputime(x)
 ! http://gcc.gnu.org/onlinedocs/gfortran/SECOND.html
 ! Returns a REAL(4) value representing the elapsed CPU time in seconds.
 !DEC  Real*8 Runsec
@@ -3696,12 +3666,10 @@ end subroutine prtime
 !
 !mi   - old version 
 !     t = mclock()/1000000.
-      return
-      end
-! *************************************************
+end function
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rdin
+subroutine rdin
 !--------------------------------------------------------------------------------
 !
 !   input reading routine called from each method routine (formerly executable)
@@ -3768,6 +3736,7 @@ end subroutine prtime
 !     read (5,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       read (LUCMD,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       write(LUPRI,'(4x,a,i3)') "norb read in, norb=",norb
+      write(LUPRI,'(2x,a,200a1)') 'orbital types:',(cc(i),i=1,norb)
 
       do 110 i=1,norb
       do 105 j=1,5
@@ -3799,14 +3768,13 @@ end subroutine prtime
       end subroutine rdin
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rdfile(nt,nrec,name,ieof)
+subroutine rdfile(nt,nrec,name,ieof)
 !-------------------------------------------------------------------------------------
-!
 !
 !  read file "nt", skipping "nrec" records, to internal file number
 !  "nflcur"+1, calling it "name".
 !
-!  disk file structure for tc etc:
+!  disk file structure of records:
 !
 !  1. nij (# of subblocks)
 !  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
@@ -3836,34 +3804,18 @@ end subroutine prtime
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-! mi: added for control printouts
-!#include "dat.h"
-!     logical :: is_open,is_present
 #endif
 
-! mi: it's useless
-!     inquire(unit=nt,exist=is_present,opened=is_open,recl=irecl )
-
-      if (getiprint().ge.5) then
-        call header('Output from rdfile',-1)
-        write(LUPRI,'(2x,a,i5)') 'file nt=',nt
-        write(LUPRI,'(2x,a,i5)') 'nrec=',nrec
-        write(LUPRI,'(2x,a,a4)') 'name=',name
-      endif
-
-      ! write(LUPRI,*) 'rdile:',is_present,is_open,irecl 
-
-!     if (.not.(is_present.or.is_open.or.irecl==0)) then
-!       call quit('rdfile: file tapeXX is NOT present ! ')
-!     endif
-
+      ! bring nt logical unit file to the beginning
       rewind nt
 
+      ! skip 4*nrec 
       if (nrec.gt.0) then
         do 10 i=1,4*nrec
 10      read (nt)
       endif
 
+      ! read the 1st part of the record - dimension of ij(:),ije(:)
       read (nt,end=190) nij
 
       nflcur=nflcur+1
@@ -3871,6 +3823,7 @@ end subroutine prtime
       nstr2=nstrt(2,nflcur-1)
       igen(nstr1+1)=nij
 
+ ! read the 2nd part of the record
       read (nt) (igen(nstr1+i),i=2,2*nij+4)
       iiia(nflcur)=igen(nstr1+2*nij+3)
       iiva(nflcur)=igen(nstr1+2*nij+4)
@@ -3878,31 +3831,24 @@ end subroutine prtime
       nsize=igen(nstr1+2*nij+2)
 
       if (nt.ne.9) then
+      ! read file with indexes
         read (nt) (igen(nstr1+2*nij+4+i),i=1,nsize)
         read (nt) (gen(nstr2+i),i=1,nsize)
         nstrt(1,nflcur)=nstr1+2*nij+4+nsize
         nstrt(2,nflcur)=nstr2+nsize
       else
+      ! read pppp file without indexes
         read (nt) (gen(nstr2+i),i=1,nsize)
         nstrt(1,nflcur)=nstr1+2*nij+4
         nstrt(2,nflcur)=nstr2+nsize
       endif
 
-      if (getiprint() >= 8) then
-       write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
-       write(LUPRI,'(2x,a,i7)') 'nstr2=',nstr2
-       ! print out extra big values 
-       do i=1,nsize
-         if (dabs(gen(nstr2+i)).ge.1.0d+5) then
-           write(LUPRI,*) nstr2+i,gen(nstr2+i)
-         endif
-       enddo
-      endif
-
       call dimx(nstrt(1,nflcur),nbig,"rdfile1")
       call dimx(nstrt(2,nflcur),nbig,"rdfile2")
+
       return
 
+! handle error in file reading
 190   if (ieof.eq.0) then
         ieof=1
         return
@@ -3910,29 +3856,29 @@ end subroutine prtime
         write (LUPRI,*) 'rdfile encountered eof'
         write (LUPRI,110) nt,nrec,name
 110     format(' nt nrec name=',i5,i4,2x,a8)
-        call abext('rdfile  ')
+        call abext('rdfile: encountered eof')
       endif
-      end subroutine rdfile
+end subroutine rdfile
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine rdsym
+subroutine rdsym
 !----------------------------------------------------------------------------
 !
 !  continue the reading from  the input file "input"
 !
 !  gets in symmetry information
 !
-!  Called from each method (executable)
+!  Called from each method (former executable, now subroutine)
 !
 !----------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use sym_mod
       use dpd_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
@@ -3940,123 +3886,121 @@ end subroutine prtime
 !     common /dpd/ nir,igmt(8,8),ici(200)
 #endif
 
-      dimension itemp(64) ! 8x8
-      data itemp / 1,2,3,4,5,6,7,8,2,1,4,3,6,5,8,7,3,4,1,2,7,8,5,6,     &
-            4,3,2,1,8,7,6,5,5,6,7,8,1,2,3,4,6,5,8,7,2,1,4,3,            &
-            7,8,5,6,3,4,1,2,8,7,6,5,4,3,2,1 /
+  integer :: itemp(64) ! 8x8
+ !mi: identical with Dirac group mult.table
+  data itemp / 1,2,3,4,5,6,7,8,   & 
+               2,1,4,3,6,5,8,7,   & 
+               3,4,1,2,7,8,5,6,   &
+               4,3,2,1,8,7,6,5,   & 
+               5,6,7,8,1,2,3,4,   & 
+               6,5,8,7,2,1,4,3,   &
+               7,8,5,6,3,4,1,2,   & 
+               8,7,6,5,4,3,2,1 /
+  logical :: rdsym_called=.false.  
+  integer :: ios,i,j,ii
 
-      ! mi: save time - no typing of input, data ready
-      !logical :: no_inter_rd=.true.
-      logical :: no_inter_rd=.false.
-      logical :: rdsym_called=.false.  
-
-      if (rdsym_called) then    
+  if (rdsym_called) then    
         write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
         return
-      else
-        write(LUPRI,*) '...continuing rdsym procedure...'
-      endif
+  else
+        write(LUPRI,'(2x,a)') '...continuing with the rdsym procedure...'
+  endif
 
-      if (no_inter_rd) then
-       nclass=4
-       write(LUPRI,'(/,2x,a,i3)') 'rdsym: nclass variable set to',nclass
-      else
-        write(LUPRI,'(/,2x,a,$)') 'Reading "nclass" variable:'
-        read (LUCMD,*,iostat=ios) nclass
-        if (ios.ne.0) then
+  write(LUPRI,'(/,2x,a,$)') 'Reading "nclass" variable...'
+  read (LUCMD,*,iostat=ios) nclass
+  if (ios.ne.0) then
           write(LUPRI,*) 'error in reading nclass, read nclass=',nclass
           call quit('rdsym: error in reading nclass!')
-        endif
-      endif
-      write(LUPRI,'(2x,a,i2)') 'read nclass=',nclass
+  endif
+  write(LUPRI,'(2x,a,i2)') 'get value nclass=',nclass
 
-      write(LUPRI,'(/,2x,a)')  & 
-        'Number of of orbitals (20i3) per symmetry(1-nclass):'
-
-      if (no_inter_rd) then
-        do i=1,nclass
-          iclass(i)=0
-        enddo
-        iclass(1)=7; iclass(2)=0; iclass(3)=1; iclass(4)=1
-        write(LUPRI,'(/,4x,a,/)') 'Hard set orbitals  7 0 1 1 now in !!'
-      else
+  write(LUPRI,'(/,2x,a)')  & 
+ 'Reading number of of orbitals (20i3) per symmetry(1-nclass):'
 
 !  --- read iclass in FREE-FORMAT ---
-!     read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
 !     read (LUCMD,1000,iostat=ios) (iclass(i),i=1,nclass)
-      read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)
-1000  format(20i3)
-      if (ios.ne.0) then
-        write(LUPRI,*) 'error in reading iclass, so far read iclass(i):'
-        write(LUPRI,*) (iclass(i),i=1,nclass)
-        call quit('error in reading iclass!')
-      endif
-
-      endif
-
-      write (LUPRI,1100) nclass,(iclass(i),i=1,nclass)
-1100  format(/,i4,' orb classes; # of orbs ',30i3)
+  1000  format(20i3)
+  read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)
+  if (ios.ne.0) then
+      write(LUPRI,*) 'error in reading iclass, so far read iclass(i):'
+      write(LUPRI,*) (iclass(i),i=1,nclass)
+      call quit('error in reading iclass!')
+  endif
+  ! print out orbitals occupation what was read
+  write (LUPRI,1100) nclass,(iclass(i),i=1,nclass)
+  1100  format(i4,' orb classes; # of orbs ',8i3)
 
 !c-------------------------------------------------
 !c  isym is  0 for orbs remaining invariant
 !c  isym is  1 for orbs changing sign
 !c  isym is -1 for orbs doing neither
 !c-------------------------------------------------
-      nsym=1
+  write(LUPRI,'(1x,a)') 'reading orbitals symmetry operations characteristics:'
+  nsym=1
+  110 continue
+  !read (LUCMD,1000) (isym(i,nsym),i=1,nclass)
+  read (LUCMD,*,iostat=ios) (isym(i,nsym),i=1,nclass)
+  if (ios.ne.0) then
+    write(LUPRI,*) 'error in reading isym, so far read nsym=',nsym
+    write (LUPRI,*) 'nclass=',nclass,' current i=',i
+    write (LUPRI,*) 'isym(i,nsym):',(isym(i,nsym),i=1,nclass)
+    call quit('error in reading isym numbers !')
+  endif
+  ! if reads "9", finish the input reading
+  if (isym(1,nsym).ge.9) go to 120 
+  ! in between print out what was read
+  write (LUPRI,1200) nsym,(isym(i,nsym),i=1,nclass)
+  1200  format(' isym(',i3,')=',30i3)
+  nsym=nsym+1
+  go to 110 ! read again
 
-110   continue
-      if (no_inter_rd) then
-         do i=1,nclass
-           isym(i,nsym)=0
-         enddo
-        ! isym(1,nsym)=9
-      else
-!       read (*,1000) (isym(i,nsym),i=1,nclass)
-        read (LUCMD,1000) (isym(i,nsym),i=1,nclass)
-      endif
-
-      !if (isym(1,nsym).ge.9) go to 120
-      if (isym(1,nsym).ge.9.or.no_inter_rd) go to 120
-
-      write (LUPRI,1200) nsym,(isym(i,nsym),i=1,nclass)
-1200  format(' isym(',i3,')=',30i3)
-
-      nsym=nsym+1
-      go to 110
-120   nsym=nsym-1
-
+! end of reading
+  120 nsym=nsym-1
 
 !  ----   fill ibias, ici   ----- 
+! ibias(:)  - pointer to the final element in symmtry class
+! iclass(:) - 
+! ici(:) - 
       ibias(1)=0
       do 140 i=1,nclass
 140   ibias(i+1)=ibias(i)+iclass(i)
       do 20 i=1,nclass
         do 30 j=ibias(i)+1,ibias(i+1)
-          ici(j)=i
+          ici(j)=i ! 
 30      continue
 20    continue
 
-      ii=0
-      do 40 i=1,8
-        do 50 j=1,8
-          ii=ii+1
-          igmt(i,j)=itemp(ii) ! MI: igmt multiplication table ?
-50      continue
-40    continue
+! printout iclass,ibias,ici
+  do i=1, nclass
+    write(LUPRI,'(i1,a,i1,a,i2,a,8i2)') & 
+    i,'.irrep:',iclass(i),' ibias:',ibias(i),' ici:',(ici(j),j=ibias(i)+1,ibias(i+1))
+  enddo
 
-! MI: nir should be the number of irreducible representations ?
-      if (nclass.eq.1) then
-        nir=1
-      else
-        nir=2**nsym
-      end if
+! fill group (matrix) multiplication table
+  ii=0
+  do i=1,8
+    do j=1,8
+      ii=ii+1
+      igmt(i,j)=itemp(ii)
+    enddo    
+  enddo    
+
+! set the number of  (irreducible representations ?) - nir
+  if (nclass.eq.1) then
+    nir=1
+  else
+    nir=2**nsym
+  end if
+  write(LUPRI,'(a,i3)') 'set nir=',nir
+
+! print out the matrix multiplication table
+  write(LUPRI,'(/,1x,a)') 'matrix (group) multiplication table:'
+  do i=1,nir
+    write(LUPRI,'(8i3)') (igmt(i,j),j=1,nclass)
+  enddo
  
-      rdsym_called = .true. 
-      write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
-      call flush (LUPRI)
+  rdsym_called = .true. 
+  write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
+  call flush(LUPRI)
 
-       ! write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
-
-      return
-      end subroutine rdsym
-
+end subroutine rdsym

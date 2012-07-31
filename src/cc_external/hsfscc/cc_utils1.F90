@@ -1,20 +1,19 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine clear(name,iii,iiv)
+subroutine clear(name,iii,iiv)
 !--------------------------------------------------------------------------------------
-!
-!
-!
-!
+! clears the diagram "name" - it means put zeroes to all diagram values, its indexes are
+! untouched
+! if diagram does not exist, create its template (in tmplt);  
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use cij1_mod
-      use hsfs_parameters
-#include "implicit.h"
+ use cfiles_mod
+ use gen_mod
+ use cij1_mod
+ ! use hsfs_parameters
+ implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
+ implicit none
 #include "priunit.h"
 !     implicit real*8 (a-h,o-z)
 !  zero out file (create if does not exist)
@@ -28,16 +27,14 @@
 #include "cij1.h"
 !      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #endif
-
-      call tmplt(iii,iiv,name,ntape)
-      nsize=ije1(nij1)
-
-!      call dcopy(nsize,0.d0,0,
-!     1 gen(nstrt(2,ntape-1)+1),1)
-      call dcopy(nsize,0.d0,0,gen(nstrt(2,ntape-1)+1),1)
-
-      return
-      end
+  character*4, intent(in) :: name
+  integer, intent(in) :: iii,iiv
+  integer :: ntape, nsize
+! get the "ntape"-number of the diagram
+  call tmplt(iii,iiv,name,ntape) 
+  nsize=ije1(nij1) ! size of the diagram
+  call dcopy(nsize,0.d0,0,gen(nstrt(2,ntape-1)+1),1)
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine clear6 (name,iii,iiv)
@@ -115,24 +112,30 @@
       return
       end
 
-      function find(itt,t,it,nt)
-      implicit real*8 (a-h,o-z)
-      dimension t(nt),it(nt)
-      find=0.d0
-      do 10 i=1,nt
+!  *******************************************************************
+real(kind=8) function find(itt,t,it,nt)
+! find and returns 1-index element, it(:) - array of packed indexes
+      !implicit real*8 (a-h,o-z)
+  implicit none
+  real(kind=8), intent(in) :: t(nt)
+  integer, intent(in) :: nt, itt, it(nt)
+  integer :: i
+  find=0.d0
+  do 10 i=1,nt
       if (it(i).eq.itt) then
         find=t(i)
         go to 90
       endif
-10    continue
-90    return
-      end
+10 continue
+90 return
+end function
 
 
 !  *******************************************************************
-      function find2 (j1,j2) 
+real(kind=8) function find2 (j1,j2) 
 !----------------------------------------------------------------------
-! find and returns 2-index quantity element
+! find and returns 2-index quantity element from gen, according
+! to indexes j1,j2, which are packed
 !----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
@@ -161,11 +164,11 @@
           find2=gen(istrt12+i)
         end if
 10    continue
-      return
-      end
+   return
+end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      function find4(j1,j2,j3,j4)
+real(kind=8) function find4(j1,j2,j3,j4)
 !--------------------------------------------------------------------------------------
 ! find and returns 4-index quantity element
 !--------------------------------------------------------------------------------------
@@ -199,7 +202,7 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      function find6 (j1,j2,j3,j4,j5,j6)
+real(kind=8) function find6 (j1,j2,j3,j4,j5,j6)
 !--------------------------------------------------------------------------------------
 ! find and returns 6-index quantity element
 !--------------------------------------------------------------------------------------
@@ -244,7 +247,7 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      function find8 (j1,j2,j3,j4,j5,j6,j7,j8)
+real(kind=8) function find8 (j1,j2,j3,j4,j5,j6,j7,j8)
 !--------------------------------------------------------------------------------------
 ! return particular array element (as real) according to his (entering) 8 indexes j1-j8
 !
@@ -303,7 +306,7 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      function find10 (ja,jb,jc,jd,je,jf,jg,jh,ji,jj)
+real(kind=8)  function find10 (ja,jb,jc,jd,je,jf,jg,jh,ji,jj)
 !--------------------------------------------------------------------------------------
 !
 !
@@ -363,7 +366,7 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      function find12 (ja,jb,jc,jd,je,jf,jg,jh,ji,jj,jk,jl)
+real(kind=8)  function find12 (ja,jb,jc,jd,je,jf,jg,jh,ji,jj,jk,jl)
 !--------------------------------------------------------------------------------------
 !
 !
@@ -427,8 +430,16 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine fold_ccsd(name2,namef)
+subroutine fold_ccsd(name2,namef)
 !-------------------------------------------------------------------------------
+! This routine extracts vv parts of the wave-functions, without denominators,
+! into separate record, which is at the very end diagonalized.
+!
+! Routine serves only for 1-electronic diagrams of (0,1), (1,0) sectors and 
+! for 2-electronic diagrams of (0,2),(2,0) and (1,1) sectors.
+!
+! Special case is (1,1) sector, where one constructs Heff from chp-direct and chq-exchange.
+! Note that in Luuk's code there is one compact diagram for Heff with antisymmetrized integrals.
 !
 !  two-electron part modified to include chp, chq.
 !  880922.
@@ -436,7 +447,6 @@
 !  for chp, chq only for exclusion of whole symmetries.
 !
 !  Renamed from "subroutine fold(name2,namef)" due to name overlaping with relccsd routine
-!
 !-------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
@@ -447,11 +457,11 @@
       use rsp2_mod
       use dat_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
+implicit none
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
 #include "param_ccsd.h"
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1 iiia(200),iiva(200)
@@ -471,30 +481,36 @@
 #include "dat.h"
 #endif
 
-      call files_ccsd(name2,ntape2,new,2,-1,-1)
+  character*4, intent(in) :: name2,namef
+  integer :: ntape2,new,ntapef,nsize1,istrtf1,nsize2,istrt21,istrt22,i
+  integer :: i1,i2,i3,i4,ir,j,istrtf2,i12,i34
+
+  call files_ccsd(name2,ntape2,new,2,-1,-1)
+
       iiv1=11
       if (iii2.gt.100) iiv1=1111
       iii1=iii2
-      call files_ccsd(namef,ntapef,new,1,iii1,iiv1)
+
+  call files_ccsd(namef,ntapef,new,1,iii1,iiv1)
       nsize1=ije1(nij1)
       istrtf1=nstrt(1,ntapef-1)+2*nij1+4
       istrtf2=nstrt(2,ntapef-1)
 
-      call dcopy(nsize1,0.d0,0,gen(istrtf2+1),1)
+  call dcopy(nsize1,0.d0,0,gen(istrtf2+1),1)
 
       nsize2=ije2(nij2)
       istrt21=nstrt(1,ntape2-1)+2*nij2+4
       istrt22=nstrt(2,ntape2-1)
-      if (iii1.lt.100) then
-!   1-electron t.
-        do 120 i=1,nsize2
-        !i1=iand(igen(istrt21+i),'ff'X)
-        i1=iand(igen(istrt21+i),z'ff')
-        if (icv(i1).eq.0) go to 120
-        if (iopt(9).ne.0) then
+
+  if (iii1.lt.100) then
+!   1-electron amplitudes, T1, from (0,1) and (1,0) sectors
+       do 120 i=1,nsize2
+         i1=iand(igen(istrt21+i),z'ff')
+         if (icv(i1).eq.0) go to 120
+         if (iopt(9).ne.0) then
           do 105 ir=1,nrsp1
 105       if (igen(istrt21+i).eq.irsp1(ir)) go to 120
-      endif
+        endif
 !   move p to p excitations to folded
         do 110 j=1,nsize1
         if (igen(istrt21+i).eq.igen(istrtf1+j)) then
@@ -503,59 +519,49 @@
           go to 120
         endif
 110     continue
-        write (6,*) ' folded not found for ',igen(istrt21+i)
-        call abext('fold    ')
+        write (LUPRI,*) 'fold_ccsd: folded not found for ',igen(istrt21+i)
+        call abext('fold_csd: folded not found for spefific index !')
 120     continue
-      else
-!   2-electron t
+  else
+!   2-electron amplitudes, T2, from 
         do 180 i=1,nsize2
-!   transition from r space eliminated
-        if (iopt(9).ne.0) then
-         !i_4hthpf=4hthpf
-         i_4hthpf=transfer("thpf",i_4hthpf)
-         !i_4hthqf=4hthqf
-         i_4hthqf=transfer("thqf",i_4hthqf)
-
-!        if (namef.eq.4hthpf) then
-         if (namef.eq.i_4hthpf) then
-          i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),             &
-               iand(igen(istrt21+i),z'ff'))
-         else if (namef.eq.i_4hthqf) then
-          i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),             &
-               iand(ishft(igen(istrt21+i),-8),z'ff'))
+!      transition from r space eliminated
+       if (iopt(9).ne.0) then
+         if (namef.eq."thpf") then ! previously as 4hthpf
+           i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),iand(igen(istrt21+i),z'ff'))
+         else if (namef.eq."thqf") then ! previously as 4hthqf
+           i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),iand(ishft(igen(istrt21+i),-8),z'ff'))
          else
            i12=iand(ishft(igen(istrt21+i),-16),z'ffff')
-          endif
-          do 130 ir=1,nrsp2
+         endif
+         do 130 ir=1,nrsp2
           if (irsp2(ir).eq.i12) then
             gen(istrt22+i)=0.d0
             go to 180
           endif
-130       continue
-        endif
-!   move p to p transitions to folded
+130      continue
+       endif
+
+!   move p to p transitions to folded, what is v to v transitions
         i1=iand(ishft(igen(istrt21+i),-24),z'ff')
         i2=iand(ishft(igen(istrt21+i),-16),z'ff')
         i3=iand(ishft(igen(istrt21+i),-8) ,z'ff')
         i4=iand(      igen(istrt21+i)     ,z'ff')
+
         if ((icv(i1).eq.0).or.(icv(i2).eq.0)) go to 180
         if ((icv(i3).eq.0).or.(icv(i4).eq.0)) go to 180
 
         if (iopt(9).eq.0) go to 170
-        !i_4hthpf=4hthpf
-        i_4hthpf=transfer("thpf",i_4hthpf)
-        !i_4hthqf=4hthqf
-        i_4hthqf=transfer("thqf",i_4hthqf)
-        if (namef.eq.i_4hthpf) then
+        if (namef.eq."thpf") then ! previously as 4hthpf
           i34=iand(ishft(igen(istrt21+i),-8),z'ffff')
-        else if (namef.eq.i_4hthqf) then
-          i34=ior(iand(ishft(igen(istrt21+i),-8),z'ff00'),              &
-             iand(igen(istrt21+i),z'ff'))
+        else if (namef.eq."thqf") then ! previously as 4hthqf
+          i34=ior(iand(ishft(igen(istrt21+i),-8),z'ff00'),iand(igen(istrt21+i),z'ff'))
         else
           i34=iand(igen(istrt21+i),z'ffff')
         endif
         do 150 ir=1,nrsp2
 150     if (i34.eq.irsp2(ir)) go to 180
+
 170     do 175 j=1,nsize1
         if (igen(istrt21+i).eq.igen(istrtf1+j)) then
           gen(istrtf2+j)=gen(istrt22+i)
@@ -563,20 +569,21 @@
           go to 180
         endif
 175     continue
-        write (6,*) ' folded not found for ',igen(istrt21+i)
-        call abext('fold    ')
+        ! error message - iden,gen element not found !
+        write (LUPRI,*) 'fold_ccsd: folded not found for ',igen(istrt21+i)
+        call abext('fold_ccsd:  folded not found for certain igen !')
 180     continue
-      endif
-      call prt(namef,"folded  ",2)
-      call prtime("folded  ",nsize1,1)
-      return
-      end
+  endif
+
+  call prt(namef,"fold_ccsd",2)
+  call prtime("fold_ccsd",nsize1,1)
+
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine fold4 (nameu,namef,ind,ninds)
+ subroutine fold4 (nameu,namef,ind,ninds)
 !--------------------------------------------------------------------------------------
-!
-!
+!  For sectors (0,4),(4,0) 
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
 !     implicit real*8 (a-h,o-z)
@@ -663,7 +670,7 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine fold6 (nameu,namef,ind,iparm)
+ subroutine fold6 (nameu,namef,ind,iparm)
 !--------------------------------------------------------------------------------------
 !
 !
@@ -878,7 +885,9 @@
       subroutine msub1 (name2,name3,namet)
 !--------------------------------------------------------------------------------------
 !
-!        special type of diagrams
+!     special case of diagrams multiplications
+!
+! TODO: add printout as is done in mult
 !
 !--------------------------------------------------------------------------------------
       use ipack_mod, only: ipack3,ipack4
@@ -1797,19 +1806,17 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine mult(name2,name3,namet,mmm)
+subroutine mult(name2,name3,namet,mmm)
 !-----------------------------------------------------------------------
-!
-! Does  multiplication of 2 2-electronic diagrams: 
+! Does the multiplication of two 2-electronic diagrams: 
 !
 !                 name2 x name3 -> namet
 !
 ! where "mmm" is type of the multiplication, mmm cosists of 3 digits m1m2m3
 !
-! m1- how many free lines in name2 (are not participating in multiplication)
-! m2 -                       name3
-! m3 - how many lines will be contracted (multiplied) to produce final diagram "namet"
-!       
+! m1 - how many free lines in name2 (are not participating in multiplication)
+! m2 - how many free lines in name3 (are not participating in multiplication)
+! m3 - how many lines will be contracted (multiplied) to produce the final diagram "namet"
 !-----------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
@@ -1819,11 +1826,13 @@
       use cij2_mod
       use cij3_mod
       use hsfs_parameters
-#include "implicit.h"
+ implicit none
+!#include "implicit.h"
 #include "priunit.h"
 #else
+ implicit none
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+!#include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -1839,97 +1848,81 @@
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
 #include "cij3.h"
 #endif
+ character*4, intent(in) :: name2,name3,namet
+ integer, intent(in) :: mmm
+ integer :: idum,m1,m2,m3,ntape2,ntape3,ntapet,new,iii,iiv,n
+ integer :: istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,nsize1,nsize2
+ integer :: nsize3,kbb,kcc,ib0,msk1,i1,ib,ic,kb,kb0,kc,kc0,n2,i,n20,jj,n3,n30
+ real(kind=8), external :: ddot
 
-      if (getiprint().ge.5) then
-       call header ('Output from mult',-1)
-       write(LUPRI,'(2x,a,a4)') 'name2=',name2
-       write(LUPRI,'(2x,a,a4)') 'name3=',name3
-       write(LUPRI,'(2x,a,a4)') 'namet=',namet
-       write(LUPRI,'(2x,a,i4)') 'mmm=',mmm
-       call print_cijx_stuff
-      endif
+ ! split mmm into 3 digits m1,m2,m3
+  call parse(mmm,idum,m1,m2,m3)
 
-      ! split mmm into 3 digits m1,m2,m3
-      call parse(mmm,idum,m1,m2,m3)
+ if (getiprint().ge.3) then
+   write(LUPRI,'(1x,a,a4,a,a4,a,a4,a,i3,a,3i1,a)') & 
+   'mult [name2 * name3 = namet]: ',name2,'* ',name3,'= ',namet,'; mmm=',mmm,'(',m1,m2,m3,')'
+   call flush(LUPRI)
+ endif
 
-      if (getiprint().ge.5) then
-        write(LUPRI,*) 'mult: obtained m1,m2,m3:',m1,m2,m3
-      endif
+ ! find diagram "name2", fill cij2 common block data, returns number ntape2
+ call files_ccsd(name2,ntape2,new,2,-1,-1)
+ if (new.ne.0) then
+    write (LUPRI,'(2x,a,a4)') ' mult input tape name2 does not exist, name2=',name2
+    call abext('mult: input tape name2 does not exist !')
+ endif
 
-      ! find diagram "name2", fill cij2 common block,returns number ntape2
-      call files_ccsd(name2,ntape2,new,2,-1,-1)
-      if (new.ne.0) then
-        write (LUPRI,'(2x,a,a4)') ' mult input tape does not exist, ',name2
-        call abext('mult    ')
-      endif
+ ! find diagram "name3", fill cij3 common block data
+ call files_ccsd(name3,ntape3,new,3,-1,-1)
+ if (new.ne.0) then
+    write (6,*) ' mult input tape name3 does not exist, name3=',name3
+    call abext('mult: input tape name3 does not exist!')
+ endif
 
-      ! find diagram "name3", fill cij3 common block
-      call files_ccsd(name3,ntape3,new,3,-1,-1)
-      if (new.ne.0) then
-        write (6,*) ' mult input tape does not exist, ',name3
-        call abext('mult    ')
-      endif
+ ! check if 2 multiplying tapes fit each other
+ n=10**m3
+ if (((iii2-n*(iii2/n)).ne.(iii3-n*(iii3/n))).or.((iiv2-n*(iiv2/n)).ne.(iiv3-n*(iiv3/n)))) then
+    write (6,*) 'Contracted indices do not match in mult'
+    write (6,*) 'iii2, iii3, iiv2, iiv3 = '
+    write (6,*) iii2,iii3,iiv2,iiv3
+    call abext('mult: Contracted indices do not match!')
+ endif
 
-      ! check if 2 multiplying files fit each other
-      n=10**m3
-      if (((iii2-n*(iii2/n)).ne.(iii3-n*(iii3/n))).or.((iiv2-n*(iiv2/n)).ne.(iiv3-n*(iiv3/n)))) then
-        write (6,*) 'Contracted indices do not match in mult'
-        write (6,*) 'iii2, iii3, iiv2, iiv3 = '
-        write (6,*) iii2,iii3,iiv2,iiv3
-        call abext('mult    ')
-      end if
+!  make characteristic of the final diagram "namet"
+  iii=10**m2*(iii2/10**m3)+iii3/10**m3
+  iiv=10**m2*(iiv2/10**m3)+iiv3/10**m3
+!  create structure of the final diagram
+  call tmplt(iii,iiv,namet,ntapet)
+  istrt11=nstrt(1,ntapet-1)+2*nij1+4 
+  istrt12=nstrt(2,ntapet-1)
+  istrt21=nstrt(1,ntape2-1)+2*nij2+4
+  istrt22=nstrt(2,ntape2-1)
+  istrt31=nstrt(1,ntape3-1)+2*nij3+4
+  istrt32=nstrt(2,ntape3-1)
 
-!    make characteristic of the final diagram "namet"
-      iii=10**m2*(iii2/10**m3)+iii3/10**m3
-      iiv=10**m2*(iiv2/10**m3)+iiv3/10**m3
-!    create structure of the final diagram
-      call tmplt(iii,iiv,namet,ntapet)
-      istrt11=nstrt(1,ntapet-1)+2*nij1+4 
-      istrt12=nstrt(2,ntapet-1)
-      istrt21=nstrt(1,ntape2-1)+2*nij2+4
-      istrt22=nstrt(2,ntape2-1)
-      istrt31=nstrt(1,ntape3-1)+2*nij3+4
-      istrt32=nstrt(2,ntape3-1)
+  nsize1=ije1(nij1) ! how many values in resulting diagram
+  nsize2=ije2(nij2) !                in 1. diagram
+  nsize3=ije3(nij3) !                in 2. diagram
 
-      nsize1=ije1(nij1) ! how many values in resulting diagram
-      nsize2=ije2(nij2) !                in 1 diagram
-      nsize3=ije3(nij3) !                in 2 diagram
-
-      if (getiprint().ge.10) then
-        write(LUPRI,*) 'mult: istrt11,istrt12:',istrt11,istrt12
-        write(LUPRI,*) 'mult: istrt21,istrt22:',istrt21,istrt22
-        write(LUPRI,*) 'mult: istrt31,istrt32:',istrt31,istrt32
-        write(LUPRI,*) 'mult: nij1,nij2,nij3:',nij1,nij2,nij3
-        write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',nsize1,nsize2,nsize3
-      endif
-!
-      if (m3.ne.2) then
+  if (m3.ne.2) then
         call tmpcng(nij1,ij1,ije1,ntapet,2,4-m2)
         call tmpcng(nij2,ij2,ije2,ntape2,2,4-m3)
         call tmpcng(nij3,ij3,ije3,ntape3,2,4-m3)
-      endif
+  endif
 
-!       write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',
-!    &                  nsize1,nsize2,nsize3
-!
-      ! zeroe array for final diagram values
-      call dcopy(nsize1,0.d0,0,gen(istrt12+1),1)
+  ! zeroe array for final diagram values
+  call dcopy(nsize1,0.d0,0,gen(istrt12+1),1)
 
-!       write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',
-!    &                  nsize1,nsize2,nsize3
-
-      kbb=0
-      kcc=0
-      ib0=z'ffff'
-      msk1=256**m2-1
-
+  kbb=0
+  kcc=0
+  ib0=z'ffff'
+  msk1=256**m2-1
 !===============================================
 !       cycle of i1 for the final diagram
 !===============================================
-      do 250 i1=1,nsize1
+  do 250 i1=1,nsize1
 
-      ib=ishft(igen(istrt11+i1),-8*m2) ! get 2 indexes at once, ib
-      ic=iand(igen(istrt11+i1),msk1)   ! get 2 indexes at once, ic
+   ib=ishft(igen(istrt11+i1),-8*m2) ! get 2 indexes at once, ib
+   ic=iand(igen(istrt11+i1),msk1)   ! get 2 indexes at once, ic
 
       if (ib.eq.ib0) go to 225
       do 210 kb=kbb+1,nij2
@@ -1957,6 +1950,7 @@
       go to 250
 240   kcc=kc0
       n2=ije2(kbb)-ije2(kbb-1)
+
       if (ije3(kcc)-ije3(kcc-1).ne.n2) then
         write (*,2100) ij2(kbb),ij3(kcc),name2,name3
 2100    format('mismatch in length of records',2(1x,z6),' of files ',2a8,'. check isym.')
@@ -1964,35 +1958,21 @@
         n3=ije3(kcc)-ije3(kcc-1)
         write (*,2200) n3,(igen(istrt31+i),i=ije3(kcc-1)+1,ije3(kcc))
 2200    format(' length and indices',i5/(10(1x,z8)))
-        call abext('mult    ')
+        call abext('mult: mismatch in length of records! ')
       endif
 
-      n20=istrt22+ije2(kbb-1)+1
-      n30=istrt32+ije3(kcc-1)+1
+      n20=istrt22+ije2(kbb-1)+1 ! position of name2
+      n30=istrt32+ije3(kcc-1)+1 ! position of name3
 
+      ! the core: ddot multiplication in cycle 
       gen(istrt12+i1)=ddot(n2,gen(n20),1,gen(n30),1)
 
-      if (getiprint().ge.13) then
-       write(LUPRI,*) 'mult: istrt12+i1,n20,n30,n2:',                   &
-                 istrt12+i1,n20,n30,n2
-       write(LUPRI,*) 'mult: gen(n20),gen(n30),gen(istrt12+i1):',       &
-             gen(n20),gen(n30),gen(istrt12+i1)
-      endif
+250   continue ! end of the cycle "i1"
 
-! insert printing & checking
-      if (dabs(gen(istrt12+i1)).ge.1.0d+5) then
-        write(LUPRI,*) 'mult: too big value !, gen=',gen(istrt12+i1) 
-         do jj=1,n2
-          write(LUPRI,'(2(i10,1x,d15.7,1x))')                           &
-      n20+jj-1,gen(n20+jj-1),n30+jj-1,gen(n30+jj-1)
-         enddo
-        !call quit('mult: error exit!') 
-      endif
+! print out the resulting diagram "namet"
+  call prt(namet,"mult: final namet",0)
 
-250   continue
-
-      return
-      end subroutine mult
+end subroutine mult
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mult6 (name2,name3,namet,id)
@@ -2389,8 +2369,8 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine mult8 (name2,name3,namet,iparm)
-!--------------------------------------------------------------------------------------
+subroutine mult8 (name2,name3,namet,iparm)
+!-------------------------------------------------------------
 !
 ! Multiplying of 4-index quantities
 !
@@ -2400,10 +2380,11 @@
 !  iparm=4 : 8x4=8
 !  iparm=5 : 6x6=8
 !  iparm=6 : 8x2=8
-!--------------------------------------------------------------------------------------
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+!-----------------------------------------------------------------
+implicit none
 #include "priunit.h"
+character*4, intent(in) :: name2,name3,namet
+integer, intent(in) :: iparm
       if (iparm.eq.1) then
         call msub1 (name2,name3,namet)
       else if (iparm.eq.2) then
@@ -2417,30 +2398,28 @@
       else if (iparm.eq.6) then
         call msub6 (name2,name3,namet)
       else
-        write (6,*) 'mult8 called with bad value of iparm, iparm= ',iparm
+        write (LUPRI,*) 'mult8 called with bad value of iparm, iparm= ',iparm
         call quit('mult8 called with bad value of iparm !')
       end if
       return
-      end
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine abext(aa)
+subroutine abext(aa)
 !--------------------------------------------------------
 !  ... exit routine, extended by DIRAC quit
 !--------------------------------------------------------
-      implicit none
+ implicit none
 #include "priunit.h"
-      character(*), intent(in) ::  aa
-      write(LUPRI,*) 'abext: aborted with text:',aa
-      call flush(LUPRI)
-      call quit(aa)
-      end subroutine abext
+ character(*), intent(in) ::  aa
+ write(LUPRI,*) 'abext: aborted with message:',aa
+ call flush(LUPRI)
+ call quit(aa)
+end subroutine abext
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine add(name1,f1,name2,f2,namet)
+subroutine add(name1,f1,name2,f2,namet)
 !-------------------------------------------------------------
-!
-! Addition of two files:  f1*name1 and f2*name2 --> namet
-!
+!  Addition of two records:  f1*name1 + f2*name2 = namet
 !-------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
@@ -2450,15 +2429,10 @@
       use cij2_mod
       use cij3_mod
       use hsfs_parameters
-
 implicit none
 #include "priunit.h"
-integer :: name1,name2,namet
-real*8 :: f1,f2
-integer :: new, nsize,ntape1,ntape2,ntapet,i
 #else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -2474,126 +2448,85 @@ integer :: new, nsize,ntape1,ntape2,ntapet,i
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
 #include "cij3.h"
 #endif
+character*4, intent(in) :: name1,name2,namet
+real*8, intent(in)  :: f1,f2
+integer :: new, nsize,ntape1,ntape2,ntapet,i
 
-      if (getiprint()>=5) then
-       call header ('Output from add',-1)
-       write(LUPRI,'(2x,a,a8)')    'name1=',name1
-       write(LUPRI,'(2x,a,d12.6)') 'f1=',f1
-       write(LUPRI,'(2x,a,a8)')    'name2=',name2
-       write(LUPRI,'(2x,a,d12.6)') 'f2=',f2
-       write(LUPRI,'(2x,a,a8)')    'namet=',namet
-       call flush(LUPRI)
-      endif
+ if (getiprint()>=3) then
+   write(LUPRI,'(1x,a,d8.2,a,a4,a,d8.2,a,a4,a,a4)') & 
+   'add [f1.name1+f2.name2=namet] : ',f1,'.',name1,'+',f2,'.',name2,'= ',namet
+   call flush(LUPRI)
+ endif
 
-!   namet=name1*f1+name2*f2
-      if ((name1.eq.name2).and.(name1.eq.namet)) then
-        write (LUPRI,*) 'all three names in add are identical'
-        call abext('add     ')
-      end if
-      call files_ccsd(name1,ntape1,new,2,-1,-1)
-      if (new.ne.0) then
-        write(LUPRI,'('' add input file does not exist '',a8)') name1
-        call abext('add     ')
-      endif
-      call files_ccsd(name2,ntape2,new,3,-1,-1)
-      if (new.ne.0) then
-        write(LUPRI,'('' add input file does not exist '',a8)') name2
-        call abext('add     ')
-      endif
+! namet=name1*f1+name2*f2
+ if ((name1.eq.name2).and.(name1.eq.namet)) then
+    write (LUPRI,*) 'all three names in add are identical'
+    call abext('add: all three names in add are identical ! ')
+ endif
+ call files_ccsd(name1,ntape1,new,2,-1,-1)
+ if (new.ne.0) then
+     write(LUPRI,'('' add input file does not exist, name1= '',a8)') name1
+     call abext('add: input file name1 does not exist! ')
+ endif
+ call files_ccsd(name2,ntape2,new,3,-1,-1)
+ if (new.ne.0) then
+     write(LUPRI,'('' add input file does not exist '',a8)') name2
+     call abext('add     ')
+ endif
 
-      ! ......   error trap, comapring of the compatibility
-       if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)) ) then
-        write (LUPRI,'(/,2x,a)')  & 
-         'add: added files do not match ! variables:'  
-         write (LUPRI,*) 'iii2,iii3:',iii2,iii3
-          write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
-          write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
-           write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
-           write(LUPRI,*) 'name1,name2:',name1,name2
-            write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
+ ! ..   error trap,  checking the compatibility between name1,name2
+ if ( (iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)) ) then
+     write (LUPRI,'(/,2x,a)')  & 
+      'add: added files do not match ! variables:'  
+      write (LUPRI,*) 'iii2,iii3:',iii2,iii3
+       write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
+       write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
+       write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
+       write(LUPRI,*) 'name1,name2:',name1,name2
+       write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),ije3(nij3)
 123     format(2a8,6i10)
         call flush(LUPRI)
-        call abext('add     ')
+        call abext('add: entering records not compatible!')
+ endif
+
+ call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
+ nsize=ije2(nij2) ! picks up nsize
+
+ if (name1.eq.namet) then
+        if (f1.ne.1.d0) then
+           call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),f1,gen(nstrt(2,ntape1-1)+1))
         endif
-
-      call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
-
-      nsize=ije2(nij2) ! picks up nsize
-
-      if (getiprint() >= 15) then
-        write(LUPRI,*) 'add: nsize=ije2(nij2)=',nsize
-       write(LUPRI,'(2x,3(a,a8))') 'name1=',name1,' name2=',name2,      &
-                              ' namet=',namet
-      endif
-
-      if (name1.eq.namet) then
-        if (f1.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),     &
-                                    f1,gen(nstrt(2,ntape1-1)+1))
-        call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),                   &
-                   1,gen(nstrt(2,ntape1-1)+1),1)
-        if (getiprint()>=5) then
-          write(LUPRI,*) 'add: name1.eq.namet, f1,f2=',f1,f2
-          write(LUPRI,*) 'add: nstrt(2,ntape1-1)+1:',nstrt(2,ntape1-1)+1
-          if (getiprint()>=18) then
-            do i=1,nsize
-               write(LUPRI,*) 'i=',i,'. gen(nstrt(2,ntape1-1)+1+i)=',   &
-          gen(nstrt(2,ntape1-1)+1+i)
-            enddo
-          endif
+        call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),1,gen(nstrt(2,ntape1-1)+1),1)
+ elseif (name2.eq.namet) then
+        if (f2.ne.1.d0) then
+          call rvmuls(nsize,gen(nstrt(2,ntape2-1)+1),f2,gen(nstrt(2,ntape2-1)+1))
         endif
-      elseif (name2.eq.namet) then
-        if (f2.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape2-1)+1),     &
-                                    f2,gen(nstrt(2,ntape2-1)+1))
-        call daxpy(nsize,f1,gen(nstrt(2,ntape1-1)+1),                   &
-                   1,gen(nstrt(2,ntape2-1)+1),1)
-        if (getiprint() >= 15) then
-          write(LUPRI,*) 'add: name2.eq.namet, f1,f2=',f1,f2
-          write(LUPRI,*) 'add: nstrt(2,ntape2-1)+1:',nstrt(2,ntape2-1)+1
-          if (getiprint()>=18) then
-            do i=1,nsize
-               write(LUPRI,*) 'i=',i,' gen(nstrt(2,ntape2-1)+1+i)=',    &
-          gen(nstrt(2,ntape1-1)+1+i)
-            enddo
-          endif
-        endif
-      else
-        call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),                     &
-                     f1,gen(nstrt(2,ntapet-1)+1))
-        call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),                   &
-                   1,gen(nstrt(2,ntapet-1)+1),1)
-        if (getiprint() >= 15) then
-          write(LUPRI,*) 'add: else branch, f1,f2=',f1,f2
-          write(LUPRI,*) 'add: nstrt(2,ntapet-1)+1:',nstrt(2,ntapet-1)+1
-          if (getiprint()>=18) then
-            do i=1,nsize
-              write(LUPRI,*) 'i=',i,'. gen(nstrt(2,ntapet-1)+1+i)=',    &
-         gen(nstrt(2,ntapet-1)+1+i)
-            enddo
-          endif
-        endif
-      endif
+        call daxpy(nsize,f1,gen(nstrt(2,ntape1-1)+1),1,gen(nstrt(2,ntape2-1)+1),1)
+ else ! name1, name2, namet are different
+        call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),f1,gen(nstrt(2,ntapet-1)+1))
+        call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),1,gen(nstrt(2,ntapet-1)+1),1)
+ endif
 
-      return
-      end subroutine add
+ ! control printout of final diagram
+ call prt(namet,"add: final namet",0)
+
+end subroutine add
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine cmult(namef,f,namet)
+subroutine cmult(namef,f,namet)
 !--------------------------------------------------------------------------------------
-!
-!   namet=f*namef
-!
+! multiply record "namef" with factors "f", place results into "namet" : namet=f*namef
 !--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use cij1_mod
-      use cij2_mod
-      use hsfs_parameters
-#include "implicit.h"
+ use cfiles_mod
+ use gen_mod
+ use cij1_mod
+ use cij2_mod
+ use hsfs_parameters
+ implicit none
 #include "priunit.h"
 #else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+ implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -2607,22 +2540,24 @@ integer :: new, nsize,ntape1,ntape2,ntapet,i
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
 #include "cij2.h"
 #endif
-
-      call files_ccsd(namef,ntapef,new,2,-1,-1)
-      if (new.ne.0) then
-        write (6,*) ' cmult input file does not exist'
-        call abext('cmult   ')
-      endif
-      call files_ccsd(namet,ntapet,new,0,iii2,iiv2)
-      nsize=ije2(nij2)
-      istrtf=nstrt(2,ntapef-1)
-      istrtt=nstrt(2,ntapet-1)
-      if (namef.ne.namet) then
-        call imove(ntapef,ntapet)
-      endif
-      call rvmuls(nsize,gen(istrtf+1),f,gen(istrtt+1))
-      return
-      end
+  character(len=4),intent(in) :: namef,namet
+  real(kind=8), intent(in) :: f
+  integer :: ntapef,ntapet,new,nsize,istrtf,istrtt
+    
+  call files_ccsd(namef,ntapef,new,2,-1,-1)
+  if (new.ne.0) then
+      write (6,*) ' cmult input file does not exist, namef=',namef
+      call abext('cmult: input file namef does not exist !')
+  endif
+  call files_ccsd(namet,ntapet,new,0,iii2,iiv2)
+  nsize=ije2(nij2)
+  istrtf=nstrt(2,ntapef-1)
+  istrtt=nstrt(2,ntapet-1)
+  if (namef.ne.namet) then
+      call imove(ntapef,ntapet)
+  endif
+  call rvmuls(nsize,gen(istrtf+1),f,gen(istrtt+1))
+end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine dbdiag (name1,name2,name3,name4,irleop,isign)
@@ -2916,547 +2851,6 @@ integer :: new, nsize,ntape1,ntape2,ntapet,i
 #include "priunit.h"
       call add   (name1,-1.d0,name2,1.d0,names)
       call fmax8 (names,tmax,idmax,indmax)
-      return
-      end
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dge5n2 (name2,name3,namet,iord)
-!--------------------------------------------------------------------------------------
-!c         6x6=10
-!--------------------------------------------------------------------------------------
-      use ipack_mod, only: ipack4
-#if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use cij1_mod
-      use cij2_mod
-      use cij3_mod
-      use idv_mod
-      use hsfs_parameters
-#include "implicit.h"
-#include "priunit.h"
-#else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
-#include "priunit.h"
-#include "param_ccsd.h"
-!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-!     1 iiia(200),iiva(200)
-#include "cfiles.h"
-!     common // gen(nbig)
-!     common /i/ igen(nbig)
-#include "gen.h"
-!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-#include "cij1.h"
-!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-#include "cij2.h"
-!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
-#include "cij3.h"
-!     common /idv/ iv(200) ,nvalo
-#include "idv.h"
-#endif
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      dimension ia(8),save1(1000),save2(1000),iord(10)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
-
-      call files_ccsd (name2,ntape2,new,2,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'dge5n2 input tape does not exist, ',name2
-        stop                      
-      end if
-      call files_ccsd (name3,ntape3,new,3,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'dge5n2 input tape does not exist, ',name3
-        stop                       
-      end if
-      istrt21=nstrt(1,ntape2-1)+2*nij2+4
-      istrt22=nstrt(2,ntape2-1)
-      istrt31=nstrt(1,ntape3-1)+2*nij3+4
-      istrt32=nstrt(2,ntape3-1)
-      call tchng6 (nij2,ij2,ije2,ntape2,4)
-      call tchng6 (nij3,ij3,ije3,ntape3,4)
-      call tmplt10 (namet,ntapet)                    
-      istrt11=nstrt(1,ntapet-1)+2*nij1+4
-      istrt12=nstrt(2,ntapet-1)
-      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
-      do 10 i=1,nij1
-        do 60 k=4,0,-1
-          ii=iand(ishft(ij1(i),-4*k),z'f')
-          ia(5-k)=iv(ii)
-60      continue
-        do 20 j=1,ije1(i)-ije1(i-1)
-          ii=igen(istrt11+ije1(i-1)+j)
-          do 70 k=4,0,-1
-            jj=iand(ishft(ii,-4*k),z'f')
-            ia(10-k)=iv(jj)
-70        continue
-          igot2=0
-          igot3=0
-          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
-          do 30 k=1,nij2
-            if (ij2(k).eq.ii) then
-              k2save=k
-              igot2=1
-            end if
-30        continue
-          ii=ipack4(ia(iord(6)),ia(iord(7)),ia(iord(8)),ia(iord(9)))
-          do 40 k=1,nij3
-            if (ij3(k).eq.ii) then
-              k3save=k
-              igot3=1
-            end if
-40        continue
-          if ((igot2.eq.1).and.(igot3.eq.1)) then
-            nel1=0
-            do 50 k=1,ije2(k2save)-ije2(k2save-1)
-              ii=igen(istrt21+ije2(k2save-1)+k)
-              if (ia(iord(5)).eq.iand(ishft(ii,-8),z'ff')) then
-                nel1=nel1+1
-                call dimx (nel1,1000,'dge5n2')
-                save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
-              end if
-50          continue 
-            nel2=0
-            do 80 k=1,ije3(k3save)-ije3(k3save-1)
-              ii=igen(istrt31+ije3(k3save-1)+k)
-              if (ia(iord(10)).eq.iand(ishft(ii,-8),z'ff')) then
-                nel2=nel2+1
-                call dimx (nel2,1000,'dge5n2')
-                save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
-              end if
-80          continue 
-            if (nel1.ne.nel2) then  
-              write (LUPRI,*) 'mismatch in lengths of records - dge5n2'
-              call quit('mismatch in lengths of records - dge5n2')
-            else  
-              gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
-            end if
-          end if
-20      continue
-10    continue
-      return
-      end
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dge6n2 (name2,name3,namet,iord)
-!-----------------------------------------------------------------------------
-!
-!c      6x8=12
-!
-!-----------------------------------------------------------------------------
-      use ipack_mod, only: ipack3,ipack4
-#if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use cij1_mod
-      use cij2_mod
-      use cij3_mod
-      use idv_mod
-      use hsfs_parameters
-#include "implicit.h"
-#include "priunit.h"
-#else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
-#include "priunit.h"
-#include "param_ccsd.h"
-!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-!     1 iiia(200),iiva(200)
-#include "cfiles.h"
-!     common // gen(nbig)
-!     common /i/ igen(nbig)
-#include "gen.h"
-!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-#include "cij1.h"
-!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-#include "cij2.h"
-!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
-#include "cij3.h"
-!     common /idv/ iv(200),nvalo
-#include "idv.h"
-#endif
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      dimension save1(1000),save2(1000),ia(12),iord(12)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!  todo: own module !
-      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-      !ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
-
-      call files_ccsd (name2,ntape2,new,2,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'dge6n2 input tape does not exist, name2=',name2
-        call quit('dge6n2 input tape name2 does not exist')
-      end if
-      call files_ccsd (name3,ntape3,new,3,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'dge6n2 input tape does not exist, name3=',name3
-        call quit('dge6n2 input tape name3 does not exist')
-      end if
-      istrt21=nstrt(1,ntape2-1)+2*nij2+4
-      istrt22=nstrt(2,ntape2-1)
-      istrt31=nstrt(1,ntape3-1)+2*nij3+4
-      istrt32=nstrt(2,ntape3-1)
-      call tmplt12 (namet,ntapet)
-      istrt11=nstrt(1,ntapet-1)+2*nij1+4
-      istrt12=nstrt(2,ntapet-1)
-      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
-      call tchng6 (nij3,ij3,ije3,ntape3,4)
-      do 10 i=1,nij1
-        do 60 k=5,0,-1
-          ii=iand(ishft(ij1(i),-4*k),z'f')
-          ia(6-k)=iv(ii)
-60      continue
-        do 20 j=1,ije1(i)-ije1(i-1)
-          ii=igen(istrt11+ije1(i-1)+j)
-          do 70 k=5,0,-1
-            jj=iand(ishft(ii,-4*k),z'f')
-            ia(12-k)=iv(jj)
-70        continue
-          igot2=0
-          igot3=0
-          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
-          do 30 k=1,nij2
-            if (ij2(k).eq.ii) then
-              k2save=k
-              igot2=1
-            end if
-30        continue
-          ii=ipack4(ia(iord(8)),ia(iord(9)),ia(iord(10)),ia(iord(11)))
-          do 50 k=1,nij3
-            if (ij3(k).eq.ii) then
-              k3save=k
-              igot3=1
-            end if
-50        continue
-          if ((igot2.eq.1).and.(igot3.eq.1)) then
-            nel1=0
-            ii=ipack3(ia(iord(5)),ia(iord(6)),ia(iord(7)))
-            do 40 k=1,ije2(k2save)-ije2(k2save-1)
-              jj=igen(istrt21+ije2(k2save-1)+k)
-              if (ii.eq.iand(ishft(jj,-8),z'ffffff')) then
-                nel1=nel1+1
-                save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
-                call dimx (nel1,1000,'dge6n2')
-              end if
-40          continue
-            nel2=0
-            ii=ia(iord(12))  
-            do 80 k=1,ije3(k3save)-ije3(k3save-1)
-              jj=igen(istrt31+ije3(k3save-1)+k)
-              if (ii.eq.iand(ishft(jj,-8),z'ff')) then
-                nel2=nel2+1
-                save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
-                call dimx (nel2,1000,'dge6n2')
-              end if
-80          continue
-            if (nel1.ne.nel2) then
-              write (LUPRI,*) 'length mismatch in dge6n2'
-              call quit('length mismatch in dge6n2')
-            else
-              gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
-            end if
-          end if
-20      continue
-10    continue
-      return
-      end
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine diage5 (name2,name3,name4,namet,iord)
-!-------------------------------------------------------------------------------------
-!
-!                  6x(4+4)=10
-!
-!-------------------------------------------------------------------------------------
-      use ipack_mod, only: ipack3,ipack4
-#if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use cij1_mod
-      use cij2_mod
-      use cij3_mod
-      use cij4_mod
-      use idv_mod
-      use hsfs_parameters
-#include "implicit.h"
-#include "priunit.h"
-#else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
-#include "priunit.h"
-#include "param_ccsd.h"
-!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-!     1 iiia(200),iiva(200)
-#include "cfiles.h"
-!     common // gen(nbig)
-!     common /i/ igen(nbig)
-#include "gen.h"
-!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-#include "cij1.h"
-!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-#include "cij2.h"
-!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
-#include "cij3.h"
-!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
-#include "cij4.h"
-!     common /idv/ iv(200),nvalo
-#include "idv.h"
-#endif
-
-      dimension iord(10),ia(10)
-
-!todo: into module !
-!     ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
-
-      call files_ccsd (name2,ntape2,new,2,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'diage5 input tape does not exist, name2=',name2
-        call quit("diage5: input tape name2 does not exist !")
-      end if
-      call files_ccsd (name3,ntape3,new,3,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'diage5 input tape does not exist, ',name3
-        call quit('diage5: input tape name3 does not exist !')
-      end if
-      call files_ccsd (name4,ntape4,new,4,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'diage5 input tape does not exist, ',name4
-        call quit('diage5: input tape name4 does not exist')
-      end if
-      istrt21=nstrt(1,ntape2-1)+2*nij2+4
-      istrt22=nstrt(2,ntape2-1)
-      istrt31=nstrt(1,ntape3-1)+2*nij3+4
-      istrt32=nstrt(2,ntape3-1)
-      istrt41=nstrt(1,ntape4-1)+2*nij4+4
-      istrt42=nstrt(2,ntape4-1)
-
-      call tmplt10 (namet,ntapet)
-
-      istrt11=nstrt(1,ntapet-1)+2*nij1+4
-      istrt12=nstrt(2,ntapet-1)
-      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
-      call tchng6 (nij2,ij2,ije2,ntape2,4)
-      call tmpcng (nij3,ij3,ije3,ntape3,2,3)
-      call tmpcng (nij4,ij4,ije4,ntape4,2,3)
-      do 10 i=1,nij1
-        do 60 k=4,0,-1
-          ii=iand(ishft(ij1(i),-4*k),z'f')
-          ia(5-k)=iv(ii)
-60      continue
-        do 20 j=1,ije1(i)-ije1(i-1)
-          ii=igen(istrt11+ije1(i-1)+j)
-          do 70 k=4,0,-1
-            jj=iand(ishft(ii,-4*k),z'f')
-            ia(10-k)=iv(jj)
-70        continue
-          igot2=0
-          igot3=0
-          igot4=0
-          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
-          do 30 k=1,nij2
-            if (ij2(k).eq.ii) then
-              k2save=k
-              igot2=1
-            end if
-30        continue
-          ii=ipack3(ia(iord(5)),ia(iord(6)),ia(iord(7)))
-          do 50 k=1,nij3
-            if (ij3(k).eq.ii) then
-              k3save=k
-              igot3=1
-            end if
-50        continue
-          ii=ipack3(ia(iord(8)),ia(iord(9)),ia(iord(10)))
-          do 80 k=1,nij4
-            if (ij4(k).eq.ii) then
-              k4save=k
-              igot4=1
-            end if
-80        continue
-          if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1)) then
-            sum=0.d0
-            do 90 k=1,ije3(k3save)-ije3(k3save-1)
-              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
-              do 100 l=1,ije4(k4save)-ije4(k4save-1)
-                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
-                kk=ior(ishft(ii,8),jj)
-                do 110 m=1,ije2(k2save)-ije2(k2save-1)
-                  if (kk.eq.                                            &
-             iand(igen(istrt21+ije2(k2save-1)+m),z'ffff')) then
-                    sum=sum+                                            &
-               gen(istrt22+ije2(k2save-1)+m)*                           &
-               gen(istrt32+ije3(k3save-1)+k)*                           &
-               gen(istrt42+ije4(k4save-1)+l)
-                  end if
-110             continue
-100           continue
-90          continue
-            gen(istrt12+ije1(i-1)+j)=sum
-          end if
-20      continue
-10    continue
-      return
-      end
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine diage6 (name2,name3,name4,name5,namet,iord)
-!--------------------------------------------------------------------------------------
-!
-!                  6x(4+4+4)=12
-!
-!--------------------------------------------------------------------------------------
-      use ipack_mod, only: ipack3
-#if defined HSFS_DYN_ALLOC
-      use cfiles_mod
-      use gen_mod
-      use cij1_mod
-      use cij2_mod
-      use cij3_mod
-      use cij4_mod
-      use cij5_mod
-      use idv_mod
-      use hsfs_parameters
-#include "implicit.h"
-#include "priunit.h"
-#else
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
-#include "priunit.h"
-#include "param_ccsd.h"
-!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-!     1 iiia(200),iiva(200)
-#include "cfiles.h"
-!     common // gen(nbig)
-!     common /i/ igen(nbig)
-#include "gen.h"
-!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-#include "cij1.h"
-!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-#include "cij2.h"
-!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
-#include "cij3.h"
-!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
-#include "cij4.h"
-!     common /cij5/ nij5,ij5(ndij),ije5(0:ndij),iii5,iiv5
-#include "cij5.h"
-!     common /idv/ iv(200),nvalo
-#include "idv.h"
-#endif
-      dimension iord(12),ia(12)
-
-      ! store into module....
-      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
-
-      call files_ccsd (name2,ntape2,new,2,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'diage6: input tape does not exist, name2=',name2
-        call quit('diage6: input tape name2 does not exist !')
-      end if
-      call files_ccsd (name3,ntape3,new,3,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'diage6: input tape does not exist, name3=',name3
-        call quit('diage6: input tape name3 does not exist !')
-      end if
-      call files_ccsd (name4,ntape4,new,4,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'diage6 input tape does not exist, name4=',name4
-        call quit('diage6: input tape name4 does not exist !')
-      end if
-      call files_ccsd (name5,ntape5,new,5,-1,-1)
-      if (new.ne.0) then
-        write (6,*) 'diage6: input tape does not exist, name5=',name5
-        call quit('diage6: input tape name5 does not exist!')
-      end if
-      istrt21=nstrt(1,ntape2-1)+2*nij2+4
-      istrt22=nstrt(2,ntape2-1)
-      istrt31=nstrt(1,ntape3-1)+2*nij3+4
-      istrt32=nstrt(2,ntape3-1)
-      istrt41=nstrt(1,ntape4-1)+2*nij4+4
-      istrt42=nstrt(2,ntape4-1)
-      istrt51=nstrt(1,ntape5-1)+2*nij5+4
-      istrt52=nstrt(2,ntape5-1)
-      call tmplt12 (namet,ntapet)
-      istrt11=nstrt(1,ntapet-1)+2*nij1+4
-      istrt12=nstrt(2,ntapet-1)
-      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
-      call tmpcng (nij3,ij3,ije3,ntape3,2,3)
-      call tmpcng (nij4,ij4,ije4,ntape4,2,3)
-      call tmpcng (nij5,ij5,ije5,ntape5,2,3)
-      do 10 i=1,nij1
-        do 60 k=5,0,-1
-          ii=iand(ishft(ij1(i),-4*k),z'f')
-          ia(6-k)=iv(ii)
-60      continue
-        do 20 j=1,ije1(i)-ije1(i-1)
-          ii=igen(istrt11+ije1(i-1)+j)
-          do 70 k=5,0,-1
-            jj=iand(ishft(ii,-4*k),z'f')
-            ia(12-k)=iv(jj)
-70        continue
-          igot2=0
-          igot3=0
-          igot4=0
-          igot5=0
-          ii=ipack3(ia(iord(1)),ia(iord(2)),ia(iord(3)))
-          do 30 k=1,nij2
-            if (ij2(k).eq.ii) then
-              k2save=k
-              igot2=1
-            end if
-30        continue
-          ii=ipack3(ia(iord(4)),ia(iord(5)),ia(iord(6)))
-          do 50 k=1,nij3
-            if (ij3(k).eq.ii) then
-              k3save=k
-              igot3=1
-            end if
-50        continue
-          ii=ipack3(ia(iord(7)),ia(iord(8)),ia(iord(9)))
-          do 80 k=1,nij4
-            if (ij4(k).eq.ii) then
-              k4save=k
-              igot4=1
-            end if
-80        continue
-          ii=ipack3(ia(iord(10)),ia(iord(11)),ia(iord(12)))
-          do 120 k=1,nij5
-            if (ij5(k).eq.ii) then
-              k5save=k
-              igot5=1
-            end if
-120       continue
-          if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1).and.(igot5.eq.1)) then
-            sum=0.d0
-            do 90 k=1,ije3(k3save)-ije3(k3save-1)
-              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
-              do 100 l=1,ije4(k4save)-ije4(k4save-1)
-                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
-                do 130 m=1,ije5(k5save)-ije5(k5save-1)
-                  kk=iand(igen(istrt51+ije5(k5save-1)+l),z'ff')
-                  ll=ipack3(ii,jj,kk)
-                  do 110 n=1,ije2(k2save)-ije2(k2save-1)
-                    if (ll.eq.                                          &
-               iand(igen(istrt21+ije2(k2save-1)+n),z'ffffff')) then
-                      sum=sum+                                          &
-                 gen(istrt22+ije2(k2save-1)+n)*                         &
-                 gen(istrt32+ije3(k3save-1)+k)*                         &
-                 gen(istrt42+ije4(k4save-1)+l)*                         &
-                 gen(istrt52+ije5(k5save-1)+m)
-                    end if
-110               continue
-130             continue
-100           continue
-90          continue
-            gen(istrt12+ije1(i-1)+j)=sum
-          end if
-20      continue
-10    continue
       return
       end
 

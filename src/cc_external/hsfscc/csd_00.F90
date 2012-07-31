@@ -1,6 +1,6 @@
       subroutine csd
 !---------------------------------------------------------------------
-!               closed shell CCSD method
+!       closed shell CC method (CCSD, CCSDT-1,...), 00 sector
 !---------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
@@ -11,13 +11,12 @@
       use cij1_mod
       use cij2_mod
       use hsfs_parameters
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "csdtime.h"
 #include "dbg.h"
 #else
-!      implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "gen.h"
@@ -39,7 +38,11 @@
 #include "dbg.h"
 !     common /dbg/ iter,idebug
 #endif
-      character*256 filenm,filenm51,filenm6,filenm20
+character*256 :: filenm,filenm51,filenm6,filenm20
+real(kind=8)::convrg,tmax,t1max,t3max,t4max, diff,df3,df4,fnew,diff1
+integer::ntape4,new,itmax,it1max,id3mx,ind3mx,id4mx,ind4mx, & 
+         iddf3,inddf3,idiff,ising,icnvg,inddf4,idiff1,itr1,iddf4
+integer, external :: idec
 
 !     iopt(1) - print.
 !     iopt(2) - no. of iterations.
@@ -105,9 +108,7 @@
 
       ! convergence criterium 
       convrg = 10.d0**(-iopt(3))
-
-      write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)')      &
-  iopt(2),convrg
+      write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)') iopt(2),convrg
 
       call prtime("rdin",0,0)
 
@@ -115,7 +116,7 @@
 
       iter=0
 
-      call tinit
+      call tinit ! initialization of amplitudes
 
       if (iopt(17).ne.0) then
         call files_ccsd ("t30 ",ntape4,new,1,-1,-1)
@@ -391,14 +392,14 @@
         end if
       end if
 
-      write (LUPRI,'(/,i8,a,i8,a)')                                     &
-    nstrt(1,nflcur),' words used in igen,',                             &
-    nstrt(2,nflcur),' words used in gen.'
+   !   write (LUPRI,'(/,i8,a,i8,a)')                                     &
+   ! nstrt(1,nflcur),' words used in igen,',                             &
+   ! nstrt(2,nflcur),' words used in gen.'
+    call space_usage
 
-      call prtime ("end",0,0)
-      !call prtime ("end     ",0,0)
+  call prtime ("end     ",0,0)
 
-      end ! of program/routine csd
+  end ! of program/routine csd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ordv_csd
@@ -425,16 +426,15 @@
 !
 !-------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use cint_mod
-      use dat_mod
-      use fock_mod
-      use hsfs_parameters
-#include "implicit.h"
+ use cint_mod
+ use dat_mod
+ use fock_mod
+ use hsfs_parameters
+implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
 !     implicit real*8 (a-h,o-z)
-#include "priunit.h"
+implicit none
 #include "param_ccsd.h"
 #include "cint.h"
 !     common /cint/ nint,idum1,vint(ndint),iint(ndint)
@@ -450,24 +450,15 @@
 
       call readv (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
 
-      if (iopt(1).ge.5) then
-        write(LUPRI,'(/,2x,a,i7,1x,i7)')                                &
-   'ordv after readv: nint,ndint=',nint,ndint
-        write(LUPRI,*) 'packed indexes & integrals: '
-        do i=1,nint
-          write(LUPRI,*) i,'. iint(i)=',iint(i),' vint(i)=',vint(i)
-        enddo
-      endif
-
       call prtime   ("readv   ",nint,0)
 
-      print *,"**************************"
+      !print *,"**************************"
       call seltyp   (2233,0,"hhpp",4)
       call seltyp   (2333,0,"hppp",4)
       call seltyp   (2323,0,"hphp",4)
       call seltyp   (2222,0,"hhhh",4)
       call seltyp   (2223,0,"hhhp",4)
-       print *,"**************************"
+       !print *,"**************************"
       call seltyp4  (3333,0,"pppp",4)
       call reorder  ("hhpp","va1 ",1324,4)
       call reorder  ("hhpp","va2 ",1423,4)
@@ -488,7 +479,7 @@
       call selt1    (33,0,"pp  ",0)
       call selt1    (32,0,"ph  ",0)
 !
-      if (iopt(17).ne.0) then
+      if (iopt(17).ne.0) then ! for CCSDT-x 
         call reorder  ("hppp","ve1 ",2431,4)
         call reorder  ("hppp","ve2 ",2341,4)
         call reorder  ("hhpp","ve3 ",1342,4)
@@ -499,29 +490,27 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine tinit
+subroutine tinit
 !------------------------------------------------------------------------
+!  Initialize amplitudes.
 !
-!  Initialize amplitudes ...
-!
+!   tc = hhpp / eps; t1c = hp/eps
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+  use dat_mod
+implicit none
 #include "priunit.h"
 #else
-#include "implicit.h"
+implicit none
 !      implicit real*8 (a-h,o-z)
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-! calc tinit = hhpp / eps
       if (iopt(20).ne.0) then
        call rdfile (51,0,"tc  ",-1)
        call rdfile (51,1,"t1c ",-1)
-       if ((iopt(17).ne.0).and.(iopt(20).eq.1))                         &
-   call rdfile (51,2,"t30 ",-1)
+       if ((iopt(17).ne.0).and.(iopt(20).eq.1)) call rdfile (51,2,"t30 ",-1)
       else
        call move     ("hhpp","tc  ")
        call diveps   ("tc  ")
@@ -535,15 +524,13 @@
           call clear8("t40 ",22223333,0)
         end if
       end if
-
-      return
-      end
+end subroutine
 
 !**************************************************************
       subroutine ener(id)
 !--------------------------------------------------------------
 !
-!            Calculate CCSD correlation energy
+!  Calculates CCSD correlation energy
 !
 !   id parameter : 2 - final correlation energy
 !        er than 1,2 - iteration correl.energy
@@ -623,7 +610,6 @@
 !
 ! does reordering 
 !
-!
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use dat_mod
@@ -645,6 +631,7 @@
       call reorder("tc  ","ta4 ",3412,4)
       call reorder("tm  ","tm4 ",3412,4)
       call reorder("t1c ","t1or",1243,4)
+      ! hhpp=tc
       call reorder("tc  ","ta5 ",1342,4)
       call clear("tb1 ",2323,0)
       call clear("tb4 ",3322,0)
@@ -657,23 +644,22 @@
       return
       end
 ! ******************************************************
-      subroutine ordtb
+  subroutine ordtb
 !---------------------------------------------------------------------
 !
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+    use dat_mod
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
       call diveps    ("t1nw")
       call reorder("tb1  ","s2  ",1324,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -699,97 +685,72 @@
       end if
       call prtime("ordtb   ",0,1)
       return
-      end
+ end subroutine
 ! **********************************************************
-      subroutine calt1
+ subroutine calt1
 !-----------------------------------------------------------
-!
-!
+!  calculate T1 amplitudes within 9 diagrams, 
+! dg1n2_csd ... dg1n11_csd
 !-----------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+  use dat_mod
+implicit none
 #include "priunit.h"
 #else
+implicit none
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
       call move("hp  ","t1nw")
-!     call dg1n2
       call dg1n2_csd
-!     call dg1n3
       call dg1n3_csd
-!     call dg1n5
       call dg1n5_csd
-!     call dg1n6
       call dg1n6_csd
-!     call dg1n7
       call dg1n7_csd
-!     call dg1n8
       call dg1n8_csd
-!     call dg1n9
       call dg1n9_csd
-      call dg1n10
-!     call dg1n11
+      call dg1n10_csd
       call dg1n11_csd
       call prtime    ("calt1   ",0,1)
-      return
-      end
+ end subroutine
 ! ****************************************************
-      subroutine calt2
+ subroutine calt2
 !--------------------------------------------------------------------------
-!
+! Calculates T2 aplitudes in 17 diagrams (CCSD)
 !
 !--------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+   use dat_mod
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
       call cmult("hhpp",0.5d0,"tnew")
-!     call diag4
       call diag4_csd
-!     call diag5
       call diag5_csd
-!     call diag6
       call diag6_csd
-!     call diag7
       call diag7_csd
-!     call diag8
       call diag8_csd
-!      call diag9
       call diag9_csd
-!      call diag11
       call diag11_csd
-!     call diag12
       call diag12_csd
-!      call diag15
       call diag15_csd
-!     call diag13
       call diag13_csd
-!     call diag14
       call diag14_csd
-!     call diag16
       call diag16_csd
       call diag21_csd
-!     call diag2
       call diag2_csd
       call diag3_csd
       call dgt1p3_csd
-!     call dgt1p4
       call dgt1p4_csd
-      if (iopt(17).ge.4) then
+      if (iopt(17).ge.4) then ! CCSDTQ case...
 !  diags 40,41
         call reordx   ("t40 ","s1  ",12563478)
         call reordx   ("t40 ","s2  ",12573468)
@@ -803,24 +764,21 @@
         call add      ("s2  ",0.5d0,"tnew",1.d0,"tnew")
       end if
       call prtime    ("calt2   ",0,1)
-      return
-      end subroutine calt2
+ end subroutine calt2
 ! *******************************************************
       subroutine calt3
 !---------------------------------------------------------------------
-!
-!
-!
+! Calculates T3 aplitudes (for CCSDTx like methods)
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use dat_mod
       use cfiles_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dbg.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -830,7 +788,6 @@
 #include "dbg.h"
 !     common /dbg/ iter,idebug
 #endif
-
       if (iopt(17).ge.1) then
 !  dg1n13
         call reord6    ("t30 ","s1  ",124356)
@@ -1052,25 +1009,22 @@
         call reord6   ("s2  ","s1  ",126345)
         call add      ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
       end if
-      call prtime   ("calt3   ",0,1) 
-      return
-      end
+ call prtime   ("calt3   ",0,1) 
+end subroutine
 
 ! *******************************************************
-      subroutine calt4
-!---------------------------------------------------------------------
-!
-!
-!
-!---------------------------------------------------------------------
+ subroutine calt4
+!>---------------------------------------------------------------------
+!> Calculates T4 amplitudes (for CCSDTQ)
+!>--------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_mod
-#include "implicit.h"
+  use dat_mod
+implicit none
 #include "priunit.h"
 #include "dbg.h"
 #else
-#include "implicit.h"
 #include "priunit.h"
+implicit none
 !     implicit real*8 (a-h,o-z)
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -1206,21 +1160,22 @@
       return
       end
 !  ******************************************************
-!     subroutine diag2
-      subroutine diag2_csd
-#include "implicit.h"
+ subroutine diag2_csd
+!
+! 
+! called from calt2
+ implicit none
 #include "priunit.h"
-!     implicit real*8 (a-h,o-z)
-      call mult("tc  ","pp  ","s2  ",311)
-      call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call prt("s2  ","diag2   ",3)
-      call prtime("diag2   ",0,1)
-      return
-      end
+    call mult("tc  ","pp  ","s2  ",311)
+    call add("tnew",1.d0,"s2  ",1.d0,"tnew")
+    call prt("s2  ","diag2_csd ",3)
+    call prtime("diag2_csd ",0,1)
+ end subroutine
 ! *******************************************************
       subroutine diag3_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+!
+!
+implicit none
 #include "priunit.h"
 !   incl diags 3 28
 !   diag 28
@@ -1230,8 +1185,8 @@
 ! ----------------------------------
       call mult("s2  ","ta3 ","s3  ",131)
       call add("tnew",1.d0,"s3  ",-1.d0,"tnew")
-      call prt("s3  ","-diag3  ",3)
-      call prtime("diag3   ",0,1)
+      call prt("s3  ","-diag3_csd",3)
+      call prtime("diag3_csd",0,1)
       return
       end
 ! **********************************************
@@ -1459,31 +1414,36 @@
       return
       end
 ! *************************************************
-!     subroutine dg1n2
-      subroutine dg1n2_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine dg1n2_csd
+! called from calt1 as the 1st step
+! dg1 - 1el.diagrams, n2 - second diagram in Uzi's list,
+!
+! cross - antisymmetric diagram, what means 2*Coulomb - Exchange (2 diagrams)
+!
+! diagram: h1
+!
+implicit none
 #include "priunit.h"
-      call add("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
-      call mult("tm1 ","s1  ","s3  ",113)
-      call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
-      call prt("s3  ","dg1n2   ",3)
-      call prtime("dg1n2   ",0,1)
-      return
-      end
+  ! 2*hppp(2413) - hppp(2314) = s1, what is spin-adapted antisymmetrised integral
+  call add("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
+  ! note: "tm" means tc; s3 final diagram
+  call mult("tm1 ","s1  ","s3  ",113)
+  ! adding results to t1 amplitudes
+  call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
+  call prt("s3  ","dg1n2_csd",3)
+  call prtime("dg1n2_csd",0,1)
+end subroutine
 ! **********************************************************
-!     subroutine dg1n3
-      subroutine dg1n3_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+subroutine dg1n3_csd
+! called from calt1
+implicit none
 #include "priunit.h"
-      call add("ta1 ",2.d0,"tm2 ",-1.d0,"s2  ")
-      call mult("s2  ","hp  ","s3  ",202)
-      call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
-      call prt("s3  ","dg1n3   ",3)
-      call prtime("dg1n3   ",0,1)
-      return
-      end
+  call add("ta1 ",2.d0,"tm2 ",-1.d0,"s2  ")
+  call mult("s2  ","hp  ","s3  ",202)
+  call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
+  call prt("s3  ","dg1n3_csd",3)
+  call prtime("dg1n3_csd",0,1)
+end subroutine
 ! **********************************************************
 !     subroutine dg1n5
       subroutine dg1n5_csd
@@ -1535,23 +1495,20 @@
       return
       end
 ! ******************************************************************
-!     subroutine dg1n9
       subroutine dg1n9_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
       call add("hhpp",-2.d0,"va6 ",1.d0,"s2  ")
       call mult("tc  ","s2  ","s3  ",113)
       call mult("s3  ","t1or","s2  ",111)
       call add("t1nw",1.d0,"s2  ",1.d0,"t1nw")
-      call prt("s2  ","dg1n9   ",3)
-      call prtime("dg1n9   ",0,1)
+      call prt("s2  ","dg1n9_csd",3)
+      call prtime("dg1n9_csd",0,1)
       return
       end
 ! ****************************************************************
-      subroutine dg1n10
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+      subroutine dg1n10_csd
+implicit none
 #include "priunit.h"
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
       call mult("tm4 ","s2  ","s3  ",113)
@@ -1562,10 +1519,8 @@
       return
       end
 ! ***************************************************************
-!     subroutine dg1n11
       subroutine dg1n11_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
@@ -1578,8 +1533,7 @@
       end
 ! *****************************************************
       subroutine dgt1p3_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !   compensates for overcounting t1**3
       call mult("t1c ","vd14","s2  ",131)
@@ -1591,10 +1545,8 @@
       return
       end
 ! ****************************************
-!     subroutine dgt1p4
       subroutine dgt1p4_csd
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !   compensates for overcounting t1**4
       call mult("t1c ","hhpp","s3  ",131)
@@ -1608,8 +1560,7 @@
       end
 !  ********************************************************************
       subroutine box1 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1
       call reorder  ("hppp","bx1 ",1342,4)
@@ -1663,8 +1614,7 @@
       end 
 !  *******************************************************************
       subroutine box2 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1
       call reorder  ("hhhp","s1  ",2143,4)
@@ -1716,8 +1666,7 @@
       end 
 !  *******************************************************************
       subroutine box3 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call add      ("va1 ",2.d0,"hphp",-1.d0,"bx3 ")
@@ -1743,8 +1692,7 @@
       end
 !  *******************************************************************
       subroutine box4 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call cmult    ("va1 ",-1.d0,"bx4 ")
@@ -1767,8 +1715,7 @@
       end 
 !  *******************************************************************
       subroutine box5 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call cmult    ("hphp",-1.d0,"bx5 ")
@@ -1787,8 +1734,7 @@
       end
 !  *******************************************************************
       subroutine box6 
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call cmult    ("hhhh",0.5d0,"bx6 ")
@@ -1802,8 +1748,7 @@
       end 
 !  *******************************************************************
       subroutine box7
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call add      ("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
@@ -1820,8 +1765,7 @@
       end
 !  *******************************************************************
       subroutine box8
-!     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 !  diag 1 
       call add      ("vc9 ",-2.d0,"vc10",1.d0,"s1  ")
@@ -1998,3 +1942,545 @@
       return
       end 
 !  *******************************************************************
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine dge5n2 (name2,name3,namet,iord)
+!--------------------------------------------------------------------------------------
+!c         6x6=10
+!--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack4
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /idv/ iv(200) ,nvalo
+#include "idv.h"
+#endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension ia(8),save1(1000),save2(1000),iord(10)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge5n2 input tape does not exist, ',name2
+        stop                      
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge5n2 input tape does not exist, ',name3
+        stop                       
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      call tchng6 (nij2,ij2,ije2,ntape2,4)
+      call tchng6 (nij3,ij3,ije3,ntape3,4)
+      call tmplt10 (namet,ntapet)                    
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      do 10 i=1,nij1
+        do 60 k=4,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(5-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=4,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(10-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack4(ia(iord(6)),ia(iord(7)),ia(iord(8)),ia(iord(9)))
+          do 40 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+40        continue
+          if ((igot2.eq.1).and.(igot3.eq.1)) then
+            nel1=0
+            do 50 k=1,ije2(k2save)-ije2(k2save-1)
+              ii=igen(istrt21+ije2(k2save-1)+k)
+              if (ia(iord(5)).eq.iand(ishft(ii,-8),z'ff')) then
+                nel1=nel1+1
+                call dimx (nel1,1000,'dge5n2')
+                save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
+              end if
+50          continue 
+            nel2=0
+            do 80 k=1,ije3(k3save)-ije3(k3save-1)
+              ii=igen(istrt31+ije3(k3save-1)+k)
+              if (ia(iord(10)).eq.iand(ishft(ii,-8),z'ff')) then
+                nel2=nel2+1
+                call dimx (nel2,1000,'dge5n2')
+                save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
+              end if
+80          continue 
+            if (nel1.ne.nel2) then  
+              write (LUPRI,*) 'mismatch in lengths of records - dge5n2'
+              call quit('mismatch in lengths of records - dge5n2')
+            else  
+              gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
+            end if
+          end if
+20      continue
+10    continue
+      return
+      end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine dge6n2 (name2,name3,namet,iord)
+!-----------------------------------------------------------------------------
+!
+!c      6x8=12
+!
+!-----------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /idv/ iv(200),nvalo
+#include "idv.h"
+#endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension save1(1000),save2(1000),ia(12),iord(12)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!  todo: own module !
+      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+      !ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge6n2 input tape does not exist, name2=',name2
+        call quit('dge6n2 input tape name2 does not exist')
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'dge6n2 input tape does not exist, name3=',name3
+        call quit('dge6n2 input tape name3 does not exist')
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      call tmplt12 (namet,ntapet)
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      call tchng6 (nij3,ij3,ije3,ntape3,4)
+      do 10 i=1,nij1
+        do 60 k=5,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(6-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=5,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(12-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack4(ia(iord(8)),ia(iord(9)),ia(iord(10)),ia(iord(11)))
+          do 50 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+50        continue
+          if ((igot2.eq.1).and.(igot3.eq.1)) then
+            nel1=0
+            ii=ipack3(ia(iord(5)),ia(iord(6)),ia(iord(7)))
+            do 40 k=1,ije2(k2save)-ije2(k2save-1)
+              jj=igen(istrt21+ije2(k2save-1)+k)
+              if (ii.eq.iand(ishft(jj,-8),z'ffffff')) then
+                nel1=nel1+1
+                save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
+                call dimx (nel1,1000,'dge6n2')
+              end if
+40          continue
+            nel2=0
+            ii=ia(iord(12))  
+            do 80 k=1,ije3(k3save)-ije3(k3save-1)
+              jj=igen(istrt31+ije3(k3save-1)+k)
+              if (ii.eq.iand(ishft(jj,-8),z'ff')) then
+                nel2=nel2+1
+                save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
+                call dimx (nel2,1000,'dge6n2')
+              end if
+80          continue
+            if (nel1.ne.nel2) then
+              write (LUPRI,*) 'length mismatch in dge6n2'
+              call quit('length mismatch in dge6n2')
+            else
+              gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
+            end if
+          end if
+20      continue
+10    continue
+      return
+      end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine diage5 (name2,name3,name4,namet,iord)
+!-------------------------------------------------------------------------------------
+!
+!                  6x(4+4)=10
+!
+!-------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3,ipack4
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use cij4_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
+#include "cij4.h"
+!     common /idv/ iv(200),nvalo
+#include "idv.h"
+#endif
+
+      dimension iord(10),ia(10)
+
+!todo: into module !
+!     ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+!     ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage5 input tape does not exist, name2=',name2
+        call quit("diage5: input tape name2 does not exist !")
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage5 input tape does not exist, ',name3
+        call quit('diage5: input tape name3 does not exist !')
+      end if
+      call files_ccsd (name4,ntape4,new,4,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage5 input tape does not exist, ',name4
+        call quit('diage5: input tape name4 does not exist')
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      istrt41=nstrt(1,ntape4-1)+2*nij4+4
+      istrt42=nstrt(2,ntape4-1)
+
+      call tmplt10 (namet,ntapet)
+
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      call tchng6 (nij2,ij2,ije2,ntape2,4)
+      call tmpcng (nij3,ij3,ije3,ntape3,2,3)
+      call tmpcng (nij4,ij4,ije4,ntape4,2,3)
+      do 10 i=1,nij1
+        do 60 k=4,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(5-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=4,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(10-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          igot4=0
+          ii=ipack4(ia(iord(1)),ia(iord(2)),ia(iord(3)),ia(iord(4)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack3(ia(iord(5)),ia(iord(6)),ia(iord(7)))
+          do 50 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+50        continue
+          ii=ipack3(ia(iord(8)),ia(iord(9)),ia(iord(10)))
+          do 80 k=1,nij4
+            if (ij4(k).eq.ii) then
+              k4save=k
+              igot4=1
+            end if
+80        continue
+          if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1)) then
+            sum=0.d0
+            do 90 k=1,ije3(k3save)-ije3(k3save-1)
+              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
+              do 100 l=1,ije4(k4save)-ije4(k4save-1)
+                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
+                kk=ior(ishft(ii,8),jj)
+                do 110 m=1,ije2(k2save)-ije2(k2save-1)
+                  if (kk.eq.                                            &
+             iand(igen(istrt21+ije2(k2save-1)+m),z'ffff')) then
+                    sum=sum+                                            &
+               gen(istrt22+ije2(k2save-1)+m)*                           &
+               gen(istrt32+ije3(k3save-1)+k)*                           &
+               gen(istrt42+ije4(k4save-1)+l)
+                  end if
+110             continue
+100           continue
+90          continue
+            gen(istrt12+ije1(i-1)+j)=sum
+          end if
+20      continue
+10    continue
+      return
+      end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine diage6 (name2,name3,name4,name5,namet,iord)
+!--------------------------------------------------------------------------------------
+!
+!                  6x(4+4+4)=12
+!
+!--------------------------------------------------------------------------------------
+      use ipack_mod, only: ipack3
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use cij4_mod
+      use cij5_mod
+      use idv_mod
+      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
+#include "cij4.h"
+!     common /cij5/ nij5,ij5(ndij),ije5(0:ndij),iii5,iiv5
+#include "cij5.h"
+!     common /idv/ iv(200),nvalo
+#include "idv.h"
+#endif
+      dimension iord(12),ia(12)
+
+      ! store into module....
+      !ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
+
+      call files_ccsd (name2,ntape2,new,2,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6: input tape does not exist, name2=',name2
+        call quit('diage6: input tape name2 does not exist !')
+      end if
+      call files_ccsd (name3,ntape3,new,3,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6: input tape does not exist, name3=',name3
+        call quit('diage6: input tape name3 does not exist !')
+      end if
+      call files_ccsd (name4,ntape4,new,4,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6 input tape does not exist, name4=',name4
+        call quit('diage6: input tape name4 does not exist !')
+      end if
+      call files_ccsd (name5,ntape5,new,5,-1,-1)
+      if (new.ne.0) then
+        write (6,*) 'diage6: input tape does not exist, name5=',name5
+        call quit('diage6: input tape name5 does not exist!')
+      end if
+      istrt21=nstrt(1,ntape2-1)+2*nij2+4
+      istrt22=nstrt(2,ntape2-1)
+      istrt31=nstrt(1,ntape3-1)+2*nij3+4
+      istrt32=nstrt(2,ntape3-1)
+      istrt41=nstrt(1,ntape4-1)+2*nij4+4
+      istrt42=nstrt(2,ntape4-1)
+      istrt51=nstrt(1,ntape5-1)+2*nij5+4
+      istrt52=nstrt(2,ntape5-1)
+      call tmplt12 (namet,ntapet)
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt12=nstrt(2,ntapet-1)
+      call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
+      call tmpcng (nij3,ij3,ije3,ntape3,2,3)
+      call tmpcng (nij4,ij4,ije4,ntape4,2,3)
+      call tmpcng (nij5,ij5,ije5,ntape5,2,3)
+      do 10 i=1,nij1
+        do 60 k=5,0,-1
+          ii=iand(ishft(ij1(i),-4*k),z'f')
+          ia(6-k)=iv(ii)
+60      continue
+        do 20 j=1,ije1(i)-ije1(i-1)
+          ii=igen(istrt11+ije1(i-1)+j)
+          do 70 k=5,0,-1
+            jj=iand(ishft(ii,-4*k),z'f')
+            ia(12-k)=iv(jj)
+70        continue
+          igot2=0
+          igot3=0
+          igot4=0
+          igot5=0
+          ii=ipack3(ia(iord(1)),ia(iord(2)),ia(iord(3)))
+          do 30 k=1,nij2
+            if (ij2(k).eq.ii) then
+              k2save=k
+              igot2=1
+            end if
+30        continue
+          ii=ipack3(ia(iord(4)),ia(iord(5)),ia(iord(6)))
+          do 50 k=1,nij3
+            if (ij3(k).eq.ii) then
+              k3save=k
+              igot3=1
+            end if
+50        continue
+          ii=ipack3(ia(iord(7)),ia(iord(8)),ia(iord(9)))
+          do 80 k=1,nij4
+            if (ij4(k).eq.ii) then
+              k4save=k
+              igot4=1
+            end if
+80        continue
+          ii=ipack3(ia(iord(10)),ia(iord(11)),ia(iord(12)))
+          do 120 k=1,nij5
+            if (ij5(k).eq.ii) then
+              k5save=k
+              igot5=1
+            end if
+120       continue
+          if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1).and.(igot5.eq.1)) then
+            sum=0.d0
+            do 90 k=1,ije3(k3save)-ije3(k3save-1)
+              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
+              do 100 l=1,ije4(k4save)-ije4(k4save-1)
+                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
+                do 130 m=1,ije5(k5save)-ije5(k5save-1)
+                  kk=iand(igen(istrt51+ije5(k5save-1)+l),z'ff')
+                  ll=ipack3(ii,jj,kk)
+                  do 110 n=1,ije2(k2save)-ije2(k2save-1)
+                    if (ll.eq.                                          &
+               iand(igen(istrt21+ije2(k2save-1)+n),z'ffffff')) then
+                      sum=sum+                                          &
+                 gen(istrt22+ije2(k2save-1)+n)*                         &
+                 gen(istrt32+ije3(k3save-1)+k)*                         &
+                 gen(istrt42+ije4(k4save-1)+l)*                         &
+                 gen(istrt52+ije5(k5save-1)+m)
+                    end if
+110               continue
+130             continue
+100           continue
+90          continue
+            gen(istrt12+ije1(i-1)+j)=sum
+          end if
+20      continue
+10    continue
+      return
+      end
+!-------------------------------------------------------------------------------------------
