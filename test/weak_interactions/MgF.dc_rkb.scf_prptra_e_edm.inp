@@ -1,10 +1,10 @@
 **DIRAC
 .TITLE
-  ...
+  MgF
 .WAVE F ! Activate integral and wave functions modules
 #.PROPERTIES ! Activate property module (dipole moment; polarizability...)
-#.ANALYZE
-#.4INDEX
+.ANALYZE
+.4INDEX
 **GENERAL
 .DIRECT
 1 1 1
@@ -21,26 +21,14 @@
 !.ONESYS
 .INTFLG
 1 1 0
-.OPERATOR
- 'nucl. el. field Mg'
-# XSIGMA
-# 'NEF 001'
-# YSIGMA
-# 'NEF 002'
-# ZSIGMA
-# 'NEF 003'
- ZSIGMA
- 'ZNUCFIEL 003'
- COMFACTOR 0.0005
- TRS_FLIP
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
 *SCF
-#.CLOSED SHELL
-#20  
-#.OPEN SHELL
-#1
-#1/2
+.CLOSED SHELL
+20  
+.OPEN SHELL
+1
+1/2
 .INTFLG ! Specify what 2-el.integrals to include
 1 1 0
 .EVCCNV ! Energy convergence...
@@ -54,49 +42,48 @@
 **MOLTRA
 .SCHEME
 6
-# pick up only the valence  open-shell spinor of interest
+# take shells of interest - here all OCCUPIED SHELLS
 .ACTIVE
-11
+1..11
 .PRPTRA
 *PRPTRA
-# we need this print level to get matrix elements
+# we need this print level to get desired matrix elements
 .PRINT
 3
 .OPERATOR
- 'xalpha_fc F' 
- XALPHA
- 'FC F  01'
+ 'e_EDM x F' 
+ XSIGMA
+ 'NEF 001'
  COMFACTOR
- 1.00D0
+ 2.00D0
 .OPERATOR
- 'yalpha_fc F'
- YALPHA
- 'FC F  01'
+ 'e_EDM y F' 
+ YSIGMA
+ 'NEF 002'
  COMFACTOR
- 1.0D00
+ 2.00D0
 .OPERATOR
- 'zalpha_fc F'
- ZALPHA
- 'FC F  01'
+ 'e_EDM z F' 
+ ZSIGMA
+ 'NEF 003'
  COMFACTOR
- 1.0D00
-# ...
+ 2.00D0
 .OPERATOR
- 'xalpha_fc Mg' 
- XALPHA
- 'FC Mg 02'
+ 'e_EDM x Mg' 
+ XSIGMA
+ 'NEF 004'
  COMFACTOR
- 1.00D0
+ 2.00D0
 .OPERATOR
- 'yalpha_fc Mg'
- YALPHA
- 'FC Mg 02'
+ 'e_EDM y Mg' 
+ YSIGMA
+ 'NEF 005'
  COMFACTOR
- 1.0D00
+ 2.00D0
 .OPERATOR
- 'zalpha_fc Mg'
- ZALPHA
- 'FC Mg 02'
+ 'e_EDM z Mg' 
+ ZSIGMA
+ 'NEF 006'
  COMFACTOR
- 1.0D00
+ 2.00D0
 *END OF

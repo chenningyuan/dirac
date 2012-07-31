@@ -486,8 +486,8 @@ C
             ENDDO
             WRITE (LUPRI,*)
          ENDIF
-         IF (IPRINT.GE.3) THEN
-            WRITE (LUPRI,1012)
+         IF (IPRINT.GE.2) THEN
+            WRITE (LUPRI,1012) ACHAR(25:32)
             DO I = 1, NSTRT1*2
                DO J = 1, NSTRT2*2
                   WRITE (LUPRI,1013) I,J,PRCMO(I,J,1),PRCMO(I,J,2)
@@ -506,10 +506,11 @@ C
  1000 FORMAT (/' Transforming ',A8,' evaluation date ',A8,' label ',A8)
  1001 FORMAT (/' Finished transformation : integrals on ',A8)
  1010 FORMAT (/' Diagonal elements of ',A8,
-     & ' operator in molecular spinor basis'
+     & ' operator in Kramers paired molecular spinor basis:'
      & //12X,'Real part',11X,'Imaginary Part')
  1011 FORMAT (I6,2X,F18.10,2X,F18.10)
- 1012 FORMAT (/' Complete property matrix in molecular spinor basis')
+ 1012 FORMAT (/' Complete property matrix of ',A8,' operator',
+     &' in Kramers paired molecular spinor basis:'/)
  1013 FORMAT (2I5,F18.10,2X,F18.10)
       RETURN
       END

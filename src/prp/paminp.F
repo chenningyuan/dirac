@@ -1415,7 +1415,7 @@ C
 CMI ... needs CVAL
 #include "dcbgen.h"
 
-      CHARACTER*4 PCOMB
+      CHARACTER*4 PCOMB, PCOMB_SAVE
 C     ... the four characters in PCOMB define inclusion of the
 C         LL, SL, LS, and SS blocks of one-electron operators.
 C
@@ -1523,6 +1523,14 @@ CMI ... inform about the assigned PCOMB
         WRITE(LUPRI,'(2X,A,D12.6)') 
      &  'EDM operator: operator strenght multiplied by -4*CVAL,'
      & //' PFAC(1)=', PFAC(1)
+      ENDIF
+
+! miro 7 June 2012 exception: for PLABEL(1:5)="e_EDM" assign PCOMB(1:1)='0'
+      IF (PNAME(1:5).EQ.'e_EDM') THEN
+         PCOMB_SAVE = PCOMB
+         PCOMB(1:1)='0'
+         WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "e_EDM operator -",PNAME,
+     &   '=> assigned matrix structure ',PCOMB_SAVE," --> ",PCOMB
       ENDIF
 
 C
