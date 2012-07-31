@@ -1,4 +1,4 @@
-DIRAC pam run in /home/saue/Dirac/test/atomic_start
+DIRAC pam run in /home/bast/dirac/develop/test/atomic_start
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -150,36 +150,37 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  ******************************************************************************
  
  
-Compilation info
-----------------
+Binary information
+------------------
  
- System                   | Linux-3.0.0-12-generic
+ Who compiled             | bast@lpqlx131
+ System                   | Linux-2.6.32-5-amd64
  Processor                | x86_64
- Internal math            | OFF
  64-bit integers          | OFF
  MPI                      | OFF
- XCFun                    | ON
- Fortran compiler         | /opt/intel/composer_xe_2011_sp1.7.256/bin/intel64/
-                          | ifort
- Fortran compiler version | ifort (IFORT) 12.1.0 20111011
+ Fortran compiler         | /opt/intel/bin/ifort
+ Fortran compiler version | ifort (IFORT) 12.1.0 20110811
  Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
  C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+ C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
  C flags                  | -g -O0
- BLAS                     | /usr/lib/libatlas.so;/usr/lib/libf77blas.so
- LAPACK                   | /usr/lib/liblapack_atlas.so;/usr/lib/liblapack.so
- static libraries linking | OFF
- Configuration time       | 2011-11-23 09:25:18.000548
- Last commit revision     | df1efd6b090eed3c51e39549d4ba8f7424336e43
- Last commit author       | Trond Saue 
- Last commit time         | Wed Nov 23 09:24:40 2011 +0100
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
+                          | thread.so;/usr/lib/libpthread.so;/usr/lib/libm.so;
+                          | /opt/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-l
+                          | iomp5;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_lapack95_lp64.a;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | 35140a5
+ Configuration time       | 2012-05-08 10:39:35.318956
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Nov 23 09:25:58 2011
+     Date and time (Linux)  : Tue May  8 11:06:21 2012
      Host name              : not found                               
  
  
@@ -194,8 +195,8 @@ Contents of the input file
 *READIN                                                                                             
 .UNCONT                                                                                             
 **WAVE FUNCTION                                                                                     
-.DHF                                                                                                
-*DHFCAL                                                                                             
+.SCF                                                                                                
+*SCF                                                                                                
 .CLOSED SHELL                                                                                       
 10                                                                                                  
 .PRINT                                                                                              
@@ -205,10 +206,10 @@ DFOXXX 2
 1,2                                                                                                 
 1.00                                                                                                
 3..5                                                                                                
-0.66                                                                                                
+0.8                                                                                                 
 DFHXXX 1                                                                                            
 1                                                                                                   
-0.5                                                                                                 
+0.6                                                                                                 
 **END OF                                                                                            
  
  
@@ -218,7 +219,7 @@ Contents of the molecule file
 INTGRL                                                                                              
 Water                                                                                               
 cc-pVDZ basis (note that a tight p has NOT been added)                                              
-C   2    0                                                                                          
+C   2                                                                                               
         8.    1                                                                                     
 O      .0000000000        0.0000000000        -.2249058930                                          
 LARGE BASIS cc-pVDZ                                                                                 
@@ -299,22 +300,72 @@ FINISH
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
 
 
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+    8         0.00000000     0.00000000    -0.22490589       1
+    1         1.45234993     0.00000000     0.89962357       1
+    1        -1.45234993     0.00000000     0.89962357       1
+
+ Symmetry class found: C(2v)  
+
+ Centered and Rotated                    
+ --------------------                    
+    8         0.00000000     0.00000000    -0.12585157       1
+    1         0.00000000     1.45234993     0.99867790       1
+    1         0.00000000    -1.45234993     0.99867790       1
+
+ The following elements were found:   X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
                           SYMGRP:Point group information
                           ------------------------------
 
-Point group: C1 
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
 
-        |  E 
-   -----+-----
-    A   |   1
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
 
    * Direct product table
 
-        | A  
-   -----+-----
-    A   | A  
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
 
 
                             **************************
@@ -322,9 +373,9 @@ Point group: C1
                             **************************
 
    * One fermion irrep:   E1 
-   * Quaternionic group. NZ = 4
+   * Real group. NZ = 1
    * Direct product decomposition:
-          E1  x E1  : A   + A   + A   + A  
+          E1  x E1  : A1  + A2  + B1  + B2 
 
 
                                  Spinor structure
@@ -332,10 +383,10 @@ Point group: C1
 
 
    * Fermion irrep no.: 1
-      La  |  A  (1)  A  (1)  |
-      Sa  |  A  (1)  A  (1)  |
-      Lb  |  A  (1)  A  (1)  |
-      Sb  |  A  (1)  A  (1)  |
+      La  |  A1 (1)  A2 (2)  |
+      Sa  |  A2 (1)  A1 (2)  |
+      Lb  |  B1 (3)  B2 (4)  |
+      Sb  |  B2 (3)  B1 (4)  |
 
 
                               Quaternion symmetries
@@ -343,7 +394,10 @@ Point group: C1
 
     Rep  T(+)
     -----------------------------
-    A    1  i  j  k
+    A1   1
+    B1   j
+    B2   k
+    A2   i
 
   QM-QM nuclear repulsion energy :      9.055003146800
 
@@ -359,7 +413,7 @@ Point group: C1
   ----------------------------------------------------------------------
   O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
                               0       0      S  - No small component basis functions attached                    
-  H2          2       1       7       7      L  - [4s1p|4s1p]                                                    
+  H1          2       1       7       7      L  - [4s1p|4s1p]                                                    
                               0       0      S  - No small component basis functions attached                    
   ----------------------------------------------------------------------
                              41      41      L  - large components
@@ -395,15 +449,15 @@ Point group: C1
 
    1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z     -0.2249058930
+   3            z     -0.1258515664
 
-   4   H1       x      1.4523499293
-   5            y      0.0000000000
-   6            z      0.8996235720
+   4   H1   1   x      0.0000000000
+   5            y      1.4523499293
+   6            z      0.9986778986
 
-   7   H2       x     -1.4523499293
-   8            y      0.0000000000
-   9            z      0.8996235720
+   7   H1   2   x      0.0000000000
+   8            y     -1.4523499293
+   9            z      0.9986778986
 
 
 
@@ -412,19 +466,50 @@ Point group: C1
 
     3
  
-O      0.0000000000   0.0000000000  -0.1190150726
-H1     0.7685504811   0.0000000000   0.4760602904
-H2    -0.7685504811   0.0000000000   0.4760602904
+O      0.0000000000   0.0000000000  -0.0665977805
+H1     0.0000000000   0.7685504811   0.5284775824
+H1     0.0000000000  -0.7685504811   0.5284775824
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H1    y    [ 5  -  8 ]/2
+   3   H1    z    [ 6  +  9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H1    x    [ 4  +  7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H1    y    [ 5  +  8 ]/2
+   8   H1    z    [ 6  -  9 ]/2
+
+
+  Symmetry 4
+
+   9   H1    x    [ 4  -  7 ]/2
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H1          H2  
+            O           H1 1        H1 2
 
    O       0.000000
-   H1      0.972000    0.000000
-   H2      0.972000    1.537101    0.000000
+   H1 1    0.972000    0.000000
+   H1 2    0.972000    1.537101    0.000000
 
 
 
@@ -434,8 +519,8 @@ H2    -0.7685504811   0.0000000000   0.4760602904
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    H1         O                              0.972000
-  bond distance:    H2         O                              0.972000
+  bond distance:    H1 1       O                              0.972000
+  bond distance:    H1 2       O                              0.972000
 
 
   Bond angles (degrees):
@@ -443,7 +528,7 @@ H2    -0.7685504811   0.0000000000   0.4760602904
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       H2         O          H1                   104.500
+  bond angle:       H1 2       O          H1 1                 104.500
 
 
   Nuclear repulsion energy :    9.055003146800
@@ -454,8 +539,19 @@ H2    -0.7685504811   0.0000000000   0.4760602904
 
    * Large components:   18
      1  L O   1 s        2  L O   1 px       3  L O   1 py       4  L O   1 pz       5  L O   1 dxx      6  L O   1 dxy 
-     7  L O   1 dxz      8  L O   1 dyy      9  L O   1 dyz     10  L O   1 dzz     11  L H1  1 s       12  L H1  1 px  
-    13  L H1  1 py      14  L H1  1 pz      15  L H2  1 s       16  L H2  1 px      17  L H2  1 py      18  L H2  1 pz  
+     7  L O   1 dxz      8  L O   1 dyy      9  L O   1 dyz     10  L O   1 dzz     11  L H1  1 s       12  L H1  2 s   
+    13  L H1  1 px      14  L H1  1 py      15  L H1  1 pz      16  L H1  2 px      17  L H1  2 py      18  L H1  2 pz  
+   * Small components:    0
+
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   18
+     1  L A1 O  s        2  L A1 O  pz       3  L A1 O  dxx      4  L A1 O  dyy      5  L A1 O  dzz      6  L A1 H1 s   
+     7  L A1 H1 py       8  L A1 H1 pz       9  L B1 O  px      10  L B1 O  dxz     11  L B1 H1 px      12  L B2 O  py  
+    13  L B2 O  dyz     14  L B2 H1 s       15  L B2 H1 py      16  L B2 H1 pz      17  L A2 O  dxy     18  L A2 H1 px  
    * Small components:    0
 
 
@@ -463,32 +559,41 @@ H2    -0.7685504811   0.0000000000   0.4760602904
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           41
-  Number of large orbitals in each symmetry:     41
-  Number of small orbitals in each symmetry:      0
+  Number of orbitals in each symmetry:           22     6    11     2
+  Number of large orbitals in each symmetry:     22     6    11     2
+  Number of small orbitals in each symmetry:      0     0     0     0
 
 * Large component functions
 
-  Symmetry  A  ( 1)
+  Symmetry  A1 ( 1)
 
         9 functions:    O  s   
-        4 functions:    O  px  
-        4 functions:    O  py  
         4 functions:    O  pz  
         1 functions:    O  dxx 
-        1 functions:    O  dxy 
-        1 functions:    O  dxz 
         1 functions:    O  dyy 
-        1 functions:    O  dyz 
         1 functions:    O  dzz 
-        4 functions:    H1 s   
-        1 functions:    H1 px  
-        1 functions:    H1 py  
-        1 functions:    H1 pz  
-        4 functions:    H2 s   
-        1 functions:    H2 px  
-        1 functions:    H2 py  
-        1 functions:    H2 pz  
+        4 functions:    H1 s   1+2
+        1 functions:    H1 py  1-2
+        1 functions:    H1 pz  1+2
+
+  Symmetry  B1 ( 2)
+
+        4 functions:    O  px  
+        1 functions:    O  dxz 
+        1 functions:    H1 px  1+2
+
+  Symmetry  B2 ( 3)
+
+        4 functions:    O  py  
+        1 functions:    O  dyz 
+        4 functions:    H1 s   1-2
+        1 functions:    H1 py  1+2
+        1 functions:    H1 pz  1-2
+
+  Symmetry  A2 ( 4)
+
+        1 functions:    O  dxy 
+        1 functions:    H1 px  1-2
 
 
    ***************************************************************************
@@ -524,7 +629,6 @@ H2    -0.7685504811   0.0000000000   0.4760602904
  * All AMFI mean-field summations are on neutral individual atoms.
  * order of AMFI contributions to the X2C Hamiltonian:  2
   --> adding spin-same orbit MFSSO2 terms.
- WARNING: .DHF is deprecated, please use .SCF instead
 
 
     **************************************************************************
@@ -533,7 +637,6 @@ H2    -0.7685504811   0.0000000000   0.4760602904
 
  Jobs in this run (in execution order):
  * Hartree-Fock calculation
- WARNING: *DHFCAL is deprecated, please use *SCF instead
 ===========================================================================
  SCFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
@@ -547,8 +650,8 @@ H2    -0.7685504811   0.0000000000   0.4760602904
 
     atom   cffile     occ    orbitals
      O      DFOXXX     1.00   1,2                                                                     
-                       0.66   3..5                                                                    
-     H1     DFHXXX     0.50   1                                                                       
+                       0.80   3..5                                                                    
+     H1     DFHXXX     0.60   1                                                                       
 
  ***** CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -588,14 +691,34 @@ H2    -0.7685504811   0.0000000000   0.4760602904
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
 
 
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+    8         0.00000000     0.00000000    -0.22490589       1
+    1         1.45234993     0.00000000     0.89962357       1
+    1        -1.45234993     0.00000000     0.89962357       1
+
+ Symmetry class found: C(2v)  
+
+ Centered and Rotated                    
+ --------------------                    
+    8         0.00000000     0.00000000    -0.12585157       1
+    1         0.00000000     1.45234993     0.99867790       1
+    1         0.00000000    -1.45234993     0.99867790       1
+
+ The following elements were found:   X  Y     
+
+
                       Nuclear contribution to dipole moments
                       --------------------------------------
 
                                au             Debye
 
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
+                    z      0.99054327      2.51773316
 
                         1 Debye =   2.54177000 a.u. 
 
@@ -603,8 +726,14 @@ H2    -0.7685504811   0.0000000000   0.4760602904
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          1(Proj:          1, Lindep:          0)
-   S   A     * Deleted:          9(Proj:          9, Lindep:          0)
+   L   A1    * Deleted:          1(Proj:          1, Lindep:          0)
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   A2    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A1    * Deleted:          6(Proj:          6, Lindep:          0)
+   S   B1    * Deleted:          1(Proj:          1, Lindep:          0)
+   S   B2    * Deleted:          2(Proj:          2, Lindep:          0)
+   S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
 
                    *****************************************************************
                    *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***
@@ -707,7 +836,7 @@ H2    -0.7685504811   0.0000000000   0.4760602904
       NUMBER OF BASIS FUNCTIONS:  4       1
       NUMBER OF CLOSED SHELLS  :  0       0
       OPEN SHELL OCCUPATION    :  1       0
-    1. iteration,  total energy:           -24.225871972474
+    1. iteration,  total energy:            11.297396771275
     2. iteration,  total energy:            -0.499278403311
     2. iteration,  total energy:            -0.499278403311
   ### NON-RELATIVISTIC APPROX. ###
@@ -729,11 +858,33 @@ H2    -0.7685504811   0.0000000000   0.4760602904
                    ***       Calculation continues in two-component mode.        ***
                    *****************************************************************
 
- >>> Time used in mk_h2c is   0.54 seconds
+ >>> Time used in mk_h2c is   0.50 seconds
 
   Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
 
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+    8         0.00000000     0.00000000    -0.22490589       1
+    1         1.45234993     0.00000000     0.89962357       1
+    1        -1.45234993     0.00000000     0.89962357       1
+
+ Symmetry class found: C(2v)  
+
+ Centered and Rotated                    
+ --------------------                    
+    8         0.00000000     0.00000000    -0.12585157       1
+    1         0.00000000     1.45234993     0.99867790       1
+    1         0.00000000    -1.45234993     0.99867790       1
+
+ The following elements were found:   X  Y     
 
 
                       Nuclear contribution to dipole moments
@@ -741,9 +892,7 @@ H2    -0.7685504811   0.0000000000   0.4760602904
 
                                au             Debye
 
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
+                    z      0.99054327      2.51773316
 
                         1 Debye =   2.54177000 a.u. 
 
@@ -751,7 +900,10 @@ H2    -0.7685504811   0.0000000000   0.4760602904
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          1(Proj:          1, Lindep:          0)
+   L   A1    * Deleted:          1(Proj:          1, Lindep:          0)
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   A2    * Deleted:          0(Proj:          0, Lindep:          0)
 
 
       **********************************************************************
@@ -769,7 +921,7 @@ Total no. of orbitals           (NORB):    40
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Wed Nov 23 09:25:58 2011
+########## START ITERATION NO.   1 ##########   Tue May  8 11:06:21 2012
 
 
 
@@ -777,41 +929,40 @@ Total no. of orbitals           (NORB):    40
                                    ------------
 
  O   DFOXXX
- DIRAC: No title specified !!!                     Wed Nov 23 09:25:57 2011
-           1           0          26          27  -71.1311824241377     
+ DIRAC: No title specified !!!                     Tue May  8 11:06:20 2012
+           1           0          26          27  -74.7977651064103     
  H1  DFHXXX
- DIRAC: No title specified !!!                     Wed Nov 23 09:25:57 2011
-           1           0           7           7 -0.499284753654516     
+ DIRAC: No title specified !!!                     Tue May  8 11:06:20 2012
+           1           0           7           7 -0.499284753673972     
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   17.17%   39.22%   25.22%   25.76%   0.08400500s
+SOfock:LL  1.00D-12   30.64%    2.07%   14.48%   21.19%   0.08800501s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -83.93942020915840
+Total electronic energy            :    -85.40322853832491
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -74.88441706235791
+Total energy                       :    -76.34822539152442
  cp DFCOEF DFCOEF.BEST
-   * Quaternion diagonalization(CPU): 0.01600105s
+   * Real diagonalization      (CPU): 0.00000000s
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -74.88441706236      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.11600703s   LL             Wed Nov 23
+It.    1    -76.34822539152      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.14400899s   LL             Tue May  8
 
-########## START ITERATION NO.   2 ##########   Wed Nov 23 09:25:58 2011
+########## START ITERATION NO.   2 ##########   Tue May  8 11:06:21 2012
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   46.81%    0.00%    1.93%   0.14000899s
+SOfock:LL  1.00D-12    0.00%    2.75%    0.00%    0.00%   0.14000899s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -84.98195615282980
+Total electronic energy            :    -84.99889166697386
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -75.92695300602931
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -75.94388852017337
 
 
                                Output from DIISD1:
@@ -821,28 +972,27 @@ Total energy                       :    -75.92695300602931
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
    * Two-electron Fock matrix  (CPU): 0.14000899s
-   * Quaternion diagonalization(CPU): 0.02000099s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.17201096s
+   * Real diagonalization      (CPU): 0.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.15601003s
 
-########## END ITERATION NO.   2 ##########   Wed Nov 23 09:25:58 2011
+########## END ITERATION NO.   2 ##########   Tue May  8 11:06:21 2012
 
-It.    2    -75.92695300603      1.04D+00 -1.43D+00  9.62D-01               0.17201096s   LL             Wed Nov 23
+It.    2    -75.94388852017     -4.04D-01 -1.32D+00  8.38D-01               0.15601003s   LL             Tue May  8
 
-########## START ITERATION NO.   3 ##########   Wed Nov 23 09:25:59 2011
+########## START ITERATION NO.   3 ##########   Tue May  8 11:06:21 2012
 
-    3 *** Differential density matrix. DCOVLP     = 0.9134
+    3 *** Differential density matrix. DCOVLP     = 0.9455
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.09%    0.00%    1.93%   0.14000899s
+SOfock:LL  1.00D-12    0.00%    3.16%    0.00%    0.00%   0.13200802s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.08340242346428
+Total electronic energy            :    -85.09859385449761
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.02839927666379
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.04359070769712
 
 
                                Output from DIISD1:
@@ -850,36 +1000,35 @@ Total energy                       :    -76.02839927666379
 
 * DIIS iteration no.:         2
 * B matrix dimension:         3
-* B matrix condition: 4.272D-01
+* B matrix condition: 4.143D-01
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     2.135D-02
-         2      3.866D-01
-         3      6.134D-01
-   * Two-electron Fock matrix  (CPU): 0.14000899s
-   * Quaternion diagonalization(CPU): 0.01600099s
+     lambda     3.631D-02
+         2      3.715D-01
+         3      6.285D-01
+   * Two-electron Fock matrix  (CPU): 0.13600796s
+   * Real diagonalization      (CPU): 0.00400102s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.17201096s
+>>> Total CPU-time : 0.15600997s
 
-########## END ITERATION NO.   3 ##########   Wed Nov 23 09:25:59 2011
+########## END ITERATION NO.   3 ##########   Tue May  8 11:06:21 2012
 
-It.    3    -76.02839927666      1.01D-01  8.57D-01  6.17D-01   DIIS   2    0.17201096s   LL             Wed Nov 23
+It.    3    -76.04359070770      9.97D-02  7.73D-01  5.19D-01   DIIS   2    0.15600997s   LL             Tue May  8
 
-########## START ITERATION NO.   4 ##########   Wed Nov 23 09:25:59 2011
+########## START ITERATION NO.   4 ##########   Tue May  8 11:06:21 2012
 
-    4 *** Differential density matrix. DCOVLP     = 0.9905
+    4 *** Differential density matrix. DCOVLP     = 0.9913
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.38%    0.00%    1.92%   0.13600898s
+SOfock:LL  1.00D-12    0.00%    3.80%    0.00%    0.00%   0.13600802s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13497275600366
+Total electronic energy            :    -85.13529528839118
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.07996960920318
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08029214159069
 
 
                                Output from DIISD1:
@@ -887,37 +1036,36 @@ Total energy                       :    -76.07996960920318
 
 * DIIS iteration no.:         3
 * B matrix dimension:         4
-* B matrix condition: 3.638D-03
+* B matrix condition: 7.542D-03
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     9.416D-04
-         2     -3.376D-02
-         3     -7.228D-02
-         4      1.106D+00
-   * Two-electron Fock matrix  (CPU): 0.14000905s
-   * Quaternion diagonalization(CPU): 0.02000201s
+     lambda     1.158D-03
+         2     -3.733D-03
+         3     -3.179D-03
+         4      1.007D+00
+   * Two-electron Fock matrix  (CPU): 0.14000797s
+   * Real diagonalization      (CPU): 0.00400102s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.17201102s
+>>> Total CPU-time : 0.16000998s
 
-########## END ITERATION NO.   4 ##########   Wed Nov 23 09:25:59 2011
+########## END ITERATION NO.   4 ##########   Tue May  8 11:06:21 2012
 
-It.    4    -76.07996960920      5.16D-02 -3.16D-01  3.51D-02   DIIS   3    0.17201102s   LL             Wed Nov 23
+It.    4    -76.08029214159      3.67D-02 -2.91D-01  3.41D-02   DIIS   3    0.16000998s   LL             Tue May  8
 
-########## START ITERATION NO.   5 ##########   Wed Nov 23 09:25:59 2011
+########## START ITERATION NO.   5 ##########   Tue May  8 11:06:21 2012
 
-    5 *** Differential density matrix. DCOVLP     = 0.9949
+    5 *** Differential density matrix. DCOVLP     = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.76%    0.00%    1.89%   0.14000809s
+SOfock:LL  1.00D-12    0.00%    4.96%    0.00%    0.00%   0.13200808s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13553510762731
+Total electronic energy            :    -85.13559600279609
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08053196082682
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08059285599560
 
 
                                Output from DIISD1:
@@ -925,38 +1073,37 @@ Total energy                       :    -76.08053196082682
 
 * DIIS iteration no.:         4
 * B matrix dimension:         5
-* B matrix condition: 6.817D-05
+* B matrix condition: 1.188D-04
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     5.613D-05
-         2     -8.075D-03
-         3     -1.144D-02
-         4     -1.991D-01
-         5      1.219D+00
-   * Two-electron Fock matrix  (CPU): 0.14000809s
-   * Quaternion diagonalization(CPU): 0.01600099s
+     lambda     3.058D-05
+         2     -7.868D-03
+         3     -1.545D-02
+         4     -7.346D-02
+         5      1.097D+00
+   * Two-electron Fock matrix  (CPU): 0.13200808s
+   * Real diagonalization      (CPU): 0.00399995s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.16801000s
+>>> Total CPU-time : 0.15200901s
 
-########## END ITERATION NO.   5 ##########   Wed Nov 23 09:25:59 2011
+########## END ITERATION NO.   5 ##########   Tue May  8 11:06:21 2012
 
-It.    5    -76.08053196083      5.62D-04 -4.13D-03  1.03D-02   DIIS   4    0.16801000s   LL             Wed Nov 23
+It.    5    -76.08059285600      3.01D-04  4.53D-03  7.53D-03   DIIS   4    0.15200901s   LL             Tue May  8
 
-########## START ITERATION NO.   6 ##########   Wed Nov 23 09:25:59 2011
+########## START ITERATION NO.   6 ##########   Tue May  8 11:06:21 2012
 
-    6 *** Differential density matrix. DCOVLP     = 0.9980
+    6 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.00%    0.00%    1.88%   0.13600910s
+SOfock:LL  1.00D-12    0.00%    5.57%    0.00%    0.00%   0.13200796s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13561358525574
+Total electronic energy            :    -85.13561961768698
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061043845525
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08061647088650
 
 
                                Output from DIISD1:
@@ -964,39 +1111,38 @@ Total energy                       :    -76.08061043845525
 
 * DIIS iteration no.:         5
 * B matrix dimension:         6
-* B matrix condition: 2.425D-06
+* B matrix condition: 1.875D-06
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.262D-06
-         2      4.727D-03
-         3      8.014D-03
-         4     -1.771D-02
-         5     -3.382D-01
-         6      1.343D+00
-   * Two-electron Fock matrix  (CPU): 0.13600910s
-   * Quaternion diagonalization(CPU): 0.02000093s
+     lambda     9.548D-07
+         2      1.151D-03
+         3      4.202D-03
+         4     -1.589D-02
+         5     -1.954D-01
+         6      1.206D+00
+   * Two-electron Fock matrix  (CPU): 0.13200796s
+   * Real diagonalization      (CPU): 0.00400007s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.17201102s
+>>> Total CPU-time : 0.14800906s
 
-########## END ITERATION NO.   6 ##########   Wed Nov 23 09:25:59 2011
+########## END ITERATION NO.   6 ##########   Tue May  8 11:06:21 2012
 
-It.    6    -76.08061043846      7.85D-05  1.01D-03  2.97D-03   DIIS   5    0.17201102s   LL             Wed Nov 23
+It.    6    -76.08061647089      2.36D-05 -1.31D-03  1.75D-03   DIIS   5    0.14800906s   LL             Tue May  8
 
-########## START ITERATION NO.   7 ##########   Wed Nov 23 09:25:59 2011
+########## START ITERATION NO.   7 ##########   Tue May  8 11:06:21 2012
 
-    7 *** Differential density matrix. DCOVLP     = 0.9994
+    7 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.31%    0.00%    1.78%   0.14000905s
+SOfock:LL  1.00D-12    0.00%    6.51%    0.00%    0.00%   0.13600802s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13562087563514
+Total electronic energy            :    -85.13562106862803
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061772883465
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08061792182754
 
 
                                Output from DIISD1:
@@ -1004,40 +1150,39 @@ Total energy                       :    -76.08061772883465
 
 * DIIS iteration no.:         6
 * B matrix dimension:         7
-* B matrix condition: 1.035D-07
+* B matrix condition: 3.294D-08
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     9.443D-08
-         2     -6.009D-04
-         3     -1.474D-03
-         4      8.178D-03
-         5      5.030D-02
-         6     -3.944D-01
-         7      1.338D+00
-   * Two-electron Fock matrix  (CPU): 0.14000905s
-   * Quaternion diagonalization(CPU): 0.02000093s
+     lambda     4.461D-08
+         2     -1.314D-04
+         3     -1.247D-03
+         4      4.792D-03
+         5      4.621D-02
+         6     -4.155D-01
+         7      1.366D+00
+   * Two-electron Fock matrix  (CPU): 0.14000893s
+   * Real diagonalization      (CPU): 0.00400007s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.16801000s
+>>> Total CPU-time : 0.16000998s
 
-########## END ITERATION NO.   7 ##########   Wed Nov 23 09:25:59 2011
+########## END ITERATION NO.   7 ##########   Tue May  8 11:06:21 2012
 
-It.    7    -76.08061772883      7.29D-06 -3.92D-04  6.30D-04   DIIS   6    0.16801000s   LL             Wed Nov 23
+It.    7    -76.08061792183      1.45D-06  5.16D-04  3.60D-04   DIIS   6    0.16000998s   LL             Tue May  8
 
-########## START ITERATION NO.   8 ##########   Wed Nov 23 09:25:59 2011
+########## START ITERATION NO.   8 ##########   Tue May  8 11:06:21 2012
 
     8 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   49.13%    0.00%    1.87%   0.14000905s
+SOfock:LL  1.00D-12    0.00%    7.87%    0.00%    0.00%   0.13200903s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13562114984694
+Total electronic energy            :    -85.13562115890532
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061800304645
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08061801210484
 
 
                                Output from DIISD1:
@@ -1045,41 +1190,40 @@ Total energy                       :    -76.08061800304645
 
 * DIIS iteration no.:         7
 * B matrix dimension:         8
-* B matrix condition: 2.639D-09
+* B matrix condition: 1.102D-09
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     7.464D-09
-         2      3.128D-05
-         3      2.875D-04
-         4     -1.038D-03
-         5     -6.346D-03
-         6      6.789D-02
-         7     -3.320D-01
-         8      1.271D+00
-   * Two-electron Fock matrix  (CPU): 0.14000905s
-   * Quaternion diagonalization(CPU): 0.02000093s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.17201102s
+     lambda     1.280D-09
+         2     -1.225D-05
+         3      2.309D-04
+         4     -1.118D-03
+         5     -4.864D-03
+         6      7.897D-02
+         7     -4.563D-01
+         8      1.383D+00
+   * Two-electron Fock matrix  (CPU): 0.13200903s
+   * Real diagonalization      (CPU): 0.00800097s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.15200996s
 
-########## END ITERATION NO.   8 ##########   Wed Nov 23 09:25:59 2011
+########## END ITERATION NO.   8 ##########   Tue May  8 11:06:21 2012
 
-It.    8    -76.08061800305      2.74D-07 -1.45D-04  1.28D-04   DIIS   7    0.17201102s   LL             Wed Nov 23
+It.    8    -76.08061801210      9.03D-08 -7.50D-05  7.67D-05   DIIS   7    0.15200996s   LL             Tue May  8
 
-########## START ITERATION NO.   9 ##########   Wed Nov 23 09:26:00 2011
+########## START ITERATION NO.   9 ##########   Tue May  8 11:06:21 2012
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   50.27%    0.00%    1.84%   0.13600910s
+SOfock:LL  1.00D-12    0.00%    9.34%    0.00%    0.00%   0.12800801s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13562116123101
+Total electronic energy            :    -85.13562116311317
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061801443053
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08061801631268
 
 
                                Output from DIISD1:
@@ -1087,42 +1231,41 @@ Total energy                       :    -76.08061801443053
 
 * DIIS iteration no.:         8
 * B matrix dimension:         9
-* B matrix condition: 1.355D-10
+* B matrix condition: 3.325D-11
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     6.240D-10
-         2      1.861D-05
-         3     -6.912D-05
-         4      1.246D-04
-         5     -1.719D-03
-         6     -1.994D-03
-         7      6.222D-02
-         8     -6.081D-01
-         9      1.549D+00
-   * Two-electron Fock matrix  (CPU): 0.13600910s
-   * Quaternion diagonalization(CPU): 0.02000213s
+     lambda     3.345D-11
+         2      6.161D-06
+         3     -1.813D-05
+         4      1.772D-04
+         5     -8.452D-04
+         6     -2.126D-03
+         7      5.240D-02
+         8     -2.870D-01
+         9      1.237D+00
+   * Two-electron Fock matrix  (CPU): 0.13200808s
+   * Real diagonalization      (CPU): 0.00800085s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.16801107s
+>>> Total CPU-time : 0.15600991s
 
-########## END ITERATION NO.   9 ##########   Wed Nov 23 09:26:00 2011
+########## END ITERATION NO.   9 ##########   Tue May  8 11:06:21 2012
 
-It.    9    -76.08061801443      1.14D-08  3.77D-05  4.21D-05   DIIS   8    0.16801107s   LL             Wed Nov 23
+It.    9    -76.08061801631      4.21D-09  1.30D-05  1.17D-05   DIIS   8    0.15600991s   LL             Tue May  8
 
-########## START ITERATION NO.  10 ##########   Wed Nov 23 09:26:00 2011
+########## START ITERATION NO.  10 ##########   Tue May  8 11:06:21 2012
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   50.96%    0.00%    1.63%   0.13600802s
+SOfock:LL  1.00D-12    0.00%   12.44%    0.00%    0.00%   0.13200808s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13562116307358
+Total electronic energy            :    -85.13562116317783
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061801627309
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08061801637734
 
 
                                Output from DIISD1:
@@ -1130,43 +1273,42 @@ Total energy                       :    -76.08061801627309
 
 * DIIS iteration no.:         9
 * B matrix dimension:        10
-* B matrix condition: 8.315D-12
+* B matrix condition: 7.481D-13
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     1.575D-11
-         2     -6.243D-06
-         3      1.827D-05
-         4     -3.077D-05
-         5      1.280D-03
-         6     -4.378D-03
-         7     -3.450D-04
-         8      1.526D-01
-         9     -6.618D-01
-        10      1.513D+00
-   * Two-electron Fock matrix  (CPU): 0.13600802s
-   * Quaternion diagonalization(CPU): 0.01600099s
+     lambda     1.143D-12
+         2     -1.157D-06
+         3      3.874D-06
+         4     -4.894D-05
+         5      3.044D-04
+         6      2.450D-05
+         7     -1.163D-02
+         8      7.460D-02
+         9     -4.207D-01
+        10      1.357D+00
+   * Two-electron Fock matrix  (CPU): 0.13200808s
+   * Real diagonalization      (CPU): 0.00399995s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.16801000s
+>>> Total CPU-time : 0.15200901s
 
-########## END ITERATION NO.  10 ##########   Wed Nov 23 09:26:00 2011
+########## END ITERATION NO.  10 ##########   Tue May  8 11:06:21 2012
 
-It.   10    -76.08061801627      1.84D-09 -1.20D-05  1.06D-05   DIIS   9    0.16801000s   LL             Wed Nov 23
+It.   10    -76.08061801638      6.47D-11 -2.17D-06  1.94D-06   DIIS   9    0.15200901s   LL             Tue May  8
 
-########## START ITERATION NO.  11 ##########   Wed Nov 23 09:26:00 2011
+########## START ITERATION NO.  11 ##########   Tue May  8 11:06:21 2012
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   52.30%    0.00%    1.59%   0.13200903s
+SOfock:LL  1.00D-12    0.00%   16.49%    0.00%    0.00%   0.12800789s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13562116317996
+Total electronic energy            :    -85.13562116318033
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061801637947
- cp DFCOEF DFCOEF.BEST
+Total energy                       :    -76.08061801637984
 
 
                                Output from DIISD1:
@@ -1174,94 +1316,50 @@ Total energy                       :    -76.08061801637947
 
 * DIIS iteration no.:        10
 * B matrix dimension:        10
-* B matrix condition: 3.333D-13
+* B matrix condition: 2.833D-14
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     4.529D-13
-         3     -4.023D-06
-         4     -1.438D-06
-         5     -1.298D-04
-         6      5.913D-04
-         7     -9.518D-04
-         8     -1.574D-02
-         9      1.008D-01
-        10     -3.240D-01
-        11      1.239D+00
-   * Two-electron Fock matrix  (CPU): 0.13600898s
-   * Quaternion diagonalization(CPU): 0.01600099s
+     lambda     1.294D-14
+         3     -3.437D-07
+         4      4.748D-06
+         5     -4.554D-05
+         6      1.493D-04
+         7      5.077D-04
+         8     -7.746D-03
+         9      6.648D-02
+        10     -3.688D-01
+        11      1.309D+00
+   * Two-electron Fock matrix  (CPU): 0.13200808s
+   * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.16801095s
+>>> Total CPU-time : 0.15201020s
 
-########## END ITERATION NO.  11 ##########   Wed Nov 23 09:26:00 2011
+########## END ITERATION NO.  11 ##########   Tue May  8 11:06:21 2012
 
-It.   11    -76.08061801638      1.06D-10 -3.51D-06  1.20D-06   DIIS   9    0.16801095s   LL             Wed Nov 23
+It.   11    -76.08061801638      2.50D-12  3.52D-07  3.28D-07   DIIS   9    0.15201020s   LL             Tue May  8
 
-########## START ITERATION NO.  12 ##########   Wed Nov 23 09:26:00 2011
+########## START ITERATION NO.  12 ##########   Tue May  8 11:06:21 2012
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   55.83%    0.00%    1.14%   0.12800789s
+SOfock:LL  1.00D-12    0.00%   21.49%    0.00%    0.00%   0.04400301s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13562116318070
+Total electronic energy            :    -85.13562116318047
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061801638021
- cp DFCOEF DFCOEF.BEST
-
-
-                               Output from DIISD1:
-                               -------------------
-
-* DIIS iteration no.:        11
-* B matrix dimension:        10
-* B matrix condition: 1.464D-14
-
-* DIIS coefficients. Sum:1.000D+00
-
-     lambda     3.037D-14
-         4      3.337D-06
-         5      8.844D-06
-         6     -9.308D-05
-         7      4.730D-04
-         8     -1.121D-03
-         9     -5.969D-03
-        10      4.422D-02
-        11     -3.799D-01
-        12      1.342D+00
-   * Two-electron Fock matrix  (CPU): 0.12800789s
-   * Quaternion diagonalization(CPU): 0.02000093s
+Total energy                       :    -76.08061801637999
+   * Two-electron Fock matrix  (CPU): 0.04400301s
+   * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.15200901s
+>>> Total CPU-time : 0.04400301s
 
-########## END ITERATION NO.  12 ##########   Wed Nov 23 09:26:00 2011
+########## END ITERATION NO.  12 ##########   Tue May  8 11:06:21 2012
 
-It.   12    -76.08061801638      7.39D-13 -2.23D-07  2.68D-07   DIIS   9    0.15200901s   LL             Wed Nov 23
-
-########## START ITERATION NO.  13 ##########   Wed Nov 23 09:26:00 2011
-
-   13 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   59.18%    0.03%    0.79%   0.12400794s
-
-
-                                Output from ERGCAL
-                                ------------------
-
-Total electronic energy            :    -85.13562116318064
-Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08061801638016
-   * Two-electron Fock matrix  (CPU): 0.12400794s
-   * Quaternion diagonalization(CPU): 0.02000093s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.13200808s
-
-########## END ITERATION NO.  13 ##########   Wed Nov 23 09:26:00 2011
-
-It.   13    -76.08061801638     -5.68D-14  5.68D-08  7.85D-08   DIIS   9    0.13200808s   LL             Wed Nov 23
+It.   12    -76.08061801638      1.42D-13  5.62D-08  3.96D-08   DIIS   9    0.04400301s   LL             Tue May  8
 
 
                                    SCF - CYCLE
@@ -1277,35 +1375,34 @@ It.   13    -76.08061801638     -5.68D-14  5.68D-08  7.85D-08   DIIS   9    0.13
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -74.88441706236      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.11600703s   LL             Wed Nov 23
-It.    2    -75.92695300603      1.04D+00 -1.43D+00  9.62D-01               0.17201096s   LL             Wed Nov 23
-It.    3    -76.02839927666      1.01D-01  8.57D-01  6.17D-01   DIIS   2    0.17201096s   LL             Wed Nov 23
-It.    4    -76.07996960920      5.16D-02 -3.16D-01  3.51D-02   DIIS   3    0.17201102s   LL             Wed Nov 23
-It.    5    -76.08053196083      5.62D-04 -4.13D-03  1.03D-02   DIIS   4    0.16801000s   LL             Wed Nov 23
-It.    6    -76.08061043846      7.85D-05  1.01D-03  2.97D-03   DIIS   5    0.17201102s   LL             Wed Nov 23
-It.    7    -76.08061772883      7.29D-06 -3.92D-04  6.30D-04   DIIS   6    0.16801000s   LL             Wed Nov 23
-It.    8    -76.08061800305      2.74D-07 -1.45D-04  1.28D-04   DIIS   7    0.17201102s   LL             Wed Nov 23
-It.    9    -76.08061801443      1.14D-08  3.77D-05  4.21D-05   DIIS   8    0.16801107s   LL             Wed Nov 23
-It.   10    -76.08061801627      1.84D-09 -1.20D-05  1.06D-05   DIIS   9    0.16801000s   LL             Wed Nov 23
-It.   11    -76.08061801638      1.06D-10 -3.51D-06  1.20D-06   DIIS   9    0.16801095s   LL             Wed Nov 23
-It.   12    -76.08061801638      7.39D-13 -2.23D-07  2.68D-07   DIIS   9    0.15200901s   LL             Wed Nov 23
-It.   13    -76.08061801638     -5.68D-14  5.68D-08  7.85D-08   DIIS   9    0.13200808s   LL             Wed Nov 23
+It.    1    -76.34822539152      1.00D+20  0.00D+00  0.00D+00   Atomic s    0.14400899s   LL             Tue May  8
+It.    2    -75.94388852017     -4.04D-01 -1.32D+00  8.38D-01               0.15601003s   LL             Tue May  8
+It.    3    -76.04359070770      9.97D-02  7.73D-01  5.19D-01   DIIS   2    0.15600997s   LL             Tue May  8
+It.    4    -76.08029214159      3.67D-02 -2.91D-01  3.41D-02   DIIS   3    0.16000998s   LL             Tue May  8
+It.    5    -76.08059285600      3.01D-04  4.53D-03  7.53D-03   DIIS   4    0.15200901s   LL             Tue May  8
+It.    6    -76.08061647089      2.36D-05 -1.31D-03  1.75D-03   DIIS   5    0.14800906s   LL             Tue May  8
+It.    7    -76.08061792183      1.45D-06  5.16D-04  3.60D-04   DIIS   6    0.16000998s   LL             Tue May  8
+It.    8    -76.08061801210      9.03D-08 -7.50D-05  7.67D-05   DIIS   7    0.15200996s   LL             Tue May  8
+It.    9    -76.08061801631      4.21D-09  1.30D-05  1.17D-05   DIIS   8    0.15600991s   LL             Tue May  8
+It.   10    -76.08061801638      6.47D-11 -2.17D-06  1.94D-06   DIIS   9    0.15200901s   LL             Tue May  8
+It.   11    -76.08061801638      2.50D-12  3.52D-07  3.28D-07   DIIS   9    0.15201020s   LL             Tue May  8
+It.   12    -76.08061801638      1.42D-13  5.62D-08  3.96D-08   DIIS   9    0.04400301s   LL             Tue May  8
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   13 iterations.
+* Convergence after   12 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.23076923s
+      LL           :    0.00000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -85.135621163180645
+   Electronic energy                        :    -85.135621163180474
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.055003146800487
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.080618016380157
+   Total energy                             :    -76.080618016379987
 
 
                                    Eigenvalues
@@ -1314,25 +1411,25 @@ It.   13    -76.08061801638     -5.68D-14  5.68D-08  7.85D-08   DIIS   9    0.13
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -20.56489714772  ( 2)       -1.33252570881  ( 2)       -0.69277014637  ( 2)       -0.56459451243  ( 2)       -0.49287124392  ( 2)
+   -20.56489715555  ( 2)       -1.33252571026  ( 2)       -0.69277015031  ( 2)       -0.56459452228  ( 2)       -0.49287124537  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.18035984474  ( 2)        0.25130412401  ( 2)        0.66089631385  ( 2)        0.73710967861  ( 2)        1.07463067104  ( 2)
-     1.12297048464  ( 2)        1.19782178795  ( 2)        1.41466085816  ( 2)        1.47145549561  ( 2)        1.63534408028  ( 2)
-     1.66934487619  ( 2)        1.89241681980  ( 2)        2.31506926886  ( 2)        2.39594226412  ( 2)        3.27115079570  ( 2)
-     3.29852605188  ( 2)        3.32276170861  ( 2)        3.39980056135  ( 2)        3.52499634025  ( 2)        3.83221318911  ( 2)
-     4.12810705935  ( 2)        6.12206455674  ( 2)        6.55553466696  ( 2)        6.81985414916  ( 2)       13.05167017183  ( 2)
-    22.16800269440  ( 2)       22.33170317312  ( 2)       33.42012479678  ( 2)       33.66119266624  ( 2)       33.81882289466  ( 2)
-    61.53045791185  ( 2)      230.57019794203  ( 2)      851.99630216018  ( 2)     3409.90566004882  ( 2)    15466.31280371358  ( 2)
+     0.18035984756  ( 2)        0.25130412516  ( 2)        0.66089631429  ( 2)        0.73710967883  ( 2)        1.07463066488  ( 2)
+     1.12297048423  ( 2)        1.19782178673  ( 2)        1.41466086040  ( 2)        1.47145549820  ( 2)        1.63534407590  ( 2)
+     1.66934487857  ( 2)        1.89241682261  ( 2)        2.31506927040  ( 2)        2.39594226461  ( 2)        3.27115079147  ( 2)
+     3.29852605535  ( 2)        3.32276170471  ( 2)        3.39980056474  ( 2)        3.52499633762  ( 2)        3.83221318539  ( 2)
+     4.12810705659  ( 2)        6.12206455093  ( 2)        6.55553466046  ( 2)        6.81985414437  ( 2)       13.05167016352  ( 2)
+    22.16800270673  ( 2)       22.33170318542  ( 2)       33.42012478850  ( 2)       33.66119265955  ( 2)       33.81882288663  ( 2)
+    61.53045790439  ( 2)      230.57019793719  ( 2)      851.99630215790  ( 2)     3409.90566004829  ( 2)    15466.31280371395  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.18035984 au (symmetry E1 )
-  - E(HOMO) :    -0.49287124 au (symmetry E1 )
+    E(LUMO) :     0.18035985 au (symmetry E1 )
+  - E(HOMO) :    -0.49287125 au (symmetry E1 )
   ------------------------------------------
     gap     :     0.67323109 au
 
 
  
-     Date and time (Linux)  : Wed Nov 23 09:26:01 2011
+     Date and time (Linux)  : Tue May  8 11:06:21 2012
      Host name              : not found                               
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1340,27 +1437,27 @@ It.   13    -76.08061801638     -5.68D-14  5.68D-08  7.85D-08   DIIS   9    0.13
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         9.11
+  Mean allocation size (Mb) :         9.32
   
   Largest          10  allocations
   
       488.28 Mb at subroutine MAIN__+0x95b                               for work array at main                        
-        0.66 Mb at subroutine dirx2c_mp_x2c_driver_+0x1989               for unnamed variable                          
-        0.66 Mb at subroutine dirx2c_mp_x2c_driver_+0x74b                for unnamed variable                          
-        0.66 Mb at subroutine x2c_pct_ao_mp_pctrafo_op_4cto2c_saao_bas_+ for unnamed variable                          
-        0.66 Mb at subroutine x2c_pct_ao_mp_pctrafo_op_4cto2c_saao_bas_+ for unnamed variable                          
-        0.66 Mb at subroutine x2c_pct_ao_mp_pctrafo_h1bnccorr_4cto2c_saa for unnamed variable                          
-        0.66 Mb at subroutine x2c_pct_ao_mp_pctrafo_h1bnccorr_4cto2c_saa for unnamed variable                          
         0.66 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
-        0.66 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
         0.66 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
+        0.66 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
+        0.66 Mb at subroutine x2c_amfi_interface_mp_x2c_interface2old_am for unnamed variable                          
+        0.16 Mb at subroutine dirx2c_mp_x2c_driver_+0x1989               for unnamed variable                          
+        0.16 Mb at subroutine dirx2c_mp_x2c_driver_+0x74b                for unnamed variable                          
+        0.16 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
+        0.16 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
+        0.16 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
   
-  Peak memory usage    (Mb) :       491.00
-       reached at subroutine : qtrans90_+0x2e8                           
-              for variable   : QTRANS90-buffer-space                     
+  Peak memory usage    (Mb) :       490.00
+       reached at subroutine : x2c_amfi_interface_mp_x2c_interface2old_am
+              for variable   : unnamed variable                          
   
- MEMGET high-water mark:     3.66 MB
+ MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 2, stime: 0, minflt: 9266, majflt: 0, nvcsw: 12, nivcsw: 259, maxrss: 20572
->>>> Total WALL time used in DIRAC: 3s
+>>>> Node 0, utime: 2, stime: 0, minflt: 7610, majflt: 0, nvcsw: 35, nivcsw: 233, maxrss: 25492
+>>>> Total WALL time used in DIRAC: 0s

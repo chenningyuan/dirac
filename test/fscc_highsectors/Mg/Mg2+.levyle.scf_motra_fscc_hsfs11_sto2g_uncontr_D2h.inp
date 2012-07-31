@@ -1,0 +1,53 @@
+**DIRAC
+.TITLE
+  Magnesium atom. Fockspace test calculations.
+.WAVE F
+.4INDEX
+**INTEGRALS
+.PRINT
+1
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.LEVY-LEBLOND
+**WAVE FUNCTIONS
+.SCF
+.HSFS
+.RELCCSD
+*SCF
+.EVCCNV
+1.0E-10 1.0E-8
+.CLOSED SHELL
+4 6
+*HSFS
+! list of methods
+.METHOD
+csd
+csv
+chv
+chp
+chq
+.END
+#.CONV
+#9
+.PRINT
+1 
+.INPUT 
+ Mg test with DIRAC-HSFS-CCSD, 1s(2) frozen, highest s deleted
+  0 99 08  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+ 16
+hvvpgvppgvppgvpp
+  8
+  4  4  4  4  0  0  0  0
+  0  0  0  0  0  0  0  0
+9
+**MOLTRA
+# 1s(2) frozen, highest virtual "s" deleted
+.ACTIVE
+energy -10.0 100.0 1.0
+energy -10.0 100.0 1.0
+*END OF
+
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6"  DEBUG=F  &END
+ &CCENER  NTOL=08  &END
+ &CCFSPC MAXIT=50, NACTH=0,0,3,3, NACTP=2,2,3,3, FSSECT=1,1,1,1,0,0  &END

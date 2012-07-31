@@ -1,0 +1,226 @@
+ 
+ Tests for spin-free higher-sectors Fock Space Coupled Cluster methods
+=============================================================================
+
+Mg atom:
+
+
+SCF:  
+
+Configuration in abelian subgroup - only alpha states:
+                                        Ag a B3ua B2ua B1ga B1ua B2ga B3ga 
+ Spinor class : inactive occupied          2    0    0    0    0    0    0   
+ Spinor class : active occupied            0    1    1    0    1    0    0    
+ Spinor class : active virtual             2    1    1    0    1    0    0    
+ Spinor class : inactive virtual           4    1    1    1    1    1    1    
+
+ 20
+hhvvpppp gvp gvp p gvp p p 
+  8
+  8  3  3  1  3  1  1  0
+  0  0  0  0  0  0  0  0
+
+  
+CCSD 02: -0.13113488967157
+relcc  : -0.131134892087296
+
+01:   -0.52345057E+00. degen  2.
+      -0.523450570249
+      -0.22231511E+00. degen  2
+      -0.222315110263
+      0.60482483E+00. degen  6.
+      0.604824830845
+
+02:   -0.77584492E+00. degen  1.
+      -0.775844923290
+      -0.60277004E+00. degen  3.
+      -0.602770039654
+      -0.58644739E+00. degen  1.
+      -0.586447396947
+      -0.32064907E+00. degen  1.
+      -0.320649068442
+
+20:    0.68347932E+01. degen  9.
+       6.834793186609
+       0.70102683E+01. degen  5.
+       7.010268354366
+       0.71926553E+01. degen  1.
+       7.192655334165
+
+
+.... differences !
+11:    0.19901840E+01. degen  9.
+       1.989659151079
+       0.20075755E+01. degen  3.
+       2.007207787789
+       0.25112430E+01. degen  9.
+       2.511157022314
+
+-------------------------------------------------------------------------------
+
+LiH, CCSD only:
+
+                   correlation energy(final)=   -0.01706242819540
+   CCSD correlation energy :                    -0.017062428254265
+
+--------------------------------------------------------------------------------
+
+N_3+: 
+
+            Ag   B1g  B2g  B3g B3u  B2u  B1u  Au
+   occ:     2    0    0    0   0    0    0    0
+   virt:   13    4    4    4  13   13   13    3
+
+          SCF: -51.082077905984647
+         CCSD:  -0.087873999599442 (relcc)
+
+SCF,lsym:  -51.082077905986161
+    D2h:   -51.082077905986161
+
+    C2v:   -50.209822074472932 !
+    C1:    -50.209822074454266 !
+
+uncontracted ano-l basis:
+ D2h:-51.082094936192860
+ C2v: -50.209832731704125 !
+
+ilias@polana:~/work/qch/systems/aces2_runs/N_3+/.
+ACESII:  SCF: -50.2098288546
+1s frozen:
+        CCSD:  -0.087873977207 (OK)
+
+EOM-CCSD EA : 47.344 (paper=47.42 eV) wrong !
+
+--------------------------------------------------------------------------------
+
+O_4+:
+
+           Ag   B1g  B2g  B3g  B3u  B2u  B1u  Au 
+  occ:     2    0    0    0     0    0    0    0
+  virt:   13    4    4    4    13   13   13    3 
+
+          SCF:    -68.257351505397210 (D2h)
+                  -67.193714575925569 (C2v - wrong occupation by default !)
+                  -67.193714575928254 (C2v, also with filled .BOSONS)
+
+         CCSD:    -0.100577589390920 (D2h,relcc) 
+
+--------------------------------------------------------------------------------
+
+F_5+:
+
+         Ag   B1g  B2g  B3g  B3u  B2u  B1u  Au 
+occ:       2    0    0    0    0    0    0    0
+virt:     13    4    4    4   13   13   13    3
+
+    SCF:   -87.933578724402423
+    CCSD:  -0.113064475253373 (relcc)
+
+
+--------------------------------------------------------------------------------
+
+P_3+
+
+             Ag   B1g  B2g  B3g   B3u  B2u  B1u  Au
+    occ:      3    0    0    0    1    1    1    0
+   virt:     14    5    5    5   15   15   15    4
+
+    frozen:   2    0    0    0    1    1    1    0
+     total:  17    5    5    5   15   15   15    4
+
+occ         :  1    0    0    0    0    0    0    0
+active(v)   :  0    0    0    0    1    1    1    0
+total space : 15    5    5    5   14   14   14    4   (total=75)
+
+HSFS input:
+----------
+75
+hpppppppppppppp ppppp ppppp ppppp vppppppppppppp vppppppppppppp vppppppppppppp pppp
+  8
+ 15  5  5  5 14 14 14  4
+  0  0  0  0  0  0  0  0
+
+
+SCF (D) = -338.56239356156408
+
+ SCF,C1 = -338.56239356156880
+ SCF,C2v= -338.56239356156749
+ SCF,D2h= -338.56239356155186 
+
+SCF(AcesII 2.5)=-338.5623935573
+1s,2s,2p frozen:
+CCSD(AcesII 2.5)= -338.612817088158
+EOM_CCSD_EA(AcesII 2.5)=-29.97869341 eV  Excellent ! Reproduced !
+
+CCSD(relcc)=-338.612817091798547
+CCSD(D,00) = -338.612817091798377
+CCSD(D,01) = -339.714513754853
+IP(D,3p) = (-338.612817091798377+339.714513754853)*27.2113834378 eV = 29.978690 [Ref: 29.98] eV
+IP(hsfs)=29.977 eV
+CCSD(D,02)=-340.436896460034
+IP(D,3p2) = (-339.714513754853+340.436896460034)*27.2113834378 eV = 19.6570327 eV [Ref: 19.66] eV
+IP(hsfs)=19.656ev
+EE(D,02,1D)=1.015566 [Ref: 1.02] eV
+EE(hsfs)=1.016ev
+EE(D,02,1S)=2.891660 [Ref: 2.89] eV
+EE(hsfs)=2.888ev
+--------------------------------------------------------------------------------
+
+S_4+
+
+SCF =         -393.368271796728777
+
+CCSD (D,00) =   -393.423195100386920
+CCSD (D,01) = -395.152685571624 
+IP(D,3p) = (-393.423195100386920+395.152685571624) * 27.2113834378 eV =  47.06182 [Ref: 47.06] eV
+CCSD (D,02) = -396.427093105551
+IP(D,3p2) = -(-396.427093105551+395.152685571624)* 27.2113834378 eV = 34.67839 [Ref: 34.68] eV
+EE(D,1D) = 1.28493  [Ref: 1.29] eV
+EE(D,1S) = 3.552368 [Ref: 3.55] eV
+
+
+------------------------------------------------------
+
+ Mg_2+, STO-2G, small space
+
+ Configuration in abelian subgroup
+
+ Configuration in abelian subgroup
+                                        Ag a B3ua B2ua B1ua 
+ Spinor class : inactive occupied          2    0    0    0    
+ Spinor class : active occupied            0    1    1    1    
+ Spinor class : active virtual             2    1    1    1    
+ Spinor class : inactive virtual           2    2    2    2    
+
+18
+hhvvpp gvpp gvpp gvpp 
+
+ CCSD correlation energy :                    -0.104742689575262
+                 correlation energy(final)=   -0.10474268957529
+ Total CCSD energy :                        -191.663965423758896
+(0,1)
+ Level  eigenvalue (eV)
+    1        0.000000000       
+    2        4.760343001     
+    3       24.443508159    
+
+energy  1 -0.54371728E+00. degen  2. ion pot=  14.795ev,  119333.cm-1. term 2s. major det  5  0
+energy  2 -0.36877788E+00. degen  6. exc en=  4.760ev,  38395.cm-1. term 2p. major det 31  0
+energy  3  0.35456517E+00. degen  2. exc en= 24.442ev, 197151.cm-1. term 2s. major det  7  0
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+
+C(2+) --> C(1+) --> C
+
+(0,2) sect
+ energy  1 -0.11439814E+01. degen  9. ion pot=   8.793ev,   70921.cm-1. term 3p. major det 13 18
+ energy  2 -0.10795362E+01. degen  5. exc en=  1.754ev,  14144.cm-1. term 1d. major det 13 18
+ energy  3 -0.10395575E+01. degen  1. exc en=  2.841ev,  22919.cm-1. term 1s. major det 13 14
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)  Ag 4B3u4B2u4B1g4B1u4B2g4B3g4Au 4
+
+    1        0.000000000          0.000000   0   0   0   0   0   0   0   0
+    2        1.753641537      14144.074324   0   0   0   0   0   0   0   0
+    3        2.841533944      22918.519229   0   0   

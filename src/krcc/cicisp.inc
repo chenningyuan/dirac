@@ -1,0 +1,8 @@
+*
+      COMMON/KRCC_CICISP/IDUMMY,NICISP,
+     &              XISPSM(MXPCSM,MXPICI),
+     &              ISMOST(MXPCSM,MXPCSM),MXSB,MXSOOB,
+     &              NBLKIC(MXPCSM,MXPICI),LCOLIC(MXPCSM,MXPICI),
+     &              MXNTTS,LCJRES,MXADKBLK,MXSOOB_AS
+
+      

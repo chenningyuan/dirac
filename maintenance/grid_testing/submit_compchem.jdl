@@ -1,0 +1,37 @@
+##############################################################
+#
+#
+#                 ***  gLite script  ***
+#
+#
+##############################################################
+
+Executable = "launch_compchem.sh";
+# files with full paths
+InputSandbox = {"launch_compchem.sh"};
+
+##############################################
+# stdout,stderr output & other working files
+##############################################
+StdOutput = "DIRAC_tests_std.out";
+StdError = "DIRAC_tests_std.err";
+OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "dirac_suite_back.tgz"};
+
+##################
+# assign your VO #
+##################
+VirtualOrganisation="compchem";
+#VirtualOrganisation="voce";
+#VirtualOrganisation="osg";
+
+#################
+# Demands on CE #
+#################
+Requirements =
+ other.GlueCEPolicyMaxWallClockTime > 1200;
+#  &&
+# RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
+# other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
+# other.GlueCEUniqueID == "ce3.ui.savba.sk:8443/cream-pbs-voce"
+#;
+#

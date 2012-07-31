@@ -1,8 +1,9 @@
-DIRAC master    (s68p03) starts by allocating            125000000 words (           953 MB) of memory
-DIRAC master    (s68p03) has no limitations in place for the amount of dynamically allocated memory
- 
-Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
- 
+DIRAC pam run in /home/saue/Dirac/test/molecular_mean_field_hamiltonian_schemes
+DIRAC serial starts by allocating 110000000 words (839 MB) of memory
+             out of the allowed maximum of 120000000 words (915 MB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw
+
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -77,39 +78,48 @@ Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in
  *          Direct Iterative Relativistic All-electron Calculations           *
  *         =========================================================          *
  *                                                                            *
- *                      VERSION 10.00  10 October 2010                        *
- *                                                                            *
- ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
- *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions since the DIRAC08 release from:                  *
+ *    with contributions from:                                                *
  *                                                                            *
- *    Radovan Bast             University of Tromsø              Norway       *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
- *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
  *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
  *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
- *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
- *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linköping University              Sweden       *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
  *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas Thorvaldsen      University of Tromsø              Norway       *
- *    Jørn Thyssen             University of Southern Denmark    Denmark      *
- *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
@@ -126,64 +136,57 @@ Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC10 (2010),                                                 *
- *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
- *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
- *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
- *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
- *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
- *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
- *    (see http://dirac.chem.vu.nl).                                          *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
  *                                                                            *
  ******************************************************************************
 
 
-Compilation settings
---------------------
+Binary information
+------------------
 
-CMAKE_SYSTEM_NAME           : Linux 
+ Who compiled             | saue@dirac
+ System                   | Linux-3.0.0-16-generic
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -O3 -funroll-all-loops
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+ C flags                  | -g -O2 -Wno-unused
+ BLAS                     | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
+                          | e/libf77blas.so;/usr/lib/atlas-base/atlas/libblas.
+                          | so
+ LAPACK                   | /usr/lib/atlas-base/liblapack_atlas.so;/usr/lib/at
+                          | las-base/atlas/liblapack.so
+ Static linking           | OFF
+ Last Git revision        | 90f689f
+ Configuration time       | 2012-07-25 04:00:21.128265
 
-ENABLE_EXTERNAL_MATH        : ON 
-ENABLE_64BIT_INTEGERS       : ON 
-ENABLE_MPI                  : ON 
-ENABLE_XCFUN                : ON 
-ENABLE_LOCAL_DISKS          :  
-NO_SSH_ACCESS_TO_NODES      :  
 
-CMAKE_BUILD_TYPE            : Release 
-
-CMAKE_Fortran_COMPILER      : /people/disk2/stefan/lib64/openmpi-1.4.2-intel64/bin/mpif90 
-FORTRAN_COMPILER_VERSION    : ifort (IFORT) 12.0.2 20110112 
-CMAKE_Fortran_FLAGS         : -w -assume byterecl -DVAR_IFORT -g -traceback -i8  
-CMAKE_Fortran_FLAGS_DEBUG   : -O0 
-CMAKE_Fortran_FLAGS_RELEASE : -O3 -ip 
-
-CMAKE_C_COMPILER            : /people/disk2/stefan/lib64/openmpi-1.4.2-intel64/bin/mpicc 
-C_COMPILER_VERSION          : icc (ICC) 12.0.2 20110112 
-CMAKE_C_FLAGS               : -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 
-CMAKE_C_FLAGS_DEBUG         : -g -O0 
-CMAKE_C_FLAGS_RELEASE       : -g -O2 
-
-BLAS_LIBRARIES              :  
-LAPACK_LIBRARIES            :  
-
-SVN_REVISION                : 14267 
-GIT_REVISION                :  
-
-Compilation time            : Wed Jun 15 16:55:12 CEST 2011 
- 
- 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Jun 15 16:58:52 2011
-     Host name              : s68p03                                  
- 
- 
+     Date and time (Linux)  : Wed Jul 25 04:10:46 2012
+     Host name              : not found                               
+
+
 Contents of the input file
 --------------------------
- 
+
 #################################                                                                   
 **DIRAC                                                                                             
 .TITLE                                                                                              
@@ -203,11 +206,12 @@ Contents of the input file
 **HAMILTONIAN                                                                                       
 .GAUNT                                                                                              
 .X2Cmmf                                                                                             
+.DOSSSS                                                                                             
 #################################                                                                   
 **WAVE FUNCTION                                                                                     
-.DHF                                                                                                
+.SCF                                                                                                
 .RELCCSD                                                                                            
-*DHFCAL                                                                                             
+*SCF                                                                                                
 .CLOSED SHELL                                                                                       
  18                                                                                                 
 .EVCCNV                                                                                             
@@ -221,13 +225,12 @@ energy -6.0 20.0 1.0
 **END OF                                                                                            
                                                                                                     
  &RELCCSD DOFSPC=T DOENER=F IPRNT=1 TIMING=T NELEC=7,7 DEBUG=F &END                                 
- &CCSORT USEOE=T, NORECMP=T &END                                                                    
  &CCFSPC MAXIT=100, NACTH=2,2, NACTP=0,0, DOIE=T &END                                               
- 
- 
+
+
 Contents of the molecule file
 -----------------------------
- 
+
 INTGRL                                                                                              
 FO                                                                                                  
 basis sets: cc-pVDZ                                                                                 
@@ -258,7 +261,7 @@ FINISH
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
- * running in four-component mode
+ * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -271,7 +274,6 @@ FINISH
  * Thresholds for linear dependence:
    Large components:   1.00D-06
    Small components:   1.00D-08
- DFPCMO: IBEIG read in I2 format.
  * General print level   :   0
 
 
@@ -295,12 +297,6 @@ FINISH
 
  Uncontracted basis forced, irrespective of basis input file.
 
-
-
- Settings for FCK3 calculation:
- ------------------------------
-
-Dynamical threshold is not (yet) implemented in DIRAC
 
 
     *************************************************************************
@@ -339,6 +335,16 @@ Dynamical threshold is not (yet) implemented in DIRAC
  --------------------                    
     9         0.00000000     0.00000000    -1.16953803       1
     8         0.00000000     0.00000000     1.38915116       1
+ 
+ Centered and rotated coordinates
+ in xyz format (angstrom)
+ --------------------------------
+ 
+2
+ 
+F       0.00000000    0.00000000   -0.61889287
+O       0.00000000    0.00000000    0.73510713
+ 
 
  The following elements were found:   X  Y     
 
@@ -420,6 +426,9 @@ Represented as: C2v
     B2   k
     A2   i
 
+  QM-QM nuclear repulsion energy :     28.139408417725
+
+
 
   Atoms and basis sets
   --------------------
@@ -441,9 +450,6 @@ Represented as: C2v
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-
-  MNF.INP input file (for the AMFI stuff) is ready.
-  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
   References for the basis sets
@@ -482,7 +488,7 @@ Represented as: C2v
   -------------------------------------------
 
     2
- 
+
 F      0.0000000000   0.0000000000  -0.6188928672
 O      0.0000000000   0.0000000000   0.7351071328
 
@@ -682,7 +688,7 @@ O      0.0000000000   0.0000000000   0.7351071328
 
  * after the four-component SCF procedure perform a X2C/BSS/IOTC transformation
    of the 4c Fock operator.
- * running in four-component mode
+ * Running in four-component mode
  * Default integral flags passed to all modules
    - LL-integrals:     1
    - LS-integrals:     1
@@ -697,7 +703,6 @@ O      0.0000000000   0.0000000000   0.7351071328
  * Default RKB projection:
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
- WARNING: .DHF is deprecated, please use .SCF instead
 
 
     **************************************************************************
@@ -707,18 +712,16 @@ O      0.0000000000   0.0000000000   0.7351071328
  Jobs in this run (in execution order):
  * Hartree-Fock calculation
  * Run RELCCSD code
- WARNING: *DHFCAL is deprecated, please use *SCF instead
 ===========================================================================
  SCFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
- * Closed shell SCF calculation with   18 electrons in
-       9 orbitals in Fermion irrep 1
+ * Closed shell SCF calculation with    18 electrons in    9 orbitals.
  * Bare nucleus screening correction used for start guess
  * General print level   :   0
- ***** TRIAL FUNCTION *****
+ ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
- ***** CONVERGENCE CRITERIA *****
+ ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-08
    Allowed convergence:1.000D-08
@@ -746,6 +749,13 @@ O      0.0000000000   0.0000000000   0.7351071328
 
   EHMIN:  1000.00000 EHMAX:   100.00000
   EPMIN:    -1.00000 EPMAX: -1000.00000
+
+ ************************************************************
+ *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***
+ *** use of SCF orbital energies and no re-computation of ***
+ *** Fock matrix elements set explicitly                  ***
+ ************************************************************
+
 
 
    ***************************************************************************
@@ -874,250 +884,267 @@ Total no. of orbitals           (NORB):   104
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Jun 15 16:58:52 2011
+########## START ITERATION NO.   1 ##########   Wed Jul 25 04:10:46 2012
 
-It.   1    -64.94689448676      1.00D+20  0.00D+00  0.00D+00               0.02399699s   Scr. nuclei    Wed Jun 15
 
-########## START ITERATION NO.   2 ##########   Wed Jun 15 16:58:52 2011
+=> Calculating sum of orbital energies
+It.    1    -64.94689431465      0.00D+00  0.00D+00  0.00D+00               0.03200199s   Scr. nuclei    Wed Jul 25
+
+########## START ITERATION NO.   2 ##########   Wed Jul 25 04:10:46 2012
 
 
 * GETGAB: label "GABAO2XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   73.22%    0.00%    2.07%   0.02399600s
-AOfock:SL  1.00D-12    0.00%   77.63%    0.00%    0.73%   0.21696702s
-AOfock:SS  1.00D-12    0.00%   84.29%    0.00%    0.05%   0.54791701s
-AOfock:GT  1.00D-12    0.00%   78.80%    0.00%    0.01%   0.37394297s
- >>> Time used in fastjk is   1.24 seconds
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 1.24081104s
+AOfock:LL  1.00D-12    0.00%   73.22%    0.00%    2.07%   0.06400299s
+AOfock:SL  1.00D-12    0.00%   77.63%    0.00%    0.73%   0.49603102s
+AOfock:SS  1.00D-12    0.00%   84.29%    0.00%    0.05%   1.24007696s
+AOfock:GT  1.00D-12    0.00%   78.80%    0.00%    0.01%   0.84405398s
+ >>> Time used in fastjk is   2.88 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 2.97218587s
 
-########## END ITERATION NO.   2 ##########   Wed Jun 15 16:58:52 2011
+########## END ITERATION NO.   2 ##########   Wed Jul 25 04:10:46 2012
 
-It.   2    -173.5595642901      1.09D+02  1.03D+01  3.58D+00               1.24081104s   LL SL SS GT    Wed Jun 15
+It.    2    -173.5595643493      1.09D+02  1.17D+01  3.58D+00               2.97218587s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.   3 ##########   Wed Jun 15 16:58:54 2011
+########## START ITERATION NO.   3 ##########   Wed Jul 25 04:10:49 2012
 
     3 *** Differential density matrix. DCOVLP     = 1.0255
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   73.40%    0.00%    2.06%   0.02499604s
-AOfock:SL  1.00D-12    0.00%   77.80%    0.00%    0.73%   0.22096705s
-AOfock:SS  1.00D-12    0.00%   85.28%    0.00%    0.05%   0.53491783s
-AOfock:GT  1.00D-12    0.00%   78.90%    0.00%    0.01%   0.37894320s
- >>> Time used in fastjk is   1.16 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.16582298s
+AOfock:LL  1.00D-12    0.00%   73.40%    0.00%    2.06%   0.06000400s
+AOfock:SL  1.00D-12    0.00%   77.80%    0.00%    0.73%   0.50803185s
+AOfock:SS  1.00D-12    0.00%   85.28%    0.00%    0.05%   1.21607494s
+AOfock:GT  1.00D-12    0.00%   78.90%    0.00%    0.01%   0.84405327s
+ >>> Time used in fastjk is   2.64 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 2.72817016s
 
-########## END ITERATION NO.   3 ##########   Wed Jun 15 16:58:54 2011
+########## END ITERATION NO.   3 ##########   Wed Jul 25 04:10:49 2012
 
-It.   3    -174.1502569073      5.91D-01 -1.64D+00  8.71D-01   DIIS   2    1.16582298s   LL SL SS GT    Wed Jun 15
+It.    3    -174.1502569206      5.91D-01 -1.57D+00  8.71D-01   DIIS   2    2.72817016s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.   4 ##########   Wed Jun 15 16:58:55 2011
+########## START ITERATION NO.   4 ##########   Wed Jul 25 04:10:52 2012
 
     4 *** Differential density matrix. DCOVLP     = 0.9521
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   73.71%    0.00%    2.05%   0.02299595s
-AOfock:SL  1.00D-12    0.00%   78.11%    0.00%    0.72%   0.21996689s
-AOfock:SS  1.00D-12    0.00%   86.16%    0.00%    0.05%   0.52692008s
-AOfock:GT  1.00D-12    0.00%   79.26%    0.00%    0.01%   0.37394309s
- >>> Time used in fastjk is   1.15 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.14982510s
+AOfock:LL  1.00D-12    0.00%   73.71%    0.00%    2.05%   0.06000376s
+AOfock:SL  1.00D-12    0.00%   78.11%    0.00%    0.72%   0.49603128s
+AOfock:SS  1.00D-12    0.00%   86.16%    0.00%    0.05%   1.19607449s
+AOfock:GT  1.00D-12    0.00%   79.26%    0.00%    0.01%   0.84005356s
+ >>> Time used in fastjk is   2.60 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 2.69216776s
 
-########## END ITERATION NO.   4 ##########   Wed Jun 15 16:58:55 2011
+########## END ITERATION NO.   4 ##########   Wed Jul 25 04:10:52 2012
 
-It.   4    -174.2503525413      1.00D-01  6.13D-01  2.29D-01   DIIS   3    1.14982510s   LL SL SS GT    Wed Jun 15
+It.    4    -174.2503525412      1.00D-01  5.83D-01  2.29D-01   DIIS   3    2.69216776s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.   5 ##########   Wed Jun 15 16:58:56 2011
+########## START ITERATION NO.   5 ##########   Wed Jul 25 04:10:55 2012
 
     5 *** Differential density matrix. DCOVLP     = 1.0053
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   74.29%    0.00%    2.03%   0.02399611s
-AOfock:SL  1.00D-12    0.00%   78.73%    0.00%    0.71%   0.21596694s
-AOfock:SS  1.00D-12    0.00%   87.81%    0.00%    0.05%   0.50792289s
-AOfock:GT  1.00D-12    0.00%   79.88%    0.00%    0.01%   0.36794424s
- >>> Time used in fastjk is   1.12 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.12182879s
+AOfock:LL  1.00D-12    0.00%   74.29%    0.00%    2.03%   0.06000233s
+AOfock:SL  1.00D-12    0.00%   78.73%    0.00%    0.71%   0.48403072s
+AOfock:SS  1.00D-12    0.00%   87.81%    0.00%    0.05%   1.15607262s
+AOfock:GT  1.00D-12    0.00%   79.88%    0.00%    0.01%   0.82405090s
+ >>> Time used in fastjk is   2.53 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 2.62416553s
 
-########## END ITERATION NO.   5 ##########   Wed Jun 15 16:58:56 2011
+########## END ITERATION NO.   5 ##########   Wed Jul 25 04:10:55 2012
 
-It.   5    -174.2580370666      7.68D-03 -1.22D-01  5.53D-02   DIIS   4    1.12182879s   LL SL SS GT    Wed Jun 15
+It.    5    -174.2580370666      7.68D-03 -1.11D-01  5.53D-02   DIIS   4    2.62416553s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.   6 ##########   Wed Jun 15 16:58:57 2011
+########## START ITERATION NO.   6 ##########   Wed Jul 25 04:10:58 2012
 
     6 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   74.97%    0.00%    2.01%   0.02299690s
-AOfock:SL  1.00D-12    0.00%   79.52%    0.00%    0.70%   0.21396685s
-AOfock:SS  1.00D-12    0.00%   89.50%    0.00%    0.05%   0.48692608s
-AOfock:GT  1.00D-12    0.00%   80.71%    0.00%    0.01%   0.36594486s
- >>> Time used in fastjk is   1.09 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.09583426s
+AOfock:LL  1.00D-12    0.00%   74.97%    0.00%    2.01%   0.06000423s
+AOfock:SL  1.00D-12    0.00%   79.52%    0.00%    0.70%   0.48003006s
+AOfock:SS  1.00D-12    0.00%   89.50%    0.00%    0.05%   1.10806751s
+AOfock:GT  1.00D-12    0.00%   80.71%    0.00%    0.01%   0.82005215s
+ >>> Time used in fastjk is   2.48 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 2.56415844s
 
-########## END ITERATION NO.   6 ##########   Wed Jun 15 16:58:57 2011
+########## END ITERATION NO.   6 ##########   Wed Jul 25 04:10:58 2012
 
-It.   6    -174.2585018886      4.65D-04 -2.54D-02  1.49D-02   DIIS   5    1.09583426s   LL SL SS GT    Wed Jun 15
+It.    6    -174.2585018886      4.65D-04 -2.34D-02  1.49D-02   DIIS   5    2.56415844s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.   7 ##########   Wed Jun 15 16:58:58 2011
+########## START ITERATION NO.   7 ##########   Wed Jul 25 04:11:00 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   75.26%    0.00%    1.99%   0.02299595s
-AOfock:SL  1.00D-12    0.00%   79.81%    0.00%    0.69%   0.21396732s
-AOfock:SS  1.00D-12    0.00%   90.37%    0.00%    0.04%   0.47992706s
-AOfock:GT  1.00D-12    0.00%   81.07%    0.00%    0.01%   0.36094570s
- >>> Time used in fastjk is   1.08 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.08483505s
+AOfock:LL  1.00D-12    0.00%   75.26%    0.00%    1.99%   0.05600262s
+AOfock:SL  1.00D-12    0.00%   79.81%    0.00%    0.69%   0.48003101s
+AOfock:SS  1.00D-12    0.00%   90.37%    0.00%    0.04%   1.09206867s
+AOfock:GT  1.00D-12    0.00%   81.07%    0.00%    0.01%   0.80804920s
+ >>> Time used in fastjk is   2.44 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 2.54015923s
 
-########## END ITERATION NO.   7 ##########   Wed Jun 15 16:58:58 2011
+########## END ITERATION NO.   7 ##########   Wed Jul 25 04:11:00 2012
 
-It.   7    -174.2586064587      1.05D-04  7.67D-03  6.25D-03   DIIS   6    1.08483505s   LL SL SS GT    Wed Jun 15
+It.    7    -174.2586064587      1.05D-04  6.49D-03  6.25D-03   DIIS   6    2.54015923s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.   8 ##########   Wed Jun 15 16:58:59 2011
+########## START ITERATION NO.   8 ##########   Wed Jul 25 04:11:03 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   75.62%    0.00%    1.98%   0.02299595s
-AOfock:SL  1.00D-12    0.00%   80.22%    0.00%    0.69%   0.21196795s
-AOfock:SS  1.00D-12    0.00%   91.02%    0.00%    0.04%   0.46792889s
-AOfock:GT  1.00D-12    0.00%   81.44%    0.00%    0.01%   0.36094475s
- >>> Time used in fastjk is   1.07 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.07183695s
+AOfock:LL  1.00D-12    0.00%   75.62%    0.00%    1.98%   0.06000519s
+AOfock:SL  1.00D-12    0.00%   80.22%    0.00%    0.69%   0.47602844s
+AOfock:SS  1.00D-12    0.00%   91.02%    0.00%    0.04%   1.08006859s
+AOfock:GT  1.00D-12    0.00%   81.44%    0.00%    0.01%   0.80405045s
+ >>> Time used in fastjk is   2.42 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 2.52015877s
 
-########## END ITERATION NO.   8 ##########   Wed Jun 15 16:58:59 2011
+########## END ITERATION NO.   8 ##########   Wed Jul 25 04:11:03 2012
 
-It.   8    -174.2586212953      1.48D-05 -2.01D-03  5.09D-04   DIIS   7    1.07183695s   LL SL SS GT    Wed Jun 15
+It.    8    -174.2586212953      1.48D-05 -2.14D-03  5.09D-04   DIIS   7    2.52015877s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.   9 ##########   Wed Jun 15 16:59:00 2011
+########## START ITERATION NO.   9 ##########   Wed Jul 25 04:11:05 2012
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   77.19%    0.00%    1.91%   0.02299595s
-AOfock:SL  1.00D-12    0.00%   82.07%    0.00%    0.66%   0.20496941s
-AOfock:SS  1.00D-12    0.00%   93.87%    0.00%    0.04%   0.43393326s
-AOfock:GT  1.00D-12    0.00%   83.35%    0.00%    0.01%   0.34694672s
- >>> Time used in fastjk is   1.01 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.01684475s
+AOfock:LL  1.00D-12    0.00%   77.19%    0.00%    1.91%   0.06000328s
+AOfock:SL  1.00D-12    0.00%   82.07%    0.00%    0.66%   0.46002769s
+AOfock:SS  1.00D-12    0.00%   93.87%    0.00%    0.04%   1.01206398s
+AOfock:GT  1.00D-12    0.00%   83.35%    0.00%    0.01%   0.78404808s
+ >>> Time used in fastjk is   2.32 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 2.41614914s
 
-########## END ITERATION NO.   9 ##########   Wed Jun 15 16:59:00 2011
+########## END ITERATION NO.   9 ##########   Wed Jul 25 04:11:05 2012
 
-It.   9    -174.2586213968      1.02D-07 -1.56D-04  7.17D-05   DIIS   8    1.01684475s   LL SL SS GT    Wed Jun 15
+It.    9    -174.2586213968      1.02D-07 -1.56D-04  7.17D-05   DIIS   8    2.41614914s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.  10 ##########   Wed Jun 15 16:59:01 2011
+########## START ITERATION NO.  10 ##########   Wed Jul 25 04:11:08 2012
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   79.13%    0.00%    1.83%   0.02299690s
-AOfock:SL  1.00D-12    0.00%   84.11%    0.00%    0.62%   0.19696999s
-AOfock:SS  1.00D-12    0.01%   96.88%    0.00%    0.03%   0.39294052s
-AOfock:GT  1.00D-12    0.00%   85.32%    0.00%    0.00%   0.33594894s
- >>> Time used in fastjk is   0.95 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.95685482s
+AOfock:LL  1.00D-12    0.00%   79.13%    0.00%    1.83%   0.05600357s
+AOfock:SL  1.00D-12    0.00%   84.11%    0.00%    0.62%   0.45202827s
+AOfock:SS  1.00D-12    0.01%   96.88%    0.00%    0.03%   0.93605804s
+AOfock:GT  1.00D-12    0.00%   85.32%    0.00%    0.00%   0.77204895s
+ >>> Time used in fastjk is   2.22 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 2.31614685s
 
-########## END ITERATION NO.  10 ##########   Wed Jun 15 16:59:01 2011
+########## END ITERATION NO.  10 ##########   Wed Jul 25 04:11:08 2012
 
-It.  10    -174.2586213983      1.43D-09 -1.74D-05  1.83D-05   DIIS   9    0.95685482s   LL SL SS GT    Wed Jun 15
+It.   10    -174.2586213983      1.43D-09 -1.01D-05  1.83D-05   DIIS   9    2.31614685s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.  11 ##########   Wed Jun 15 16:59:02 2011
+########## START ITERATION NO.  11 ##########   Wed Jul 25 04:11:10 2012
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   80.21%    0.00%    1.75%   0.01999664s
-AOfock:SL  1.00D-12    0.00%   86.30%    0.00%    0.58%   0.19097042s
-AOfock:SS  1.00D-12    0.16%   97.59%    0.01%    0.07%   0.38194275s
-AOfock:GT  1.00D-12    0.00%   86.78%    0.00%    0.00%   0.32695007s
- >>> Time used in fastjk is   0.92 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.92585945s
+AOfock:LL  1.00D-12    0.00%   80.21%    0.00%    1.75%   0.06000328s
+AOfock:SL  1.00D-12    0.00%   86.30%    0.00%    0.58%   0.43202591s
+AOfock:SS  1.00D-12    0.16%   97.59%    0.01%    0.07%   0.90405846s
+AOfock:GT  1.00D-12    0.00%   86.78%    0.00%    0.00%   0.74404716s
+ >>> Time used in fastjk is   2.15 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 2.24813843s
 
-########## END ITERATION NO.  11 ##########   Wed Jun 15 16:59:02 2011
+########## END ITERATION NO.  11 ##########   Wed Jul 25 04:11:10 2012
 
-It.  11    -174.2586213986      3.69D-10  2.47D-06  1.08D-05   DIIS   9    0.92585945s   LL SL SS GT    Wed Jun 15
+It.   11    -174.2586213986      3.69D-10 -2.34D-06  1.08D-05   DIIS   9    2.24813843s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.  12 ##########   Wed Jun 15 16:59:03 2011
+########## START ITERATION NO.  12 ##########   Wed Jul 25 04:11:12 2012
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   80.31%    0.00%    1.70%   0.02199745s
-AOfock:SL  1.00D-12    0.00%   87.85%    0.00%    0.53%   0.18097115s
-AOfock:SS  1.00D-12    0.94%   96.77%    0.01%    0.12%   0.37494373s
-AOfock:GT  1.00D-12    0.00%   86.90%    0.00%    0.00%   0.32794952s
- >>> Time used in fastjk is   0.91 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.91286087s
+AOfock:LL  1.00D-12    0.00%   80.31%    0.00%    1.70%   0.05600166s
+AOfock:SL  1.00D-12    0.00%   87.85%    0.00%    0.53%   0.42402840s
+AOfock:SS  1.00D-12    0.94%   96.77%    0.01%    0.12%   0.90005684s
+AOfock:GT  1.00D-12    0.00%   86.90%    0.00%    0.00%   0.74404526s
+ >>> Time used in fastjk is   2.13 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 2.22414017s
 
-########## END ITERATION NO.  12 ##########   Wed Jun 15 16:59:03 2011
+########## END ITERATION NO.  12 ##########   Wed Jul 25 04:11:12 2012
 
-It.  12    -174.2586213989      2.35D-10 -2.41D-06  3.93D-06   DIIS   9    0.91286087s   LL SL SS GT    Wed Jun 15
+It.   12    -174.2586213989      2.34D-10 -3.07D-06  3.93D-06   DIIS   9    2.22414017s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.  13 ##########   Wed Jun 15 16:59:04 2011
+########## START ITERATION NO.  13 ##########   Wed Jul 25 04:11:15 2012
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   81.01%    0.00%    1.69%   0.02099705s
-AOfock:SL  1.00D-12    0.00%   88.17%    0.00%    0.54%   0.18297195s
-AOfock:SS  1.00D-12    2.02%   96.35%    0.04%    0.16%   0.35894489s
-AOfock:GT  1.00D-12    0.00%   87.64%    0.00%    0.00%   0.31895161s
- >>> Time used in fastjk is   0.88 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.88886547s
+AOfock:LL  1.00D-12    0.00%   81.01%    0.00%    1.69%   0.05600357s
+AOfock:SL  1.00D-12    0.00%   88.17%    0.00%    0.54%   0.42402649s
+AOfock:SS  1.00D-12    2.02%   96.35%    0.04%    0.16%   0.87205505s
+AOfock:GT  1.00D-12    0.00%   87.64%    0.00%    0.00%   0.73604584s
+ >>> Time used in fastjk is   2.09 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 2.18413544s
 
-########## END ITERATION NO.  13 ##########   Wed Jun 15 16:59:04 2011
+########## END ITERATION NO.  13 ##########   Wed Jul 25 04:11:15 2012
 
-It.  13    -174.2586213989      2.90D-11 -1.10D-06  9.17D-07   DIIS   9    0.88886547s   LL SL SS GT    Wed Jun 15
+It.   13    -174.2586213989      3.03D-11 -1.29D-06  9.17D-07   DIIS   9    2.18413544s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.  14 ##########   Wed Jun 15 16:59:05 2011
+########## START ITERATION NO.  14 ##########   Wed Jul 25 04:11:17 2012
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   83.58%    0.00%    1.59%   0.02099705s
-AOfock:SL  1.00D-12    0.00%   90.23%    0.00%    0.51%   0.17497253s
-AOfock:SS  1.00D-12   17.38%   82.05%    0.63%    1.93%   0.26496029s
-AOfock:GT  1.00D-12    0.00%   90.23%    0.00%    0.00%   0.29795456s
- >>> Time used in fastjk is   0.76 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.76588345s
+AOfock:LL  1.00D-12    0.00%   83.58%    0.00%    1.59%   0.05200386s
+AOfock:SL  1.00D-12    0.00%   90.23%    0.00%    0.51%   0.41602516s
+AOfock:SS  1.00D-12   17.38%   82.05%    0.63%    1.93%   0.68404198s
+AOfock:GT  1.00D-12    0.00%   90.23%    0.00%    0.00%   0.70404434s
+ >>> Time used in fastjk is   1.86 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 1.96012115s
 
-########## END ITERATION NO.  14 ##########   Wed Jun 15 16:59:05 2011
+########## END ITERATION NO.  14 ##########   Wed Jul 25 04:11:17 2012
 
-It.  14    -174.2586213989      9.38D-13  1.30D-07  3.43D-07   DIIS   9    0.76588345s   LL SL SS GT    Wed Jun 15
+It.   14    -174.2586213989      4.55D-13 -2.04D-07  3.43D-07   DIIS   9    1.96012115s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.  15 ##########   Wed Jun 15 16:59:06 2011
+########## START ITERATION NO.  15 ##########   Wed Jul 25 04:11:19 2012
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   85.02%    0.00%    1.68%   0.02099705s
-AOfock:SL  1.00D-12    0.00%   91.38%    0.00%    0.49%   0.16897392s
-AOfock:SS  1.00D-12   31.01%   68.62%    0.78%    6.09%   0.21196747s
-AOfock:GT  1.00D-12    0.00%   91.42%    0.00%    0.01%   0.29895401s
- >>> Time used in fastjk is   0.70 seconds
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.70789242s
+AOfock:LL  1.00D-12    0.00%   85.02%    0.00%    1.67%   0.05200195s
+AOfock:SL  1.00D-12    0.00%   91.38%    0.00%    0.49%   0.40002823s
+AOfock:SS  1.00D-12   31.01%   68.62%    0.78%    6.09%   0.56403351s
+AOfock:GT  1.00D-12    0.00%   91.42%    0.00%    0.01%   0.68804550s
+ >>> Time used in fastjk is   1.71 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 1.80411530s
 
-########## END ITERATION NO.  15 ##########   Wed Jun 15 16:59:06 2011
+########## END ITERATION NO.  15 ##########   Wed Jul 25 04:11:19 2012
 
-It.  15    -174.2586213989      1.59D-12  5.70D-08  4.32D-08   DIIS   9    0.70789242s   LL SL SS GT    Wed Jun 15
+It.   15    -174.2586213989      4.55D-13  6.62D-08  4.32D-08   DIIS   9    1.80411530s   LL SL SS GT    Wed Jul 25
 
-########## START ITERATION NO.  16 ##########   Wed Jun 15 16:59:07 2011
+########## START ITERATION NO.  16 ##########   Wed Jul 25 04:11:21 2012
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   88.26%    0.00%    1.41%   0.01999664s
-AOfock:SL  1.00D-12    0.00%   92.85%    0.00%    0.91%   0.16697502s
-AOfock:SS  1.00D-12   75.77%   24.19%    1.40%   11.58%   0.06798935s
-AOfock:GT  1.00D-12    0.00%   94.09%    0.00%    0.04%   0.27895737s
- >>> Time used in fastjk is   0.54 seconds
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.53991795s
+AOfock:LL  1.00D-12    0.00%   88.26%    0.00%    1.42%   0.05200195s
+AOfock:SL  1.00D-12    0.00%   92.85%    0.00%    0.91%   0.38802338s
+AOfock:SS  1.00D-12   75.77%   24.19%    1.40%   11.58%   0.23601532s
+AOfock:GT  1.00D-12    0.00%   94.09%    0.00%    0.04%   0.64804077s
+ >>> Time used in fastjk is   1.33 seconds
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 1.42008591s
 
-########## END ITERATION NO.  16 ##########   Wed Jun 15 16:59:07 2011
+########## END ITERATION NO.  16 ##########   Wed Jul 25 04:11:21 2012
 
-It.  16    -174.2586213989      8.33D-12 -8.60D-09  4.36D-09   DIIS   9    0.53991795s   LL SL SS GT    Wed Jun 15
+It.   16    -174.2586213989      8.81D-12 -6.29D-09  4.34D-09   DIIS   9    1.42008591s   LL SL SS GT    Wed Jul 25
 
 
                                    SCF - CYCLE
@@ -1133,22 +1160,22 @@ It.  16    -174.2586213989      8.33D-12 -8.60D-09  4.36D-09   DIIS   9    0.539
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -64.94689448676      1.00D+20  0.00D+00  0.00D+00               0.02399699s   Scr. nuclei    Wed Jun 15
-It.   2    -173.5595642901      1.09D+02  1.03D+01  3.58D+00               1.24081104s   LL SL SS GT    Wed Jun 15
-It.   3    -174.1502569073      5.91D-01 -1.64D+00  8.71D-01   DIIS   2    1.16582298s   LL SL SS GT    Wed Jun 15
-It.   4    -174.2503525413      1.00D-01  6.13D-01  2.29D-01   DIIS   3    1.14982510s   LL SL SS GT    Wed Jun 15
-It.   5    -174.2580370666      7.68D-03 -1.22D-01  5.53D-02   DIIS   4    1.12182879s   LL SL SS GT    Wed Jun 15
-It.   6    -174.2585018886      4.65D-04 -2.54D-02  1.49D-02   DIIS   5    1.09583426s   LL SL SS GT    Wed Jun 15
-It.   7    -174.2586064587      1.05D-04  7.67D-03  6.25D-03   DIIS   6    1.08483505s   LL SL SS GT    Wed Jun 15
-It.   8    -174.2586212953      1.48D-05 -2.01D-03  5.09D-04   DIIS   7    1.07183695s   LL SL SS GT    Wed Jun 15
-It.   9    -174.2586213968      1.02D-07 -1.56D-04  7.17D-05   DIIS   8    1.01684475s   LL SL SS GT    Wed Jun 15
-It.  10    -174.2586213983      1.43D-09 -1.74D-05  1.83D-05   DIIS   9    0.95685482s   LL SL SS GT    Wed Jun 15
-It.  11    -174.2586213986      3.69D-10  2.47D-06  1.08D-05   DIIS   9    0.92585945s   LL SL SS GT    Wed Jun 15
-It.  12    -174.2586213989      2.35D-10 -2.41D-06  3.93D-06   DIIS   9    0.91286087s   LL SL SS GT    Wed Jun 15
-It.  13    -174.2586213989      2.90D-11 -1.10D-06  9.17D-07   DIIS   9    0.88886547s   LL SL SS GT    Wed Jun 15
-It.  14    -174.2586213989      9.38D-13  1.30D-07  3.43D-07   DIIS   9    0.76588345s   LL SL SS GT    Wed Jun 15
-It.  15    -174.2586213989      1.59D-12  5.70D-08  4.32D-08   DIIS   9    0.70789242s   LL SL SS GT    Wed Jun 15
-It.  16    -174.2586213989      8.33D-12 -8.60D-09  4.36D-09   DIIS   9    0.53991795s   LL SL SS GT    Wed Jun 15
+It.    1    -64.94689431465      0.00D+00  0.00D+00  0.00D+00               0.03200199s   Scr. nuclei    Wed Jul 25
+It.    2    -173.5595643493      1.09D+02  1.17D+01  3.58D+00               2.97218587s   LL SL SS GT    Wed Jul 25
+It.    3    -174.1502569206      5.91D-01 -1.57D+00  8.71D-01   DIIS   2    2.72817016s   LL SL SS GT    Wed Jul 25
+It.    4    -174.2503525412      1.00D-01  5.83D-01  2.29D-01   DIIS   3    2.69216776s   LL SL SS GT    Wed Jul 25
+It.    5    -174.2580370666      7.68D-03 -1.11D-01  5.53D-02   DIIS   4    2.62416553s   LL SL SS GT    Wed Jul 25
+It.    6    -174.2585018886      4.65D-04 -2.34D-02  1.49D-02   DIIS   5    2.56415844s   LL SL SS GT    Wed Jul 25
+It.    7    -174.2586064587      1.05D-04  6.49D-03  6.25D-03   DIIS   6    2.54015923s   LL SL SS GT    Wed Jul 25
+It.    8    -174.2586212953      1.48D-05 -2.14D-03  5.09D-04   DIIS   7    2.52015877s   LL SL SS GT    Wed Jul 25
+It.    9    -174.2586213968      1.02D-07 -1.56D-04  7.17D-05   DIIS   8    2.41614914s   LL SL SS GT    Wed Jul 25
+It.   10    -174.2586213983      1.43D-09 -1.01D-05  1.83D-05   DIIS   9    2.31614685s   LL SL SS GT    Wed Jul 25
+It.   11    -174.2586213986      3.69D-10 -2.34D-06  1.08D-05   DIIS   9    2.24813843s   LL SL SS GT    Wed Jul 25
+It.   12    -174.2586213989      2.34D-10 -3.07D-06  3.93D-06   DIIS   9    2.22414017s   LL SL SS GT    Wed Jul 25
+It.   13    -174.2586213989      3.03D-11 -1.29D-06  9.17D-07   DIIS   9    2.18413544s   LL SL SS GT    Wed Jul 25
+It.   14    -174.2586213989      4.55D-13 -2.04D-07  3.43D-07   DIIS   9    1.96012115s   LL SL SS GT    Wed Jul 25
+It.   15    -174.2586213989      4.55D-13  6.62D-08  4.32D-08   DIIS   9    1.80411530s   LL SL SS GT    Wed Jul 25
+It.   16    -174.2586213989      8.81D-12 -6.29D-09  4.34D-09   DIIS   9    1.42008591s   LL SL SS GT    Wed Jul 25
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   16 iterations.
 * Average elapsed time per iteration: 
@@ -1158,23 +1185,23 @@ It.  16    -174.2586213989      8.33D-12 -8.60D-09  4.36D-09   DIIS   9    0.539
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -202.39802981662902
+   Electronic energy                        :    -202.39802981662910
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      28.13940841772526
 
    Sum of all contributions to the energy
-   Total energy                             :    -174.25862139890376
+   Total energy                             :    -174.25862139890384
 
 
                                WARNING from EIGCHK
                                -------------------
 
        4 positron states intruding
-         52   -37556.06846645        1.66202109
-         51   -37556.11771411        1.61277343
-         50   -37556.76107049        0.96941706
-         49   -37556.98747735        0.74301020
+         52   -37556.06846647        1.66202108
+         51   -37556.11771413        1.61277342
+         50   -37556.76107053        0.96941702
+         49   -37556.98747738        0.74301017
 
 
                                    Eigenvalues
@@ -1183,27 +1210,27 @@ It.  16    -174.2586213989      8.33D-12 -8.60D-09  4.36D-09   DIIS   9    0.539
 
 * Block   1 in E1 :  Omega =  1/2
   * Closed shell, f = 1.0000
-   -25.97272978873  ( 2)      -20.20194849957  ( 2)       -1.28674846414  ( 2)       -0.80821832314  ( 2)       -0.34955792544  ( 2)
-    -0.29603560726  ( 2)       -0.08059830077  ( 2)
+   -25.97272978871  ( 2)      -20.20194849956  ( 2)       -1.28674846414  ( 2)       -0.80821832314  ( 2)       -0.34955792543  ( 2)
+    -0.29603560727  ( 2)       -0.08059830078  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.67227582541  ( 2)        1.45948628898  ( 2)        1.48147178939  ( 2)        1.68475425699  ( 2)        1.72438801820  ( 2)
-     1.81529073021  ( 2)        2.49775843611  ( 2)        3.25253278032  ( 2)        3.45429811797  ( 2)        4.51943326057  ( 2)
-     5.03494413363  ( 2)        6.49649894839  ( 2)        6.73375947785  ( 2)        8.02553872824  ( 2)        8.28807410797  ( 2)
-    13.11952458326  ( 2)       16.47139530410  ( 2)       33.77998022921  ( 2)       33.86458702425  ( 2)       42.77798426130  ( 2)
-    42.90002933445  ( 2)       61.64529519913  ( 2)       76.99135244183  ( 2)      230.73581093354  ( 2)      287.82476514140  ( 2)
-   852.21695965761  ( 2)     1059.08372382850  ( 2)     3410.18850808879  ( 2)     4177.35022452001  ( 2)    15466.64079874315  ( 2)
- 18277.14716143424  ( 2)
+     0.67227582541  ( 2)        1.45948628898  ( 2)        1.48147178939  ( 2)        1.68475425700  ( 2)        1.72438801822  ( 2)
+     1.81529073020  ( 2)        2.49775843611  ( 2)        3.25253278033  ( 2)        3.45429811797  ( 2)        4.51943326056  ( 2)
+     5.03494413360  ( 2)        6.49649894838  ( 2)        6.73375947785  ( 2)        8.02553872824  ( 2)        8.28807410797  ( 2)
+    13.11952458326  ( 2)       16.47139530410  ( 2)       33.77998022921  ( 2)       33.86458702427  ( 2)       42.77798426132  ( 2)
+    42.90002933446  ( 2)       61.64529519912  ( 2)       76.99135244184  ( 2)      230.73581093352  ( 2)      287.82476514140  ( 2)
+   852.21695965752  ( 2)     1059.08372382863  ( 2)     3410.18850808877  ( 2)     4177.35022452005  ( 2)    15466.64079874321  ( 2)
+ 18277.14716143408  ( 2)
 
 * Block   2 in E1 :  Omega =  3/2
   * Closed shell, f = 1.0000
-    -0.34825220541  ( 2)       -0.07957243843  ( 2)
+    -0.34825220540  ( 2)       -0.07957243842  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     1.48227121045  ( 2)        1.72553451605  ( 2)        3.25264864771  ( 2)        3.33891409349  ( 2)        4.32612717422  ( 2)
-     4.51964786516  ( 2)        6.49945611335  ( 2)        8.03062219304  ( 2)       33.81161398564  ( 2)       42.83239135555  ( 2)
+     1.48227121046  ( 2)        1.72553451607  ( 2)        3.25264864771  ( 2)        3.33891409347  ( 2)        4.32612717423  ( 2)
+     4.51964786516  ( 2)        6.49945611335  ( 2)        8.03062219305  ( 2)       33.81161398563  ( 2)       42.83239135557  ( 2)
 
 * Block   3 in E1 :  Omega =  5/2
   * Virtual eigenvalues, f = 0.0000
-     3.33909542803  ( 2)        4.32649030432  ( 2)
+     3.33909542803  ( 2)        4.32649030433  ( 2)
 
 * Occupation in fermion symmetry E1 
   * Inactive orbitals
@@ -1231,64 +1258,19 @@ tot.num. of pos.erg shells:   38   12    2
                    *****************************************************************
                    *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***
                    ***          written by Stefan Knecht and Trond Saue,         ***
-                   ***              University of Strasbourg, 2010.              ***
+                   *** Universities of Strasbourg, Toulouse and Odense 2010-2011 ***
                    *****************************************************************
 
 
-
-                       Generating Lowdin canonical matrix:
-                       -----------------------------------
-
-   L   A1    * Deleted:          2(Proj:          2, Lindep:          0)
-   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
-   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
-   L   A2    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A1    * Deleted:         10(Proj:         10, Lindep:          0)
-   S   B1    * Deleted:          2(Proj:          2, Lindep:          0)
-   S   B2    * Deleted:          2(Proj:          2, Lindep:          0)
-   S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
-
-
-                                Output from LINSYM
-                                ------------------
-
-
- Parity   MJ  Functions(total) Functions(LC) Functions(SC)
-     1    1/2         38           38            0
-     1   -3/2         12           12            0
-     1    5/2          2            2            0
-
-
-                                Output from MODHAM
-                                ------------------
-
-* Applied strict kinetic balance !
-
-
-                                Output from LINSYM
-                                ------------------
-
-
- Parity   MJ  Functions(total) Functions(LC) Functions(SC)
-     1    1/2         76           38           38
-     1   -3/2         24           12           12
-     1    5/2          4            2            2
+* REACMO: Coefficients read from file DFCOEF - Total energy: -174.258621398895031
+* Heading : FO                                               Wed Jul 25 04:11:21 2012
 
                    *****************************************************************
                    ***            X2C transformation ended properly.             ***
                    ***       Calculation continues in two-component mode.        ***
                    *****************************************************************
 
-
-
-                                Output from LINSYM
-                                ------------------
-
-
- Parity   MJ  Functions(total) Functions(LC) Functions(SC)
-     1    1/2         38           38            0
-     1   -3/2         12           12            0
-     1    5/2          2            2            0
+ >>> Time used in mk_h2c is   0.22 seconds
 
 
       **********************************************************************
@@ -1315,501 +1297,503 @@ Total no. of orbitals           (NORB):    52
                                  ----------------
 
 
-* Electronic eigenvalue no.  1: -25.972729788732
+* Electronic eigenvalue no.  1: -25.972729788705
 ====================================================
-       1  L A1 F  s      -0.0009869819  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s      -0.0059936328  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s      -0.0289297390  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s      -0.1072452360  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s      -0.2871945015  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s      -0.4481014175  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s      -0.2637660334  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s      -0.0161288384  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s       0.0035915359  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz     -0.0003928678  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz     -0.0005367324  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz     -0.0001370197  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz      0.0009645857  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx    -0.0000810197  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy    -0.0000810197  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz     0.0001620394  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s      -0.0000000308  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s       0.0000001139  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s      -0.0000018931  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s       0.0000060174  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s      -0.0000340205  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s       0.0000790708  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s      -0.0001353361  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s       0.0003600020  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s      -0.0012823984  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz     -0.0000044312  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz      0.0000683439  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz      0.0000780694  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz      0.0009464391  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx     0.0000380823  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy     0.0000380823  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz    -0.0000761645  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000 -0.0000001464  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000  0.0000003810  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000  0.0000000366  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000  0.0000000083  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0000002183  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000  0.0000000006  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000 -0.0000000975  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000 -0.0000000819  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0000001009  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0000001464
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000003810
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000000366
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000000083
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000  0.0000002183
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0000000006
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000000975
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000000819
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000  0.0000001009
+       1  L A1 F  s       0.0009869819  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s       0.0059936328  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s       0.0289297390  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s       0.1072452361  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s       0.2871945015  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s       0.4481014188  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s       0.2637660322  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s       0.0161288373  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s      -0.0035915355  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz      0.0003928668  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz      0.0005367308  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz      0.0001370200  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz     -0.0009645856  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx     0.0000810197  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy     0.0000810197  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz    -0.0001620394  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s       0.0000000308  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s      -0.0000001139  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s       0.0000018931  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s      -0.0000060174  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s       0.0000340205  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s      -0.0000790708  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s       0.0001353361  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s      -0.0003600020  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s       0.0012823981  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz      0.0000044313  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz     -0.0000683439  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz     -0.0000780693  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz     -0.0009464390  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx    -0.0000380822  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy    -0.0000380822  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz     0.0000761645  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000  0.0000001487  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000 -0.0000003713  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000 -0.0000000334  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000 -0.0000000089  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0000002187  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000 -0.0000000004  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000  0.0000000008  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000  0.0000000995  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000  0.0000000829  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0000001012  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000001487
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000003713
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000000334
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000000089
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0000002187
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000000004
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000000008
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000000995
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000000829
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0000001012
 
-* Electronic eigenvalue no.  2: -20.201948499568
+* Electronic eigenvalue no.  2: -20.201948499562
 ====================================================
-       1  L A1 F  s      -0.0000000345  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s      -0.0000004321  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s      -0.0000002988  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s      -0.0000108402  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s       0.0000086027  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s      -0.0000933448  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s       0.0000957102  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s      -0.0002118539  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s       0.0009015289  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz     -0.0000006545  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz      0.0000948172  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz      0.0000600846  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz      0.0004756187  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx     0.0000118057  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy     0.0000118057  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz    -0.0000236113  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s       0.0009304722  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s       0.0058161217  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s       0.0283553713  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s       0.1054207729  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s       0.2833741650  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s       0.4482622357  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s       0.2702169008  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s       0.0159316751  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s      -0.0031429562  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz     -0.0006913398  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz     -0.0010273174  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz      0.0000703874  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz      0.0005593207  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx     0.0001507532  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy     0.0001507532  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz    -0.0003015063  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000  0.0000000078  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000  0.0000000034  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000 -0.0000001300  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000 -0.0000001896  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0000001413  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000 -0.0000001829  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000  0.0000005997  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000  0.0000000583  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000  0.0000000412  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0000004066  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000000078
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000000034
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0000001300
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0000001896
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0000001413
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000001829
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0000005997
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0000000583
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0000000412
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0000004066
+       1  L A1 F  s       0.0000000345  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s       0.0000004321  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s       0.0000002988  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s       0.0000108402  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s      -0.0000086027  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s       0.0000933449  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s      -0.0000957101  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s       0.0002118538  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s      -0.0009015293  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz      0.0000006545  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz     -0.0000948174  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz     -0.0000600847  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz     -0.0004756187  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx    -0.0000118057  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy    -0.0000118057  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz     0.0000236114  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s      -0.0009304722  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s      -0.0058161217  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s      -0.0283553712  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s      -0.1054207724  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s      -0.2833741641  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s      -0.4482622338  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s      -0.2702169030  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s      -0.0159316781  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s       0.0031429571  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz      0.0006913293  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz      0.0010273014  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz     -0.0000703827  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz     -0.0005593221  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx    -0.0001507533  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy    -0.0001507533  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz     0.0003015067  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000 -0.0000000080  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000 -0.0000000045  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000  0.0000001283  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000  0.0000001889  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0000001418  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000  0.0000001787  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000 -0.0000006173  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000 -0.0000000637  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000 -0.0000000409  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0000004052  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000000080
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000000045
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000001283
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000001889
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0000001418
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000001787
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000006173
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000000637
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000000409
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0000004052
 
-* Electronic eigenvalue no.  3: -1.2867484641408
+* Electronic eigenvalue no.  3: -1.2867484641356
 ====================================================
-       1  L A1 F  s      -0.0002022668  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s      -0.0012562601  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s      -0.0059388281  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s      -0.0239080877  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s      -0.0659356001  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s      -0.1507225095  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s      -0.1001477849  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s       0.4891733523  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s       0.4999190997  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz      0.0037993158  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz      0.0160984474  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz      0.0538331250  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz      0.0166941176  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx    -0.0029992463  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy    -0.0029992463  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz     0.0059984926  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s      -0.0000691529  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s      -0.0004393252  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s      -0.0021187570  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s      -0.0084092424  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s      -0.0236706544  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s      -0.0523962258  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s      -0.0400027252  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s       0.1714920508  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s       0.1498576640  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz     -0.0050782439  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz     -0.0222246825  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz     -0.0656751134  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz     -0.0215084069  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx    -0.0050540647  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy    -0.0050540647  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz     0.0101081295  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000  0.0000117346  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000  0.0000340770  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000  0.0000464430  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000  0.0000209958  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0000007500  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000 -0.0000100300  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000 -0.0000252301  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000 -0.0000281965  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000 -0.0000057814  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0000036131  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000117346
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000340770
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000464430
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000209958
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0000007500
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000100300
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000252301
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000281965
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000057814
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0000036131
+       1  L A1 F  s      -0.0002022668  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s      -0.0012562604  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s      -0.0059388294  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s      -0.0239080932  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s      -0.0659356145  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s      -0.1507225476  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s      -0.1001478036  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s       0.4891735196  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s       0.4999191409  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz      0.0037993095  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz      0.0160984237  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz      0.0538330320  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz      0.0166940710  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx    -0.0029992397  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy    -0.0029992397  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz     0.0059984794  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s      -0.0000691529  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s      -0.0004393249  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s      -0.0021187555  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s      -0.0084092364  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s      -0.0236706380  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s      -0.0523961884  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s      -0.0400026993  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s       0.1714919659  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s       0.1498574603  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz     -0.0050782479  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz     -0.0222247134  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz     -0.0656751150  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz     -0.0215083786  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx    -0.0050540560  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy    -0.0050540560  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz     0.0101081120  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000  0.0000116722  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000  0.0000337506  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000  0.0000458446  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000  0.0000207522  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0000007210  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000 -0.0000100861  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000 -0.0000255374  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000 -0.0000287499  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000 -0.0000059339  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0000036689  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000116722
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000337506
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000458446
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000207522
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0000007210
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000100861
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000255374
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000287499
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000059339
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0000036689
 
-* Electronic eigenvalue no.  4: -0.8082183231445
+* Electronic eigenvalue no.  4: -0.8082183231417
 ====================================================
-       1  L A1 F  s       0.0000917009  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s       0.0005745880  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s       0.0026769320  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s       0.0110120697  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s       0.0295051238  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s       0.0709795643  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s       0.0421318370  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s      -0.2222963387  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s      -0.2969965083  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz      0.0124316922  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz      0.0628160101  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz      0.1391872908  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz      0.1058060864  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx    -0.0035645416  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy    -0.0035645416  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz     0.0071290832  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s      -0.0001807842  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s      -0.0011588081  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s      -0.0055086631  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s      -0.0223405797  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s      -0.0611595358  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s      -0.1425951098  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s      -0.0990763601  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s       0.4599331276  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s       0.5241295693  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz      0.0008746716  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz      0.0076179273  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz     -0.0038162234  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz      0.0243585261  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx    -0.0012448168  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy    -0.0012448168  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz     0.0024896335  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000  0.0000455925  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000  0.0001444162  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000  0.0002254732  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000  0.0001018997  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0000003844  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000  0.0000014301  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000  0.0000013423  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000 -0.0000001515  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000 -0.0000146670  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0000020650  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000455925
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0001444162
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0002254732
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0001018997
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0000003844
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0000014301
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0000013423
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000001515
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000146670
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0000020650
+       1  L A1 F  s      -0.0000917009  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s      -0.0005745878  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s      -0.0026769311  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s      -0.0110120665  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s      -0.0295051142  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s      -0.0709795461  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s      -0.0421318198  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s       0.2222962869  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s       0.2969965199  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz     -0.0124316895  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz     -0.0628159927  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz     -0.1391872795  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz     -0.1058059710  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx     0.0035645471  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy     0.0035645471  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz    -0.0071290942  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s       0.0001807842  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s       0.0011588082  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s       0.0055086638  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s       0.0223405819  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s       0.0611595436  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s       0.1425951207  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s       0.0990763810  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s      -0.4599331484  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s      -0.5241297423  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz     -0.0008746287  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz     -0.0076177056  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz      0.0038166498  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz     -0.0243582705  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx     0.0012448202  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy     0.0012448202  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz    -0.0024896403  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000 -0.0000455479  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000 -0.0001441832  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000 -0.0002249291  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000 -0.0001017703  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0000004114  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000 -0.0000013347  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000 -0.0000008454  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000  0.0000010820  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000  0.0000153451  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0000021042  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000455479
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0001441832
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0002249291
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0001017703
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0000004114
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000013347
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000008454
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000010820
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000153451
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0000021042
 
-* Electronic eigenvalue no.  5: -0.3495579254395
+* Electronic eigenvalue no.  5: -0.3495579254286
 ====================================================
-       1  L A1 F  s      -0.0000000606  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s      -0.0000004467  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s      -0.0000015551  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s      -0.0000094950  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s      -0.0000135882  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s      -0.0000772593  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s       0.0000263861  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s       0.0000448229  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s       0.0004008679  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz     -0.0005810727  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz     -0.0025711759  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz     -0.0053628945  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz     -0.0048233463  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx     0.0000627549  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy     0.0000627549  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz    -0.0001255099  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s      -0.0000009578  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s      -0.0000063031  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s      -0.0000286841  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s      -0.0001237986  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s      -0.0003103635  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s      -0.0008319636  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s      -0.0004102141  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s       0.0022719582  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s       0.0048013559  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz      0.0001853338  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz      0.0010165699  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz      0.0025640209  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz      0.0018029485  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx     0.0001179034  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy     0.0001179034  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz    -0.0002358068  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000 -0.0278254634  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000 -0.1452465279  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000 -0.3096386979  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000 -0.3058220789  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0070910966  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000 -0.0101073320  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000 -0.0533575910  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000 -0.1140218636  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000 -0.1132387286  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0097703002  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0278254634
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.1452465279
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.3096386979
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.3058220789
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0070910966
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0101073320
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0533575910
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.1140218636
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.1132387286
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000  0.0097703002
+       1  L A1 F  s      -0.0000000594  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s      -0.0000004384  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s      -0.0000015210  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s      -0.0000093285  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s      -0.0000132447  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s      -0.0000760596  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s       0.0000264937  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s       0.0000432789  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s       0.0003929734  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz     -0.0005777365  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz     -0.0025540099  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz     -0.0053247549  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz     -0.0047871556  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx     0.0000622987  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy     0.0000622987  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz    -0.0001245975  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s      -0.0000009512  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s      -0.0000062594  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s      -0.0000284858  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s      -0.0001229380  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s      -0.0003082245  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s      -0.0008261660  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s      -0.0004074639  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s       0.0022569075  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s       0.0047664109  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz      0.0001832249  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz      0.0010059438  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz      0.0025391501  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz      0.0017855223  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx     0.0001170722  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy     0.0001170722  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz    -0.0002341444  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000 -0.0278254924  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000 -0.1452467083  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000 -0.3096391022  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000 -0.3058225740  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0070910760  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000 -0.0101073387  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000 -0.0533576151  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000 -0.1140219100  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000 -0.1132387434  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0097702693  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0278254924
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.1452467083
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.3096391022
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.3058225740
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0070910760
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0101073387
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0533576151
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.1140219100
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.1132387434
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0097702693
 
-* Electronic eigenvalue no.  6: -0.3482522054093
+* Electronic eigenvalue no.  6: -0.3482522053986
 ====================================================
-      14  L A1 F  dxx    -0.0000004785  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy     0.0000004785  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx     0.0000002243  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy    -0.0000002243  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000  0.0276751384  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000  0.1448911455  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000  0.3092359395  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000  0.3061211855  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0070967463  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000  0.0101027197  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000  0.0534558010  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000  0.1143093123  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000  0.1137850056  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0097807821  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0276751384
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.1448911455
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.3092359395
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.3061211855
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0070967463
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0101027197
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0534558010
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.1143093123
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.1137850056
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000  0.0097807821
-     179  L A2 F  dxy     0.0000000000  0.0000009569  0.0000000000  0.0000000000
-     180  L A2 O  dxy     0.0000000000 -0.0000004487  0.0000000000  0.0000000000
+      14  L A1 F  dxx    -0.0000004503  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy     0.0000004503  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx     0.0000002543  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy    -0.0000002543  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000  0.0276751420  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000  0.1448911675  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000  0.3092359840  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000  0.3061213108  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0070967145  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000  0.0101027068  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000  0.0534557333  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000  0.1143091729  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000  0.1137848415  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0097807361  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0276751420
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.1448911675
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.3092359840
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.3061213108
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0070967145
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0101027068
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0534557333
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.1143091729
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.1137848415
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0097807361
+     179  L A2 F  dxy     0.0000000000  0.0000009006 -0.0000000000  0.0000000000
+     180  L A2 O  dxy     0.0000000000 -0.0000005087 -0.0000000000  0.0000000000
 
-* Electronic eigenvalue no.  7: -0.2960356072607
+* Electronic eigenvalue no.  7: -0.2960356072680
 ====================================================
-       1  L A1 F  s       0.0000121417  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s       0.0000820306  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s       0.0003354967  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s       0.0016552834  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s       0.0033831142  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s       0.0121263863  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s       0.0009031534  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s      -0.0211812164  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s      -0.0715705458  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz      0.0334492714  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz      0.1710571123  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz      0.3841670488  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz      0.3841519368  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx    -0.0055588763  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy    -0.0055588763  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz     0.0111177525  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s       0.0000632022  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s       0.0004182111  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s       0.0018856039  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s       0.0082450965  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s       0.0202839078  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s       0.0559479921  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s       0.0253336083  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s      -0.1461886183  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s      -0.3420480044  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz     -0.0209175906  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz     -0.1041177190  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz     -0.2485107236  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz     -0.1844235844  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx    -0.0096146334  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy    -0.0096146334  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz     0.0192292668  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000 -0.0002231894  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000 -0.0014179028  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000 -0.0032363196  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000 -0.0035494922  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0001056671  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000 -0.0002584537  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000 -0.0012508721  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000 -0.0025691350  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000 -0.0025600201  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0001393117  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0002231894
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0014179028
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0032363196
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0035494922
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0001056671
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0002584537
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0012508721
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0025691350
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0025600201
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000  0.0001393117
+       1  L A1 F  s      -0.0000121417  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s      -0.0000820302  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s      -0.0003354950  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s      -0.0016552767  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s      -0.0033830949  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s      -0.0121263444  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s      -0.0009031204  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s       0.0211810353  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s       0.0715704389  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz     -0.0334493306  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz     -0.1710573814  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz     -0.3841675988  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz     -0.3841524185  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx     0.0055588784  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy     0.0055588784  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz    -0.0111177568  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s      -0.0000632023  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s      -0.0004182120  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s      -0.0018856080  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s      -0.0082451139  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s      -0.0202839517  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s      -0.0559481048  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s      -0.0253336696  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s       0.1461887832  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s       0.3420489216  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz      0.0209175887  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz      0.1041177192  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz      0.2485107383  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz      0.1844238258  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx     0.0096146343  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy     0.0096146343  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz    -0.0192292686  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000  0.0002203430  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000  0.0014030234  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000  0.0032047313  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000  0.0035160429  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0001049114  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000  0.0002578925  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000  0.0012479365  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000  0.0025629839  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000  0.0025524721  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0001382144  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0002203430
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0014030234
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0032047313
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0035160429
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0001049114
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0002578925
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0012479365
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0025629839
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0025524721
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0001382144
 
 * Electronic eigenvalue no.  8: -0.805983008D-01
 ====================================================
-       1  L A1 F  s      -0.0000000021  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s      -0.0000000356  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s       0.0000000094  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s      -0.0000009904  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s       0.0000013047  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s      -0.0000117989  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s       0.0000163168  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s      -0.0000184686  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s       0.0000714674  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz     -0.0000716310  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz     -0.0005773467  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz     -0.0014631774  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz     -0.0019948739  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx     0.0000199854  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy     0.0000199854  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz    -0.0000399708  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s      -0.0000002127  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s      -0.0000014136  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s      -0.0000063275  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s      -0.0000279583  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s      -0.0000677883  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s      -0.0001918239  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s      -0.0000828573  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s       0.0005065852  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s       0.0013999970  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz     -0.0000451710  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz      0.0000514438  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz      0.0004229020  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz      0.0005633812  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx     0.0000387130  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy     0.0000387130  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz    -0.0000774259  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000  0.0139455317  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000  0.0740039286  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000  0.1545851247  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000  0.1835576976  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0055180908  0.0000000000
+       1  L A1 F  s      -0.0000000005  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s      -0.0000000254  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s       0.0000000565  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s      -0.0000007944  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s       0.0000018222  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s      -0.0000105102  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s       0.0000170424  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s      -0.0000224800  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s       0.0000601157  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz     -0.0000729276  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz     -0.0005842088  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz     -0.0014777737  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz     -0.0020146119  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx     0.0000199642  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy     0.0000199642  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz    -0.0000399283  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s      -0.0000002150  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s      -0.0000014284  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s      -0.0000063960  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s      -0.0000282463  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s      -0.0000685431  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s      -0.0001937499  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s      -0.0000840005  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s       0.0005134025  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s       0.0014132038  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz     -0.0000461052  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz      0.0000462448  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz      0.0004119215  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz      0.0005481781  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx     0.0000389649  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy     0.0000389649  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz    -0.0000779297  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000  0.0139455130  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000  0.0740038432  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000  0.1545849440  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000  0.1835575970  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0055180985  0.0000000000
       96  L B1 O  px      0.0000000000  0.0000000000 -0.0269060182  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000 -0.1442863651  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000 -0.3049268816  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000 -0.3685155920  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0031122746  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0139455317
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0740039286
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.1545851247
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.1835576976
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0055180908
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0269060182
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.1442863651
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.3049268816
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.3685155920
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000  0.0031122746
+      97  L B1 O  px      0.0000000000  0.0000000000 -0.1442863591  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000 -0.3049268806  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000 -0.3685156808  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0031122025  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0139455130
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0740038432
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.1545849440
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.1835575970
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0055180985
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0269060182
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.1442863591
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.3049268806
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.3685156808
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0031122025
 
 * Electronic eigenvalue no.  9: -0.795724384D-01
 ====================================================
-      14  L A1 F  dxx    -0.0000009639  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy     0.0000009639  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx    -0.0000018339  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy     0.0000018339  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000  0.0139127669  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000  0.0740491549  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000  0.1548487377  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000  0.1842842384  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0055149885  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000 -0.0267956823  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000 -0.1440238894  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000 -0.3045990689  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000 -0.3688451565  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0030908791  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0139127669
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0740491549
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.1548487377
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.1842842384
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000  0.0055149885
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0267956823
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.1440238894
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.3045990689
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.3688451565
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0030908791
-     179  L A2 F  dxy     0.0000000000  0.0000019279  0.0000000000  0.0000000000
-     180  L A2 O  dxy     0.0000000000  0.0000036679  0.0000000000  0.0000000000
+      14  L A1 F  dxx     0.0000009445  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy    -0.0000009445  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx     0.0000019140  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy    -0.0000019140  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000 -0.0139127517  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000 -0.0740490772  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000 -0.1548485635  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000 -0.1842841650  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0055149961  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000  0.0267956810  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000  0.1440238824  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000  0.3045990672  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000  0.3688453030  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0030908053  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0139127517
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0740490772
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.1548485635
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.1842841650
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0055149961
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0267956810
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.1440238824
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.3045990672
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.3688453030
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0030908053
+     179  L A2 F  dxy     0.0000000000 -0.0000018890 -0.0000000000  0.0000000000
+     180  L A2 O  dxy     0.0000000000 -0.0000038280 -0.0000000000  0.0000000000
 
-* Electronic eigenvalue no. 10:  0.6722758254071
+* Electronic eigenvalue no. 10:  0.6722758254074
 ====================================================
-       1  L A1 F  s       0.0000677018  0.0000000000  0.0000000000  0.0000000000
-       2  L A1 F  s       0.0004301870  0.0000000000  0.0000000000  0.0000000000
-       3  L A1 F  s       0.0019580299  0.0000000000  0.0000000000  0.0000000000
-       4  L A1 F  s       0.0083365716  0.0000000000  0.0000000000  0.0000000000
-       5  L A1 F  s       0.0213260707  0.0000000000  0.0000000000  0.0000000000
-       6  L A1 F  s       0.0557068558  0.0000000000  0.0000000000  0.0000000000
-       7  L A1 F  s       0.0272180809  0.0000000000  0.0000000000  0.0000000000
-       8  L A1 F  s      -0.1507464780  0.0000000000  0.0000000000  0.0000000000
-       9  L A1 F  s      -0.6004657356  0.0000000000  0.0000000000  0.0000000000
-      10  L A1 F  pz     -0.0242709108  0.0000000000  0.0000000000  0.0000000000
-      11  L A1 F  pz     -0.1364228989  0.0000000000  0.0000000000  0.0000000000
-      12  L A1 F  pz     -0.2535048752  0.0000000000  0.0000000000  0.0000000000
-      13  L A1 F  pz     -0.6817192950  0.0000000000  0.0000000000  0.0000000000
-      14  L A1 F  dxx    -0.0043444254  0.0000000000  0.0000000000  0.0000000000
-      15  L A1 F  dyy    -0.0043444254  0.0000000000  0.0000000000  0.0000000000
-      16  L A1 F  dzz     0.0086888508  0.0000000000  0.0000000000  0.0000000000
-      17  L A1 O  s      -0.0000601693  0.0000000000  0.0000000000  0.0000000000
-      18  L A1 O  s      -0.0003872771  0.0000000000  0.0000000000  0.0000000000
-      19  L A1 O  s      -0.0018295057  0.0000000000  0.0000000000  0.0000000000
-      20  L A1 O  s      -0.0075000299  0.0000000000  0.0000000000  0.0000000000
-      21  L A1 O  s      -0.0203184478  0.0000000000  0.0000000000  0.0000000000
-      22  L A1 O  s      -0.0489621705  0.0000000000  0.0000000000  0.0000000000
-      23  L A1 O  s      -0.0330610885  0.0000000000  0.0000000000  0.0000000000
-      24  L A1 O  s       0.1526672240  0.0000000000  0.0000000000  0.0000000000
-      25  L A1 O  s       0.4977885794  0.0000000000  0.0000000000  0.0000000000
-      26  L A1 O  pz     -0.0304619945  0.0000000000  0.0000000000  0.0000000000
-      27  L A1 O  pz     -0.1702831831  0.0000000000  0.0000000000  0.0000000000
-      28  L A1 O  pz     -0.3354600175  0.0000000000  0.0000000000  0.0000000000
-      29  L A1 O  pz     -0.9221676780  0.0000000000  0.0000000000  0.0000000000
-      30  L A1 O  dxx     0.0008966969  0.0000000000  0.0000000000  0.0000000000
-      31  L A1 O  dyy     0.0008966969  0.0000000000  0.0000000000  0.0000000000
-      32  L A1 O  dzz    -0.0017933938  0.0000000000  0.0000000000  0.0000000000
-      91  L B1 F  px      0.0000000000  0.0000000000 -0.0000443449  0.0000000000
-      92  L B1 F  px      0.0000000000  0.0000000000 -0.0000288417  0.0000000000
-      93  L B1 F  px      0.0000000000  0.0000000000  0.0000272882  0.0000000000
-      94  L B1 F  px      0.0000000000  0.0000000000  0.0006237506  0.0000000000
-      95  L B1 F  dxz     0.0000000000  0.0000000000  0.0000036468  0.0000000000
-      96  L B1 O  px      0.0000000000  0.0000000000 -0.0000400860  0.0000000000
-      97  L B1 O  px      0.0000000000  0.0000000000 -0.0000076002  0.0000000000
-      98  L B1 O  px      0.0000000000  0.0000000000  0.0000122953  0.0000000000
-      99  L B1 O  px      0.0000000000  0.0000000000  0.0007603535  0.0000000000
-     100  L B1 O  dxz     0.0000000000  0.0000000000 -0.0000070941  0.0000000000
-     135  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0000443449
-     136  L B2 F  py      0.0000000000  0.0000000000  0.0000000000 -0.0000288417
-     137  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0000272882
-     138  L B2 F  py      0.0000000000  0.0000000000  0.0000000000  0.0006237506
-     139  L B2 F  dyz     0.0000000000  0.0000000000  0.0000000000  0.0000036468
-     140  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000400860
-     141  L B2 O  py      0.0000000000  0.0000000000  0.0000000000 -0.0000076002
-     142  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0000122953
-     143  L B2 O  py      0.0000000000  0.0000000000  0.0000000000  0.0007603535
-     144  L B2 O  dyz     0.0000000000  0.0000000000  0.0000000000 -0.0000070941
+       1  L A1 F  s      -0.0000677018  0.0000000000 -0.0000000000  0.0000000000
+       2  L A1 F  s      -0.0004301868  0.0000000000 -0.0000000000  0.0000000000
+       3  L A1 F  s      -0.0019580288  0.0000000000 -0.0000000000  0.0000000000
+       4  L A1 F  s      -0.0083365676  0.0000000000 -0.0000000000  0.0000000000
+       5  L A1 F  s      -0.0213260589  0.0000000000 -0.0000000000  0.0000000000
+       6  L A1 F  s      -0.0557068321  0.0000000000 -0.0000000000  0.0000000000
+       7  L A1 F  s      -0.0272180597  0.0000000000 -0.0000000000  0.0000000000
+       8  L A1 F  s       0.1507463993  0.0000000000 -0.0000000000  0.0000000000
+       9  L A1 F  s       0.6004657727  0.0000000000 -0.0000000000  0.0000000000
+      10  L A1 F  pz      0.0242709021  0.0000000000 -0.0000000000  0.0000000000
+      11  L A1 F  pz      0.1364228583  0.0000000000 -0.0000000000  0.0000000000
+      12  L A1 F  pz      0.2535047381  0.0000000000 -0.0000000000  0.0000000000
+      13  L A1 F  pz      0.6817193963  0.0000000000 -0.0000000000  0.0000000000
+      14  L A1 F  dxx     0.0043444258  0.0000000000 -0.0000000000  0.0000000000
+      15  L A1 F  dyy     0.0043444258  0.0000000000 -0.0000000000  0.0000000000
+      16  L A1 F  dzz    -0.0086888516  0.0000000000 -0.0000000000  0.0000000000
+      17  L A1 O  s       0.0000601692  0.0000000000 -0.0000000000  0.0000000000
+      18  L A1 O  s       0.0003872765  0.0000000000 -0.0000000000  0.0000000000
+      19  L A1 O  s       0.0018295031  0.0000000000 -0.0000000000  0.0000000000
+      20  L A1 O  s       0.0075000181  0.0000000000 -0.0000000000  0.0000000000
+      21  L A1 O  s       0.0203184206  0.0000000000 -0.0000000000  0.0000000000
+      22  L A1 O  s       0.0489620937  0.0000000000 -0.0000000000  0.0000000000
+      23  L A1 O  s       0.0330610578  0.0000000000 -0.0000000000  0.0000000000
+      24  L A1 O  s      -0.1526671392  0.0000000000 -0.0000000000  0.0000000000
+      25  L A1 O  s      -0.4977881404  0.0000000000 -0.0000000000  0.0000000000
+      26  L A1 O  pz      0.0304619769  0.0000000000 -0.0000000000  0.0000000000
+      27  L A1 O  pz      0.1702831020  0.0000000000 -0.0000000000  0.0000000000
+      28  L A1 O  pz      0.3354597601  0.0000000000 -0.0000000000  0.0000000000
+      29  L A1 O  pz      0.9221682490  0.0000000000 -0.0000000000  0.0000000000
+      30  L A1 O  dxx    -0.0008966986  0.0000000000 -0.0000000000  0.0000000000
+      31  L A1 O  dyy    -0.0008966986  0.0000000000 -0.0000000000  0.0000000000
+      32  L A1 O  dzz     0.0017933972  0.0000000000 -0.0000000000  0.0000000000
+      91  L B1 F  px      0.0000000000  0.0000000000  0.0000447019  0.0000000000
+      92  L B1 F  px      0.0000000000  0.0000000000  0.0000307773  0.0000000000
+      93  L B1 F  px      0.0000000000  0.0000000000 -0.0000234715  0.0000000000
+      94  L B1 F  px      0.0000000000  0.0000000000 -0.0006162810  0.0000000000
+      95  L B1 F  dxz     0.0000000000  0.0000000000 -0.0000038525  0.0000000000
+      96  L B1 O  px      0.0000000000  0.0000000000  0.0000395311  0.0000000000
+      97  L B1 O  px      0.0000000000  0.0000000000  0.0000043950  0.0000000000
+      98  L B1 O  px      0.0000000000  0.0000000000 -0.0000177991  0.0000000000
+      99  L B1 O  px      0.0000000000  0.0000000000 -0.0007760095  0.0000000000
+     100  L B1 O  dxz     0.0000000000  0.0000000000  0.0000071482  0.0000000000
+     135  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000447019
+     136  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000  0.0000307773
+     137  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000234715
+     138  L B2 F  py      0.0000000000  0.0000000000 -0.0000000000 -0.0006162810
+     139  L B2 F  dyz     0.0000000000  0.0000000000 -0.0000000000 -0.0000038525
+     140  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000395311
+     141  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000  0.0000043950
+     142  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0000177991
+     143  L B2 O  py      0.0000000000  0.0000000000 -0.0000000000 -0.0007760095
+     144  L B2 O  dyz     0.0000000000  0.0000000000 -0.0000000000  0.0000071482
 
 
     **************************************************************************
@@ -1828,10 +1812,10 @@ Total no. of orbitals           (NORB):    52
      ************************************************************************
 
 
- Transformation started at : Wed Jun 15 16:59:08 2011
+ Transformation started at : Wed Jul 25 04:11:23 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -174.258621398895428
-* Heading : X2Cmod - molecular-mean field 2c MOs             Wed Jun 15 16:59:08 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -174.258621398895031
+* Heading : X2Cmod - molecular-mean field 2c MOs             Wed Jul 25 04:11:23 2012
      Energy selection of active orbitals :       -6.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
      Energy selection of active orbitals :       -6.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
      Energy selection of active orbitals :       -6.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
@@ -1887,21 +1871,22 @@ Total no. of orbitals           (NORB):    52
        ********************************************************************
 
 
- Transformation started at : Wed Jun 15 16:59:08 2011
+ Transformation started at : Wed Jul 25 04:11:23 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -174.258621398895428
-* Heading : X2Cmod - molecular-mean field 2c MOs             Wed Jun 15 16:59:08 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -174.258621398895031
+* Heading : X2Cmod - molecular-mean field 2c MOs             Wed Jul 25 04:11:23 2012
 
 * GETGAB: label "GABAO0XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
+AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.06000137s
 *** WARNING *** GTCFC1: No 1-Fock found. Regenerating.
+ cp DFCOEF DFCOEF.BEST
 
 
- Core energy (includes nuclear repulsion) :           -252.0065287597
- - Electronic part :                                  -280.1459371774
-   - One-electron terms :                             -291.8261463544
-   - Two-electron terms :                               11.6802091770
+ Core energy (includes nuclear repulsion) :           -252.0065285413
+ - Electronic part :                                  -280.1459369590
+   - One-electron terms :                             -291.8261461225
+   - Two-electron terms :                               11.6802091635
 
 
  MOLFDIR file MRCONEE is written
@@ -1916,13 +1901,13 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
    - Beginning task   6 of   6 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
 
- Node    0 finished first half transformation         1140636 HT integrals written ( 66.45%,      0.02 GB)
+ Node    0 finished first half transformation         1140656 HT integrals written ( 66.45%,      0.02 GB)
   
- <<< Starting 2HT on node                      0
+ <<< Starting 2HT on node            0
   
   
- >>> Finished 2HT on node                      0
- >>> Time used in 2HT_all is   1.45 seconds
+ >>> Finished 2HT on node            0
+ >>> Time used in 2HT_all is  26.15 seconds
   
  - Binary  file MDCINT was written.
 * Screening statistics:
@@ -1931,19 +1916,15 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformati       0.201 seconds
- Time in  Second halftransformat       1.454 seconds
-
------- End of timing report ------
+ Time in  First halftransformation            1.960 seconds
+ Time in  Second halftransformation          26.150 seconds
 
 
+ Total wall time used in PAMTRA :   00:00:30
+ Total CPU  time used in PAMTRA (master only) :   00:00:28
 
- Total wall time used in PAMTRA :   00:00:04
- Total CPU  time used in PAMTRA (master only) :   00:00:02
+ Transformation ended at : Wed Jul 25 04:11:53 2012
 
-
-
- Transformation ended at : Wed Jun 15 16:59:12 2011
 
 ---< Process     1 of     1----<
 
@@ -1967,15 +1948,22 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
   - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
 
 
- Today is :   15 Jun 11 
- The time is :  16:59:12
+ Today is :   25 Jul 12 
+ The time is :  04:11:53
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 
   EHMIN:  1000.00000 EHMAX:   100.00000
   EPMIN:    -1.00000 EPMAX: -1000.00000
 
- Total memory available :                               953 MB
+ ************************************************************
+ *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***
+ *** use of SCF orbital energies and no re-computation of ***
+ *** Fock matrix elements set explicitly                  ***
+ ************************************************************
+
+
+ Total memory available :                                76 MB
 
  Configuration in highest pointgroup
 
@@ -2001,18 +1989,15 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
  Debug information       :                 F
  Timing information      :                 T
  Print level          :                    1
- Memory limit (MWord) :                  120
+ Memory limit (MWord) :                         9
  Interface used       :                DIRAC6    
 
 
- Memory for reading and sorting integrals :         1364253 8-byte words
- Core used for calculating amplitudes :              511755 8-byte words
- Core used for in core evaluation of triples :       440104 8-byte words
- Core used for Gradient calculation :             124999999 8-byte words
- Core used for RPA calculation :                     235149 8-byte words
- Memory for reading and sorting integrals :         9435583 8-byte words
- Core used for Fock space CCSD energies :           9435583 8-byte words
- Memory used for active modules :                   9435583 8-byte words
+ Memory for reading and sorting integrals :         1091327 8-byte words
+ Memory for reading and sorting integrals :         5250753 8-byte words
+ debug, kind buf3 :           8
+ Core used for Fock space CCSD energies :           9390422 8-byte words
+ Memory used for active modules :                   9390422 8-byte words
 
 
  Fock space CCSD Energy calculations
@@ -2039,25 +2024,34 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
  Spinor class : inactive virtual          17   17    8    8    2    2
 
  Expanding and sorting integrals to unique types :
- Type OOOO :      1843 integrals
- Type VOOO :     15140 integrals
- Type VVOO :     29285 integrals
- Type VOVO :    126068 integrals
- Type VOVV :    245106 integrals
- Type VVVV :    478485 integrals
- 
- Sorting of first 4 classes done.
+ Type OOOO :            1843 integrals
+ Type VOOO :           15140 integrals
+ Type VVOO :           29285 integrals
+ Type VOVO :          126068 integrals
+ Type VOVV :          245106 integrals
+ Type VVVV :          478485 integrals
+
+ Start sorting of integral classes at 25 Jul 12 04:11:53
+
+
+ Sorting of first 4 classes done at 25 Jul 12 04:11:59
 
  Need      1 passes to sort VOVV integrals
- VOVV sorting done.
+
+  Pass     1 ended at 25 Jul 12 04:12:05
+
+ VOVV sorting done at 25 Jul 12 04:12:05
 
  Need      1 passes to sort VVVV integrals
- VVVV sorting done.
+
+  Pass     1 ended at 25 Jul 12 04:12:12
+
+ VVVV sorting done at 25 Jul 12 04:12:12
 
  Reading Coulomb integrals :
- File date :      15Jun11  
- File time :       16:59:08
- # of integrals         1890824
+ File date :     25 Jul 12 
+ File time :       04:12:12
+ # of integrals             1890816
 
  Finished sorting of integrals
 
@@ -2094,11 +2088,12 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
  * Value is taken from the file DFCOEF instead.            *
  ***********************************************************
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -174.258621398895428
-* Heading : X2Cmod - molecular-mean field 2c MOs             Wed Jun 15 16:59:08 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -174.258621398895031
+* Heading : X2Cmod - molecular-mean field 2c MOs             Wed Jul 25 04:11:23 2012
 
 
- SCF energy :                               -174.258621398895428
+ SCF energy :                               -174.258621398895031
+ debug, kind buf3 :           8
 
 
  Fock space CCSD options :
@@ -2113,55 +2108,56 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
 
 
    NIT          ENERGY                    RMS       T1-DIAGN
-    0       -0.397098989984532   1.000000000000000   0.00000
-    1       -0.393594991885649   0.527118913221064   0.01159
-    2       -0.402588229111118   0.015568726697246   0.01172
-    3       -0.402784894211719   0.007035512358053   0.01332
-    4       -0.403963174914235   0.003986633741849   0.01418
-    5       -0.403979662737410   0.002118739457861   0.01432
-    6       -0.403916566095988   0.000464210668714   0.01435
-    7       -0.403923366745452   0.000079058147766   0.01435
-    8       -0.403924229609169   0.000005840001264   0.01435
-    9       -0.403923668051307   0.000005851382755   0.01435
-   10       -0.403923817947453   0.000004171164348   0.01435
-   11       -0.403923863854038   0.000002207117229   0.01435
-   12       -0.403923838174968   0.000001142111696   0.01435
-   13       -0.403923845375214   0.000000244964632   0.01435
-   14       -0.403923839571919   0.000000105899991   0.01435
-   15       -0.403923842173523   0.000000038232454   0.01435
-   16       -0.403923841418116   0.000000015662609   0.01435
-   17       -0.403923841438485   0.000000006323140   0.01435
-   18       -0.403923841390328   0.000000000873034   0.01435
-   19       -0.403923841381107   0.000000000367335   0.01435
-   20       -0.403923841385347   0.000000000130733   0.01435
-   21       -0.403923841387066   0.000000000043834   0.01435
-   22       -0.403923841387150   0.000000000024576   0.01435
-   23       -0.403923841387501   0.000000000009324   0.01435
-   24       -0.403923841387357   0.000000000008089   0.01435
-   25       -0.403923841387391   0.000000000003911   0.01435
-   26       -0.403923841387359   0.000000000000288   0.01435
+    0       -0.397098968292233   1.000000000000000   0.00000
+    1       -0.393594967202318   5.506581201292041   0.01159
+    2       -0.402588205339287   0.042017809809291   0.01172
+    3       -0.402784869317118   0.020119545901257   0.01332
+    4       -0.403963149599490   0.001988537817922   0.01418
+    5       -0.403979637491661   0.000800024667920   0.01432
+    6       -0.403916540891401   0.000182358664980   0.01435
+    7       -0.403923341519411   0.000093693930766   0.01435
+    8       -0.403924204388353   0.000024117781652   0.01435
+    9       -0.403923642805479   0.000014162465867   0.01435
+   10       -0.403923792741245   0.000002503277004   0.01435
+   11       -0.403923838640157   0.000001717891527   0.01435
+   12       -0.403923812947870   0.000002213910232   0.01435
+   13       -0.403923820140540   0.000000102891231   0.01435
+   14       -0.403923814340776   0.000000059147065   0.01435
+   15       -0.403923816941746   0.000000013158485   0.01435
+   16       -0.403923816186239   0.000000004768998   0.01435
+   17       -0.403923816206571   0.000000000813582   0.01435
+   18       -0.403923816158339   0.000000000724659   0.01435
+   19       -0.403923816149118   0.000000000094169   0.01435
+   20       -0.403923816153361   0.000000000117044   0.01435
+   21       -0.403923816155080   0.000000000029640   0.01435
+   22       -0.403923816155164   0.000000000036479   0.01435
+   23       -0.403923816155515   0.000000000002740   0.01435
+   24       -0.403923816155372   0.000000000009951   0.01435
+   25       -0.403923816155406   0.000000000002004   0.01435
+   26       -0.403923816155374   0.000000000001459   0.01435
+   27       -0.403923816155380   0.000000000000342   0.01435
 
 
   CCSD results
 
- SCF energy :                               -174.258621398895428
- CCSD correlation energy :                    -0.403923841387359
- Total CCSD energy :                        -174.662545240282782
- T1 diagnostic :                               0.014345744438879
- Convergence :                                 0.000000000000288
- Number or iterations used :                                  26
+ SCF energy :                               -174.258621398895031
+ CCSD correlation energy :                    -0.403923816155380
+ Total CCSD energy :                        -174.662545215050415
+ T1 diagnostic :                               0.014345748510044
+ Convergence :                                 0.000000000000342
+ Number or iterations used :                                  27
 
 
  Performance of BLAS GEMM in the largest contractions
 
  Contraction type                           Performance
- VVVV+VOVV (in B: includes I/O)             5.166   Gflop/s
- VOVO (in H: only XGEMM)                    10.86   Gflop/s
- VOVO (in T2EQN: includes sort)             7.906   Gflop/s
+ VVVV+VOVV (in B: includes I/O)             1.217   Gflop/s
+ VOVO (in H: only XGEMM)                    2.038   Gflop/s
+ VOVO (in T2EQN: includes sort)             1.695   Gflop/s
 
 
  Analysis of eigenvectors of the effective Hamiltonian
- First line  : Eigenvalue, Energy
+ First line  :  Energy, Eigenvalue
  other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
 
 
@@ -2171,50 +2167,50 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
 
 
    NIT          ENERGY                    RMS       T1-DIAGN
-    0       -0.403923841387359   1.000000000000000   0.01435
-    1       -0.403923841387374   0.597168965614136   0.01435
-    2       -0.403923841387369   0.235138233997010   0.01435
-    3       -0.403923841387370   0.114550909025304   0.01435
-    4       -0.403923841387370   0.039603303481340   0.01435
-    5       -0.403923841387370   0.007395860241889   0.01435
-    6       -0.403923841387370   0.000932110076964   0.01435
-    7       -0.403923841387370   0.000562236719690   0.01435
-    8       -0.403923841387369   0.000178374032283   0.01435
-    9       -0.403923841387369   0.000061304746687   0.01435
-   10       -0.403923841387369   0.000017375115187   0.01435
-   11       -0.403923841387369   0.000012105220829   0.01435
-   12       -0.403923841387369   0.000001790562860   0.01435
-   13       -0.403923841387369   0.000000960759192   0.01435
-   14       -0.403923841387369   0.000000395164100   0.01435
-   15       -0.403923841387369   0.000000275826435   0.01435
-   16       -0.403923841387369   0.000000031775977   0.01435
-   17       -0.403923841387369   0.000000037429240   0.01435
-   18       -0.403923841387369   0.000000006370877   0.01435
-   19       -0.403923841387369   0.000000004244137   0.01435
-   20       -0.403923841387369   0.000000001169357   0.01435
-   21       -0.403923841387369   0.000000001775677   0.01435
-   22       -0.403923841387369   0.000000000236721   0.01435
-   23       -0.403923841387369   0.000000000171797   0.01435
-   24       -0.403923841387369   0.000000000001518   0.01435
-   25       -0.403923841387369   0.000000000005131   0.01435
-   26       -0.403923841387369   0.000000000003708   0.01435
-   27       -0.403923841387369   0.000000000001253   0.01435
-   28       -0.403923841387369   0.000000000000599   0.01435
+    0       -0.403923816155380   1.000000000000000   0.01435
+    1       -0.403923816155382   0.946340712111357   0.01435
+    2       -0.403923816155383   0.296968595646280   0.01435
+    3       -0.403923816155384   0.181954815950943   0.01435
+    4       -0.403923816155384   0.016298870520657   0.01435
+    5       -0.403923816155384   0.005872524373173   0.01435
+    6       -0.403923816155384   0.000963230344034   0.01435
+    7       -0.403923816155384   0.001174828610516   0.01435
+    8       -0.403923816155384   0.000224970663894   0.01435
+    9       -0.403923816155384   0.000049410070077   0.01435
+   10       -0.403923816155384   0.000059413251666   0.01435
+   11       -0.403923816155384   0.000028656419456   0.01435
+   12       -0.403923816155384   0.000004085546971   0.01435
+   13       -0.403923816155384   0.000001877109772   0.01435
+   14       -0.403923816155384   0.000000263958361   0.01435
+   15       -0.403923816155384   0.000000071486743   0.01435
+   16       -0.403923816155384   0.000000037041528   0.01435
+   17       -0.403923816155384   0.000000037236689   0.01435
+   18       -0.403923816155384   0.000000006455050   0.01435
+   19       -0.403923816155384   0.000000001732546   0.01435
+   20       -0.403923816155384   0.000000000969298   0.01435
+   21       -0.403923816155384   0.000000000231882   0.01435
+   22       -0.403923816155384   0.000000000154362   0.01435
+   23       -0.403923816155384   0.000000000044876   0.01435
+   24       -0.403923816155384   0.000000000042712   0.01435
+   25       -0.403923816155384   0.000000000015939   0.01435
+   26       -0.403923816155384   0.000000000002681   0.01435
+   27       -0.403923816155384   0.000000000002387   0.01435
+   28       -0.403923816155384   0.000000000000459   0.01435
 
 
   CCSD results
 
- T1 diagnostic :                               0.014345744438879
- Convergence :                                 0.000000000000599
+ T1 diagnostic :                               0.014345748510047
+ Convergence :                                 0.000000000000459
  Number or iterations used :                                  28
 
 
  Performance of BLAS GEMM in the largest contractions
 
  Contraction type                           Performance
- VVVV+VOVV (in B: includes I/O)             5.020   Gflop/s
- VOVO (in H: only XGEMM)                    10.79   Gflop/s
- VOVO (in T2EQN: includes sort)             8.023   Gflop/s
+ VVVV+VOVV (in B: includes I/O)             1.200   Gflop/s
+ VOVO (in H: only XGEMM)                    2.072   Gflop/s
+ VOVO (in T2EQN: includes sort)             1.673   Gflop/s
 
  ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
 
@@ -2223,71 +2219,71 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
 
  Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
 
-    1   0.000000000000      0.010071905360     -174.652473334923 (   2 * )
-    2   0.000836408649      0.010908314009     -174.651636926274 (   2 * )
+    1     0.0000000000      0.010071920792     -174.652473294259 (   2 * )
+    2     0.0008364099      0.010908330661     -174.651636884390 (   2 * )
 
 
- Total average:      -174.6520551306
-
-
- Relative real eigenvalues in other units;
- Symmetry Classification in the Abelian subgroup
-
- Level  eigenvalue (eV)  Eigenvalue (cm-1)     1  -1   3  -3   5  -5   7  -7
-
-    1        0.000000000          0.000000   0   0   1   1   0   0   0   0
-    2        0.022759836        183.570480   1   1   0   0   0   0   0   0
+ Total average:      -174.6520550893
 
 
  Relative real eigenvalues in other units;
  Symmetry Classification in the Abelian subgroup
 
- Level  eigenvalue (eV)  Eigenvalue (cm-1)     9  -9  11 -11  13 -13  15 -15
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)     1|  -1|   3|  -3|   5|  -5|   7|  -7|
 
-    1        0.000000000          0.000000   0   0   0   0   0   0   0   0
-    2        0.022759836        183.570480   0   0   0   0   0   0   0   0
-
-
- Relative real eigenvalues in other units;
- Symmetry Classification in the Abelian subgroup
-
- Level  eigenvalue (eV)  Eigenvalue (cm-1)    17 -17  19 -19  21 -21  23 -23
-
-    1        0.000000000          0.000000   0   0   0   0   0   0   0   0
-    2        0.022759836        183.570480   0   0   0   0   0   0   0   0
+    1        0.000000000          0.000000     0|   0|   1|   1|   0|   0|   0|   0|
+    2        0.022759870        183.570748     1|   1|   0|   0|   0|   0|   0|   0|
 
 
  Relative real eigenvalues in other units;
  Symmetry Classification in the Abelian subgroup
 
- Level  eigenvalue (eV)  Eigenvalue (cm-1)    25 -25  27 -27  29 -29  31 -31
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)     9|  -9|  11| -11|  13| -13|  15| -15|
 
-    1        0.000000000          0.000000   0   0   0   0   0   0   0   0
-    2        0.022759836        183.570480   0   0   0   0   0   0   0   0
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.022759870        183.570748     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    17| -17|  19| -19|  21| -21|  23| -23|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.022759870        183.570748     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    25| -25|  27| -27|  29| -29|  31| -31|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.022759870        183.570748     0|   0|   0|   0|   0|   0|   0|   0|
 
 
  Analysis of eigenvectors of the effective Hamiltonian
- First line  : Eigenvalue, Energy
+ First line  :  Energy, Eigenvalue
  other lines : Coefficients of contributing determinants (above a treshold of .1E-02)
 
- Irrep    1 State     1      0.01090831   -174.65163693
+ Irrep    1 State     1   -174.65163688      0.01090833
         1.00000   |    1 #   1 (  -0.081) |                         
 
- Irrep   -1 State     1      0.01090831   -174.65163693
+ Irrep   -1 State     1   -174.65163688      0.01090833
         1.00000   |   -1 #   1 (  -0.081) |                         
 
- Irrep    3 State     1      0.01007191   -174.65247333
+ Irrep    3 State     1   -174.65247329      0.01007192
         1.00000   |    3 #   1 (  -0.080) |                         
 
- Irrep   -3 State     1      0.01007191   -174.65247333
+ Irrep   -3 State     1   -174.65247329      0.01007192
         1.00000   |   -3 #   1 (  -0.080) |                         
 
 
 --------------------------------------------------------------------------------
 
 
- Today is :   15 Jun 11 
- The time is :  16:59:23
+ Today is :   25 Jul 12 
+ The time is :  04:12:20
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -2315,93 +2311,91 @@ AOfock:LL  1.00D-12    0.00%   75.67%    0.00%    6.50%   0.03499508s
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
- Time in - T1 equations                0.299 seconds
- Time in --- T1EQNS HOV*T2(A,C,I       0.013 seconds
- Time in --- T1EQNS VOOO*TAU           0.027 seconds
- Time in --- T1EQNS VOVV contrib       0.118 seconds
- Time in --- T1EQNS VOVO * T(C,K       0.033 seconds
- Time in - T2 equations                1.549 seconds
- Time in -- GOINTM                     0.013 seconds
- Time in -- GVINTM                     0.099 seconds
- Time in -- AINTM                      0.035 seconds
- Time in -- HINTM                      0.525 seconds
- Time in --- HINTM: VOVV*T             0.134 seconds
- Time in --- HINTM: VVOO contrib       0.223 seconds
- Time in -- T2 EQNS                    0.544 seconds
- Time in --- T2EQNS: TAU*AINTM c       0.017 seconds
- Time in --- T2EQNS: VOVV*T1           0.114 seconds
- Time in --- T2EQNS: HINTM*T2          0.303 seconds
- Time in -- BINTM                      0.331 seconds
- Time in - DIIS extrapolation          0.032 seconds
-
------- End of timing report ------
-
+ Time in - T1 equations                       0.848 seconds
+ Time in --- T1EQNS T*[HOV - F]*T             0.008 seconds
+ Time in --- T1EQNS HOV*T2(A,C,I,K            0.052 seconds
+ Time in --- T1EQNS VOOO*TAU                  0.072 seconds
+ Time in --- T1EQNS VOVV contribution         0.224 seconds
+ Time in --- T1EQNS VOVO * T(C,K)             0.132 seconds
+ Time in - T2 equations                       6.292 seconds
+ Time in -- GOINTM                            0.028 seconds
+ Time in -- GVINTM                            0.288 seconds
+ Time in -- AINTM                             0.112 seconds
+ Time in -- HINTM                             2.248 seconds
+ Time in --- HINTM: VOVV*T                    0.484 seconds
+ Time in --- HINTM: VVOO contribution         1.196 seconds
+ Time in -- T2 EQNS                           2.196 seconds
+ Time in --- T2EQNS: TAU*AINTM contract       0.064 seconds
+ Time in --- T2EQNS: VOVV*T1                  0.256 seconds
+ Time in --- T2EQNS: HINTM*T2                 1.460 seconds
+ Time in -- BINTM                             1.420 seconds
+ Time in - DIIS extrapolation                 0.168 seconds
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :                 20.00                    16.63
- Initialization :                    0.00                     0.00
+ Before CC driver :                 67.00                    64.09
+ Initialization :                    0.00                     0.22
  Integral sorting :                  0.00                     0.00
  Energy calculation :                0.00                     0.00
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
- Fock space energies :               0.00                    11.06
- Untimed parts :                    11.00                     0.00
- Total time in CC driver :            11.                    11.06
+ Fock space energies :               0.00                    26.64
+ Untimed parts :                    27.00                     0.00
+ Total time in CC driver :            27.                    26.86
 
  Statistics for the word-addressable I/O
- Number of write calls                                5511.
- Number of read calls                                 5511.
- Megabytes written                                   21.878
- Megabytes read                                     578.938
- Seconds spent in reads                               1.000
- Seconds spent in writes                              1.000
- average I/O speed for write (Mb/s)                  21.878
- average I/O speed for read  (Mb/s)                 578.938
- I AM IN SYNC PROC., MYPROC =                      0
- I AM IN SYNC PROC., MYPROC =                      0
- SYNC. PROCESS HAS USED                     0 SEC.
+ Number of write calls                                5617.
+ Number of read calls                                 5617.
+ Megabytes written                                   44.431
+ Megabytes read                                    1179.745
+ Seconds spent in reads                               0.000
+ Seconds spent in writes                              0.000
+ average I/O speed for write (Mb/s)                   0.000
+ average I/O speed for read  (Mb/s)                   0.000
 
 
- CPU time (seconds) used in RELCCSD:                    11.0623
- CPU time (seconds) used before RELCCSD:                16.6265
- CPU time (seconds) used in total sofar:                27.6888
+ CPU time (seconds) used in RELCCSD:                    26.8577
+ CPU time (seconds) used before RELCCSD:                64.0920
+ CPU time (seconds) used in total sofar:                90.9497
 
   --- Normal end of RELCCSD Run ---
 
 
 ################################################################################
 
- 
-     Date and time (Linux)  : Wed Jun 15 16:59:23 2011
-     Host name              : s68p03                                  
->>>> Node 0, utime: 27, stime: 1, minflt: 435102, majflt: 189, nvcsw: 1201, nivcsw: 1771, maxrss: 0
->>>> Total WALL time used in DIRAC: 31s
+*****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
+
+ 
+     Date and time (Linux)  : Wed Jul 25 04:12:20 2012
+     Host name              : not found                               
+
+>>>> Node 0, utime: 88, stime: 2, minflt: 174007, majflt: 0, nvcsw: 104, nivcsw: 18004, maxrss: 46520
+>>>> Total WALL time used in DIRAC: 1min34s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         0.21
+  Mean allocation size (Mb) :         0.20
   
-  Largest                    10  allocations
+  Largest          10  allocations
   
-      953.67 Mb at subroutine                                            for work array at main                        
-        0.28 Mb at subroutine                                            for unnamed variable                          
-        0.28 Mb at subroutine                                            for unnamed variable                          
-        0.28 Mb at subroutine                                            for unnamed variable                          
-        0.28 Mb at subroutine                                            for buf in butobs                             
-        0.28 Mb at subroutine                                            for unnamed variable                          
-        0.28 Mb at subroutine                                            for unnamed variable                          
-        0.28 Mb at subroutine                                            for buf in butobs                             
-        0.28 Mb at subroutine                                            for buf in butobs                             
-        0.28 Mb at subroutine                                            for buf in butobs                             
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
+       31.61 Mb at subroutine __allocator_track_if_MOD_allocator_registe for ibuf                                      
+       31.61 Mb at subroutine __allocator_track_if_MOD_allocator_registe for ibuf                                      
+        3.66 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+        3.66 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
+        3.66 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+        3.66 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
+        2.75 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+        2.75 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
+        1.98 Mb at subroutine __allocator_track_if_MOD_allocator_registe for ibuf                                      
   
-  Peak memory usage    (Mb) :       955.00
-       reached at subroutine :                                           
-              for variable   : buf in butobs                             
+  Peak memory usage    (Mb) :       879.00
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : vta                                       
   
- MEMGET high-water mark:   982.57 MB
+ MEMGET high-water mark:     0.00 MB
 
 *****************************************************

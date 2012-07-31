@@ -2,13 +2,11 @@
 .TITLE
   LiH
 .WAVE F ! Activate integral and wave functions modules
-!.PROPERTIES ! Activate property module (dipole moment; polarizability...)
 **GENERAL
 ! Direct evaluation of two-electron integrals
 .DIRECT
 1 1 1
 ! SPEED OF LIGHT FOR COMPARISON WITH THE DALTON DOUGLAS-KROLL RESULTS
-!.CVALUE
 !137.0359895D0
 **INTEGRALS
 .PRINT
@@ -26,7 +24,6 @@
 .SCF
 .RELCCSD
 .LUCITA
-#.MP2
 *SCF
 .CLOSED SHELL
 10  

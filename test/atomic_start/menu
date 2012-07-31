@@ -1,10 +1,14 @@
+quick
+
 noref H.inp H.mol --get=DFACMO
-sh mv DFACMO ac.H
-sh ln -s ac.H DFHXXX
+mv DFACMO ac.H
+cp ac.H DFHXXX
 
 noref O.inp O.mol --get=DFACMO
-sh mv DFACMO ac.O
-sh ln -s ac.O DFOXXX
+mv DFACMO ac.O
+cp ac.O DFOXXX
+
+O_atom.inp O.mol --copy="DFOXXX"
 
 H2O.inp H2O.mol --copy="DFHXXX DFOXXX"
-sh rm ac.O ac.H DFHXXX DFOXXX
+rm ac.O ac.H DFHXXX DFOXXX

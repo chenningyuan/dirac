@@ -9,7 +9,9 @@ import os
 import sys
 import string
 import subprocess
+import shlex
 import time
+import shutil
 import signal
 from optparse import OptionParser, OptionGroup
 
@@ -147,6 +149,11 @@ group.add_option('--showdiff',
                  dest='showdiff',
                  default=False,
                  help="show differences in numbers [default: %default]")
+group.add_option('--jobargs',
+                 action='store',
+                 dest='jobargs',
+                 default=None,
+                 help="extra arguments to launcher [default: %default]")
 parser.add_option_group(group)
 
 # process input
@@ -483,6 +490,8 @@ class run:
              launcher_flags += '--noarch '
              if options.binary:
                  launcher_flags += '--dirac=%s ' % options.binary
+             if options.jobargs:
+                 launcher_flags += ' %s ' % options.jobargs
          if program_is_dalton:
              launcher_flags += '-nobackup '
              launcher_flags += '-noarch '
@@ -510,8 +519,10 @@ class run:
                      os.killpg(pgid_dirac,signum_kill) 
                  else: 
                      kill_win(pgid_dirac)
-                 #miro: important to have short time delay !
-                 time.sleep(2)
+                 if not executed_from_subdir:
+                     # time delay for killing
+                     # don't delay if this is interactive run from subdir
+                     time.sleep(2)
              sys.exit()
 			 
          if sys.platform != 'win32':
@@ -535,12 +546,13 @@ class run:
          # run the launcher
          if program_is_dirac:
              launcher = os.path.join(root_directory, "pam")
+             #print  "launcher=",launcher
              command = 'python ' + launcher + ' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.launcher_flags)
          if program_is_dalton:
              if options.launcher:
                  launcher = options.launcher
              else:
-                 launcher = os.path.join(root_directory, '../build/dalton')
+                 launcher = os.path.join(root_directory, '../../build/dalton')
              # verify that launcher really exists
              if not os.path.isfile(launcher):
                  error_message = 'error: launcher not found in %s' % launcher
@@ -555,17 +567,16 @@ class run:
                                                              self.mol,            \
                                                              output_prefix,       \
                                                              output_prefix)
+         #print  "command=",command
 
          if program_is_dirac:
              if sys.platform != 'win32':
-                 p = subprocess.Popen(command,
-                                      shell=True,
+                 p = subprocess.Popen(shlex.split(command),
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       preexec_fn=os.setsid)
              else:
                  p = subprocess.Popen(command,
-                                      shell=True,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE)
              pgid_dirac = p.pid # save DIRAC process group id for latter killing of subprocesses
@@ -590,6 +601,9 @@ class run:
                         exit = 'SKIP'
                  if 'controlled stop: only int64' in line:
                     if int32_run(s):
+                        exit = 'SKIP'
+                 if 'controlled stop: only int32' in line:
+                    if not int32_run(s):
                         exit = 'SKIP'
              f.close()
              return exit
@@ -691,6 +705,8 @@ class run:
 
      def is_shell_command(self):
          return False
+     def is_python_command(self):
+         return False
      def is_run(self):
          return True
 
@@ -703,6 +719,51 @@ class shell_command:
          os.system(self.command)
      def is_shell_command(self):
          return True
+     def is_run(self):
+         return False
+
+class python_command:
+     def __init__(self, test, line):
+         self.test    = test
+         self.command_args = line[2:]
+         self.command = line[:2]
+     def execute(self):
+         os.chdir(self.test)
+         if self.command == 'cp' :
+             src=self.command_args.split()[0]
+             dest=self.command_args.split()[1]
+             if len(self.command_args.split()) != 2:
+                 sys.exit("must be two arguments for copying command! you have"+self.command_args)
+             if os.path.isfile(src):
+                 pass
+                 shutil.copy(src, dest)
+             else:
+                 print "runtest warning: copied file "+src+" does not exist in "+self.test
+         elif self.command == 'rm' :
+             for dirac_file  in self.command_args.split():
+                if os.path.isfile(dirac_file):
+                    os.remove(dirac_file)
+                else:
+                    print "runtest warning: file for removing "+dirac_file+"does not exist!"
+                    print "  check the test menu presciption: "+self.command+" "+self.command_args
+         elif self.command == 'mv' :
+             src=self.command_args.split()[0]
+             dest=self.command_args.split()[1]
+             if len(self.command_args.split()) != 2:
+                 sys.exit("must be two arguments for moving command!")
+             if os.path.isfile(src):
+                 pass
+                 shutil.move(src, dest)
+             else:
+                 print "runtest warning:  source file "+src+" does not exist for move!"
+                 print "  check test menu presciption: "+self.command+" "+self.command_args
+         else:
+             print 'wrong command in menu:',self.command
+             sys.exit("Wrong meta-command in menu ! Can be only rm/cp/mv ! check menu presciption:"+self.command+" "+self.command_args)
+     def is_python_command(self):
+         return True
+     def is_shell_command(self):
+         return False 
      def is_run(self):
          return False
 
@@ -727,7 +788,7 @@ def get_current_section(line, current_section):
     return current_section
 
 def line_is_keyword(line):
-    return line.split()[0] in ['sh', 'quick', 'regular', 'benchmark']
+    return line.split()[0] in ['sh', 'quick', 'regular', 'benchmark', 'cp', 'mv', 'rm']
 
 # main function
 def main(*args):
@@ -745,8 +806,17 @@ def main(*args):
                     if line[0:1] != '#':
                         current_section = get_current_section(line, current_section)
                         if use_this_line(current_section):
-                            if line[0:2] == 'sh':
+                            if   line[0:2] == 'sh':
                                 l.append(shell_command(test, line))
+                            elif line[0:2] == 'cp':
+                                l.append(python_command(test, line))
+                                pass
+                            elif line[0:2] == 'mv':
+                                l.append(python_command(test, line))
+                                pass
+                            elif line[0:2] == 'rm':
+                                l.append(python_command(test, line))
+                                pass
                             else:
                                 if not line_is_keyword(line):
                                     l.append(run(test, line, current_section[0]))
@@ -780,7 +850,7 @@ def main(*args):
     global_elapsed   = 0.0
 
     for task in l:
-        if task.is_shell_command():
+        if task.is_shell_command() or task.is_python_command():
             task.execute()
         else:
             nr_of_tests_done += 1

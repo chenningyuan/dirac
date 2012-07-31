@@ -1,13 +1,10 @@
 **DIRAC
 .TITLE
 Water molecule. 
-#.WAVE F
 .MINIMI
-#.ANALYZE
 *OPTIMI
 .NUMGRA
 **HAMILTONIAN
-#.IOTC ! deprecated
 .X2COLD
 .CMPEIG
 .PRINT

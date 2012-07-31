@@ -1,0 +1,24 @@
+
+
+Supported platforms and compilers
+=================================
+
+DIRAC requires Fortran 90, C, and C++ compilers.  The program is designed to
+run on a unix-like operating system, and uses MPI for parallel calculations.
+Optionally DIRAC can (and should) be linked to platform specific BLAS and
+LAPACK libraries.
+
+We have tested DIRAC |version| on the following platforms:
+
+-  Linux i386
+-  Linux x86\_64
+-  Mac OSX
+-  Windows
+
+We have tested DIRAC |version| with the following compilers:
+
+-  gfortran/gcc (minimum gfortran version 4.3.6)
+-  ifort/icc
+-  xlf/xlc
+
+Please write us about your experiences with other platforms.
