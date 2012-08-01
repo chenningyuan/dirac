@@ -442,5 +442,5 @@ or popular Google-Books web-space.
    *Accurate Spin-Dependent Electron Liquid Correlation Energies for Local Spin
    Density Calculations: A Critical Analysis*, 
    Can. J. Phys. **58**, *1200* (1980)
-   <http://www.nrcresearchpress.com/doi/abs/10.1139/p80-159>
+   <http://dx.doi.org/10.1139/p80-159>
 
