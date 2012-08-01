@@ -1,4 +1,8 @@
+$ERROR 1.E-7
+fromRE: Energy eigenvalues in atomic units
+toi:Total average
 
-FromRE: Energy eigenvalues in atomic units
-To:Total CPU
 
+$ERROR 1.E-5
+from:Relative real eigenvalues in other units
+to:Total CPU
