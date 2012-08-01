@@ -426,10 +426,12 @@ C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
 C ===================================================================
       IF (IPZ.EQ.9) THEN
 C       ... infinite order - either block diagonalization, or YR equation solving
+#ifdef MOD_UNRELEASED
         IF (BLOCKD) THEN
          CALL GET_HINF_BD(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
      &                    GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
         ELSE
+#endif
 C        ... we need additional integer array...
          ISIZE=NORB(1)
          IF (NFSYM.EQ.2) THEN
@@ -441,7 +443,9 @@ C        ... both for FPM "k" & RKB
      &                   WORK(KEIG),WORK(KIBEIG),FPB,YREQ1,
      &               GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
 
+#ifdef MOD_UNRELEASED
         ENDIF
+#endif
 C =======================================================================
 C       ... second order DKH - only in the free-particle basis
 C =======================================================================
@@ -3591,6 +3595,7 @@ C         ... do transform it to the "k" basis into TBUF !
       CALL QEXIT('DF2ONB')
       RETURN
       END
+#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_bd */      
       SUBROUTINE GET_HINF_BD(TBUF,TMAT,VMAT,IBEIG,
@@ -3857,6 +3862,7 @@ C Copy VMAT into TBUF as TBUF is leaving this routine...
       CALL QEXIT('GET_HINF_BD')
       RETURN
       END
+#endif
       SUBROUTINE DIAG_h_test(hmat,eigvl,eigvc,ndim,nz,ierr)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"                                       

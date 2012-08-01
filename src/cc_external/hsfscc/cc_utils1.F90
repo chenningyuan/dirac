@@ -885,7 +885,9 @@ end subroutine
       subroutine msub1 (name2,name3,namet)
 !--------------------------------------------------------------------------------------
 !
-!        special type of diagrams
+!     special case of diagrams multiplications
+!
+! TODO: add printout as is done in mult
 !
 !--------------------------------------------------------------------------------------
       use ipack_mod, only: ipack3,ipack4

@@ -29,8 +29,8 @@ module mystring
 !             type(string) :: s,s1
 !             call make_string(s,"this is my string")
 !             call copy_string(s,s1)
-!             call print_string(s1)
-!             call cancel_string(s);call cancel_string(s1) 
+!             call print_string(s1) or print get_string(s1)
+!             call cancel_string(s); call cancel_string(s1) 
 ! 
 !--------------------------------------------------------------------
  type string
@@ -47,8 +47,10 @@ subroutine make_string(self, text)
 !-----------------------------------------------------------------------
 !       create (allocate) the string
 !-----------------------------------------------------------------------
+implicit none
 #include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
+ !type(string), dimension(1), intent(inout) :: self
  character(*), intent(in) :: text
  integer :: i, alloc_stat
 
@@ -84,6 +86,7 @@ subroutine make_string(self, text)
 !----------------------------------------------------------------
 !   cancels (deallocates) the string
 !----------------------------------------------------------------
+implicit none
 #include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
  integer :: dealloc_stat
@@ -121,6 +124,7 @@ end subroutine print_string
 !---------------------------------------------------------------------------
 ! Returns true/false depending on whether the string was allocated/deallocated
 !----------------------------------------------------------------------------
+implicit none
    type(string), dimension(:), intent(in) :: self
    logical (kind=1) :: is
      is = self(1)%is_alloc
@@ -187,9 +191,107 @@ subroutine set_no_string(self)
 !------------------------------------------------------------------------
 !    sets logical flag indicating allocated string to .FALSE.
 !------------------------------------------------------------------------
+implicit none
  type(string), dimension(:), intent(inout) :: self
  self(1)%is_alloc = .FALSE.
  self(1)%str_length = 0
 end subroutine set_no_string
 
 end module mystring
+
+
+! replacement of mystring module; mystring shall be canceled later (on TODO) 
+module dyn_string
+ type string
+  private
+   character*1, dimension (:), pointer :: strp  => NULL()
+   logical :: is_alloc = .false. ! this default does not work for older F90 compilers 
+   integer :: str_length = 0 ! length of the allocated string
+ end type string
+ integer, private :: iprint_string = 0  ! control print-out variable
+ contains 
+
+subroutine create_string(self, text)
+implicit none
+#include "priunit.h"
+ type(string), intent(inout) :: self
+ character(*), intent(in) :: text
+ integer :: i, alloc_stat
+
+ if (.not.self%is_alloc) then
+   allocate(self%strp(len(text)), stat = alloc_stat)
+   ! ... store the actual size
+   self%str_length = size(self%strp)
+   if (self%str_length.ne.len(text)) then
+     write(LUPRI,*) 'new string lenghts:',len(text),self%str_length
+     call FLSHFO(LUPRI)
+     call QUIT('make_string: error in string length !')
+   endif
+   if ( alloc_stat > 0 ) then
+     write(LUPRI,*) 'alloc_stat erro !'
+     call FLSHFO(LUPRI)
+     call QUIT('mystring/make_string: error in string allocation !')
+     stop 
+   endif
+
+  ! copy the text-string into allocated array, pointed by strp(1)
+  do i = 1, len(text)
+    self%strp(i) = text(i:i)
+  enddo
+  self%is_alloc=.true.
+ else
+    write(LUPRI,*) 'mystring/make_string: this string '// &
+    'was already allocated, here: ',self%strp
+ endif
+end subroutine 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_string(self) result(str_out)
+!-------------------------------------------------------------------
+!   returns the string - pointer to the character array
+!-------------------------------------------------------------------
+  implicit none
+  type(string), intent(in) :: self
+  character*1, dimension (:), pointer :: str_out  
+  integer :: i
+
+  ! first clean returning pointer
+  if ( associated(str_out) ) then
+     nullify(str_out)
+  endif
+
+  if (self%is_alloc) then
+   allocate( str_out(self%str_length) )
+   do i = 1, self%str_length
+    str_out(i:i) = self%strp(i)
+   enddo
+  else
+    str_out=' '
+  endif
+end function get_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine cancel_string(self)
+!----------------------------------------------------------------
+!   cancels (deallocates) the string
+!----------------------------------------------------------------
+implicit none
+#include "priunit.h"
+ type(string), intent(inout) :: self
+ integer :: dealloc_stat
+
+ if ( self%is_alloc) then
+     deallocate(self%strp, stat = dealloc_stat)
+     if (dealloc_stat /= 0) then
+       write(LUPRI,*) 'dellocation error !, dealloc_stat=',dealloc_stat
+       write(LUPRI,*) ' length of the delloc. string was:',self%str_length
+       call FLSHFO(LUPRI)
+       call QUIT('mystring/cancel_string: deallocation error !')
+     endif
+     nullify( self%strp )
+     self%is_alloc=.false.
+     self%str_length = 0
+ endif
+end subroutine cancel_string
+
+end module dyn_string
