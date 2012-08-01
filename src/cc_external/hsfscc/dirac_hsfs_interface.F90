@@ -411,7 +411,7 @@ do isp=1, nsp
      boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
      if (iprint_hsfs >= 2) then
        write(LUPRI,*) '- irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
-     endif
+      endif
   endif
 enddo
 

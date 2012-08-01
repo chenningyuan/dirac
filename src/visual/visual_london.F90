@@ -42,9 +42,10 @@ module visual_london
 
 contains
 
-  subroutine get_d_con_mo(D_con_mo, D_con_mo_ai)
+  subroutine get_d_con_mo(D_con_mo, occupation, D_con_mo_ai)
 !   ----------------------------------------------------------------------------
     type(matrix)            :: D_con_mo
+    real(8)                 :: occupation(*)
     type(matrix), optional  :: D_con_mo_ai
 
     real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
@@ -112,7 +113,7 @@ contains
     end if
 
     if (visual_cfg_use_orbital_string) then
-       call select_orbitals_reortho(D_con_mo%elms)
+       call select_orbitals_reortho(D_con_mo%elms, occupation)
     end if
 
     if (visual_cfg_london_none) then
@@ -130,74 +131,36 @@ contains
 
   end subroutine
 
-  subroutine select_orbitals_reortho(A)
-!    ---------------------------------------------------------------------------
-     real(8), intent(inout)  :: A(norbt, norbt, nz)
-     real(8), allocatable    :: B(:, :, :)
+   subroutine select_orbitals_reortho(A, occupation)
 
-     integer, allocatable :: kvec(:)
-     integer :: list(norbt, 2), ifrp, i, k, iz, nr(2), ir(2, 2), nvec
-!    ---------------------------------------------------------------------------
+      real(8), intent(inout)  :: A(norbt, norbt, nz)
+      real(8), intent(in)     :: occupation(*)
 
+      real(8), allocatable    :: B(:, :, :)
+      integer                 :: i, k, iz
 
-!    read numbers from the string
-!    into integer list kvec(nvec):
-     do ifrp = 1, nfsym
+      allocate(B(norbt, norbt, nz))
+      B = 0.0d0
 
-!fixme skipep
-        !if(xlr_skipep) then
-        !   nr(ifrp)   = nesh(ifrp)
-        !   ir(1,ifrp) = 1
-        !   ir(2,ifrp) = nesh(ifrp)
-        !else
-           nr(ifrp)   =  norb(ifrp)
-           ir(1,ifrp) = -npsh(ifrp)
-           ir(2,ifrp) =  nesh(ifrp)
-        !endif
+      ! radovan: i (re)wrote this but don't quite get it
+      !          but it reproduces previous more complicated code
+      do iz = 1, nz
+         do k = 1, norbt
+            do i = 1, norbt
+               if (dabs(occupation(k)) > 1.0d-20) then
+                  B(i, k, iz) = A(i, k, iz)*occupation(k)
+               end if
+               if (dabs(occupation(i)) < 1.0d-20) then
+                  B(k, i, iz) = A(k, i, iz)*occupation(k)
+               end if
+            end do
+         end do
+      end do
 
-        call alloc(kvec, norb(ifrp))
-        kvec = 0
-        nvec = 1
-        call numlst(visual_cfg_orbital_string(ifrp), kvec, nr(ifrp), ir(1,ifrp), ir(2,ifrp), ifrp, nvec)
+      A = B
+      deallocate(B)
 
-!       we need absolute indices:
-        write(*, *) '--------------------------------------------------------------'
-        write(*, *) 'visual_london.F90: selected orbitals (in reorthonormalization)'
-        write(*, *) 'in fermion symmetry: ', ifrp
-        write(*, *) 'electronic index, (absolute index)'
-        list = 0
-        do i = 1, nvec
-           list(i, ifrp) = kvec(i) + npsh(ifrp)
-           write(*, *) kvec(i), '(', list(i, ifrp), ')'
-        end do
-        write(*, *) '--------------------------------------------------------------'
-        call dealloc(kvec)
-
-     end do
-
-!    save those elements of A which are on the list and zero-out the rest
-     call alloc(B, norbt, norbt, nz)
-     call dzero(B, norbt*norbt*nz)
-
-     do iz = 1, nz
-        do ifrp = 1, nfsym
-           do k = 1, nvec
-              do i = 1, norbt
-                 B(i, list(k, ifrp), iz) = A(i, list(k, ifrp), iz)
-                 if (i .ne. list(k, ifrp)) then
-                    B(list(k, ifrp), i, iz) = A(list(k, ifrp), i, iz)
-                 end if
-              end do
-           end do
-        end do
-     end do
-
-     call dzero(A, norbt*norbt*nz)
-     call dcopy(norbt*norbt*nz, B, 1, A, 1)
-
-     call dealloc(B)
-
-  end subroutine
+   end subroutine
 
 
 

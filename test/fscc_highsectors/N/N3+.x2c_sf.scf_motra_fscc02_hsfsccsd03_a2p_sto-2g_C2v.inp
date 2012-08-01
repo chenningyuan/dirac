@@ -38,7 +38,7 @@ csw
 .END
 .INPUT
  N3+ to N; DIRAC-HSFS-CCSD; STO-2G basis set, no frozen, act.space:2p
-  0 80 09  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+  1 80 09  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
  10
 hhvpppvpvp
   4

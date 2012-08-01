@@ -190,15 +190,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbprl.h"
 #include "dcbcls.h"
 #include "dcbxpr.h"
-C     GEXPEFFDEN contains nuclear gaussian exponents related to size change
+C     GEXPEFFDE2 contains nuclear gaussian exponents related to size change
 C     EXPPLC = Exponent placeholder
-      REAL*8 GEXPEFFDEN, EXPPLC, PREFACTOR 
+      REAL*8 GEXPEFFDE2, EXPPLC, PREFACTOR 
       CHARACTER RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4, 
      &          LABINT(15*MXCENT)*8
       LOGICAl DOINT(4), DOATOM(NUCIND)
       INTEGER ITYP
       real*8 prefac2(4)
-      DIMENSION WORK(LWORK), GEXPEFFDEN(4), INTREP(9*MXCENT)
+      DIMENSION WORK(LWORK), GEXPEFFDE2(4), INTREP(9*MXCENT)
 #include "memint.h"
       CALL QENTER('EFFECTIVE_DENS_NUC')
 
@@ -217,7 +217,7 @@ C     Memory allocation
       OMITVNUC(2) = 'FFFF'
 C     Fetch and set labels/variables (-99 is used to turn on .SELECT)
       CALL SETATM(DOATOM,NATOM,-99)
-      CALL EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
       RTNLBL(2)(1:2) = 'SY'
       WRITE(RTNLBL(2)(3:4),'(I2)') 1
@@ -229,11 +229,11 @@ C     and reset to the original value after each calculation
       DO K = 1,NUCIND
         IF (DOATOM(K)) THEN
 C         Generate nuclear exponents for nuclear size displacments and prefactor 
-          CALL EFF_DEN_NUC_EXP(GEXPEFFDEN, K, PREFACTOR)
+          CALL EFF_DEN_NUC_EXP(GEXPEFFDE2, K, PREFACTOR)
           EXPPLC = GNUEXP(K)
 C         Calculate property matrices for nuclear displacements
           DO L = 1, 4 
-            GNUEXP(K) = GEXPEFFDEN(L)
+            GNUEXP(K) = GEXPEFFDE2(L)
 C           Calculate the integrals  
             CALL NUCAT1(WORK(KONEIN+(L-1)*NNBBASX),WORK(KFREE),LFREE,
      &                  DOINT,OMITVNUC,IPRHAM)
@@ -281,7 +281,7 @@ C     Not able to read DOINT information from COMB
       RETURN
       END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE EFF_DEN_NUC_EXP(GEXPEFFDEN, NUCLEUS, PREFACTOR)
+      SUBROUTINE EFF_DEN_NUC_EXP(GEXPEFFDE2, NUCLEUS, PREFACTOR)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C Fills Mossbauer exponent array with exponent values
@@ -296,15 +296,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "mxcent.h"
 #include "nuclei.h"
 #include "pi.h"
-      REAL*8 GEXPEFFDEN, RADIUS
-      DIMENSION GEXPEFFDEN(4)
+      REAL*8 GEXPEFFDE2, RADIUS
+      DIMENSION GEXPEFFDE2(4)
 C     Generate nuclear radius from the gaussian exponent    
       RADIUS = SQRT(3D0 / (2D0 * GNUEXP(NUCLEUS)) )
 C     Generate new gaussian parameters dR=0.005R
-      GEXPEFFDEN(1) = 3D0 / (2D0 * 0.990D0 * 0.990D0 * RADIUS * RADIUS) 
-      GEXPEFFDEN(2) = 3D0 / (2D0 * 0.995D0 * 0.995D0 * RADIUS * RADIUS)
-      GEXPEFFDEN(3) = 3D0 / (2D0 * 1.005D0 * 1.005D0 * RADIUS * RADIUS)
-      GEXPEFFDEN(4) = 3D0 / (2D0 * 1.010D0 * 1.010D0 * RADIUS * RADIUS)  
+      GEXPEFFDE2(1) = 3D0 / (2D0 * 0.990D0 * 0.990D0 * RADIUS * RADIUS) 
+      GEXPEFFDE2(2) = 3D0 / (2D0 * 0.995D0 * 0.995D0 * RADIUS * RADIUS)
+      GEXPEFFDE2(3) = 3D0 / (2D0 * 1.005D0 * 1.005D0 * RADIUS * RADIUS)
+      GEXPEFFDE2(4) = 3D0 / (2D0 * 1.010D0 * 1.010D0 * RADIUS * RADIUS)  
 C     Prefactor = 3 / (48*Z*Pi*R*dR) 
       PREFACTOR = 12.5D0 / (RADIUS * RADIUS * CHARGE(NUCLEUS) * PI)
       RETURN
@@ -3946,7 +3946,9 @@ CMI .. mover before diagonalization which can destroy SMAT
 C
 C     Diagonalize overlap matrix
 C
+#ifdef MOD_UNRELEASED
       IF (.NOT.DOQJACO) THEN
+#endif
          IF (LOWJACO) THEN
             CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
          ELSE
@@ -3959,6 +3961,7 @@ c    It would be better to rewrite the code below instead..
                CALL QUIT('Diagonalization of overlap matrix failed')
             ENDIF
          ENDIF
+#ifdef MOD_UNRELEASED
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
@@ -3983,7 +3986,7 @@ CMI   ... (quaternion) Jacobi diagonalization routine
         CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1) ! resort
         CALL MEMREL('LOWGEN',WORK,KSMAT,KSMAT,KFREE,LFREE)
       ENDIF
-
+#endif
 !    ... ensure V_ij = U_ij/SQRT(s_j)
       NV = 0
       DO I = 1,NS
@@ -5824,7 +5827,9 @@ C
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
 
+#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
+#endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL),WORK(KFREE),LFREE)
@@ -5840,12 +5845,14 @@ C
      &        'LINSYM: Errorneous QDIAG diagonalization of Jz_LL !')
               ENDIF
             ENDIF
+#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,IDUMMY,.TRUE.,2)
             DO II=1,NL
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
+#endif
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -5873,7 +5880,9 @@ C
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
+#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
+#endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS),WORK(KFREE),LFREE)
@@ -5889,12 +5898,14 @@ C
      &        'LINSYM: Errorneous QDIAG diagonalization of Jz_SS !')
               ENDIF
             ENDIF
+#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,.TRUE.,2)
             DO II=1,NS
               EIG(IEIGP+II-1)=WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
+#endif
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')

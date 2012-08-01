@@ -245,10 +245,21 @@ C     Print section
 C     =============
 C
 C ... header:
-C     CALL PRSYMB(LUPRI,'=',75,0)
-C     WRITE(LUPRI,'(A)')
-C    &   ' NMRINP: Magnetic properties'
-C     CALL PRSYMB(LUPRI,'=',75,0)
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+
+      IF (MSUSCP.AND.LONDON) THEN
+#if !defined MOD_MAGNETIZ
+        WRITE(LUPRI,'(2X,A)') 
+     &'You have asked for magnetizabilities wih London atomic orbitals'
+        WRITE(LUPRI,'(2X,A)') 
+     &'-this is not supported in the release version of DIRAC.'
+        CALL QUIT(
+     &'Magnetizabilities wih London atomic orbitals are not supported'//
+     & ' in the DIRAC release version !')
+#endif
+      ENDIF
 
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
@@ -1543,13 +1554,13 @@ C
       RETURN
       END
 
+#if defined MOD_MAGNETIZ
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck EXPVSUSLO  */
       SUBROUTINE EXPVSUSLO(WORK,LWORK)
 C*****************************************************************************
 C
 C  Routine that calculates expectation value terms for magnetic
-C  susceptibilities - two-electron term and both higher and lower order
+C  susceptibilities with LAO - two-electron term and both higher and lower order
 C  reorthonormalization terms.
 C
 C  Written by Miroslav Ilias, Prievidza, june 2003.
@@ -1914,17 +1925,13 @@ C       ... control print-out ...
 
       ENDDO ! of XX,XY,XZ,YY,YZ,ZZ .....
       DOPCT=DOPCTRA_SAVE
-
 C     .... release the whole memory block used in this subroutine
       CALL MEMREL('HORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-
 C     ... close the AOPROPER file
       CLOSE(LU1INT,STATUS = 'KEEP')
-
       CALL QEXIT('HORDRNT')
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lordrrnt  */
       SUBROUTINE LORDRNT(CMO,IBEIG,WORK,KFREE,LFREE)
@@ -2320,9 +2327,7 @@ C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
           CALL PRQMAT(WORK(KSWMAT),NORBT,NORBT,NORBT,
      &               NORBT,NZ,IPQTOQ(1,IREP12),LUPRI )
          ENDIF
-
 C ...  Store expect. values from resulting matrix WORK(KSWMAT)
-
        EXPVAL = D0
        DO IFS = 1, NFSYM
        IF (NOCC(IFS).GT.0) THEN
@@ -2369,19 +2374,14 @@ C Symmetrize the off-diagonal terms of SUSFSY !!
        SUSFSY(IPTAX(I2,2),IPTAX(I1,2))=PS
       ENDDO
       ENDDO
-
 C     .... release the whole block used in this subroutine
       CALL MEMREL('LORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-
       CLOSE(LU1INT,STATUS = 'KEEP')
-
       DOPCT=DOPCTRA_SAVE
-
       CALL QEXIT('LORDRNT')
-C     CALL QUIT('Exit from LORDRNT')
-      
       RETURN
       END
+#endif
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_d1hblond */
@@ -2986,7 +2986,7 @@ C      gradient matrix, PRPMO for LAO-PDBS
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
         WRITE(LUPRI,'(A)')
-     &'WARNING from GETDHB: The total propery gradient'
+     &'WARNING from GETDHB: The total property gradient'
      &//'matrix dH/dB for LAO-PDBS is not (fully?) symmetric !'
       ENDIF
 

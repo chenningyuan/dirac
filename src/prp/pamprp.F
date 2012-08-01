@@ -1220,12 +1220,10 @@ C      .... spin-spin coupling
             DSO = .TRUE.
          END IF
 C      .... magnetic susceptibilities
-#ifdef MOD_MAGNETIZ
          IF (MSUSCP) THEN
             DOEXP = .TRUE.
             MSUSCDIA = .TRUE.
          END IF
-#endif
       END IF
 C
 C     Dipole moment
@@ -1341,11 +1339,9 @@ C
 C
 C     Magnetizabilities
 C
-#ifdef MOD_MAGNETIZ
       IF(MSUSCP) THEN
         CALL DEF_MSUSCP(WORK,LWORK)
       ENDIF
-#endif
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
@@ -1384,13 +1380,22 @@ C
         CALL DEF_BLAO(WORK, LWORK, IPRPRP)
       ENDIF
 C
-C     Effective electronic densities at the nuclei
+C     Effective electronic densities at the nuclei - new code
 C
       IF(EFFDEN) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
+C
+C     Effective electronic densities at the nuclei - old code
+C
+      IF(EFFDE2) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 
       RETURN
@@ -1508,11 +1513,9 @@ C
 C
 C     Magnetic susceptibilities
 C
-#ifdef MOD_MAGNETIZ
       IF (MSUSCP) THEN
         CALL PRP_MSUSCP(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
-#endif
 C
 C     Molecular rotational g-tensor
 C
@@ -4821,7 +4824,6 @@ C
       RETURN
       END
 
-#ifdef MOD_MAGNETIZ
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_msuscp */
       SUBROUTINE DEF_MSUSCP(WORK,LWORK)
@@ -4862,8 +4864,10 @@ C
       WRITE(LUPRI,'(1X,A)')
      &  'DEF_MSUSCP: Magnetic susceptibility'
        IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
           WRITE(LUPRI,'(1X,A)')
      &  '- with London atomic orbitals (LAO).'
+#endif
        ELSE  
           WRITE(LUPRI,'(1X,A)')
      &  '- with conventional atomic orbitals (CGO)'
@@ -4888,12 +4892,13 @@ C
       CALL IZERO(IPMSUSC,6)
     
       IF (LONDON) THEN ! use London AO's
+#if defined MOD_MAGNETIZ
 C ... always calculate expectation value terms 
        DOEXP = .TRUE. 
 C ... define operators for response and exp.value parts
        CALL DEF_D1HBLOND(2,WORK,LWORK,LPRINT)  
+#endif
       ELSE ! Conventional AO
-
 C      ... XAVECTOR
        IOP(1) = 5
 C      ... YAVECTOR
@@ -4958,11 +4963,13 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,3
        IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
          DO J = 1, 4
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
      &'Including g(B) and {T(1),H(0)} terms. ' 
+#endif
        ELSE
        INDOP1 = IPMSUSC(1,I)
        IF(INDOP1.GT.0) THEN
@@ -4981,11 +4988,13 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1, 3
        IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
          DO J = 1, 4
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
      &'Including g(B) and {T(1),H(0)} terms. ' 
+#endif
        ELSE
         INDOP1 = IPMSUSC(2,I)
         IF(INDOP1.GT.0) THEN
@@ -4998,12 +5007,8 @@ C
 C ----------------------------------------------
 C Define operators for the expectation value
 C ----------------------------------------------
-
-C     IF (XLR_SKIPEP.AND.(.NOT.LONDON)) THEN
       IF (MSUSCDIA.AND.(.NOT.LONDON)) THEN
-
-       DOEXP = .TRUE. ! Calculate the expectation value !
-C
+       DOEXP = .TRUE. ! Calculate the expectation value 
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)')
      & 'Diamagnetic susceptibility terms (CGO):'
@@ -5090,6 +5095,7 @@ C        which is fully  involved in paramag. term when using URKBAL !
 
 C ... the case of London orbitals - do always calculate the exp.value !
       ELSE IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
 C  ... Here take care of one-electron terms 
 C ... first 3 terms from the <r r~ hd> - RM2H1+RM2H2+RM2H3
 C  ... 6 terms  Qmn.<r r~ beta' c^2>.Qmn - 6 diagonal operators
@@ -5403,12 +5409,10 @@ C ... off-diagonal terms need to be symmetrized !
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
         CALL OP1IND('ZZRDSUL',IPDSUSC(27),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
-
 C-----------------------------------------------------------------
 C ... RDSUSNL terms,  pointers in IPDSUSC(28-33)
 C   are TRUE diamagnetic terms according to the Sternheim  
 C-----------------------------------------------------------------
-C      IF (XLR_SKIPEP) THEN
 C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
        IF (MSUSCDIA) THEN
         PNAME     = 'LAO-XXRDSUSNL'
@@ -5526,7 +5530,6 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       CALL OP1IND('ZZDSUSC',IPDSUSC(39),LEXPP,NEXPP,INDXPR,MAXEXP)
-
        ENDIF
 C
 C      Print section for LAO exp.values susceptibilities
@@ -5535,7 +5538,6 @@ C
        IF(IPRINT.GE.1) THEN
          WRITE(LUPRI,'(2X,A)') 'DEF_MSUSCP'//
      &': Expec.value terms term for the magnet. susc with LAO:'
-C        IF (XLR_SKIPEP) THEN 
          IF (MSUSCDIA) THEN 
            NOP_DSUSC=39
          ELSE 
@@ -5550,6 +5552,7 @@ C        IF (XLR_SKIPEP) THEN
            CALL WRIXPR(I,INDXPR)
          ENDDO
         ENDIF
+#endif
       ENDIF
 
       CALL QEXIT('DEF_MSUSCP')
@@ -5611,7 +5614,9 @@ C=============================================================================
 
 C     ... evaluate expectation value terms first
       IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
         CALL EXPVSUSLO(WORK(KFREE),LFREE)
+#endif
       ENDIF
 
       KFRSAV = KFREE
@@ -5619,11 +5624,13 @@ C     ... evaluate expectation value terms first
 
       IF (.NOT.XLR_SKIPEP.AND.MSUSCDIA) THEN
          IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
           WRITE(LUPRI,'(2X,A)')
      &  'For LAO & e-p rotations the diamag.term is not (yet) defined !'
           WRITE(LUPRI,'(2X,A)')
      &  'MSUSCDIA for magnetizabilities is set to .false. ! '
           MSUSCDIA=.FALSE.
+#endif
          ENDIF
       ENDIF
 
@@ -5631,7 +5638,6 @@ C     ... evaluate expectation value terms first
       CALL DZERO(SUSDIA_EX,9)
 
       IF (.NOT.LONDON) THEN
-
        IF (MSUSCDIA) THEN
         IJ = 0
         DO I = 1, 3
@@ -5660,6 +5666,7 @@ C  -1 is for the compatibility with Dalton
        ENDIF 
 
       ELSE IF (LONDON) THEN 
+#if defined MOD_MAGNETIZ
 C ... accumulate one-electron expectation values into SUSDIA
 C.......................................................................................
 C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3, 
@@ -5770,7 +5777,6 @@ C ... This is needed for compatibility with Dalton
           SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
          ENDDO
          ENDDO
-
         ENDIF
 
 C ... Write output - always print out partial results
@@ -5796,16 +5802,13 @@ C
         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
         CALL FLSHFO(LUPRI)
        ENDIF
-
+#endif
       ENDIF
-
 C------------------------------------------------------------
 C  ... get relaxation parts of susceptibilities
 C     for both conventional and London atomic orbitals
 C------------------------------------------------------------
-      
       DO IFREQ = 1, NBFREQ 
-
         CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
            WRITE(LUPRI,'(A,F15.8,2X,A)') 
@@ -5813,13 +5816,12 @@ C------------------------------------------------------------
         ENDIF
         CALL DZERO(SUSREL,9)
         CALL DZERO(SUSREL_EP,18)
-
 C ===========================================================================
 C ... extract the relaxation (response) part of magnetic susceptibilities...
 C ===========================================================================
        DO IB = 1,3
-
          IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
           IBX = IPLONDON(1,IB)
           READ (PRPNAM((IBX)),'(4X,A1)') JCB
           JB = ICONVXYZ(JCB)
@@ -5829,6 +5831,7 @@ C ===========================================================================
            write(lupri,*) 'got JCB=',JCB
            CALL QUIT('PRP_MSUSCP: wrong extracted number in LAO !')
           ENDIF
+#endif
          ELSE
           IBX = IPMSUSC(2,IB)
 CMI  ...    extract first character, like 'X magnetic field'
@@ -5845,9 +5848,11 @@ CMI  ...    extract first character, like 'X magnetic field'
          KB = IPMSUSC(2,JB)
          DO IA = 1, 3
           IF (LONDON) THEN
+#if defined MOD_MAGNETIZ
            IAX = IPLONDON(1,IA)
            READ (PRPNAM((IAX)),'(4X,A1)') JCA
            JA = ICONVXYZ(JCA)  
+#endif
           ELSE
            IAX = IPMSUSC(1,IA)
            READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
@@ -5859,10 +5864,9 @@ CMI  ...    extract first character, like 'X magnetic field'
            CALL QUIT('PRP_MSUSCP: wrong extracted number !')
            ENDIF
           ENDIF
-
+          ! store the relaxation part
           KA = IPMSUSC(1,IA)
           SUSREL(IPTAX(IB,2),IPTAX(IA,2)) = ABLRF(IFREQ,KA,KB,1)
-
           IF (.NOT.XLR_SKIPEP) THEN
 C   .... save e-e "paramagnetic" and e-p "diamagnetic"
 C        contributions from the linear response function
@@ -5874,8 +5878,10 @@ C        contributions from the linear response function
 
 C    .... DALTON type of output
          IF (LONDON) THEN  
+#if defined MOD_MAGNETIZ
           CALL HEADER('Relaxation',-1)
           CALL POLPRI(SUSREL,'   ',-2)
+#endif
          ELSE
           CALL HEADER('Relaxation part of susceptibilities',-1)
           CALL OUTPUT(SUSREL,1,3,1,3,3,3,1,LUPRI)
@@ -5934,6 +5940,7 @@ C           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
          ENDDO
          ENDDO
        ELSE 
+#if defined MOD_MAGNETIZ
 C        ... the case with London atomic orbitals ...
          DO I = 1, 3
          DO J = 1, 3
@@ -5946,6 +5953,7 @@ C        ... the case with London atomic orbitals ...
            PARSUS(I,J) = SUSTOT(I,J) - DIASUSC(I,J)
          ENDDO
          ENDDO
+#endif
       ENDIF
 
 C
@@ -6015,13 +6023,14 @@ C
          WRITE (LUPRI,'(/,1X,A)')
      &  ' Calculations without London atomic orbitals.'
       ELSE
+#if defined MOD_MAGNETIZ
          WRITE (LUPRI,'(/,1X,A)')
      &  ' London atomic orbitals used in calculations.'
+#endif
       END IF
 
 CMI   ...there are three defferent types of the magnetizability output 
 CMI  ====================================================================
-CMI   IF (D12 .AND. D23) THEN
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
          write(lupri,'(3X,A)') '...magnetizability output 1...'
@@ -6033,7 +6042,6 @@ CMI   IF (D12 .AND. D23) THEN
      &      ' Paramagnetic contribution: ',PARAMA,' (au), ',
      &        SI*PARAMA*1.0D31,' (SI), ',CGS*PARAMA,' (cgs)'
          WRITE (LUPRI,'(/,1X,A)') ' Magnetizability is spherical.'
-CMI   ELSE IF (D12 .OR. D23) THEN
       ELSE IF (MAGOUT2) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
          IF (D12) THEN
@@ -6063,7 +6071,6 @@ CMI   ELSE IF (D12 .OR. D23) THEN
      &         ABC(I),PVAL(I),SI*PVAL(I)*1.0D31,CGS*PVAL(I),
      &         (AXES(IPTAX(J,2),I),J=1,3)
  700     CONTINUE
-CMI   ELSE
       ELSE IF (MAGOUT3) THEN
          CALL DSWAP(1,PVAL(2),1,PVAL(1),1)
          CALL DSWAP(3,AXES(1,2),1,AXES(1,1),1)
@@ -6088,7 +6095,6 @@ CMI   ELSE
      &         (AXES(IPTAX(J,2),I),J=1,3)
  800     CONTINUE
       ELSE
-C      call quit('PRP_MSUSCP: blind branch of the output !!!')
        write(lupri,*) 'PRP_MSUSCP: blind branch of the output !!!'
       END IF
 C
@@ -6119,7 +6125,6 @@ C     CALL DSCAL(9,-D1,PARSUS,1)
       CALL QEXIT('PRP_MSUSCP')
       RETURN
       END
-#endif
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_SHIELD */
@@ -8498,7 +8503,7 @@ C
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DENS(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
 C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
@@ -8515,13 +8520,13 @@ C
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     (-99: accept .SELECT specification)
       CALL SETATM(WORK(KDATOM),NATOM,-99)
-      CALL DEF_EFF_DENS1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+      CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_EFF_DENS',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN  
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DENS1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
+      SUBROUTINE DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
      &               IPRINT)
 C**********************************************************
 C     Define effective density operator
@@ -8568,3 +8573,109 @@ C
   100 CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_EFFDEN */
+      SUBROUTINE DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for effective density at nuclei
+C     see S. Knecht, S. Fux, R. van Meer, L. Visscher, M. Reiher 
+C     and T. Saue, Theor. Chem. Acc. 129 (2011) 631
+C     Based on DEF_PVC
+C
+C     Written by T. Saue July 25 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     PVC: INTTYP = 62
+C     (-62: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-62)
+      CALL DEF_EFFDEN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_EFFDEN',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_effden1 */
+      SUBROUTINE DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for parity violation - chirality
+C
+C     Written by J. Thyssen - Oct 7 1999
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "gfac.h"
+#include "pi.h"
+      PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+C
+      ITYP = 0
+      IPTYP     = 1
+      NPCOMP    = 1
+      IF(GAUNUC) THEN
+        PFAC(1) = D1
+      ELSE
+        WRITE(6,*) 'WARNING: Effective density at nucleus is not'//
+     &       'well defined for point nucleus,',
+     &       'due to singularity in the relativistic case. Skipping.'
+        RETURN        
+      ENDIF
+      DO 100 IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+            DO 200 IREP = 0, MAXREP
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  PNAME = 'EFFD:'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  CALL OP1IND('PVC   '
+     &                 ,IPEFFDEN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+               END IF
+  200       CONTINUE
+         END IF
+  100 CONTINUE
+C
+      IF(IPRINT.GE.1) THEN
+        DO I = 1,ITYP
+          INDXPR = LEXPP(IPEFFDEN(I))
+          CALL PRSYMB(LUPRI,'.',75,0)
+          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &       'Component no.',I,':',PRPNAM(INDXPR)
+          CALL PRSYMB(LUPRI,'.',75,0)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

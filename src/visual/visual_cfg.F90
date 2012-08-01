@@ -111,8 +111,6 @@ module visual_cfg
    integer, public              :: visual_cfg_nr_points_in_list = 0
    real(8), public, allocatable :: visual_cfg_xyz_list(:, :)
 
-   logical,       public :: visual_cfg_use_orbital_string = .false.
-   character(72), public :: visual_cfg_orbital_string(2)
    real(8),       public :: visual_cfg_scale              = 1.0d0
    real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
    logical,       public :: visual_cfg_radial             = .false.
@@ -127,6 +125,9 @@ module visual_cfg
 
    integer,      public :: visual_cfg_irep_conmat = 0
    integer,      public :: visual_cfg_itim_conmat = 0
+
+   logical, public              :: visual_cfg_use_orbital_string = .false.
+   real(8), public, allocatable :: visual_cfg_occupation(:, :)
 
    private
 

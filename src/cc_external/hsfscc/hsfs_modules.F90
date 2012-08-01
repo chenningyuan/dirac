@@ -529,6 +529,7 @@ integer, allocatable  :: iclass(:),isym(:,:),ibias(:)
 logical :: sym_mod_initialized = .false.
 contains
 subroutine init_sym_mod
+implicit none
 #include "priunit.h"
 if (.not.sym_mod_initialized) then
 allocate(iclass(1:16))
@@ -719,10 +720,10 @@ function check_method_name(what_method) result (found_method)
 !--------------------------------------------------------------
 !   checks method name entering in "what_method"
 !--------------------------------------------------------------
+implicit none
 character(len=4), intent(in) :: what_method
 integer :: i
 logical :: found_method
-
 found_method=.false.
 do i=1,size(hs_method_name)
  if (what_method==hs_method_name(i)) then
@@ -730,11 +731,9 @@ do i=1,size(hs_method_name)
    Exit
  endif
 enddo
-
 ! mi: now skip checking
 found_method=.true.
 return
-
 end function check_method_name
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -802,7 +801,6 @@ do i=1, num_methods
       write(LUPRI,*) method_name(i),' is not in the list !'
       call quit('launch_hsfs_methods')
   endif
-
 enddo
 
 end subroutine launch_hsfs_methods
@@ -813,44 +811,88 @@ end module high_sect_execs
 module ipack_mod
 !--------------------------------------------------------------------
 ! module for integer indexes packing - ipack3, ipack4, ipack5, ipack6
+! for retrieving individual indexes from packed indexes i1upack2,i2unpack2
 ! and with some checking procedures
 !--------------------------------------------------------------------
   implicit none
   logical, private :: check_ipack_indexes=.false.
   integer, parameter, private :: min_indx = 1, max_indx = 255
+  !private :: set_check_ipack_indexes, unset_check_ipack_indexes
   contains
 
   subroutine set_check_ipack_indexes
     check_ipack_indexes=.true. ! sets checking of ipack indexes
-  end subroutine set_check_ipack_indexes
+  end subroutine 
 
   subroutine unset_check_ipack_indexes
     check_ipack_indexes=.false. ! unsets checking of ipack indexes
-  end subroutine unset_check_ipack_indexes
+  end subroutine 
 
   integer function ipack2(i,j)
     integer, intent(in) :: i,j
     if (check_ipack_indexes) call check_ipack2_indexes(i,j)
     ipack2=ior(ishft(i,8),j)
-  end function ipack2
+  end function 
+
+  integer function i1unpack2(ii)
+  ! retreive 1st index from the packed index of two
+    integer, intent(in) :: ii
+    i1unpack2=iand(ishft(ii,-8),z'ff')
+    if (check_ipack_indexes) call check_ipack1_indexes(i1unpack2)
+  end function 
+
+  integer function i2unpack2(ii)
+  ! retrieve 2nd index from the packed index of two
+    integer, intent(in) :: ii
+    i2unpack2=iand(ii,z'ff')
+    if (check_ipack_indexes) call check_ipack1_indexes(i2unpack2)
+  end function 
 
   integer function ipack3(i,j,k)
     integer, intent(in) :: i,j,k
     if (check_ipack_indexes) call check_ipack3_indexes(i,j,k)
     ipack3=ior(ior(ishft(i,16),ishft(j,8)),k)
-  end function ipack3
+  end function 
 
   integer function ipack4(i,j,k,l)
     integer, intent(in) :: i,j,k,l
     if (check_ipack_indexes) call check_ipack4_indexes(i,j,k,l)
     ipack4=ior(ior(ishft(i,24),ishft(j,16)),ior(ishft(k,8),l))
-  end function ipack4
+  end function 
+
+  integer function i1unpack4(ii)
+  ! unpack 1st index of packed index of four
+    integer, intent(in) :: ii
+    i1unpack4=iand(ishft(ii,-24),z'ff')
+    if (check_ipack_indexes) call check_ipack1_indexes(i1unpack4)
+  end function 
+
+  integer function i2unpack4(ii)
+  ! unpack 2. index of packed index of four
+    integer, intent(in) :: ii
+    i2unpack4=iand(ishft(ii,-16),z'ff')
+    if (check_ipack_indexes) call check_ipack1_indexes(i2unpack4)
+  end function 
+
+  integer function i3unpack4(ii)
+  ! unpack 3. index
+    integer, intent(in) :: ii
+    i3unpack4=iand(ishft(ii,-8),z'ff')
+    if (check_ipack_indexes) call check_ipack1_indexes(i3unpack4)
+  end function 
+
+  integer function i4unpack4(ii)
+  ! retreive 4.index
+    integer, intent(in) :: ii
+    i4unpack4=iand(ii,z'ff')
+    if (check_ipack_indexes) call check_ipack1_indexes(i4unpack4)
+  end function 
 
   integer function ipack5(i,j,k,l,m)
     integer, intent(in) :: i,j,k,l,m
     if (check_ipack_indexes) call check_ipack5_indexes(i,j,k,l,m)
     ipack5=ior(ishft(i,16),ior(ior(ishft(j,12),ishft(k,8)),ior(ishft(l,4),m)))
-  end function ipack5
+  end function 
 
   integer function ipack6(i,j,k,l,m,n)
     integer, intent(in) :: i,j,k,l,m,n
@@ -858,7 +900,16 @@ module ipack_mod
     ipack6=ior(ior(ishft(i,20),ishft(j,16)),     &
            ior(ior(ishft(k,12),ishft(l,8)),      & 
                ior(ishft(m,4),n)))
-  end function ipack6
+  end function 
+
+  subroutine check_ipack1_indexes(i)
+#include "priunit.h"
+    integer, intent(in) :: i
+    if (.not.(i >= min_indx .and. i <= max_indx )) then
+        write(LUPRI,*) 'ipack1: i=',i
+        call quit('ipack1 index out of range !')
+    endif
+  end subroutine 
 
   subroutine check_ipack2_indexes(i,j)
 #include "priunit.h"
@@ -868,7 +919,7 @@ module ipack_mod
         write(LUPRI,*) 'ipack2: i=',i,' j=',j
         call quit('ipack2 index out of range !')
     endif
-  end subroutine check_ipack2_indexes 
+  end subroutine 
 
   subroutine check_ipack3_indexes(i,j,k)
 #include "priunit.h"
@@ -879,7 +930,7 @@ module ipack_mod
         write(LUPRI,*) 'ipack3: i=',i,' j=',j,' k=',k
         call quit('ipack3 index out of range !')
     endif
-  end subroutine check_ipack3_indexes 
+  end subroutine 
 
   subroutine check_ipack4_indexes(i,j,k,l)
 #include "priunit.h"
@@ -891,7 +942,7 @@ module ipack_mod
         write(LUPRI,*) 'ipack4: i=',i,' j=',j,' k=',k,' l=',l
         call quit('ipack4 index out of range !')
     endif
-  end subroutine check_ipack4_indexes 
+  end subroutine 
 
   subroutine check_ipack5_indexes(i,j,k,l,m)
 #include "priunit.h"
@@ -904,7 +955,7 @@ module ipack_mod
         write(LUPRI,*) 'ipack5: i=',i,' j=',j,' k=',k,' l=',l,' m=',m
         call quit('ipack5 index out of range !')
     endif
-  end subroutine check_ipack5_indexes 
+  end subroutine 
 
   subroutine check_ipack6_indexes(i,j,k,l,m,n)
 #include "priunit.h"
@@ -918,7 +969,7 @@ module ipack_mod
        write(LUPRI,*) 'ipack6: i=',i,' j=',j,' k=',k,' l=',l,' m=',m,' n=',n
        call quit('ipack6 index out of range !')
     endif
-  end subroutine check_ipack6_indexes 
+  end subroutine 
 
   subroutine test_ipack_functions
     ! subroutine for demonstration and testing of ipack<2-6> functions
@@ -967,8 +1018,6 @@ module ipack_mod
     ip6=ipack6(i0,j0,k0,l0,m0,n0)
     write(LUPRI,*) 'ipack6(',i0,',',j0,',',k0,',',l0,',',m0,',',n0,')=',ip6
 
-
-
     write(LUPRI,*)
     call unset_check_ipack_indexes
   end subroutine test_ipack_functions
@@ -1006,3 +1055,20 @@ call check_ijtemp_mod
  write(LUPRI,*) 'no checking of modules, this is nasty STATIC version.'
 #endif
 end subroutine check_modules
+
+subroutine space_usage
+!> at the end of some method print out info 
+!! about the consumed space of gen & igen arrays
+!! TODO: compare to the size of allocations
+#if defined HSFS_DYN_ALLOC
+use cfiles_mod
+implicit none
+#else
+implicit none
+#include "cfiles.h"
+!common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,iiia(200),iiva(200)
+#endif
+#include "priunit.h"
+write (LUPRI,'(/,i8,a,i8,a)') nstrt(1,nflcur),' words used in igen,', & 
+                              nstrt(2,nflcur),' words used in gen.'
+end subroutine

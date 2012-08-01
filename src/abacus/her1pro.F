@@ -4211,7 +4211,7 @@ C
       RETURN
       END
 C  /* Deck effdentyp */
-      SUBROUTINE EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      SUBROUTINE EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
