@@ -8,7 +8,6 @@ module orbital_rotation_indices
    public set_as_initialized
    public get_orbital_rotation_indices_pp
    public get_orbital_rotation_indices_pn
-   public set_orbital_rotation_indices
 
    private
 
@@ -18,46 +17,6 @@ module orbital_rotation_indices
    logical :: is_initialized = .false.
 
 contains
-
-   subroutine set_orbital_rotation_indices(                            &
-                                           do_pp,                      &
-                                           do_pn,                      &
-                                           length_pp,                  &
-                                           length_pn,                  &
-                                           orbital_rotation_vector_pp, &
-                                           orbital_rotation_vector_pn  &
-                                          )
-
-      logical :: do_pp
-      logical :: do_pn
-      integer :: length_pp
-      integer :: length_pn
-      integer :: orbital_rotation_vector_pp(*)
-      integer :: orbital_rotation_vector_pn(*)
-
-      integer :: i, j
-
-      if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)
-      if (do_pp) then
-         allocate(orbital_rotation_indices_pp(length_pp*2))
-         orbital_rotation_indices_pp(1:length_pp*2) = orbital_rotation_vector_pp(1:length_pp*2)
-      else
-         allocate(orbital_rotation_indices_pp(2))
-         orbital_rotation_indices_pp = 0
-      end if
-
-      if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)
-      if (do_pn) then
-         allocate(orbital_rotation_indices_pn(length_pn*2))
-         orbital_rotation_indices_pn(1:length_pn*2) = orbital_rotation_vector_pn(1:length_pn*2)
-      else
-         allocate(orbital_rotation_indices_pn(2))
-         orbital_rotation_indices_pn = 0
-      end if
-
-      call set_as_initialized()
-
-   end subroutine
 
    subroutine set_as_initialized()
       is_initialized = .true.
@@ -802,3 +761,45 @@ end module
       end if
 !     stop 'after GASCAS determination.'
       END
+
+   subroutine set_orbital_rotation_indices(                            &
+                                           do_pp,                      &
+                                           do_pn,                      &
+                                           length_pp,                  &
+                                           length_pn,                  &
+                                           orbital_rotation_vector_pp, &
+                                           orbital_rotation_vector_pn  &
+                                          )
+
+      use orbital_rotation_indices
+
+      logical :: do_pp
+      logical :: do_pn
+      integer :: length_pp
+      integer :: length_pn
+      integer :: orbital_rotation_vector_pp(*)
+      integer :: orbital_rotation_vector_pn(*)
+
+      integer :: i, j
+
+      if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)
+      if (do_pp) then
+         allocate(orbital_rotation_indices_pp(length_pp*2))
+         orbital_rotation_indices_pp(1:length_pp*2) = orbital_rotation_vector_pp(1:length_pp*2)
+      else
+         allocate(orbital_rotation_indices_pp(2))
+         orbital_rotation_indices_pp = 0
+      end if
+
+      if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)
+      if (do_pn) then
+         allocate(orbital_rotation_indices_pn(length_pn*2))
+         orbital_rotation_indices_pn(1:length_pn*2) = orbital_rotation_vector_pn(1:length_pn*2)
+      else
+         allocate(orbital_rotation_indices_pn(2))
+         orbital_rotation_indices_pn = 0
+      end if
+
+      call set_as_initialized()
+
+   end subroutine

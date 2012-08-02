@@ -2097,11 +2097,9 @@ C
 C
 C
 C     MCSCF calculation in linear symmetry: remove potentially
-C     symmetry-breaking orbital rotations - this will hopefully (!)
-C     solve the problem in MCSCF calculations (observed for U2)
+C     symmetry-breaking orbital rotations - this solves
+C     the problem in MCSCF calculations (observed for U2)
 C     with active spaces that contain orbitals of different mj-values.
-C     Note that linear symmetry is not implemented (yet) for KR-CI
-C     and we run instead in C2h*. SK+HJAaJ/Jan 2010
 C
 C     similar arguments apply for spinfree MCSCF: remove rotations
 C     between orbitals of different boson symmetry.
@@ -2548,33 +2546,6 @@ C
 C         reduce orbital parameters wrt mj-blocking
           CALL DELPAR(orb_sym_vec,JXOPE,NZXOPE,NZHOPE,JXOPP,NZXOPP,
      &                IPRINT)
-        END IF
-C
-        IF ( IREDJOB .eq. 9) THEN
-          call alloc(ukappa2,n2orbxq)
-          ukappa2 = 0
-C
-C         save original kappa matrix
-          CALL DCOPY(N2ORBXQ,UKAPPA,1,ukappa2,1)
-C
-          call zero_kappa_mj(ukappa2,orb_sym_vec,iprint)
-C
-          IF( IPRINT .ge. 5 )THEN
-            WRITE(LUPRI,'(A)') ' orig kappa'
-            CALL PRQMAT(UKAPPA,NORBT,NORBT,NORBT,NORBT,NZ,
-     &                  IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(A)') ' revised kappa'
-            CALL PRQMAT(ukappa2,NORBT,NORBT,NORBT,NORBT,NZ,
-     &                IPQTOQ(1,0),LUPRI)
-          END IF
-C
-C         use modified kappa matrix
-          CALL DZERO(UKAPPA,N2ORBXQ)
-          CALL DCOPY(N2ORBXQ,ukappa2,1,UKAPPA,1)
-          WRITE(LUPRI,'(A)')
-     &    ' *** attention: using modified kappa... ***'
-C
-          call dealloc(ukappa2)
         END IF
        call dealloc(orb_sym_vec)
       END IF

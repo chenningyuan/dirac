@@ -19,9 +19,13 @@ export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mkl/lib/
 #licence
 export INTEL_LICENSE_FILE=/people/disk2/magnus/intel/licenses:$INTEL_LICENSE_FILE
 
-# OpenMPI stuff
-export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin:$PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/lib:$LD_LIBRARY_PATH
+# OpenMPI stuff, I32LP64
+export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/bin:$PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/lib:$LD_LIBRARY_PATH
+
+# OpenMPI stuff, ILP64
+#export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin:$PATH
+#export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/lib:$LD_LIBRARY_PATH
 # OpenMPI_valgrind stuff
 #export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64_valgrind/bin:$PATH
 #export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64_valgrind/lib:$LD_LIBRARY_PATH
@@ -41,7 +45,8 @@ DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
 #
 BUILD=build_ompi_ifort_icc_mkl_ilp64
 #
-OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin
+#OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin
+OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/bin
 
 cd $DIRAC
 

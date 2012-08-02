@@ -22,3 +22,17 @@ else()
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 endif()
+
+# handle Doxygen, code documentation tool 
+include(FindDoxygen)
+if (DOXYGEN_FOUND)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
+        ${PROJECT_BINARY_DIR}/Doxyfile
+    )
+    add_custom_target(
+        doxygen
+        COMMAND ${DOXYGEN_EXECUTABLE}
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        )
+endif()

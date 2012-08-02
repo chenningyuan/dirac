@@ -10,19 +10,26 @@ export LD_LIBRARY_PATH=/home/milias/bin/openmpi_ilp64/lib:/usr/local/cuda/cudapr
 
 # the directory where your DIRAC sits
 DIRAC=/home/milias/work/qch/dirac_git/trunk
-BUILD=build_ompi_gfortran_gcc_ownmath_ilp64
 OMPI=/home/milias/bin/openmpi_ilp64/bin
 
 # go to the local DIRAC directory
 cd $DIRAC
-/bin/rm -rf $BUILD
 git pull
-./pamadm -a 
+
+./pamadm -a --hsfsdyn --hscc --auto
+
+BUILD=build_ompi_gfortran_gcc_ownmath_ilp64
 # configure step
-./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x -D ENABLE_BOUNDS_CHECK=ON $BUILD 
+./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD 
 cd $DIRAC/$BUILD
 make Experimental
-make info_ext
+
+# now the second buildup with serial ifort
+BUILD1=build_ifort_mkl_int64
+export MATH_ROOT=/opt/intel/mkl
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ifort_icc_mkl_ilp64" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD1/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD1
+cd $DIRAC/$BUILD1
+make Experimental
 
 #
 # now do the nightly build

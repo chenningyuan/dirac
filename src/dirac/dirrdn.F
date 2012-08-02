@@ -2951,12 +2951,13 @@ C
             print *, 'controlled stop: only sequential'
             call quit ('RELADC not parallelized')
          endif
-! MP for test purposes we comment out the default call of adcinpt
-! If you want to avoid namelist reading comment out the next 3 lines.
 !
-         OPEN(LUCMD,FILE = 'DIRAC.INP')
-         CALL ADCINPT(LUCMD,LUPRI)
-         CLOSE(LUCMD)
+! MP we now comment out the default call of adcinpt since we have the
+! new input structure.
+!
+!        OPEN(LUCMD,FILE = 'DIRAC.INP')
+!        CALL ADCINPT(LUCMD,LUPRI)
+!        CLOSE(LUCMD)
       ENDIF
 !
 !     Input of COSCI module
@@ -4995,7 +4996,11 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
+#if defined MOD_UNRELEASED
              BLOCKD = .TRUE.
+#else
+             call quit('block diagonalizing feature not in release!')
+#endif
             GO TO 100
   131     CONTINUE
 C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.mode...

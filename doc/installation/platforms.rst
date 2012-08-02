@@ -17,7 +17,7 @@ We have tested DIRAC |version| on the following platforms:
 
 We have tested DIRAC |version| with the following compilers:
 
--  gfortran/gcc
+-  gfortran/gcc (minimum gfortran version 4.3.6)
 -  ifort/icc
 -  xlf/xlc
 
