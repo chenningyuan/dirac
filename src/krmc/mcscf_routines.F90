@@ -1257,36 +1257,208 @@ contains
                      END IF
                   END IF
 
-                  IF (NZ .EQ. 4) THEN
-                     CALL QUIT('*** ERROR in M2DNZ3 ***' &
-                          //' NZ=4 not implemented - '   &
-                          //'we are seeking volunteers!')
-                     IF (TSYMM) THEN
-                        VDUUUU(KK,LL,IJ,3,1) = &
-                             VMUUUU(K,L,I,JTR,1) + VMUUUU(L,K,JTR,I,1)
-                        VDUUUU(KK,LL,IJ,4,1) = &
-                             VMUUUU(K,L,I,JTR,2) - VMUUUU(L,K,JTR,I,2)
-                        VDUUUU(KK,LL,IJ,3,2) = &
-                             VMUUUU(K,LTR,I,J,1) + VMUUUU(LTR,K,J,I,1)
-                        VDUUUU(KK,LL,IJ,4,2) = &
-                             VMUUUU(K,LTR,I,J,2) - VMUUUU(LTR,K,J,I,2)
-                        VDUUUU(KK,LL,IJ,3,3) = &
-                             VMUUUU(KTR,L,I,J,1) + VMUUUU(L,KTR,J,I,1)
-                        VDUUUU(KK,LL,IJ,4,3) = &
-                             VMUUUU(KTR,L,I,J,2) - VMUUUU(L,KTR,J,I,2)
-                     ELSE
-                        VDUUUU(KK,LL,IJ,3,1) = VMUUUU(K,L,I,JTR,1)
-                        VDUUUU(KK,LL,IJ,4,1) = VMUUUU(K,L,I,JTR,2)
-                        VDUUUU(KK,LL,IJ,3,2) = VMUUUU(K,LTR,I,J,1)
-                        VDUUUU(KK,LL,IJ,4,2) = VMUUUU(K,LTR,I,J,2)
-                        VDUUUU(KK,LL,IJ,3,3) = VMUUUU(KTR,L,I,J,1)
-                        VDUUUU(KK,LL,IJ,4,3) = VMUUUU(KTR,L,I,J,2)
-                     ENDIF
-                  END IF
-               END DO
-            END DO
-         END DO
-      END DO
+          if(nz == 4)then  ! goto nz4
+
+          if(tsymm)then
+            if(psymm)then
+              if(ksymm)then
+
+!               (1) Symm. transition density matrix
+!               (2) Particle symmetrization
+!               (3) Kramer's symmetrization
+!                   Order of the implementation: (3), (1), (2)
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1) - vmuuuu(ltr,ktr,j  ,itr,1) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,1) - vmuuuu(k  ,l  ,j  ,itr,1) &
+                                     + vmuuuu(l  ,k  ,jtr,i  ,1) - vmuuuu(ktr,ltr,itr,j  ,1) &
+                                     + vmuuuu(ktr,ltr,jtr,i  ,1) - vmuuuu(l  ,k  ,itr,j  ,1) &
+                                     + vmuuuu(i  ,jtr,k  ,l  ,1) - vmuuuu(j  ,itr,ltr,ktr,1) &
+                                     + vmuuuu(i  ,jtr,ltr,ktr,1) - vmuuuu(j  ,itr,k  ,l  ,1) &
+                                     + vmuuuu(jtr,i  ,l  ,k  ,1) - vmuuuu(itr,j  ,ktr,ltr,1) &
+                                     + vmuuuu(jtr,i  ,ktr,ltr,1) - vmuuuu(itr,j  ,l  ,k  ,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2) - vmuuuu(ltr,ktr,j  ,itr,2) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,2) - vmuuuu(k  ,l  ,j  ,itr,2) &
+                                     - vmuuuu(l  ,k  ,jtr,i  ,2) + vmuuuu(ktr,ltr,itr,j  ,2) &
+                                     - vmuuuu(ktr,ltr,jtr,i  ,2) + vmuuuu(l  ,k  ,itr,j  ,2) &
+                                     + vmuuuu(i  ,jtr,k  ,l  ,2) - vmuuuu(j  ,itr,ltr,ktr,2) &
+                                     + vmuuuu(i  ,jtr,ltr,ktr,2) - vmuuuu(j  ,itr,k  ,l  ,2) &
+                                     - vmuuuu(jtr,i  ,l  ,k  ,2) + vmuuuu(itr,j  ,ktr,ltr,2) &
+                                     - vmuuuu(jtr,i  ,ktr,ltr,2) + vmuuuu(itr,j  ,l  ,k  ,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1) - vmuuuu(l  ,ktr,jtr,itr,1) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,1) + vmuuuu(k  ,ltr,jtr,itr,1) &
+                                     + vmuuuu(ltr,k  ,j  ,i  ,1) - vmuuuu(ktr,l  ,itr,jtr,1) &
+                                     - vmuuuu(ktr,l  ,j  ,i  ,1) + vmuuuu(ltr,k  ,itr,jtr,1) &
+                                     + vmuuuu(i  ,j  ,k  ,ltr,1) - vmuuuu(jtr,itr,l  ,ktr,1) &
+                                     - vmuuuu(i  ,j  ,l  ,ktr,1) + vmuuuu(jtr,itr,k  ,ltr,1) &
+                                     + vmuuuu(j  ,i  ,ltr,k  ,1) - vmuuuu(itr,jtr,ktr,l  ,1) &
+                                     - vmuuuu(j  ,i  ,ktr,l  ,1) + vmuuuu(itr,jtr,ltr,k  ,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2) - vmuuuu(l  ,ktr,jtr,itr,2) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,2) + vmuuuu(k  ,ltr,jtr,itr,2) &
+                                     - vmuuuu(ltr,k  ,j  ,i  ,2) + vmuuuu(ktr,l  ,itr,jtr,2) &
+                                     + vmuuuu(ktr,l  ,j  ,i  ,2) - vmuuuu(ltr,k  ,itr,jtr,2) &
+                                     + vmuuuu(i  ,j  ,k  ,ltr,2) - vmuuuu(jtr,itr,l  ,ktr,2) &
+                                     - vmuuuu(i  ,j  ,l  ,ktr,2) + vmuuuu(jtr,itr,k  ,ltr,2) &
+                                     - vmuuuu(j  ,i  ,ltr,k  ,2) + vmuuuu(itr,jtr,ktr,l  ,2) &
+                                     + vmuuuu(j  ,i  ,ktr,l  ,2) - vmuuuu(itr,jtr,ltr,k  ,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1) - vmuuuu(ltr,k  ,jtr,itr,1) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,1) + vmuuuu(ktr,l  ,jtr,itr,1) &
+                                     + vmuuuu(l  ,ktr,j  ,i  ,1) - vmuuuu(k  ,ltr,itr,jtr,1) &
+                                     - vmuuuu(k  ,ltr,j  ,i  ,1) + vmuuuu(l  ,ktr,itr,jtr,1) &
+                                     + vmuuuu(i  ,j  ,ktr,l  ,1) - vmuuuu(jtr,itr,ltr,k  ,1) &
+                                     - vmuuuu(i  ,j  ,ltr,k  ,1) + vmuuuu(jtr,itr,ktr,l  ,1) &
+                                     + vmuuuu(j  ,i  ,l  ,ktr,1) - vmuuuu(itr,jtr,k  ,ltr,1) &
+                                     - vmuuuu(j  ,i  ,k  ,ltr,1) + vmuuuu(itr,jtr,l  ,ktr,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2) - vmuuuu(ltr,k  ,jtr,itr,2) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,2) + vmuuuu(ktr,l  ,jtr,itr,2) &
+                                     - vmuuuu(l  ,ktr,j  ,i  ,2) + vmuuuu(k  ,ltr,itr,jtr,2) &
+                                     + vmuuuu(k  ,ltr,j  ,i  ,2) - vmuuuu(l  ,ktr,itr,jtr,2) &
+                                     + vmuuuu(i  ,j  ,ktr,l  ,2) - vmuuuu(jtr,itr,ltr,k  ,2) &
+                                     - vmuuuu(i  ,j  ,ltr,k  ,2) + vmuuuu(jtr,itr,ktr,l  ,2) &
+                                     - vmuuuu(j  ,i  ,l  ,ktr,2) + vmuuuu(itr,jtr,k  ,ltr,2) &
+                                     + vmuuuu(j  ,i  ,k  ,ltr,2) - vmuuuu(itr,jtr,l  ,ktr,2)
+              else
+
+!               (1) Symm. transition density matrix
+!               (2) Particle symmetrization
+!                   Order of the implementation: (1), (2)
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1) + vmuuuu(l  ,k  ,jtr,i  ,1) &
+                                     + vmuuuu(i  ,jtr,k  ,l  ,1) + vmuuuu(jtr,i  ,l  ,k  ,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2) - vmuuuu(l  ,k  ,jtr,i  ,2) &
+                                     + vmuuuu(i  ,jtr,k  ,l  ,2) - vmuuuu(jtr,i  ,l  ,k  ,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1) + vmuuuu(ltr,k  ,j  ,i  ,1) &
+                                     + vmuuuu(i  ,j  ,k  ,ltr,1) + vmuuuu(j  ,i  ,ltr,k  ,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2) - vmuuuu(ltr,k  ,j  ,i  ,2) &
+                                     + vmuuuu(i  ,j  ,k  ,ltr,2) - vmuuuu(j  ,i  ,ltr,k  ,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1) + vmuuuu(l  ,ktr,j  ,i  ,1) &
+                                     + vmuuuu(i  ,j  ,ktr,l  ,1) + vmuuuu(j  ,i  ,l  ,ktr,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2) - vmuuuu(l  ,ktr,j  ,i  ,2) &
+                                     + vmuuuu(i  ,j  ,ktr,l  ,2) - vmuuuu(j  ,i  ,l  ,ktr,2)
+              endif
+            else
+              if(ksymm)then
+
+!               (1) Symm. transition density matrix
+!               (3) Kramers symmetrization
+!                   Order of the implementation: (3), (1)
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1) - vmuuuu(ltr,ktr,j  ,itr,1) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,1) - vmuuuu(k  ,l  ,j  ,itr,1) &
+                                     + vmuuuu(l  ,k  ,jtr,i  ,1) - vmuuuu(ktr,ltr,itr,j  ,1) &
+                                     + vmuuuu(ktr,ltr,jtr,i  ,1) - vmuuuu(l  ,k  ,itr,j  ,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2) - vmuuuu(ltr,ktr,j  ,itr,2) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,2) - vmuuuu(k  ,l  ,j  ,itr,2) &
+                                     - vmuuuu(l  ,k  ,jtr,i  ,2) + vmuuuu(ktr,ltr,itr,j  ,2) &
+                                     - vmuuuu(ktr,ltr,jtr,i  ,2) + vmuuuu(l  ,k  ,itr,j  ,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1) - vmuuuu(l  ,ktr,jtr,itr,1) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,1) + vmuuuu(k  ,ltr,jtr,itr,1) &
+                                     + vmuuuu(ltr,k  ,j  ,i  ,1) - vmuuuu(ktr,l  ,itr,jtr,1) &
+                                     - vmuuuu(ktr,l  ,j  ,i  ,1) + vmuuuu(ltr,k  ,itr,jtr,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2) - vmuuuu(l  ,ktr,jtr,itr,2) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,2) + vmuuuu(k  ,ltr,jtr,itr,2) &
+                                     - vmuuuu(ltr,k  ,j  ,i  ,2) + vmuuuu(ktr,l  ,itr,jtr,2) &
+                                     + vmuuuu(ktr,l  ,j  ,i  ,2) - vmuuuu(ltr,k  ,itr,jtr,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1) - vmuuuu(ltr,k  ,jtr,itr,1) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,1) + vmuuuu(ktr,l  ,jtr,itr,1) &
+                                     + vmuuuu(l  ,ktr,j  ,i  ,1) - vmuuuu(k  ,ltr,itr,jtr,1) &
+                                     - vmuuuu(k  ,ltr,j  ,i  ,1) + vmuuuu(l  ,ktr,itr,jtr,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2) - vmuuuu(ltr,k  ,jtr,itr,2) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,2) + vmuuuu(ktr,l  ,jtr,itr,2) &
+                                     - vmuuuu(l  ,ktr,j  ,i  ,2) + vmuuuu(k  ,ltr,itr,jtr,2) &
+                                     + vmuuuu(k  ,ltr,j  ,i  ,2) - vmuuuu(l  ,ktr,itr,jtr,2)
+              else
+
+!               (1) Symm. transition density matrix
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1) + vmuuuu(l  ,k  ,jtr,i  ,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2) - vmuuuu(l  ,k  ,jtr,i  ,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1) + vmuuuu(ltr,k  ,j  ,i  ,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2) - vmuuuu(ltr,k  ,j  ,i  ,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1) + vmuuuu(l  ,ktr,j  ,i  ,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2) - vmuuuu(l  ,ktr,j  ,i  ,2)
+              endif
+            endif
+          else
+            if(psymm)then
+              if(ksymm)then
+
+!               (2) Particle symmetrization
+!               (3) Kramers symmetrization
+!                   Order of the implementation: (3), (2)
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1) - vmuuuu(ltr,ktr,j  ,itr,1) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,1) - vmuuuu(k  ,l  ,j  ,itr,1) &
+                                     + vmuuuu(i  ,jtr,k  ,l  ,1) - vmuuuu(j  ,itr,ltr,ktr,1) &
+                                     + vmuuuu(i  ,jtr,ltr,ktr,1) - vmuuuu(j  ,itr,k  ,l  ,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2) - vmuuuu(ltr,ktr,j  ,itr,2) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,2) - vmuuuu(k  ,l  ,j  ,itr,2) &
+                                     + vmuuuu(i  ,jtr,k  ,l  ,2) - vmuuuu(j  ,itr,ltr,ktr,2) &
+                                     + vmuuuu(i  ,jtr,ltr,ktr,2) - vmuuuu(j  ,itr,k  ,l  ,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1) - vmuuuu(l  ,ktr,jtr,itr,1) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,1) + vmuuuu(k  ,ltr,jtr,itr,1) &
+                                     + vmuuuu(i  ,j  ,k  ,ltr,1) - vmuuuu(jtr,itr,l  ,ktr,1) &
+                                     - vmuuuu(i  ,j  ,l  ,ktr,1) + vmuuuu(jtr,itr,k  ,ltr,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2) - vmuuuu(l  ,ktr,jtr,itr,2) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,2) + vmuuuu(k  ,ltr,jtr,itr,2) &
+                                     + vmuuuu(i  ,j  ,k  ,ltr,2) - vmuuuu(jtr,itr,l  ,ktr,2) &
+                                     - vmuuuu(i  ,j  ,l  ,ktr,2) + vmuuuu(jtr,itr,k  ,ltr,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1) - vmuuuu(ltr,k  ,jtr,itr,1) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,1) + vmuuuu(ktr,l  ,jtr,itr,1) &
+                                     + vmuuuu(i  ,j  ,ktr,l  ,1) - vmuuuu(jtr,itr,ltr,k  ,1) &
+                                     - vmuuuu(i  ,j  ,ltr,k  ,1) + vmuuuu(jtr,itr,ktr,l  ,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2) - vmuuuu(ltr,k  ,jtr,itr,2) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,2) + vmuuuu(ktr,l  ,jtr,itr,2) &
+                                     + vmuuuu(i  ,j  ,ktr,l  ,2) - vmuuuu(jtr,itr,ltr,k  ,2) &
+                                     - vmuuuu(i  ,j  ,ltr,k  ,2) + vmuuuu(jtr,itr,ktr,l  ,2)
+              else
+
+!               (2) Particle symmetrization
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1) + vmuuuu(i  ,jtr,k  ,l  ,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2) + vmuuuu(i  ,jtr,k  ,l  ,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1) + vmuuuu(i  ,j  ,k  ,ltr,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2) + vmuuuu(i  ,j  ,k  ,ltr,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1) + vmuuuu(i  ,j  ,ktr,l  ,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2) + vmuuuu(i  ,j  ,ktr,l  ,2)
+              endif
+            else
+              if(ksymm)then
+
+!               (3) Kramers symmetrization
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1) - vmuuuu(ltr,ktr,j  ,itr,1) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,1) - vmuuuu(k  ,l  ,j  ,itr,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2) - vmuuuu(ltr,ktr,j  ,itr,2) &
+                                     + vmuuuu(ltr,ktr,i  ,jtr,2) - vmuuuu(k  ,l  ,j  ,itr,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1) - vmuuuu(l  ,ktr,jtr,itr,1) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,1) + vmuuuu(k  ,ltr,jtr,itr,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2) - vmuuuu(l  ,ktr,jtr,itr,2) &
+                                     - vmuuuu(l  ,ktr,i  ,j  ,2) + vmuuuu(k  ,ltr,jtr,itr,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1) - vmuuuu(ltr,k  ,jtr,itr,1) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,1) + vmuuuu(ktr,l  ,jtr,itr,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2) - vmuuuu(ltr,k  ,jtr,itr,2) &
+                                     - vmuuuu(ltr,k  ,i  ,j  ,2) + vmuuuu(ktr,l  ,jtr,itr,2)
+              else
+
+!               No symmetrization
+
+                vduuuu(kk,ll,ij,3,1) = vmuuuu(k  ,l  ,i  ,jtr,1)
+                vduuuu(kk,ll,ij,4,1) = vmuuuu(k  ,l  ,i  ,jtr,2)
+                vduuuu(kk,ll,ij,3,2) = vmuuuu(k  ,ltr,i  ,j  ,1)
+                vduuuu(kk,ll,ij,4,2) = vmuuuu(k  ,ltr,i  ,j  ,2)
+                vduuuu(kk,ll,ij,3,3) = vmuuuu(ktr,l  ,i  ,j  ,1)
+                vduuuu(kk,ll,ij,4,3) = vmuuuu(ktr,l  ,i  ,j  ,2)
+              endif
+            endif
+          endif
+
+          endif  ! label nz4
+
+! END OF LOOPS FOR UUUU matrix transformation
+        enddo
+      enddo
+    enddo
+  enddo
 
 !     remove integrals that should be zero in spinfree calculations but
 !     are not due to numerical noise
