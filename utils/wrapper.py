@@ -316,7 +316,7 @@ class Wrapper:
                 else:
                     print >> sys.stderr, "Wrapper: Cannot determine type of archive file",a,"quitting."
                     sys.exit(1)
-                    t.extractall(path=self.tmppath)
+                t.extractall(path=self.tmppath)
             except:
                 print >> sys.stderr, "Wrapper: Error extracting files from '"+a+"', quitting."
                 raise
