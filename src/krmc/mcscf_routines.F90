@@ -717,8 +717,8 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE M2DNZ390(TSYMM,KSYMM,PSYMM,VMUUUU,VDUUUU,IPRINT, &
-                      IPQTOQ,NASH,NASHT,NNASHX,NZ,NZINCI,NM5, &
+  SUBROUTINE M2DNZ390(TSYMM,KSYMM,PSYMM,VMUUUU,VDUUUU,IPRINT,   &
+                      IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_IN_CI,NM5, &
                       NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
 !***********************************************************************
 !
@@ -741,7 +741,7 @@ contains
 #include "unit-test.h"
 
       LOGICAL, INTENT( IN) :: PSYMM, KSYMM, TSYMM, SPINFR, LEVYLE
-      INTEGER, INTENT( IN) :: NASHT, NNASHX, NZ, NZINCI, NM5, NBSYM, NFSYM, IPRINT, LUPRI
+      INTEGER, INTENT( IN) :: NASHT, NNASHX, NZ, NZ_IN_CI, NM5, NBSYM, NFSYM, IPRINT, LUPRI
       INTEGER, INTENT( IN) :: NASH(2), IPQTOQ(4,0:7)
 
       REAL*8,  INTENT( IN) :: VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,NM5)
@@ -750,15 +750,14 @@ contains
       INTEGER :: I, J, K, L, M, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
       INTEGER :: IER, NCLASS, IFSYM, IZ, KR(-300:300)
       REAL*8  :: THR_PRINT
-      INTEGER, SAVE :: ICOUNT = 0
 
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
-      icount = icount + 1
-      write(6,*) 'M2DNZ390',psymm,ksymm,tsymm,icount
 
 #ifdef CREATE_UNIT_TESTS
+      integer, save :: icount = 0
+      icount = icount + 1
       call set_suffix(psymm)
       call set_suffix(ksymm)
       call set_suffix(tsymm)
@@ -774,7 +773,7 @@ contains
       call add_inp_variable(nasht ,'nasht ')
       call add_inp_variable(nnashx,'nnashx')
       call add_inp_variable(nz    ,'nz    ')
-      call add_inp_variable(nzinci,'nzinci')
+      call add_inp_variable(nz_in_ci,'nz_in_ci')
       call add_inp_variable(nm5   ,'nm5   ')
       call add_inp_variable(nbsym ,'nbsym ')
       call add_inp_variable(nfsym ,'nfsym ')
@@ -784,6 +783,8 @@ contains
       call add_inp_variable(ipqtoq,'ipqtoq')
       call add_inp_variable(vmuuuu,'vmuuuu')
 #endif
+
+      write(6,*) 'in M2DNZ390',psymm,ksymm,tsymm,NM5
 
   !------------------------------------------------------------------------------!
       NCLASS = NZ * NZ * NBSYM / NFSYM
@@ -815,7 +816,7 @@ contains
                      IF ( (ABS(VMUUUU(I,J,K,L,1)) .GT. THR_PRINT   &
                       .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. THR_PRINT)) &
                           WRITE(LUPRI,9001) &
-                          I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZINCI)
+                          I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_IN_CI)
                   END DO
                END DO
             END DO

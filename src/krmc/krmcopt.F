@@ -1104,6 +1104,7 @@ C     Last revision : 24.01.2001, T. Fleig
 C
 C***********************************************************************
       use quaternion_algebra
+      use mcscf_routines
 #include "implicit.h"
 #include "priunit.h"
 !sk   PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-8 )
@@ -1113,6 +1114,7 @@ C
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "dgroup.h"
+#include "dcbham.h"
 C
       LOGICAL CALCDV, CALCPV
       DIMENSION DV(*), PV(*), CREF(*), WORK(*)
@@ -1131,7 +1133,8 @@ C
 C        Calculate density matrices in MOLFDIR format
 C
          IF (CALCPV) THEN
-            LPV = (2*NASHT)**4 * MIN(2,NZ)
+            NM5 = MIN(2,NZ)
+            LPV = (2*NASHT)**4 * NM5
          ELSE
             LPV = 0
          END IF
@@ -1164,9 +1167,10 @@ C
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
 !        IPROPT = 00
          IF (CALCPV) THEN
-            CALL M2DNZ3(.FALSE.,.TRUE.,.TRUE.,
-     &           WORK(KPVMOLF),PV,IPROPT)
-C           CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PVD,IPRINT)
+            CALL M2DNZ390(.FALSE.,.TRUE.,.TRUE.,
+     &           WORK(KPVMOLF),PV,IPROPT,
+     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
          END IF
 CSK      IPROPT = 00
          CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
