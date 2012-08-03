@@ -224,7 +224,7 @@
                character(len=*) :: errormessage
  
                write (*,*) errormessage
-               call exit()
+               stop 1001 
 
             end subroutine quit
 
