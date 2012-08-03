@@ -555,6 +555,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Print I/O statistics
 !
       CALL WAIO_PRST (IW)
+      call dealloc(cc)
 C
       RETURN
 C
