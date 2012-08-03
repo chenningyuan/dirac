@@ -2524,6 +2524,7 @@ C
          ELSE
             ICHK_S = ICHK_S + IORB_S
             ICHK_D = ICHK_D + IORB_D
+            if(IORB_S == IORB_D) goto 10
 C
 C           Copy eigenvalue and boson classification
 C
@@ -2536,6 +2537,7 @@ C
                CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,
      &                          CMO(1,IORB_D,IZ),1)
             END DO
+ 10         CONTINUE
          END IF
       END DO
 C

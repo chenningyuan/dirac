@@ -6841,17 +6841,21 @@ C   .... prevent segmentation of L shells...
             NDEG  = NUCDEG(ICENT)
             KBCH  = IBLOCK
 CMI         ... charge, highest angular momentum
+!          skip AMFI contributions with l > 5 (h, i, ... functions)
+!          stefan - nov 2011: simple fix/approximation for the time
+!                             being...
+           imax_l = min(IQM(I)-1,4)
            IF (N.EQ.1) THEN
             WRITE(LUTMP2,*) NINT(CHARGE(MNCENT)) 
-            WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
-C           WRITE (lupri,*) '*****  charge,iqm:',CHARGE(MNCENT),IQM(I)-1
+            WRITE (LUTMP2,*) CHARGE(MNCENT),imax_l
+!sk         WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
            ENDIF
             II = 0
             DO 200 J = 1, IQM(I)
-           IF (N.EQ.1) THEN
-C            write(lupri,*)
-C    &       '  >>>  momentum J=',J,' JCO(J,I)=',JCO(J,I)
-           ENDIF
+!          IF (N.EQ.1) THEN
+!            write(lupri,*)
+!    &       '  >>>  momentum J=',J,' JCO(J,I)=',JCO(J,I)
+!          ENDIF
 CMI           .... segmentation of L blocks ...not desirable for AMFI...
                IF (JCO(J,I).GT.1) THEN
                 KBCH_SAVE=KBCH
@@ -6871,14 +6875,18 @@ CMI           .... segmentation of L blocks ...not desirable for AMFI...
                   IF (NNUC .EQ. 0) GO TO 200
                 IF (N.EQ.1) THEN
                  IF (JCO(J,I).EQ.1) THEN
-                  WRITE (LUTMP2,*) NNUC,NNRC
-C                 WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
-C    &                '  -> NNUC,NNRC:',NNUC,NNRC
+                   if(j .lt. 6)then ! up to g functions
+                     WRITE (LUTMP2,*) NNUC,NNRC
+                   end if
+!                   WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
+!    &                  '  -> NNUC,NNRC:',NNUC,NNRC
                  ELSE
                   IF (K.EQ.1) THEN
-                    WRITE (LUTMP2,*) NNUCT,NNRCT
-C                   WRITE (lupri,*) 
-C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    if(j .lt. 6)then ! up to g functions
+                      WRITE (LUTMP2,*) NNUCT,NNRCT
+!                     WRITE (lupri,*) 
+!    &                 '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    end if
                   ENDIF
                  ENDIF
                 ENDIF
@@ -6888,11 +6896,20 @@ C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
                   IF (N .EQ. 1) THEN
-                     DO 410 M = 1, NNUC
-                        IPRIMD = IPRIMD + 1
-                           WRITE (LUTMP2,'(F24.11)') PRIEXP(IPSTRT-1+M)
-C                          WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
- 410                 CONTINUE
+                     if(j .lt. 6)then ! up to g functions
+                       DO 410 M = 1, NNUC
+                         IPRIMD = IPRIMD + 1
+                         WRITE (LUTMP2,'(F24.11)') PRIEXP(IPSTRT-1+M)
+!                        WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
+ 410                   CONTINUE
+                     else
+                       IPRIMD = IPRIMD + NNUC
+#ifdef X2C_debug
+                       WRITE (lupri,'(a,i4)') 'mnf input writing:'//
+     &             ' skipped angular momentum functions > 5 (h,i,...)',
+     &               NNUC
+#endif
+                     end if
                   END IF
  210           CONTINUE
  200        CONTINUE
