@@ -25,10 +25,13 @@ for line in process.stdout.readlines():
     if 'DEFAULT' in line:
         size = int(line.split()[2], 16)
         name = line.split()[-1]
-        l.append([size, name])
+        type = line.split()[-5]
+        l.append([size, name, type])
 
 l.sort(reverse=True)
 
-print ('top 10 consumers')
-for i in range(10):
-    print('%10i MB %s' % (l[i][0]/(1024*1024), l[i][1]))
+ncons=20
+print ('top '+str(ncons)+' consumers')
+for i in range(ncons):
+    ii=2*i+1
+    print('%4.2f MB %20s  (%8s)' % (float(l[ii][0])/(1024*1024), l[ii][1], l[ii][2] ))

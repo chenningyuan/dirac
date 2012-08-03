@@ -8603,6 +8603,8 @@ c     logical dirbss_verbose
 #include "memint.h"
 
 c     dirbss_verbose = .false.
+!     iprint_save = iprint
+!     iprint      = 3
 
       IF (IPRINT.GE.3) THEN
       CALL HEADER('*** Output from AMFIIN ***',-1)
@@ -8775,9 +8777,34 @@ C          write(lupri,*) 'IX set to:',IX
           INDXLM(IX+8)=INDX
           IPNUC (IX+8)=INUCPOS
 
-          IX = IX + 9
-        ELSE
-          CALL QUIT('AMFI ONLY UP TO g FUNCTIONS!')
+          IX            = IX + 9
+
+        else if(l.eq.6.or.l.eq.7.or.l.eq.8)then
+
+          select case(l)
+            case(6) ! h
+             is_degeneracy = 11
+             ilast_IPTYPAO = 25
+            case(7) ! i
+             is_degeneracy = 13
+             ilast_IPTYPAO = 35
+            case(8) ! j
+             is_degeneracy = 15
+             ilast_IPTYPAO = 47
+          end select
+          do jjj = 1, is_degeneracy
+            ilast_IPTYPAO     = ilast_IPTYPAO + 1
+            IPTYPAO(IX+jjj-1) = ilast_IPTYPAO
+            INDXLM (IX+jjj-1) = INDX
+            IPNUC  (IX+jjj-1) = INUCPOS
+          end do
+          IX = IX + is_degeneracy
+          write(lupri,*) 'warning: old amfi routines in use:'//
+     &    ' zero AMFI contributions from h, i, j, ... shells '
+        else
+          write(lupri,*) 'error: old amfi routines in use:'//
+     &    ' no AMFI contributions from k, l, ... shells implemented. '
+          CALL QUIT('AMFI interface ONLY UP TO i FUNCTIONS!')
         ENDIF
       ENDDO
       ENDDO
@@ -8961,8 +8988,6 @@ C    &  '...this file does not exist, AMFI is utilized ! '
           CALL GPOPEN(LUMNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ELSE 
-          WRITE(LUPRI,'(4X,A)')
-     &  '...this file does exist, AMFI is not utilized ! '
           CALL GPOPEN(LUMNFPRP,AFN,'OLD',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ENDIF
@@ -8994,8 +9019,8 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-       CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
-     &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
+         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+     &             CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
@@ -9142,6 +9167,11 @@ C       ... get SO integrals from AMFI
          SOXINT=-WORK(KSOX+IX)
          SOYINT=-WORK(KSOY+IX)
          SOZINT=-WORK(KSOZ+IX)
+!        if(IPTYPAO(IX+1) .gt. 25)then
+!          SOXINT = 0.0d0
+!          SOYINT = 0.0d0
+!          SOZINT = 0.0d0
+!        end if
 C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
@@ -9304,6 +9334,7 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
 
         CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
       ENDIF
+!     iprint = iprint_save
 
       CALL QEXIT('AMFIIN')
       RETURN

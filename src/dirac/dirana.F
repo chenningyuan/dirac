@@ -365,13 +365,16 @@ C
              KRMC_FLG = 3
 C            coefficients
              CALL RREADMO(WORK(KCMO),JRDMO,4,LUKRMC)
-C            occupancies
-             CALL REAKRMC(LUKRMC,'MCNATOCC',WORK(KOCC),NORBT)
              IF (JRDMO .EQ. 0) THEN
                 WRITE(LUPRI,'(/A)')
      &               ' (MULPOP)  Orbitals read from' //
      &               ' label MCCINATO on file KRMCSCF'
              END IF
+C            occupancies
+             CALL REAKRMC(LUKRMC,'MCNATOCC',WORK(KOCC),NORBT)
+             WRITE(LUPRI,'(/A)')
+     &             ' (MULPOP)  Natural orbital occupancies read from'//
+     &             ' label MCNATOCC on file KRMCSCF'
            ELSE
              KRMC_FLG = 1
              CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
