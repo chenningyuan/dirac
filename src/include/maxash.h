@@ -4,4 +4,4 @@
 !     MAXASH = maximum number of active orbitals in KR-MCSCF
 !
       INTEGER MAXASH
-      PARAMETER (MAXASH = 200)
+      PARAMETER (MAXASH = 300)
