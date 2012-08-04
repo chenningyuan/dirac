@@ -2,7 +2,7 @@
 !
 ! Program:      Dirac 
 !
-! Module:       interest_interface 
+! Module:       module_interest_interface.f90 
 !
 ! Description:  - interfacing basic data between Dirac & InteRest program 
 !               - providing two- and four-center integrals in RKB/RMB balanced basis
@@ -38,7 +38,7 @@
 !                            
 ! ------------------------------------------------------------------------------------
 
-MODULE INTEREST_INTERFACE
+MODULE MODULE_INTEREST_INTERFACE
 
   implicit none
 
@@ -436,29 +436,13 @@ CONTAINS
 !> note: on input G, P are assumed to be in cartesian GTOs 
   SUBROUTINE process_two_electron_integrals( Gmat, Pmat, intflg ) 
 
+    use module_interest_eri
+
     !> input
     !> note:  we assume nz=4 !!!
     !> fixme: the case when nz!=4
        real(8), intent(in) :: Pmat(2*nrow,2*ncol,4)
        integer, intent(in) :: intflg
-       interface 
-         subroutine interest_eri(rkb,factor,fint,nint,   &
-                                 la,alpha,ax,ay,az,anorm,&
-                                 lb,beta ,bx,by,bz,bnorm,&
-                                 lc,gamma,cx,cy,cz,cnorm,&
-                                 ld,delta,dx,dy,dz,dnorm )
-       
-           integer, intent(out) :: nint
-           real(8), intent(out) :: fint(*)
-           logical, intent(in ) :: rkb 
-           real(8), intent(in ) :: factor 
-           integer, intent(in ) :: la,lb,lc,ld
-           real(8), intent(in ) :: alpha,ax,ay,az,anorm
-           real(8), intent(in ) :: beta, bx,by,bz,bnorm
-           real(8), intent(in ) :: gamma,cx,cy,cz,cnorm
-           real(8), intent(in ) :: delta,dx,dy,dz,dnorm
-         end subroutine
-       end interface
     !> end
 
     !> output
@@ -937,6 +921,8 @@ lloop:       do l=1,lmax
 !> to the Fock matrix
   SUBROUTINE max_shell_pair_contributions( dP, idP, dG )
 
+    use module_interest_eri
+
     !> input
        integer :: idP
        real(8) :: dP(idP,idP,nshl)
@@ -947,24 +933,6 @@ lloop:       do l=1,lmax
     !> end
 
     !> local 
-       interface
-         subroutine interest_eri(rkb,                                            &
-                                 factor,fint,nint,                               &
-                                 la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
-                                 lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
-
-           integer, intent(out) :: nint
-           real(8), intent(out) :: fint(*)
-           logical, intent(in ) :: rkb
-           real(8), intent(in ) :: factor
-           integer, intent(in ) :: la,lb,lc,ld
-           real(8), intent(in ) :: alpha,ax,ay,az,anorm
-           real(8), intent(in ) :: beta, bx,by,bz,bnorm
-           real(8), intent(in ) :: gamma,cx,cy,cz,cnorm
-           real(8), intent(in ) :: delta,dx,dy,dz,dnorm
-         end subroutine
-       end interface
-
        integer :: n, nint
        integer :: i, ii, io, ic
        integer :: j, jj, jo, jc

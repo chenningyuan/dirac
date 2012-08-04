@@ -36,7 +36,7 @@ C***********************************************************************
       use visual_cfg
       use x2cmod_cfg
 #ifdef MOD_INTEREST
-      use interest_interface
+      use module_interest_interface
 #endif
 #ifdef MOD_CAP
       use memory

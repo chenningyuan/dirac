@@ -718,7 +718,7 @@ C*****************************************************************************
       use x2c_utils, only:
      &    read_1fock_x2c
 #ifdef MOD_INTEREST
-      use interest_interface
+      use module_interest_interface
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -3560,7 +3560,7 @@ C
 C*****************************************************************************
       use memory_allocator
 #ifdef MOD_INTEREST
-      use interest_interface
+      use module_interest_interface
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -3648,7 +3648,7 @@ C
 C*****************************************************************************
       use memory_allocator
 #ifdef MOD_INTEREST
-      use interest_interface
+      use module_interest_interface
 #endif
 #include "implicit.h"
 #include "priunit.h"

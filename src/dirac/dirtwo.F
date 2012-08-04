@@ -40,7 +40,7 @@ C*****************************************************************************
       use srdft_cfg ! for MCSCF-srDFT calculation
 #endif
 #ifdef MOD_INTEREST
-      use interest_interface
+      use module_interest_interface
 #endif
 #include "implicit.h"
 #include "priunit.h"
