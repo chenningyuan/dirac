@@ -203,10 +203,10 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-# get size of static allocations
+# get size of static allocations, specify executable, ex: make info EX=dirac.x
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dirac.x
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py \${EX}
     )
 
 set(LIST_OF_EXECUTABLES)
