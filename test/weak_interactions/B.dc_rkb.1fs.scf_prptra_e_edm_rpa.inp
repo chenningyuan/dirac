@@ -24,6 +24,7 @@
 #.URKBAL
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
+.RELCCSD
 *SCF
 # 1s(2) 2s(2)
 .CLOSED SHELL
@@ -43,32 +44,38 @@
 .VECPOP
 all   
 **MOLTRA
-.SCHEME
-6
-# take all shells into consideration
+#.SCHEME
+#6
+# take all shells into consideration: occupied + virtual
 .ACTIVE
 all
 .PRPTRA
 *PRPTRA
 # we need this print level to get all operator matrix elements
 .PRINT
-2
+4
 .OPERATOR
- 'eEDM x' 
+ 'e_EDM x' 
  XSIGMA
  'NEF 001'
  COMFACTOR
  2.00D0
 .OPERATOR
- 'eEDM y' 
+ 'e_EDM y' 
  YSIGMA
  'NEF 002'
  COMFACTOR
  2.00D0
 .OPERATOR
- 'eEDM z' 
+ 'e_EDM z' 
  ZSIGMA
  'NEF 003'
  COMFACTOR
  2.00D0
 *END OF
+
+ &RELCCSD TIMING=T, DOSORT=T, DOENER=F, DOFOPR=F, DOSOPR=T  &END
+ &CCSOPR NAOPER=3, NBOPER=3,
+   NAMEA='e_EDM x','e_EDM y','e_EDM z',
+   NAMEB='e_EDM x','e_EDM y','e_EDM z',
+ &END

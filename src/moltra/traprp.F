@@ -478,8 +478,10 @@ C               Translate to the complex (bar/unbar) notation.
       ENDDO
       ENDIF
 C
+! Printout of complex matrix elements of the transformed operator
       IF (IPRINT.GE.1) THEN
          IF (NSTRT1.EQ.NSTRT2) THEN
+            ! print diagonal matrix elements
             WRITE (LUPRI,1010) ACHAR(25:32)
             DO I = 1, 2*NSTRT1
                WRITE (LUPRI,1011) I,PRCMO(I,I,1),PRCMO(I,I,2)
@@ -487,6 +489,7 @@ C
             WRITE (LUPRI,*)
          ENDIF
          IF (IPRINT.GE.2) THEN
+           ! print all matrix elements
             WRITE (LUPRI,1012) ACHAR(25:32)
             DO I = 1, NSTRT1*2
                DO J = 1, NSTRT2*2
