@@ -139,14 +139,8 @@ contains
                                      x2c_file_glb,         &
                                      print_lvl)
          is_final_ham_lvl = -3
-       else if(x2c_add_amfi == 2)then
-!        interface to new AMFI
-!        call x2c_interface2new_amfi
-!        is_final_ham_lvl = TODO
-       else if(x2c_add_amfi == 3)then
-!        interface to new AMFI for atom-by-atom X2C
-!        call x2c_interface2new_amfi_abax2c
-!        is_final_ham_lvl = TODO
+       else
+         call quit('unknown AMFI interface in x2c module')
        end if
 
   end subroutine x2c_amfi_driver
@@ -376,7 +370,8 @@ contains
                    amfi_order_contrib,     &
                    quat_pointer_op,        &
                    cspeed,                 &
-                   print_lvl,              &
+                   5        ,              &
+                  !print_lvl,              &
                    wrk,                    &
                    lwrk)
 

@@ -1486,6 +1486,19 @@ C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'scfcyc: 1-electron Fock matrix for you',-1)
+         CALL PRQMAT(CMO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER(
+     &   'scfcyc: 2-electron Fock matrix for you',-1)
+         CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
+#endif
 C
 C        Calculate correction according to the One-center app. models 
 C        ============================================================

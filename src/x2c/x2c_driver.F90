@@ -91,7 +91,9 @@ module dirx2c
   use x2c_h1mat_base
   use x2c_pct_mo_coefficients
   use x2c_import_exportC1
-  use x2c_dirac_in_house_so_correction
+#ifdef MOD_AOOSOC
+  use atomic_oo_order_so_correction
+#endif
 
   implicit none
 
@@ -381,13 +383,6 @@ contains
          is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c - j + nr_ao_total_x2c**2 * nr_quat
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
-!        prepare DIRACs in-house SO-correction based on the 4c-fock SO-elements for each atom type
-!        -----------------------------------------------------------------------------------------
-         call prepare_so_correction_driver(nr_fsym,              &
-                                           nr_quat,              &
-                                           dim_oshell,           &
-                                           x2c_prt)
-
 !        ------------------------------------------------------------------------------
 !        step 1.5: obtain 
 !                  a. decoupling matrix "R" in orthonormal MO basis
@@ -465,6 +460,13 @@ contains
                                 x2c_cspeed,                        &
                                 x2c_prt)
          end if
+
+!        put DIRACs SO-correction based on the 4c-fock SO-elements for each atom type
+!        -------------------------------------------------------------------------------
+#ifdef MOD_AOOSOC
+         call put_atomic_oo_order_so_correction(                      &
+                                                x2c_prt)
+#endif
 
          close(x2c_famfi,status="delete")
 

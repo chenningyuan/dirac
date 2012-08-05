@@ -63,6 +63,8 @@ C
 C
       CALL QENTER('TWOFCK')
 #include "memint.h"
+      iprint_save = iprint
+      iprint = 0
 C
       IF(IPRINT.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
@@ -248,6 +250,12 @@ C       IH = 0   Non-symmetric
 C       IH = 1   Symmetric
 C       IH = 2   Anti-symmetric
 C
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('unSorted FMAT matrix',-1)
+          WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
+          CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+        ENDIF
         DO IZ = 1,NZ
           IQ = IPQTOQ(IZ,IREP)
           IH = IHQMAT(IQ,IHRMOP(I)) 
@@ -265,6 +273,7 @@ C
         ENDIF
       ENDDO
       CALL QEXIT('TWOFCK')
+      iprint = iprint_save
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

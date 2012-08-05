@@ -2710,7 +2710,8 @@ C
 C     Case 1: Unrestricted kinetic balance 
 C             or 2-component non-relativistic calculation
 C     ---------------------------------------------------
-      IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run).OR.MDIRAC) THEN
+      IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run).OR.
+     &   (MDIRAC.and..not.is_2c_rel_run) ) THEN
 C
 C
         NZT = 1
@@ -2735,6 +2736,7 @@ C
 !     --------------------------------------------
       ELSE IF (is_2c_rel_run)THEN
 !
+        print *, 'blubb ', mdirac
         CALL TIMER('START ',TIMSTR,TIMEND)
 
         TOBE=.FALSE.
@@ -3215,6 +3217,7 @@ C
 C     Generate free particle (or bare nucleus) matrix in Lowdin-basis
 C     ===============================================================
 C
+      print *, 'blubb',vextpj
       IF(VEXTPJ) THEN
         CALL ONEFCK(TBUF,IPRONE,WORK(KFREE),LFREE)
       ELSE

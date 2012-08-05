@@ -831,7 +831,6 @@ contains
 !**********************************************************************
 
        abs_ham_lvl = abs(ham_lvl)
-
        if(abs_ham_lvl <= 0 .or. abs_ham_lvl > 4)           &
          call quit('*** error in read_1fock_x2c: invalid pointer to Hamiltonian integral type. ***')
 
