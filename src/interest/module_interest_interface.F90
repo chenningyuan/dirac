@@ -520,7 +520,7 @@ CONTAINS
            P(i,j) = 0.5d0*Pmat(i,j,1)  !Re(A,LL)
          enddo
        enddo
-      !call forward_ao_resorting( P )
+       call forward_ao_resorting( P )
     !> end
 
     !> precalculate maximum shell pair contributions to the Fock matrix
