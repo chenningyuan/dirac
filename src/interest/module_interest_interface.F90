@@ -471,7 +471,7 @@ CONTAINS
     real(8) :: el, cl, xl, yl, zl 
  
     !> fixme: later through the input ...
-    character(len=4), parameter :: eri_class = 'llll'
+    character(len=4), parameter :: eri_class = 'ssll'
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
@@ -699,12 +699,11 @@ CONTAINS
                gbagaa =-dconjg( gabgbb )
             !> end
             !> contraction [ij|kl]*lk
-               pll = pmat(1,1,lbas,kbas) &
-                   + pmat(3,3,lbas,kbas)
                paa = pmat(2,2,lbas,kbas)
                pba = pmat(4,2,lbas,kbas)
                pab = pmat(2,4,lbas,kbas)
                pbb = pmat(4,4,lbas,kbas)
+               pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
                !> large-large block
                gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
                gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
