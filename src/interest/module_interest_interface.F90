@@ -447,10 +447,10 @@ CONTAINS
     !> note:  we assume nz=4 !!!
     !> fixme: the case when nz!=4
     integer, intent(in) :: intflg
-    real(8), intent(in) :: Pmat(2*nrow,2*ncol,4)
+    real(8), intent(in) :: Pmat(2*nrow,2*nrow,4)  ! 1-electron density matrix, Dirac format
 
     !> output
-    real(8), intent(out) :: Gmat(2*nrow,2*ncol,4)
+    real(8), intent(out) :: Gmat(2*nrow,2*nrow,4) ! 2-electron Fock matrix, Dirac format, from Pmat
 
     !> local
     logical :: doK
@@ -489,26 +489,26 @@ CONTAINS
     allocate( dG(4,4,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
     do j=1,nrow
       do i=1,nrow
-        !> alpha-alpha
-        dP(1,1,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll, Pmat(i     ,j     ,2)*fll )
-        dP(2,1,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl, Pmat(i+nrow,j     ,2)*fsl )
-        dP(1,2,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl, Pmat(i     ,j+nrow,2)*fsl )
-        dP(2,2,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss, Pmat(i+nrow,j+nrow,2)*fss )
-        !> beta-beta  
-        dP(3,3,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll,-Pmat(i     ,j     ,2)*fll )
-        dP(4,3,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl,-Pmat(i+nrow,j     ,2)*fsl )
-        dP(3,4,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl,-Pmat(i     ,j+nrow,2)*fsl )
-        dP(4,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss,-Pmat(i+nrow,j+nrow,2)*fss )
-        !> alpha-beta  
-        dP(1,3,i,j) = dcmplx( Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll )
-        dP(2,3,i,j) = dcmplx( Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl )
-        dP(1,4,i,j) = dcmplx( Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl )
-        dP(2,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss )
-        !> beta-alpha 
-        dP(3,1,i,j) = dcmplx(-Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll )
-        dP(4,1,i,j) = dcmplx(-Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl )
-        dP(3,2,i,j) = dcmplx(-Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl )
-        dP(4,2,i,j) = dcmplx(-Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss )
+        !> alpha-alpha = "A"
+        dP(1,1,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll, Pmat(i     ,j     ,2)*fll ) ! LL
+        dP(2,1,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl, Pmat(i+nrow,j     ,2)*fsl ) ! SL
+        dP(1,2,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl, Pmat(i     ,j+nrow,2)*fsl ) ! LS
+        dP(2,2,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss, Pmat(i+nrow,j+nrow,2)*fss ) ! SS
+        !> beta-beta  = "A*"
+        dP(3,3,i,j) = dconjg( dP(1,1,i,j) )
+        dP(4,3,i,j) = dconjg( dP(2,1,i,j) )
+        dP(3,4,i,j) = dconjg( dP(1,2,i,j) )
+        dP(4,4,i,j) = dconjg( dP(2,2,i,j) )
+        !> alpha-beta = "B"
+        dP(1,3,i,j) = dcmplx( Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll ) ! LL
+        dP(2,3,i,j) = dcmplx( Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl ) ! SL
+        dP(1,4,i,j) = dcmplx( Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl ) ! LS
+        dP(2,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss ) ! SS
+        !> beta-alpha =" -B*"
+        dP(3,1,i,j) = -dconjg( dP(1,3,i,j) )
+        dP(4,1,i,j) = -dconjg( dP(2,3,i,j) )
+        dP(3,2,i,j) = -dconjg( dP(1,4,i,j) )
+        dP(4,2,i,j) = -dconjg( dP(2,4,i,j) )
       enddo
     enddo
 
@@ -592,22 +592,22 @@ CONTAINS
     fss = constant%alpha2/4.0d0 
     do j=1,nrow
       do i=1,nrow
-        !> quaterion(0) 
+        !> quaternion(0) 
         Gmat(i     ,j     ,1) = Gmat(i     ,j     ,1) + dreal(dG(1,1,i,j))
         Gmat(i+nrow,j     ,1) = Gmat(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
         Gmat(i     ,j+nrow,1) = Gmat(i     ,j+nrow,1) + dreal(dG(1,2,i,j))*fsl
         Gmat(i+nrow,j+nrow,1) = Gmat(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
-        !> quaterion(i) 
+        !> quaternion(i) 
         Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) + dimag(dG(1,1,i,j))
         Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
         Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) + dimag(dG(1,2,i,j))*fsl
         Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
-        !> quaterion(j) 
+        !> quaternion(j) 
         Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) + dreal(dG(1,3,i,j))
         Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
         Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) + dreal(dG(1,4,i,j))*fsl
         Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
-        !> quaterion(k) 
+        !> quaternion(k) 
         Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) + dimag(dG(1,3,i,j))
         Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
         Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) + dimag(dG(1,4,i,j))*fsl
