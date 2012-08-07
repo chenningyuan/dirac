@@ -439,7 +439,7 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> note: on input,  G and P must be in the cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg ) 
+  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg, hfxfac ) 
 
     use module_interest_eri
 
@@ -447,15 +447,17 @@ CONTAINS
     !> note:  we assume nz=4 !!!
     !> fixme: the case when nz!=4
     integer, intent(in) :: intflg
-    real(8), intent(in) :: Pmat(2*nrow,2*ncol,4)
+    real(8), intent(in) :: hfxfac
+    !> 1-electron density matrix, Dirac format
+    real(8), intent(in) :: Pmat(2*nrow,2*nrow,4)  
 
     !> output
-    real(8), intent(out) :: Gmat(2*nrow,2*ncol,4)
+    !> 2-electron Fock matrix, Dirac format
+    real(8), intent(out) :: Gmat(2*nrow,2*nrow,4) 
 
     !> local
     logical :: doK
     real(8) :: fijkl
-    real(8) :: scaleK 
     integer :: li, ni, oi   
     integer :: lj, nj, oj   
     integer :: lk, nk, ok   
@@ -463,23 +465,29 @@ CONTAINS
     integer :: nint, lmax
     real(8) :: fll, fsl, fss 
     integer :: i, j, k, l, ibas
-    real(8) :: gout(441*441*25)    !todo: rozumnejsia definicia
+    real(8) :: gout(441*441*25)    !todo
     integer :: nij, nkl, ij
     real(8) :: ei, ci, xi, yi, zi 
     real(8) :: ej, cj, xj, yj, zj 
     real(8) :: ek, ck, xk, yk, zk 
     real(8) :: el, cl, xl, yl, zl 
- 
-    !> fixme: later through the input ...
-    character(len=4), parameter :: eri_class = 'llll'
+
+    character(len=4) :: eri_class = 'ssss'
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
 
 
-    !> initialize for DFT
-    scaleK = 1.0d0
-    doK    = ( scaleK /= 0.0d0 )
+    !> init for eri classes
+    select case( intflg )
+      case( 1 );    eri_class = 'llll'
+      case( 3 );    eri_class = 'ssll'
+      case( 7 );    eri_class = 'ssss'
+      case default; stop "The desired class of ERI integrals is not implemented in InteRest :-( => stop"
+    end select
+
+    !> init for DFT
+    doK = ( hfxfac /= 0.0d0 )
 
     !> data forward alignment 
     fll = 0.5d0
@@ -489,26 +497,26 @@ CONTAINS
     allocate( dG(4,4,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
     do j=1,nrow
       do i=1,nrow
-        !> alpha-alpha
-        dP(1,1,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll, Pmat(i     ,j     ,2)*fll )
-        dP(2,1,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl, Pmat(i+nrow,j     ,2)*fsl )
-        dP(1,2,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl, Pmat(i     ,j+nrow,2)*fsl )
-        dP(2,2,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss, Pmat(i+nrow,j+nrow,2)*fss )
-        !> beta-beta  
-        dP(3,3,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll,-Pmat(i     ,j     ,2)*fll )
-        dP(4,3,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl,-Pmat(i+nrow,j     ,2)*fsl )
-        dP(3,4,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl,-Pmat(i     ,j+nrow,2)*fsl )
-        dP(4,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss,-Pmat(i+nrow,j+nrow,2)*fss )
-        !> alpha-beta  
-        dP(1,3,i,j) = dcmplx( Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll )
-        dP(2,3,i,j) = dcmplx( Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl )
-        dP(1,4,i,j) = dcmplx( Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl )
-        dP(2,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss )
-        !> beta-alpha 
-        dP(3,1,i,j) = dcmplx(-Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll )
-        dP(4,1,i,j) = dcmplx(-Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl )
-        dP(3,2,i,j) = dcmplx(-Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl )
-        dP(4,2,i,j) = dcmplx(-Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss )
+        !> alpha-alpha = "A"
+        dP(1,1,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll, Pmat(i     ,j     ,2)*fll ) ! LL
+        dP(2,1,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl, Pmat(i+nrow,j     ,2)*fsl ) ! SL
+        dP(1,2,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl, Pmat(i     ,j+nrow,2)*fsl ) ! LS
+        dP(2,2,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss, Pmat(i+nrow,j+nrow,2)*fss ) ! SS
+        !> beta-beta  = "A*"
+        dP(3,3,i,j) = dconjg( dP(1,1,i,j) )
+        dP(4,3,i,j) = dconjg( dP(2,1,i,j) )
+        dP(3,4,i,j) = dconjg( dP(1,2,i,j) )
+        dP(4,4,i,j) = dconjg( dP(2,2,i,j) )
+        !> alpha-beta = "B"
+        dP(1,3,i,j) = dcmplx( Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll ) ! LL
+        dP(2,3,i,j) = dcmplx( Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl ) ! SL
+        dP(1,4,i,j) = dcmplx( Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl ) ! LS
+        dP(2,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss ) ! SS
+        !> beta-alpha =" -B*"
+        dP(3,1,i,j) = -dconjg( dP(1,3,i,j) )
+        dP(4,1,i,j) = -dconjg( dP(2,3,i,j) )
+        dP(3,2,i,j) = -dconjg( dP(1,4,i,j) )
+        dP(4,2,i,j) = -dconjg( dP(2,4,i,j) )
       enddo
     enddo
 
@@ -556,61 +564,65 @@ CONTAINS
        
                SELECT CASE( eri_class )
                  CASE( 'llll' )
-                     call interest_eri_rkb('llll',fijkl,gout,&
-                                           li,ei,xi,yi,zi,ci,&
-                                           lj,ej,xj,yj,zj,cj,&
-                                           lk,ek,xk,yk,zk,ck,&
+                     call interest_eri_rkb('llll',fijkl,gout,                &
+                                           li,ei,xi,yi,zi,ci,                &
+                                           lj,ej,xj,yj,zj,cj,                &
+                                           lk,ek,xk,yk,zk,ck,                &
                                            ll,el,xl,yl,zl,cl )
+                     call process_dG_4comp_llll_1x(ni,nj,nk,nl,              &
+                                                   oi,oj,ok,ol,              &
+                                                   nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssll' )
-                     call interest_eri_rkb('ssll',fijkl,gout,&
-                                           li,ei,xi,yi,zi,ci,&
-                                           lj,ej,xj,yj,zj,cj,&
-                                           lk,ek,xk,yk,zk,ck,&
+                     call interest_eri_rkb('ssll',fijkl,gout,                &
+                                           li,ei,xi,yi,zi,ci,                &
+                                           lj,ej,xj,yj,zj,cj,                &
+                                           lk,ek,xk,yk,zk,ck,                &
                                            ll,el,xl,yl,zl,cl )
+                     call process_dG_4comp_ssll_1x(ni,nj,nk,nl,              &
+                                                   oi,oj,ok,ol,              &
+                                                   nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssss' ) 
-                     call interest_eri_rkb('ssss',fijkl,gout,&
-                                           li,ei,xi,yi,zi,ci,&
-                                           lj,ej,xj,yj,zj,cj,&
-                                           lk,ek,xk,yk,zk,ck,&
+                     call interest_eri_rkb('ssss',fijkl,gout,                &
+                                           li,ei,xi,yi,zi,ci,                &
+                                           lj,ej,xj,yj,zj,cj,                &
+                                           lk,ek,xk,yk,zk,ck,                &
                                            ll,el,xl,yl,zl,cl )
+                     call process_dG_4comp_ssss_1x(ni,nj,nk,nl,              &
+                                                   oi,oj,ok,ol,              &
+                                                   nrow,doK,hfxfac,gout,dP,dG)
                  CASE default
                       stop 'Error: this ERI class is not implemented yet => stop'
                END SELECT
-               call process_dG_4comp_test_ssss_1x(ni,nj,nk,nl,              &
-                                                  oi,oj,ok,ol,              &
-                                                  nrow,doK,scaleK,gout,dP,dG)
-
              enddo lloop
            enddo kloop
          enddo jloop
        enddo iloop
     !> end
 
-
     !> data backward alignment 
     fsl = constant%alpha /2.0d0 
     fss = constant%alpha2/4.0d0 
     do j=1,nrow
       do i=1,nrow
-        !> quaterion(0) 
+        !> quaternion(0) 
         Gmat(i     ,j     ,1) = Gmat(i     ,j     ,1) + dreal(dG(1,1,i,j))
         Gmat(i+nrow,j     ,1) = Gmat(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
-        Gmat(i     ,j+nrow,1) = Gmat(i     ,j+nrow,1) + dreal(dG(1,2,i,j))*fsl
+        Gmat(i     ,j+nrow,1) = Gmat(i     ,j+nrow,1) + dreal(dG(2,1,j,i))*fsl
         Gmat(i+nrow,j+nrow,1) = Gmat(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
-        !> quaterion(i) 
+        !> quaternion(i) 
         Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) + dimag(dG(1,1,i,j))
         Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
-        Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) + dimag(dG(1,2,i,j))*fsl
+        Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) - dimag(dG(2,1,j,i))*fsl
         Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
-        !> quaterion(j) 
+        !> quaternion(j) 
         Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) + dreal(dG(1,3,i,j))
         Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
-        Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) + dreal(dG(1,4,i,j))*fsl
+        Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) - dreal(dG(2,3,j,i))*fsl
         Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
-        !> quaterion(k) 
+        !> quaternion(k) 
         Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) + dimag(dG(1,3,i,j))
         Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
-        Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) + dimag(dG(1,4,i,j))*fsl
+        Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) - dimag(dG(2,3,j,i))*fsl
         Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) + dimag(dG(2,4,i,j))*fss
       enddo
     enddo
@@ -621,7 +633,215 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_dG_4comp_test_ssss_1x( ic, jc, kc, lc, io, jo, ko, lo, nbas, doK, scaleK, gout, pmat, gmat ) 
+  SUBROUTINE process_dG_4comp_llll_1x( ic, jc, kc, lc, io, jo, ko, lo, nbas, doK, scaleK, gout, pmat, gmat ) 
+
+    !> input
+    logical,    intent(in) :: doK
+    integer,    intent(in) :: nbas
+    real(8),    intent(in) :: scaleK
+    integer,    intent(in) :: ic, jc, kc, lc
+    integer,    intent(in) :: io, jo, ko, lo
+    complex(8), intent(in) :: pmat(4,4,nbas,nbas)
+
+    !> input/output
+    real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
+
+    !> output
+    complex(8), intent(out) :: gmat(4,4,nbas,nbas)
+
+    !> local
+    integer    :: i, j, k, l
+    integer    :: ibas, jbas, kbas, lbas
+    complex(8) :: gg, pll, paa_ll, pab_ll, pba_ll, pbb_ll
+
+
+    !> coulomb part
+    do j=1,jc
+      jbas=jo+j
+      do i=1,ic
+        ibas=io+i
+        do l=1,lc
+          lbas=lo+l
+          do k=1,kc
+            kbas = ko+k
+            gg   = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+            pll  = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
+            gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll
+            gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg*pll
+          enddo
+        enddo
+      enddo
+    enddo
+
+    if( .not. doK )return
+
+    !> pre-multiplication for scalling K-contribution 
+    if( scalek /= 1.0d0 )then
+      do j=1,jc
+        do i=1,ic
+          do l=1,lc
+            do k=1,kc
+              gout(1,k,l,1,i,j) = gout(1,k,l,1,i,j)*scaleK
+            enddo
+          enddo
+        enddo
+      enddo
+    endif
+
+    !> exchange part
+    do l=1,lc
+      lbas=lo+l
+      do k=1,kc
+        kbas=ko+k
+        do j=1,jc
+          jbas=jo+j
+          paa_ll = pmat(1,1,jbas,kbas)
+          pba_ll = pmat(3,1,jbas,kbas)
+          pab_ll = pmat(1,3,jbas,kbas)
+          pbb_ll = pmat(3,3,jbas,kbas)
+          do i=1,ic
+            ibas = io+i
+            gg   = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+            gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
+            gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
+            gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
+            gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
+          enddo
+        enddo
+      enddo
+    enddo
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!>
+  SUBROUTINE process_dG_4comp_ssll_1x( ic, jc, kc, lc, io, jo, ko, lo, nbas, doK, scaleK, gout, pmat, gmat ) 
+
+    !> input
+    logical,    intent(in) :: doK
+    integer,    intent(in) :: nbas
+    real(8),    intent(in) :: scaleK
+    integer,    intent(in) :: ic, jc, kc, lc
+    integer,    intent(in) :: io, jo, ko, lo
+    complex(8), intent(in) :: pmat(4,4,nbas,nbas)
+
+    !> input/output
+    real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
+
+    !> output
+    complex(8), intent(out) :: gmat(4,4,nbas,nbas)
+
+    !> local
+    integer    :: i, j, k, l, m
+    integer    :: ibas, jbas, kbas, lbas
+    complex(8) :: pll, paa, pab, pba, pbb
+    complex(8) :: gg, gaag, gabg, gbag, gbbg
+    complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
+    complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
+
+
+    !> coulomb part
+    do j=1,jc
+      jbas=jo+j
+      do i=1,ic
+        ibas=io+i
+        do l=1,lc
+          lbas=lo+l
+          do k=1,kc
+            kbas=ko+k
+            !> integrals processing: [ij|kl]
+               !> large-large block 
+               gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+               !> small-large block 
+               gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+               gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+               gbbg = dconjg( gaag )
+               gbag =-dconjg( gabg ) 
+            !> end
+            !> contraction [kl|ij]*ji
+               paa = pmat(2,2,jbas,ibas)
+               pba = pmat(4,2,jbas,ibas)
+               pab = pmat(2,4,jbas,ibas)
+               pbb = pmat(4,4,jbas,ibas)
+               pll = pmat(1,1,jbas,ibas) + pmat(3,3,jbas,ibas)
+               !> large-large block
+               gg = gg*pll + gaag*paa + gabg*pba + gbag*pab + gbbg*pbb
+               gmat(1,1,kbas,lbas) = gmat(1,1,kbas,lbas) + gg
+               gmat(3,3,kbas,lbas) = gmat(3,3,kbas,lbas) + gg
+            !> contraction [ij|kl]*lk
+               pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
+               !> small-small block
+               gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll
+               gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll
+               gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) + gabg*pll
+               gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + gbbg*pll
+            !> end
+          enddo
+        enddo
+      enddo
+    enddo
+
+    if( .not. doK )return
+
+    !> pre-multiplication for scalling K-contribution 
+    if( scalek /= 1.0d0 )then
+      do j=1,jc
+        do i=1,ic
+          do m=1,5
+            do l=1,lc
+              do k=1,kc
+                gout(1,k,l,m,i,j) = gout(1,k,l,m,i,j)*scaleK
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
+    endif
+
+    !> exchange part
+    do l=1,lc
+      lbas=lo+l
+      do k=1,kc
+        kbas=ko+k
+        do j=1,jc
+          jbas=jo+j
+          !> large-large block
+          paa_ll = pmat(1,1,jbas,kbas)
+          pba_ll = pmat(3,1,jbas,kbas)
+          pab_ll = pmat(1,3,jbas,kbas)
+          pbb_ll = pmat(3,3,jbas,kbas)
+          !> small-large block
+          paa_sl = pmat(2,1,jbas,kbas)
+          pba_sl = pmat(4,1,jbas,kbas)
+          pab_sl = pmat(2,3,jbas,kbas)
+          pbb_sl = pmat(4,3,jbas,kbas)
+          do i=1,ic
+            ibas=io+i
+            !> large-large block 
+            gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+            !> small-large block 
+            gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+            gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+            gbbg = dconjg( gaag )
+            gbag =-dconjg( gabg ) 
+            !> large-large block
+            gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
+            gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
+            gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
+            gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
+            !> small-large block
+            gmat(2,1,ibas,lbas) = gmat(2,1,ibas,lbas) - gaag*paa_sl - gabg*pba_sl 
+            gmat(2,3,ibas,lbas) = gmat(2,3,ibas,lbas) - gaag*pab_sl - gabg*pbb_sl 
+            gmat(4,1,ibas,lbas) = gmat(4,1,ibas,lbas) - gbag*paa_sl - gbbg*pba_sl 
+            gmat(4,3,ibas,lbas) = gmat(4,3,ibas,lbas) - gbag*pab_sl - gbbg*pbb_sl 
+          enddo
+        enddo
+      enddo
+    enddo
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!>
+  SUBROUTINE process_dG_4comp_ssss_1x( ic, jc, kc, lc, io, jo, ko, lo, nbas, doK, scaleK, gout, pmat, gmat ) 
 
     !> input
     logical,    intent(in) :: doK
@@ -699,15 +919,15 @@ CONTAINS
                gbagaa =-dconjg( gabgbb )
             !> end
             !> contraction [ij|kl]*lk
-               pll = pmat(1,1,lbas,kbas) &
-                   + pmat(3,3,lbas,kbas)
                paa = pmat(2,2,lbas,kbas)
                pba = pmat(4,2,lbas,kbas)
                pab = pmat(2,4,lbas,kbas)
                pbb = pmat(4,4,lbas,kbas)
+               pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
                !> large-large block
-               gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
-               gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
+               gg = gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
+               gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg
+               gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg
                !> small-small block
                gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll + gaagaa*paa + gaagab*pba + gaagba*pab + gaagbb*pbb
                gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll + gbagaa*paa + gbagab*pba + gbagba*pab + gbagbb*pbb
