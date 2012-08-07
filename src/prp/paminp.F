@@ -2384,14 +2384,6 @@ CMI    exception for the i*BETA*GAMMA5 operator
 
       ENDIF
 
-CMI - TODO force change of the time rev.symm. if wanted
-!     IF (IPRPTYP(INDXPR).EQ.2.OR.
-!    &   IPRPTYP(INDXPR).EQ.3.OR.IPRPTYP(INDXPR).EQ.4) THEN
-!       IATIM=+1
-!       WRITE(LUPRI,*) 'forcing IATIM=1 for IPRPTYP(INDXPR)!'
-!     ENDIF
-
-
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
 C     Total time reversal symmetry of the 4-comp.operator
