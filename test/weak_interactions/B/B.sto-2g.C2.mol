@@ -1,0 +1,8 @@
+INTGRL
+ B atom      
+ smallest possible test basis  
+C   1    1  X Y Z
+       5.0    1    
+B     0.0000000000        0.0000000000         0.0000000
+LARGE BASIS STO-2G 
+FINISH
