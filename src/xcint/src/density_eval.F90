@@ -50,11 +50,9 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
-#ifdef MOD_UNRELEASED
    public get_jblao
    public get_gjblao
    public get_jblao_ll
-#endif
 
    private
 
@@ -1362,7 +1360,6 @@ contains
 
    end subroutine
 
-#ifdef MOD_UNRELEASED
    subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
 
 !     --------------------------------------------------------------------------
@@ -1546,6 +1543,5 @@ contains
       j = -0.5d0*j
 
    end subroutine
-#endif /* #ifdef MOD_UNRELEASED */
 
 end module

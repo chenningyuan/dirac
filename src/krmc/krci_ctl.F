@@ -55,6 +55,7 @@ C                    input and start-up --> "modularize"
 C
 C***********************************************************************
       use symmetry_setup_krci
+      use krci_cfg
       use os_utils
 #include "implicit.h"
 #include "priunit.h"
@@ -90,11 +91,11 @@ C
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
-     &            '.THRPCI','.xxxxxx','.MIN MK','.MAX MK','.GASSH ',
+     &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
-     &            '.DIPMOM','.MCANA ','.GAS SH','.xxxxxx','.xxxxxx'/
+     &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: tmp_symmetry_str
@@ -141,6 +142,7 @@ C
       LOWSORT_KRCI      = .FALSE.
       STATE_SELECT_KRCI = .FALSE.
       LOWSORT_KRCI      = .FALSE.
+      save_reordered_nos_krci = .false.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -182,6 +184,7 @@ C
          NKRCISSH(I) = 0
          NKRCIPSH(I) = 0
          NKRCIFRO(I) = 0
+         IKRCI_SVRONO(i)  = 0
          DO J = 1, MXMCGAS
             NKRCIGSH(I,J) = 0
             NKRCIGSP(I,J) = 0
@@ -219,13 +222,18 @@ C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
 C     some scratch
-      IKRCI_SYMSEL   = 0 
-      NOMEGASEL_KRCI = 0
+      IKRCI_SYMSEL      = 0 
+      NOMEGASEL_KRCI    = 0
+      NOMEGASEL_statenr = 1
+
 
       if(IDOPARIO_KRCI .ne. 0 .or. IDOPARIO_KRCI.ne. 1)then
 !       fall back to default: 0
         IDOPARIO_KRCI = 0
       end if
+
+!     krci_cfg
+      krci_cfg_max_vec_block = -1
  
 C
 C     Process input for *KRCICALC
@@ -536,7 +544,8 @@ C&&& THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRCI_THRPCI
                GO TO 100
    22          CONTINUE
-C&&& xxx
+C&&& max vector block length to allocate
+                  READ(LUCMD,*) krci_cfg_max_vec_block
                GO TO 100
    23          CONTINUE
 C&&& MIN MK2: minimum value of 2 * MK
@@ -653,7 +662,8 @@ C              subsequent MCSCF...
                STATE_SELECT_KRCI = .TRUE.
                DOPROP_KRCI       = .TRUE.
                DOJZEXP           = .TRUE.
-               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI
+               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI, 
+     &                       NOMEGASEL_statenr
                IF (IKRCI_SYMSEL .LE. MAX_NKRCI_MAX_SYM .AND.
      &            IKRCI_SYMSEL .GT. 0) THEN
                   NKRCI_SELOM(IKRCI_SYMSEL) = NOMEGASEL_KRCI
@@ -749,10 +759,13 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                GO TO 100
    44          CONTINUE
-C&&&  xxxxxx:  
+C&&&  SVRONO:  save reordered NOs rather than unsorted ones (the latter being the default)
+               save_reordered_nos_krci = .true.
                GO TO 100
    45          CONTINUE
-C&&&  xxxxxx:  
+C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+               save_reordered_nos_krci = .true.
+               READ(LUCMD,*) (IKRCI_SVRONO(I),I=1,NFSYM)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -904,16 +917,20 @@ C
 C
 C        MINMK2/MAXMK2 explicitly set
 C
+         NKRCI_MK2REF = 0
+         NKRCI_MK2DEL = NKRCI_MAXMK2
       ELSE
         IF(IKWSET(27) .EQ. 0 .AND. IKWSET(28) .EQ. 0)THEN
 !         Assign default values for MINMK2/MAXMK2
+          NKRCI_MAXMK2 = 2*MIN(NKRCIAELEC,NKRCIASHT) - NKRCIAELEC
+          NKRCI_MINMK2 = NKRCIAELEC-2*MIN(NKRCIAELEC,NKRCIASHT)
           NKRCI_MK2REF = 0
-          NKRCI_MK2DEL = NKRCIAELEC
+          NKRCI_MK2DEL = NKRCI_MAXMK2
+        ELSE
+!         assign MINMK2/MAXMK2 defaults
+          NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
+          NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
         END IF
-
-!       assign MINMK2/MAXMK2 defaults
-        NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
-        NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
       END IF
 C
 C     boson or fermion symmetries in the CI expansion
@@ -1178,6 +1195,12 @@ C
             if(nkrci_ciroots(ikrci_symmetry) .le. 0)then
               call quit(' *** error in KRCI_INP: 
      &                    CI root selection for inactive symmetry. ***')
+            end if
+            if(nkrci_ciroots(ikrci_symmetry) .lt. 
+     &         NOMEGASEL_statenr)then
+              call quit(' *** error in KRCI_INP: 
+     &                    CI root selection for state > # of roots in'//
+     &                  ' in this symmetry. ***')
             end if
             write(lupri,'(/a,a5,a,i4,a)') 
      &      ' *** symmetry:',xrepeig(ikrci_symmetry),

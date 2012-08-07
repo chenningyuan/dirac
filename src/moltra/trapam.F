@@ -444,22 +444,10 @@ C
      &      ' Total CPU  time used in PAMTRA (master only) :',
      &      IHOURS,':',IMINS,':',ISECS
 C
-      WRITE(LUPRI,'(/A,F20.6)')
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
+      WRITE(LUPRI,'(/A,A24/)') ' Transformation ended at : ',DAYTID
 C
       CALL FLSHFO(LUPRI)
-
-#ifdef MOD_HSCC
-!     ... interface for the HSCC module
-      IF (DOHSCC) CALL HSCC_STUFF(WORK,LWORK)
-#endif
-
-#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
-!     ... interface for the HSFS module
-      IF (DOHSFS) CALL HSFS_STUFF(WORK,LWORK)
-#endif
-
       CALL QEXIT('PAMTRA')
       RETURN
       END

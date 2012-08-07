@@ -76,8 +76,6 @@ C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
-      CALL TSTAMP(' ',LUPRI)
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C
@@ -143,7 +141,8 @@ C***********************************************************************
      & 'working with X2C Hamiltonian!')
         end if
         call init_pcm 
-        print *, 'after pcm init'
+        call print_pcm
+        print *, 'PCMSolver initialized.'
       end if
 #endif
 
@@ -165,7 +164,7 @@ C*****  T  E  R  M  I  N  A  T  I  O  N  *******************************
 C***********************************************************************
 C
 
-#ifdef BUILD_GEN1INT
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
@@ -418,6 +417,17 @@ C***** R E L C C S D  M O D U L E **************************************
 C***********************************************************************
 C
       IF(DOCCM.AND.DOPSI) CALL PAMCCM(WORK,LWORK)
+
+#if defined (MOD_HSCC)
+!     Hilbert Space Coupled Cluster module
+      IF (DOHSCC.AND.DOPSI) CALL PAMHSMRCC(WORK,LWORK)
+#endif
+
+#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
+!     High Sectors Fock Space Coupled Cluster module
+      IF (DOHSFS.AND.DOPSI) CALL PAMHSFSCC(WORK,LWORK)
+#endif
+
 C
 C***********************************************************************
 C***** D I R R C I   M O D U L E ***************************************
@@ -504,19 +514,6 @@ C
 #endif
       END IF
 C
-
-C
-C***********************************************************************
-C***** High Sect F S C C  M O D U L E **********************************
-C***********************************************************************
-C
-#ifdef MOD_HSFS
-!     ... interface from HSFS module
-      IF (DOHSFS) THEN
-        CALL HSFS_STUFF(WORK,LWORK)
-      ENDIF
-#endif
-
       CALL QEXIT('PAMPSI')
       RETURN
 C
@@ -736,6 +733,8 @@ C
       MOPT_MAXBCK    = MAXBCK
       IOPT_ISTATE    = 1
       JKRRUNTYPE     = 0
+      ISVRONO(1)     = 0
+      ISVRONO(2)     = 0
 C
 C     Set common block DCROPT
 C
@@ -757,6 +756,7 @@ C
       OPT_CHCKJZ     = .FALSE.
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
       no1pdens_save  = .true.
+      save_reordered_nos = .false.
 C
 C     Set common block DCCOPT
 C
@@ -906,6 +906,8 @@ C
       JKRRUNTYPE     = 1
 !     information from dcbdhf.h
       nopen_mc       = nopen
+      ISVRONO(1)     = IKRMC_SVRONO(1)
+      ISVRONO(2)     = IKRMC_SVRONO(2)
 C
 C     Set common block DCROPT
 C
@@ -918,12 +920,13 @@ C
 C
 C     Set common block DCLOPT
 C
-      OPT_SKIPEE     = KRMC_SKIPEE
-      OPT_SKIPEP     = KRMC_SKIPEP
-      OPT_NOCI       = KRMC_NOCI
-      OPT_UCIBOS     = KRMC_UCIBOS
-      OPT_CHCKJZ     = KRMC_CHCKJZ
-      no1pdens_save  = KRMC_NO1pdens
+      OPT_SKIPEE         = KRMC_SKIPEE
+      OPT_SKIPEP         = KRMC_SKIPEP
+      OPT_NOCI           = KRMC_NOCI
+      OPT_UCIBOS         = KRMC_UCIBOS
+      OPT_CHCKJZ         = KRMC_CHCKJZ
+      no1pdens_save      = KRMC_NO1pdens
+      save_reordered_nos = krmc_save_reordered_nos
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -1025,6 +1028,8 @@ C
       JKRRUNTYPE     = 2
 !     information from dcbdhf.h
       nopen_mc       = nopen
+      ISVRONO(1)     = IKRCI_SVRONO(1)
+      ISVRONO(2)     = IKRCI_SVRONO(2)
 C
 C     Set common block DCROPT
 C
@@ -1048,6 +1053,7 @@ C
       if(linear) opt_chckjz = .true.
 !     opt_chckjz = .true.
       no1pdens_save  = .true.
+      save_reordered_nos = save_reordered_nos_krci
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.

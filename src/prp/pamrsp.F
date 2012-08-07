@@ -3262,6 +3262,9 @@ C
 C     Written by T.Saue 1996
 C
 C***********************************************************************
+
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3274,7 +3277,9 @@ C     Orbital part
 C
       IF((NZXOPE.GT.0).OR.(NZXOPP.GT.0)) THEN
         CALL E2ODIA(HEDIAG,HPDIAG,SEDIAG,SPDIAG,
-     &              WORK(KZXOPE),WORK(KZXOPP),WORK,KFREE,LFREE)
+     &              get_orbital_rotation_indices_pp(),
+     &              get_orbital_rotation_indices_pn(),
+     &              WORK,KFREE,LFREE)
       ENDIF
 C
 C     Configurational part
@@ -3345,11 +3350,13 @@ C
 C
       DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
+      integer :: lfmo
 C
       CALL QENTER('E2ODIA')
 
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KFMO,NFOCKMAT*N2BBASXQ,WORK,KFREE,LFREE)
+      lfmo = max(NFOCKMAT*N2BBASXQ,2*N2ORBXQ)
+      CALL MEMGET('REAL',KFMO,lfmo,WORK,KFREE,LFREE)
       KFC = KFMO
       KFV = KFMO + N2ORBXQ
 C
@@ -4104,6 +4111,7 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dgroup.h"
       LOGICAL FNDLAB16
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       DIMENSION RSPVEC(LEN),JXOP(2,LEN)
@@ -4117,7 +4125,10 @@ CHJ TODO: note that ERGRSP was not defined, what is the idea ????
      &          JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
      &          ERGRSP,NTBAS(0),NORBT
         CALL WRITT(LU,LEN,RSPVEC)
-        CALL WRITI(LU,2*LEN,JXOP)
+!radovan: this was previously LEN but this goes out of bounds!
+!         the length of the orbital rotation index vector is 2*LEN/NZ
+!       CALL WRITI(LU,2*LEN,JXOP)
+        CALL WRITI(LU,2*LEN/NZ,JXOP)
         WRITE(LU) 'END_OF_THIS_FILE'
       ELSE
         WRITE(LUPRI,'(A)') 'WRTRSP: EOF flag not found !'
@@ -4382,6 +4393,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dcborb.h"
       DIMENSION A(LDA,N),WORK(*)
       DIMENSION INERT(3),DET(2)
 C
@@ -4393,17 +4405,20 @@ C
       CALL DSPFA (WORK(KAN),N,WORK(KPVT),INFO)
       CALL DSPDI(WORK(KAN),N,WORK(KPVT),DET,INERT,WORK(KFREE),100)
       IPAR = INERT(2) - NEPROT
-      IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
-        WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-        WRITE(LUPRI,'(4(5X,A,I5)/)')
-     &      '* Number of positive eigenvalues:',INERT(1),
-     &      '* Number of zero     eigenvalues:',INERT(3),
-     &      '* Number of negative eigenvalues:',INERT(2),
-     &      '  number of +- (ep) trial vectors:',NEPROT
-        IF(IPAR.GT.0) THEN
-          WRITE(LUPRI,'(/A)')
-     &      '*** WARNING - Possible instability detected '//
-     &      'in reduced system !'
+!     stefan: reduce output for mcscf - FIXME: find a better solution to handle the quantity of output...
+      if(nasht .le. 0)then
+        IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
+          WRITE(LUPRI,'(3X,A,F12.5)') '* Reduced matrix. Frequency:',W
+          WRITE(LUPRI,'(4(5X,A,I5))')
+     &        '* Number of positive eigenvalues:',INERT(1),
+     &        '* Number of zero     eigenvalues:',INERT(3),
+     &        '* Number of negative eigenvalues:',INERT(2),
+     &        '  number of +- (ep) trial vectors:',NEPROT
+          IF(IPAR.GT.0.and. iprint >= 5) THEN
+            WRITE(LUPRI,'(A)')
+     &        '*** WARNING - Possible instability detected '//
+     &        'in reduced system !'
+          ENDIF
         ENDIF
       ENDIF
       CALL MEMREL('XRSSTAB',WORK,1,KFRSAV,KFREE,LFREE)

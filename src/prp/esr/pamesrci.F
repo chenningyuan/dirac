@@ -114,7 +114,7 @@ C
 C
 C     Write information to LUKRMC
 C
-      CALL RSET_KRMC(WORK,KFREE,LFREE)
+      CALL RSET_KRMC(WORK)
 C
 C     Transfer NZCONF to N_CIESR - dimension of ESR matrix
 C
@@ -252,7 +252,7 @@ C
 C debug TODO remove again: 
          CALL GASCIP_FULLCI(NZCONF,WORK(KZCONF),CMO,
      &                     WORK(K_EIGVAL),WORK(K_EIGVEC),ECORE,
-     &                     IPROPT,WORK(KFREE),LFREE)
+     &                     IPROPT,WORK,KFREE,LFREE)
 C         CALL GASCIP_FULLCI(NDET,IDET,CMO,EIGVAL,EIGVEC,ECORE,
 C     &                         IPRINT,WORK,LWORK)
 

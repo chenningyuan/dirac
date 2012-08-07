@@ -149,6 +149,11 @@ group.add_option('--showdiff',
                  dest='showdiff',
                  default=False,
                  help="show differences in numbers [default: %default]")
+group.add_option('--jobargs',
+                 action='store',
+                 dest='jobargs',
+                 default=None,
+                 help="extra arguments to launcher [default: %default]")
 parser.add_option_group(group)
 
 # process input
@@ -485,6 +490,8 @@ class run:
              launcher_flags += '--noarch '
              if options.binary:
                  launcher_flags += '--dirac=%s ' % options.binary
+             if options.jobargs:
+                 launcher_flags += ' %s ' % options.jobargs
          if program_is_dalton:
              launcher_flags += '-nobackup '
              launcher_flags += '-noarch '
@@ -560,7 +567,8 @@ class run:
                                                              self.mol,            \
                                                              output_prefix,       \
                                                              output_prefix)
-           			 
+         #print  "command=",command
+
          if program_is_dirac:
              if sys.platform != 'win32':
                  p = subprocess.Popen(shlex.split(command),
@@ -593,6 +601,9 @@ class run:
                         exit = 'SKIP'
                  if 'controlled stop: only int64' in line:
                     if int32_run(s):
+                        exit = 'SKIP'
+                 if 'controlled stop: only int32' in line:
+                    if not int32_run(s):
                         exit = 'SKIP'
              f.close()
              return exit

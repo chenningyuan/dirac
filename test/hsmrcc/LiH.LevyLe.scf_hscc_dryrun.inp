@@ -1,0 +1,60 @@
+!
+**DIRAC
+.TITLE
+ LiH. HSCC calculations.
+.WAVE F
+.ANALYZE
+.4INDEX
+**INTEGRALS
+.NUCMOD
+1
+*READIN
+.UNCONTRACTED
+.PRINT
+2
+**HAMILTONIAN
+.LEVY-LEBLOND
+.PRINT
+1
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.EVCCNV
+1.0E-9  1.0E-8
+.INTFLG
+1 1 0
+#0.01 0.0001
+.CLOSED SHELL
+4
+.MAXITR
+45
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all
+**MOLTRA
+.INTFLG
+1 1 0
+.ACTIVE
+energy -1000.0   1.250  0.0001
+.HSCC
+*HSCC
+.NCORE
+2
+!  ... active KU spinors (in occ and in virt space)
+.NACT
+4
+! ... do not prepare HSMRCC files (dry run)
+.DRYRUN
+!* something with *...
+! .. comment 2
+.PRINT
+22
+!2
+*END OF
+
+ &RELCCSD DOFSPC=F DOENER=T  IPRNT=2 NELEC=2,2  &END
+ &CCSORT  USEOE=F &END
+ &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=F, MAXIT=100, NTOL=10 &END
+

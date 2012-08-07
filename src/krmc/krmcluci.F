@@ -57,6 +57,9 @@ C
       character (len=11)    :: orb_sym_fn
       character (len= 4)    :: mynum_str
 C
+!
+      is_ana_mcscf = .false.
+
 C     set "I/O node master" + "shared memory node master"
       N_MASTER    = 0
       N_MASTER_SM = 0
@@ -1656,6 +1659,7 @@ C     Write current CI vector(s) to file - debug version
 !       internally we copy the 
 !       lhs --> LUSC61
 !       rhs --> LUSC62
+        is_ana_mcscf = .true.
         print *, 'read mcscf vector from file KRMCOLD (unit 59)...'
         CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL REAKRMC(59,'CREF    ',WORK(KRSCR),NZCONF*MZ)

@@ -15,3 +15,4 @@ C
 C
       COMMON /DCLPRP/ DOPOP, DOPRJ, DOVEC, DO1RHO, DO3RHO, DO1WT,       &
      &                DOLOC
+C -- end of dcbana.h --

@@ -65,7 +65,7 @@
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
     integer ierr  !error information
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
@@ -75,7 +75,7 @@
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                           num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_INIT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -86,7 +86,7 @@
     return
   end subroutine gen1int_host_init
 
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
   !> \brief initializes Gen1Int interface, for instance, creates the AO sub-shells
   !>        of host program (based on \fn(ORBPRO) subroutine by getting the unnormalized
   !>        contraction coefficients); should be called before any calculation
@@ -146,6 +146,7 @@
   !>       in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz), see
   !>       Gen1Int library manual, for instance Section 2.2.
   subroutine gen1int_host_get_int(gto_type, prop_name, order_mom, &
+                                  order_elec,                     &
                                   order_mag_bra, order_mag_ket,   &
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
@@ -156,44 +157,50 @@
                                   geom_type,                      &
                                   add_sr, add_so, add_london,     &
                                   num_ints, val_ints, write_ints, &
+                                  nr_active_blocks,               &
+                                  active_component_pairs,         &
                                   io_viewer, level_print)
     use gen1int_api
     implicit none
-    integer, intent(in) :: gto_type
-    character*(*), intent(in) :: prop_name
-    integer, intent(in) :: order_mom
-    integer, intent(in) :: order_mag_bra
-    integer, intent(in) :: order_mag_ket
-    integer, intent(in) :: order_mag_total
-    integer, intent(in) :: order_ram_bra
-    integer, intent(in) :: order_ram_ket
-    integer, intent(in) :: order_ram_total
-    integer, intent(in) :: order_geo_bra
-    integer, intent(in) :: order_geo_ket
-    integer, intent(in) :: max_num_cent
-    integer, intent(in) :: order_geo_total
-    integer, intent(in) :: num_geo_atoms
-    integer, intent(in) :: idx_geo_atoms(*)
-    integer, intent(in) :: geom_type
-    logical, intent(in) :: add_sr
-    logical, intent(in) :: add_so
-    logical, intent(in) :: add_london
-    integer, intent(in) :: num_ints
-    type(matrix), intent(inout) :: val_ints(*)
-    logical, intent(in) :: write_ints
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
+    integer,       intent(in)    :: gto_type
+    character*(*), intent(in)    :: prop_name
+    integer,       intent(in)    :: order_mom
+    integer,       intent(in)    :: order_elec
+    integer,       intent(in)    :: order_mag_bra
+    integer,       intent(in)    :: order_mag_ket
+    integer,       intent(in)    :: order_mag_total
+    integer,       intent(in)    :: order_ram_bra
+    integer,       intent(in)    :: order_ram_ket
+    integer,       intent(in)    :: order_ram_total
+    integer,       intent(in)    :: order_geo_bra
+    integer,       intent(in)    :: order_geo_ket
+    integer,       intent(in)    :: max_num_cent
+    integer,       intent(in)    :: order_geo_total
+    integer,       intent(in)    :: num_geo_atoms
+    integer,       intent(in)    :: idx_geo_atoms(*)
+    integer,       intent(in)    :: geom_type
+    logical,       intent(in)    :: add_sr
+    logical,       intent(in)    :: add_so
+    logical,       intent(in)    :: add_london
+    integer,       intent(in)    :: num_ints
+    type(matrix),  intent(inout) :: val_ints(*)
+    logical,       intent(in)    :: write_ints
+    integer,       intent(in)    :: nr_active_blocks
+    integer,       intent(in)    :: active_component_pairs(*)
+    integer,       intent(in)    :: io_viewer
+    integer,       intent(in)    :: level_print
+
     real(REALK) start_time       !start time
     type(prop_comp_t) prop_comp  !operator of property integrals with non-zero components
     type(geom_tree_t) geom_tree  !N-ary tree for total geometric derivatives
     integer ierr                 !error information
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_GET_INT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -209,6 +216,7 @@
     ! geometric derivatives on manager processor, and broadcasts other input
     ! arguments to worker processors
     call gen1int_host_prop_create(gto_type, prop_name, order_mom, &
+                                  order_elec,                     &
                                   order_mag_bra, order_mag_ket,   &
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
@@ -218,13 +226,15 @@
                                   num_geo_atoms, idx_geo_atoms,   &
                                   add_sr, add_so, add_london,     &
                                   io_viewer, level_print,         &
+                                  nr_active_blocks,               &
+                                  active_component_pairs,         &
                                   prop_comp, geom_tree)
     ! performs calculations
     if (order_geo_total>0) then
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_tree=geom_tree,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_ints=num_ints,       &
@@ -236,7 +246,7 @@
     else
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_ints=num_ints,       &
@@ -249,7 +259,7 @@
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
     if (order_geo_total>=0) call Gen1IntAPIGeoTreeDestroy(geom_tree=geom_tree)
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -258,7 +268,7 @@
     return
   end subroutine gen1int_host_get_int
 
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
   !> \brief evaluates the one-electron property integral matrices on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -330,6 +340,7 @@
   !> \note please see the comments of \fn(gen1int_host_get_int) of other arguments,
   !>       \var(val_expt) should be zero by users before calculations
   subroutine gen1int_host_get_expt(gto_type, prop_name, order_mom, &
+                                   order_elec,                     &
                                    order_mag_bra, order_mag_ket,   &
                                    order_mag_total,                &
                                    order_ram_bra, order_ram_ket,   &
@@ -341,47 +352,53 @@
                                    add_sr, add_so, add_london,     &
                                    num_dens, ao_dens,              &
                                    num_ints, val_expt, write_expt, &
+                                   nr_active_blocks,               &
+                                   active_component_pairs,         &
                                    io_viewer, level_print)
     use gen1int_api
     implicit none
-    integer, intent(in) :: gto_type
-    character*(*), intent(in) :: prop_name
-    integer, intent(in) :: order_mom
-    integer, intent(in) :: order_mag_bra
-    integer, intent(in) :: order_mag_ket
-    integer, intent(in) :: order_mag_total
-    integer, intent(in) :: order_ram_bra
-    integer, intent(in) :: order_ram_ket
-    integer, intent(in) :: order_ram_total
-    integer, intent(in) :: order_geo_bra
-    integer, intent(in) :: order_geo_ket
-    integer, intent(in) :: max_num_cent
-    integer, intent(in) :: order_geo_total
-    integer, intent(in) :: num_geo_atoms
-    integer, intent(in) :: idx_geo_atoms(*)
-    integer, intent(in) :: geom_type
-    logical, intent(in) :: add_sr
-    logical, intent(in) :: add_so
-    logical, intent(in) :: add_london
-    integer, intent(in) :: num_dens
-    type(matrix), intent(inout) :: ao_dens(num_dens)
-    integer, intent(in) :: num_ints
-    real(REALK), intent(inout) :: val_expt(num_ints*num_dens)
-    logical, intent(in) :: write_expt
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
+    integer,       intent(in)    :: gto_type
+    character*(*), intent(in)    :: prop_name
+    integer,       intent(in)    :: order_mom
+    integer,       intent(in)    :: order_elec
+    integer,       intent(in)    :: order_mag_bra
+    integer,       intent(in)    :: order_mag_ket
+    integer,       intent(in)    :: order_mag_total
+    integer,       intent(in)    :: order_ram_bra
+    integer,       intent(in)    :: order_ram_ket
+    integer,       intent(in)    :: order_ram_total
+    integer,       intent(in)    :: order_geo_bra
+    integer,       intent(in)    :: order_geo_ket
+    integer,       intent(in)    :: max_num_cent
+    integer,       intent(in)    :: order_geo_total
+    integer,       intent(in)    :: num_geo_atoms
+    integer,       intent(in)    :: idx_geo_atoms(*)
+    integer,       intent(in)    :: geom_type
+    logical,       intent(in)    :: add_sr
+    logical,       intent(in)    :: add_so
+    logical,       intent(in)    :: add_london
+    integer,       intent(in)    :: num_dens
+    type(matrix),  intent(inout) :: ao_dens(num_dens)
+    integer,       intent(in)    :: num_ints
+    real(REALK),   intent(inout) :: val_expt(num_ints*num_dens)
+    logical,       intent(in)    :: write_expt
+    integer,       intent(in)    :: nr_active_blocks
+    integer,       intent(in)    :: active_component_pairs(*)
+    integer,       intent(in)    :: io_viewer
+    integer,       intent(in)    :: level_print
+
     real(REALK) start_time       !start time
     type(prop_comp_t) prop_comp  !operator of property integrals with non-zero components
     type(geom_tree_t) geom_tree  !N-ary tree for total geometric derivatives
     integer idens                !incremental recorder over AO density matrices
     integer ierr                 !error information
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_GET_EXPT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -403,6 +420,7 @@
     ! geometric derivatives on manager processor, and broadcasts other input
     ! arguments to worker processors
     call gen1int_host_prop_create(gto_type, prop_name, order_mom, &
+                                  order_elec,                     &
                                   order_mag_bra, order_mag_ket,   &
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
@@ -412,13 +430,15 @@
                                   num_geo_atoms, idx_geo_atoms,   &
                                   add_sr, add_so, add_london,     &
                                   io_viewer, level_print,         &
+                                  nr_active_blocks,               &
+                                  active_component_pairs,         &
                                   prop_comp, geom_tree)
     ! performs calculations
     if (order_geo_total>0) then
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_tree=geom_tree,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_dens=num_dens,       &
@@ -431,7 +451,7 @@
     else
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_dens=num_dens,       &
@@ -445,7 +465,7 @@
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
     if (order_geo_total>=0) call Gen1IntAPIGeoTreeDestroy(geom_tree=geom_tree)
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -454,7 +474,7 @@
     return
   end subroutine gen1int_host_get_expt
 
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
   !> \brief evaluates the one-electron property expectation values on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -498,7 +518,7 @@
     call MPI_Bcast(num_ints, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! creates the operator of property integrals and N-ary tree for total
     ! geometric derivatives on worker processors by the arguments from manager
-    call gen1int_worker_prop_create(io_viewer, level_print, &
+    call gen1int_worker_prop_create(io_viewer, level_print,  &
                                     prop_comp, geom_tree)
     ! performs calculations
     if (order_geo_total>0) then
@@ -703,7 +723,7 @@
     logical found                                     !if found required data from SIRIFC
     integer start_ao, end_ao                          !start and end addresses of AOs
     integer imo                                       !incremental recorder over MOs
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
     ! wakes up workers
@@ -754,6 +774,7 @@
                                     0, (/0/),                  &
                                     .false., .false., .false., &
                                     io_viewer, level_print,    &
+                                    1, (/1, 1/),               &   !hardcoded for Dalton
                                     prop_comp, geom_tree)
       ! evaluates the electron density at points of cube file
       allocate(cube_values(cube_num_inc(3),cube_num_inc(2),cube_num_inc(1),1), &
@@ -996,7 +1017,7 @@
 100 format("gen1int_host_get_cube>> ",A,I8)
   end subroutine gen1int_host_get_cube
 
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
   subroutine gen1int_worker_get_cube(len_work, wrk_space, io_viewer, level_print)
     use gen1int_matrix
     use gen1int_api
@@ -1175,6 +1196,7 @@
       ! calculates integrals using Gen1Int
       call gen1int_host_get_int(GTO_TYPE(itest),                                 &
                                 trim(PROP_NAME(itest)), ORDER_MOM(itest),        &
+                                0,                                               &
                                 ORDER_MAG_BRA(itest), ORDER_MAG_KET(itest),      &
                                 ORDER_MAG_TOTAL(itest),                          &
                                 ORDER_RAM_BRA(itest), ORDER_RAM_KET(itest),      &
@@ -1184,6 +1206,7 @@
                                 0, (/0/), GEOM_TYPE(itest),                      &
                                 ADD_SR(itest), ADD_SO(itest), ADD_LONDON(itest), &
                                 NUM_INTS(itest), val_ints, WRITE_INTS,           &
+                                1, (/1, 1/),                                     & !hardcoded for Dalton
                                 io_viewer, level_print)
       ! gets the referenced results from HERMIT
 !FIXME: \var(FORQM3)
@@ -1225,12 +1248,7 @@
       ! not equals to 0 so that \fn(PR1IN1) will copy the results back when first calling it
       NCOMP = -1
       if (TRIANG(itest)) then
-#if defined(PRG_DIRAC)
-        call PR1IN1(wrk_space(end_herm_int+1:), len_free, int_rep, int_adr, lb_int,    &
-                    HERM_PROP(itest)(1:7), ORDER_MOM(itest), NUM_PQUAD, TRIANG(itest), &
-                    PROP_PRINT, level_print, wrk_space(1:end_herm_int), NCOMP, TOFILE, &
-                    MTFORM, DOINT)
-#else
+#ifndef PRG_DIRAC
 !FIXME: the last argument is symmetric AO density matrix
         call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
                     int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
@@ -1239,12 +1257,7 @@
                     wrk_space(end_herm_int+1:), GET_EXPT, wrk_space(end_herm_int+1:))
 #endif
       else
-#if defined(PRG_DIRAC)
-        call PR1IN1(wrk_space(end_herm_int+1:), len_free, int_rep, int_adr, lb_int,    &
-                    HERM_PROP(itest)(1:7), ORDER_MOM(itest), NUM_PQUAD, TRIANG(itest), &
-                    PROP_PRINT, level_print, wrk_space(1:end_herm_int), NCOMP, TOFILE, &
-                    MTFORM, DOINT)
-#else
+#ifndef PRG_DIRAC
 !FIXME: the last argument is square AO density matrix
         call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
                     int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
@@ -1302,6 +1315,7 @@
   !> \return geom_tree is the N-ary tree for total geometric derivatives
   !> \note see \fn(gen1int_host_get_int) for the explanation of other arguments
   subroutine gen1int_host_prop_create(gto_type, prop_name, order_mom, &
+                                      order_elec,                     &
                                       order_mag_bra, order_mag_ket,   &
                                       order_mag_total,                &
                                       order_ram_bra, order_ram_ket,   &
@@ -1311,34 +1325,39 @@
                                       num_geo_atoms, idx_geo_atoms,   &
                                       add_sr, add_so, add_london,     &
                                       io_viewer, level_print,         &
+                                      nr_active_blocks,               &
+                                      active_component_pairs,         &
                                       prop_comp, geom_tree)
     use gen1int_api
     implicit none
-    integer, intent(in) :: gto_type
-    character*(*), intent(in) :: prop_name
-    integer, intent(in) :: order_mom
-    integer, intent(in) :: order_mag_bra
-    integer, intent(in) :: order_mag_ket
-    integer, intent(in) :: order_mag_total
-    integer, intent(in) :: order_ram_bra
-    integer, intent(in) :: order_ram_ket
-    integer, intent(in) :: order_ram_total
-    integer, intent(in) :: order_geo_bra
-    integer, intent(in) :: order_geo_ket
-    integer, intent(in) :: max_num_cent
-    integer, intent(in) :: order_geo_total
-    integer, intent(in) :: num_geo_atoms
-    integer, intent(in) :: idx_geo_atoms(*)
-    logical, intent(in) :: add_sr
-    logical, intent(in) :: add_so
-    logical, intent(in) :: add_london
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
+    integer,           intent(in)    :: gto_type
+    character*(*),     intent(in)    :: prop_name
+    integer,           intent(in)    :: order_mom
+    integer,           intent(in)    :: order_elec
+    integer,           intent(in)    :: order_mag_bra
+    integer,           intent(in)    :: order_mag_ket
+    integer,           intent(in)    :: order_mag_total
+    integer,           intent(in)    :: order_ram_bra
+    integer,           intent(in)    :: order_ram_ket
+    integer,           intent(in)    :: order_ram_total
+    integer,           intent(in)    :: order_geo_bra
+    integer,           intent(in)    :: order_geo_ket
+    integer,           intent(in)    :: max_num_cent
+    integer,           intent(in)    :: order_geo_total
+    integer,           intent(in)    :: num_geo_atoms
+    integer,           intent(in)    :: idx_geo_atoms(*)
+    logical,           intent(in)    :: add_sr
+    logical,           intent(in)    :: add_so
+    logical,           intent(in)    :: add_london
+    integer,           intent(in)    :: io_viewer
+    integer,           intent(in)    :: level_print
+    integer,           intent(in)    :: nr_active_blocks
+    integer,           intent(in)    :: active_component_pairs(*)
     type(prop_comp_t), intent(inout) :: prop_comp
     type(geom_tree_t), intent(inout) :: geom_tree
     integer len_name  !length of property name
     integer ierr      !error information
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
 #include "mpif.h"
     ! broadcasts input arguments
     call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1349,34 +1368,40 @@
     call MPI_Bcast(len_name, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
                    MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mom, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_mom,       1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_elec,      1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_mag_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_mag_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_ram_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_ram_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_ram_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(max_num_cent, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_geo_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_geo_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_num_cent,    1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_geo_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_geo_atoms, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_geo_atoms,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(nr_active_blocks,       1,                  MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(active_component_pairs, nr_active_blocks*2, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     if (num_geo_atoms>0) then
       call MPI_Bcast(idx_geo_atoms, num_geo_atoms, MPI_INTEGER, MANAGER, &
                      MPI_COMM_WORLD, ierr)
     end if
-    call MPI_Bcast(add_sr, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_so, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(add_sr,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(add_so,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(add_london, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
 #endif
     ! creates the operator of property integrals
     call Gen1IntAPIPropCreate(gto_type, prop_name, order_mom, &
+                              order_elec,                     &
                               order_mag_bra, order_mag_ket,   &
                               order_mag_total,                &
                               order_ram_bra, order_ram_ket,   &
                               order_ram_total,                &
                               order_geo_bra, order_geo_ket,   &
                               add_sr, add_so, add_london,     &
+                              nr_active_blocks,               &
+                              active_component_pairs,         &
                               prop_comp)
     ! creates the N-ary tree for total geometric derivatives
     call Gen1IntAPIGeoTreeCreate(max_num_cent=max_num_cent,       &
@@ -1391,7 +1416,7 @@
     return
   end subroutine gen1int_host_prop_create
 
-#if defined(VAR_MPI_DEACTIVATED)
+#if defined(VAR_MPI)
   !> \brief creates the operator of property integrals and N-ary tree for total
   !>        geometric derivatives on worker processors by the arguments from manager
   !> \author Bin Gao
@@ -1404,14 +1429,15 @@
                                         prop_comp, geom_tree)
     use gen1int_api
     implicit none
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
+    integer,           intent(in)    :: io_viewer
+    integer,           intent(in)    :: level_print
     type(prop_comp_t), intent(inout) :: prop_comp
     type(geom_tree_t), intent(inout) :: geom_tree
     ! local variables, see the explanation of input arguments in \fn(gen1int_host_get_int)
     integer gto_type
     character(MAX_LEN_STR) prop_name
     integer order_mom
+    integer order_elec
     integer order_mag_bra
     integer order_mag_ket
     integer order_mag_total
@@ -1424,6 +1450,8 @@
     integer order_geo_total
     integer num_geo_atoms
     integer, allocatable :: idx_geo_atoms(:)
+    integer              :: nr_active_blocks
+    integer, allocatable :: active_component_pairs(:)
     logical add_sr
     logical add_so
     logical add_london
@@ -1439,18 +1467,25 @@
     prop_name = ""
     call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
                    MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mom, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_mom,       1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_elec,      1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_mag_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_mag_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_mag_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_ram_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_ram_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_ram_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(max_num_cent, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_geo_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(order_geo_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_num_cent,    1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(order_geo_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_geo_atoms, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_geo_atoms,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(nr_active_blocks,       1,                  MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    allocate(active_component_pairs(nr_active_blocks*2), stat=ierr)
+    if (ierr /= 0) then
+      stop "gen1int_worker_prop_create>> failed to allocate active_component_pairs!"
+    end if
+    call MPI_Bcast(active_component_pairs, nr_active_blocks*2, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     if (num_geo_atoms>0) then
       allocate(idx_geo_atoms(num_geo_atoms), stat=ierr)
       if (ierr/=0) then
@@ -1459,17 +1494,20 @@
       call MPI_Bcast(idx_geo_atoms, num_geo_atoms, MPI_INTEGER, MANAGER, &
                      MPI_COMM_WORLD, ierr)
     end if
-    call MPI_Bcast(add_sr, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_so, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(add_sr,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(add_so,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(add_london, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
     ! creates the operator of property integrals
     call Gen1IntAPIPropCreate(gto_type, prop_name, order_mom, &
+                              order_elec,                     &
                               order_mag_bra, order_mag_ket,   &
                               order_mag_total,                &
                               order_ram_bra, order_ram_ket,   &
                               order_ram_total,                &
                               order_geo_bra, order_geo_ket,   &
                               add_sr, add_so, add_london,     &
+                              nr_active_blocks,               &
+                              active_component_pairs,         &
                               prop_comp)
     ! creates the N-ary tree for total geometric derivatives
     call Gen1IntAPIGeoTreeCreate(max_num_cent=max_num_cent,       &

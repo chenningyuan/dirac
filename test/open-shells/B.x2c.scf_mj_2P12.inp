@@ -29,11 +29,9 @@
 .PRINT
 0
 **ANALYZE
-#.PRIVEC
 .MULPOP
 #*PRIVEC
 # 2 fermion symmetries
-#.VECPRI
 # all   
 # all   
 *MULPOP

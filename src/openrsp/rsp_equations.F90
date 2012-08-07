@@ -29,7 +29,7 @@
 !> time by #define statements.
 module rsp_equations
 
-   use matrix_defop  !matrix type and operators
+   use matrix_defop_old  !matrix type and operators
    use prop_contribs !integrals and integral contractions
 
    implicit none

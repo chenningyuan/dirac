@@ -1,15 +1,19 @@
 References
-============
+==========
 
 List of published papers and other sources (books, theses) documenting the
-development of various features of DIRAC, its related references and also some
-interesting applications. 
+development of various features of DIRAC, some interesting applications
+and various related references.
 
-References are sorted alphabetically according to the first author's family
-name with the year of publishing.  If the first author has more publications in
-the same year, attach "a", "b", "c", etc. after the year.
+Reference entries are sorted alphabetically according to the first author's family
+name with the year of the publishing.  If the first author has several publications in
+the same year, characters in alphabetical order - "a", "b", "c", etc. - are added
+after the year.
 
-Please always provide citation entry with permanent URL-link, the best is the DOI web identity.
+Please always provide each citation entry with its permanent URL-link.
+The best web-link is the DOI web identity, used almost for all peer-reviewed papers.
+For books we recommend to resort to semi-permanent links, like the publisher's web-site, 
+or popular Google-Books web-space.
 
 .. [Amovilli1998] C. Amovilli, V. Barone, R. Cammi, E. Cancès, M. Cossi, 
    B. Mennucci, C. S. Pomelli and J .Tomasi;
@@ -78,6 +82,12 @@ Please always provide citation entry with permanent URL-link, the best is the DO
    noble gases and dihalogens*, 
    The Journal of Chemical Physics **122**,  *074321* (2005) 
    <http://dx.doi.org/10.1063/1.1849167>
+
+.. [Eliav2009] Ephraim Eliav, Anastasia Borschevsky, K. R. Shamasundar,
+   Sourav Pal, Uzi Kaldor,
+   *Intermediate Hamiltonian Hilbert space coupled cluster method: Theory and pilot application*,
+   Int.J.Quant.Chem. **109**, *2909–2915* (2009)
+   <http://dx.doi.org/10.1002/qua.22155>
 
 .. [Faegri2001]  K. Fægri and T. Saue, *Diatomic molecules
    between very heavy elements of group 13 and group 17: A study of
@@ -432,5 +442,5 @@ Please always provide citation entry with permanent URL-link, the best is the DO
    *Accurate Spin-Dependent Electron Liquid Correlation Energies for Local Spin
    Density Calculations: A Critical Analysis*, 
    Can. J. Phys. **58**, *1200* (1980)
-   <http://www.nrcresearchpress.com/doi/abs/10.1139/p80-159>
+   <http://dx.doi.org/10.1139/p80-159>
 

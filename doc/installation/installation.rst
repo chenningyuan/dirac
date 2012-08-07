@@ -28,12 +28,9 @@ If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
-1. Download the latest tarball from http://www.cmake.org/cmake/resources/software.html
+1. Download the latest precompiled tarball from http://www.cmake.org/cmake/resources/software.html
 2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
-
-Now you can enjoy your new CMake instead of the old one::
-
-  $ ./setup [other flags] --cmake=~/cmake-2.8.5-Linux-i386/bin/cmake
+3. Set correct PATH variable
 
 
 Basic installation using the setup script
@@ -242,17 +239,6 @@ We recommend to let $PATH point to the install directory::
 
 This way everything (binary, scripts, basis sets) will be at the right place
 under /install/path and $PATH should contain /install/path.
-
-
-How can I compile DIRAC for large molecules?
---------------------------------------------
-
-Set ENABLE_LARGE_MOLECULES to ON via ccmake::
-
-  $ cd build
-  $ ccmake ..
-
-Then (re)build the binary
 
 
 Compiling in verbose mode

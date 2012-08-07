@@ -1,4 +1,4 @@
-find_package(Sphinx)
+find_package(Sphinx QUIET)
 if(SPHINX_FOUND)
     add_custom_target(
         html
@@ -19,6 +19,20 @@ else()
     add_custom_target(
         latex
         COMMAND echo error: please install python-sphinx and python-matplotlib first
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        )
+endif()
+
+# handle Doxygen, code documentation tool 
+include(FindDoxygen)
+if (DOXYGEN_FOUND)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
+        ${PROJECT_BINARY_DIR}/Doxyfile
+    )
+    add_custom_target(
+        doxygen
+        COMMAND ${DOXYGEN_EXECUTABLE}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 endif()

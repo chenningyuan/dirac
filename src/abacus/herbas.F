@@ -31,9 +31,9 @@ C* This is the procedures that controls the reading from     *
 C* file, and calls all the other subroutines.                *
 C* It returns a bunch of variables. It returns:              *
 C*     IQM - (Highest angular quantum number) + 1            *
-C*     JCO - Variable that gives how many blocks             *
+C*     JCO - Redundant variable that gives how many blocks   *
 C*           the primitives and contraction coefficients are *
-C*           given in (array)                                *
+C*           given in (will be set to one) (array)           *
 C*     NUC - Number of primitives for a given                *
 C*           (quantum number + 1)                            *
 C*     NRC - Number of columns with contraction coefficients *
@@ -48,7 +48,9 @@ C*              contraction coefficients (for a given        *
 C*              (quantum number + 1)).                       *
 C*     CPRIM - Like CPRIMU, but this time the contraction    *
 C*             coefficients are normalized.                  *
-C*     NBLOCK - Number of function blocks                    *
+C*     NBLOCK - total number of blocks; here always same as  *
+C*              IQM, but in GTOINP the user may divide any   *
+C*              IQM value in several blocks.                 *
 C*     KAOVEC, KPRIM, Q, DSM are max (angular quantum number *
 C*             + 1), max number of primitives, nuclear       *
 C*             charge, highest number to be accepted as zero *
@@ -1677,5 +1679,79 @@ C
          write(*, '(e22.10, e18.10)') alpha(i), 1.0d0
       end do
 
+      END
+C/* Deck ECP_LCORE */
+      SUBROUTINE ECP_LCORE(IQCORE,IQM,ILOFF)
+C
+C     Nov. 2003, Johan, Patrick and Hans Joergen.
+C
+C     Purpose: calculate ILOFF = number of core orbitals described by ECP
+C     for l_quantum_number = IQM - 1
+C     when IQCORE electrons are described with the ECP.
+C
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION ILCORE(4)
+C
+      IF (IQCORE .GT. 0 .AND. IQM .LE. 4) THEN
+C        only s, p. d, f (never g, h, ... core orbitals)
+         IF (MOD(IQCORE,2) .NE. 0) THEN
+            WRITE(LUPRI,'(/A,I5)')
+     &      'ECP_LCORE ECP: odd number of core electrons',IQCORE
+            CALL QUIT('ECP_LCORE ECP: odd number of core electrons ')
+         END IF
+         DO I = 1, 4
+            ILCORE(I) = 0
+         END DO
+         IF (IQCORE .EQ. 2) THEN
+C           1s ECP
+            ILCORE(1) = 1
+         ELSE IF (IQCORE .EQ. 10) THEN
+C           1s,2s,2p ECP
+            ILCORE(1) = 2
+            ILCORE(2) = 1
+         ELSE IF (IQCORE .EQ. 18) THEN
+C           1s,2s,2p,3s,3p ECP
+            ILCORE(1) = 3
+            ILCORE(2) = 2
+         ELSE IF (IQCORE .EQ. 28) THEN
+C           1s,2s,2p,3s,3p,3d ECP
+            ILCORE(1) = 3
+            ILCORE(2) = 2
+            ILCORE(3) = 1
+         ELSE IF (IQCORE .EQ. 36) THEN
+C           1s,2s,2p,3s,3p,3d,4s,4p ECP
+            ILCORE(1) = 4
+            ILCORE(2) = 3
+            ILCORE(3) = 1
+         ELSE IF (IQCORE .EQ. 46) THEN
+C           1s,2s,2p,3s,3p,3d,4s,4p,4d ECP
+            ILCORE(1) = 4
+            ILCORE(2) = 3
+            ILCORE(3) = 2
+         ELSE IF (IQCORE .EQ. 60) THEN
+C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f ECP
+            ILCORE(1) = 4
+            ILCORE(2) = 3
+            ILCORE(3) = 2
+            ILCORE(4) = 1
+         ELSE IF (IQCORE .EQ. 78) THEN
+C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f,5s,5p,5d ECP
+            ILCORE(1) = 5
+            ILCORE(2) = 4
+            ILCORE(3) = 3
+            ILCORE(4) = 1
+         ELSE
+            WRITE(LUPRI,'(/A,I5)') 'REAANO FATAL ERROR: '//
+     &         'ECP Huckel not implemented for this core charge:',IQCORE
+            CALL QUIT('REAANO ECP not implemented for this core charge')
+         END IF
+         ILOFF = ILCORE(IQM)
+      ELSE
+         ILOFF = 0
+C        not ECP or g, h, ...
+C        i.e. no core orbitals to exclude
+      END IF
+      RETURN
       END
 C  -- end of herbas.F --

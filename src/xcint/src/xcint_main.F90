@@ -15,10 +15,8 @@ module xcint_main
    use xc_blas3
    use xc_max_block_length
    use xc_geometric
-#ifdef MOD_UNRELEASED
    use overlap_diagnostic
    use xc_london_c1
-#endif
 #ifdef MOD_OPENRSP
    use xc_response
 #endif
@@ -290,20 +288,6 @@ contains
          if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
       end if
 
-#ifndef MOD_UNRELEASED
-      if (do_london_rhs_direct .or. &
-          do_london_rhs_ro     .or. &
-          do_london_ks         .or. &
-          do_london_lr) then
-         print *, 'error: LAO+DFT not available in this version'
-         stop 1
-      end if
-      if (do_overlap_diagnostic) then
-         print *, 'error: overlap diagnostic not available in this version'
-         stop 1
-      end if
-#endif
-
 #ifdef VAR_MPI
       if (parallel_xc) then
 !        broadcast non-allocatables
@@ -457,13 +441,6 @@ contains
 #endif
       end if
 
-#ifndef MOD_UNRELEASED
-      if (fun_is_tau_mgga(xc_fun)) then
-         print *, 'error: meta-GGA not available in this version'
-         stop 1
-      end if
-#endif
-
 !     check whether gga code structure will be used
       use_gga_qr = (fun_is_gga(xc_fun) .or. fun_is_tau_mgga(xc_fun))
       use_gga_qi = (fun_is_gga(xc_fun) .or. fun_is_tau_mgga(xc_fun))
@@ -592,15 +569,12 @@ contains
       fmat = 0.0d0
 #endif
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call overlap_diagnostic_init(parallel_xc, xc_mpi_is_master())
       end if
-#endif
 
       call loop_over_batches()
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
 #ifdef VAR_MPI
          if (parallel_xc) then
@@ -611,7 +585,6 @@ contains
             call o_matrix_to_disc()
          end if
       end if
-#endif
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -994,11 +967,9 @@ contains
                                     xc_energy                 &
                                    )
 
-#ifdef MOD_UNRELEASED
          if (do_overlap_diagnostic) then
             call integrate_o_matrix(block_length, rw(ipoint), ao)
          end if
-#endif
 
          deallocate(ao)
          deallocate(buffer)
@@ -1056,7 +1027,6 @@ contains
 
          w(1) = rw(ipoint)
 
-#ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
             call get_kin_tau(tau,     &
                          0,       &
@@ -1066,7 +1036,6 @@ contains
                          ao)
             tau_integral = tau_integral + w(1)*tau
          end if
-#endif /* ifdef MOD_UNRELEASED */
 
 !       number of electrons
         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
@@ -1136,17 +1105,13 @@ contains
 !           yields two identical terms (one left, one right)
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
-#ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
             u%tn(1) = derv(1, d0000010)
          end if
-#endif
 
         end if !exchange-correlation potential
 
 
-
-#ifdef MOD_UNRELEASED
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
@@ -1218,7 +1183,6 @@ contains
               !                        derv, u,        &
               !                        rx(ipoint), ry(ipoint), rz(ipoint))
         end if
-#endif /* #ifdef MOD_UNRELEASED */
 
 
 !       linear response
@@ -1335,7 +1299,6 @@ contains
              end if
           end if
 
-#ifdef MOD_UNRELEASED
           if (do_geo_1) then
              call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
              call xc_geo_1_lda_c1(property_gradient, &
@@ -1424,8 +1387,6 @@ contains
                 end if
              end do
           end if
-#endif /* ifdef MOD_UNRELEASED */
-
 
 
 !         distribute over fock matrices
@@ -1513,7 +1474,6 @@ contains
                 end if
              end if
 
-#ifdef MOD_UNRELEASED
              utn_above_threshold = .false.
              if (dabs(u%tn(im)) > tiny(0.0d0)) then
                 utn_above_threshold = .true.
@@ -1624,9 +1584,6 @@ contains
                                    ao)
                 end if
              end if
-!end gosia
-
-#endif /* ifdef MOD_UNRELEASED */
 
           end do
 
@@ -1909,7 +1866,6 @@ contains
 !     hermitian contribution (qr = quaternion real)
       if (calculate_qr) then
 
-#ifdef MOD_UNRELEASED
          if (fun_is_tau_mgga(xc_fun)) then
             call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
@@ -1918,7 +1874,6 @@ contains
                          buffer,  &
                          ao)
          end if
-#endif /* ifdef MOD_UNRELEASED */
 
          if (is_gga_qr) then
             if (allow_nonhermitian) then
@@ -1961,7 +1916,6 @@ contains
                                          + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
 
-#ifdef MOD_UNRELEASED
         if (fun_is_tau_mgga(xc_fun)) then
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
@@ -1969,7 +1923,6 @@ contains
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*t_b*derv(1, d0010010)
         end if
-#endif /* ifdef MOD_UNRELEASED */
 
       end if !end of qr contribution
 
@@ -2003,7 +1956,6 @@ contains
                    buffer,                     &
                    ao)
         end if
-#ifdef MOD_UNRELEASED
         if (fun_is_tau_mgga(xc_fun)) then
            call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
@@ -2012,7 +1964,6 @@ contains
                              buffer,  &
                              ao)
         end if
-#endif /* ifdef MOD_UNRELEASED */
 
         do k = k_start, 3
            u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
@@ -2028,7 +1979,6 @@ contains
                                                   +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
-#ifdef MOD_UNRELEASED
            if (fun_is_tau_mgga(xc_fun)) then
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
@@ -2036,7 +1986,6 @@ contains
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
               u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0_pointwise(1:3)*ts_b(k)*derv(1, d0001001)
            end if
-#endif /* ifdef MOD_UNRELEASED */
         end do
 
       end if !end of qi contribution

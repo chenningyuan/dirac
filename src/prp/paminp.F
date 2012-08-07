@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : paminp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpinp */
@@ -38,7 +39,6 @@ C
 C***********************************************************************
 
          use dirac_cfg
-         use input_reader
 #ifdef MOD_OPENRSP
          use dirac_interface
          use openrsp_cfg
@@ -85,7 +85,7 @@ C
 !                    33        34        35        36
      &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.XXXXXX','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.EFFDE2','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -140,6 +140,7 @@ C
       BYLAO        = .FALSE.
       BZLAO        = .FALSE.
       EFFDEN       = .FALSE.
+      EFFDE2       = .FALSE.
 
 
 CMI Activate the  picture change transformations
@@ -230,10 +231,8 @@ C&&&& POLAR - electronic dipole polarizabilities
             GO TO 100
   104    CONTINUE
 C&&&& MAGNET - magnetic susceptibilities
-#ifdef MOD_MAGNETIZ
             DOXLR  = .TRUE.
             MSUSCP = .TRUE.
-#endif
             GO TO 100
   105    CONTINUE
 C&&&& NMR parameters:
@@ -356,10 +355,8 @@ CMI ... at present it is not implemented
             GO TO 100
   127    CONTINUE 
 C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
-#ifdef MOD_MAGNETIZ
             MSUSCDIA = .TRUE.
             DOEXP    = .TRUE.
-#endif
             GO TO 100
   128    CONTINUE 
 C&&&& PV contribution to spin-spin coupling
@@ -418,6 +415,9 @@ C&&&& EFFDEN; calculate effective electronic densities at the nuclei
             EFFDEN = .TRUE. 
             GO TO 100
   139    CONTINUE
+C&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
+            DOEXP  = .TRUE.
+            EFFDE2 = .TRUE. 
          GO TO 100
   140    CONTINUE
 C&&&& XXXXXX
@@ -536,7 +536,7 @@ C     *STEX
 #ifdef MOD_OPENRSP
          dirac_cfg_openrsp = .true.
          call init_dirac_interface()
-         call move_to_next_star(word)
+         call move_to_next_star(word, lucmd)
          if (openrsp_cfg_skip_1el) then
             write(*, *) 'OpenRSP: skipping calculation of 1el integrals'
          else
@@ -894,8 +894,7 @@ C
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
       CHARACTER   PLABEL(3)*8, PNAME*16
-      LOGICAL     CLABEL 
-      LOGICAL     TRS_FLIP
+      LOGICAL     CLABEL, TRS_FLIP
 C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
@@ -1086,9 +1085,9 @@ C&&&&    Read a common factor for each component, COMFACTOR, TABKW(3)
          GO TO 300
 C&&&     Multiply with current value of the speed of light, CMULT
     7    CONTINUE
-           PFAC(1) = PFAC(1)*CVAL          
-           PFAC(2) = PFAC(2)*CVAL          
-           PFAC(3) = PFAC(3)*CVAL 
+           PFAC(1) = PFAC(1)*CVAL
+           PFAC(2) = PFAC(2)*CVAL
+           PFAC(3) = PFAC(3)*CVAL
          GO TO 300
 C&&&     miro: Time-reversal symmetry flip, TRS_FLIP, as newly added operator characteristic
     8    CONTINUE
@@ -2164,7 +2163,7 @@ C
         ANTI      = .FALSE.
         IORDER    = 0
         CALL SETATM(DOATOM,NATOM,-99)
-        CALL EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
+        CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
       ELSE
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
@@ -2785,7 +2784,7 @@ C
       RETURN
       END
 C  /* Deck INIGRD */
-      SUBROUTINE INIGRD
+      SUBROUTINE INIGRD(IPRGRD_inp)
 C***********************************************************************
 C
 C     Initialization for molecular gradient
@@ -2802,14 +2801,13 @@ C
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "dcbprp.h"
 C
 #include "ibtfun.h"
 C
 C     Initialize /CBIGRD/
 C     ===================
 C
-      IPRGRD = IPRPRP
+      IPRGRD = IPRGRD_inp
 C
 C     RELGRD is used in DHFGRD to control integrals
 C
@@ -2868,7 +2866,7 @@ C        hjaaj: repeated input sections give infinite loop ...
          SET = .TRUE.
       END IF
 C
-      CALL INIGRD
+      CALL INIGRD(IPRPRP)
 C
 C
 C     Process input for DCBEXP

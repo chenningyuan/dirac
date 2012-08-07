@@ -1,0 +1,56 @@
+!dirac_copyright_start
+!      Copyright (c) 2011 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
+module adc_cfg
+
+! This module contains all input set by the user. Used for RELADC
+
+
+!
+!  adc control variables
+!
+  implicit none
+
+  save    !  if values of variables are changed they are still there after the next call 
+
+  integer, public                  :: reladc_adclevel   = 3
+  logical, public                  :: reladc_dosips     = .false.
+  logical, public                  :: reladc_dodips     = .false.
+  integer, dimension(1:32), public :: reladc_sipreps    = 0  
+  integer, dimension(1:32), public :: reladc_dipreps    = 0  
+  logical, public                  :: reladc_readqkl    = .false.
+  logical, public                  :: reladc_doconst    = .true.
+  logical, public                  :: reladc_doadcpop   = .false.
+  logical, public                  :: reladc_dofull     = .false.
+  real*8,  public                  :: reladc_vconv      = 1.0E-06
+  real*8,  public                  :: reladc_adcthr     = 0.0
+!
+!  lanczos control variables
+!
+  integer, public                  :: reladc_sipiter    = 500
+  integer, public                  :: reladc_dipiter    = 500
+  integer, dimension(1:32), public :: reladc_sipeigv    = 0
+  integer, dimension(1:32), public :: reladc_dipeigv    = 0
+  real*8,  public                  :: reladc_sipprnt    = 50.0
+  real*8,  public                  :: reladc_dipprnt    = 50.0
+  logical, public                  :: reladc_doincore   = .false.
+
+end module
