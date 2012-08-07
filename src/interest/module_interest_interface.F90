@@ -439,7 +439,7 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> note: on input,  G and P must be in the cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg ) 
+  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg, hfxfac ) 
 
     use module_interest_eri
 
@@ -447,6 +447,7 @@ CONTAINS
     !> note:  we assume nz=4 !!!
     !> fixme: the case when nz!=4
     integer, intent(in) :: intflg
+    real(8), intent(in) :: hfxfac
     !> 1-electron density matrix, Dirac format
     real(8), intent(in) :: Pmat(2*nrow,2*nrow,4)  
 
@@ -457,7 +458,6 @@ CONTAINS
     !> local
     logical :: doK
     real(8) :: fijkl
-    real(8) :: scaleK 
     integer :: li, ni, oi   
     integer :: lj, nj, oj   
     integer :: lk, nk, ok   
@@ -471,17 +471,23 @@ CONTAINS
     real(8) :: ej, cj, xj, yj, zj 
     real(8) :: ek, ck, xk, yk, zk 
     real(8) :: el, cl, xl, yl, zl 
- 
-    !> fixme: later through the input ...
-    character(len=4), parameter :: eri_class = 'ssss'
+
+    character(len=4) :: eri_class = 'ssss'
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
 
 
+    !> init for eri classes
+    select case( intflg )
+      case( 1 );    eri_class = 'llll'
+      case( 3 );    eri_class = 'ssll'
+      case( 7 );    eri_class = 'ssss'
+      case default; stop "The desired class of ERI integrals is not implemented in InteRest :-( => stop"
+    end select
+
     !> init for DFT
-    scaleK = 1.0d0
-    doK    = ( scaleK /= 0.0d0 )
+    doK = ( hfxfac /= 0.0d0 )
 
     !> data forward alignment 
     fll = 0.5d0
@@ -565,7 +571,7 @@ CONTAINS
                                            ll,el,xl,yl,zl,cl )
                      call process_dG_4comp_llll_1x(ni,nj,nk,nl,              &
                                                    oi,oj,ok,ol,              &
-                                                   nrow,doK,scaleK,gout,dP,dG)
+                                                   nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssll' )
                      call interest_eri_rkb('ssll',fijkl,gout,                &
                                            li,ei,xi,yi,zi,ci,                &
@@ -574,7 +580,7 @@ CONTAINS
                                            ll,el,xl,yl,zl,cl )
                      call process_dG_4comp_ssll_1x(ni,nj,nk,nl,              &
                                                    oi,oj,ok,ol,              &
-                                                   nrow,doK,scaleK,gout,dP,dG)
+                                                   nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssss' ) 
                      call interest_eri_rkb('ssss',fijkl,gout,                &
                                            li,ei,xi,yi,zi,ci,                &
@@ -583,7 +589,7 @@ CONTAINS
                                            ll,el,xl,yl,zl,cl )
                      call process_dG_4comp_ssss_1x(ni,nj,nk,nl,              &
                                                    oi,oj,ok,ol,              &
-                                                   nrow,doK,scaleK,gout,dP,dG)
+                                                   nrow,doK,hfxfac,gout,dP,dG)
                  CASE default
                       stop 'Error: this ERI class is not implemented yet => stop'
                END SELECT

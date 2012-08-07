@@ -177,7 +177,7 @@ C
          HFXMU = D0
          IF(MDIRAC)THEN
 #ifdef MOD_INTEREST
-           call process_two_electron_integrals( fmat, dmat, intflg ) 
+           call process_two_electron_integrals(fmat,dmat,intflg,hfxfac) 
 #endif
          ELSE
            CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
