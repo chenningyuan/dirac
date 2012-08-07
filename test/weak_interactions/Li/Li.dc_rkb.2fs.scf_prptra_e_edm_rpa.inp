@@ -1,0 +1,98 @@
+**DIRAC
+.TITLE
+  Li atom
+.WAVE F ! Activate integral and wave functions modules
+#.PROPERTIES ! Activate property module (dipole moment; polarizability...)
+.ANALYZE
+.4INDEX
+**GENERAL
+.DIRECT
+1 1 1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.PRINT
+2
+!.ONESYS
+.INTFLG
+1 1 0
+#.URKBAL
+**WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
+.SCF
+.RELCCSD
+*SCF
+# 1s(2) 
+.CLOSED SHELL
+2 0 
+# 2s(1)
+.OPEN SHELL
+1
+1/2,0 
+.INTFLG ! Specify what 2-el.integrals to include
+1 1 0
+.EVCCNV ! Energy convergence...
+1.0D-9  1.0D-6
+#################################################
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all   
+all   
+**MOLTRA
+.SCHEME
+6
+# take all occupied shells into consideration
+.ACTIVE
+all 
+all 
+.PRPTRA
+*PRPTRA
+# we need this print level to get all operator matrix elements
+.PRINT
+3  
+# eEDM operators
+.OPERATOR
+ 'e_EDM x' 
+ XSIGMA
+ 'NEF 001'
+ COMFACTOR
+ 2.00D0
+.OPERATOR
+ 'e_EDM y' 
+ YSIGMA
+ 'NEF 002'
+ COMFACTOR
+ 2.00D0
+.OPERATOR
+ 'e_EDM z' 
+ ZSIGMA
+ 'NEF 003'
+ COMFACTOR
+ 2.00D0
+# dipole operators
+.OPERATOR
+ XDIPLEN
+ COMFACTOR
+ 1.00D0
+.OPERATOR
+ YDIPLEN
+ COMFACTOR
+ 1.00D0
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ 1.00D0 
+*END OF
+
+ &RELCCSD TIMING=T, DOSORT=T, DOENER=F, DOFOPR=F, DOSOPR=T, NELEC=2,1,0,0  &END
+ &CCSOPR MAXIT=50, NTOL=10, NAOPER=3, NBOPER=3,
+   NAMEA='e_EDM x','e_EDM y','e_EDM z',
+   NAMEB='XDIPLEN','YDIPLEN','ZDIPLEN',
+ &END
+
