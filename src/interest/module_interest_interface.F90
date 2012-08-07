@@ -471,7 +471,7 @@ CONTAINS
     real(8) :: el, cl, xl, yl, zl 
  
     !> fixme: later through the input ...
-    character(len=4), parameter :: eri_class = 'ssll'
+    character(len=4), parameter :: eri_class = 'ssss'
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
