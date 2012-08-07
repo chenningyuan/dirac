@@ -774,6 +774,7 @@ CMI   ... control output ...
 !   BSSMAT file (lu=LUBSS) according to the parameter I2COFK
        CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM)
       else if(x2c.and..not.x2c_4c_fock_mtx_defh1)then
+        print *, 'blubb blubb x2c read'
         call read_1fock_x2c(fock,n2bbasx,nz,i2cofk)
       else
 C
@@ -808,6 +809,12 @@ C
 C     Output section
 C     ==============
 C
+#define blubb_blubb_so
+#ifdef blubb_blubb_so
+      iprham_save = iprham
+      iprham      = 4
+      print *, 'bss, x2c, twocomp',bss,x2c,twocomp
+#endif
       IF(IPRHAM.GE.4) THEN
         IF (BSS) THEN
          IF (TWOCOMPBSS) THEN
@@ -850,6 +857,10 @@ C
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    10   CONTINUE
       ENDIF
+#ifdef blubb_blubb_so
+      iprham = iprham_save
+#undef blubb_blubb_so
+#endif
 C
       CALL QEXIT('ONEFCK')
       RETURN
@@ -4432,8 +4443,8 @@ C
 C*****************************************************************************
       use x2c_fio, only:
      &    x2c_read
-!     use x2c_utils, only:
-!    &    print_x2cmat
+      use x2c_utils, only:
+     &    print_x2cmat
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4498,9 +4509,13 @@ CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
 !         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
 !    &         'bss - h1barenuc',LUPRI)
         else if(x2c)then
+          print *, 'blubb enter' 
+          call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         'x2c - enter fmat',LUPRI)
           call x2c_read(flabel,fmat,n2bbasx * nz,lux2c)
-!         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-!    &         'x2c - h1barenuc',LUPRI)
+          print *, 'blubb leaving' 
+          call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         'x2c - h1barenuc',LUPRI)
           close(lux2c,status='keep')
         end if
       ELSE
