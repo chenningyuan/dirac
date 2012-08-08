@@ -231,23 +231,21 @@ CONTAINS
   SUBROUTINE process_overlap_integrals( S ) 
 
     !> input
-       real(8) :: S(2*nrow,2*ncol) 
-    !> end
+    real(8) :: S(2*nrow,2*ncol) 
 
     !> local
-       integer              :: i, j 
-       real(8), allocatable :: Smat(:,:,:)
-    !> end
+    integer              :: i, j 
+    real(8), allocatable :: Smat(:,:,:)
 
     !> external InteRest integral routines
-       external :: interest_overlap 
-    !> end
+    external :: interest_overlap 
 
 
     allocate( Smat( nrow,ncol,2 ) ); Smat = 0.0d0
     call two_center_integrals( interest_overlap, Smat, nrow )
     call symmetrize_matrix(                                 A = Smat(1,1,1), ida = nrow )  !Re(A)
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
+    S = 0.0d0
     do j=1,ncol
       do i=1,nrow
         S(i     ,j     ) = Smat(i,j,1) 
@@ -262,17 +260,14 @@ CONTAINS
   SUBROUTINE process_kinetic_energy_integrals( T ) 
 
     !> input
-       real(8) :: T(2*nrow,2*ncol) 
-    !> end
+    real(8) :: T(2*nrow,2*ncol,4) 
 
     !> local
-       integer              :: i, j 
-       real(8), allocatable :: Tmat(:,:,:)
-    !> end
+    integer              :: i, j 
+    real(8), allocatable :: Tmat(:,:,:)
 
     !> external InteRest integral routines
-       external :: interest_overlap 
-    !> end
+    external :: interest_overlap 
 
 
     allocate( Tmat( nrow,ncol,2 ) ); Tmat = 0.0d0
@@ -280,9 +275,9 @@ CONTAINS
     call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
     do j=1,ncol
       do i=1,nrow
-        T(i+nrow,j     ) = T(i+nrow,j     ) + Tmat(i,j,2)
-        T(i     ,j+ncol) = T(i     ,j+ncol) + Tmat(i,j,2)
-        T(i+nrow,j+ncol) = T(i+nrow,j+ncol) - Tmat(i,j,2)
+        T(i+nrow,j     ,1) = T(i+nrow,j     ,1) + Tmat(i,j,2)
+        T(i     ,j+ncol,1) = T(i     ,j+ncol,1) + Tmat(i,j,2)
+        T(i+nrow,j+ncol,1) = T(i+nrow,j+ncol,1) - Tmat(i,j,2)
       enddo
     enddo
     deallocate( Tmat )
@@ -294,17 +289,14 @@ CONTAINS
  
     !> input
     !> note: we assume nz=4 !!!
-       real(8) :: V(2*nrow,2*ncol,4)
-    !> end
+    real(8) :: V(2*nrow,2*ncol,4)
 
     !> local
-       integer              :: i, j 
-       real(8), allocatable :: Vmat(:,:,:)
-    !> end
+    integer              :: i, j 
+    real(8), allocatable :: Vmat(:,:,:)
 
     !> external InteRest integral routines
-       external :: interest_nuclear_attraction_point_nucleus 
-    !> end
+    external :: interest_nuclear_attraction_point_nucleus 
 
 
     allocate( Vmat( nrow,ncol,5 ) ); Vmat = 0.0d0
@@ -353,20 +345,17 @@ CONTAINS
     !> end
 
     !> input
-       integer, intent(in)  :: ida           !todo: better definition
-       logical              :: rkb = .true.  !todo: better definition
-    !> end
+    integer, intent(in)  :: ida           !todo: better definition
+    logical              :: rkb = .true.  !todo: better definition
 
     !> output
-       real(8) :: final_integrals(*)
-    !> end
+    real(8) :: final_integrals(*)
 
     !> local
-       integer :: nrkb
-       integer :: i, ni
-       integer :: j, nj
-       real(8) :: gout(5*441)  !todo: better definition 
-    !> end
+    integer :: nrkb
+    integer :: i, ni
+    integer :: j, nj
+    real(8) :: gout(5*441)  !todo: better definition 
 
 
     do j=1,nr_shells
@@ -409,23 +398,20 @@ CONTAINS
   SUBROUTINE store_batch( A, ida, jda, nrkb, B, idb, jdb, ioffset, joffset )
 
     !> input 
-       integer :: nrkb
-       integer :: ioffset 
-       integer :: joffset 
-       integer :: ida, jda 
-       integer :: idb, jdb
-       real(8) :: A(5,ida,jda)
-    !> end
+    integer :: nrkb
+    integer :: ioffset 
+    integer :: joffset 
+    integer :: ida, jda 
+    integer :: idb, jdb
+    real(8) :: A(5,ida,jda)
 
     !> output
-       real(8) :: B(idb,jdb,nrkb)
-    !> end
+    real(8) :: B(idb,jdb,nrkb)
 
     !> local
-       integer :: i
-       integer :: j
-       integer :: k
-    !> end
+    integer :: i
+    integer :: j
+    integer :: k
 
 
     do k=1,nrkb
