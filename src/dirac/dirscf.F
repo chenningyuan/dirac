@@ -418,7 +418,7 @@ C
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRINT)
       print *, 'blubb restfck, barnuc,',restfck,barnuc
 
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'predhf: 1-electron Fock matrix for you',-1)
@@ -651,7 +651,7 @@ C
       ELSE IF (BARNUC) THEN
 C       ... read 1-electron Fock matrix into FOCK ...
         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'predhf: barnuc 1-electron Fock matrix for you',-1)
@@ -754,7 +754,7 @@ C
       ELSE
         DOLEV = DOLEVEL
       ENDIF
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'predhf: total Fock matrix for you',-1)
@@ -1440,7 +1440,7 @@ C
             call dzero(fock,N2BBASXQ*nopen)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'scfcyc: twofock 2-electron Fock matrix for you',-1)
@@ -1453,7 +1453,7 @@ C
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
             call dzero(dmat,N2BBASXQ*nopen)
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'scfcyc: old 2-electron Fock matrix for you',-1)
@@ -1489,7 +1489,7 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'scfcyc: final 2-electron Fock matrix for you',-1)
@@ -1549,7 +1549,7 @@ C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'scfcyc: 1-electron Fock matrix for you',-1)
@@ -1591,7 +1591,7 @@ C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
          CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'scfcyc: total Fock matrix for you',-1)
@@ -4131,7 +4131,8 @@ C
           IBEIG(IORB(I)+J) = 0
         ENDDO
 
-
+         iprham_svae = iprham
+         iprham = 5
 C ... control print out of the matrix to be diagonalized
          IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -4362,6 +4363,7 @@ C
 C       Check if any positronic eigenvalues are below -2mc^2
 C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
+        iprham = iprham_svae
 C
  30   CONTINUE
 C

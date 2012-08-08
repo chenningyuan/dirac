@@ -3631,6 +3631,8 @@ C
 C       Scale SS-block
 C       ==============
 C       
+        ssmetr_save = ssmetr
+!       ssmetr      = 0.0d0
         IF(SSMETR.NE.D1) THEN
           DO I = 1,NFSYM
              JJ = I2BASX(I,I)+(NFBAS(I,1)*NTBAS(0))+NFBAS(I,1)+1
@@ -3640,6 +3642,7 @@ C
              ENDDO
           ENDDO
         ENDIF
+        ssmetr= ssmetr_save
       ENDIF
 C
       CALL QEXIT('GTOVLX')
