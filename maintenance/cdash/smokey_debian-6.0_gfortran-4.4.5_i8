@@ -12,8 +12,8 @@ mkdir build
 cd build
 cmake ..
 make release
-tar xvzf DIRAC-11.0.2-Source.tar.gz
-cd DIRAC-11.0.2-Source
+tar xvzf DIRAC-12.0.0-Source.tar.gz
+cd DIRAC-12.0.0-Source
 
 ./setup --fc=gfortran --cc=gcc --int64 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8"
 cd build

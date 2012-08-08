@@ -40,8 +40,6 @@ be deleted at the end of a run.
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
                      metavar='[NAME=]FILE]')
-    group.add_option('--allow-empty-infiles', action='store_true', dest="allow_empty_infiles",default=False,
-		     help="Do not stop if infiles do not exist.")
     group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
 		     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
     group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
@@ -156,8 +154,6 @@ be deleted at the end of a run.
     W.stdin = None
     if not options.noarchive:
         W.archive = jobname+'.tgz'
-    if options.allow_empty_infiles:
-        W.allow_empty_infiles = True
 
     # Append executable itself to the commands to be run
     if options.executable is None:
@@ -216,7 +212,6 @@ class Wrapper:
         self.archive = None
         self.archpatterns = []
         self.verbose = False
-        self.allow_empty_infiles = False
         self.workdir = None
         self.env = os.environ.copy()
         self.remote_hosts = set() # Duplicate tmpdir and stage in on these hosts
@@ -321,7 +316,7 @@ class Wrapper:
                 else:
                     print >> sys.stderr, "Wrapper: Cannot determine type of archive file",a,"quitting."
                     sys.exit(1)
-                    t.extractall(path=self.tmppath)
+                t.extractall(path=self.tmppath)
             except:
                 print >> sys.stderr, "Wrapper: Error extracting files from '"+a+"', quitting."
                 raise
@@ -342,9 +337,7 @@ class Wrapper:
                     print >> sys.stderr, "Wrapper: File copy failed, quitting."
                     raise
             else:
-                if not self.allow_empty_infiles:
-                    print >> sys.stderr, "Wrapper: File copy of %s failed, source file nonexistent, quitting." % src
-                    raise
+                print >> sys.stderr, "Wrapper: File copy of %s failed, source file nonexistent." % src
         for h in self.remote_hosts:
             try:
                 self.run_cmd([self.rcp]+glob.glob(os.path.join(self.tmppath,'*'))+[h+':'+self.tmppath])

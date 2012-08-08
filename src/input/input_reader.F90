@@ -9,6 +9,7 @@ module input_reader
    public lowercase
    public uppercase
    public word_contains
+   public word_count
    public reset_available_kw_list
    public check_whether_kw_found
    public kw_matches
@@ -162,7 +163,9 @@ contains
       character(kw_length), intent(in)  :: kw_input
       character(*),         intent(out) :: c
 
-      read(file_unit, *, err=1) c
+      ! radovan: please do not change to star
+      !          otherwise "3,5" is read as "3"
+      read(file_unit, '(a)', err=1) c
       return
 
 1     call kw_read_error(kw_input)

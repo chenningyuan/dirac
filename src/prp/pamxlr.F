@@ -136,6 +136,8 @@ C***********************************************************************
       use london_direct_hb
       use london_reorth_hb
       use memory_allocator
+      use orbital_rotation_indices
+
 
 #include "implicit.h"
 #include "priunit.h"
@@ -279,7 +281,9 @@ C
               NOSPIN = .TRUE.
             ENDIF
             CALL PAMGRD(INDPRB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
-     &                  JOPSY,WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),
+     &                  JOPSY,WORK(KZCONF),
+     &                  get_orbital_rotation_indices_pp(),
+     &                  get_orbital_rotation_indices_pn(),
      &                  NZCONF,NZXOPE,NZXOPP,WORK,KFREE,LFREE,IPRXLR)
             IF(NOSPIB) NOSPIN = LBUF
 C
@@ -304,7 +308,9 @@ C           ====================================
 C
             IF(THRCOM.NE.D0) THEN
               CALL REDPAR(IREDJOB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
-     &                    WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),
+     &                    WORK(KZCONF),
+     &                    get_orbital_rotation_indices_pp(),
+     &                    get_orbital_rotation_indices_pn(),
      &                    NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
      &                    NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
      &                    WORK,KFREE,LFREE,IPRXLR)
@@ -1265,6 +1271,8 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1359,7 +1367,8 @@ C...secondary electron orbitals
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBEVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
-     &              WORK(KCMO),WORK(KBEIG),IORBCL,WORK(KZXOPE),
+     &              WORK(KCMO),WORK(KBEIG),IORBCL,
+     &              get_orbital_rotation_indices_pp(),
      &              WORK(KIVEC),NI,NV,
      &              WORK(KINDX),WORK(KII),WORK(KIV),WORK(KRI),WORK(KRV),
      &              WORK,KFREE,LFREE)
@@ -1408,7 +1417,8 @@ C...secondary positron orbitals
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBPVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
-     &              WORK(KCMO),WORK(KBEIG),IORBCL,WORK(KZXOPP),
+     &              WORK(KCMO),WORK(KBEIG),IORBCL,
+     &              get_orbital_rotation_indices_pn(),
      &              WORK(KIVEC),NI,NV,
      &              WORK(KINDX),WORK(KII),WORK(KIV),WORK(KRI),WORK(KRV),
      &              WORK,KFREE,LFREE)
@@ -1870,10 +1880,10 @@ C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
 
-#ifdef MOD_UNRELEASED
       use overlap_diagnostic
-#endif
       use dft_cfg
+      use orbital_rotation_indices
+
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1893,11 +1903,9 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
-#ifdef MOD_UNRELEASED
       if (dft_cfg_overlap_diagnostic) then
          call o_matrix_from_disc()
       end if
-#endif
 
 C
 C     Check if file of solution vectors is present
@@ -1937,13 +1945,15 @@ C           Analyze NVEC solution vectors from last parameter class
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 20
               IC = 1
-              CALL ANAXR1(NBDIM,NVEC,IC,WORK(KZXOPE),WORK(KLRO),
+              CALL ANAXR1(NBDIM,NVEC,IC,
+     &                    get_orbital_rotation_indices_pp(),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    NCLS,WORK,KFREE,LFREE,IPRINT)
             ELSEIF(PBUF.EQ.'P') THEN
               IF(SKIPEP) GOTO 20
               IC = 2
-              CALL ANAXR1(NBDIM,NVEC,IC,WORK(KZXOPP),WORK(KLRO),
+              CALL ANAXR1(NBDIM,NVEC,IC,
+     &                    get_orbital_rotation_indices_pn(),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    NCLS,WORK,KFREE,LFREE,IPRINT)
             ENDIF
@@ -1966,13 +1976,15 @@ C           Analyze NVEC solution vectors from previous parameter class
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 30
               IC = 1
-              CALL ANAXR1(NBDIM,NVEC,IC,WORK(KZXOPE),WORK(KLRO),
+              CALL ANAXR1(NBDIM,NVEC,IC,
+     &                    get_orbital_rotation_indices_pp(),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    NCLS,WORK,KFREE,LFREE,IPRINT)
             ELSEIF(PBUF.EQ.'P') THEN
               IF(SKIPEP) GOTO 30
               IC = 2
-              CALL ANAXR1(NBDIM,NVEC,IC,WORK(KZXOPP),WORK(KLRO),
+              CALL ANAXR1(NBDIM,NVEC,IC,
+     &                    get_orbital_rotation_indices_pn(),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    NCLS,WORK,KFREE,LFREE,IPRINT)
             ENDIF
@@ -2003,10 +2015,12 @@ C         Generate orbital rotation operator
             GASWF = .FALSE.
             CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,WORK(KNOROT),
      &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,IPRINT)
+     &            IPRINT)
 C           No CALL MEMREL here for KNOROT, because
 C           SETXOP defines WORK(KZXOPE) and WORK(KZXOPP) and they must
 C           be preserved!!!
+!           radovan: that's not true anymore, the indices are sitting on
+!                    a module and work array can be reused
             JFRP = IFRP
           ENDIF
 C
@@ -2107,9 +2121,7 @@ C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
 
-#ifdef MOD_UNRELEASED
       use overlap_diagnostic
-#endif
       use dft_cfg
 
 #include "implicit.h"
@@ -2292,7 +2304,6 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
-#ifdef MOD_UNRELEASED
         if (dft_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
@@ -2315,7 +2326,6 @@ C       Give major orbital rotations in excitations
            write(lupri, '(a, f8.5)') '     lambda = ', 
      &        lambda_numerator/lambda_denominator
         end if
-#endif
       ENDIF
  20   CONTINUE
       ENDDO

@@ -1058,11 +1058,11 @@ C     be on unit LUONEL. Parameter .TRUE. in call indicates that
 C     LUONEL must be written.
 C
 #ifdef PRG_DIRAC
-      CALL READIN(WORK,LWORK,.FALSE.)
+      CALL READIN(.FALSE.)
 #else
       OPEN (LUONEL,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &      FILE='AOONEINT')
-      CALL READIN(WORK,LWORK,.TRUE.)
+      CALL READIN(.TRUE.)
       IF (TSTINP) CLOSE (LUONEL,STATUS='DELETE')
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS
 #endif
