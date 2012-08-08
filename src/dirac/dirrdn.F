@@ -24,7 +24,7 @@ C FILE    : dirac/dirrdn.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paminp */
-      SUBROUTINE PAMINP(WORK,LWORK)
+      SUBROUTINE PAMINP()
 C***********************************************************************
 C
 C     Driver for input module of DIRAC
@@ -39,6 +39,7 @@ C
 C***********************************************************************
 
       use dirac_cfg
+      use memory_allocator
       use num_grid_cfg
       use interface_functional_read
       use x2cmod_cfg
@@ -54,7 +55,9 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dgroup.h"
 #include "cbirea.h"
-      DIMENSION WORK(*)
+
+      integer, parameter   :: lwork = 100000
+      real(8), allocatable :: WORK(:)
       character(100)     :: line 
       integer, parameter :: file_unit = 137
       logical            :: file_exists, file_exists2
@@ -63,13 +66,11 @@ C***********************************************************************
 
 C
       CALL QENTER('PAMINP')
+      call alloc(WORK,LWORK, id="PAMINP WORK array")
 C
 C     Initializations
 C
       CALL PAMINI()
-
-
-
 
 !     print contents of input file to output
       inquire(file = 'DIRAC.INP', exist = file_exists)
@@ -134,7 +135,7 @@ C
         CALL QUIT('Error in opening DIRAC.INP!')
       ENDIF
       CALL KEYWORD_SCAN (.TRUE.,.TRUE.,.TRUE.,.TRUE.,
-     &                   .FALSE.,NUMBER_OF_KEYWORDS,WORK)
+     &                   .FALSE.,NUMBER_OF_KEYWORDS)
       CLOSE(LUCMD)
 #endif
 C
@@ -285,6 +286,7 @@ C
 C
       CALL TITLER('End of input processing','*',124)
 C
+      call dealloc(WORK)
       CALL QEXIT('PAMINP')
       RETURN
       END
@@ -679,7 +681,7 @@ C
       DATA TABDIR /'*END OF','*OPTIMI','*MINIMI','xXXXXXX'/
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
-     &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
+     &             '.WAVE F','.ANALYZ','.PROPER','xxxxxx ',
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
      &             '.XMLOUT','.xxxxxx'/
 C
@@ -753,9 +755,7 @@ C&&&& PROPERTIES:  Call property module
             NJOBS = NJOBS + 1
             GO TO 100
   108    CONTINUE
-C&&& HEINZ: Solve one-electronsystems using free-particle
-C           projection operators
-            DOHEINZ = .TRUE.
+C&&& 
             GO TO 100
   109    CONTINUE
 C&&&& deactivate 4-INDEX transformation (on by default for CC and CI)
@@ -816,8 +816,6 @@ C
       IF(DOPRP)   WRITE(LUPRI,'(3X,A)') '* Properties'
       IF(DOTRA) WRITE(LUPRI,'(3X,A)') '* Transformation to Molecu'//
      &    'lar Spinor basis'
-      IF(DOHEINZ) WRITE(LUPRI,'(3X,A)') '* One-electron systems with'//
-     &    ' free particle projection and point nucleus'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only '
       IF(OPTIMI)  WRITE(LUPRI,'(3X,A/3X,A)') '* Geometry optimi'//
      &    'zation','  IMPORTANT'//
@@ -2781,7 +2779,7 @@ C
         CALL MP2INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     4 CONTINUE
-        CALL LUCITA_INP(WORD,.FALSE.,WORK,LWORK)
+        CALL LUCITA_INP(WORD,.FALSE.)
         GO TO 200
     5 CONTINUE
         CALL MVOINP(WORD,.FALSE.,WORK,LWORK)
@@ -2881,7 +2879,7 @@ C
       CALL MP2NOINP(WORD,.TRUE.,WORK,LWORK)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
-      CALL LUCITA_INP(WORD,.TRUE.,WORK,LWORK)
+      CALL LUCITA_INP(WORD,.TRUE.)
 !
 !     stefan: commented out this call. at present arducca is using the
 !     same common blocks for setting input data as lucita; this is
@@ -2975,7 +2973,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCITA_INP(WORD,RESET,WORK,LWORK)
+      SUBROUTINE LUCITA_INP(WORD,RESET)
 C***********************************************************************
 C
 C       Input section for LUCITA module
@@ -2993,8 +2991,6 @@ C
 C
       LOGICAL   SET,RESET,NEWDEF
       CHARACTER WORD*7,WORD1*7,PROMPT*1,TABLE(NTABLE)*7
-C
-      DIMENSION WORK(LWORK)
 C
 C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
@@ -4398,7 +4394,6 @@ C
       DOPSI    = .FALSE.
       DOANA    = .FALSE.
       DOPRP    = .FALSE.
-      DOHEINZ  = .FALSE.
       DOHRM    = .FALSE.
       DOJACO   = .FALSE.
       DOPUT    = .FALSE.
@@ -6554,7 +6549,7 @@ C***********************************************************************
 C*****  A N A L Y S I S    M O D U L E  ********************************
 C***********************************************************************
 C
-         IF(DOANA) CALL PAMANA(WORK,LWORK)
+         IF(DOANA) CALL PAMANA()
 C
       ENDIF
 C
@@ -7867,11 +7862,12 @@ C............variable telling that this is a 2-component relativistic calculatio
       ENDIF
 C
       END
+#ifdef DO_KEYWORD_SCAN
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck keyword_scan */
       SUBROUTINE KEYWORD_SCAN (DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST,
      &                         FILL_LIST,
-     &                         NUMBER_OF_KEYWORDS,KEYWORD_LIST)
+     &                         NUMBER_OF_KEYWORDS)
 C***********************************************************************
 C
 C     Search for keywords in the DIRAC input file. These are given
@@ -7892,7 +7888,7 @@ C***********************************************************************
       LOGICAL DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST
       LOGICAL FILL_LIST
       CHARACTER*80 LINE
-      CHARACTER*7 KEYWORD_LIST(*)
+      CHARACTER*7 KEYWORD_LIST(100)
       INTEGER NUMBER_OF_KEYWORDS, LEN_LINE
 C
 C     Scan menu file
@@ -7936,6 +7932,7 @@ C
 C
       RETURN
       END
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck find_keyword */
       LOGICAL FUNCTION FIND_KEYWORD (KEYWORD)

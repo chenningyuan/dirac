@@ -179,13 +179,10 @@
                      mbytesMax   = mbytesMax/b2mbfac
 !                    write (*,*) 'debug, maximum :',mbytesMax
 
-                     write (InfoMessage,'(a,f12.0,a,f12.0,a,f12.0,a)')  &
-     &                  'Request (',mbytesRequested,' Mb) +'//          &
-     &                  ' memory in use (',mbytesInUse,' Mb)'//         &
-     &                  '  >  user-defined limit (',mbytesMax,' Mb)'
-#ifdef PRG_DIRAC
-                     write (*,*) 'Make -aw',((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)
-#endif
+                     write (InfoMessage,'(a,i7,a,i7,a,i7,a)')  &
+     &                  'Requested (',nint(mbytesRequested),' Mb) +'// &
+     &                  ' In use (',nint(mbytesInUse),' Mb)'//         &
+     &                  ' > Limit (',nint(mbytesMax),' Mb)'
 
                      ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
                      isFatal = .True.
@@ -204,7 +201,12 @@
                      if (isVerbose) &
      &               write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
                   else
+                     write (*,*) ''
+                     write (*,*) ErrorMessage
                      write (*,*) InfoMessage
+#ifdef PRG_DIRAC
+                     write (ErrorMessage,'(a,i8)') 'Try setting --aw to',nint((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)+1
+#endif
                      call quit(ErrorMessage)
                   endif
                else
@@ -222,7 +224,7 @@
                character(len=*) :: errormessage
  
                write (*,*) errormessage
-               call exit()
+               stop 1001 
 
             end subroutine quit
 

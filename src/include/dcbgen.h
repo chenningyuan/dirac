@@ -8,14 +8,14 @@
 !  INTGEN - Give top level integral flag
 !  DOLVC  - Treat SS 2-e interaction by point charge model
 !  DOTSC  - Treat SS 2-e interaction by TS point charge model
-!  DIRSET - Conventional OR direct calculation of 2-e integrals 
+!  DIRSET - Conventional OR direct calculation of 2-e integrals
 !           has been specified manually (used for SMLV1C)
-!  BNCRON - Improved screening of nucleus for bare nucleus starting 
+!  BNCRON - Improved screening of nucleus for bare nucleus starting
 !           guess
 !
 !      TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
 !  TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
-!  TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode 
+!  TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode
 !  X2Cmod_x2c = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
 !  (now stored in the module x2cmod_cfg)
 !
@@ -35,7 +35,7 @@
       COMMON /CBCPAM/ TITLE
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
-     &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO,                     & 
+     &        DOANA, DOPRP,          DOHRM, DOJACO,                     &
      &        DOPUT,DORKBIMP,                                           &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
@@ -48,7 +48,7 @@
 
       COMMON /DCBGEN_L_PAM/                                             &
      &                FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
-     &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
+     &                NOTRA, DOPRP, DOANA,    DOHRM, DOJACO,            &
      &                DOFCK3,                 DORKBIMP,                 & 
      &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
