@@ -406,6 +406,7 @@
       if (kw_matches(word, '.OCCUPA')) then
          visual_cfg_use_orbital_string = .true.
          allocate(visual_cfg_occupation(mxprim, 2))
+         visual_cfg_occupation = 0.0d0
          ! read nr of lines
          call kw_read(word, nr_lines)
          print *, 'reading .OCCUPATION, nr lines:', nr_lines

@@ -1220,7 +1220,7 @@ C
 
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRCI_CALC(WFTYP,WFCONV,WORK,LWORK)
+      SUBROUTINE KRCI_CALC(WFTYP,WFCONV)
 C***********************************************************************
 C
 C     Driver routine to KRCI_CALC_1
@@ -1234,6 +1234,8 @@ C
 C     Last revision :
 C
 C***********************************************************************
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1241,7 +1243,6 @@ C***********************************************************************
 C
       CHARACTER WFTYP*(*), KRCLCTYP*8
       LOGICAL   WFCONV
-      DIMENSION WORK(LWORK)
 C
 #include "maxorb.h"
 #include "dcbidx.h"
@@ -1259,9 +1260,14 @@ C
       LOGICAL EX, FILEOPEN
       INTEGER RENAME
 C
+      real(8), allocatable :: WORK(:)
+
+      CALL QENTER('KRCI_CALC')
+
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
 C
-      CALL QENTER('KRCI_CALC')
+      call alloc(WORK,LWORK,id='WORK in KRCI_CALC')
 C
 C
 C     Determine the wave function type
@@ -1424,6 +1430,7 @@ C     *** Memory deallocation ***************************
 C     ***************************************************
 C
       CALL MEMREL('KRCI_CALC',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(WORK)
 C
       CALL QEXIT('KRCI_CALC')
       RETURN
