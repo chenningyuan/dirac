@@ -5,7 +5,7 @@
 ! Module:       module_interest_interface.f90 
 !
 ! Description:  - interfacing basic data between Dirac & InteRest program 
-!               - providing two- and four-center integrals in RKB/RMB balanced basis
+!               - providing two- and four-center cartesian integrals over RKB/RMB balanced basis
 !
 ! Contains:     
 !
@@ -166,7 +166,7 @@ CONTAINS
          do j=1,nrco(i+1)
            i=i+1
            gto(i) = type_gto( ij,                      &
-                              0,                       &
+                              ij,                      &
                               nhkt(i),                 &
                               ncent(i),                & 
                               (2*nhkt(i)-1),           &
@@ -182,17 +182,17 @@ CONTAINS
     !> reorder basis functions to the angular momentum 
     !> ascending order to increase the integral performance
     !> set the AO-vector offsets and shell-degeneracy
-       do i=1,size(gto)-1
-         do j=(i+1),size(gto)
-           if( gto(j)%lvalue >= gto(i)%lvalue )cycle
-           tmpgto = gto(i)
-           gto(i) = gto(j)
-           gto(j) = tmpgto
-         enddo
-       enddo
-       do i=1,size(gto)-1
-         gto(i+1)%offset = gto(i)%offset + gto(i)%cdegen
-       enddo
+    !  do i=1,size(gto)-1
+    !    do j=(i+1),size(gto)
+    !      if( gto(j)%lvalue >= gto(i)%lvalue )cycle
+    !      tmpgto = gto(i)
+    !      gto(i) = gto(j)
+    !      gto(j) = tmpgto
+    !    enddo
+    !  enddo
+    !  do i=1,size(gto)-1
+    !    gto(i+1)%offset = gto(i)%offset + gto(i)%cdegen
+    !  enddo
     !> end
 
     !> temporary print ... 
@@ -221,7 +221,7 @@ CONTAINS
        write(6,*) 
        write(6,'(2x,a,i5  )') 'Total number of basis function shells:    ',size(gto)
        write(6,'(2x,a,i5  )') 'Total number of spherical basis functions:',sum(gto(:)%sdegen)
-       write(6,'(2x,a,i5,a)') 'Total number of cartesian basis functions:',sum(gto(:)%cdegen),' (used for calculation)'
+       write(6,'(2x,a,i5,a)') 'Total number of cartesian basis functions:',sum(gto(:)%cdegen),' (used in InteRest calculations)'
        write(6,*) 
     !> end
 
@@ -430,8 +430,7 @@ CONTAINS
     use module_interest_eri
 
     !> input
-    !> note:  we assume nz=4 !!!
-    !> fixme: the case when nz!=4
+    !> fixme: the case when nz!=4, since we always assume nz=4
     integer, intent(in) :: intflg
     real(8), intent(in) :: hfxfac
     !> 1-electron density matrix, Dirac format
@@ -466,6 +465,7 @@ CONTAINS
 
     !> init for eri classes
     select case( intflg )
+      case( 0 );    return 
       case( 1 );    eri_class = 'llll'
       case( 3 );    eri_class = 'ssll'
       case( 7 );    eri_class = 'ssss'
@@ -1072,8 +1072,7 @@ CONTAINS
       enddo
     endif
 
-    !fixme
-    !call backward_ao_resorting( A )
+   !call backward_ao_resorting( A )
      
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
@@ -1107,14 +1106,12 @@ CONTAINS
       enddo
     endif
 
-    !fixme
-    !call backward_ao_resorting( A )
+   !call backward_ao_resorting( A )
      
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!>on input:  the matrix in "input"  AO order 
-!>on output: the matrix in integral AO order 
-!>fixme:     clsed-shell and LL-only case!!!
+!>on input:  the matrix in "input"  basis order 
+!>on output: the matrix in integral basis order 
   SUBROUTINE forward_ao_resorting( A )
 
     !> input/ouput
@@ -1137,7 +1134,7 @@ CONTAINS
         io_old = gto(i)%index 
         do jj=1,jc
           do ii=1,ic
-            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)  !Re(A,LL) 
+            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)
           enddo
         enddo
       enddo
@@ -1146,9 +1143,8 @@ CONTAINS
         
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!>on input:  the matrix in "integral" AO order 
-!>on output: the matrix in "input"    AO order 
-!>fixme:     clsed-shell and LL-only case!!!
+!>on input:  the matrix in "integral" basis order 
+!>on output: the matrix in "input"    basis order 
   SUBROUTINE backward_ao_resorting( A )
 
     !> input/ouput
@@ -1171,7 +1167,7 @@ CONTAINS
         io_old = gto(i)%offset
         do jj=1,jc
           do ii=1,ic
-            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)  !Re(A,LL) 
+            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)
           enddo
         enddo
       enddo
