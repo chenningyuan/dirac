@@ -1489,6 +1489,21 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
+#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'scfcyc: final 2-electron Fock matrix for you',-1)
+!        CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         
+!        open(99,file='blubb_oo',status='replace',form='unformatted',
+!    &        access='sequential',action="readwrite",position='rewind')
+!        write(99) (fock(i),i=1,N2BBASXQ)
+!        close(99,status='keep')
+!        CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
+#undef blubb_blubb_so
+#endif
 
 !       mi - variable initialization (otherwise runtime-check failure)
 
@@ -1576,11 +1591,16 @@ C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
          CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
+#define blubb_blubb_so
 #ifdef blubb_blubb_so
          CALL HEADER(
      &   'scfcyc: total Fock matrix for you',-1)
          CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZ,IPQTOQ(1,0),LUPRI)
+         open(99,file='blubb_oo',status='replace',form='unformatted',
+     &        access='sequential',action="readwrite",position='rewind')
+         write(99) (cmo(i),i=1,N2BBASXQ)
+         close(99,status='keep')
 #undef blubb_blubb_so
 #endif
 

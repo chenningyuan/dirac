@@ -571,6 +571,38 @@ contains
        write(flabel,'(a11,i1)') 'h1bncc2cAOl',i
        call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
 
+#define blubb_blubb_so
+#ifdef blubb_blubb_so
+       scr_mat2   = 0
+       scr_mat1   = 0
+       op_fer_rep = 0
+       open(99,file='blubb_oo',status='old',form='unformatted',&
+            access='sequential',action="readwrite",position='rewind')
+       read(99) (scr_mat1(i),i=1, naosh_ls**2*nz)
+       close(99,status='keep')
+
+       call perform_pct_saao_bas(scr_mat1,            &
+                                 pctmat,              &
+                                 scr_mat2,            &
+                                 naosh_ls,            &
+                                 nr_ao_L,             &
+                                 naosh_all,           &
+                                 naosh_L,             &
+                                 nfsym,               &
+                                 nz,                  &
+                                 ipq_off_in,          &
+                                 ioff_aomx,           &
+                                 op_fer_rep,          &
+                                 op_bs_to_fs,         &
+                                 .true.,              &
+                                 print_lvl)
+
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2fock-tra',6)
+!      end if
+#endif
+
        call dealloc(scr_mat2)
        call dealloc(pctmat)
        call dealloc(scr_mat1)
