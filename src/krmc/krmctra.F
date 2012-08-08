@@ -3009,7 +3009,6 @@ C
 C
       LOGICAL SWAPIJ
 C
-      if (nz .eq. 4) call quit('nz=4 not implemented')
       DO IN = 1, N
          CALL DCOPY(NASHT*NASHT*NNASHX*3*NZ,H2AC(1,1,1,1,1,IN),1,
      &        H2ACO,1)
@@ -3098,15 +3097,15 @@ C
      &                       H2AC(K,L,NIJ,4,2,IN)
      &                       - H2ACO(I,J,NKL,4,1)
 C
-C                       (Kl|ij) + (ij|Kl) = (Kl|ij) - (ij|Lk)
+C                       (Kl|ij) + (ij|Kl) = (Kl|ij) + (ji|lK)^*
 C
                         H2AC(K,L,NIJ,3,3,IN) =
      &                       H2AC(K,L,NIJ,3,3,IN)
-     &                       - H2ACO(I,J,NKL,3,2)
+     &                       + H2ACO(J,I,NKL,3,1)
 C
                         H2AC(K,L,NIJ,4,3,IN) =
      &                       H2AC(K,L,NIJ,4,3,IN)
-     &                       - H2ACO(I,J,NKL,4,2)
+     &                       - H2ACO(J,I,NKL,4,1)
 C
                      END IF
                      endif
