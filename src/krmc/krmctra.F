@@ -2679,10 +2679,11 @@ C                 the gazillion matrix multiplies to construct
 C                 the auxiliary Fock matrix FQT.
 C
                   DO ICSIM = 1, NCSIM
-                     CALL RADDFQ(FQT(1,1,1,ICSIM),
-     &                           WORK(KH2XY),WORK(KH2YX),
-     &                           PVT(1,1,1,1,1,ICSIM),
-     &                           IUU,IXU,IYU,IREPXY,IPRINT)
+                     CALL RADDFQ90(FQT(1,1,1,ICSIM),
+     &                             WORK(KH2XY),WORK(KH2YX),
+     &                             PVT(1,1,1,1,1,ICSIM),
+     &                             IUU,IXU,IYU,IREPXY,IPRINT,
+     &                             NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
                   END DO
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
                   if (ncsim .gt. 0 .and. nosim .gt. 0) then
