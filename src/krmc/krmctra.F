@@ -2340,6 +2340,7 @@ C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
       use memory_allocator
+      use mcscf_routines
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2747,9 +2748,10 @@ C                   Calculate ``matrix-multiply'' part of FQX:
 C                   ------------------------------------------
 C
                     IF ( DOFQX ) THEN
-                       CALL RADDFQ(FQX(1,1,1,I),
-     &                             WORK(KH2XY),WORK(KH2YX),PV,
-     &                             IUU,IXU,IYU,IREPXY,IPRINT)
+                       CALL RADDFQ90(FQX(1,1,1,I),
+     &                               WORK(KH2XY),WORK(KH2YX),PV,
+     &                               IUU,IXU,IYU,IREPXY,IPRINT,
+     &                               NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
                     END IF
 C
                   END DO
