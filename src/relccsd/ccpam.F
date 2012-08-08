@@ -21,7 +21,7 @@
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PAMCCM (CC,MAXCOR)
+      SUBROUTINE PAMCCM ()
 C
 C---------------Description-----------------------------------------------
 C
@@ -42,6 +42,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
       use interface_to_mpi
+
 #include "implicit.h"
 #include "maxorb.h"
 #include "priunit.h"
@@ -56,7 +57,6 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
@@ -121,7 +121,7 @@ C
 C
 C     Enter the generic CCMAIN routine (master becomes now primus inter parens)
 C
-      CALL CCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
+      CALL CCMAIN(IN,IW,CA,INTFCE)
 C
 C     Return the slaves to the general menu routine.
 C
@@ -195,13 +195,14 @@ C
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck CCNOD */
-      SUBROUTINE CCNOD(CC,MAXCOR)
+      SUBROUTINE CCNOD
 C
 C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
+
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcbham.h"
@@ -216,8 +217,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "files.inc"
       CHARACTER*10 INTFCE, MP2NOF
       LOGICAL CA,CCEND
-C
-      DIMENSION CC(MAXCOR)
 C
 C     arrange for the MPI stuff and correct node number
 C     to the total number of running invocations.
@@ -260,7 +259,6 @@ C
      &                 global_communicator)
       END IF
 #endif
-      print *, 'slave: CA, IAOMOSCHEME',CA, IAOMOSCHEME,INTFCE
 C
 C     create a node-unique filename as output file. Important on
 C     shared file systems. Otherwise all the output gets mingled in one
@@ -314,7 +312,7 @@ C     to the corresponding output file.
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       OPEN(MSLVOUT,FILE = CCFILN(1:LCCFIL))
-      CALL CCMAIN(CC,MAXCOR,LUCMD,MSLVOUT,CA,INTFCE)
+      CALL CCMAIN(LUCMD,MSLVOUT,CA,INTFCE)
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
       IF( MP2_DENRUN )THEN

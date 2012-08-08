@@ -5,7 +5,7 @@
 ! Module:       module_interest_interface.f90 
 !
 ! Description:  - interfacing basic data between Dirac & InteRest program 
-!               - providing two- and four-center integrals in RKB/RMB balanced basis
+!               - providing two- and four-center cartesian integrals over RKB/RMB balanced basis
 !
 ! Contains:     
 !
@@ -166,7 +166,7 @@ CONTAINS
          do j=1,nrco(i+1)
            i=i+1
            gto(i) = type_gto( ij,                      &
-                              0,                       &
+                              ij,                      &
                               nhkt(i),                 &
                               ncent(i),                & 
                               (2*nhkt(i)-1),           &
@@ -182,17 +182,17 @@ CONTAINS
     !> reorder basis functions to the angular momentum 
     !> ascending order to increase the integral performance
     !> set the AO-vector offsets and shell-degeneracy
-       do i=1,size(gto)-1
-         do j=(i+1),size(gto)
-           if( gto(j)%lvalue >= gto(i)%lvalue )cycle
-           tmpgto = gto(i)
-           gto(i) = gto(j)
-           gto(j) = tmpgto
-         enddo
-       enddo
-       do i=1,size(gto)-1
-         gto(i+1)%offset = gto(i)%offset + gto(i)%cdegen
-       enddo
+    !  do i=1,size(gto)-1
+    !    do j=(i+1),size(gto)
+    !      if( gto(j)%lvalue >= gto(i)%lvalue )cycle
+    !      tmpgto = gto(i)
+    !      gto(i) = gto(j)
+    !      gto(j) = tmpgto
+    !    enddo
+    !  enddo
+    !  do i=1,size(gto)-1
+    !    gto(i+1)%offset = gto(i)%offset + gto(i)%cdegen
+    !  enddo
     !> end
 
     !> temporary print ... 
@@ -221,7 +221,7 @@ CONTAINS
        write(6,*) 
        write(6,'(2x,a,i5  )') 'Total number of basis function shells:    ',size(gto)
        write(6,'(2x,a,i5  )') 'Total number of spherical basis functions:',sum(gto(:)%sdegen)
-       write(6,'(2x,a,i5,a)') 'Total number of cartesian basis functions:',sum(gto(:)%cdegen),' (used for calculation)'
+       write(6,'(2x,a,i5,a)') 'Total number of cartesian basis functions:',sum(gto(:)%cdegen),' (used in InteRest calculations)'
        write(6,*) 
     !> end
 
@@ -231,23 +231,21 @@ CONTAINS
   SUBROUTINE process_overlap_integrals( S ) 
 
     !> input
-       real(8) :: S(2*nrow,2*ncol) 
-    !> end
+    real(8) :: S(2*nrow,2*ncol) 
 
     !> local
-       integer              :: i, j 
-       real(8), allocatable :: Smat(:,:,:)
-    !> end
+    integer              :: i, j 
+    real(8), allocatable :: Smat(:,:,:)
 
     !> external InteRest integral routines
-       external :: interest_overlap 
-    !> end
+    external :: interest_overlap 
 
 
     allocate( Smat( nrow,ncol,2 ) ); Smat = 0.0d0
     call two_center_integrals( interest_overlap, Smat, nrow )
     call symmetrize_matrix(                                 A = Smat(1,1,1), ida = nrow )  !Re(A)
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
+    S = 0.0d0
     do j=1,ncol
       do i=1,nrow
         S(i     ,j     ) = Smat(i,j,1) 
@@ -262,17 +260,14 @@ CONTAINS
   SUBROUTINE process_kinetic_energy_integrals( T ) 
 
     !> input
-       real(8) :: T(2*nrow,2*ncol) 
-    !> end
+    real(8) :: T(2*nrow,2*ncol,4) 
 
     !> local
-       integer              :: i, j 
-       real(8), allocatable :: Tmat(:,:,:)
-    !> end
+    integer              :: i, j 
+    real(8), allocatable :: Tmat(:,:,:)
 
     !> external InteRest integral routines
-       external :: interest_overlap 
-    !> end
+    external :: interest_overlap 
 
 
     allocate( Tmat( nrow,ncol,2 ) ); Tmat = 0.0d0
@@ -280,9 +275,9 @@ CONTAINS
     call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
     do j=1,ncol
       do i=1,nrow
-        T(i+nrow,j     ) = T(i+nrow,j     ) + Tmat(i,j,2)
-        T(i     ,j+ncol) = T(i     ,j+ncol) + Tmat(i,j,2)
-        T(i+nrow,j+ncol) = T(i+nrow,j+ncol) - Tmat(i,j,2)
+        T(i+nrow,j     ,1) = T(i+nrow,j     ,1) + Tmat(i,j,2)
+        T(i     ,j+ncol,1) = T(i     ,j+ncol,1) + Tmat(i,j,2)
+        T(i+nrow,j+ncol,1) = T(i+nrow,j+ncol,1) - Tmat(i,j,2)
       enddo
     enddo
     deallocate( Tmat )
@@ -294,17 +289,14 @@ CONTAINS
  
     !> input
     !> note: we assume nz=4 !!!
-       real(8) :: V(2*nrow,2*ncol,4)
-    !> end
+    real(8) :: V(2*nrow,2*ncol,4)
 
     !> local
-       integer              :: i, j 
-       real(8), allocatable :: Vmat(:,:,:)
-    !> end
+    integer              :: i, j 
+    real(8), allocatable :: Vmat(:,:,:)
 
     !> external InteRest integral routines
-       external :: interest_nuclear_attraction_point_nucleus 
-    !> end
+    external :: interest_nuclear_attraction_point_nucleus 
 
 
     allocate( Vmat( nrow,ncol,5 ) ); Vmat = 0.0d0
@@ -353,20 +345,17 @@ CONTAINS
     !> end
 
     !> input
-       integer, intent(in)  :: ida           !todo: better definition
-       logical              :: rkb = .true.  !todo: better definition
-    !> end
+    integer, intent(in)  :: ida           !todo: better definition
+    logical              :: rkb = .true.  !todo: better definition
 
     !> output
-       real(8) :: final_integrals(*)
-    !> end
+    real(8) :: final_integrals(*)
 
     !> local
-       integer :: nrkb
-       integer :: i, ni
-       integer :: j, nj
-       real(8) :: gout(5*441)  !todo: better definition 
-    !> end
+    integer :: nrkb
+    integer :: i, ni
+    integer :: j, nj
+    real(8) :: gout(5*441)  !todo: better definition 
 
 
     do j=1,nr_shells
@@ -409,23 +398,20 @@ CONTAINS
   SUBROUTINE store_batch( A, ida, jda, nrkb, B, idb, jdb, ioffset, joffset )
 
     !> input 
-       integer :: nrkb
-       integer :: ioffset 
-       integer :: joffset 
-       integer :: ida, jda 
-       integer :: idb, jdb
-       real(8) :: A(5,ida,jda)
-    !> end
+    integer :: nrkb
+    integer :: ioffset 
+    integer :: joffset 
+    integer :: ida, jda 
+    integer :: idb, jdb
+    real(8) :: A(5,ida,jda)
 
     !> output
-       real(8) :: B(idb,jdb,nrkb)
-    !> end
+    real(8) :: B(idb,jdb,nrkb)
 
     !> local
-       integer :: i
-       integer :: j
-       integer :: k
-    !> end
+    integer :: i
+    integer :: j
+    integer :: k
 
 
     do k=1,nrkb
@@ -444,8 +430,7 @@ CONTAINS
     use module_interest_eri
 
     !> input
-    !> note:  we assume nz=4 !!!
-    !> fixme: the case when nz!=4
+    !> fixme: the case when nz!=4, since we always assume nz=4
     integer, intent(in) :: intflg
     real(8), intent(in) :: hfxfac
     !> 1-electron density matrix, Dirac format
@@ -480,6 +465,7 @@ CONTAINS
 
     !> init for eri classes
     select case( intflg )
+      case( 0 );    return 
       case( 1 );    eri_class = 'llll'
       case( 3 );    eri_class = 'ssll'
       case( 7 );    eri_class = 'ssss'
@@ -1086,8 +1072,7 @@ CONTAINS
       enddo
     endif
 
-    !fixme
-    !call backward_ao_resorting( A )
+   !call backward_ao_resorting( A )
      
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
@@ -1121,14 +1106,12 @@ CONTAINS
       enddo
     endif
 
-    !fixme
-    !call backward_ao_resorting( A )
+   !call backward_ao_resorting( A )
      
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!>on input:  the matrix in "input"  AO order 
-!>on output: the matrix in integral AO order 
-!>fixme:     clsed-shell and LL-only case!!!
+!>on input:  the matrix in "input"  basis order 
+!>on output: the matrix in integral basis order 
   SUBROUTINE forward_ao_resorting( A )
 
     !> input/ouput
@@ -1151,7 +1134,7 @@ CONTAINS
         io_old = gto(i)%index 
         do jj=1,jc
           do ii=1,ic
-            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)  !Re(A,LL) 
+            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)
           enddo
         enddo
       enddo
@@ -1160,9 +1143,8 @@ CONTAINS
         
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!>on input:  the matrix in "integral" AO order 
-!>on output: the matrix in "input"    AO order 
-!>fixme:     clsed-shell and LL-only case!!!
+!>on input:  the matrix in "integral" basis order 
+!>on output: the matrix in "input"    basis order 
   SUBROUTINE backward_ao_resorting( A )
 
     !> input/ouput
@@ -1185,7 +1167,7 @@ CONTAINS
         io_old = gto(i)%offset
         do jj=1,jc
           do ii=1,ic
-            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)  !Re(A,LL) 
+            A(io_new+ii,jo_new+jj) = B(io_old+ii,jo_old+jj)
           enddo
         enddo
       enddo

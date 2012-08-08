@@ -244,7 +244,7 @@ C        Slaves are already initialized before coming here.
       RETURN
       END
 C  /* Deck readin */
-      SUBROUTINE READIN(WORK,LWORK,HERMIT)
+      SUBROUTINE READIN(HERMIT)
 C     Based on
 C       READIN:Input processing routine for  M O L E C U L E.
 C         Jan Almlof, Stockholm, Dec. 1971.
@@ -270,6 +270,7 @@ C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
         USE READ_XYZFILE
+        use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -288,7 +289,6 @@ C
 #include "cbirea.h"
 C
       CHARACTER(LEN=8) :: moltype
-      REAL(KIND=8)     :: WORK(LWORK)
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
@@ -308,6 +308,9 @@ C     JHS
 #include "chrsgn.h"
 #include "aosotr.h"
 #include "infpar.h"
+
+      integer, parameter   :: LWORK = 1000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -315,6 +318,8 @@ C     iteration.
 C
       IF (RDINPC) RETURN
       RDINPC = .TRUE.
+C
+      call alloc(WORK,LWORK,id='WORK in READIN')
 C
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPREAD .GT.  0) THEN
@@ -403,9 +408,10 @@ C               These are the only two extensions at the moment.
       CALL GPCLOSE(LUINFO,'KEEP')
       IF (IPREAD .GT. 20) CALL REAPRI
 
+      call dealloc(WORK)
       RETURN
       END
-C  /* Deck readi1 */
+C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C******************************************************************************

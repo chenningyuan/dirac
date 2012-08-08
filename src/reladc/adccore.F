@@ -25,7 +25,7 @@
 #define zdotc z_dot_c
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PAMADC (CC,MAXCOR)
+      SUBROUTINE PAMADC ()
 !
 !---------------Description-----------------------------------------------
 !
@@ -55,7 +55,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Local variables--------------------------------------
 !
-      REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
@@ -121,7 +120,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !     Enter the generic ADCMAIN routine (master becomes now primus inter pares)
 !
-      CALL ADCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
+      CALL ADCMAIN(IN,IW,CA,INTFCE)
 !
 !     Return the slaves to the general menu routine.
 !
@@ -140,7 +139,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCMAIN (CC,MAXCORE,IN123,IW123,CA,INTFCE)
+      SUBROUTINE ADCMAIN (IN123,IW123,CA,INTFCE)
 !
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -161,8 +160,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Calling variables--------------------------------------
 !
-      INTEGER MAXCORE
-      REAL*8 CC(MAXCORE)
       INTEGER IN123,IW123
       LOGICAL CA
       CHARACTER*10 INTFCE
@@ -193,6 +190,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer                :: n,i,ntotsymm
+
+      integer :: MAXCORE
+      real(8), allocatable :: CC(:)
+
+      call legacy_lwork_get(MAXCORE)
+      call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
 
 !
 !---------------Executable code--------------------------------------
@@ -470,8 +473,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       IF(DOCCSETI) THEN
         MXCORR1 = 0
-        CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &               NSP,IREPSP,IREPSPI)
+        CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
         WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
@@ -517,8 +519,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       write(*,*) 'Providing ',MXCORR,' to the act. modules.'
       IF(DOSORT) THEN
-        CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &               NSP,IREPSP,IREPSPI)
+        CALL CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
       ENDIF
 
       write(*,*) 'MXCORR after allocated CCSETI:',MXCORR
@@ -554,6 +555,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Print I/O statistics
 !
       CALL WAIO_PRST (IW)
+      call dealloc(cc)
 C
       RETURN
 C

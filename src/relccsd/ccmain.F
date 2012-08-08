@@ -41,14 +41,12 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-      PARAMETER (MAXCOR = 60 000 000)
 #include "files.inc"
 #include "ccpar.inc"
 #include "infpar.h"
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
@@ -73,11 +71,7 @@ C
       MYPROC = 0
       NMPROC = 1
 #endif
-#if defined (CC_ALONE)
-      CALL CCMAIN(MAXCOR,IN,IW,CA,INTFCE)
-#else
-      CALL CCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
-#endif
+      CALL CCMAIN(IN,IW,CA,INTFCE)
 C
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC

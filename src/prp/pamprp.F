@@ -23,12 +23,12 @@ C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
-      SUBROUTINE PAMPRP(WORK,LWORK)
+      SUBROUTINE PAMPRP()
 C***********************************************************************
 C
-C     Driver for PAMPR1.
+C     Driver for PAMPRP_1.
 C
-C     Loop over wave functions and call PAMPR1 for each of them.
+C     Loop over wave functions and call PAMPRP_1 for each of them.
 C
 C
 C***********************************************************************
@@ -41,12 +41,9 @@ C dcbprp.h: NPRPWF, PRPWF(*)
 C
 #include "dcbprp.h"
 C
-      DIMENSION WORK(LWORK)
-C
       CHARACTER WF*4
 C
       CALL QENTER('PAMPRP')
-#include "memint.h"
 C
       CALL TITLER('Property module','*',125)
       WRITE(LUPRI,9000)
@@ -85,7 +82,7 @@ C
          END IF
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)
-         CALL PAMPR1(WF,WORK,LWORK)
+         CALL PAMPRP_1(WF)
       END DO
 C
       CALL QEXIT('PAMPRP')
@@ -93,7 +90,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pampr1 */
-      SUBROUTINE PAMPR1(WF,WORK,LWORK)
+      SUBROUTINE PAMPRP_1(WF)
 C***********************************************************************
 C
 C     NOTE
@@ -121,11 +118,13 @@ C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
 
+      use memory_allocator
       use dirac_cfg
 #ifdef MOD_OPENRSP
       use openrsp_main
 #endif
       use fde_mod
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -138,14 +137,16 @@ C
 #include "dcborb.h"
 #include "dcbpsi.h"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
       logical :: export_n,export_gn,export_vc
 C
-      CALL QENTER('PAMPR1')
+      CALL QENTER('PAMPRP_1')
 C
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in PAMPRP_1')
 C
 C     Make sure common block dcbidx is set
 C
@@ -157,7 +158,7 @@ C***********************************************************************
 C
       IF (MGRAD) THEN
          IF (WF .NE. 'DHF') THEN
-            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+            CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'Molecular gradient not implemented for ' // WF )
          END IF
          CALL RMOLGRD(WORK(KFREE),LFREE)
@@ -200,7 +201,7 @@ C
          IF (WF. EQ. 'DHF') THEN
             CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KSSYM,KFREE,LFREE)
          ELSE
-            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+            CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'PP excitation energies not implemented for ' // WF )
          END IF
       END IF
@@ -213,7 +214,7 @@ C
          IF (WF. EQ. 'DHF') THEN
             CALL PRPXLR(WORK,KLRF,KLRCNV,KLRO,KFREE,LFREE)
          ELSE
-            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+            CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'Linear response not implemented for ' // WF )
          END IF
       ELSE
@@ -228,7 +229,7 @@ C***********************************************************************
 C
       IF (DOXQR .OR. DOTPA .OR. DOEXCPRP) THEN
          IF (WF. NE. 'DHF') 
-     &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
+     &        CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &        'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
@@ -283,7 +284,8 @@ C
 
 C
 CMI   CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('PAMPR1')
+      call dealloc(WORK)
+      CALL QEXIT('PAMPRP_1')
 C
       RETURN
       END
