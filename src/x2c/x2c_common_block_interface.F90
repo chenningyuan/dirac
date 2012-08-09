@@ -181,6 +181,7 @@ contains
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
          x2c_1e_system    = onesys
+         x2c_mdirac       = mdirac
   
 !        initialize real*8
          x2c_cspeed = cval

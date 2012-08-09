@@ -129,6 +129,18 @@ contains
 !                 2. approximate a combined picture-change transformation matrix U_comb
 !                 3. picture-change transform all relevant operator
 !
+!             possible "defining h1_4c" Hamiltonian:
+!
+!                 a. x2c_is_defining_h1mat == 0: 1-el Dirac Hamiltonian                           
+!                    ==> default for X2C
+!
+!                 b. x2c_is_defining_h1mat == 2: Fock operator after a (converged) [spinfree==sf] SCF 
+!                    ==> default for [sf-]X2Cmmf
+
+!                 b. x2c_is_defining_h1mat == 3: free-particle 
+!                    ==> test-option
+!
+!
 !**********************************************************************
      integer, intent(in)    :: lwork
      real(8), intent(inout) :: work(lwork)
@@ -344,28 +356,37 @@ contains
 
              close(9,status='delete')
 
-           case default
+           case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
-             call sel_wrk_x2c(wrk,lwrk)
+             if(x2c_mdirac)then
+               stop 'mdirac blubb...'
+             else
+               call sel_wrk_x2c(wrk,lwrk)
 
-             call modham(scr1mat,                                         &
-                         xmat,                                            &
-                         scr2mat,                                         &
-                         eigvl,                                           &
-                         .true.,                                          &
-                         .false.,                                         &
-                         x2c_is_defining_h1mat,                           &
-                         wrk,                                             &
-                         lwrk)
+               call modham(scr1mat,                                         &
+                           xmat,                                            &
+                           scr2mat,                                         &
+                           eigvl,                                           &
+                           .true.,                                          &
+                           .false.,                                         &
+                           x2c_is_defining_h1mat,                           &
+                           wrk,                                             &
+                           lwrk)
 
-!            nullify pointer to work array and release matrices
-             call desel_wrk_x2c(wrk,lwrk)
+!              nullify pointer to work array and release matrices
+               call desel_wrk_x2c(wrk,lwrk)
+
+             end if
 
 !            ------------------------------------------------------------------------------------
 !            step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
-!                      these dimensions have been evaluated in MODHAM. 
+!                      these dimensions have been evaluated in MODHAM/prepare_x2c_MDIRAC 
 !            ------------------------------------------------------------------------------------
              call init_x2c_cb(.true.)
+
+           case default
+         
+             stop 'x2c driver: defining 4c-Hamiltonian type unknown...'
 
          end select
 
@@ -593,8 +614,8 @@ contains
 !                       wrt which the decoupling step is performed.
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
-!                                      == 1: (extended) Huckel start guess
-!                                      == 2: converged 4c-Fock-Dirac operator (not implemented yet)
+!                                      == 1: (extended) Huckel start guess (won't be implemented)
+!                                      == 2: converged 4c-Fock-Dirac operator
 !
 !             delivers: a. decoupling matrix "R" in orthonormal MO basis
 !                       b. picture-change transformation matrix "U" in orthonormal MO basis and Dirac-sorted SA-AO basis
