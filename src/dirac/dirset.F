@@ -85,10 +85,10 @@ C
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
-        IPREAD = IPREAD - 5
+!       IPREAD = IPREAD - 5
         CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
-        IPREAD = IPREAD + 5
+!       IPREAD = IPREAD + 5
       ENDIF
 C
 C     Generate all one-electron integrals
