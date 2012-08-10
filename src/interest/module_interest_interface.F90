@@ -47,6 +47,7 @@ MODULE MODULE_INTEREST_INTERFACE
   public process_kinetic_energy_integrals 
   public process_nuclear_attraction_integrals
   public process_two_electron_integrals_4comp
+  public process_two_electron_integrals_2comp
 
   private
 
@@ -422,6 +423,218 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> note: on input,  G and P must be in the cartesian GTOs 
+  SUBROUTINE process_two_electron_integrals_2comp( Gmat, Pmat, intflg, hfxfac ) 
+
+    use module_interest_eri
+
+    !> input
+    !> fixme: the case when nz!=4, since we always assume nz=4
+    integer, intent(in) :: intflg
+    real(8), intent(in) :: hfxfac
+    !> 1-electron density matrix, Dirac format
+    real(8), intent(in) :: Pmat(nrow,nrow,4)  
+
+    !> output
+    !> 2-electron Fock matrix, Dirac format
+    real(8), intent(out) :: Gmat(nrow,nrow,4) 
+
+    !> local
+    logical :: doK
+    real(8) :: fijkl, fll
+    integer :: li, ni, oi   
+    integer :: lj, nj, oj   
+    integer :: lk, nk, ok   
+    integer :: ll, nl, ol   
+    integer :: nint, lmax
+    integer :: i, j, k, l, ibas
+    real(8) :: gout(441*441)    !todo
+    integer :: nij, nkl, ij
+    real(8) :: ei, ci, xi, yi, zi 
+    real(8) :: ej, cj, xj, yj, zj 
+    real(8) :: ek, ck, xk, yk, zk 
+    real(8) :: el, cl, xl, yl, zl 
+
+    complex(8), allocatable :: dP(:,:,:,:)
+    complex(8), allocatable :: dG(:,:,:,:)
+
+
+    !> check the eri class
+    select case( intflg )
+      case( 0 );    return 
+      case( 1 );
+      case default; stop "The desired class of ERI integrals is not implemented in InteRest :-( => stop"
+    end select
+
+    !> init for DFT
+    doK = ( hfxfac /= 0.0d0 )
+
+    !> data forward alignment 
+    fll = 0.5d0
+    allocate( dP(2,2,nrow,nrow) ); dP = dcmplx( 0.0d0, 0.0d0 ) 
+    allocate( dG(2,2,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
+    do j=1,nrow
+      do i=1,nrow
+        !> alpha-alpha = "A"
+        dP(1,1,i,j) =  dcmplx( Pmat(i,j,1)*fll, Pmat(i,j,2)*fll )
+        !> alpha-beta  = "B"
+        dP(1,2,i,j) =  dcmplx( Pmat(i,j,3)*fll, Pmat(i,j,4)*fll )
+        !> beta-beta   = "A*"
+        dP(2,2,i,j) =  dconjg( dP(1,1,i,j) ) 
+        !> beta-alpha  = "-B*"
+        dP(2,1,i,j) = -dconjg( dP(1,2,i,j) ) 
+      enddo
+    enddo
+
+
+ iloop:do i=1,nr_shells
+         li =       gto(i)%lvalue
+         oi =       gto(i)%offset
+         ni =       gto(i)%cdegen
+         ei =       gto(i)%exponent(1)
+         xi = atom( gto(i)%origin )%coordinate_x
+         yi = atom( gto(i)%origin )%coordinate_y
+         zi = atom( gto(i)%origin )%coordinate_z
+         ci =       gto(i)%coefficient(1)
+     
+ jloop:  do j=1,nr_shells
+           lj =       gto(j)%lvalue
+           oj =       gto(j)%offset
+           nj =       gto(j)%cdegen
+           ej =       gto(j)%exponent(1)
+           xj = atom( gto(j)%origin )%coordinate_x
+           yj = atom( gto(j)%origin )%coordinate_y
+           zj = atom( gto(j)%origin )%coordinate_z
+           cj =       gto(j)%coefficient(1)
+       
+ kloop:    do k=1,nr_shells
+             lk =       gto(k)%lvalue
+             ok =       gto(k)%offset
+             nk =       gto(k)%cdegen
+             ek =       gto(k)%exponent(1)
+             xk = atom( gto(k)%origin )%coordinate_x
+             yk = atom( gto(k)%origin )%coordinate_y
+             zk = atom( gto(k)%origin )%coordinate_z
+             ck =       gto(k)%coefficient(1)
+       
+ lloop:      do l=1,nr_shells
+               ll   =       gto(l)%lvalue
+               nl   =       gto(l)%cdegen
+               ol   =       gto(l)%offset
+               el   =       gto(l)%exponent(1)
+               xl   = atom( gto(l)%origin )%coordinate_x
+               yl   = atom( gto(l)%origin )%coordinate_y
+               zl   = atom( gto(l)%origin )%coordinate_z
+               cl   =       gto(l)%coefficient(1)
+               fijkl= 1.0d0 
+       
+               call interest_eri(fijkl,gout,       &
+                                 li,ei,xi,yi,zi,ci,&
+                                 lj,ej,xj,yj,zj,cj,&
+                                 lk,ek,xk,yk,zk,ck,&
+                                 ll,el,xl,yl,zl,cl )
+               call process_dG(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                               nrow,doK,hfxfac,gout,dP,dG)
+             enddo lloop
+           enddo kloop
+         enddo jloop
+       enddo iloop
+    !> end
+
+    !> data backward alignment 
+    do j=1,nrow
+      do i=1,nrow
+        !> quaternion(0) 
+        Gmat(i,j,1) = Gmat(i,j,1) + dreal(dG(1,1,i,j))
+        !> quaternion(i) 
+        Gmat(i,j,2) = Gmat(i,j,2) + dimag(dG(1,1,i,j))
+        !> quaternion(j) 
+        Gmat(i,j,3) = Gmat(i,j,3) + dreal(dG(1,2,i,j))
+        !> quaternion(k) 
+        Gmat(i,j,4) = Gmat(i,j,4) + dimag(dG(1,2,i,j))
+      enddo
+    enddo
+
+    deallocate( dP )
+    deallocate( dG )
+
+
+    CONTAINS
+
+    subroutine process_dG(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,scaleK,gout,pmat,gmat) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      real(8),    intent(in) :: scaleK
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: pmat(2,2,nbas,nbas)
+      !> input/output
+      real(8), intent(inout) :: gout(kc,lc,ic,jc)
+      !> output
+      complex(8), intent(out) :: gmat(2,2,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: gg, pll, paa, pab, pba, pbb
+      !>
+      !> coulomb part
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          do l=1,lc
+            lbas=lo+l
+            do k=1,kc
+              kbas = ko+k
+              gg   = dcmplx( gout(k,l,i,j), 0.0d0 )
+              pll  = pmat(1,1,lbas,kbas) + pmat(2,2,lbas,kbas)
+              gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll
+              gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gg*pll
+            enddo
+          enddo
+        enddo
+      enddo
+      !> exchange part
+      if( .not. doK )return
+      !> pre-multiplication for scalling K-contribution 
+      if( scalek /= 1.0d0 )then
+        do j=1,jc
+          do i=1,ic
+            do l=1,lc
+              do k=1,kc
+                gout(k,l,i,j) = gout(k,l,i,j)*scaleK
+              enddo
+            enddo
+          enddo
+        enddo
+      endif
+      !>
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            jbas=jo+j
+            paa = pmat(1,1,jbas,kbas)
+            pba = pmat(2,1,jbas,kbas)
+            pab = pmat(1,2,jbas,kbas)
+            pbb = pmat(2,2,jbas,kbas)
+            do i=1,ic
+              ibas = io+i
+              gg   = dcmplx( gout(k,l,i,j), 0.0d0 )
+              gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa*gg
+              gmat(1,2,ibas,lbas) = gmat(1,2,ibas,lbas) - pab*gg
+              gmat(2,1,ibas,lbas) = gmat(2,1,ibas,lbas) - pba*gg
+              gmat(2,2,ibas,lbas) = gmat(2,2,ibas,lbas) - pbb*gg
+            enddo
+          enddo
+        enddo
+      enddo
+    end subroutine
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!> note: on input,  G and P must be in the cartesian GTOs 
   SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg, hfxfac ) 
 
     use module_interest_eri
@@ -552,21 +765,24 @@ CONTAINS
                                            lj,ej,xj,yj,zj,cj,&
                                            lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_llll(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_llll(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                                          nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssll' )
                      call interest_eri_rkb('ssll',fijkl,gout,&
                                            li,ei,xi,yi,zi,ci,&
                                            lj,ej,xj,yj,zj,cj,&
                                            lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_ssll(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_ssll(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                                          nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssss' ) 
                      call interest_eri_rkb('ssss',fijkl,gout,&
                                            li,ei,xi,yi,zi,ci,&
                                            lj,ej,xj,yj,zj,cj,&
                                            lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_ssss(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_ssss(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                                          nrow,doK,hfxfac,gout,dP,dG)
                  CASE DEFAULT; stop 'Error: this ERI class is not implemented yet => stop'
                END SELECT
              enddo lloop
