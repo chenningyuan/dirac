@@ -550,34 +550,27 @@ CONTAINS
        
                SELECT CASE( eri_class )
                  CASE( 'llll' )
-                     call interest_eri_rkb('llll',fijkl,gout,                &
-                                           li,ei,xi,yi,zi,ci,                &
-                                           lj,ej,xj,yj,zj,cj,                &
-                                           lk,ek,xk,yk,zk,ck,                &
+                     call interest_eri_rkb('llll',fijkl,gout,&
+                                           li,ei,xi,yi,zi,ci,&
+                                           lj,ej,xj,yj,zj,cj,&
+                                           lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_4comp_llll_1x(ni,nj,nk,nl,              &
-                                                   oi,oj,ok,ol,              &
-                                                   nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_llll(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssll' )
-                     call interest_eri_rkb('ssll',fijkl,gout,                &
-                                           li,ei,xi,yi,zi,ci,                &
-                                           lj,ej,xj,yj,zj,cj,                &
-                                           lk,ek,xk,yk,zk,ck,                &
+                     call interest_eri_rkb('ssll',fijkl,gout,&
+                                           li,ei,xi,yi,zi,ci,&
+                                           lj,ej,xj,yj,zj,cj,&
+                                           lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_4comp_ssll_1x(ni,nj,nk,nl,              &
-                                                   oi,oj,ok,ol,              &
-                                                   nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_ssll(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssss' ) 
-                     call interest_eri_rkb('ssss',fijkl,gout,                &
-                                           li,ei,xi,yi,zi,ci,                &
-                                           lj,ej,xj,yj,zj,cj,                &
-                                           lk,ek,xk,yk,zk,ck,                &
+                     call interest_eri_rkb('ssss',fijkl,gout,&
+                                           li,ei,xi,yi,zi,ci,&
+                                           lj,ej,xj,yj,zj,cj,&
+                                           lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_4comp_ssss_1x(ni,nj,nk,nl,              &
-                                                   oi,oj,ok,ol,              &
-                                                   nrow,doK,hfxfac,gout,dP,dG)
-                 CASE default
-                      stop 'Error: this ERI class is not implemented yet => stop'
+                     call process_dG_ssss(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
+                 CASE DEFAULT; stop 'Error: this ERI class is not implemented yet => stop'
                END SELECT
              enddo lloop
            enddo kloop
@@ -616,429 +609,405 @@ CONTAINS
     deallocate( dP )
     deallocate( dG )
 
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!>
-  SUBROUTINE process_dG_4comp_llll_1x( ic, jc, kc, lc, io, jo, ko, lo, nbas, doK, scaleK, gout, pmat, gmat ) 
 
-    !> input
-    logical,    intent(in) :: doK
-    integer,    intent(in) :: nbas
-    real(8),    intent(in) :: scaleK
-    integer,    intent(in) :: ic, jc, kc, lc
-    integer,    intent(in) :: io, jo, ko, lo
-    complex(8), intent(in) :: pmat(4,4,nbas,nbas)
+    CONTAINS
 
-    !> input/output
-    real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
-
-    !> output
-    complex(8), intent(out) :: gmat(4,4,nbas,nbas)
-
-    !> local
-    integer    :: i, j, k, l
-    integer    :: ibas, jbas, kbas, lbas
-    complex(8) :: gg, pll, paa_ll, pab_ll, pba_ll, pbb_ll
-
-
-    !> coulomb part
-    do j=1,jc
-      jbas=jo+j
-      do i=1,ic
-        ibas=io+i
-        do l=1,lc
-          lbas=lo+l
-          do k=1,kc
-            kbas = ko+k
-            gg   = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
-            pll  = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
-            gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll
-            gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg*pll
-          enddo
-        enddo
-      enddo
-    enddo
-
-    if( .not. doK )return
-
-    !> pre-multiplication for scalling K-contribution 
-    if( scalek /= 1.0d0 )then
+    subroutine process_dG_llll(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,scaleK,gout,pmat,gmat) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      real(8),    intent(in) :: scaleK
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: pmat(4,4,nbas,nbas)
+      !> input/output
+      real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
+      !> output
+      complex(8), intent(out) :: gmat(4,4,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: gg, pll, paa_ll, pab_ll, pba_ll, pbb_ll
+      !>
+      !> coulomb part
       do j=1,jc
+        jbas=jo+j
         do i=1,ic
+          ibas=io+i
           do l=1,lc
+            lbas=lo+l
             do k=1,kc
-              gout(1,k,l,1,i,j) = gout(1,k,l,1,i,j)*scaleK
+              kbas = ko+k
+              gg   = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+              pll  = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
+              gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll
+              gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg*pll
             enddo
           enddo
         enddo
       enddo
-    endif
-
-    !> exchange part
-    do l=1,lc
-      lbas=lo+l
-      do k=1,kc
-        kbas=ko+k
+      !> exchange part
+      if( .not. doK )return
+      !> pre-multiplication for scalling K-contribution 
+      if( scalek /= 1.0d0 )then
         do j=1,jc
-          jbas=jo+j
-          paa_ll = pmat(1,1,jbas,kbas)
-          pba_ll = pmat(3,1,jbas,kbas)
-          pab_ll = pmat(1,3,jbas,kbas)
-          pbb_ll = pmat(3,3,jbas,kbas)
           do i=1,ic
-            ibas = io+i
-            gg   = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
-            gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
-            gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
-            gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
-            gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
-          enddo
-        enddo
-      enddo
-    enddo
-
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!>
-  SUBROUTINE process_dG_4comp_ssll_1x( ic, jc, kc, lc, io, jo, ko, lo, nbas, doK, scaleK, gout, pmat, gmat ) 
-
-    !> input
-    logical,    intent(in) :: doK
-    integer,    intent(in) :: nbas
-    real(8),    intent(in) :: scaleK
-    integer,    intent(in) :: ic, jc, kc, lc
-    integer,    intent(in) :: io, jo, ko, lo
-    complex(8), intent(in) :: pmat(4,4,nbas,nbas)
-
-    !> input/output
-    real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
-
-    !> output
-    complex(8), intent(out) :: gmat(4,4,nbas,nbas)
-
-    !> local
-    integer    :: i, j, k, l, m
-    integer    :: ibas, jbas, kbas, lbas
-    complex(8) :: pll, paa, pab, pba, pbb
-    complex(8) :: gg, gaag, gabg, gbag, gbbg
-    complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
-    complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
-
-
-    !> coulomb part
-    do j=1,jc
-      jbas=jo+j
-      do i=1,ic
-        ibas=io+i
-        do l=1,lc
-          lbas=lo+l
-          do k=1,kc
-            kbas=ko+k
-            !> integrals processing: [ij|kl]
-               !> large-large block 
-               gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
-               !> small-large block 
-               gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
-               gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
-               gbbg = dconjg( gaag )
-               gbag =-dconjg( gabg ) 
-            !> end
-            !> contraction [kl|ij]*ji
-               paa = pmat(2,2,jbas,ibas)
-               pba = pmat(4,2,jbas,ibas)
-               pab = pmat(2,4,jbas,ibas)
-               pbb = pmat(4,4,jbas,ibas)
-               pll = pmat(1,1,jbas,ibas) + pmat(3,3,jbas,ibas)
-               !> large-large block
-               gg = gg*pll + gaag*paa + gabg*pba + gbag*pab + gbbg*pbb
-               gmat(1,1,kbas,lbas) = gmat(1,1,kbas,lbas) + gg
-               gmat(3,3,kbas,lbas) = gmat(3,3,kbas,lbas) + gg
-            !> contraction [ij|kl]*lk
-               pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
-               !> small-small block
-               gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll
-               gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll
-               gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) + gabg*pll
-               gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + gbbg*pll
-            !> end
-          enddo
-        enddo
-      enddo
-    enddo
-
-    if( .not. doK )return
-
-    !> pre-multiplication for scalling K-contribution 
-    if( scalek /= 1.0d0 )then
-      do j=1,jc
-        do i=1,ic
-          do m=1,5
             do l=1,lc
               do k=1,kc
-                gout(1,k,l,m,i,j) = gout(1,k,l,m,i,j)*scaleK
+                gout(1,k,l,1,i,j) = gout(1,k,l,1,i,j)*scaleK
               enddo
             enddo
           enddo
         enddo
+      endif
+      !>
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            jbas=jo+j
+            paa_ll = pmat(1,1,jbas,kbas)
+            pba_ll = pmat(3,1,jbas,kbas)
+            pab_ll = pmat(1,3,jbas,kbas)
+            pbb_ll = pmat(3,3,jbas,kbas)
+            do i=1,ic
+              ibas = io+i
+              gg   = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+              gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
+              gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
+              gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
+              gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
+            enddo
+          enddo
+        enddo
       enddo
-    endif
-
-    !> exchange part
-    do l=1,lc
-      lbas=lo+l
-      do k=1,kc
-        kbas=ko+k
+    end subroutine
+    !-------------
+    subroutine process_dG_ssll(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,scaleK,gout,pmat,gmat) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      real(8),    intent(in) :: scaleK
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: pmat(4,4,nbas,nbas)
+      !> input/output
+      real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
+      !> output
+      complex(8), intent(out) :: gmat(4,4,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l, m
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: pll, paa, pab, pba, pbb
+      complex(8) :: gg, gaag, gabg, gbag, gbbg
+      complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
+      complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
+      !>
+      !> coulomb part
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          do l=1,lc
+            lbas=lo+l
+            do k=1,kc
+              kbas=ko+k
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+                 !> small-large block 
+                 gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+                 gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+                 gbbg = dconjg( gaag )
+                 gbag =-dconjg( gabg ) 
+              !> end
+              !> contraction [kl|ij]*ji
+                 paa = pmat(2,2,jbas,ibas)
+                 pba = pmat(4,2,jbas,ibas)
+                 pab = pmat(2,4,jbas,ibas)
+                 pbb = pmat(4,4,jbas,ibas)
+                 pll = pmat(1,1,jbas,ibas) + pmat(3,3,jbas,ibas)
+                 !> large-large block
+                 gg = gg*pll + gaag*paa + gabg*pba + gbag*pab + gbbg*pbb
+                 gmat(1,1,kbas,lbas) = gmat(1,1,kbas,lbas) + gg
+                 gmat(3,3,kbas,lbas) = gmat(3,3,kbas,lbas) + gg
+              !> contraction [ij|kl]*lk
+                 pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
+                 !> small-small block
+                 gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll
+                 gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll
+                 gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) + gabg*pll
+                 gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + gbbg*pll
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+      !> exchange part 
+      if( .not. doK )return
+      !> pre-multiplication for scalling K-contribution 
+      if( scalek /= 1.0d0 )then
         do j=1,jc
-          jbas=jo+j
-          !> large-large block
-          paa_ll = pmat(1,1,jbas,kbas)
-          pba_ll = pmat(3,1,jbas,kbas)
-          pab_ll = pmat(1,3,jbas,kbas)
-          pbb_ll = pmat(3,3,jbas,kbas)
-          !> small-large block
-          paa_sl = pmat(2,1,jbas,kbas)
-          pba_sl = pmat(4,1,jbas,kbas)
-          pab_sl = pmat(2,3,jbas,kbas)
-          pbb_sl = pmat(4,3,jbas,kbas)
           do i=1,ic
-            ibas=io+i
-            !> large-large block 
-            gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
-            !> small-large block 
-            gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
-            gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
-            gbbg = dconjg( gaag )
-            gbag =-dconjg( gabg ) 
+            do m=1,5
+              do l=1,lc
+                do k=1,kc
+                  gout(1,k,l,m,i,j) = gout(1,k,l,m,i,j)*scaleK
+                enddo
+              enddo
+            enddo
+          enddo
+        enddo
+      endif
+      !>
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            jbas=jo+j
             !> large-large block
-            gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
-            gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
-            gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
-            gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
+            paa_ll = pmat(1,1,jbas,kbas)
+            pba_ll = pmat(3,1,jbas,kbas)
+            pab_ll = pmat(1,3,jbas,kbas)
+            pbb_ll = pmat(3,3,jbas,kbas)
             !> small-large block
-            gmat(2,1,ibas,lbas) = gmat(2,1,ibas,lbas) - gaag*paa_sl - gabg*pba_sl 
-            gmat(2,3,ibas,lbas) = gmat(2,3,ibas,lbas) - gaag*pab_sl - gabg*pbb_sl 
-            gmat(4,1,ibas,lbas) = gmat(4,1,ibas,lbas) - gbag*paa_sl - gbbg*pba_sl 
-            gmat(4,3,ibas,lbas) = gmat(4,3,ibas,lbas) - gbag*pab_sl - gbbg*pbb_sl 
-          enddo
-        enddo
-      enddo
-    enddo
-
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!>
-  SUBROUTINE process_dG_4comp_ssss_1x( ic, jc, kc, lc, io, jo, ko, lo, nbas, doK, scaleK, gout, pmat, gmat ) 
-
-    !> input
-    logical,    intent(in) :: doK
-    integer,    intent(in) :: nbas
-    real(8),    intent(in) :: scaleK
-    integer,    intent(in) :: ic, jc, kc, lc
-    integer,    intent(in) :: io, jo, ko, lo
-    complex(8), intent(in) :: pmat(4,4,nbas,nbas)
-
-    !> input/output
-    real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
-
-    !> output
-    complex(8), intent(out) :: gmat(4,4,nbas,nbas)
-
-    !> local
-    integer    :: i, j, k, l, m
-    integer    :: ibas, jbas, kbas, lbas
-    complex(8) :: gg
-    complex(8) :: gaag,   gabg,   gbag,   gbbg
-    complex(8) :: ggaa,   ggab,   ggba,   ggbb   
-    complex(8) :: gaagaa, gabgaa, gbagaa, gbbgaa
-    complex(8) :: gaagab, gabgab, gbagab, gbbgab
-    complex(8) :: gaagba, gabgba, gbagba, gbbgba
-    complex(8) :: gaagbb, gabgbb, gbagbb, gbbgbb
-    complex(8) :: pll
-    complex(8) :: paa,    pab,    pba,    pbb
-    complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
-    complex(8) :: paa_ls, pab_ls, pba_ls, pbb_ls
-    complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
-    complex(8) :: paa_ss, pab_ss, pba_ss, pbb_ss
-
-
-    !> coulomb part
-    do j=1,jc
-      jbas=jo+j
-      do i=1,ic
-        ibas=io+i
-        do l=1,lc
-          lbas=lo+l
-          do k=1,kc
-            kbas=ko+k
-            !> integrals processing: [ij|kl]
-               !> large-large block 
-               gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
-               !> large-small block 
-               ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
-               ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
-               ggbb = dconjg( ggaa )
-               ggba =-dconjg( ggab )
-               !> small-large block 
-               gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
-               gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
-               gbbg = dconjg( gaag )
-               gbag =-dconjg( gabg ) 
-               !> small-small block: aa
-               gaagaa = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
-               gaagba = dcmplx( (-gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
-               gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
-               gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
-               !> small-small block: bb
-               gbbgbb = dconjg( gaagaa )
-               gbbgab =-dconjg( gaagba ) 
-               gbagbb =-dconjg( gabgaa )
-               gbagab = dconjg( gabgba )
-               !> small-small block: ab
-               gaagab = dcmplx( ( gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
-               gaagbb = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
-               gabgab = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
-               gabgbb = dcmplx( ( gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
-               !> small-small block: ba
-               gbbgba =-dconjg( gaagab )
-               gbbgaa = dconjg( gaagbb )
-               gbagba = dconjg( gabgab )
-               gbagaa =-dconjg( gabgbb )
-            !> end
-            !> contraction [ij|kl]*lk
-               paa = pmat(2,2,lbas,kbas)
-               pba = pmat(4,2,lbas,kbas)
-               pab = pmat(2,4,lbas,kbas)
-               pbb = pmat(4,4,lbas,kbas)
-               pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
-               !> large-large block
-               gg = gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
-               gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg
-               gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg
-               !> small-small block
-               gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll + gaagaa*paa + gaagab*pba + gaagba*pab + gaagbb*pbb
-               gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll + gbagaa*paa + gbagab*pba + gbagba*pab + gbagbb*pbb
-               gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) + gabg*pll + gabgaa*paa + gabgab*pba + gabgba*pab + gabgbb*pbb
-               gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + gbbg*pll + gbbgaa*paa + gbbgab*pba + gbbgba*pab + gbbgbb*pbb
-            !> end
-          enddo
-        enddo
-      enddo
-    enddo
-
-    if( .not. doK )return
-
-    !> pre-multiplication for scalling K-contribution 
-    if( scalek /= 1.0d0 )then
-      do j=1,jc
-        do i=1,ic
-          do m=1,5
-            do l=1,lc
-              do k=1,kc
-                gout(1,k,l,m,i,j) = gout(1,k,l,m,i,j)*scaleK
-                gout(2,k,l,m,i,j) = gout(2,k,l,m,i,j)*scaleK
-                gout(3,k,l,m,i,j) = gout(3,k,l,m,i,j)*scaleK
-                gout(4,k,l,m,i,j) = gout(4,k,l,m,i,j)*scaleK
-                gout(5,k,l,m,i,j) = gout(5,k,l,m,i,j)*scaleK
-              enddo
+            paa_sl = pmat(2,1,jbas,kbas)
+            pba_sl = pmat(4,1,jbas,kbas)
+            pab_sl = pmat(2,3,jbas,kbas)
+            pbb_sl = pmat(4,3,jbas,kbas)
+            do i=1,ic
+              ibas=io+i
+              !> large-large block 
+              gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+              !> small-large block 
+              gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+              gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+              gbbg = dconjg( gaag )
+              gbag =-dconjg( gabg ) 
+              !> large-large block
+              gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
+              gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
+              gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
+              gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
+              !> small-large block
+              gmat(2,1,ibas,lbas) = gmat(2,1,ibas,lbas) - gaag*paa_sl - gabg*pba_sl 
+              gmat(2,3,ibas,lbas) = gmat(2,3,ibas,lbas) - gaag*pab_sl - gabg*pbb_sl 
+              gmat(4,1,ibas,lbas) = gmat(4,1,ibas,lbas) - gbag*paa_sl - gbbg*pba_sl 
+              gmat(4,3,ibas,lbas) = gmat(4,3,ibas,lbas) - gbag*pab_sl - gbbg*pbb_sl 
             enddo
           enddo
         enddo
       enddo
-    endif
-
-    !> exchange part
-    do l=1,lc
-      lbas=lo+l
-      do k=1,kc
-        kbas=ko+k
+    end subroutine
+    !-------------
+    subroutine process_dG_ssss(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,scaleK,gout,pmat,gmat) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      real(8),    intent(in) :: scaleK
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: pmat(4,4,nbas,nbas)
+      !> input/output
+      real(8), intent(inout) :: gout(5,kc,lc,5,ic,jc)
+      !> output
+      complex(8), intent(out) :: gmat(4,4,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l, m
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: gg
+      complex(8) :: gaag,   gabg,   gbag,   gbbg
+      complex(8) :: ggaa,   ggab,   ggba,   ggbb   
+      complex(8) :: gaagaa, gabgaa, gbagaa, gbbgaa
+      complex(8) :: gaagab, gabgab, gbagab, gbbgab
+      complex(8) :: gaagba, gabgba, gbagba, gbbgba
+      complex(8) :: gaagbb, gabgbb, gbagbb, gbbgbb
+      complex(8) :: pll
+      complex(8) :: paa,    pab,    pba,    pbb
+      complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
+      complex(8) :: paa_ls, pab_ls, pba_ls, pbb_ls
+      complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
+      complex(8) :: paa_ss, pab_ss, pba_ss, pbb_ss
+      !> 
+      !> coulomb part
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          do l=1,lc
+            lbas=lo+l
+            do k=1,kc
+              kbas=ko+k
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+                 !> large-small block 
+                 ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
+                 ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
+                 ggbb = dconjg( ggaa )
+                 ggba =-dconjg( ggab )
+                 !> small-large block 
+                 gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+                 gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+                 gbbg = dconjg( gaag )
+                 gbag =-dconjg( gabg ) 
+                 !> small-small block: aa
+                 gaagaa = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+                 gaagba = dcmplx( (-gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
+                 gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+                 gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
+                 !> small-small block: bb
+                 gbbgbb = dconjg( gaagaa )
+                 gbbgab =-dconjg( gaagba ) 
+                 gbagbb =-dconjg( gabgaa )
+                 gbagab = dconjg( gabgba )
+                 !> small-small block: ab
+                 gaagab = dcmplx( ( gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
+                 gaagbb = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+                 gabgab = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
+                 gabgbb = dcmplx( ( gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+                 !> small-small block: ba
+                 gbbgba =-dconjg( gaagab )
+                 gbbgaa = dconjg( gaagbb )
+                 gbagba = dconjg( gabgab )
+                 gbagaa =-dconjg( gabgbb )
+              !> end
+              !> contraction [ij|kl]*lk
+                 paa = pmat(2,2,lbas,kbas)
+                 pba = pmat(4,2,lbas,kbas)
+                 pab = pmat(2,4,lbas,kbas)
+                 pbb = pmat(4,4,lbas,kbas)
+                 pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
+                 !> large-large block
+                 gg = gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
+                 gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg
+                 gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg
+                 !> small-small block
+                 gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll + gaagaa*paa + gaagab*pba + gaagba*pab + gaagbb*pbb
+                 gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll + gbagaa*paa + gbagab*pba + gbagba*pab + gbagbb*pbb
+                 gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) + gabg*pll + gabgaa*paa + gabgab*pba + gabgba*pab + gabgbb*pbb
+                 gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + gbbg*pll + gbbgaa*paa + gbbgab*pba + gbbgba*pab + gbbgbb*pbb
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+      !> exchange part  
+      if( .not. doK )return
+      !> pre-multiplication for scalling K-contribution 
+      if( scalek /= 1.0d0 )then
         do j=1,jc
-          jbas=jo+j
-          !> large-large block
-          paa_ll = pmat(1,1,jbas,kbas)
-          pba_ll = pmat(3,1,jbas,kbas)
-          pab_ll = pmat(1,3,jbas,kbas)
-          pbb_ll = pmat(3,3,jbas,kbas)
-          !> large-small block
-          paa_ls = pmat(1,2,jbas,kbas)
-          pba_ls = pmat(3,2,jbas,kbas)
-          pab_ls = pmat(1,4,jbas,kbas)
-          pbb_ls = pmat(3,4,jbas,kbas)
-          !> small-large block
-          paa_sl = pmat(2,1,jbas,kbas)
-          pba_sl = pmat(4,1,jbas,kbas)
-          pab_sl = pmat(2,3,jbas,kbas)
-          pbb_sl = pmat(4,3,jbas,kbas)
-          !> small-small block
-          paa_ss = pmat(2,2,jbas,kbas)
-          pba_ss = pmat(4,2,jbas,kbas)
-          pab_ss = pmat(2,4,jbas,kbas)
-          pbb_ss = pmat(4,4,jbas,kbas)
           do i=1,ic
-            ibas=io+i
-            !> large-large block 
-            gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
-            !> large-small block 
-            ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
-            ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
-            ggbb = dconjg( ggaa )
-            ggba =-dconjg( ggab )
-            !> small-large block 
-            gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
-            gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
-            gbbg = dconjg( gaag )
-            gbag =-dconjg( gabg ) 
-            !> small-small block: aa
-            gaagaa = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
-            gaagba = dcmplx( (-gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
-            gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
-            gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
-            !> small-small block: bb
-            gbbgbb = dconjg( gaagaa )
-            gbbgab =-dconjg( gaagba ) 
-            gbagbb =-dconjg( gabgaa )
-            gbagab = dconjg( gabgba )
-           !gbbgbb = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)-gout(2,k,l,3,i,j)) )
-           !gbbgab = dcmplx( ( gout(4,k,l,2,i,j)+gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
-           !gbagbb = dcmplx( (-gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
-           !gbagab = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), (-gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
-            !> small-small block: ab
-            gaagab = dcmplx( ( gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
-            gaagbb = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
-            gabgab = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
-            gabgbb = dcmplx( ( gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
-            !> small-small block: ba
-            gbbgba =-dconjg( gaagab )
-            gbbgaa = dconjg( gaagbb )
-            gbagba = dconjg( gabgab )
-            gbagaa =-dconjg( gabgbb )
-           !gbbgba = dcmplx( (-gout(4,k,l,2,i,j)+gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
-           !gbbgaa = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)-gout(2,k,l,3,i,j)) )
-           !gbagba = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), (-gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
-           !gbagaa = dcmplx( (-gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+            do m=1,5
+              do l=1,lc
+                do k=1,kc
+                  gout(1,k,l,m,i,j) = gout(1,k,l,m,i,j)*scaleK
+                  gout(2,k,l,m,i,j) = gout(2,k,l,m,i,j)*scaleK
+                  gout(3,k,l,m,i,j) = gout(3,k,l,m,i,j)*scaleK
+                  gout(4,k,l,m,i,j) = gout(4,k,l,m,i,j)*scaleK
+                  gout(5,k,l,m,i,j) = gout(5,k,l,m,i,j)*scaleK
+                enddo
+              enddo
+            enddo
+          enddo
+        enddo
+      endif
+      !>
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            jbas=jo+j
             !> large-large block
-            gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
-            gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
-            gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
-            gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
+            paa_ll = pmat(1,1,jbas,kbas)
+            pba_ll = pmat(3,1,jbas,kbas)
+            pab_ll = pmat(1,3,jbas,kbas)
+            pbb_ll = pmat(3,3,jbas,kbas)
             !> large-small block
-            gmat(1,2,ibas,lbas) = gmat(1,2,ibas,lbas) - paa_ls*ggaa - pab_ls*ggba  
-            gmat(1,4,ibas,lbas) = gmat(1,4,ibas,lbas) - paa_ls*ggab - pab_ls*ggbb
-            gmat(3,2,ibas,lbas) = gmat(3,2,ibas,lbas) - pba_ls*ggaa - pbb_ls*ggba
-            gmat(3,4,ibas,lbas) = gmat(3,4,ibas,lbas) - pba_ls*ggab - pbb_ls*ggbb
+            paa_ls = pmat(1,2,jbas,kbas)
+            pba_ls = pmat(3,2,jbas,kbas)
+            pab_ls = pmat(1,4,jbas,kbas)
+            pbb_ls = pmat(3,4,jbas,kbas)
             !> small-large block
-            gmat(2,1,ibas,lbas) = gmat(2,1,ibas,lbas) - gaag*paa_sl - gabg*pba_sl 
-            gmat(2,3,ibas,lbas) = gmat(2,3,ibas,lbas) - gaag*pab_sl - gabg*pbb_sl 
-            gmat(4,1,ibas,lbas) = gmat(4,1,ibas,lbas) - gbag*paa_sl - gbbg*pba_sl 
-            gmat(4,3,ibas,lbas) = gmat(4,3,ibas,lbas) - gbag*pab_sl - gbbg*pbb_sl 
+            paa_sl = pmat(2,1,jbas,kbas)
+            pba_sl = pmat(4,1,jbas,kbas)
+            pab_sl = pmat(2,3,jbas,kbas)
+            pbb_sl = pmat(4,3,jbas,kbas)
             !> small-small block
-            gmat(2,2,ibas,lbas) = gmat(2,2,ibas,lbas) - gaagaa*paa_ss - gaagba*pab_ss - gabgaa*pba_ss - gabgba*pbb_ss 
-            gmat(2,4,ibas,lbas) = gmat(2,4,ibas,lbas) - gaagab*paa_ss - gaagbb*pab_ss - gabgab*pba_ss - gabgbb*pbb_ss 
-            gmat(4,2,ibas,lbas) = gmat(4,2,ibas,lbas) - gbagaa*paa_ss - gbagba*pab_ss - gbbgaa*pba_ss - gbbgba*pbb_ss 
-            gmat(4,4,ibas,lbas) = gmat(4,4,ibas,lbas) - gbagab*paa_ss - gbagbb*pab_ss - gbbgab*pba_ss - gbbgbb*pbb_ss 
+            paa_ss = pmat(2,2,jbas,kbas)
+            pba_ss = pmat(4,2,jbas,kbas)
+            pab_ss = pmat(2,4,jbas,kbas)
+            pbb_ss = pmat(4,4,jbas,kbas)
+            do i=1,ic
+              ibas=io+i
+              !> large-large block 
+              gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+              !> large-small block 
+              ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
+              ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
+              ggbb = dconjg( ggaa )
+              ggba =-dconjg( ggab )
+              !> small-large block 
+              gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+              gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+              gbbg = dconjg( gaag )
+              gbag =-dconjg( gabg ) 
+              !> small-small block: aa
+              gaagaa = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+              gaagba = dcmplx( (-gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
+              gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+              gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
+              !> small-small block: bb
+              gbbgbb = dconjg( gaagaa )
+              gbbgab =-dconjg( gaagba ) 
+              gbagbb =-dconjg( gabgaa )
+              gbagab = dconjg( gabgba )
+             !gbbgbb = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)-gout(2,k,l,3,i,j)) )
+             !gbbgab = dcmplx( ( gout(4,k,l,2,i,j)+gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
+             !gbagbb = dcmplx( (-gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+             !gbagab = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), (-gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
+              !> small-small block: ab
+              gaagab = dcmplx( ( gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
+              gaagbb = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+              gabgab = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
+              gabgbb = dcmplx( ( gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+              !> small-small block: ba
+              gbbgba =-dconjg( gaagab )
+              gbbgaa = dconjg( gaagbb )
+              gbagba = dconjg( gabgab )
+              gbagaa =-dconjg( gabgbb )
+             !gbbgba = dcmplx( (-gout(4,k,l,2,i,j)+gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
+             !gbbgaa = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)-gout(2,k,l,3,i,j)) )
+             !gbagba = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), (-gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
+             !gbagaa = dcmplx( (-gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+              !> large-large block
+              gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa_ll*gg
+              gmat(1,3,ibas,lbas) = gmat(1,3,ibas,lbas) - pab_ll*gg
+              gmat(3,1,ibas,lbas) = gmat(3,1,ibas,lbas) - pba_ll*gg
+              gmat(3,3,ibas,lbas) = gmat(3,3,ibas,lbas) - pbb_ll*gg
+              !> large-small block
+              gmat(1,2,ibas,lbas) = gmat(1,2,ibas,lbas) - paa_ls*ggaa - pab_ls*ggba  
+              gmat(1,4,ibas,lbas) = gmat(1,4,ibas,lbas) - paa_ls*ggab - pab_ls*ggbb
+              gmat(3,2,ibas,lbas) = gmat(3,2,ibas,lbas) - pba_ls*ggaa - pbb_ls*ggba
+              gmat(3,4,ibas,lbas) = gmat(3,4,ibas,lbas) - pba_ls*ggab - pbb_ls*ggbb
+              !> small-large block
+              gmat(2,1,ibas,lbas) = gmat(2,1,ibas,lbas) - gaag*paa_sl - gabg*pba_sl 
+              gmat(2,3,ibas,lbas) = gmat(2,3,ibas,lbas) - gaag*pab_sl - gabg*pbb_sl 
+              gmat(4,1,ibas,lbas) = gmat(4,1,ibas,lbas) - gbag*paa_sl - gbbg*pba_sl 
+              gmat(4,3,ibas,lbas) = gmat(4,3,ibas,lbas) - gbag*pab_sl - gbbg*pbb_sl 
+              !> small-small block
+              gmat(2,2,ibas,lbas) = gmat(2,2,ibas,lbas) - gaagaa*paa_ss - gaagba*pab_ss - gabgaa*pba_ss - gabgba*pbb_ss 
+              gmat(2,4,ibas,lbas) = gmat(2,4,ibas,lbas) - gaagab*paa_ss - gaagbb*pab_ss - gabgab*pba_ss - gabgbb*pbb_ss 
+              gmat(4,2,ibas,lbas) = gmat(4,2,ibas,lbas) - gbagaa*paa_ss - gbagba*pab_ss - gbbgaa*pba_ss - gbbgba*pbb_ss 
+              gmat(4,4,ibas,lbas) = gmat(4,4,ibas,lbas) - gbagab*paa_ss - gbagbb*pab_ss - gbbgab*pba_ss - gbbgbb*pbb_ss 
+            enddo
           enddo
         enddo
       enddo
-    enddo
+    end subroutine
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
