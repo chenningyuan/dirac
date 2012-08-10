@@ -44,13 +44,9 @@ MODULE MODULE_INTEREST_INTERFACE
 
   public initialize_interest 
   public process_overlap_integrals 
-  public process_two_electron_integrals
   public process_kinetic_energy_integrals 
   public process_nuclear_attraction_integrals
-
-  interface process_two_electron_integrals
-    module procedure process_two_electron_integrals_4comp
-  end interface
+  public process_two_electron_integrals_4comp
 
   private
 
@@ -228,10 +224,10 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_overlap_integrals( S_4comp ) 
+  SUBROUTINE process_overlap_integrals( S ) 
 
     !> input
-    real(8), optional :: S_4comp(2*nrow,2*ncol) 
+    real(8) :: S(2*nrow,2*ncol) 
 
     !> local
     integer              :: i, j 
@@ -245,11 +241,11 @@ CONTAINS
     call two_center_integrals( interest_overlap, Smat, nrow )
     call symmetrize_matrix(                                 A = Smat(1,1,1), ida = nrow )  !Re(A)
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
-    S_4comp = 0.0d0
+    S = 0.0d0
     do j=1,ncol
       do i=1,nrow
-        S_4comp(i     ,j     ) = Smat(i,j,1) 
-        S_4comp(i+nrow,j+ncol) = Smat(i,j,2) 
+        S(i     ,j     ) = Smat(i,j,1) 
+        S(i+nrow,j+ncol) = Smat(i,j,2) 
       enddo
     enddo
     deallocate( Smat )
@@ -257,11 +253,11 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_kinetic_energy_integrals( T_4comp ) 
+  SUBROUTINE process_kinetic_energy_integrals( T ) 
 
     !> input
     !> fixme: the case when nz!=4, since we always assume nz=4
-    real(8), optional :: T_4comp(2*nrow,2*ncol,4) 
+    real(8) :: T(2*nrow,2*ncol,4) 
 
     !> local
     integer              :: i, j 
@@ -276,9 +272,9 @@ CONTAINS
     call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
     do j=1,ncol
       do i=1,nrow
-        T_4comp(i+nrow,j     ,1) = T_4comp(i+nrow,j     ,1) + Tmat(i,j,2)
-        T_4comp(i     ,j+ncol,1) = T_4comp(i     ,j+ncol,1) + Tmat(i,j,2)
-        T_4comp(i+nrow,j+ncol,1) = T_4comp(i+nrow,j+ncol,1) - Tmat(i,j,2)
+        T(i+nrow,j     ,1) = T(i+nrow,j     ,1) + Tmat(i,j,2)
+        T(i     ,j+ncol,1) = T(i     ,j+ncol,1) + Tmat(i,j,2)
+        T(i+nrow,j+ncol,1) = T(i+nrow,j+ncol,1) - Tmat(i,j,2)
       enddo
     enddo
     deallocate( Tmat )
@@ -286,11 +282,11 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE process_nuclear_attraction_integrals( V_4comp ) 
+  SUBROUTINE process_nuclear_attraction_integrals( V ) 
  
     !> input
     !> fixme: the case when nz!=4, since we always assume nz=4
-    real(8), optional :: V_4comp(2*nrow,2*ncol,4)
+    real(8) :: V(2*nrow,2*ncol,4)
 
     !> local
     integer              :: i, j 
@@ -309,11 +305,11 @@ CONTAINS
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,1,5), ida = nrow )  !Im(B) = (yz - zy)     
     do j=1,ncol
       do i=1,nrow
-        V_4comp(i     ,j     ,1) = V_4comp(i     ,j     ,1) + Vmat(i,j,1)
-        V_4comp(i+nrow,j+ncol,1) = V_4comp(i+nrow,j+ncol,1) + Vmat(i,j,2)
-        V_4comp(i+nrow,j+ncol,2) = V_4comp(i+nrow,j+ncol,2) + Vmat(i,j,3)
-        V_4comp(i+nrow,j+ncol,3) = V_4comp(i+nrow,j+ncol,3) + Vmat(i,j,4)
-        V_4comp(i+nrow,j+ncol,4) = V_4comp(i+nrow,j+ncol,4) + Vmat(i,j,5)
+        V(i     ,j     ,1) = V(i     ,j     ,1) + Vmat(i,j,1)
+        V(i+nrow,j+ncol,1) = V(i+nrow,j+ncol,1) + Vmat(i,j,2)
+        V(i+nrow,j+ncol,2) = V(i+nrow,j+ncol,2) + Vmat(i,j,3)
+        V(i+nrow,j+ncol,3) = V(i+nrow,j+ncol,3) + Vmat(i,j,4)
+        V(i+nrow,j+ncol,4) = V(i+nrow,j+ncol,4) + Vmat(i,j,5)
       enddo
     enddo
     deallocate( Vmat )
@@ -426,7 +422,7 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> note: on input,  G and P must be in the cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals_4comp( Gmat_4comp, Pmat_4comp, intflg, hfxfac ) 
+  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg, hfxfac ) 
 
     use module_interest_eri
 
@@ -435,11 +431,11 @@ CONTAINS
     integer, intent(in) :: intflg
     real(8), intent(in) :: hfxfac
     !> 1-electron density matrix, Dirac format
-    real(8), intent(in), optional :: Pmat_4comp(2*nrow,2*nrow,4)  
+    real(8), intent(in) :: Pmat(2*nrow,2*nrow,4)  
 
     !> output
     !> 2-electron Fock matrix, Dirac format
-    real(8), intent(out), optional :: Gmat_4comp(2*nrow,2*nrow,4) 
+    real(8), intent(out) :: Gmat(2*nrow,2*nrow,4) 
 
     !> local
     logical :: doK
@@ -485,20 +481,20 @@ CONTAINS
     do j=1,nrow
       do i=1,nrow
         !> alpha-alpha = "A"
-        dP(1,1,i,j) = dcmplx( Pmat_4comp(i     ,j     ,1)*fll, Pmat_4comp(i     ,j     ,2)*fll ) ! LL
-        dP(2,1,i,j) = dcmplx( Pmat_4comp(i+nrow,j     ,1)*fsl, Pmat_4comp(i+nrow,j     ,2)*fsl ) ! SL
-        dP(1,2,i,j) = dcmplx( Pmat_4comp(i     ,j+nrow,1)*fsl, Pmat_4comp(i     ,j+nrow,2)*fsl ) ! LS
-        dP(2,2,i,j) = dcmplx( Pmat_4comp(i+nrow,j+nrow,1)*fss, Pmat_4comp(i+nrow,j+nrow,2)*fss ) ! SS
+        dP(1,1,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll, Pmat(i     ,j     ,2)*fll ) ! LL
+        dP(2,1,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl, Pmat(i+nrow,j     ,2)*fsl ) ! SL
+        dP(1,2,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl, Pmat(i     ,j+nrow,2)*fsl ) ! LS
+        dP(2,2,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss, Pmat(i+nrow,j+nrow,2)*fss ) ! SS
         !> beta-beta  = "A*"
         dP(3,3,i,j) = dconjg( dP(1,1,i,j) )
         dP(4,3,i,j) = dconjg( dP(2,1,i,j) )
         dP(3,4,i,j) = dconjg( dP(1,2,i,j) )
         dP(4,4,i,j) = dconjg( dP(2,2,i,j) )
         !> alpha-beta = "B"
-        dP(1,3,i,j) = dcmplx( Pmat_4comp(i     ,j     ,3)*fll, Pmat_4comp(i     ,j     ,4)*fll ) ! LL
-        dP(2,3,i,j) = dcmplx( Pmat_4comp(i+nrow,j     ,3)*fsl, Pmat_4comp(i+nrow,j     ,4)*fsl ) ! SL
-        dP(1,4,i,j) = dcmplx( Pmat_4comp(i     ,j+nrow,3)*fsl, Pmat_4comp(i     ,j+nrow,4)*fsl ) ! LS
-        dP(2,4,i,j) = dcmplx( Pmat_4comp(i+nrow,j+nrow,3)*fss, Pmat_4comp(i+nrow,j+nrow,4)*fss ) ! SS
+        dP(1,3,i,j) = dcmplx( Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll ) ! LL
+        dP(2,3,i,j) = dcmplx( Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl ) ! SL
+        dP(1,4,i,j) = dcmplx( Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl ) ! LS
+        dP(2,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss ) ! SS
         !> beta-alpha =" -B*"
         dP(3,1,i,j) = -dconjg( dP(1,3,i,j) )
         dP(4,1,i,j) = -dconjg( dP(2,3,i,j) )
@@ -585,25 +581,25 @@ CONTAINS
     do j=1,nrow
       do i=1,nrow
         !> quaternion(0) 
-        Gmat_4comp(i     ,j     ,1) = Gmat_4comp(i     ,j     ,1) + dreal(dG(1,1,i,j))
-        Gmat_4comp(i+nrow,j     ,1) = Gmat_4comp(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,1) = Gmat_4comp(i     ,j+nrow,1) + dreal(dG(2,1,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,1) = Gmat_4comp(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
+        Gmat(i     ,j     ,1) = Gmat(i     ,j     ,1) + dreal(dG(1,1,i,j))
+        Gmat(i+nrow,j     ,1) = Gmat(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
+        Gmat(i     ,j+nrow,1) = Gmat(i     ,j+nrow,1) + dreal(dG(2,1,j,i))*fsl
+        Gmat(i+nrow,j+nrow,1) = Gmat(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
         !> quaternion(i) 
-        Gmat_4comp(i     ,j     ,2) = Gmat_4comp(i     ,j     ,2) + dimag(dG(1,1,i,j))
-        Gmat_4comp(i+nrow,j     ,2) = Gmat_4comp(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,2) = Gmat_4comp(i     ,j+nrow,2) - dimag(dG(2,1,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,2) = Gmat_4comp(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
+        Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) + dimag(dG(1,1,i,j))
+        Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
+        Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) - dimag(dG(2,1,j,i))*fsl
+        Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
         !> quaternion(j) 
-        Gmat_4comp(i     ,j     ,3) = Gmat_4comp(i     ,j     ,3) + dreal(dG(1,3,i,j))
-        Gmat_4comp(i+nrow,j     ,3) = Gmat_4comp(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,3) = Gmat_4comp(i     ,j+nrow,3) - dreal(dG(2,3,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,3) = Gmat_4comp(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
+        Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) + dreal(dG(1,3,i,j))
+        Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
+        Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) - dreal(dG(2,3,j,i))*fsl
+        Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
         !> quaternion(k) 
-        Gmat_4comp(i     ,j     ,4) = Gmat_4comp(i     ,j     ,4) + dimag(dG(1,3,i,j))
-        Gmat_4comp(i+nrow,j     ,4) = Gmat_4comp(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,4) = Gmat_4comp(i     ,j+nrow,4) - dimag(dG(2,3,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,4) = Gmat_4comp(i+nrow,j+nrow,4) + dimag(dG(2,4,i,j))*fss
+        Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) + dimag(dG(1,3,i,j))
+        Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
+        Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) - dimag(dG(2,3,j,i))*fsl
+        Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) + dimag(dG(2,4,i,j))*fss
       enddo
     enddo
 
