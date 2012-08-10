@@ -1,6 +1,6 @@
 !*******************************************************************
 !
-!     ECPINT : RECP integral routine
+!     RECP : RECP integral routine
 !
 !     This program is based on argos integral routine
 !     with the permission of R. M. Pitzer
@@ -16,8 +16,8 @@
 #include "argoscom.h"
 #include "inc_print.h"
 
-!     Enter ECPINT
-      CALL QENTER('ECPINT')
+!     Enter RECP
+      CALL QENTER('RECP')
       CALL TITLER('RECP integral start','*',126)
 
 !     Parameters from menu (RECP_LNK_RDMENU)
@@ -31,9 +31,9 @@
 !     Main part
       CALL RECP_ONE
 
-!     Exit ECPINT
+!     Exit RECP
       CALL TITLER('RECP integral end','*',126)
-      CALL QEXIT('ECPINT')
+      CALL QEXIT('RECP')
       END
 
 ! ------------------------------------------------

@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PAMKRCC(WORK,LWORK)
+      SUBROUTINE PAMKRCC()
 C***********************************************************************
 C
 C Getting information from Dirac and setting up strings etc.
@@ -11,6 +11,8 @@ C
 C common blocks needs cleaning!!!!!!!!!!!!!!!!
 C
 C***********************************************************************
+      use memory_allocator
+
 #include "implicit.inc"
 #include "ipoist8.inc"
 *. Parameters for dimensioning
@@ -28,12 +30,15 @@ C will probably have to delete most of these again
 C added by lasse
 #include "cintfo.inc"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
+
+      CALL QENTER('KRCC ')
 C
+      call legacy_lwork_get(LWORK)
 C
 #include "memint.h"
-C
-      CALL QENTER('KRCC ')
+      call alloc(WORK,LWORK,id='WORK in PAMKRCC')
+
 *. Ratio beteeen real and integer word length
       CALL ZIRAT_KRCC !ok
 * First make an entry on memory to look for
@@ -109,6 +114,7 @@ C
      &                WORK,KFREE,LFREE)
 
 
+      call dealloc(WORK)
 *
       CALL QEXIT('KRCC ')
 *
