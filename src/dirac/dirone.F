@@ -789,8 +789,8 @@ C
        IF(MDIRAC) THEN
 #ifdef MOD_INTEREST
          fock(1:n2bbasxq) = 0.0d0
-         call process_kinetic_energy_integrals( T_4comp=Fock )
-         call process_nuclear_attraction_integrals( V_4comp=Fock ) 
+         call process_kinetic_energy_integrals( Fock )
+         call process_nuclear_attraction_integrals( Fock ) 
 #endif
        ELSE
          CALL MEMGET('REAL',KFTRI ,NZ*N2BBASX,WORK,KFREE,LFREE)
@@ -3634,7 +3634,7 @@ C
           CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals( S_4comp=smat )
+        call process_overlap_integrals( smat )
 #endif
       ELSE
 C      
@@ -3736,7 +3736,7 @@ C
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals( S_4comp=smat )
+        call process_overlap_integrals( smat )
 #endif
       ELSE
 !       call alloc(sbuf, n2bbasx)

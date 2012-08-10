@@ -44,13 +44,10 @@ MODULE MODULE_INTEREST_INTERFACE
 
   public initialize_interest 
   public process_overlap_integrals 
-  public process_two_electron_integrals
   public process_kinetic_energy_integrals 
   public process_nuclear_attraction_integrals
-
-  interface process_two_electron_integrals
-    module procedure process_two_electron_integrals_4comp
-  end interface
+  public process_two_electron_integrals_4comp
+  public process_two_electron_integrals_2comp
 
   private
 
@@ -228,10 +225,10 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_overlap_integrals( S_4comp ) 
+  SUBROUTINE process_overlap_integrals( S ) 
 
     !> input
-    real(8), optional :: S_4comp(2*nrow,2*ncol) 
+    real(8) :: S(2*nrow,2*ncol) 
 
     !> local
     integer              :: i, j 
@@ -245,11 +242,11 @@ CONTAINS
     call two_center_integrals( interest_overlap, Smat, nrow )
     call symmetrize_matrix(                                 A = Smat(1,1,1), ida = nrow )  !Re(A)
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
-    S_4comp = 0.0d0
+    S = 0.0d0
     do j=1,ncol
       do i=1,nrow
-        S_4comp(i     ,j     ) = Smat(i,j,1) 
-        S_4comp(i+nrow,j+ncol) = Smat(i,j,2) 
+        S(i     ,j     ) = Smat(i,j,1) 
+        S(i+nrow,j+ncol) = Smat(i,j,2) 
       enddo
     enddo
     deallocate( Smat )
@@ -257,11 +254,11 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_kinetic_energy_integrals( T_4comp ) 
+  SUBROUTINE process_kinetic_energy_integrals( T ) 
 
     !> input
     !> fixme: the case when nz!=4, since we always assume nz=4
-    real(8), optional :: T_4comp(2*nrow,2*ncol,4) 
+    real(8) :: T(2*nrow,2*ncol,4) 
 
     !> local
     integer              :: i, j 
@@ -276,9 +273,9 @@ CONTAINS
     call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
     do j=1,ncol
       do i=1,nrow
-        T_4comp(i+nrow,j     ,1) = T_4comp(i+nrow,j     ,1) + Tmat(i,j,2)
-        T_4comp(i     ,j+ncol,1) = T_4comp(i     ,j+ncol,1) + Tmat(i,j,2)
-        T_4comp(i+nrow,j+ncol,1) = T_4comp(i+nrow,j+ncol,1) - Tmat(i,j,2)
+        T(i+nrow,j     ,1) = T(i+nrow,j     ,1) + Tmat(i,j,2)
+        T(i     ,j+ncol,1) = T(i     ,j+ncol,1) + Tmat(i,j,2)
+        T(i+nrow,j+ncol,1) = T(i+nrow,j+ncol,1) - Tmat(i,j,2)
       enddo
     enddo
     deallocate( Tmat )
@@ -286,11 +283,11 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE process_nuclear_attraction_integrals( V_4comp ) 
+  SUBROUTINE process_nuclear_attraction_integrals( V ) 
  
     !> input
     !> fixme: the case when nz!=4, since we always assume nz=4
-    real(8), optional :: V_4comp(2*nrow,2*ncol,4)
+    real(8) :: V(2*nrow,2*ncol,4)
 
     !> local
     integer              :: i, j 
@@ -309,11 +306,11 @@ CONTAINS
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,1,5), ida = nrow )  !Im(B) = (yz - zy)     
     do j=1,ncol
       do i=1,nrow
-        V_4comp(i     ,j     ,1) = V_4comp(i     ,j     ,1) + Vmat(i,j,1)
-        V_4comp(i+nrow,j+ncol,1) = V_4comp(i+nrow,j+ncol,1) + Vmat(i,j,2)
-        V_4comp(i+nrow,j+ncol,2) = V_4comp(i+nrow,j+ncol,2) + Vmat(i,j,3)
-        V_4comp(i+nrow,j+ncol,3) = V_4comp(i+nrow,j+ncol,3) + Vmat(i,j,4)
-        V_4comp(i+nrow,j+ncol,4) = V_4comp(i+nrow,j+ncol,4) + Vmat(i,j,5)
+        V(i     ,j     ,1) = V(i     ,j     ,1) + Vmat(i,j,1)
+        V(i+nrow,j+ncol,1) = V(i+nrow,j+ncol,1) + Vmat(i,j,2)
+        V(i+nrow,j+ncol,2) = V(i+nrow,j+ncol,2) + Vmat(i,j,3)
+        V(i+nrow,j+ncol,3) = V(i+nrow,j+ncol,3) + Vmat(i,j,4)
+        V(i+nrow,j+ncol,4) = V(i+nrow,j+ncol,4) + Vmat(i,j,5)
       enddo
     enddo
     deallocate( Vmat )
@@ -426,7 +423,7 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> note: on input,  G and P must be in the cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals_4comp( Gmat_4comp, Pmat_4comp, intflg, hfxfac ) 
+  SUBROUTINE process_two_electron_integrals_2comp( Gmat, Pmat, intflg, hfxfac ) 
 
     use module_interest_eri
 
@@ -435,11 +432,223 @@ CONTAINS
     integer, intent(in) :: intflg
     real(8), intent(in) :: hfxfac
     !> 1-electron density matrix, Dirac format
-    real(8), intent(in), optional :: Pmat_4comp(2*nrow,2*nrow,4)  
+    real(8), intent(in) :: Pmat(nrow,nrow,4)  
 
     !> output
     !> 2-electron Fock matrix, Dirac format
-    real(8), intent(out), optional :: Gmat_4comp(2*nrow,2*nrow,4) 
+    real(8), intent(out) :: Gmat(nrow,nrow,4) 
+
+    !> local
+    logical :: doK
+    real(8) :: fijkl, fll
+    integer :: li, ni, oi   
+    integer :: lj, nj, oj   
+    integer :: lk, nk, ok   
+    integer :: ll, nl, ol   
+    integer :: nint, lmax
+    integer :: i, j, k, l, ibas
+    real(8) :: gout(441*441)    !todo
+    integer :: nij, nkl, ij
+    real(8) :: ei, ci, xi, yi, zi 
+    real(8) :: ej, cj, xj, yj, zj 
+    real(8) :: ek, ck, xk, yk, zk 
+    real(8) :: el, cl, xl, yl, zl 
+
+    complex(8), allocatable :: dP(:,:,:,:)
+    complex(8), allocatable :: dG(:,:,:,:)
+
+
+    !> check the eri class
+    select case( intflg )
+      case( 0 );    return 
+      case( 1 );
+      case default; stop "The desired class of ERI integrals is not implemented in InteRest :-( => stop"
+    end select
+
+    !> init for DFT
+    doK = ( hfxfac /= 0.0d0 )
+
+    !> data forward alignment 
+    fll = 0.5d0
+    allocate( dP(2,2,nrow,nrow) ); dP = dcmplx( 0.0d0, 0.0d0 ) 
+    allocate( dG(2,2,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
+    do j=1,nrow
+      do i=1,nrow
+        !> alpha-alpha = "A"
+        dP(1,1,i,j) =  dcmplx( Pmat(i,j,1)*fll, Pmat(i,j,2)*fll )
+        !> alpha-beta  = "B"
+        dP(1,2,i,j) =  dcmplx( Pmat(i,j,3)*fll, Pmat(i,j,4)*fll )
+        !> beta-beta   = "A*"
+        dP(2,2,i,j) =  dconjg( dP(1,1,i,j) ) 
+        !> beta-alpha  = "-B*"
+        dP(2,1,i,j) = -dconjg( dP(1,2,i,j) ) 
+      enddo
+    enddo
+
+
+ iloop:do i=1,nr_shells
+         li =       gto(i)%lvalue
+         oi =       gto(i)%offset
+         ni =       gto(i)%cdegen
+         ei =       gto(i)%exponent(1)
+         xi = atom( gto(i)%origin )%coordinate_x
+         yi = atom( gto(i)%origin )%coordinate_y
+         zi = atom( gto(i)%origin )%coordinate_z
+         ci =       gto(i)%coefficient(1)
+     
+ jloop:  do j=1,nr_shells
+           lj =       gto(j)%lvalue
+           oj =       gto(j)%offset
+           nj =       gto(j)%cdegen
+           ej =       gto(j)%exponent(1)
+           xj = atom( gto(j)%origin )%coordinate_x
+           yj = atom( gto(j)%origin )%coordinate_y
+           zj = atom( gto(j)%origin )%coordinate_z
+           cj =       gto(j)%coefficient(1)
+       
+ kloop:    do k=1,nr_shells
+             lk =       gto(k)%lvalue
+             ok =       gto(k)%offset
+             nk =       gto(k)%cdegen
+             ek =       gto(k)%exponent(1)
+             xk = atom( gto(k)%origin )%coordinate_x
+             yk = atom( gto(k)%origin )%coordinate_y
+             zk = atom( gto(k)%origin )%coordinate_z
+             ck =       gto(k)%coefficient(1)
+       
+ lloop:      do l=1,nr_shells
+               ll   =       gto(l)%lvalue
+               nl   =       gto(l)%cdegen
+               ol   =       gto(l)%offset
+               el   =       gto(l)%exponent(1)
+               xl   = atom( gto(l)%origin )%coordinate_x
+               yl   = atom( gto(l)%origin )%coordinate_y
+               zl   = atom( gto(l)%origin )%coordinate_z
+               cl   =       gto(l)%coefficient(1)
+               fijkl= 1.0d0 
+       
+               call interest_eri(fijkl,gout,       &
+                                 li,ei,xi,yi,zi,ci,&
+                                 lj,ej,xj,yj,zj,cj,&
+                                 lk,ek,xk,yk,zk,ck,&
+                                 ll,el,xl,yl,zl,cl )
+               call process_dG(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                               nrow,doK,hfxfac,gout,dP,dG)
+             enddo lloop
+           enddo kloop
+         enddo jloop
+       enddo iloop
+    !> end
+
+    !> data backward alignment 
+    do j=1,nrow
+      do i=1,nrow
+        !> quaternion(0) 
+        Gmat(i,j,1) = Gmat(i,j,1) + dreal(dG(1,1,i,j))
+        !> quaternion(i) 
+        Gmat(i,j,2) = Gmat(i,j,2) + dimag(dG(1,1,i,j))
+        !> quaternion(j) 
+        Gmat(i,j,3) = Gmat(i,j,3) + dreal(dG(1,2,i,j))
+        !> quaternion(k) 
+        Gmat(i,j,4) = Gmat(i,j,4) + dimag(dG(1,2,i,j))
+      enddo
+    enddo
+
+    deallocate( dP )
+    deallocate( dG )
+
+
+    CONTAINS
+
+    subroutine process_dG(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,scaleK,gout,pmat,gmat) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      real(8),    intent(in) :: scaleK
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: pmat(2,2,nbas,nbas)
+      !> input/output
+      real(8), intent(inout) :: gout(kc,lc,ic,jc)
+      !> output
+      complex(8), intent(out) :: gmat(2,2,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: gg, pll, paa, pab, pba, pbb
+      !>
+      !> coulomb part
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          do l=1,lc
+            lbas=lo+l
+            do k=1,kc
+              kbas = ko+k
+              gg   = dcmplx( gout(k,l,i,j), 0.0d0 )
+              pll  = pmat(1,1,lbas,kbas) + pmat(2,2,lbas,kbas)
+              gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll
+              gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gg*pll
+            enddo
+          enddo
+        enddo
+      enddo
+      !> exchange part
+      if( .not. doK )return
+      !> pre-multiplication for scalling K-contribution 
+      if( scalek /= 1.0d0 )then
+        do j=1,jc
+          do i=1,ic
+            do l=1,lc
+              do k=1,kc
+                gout(k,l,i,j) = gout(k,l,i,j)*scaleK
+              enddo
+            enddo
+          enddo
+        enddo
+      endif
+      !>
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            jbas=jo+j
+            paa = pmat(1,1,jbas,kbas)
+            pba = pmat(2,1,jbas,kbas)
+            pab = pmat(1,2,jbas,kbas)
+            pbb = pmat(2,2,jbas,kbas)
+            do i=1,ic
+              ibas = io+i
+              gg   = dcmplx( gout(k,l,i,j), 0.0d0 )
+              gmat(1,1,ibas,lbas) = gmat(1,1,ibas,lbas) - paa*gg
+              gmat(1,2,ibas,lbas) = gmat(1,2,ibas,lbas) - pab*gg
+              gmat(2,1,ibas,lbas) = gmat(2,1,ibas,lbas) - pba*gg
+              gmat(2,2,ibas,lbas) = gmat(2,2,ibas,lbas) - pbb*gg
+            enddo
+          enddo
+        enddo
+      enddo
+    end subroutine
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!> note: on input,  G and P must be in the cartesian GTOs 
+  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg, hfxfac ) 
+
+    use module_interest_eri
+
+    !> input
+    !> fixme: the case when nz!=4, since we always assume nz=4
+    integer, intent(in) :: intflg
+    real(8), intent(in) :: hfxfac
+    !> 1-electron density matrix, Dirac format
+    real(8), intent(in) :: Pmat(2*nrow,2*nrow,4)  
+
+    !> output
+    !> 2-electron Fock matrix, Dirac format
+    real(8), intent(out) :: Gmat(2*nrow,2*nrow,4) 
 
     !> local
     logical :: doK
@@ -485,20 +694,20 @@ CONTAINS
     do j=1,nrow
       do i=1,nrow
         !> alpha-alpha = "A"
-        dP(1,1,i,j) = dcmplx( Pmat_4comp(i     ,j     ,1)*fll, Pmat_4comp(i     ,j     ,2)*fll ) ! LL
-        dP(2,1,i,j) = dcmplx( Pmat_4comp(i+nrow,j     ,1)*fsl, Pmat_4comp(i+nrow,j     ,2)*fsl ) ! SL
-        dP(1,2,i,j) = dcmplx( Pmat_4comp(i     ,j+nrow,1)*fsl, Pmat_4comp(i     ,j+nrow,2)*fsl ) ! LS
-        dP(2,2,i,j) = dcmplx( Pmat_4comp(i+nrow,j+nrow,1)*fss, Pmat_4comp(i+nrow,j+nrow,2)*fss ) ! SS
+        dP(1,1,i,j) = dcmplx( Pmat(i     ,j     ,1)*fll, Pmat(i     ,j     ,2)*fll ) ! LL
+        dP(2,1,i,j) = dcmplx( Pmat(i+nrow,j     ,1)*fsl, Pmat(i+nrow,j     ,2)*fsl ) ! SL
+        dP(1,2,i,j) = dcmplx( Pmat(i     ,j+nrow,1)*fsl, Pmat(i     ,j+nrow,2)*fsl ) ! LS
+        dP(2,2,i,j) = dcmplx( Pmat(i+nrow,j+nrow,1)*fss, Pmat(i+nrow,j+nrow,2)*fss ) ! SS
         !> beta-beta  = "A*"
         dP(3,3,i,j) = dconjg( dP(1,1,i,j) )
         dP(4,3,i,j) = dconjg( dP(2,1,i,j) )
         dP(3,4,i,j) = dconjg( dP(1,2,i,j) )
         dP(4,4,i,j) = dconjg( dP(2,2,i,j) )
         !> alpha-beta = "B"
-        dP(1,3,i,j) = dcmplx( Pmat_4comp(i     ,j     ,3)*fll, Pmat_4comp(i     ,j     ,4)*fll ) ! LL
-        dP(2,3,i,j) = dcmplx( Pmat_4comp(i+nrow,j     ,3)*fsl, Pmat_4comp(i+nrow,j     ,4)*fsl ) ! SL
-        dP(1,4,i,j) = dcmplx( Pmat_4comp(i     ,j+nrow,3)*fsl, Pmat_4comp(i     ,j+nrow,4)*fsl ) ! LS
-        dP(2,4,i,j) = dcmplx( Pmat_4comp(i+nrow,j+nrow,3)*fss, Pmat_4comp(i+nrow,j+nrow,4)*fss ) ! SS
+        dP(1,3,i,j) = dcmplx( Pmat(i     ,j     ,3)*fll, Pmat(i     ,j     ,4)*fll ) ! LL
+        dP(2,3,i,j) = dcmplx( Pmat(i+nrow,j     ,3)*fsl, Pmat(i+nrow,j     ,4)*fsl ) ! SL
+        dP(1,4,i,j) = dcmplx( Pmat(i     ,j+nrow,3)*fsl, Pmat(i     ,j+nrow,4)*fsl ) ! LS
+        dP(2,4,i,j) = dcmplx( Pmat(i+nrow,j+nrow,3)*fss, Pmat(i+nrow,j+nrow,4)*fss ) ! SS
         !> beta-alpha =" -B*"
         dP(3,1,i,j) = -dconjg( dP(1,3,i,j) )
         dP(4,1,i,j) = -dconjg( dP(2,3,i,j) )
@@ -556,21 +765,24 @@ CONTAINS
                                            lj,ej,xj,yj,zj,cj,&
                                            lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_llll(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_llll(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                                          nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssll' )
                      call interest_eri_rkb('ssll',fijkl,gout,&
                                            li,ei,xi,yi,zi,ci,&
                                            lj,ej,xj,yj,zj,cj,&
                                            lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_ssll(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_ssll(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                                          nrow,doK,hfxfac,gout,dP,dG)
                  CASE( 'ssss' ) 
                      call interest_eri_rkb('ssss',fijkl,gout,&
                                            li,ei,xi,yi,zi,ci,&
                                            lj,ej,xj,yj,zj,cj,&
                                            lk,ek,xk,yk,zk,ck,&
                                            ll,el,xl,yl,zl,cl )
-                     call process_dG_ssss(ni,nj,nk,nl,oi,oj,ok,ol,nrow,doK,hfxfac,gout,dP,dG)
+                     call process_dG_ssss(ni,nj,nk,nl,oi,oj,ok,ol,  &
+                                          nrow,doK,hfxfac,gout,dP,dG)
                  CASE DEFAULT; stop 'Error: this ERI class is not implemented yet => stop'
                END SELECT
              enddo lloop
@@ -585,25 +797,25 @@ CONTAINS
     do j=1,nrow
       do i=1,nrow
         !> quaternion(0) 
-        Gmat_4comp(i     ,j     ,1) = Gmat_4comp(i     ,j     ,1) + dreal(dG(1,1,i,j))
-        Gmat_4comp(i+nrow,j     ,1) = Gmat_4comp(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,1) = Gmat_4comp(i     ,j+nrow,1) + dreal(dG(2,1,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,1) = Gmat_4comp(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
+        Gmat(i     ,j     ,1) = Gmat(i     ,j     ,1) + dreal(dG(1,1,i,j))
+        Gmat(i+nrow,j     ,1) = Gmat(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
+        Gmat(i     ,j+nrow,1) = Gmat(i     ,j+nrow,1) + dreal(dG(2,1,j,i))*fsl
+        Gmat(i+nrow,j+nrow,1) = Gmat(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
         !> quaternion(i) 
-        Gmat_4comp(i     ,j     ,2) = Gmat_4comp(i     ,j     ,2) + dimag(dG(1,1,i,j))
-        Gmat_4comp(i+nrow,j     ,2) = Gmat_4comp(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,2) = Gmat_4comp(i     ,j+nrow,2) - dimag(dG(2,1,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,2) = Gmat_4comp(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
+        Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) + dimag(dG(1,1,i,j))
+        Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
+        Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) - dimag(dG(2,1,j,i))*fsl
+        Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
         !> quaternion(j) 
-        Gmat_4comp(i     ,j     ,3) = Gmat_4comp(i     ,j     ,3) + dreal(dG(1,3,i,j))
-        Gmat_4comp(i+nrow,j     ,3) = Gmat_4comp(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,3) = Gmat_4comp(i     ,j+nrow,3) - dreal(dG(2,3,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,3) = Gmat_4comp(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
+        Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) + dreal(dG(1,3,i,j))
+        Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
+        Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) - dreal(dG(2,3,j,i))*fsl
+        Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
         !> quaternion(k) 
-        Gmat_4comp(i     ,j     ,4) = Gmat_4comp(i     ,j     ,4) + dimag(dG(1,3,i,j))
-        Gmat_4comp(i+nrow,j     ,4) = Gmat_4comp(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
-        Gmat_4comp(i     ,j+nrow,4) = Gmat_4comp(i     ,j+nrow,4) - dimag(dG(2,3,j,i))*fsl
-        Gmat_4comp(i+nrow,j+nrow,4) = Gmat_4comp(i+nrow,j+nrow,4) + dimag(dG(2,4,i,j))*fss
+        Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) + dimag(dG(1,3,i,j))
+        Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
+        Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) - dimag(dG(2,3,j,i))*fsl
+        Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) + dimag(dG(2,4,i,j))*fss
       enddo
     enddo
 
