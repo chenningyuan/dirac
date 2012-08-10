@@ -309,7 +309,7 @@ C     JHS
 #include "aosotr.h"
 #include "infpar.h"
 
-      integer, parameter   :: LWORK = 1000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      integer, parameter   :: LWORK = 10000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
@@ -319,7 +319,8 @@ C
       IF (RDINPC) RETURN
       RDINPC = .TRUE.
 C
-      call alloc(WORK,LWORK,id='WORK in READIN')
+!     call alloc(WORK,LWORK,id='WORK in READIN')
+      allocate(WORK(LWORK))
 C
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPREAD .GT.  0) THEN
@@ -408,7 +409,8 @@ C               These are the only two extensions at the moment.
       CALL GPCLOSE(LUINFO,'KEEP')
       IF (IPREAD .GT. 20) CALL REAPRI
 
-      call dealloc(WORK)
+!     call dealloc(WORK)
+      deallocate(WORK)
       RETURN
       END
 C  /* Deck read_mol */

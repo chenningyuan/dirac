@@ -3682,8 +3682,10 @@ C
         call process_overlap_integrals( S_4comp=smat )
 #endif
       ELSE
-        call alloc(sbuf, n2bbasx)
-        call alloc(stri, nnbbasx)
+!       call alloc(sbuf, n2bbasx)
+!       call alloc(stri, nnbbasx)
+        allocate(sbuf(n2bbasx))
+        allocate(stri(nnbbasx))
 C
 C       Read integral from file
 C       =======================
@@ -3721,8 +3723,10 @@ C
           ENDDO
           IOFF = IOFF + N2BAS(I)
         ENDDO
-        call dealloc(stri)
-        call dealloc(sbuf)
+        deallocate(stri)
+        deallocate(sbuf)
+!       call dealloc(stri)
+!       call dealloc(sbuf)
       ENDIF
 C
 C     Scale SS-block
