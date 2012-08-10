@@ -100,7 +100,7 @@ SUBROUTINE RECP_INP2_READIRREP(idp,nd,ityp)
   CALL RECP_NTRD_IRREP
 END SUBROUTINE RECP_INP2_READIRREP
 
-SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX_TEMP)
+SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX0)
 ! Read in AO to SO transformation matrices 
   USE RECP_IPT
   USE RECP_NTR
@@ -110,7 +110,7 @@ SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX_TEMP)
   INTEGER naords, ngcs, maords(*),la(mrup,*),nir(*)
   INTEGER AORDS1 ! ith-AO reduction set
   INTEGER IRREP1,IRREP_MAX
-  INTEGER SO1,AO1,AO2,CX_TEMP
+  INTEGER SO1,AO1,AO2,CX0
   REAL*8  AO2SO_TEMP1, AO2SO_TEMP2
 
 ! Read number(nir) and list(la) of irrep in ith-AO reduction set 
@@ -133,9 +133,9 @@ SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX_TEMP)
   ENDDO
 
 ! Allocate 
-  CX_TEMP = IRREP_MAX*IRREP_MAX*naords
-  CX_TEMP = CX_TEMP*CX_TEMP
-  ALLOCATE( IPT_CX_TEMP(CX_TEMP) )
+  CX0 = IRREP_MAX*IRREP_MAX*naords
+  CX0 = CX0*CX0
+  ALLOCATE( IPT_CX0(CX0) )
   ALLOCATE( IPT_AO2SO(IRREP_MAX,IRREP_MAX,naords) )
 
 ! ngcs : Number of transformation matrices relating AOs to SOs to be read in.
@@ -461,8 +461,8 @@ SUBROUTINE RECP_INP2_READGEO(ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
 !       Save to global variables
         J2 = J2 + 1
         BASIS1   = RECPIN_BLKMATCH(1,J2)
-        mcons(J2)= BASIS1
-        mgcs(J2) = RECPIN_BLKMATCH(2,J2) !==J2
+        mcons(J2)= BASIS1                !Basis block
+        mgcs(J2) = RECPIN_BLKMATCH(2,J2) !L-value(=J2)
         IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(3X,3(A,I3))') &
            'J2',J2,' Basis block ',mcons(J2),' L-value',mgcs(J2) 
             

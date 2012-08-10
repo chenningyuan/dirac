@@ -101,12 +101,13 @@
       ALLOCATE(IPT_IL(nnbft))  !allocate space for il(*)
 
 !     Compute symmetry coefficient products.
-      call recp_socfpd( mgcsu,icxast,icxst,
+      call RECP_SOCFPD( mgcsu,icxast,icxst,
      &   icxsv1, icxsv2, idp,  iprst, la,
      &   lb,     maords, mau,  mcons, mgcs,   mics,
      &   mjcs,   nblpr,  nc,   nd,    nf,     nir,
      &   npair,  nprir,  nrcr, nsopr, nt,     ntl,
      &   ntu, CX_TEMP )
+
 !     Allocate variables
       CALL RECP_IPTA_CORTAB(ndfac,lmn1u,lproju,ncru,lmax)
       eps = 1.0d-12

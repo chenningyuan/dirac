@@ -7,8 +7,10 @@
 !    Compute symmetry orbital coefficient products.
 !    on return from socfpd(*), cx(1:mcxu) was computed.
 
+      USE RECP_INP_ORBITAL
       USE RECP_IPT
       USE RECP_OUTPUT
+      USE RECP_WRITE
       implicit logical(a-z)
 
 !     il(*) packing factor. see also oneint() and wtint2().
@@ -43,17 +45,26 @@
      & npair(2,*),       nrcr(*),      nsopr(*),     nprir(2,mstu,*),
      & nt(*),            ntl(*),       ntu(*)
 
-c     # local:
+!     # local:
       integer mcxu1, icx, ipair, ijsf, isf, isfr, igcs, jgcs, is,
      & ifu, icu, isfis, isfris, jsf, jsfr, js, jsfjs, jsfrjs, jfu,
      & jcu, if, isfrif, iaords, iru, ircru, itl, itu, jf, jaords,
      & jtl, jsfrjf, jtu, jru, ist, jrcru, ircr, isfrib, jrcr,
      & jsfrjb, iesfb, npr, ipr, ics, ir, lai, jcs, jr, laj,
      & isv1, icxu, icxa, isv2, ict, ic, ictic, jct, jc, jctjc, it,
-     & jt, ia, npru, I,J,K
-      logical ea, easfb, es, esf, esfb, esfbc, msfbct
+     & jt,npru, I,J,K,FILE_NUM(3)
+      LOGICAL ea, easfb, es, esf, esfb, esfbc, msfbct
+      CHARACTER(10) FILE_NAME(3)
+      DATA FILE_NUM  / 64, 65, 66 /
+      DATA FILE_NAME / 'RECP_SOC_0','RECP_SOC_1','RECP_SOC_2' /
 
       CALL OUTPUT_LOC('ARGOS_SOCFPD','E')
+
+!     write file in debug mode
+      IF (RECP_DBG.GE.1) THEN
+         CALL RECP_WRITE_FILEOPEN(FILE_NUM(2),FILE_NAME(2),'REPLACE')
+         CALL RECP_WRITE_FILEOPEN(FILE_NUM(3),FILE_NAME(3),'REPLACE')
+      ENDIF
 
       DO I = 1, 2
          DO J = 1, mstup 
@@ -254,40 +265,11 @@ c     # local:
                         jct = jctjc
                         do 292 jt = jtl, jtu
                           jct = jct + 1
-                          msfbct =  .not. esfb .or.
+                          msfbct =.not.esfb .or.
      &                     (ic.eq.jc .and. it.eq.jt)
-                          do 290 ipr = 1, npr
-                            icx = icx + 1
-                            IPT_CX_TEMP(icx) = 0.0d0
-                            if(easfb) then
-                              icxa = icxa + 1
-                              IPT_CX_TEMP(icxa) = 0.0d0
-                            endif
-                            ics = mics(ipr)
-                            jcs = mjcs(ipr)
-                            do 280 ia = 1, mau(ipr)
-!                             print *, 'socfpd:',ic,jc,it,jt,ipr,ia
-                              ics = ics + 1
-                              jcs = jcs + 1
-                              IPT_CX_TEMP(icx) = IPT_CX_TEMP(icx)
-     &                         + (IPT_AO2SO(ict,ics,igcs) 
-     &                           *IPT_AO2SO(jct,jcs,jgcs))
-!                             print *,'cx1(',icx,')',IPT_CX_TEMP(icx)
-                              if(easfb) IPT_CX_TEMP(icxa) 
-     &                                  = IPT_CX_TEMP(icxa)
-     &                                  + (IPT_AO2SO(ict,ics,igcs) 
-     &                                    *IPT_AO2SO(jct,jcs,jgcs))
-                              if(msfbct) go to 280
-                              IPT_CX_TEMP(icx) = IPT_CX_TEMP(icx)
-     &                         + (IPT_AO2SO(jct,ics,igcs) 
-     &                           *IPT_AO2SO(ict,jcs,jgcs))
-!                             print *,'cx2(',icx,')',IPT_CX_TEMP(icx)
-                              if(easfb) IPT_CX_TEMP(icxa) 
-     &                                  = IPT_CX_TEMP(icxa)
-     &                                  - (IPT_AO2SO(jct,ics,igcs) 
-     &                                    *IPT_AO2SO(ict,jcs,jgcs))
-280                         continue
-290                       continue
+
+                          CALL RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,
+     &                     mau,ict,jct,igcs,jgcs,FILE_NUM,easfb,msfbct)
 292                     continue
 294                   continue
 296                 continue
@@ -306,63 +288,15 @@ c     # local:
 !     Allocate variables cx(*)
       ALLOCATE (IPT_CX(mcxu))
       DO I = 1, mcxu
-         IPT_CX(I) = IPT_CX_TEMP(I)
+         IPT_CX(I) = IPT_CX0(I)
       ENDDO
 !     Deallocate variables cx_temp(*),c(*)
-      DEALLOCATE(IPT_CX_TEMP)
+      DEALLOCATE(IPT_CX0)
       DEALLOCATE(IPT_AO2SO)
 
+      IF (RECP_DBG.GE.1) THEN
+         CLOSE(FILE_NUM(2))
+         CLOSE(FILE_NUM(3))
+      ENDIF
       CALL OUTPUT_LOC('ARGOS_SOCFPD','X')
       END
-
-      SUBROUTINE RECP_SOCFPD_SHIFTCX(mblu,mcxu,mcxu1,mcxu2,icx,icxu,
-     &           ijsf,icxast,ea)
-!       # move antisymmetric coefficient products down.
- 
-!       #       offsets: 0               mcxu1  mblu
-!       # before: a(*)-->................c(*)
-!       #                0          mcxu mcxu1  mblu
-!       # now:    a(*)-->cx(*)......x(*),c(*)
-!       #                0    mcxu2 mcxu       (mblu+mcxu)
-!       # after:  a(*)-->cx(*),x(*),........
-        USE RECP_IPT
-        IMPLICIT NONE
-#include "inc_print.h"
-!       global variable
-        INTEGER mblu,mcxu,mcxu1,mcxu2,icx,icxu,ijsf,icxast(*)
-        LOGICAL ea
-!       local variable
-        INTEGER I,icxl 
-      if (ea) then
-!       # on return, mcxu2 is the offset for the s.o. coefficients.
-        mcxu2 = icx
-        icxl  = icx + 1
-        icxu  = mcxu - icx
-        mcxu  = mcxu1 - icxu
-!       print *,'socfpd :',icxl, mcxu
-        do icx = icxl, mcxu
-          IPT_CX_TEMP(icx) = IPT_CX_TEMP(icx+icxu)
-!         print *,'socfpd:cx(',icx,')',IPT_CX_TEMP(icx)
-        enddo
-
-!       # make pointers relative to mcxu2 instead of 0.
-        do I = 1, ijsf
-          icxast(I) = icxast(I) - icxu
-        enddo
-
-!       # on return, mcxu and mblu divide the workspace as:
-!       # a(*)-->[cx//x](1:mcxu),w(1:mblu)
-        mblu = mblu - mcxu
-        IF (PRINT_LEVEL.GE.3) write(RECP_OUT,6010) mcxu, mcxu2, mblu
-6010    format(/' socfpd: mcxu=',i9,' mcxu2=',i9,' left=',i9)
-
-      else
-!       # on return, mcxu and mblu divide the workspace as:
-!       # a(*)-->cx(1:mcxu),w(1:mblu)
-        mcxu = icx
-        mblu = mblu - mcxu
-        IF (PRINT_LEVEL.GE.3) write(RECP_OUT,6020) mcxu, mblu
-6020    format(/' socfpd: mcxu=',i9,' left=',i9)
-      endif
-      end
-

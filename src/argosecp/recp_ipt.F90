@@ -7,7 +7,7 @@ MODULE RECP_IPT
   INTEGER, ALLOCATABLE :: IPT_IL(:)           ! 02:il(1:nnbft)
 ! in RECP_INP_READ_AO2SO, RECP_SOCFPD
   REAL(8), ALLOCATABLE :: IPT_AO2SO(:,:,:)    ! ipt.55 -> c(1:mctu,mcsu,mgcsu)
-  REAL(8), ALLOCATABLE :: IPT_CX_TEMP(:)      !* temporary before 3:cx(1:mcxu) 
+  REAL(8), ALLOCATABLE :: IPT_CX0(:)          !* temporary before 3:cx(1:mcxu) 
   REAL(8), ALLOCATABLE :: IPT_CX(:)           ! 03:cx(1:mcxu)
 ! main
   REAL(8), ALLOCATABLE :: IPT_ARRAY(:,:)      ! 04:array(1:mpru,1:narray)
