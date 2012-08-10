@@ -409,6 +409,8 @@ contains
                                        defining_h1mat,      &
                                        is_fragment,         &
                                        x2c_file_scr,        &
+                                       ipq_off_in,          &
+                                       print_lvl,           &
                                        linear_sym)
 !**********************************************************************
 !
@@ -434,6 +436,8 @@ contains
      integer, intent(in)    :: is_fragment
      integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: x2c_file_scr
+     integer, intent(in)    :: ipq_off_in(4,0:7)
+     integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
 !----------------------------------------------------------------------
      integer                :: i
@@ -475,6 +479,10 @@ contains
        ioff_aomo = 1
        do i = 1, nfsym
          call dcopy(naosh_all(i)*norb_dim(i)*nz,mat1(ioff_aomo),1,mat3(ioff_aomo),1)
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(mat3(ioff_aomo),naosh_all(i),norb_dim(i),nz,ipq_off_in,'x2c - AO2MO resorted',6)
+         end if
          ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nz
        end do
          

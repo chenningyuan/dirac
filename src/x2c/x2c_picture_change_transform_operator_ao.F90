@@ -276,10 +276,16 @@ contains
      integer                        :: op_mat_dim
      integer                        :: ioff_pct_mat
      logical                        :: do_pct_prp_op
+     logical                        :: aoprop_avail
      logical, allocatable           :: quat_array_filled_tmp(:)
      character (len=12)             :: flabel
      character (len=4)              :: numstr
 !**********************************************************************
+
+
+!      test if any one-particle operator integrals have been created 
+       inquire(file="AOPROPER",exist=aoprop_avail)
+       if(.not.aoprop_avail) return
 
 !      initialize offset
        ioff_pct_mat = 1

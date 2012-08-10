@@ -354,7 +354,11 @@ contains
            case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
              if(x2c_mdirac)then
-               stop 'mdirac blubb...'
+
+               print *, "blubb skip modham"
+               call dcopy(fulllowdmat_dim,xmat,1,scr1mat,1)
+               
+
              else
 
                allocate(wrk(lwrk))
@@ -680,6 +684,8 @@ contains
                                       defining_h1mat,      &
                                       is_z_value,          &
                                       x2c_file_scr,        &
+                                      ipq_off,             &
+                                      print_lvl,           &
                                       linear_sym)
 
 !      step 2: store the hamiltonian for which the 4c-->2c transformation 
