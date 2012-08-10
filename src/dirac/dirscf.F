@@ -158,6 +158,8 @@ C     Memory deallocation of the rest..
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
+      call dealloc(work)
+
 C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
@@ -168,9 +170,11 @@ C=============================================================
         SSMTRC = SSMTRC_SAVE
 
         BSS = .FALSE.
-        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.)
 CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
         CALL SETDC2(0)
+
+        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 2')
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
@@ -264,6 +268,8 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
         CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
+        call dealloc(work)
+
         DO2C4C = .FALSE.
       ENDIF
 
@@ -286,7 +292,9 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
 !
 !       call the x2c/bss transformation module (branch 2 inside gmotra)
-        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.)
+
+        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 3')
 
         IF(.NOT.CONT2C) THEN
 CMI ... consider TRMO4C2C ...???
@@ -328,6 +336,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
 
           CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
+        call dealloc(work)
       END IF ! 4c --> 2c switch
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
@@ -339,7 +348,7 @@ C
          call xml_end('output')
          call xml_end('task')
       endif
-      call dealloc(WORK)
+      if(allocated(work)) call dealloc(WORK)
       CALL QEXIT('PSIDHF')
       RETURN
 C

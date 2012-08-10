@@ -2561,7 +2561,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gmotra */
-      SUBROUTINE GMOTRA(GOFAST,WORK,LWORK)
+      SUBROUTINE GMOTRA(GOFAST)
 C*****************************************************************************
 C
 C PURPOSE:
@@ -2593,10 +2593,9 @@ C     Last revision May 21 1996 - tsaue
 C                    2006 - M.Ilias
 C
 C*****************************************************************************
+      use memory_allocator
       use x2cmod_cfg
       use dirx2c
-      use x2c_cb_interface, only:
-     &    set_wrk_x2c
       use x2c_pct_ao,       only:
      &    pctrafo_all_op_driver
       use x2c_fio
@@ -2623,19 +2622,22 @@ C   PAMIOU: LUTMAT
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
-      DIMENSION WORK(LWORK)
-      logical, intent(in) :: GOFAST
+      real(8), allocatable :: WORK(:)
+      logical, intent(in)  :: GOFAST
 !     local scratch
-      logical             :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
-      logical             :: is_2c_rel_run
-      integer             :: is_defining_h1mat
-      integer             :: ndim_lowmat
-      integer             :: lulmat = 99
+      logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
+      logical              :: is_2c_rel_run
+      integer              :: is_defining_h1mat
+      integer              :: ndim_lowmat
+      integer              :: lulmat = 99
 
       CALL QENTER('GMOTRA')
 
       IF(GOFAST.AND.(.NOT.(BSS.or.x2c))) GOTO 10
+
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in GMOTRA')
       KFRSAV = KFREE
 C
 !     set file unit number for X2CMAT
@@ -2699,7 +2701,10 @@ C     ==============================================
       close(lulmat,status='keep')
 
 !     release memory when we invoke the x2c module
-      if(x2c) call memrel('x2cfre',work,kwork,kwork,kfree,lfree)
+      if(x2c)then 
+       call memrel('x2cfre',work,kwork,kwork,kfree,lfree)
+       call dealloc(work)
+      end if
 
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
 C     =========================================================
@@ -2819,7 +2824,7 @@ C         2) do picture change transformation of integrals on AOPROPER
               call x2c_write('thisisadummy',work,-1,lux2c)
             end if
 
-            if(dosphe) call set_wrk_x2c(work,lfree)
+!           if(dosphe) call set_wrk_x2c(work,lfree)
 
             call pctrafo_all_op_driver(ntbas(0),
      &                                 ntbas(1),
@@ -2833,7 +2838,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 lu1int,
      &                                 jbtof,
      &                                 nprps,
-     &                                 lfree,
+     &                                 lwork,
      &                                 dosphe,
      &                                 .false.,
      &                                 onesys, 
@@ -2856,8 +2861,10 @@ C         2) do picture change transformation of integrals on AOPROPER
             CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
           else if(x2c)then
 !           optimized x2c module
-            call x2c_driver(work(kfree),lfree,x2cmod_fragment_x2c,
-     &                      1,.true.)
+            call x2c_driver(x2cmod_fragment_x2c,.true.)
+!           re-allocate 
+            call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
+#include "memint.h"
           end if
 
         ENDIF
@@ -3140,6 +3147,7 @@ C
 C
 C     Memory deallocation
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
+      if(allocated(work)) call dealloc(work)
  10   CONTINUE
 
       CALL QEXIT('GMOTRA')

@@ -33,9 +33,6 @@ module x2c_amfi_interface
   use x2c_utils, only:                 &
       pick_LL_block_saao_bas,          &
       print_x2cmat
-  use x2c_cb_interface, only:          &
-      sel_wrk_x2c,                     &
-      desel_wrk_x2c
 
   implicit none
 
@@ -218,7 +215,7 @@ contains
      integer, intent(in)             :: print_lvl
      logical, intent(in)             :: spherical_on
 !--------------------------------------------------------------
-     real(8), pointer                :: wrk(:)
+     real(8), allocatable            :: wrk(:)
      real(8), allocatable            :: scr1_mat(:)
      real(8), allocatable            :: scr2_mat(:)
      real(8), allocatable            :: rcha_pnuc(:)
@@ -251,7 +248,7 @@ contains
 !      ---------------------------------------
 
        lwrk = is_len_wrk
-       call sel_wrk_x2c(wrk,lwrk)
+       allocate(wrk(lwrk))
 
        call sphgen(1,2,.false.,wrk,lwrk,print_lvl)
 
@@ -352,7 +349,7 @@ contains
 !      reset the common blocks (see note in the header)
        call sphgen(1,2,.false.,wrk,lwrk,print_lvl)
 
-       call desel_wrk_x2c(wrk,lwrk)
+       deallocate(wrk)
 
 !      b. transform from AO-basis to SO-AO basis
 !      -----------------------------------------
@@ -432,9 +429,9 @@ contains
        if(spherical_on)then
 
          lwrk = is_len_wrk
-         call sel_wrk_x2c(wrk,lwrk)
+         allocate(wrk(lwrk))
          call sph_iotc(scr2_mat,scr1_mat,nr_sph,print_lvl,wrk,lwrk)
-         call desel_wrk_x2c(wrk,lwrk)
+         deallocate(wrk)
 
          call x2c_write(flabel,scr1_mat,nr_sph**2  * nz,x2c_file_glb)
        else

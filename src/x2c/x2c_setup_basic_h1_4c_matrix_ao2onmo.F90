@@ -31,8 +31,6 @@ module x2c_h1mat_base
   use memory_allocator
   use x2c_fio
   use x2c_cb_interface, only:         &
-      sel_wrk_x2c,                    &
-      desel_wrk_x2c,                  &
       reset_x2c_cb_onefck
   use x2c_utils, only: print_x2cmat
   use x2c_def_h1_4c, only:            &
@@ -107,8 +105,6 @@ contains
      integer                :: nbas1_f
      integer                :: ndim_ao 
      character (len=12)     :: flabel
-     real(8), pointer       :: wrk(:)
-     integer                :: lwrk
 !**********************************************************************
 
 !      step 1: get the basic 4c-h1 matrix in SA-AO basis according to the value for basic_h1mat

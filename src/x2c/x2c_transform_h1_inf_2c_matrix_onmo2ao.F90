@@ -35,9 +35,6 @@ module x2c_h1inf2c_mo2ao
       construct_saomo_overlap_half_tr, &
       pick_LL_block_saao_bas,          &
       print_x2cmat
-  use x2c_cb_interface, only:          &
-      sel_wrk_x2c,                     &
-      desel_wrk_x2c
 
   implicit none
 
@@ -116,7 +113,7 @@ contains
      logical, intent(in)    :: spherical_on
      logical, intent(in)    :: fragment_x2c
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: wrk(:)
      integer                :: lwrk
      integer                :: i
      integer                :: n1esh_f
@@ -283,10 +280,10 @@ contains
   
 !            set pointer to WORK array and allow full length for allocations
              lwrk = is_len_wrk
-             call sel_wrk_x2c(wrk,lwrk) 
+             allocate(wrk(lwrk))
              call sph_iotc(scr_mat2,h1_2cinf_saao,nr_sph,print_lvl,wrk,lwrk)
 !            reset pointer to WORK array
-             call desel_wrk_x2c(wrk,lwrk)
+             deallocate(wrk)
 
              call x2c_write(flabel,h1_2cinf_saao,nr_sph**2  * nz,x2c_file_glb)
            else

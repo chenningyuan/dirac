@@ -75,7 +75,9 @@ module dirx2c
 !                            end of "roadmap" of the X2C code
 ! ---------------------------------------------------------------------------------------
 !
+#ifdef PRG_DIRAC
   use memory_allocator
+#endif
 ! x2c modules
   use x2cmod_cfg
   use x2c_cb_interface
@@ -109,10 +111,8 @@ module dirx2c
 contains
 
 !**********************************************************************
-  subroutine x2c_driver(work,                   &
-                        lwork,                  &
+  subroutine x2c_driver(                        &
                         atom_by_atom_x2c,       &
-                        x2c_nuccent,            &
                         return_h1_inf_2c)
 !**********************************************************************
 !
@@ -136,23 +136,21 @@ contains
 !
 !                 b. x2c_is_defining_h1mat == 2: Fock operator after a (converged) [spinfree==sf] SCF 
 !                    ==> default for [sf-]X2Cmmf
-
+!
 !                 b. x2c_is_defining_h1mat == 3: free-particle 
 !                    ==> test-option
 !
 !
 !**********************************************************************
-     integer, intent(in)    :: lwork
-     real(8), intent(inout) :: work(lwork)
-     integer, intent(in)    :: x2c_nuccent        ! total number of nuclei/molecular fragments
      logical, intent(in)    :: atom_by_atom_x2c   ! atom-by-atom or molecular x2c run
      logical, intent(in)    :: return_h1_inf_2c   ! return transformed h1_2c^++
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: wrk(:)
      real(8), allocatable   :: xmat(:)
      real(8), allocatable   :: scr1mat(:)
      real(8), allocatable   :: scr2mat(:)
      real(8), allocatable   :: eigvl(:)
+     integer                :: x2c_nuccent = 1    ! total number of nuclei/molecular fragments
      integer                :: lwrk
      integer                :: is_allocated_dyn
      integer                :: i,j
@@ -174,9 +172,6 @@ contains
 
 !      print header
        call hello_dirx2c()
-
-!      initialize interface to f77 work array
-       call set_wrk_x2c(work,lwork)
 
 !      initialize variable(s)
        final_ham_lvl_x2c = 0
@@ -361,8 +356,8 @@ contains
              if(x2c_mdirac)then
                stop 'mdirac blubb...'
              else
-               call sel_wrk_x2c(wrk,lwrk)
 
+               allocate(wrk(lwrk))
                call modham(scr1mat,                                         &
                            xmat,                                            &
                            scr2mat,                                         &
@@ -372,9 +367,7 @@ contains
                            x2c_is_defining_h1mat,                           &
                            wrk,                                             &
                            lwrk)
-
-!              nullify pointer to work array and release matrices
-               call desel_wrk_x2c(wrk,lwrk)
+               deallocate(wrk)
 
              end if
 
@@ -474,7 +467,7 @@ contains
                                 num_nuclei,                        &
                                 x2c_tot_charge_for_mfsum,          &
                                 x2c_amfi_order,                    &
-                                len_wrk_f77_x2c,                   &
+                                lwrk,                              &
                                 x2c_do_spherical,                  &
                                 x2c_famfi,                         &
                                 x2c_funit,                         &
@@ -519,7 +512,7 @@ contains
                                   fh_1int_4c,                    &
                                   x2c_bs_to_fs,                  &
                                   all_prp_op,                    &
-                                  len_wrk_f77_x2c,               &
+                                  lwrk,                          &
                                   x2c_do_spherical,              &
                                   x2c_prep_bnccorr,              &
                                   x2c_1e_system,                 &

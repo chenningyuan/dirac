@@ -30,8 +30,6 @@ module x2c_def_h1_4c
   use memory_allocator
   use x2c_fio
   use x2c_cb_interface, only:         &
-      sel_wrk_x2c,                    &
-      desel_wrk_x2c,                  &
       reset_x2c_cb_onefck
   use x2c_utils,        only:         &
       print_x2cmat,                   &
@@ -109,8 +107,6 @@ contains
      character (len=12)     :: flabel
      logical                :: skip_step1 = .false.
      logical                :: fndlab12
-     real(8), pointer       :: wrk(:)
-     integer                :: lwrk
 !**********************************************************************
 
 !     step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
@@ -230,7 +226,7 @@ contains
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: wrk(:)
      integer                :: lwrk
 !**********************************************************************
 
@@ -239,15 +235,14 @@ contains
 
        if(defining_h1mat == 0)then
 
-!        set pointer to WORK array
-         call sel_wrk_x2c(wrk,lwrk)
+         allocate(wrk(lwrk))
 
          call reset_x2c_cb_onefck(.false.)
          call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
          call reset_x2c_cb_onefck(.true.)
 
 !        reset pointer to WORK array
-         call desel_wrk_x2c(wrk,lwrk)
+         deallocate(wrk)
 
        else if(defining_h1mat == 1)then
 !        HUCKEL start guess...
@@ -270,16 +265,15 @@ contains
                                   print_lvl)
 
        else if(defining_h1mat == 3)then
-!        set pointer to WORK array
-         call sel_wrk_x2c(wrk,lwrk)
+
+         allocate(wrk(lwrk))
 
 !        Free-particle matrix
          call reset_x2c_cb_onefck(.false.)
          call freemt(h1_saao_bas,print_lvl,wrk,lwrk)
          call reset_x2c_cb_onefck(.true.)
 
-!        reset pointer to WORK array
-         call desel_wrk_x2c(wrk,lwrk)
+         deallocate(wrk)
        end if
 
 
@@ -296,7 +290,7 @@ contains
                                  nz,                     &
                                  ipq_off_in,             &
                                  linear_sym,             &
-                                 lwrk,                   &
+                                 is_len_wrk,             &
                                  x2c_file_scr,           &
                                  print_lvl)
 !**********************************************************************
@@ -324,7 +318,7 @@ contains
      logical, intent(in)          :: linear_sym
      integer, intent(in)          :: x2c_file_scr
      integer, intent(in)          :: print_lvl
-     integer, intent(in)          :: lwrk
+     integer, intent(in)          :: is_len_wrk
 !----------------------------------------------------------------------
      integer                      :: ioff_osh1
      integer                      :: ioff_ao_o_sh1
@@ -336,8 +330,12 @@ contains
      character (len=12)           :: flabel
      character (len=28)           :: debug_string
      logical                      :: fndlab12
-     real(8), pointer             :: wrk(:)
+     real(8), allocatable         :: wrk(:)
+     integer                      :: lwrk
 !**********************************************************************
+ 
+!     give full length for WORK array allocations
+      lwrk = is_len_wrk
 
 !     dummy center/fragment counter
       j = 1
@@ -422,8 +420,7 @@ contains
 
 !       step 3: get half-transformed overlap matrix Sao
 !       -----------------------------------------------
-!       set pointer to WORK array
-        call sel_wrk_x2c(wrk,lwrk)
+        allocate(wrk(lwrk))
 
         ioff_ao_o_sh1 = 1
         do i = 1, nfsym
@@ -435,8 +432,7 @@ contains
         end do
         call mksaomo(scrmat2,h1_saao_bas,.false.,print_lvl,wrk,lwrk)
 
-!       reset pointer to WORK array
-        call desel_wrk_x2c(wrk,lwrk)
+        deallocate(wrk)
 
 !       step 4: 4c-fock_onmo_nonlin LS sorted --> 4c-fock_saao
 !       ------------------------------------------------------
