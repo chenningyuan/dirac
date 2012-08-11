@@ -353,14 +353,6 @@ contains
 
            case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
-!            if(x2c_mdirac)then
-
-!              print *, "blubb skip modham"
-!              call dcopy(fulllowdmat_dim,xmat,1,scr1mat,1)
-               
-
-!            else
-
                allocate(wrk(lwrk))
                call modham(scr1mat,                                         &
                            xmat,                                            &
@@ -372,8 +364,6 @@ contains
                            wrk,                                             &
                            lwrk)
                deallocate(wrk)
-
-!            end if
 
 !            ------------------------------------------------------------------------------------
 !            step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -

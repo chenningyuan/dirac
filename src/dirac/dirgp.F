@@ -4524,27 +4524,49 @@ C
       RETURN
       END
 
-      subroutine resort_mdirac_vmat(tmat,vmat,nrow,ncol,nr_p_orb,
-     &                              nr_e_orb,nz)
+      subroutine resort_mdirac_vmat(tmat,vmat,nrow,ncol,ifsym,
+     &                              nboson_orb,nz)
       implicit none
       real(8), intent(inout) :: tmat(nrow,ncol,nz)
       real(8), intent(inout) :: vmat(nrow,ncol,nz)
       integer, intent(in)    :: nrow
       integer, intent(in)    :: ncol
       integer, intent(in)    :: nz
-      integer, intent(in)    :: nr_p_orb
-      integer, intent(in)    :: nr_e_orb
-      integer                :: i, j
+      integer, intent(in)    :: nboson_orb(4,2,0:2)
+      integer, intent(in)    :: ifsym
+      integer                :: i, j, k, l, nv
+      integer                :: nsym
+      integer                :: nvec(2)
+      integer                :: ioff(2)
+      integer                :: isum
 
       call dzero(tmat,nrow*ncol*nz)
+      call izero(nvec,2)
+      call izero(ioff,2)
 
-      do i = 1, nz
-        do j = 1, ncol
-          if(j <= nr_e_orb)then
-            call dcopy(nrow,vmat(1,j,i),1,tmat(1,nr_p_orb+j,i),1)
-          else
-            call dcopy(nrow,vmat(1,j,i),1,tmat(1,j-nr_e_orb,i),1)
-          end if
+      nsym = 4 / nz ! # of boson irreps in gerade/ungerade
+
+      ioff(1) = 0
+      ioff(2) = isum(nsym,nboson_orb(1,ifsym,1),1)
+
+      nv      = 0
+
+      do j = 1, nsym
+        do k = 2,1,-1
+          do l = 1, nboson_orb(j,ifsym,k)
+            nv = nv + 1
+            do i = 1, nz
+!                        copy from p1 p2 p3 p4 n1 n2 n3 n4 order (vmat)
+!                        copy to   n1 p1 n2 p2 n3 p3 n4 p4 order (tmat)
+!                        where n == negative energy shell
+!                        where p == positive energy shell
+!                        and   "1", "2", ... refer to boson irreps
+              call dcopy(nrow,
+     &                   vmat(1,ioff(k)+nvec(k)+l,i),1,
+     &                   tmat(1,nv,i),1)
+            end do
+          end do
+          nvec(k) = nvec(k) + nboson_orb(j,ifsym,k)
         end do
       end do
       end

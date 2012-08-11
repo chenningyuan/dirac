@@ -3308,7 +3308,7 @@ C       =============================================================
           lMAT        = NFBAS(ifrp,0)*NORB(ifrp)*NZ
           call resort_mdirac_vmat(tmat(imat),vmat(imat),
      &                            nfbas(ifrp,0),norb(ifrp),
-     &                            nforb(ifrp,1),nforb(ifrp,1),nz)
+     &                            ifrp,nborb,nz)
           iMAT        = imat + NFBAS(ifrp,0)*NORB(ifrp)*NZ
         END DO
 
