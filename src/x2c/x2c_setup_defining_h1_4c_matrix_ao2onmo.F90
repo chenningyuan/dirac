@@ -67,6 +67,7 @@ contains
                                      ioff_aomx,            &
                                      nfsym,                &
                                      nz,                   &
+                                     nzt,                  &
                                      ipq_off_in,           &
                                      defining_h1mat,       &
                                      is_len_wrk,           &
@@ -95,6 +96,7 @@ contains
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: is_fragment
@@ -134,6 +136,7 @@ contains
                                 norb_dim,               &
                                 nfsym,                  &
                                 nz,                     &
+                                nzt,                    &
                                 ipq_off_in,             &
                                 defining_h1mat,         &
                                 linear_sym,             &
@@ -178,13 +181,14 @@ contains
                                   nbas1_f,                           &
                                   norb1_f,                           &
                                   nz,                                &
+                                  nzt,                               &
                                   ipq_off_in,                        &
                                   print_lvl)
 
         end if
 
 !       update offsets for matrices
-        ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz
+        ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz 
         ioff_osh1      = ioff_osh1      + norb1_f**2 * nz
 
@@ -201,6 +205,7 @@ contains
                                   norb_dim,               &
                                   nfsym,                  &
                                   nz,                     &
+                                  nzt,                    &
                                   ipq_off_in,             &
                                   defining_h1mat,         &
                                   linear_sym,             &
@@ -229,6 +234,7 @@ contains
      integer, intent(in)    :: naosh_all(nfsym)
      integer, intent(in)    :: norb_dim(nfsym)
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: defining_h1mat
      logical, intent(in)    :: linear_sym
@@ -276,6 +282,7 @@ contains
                                   norb_dim,           &
                                   nfsym,              &
                                   nz,                 &
+                                  nzt,                &
                                   ipq_off_in,         &
                                   linear_sym,         &
                                   mdirac,             &
@@ -308,6 +315,7 @@ contains
                                  norb_dim,               &
                                  nfsym,                  &
                                  nz,                     &
+                                 nzt,                    &
                                  ipq_off_in,             &
                                  linear_sym,             &
                                  mdirac,                 &
@@ -335,6 +343,7 @@ contains
      integer, intent(in)          :: naosh_all(nfsym)
      integer, intent(in)          :: norb_dim(nfsym)
      integer, intent(in)          :: nz
+     integer, intent(in)          :: nzt
      integer, intent(in)          :: ipq_off_in(4,0:7)
      logical, intent(in)          :: linear_sym
      logical, intent(in)          :: mdirac
@@ -452,8 +461,8 @@ contains
           norb1_f = norb_dim(i)
           write(flabel,'(a7,i4,i1)') '4cAOMOo',j,i
           if(nbas1_f * norb1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1), &
-                                          nbas1_f * norb1_f * nzt_x2c, x2c_file_scr)
-          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt_x2c
+                                          nbas1_f * norb1_f * nzt, x2c_file_scr)
+          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt
         end do
         call get_saomo_x2c(                &
                            scrmat2,        &
@@ -464,7 +473,7 @@ contains
                            ioff_aomat_x,   &
                            nfsym,          &
                            nz,             &
-                           nzt_x2c,        &
+                           nzt,            &
                            ipq_off_in,     &
                            mdirac,         &
                            print_lvl)
@@ -490,7 +499,7 @@ contains
                                                norb1_f,                        &
                                                nbas1_f,                        &
                                                nz,                             &
-                                               nzt_x2c,                        &
+                                               nzt,                            &
                                                ipq_off_in,                     &
                                                'MOAO',                         &
                                                'S',                            &
@@ -511,7 +520,7 @@ contains
 
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
           ioff_osh1      = ioff_osh1      + norb1_f * norb1_f * nz
-          ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt_x2c
+          ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         end do
 !
 !       step 5: read in the "SL resorted" transformation matrix (the calling programs expect it to reside in scrmat2
@@ -521,8 +530,8 @@ contains
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
           write(flabel,'(a7,i4,i1)') '4cAOMOr',j,i
-          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f*norb1_f*nzt_x2c,x2c_file_scr)
-          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt_x2c
+          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f*norb1_f*nzt,x2c_file_scr)
+          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt
         end do
 
       end if ! if fndlab12('h1_4cAO   11') --> h1_4cAO already exists on file x2cscr
@@ -537,6 +546,7 @@ contains
                                 nbas1_f,                &
                                 norb1_f,                &
                                 nz,                     &
+                                nzt,                    &
                                 ipq_off_in,             &
                                 print_lvl)
 !**********************************************************************
@@ -553,6 +563,7 @@ contains
      integer, intent(in)    :: norb1_f
      integer, intent(in)    :: naosh_ls
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
@@ -566,7 +577,7 @@ contains
                                           norb1_f,               &
                                           naosh_ls,              &
                                           nz,                    &
-                                          nz,                    &
+                                          nzt,                   &
                                           ipq_off_in,            &
                                           'AOMO',                &
                                           'S',                   &

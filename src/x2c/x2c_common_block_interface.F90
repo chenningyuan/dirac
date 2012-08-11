@@ -87,6 +87,7 @@ contains
          x2c_prt               = 3
          nr_quat               = nz
          nzt_x2c               = nzt
+         if(mdirac) nzt_x2c    = nz ! default: 1
          nr_fsym               = nfsym
          mfsym                 = min(nfsym,2)
 
@@ -153,7 +154,7 @@ contains
 !          LOWDIN matrix dimension
            fulllowdmat_dim  = fulllowdmat_dim + nr_ao_all(i) * nr_mo_lw_all(i)
 !          AO2MO transformation matrix dimension
-           fullao2momat_dim = fullao2momat_dim + nr_ao_all(i) * k * nr_quat
+           fullao2momat_dim = fullao2momat_dim + nr_ao_all(i) * k * nzt_x2c
 !          MO2MO transformation matrix dimension (linear symmetry --> non-linear symmetry)
            fullmo2momat_dim = fullmo2momat_dim + k * k * nr_quat
 

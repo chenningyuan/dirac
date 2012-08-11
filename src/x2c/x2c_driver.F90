@@ -26,12 +26,15 @@ module dirx2c
 !           to a two-component framework 
 !
 !           written by sknecht, jan 2010 - july 2010
+!           modularization and interface to MDIRAC (InteRest): sknecht and mrepisky aug 2012
 !
-!           TODO: go through code and carefully check nz vs nzt (number of lowdin transformation matrices; with MDIRAC we
-!                 only have NZT == 1, otherwise NZT == NZ)
-!
+!           TODO: go through code and carefully check nz vs nzt [a job for TDK aka Bruce Wayne] 
+!                 nzt == number of AO2MO transformation matrices 
+!                 "MDIRAC" NZT == 1, 
+!                 " DIRAC" NZT == NZ
+!                 for simplicity we internally use nzt = nz also for MDIRAC (some 0 multiplies will not hurt that much
+!                 
 ! space for some notes on the pure 1-step approach: 
-!
 !
 !
 ! ---------------------------------------------------------------------------------------
@@ -416,6 +419,7 @@ contains
                       ioff_aomat_x,           &
                       nr_fsym,                &
                       nr_quat,                &
+                      nzt_x2c,                &
                       x2c_cb_pq_to_uq,        &
                       z_value,                &
                       x2c_funit,              &
@@ -581,6 +585,7 @@ contains
                      ioff_aomx,            &
                      nfsym,                &
                      nz,                   &
+                     nzt,                  &
                      ipq_off,              &
                      is_z_value,           &
                      x2c_file_glb,         &
@@ -622,6 +627,7 @@ contains
      real(8), intent(inout) :: scr2mat(*)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: nr_ao_L
      integer, intent(in)    :: naosh_ls
      integer, intent(in)    :: naosh_all(nfsym)
@@ -677,6 +683,7 @@ contains
                                       naosh_all,           &
                                       nfsym,               &
                                       nz,                  &
+                                      nzt,                 &
                                       defining_h1mat,      &
                                       is_z_value,          &
                                       x2c_file_scr,        &
@@ -703,6 +710,7 @@ contains
                                 ioff_aomx,             &
                                 nfsym,                 &
                                 nz,                    &
+                                nzt,                   &
                                 ipq_off,               &
                                 basic_h1mat,           &
                                 lwrk,                  &
@@ -725,6 +733,7 @@ contains
                                     ioff_aomx,             &
                                     nfsym,                 &
                                     nz,                    &
+                                    nzt,                   &
                                     ipq_off,               &
                                     defining_h1mat,        &
                                     lwrk,                  &
@@ -787,6 +796,7 @@ contains
                                    ioff_aomx,               &
                                    nfsym,                   &
                                    nz,                      &
+                                   nzt,                     &
                                    ipq_off,                 &
                                    is_z_value,              &
                                    is_final_ham_lvl,        &
@@ -824,6 +834,7 @@ contains
                                       naosh_L,             &
                                       nfsym,               &
                                       nz,                  &
+                                      nzt,                 &
                                       ipq_off,             &
                                       is_fragment_pctmat,  &
                                       is_z_value,          &

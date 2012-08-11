@@ -76,6 +76,7 @@ contains
                                        naosh_L,            &
                                        nfsym,              &
                                        nz,                 &
+                                       nzt,                &
                                        ipq_off_in,         &
                                        is_fragment_pctmat, &
                                        is_fragment,        &
@@ -105,6 +106,7 @@ contains
      integer, intent(in)    :: naosh_L(nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: is_fragment_pctmat
      integer, intent(in)    :: is_fragment
@@ -135,6 +137,7 @@ contains
                                             norb_dim,             &
                                             naosh_all,            &
                                             nz,                   &
+                                            nzt,                  &
                                             nfsym,                &
                                             is_fragment,          &
                                             ipq_off_in,           &
@@ -158,7 +161,7 @@ contains
           
 !          read RKB AOtoMO transformation matrix ["SL resorted"] from file
            write(flabel,'(a7,i4,i1)') '4cAOMOr',is_fragment,i
-           call x2c_read(flabel,xmat,nbas1_f*norb1_f*nz,x2c_file_scr)
+           call x2c_read(flabel,xmat,nbas1_f*norb1_f*nzt,x2c_file_scr)
 
 !          pctmt (4c-SA-AO -> 2c-ON-RKB) = RKB AOtoMO trafo mat ["SL resorted"]  * Umat_ON
 !          scr_mat2                      = xmat                                  * scr_mat3
@@ -171,7 +174,7 @@ contains
                       xmat,                                     &
                       nbas1_f,                                  &
                       norb1_f,                                  &
-                      nz,                                       &
+                      nzt,                                      &
                       'N','N',                                  &
                       ipq_off_in,                               &
                       scr_mat3,                                 &
@@ -240,6 +243,7 @@ contains
                                              norb_dim,      &
                                              naosh_all,     &
                                              nz,            &
+                                             nzt,           &
                                              nfsym,         &
                                              is_center,     &
                                              ipq_off_in,    &
@@ -261,6 +265,7 @@ contains
      integer, intent(in)    :: norb_dim(nfsym)
      integer, intent(in)    :: naosh_all(nfsym)
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: is_center
      integer, intent(in)    :: ipq_off_in(4,0:7)
@@ -296,7 +301,7 @@ contains
 
 !          read RKB AOtoMO transformation matrix ["SL resorted"] from file 
            write(flabel,'(a7,i4,i1)') '4cAOMOr',is_center,i
-           call x2c_read(flabel,scr_mat2(ioff_temp_sl_r),nbas1_f*norb1_f*nz,x2c_file_scr)
+           call x2c_read(flabel,scr_mat2(ioff_temp_sl_r),nbas1_f*norb1_f*nzt,x2c_file_scr)
 
 !          proper offset in qgemm for the "SL resorted" matrix
            ioff_aomo_sl_r = ioff_temp_sl_r + nbas1_f * n1esh_f
@@ -318,7 +323,7 @@ contains
                       scr_mat2(ioff_aomo_sl_r),                 &
                       nbas1_f,                                  &
                       n1esh_f,                                  &
-                      nz,                                       &
+                      nzt,                                      &
                       val_d0,                                   &
                       ipq_off_in,                               &
                       s_aomo_half_t(ioff_aomo_half_t),          &
@@ -330,7 +335,7 @@ contains
 
 !        update offsets for matrices
          ioff_ovl         = ioff_ovl + nbas1_f**2
-         ioff_temp_sl_r   = ioff_temp_sl_r   + nbas1_f*norb1_f*nz
+         ioff_temp_sl_r   = ioff_temp_sl_r   + nbas1_f*norb1_f*nzt
          ioff_aomo_half_t = ioff_aomo_half_t + nbas1_f*n1esh_f*nz
 
        end do
@@ -410,6 +415,7 @@ contains
                                        naosh_all,           &
                                        nfsym,               &
                                        nz,                  &
+                                       nzt,                 &
                                        defining_h1mat,      &
                                        is_fragment,         &
                                        x2c_file_scr,        &
@@ -432,11 +438,12 @@ contains
 !----------------------------------------------------------------------
      real(8), intent(in)    :: mat1(*)
      real(8), intent(in)    :: mat2(*)
-     real(8), intent(in)    :: mat3(*)
+     real(8), intent(inout) :: mat3(*)
      integer, intent(in)    :: norb_dim(nfsym)
      integer, intent(in)    :: naosh_all(nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: is_fragment
      integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: x2c_file_scr
@@ -457,11 +464,11 @@ contains
        do i = 1, nfsym
 
          write(flabel,'(a7,i4,i1)') '4cAOMOr',is_fragment,i
-         call x2c_write(flabel,mat1(ioff_aomo),naosh_all(i)*norb_dim(i)*nz,x2c_file_scr)
+         call x2c_write(flabel,mat1(ioff_aomo),naosh_all(i)*norb_dim(i)*nzt,x2c_file_scr)
 
          if(defining_h1mat == 2)then
            write(flabel,'(a7,i4,i1)') '4cAOMOo',is_fragment,i
-           call x2c_write(flabel,mat2(ioff_aomo),naosh_all(i)*norb_dim(i)*nz,x2c_file_scr)
+           call x2c_write(flabel,mat2(ioff_aomo),naosh_all(i)*norb_dim(i)*nzt,x2c_file_scr)
 
            if(linear_sym)then
              write(flabel,'(a7,i4,i1)') '4cMOMOl',is_fragment,i
@@ -470,7 +477,7 @@ contains
 
          end if
 
-         ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nz
+         ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nzt
          ioff_momo = ioff_momo + norb_dim(i) *  norb_dim(i)*nz
        end do
 
@@ -482,12 +489,13 @@ contains
 !      x2c_get_h1_mat_base (module x2c_h1mat_base)
        ioff_aomo = 1
        do i = 1, nfsym
-         call dcopy(naosh_all(i)*norb_dim(i)*nz,mat1(ioff_aomo),1,mat3(ioff_aomo),1)
+         mat3(ioff_aomo:naosh_all(i)*norb_dim(i)*nz ) = 0.0d0
+         call dcopy(naosh_all(i)*norb_dim(i)*nzt,mat1(ioff_aomo),1,mat3(ioff_aomo),1)
 !        debug print
          if(print_lvl > 2)then
-           call print_x2cmat(mat3(ioff_aomo),naosh_all(i),norb_dim(i),nz,ipq_off_in,'x2c - AO2MO resorted',6)
+           call print_x2cmat(mat3(ioff_aomo),naosh_all(i),norb_dim(i),nzt,ipq_off_in,'x2c - AO2MO resorted',6)
          end if
-         ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nz
+         ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nzt
        end do
          
   end subroutine store_aomo_trafo_matrices
