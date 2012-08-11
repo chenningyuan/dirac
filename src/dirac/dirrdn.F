@@ -6877,6 +6877,7 @@ C     .. or are computed exactly
       SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
+#ifdef blubb
       IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND.
      &   .NOT.TWOCOMP.AND..NOT.LEVYLE.AND..NOT.is_2c_rel_run) THEN
          DOLVC = .TRUE.
@@ -6886,6 +6887,7 @@ C     Check for possible ways of correcting..
      &     "   Activated SCC method (.LVCORR), "//
      &     "see L. Visscher TCA 98 (1997) 68."
       ENDIF
+#endif
 C
 C     Check for C1 symmetry if localization requested
 C

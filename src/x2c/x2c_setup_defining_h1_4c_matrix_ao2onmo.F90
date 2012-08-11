@@ -23,21 +23,24 @@
 ! module containing the selection of the defining matrix "h1" from which 
 ! the decoupling matrix shall be extracted.
 !
-! written by sknecht june 2010
+! written by sknecht   june 2010 - original implementation
+!
+!            sknecht august 2012 - added InteRest interface for 1-e Hamiltonian 
 !
 module x2c_def_h1_4c
 
   use memory_allocator
   use x2c_fio
   use x2c_cb_interface, only:         &
-      sel_wrk_x2c,                    &
-      desel_wrk_x2c,                  &
       reset_x2c_cb_onefck
   use x2c_utils,        only:         &
       print_x2cmat,                   &
       read_4cfock_operator_x2c,       &
       generic_interface_ao2mo_mo2ao
   use x2c_import_exportC1
+#ifdef MOD_INTEREST
+      use module_interest_interface
+#endif
 
   implicit none
 
@@ -69,6 +72,7 @@ contains
                                      is_fragment,          &
                                      x2c_file_scr,         &
                                      linear_sym,           &
+                                     mdirac,               &
                                      print_lvl)
 !**********************************************************************
 !
@@ -97,6 +101,7 @@ contains
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
 !----------------------------------------------------------------------
      integer                :: ioff_osh1       
      integer                :: ioff_ao_o_sh1   
@@ -109,8 +114,6 @@ contains
      character (len=12)     :: flabel
      logical                :: skip_step1 = .false.
      logical                :: fndlab12
-     real(8), pointer       :: wrk(:)
-     integer                :: lwrk
 !**********************************************************************
 
 !     step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
@@ -133,6 +136,7 @@ contains
                                 ipq_off_in,             &
                                 defining_h1mat,         &
                                 linear_sym,             &
+                                mdirac,                 &
                                 is_len_wrk,             &
                                 x2c_file_scr,           &
                                 print_lvl)
@@ -199,6 +203,7 @@ contains
                                   ipq_off_in,             &
                                   defining_h1mat,         &
                                   linear_sym,             &
+                                  mdirac,                 &
                                   is_len_wrk,             &
                                   x2c_file_scr,           &
                                   print_lvl)
@@ -226,11 +231,12 @@ contains
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: defining_h1mat
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: wrk(:)
      integer                :: lwrk
 !**********************************************************************
 
@@ -239,15 +245,21 @@ contains
 
        if(defining_h1mat == 0)then
 
-!        set pointer to WORK array
-         call sel_wrk_x2c(wrk,lwrk)
-
-         call reset_x2c_cb_onefck(.false.)
-         call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
-         call reset_x2c_cb_onefck(.true.)
-
-!        reset pointer to WORK array
-         call desel_wrk_x2c(wrk,lwrk)
+         if(mdirac)then
+#ifdef MOD_INTEREST
+           h1_saao_bas(1:naosh_ls**2*nz) = 0.0d0
+           call process_kinetic_energy_integrals( h1_saao_bas )
+           call process_nuclear_attraction_integrals( h1_saao_bas ) 
+#endif
+         else
+#ifdef PRG_DIRAC
+           allocate(wrk(lwrk))
+           call reset_x2c_cb_onefck(.false.)
+           call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
+           call reset_x2c_cb_onefck(.true.)
+           deallocate(wrk)
+#endif
+         end if
 
        else if(defining_h1mat == 1)then
 !        HUCKEL start guess...
@@ -265,21 +277,22 @@ contains
                                   nz,                 &
                                   ipq_off_in,         &
                                   linear_sym,         &
+                                  mdirac,             &
                                   lwrk,               &
                                   x2c_file_scr,       &
                                   print_lvl)
 
        else if(defining_h1mat == 3)then
-!        set pointer to WORK array
-         call sel_wrk_x2c(wrk,lwrk)
 
+#ifdef PRG_DIRAC
 !        Free-particle matrix
+         allocate(wrk(lwrk))
          call reset_x2c_cb_onefck(.false.)
          call freemt(h1_saao_bas,print_lvl,wrk,lwrk)
          call reset_x2c_cb_onefck(.true.)
+         deallocate(wrk)
+#endif
 
-!        reset pointer to WORK array
-         call desel_wrk_x2c(wrk,lwrk)
        end if
 
 
@@ -296,7 +309,8 @@ contains
                                  nz,                     &
                                  ipq_off_in,             &
                                  linear_sym,             &
-                                 lwrk,                   &
+                                 mdirac,                 &
+                                 is_len_wrk,             &
                                  x2c_file_scr,           &
                                  print_lvl)
 !**********************************************************************
@@ -322,9 +336,10 @@ contains
      integer, intent(in)          :: nz
      integer, intent(in)          :: ipq_off_in(4,0:7)
      logical, intent(in)          :: linear_sym
+     logical, intent(in)          :: mdirac
      integer, intent(in)          :: x2c_file_scr
      integer, intent(in)          :: print_lvl
-     integer, intent(in)          :: lwrk
+     integer, intent(in)          :: is_len_wrk
 !----------------------------------------------------------------------
      integer                      :: ioff_osh1
      integer                      :: ioff_ao_o_sh1
@@ -336,8 +351,12 @@ contains
      character (len=12)           :: flabel
      character (len=28)           :: debug_string
      logical                      :: fndlab12
-     real(8), pointer             :: wrk(:)
+     real(8), allocatable         :: wrk(:)
+     integer                      :: lwrk
 !**********************************************************************
+ 
+!     give full length for WORK array allocations
+      lwrk = is_len_wrk
 
 !     dummy center/fragment counter
       j = 1
@@ -357,6 +376,10 @@ contains
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f**2 * nz
         end do
 
+#ifdef MOD_INTEREST
+      else if(mdirac)then
+         stop 'FIXME - stefan: MDIRAC interface for fock-operator as defining/base h1 matrix'
+#endif
       else
 !       step 1: read 4c-fock_onmo (LS sorted) from file op_mat_on_file
 !       --------------------------------------------------------------
@@ -422,8 +445,7 @@ contains
 
 !       step 3: get half-transformed overlap matrix Sao
 !       -----------------------------------------------
-!       set pointer to WORK array
-        call sel_wrk_x2c(wrk,lwrk)
+        allocate(wrk(lwrk))
 
         ioff_ao_o_sh1 = 1
         do i = 1, nfsym
@@ -435,8 +457,7 @@ contains
         end do
         call mksaomo(scrmat2,h1_saao_bas,.false.,print_lvl,wrk,lwrk)
 
-!       reset pointer to WORK array
-        call desel_wrk_x2c(wrk,lwrk)
+        deallocate(wrk)
 
 !       step 4: 4c-fock_onmo_nonlin LS sorted --> 4c-fock_saao
 !       ------------------------------------------------------

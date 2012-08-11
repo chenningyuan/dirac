@@ -158,6 +158,8 @@ C     Memory deallocation of the rest..
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
+      call dealloc(work)
+
 C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
@@ -168,9 +170,11 @@ C=============================================================
         SSMTRC = SSMTRC_SAVE
 
         BSS = .FALSE.
-        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.)
 CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
         CALL SETDC2(0)
+
+        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 2')
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
@@ -264,6 +268,8 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
         CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
+        call dealloc(work)
+
         DO2C4C = .FALSE.
       ENDIF
 
@@ -286,7 +292,9 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
 !
 !       call the x2c/bss transformation module (branch 2 inside gmotra)
-        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.)
+
+        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 3')
 
         IF(.NOT.CONT2C) THEN
 CMI ... consider TRMO4C2C ...???
@@ -328,6 +336,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
 
           CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
+        call dealloc(work)
       END IF ! 4c --> 2c switch
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
@@ -339,7 +348,7 @@ C
          call xml_end('output')
          call xml_end('task')
       endif
-      call dealloc(WORK)
+      if(allocated(work)) call dealloc(WORK)
       CALL QEXIT('PSIDHF')
       RETURN
 C
@@ -422,7 +431,16 @@ C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRINT)
+      print *, 'blubb restfck, barnuc,',restfck,barnuc
 
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'predhf: 1-electron Fock matrix for you',-1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#undef blubb_blubb_so
+#endif
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
       IF (RESTFCK) THEN
          BARNUC  =.FALSE.
@@ -648,12 +666,21 @@ C
       ELSE IF (BARNUC) THEN
 C       ... read 1-electron Fock matrix into FOCK ...
         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'predhf: barnuc 1-electron Fock matrix for you',-1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#undef blubb_blubb_so
+#endif
         IF(IPRSCF.GE.12) THEN
          CALL HEADER(
      &   'PREDHF: Fresh 1-electron Fock matrix within "BARNUC"',-1)
          CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
+!       bncron = .false.
         IF(BNCRON .AND. .NOT. ONESYS) THEN
           CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
           IF(IPRSCF.GE.12) THEN
@@ -742,6 +769,14 @@ C
       ELSE
         DOLEV = DOLEVEL
       ENDIF
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'predhf: total Fock matrix for you',-1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#undef blubb_blubb_so
+#endif
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,DOLEV,WORK(KFREE),LFREE)
       IF(ATOMST) THEN
@@ -1169,9 +1204,9 @@ C
 C     Generate one-electron Fock matrix and write to file
 C     ===================================================
 C
+!sk   two-component methods: pct-1-el fock matrix will be read from file (BSSMAT or X2CMAT)
       CALL ONEFCK(FOCK,IPRONE,WORK,LWORK)
-CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed operator
-C       in ONEFCK ... no need to prepare LUFCK1 !!!!
+!sk   we write 1-el fock matrix here and read it later during the scf cycle from file.
 
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
@@ -1417,10 +1452,32 @@ C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
             !fixme: michal for InteRest                            
+            call dzero(fock,N2BBASXQ*nopen)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'scfcyc: twofock 2-electron Fock matrix for you',-1)
+         CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
+#undef blubb_blubb_so
+#endif
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
+            call dzero(dmat,N2BBASXQ*nopen)
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'scfcyc: old 2-electron Fock matrix for you',-1)
+         CALL DSCAL(N2BBASXQ,0.5d0,DMAT,1)
+         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         CALL DSCAL(N2BBASXQ,2.0d0,DMAT,1)
+#undef blubb_blubb_so
+#endif
 C
             IF (NISHT .GT. 0)
      &         CALL DAXPY(N2BBASXQ,DCOVLP,DMAT,1,FOCK,1)
@@ -1447,6 +1504,21 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'scfcyc: final 2-electron Fock matrix for you',-1)
+!        CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         
+!        open(99,file='blubb_oo',status='replace',form='unformatted',
+!    &        access='sequential',action="readwrite",position='rewind')
+!        write(99) (fock(i),i=1,N2BBASXQ)
+!        close(99,status='keep')
+!        CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
+#undef blubb_blubb_so
+#endif
 
 !       mi - variable initialization (otherwise runtime-check failure)
 
@@ -1492,6 +1564,19 @@ C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'scfcyc: 1-electron Fock matrix for you',-1)
+         CALL PRQMAT(CMO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER(
+     &   'scfcyc: 2-electron Fock matrix for you',-1)
+         CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
+#endif
 C
 C        Calculate correction according to the One-center app. models 
 C        ============================================================
@@ -1521,6 +1606,18 @@ C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
          CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+         CALL HEADER(
+     &   'scfcyc: total Fock matrix for you',-1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         open(99,file='blubb_oo',status='replace',form='unformatted',
+     &        access='sequential',action="readwrite",position='rewind')
+         write(99) (cmo(i),i=1,N2BBASXQ)
+         close(99,status='keep')
+#undef blubb_blubb_so
+#endif
 
 C
 C        Add active two-electron Fock matrices
@@ -1742,6 +1839,7 @@ C           fact that all Fock matrices were multiplied with 2
 C           in TWOFCK.
 C
          DFRAC2 = DP25*DFRAC1*DFRAC1*DA(ISHELL)
+         print *, 'dfrac1, dfrac2',dfrac1,dfrac2
 C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
@@ -4055,7 +4153,8 @@ C
           IBEIG(IORB(I)+J) = 0
         ENDDO
 
-
+         iprham_svae = iprham
+         iprham = 5
 C ... control print out of the matrix to be diagonalized
          IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -4286,6 +4385,7 @@ C
 C       Check if any positronic eigenvalues are below -2mc^2
 C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
+        iprham = iprham_svae
 C
  30   CONTINUE
 C

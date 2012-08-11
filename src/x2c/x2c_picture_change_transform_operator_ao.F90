@@ -33,8 +33,6 @@ module x2c_pct_ao
   use x2c_fio
   use x2c_cb_interface, only:            &
       init_x2c_cb,                       &
-      sel_wrk_x2c,                       &
-      desel_wrk_x2c,                     &
       reset_x2c_cb_onefck
   use x2c_utils, only:                   &
       pick_LL_block_saao_bas,            &
@@ -266,7 +264,7 @@ contains
      logical, intent(in)            :: spherical_on
      character (len=16), intent(in) :: prop_op_name(num_prp_op)
 !----------------------------------------------------------------------
-     real(8), pointer               :: wrk(:)
+     real(8), allocatable           :: wrk(:)
      real(8), allocatable           :: scr_mat1(:)
      real(8), allocatable           :: scr_mat2(:)
      real(8), allocatable           :: pctmat(:)
@@ -278,10 +276,16 @@ contains
      integer                        :: op_mat_dim
      integer                        :: ioff_pct_mat
      logical                        :: do_pct_prp_op
+     logical                        :: aoprop_avail
      logical, allocatable           :: quat_array_filled_tmp(:)
      character (len=12)             :: flabel
      character (len=4)              :: numstr
 !**********************************************************************
+
+
+!      test if any one-particle operator integrals have been created 
+       inquire(file="AOPROPER",exist=aoprop_avail)
+       if(.not.aoprop_avail) return
 
 !      initialize offset
        ioff_pct_mat = 1
@@ -414,9 +418,10 @@ contains
          if(spherical_on)then
 
            lwrk = is_len_wrk
-           call sel_wrk_x2c(wrk,lwrk)
+           allocate(wrk(lwrk))
            call sph_iotc(scr_mat1,scr_mat2,nr_sph,print_lvl,wrk,lwrk)
-           call desel_wrk_x2c(wrk,lwrk)
+           deallocate(wrk)
+           
 
            call x2c_write(flabel,scr_mat2,nr_sph**2  * nz,x2c_file_glb)
          else
@@ -477,7 +482,7 @@ contains
      integer, intent(in)            :: is_len_wrk
      integer, intent(in)            :: print_lvl
 !----------------------------------------------------------------------
-     real(8), pointer               :: wrk(:)
+     real(8), allocatable           :: wrk(:)
      real(8), allocatable           :: scr_mat1(:)
      real(8), allocatable           :: scr_mat2(:)
      real(8), allocatable           :: pctmat(:)
@@ -498,8 +503,8 @@ contains
 
        lwrk = is_len_wrk
 !      set common block and pointer to WORK array
-       call sel_wrk_x2c(wrk,lwrk)
        call reset_x2c_cb_onefck(.false.)
+       allocate(wrk(lwrk))
 
        call onefck(scr_mat1,print_lvl,wrk,lwrk)
 
@@ -517,7 +522,7 @@ contains
 
 !      reset common block and pointer to WORK array
        call reset_x2c_cb_onefck(.true.)
-       call desel_wrk_x2c(wrk,lwrk)
+       deallocate(wrk)
 
 !      step 2: read picture-change transformation matrix in SA-AO basis from global file
 !      ---------------------------------------------------------------------------------
@@ -570,6 +575,38 @@ contains
        i = 0  ! one-step storage of "gerade+ungerade" matrix parts
        write(flabel,'(a11,i1)') 'h1bncc2cAOl',i
        call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
+
+!#define blubb_blubb_so
+#ifdef blubb_blubb_so
+       scr_mat2   = 0
+       scr_mat1   = 0
+       op_fer_rep = 0
+       open(99,file='blubb_oo',status='old',form='unformatted',&
+            access='sequential',action="readwrite",position='rewind')
+       read(99) (scr_mat1(i),i=1, naosh_ls**2*nz)
+       close(99,status='keep')
+
+       call perform_pct_saao_bas(scr_mat1,            &
+                                 pctmat,              &
+                                 scr_mat2,            &
+                                 naosh_ls,            &
+                                 nr_ao_L,             &
+                                 naosh_all,           &
+                                 naosh_L,             &
+                                 nfsym,               &
+                                 nz,                  &
+                                 ipq_off_in,          &
+                                 ioff_aomx,           &
+                                 op_fer_rep,          &
+                                 op_bs_to_fs,         &
+                                 .true.,              &
+                                 print_lvl)
+
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2fock-tra',6)
+!      end if
+#endif
 
        call dealloc(scr_mat2)
        call dealloc(pctmat)

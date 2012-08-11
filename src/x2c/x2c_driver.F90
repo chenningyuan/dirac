@@ -75,7 +75,9 @@ module dirx2c
 !                            end of "roadmap" of the X2C code
 ! ---------------------------------------------------------------------------------------
 !
+#ifdef PRG_DIRAC
   use memory_allocator
+#endif
 ! x2c modules
   use x2cmod_cfg
   use x2c_cb_interface
@@ -91,7 +93,9 @@ module dirx2c
   use x2c_h1mat_base
   use x2c_pct_mo_coefficients
   use x2c_import_exportC1
-  use x2c_dirac_in_house_so_correction
+#ifdef MOD_AOOSOC
+  use atomic_oo_order_so_correction
+#endif
 
   implicit none
 
@@ -107,10 +111,8 @@ module dirx2c
 contains
 
 !**********************************************************************
-  subroutine x2c_driver(work,                   &
-                        lwork,                  &
+  subroutine x2c_driver(                        &
                         atom_by_atom_x2c,       &
-                        x2c_nuccent,            &
                         return_h1_inf_2c)
 !**********************************************************************
 !
@@ -127,18 +129,28 @@ contains
 !                 2. approximate a combined picture-change transformation matrix U_comb
 !                 3. picture-change transform all relevant operator
 !
+!             possible "defining h1_4c" Hamiltonian:
+!
+!                 a. x2c_is_defining_h1mat == 0: 1-el Dirac Hamiltonian                           
+!                    ==> default for X2C
+!
+!                 b. x2c_is_defining_h1mat == 2: Fock operator after a (converged) [spinfree==sf] SCF 
+!                    ==> default for [sf-]X2Cmmf
+!
+!                 b. x2c_is_defining_h1mat == 3: free-particle 
+!                    ==> test-option
+!
+!
 !**********************************************************************
-     integer, intent(in)    :: lwork
-     real(8), intent(inout) :: work(lwork)
-     integer, intent(in)    :: x2c_nuccent        ! total number of nuclei/molecular fragments
      logical, intent(in)    :: atom_by_atom_x2c   ! atom-by-atom or molecular x2c run
      logical, intent(in)    :: return_h1_inf_2c   ! return transformed h1_2c^++
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: wrk(:)
      real(8), allocatable   :: xmat(:)
      real(8), allocatable   :: scr1mat(:)
      real(8), allocatable   :: scr2mat(:)
      real(8), allocatable   :: eigvl(:)
+     integer                :: x2c_nuccent = 1    ! total number of nuclei/molecular fragments
      integer                :: lwrk
      integer                :: is_allocated_dyn
      integer                :: i,j
@@ -160,9 +172,6 @@ contains
 
 !      print header
        call hello_dirx2c()
-
-!      initialize interface to f77 work array
-       call set_wrk_x2c(work,lwork)
 
 !      initialize variable(s)
        final_ham_lvl_x2c = 0
@@ -228,8 +237,8 @@ contains
          dim2_fsym_Sao = 0
          if(nr_fsym == 2) dim2_fsym_Sao = nr_ao_all(nr_fsym)
 
-         call get_Sao_LL_mat(xmat,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
-!                                                     ^ (compute+write if >= 0)
+         call get_Sao_LL_mat(xmat,x2c_mdirac,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
+!                                                                      ^ (compute+write if >= 0)
 
 !        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
          j                               = dimension_for_2mat
@@ -342,28 +351,29 @@ contains
 
              close(9,status='delete')
 
-           case default
+           case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
-             call sel_wrk_x2c(wrk,lwrk)
-
-             call modham(scr1mat,                                         &
-                         xmat,                                            &
-                         scr2mat,                                         &
-                         eigvl,                                           &
-                         .true.,                                          &
-                         .false.,                                         &
-                         x2c_is_defining_h1mat,                           &
-                         wrk,                                             &
-                         lwrk)
-
-!            nullify pointer to work array and release matrices
-             call desel_wrk_x2c(wrk,lwrk)
+               allocate(wrk(lwrk))
+               call modham(scr1mat,                                         &
+                           xmat,                                            &
+                           scr2mat,                                         &
+                           eigvl,                                           &
+                           .true.,                                          &
+                           .false.,                                         &
+                           x2c_is_defining_h1mat,                           &
+                           wrk,                                             &
+                           lwrk)
+               deallocate(wrk)
 
 !            ------------------------------------------------------------------------------------
 !            step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
-!                      these dimensions have been evaluated in MODHAM. 
+!                      these dimensions have been evaluated in MODHAM
 !            ------------------------------------------------------------------------------------
              call init_x2c_cb(.true.)
+
+           case default
+         
+             stop 'x2c driver: defining 4c-Hamiltonian type unknown...'
 
          end select
 
@@ -380,13 +390,6 @@ contains
 !        recalculate the new maximum allowed length of wrk array allocations to be used in the subroutines.
          is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c - j + nr_ao_total_x2c**2 * nr_quat
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
-
-!        prepare DIRACs in-house SO-correction based on the 4c-fock SO-elements for each atom type
-!        -----------------------------------------------------------------------------------------
-         call prepare_so_correction_driver(nr_fsym,              &
-                                           nr_quat,              &
-                                           dim_oshell,           &
-                                           x2c_prt)
 
 !        ------------------------------------------------------------------------------
 !        step 1.5: obtain 
@@ -423,6 +426,7 @@ contains
                       x2c_prt,                &
                       atom_by_atom_x2c,       &
                       x2c_linsym,             &
+                      x2c_mdirac,             &
                       return_h1_inf_2c,       & 
                       x2c_do_spherical)
 
@@ -458,13 +462,20 @@ contains
                                 num_nuclei,                        &
                                 x2c_tot_charge_for_mfsum,          &
                                 x2c_amfi_order,                    &
-                                len_wrk_f77_x2c,                   &
+                                lwrk,                              &
                                 x2c_do_spherical,                  &
                                 x2c_famfi,                         &
                                 x2c_funit,                         &
                                 x2c_cspeed,                        &
                                 x2c_prt)
          end if
+
+!        put DIRACs SO-correction based on the 4c-fock SO-elements for each atom type
+!        -------------------------------------------------------------------------------
+#ifdef MOD_AOOSOC
+         call put_atomic_oo_order_so_correction(                      &
+                                                x2c_prt)
+#endif
 
          close(x2c_famfi,status="delete")
 
@@ -496,7 +507,7 @@ contains
                                   fh_1int_4c,                    &
                                   x2c_bs_to_fs,                  &
                                   all_prp_op,                    &
-                                  len_wrk_f77_x2c,               &
+                                  lwrk,                          &
                                   x2c_do_spherical,              &
                                   x2c_prep_bnccorr,              &
                                   x2c_1e_system,                 &
@@ -580,6 +591,7 @@ contains
                      print_lvl,            &
                      fragment_x2c,         &
                      linear_sym,           &
+                     mdirac,               &
                      return_h1_inf_2c,     &
                      spherical_on)
 !**********************************************************************
@@ -591,8 +603,8 @@ contains
 !                       wrt which the decoupling step is performed.
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
-!                                      == 1: (extended) Huckel start guess
-!                                      == 2: converged 4c-Fock-Dirac operator (not implemented yet)
+!                                      == 1: (extended) Huckel start guess (won't be implemented)
+!                                      == 2: converged 4c-Fock-Dirac operator
 !
 !             delivers: a. decoupling matrix "R" in orthonormal MO basis
 !                       b. picture-change transformation matrix "U" in orthonormal MO basis and Dirac-sorted SA-AO basis
@@ -630,6 +642,7 @@ contains
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: fragment_x2c
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
      logical, intent(in)    :: return_h1_inf_2c
      logical, intent(in)    :: spherical_on
 !----------------------------------------------------------------------
@@ -664,6 +677,8 @@ contains
                                       defining_h1mat,      &
                                       is_z_value,          &
                                       x2c_file_scr,        &
+                                      ipq_off,             &
+                                      print_lvl,           &
                                       linear_sym)
 
 !      step 2: store the hamiltonian for which the 4c-->2c transformation 
@@ -691,6 +706,7 @@ contains
                                 is_z_value,            &
                                 x2c_file_scr,          &
                                 linear_sym,            &
+                                mdirac,                &
                                 print_lvl)
        
 !      step 3: get defining matrix (== "h1-defining" in orthonormal MO basis)
@@ -712,6 +728,7 @@ contains
                                     is_z_value,            &
                                     x2c_file_scr,          &
                                     linear_sym,            &
+                                    mdirac,                &
                                     print_lvl)
  
 !      allocate scratch matrix with appropriate dimension

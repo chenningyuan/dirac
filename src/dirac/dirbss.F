@@ -9162,7 +9162,7 @@ CMI   if (dirbss_verbose) write(lupri,*)
 
         IX = 0
         DO  I = 1, numballcart
-        DO  J = 1, I
+        DO 111 J = 1, I
 C       ... get SO integrals from AMFI  
          SOXINT=-WORK(KSOX+IX)
          SOYINT=-WORK(KSOY+IX)
@@ -9175,6 +9175,16 @@ C       ... get SO integrals from AMFI
 C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
+
+       if((DABS(SOXINT) < THRNULL).and.
+     &    (DABS(SOYINT) < THRNULL).and.
+     &    (DABS(SOZINT) < THRNULL))then
+         ix = ix + 1
+         goto 111
+       end if
+
+       if(iprint >= 5) write(lupri,*) ' hamiltonian indices 1 and 2',
+     &                                  i1,j1
 
 C      ... print out AMFI integrals
        IF (IPRINT.GE.3) THEN
@@ -9291,6 +9301,13 @@ C  ==================================================
 C      ... add AMFI contribution to the H2CAO
 C        when onlytra=.false.
 C  ==================================================
+
+        if (IPRINT >= 5)then
+          write(lupri,*) 'soxint ==> ',soxint
+          write(lupri,*) 'soyint ==> ',soyint
+          write(lupri,*) 'sozint ==> ',sozint
+        end if
+
         H2SAO(I1,J1,IZPOS) = H2SAO(I1,J1,IZPOS) + SOZINT 
         H2SAO(I1,J1,IYPOS) = H2SAO(I1,J1,IYPOS) + SOYINT 
         H2SAO(I1,J1,IXPOS) = H2SAO(I1,J1,IXPOS) + SOXINT 
@@ -9300,7 +9317,7 @@ C  ==================================================
         H2SAO(J1,I1,IXPOS) = H2SAO(J1,I1,IXPOS) - SOXINT 
        ENDIF
        IX = IX + 1
-      ENDDO
+ 111  continue
       ENDDO
       ENDIF
       if (IPRINT.GE.3) 

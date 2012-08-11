@@ -35,19 +35,13 @@ module x2c_cb_interface
   implicit none
 
   public init_x2c_cb
-  public set_wrk_x2c
-  public sel_wrk_x2c
-  public desel_wrk_x2c
   public set_x2c_subblock_data
   public reset_x2c_cb_onefck
   public renew_x2c_cb_orb_shell_dim
 
   private
 
-  real(8), pointer :: f77_wrk_x2c(:)      ! f77 work array pointer
   integer, public  :: len_wrk_f77_x2c = 0 ! length of the work array
-  integer          :: mem_wrk_use_x2c = 0 ! amount of work array used
-  integer          :: mem_wrk_cnt_x2c = 0 ! counts
 
 contains
 
@@ -58,6 +52,7 @@ contains
                          prop_op_name)
 
       use quaternion_algebra
+      use memory_allocator
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -86,6 +81,7 @@ contains
 !   ----------------------------------------------------------------------------
 
        if(init_x2c_cb_blocks)then
+         call legacy_lwork_get(len_wrk_f77_x2c)
          x2c_prt               = iprham
          if(x2cmod_debug)      &
          x2c_prt               = 3
@@ -181,6 +177,7 @@ contains
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
          x2c_1e_system    = onesys
+         x2c_mdirac       = mdirac
   
 !        initialize real*8
          x2c_cspeed = cval
@@ -379,48 +376,4 @@ contains
 
   end subroutine renew_x2c_cb_orb_shell_dim
 !**********************************************************************
-!-----------------------------------------------------------------------
-! rip from openrsp/dirac_interface.F90 / prp/london_reorth.F90
-
-!**********************************************************************
-  subroutine set_wrk_x2c(wrk,lwork)
-!**********************************************************************
-     real(8),target     :: wrk(:)
-     integer            :: lwork
-!**********************************************************************
-
-     len_wrk_f77_x2c =  lwork
-     f77_wrk_x2c     => wrk
-
-  end subroutine set_wrk_x2c
-
-!**********************************************************************
-  subroutine sel_wrk_x2c(wrk, mem_req)
-!**********************************************************************
-     real(8), pointer    :: wrk(:)
-     integer, intent(in) :: mem_req
-!**********************************************************************
-
-     wrk => f77_wrk_x2c
-     mem_wrk_use_x2c = mem_req
-     mem_wrk_cnt_x2c = mem_wrk_cnt_x2c + 1
-     if(mem_wrk_cnt_x2c > 1)                               &
-        call quit(' *** dirac/dirx2c.F90 - sel_wrk_x2c: counter > 1 not implemented ***')
-
-  end subroutine sel_wrk_x2c
-
-!**********************************************************************
-  subroutine desel_wrk_x2c(wrk, mem_req)
-!**********************************************************************
-     real(8), pointer    :: wrk(:)
-     integer, intent(in) :: mem_req
-!**********************************************************************
-
-     nullify(wrk)
-     mem_wrk_use_x2c = 0
-     mem_wrk_cnt_x2c = mem_wrk_cnt_x2c - 1
-
-  end subroutine desel_wrk_x2c
-!-----------------------------------------------------------------------
-! end of rip
 end module

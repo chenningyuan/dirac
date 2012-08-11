@@ -774,6 +774,7 @@ CMI   ... control output ...
 !   BSSMAT file (lu=LUBSS) according to the parameter I2COFK
        CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM)
       else if(x2c.and..not.x2c_4c_fock_mtx_defh1)then
+        print *, 'blubb blubb x2c read'
         call read_1fock_x2c(fock,n2bbasx,nz,i2cofk)
       else
 C
@@ -807,6 +808,12 @@ C
 C     Output section
 C     ==============
 C
+#define blubb_blubb_so
+#ifdef blubb_blubb_so
+      iprham_save = iprham
+      iprham      = 4
+      print *, 'bss, x2c, twocomp',bss,x2c,twocomp
+#endif
       IF(IPRHAM.GE.4) THEN
         IF (BSS) THEN
          IF (TWOCOMPBSS) THEN
@@ -849,6 +856,10 @@ C
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    10   CONTINUE
       ENDIF
+#ifdef blubb_blubb_so
+      iprham = iprham_save
+#undef blubb_blubb_so
+#endif
 C
       CALL QEXIT('ONEFCK')
       RETURN
@@ -2218,14 +2229,14 @@ C
           NBORB(JSYM,IFRP,0) = NBORB(JSYM,IFRP,1) + NBORB(JSYM,IFRP,2)
         ENDDO
         NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
-        IF (IPRINT.GE.5) THEN
+!       IF (IPRINT.GE.5) THEN
           CALL HEADER(
      &    'LOWDI1: Lowdin canonical matrix (in ferm.symm.blocks) ',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &    '*** fermion corep ',IFRP,'/',NFSYM
            CALL PRQMAT(VMAT(IVOFF),NFBAS(IFRP,0),NFORB(IFRP,0),
      &           NFBAS(IFRP,0),NFORB(IFRP,0),1,IPQTOQ(1,0),LUPRI)
-        END IF
+!       END IF
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
@@ -2550,7 +2561,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gmotra */
-      SUBROUTINE GMOTRA(GOFAST,WORK,LWORK)
+      SUBROUTINE GMOTRA(GOFAST)
 C*****************************************************************************
 C
 C PURPOSE:
@@ -2582,10 +2593,9 @@ C     Last revision May 21 1996 - tsaue
 C                    2006 - M.Ilias
 C
 C*****************************************************************************
+      use memory_allocator
       use x2cmod_cfg
       use dirx2c
-      use x2c_cb_interface, only:
-     &    set_wrk_x2c
       use x2c_pct_ao,       only:
      &    pctrafo_all_op_driver
       use x2c_fio
@@ -2612,19 +2622,22 @@ C   PAMIOU: LUTMAT
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
-      DIMENSION WORK(LWORK)
-      logical, intent(in) :: GOFAST
+      real(8), allocatable :: WORK(:)
+      logical, intent(in)  :: GOFAST
 !     local scratch
-      logical             :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
-      logical             :: is_2c_rel_run
-      integer             :: is_defining_h1mat
-      integer             :: ndim_lowmat
-      integer             :: lulmat = 99
+      logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
+      logical              :: is_2c_rel_run
+      integer              :: is_defining_h1mat
+      integer              :: ndim_lowmat
+      integer              :: lulmat = 99
 
       CALL QENTER('GMOTRA')
 
       IF(GOFAST.AND.(.NOT.(BSS.or.x2c))) GOTO 10
+
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in GMOTRA')
       KFRSAV = KFREE
 C
 !     set file unit number for X2CMAT
@@ -2688,7 +2701,10 @@ C     ==============================================
       close(lulmat,status='keep')
 
 !     release memory when we invoke the x2c module
-      if(x2c) call memrel('x2cfre',work,kwork,kwork,kfree,lfree)
+      if(x2c)then 
+       call memrel('x2cfre',work,kwork,kwork,kfree,lfree)
+       call dealloc(work)
+      end if
 
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
 C     =========================================================
@@ -2706,12 +2722,11 @@ C
 C     ** Branching point **
 C=======================================================================
 C
-C     Case 1: Unrestricted kinetic balance 
-C             or 2-component non-relativistic calculation
-C     ---------------------------------------------------
-      IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run).OR.MDIRAC) THEN
-C
-C
+!       ---------------------------------------------------
+!       Case 1: Unrestricted kinetic balance 
+!               or 2-component non-relativistic calculation
+!       ---------------------------------------------------
+      IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
         NZT = 1
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
@@ -2729,10 +2744,10 @@ C
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
-
-!     Case 2: relativistic 2-component Hamiltonian
-!     --------------------------------------------
-      ELSE IF (is_2c_rel_run)THEN
+!       --------------------------------------------
+!       Case 2: relativistic 2-component Hamiltonian
+!       --------------------------------------------
+      ELSE IF(is_2c_rel_run)THEN
 !
         CALL TIMER('START ',TIMSTR,TIMEND)
 
@@ -2806,8 +2821,6 @@ C         2) do picture change transformation of integrals on AOPROPER
               call x2c_write('thisisadummy',work,-1,lux2c)
             end if
 
-            if(dosphe) call set_wrk_x2c(work,lfree)
-
             call pctrafo_all_op_driver(ntbas(0),
      &                                 ntbas(1),
      &                                 nfbas(1,0),
@@ -2820,7 +2833,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 lu1int,
      &                                 jbtof,
      &                                 nprps,
-     &                                 lfree,
+     &                                 lwork,
      &                                 dosphe,
      &                                 .false.,
      &                                 onesys, 
@@ -2841,19 +2854,35 @@ C         2) do picture change transformation of integrals on AOPROPER
           if(bss)then
 !           bss module (if asked for it can also perform an X2C transformation)
             CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
+
           else if(x2c)then
+
+!           put in an interface routine to be called inside x2c_driver
+            if(mdirac)then
+              NZT = 1
+              DO IFRP = 1,NFSYM
+                NESH(IFRP)  = NFORB(IFRP,1)
+                NPSH(IFRP)  = NFORB(IFRP,1)
+                NORB(IFRP)  = NESH(IFRP)    * 2
+                NTMO(IFRP)  = NORB(IFRP)
+              END DO
+            end if
+
 !           optimized x2c module
-            call x2c_driver(work(kfree),lfree,x2cmod_fragment_x2c,
-     &                      1,.true.)
+            call x2c_driver(x2cmod_fragment_x2c,.true.)
+!           re-allocate 
+            call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
+#include "memint.h"
+
           end if
 
-        ENDIF
+        ENDIF ! restart X2C or re-do X2C switch
 
         CALL TIMER('mk_h2c',TIMSTR,TIMEND)
 
 !       
-!       case2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
-!       ------------------------------------------------------------------------------
+!       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
+!       -------------------------------------------------------------------------------
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
 
           if(x2cmod_mmf)then
@@ -2932,9 +2961,10 @@ C.........do canonical orthonormalization
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
 
-C
-C     Case 3: Transformation matrix with modified Dirac equation embedded
-C     -------------------------------------------------------------------
+!
+!     -------------------------------------------------------------------
+!     Case 3: Transformation matrix with modified Dirac equation embedded
+!     -------------------------------------------------------------------
       ELSE
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
@@ -3127,6 +3157,7 @@ C
 C
 C     Memory deallocation
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
+      if(allocated(work)) call dealloc(work)
  10   CONTINUE
 
       CALL QEXIT('GMOTRA')
@@ -3210,69 +3241,95 @@ CMI  ... check of keywords..
 !
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
+      print *, 'slgroup', slgroup
+      if(.not.MDIRAC)THEN
 C
-C     Generate free particle (or bare nucleus) matrix in Lowdin-basis
-C     ===============================================================
+C       Generate free particle (or bare nucleus) matrix in Lowdin-basis
+C       ===============================================================
 C
-      IF(VEXTPJ) THEN
-        CALL ONEFCK(TBUF,IPRONE,WORK(KFREE),LFREE)
-      ELSE
-        CALL FREEMT(TBUF,IPRONE,WORK(KFREE),LFREE)
-      ENDIF
-      IOFT = 1
-      IOFV = 1
-      DO 10 I = 1,NFSYM
-        IF(NFORB(I,0).EQ.0) GOTO 10
-CMI      ... transform to the Lowdin basis "Theta"
-        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                         NFORB(I,0),NFORB(I,0),
-     &            TBUF(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &            TMAT(IOFT),NFORB(I,0),NFORB(I,0),NZ,IPQTOQ(1,0),
-     &            VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,IPQTOQ(1,0),
-     &            VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,IPQTOQ(1,0),
-     &            WORK,LWORK,IPRGEN)
-        IF (IPRHAM.GE.6) THEN
-           IF(VEXTPJ) THEN
-             CALL HEADER('MODHAM: '//
+        print *, 'blubb',vextpj
+        IF(VEXTPJ) THEN
+          CALL ONEFCK(TBUF,IPRONE,WORK(KFREE),LFREE)
+        ELSE
+          CALL FREEMT(TBUF,IPRONE,WORK(KFREE),LFREE)
+        ENDIF
+        IOFT = 1
+        IOFV = 1
+        DO 10 I = 1,NFSYM
+          IF(NFORB(I,0).EQ.0) GOTO 10
+CMI        ... transform to the Lowdin basis "Theta"
+          CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &                              NFORB(I,0),NFORB(I,0),
+     &         TBUF(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         TMAT(IOFT),NFORB(I,0),NFORB(I,0),NZ,IPQTOQ(1,0),
+     &         VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,IPQTOQ(1,0),
+     &         VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,IPQTOQ(1,0),
+     &         WORK,LWORK,IPRGEN)
+          IF (IPRHAM.GE.6) THEN
+             IF(VEXTPJ) THEN
+               CALL HEADER('MODHAM: '//
      &'Bare nucleus Dirac matrix in orthonormal canonical Lowdin basis'
      &,-1)
-           ELSE
-             CALL HEADER('MODHAM: '//
+             ELSE
+               CALL HEADER('MODHAM: '//
      &'Free particle Dirac matrix in orthonormal canonical Lowdin basis'
      &,-1)
-           ENDIF
-           WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-           CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
-     &                 NFORB(I,0),NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-        IOFT = IOFT + NFORB(I,0)*NFORB(I,0)*NZ
-        IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
-   10 CONTINUE
+             ENDIF
+             WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+             CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
+     &                   NFORB(I,0),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          IOFT = IOFT + NFORB(I,0)*NFORB(I,0)*NZ
+          IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
+   10   CONTINUE
 C
-      NZT = NZ
+        NZT = NZ
+      END IF
+
       IF(LEVYLE) THEN
 C
 C       Generate transformation matrix for the Levy-Leblond equation
 C       ============================================================
 C
         CALL LL_EQ(TMAT,TBUF,VMAT)
+
+      ELSE IF(MDIRAC)THEN      
+
+C       The modified Dirac equation at the integral level (InteRest):
+C       =============================================================
+        NZT = 1
+
+        imat = 1
+        DO IFRP = 1,NFSYM
+          NESH(IFRP)  = NFORB(IFRP,1)
+          NPSH(IFRP)  = NFORB(IFRP,1)
+          NORB(IFRP)  = NESH(IFRP)    * 2
+          NTMO(IFRP)  = NORB(IFRP)
+          lMAT        = NFBAS(ifrp,0)*NORB(ifrp)*NZ
+          call resort_mdirac_vmat(tmat(imat),vmat(imat),
+     &                            nfbas(ifrp,0),norb(ifrp),
+     &                            ifrp,nborb,nz)
+          iMAT        = imat + NFBAS(ifrp,0)*NORB(ifrp)*NZ
+        END DO
+
       ELSE      
 C
-C       The modified Dirac eqation:
-C       ===========================
+C       The modified Dirac equation at the matrix level (Hermit):
+C       =========================================================
 
         CALL MOD_DIREQ(TMAT,TBUF,VMAT,EIG,WORK(KFREE),LFREE)
       ENDIF   
 C
 C     Print section
 C
-      CALL HEADER('Output from MODHAM',-1)
       IF(LEVYLE.OR.VEXTPJ.OR.FREEPJ) THEN
+        CALL HEADER('Output from MODHAM',-1)
         WRITE(LUPRI,'(A)') '* All positronic solutions deleted !'
-      ELSE
+      ELSE IF(.not.mdirac)then
+        CALL HEADER('Output from MODHAM',-1)
         WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
       ENDIF
-      IF(IPRHAM.GE.5) THEN
+!     IF(IPRHAM.GE.5) THEN
         CALL HEADER(
      &    'MODHAM: Actual transformation matrix 4c AO->MO ',-1)
         IMAT = 1
@@ -3285,7 +3342,7 @@ C
           IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
         ENDIF
  80     CONTINUE
-      ENDIF
+!     ENDIF
 
 CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
 CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
@@ -3580,7 +3637,7 @@ C
           CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals( smat )
+        call process_overlap_integrals( smat, SS_scaling=SSmetr )
 #endif
       ELSE
 C      
@@ -3679,7 +3736,7 @@ C
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals( smat )
+        call process_overlap_integrals( smat, SS_scaling=SSmetr )
 #endif
       ELSE
 !       call alloc(sbuf, n2bbasx)
@@ -4212,8 +4269,8 @@ C
 C*****************************************************************************
       use x2c_fio, only:
      &    x2c_read
-!     use x2c_utils, only:
-!    &    print_x2cmat
+      use x2c_utils, only:
+     &    print_x2cmat
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4278,9 +4335,13 @@ CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
 !         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
 !    &         'bss - h1barenuc',LUPRI)
         else if(x2c)then
+          print *, 'blubb enter' 
+          call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         'x2c - enter fmat',LUPRI)
           call x2c_read(flabel,fmat,n2bbasx * nz,lux2c)
-!         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-!    &         'x2c - h1barenuc',LUPRI)
+          print *, 'blubb leaving' 
+          call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         'x2c - h1barenuc',LUPRI)
           close(lux2c,status='keep')
         end if
       ELSE
@@ -6719,6 +6780,8 @@ C       TMAT - transformation matrix with modified Dirac equation embedded
 C
 C     Note that there is a difference in boson irrep ordering 
 C     between TMAT and the Lowdin canonical transformation matrix VMAT:
+!
+!
 C     After transformation with VMAT the boson irrep ordering
 C     in a given fermion ircop is:
 C       L1 - L2 - L3 .. S1 - S2 - S3 - ..

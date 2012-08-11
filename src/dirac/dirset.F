@@ -66,7 +66,7 @@ C
 
       CALL QENTER('PAMSET')
       call legacy_lwork_get(LWORK)
-      call alloc(WORK,LWORK,id='WORK in PAMSET')
+      call alloc(WORK,LWORK,id='WORK in PAMSET - 1')
 
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
@@ -85,10 +85,10 @@ C
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
-        IPREAD = IPREAD - 5
+!       IPREAD = IPREAD - 5
         CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
-        IPREAD = IPREAD + 5
+!       IPREAD = IPREAD + 5
       ENDIF
 C
 C     Generate all one-electron integrals
@@ -134,7 +134,9 @@ CMI  ... call of F90 routine
 !        call TEST_OOF ! memmory was unsticked here
 !         call StickMemory(WORK,LWORK) ! stick again
 !         call cap_ovlp
-        IF (CAP) CALL CAP_STUFF(WORK,LWORK)
+        IF (CAP)then
+          CALL CAP_STUFF(WORK,LWORK)
+        END IF
 !    .... independent tests
 !       call test_oof_basis_fu(WORK,LWORK)
 #endif
@@ -151,9 +153,11 @@ C
 C     DO4C2C=T : after 4c SCF perform IOTC transformation
 C     DO2C4C=T : jump to 4c level after some 2c SCF iterations
 C
-      CALL GMOTRA(GOFAST,WORK,LWORK)
+      call dealloc(work) ! release memory - particularly because of X2C...
+
+      CALL GMOTRA(GOFAST)
 C
- 10   CONTINUE
+      call alloc(WORK,LWORK,id='WORK in PAMSET - 2')
 C
 C     Set DCB common blocks - second time
 C     ===================================

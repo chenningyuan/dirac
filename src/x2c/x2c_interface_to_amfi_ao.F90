@@ -33,9 +33,6 @@ module x2c_amfi_interface
   use x2c_utils, only:                 &
       pick_LL_block_saao_bas,          &
       print_x2cmat
-  use x2c_cb_interface, only:          &
-      sel_wrk_x2c,                     &
-      desel_wrk_x2c
 
   implicit none
 
@@ -139,14 +136,8 @@ contains
                                      x2c_file_glb,         &
                                      print_lvl)
          is_final_ham_lvl = -3
-       else if(x2c_add_amfi == 2)then
-!        interface to new AMFI
-!        call x2c_interface2new_amfi
-!        is_final_ham_lvl = TODO
-       else if(x2c_add_amfi == 3)then
-!        interface to new AMFI for atom-by-atom X2C
-!        call x2c_interface2new_amfi_abax2c
-!        is_final_ham_lvl = TODO
+       else
+         call quit('unknown AMFI interface in x2c module')
        end if
 
   end subroutine x2c_amfi_driver
@@ -183,18 +174,15 @@ contains
 !
 !             the outline of this routine may be sketched as follows:
 !
-!             1. read h1_++_saao_cartesian_gaussian from file X2Camfi_scr (in ++ form but 4c-format retained)
-!            /  a. insert quaternion phases
-!   "see"   /   b. transform h1 from Dirac-sorted AO (SA-AO) to Hermit-sorted SO-AO basis
-!  -------  \   c. transform h1 from Hermit-sorted SO-AO basis to simple AO basis
-!            \  d. transform h1 from cartesian-gaussian AO basis to spherical-gaussian AO basis
-!             2. add AMFI contributions
-!            /  e. transform h1 from spherical-gaussian AO basis to cartesian-gaussian AO basis
-!   "saw"   /   f. transform h1 from simple AO basis to Hermit-sorted SO-AO basis
-!  -------  \   g. transform h1 from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
-!            \  h. insert quaternion phases
-!             3. pick out LL block
-!             4. save h1_++_LL_saao_cartesian_gaussian to file X2CMAT (only LL-block retained)
+!             1. prepare for spherical harmonics
+!             2. calculate AMFI contributions
+!            /  a. transform from spherical-gaussian AO basis to cartesian-gaussian AO basis
+!   "saw"   /   b. transform from simple AO basis to Hermit-sorted SO-AO basis
+!  -------  \   c. transform from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
+!            \  d. insert quaternion phases
+!             3. read h1_++_saao_cartesian_gaussian from file X2Camfi_scr (in ++ form but 4c-format retained)
+!             4. pick out LL block
+!             5. save h1_++_LL_saao_cartesian_gaussian to file X2CMAT (only LL-block retained)
 
 !    note: sphgen modifies the common blocks for 
 !          cartesian --> spherical gaussian transformations;
@@ -227,7 +215,7 @@ contains
      integer, intent(in)             :: print_lvl
      logical, intent(in)             :: spherical_on
 !--------------------------------------------------------------
-     real(8), pointer                :: wrk(:)
+     real(8), allocatable            :: wrk(:)
      real(8), allocatable            :: scr1_mat(:)
      real(8), allocatable            :: scr2_mat(:)
      real(8), allocatable            :: rcha_pnuc(:)
@@ -255,77 +243,14 @@ contains
      character (len=12)              :: flabel
 !**********************************************************************
  
-!      allocate first scratch matrix
-       call alloc(scr1_mat,naosh_ls*naosh_ls*4)
-       scr1_mat = 0
-
-!      -------------------------------------------
-!      step 1: read h1 in Dirac-sorted SA-AO basis
-!      -------------------------------------------
-
-       i = 0
-       j = 0
-       write(flabel,'(a7,i4,i1)') 'h12cAOa',j,i
-       call x2c_read(flabel,scr1_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
-
-!      a. insert quaternion phase factors
-!      ----------------------------------
-       if(nz < 4)then
-         do iz = 1, nz                                                
-           iq = ipq_off_in(iz,0)
-           call q2bphase('F',iq,1,scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))))
-         end do           
-       end if          
-
-!      b. transform hamiltonian integral elements from DIRAC-sorted AO to Hermit-sorted AO basis  
-!      -----------------------------------------------------------------------------------------
-       call bstobu_no_work(scr1_mat,nz)
-
-!      allocate second scratch matrix
-       call alloc(scr2_mat,naosh_ls*naosh_ls*4)
-       scr2_mat = 0
-
-!      c. transform from SO-AO basis to AO-basis
-!      -----------------------------------------
-       i = op_bs_to_fs(0,1)
-       do iz = 1, 4
-         irepd = bs_irrep_mat(iz,0)
-         iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
-         ipq   = iqp_off_in(iq,0)
-         call mtsoao(scr1_mat(1+(naosh_ls*naosh_ls*(ipq-1))),    &
-                     scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
-                     naosh_ls,                                   &
-                     irepd,                                      &
-                     print_lvl)
-       end do
-
-!      release scratch space
-       call dealloc(scr1_mat)
+!      ---------------------------------------
+!      step 1. prepare for spherical harmonics
+!      ---------------------------------------
 
        lwrk = is_len_wrk
-       call sel_wrk_x2c(wrk,lwrk)
+       allocate(wrk(lwrk))
 
        call sphgen(1,2,.false.,wrk,lwrk,print_lvl)
-
-!      re-allocate scratch matrix
-       call alloc(scr1_mat,naosh_ls*naosh_ls*4)
-       scr1_mat = 0
-
-!      d. transform from cartesian Gaussian AO basis to spherical Gaussian basis
-!      -------------------------------------------------------------------------
-!        in : h1_cartesian -> scr2_mat; wf_components == 0: transform large+small component
-!        out: h1_spherical -> scr1_mat
-       wf_components = 0 
-       do iz = 1, 4
-         call mtaocs(scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
-                     naosh_ls,                                   &
-                     scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
-                     naosh_ls,                                   &
-                     wf_components,                              &
-                     wrk,                                        &
-                     lwrk,                                       &
-                     print_lvl)
-       end do
 
 !      determine the total number of spherical functions for the large (L => 1) component
        sph_fun_L = nsphcm(1)
@@ -335,8 +260,6 @@ contains
 !      get proper labels (including signs) for s,p,d,f,... functions
        call sphlab(max_quant_num-1,clab_int)
 
-!      release scratch space
-       call dealloc(scr2_mat)
 
 !      allocate temporary matrices for AMFI module
        call alloc(itmp_mat1,sph_fun_L)
@@ -353,8 +276,11 @@ contains
 !      ------------------------------
 !      step 2. add AMFI contributions
 !      ------------------------------
-!        in : h1_spherical        -> scr1_mat
-!        out: h1_spherical + AMFI -> scr1_mat
+!        out: AMFI (spherical) -> scr1_mat
+
+!      allocate first scratch matrix
+       call alloc(scr1_mat,naosh_ls*naosh_ls*4)
+       scr1_mat = 0.0d0
 
        call amfiin(scr1_mat,               &
                    naosh_ls,               &
@@ -376,7 +302,8 @@ contains
                    amfi_order_contrib,     &
                    quat_pointer_op,        &
                    cspeed,                 &
-                   print_lvl,              &
+                   5        ,              &
+                  !print_lvl,              &
                    wrk,                    &
                    lwrk)
 
@@ -398,14 +325,16 @@ contains
 !      set up the proper factors for the backtransformation
        call sphgen(1,2,.true.,wrk,lwrk,print_lvl)
 
-!      re-allocate scratch space
+!      allocate scratch space
        call alloc(scr2_mat,naosh_ls*naosh_ls*4)
        scr2_mat = 0
 
-!      e. transform from spherical Gaussian AO basis to cartesian Gaussian AO basis
+!      a. transform from spherical Gaussian AO basis to cartesian Gaussian AO basis
 !      ----------------------------------------------------------------------------
-!        in : h1_spherical -> scr1_mat
-!        out: h1_cartesian -> scr2_mat
+!        in : AMFI contributions -> scr1_mat
+!        out: AMFI contributions -> scr2_mat
+!             wf_components = 0: large+small
+       wf_components = 0 
        do iz = 1, 4
          call mtaosc(scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
                      naosh_ls,                                   &
@@ -420,13 +349,13 @@ contains
 !      reset the common blocks (see note in the header)
        call sphgen(1,2,.false.,wrk,lwrk,print_lvl)
 
-       call desel_wrk_x2c(wrk,lwrk)
+       deallocate(wrk)
 
-!      f. transform from AO-basis to SO-AO basis
+!      b. transform from AO-basis to SO-AO basis
 !      -----------------------------------------
 !        in : h1_AO    -> scr2_mat
 !        out: h1_SO-AO -> scr1_mat
-       scr1_mat = 0
+       scr1_mat = 0.0d0
        i = op_bs_to_fs(0,1)
        do iz = 1, 4
          irepd = bs_irrep_mat(iz,0)
@@ -439,14 +368,11 @@ contains
                      print_lvl)
        end do
 
-!      release scratch space
-       call dealloc(scr2_mat)
-
-!      g. transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
 !      -----------------------------------------------------------
        call butobs_no_work(scr1_mat,nz)
 
-!      h. insert quaternion phase factors
+!      d. insert quaternion phase factors
 !      ----------------------------------
        if(nz < 4)then
          do iz = 1, nz                                                
@@ -455,12 +381,30 @@ contains
          end do           
        end if          
 
-!      re-allocate scratch space
-       call alloc(scr2_mat,naosh_ls*naosh_ls*nz)
-       scr2_mat = 0
+
+!      -------------------------------------------------------------------------------
+!      step 3. read h1_2c_saao_cartesian_gaussian from file and add AMFI contributions 
+!      -------------------------------------------------------------------------------
+
+       i = 0
+       j = 0
+       write(flabel,'(a7,i4,i1)') 'h12cAOa',j,i
+       scr2_mat = 0.0d0
+       call x2c_read(flabel,scr2_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
+
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
+         call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h12c almost ready',6)
+!      end if
+
+!      add amfi contributions to h1_2c
+       call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,scr1_mat,1)
+
+       scr2_mat = 0.0d0
 
 !      --------------------------------------------------------
-!      step 3. select LL-block of h1_++_saao_cartesian_gaussian
+!      step 4. select LL-block of h1_++_saao_cartesian_gaussian
 !      --------------------------------------------------------
 
        call pick_LL_block_saao_bas(scr1_mat,            &
@@ -475,7 +419,7 @@ contains
                                    op_bs_to_fs)
 
 !      -------------------------------------------------------------
-!      step 4. write h1_++_LL_saao_cartesian_gaussian to file X2CMAT 
+!      step 5. write h1_++_LL_saao_cartesian_gaussian to file X2CMAT 
 !      -------------------------------------------------------------
 
        i = 0
@@ -485,17 +429,18 @@ contains
        if(spherical_on)then
 
          lwrk = is_len_wrk
-         call sel_wrk_x2c(wrk,lwrk)
+         allocate(wrk(lwrk))
          call sph_iotc(scr2_mat,scr1_mat,nr_sph,print_lvl,wrk,lwrk)
-         call desel_wrk_x2c(wrk,lwrk)
+         deallocate(wrk)
 
          call x2c_write(flabel,scr1_mat,nr_sph**2  * nz,x2c_file_glb)
        else
 
 !        debug print
-         if(print_lvl > 2)then
+!        if(print_lvl > 2)then
+           print *, "nr_ao_L",nr_ao_L
            call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+AMFI',6)
-         end if
+!        end if
 
          call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
        end if

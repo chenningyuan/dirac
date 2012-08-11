@@ -33,6 +33,9 @@ module x2c_utils
   use x2c_fio
   use x2c_cb_interface, only:  &
       set_x2c_subblock_data
+#ifdef MOD_INTEREST
+  use module_interest_interface
+#endif
 
   implicit none
 
@@ -287,8 +290,8 @@ contains
 
          if(nesh_dim(i) > 0)then
  
-!          read (task_id < 0) Sao_LL overlap matrix from file
-           call get_Sao_LL_mat(scr_mat1(ioff_ovl),nbas1_f,i,-1)
+!          read (task_id < 0) Sao_LL overlap matrix from file (always read, thus mdirac == .false.)
+           call get_Sao_LL_mat(scr_mat1(ioff_ovl),.false.,nbas1_f,i,-1)
 
 !          read RKB AOtoMO transformation matrix ["SL resorted"] from file 
            write(flabel,'(a7,i4,i1)') '4cAOMOr',is_center,i
@@ -409,6 +412,8 @@ contains
                                        defining_h1mat,      &
                                        is_fragment,         &
                                        x2c_file_scr,        &
+                                       ipq_off_in,          &
+                                       print_lvl,           &
                                        linear_sym)
 !**********************************************************************
 !
@@ -434,6 +439,8 @@ contains
      integer, intent(in)    :: is_fragment
      integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: x2c_file_scr
+     integer, intent(in)    :: ipq_off_in(4,0:7)
+     integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
 !----------------------------------------------------------------------
      integer                :: i
@@ -475,6 +482,10 @@ contains
        ioff_aomo = 1
        do i = 1, nfsym
          call dcopy(naosh_all(i)*norb_dim(i)*nz,mat1(ioff_aomo),1,mat3(ioff_aomo),1)
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(mat3(ioff_aomo),naosh_all(i),norb_dim(i),nz,ipq_off_in,'x2c - AO2MO resorted',6)
+         end if
          ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nz
        end do
          
@@ -831,7 +842,6 @@ contains
 !**********************************************************************
 
        abs_ham_lvl = abs(ham_lvl)
-
        if(abs_ham_lvl <= 0 .or. abs_ham_lvl > 4)           &
          call quit('*** error in read_1fock_x2c: invalid pointer to Hamiltonian integral type. ***')
 
@@ -1058,6 +1068,7 @@ contains
 
 !**********************************************************************
   subroutine get_Sao_LL_mat(scr_mat1,    &
+                            mdirac,      &
                             ndim_mat,    &
                             i,           &
                             task_id)
@@ -1073,6 +1084,7 @@ contains
      integer, intent(in)      :: ndim_mat
      integer, intent(in)      :: i
      integer, intent(in)      :: task_id
+     logical, intent(in)      :: mdirac
 !----------------------------------------------------------------------
      integer                  :: j
      integer                  :: ndim_mat_tmp
@@ -1087,8 +1099,16 @@ contains
 
        if(task_id >= 0)then
 
+         if(mdirac)then
+#ifdef MOD_INTEREST
+           call process_overlap_integrals( scr_mat1, SS_scaling=0.0d0 )
+#endif
+         else
+#ifdef PRG_DIRAC
 !        compute Sao_LL overlap matrix where the SS part is set to zero
-         call gtovlt(scr_mat1,val_d0,0)
+         call gtovlt(scr_mat1,0.0d0,0)
+#endif
+        end if
 
 !        store matrix on file in "gerade/ungerade" format (if applicable)
          ioff_ovl = 1
