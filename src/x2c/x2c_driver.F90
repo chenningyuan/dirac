@@ -426,6 +426,7 @@ contains
                       x2c_prt,                &
                       atom_by_atom_x2c,       &
                       x2c_linsym,             &
+                      x2c_mdirac,             &
                       return_h1_inf_2c,       & 
                       x2c_do_spherical)
 
@@ -590,6 +591,7 @@ contains
                      print_lvl,            &
                      fragment_x2c,         &
                      linear_sym,           &
+                     mdirac,               &
                      return_h1_inf_2c,     &
                      spherical_on)
 !**********************************************************************
@@ -640,6 +642,7 @@ contains
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: fragment_x2c
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
      logical, intent(in)    :: return_h1_inf_2c
      logical, intent(in)    :: spherical_on
 !----------------------------------------------------------------------
@@ -703,6 +706,7 @@ contains
                                 is_z_value,            &
                                 x2c_file_scr,          &
                                 linear_sym,            &
+                                mdirac,                &
                                 print_lvl)
        
 !      step 3: get defining matrix (== "h1-defining" in orthonormal MO basis)
@@ -724,6 +728,7 @@ contains
                                     is_z_value,            &
                                     x2c_file_scr,          &
                                     linear_sym,            &
+                                    mdirac,                &
                                     print_lvl)
  
 !      allocate scratch matrix with appropriate dimension

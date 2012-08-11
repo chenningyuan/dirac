@@ -65,6 +65,7 @@ contains
                                  is_fragment,          &
                                  x2c_file_scr,         &
                                  linear_sym,           &
+                                 mdirac,               &
                                  print_lvl)
 !**********************************************************************
 !
@@ -96,6 +97,7 @@ contains
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
 !----------------------------------------------------------------------
      integer                :: ioff_osh1       
      integer                :: ioff_ao_o_sh1   
@@ -125,6 +127,7 @@ contains
                                  ipq_off_in,             &
                                  basic_h1mat,            &
                                  linear_sym,             &
+                                 mdirac,                 &
                                  is_len_wrk,             &
                                  x2c_file_scr,           &
                                  print_lvl)
