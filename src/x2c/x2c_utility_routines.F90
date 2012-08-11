@@ -1101,12 +1101,12 @@ contains
 
          if(mdirac)then
 #ifdef MOD_INTEREST
-           call process_overlap_integrals( scr_mat1, val_d0 )
+           call process_overlap_integrals( scr_mat1, SSSS_metric=0.0d0 )
 #endif
          else
 #ifdef PRG_DIRAC
 !        compute Sao_LL overlap matrix where the SS part is set to zero
-         call gtovlt(scr_mat1,val_d0,0)
+         call gtovlt(scr_mat1,0.0d0,0)
 #endif
         end if
 

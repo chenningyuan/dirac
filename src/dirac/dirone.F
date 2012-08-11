@@ -3637,7 +3637,7 @@ C
           CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals( smat )
+        call process_overlap_integrals( smat, SSSS_metric=SSmetr )
 #endif
       ELSE
 C      
@@ -3736,7 +3736,7 @@ C
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals( smat )
+        call process_overlap_integrals( smat, SSSS_metric=SSmetr )
 #endif
       ELSE
 !       call alloc(sbuf, n2bbasx)
