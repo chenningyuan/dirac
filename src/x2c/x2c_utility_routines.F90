@@ -1101,7 +1101,7 @@ contains
 
          if(mdirac)then
 #ifdef MOD_INTEREST
-           call process_overlap_integrals( scr_mat1, SSSS_metric=0.0d0 )
+           call process_overlap_integrals( scr_mat1, SS_scaling=0.0d0 )
 #endif
          else
 #ifdef PRG_DIRAC

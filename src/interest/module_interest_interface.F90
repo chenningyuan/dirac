@@ -225,11 +225,11 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_overlap_integrals( S, SSSS_metric ) 
+  SUBROUTINE process_overlap_integrals( S, SS_scaling ) 
 
     !> input
     real(8)           :: S(2*nrow,2*ncol) 
-    real(8), optional :: SSSS_metric
+    real(8), optional :: SS_scaling
 
     !> local
     integer              :: i, j 
@@ -244,11 +244,11 @@ CONTAINS
     call symmetrize_matrix(                                 A = Smat(1,1,1), ida = nrow )  !Re(A)
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
     S = 0.0d0
-    if(present(SSSS_metric))then
+    if(present(SS_scaling))then
       do j=1,ncol
         do i=1,nrow
           S(i     ,j     ) = Smat(i,j,1) 
-          S(i+nrow,j+ncol) = Smat(i,j,2) * SSSS_metric
+          S(i+nrow,j+ncol) = Smat(i,j,2) * SS_scaling
         enddo
       enddo
     else
