@@ -237,8 +237,8 @@ contains
          dim2_fsym_Sao = 0
          if(nr_fsym == 2) dim2_fsym_Sao = nr_ao_all(nr_fsym)
 
-         call get_Sao_LL_mat(xmat,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
-!                                                     ^ (compute+write if >= 0)
+         call get_Sao_LL_mat(xmat,x2c_mdirac,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
+!                                                                      ^ (compute+write if >= 0)
 
 !        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
          j                               = dimension_for_2mat

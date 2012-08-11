@@ -33,6 +33,9 @@ module x2c_utils
   use x2c_fio
   use x2c_cb_interface, only:  &
       set_x2c_subblock_data
+#ifdef MOD_INTEREST
+  use module_interest_interface
+#endif
 
   implicit none
 
@@ -287,8 +290,8 @@ contains
 
          if(nesh_dim(i) > 0)then
  
-!          read (task_id < 0) Sao_LL overlap matrix from file
-           call get_Sao_LL_mat(scr_mat1(ioff_ovl),nbas1_f,i,-1)
+!          read (task_id < 0) Sao_LL overlap matrix from file (always read, thus mdirac == .false.)
+           call get_Sao_LL_mat(scr_mat1(ioff_ovl),.false.,nbas1_f,i,-1)
 
 !          read RKB AOtoMO transformation matrix ["SL resorted"] from file 
            write(flabel,'(a7,i4,i1)') '4cAOMOr',is_center,i
@@ -1065,6 +1068,7 @@ contains
 
 !**********************************************************************
   subroutine get_Sao_LL_mat(scr_mat1,    &
+                            mdirac,      &
                             ndim_mat,    &
                             i,           &
                             task_id)
@@ -1080,6 +1084,7 @@ contains
      integer, intent(in)      :: ndim_mat
      integer, intent(in)      :: i
      integer, intent(in)      :: task_id
+     logical, intent(in)      :: mdirac
 !----------------------------------------------------------------------
      integer                  :: j
      integer                  :: ndim_mat_tmp
@@ -1094,10 +1099,16 @@ contains
 
        if(task_id >= 0)then
 
+         if(mdirac)then
+#ifdef MOD_INTEREST
+           call process_overlap_integrals( scr_mat1, val_d0 )
+#endif
+         else
 #ifdef PRG_DIRAC
 !        compute Sao_LL overlap matrix where the SS part is set to zero
          call gtovlt(scr_mat1,val_d0,0)
 #endif
+        end if
 
 !        store matrix on file in "gerade/ungerade" format (if applicable)
          ioff_ovl = 1
