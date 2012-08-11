@@ -248,8 +248,8 @@ contains
          if(mdirac)then
 #ifdef MOD_INTEREST
            h1_saao_bas(1:naosh_ls**2*nz) = 0.0d0
-           call process_kinetic_energy_integrals( h1_saao_bas )
-           call process_nuclear_attraction_integrals( h1_saao_bas ) 
+           call process_kinetic_energy_integrals_4comp( h1_saao_bas )
+           call process_nuclear_attraction_integrals_4comp( h1_saao_bas ) 
 #endif
          else
 #ifdef PRG_DIRAC
