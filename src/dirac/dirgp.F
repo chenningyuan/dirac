@@ -4523,3 +4523,28 @@ C
       CALL QEXIT('GETACORD')
       RETURN
       END
+
+      subroutine resort_mdirac_vmat(tmat,vmat,nrow,ncol,nr_p_orb,
+     &                              nr_e_orb,nz)
+      implicit none
+      real(8), intent(inout) :: tmat(nrow,ncol,nz)
+      real(8), intent(inout) :: vmat(nrow,ncol,nz)
+      integer, intent(in)    :: nrow
+      integer, intent(in)    :: ncol
+      integer, intent(in)    :: nz
+      integer, intent(in)    :: nr_p_orb
+      integer, intent(in)    :: nr_e_orb
+      integer                :: i, j
+
+      call dzero(tmat,nrow*ncol*nz)
+
+      do i = 1, nz
+        do j = 1, ncol
+          if(j <= nr_e_orb)then
+            call dcopy(nrow,vmat(1,j,i),1,tmat(1,nr_p_orb+j,i),1)
+          else
+            call dcopy(nrow,vmat(1,j,i),1,tmat(1,j-nr_e_orb,i),1)
+          end if
+        end do
+      end do
+      end

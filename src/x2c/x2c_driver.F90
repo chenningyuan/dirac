@@ -353,13 +353,13 @@ contains
 
            case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
-             if(x2c_mdirac)then
+!            if(x2c_mdirac)then
 
-               print *, "blubb skip modham"
-               call dcopy(fulllowdmat_dim,xmat,1,scr1mat,1)
+!              print *, "blubb skip modham"
+!              call dcopy(fulllowdmat_dim,xmat,1,scr1mat,1)
                
 
-             else
+!            else
 
                allocate(wrk(lwrk))
                call modham(scr1mat,                                         &
@@ -373,11 +373,11 @@ contains
                            lwrk)
                deallocate(wrk)
 
-             end if
+!            end if
 
 !            ------------------------------------------------------------------------------------
 !            step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
-!                      these dimensions have been evaluated in MODHAM/prepare_x2c_MDIRAC 
+!                      these dimensions have been evaluated in MODHAM
 !            ------------------------------------------------------------------------------------
              call init_x2c_cb(.true.)
 

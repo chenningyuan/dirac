@@ -2229,14 +2229,14 @@ C
           NBORB(JSYM,IFRP,0) = NBORB(JSYM,IFRP,1) + NBORB(JSYM,IFRP,2)
         ENDDO
         NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
-        IF (IPRINT.GE.5) THEN
+!       IF (IPRINT.GE.5) THEN
           CALL HEADER(
      &    'LOWDI1: Lowdin canonical matrix (in ferm.symm.blocks) ',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &    '*** fermion corep ',IFRP,'/',NFSYM
            CALL PRQMAT(VMAT(IVOFF),NFBAS(IFRP,0),NFORB(IFRP,0),
      &           NFBAS(IFRP,0),NFORB(IFRP,0),1,IPQTOQ(1,0),LUPRI)
-        END IF
+!       END IF
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
@@ -3299,15 +3299,18 @@ C       The modified Dirac equation at the integral level (InteRest):
 C       =============================================================
         NZT = 1
 
-        lmat = 0
+        imat = 1
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
           NPSH(IFRP)  = NFORB(IFRP,1)
           NORB(IFRP)  = NESH(IFRP)    * 2
           NTMO(IFRP)  = NORB(IFRP)
-          lMAT        = lMAT + NFBAS(ifrp,0)*NORB(ifrp)*NZ
+          lMAT        = NFBAS(ifrp,0)*NORB(ifrp)*NZ
+          call resort_mdirac_vmat(tmat(imat),vmat(imat),
+     &                            nfbas(ifrp,0),norb(ifrp),
+     &                            nforb(ifrp,1),nforb(ifrp,1),nz)
+          iMAT        = imat + NFBAS(ifrp,0)*NORB(ifrp)*NZ
         END DO
-        call dcopy(lmat,vmat,1,tmat,1)
 
       ELSE      
 C
@@ -3326,7 +3329,7 @@ C
         CALL HEADER('Output from MODHAM',-1)
         WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
       ENDIF
-      IF(IPRHAM.GE.5) THEN
+!     IF(IPRHAM.GE.5) THEN
         CALL HEADER(
      &    'MODHAM: Actual transformation matrix 4c AO->MO ',-1)
         IMAT = 1
@@ -3339,7 +3342,7 @@ C
           IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
         ENDIF
  80     CONTINUE
-      ENDIF
+!     ENDIF
 
 CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
 CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
