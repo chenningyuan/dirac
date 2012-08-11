@@ -26,7 +26,10 @@ module dirx2c
 !           to a two-component framework 
 !
 !           written by sknecht, jan 2010 - july 2010
-
+!
+!           TODO: go through code and carefully check nz vs nzt (number of lowdin transformation matrices; with MDIRAC we
+!                 only have NZT == 1, otherwise NZT == NZ)
+!
 ! space for some notes on the pure 1-step approach: 
 !
 !

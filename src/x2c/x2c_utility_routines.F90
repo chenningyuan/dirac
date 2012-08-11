@@ -52,6 +52,7 @@ module x2c_utils
   public read_fock_matrices_saao_basis_x2c
   public write_fock_matrices_saao_basis_x2c
   public get_Sao_LL_mat
+  public get_saomo_x2c
   public get_boson_irrep_info
   public hello_dirx2c
   public goodbye_dirx2c
@@ -1130,6 +1131,105 @@ contains
        end if
 
   end subroutine get_Sao_LL_mat
+!**********************************************************************
+
+  subroutine get_saomo_x2c(                &
+                            saomo,         &
+                            vaomo,         &
+                            naosh_ls,      &
+                            naosh_all,     &
+                            norb_dim,      &
+                            ioff_aomat_x,  &
+                            nfsym,         &
+                            nz,            &
+                            nzt,           &
+                            ipq_off_in,    &
+                            mdirac,        &
+                            print_lvl)
+!**********************************************************************
+!
+!    purpose: compute the right-index transformed overlap matrix
+!
+!**********************************************************************
+     real(8), intent(inout) :: saomo(*)
+     real(8), intent(inout) :: vaomo(*)
+     integer, intent(in)    :: nfsym
+     integer, intent(in)    :: naosh_ls
+     integer, intent(in)    :: naosh_all(nfsym)
+     integer, intent(in)    :: norb_dim(nfsym)
+     integer, intent(in)    :: ioff_aomat_x(nfsym,nfsym)
+     integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
+     integer, intent(in)    :: ipq_off_in(4,0:7)
+     logical, intent(in)    :: mdirac
+     integer, intent(in)    :: print_lvl
+!----------------------------------------------------------------------
+     real(8), allocatable   :: saoao(:)
+     integer                :: iaomo
+     integer                :: i
+     integer                :: norb1_f
+     integer                :: nbas1_f
+!**********************************************************************
+ 
+       allocate(saoao(naosh_ls**2))
+       saoao(1:naosh_ls**2) = 0.0d0
+
+!      compute Saoao overlap matrix
+       if(mdirac)then
+#ifdef MOD_INTEREST
+         call process_overlap_integrals( saoao )
+#endif
+       else
+#ifdef PRG_DIRAC
+         call gtovlx(saoao,1.0d0)
+#endif
+       end if
+
+       iaomo = 1
+
+       do i = 1, nfsym
+
+!        set dimensions for matrices used in the subroutine
+         norb1_f  = norb_dim(i)
+         nbas1_f  = naosh_all(i)
+
+         if(norb_dim(i) > 0)then
+
+!          Saomo                         = Saoao * RKB AOtoMO trafo mat
+!          saomo                         = saoao * vaomo
+           call qgemm(nbas1_f,                                  &
+                      norb1_f,                                  &
+                      nbas1_f,                                  &
+                      val_d1,                                   &
+                      'N','N',                                  &
+                      ipq_off_in,                               &
+                      saoao(ioff_aomat_x(i,i)),                 &
+                      naosh_ls,                                 &
+                      naosh_ls,                                 &
+                      1,                                        &
+                      'N','N',                                  &
+                      ipq_off_in,                               &
+                      vaomo(iaomo),                             &
+                      nbas1_f,                                  &
+                      norb1_f,                                  &
+                      nzt,                                      &
+                      val_d0,                                   &
+                      ipq_off_in,                               &
+                      saomo(iaomo),                             &
+                      nbas1_f,                                  &
+                      norb1_f,                                  &
+                      nzt)         
+
+         end if
+
+!        keep track of offset
+         iaomo = iaomo + nzt * nbas1_f * norb1_f
+
+       end do
+
+       deallocate(saoao)
+
+  end subroutine get_saomo_x2c
 !**********************************************************************
 
   subroutine get_boson_irrep_info(boson_info,  &

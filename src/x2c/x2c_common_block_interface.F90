@@ -86,6 +86,7 @@ contains
          if(x2cmod_debug)      &
          x2c_prt               = 3
          nr_quat               = nz
+         nzt_x2c               = nzt
          nr_fsym               = nfsym
          mfsym                 = min(nfsym,2)
 
@@ -329,7 +330,7 @@ contains
          end do
        end do
        if(ham_lvl_x2c == -137)then ! hidden code for mmf-approach
-         nzt     = nz
+         nzt     = nzt_x2c
          n2tmt   = 0
          n2tmotq = 0
          do i=1, nfsym

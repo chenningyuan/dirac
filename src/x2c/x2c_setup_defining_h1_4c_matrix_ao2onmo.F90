@@ -36,6 +36,7 @@ module x2c_def_h1_4c
   use x2c_utils,        only:         &
       print_x2cmat,                   &
       read_4cfock_operator_x2c,       &
+      get_saomo_x2c,                  &
       generic_interface_ao2mo_mo2ao
   use x2c_import_exportC1
 #ifdef MOD_INTEREST
@@ -445,17 +446,28 @@ contains
 
 !       step 3: get half-transformed overlap matrix Sao
 !       -----------------------------------------------
-        allocate(wrk(lwrk))
-
         ioff_ao_o_sh1 = 1
         do i = 1, nfsym
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
           write(flabel,'(a7,i4,i1)') '4cAOMOo',j,i
-          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1),nbas1_f*norb1_f*nz,x2c_file_scr)
-          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
+          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1), &
+                                          nbas1_f * norb1_f * nzt_x2c, x2c_file_scr)
+          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt_x2c
         end do
-        call mksaomo(scrmat2,h1_saao_bas,.false.,print_lvl,wrk,lwrk)
+        call get_saomo_x2c(                &
+                           scrmat2,        &
+                           h1_saao_bas,    &
+                           naosh_ls,       &
+                           naosh_all,      &
+                           norb_dim,       &
+                           ioff_aomat_x,   &
+                           nfsym,          &
+                           nz,             &
+                           nzt_x2c,        &
+                           ipq_off_in,     &
+                           mdirac,         &
+                           print_lvl)
 
         deallocate(wrk)
 
@@ -478,7 +490,7 @@ contains
                                                norb1_f,                        &
                                                nbas1_f,                        &
                                                nz,                             &
-                                               nz,                             &
+                                               nzt_x2c,                        &
                                                ipq_off_in,                     &
                                                'MOAO',                         &
                                                'S',                            &
@@ -499,7 +511,7 @@ contains
 
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
           ioff_osh1      = ioff_osh1      + norb1_f * norb1_f * nz
-          ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz
+          ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt_x2c
         end do
 !
 !       step 5: read in the "SL resorted" transformation matrix (the calling programs expect it to reside in scrmat2
@@ -509,8 +521,8 @@ contains
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
           write(flabel,'(a7,i4,i1)') '4cAOMOr',j,i
-          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f * norb1_f * nz,x2c_file_scr)
-          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
+          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f*norb1_f*nzt_x2c,x2c_file_scr)
+          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt_x2c
         end do
 
       end if ! if fndlab12('h1_4cAO   11') --> h1_4cAO already exists on file x2cscr
