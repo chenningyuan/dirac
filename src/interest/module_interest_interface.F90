@@ -43,11 +43,14 @@ MODULE MODULE_INTEREST_INTERFACE
   implicit none
 
   public initialize_interest 
-  public process_overlap_integrals 
-  public process_kinetic_energy_integrals 
-  public process_nuclear_attraction_integrals
+  public process_overlap_integrals_2comp 
+  public process_overlap_integrals_4comp 
   public process_two_electron_integrals_4comp
   public process_two_electron_integrals_2comp
+  public process_kinetic_energy_integrals_2comp 
+  public process_kinetic_energy_integrals_4comp 
+  public process_nuclear_attraction_integrals_2comp
+  public process_nuclear_attraction_integrals_4comp
 
   private
 
@@ -225,11 +228,38 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_overlap_integrals( S, SS_scaling ) 
+  SUBROUTINE process_overlap_integrals_2comp( S ) 
+
+    !> input
+    real(8) :: S(nrow,ncol) 
+
+    !> local
+    integer              :: i, j 
+    real(8), allocatable :: Smat(:,:,:)
+
+    !> external InteRest integral routines
+    external :: interest_overlap 
+
+
+    allocate( Smat( nrow,ncol,2 ) ); Smat = 0.0d0
+    call two_center_integrals( interest_overlap, Smat, nrow )
+    call symmetrize_matrix( A = Smat(1,1,1), ida = nrow )
+    S = 0.0d0
+    do j=1,ncol
+      do i=1,nrow
+        S(i,j) = Smat(i,j,1) 
+      enddo
+    enddo
+    deallocate( Smat )
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!>
+  SUBROUTINE process_overlap_integrals_4comp( S, ss_scaling ) 
 
     !> input
     real(8)           :: S(2*nrow,2*ncol) 
-    real(8), optional :: SS_scaling
+    real(8), optional :: ss_scaling
 
     !> local
     integer              :: i, j 
@@ -244,11 +274,11 @@ CONTAINS
     call symmetrize_matrix(                                 A = Smat(1,1,1), ida = nrow )  !Re(A)
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
     S = 0.0d0
-    if(present(SS_scaling))then
+    if(present(ss_scaling))then
       do j=1,ncol
         do i=1,nrow
           S(i     ,j     ) = Smat(i,j,1) 
-          S(i+nrow,j+ncol) = Smat(i,j,2) * SS_scaling
+          S(i+nrow,j+ncol) = Smat(i,j,2) * ss_scaling
         enddo
       enddo
     else
@@ -264,7 +294,34 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_kinetic_energy_integrals( T ) 
+  SUBROUTINE process_kinetic_energy_integrals_2comp( T ) 
+
+    !> input
+    !> fixme: the case when nz!=4, since we always assume nz=4
+    real(8) :: T(nrow,ncol,4) 
+
+    !> local
+    integer              :: i, j 
+    real(8), allocatable :: Tmat(:,:,:)
+
+    !> external InteRest integral routines
+    external :: interest_overlap 
+
+
+    allocate( Tmat( nrow,ncol,2 ) ); Tmat = 0.0d0
+    call two_center_integrals( interest_overlap, Tmat, nrow )
+    call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
+    do j=1,ncol
+      do i=1,nrow
+        T(i,j,1) = T(i,j,1) + Tmat(i,j,2)
+      enddo
+    enddo
+    deallocate( Tmat )
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!>
+  SUBROUTINE process_kinetic_energy_integrals_4comp( T ) 
 
     !> input
     !> fixme: the case when nz!=4, since we always assume nz=4
@@ -293,7 +350,34 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE process_nuclear_attraction_integrals( V ) 
+  SUBROUTINE process_nuclear_attraction_integrals_2comp( V ) 
+ 
+    !> input
+    !> fixme: the case when nz!=4, since we always assume nz=4
+    real(8) :: V(nrow,ncol,4)
+
+    !> local
+    integer              :: i, j 
+    real(8), allocatable :: Vmat(:,:,:)
+
+    !> external InteRest integral routines
+    external :: interest_nuclear_attraction_point_nucleus 
+
+
+    allocate( Vmat( nrow,ncol,5 ) ); Vmat = 0.0d0
+    call two_center_integrals( interest_nuclear_attraction_point_nucleus, Vmat, nrow )
+    call symmetrize_matrix   ( A = Vmat(1,1,1), ida = nrow )
+    do j=1,ncol
+      do i=1,nrow
+        V(i,j,1) = V(i,j,1) + Vmat(i,j,1)
+      enddo
+    enddo
+    deallocate( Vmat )
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!> 
+  SUBROUTINE process_nuclear_attraction_integrals_4comp( V ) 
  
     !> input
     !> fixme: the case when nz!=4, since we always assume nz=4
