@@ -286,7 +286,6 @@ contains
                                   ipq_off_in,         &
                                   linear_sym,         &
                                   mdirac,             &
-                                  lwrk,               &
                                   x2c_file_scr,       &
                                   print_lvl)
 
@@ -303,7 +302,6 @@ contains
 
        end if
 
-
   end subroutine get_h1_4c_saao_basis
 
 !**********************************************************************
@@ -319,7 +317,6 @@ contains
                                  ipq_off_in,             &
                                  linear_sym,             &
                                  mdirac,                 &
-                                 is_len_wrk,             &
                                  x2c_file_scr,           &
                                  print_lvl)
 !**********************************************************************
@@ -349,7 +346,6 @@ contains
      logical, intent(in)          :: mdirac
      integer, intent(in)          :: x2c_file_scr
      integer, intent(in)          :: print_lvl
-     integer, intent(in)          :: is_len_wrk
 !----------------------------------------------------------------------
      integer                      :: ioff_osh1
      integer                      :: ioff_ao_o_sh1
@@ -361,13 +357,8 @@ contains
      character (len=12)           :: flabel
      character (len=28)           :: debug_string
      logical                      :: fndlab12
-     real(8), allocatable         :: wrk(:)
-     integer                      :: lwrk
 !**********************************************************************
  
-!     give full length for WORK array allocations
-      lwrk = is_len_wrk
-
 !     dummy center/fragment counter
       j = 1
 
@@ -477,8 +468,6 @@ contains
                            ipq_off_in,     &
                            mdirac,         &
                            print_lvl)
-
-        deallocate(wrk)
 
 !       step 4: 4c-fock_onmo_nonlin LS sorted --> 4c-fock_saao
 !       ------------------------------------------------------

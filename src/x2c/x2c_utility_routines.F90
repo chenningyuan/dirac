@@ -1180,8 +1180,8 @@ contains
      integer                :: nbas1_f
 !**********************************************************************
  
-       allocate(saoao(naosh_ls**2))
-       saoao(1:naosh_ls**2) = 0.0d0
+       allocate(saoao(nzt*naosh_ls**2))
+       saoao(1:nzt*naosh_ls**2) = 0.0d0
 
 !      compute Saoao overlap matrix
        if(mdirac)then
