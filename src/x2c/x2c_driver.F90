@@ -516,6 +516,7 @@ contains
                                   all_prp_op,                    &
                                   lwrk,                          &
                                   x2c_do_spherical,              &
+                                  x2c_mdirac,                    &
                                   x2c_prep_bnccorr,              &
                                   x2c_1e_system,                 &
                                   x2c_is_defining_h1mat,         &

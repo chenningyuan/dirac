@@ -39,6 +39,9 @@ module x2c_pct_ao
       read_fock_matrices_saao_basis_x2c, &
       write_fock_matrices_saao_basis_x2c,&
       print_x2cmat
+#ifdef MOD_INTEREST
+  use module_interest_interface
+#endif
 
   implicit none
 
@@ -67,6 +70,7 @@ contains
                                    num_prp_op,                   &
                                    is_len_wrk,                   &
                                    spherical_on,                 &
+                                   mdirac,                       &
                                    prep_bncorr,                  &
                                    is_1e_system,                 &
                                    defining_h1mat,               &
@@ -99,6 +103,7 @@ contains
      integer, intent(in)             :: nr_2e_fock_matrices
      integer, intent(in)             :: print_lvl
      logical, intent(in)             :: spherical_on
+     logical, intent(in)             :: mdirac
      logical, intent(in)             :: prep_bncorr
      logical, intent(in)             :: is_1e_system
      character (len=6), intent(in)   :: file_name_1e_fock_matrix
@@ -131,6 +136,7 @@ contains
                                                 x2c_file_glb,        &
                                                 op_bs_to_fs,         &
                                                 is_len_wrk,          &
+                                                mdirac,              &
                                                 print_lvl)   
        end if
 
@@ -455,6 +461,7 @@ contains
                                                x2c_file_glb,         &
                                                op_bs_to_fs,          &
                                                is_len_wrk,           &
+                                               mdirac,               &
                                                print_lvl)
 !**********************************************************************
 !
@@ -481,6 +488,7 @@ contains
      integer, intent(in)            :: op_bs_to_fs(0:7,1:2)
      integer, intent(in)            :: is_len_wrk
      integer, intent(in)            :: print_lvl
+     logical, intent(in)            :: mdirac
 !----------------------------------------------------------------------
      real(8), allocatable           :: wrk(:)
      real(8), allocatable           :: scr_mat1(:)
@@ -494,19 +502,29 @@ contains
      character (len=12)             :: flabel
 !**********************************************************************
 
+       lwrk = is_len_wrk
+
 !      allocate first required scratch matrix
        call alloc(scr_mat1,naosh_ls**2 * nz)
        scr_mat1 = 0
 
 !      step 1: get the 4c bare-nucleus corrected 1e Dirac Hamiltonian in SA-AO basis
 !      -----------------------------------------------------------------------------
-
-       lwrk = is_len_wrk
-!      set common block and pointer to WORK array
        call reset_x2c_cb_onefck(.false.)
-       allocate(wrk(lwrk))
 
-       call onefck(scr_mat1,print_lvl,wrk,lwrk)
+       if(mdirac)then
+#ifdef MOD_INTEREST
+         scr_mat1(1:naosh_ls**2*nz) = 0.0d0
+         call process_kinetic_energy_integrals_4comp( scr_mat1 )
+         call process_nuclear_attraction_integrals_4comp( scr_mat1 ) 
+#endif
+         allocate(wrk(lwrk))
+       else
+#ifdef PRG_DIRAC
+         allocate(wrk(lwrk))
+         call onefck(scr_mat1,print_lvl,wrk,lwrk)
+#endif
+       end if
 
 !      debug print
        if(print_lvl > 2)then
@@ -520,9 +538,9 @@ contains
          call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4ch1bnc',6)
        end if
 
-!      reset common block and pointer to WORK array
-       call reset_x2c_cb_onefck(.true.)
+!      reset common block and WORK array
        deallocate(wrk)
+       call reset_x2c_cb_onefck(.true.)
 
 !      step 2: read picture-change transformation matrix in SA-AO basis from global file
 !      ---------------------------------------------------------------------------------
@@ -542,6 +560,10 @@ contains
          write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
          if(naosh_all(i)*naosh_L(i) > 0) call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,     &
                                                        x2c_file_glb)
+!        if(print_lvl > 2)then
+           call print_x2cmat(pctmat(ioff_pct_mat),naosh_all(i),naosh_L(i),nz,ipq_off_in(1,0),& 
+                             'x2c - bare-pctmat',6)
+!        end if
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do
 
@@ -575,6 +597,10 @@ contains
        i = 0  ! one-step storage of "gerade+ungerade" matrix parts
        write(flabel,'(a11,i1)') 'h1bncc2cAOl',i
        call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
+
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - bare-corrected',6)
+!      end if
 
 !#define blubb_blubb_so
 #ifdef blubb_blubb_so

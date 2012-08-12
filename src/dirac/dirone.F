@@ -2835,6 +2835,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 nprps,
      &                                 lwork,
      &                                 dosphe,
+     &                                 mdirac,
      &                                 .false.,
      &                                 onesys, 
      &                                 -1,
