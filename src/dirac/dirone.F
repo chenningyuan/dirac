@@ -774,7 +774,6 @@ CMI   ... control output ...
 !   BSSMAT file (lu=LUBSS) according to the parameter I2COFK
        CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM)
       else if(x2c.and..not.x2c_4c_fock_mtx_defh1)then
-        print *, 'blubb blubb x2c read'
         call read_1fock_x2c(fock,n2bbasx,nz,i2cofk)
       else
 C
@@ -808,11 +807,10 @@ C
 C     Output section
 C     ==============
 C
-#define blubb_blubb_so
+!#define blubb_blubb_so
 #ifdef blubb_blubb_so
       iprham_save = iprham
       iprham      = 4
-      print *, 'bss, x2c, twocomp',bss,x2c,twocomp
 #endif
       IF(IPRHAM.GE.4) THEN
         IF (BSS) THEN
@@ -2229,14 +2227,14 @@ C
           NBORB(JSYM,IFRP,0) = NBORB(JSYM,IFRP,1) + NBORB(JSYM,IFRP,2)
         ENDDO
         NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
-!       IF (IPRINT.GE.5) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      &    'LOWDI1: Lowdin canonical matrix (in ferm.symm.blocks) ',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &    '*** fermion corep ',IFRP,'/',NFSYM
            CALL PRQMAT(VMAT(IVOFF),NFBAS(IFRP,0),NFORB(IFRP,0),
      &           NFBAS(IFRP,0),NFORB(IFRP,0),1,IPQTOQ(1,0),LUPRI)
-!       END IF
+        END IF
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
@@ -3242,13 +3240,11 @@ CMI  ... check of keywords..
 !
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
-      print *, 'slgroup', slgroup
       if(.not.MDIRAC)THEN
 C
 C       Generate free particle (or bare nucleus) matrix in Lowdin-basis
 C       ===============================================================
 C
-        print *, 'blubb',vextpj
         IF(VEXTPJ) THEN
           CALL ONEFCK(TBUF,IPRONE,WORK(KFREE),LFREE)
         ELSE
@@ -3326,11 +3322,11 @@ C
       IF(LEVYLE.OR.VEXTPJ.OR.FREEPJ) THEN
         CALL HEADER('Output from MODHAM',-1)
         WRITE(LUPRI,'(A)') '* All positronic solutions deleted !'
-      ELSE IF(.not.mdirac)then
+      ELSE
         CALL HEADER('Output from MODHAM',-1)
         WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
       ENDIF
-!     IF(IPRHAM.GE.5) THEN
+      IF(IPRHAM.GE.5) THEN
         CALL HEADER(
      &    'MODHAM: Actual transformation matrix 4c AO->MO ',-1)
         IMAT = 1
@@ -3343,7 +3339,7 @@ C
           IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
         ENDIF
  80     CONTINUE
-!     ENDIF
+      ENDIF
 
 CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
 CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
@@ -4278,8 +4274,6 @@ C
 C*****************************************************************************
       use x2c_fio, only:
      &    x2c_read
-      use x2c_utils, only:
-     &    print_x2cmat
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4341,19 +4335,20 @@ CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
           end if
           CALL RFBSSMAT(BNCRLAB,.FALSE.,'BNCORR',
      &                  FMAT,N2BBASXQ,LUBSS,IPRHAM)
-!         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-!    &         'bss - h1barenuc',LUPRI)
         else if(x2c)then
-          print *, 'blubb enter' 
-          call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &         'x2c - enter fmat',LUPRI)
           call x2c_read(flabel,fmat,n2bbasx * nz,lux2c)
-          print *, 'blubb leaving' 
-          call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &         'x2c - h1barenuc',LUPRI)
           close(lux2c,status='keep')
         end if
       ELSE
+
+        if(mdirac)then
+        write(lupri,*) 
+     &  ' bare-nucleus correction not implemented yet for MDIRAC'
+        write(lupri,*) 
+     &  ' program will continue with the default 1-el Hamiltonian' 
+          goto 999
+        end if
+
 CMI   ... continue the standard way
 C     Memory allocation
       CALL MEMGET('REAL',KONEMT, N2BBASX,WORK,KFREE,LFREE)
@@ -4510,7 +4505,7 @@ C     Memory deallocation
 C
 c     Stop timer
 c
-      TIMEND = SECOND()
+ 999  TIMEND = SECOND()
       TIME   = TIMEND - TIMSTR
       IF (IPRINT.GE.2)
      &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)

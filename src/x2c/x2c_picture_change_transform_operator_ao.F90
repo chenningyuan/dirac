@@ -526,11 +526,6 @@ contains
 #endif
        end if
 
-!      debug print
-       if(print_lvl > 2)then
-         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4ch1sbc',6)
-       end if
-
        call bncorr(scr_mat1,wrk,lwrk,print_lvl)
 
 !      debug print
@@ -560,10 +555,6 @@ contains
          write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
          if(naosh_all(i)*naosh_L(i) > 0) call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,     &
                                                        x2c_file_glb)
-!        if(print_lvl > 2)then
-           call print_x2cmat(pctmat(ioff_pct_mat),naosh_all(i),naosh_L(i),nz,ipq_off_in(1,0),& 
-                             'x2c - bare-pctmat',6)
-!        end if
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do
 
@@ -598,9 +589,9 @@ contains
        write(flabel,'(a11,i1)') 'h1bncc2cAOl',i
        call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
 
-!      if(print_lvl > 2)then
+       if(print_lvl > 2)then
          call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - bare-corrected',6)
-!      end if
+       end if
 
 !#define blubb_blubb_so
 #ifdef blubb_blubb_so
@@ -629,9 +620,9 @@ contains
                                  print_lvl)
 
 !      debug print
-!      if(print_lvl > 2)then
+       if(print_lvl > 2)then
          call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2fock-tra',6)
-!      end if
+       end if
 #endif
 
        call dealloc(scr_mat2)

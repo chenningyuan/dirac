@@ -164,12 +164,6 @@ contains
            write(flabel,'(a7,i4,i1)') '4cAOMOr',is_fragment,i
            call x2c_read(flabel,xmat,nbas1_f*norb1_f*nzt,x2c_file_scr)
 
-!          debug print
-!          if(print_lvl > 2)then
-             call print_x2cmat(scr_mat3,norb1_f,n1esh_f,nz,ipq_off_in,'x2c - pctonMO',6)
-             call print_x2cmat(xmat,nbas1_f,norb1_f,nzt,ipq_off_in,'x2c - pctVmat',6)
-!          end if
-
 !          pctmt (4c-SA-AO -> 2c-ON-RKB) = RKB AOtoMO trafo mat ["SL resorted"]  * Umat_ON
 !          scr_mat2                      = xmat                                  * scr_mat3
            call qgemm(nbas1_f,                                  &
@@ -194,13 +188,6 @@ contains
                       nbas1_f,                                  &
                       n1esh_f,                                  &
                       nz)          
-
-!          debug print
-!          if(print_lvl > 2)then
-             call print_x2cmat(scr_mat2,nbas1_f,n1esh_f,nz,ipq_off_in,'x2c - pctaoonMO',6)
-             call print_x2cmat(scr_mat1(ioff_vmat),nbas1_f,n1esh_f,nz,ipq_off_in,'x2c - pctV+',6)
-!          end if
-
 
 !          pctmt 4c-SA-AO -> 2c-SA-AO    = pctmt (4c-SA-AO -> 2c-ON-RKB)         * V+
 !          xmat                          = scr_mat2                              * scr_mat1
@@ -227,25 +214,17 @@ contains
                       nbasL_f,                                  &
                       nz)          
 
-!          do j = 1,nbasL_f
-!            do k = 1, nbas1_f - nbasL_f
-!              do l = 1, nz
-!                xmat(nbasL_f + k + (j-1)*nbas1_f + (l-1)*nbasL_f*nbas1_f) = 0.0d0
-!              end do
-!            end do
-!          end do 
-           
 !          store picture-change transformation matrix in DIRAC-sorted SA-AO basis on global file
            write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment_pctmat,i
            call x2c_write(flabel,xmat,nbas1_f*nbasL_f*nz,x2c_file_glb)
 
 !          debug print
-!          if(print_lvl > 2)then
+           if(print_lvl > 2)then
              write(debug_string,'(a27,i1)') 'x2c - pctmat_saao - fsym = ',i
              call print_x2cmat(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
-!            write(debug_string,'(a27,i1)') 'x2c - mtxpctmat_saao - fsym = ',i
-!            call print_x2cmtx(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
-!          end if
+!mathematica write(debug_string,'(a27,i1)') 'x2c - mtxpctmat_saao - fsym = ',i
+!mathematica call print_x2cmtx(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
+           end if
 
          end if
 
