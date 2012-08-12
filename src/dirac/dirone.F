@@ -3637,7 +3637,11 @@ C
           CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr )
+        if(mc == 1)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
+          call process_overlap_integrals_2comp( smat )
+        else ! any other case including also an X2C run prior to the 4c->2c transformation
+          call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
+        end if
 #endif
       ELSE
 C      
@@ -3736,7 +3740,11 @@ C
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr )
+        if(mc == 1)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
+          call process_overlap_integrals_2comp( smat )
+        else ! any other case including also an X2C run prior to the 4c->2c transformation
+          call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
+        end if
 #endif
       ELSE
 !       call alloc(sbuf, n2bbasx)

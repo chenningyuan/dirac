@@ -1185,7 +1185,7 @@ contains
 !      compute Saoao overlap matrix
        if(mdirac)then
 #ifdef MOD_INTEREST
-         call process_overlap_integrals( saoao )
+         call process_overlap_integrals_4comp( saoao )
 #endif
        else
 #ifdef PRG_DIRAC
