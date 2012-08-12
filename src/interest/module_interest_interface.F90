@@ -109,8 +109,6 @@ CONTAINS
 !> 
   SUBROUTINE initialize_interest()
 
-  use codata
-
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -120,6 +118,7 @@ CONTAINS
 #include "primit.h"
 #include "dcbdhf.h"
 #include "nucdata.h"
+#include "dcbgen.h"
 
     !> local variables
        integer :: i
@@ -142,8 +141,8 @@ CONTAINS
        endif
     !> end
   
-    !> interface constants
-       constant = type_constant( dsqrt(alpha2), alpha2 )
+    !> interface constants (cval == speed of light used in Dirac [might be different from 137])
+       constant = type_constant( (1.0d0/cval), (1.0d0/cval)**2 )
     !> end
 
     !> interface molecular data

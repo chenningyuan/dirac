@@ -62,6 +62,7 @@ contains
                                     ioff_aomx,              &
                                     nfsym,                  &
                                     nz,                     &
+                                    nzt,                    &
                                     ipq_off_in,             &
                                     is_fragment,            &
                                     is_final_ham_lvl,       &
@@ -99,6 +100,7 @@ contains
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: is_fragment
      integer, intent(inout) :: is_final_ham_lvl
@@ -142,6 +144,7 @@ contains
                                             norb_dim,             &
                                             naosh_all,            &
                                             nz,                   &
+                                            nzt,                  &
                                             nfsym,                &
                                             is_fragment,          &
                                             ipq_off_in,           &

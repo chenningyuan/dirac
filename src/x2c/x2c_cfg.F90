@@ -76,6 +76,7 @@ module x2cmod_cfg
   integer, public :: fulllowdmat_dim                  =  0
   integer, public :: fullao2momat_dim                 =  0
   integer, public :: fullmo2momat_dim                 =  0
+  integer, public :: nzt_x2c                          =  0
   integer, public :: nr_quat                          =  0
   integer, public :: nr_fsym                          =  0
   integer, public :: mfsym                            =  0

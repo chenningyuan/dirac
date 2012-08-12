@@ -431,7 +431,6 @@ C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRINT)
-      print *, 'blubb restfck, barnuc,',restfck,barnuc
 
 !#define blubb_blubb_so
 #ifdef blubb_blubb_so
@@ -4154,7 +4153,7 @@ C
         ENDDO
 
          iprham_svae = iprham
-         iprham = 5
+!        iprham = 5
 C ... control print out of the matrix to be diagonalized
          IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(

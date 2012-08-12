@@ -302,8 +302,8 @@ contains
                    amfi_order_contrib,     &
                    quat_pointer_op,        &
                    cspeed,                 &
-                   5        ,              &
-                  !print_lvl,              &
+!                  5        ,              &
+                   print_lvl*3,            &
                    wrk,                    &
                    lwrk)
 
@@ -393,10 +393,9 @@ contains
        call x2c_read(flabel,scr2_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
 
 !      debug print
-!      if(print_lvl > 2)then
+       if(print_lvl > 2)then
          call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
-         call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h12c almost ready',6)
-!      end if
+       end if
 
 !      add amfi contributions to h1_2c
        call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,scr1_mat,1)
@@ -437,10 +436,9 @@ contains
        else
 
 !        debug print
-!        if(print_lvl > 2)then
-           print *, "nr_ao_L",nr_ao_L
+         if(print_lvl > 2)then
            call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+AMFI',6)
-!        end if
+         end if
 
          call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
        end if

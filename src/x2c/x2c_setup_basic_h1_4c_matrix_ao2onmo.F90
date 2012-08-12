@@ -59,6 +59,7 @@ contains
                                  ioff_aomx,            &
                                  nfsym,                &
                                  nz,                   &
+                                 nzt,                  &
                                  ipq_off_in,           &
                                  basic_h1mat,          &
                                  is_len_wrk,           &
@@ -90,6 +91,7 @@ contains
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: basic_h1mat
      integer, intent(in)    :: is_fragment
@@ -124,6 +126,7 @@ contains
                                  norb_dim,               &
                                  nfsym,                  &
                                  nz,                     &
+                                 nzt,                    &
                                  ipq_off_in,             &
                                  basic_h1mat,            &
                                  linear_sym,             &
@@ -173,6 +176,7 @@ contains
                                    nbas1_f,                           &
                                    norb1_f,                           &
                                    nz,                                &
+                                   nzt,                               &
                                    ipq_off_in,                        &
                                    print_lvl)
 
@@ -183,7 +187,7 @@ contains
          call x2c_write(flabel,h1_onmo_bas(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
 
 !        update offsets for matrices
-         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz
+         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
          ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
          ioff_osh1      = ioff_osh1      + norb1_f**2 * nz
 
