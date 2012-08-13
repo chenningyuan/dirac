@@ -1,4 +1,23 @@
 
+Symmetry of operarators
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+D2h
+diagonal sigma_x, sigma_y, sigma_z  :  B2g  B2g  B1g (T-)
+           diagonal NEF 001,002,003 :  B3u  B2u  B1u (T+)
+                total symm product  :   Au   Au   Au
+
+C2v
+diagonal sigma_x, sigma_y, sigma_z  :  B2   B1   A2 (T-)
+           diagonal NEF 001,002,003 :  A1   B1   B2 (T+)
+                total symm product  :  B2   A1   B1
+
+C2
+diagonal sigma_x, sigma_y, sigma_z  :  
+           diagonal NEF 001,002,003 :  
+                total symm product  :  
+
 
 Li atom
 ~~~~~~~

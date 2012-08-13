@@ -1190,11 +1190,11 @@ CHJMAERKE: implement interpretation of class keyword
      &     'initial values: INDXPR=',INDXPR,
      &    ' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
          ENDIF
-CMI      ... assign remaining parameters
+CMI      ... assign remaining parameters in dedicated subroutine
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
          IF (TRS_FLIP) THEN
-           ! miro: perform the time-reversal symmetry flip of the operaror
+           ! miro: perform the time-reversal symmetry flip of the operaror if wanted
            CALL OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                            INDXPR,ISYXPR,ITRXPR,IPRINT)
            TRS_FLIP=.FALSE.
@@ -1527,10 +1527,28 @@ CMI ... inform about the assigned PCOMB
 
 ! miro 7 June 2012 exception: for PLABEL(1:5)="e_EDM" assign PCOMB(1:1)='0'
       IF (PNAME(1:5).EQ.'e_EDM') THEN
+         IF (PCOMB.NE.'+00+') THEN 
+           PCOMB = '+00+' ! assig as for SIGMA type of operator
+           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
+         ENDIF
          PCOMB_SAVE = PCOMB
          PCOMB(1:1)='0'
          WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "e_EDM operator -",PNAME,
      &   '=> assigned matrix structure ',PCOMB_SAVE," --> ",PCOMB
+         IF (NPCOMP.EQ.3) THEN
+         IF (PLABEL(1).EQ.'XE_EDM') THEN
+           PLABEL(1)='NEF 001'
+           WRITE(LUPRI,*) 'reassigned PLABEL(1)=',PLABEL(1)
+         ENDIF
+         IF (PLABEL(2).EQ.'YE_EDM') THEN
+           PLABEL(2)='NEF 002'
+           WRITE(LUPRI,*) 'reassigned PLABEL(2)=',PLABEL(2)
+         ENDIF
+         IF (PLABEL(3).EQ.'ZE_EDM') THEN
+           PLABEL(3)='NEF 003'
+           WRITE(LUPRI,*) 'reassigned PLABEL(3)=',PLABEL(3)
+         ENDIF
+         ENDIF
       ENDIF
 
 C
@@ -2023,11 +2041,11 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASLB = 'CAPDVE' 
       ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
         CLASLB = 'CAPD_VD' 
-CMI  EDM operator
+CMI  EDM operator (Muherjee, Sahoo, Narataj, Das)
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
         CLASLB = 'KINENER'
 !    another e_EDM operator of Flambaum
-      ELSE IF(LABINT(2:5).EQ.'E_EDM') THEN
+      ELSE IF(LABINT(2:6).EQ.'E_EDM') THEN
         CLASLB = 'E_EDM'
 C
 C     Unknown LABINT
@@ -2168,6 +2186,7 @@ C
         CALL SETATM(DOATOM,NATOM,-99)
         CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
       ELSE
+        ! call abacus part
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO

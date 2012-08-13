@@ -55,7 +55,7 @@ all
 *PRPTRA
 # we need this print level to get all operator matrix elements
 .PRINT
-3  
+15 
 # eEDM operators
 .OPERATOR
  'e_EDM x' 
