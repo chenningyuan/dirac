@@ -2026,6 +2026,9 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
 CMI  EDM operator
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
         CLASLB = 'KINENER'
+!    another e_EDM operator of Flambaum
+      ELSE IF(LABINT(2:5).EQ.'E_EDM') THEN
+        CLASLB = 'E_EDM'
 C
 C     Unknown LABINT
 C   
