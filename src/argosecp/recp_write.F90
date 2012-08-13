@@ -349,9 +349,9 @@ SUBROUTINE RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so, &
   DATA FILE_DBG /'RECP_DBG_S','RECP_DBG_T','RECP_DBG_V', &
                  'RECP_DBG_C','RECP_DBG_X','RECP_DBG_Y', &
                  'RECP_DBG_Z'/
-  DATA FILE_NAME /'Overlap   ','Kinetic   ','Potential ', &
-                  'RECP AVE  ','RECP SO(X)','RECP SO(Y)', &
-                  'RECP SO(Z)'/
+  DATA FILE_NAME/'Overlap   ','Kinetic   ','Potential ', &
+                 'RECP AVE  ','RECP SO(X)','RECP SO(Y)', &
+                 'RECP SO(Z)'/
 
   CALL OUTPUT_LOC('RECP_WRITE_FILE','E')
 

@@ -812,8 +812,8 @@
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
-      INTEGER,INTENT(IN)   :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
-      INTEGER,INTENT(INOUT)::LWORK
+      INTEGER,INTENT(IN) :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
+      INTEGER,INTENT(IN) :: LWORK
 
       INTEGER      :: KLAST,i,j,IBSFLAG, KAOVEC, NBLOCK,                &
      &                katom,basindex,index, iqm_check
@@ -1319,11 +1319,12 @@
      &                      work,lwork,kang,ksets,kblock,kprim,hermit)
 
         INTEGER, INTENT(IN) :: molfile,cmdfile,lupri
-        INTEGER,INTENT(IN)   :: KANG,KSETS,KBLOCK,KPRIM
-        LOGICAL,INTENT(IN)   :: HERMIT
-        INTEGER,INTENT(INOUT):: lwork
-        REAL(KIND=8):: WORK(LWORK) 
-        INTEGER ::     inpfile
+        INTEGER, INTENT(IN) :: lwork
+        REAL(KIND=8)        :: WORK(LWORK) 
+        INTEGER, INTENT(IN) :: KANG,KSETS,KBLOCK,KPRIM
+        LOGICAL, INTENT(IN) :: HERMIT
+
+        INTEGER             :: inpfile
 
 !       Driver for reading coordinates and basis set information from xyz file and DIRAC.INP
 

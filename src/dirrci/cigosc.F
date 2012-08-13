@@ -410,13 +410,13 @@ C
 CSK   REAL*8 E(N2),EE(N2*N2,2)
 C
 CSK
-      call alloc(e, n2)
-      call alloc(ee,n2*n2,2)
+      call alloc(e, n2, id="e")
+      call alloc(ee,n2*n2,2, id="ee")
 CSK
       CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
 CSK
-      call dealloc(ee)
-      call dealloc(e)
+      call dealloc(ee, id="ee")
+      call dealloc(e, id="e")
 CSK
       RETURN
       END
@@ -847,9 +847,9 @@ C
       MXMAX=100
 !.q
 !SK
-      call alloc(IRPS, N2*N5)
-      call alloc(INDX, N2*N5)
-      call alloc(IND,  N5)
+      call alloc(IRPS, N2*N5, id="irps")
+      call alloc(INDX, N2*N5, id="indx")
+      call alloc(IND,  N5,    id="ind")
       IRPS = 0
       INDX = 0
       IND  = 0
@@ -859,7 +859,12 @@ C
       READ(5,POPAN,END=100)
  100  IF (IRP.EQ.0) GOTO 110
       NDETI(IRP)=NDET
-      IF (IPRNT.LT.5) RETURN
+      IF (IPRNT.LT.5) then
+         call dealloc(IRPS, id="irps at low print level")
+         call dealloc(INDX, id="indx at low print level")
+         call dealloc(IND,  id="ind at low print level")
+         return 
+      endif
 C
 C     ------------------------------------------------
 C     PRINT POPULATION ANALYSIS FOR REPRESENTATION IRP
@@ -917,7 +922,10 @@ C
           ENDIF
  40       CONTINUE
  30     CONTINUE
-      RETURN
+      call dealloc(IRPS)
+      call dealloc(INDX)
+      call dealloc(IND)
+      return
 C
 C     ------------------------------------
 C     PRINT COMPRESSED LIST OF EIGENVALUES
@@ -1008,9 +1016,9 @@ C
  1030 FORMAT(1X,I4,1X,F18.9,F18.6,1X,8(I3,1X))
 #endif /* ego */
 CSK
-      call dealloc(IRPS)
-      call dealloc(INDX)
-      call dealloc(IND)
+      call dealloc(IRPS, id="irps at the end of the routine")
+      call dealloc(INDX, id="indx at the end of the routine")
+      call dealloc(IND,  id="ind at the end of the routine")
 CSK
       RETURN
       END

@@ -88,30 +88,34 @@ END SUBROUTINE RECP_INP_ORBITAL_CCNORM
 
 
 
-SUBROUTINE RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst)
+SUBROUTINE RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst,FILE_NUM)
 ! compute contracted orbital and lower-triangle-packed matrix symmetry offsets.
   USE RECP_FUNCTION
   IMPLICIT NONE
+#include "inc_print.h"
 ! variable : global
-  INTEGER  :: nsopr(*),nso(*),nblpr(*),nst
+  INTEGER  :: nsopr(*),nso(*),nblpr(*),nst,FILE_NUM(*)
 ! variable : local
   INTEGER  :: i 
 
+  IF(RECP_DBG.GE.1) WRITE(FILE_NUM(1),'(/,A)') ' *** RECP_INP_ORBITAL_OFFSET ***'
+  IF(RECP_DBG.GE.1) WRITE(FILE_NUM(1),'(6X,2A)') 'I',':  nsopr  nblpr'
   nsopr(1) = 0
   nblpr(1) = 0
-  do i = 2,nst
+  DO I = 2,nst
      nsopr(i) = nsopr(i-1) + nso(i-1)
      nblpr(i) = nblpr(i-1) + ( (nso(i-1)+1)*((nso(i-1)+1)-1)/2 )
-  enddo
+     IF(RECP_DBG.GE.1) WRITE(FILE_NUM(1),'(I7,A,2I7)') I,':',nsopr(i),nblpr(i)
+  ENDDO
 END SUBROUTINE RECP_INP_ORBITAL_OFFSET
 
 
-SUBROUTINE RECP_INP_ORBANGSYM(icu,itl,itu,ics,igcs,lai,ixyzir)
+SUBROUTINE RECP_INP_ORBITAL_ANGSYM(icu,itl,itu,ICS,igcs,lai,ixyzir)
 ! # determine angular momentum symmetries.
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"
-  INTEGER :: icu,itl,itu,ics,igcs,lai,ixyzir(3)
+  INTEGER :: icu,itl,itu,ICS,igcs,lai,ixyzir(3)
 ! local variables
   REAL*8  :: c_sum 
   INTEGER :: I1,I2,I3,ict,ic,it
@@ -121,25 +125,146 @@ SUBROUTINE RECP_INP_ORBANGSYM(icu,itl,itu,ics,igcs,lai,ixyzir)
      I3 = mod(I1+1,3) + 1
      c_sum = 0.0d0
      ict = 0
-     do ic = 1, icu
-        do it = itl,itu
+     DO ic = 1, icu
+        DO it = itl,itu
            ict = ict + 1
            L1 = mod(IPT_LMNV(I1,it),2).eq.1
            L2 = mod(IPT_LMNV(I2,it),2).eq.0
            L3 = mod(IPT_LMNV(I3,it),2).eq.0
-           IF(L1.AND.L2.AND.L3) c_sum=c_sum+IPT_AO2SO(ict,ics,igcs) 
-        enddo
-     enddo
+           IF(L1.AND.L2.AND.L3) c_sum=c_sum+IPT_AO2SO(ict,ICS,igcs) 
+        ENDDO
+     ENDDO
 
-     IF ( (c_sum.ne.0.0d0).and.(lai.ne.ixyzir(I1)) ) THEN 
-        IF ( ixyzir(I1) .ne. 0 ) then
-           WRITE (RECP_OUT,'(3X,A)') &
-                 'axis choice is unsuitable for spin-orbit integrals'
-           call bummer('RECP_INP_ORBANGSYM: ixyzir=',ixyzir(I1),2)
+     IF ( (c_sum.NE.0.0d0).AND.(lai.NE.ixyzir(I1)) ) THEN 
+        IF ( ixyzir(I1).NE.0 ) THEN
+           WRITE (RECP_OUT,'(3X,A)') 'axis choice is unsuitable for spin-orbit integrals'
+           CALL bummer('RECP_INP_ORBANGSYM: ixyzir=',ixyzir(I1),2)
         ENDIF
         ixyzir(I1) = lai
      ENDIF
   ENDDO
-ENd SUBROUTINE RECP_INP_ORBANGSYM
+END SUBROUTINE RECP_INP_ORBITAL_ANGSYM
+
+
+! --------------- SOCFPD ---------------
+
+
+SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,mau,ict,jct,igcs,jgcs, &
+           FILE_NUM,easfb,msfbct)
+  USE RECP_IPT
+  IMPLICIT NONE
+#include "inc_print.h"
+! global variable
+  INTEGER npr,icx,icxa,mics(*),mjcs(*),mau(*),ict,jct,igcs,jgcs,FILE_NUM(*)
+  LOGICAL easfb,msfbct
+! local variable
+  INTEGER I,J,ICS,JCS
+  REAL(8) CX1
+
+  
+  DO I = 1, npr
+
+!    set icx/IPT_CX0 (icxa/IPT_CX0)
+!    ------------------------------
+     icx = icx + 1
+     IPT_CX0(icx) = 0.0d0
+     if (easfb) then
+       icxa = icxa + 1
+       IPT_CX0(icxa) = 0.0d0
+     endif
+
+!    set ICS/JCS
+!    -----------
+     ICS = mics(I)
+     JCS = mjcs(I)
+
+!    write file for debug
+!    --------------------
+     IF (RECP_DBG.GE.1) THEN
+        WRITE (FILE_NUM(2),'(A,4I10)') 'I/icx/ICS/JCS',I,icx,ICS,JCS
+        IF (easfb) THEN
+           WRITE (FILE_NUM(2),'(A,4I10)') 'I/icxa/ICS/JCS',I,icxa,ICS,JCS
+        ENDIF
+     ENDIF
+
+!    get IPT_CX1
+!    -----------
+     DO J = 1, mau(I)
+        ICS = ICS + 1
+        JCS = JCS + 1
+        IF (msfbct) THEN
+           CX1 = (IPT_AO2SO(ict,ICS,igcs) * IPT_AO2SO(jct,JCS,jgcs))
+           IPT_CX0(icx) = IPT_CX0(icx) + CX1 
+           IF (easfb) IPT_CX0(icxa) = IPT_CX0(icxa) + CX1
+        ELSE 
+           CX1 = (IPT_AO2SO(jct,ICS,igcs) * IPT_AO2SO(ict,JCS,jgcs))
+           IPT_CX0(icx) = IPT_CX0(icx) + CX1 
+           IF (easfb) IPT_CX0(icxa) = IPT_CX0(icxa) - CX1
+        ENDIF
+
+!       write file for debug
+        IF (RECP_DBG.GE.1) THEN
+           WRITE (FILE_NUM(2),'(A,I7,A,F15.7)')'IPT_CX0(',icx,') = ',IPT_CX0(icx)
+           IF (easfb) THEN
+              WRITE (FILE_NUM(3),'(A,I7,A,F15.7)')'IPT_CX0(',icxa,') = ',IPT_CX0(icxa)
+           ENDIF
+        ENDIF
+     ENDDO
+  ENDDO
+END SUBROUTINE RECP_SOCFPD_CX0
+
+!SUBROUTINE RECP_INP_ORBITAL_SHIFTCX(mblu,mcxu,mcxu1,mcxu2,icx,icxu,ijsf,icxast,ea)
+SUBROUTINE RECP_SOCFPD_SHIFTCX(mblu,mcxu,mcxu1,mcxu2,icx,icxu,ijsf,icxast,ea)
+! # move antisymmetric coefficient products down.
+
+! #       offsets: 0               mcxu1  mblu
+! # before: a(*)-->................c(*)
+! #                0          mcxu mcxu1  mblu
+! # now:    a(*)-->cx(*)......x(*),c(*)
+! #                0    mcxu2 mcxu       (mblu+mcxu)
+! # after:  a(*)-->cx(*),x(*),........
+  USE RECP_IPT
+  IMPLICIT NONE
+#include "inc_print.h"
+! global variable
+  INTEGER mblu,mcxu,mcxu1,mcxu2,icx,icxu,ijsf,icxast(*)
+  LOGICAL ea
+! local variable
+  INTEGER I,icxl
+  if (ea) then
+!    # on return, mcxu2 is the offset for the s.o. coefficients.
+     mcxu2 = icx
+     icxl  = icx + 1
+     icxu  = mcxu - icx
+     mcxu  = mcxu1 - icxu
+!    print *,'socfpd :',icxl, mcxu
+     do icx = icxl, mcxu
+       IPT_CX0(icx) = IPT_CX0(icx+icxu)
+!      print *,'socfpd:cx(',icx,')',IPT_CX0(icx)
+     enddo
+
+!    # make pointers relative to mcxu2 instead of 0.
+     do I = 1, ijsf
+       icxast(I) = icxast(I) - icxu
+     enddo
+
+!    # on return, mcxu and mblu divide the workspace as:
+!    # a(*)-->[cx//x](1:mcxu),w(1:mblu)
+     mblu = mblu - mcxu
+     IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I9)') ' * socfpd: mcxu2=',mcxu2
+
+  else
+!    # on return, mcxu and mblu divide the workspace as:
+!    # a(*)-->cx(1:mcxu),w(1:mblu)
+     mcxu = icx
+     mblu = mblu - mcxu
+  endif
+
+  IF (RECP_DBG.GE.2) THEN
+     write(RECP_OUT,'(A,I9)') ' * socfpd: mcxu=',mcxu
+     write(RECP_OUT,'(A,I9)') ' * socfpd: left=',mblu
+  ENDIF
+END SUBROUTINE RECP_SOCFPD_SHIFTCX
+
 
 END MODULE RECP_INP_ORBITAL 
