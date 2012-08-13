@@ -1186,7 +1186,8 @@ contains
 !      compute Saoao overlap matrix
        if(mdirac)then
 #ifdef MOD_INTEREST
-         call process_overlap_integrals_4comp( saoao )
+         call process_overlap_integrals_4comp( saoao , ss_scaling=1.0d0)
+!        call butobs_no_work(saoao,1)
 #endif
        else
 #ifdef PRG_DIRAC
@@ -1202,6 +1203,12 @@ contains
          norb1_f  = norb_dim(i)
          nbas1_f  = naosh_all(i)
 
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(vaomo(iaomo),nbas1_f,norb1_f,nzt,ipq_off_in,'x2c - v    ',6)
+           call print_x2cmat(saoao(ioff_aomat_x(i,i)+1),nbas1_f,naosh_ls,nzt,ipq_off_in,'x2c - saoao',6)
+         end if
+
          if(norb_dim(i) > 0)then
 
 !          Saomo                         = Saoao * RKB AOtoMO trafo mat
@@ -1212,7 +1219,7 @@ contains
                       val_d1,                                   &
                       'N','N',                                  &
                       ipq_off_in,                               &
-                      saoao(ioff_aomat_x(i,i)),                 &
+                      saoao(ioff_aomat_x(i,i)+1),               &
                       naosh_ls,                                 &
                       naosh_ls,                                 &
                       1,                                        &
@@ -1229,6 +1236,11 @@ contains
                       norb1_f,                                  &
                       nzt)         
 
+         end if
+
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(saomo(iaomo),nbas1_f,norb1_f,nzt,ipq_off_in,'x2c - saomo',6)
          end if
 
 !        keep track of offset

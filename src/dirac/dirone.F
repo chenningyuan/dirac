@@ -3634,7 +3634,7 @@ C
           CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        if(mc == 1)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
+        if(mc == 1 .and. ntbas(2) == 0)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
           call process_overlap_integrals_2comp( smat )
         else ! any other case including also an X2C run prior to the 4c->2c transformation
           call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
@@ -3737,7 +3737,7 @@ C
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
 #ifdef MOD_INTEREST
-        if(mc == 1)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
+        if(mc == 1 .and. ntbas(2) == 0)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
           call process_overlap_integrals_2comp( smat )
         else ! any other case including also an X2C run prior to the 4c->2c transformation
           call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
@@ -7118,7 +7118,7 @@ C
 C       Construct right index transformed overlap matrix Saomo = Sao T
 C       Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
 C
-        CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRINT,WORK(KFREE),LFREE)
+        CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 C
       RETURN

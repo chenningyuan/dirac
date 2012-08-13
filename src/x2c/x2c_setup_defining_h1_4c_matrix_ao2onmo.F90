@@ -377,10 +377,10 @@ contains
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f**2 * nz
         end do
 
-#ifdef MOD_INTEREST
-      else if(mdirac)then
-         stop 'FIXME - stefan: MDIRAC interface for fock-operator as defining/base h1 matrix'
-#endif
+!#ifdef MOD_INTEREST
+!      else if(mdirac)then
+!        stop 'FIXME - stefan: MDIRAC interface for fock-operator as defining/base h1 matrix'
+!#endif
       else
 !       step 1: read 4c-fock_onmo (LS sorted) from file op_mat_on_file
 !       --------------------------------------------------------------
