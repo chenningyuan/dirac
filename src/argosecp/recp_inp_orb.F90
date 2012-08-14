@@ -192,11 +192,12 @@ SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,mau,ict,jct,igcs,jgcs, &
      DO J = 1, mau(I)
         ICS = ICS + 1
         JCS = JCS + 1
-        IF (msfbct) THEN
-           CX1 = (IPT_AO2SO(ict,ICS,igcs) * IPT_AO2SO(jct,JCS,jgcs))
-           IPT_CX0(icx) = IPT_CX0(icx) + CX1 
-           IF (easfb) IPT_CX0(icxa) = IPT_CX0(icxa) + CX1
-        ELSE 
+
+        CX1 = (IPT_AO2SO(ict,ICS,igcs) * IPT_AO2SO(jct,JCS,jgcs))
+        IPT_CX0(icx) = IPT_CX0(icx) + CX1 
+        IF (easfb) IPT_CX0(icxa) = IPT_CX0(icxa) + CX1
+
+        IF (.NOT.msfbct) THEN
            CX1 = (IPT_AO2SO(jct,ICS,igcs) * IPT_AO2SO(ict,JCS,jgcs))
            IPT_CX0(icx) = IPT_CX0(icx) + CX1 
            IF (easfb) IPT_CX0(icxa) = IPT_CX0(icxa) - CX1
