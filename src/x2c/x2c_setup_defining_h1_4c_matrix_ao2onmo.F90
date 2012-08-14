@@ -26,22 +26,30 @@
 ! written by sknecht   june 2010 - original implementation
 !
 !            sknecht august 2012 - added InteRest interface for 1-e Hamiltonian 
+!                                - added test support for X2C-spinfree (before the decoupling)
+!                                  simply activate "x2c_spinfree_" in the next line
+!#define x2c_spinfree_before_4c_to_2c
+!                                  default for X2C-spinfree is "after the decoupling"
 !
 module x2c_def_h1_4c
 
+#ifdef MOD_INTEREST
+      use module_interest_interface
+#endif
   use memory_allocator
+  use x2c_import_exportC1
   use x2c_fio
   use x2c_cb_interface, only:         &
       reset_x2c_cb_onefck
   use x2c_utils,        only:         &
       print_x2cmat,                   &
+#ifdef x2c_spinfree_before_4c_to_2c
+      make_spinfree_h1_onmo,          &
+      get_boson_irrep_info,           &
+#endif
       read_4cfock_operator_x2c,       &
       get_saomo_x2c,                  &
       generic_interface_ao2mo_mo2ao
-  use x2c_import_exportC1
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 
   implicit none
 
@@ -75,6 +83,7 @@ contains
                                      x2c_file_scr,         &
                                      linear_sym,           &
                                      mdirac,               &
+                                     spinfree,             &
                                      print_lvl)
 !**********************************************************************
 !
@@ -105,8 +114,10 @@ contains
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
+     logical, intent(in)    :: spinfree
 !----------------------------------------------------------------------
-     integer                :: ioff_osh1       
+     integer                :: ioff_osh1
+     integer                :: ioff_osh2
      integer                :: ioff_ao_o_sh1   
      integer                :: ioff_ao_ao_sh1
      integer                :: i       
@@ -117,6 +128,7 @@ contains
      character (len=12)     :: flabel
      logical                :: skip_step1 = .false.
      logical                :: fndlab12
+     integer, allocatable   :: boson_info(:)
 !**********************************************************************
 
 !     step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
@@ -153,9 +165,19 @@ contains
 !             in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !     ------------------------------------------------------------------------------
+#ifdef x2c_spinfree_before_4c_to_2c
+      if(spinfree)then
+        allocate(boson_info(norb_dim(1)+norb_dim(2)))
+        call get_boson_irrep_info(boson_info,  &
+                                  nfsym,       &
+                                  norb_dim,    &
+                                  print_lvl)
+      end if
+#endif
 
 !     initialize matrix offsets
       ioff_osh1      = 1
+      ioff_osh2      = 1
       ioff_ao_o_sh1  = 1
       ioff_ao_ao_sh1 = 1
 
@@ -183,6 +205,8 @@ contains
                                   nz,                                &
                                   nzt,                               &
                                   ipq_off_in,                        &
+                                  spinfree,                          &
+                                  boson_info(ioff_osh2),             &
                                   print_lvl)
 
         end if
@@ -191,8 +215,13 @@ contains
         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz 
         ioff_osh1      = ioff_osh1      + norb1_f**2 * nz
+        ioff_osh2      = ioff_osh2      + norb1_f
 
       end do
+
+#ifdef x2c_spinfree_before_4c_to_2c
+      if(spinfree) deallocate(boson_info)
+#endif
 
   end subroutine x2c_get_h1_defining_mat
 
@@ -377,10 +406,6 @@ contains
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f**2 * nz
         end do
 
-!#ifdef MOD_INTEREST
-!      else if(mdirac)then
-!        stop 'FIXME - stefan: MDIRAC interface for fock-operator as defining/base h1 matrix'
-!#endif
       else
 !       step 1: read 4c-fock_onmo (LS sorted) from file op_mat_on_file
 !       --------------------------------------------------------------
@@ -455,6 +480,7 @@ contains
                                           nbas1_f * norb1_f * nzt, x2c_file_scr)
           ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt
         end do
+
         call get_saomo_x2c(                &
                            scrmat2,        &
                            h1_saao_bas,    &
@@ -537,6 +563,8 @@ contains
                                 nz,                     &
                                 nzt,                    &
                                 ipq_off_in,             &
+                                spinfree,               &
+                                boson_info,             &
                                 print_lvl)
 !**********************************************************************
 !
@@ -548,6 +576,7 @@ contains
      real(8), intent(inout) :: h1_onmo_bas(*)
      real(8), intent(inout) :: h1_saao_bas(*)
      real(8), intent(inout) :: tra_mat_4cAOMO(*)
+     integer, intent(in)    :: boson_info(*)
      integer, intent(in)    :: nbas1_f
      integer, intent(in)    :: norb1_f
      integer, intent(in)    :: naosh_ls
@@ -555,6 +584,7 @@ contains
      integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: print_lvl
+     logical, intent(in)    :: spinfree
 !----------------------------------------------------------------------
 
 !      h1_4cON = V+ * h1_4cao * V
@@ -571,6 +601,23 @@ contains
                                           'AOMO',                &
                                           'S',                   &
                                           print_lvl) 
+
+#ifdef x2c_spinfree_before_4c_to_2c
+!       test the spinfree-before scheme by Miro and HJAAJ
+        if(spinfree)then
+          call make_spinfree_h1_onmo(                            &
+                                     h1_onmo_bas,                & 
+                                     norb1_f,                    & 
+                                     norb1_f,                    & 
+                                     norb1_f,                    & 
+                                     norb1_f,                    & 
+                                     boson_info,                 &
+                                     boson_info,                 &
+                                     nz,                         &
+                                     print_lvl                   &
+                                    )
+        end if
+#endif
 
   end subroutine get_h1_4c_on_basis
 !**********************************************************************

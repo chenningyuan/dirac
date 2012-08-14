@@ -434,6 +434,7 @@ contains
                       atom_by_atom_x2c,       &
                       x2c_linsym,             &
                       x2c_mdirac,             &
+                      x2c_spinfree,           &
                       return_h1_inf_2c,       & 
                       x2c_do_spherical)
 
@@ -601,6 +602,7 @@ contains
                      fragment_x2c,         &
                      linear_sym,           &
                      mdirac,               &
+                     spinfree,             &
                      return_h1_inf_2c,     &
                      spherical_on)
 !**********************************************************************
@@ -653,6 +655,7 @@ contains
      logical, intent(in)    :: fragment_x2c
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
+     logical, intent(in)    :: spinfree
      logical, intent(in)    :: return_h1_inf_2c
      logical, intent(in)    :: spherical_on
 !----------------------------------------------------------------------
@@ -719,6 +722,7 @@ contains
                                 x2c_file_scr,          &
                                 linear_sym,            &
                                 mdirac,                &
+                                spinfree,              &
                                 print_lvl)
        
 !      step 3: get defining matrix (== "h1-defining" in orthonormal MO basis)
@@ -742,6 +746,7 @@ contains
                                     x2c_file_scr,          &
                                     linear_sym,            &
                                     mdirac,                &
+                                    spinfree,              &
                                     print_lvl)
  
 !      allocate scratch matrix with appropriate dimension
@@ -771,6 +776,7 @@ contains
                                is_z_value,                &
                                x2c_file_scr,              &
                                defining_h1mat,            &
+                               spinfree,                  &
                                print_lvl)
 
 !      step 5: get the transformed operator "h1_infinite_2c" in SA-AO basis

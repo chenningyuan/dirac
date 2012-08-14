@@ -32,7 +32,10 @@ module x2c_h1mat_base
   use x2c_fio
   use x2c_cb_interface, only:         &
       reset_x2c_cb_onefck
-  use x2c_utils, only: print_x2cmat
+  use x2c_utils, only:                &
+      print_x2cmat,                   &
+      make_spinfree_h1_onmo,          &
+      get_boson_irrep_info
   use x2c_def_h1_4c, only:            &
       get_h1_4c_saao_basis,           &
       get_h1_4c_on_basis
@@ -67,6 +70,7 @@ contains
                                  x2c_file_scr,         &
                                  linear_sym,           &
                                  mdirac,               &
+                                 spinfree,             &
                                  print_lvl)
 !**********************************************************************
 !
@@ -100,8 +104,10 @@ contains
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
+     logical, intent(in)    :: spinfree
 !----------------------------------------------------------------------
-     integer                :: ioff_osh1       
+     integer                :: ioff_osh1
+     integer                :: ioff_osh2
      integer                :: ioff_ao_o_sh1   
      integer                :: ioff_ao_ao_sh1
      integer                :: i       
@@ -109,6 +115,7 @@ contains
      integer                :: nbas1_f
      integer                :: ndim_ao 
      character (len=12)     :: flabel
+     integer, allocatable   :: boson_info(:)
 !**********************************************************************
 
 !      step 1: get the basic 4c-h1 matrix in SA-AO basis according to the value for basic_h1mat
@@ -141,8 +148,19 @@ contains
 !              out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !      ------------------------------------------------------------------------------
 
+#ifdef x2c_spinfree_test_debug
+       if(spinfree)then
+         allocate(boson_info(norb_dim(1)+norb_dim(2)))
+         call get_boson_irrep_info(boson_info,  &
+                                   nfsym,       &
+                                   norb_dim,    &
+                                   print_lvl)
+       end if
+#endif
+
 !      initialize matrix offsets
        ioff_osh1      = 1
+       ioff_osh2      = 1
        ioff_ao_o_sh1  = 1
        ioff_ao_ao_sh1 = 1
 
@@ -178,6 +196,8 @@ contains
                                    nz,                                &
                                    nzt,                               &
                                    ipq_off_in,                        &
+                                   spinfree,                          &
+                                   boson_info(ioff_osh2),             &
                                    print_lvl)
 
          end if
@@ -190,8 +210,13 @@ contains
          ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
          ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
          ioff_osh1      = ioff_osh1      + norb1_f**2 * nz
+         ioff_osh2      = ioff_osh2      + norb1_f
 
        end do
+
+#ifdef x2c_spinfree_test_debug
+       if(spinfree) deallocate(boson_info)
+#endif
 
   end subroutine x2c_get_h1_mat_base
 

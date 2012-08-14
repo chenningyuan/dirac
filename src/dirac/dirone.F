@@ -3321,10 +3321,10 @@ C     Print section
 C
       IF(LEVYLE.OR.VEXTPJ.OR.FREEPJ) THEN
         CALL HEADER('Output from MODHAM',-1)
-        WRITE(LUPRI,'(A)') '* All positronic solutions deleted !'
+        WRITE(LUPRI,'(A)') ' * All positronic solutions deleted !'
       ELSE
         CALL HEADER('Output from MODHAM',-1)
-        WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
+        WRITE(LUPRI,'(A)') ' * Applied strict kinetic balance !'
       ENDIF
       IF(IPRHAM.GE.5) THEN
         CALL HEADER(
