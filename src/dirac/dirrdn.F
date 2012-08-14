@@ -5259,22 +5259,12 @@ C..TODO: check for inconsistencies and add stops
       end if 
       GAUNT_SAVE = GAUNT
 
-!     take care of the correct choice of the X2C module 
-!     -------------------------------------------------
-!     1. X2C+spinfree 
-!     2. X2C+compare eigenvalues 4c-Hamiltonian <--> 2c-Hamiltonian
+!     take care of the correct choice of/in the X2C module 
+!     ----------------------------------------------------
       if(x2c.and.spinfr)then
-!       disable new x2c module
-        x2c        = .false.
-        x2cmod_x2c = .false.
-!       enable old bss/x2c module (AMFI flags are taken care of via ibss)
-        iotc       = .true.
-        bss        = .true.
-        noprtr     = .true.
-        ibss       = 2999
-        twocompbss = .true.
-        twocomp    = .true.
         isorder_amfi_x2c = -1
+        x2c_add_amfi     = -1
+!     X2C+compare eigenvalues 4c-Hamiltonian <--> 2c-Hamiltonian
       else if(x2c.and.cmpeig)then
         write(lupri,'(a/)') 
      &  ' *** Warning: the .cmpeig option is not implemented in'//
@@ -6246,7 +6236,7 @@ C
 #endif
 
       IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.and..not.DO4C2C)THEN
-         CALL AMFI_RELSCF_INP(WORD,.TRUE.)
+         if(.not.spinfr) CALL AMFI_RELSCF_INP(WORD,.TRUE.)
       ENDIF
 C
  500  CONTINUE

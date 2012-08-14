@@ -54,6 +54,7 @@ module x2c_utils
   public get_Sao_LL_mat
   public get_saomo_x2c
   public get_boson_irrep_info
+  public make_spinfree_h1_onmo
   public hello_dirx2c
   public goodbye_dirx2c
 
@@ -1180,13 +1181,14 @@ contains
      integer                :: nbas1_f
 !**********************************************************************
  
-       allocate(saoao(naosh_ls**2))
-       saoao(1:naosh_ls**2) = 0.0d0
+       allocate(saoao(nzt*naosh_ls**2))
+       saoao(1:nzt*naosh_ls**2) = 0.0d0
 
 !      compute Saoao overlap matrix
        if(mdirac)then
 #ifdef MOD_INTEREST
-         call process_overlap_integrals_4comp( saoao )
+         call process_overlap_integrals_4comp( saoao , ss_scaling=1.0d0)
+!        call butobs_no_work(saoao,1)
 #endif
        else
 #ifdef PRG_DIRAC
@@ -1202,6 +1204,12 @@ contains
          norb1_f  = norb_dim(i)
          nbas1_f  = naosh_all(i)
 
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(vaomo(iaomo),nbas1_f,norb1_f,nzt,ipq_off_in,'x2c - v    ',6)
+           call print_x2cmat(saoao(ioff_aomat_x(i,i)+1),nbas1_f,naosh_ls,nzt,ipq_off_in,'x2c - saoao',6)
+         end if
+
          if(norb_dim(i) > 0)then
 
 !          Saomo                         = Saoao * RKB AOtoMO trafo mat
@@ -1212,7 +1220,7 @@ contains
                       val_d1,                                   &
                       'N','N',                                  &
                       ipq_off_in,                               &
-                      saoao(ioff_aomat_x(i,i)),                 &
+                      saoao(ioff_aomat_x(i,i)+1),               &
                       naosh_ls,                                 &
                       naosh_ls,                                 &
                       1,                                        &
@@ -1229,6 +1237,11 @@ contains
                       norb1_f,                                  &
                       nzt)         
 
+         end if
+
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(saomo(iaomo),nbas1_f,norb1_f,nzt,ipq_off_in,'x2c - saomo',6)
          end if
 
 !        keep track of offset
@@ -1270,17 +1283,77 @@ contains
 
   end subroutine get_boson_irrep_info
 !**********************************************************************
+  subroutine make_spinfree_h1_onmo(                            &
+                                   h1_onmo_bas,                & 
+                                   lrow,                       &
+                                   lcol,                       &
+                                   nrow,                       &
+                                   ncol,                       &
+                                   boson_info_r,               &
+                                   boson_info_c,               &
+                                   nz,                         &
+                                   print_lvl                   &
+                                  )
+!**********************************************************************
+!
+!    purpose: retain only spinfree elements in 1-el Hamiltonian
+!
+!**********************************************************************
+     real(8), intent(inout)   :: h1_onmo_bas(lrow,lcol,nz)
+     integer, intent(in)      :: boson_info_r(*)
+     integer, intent(in)      :: boson_info_c(*)
+     integer, intent(in)      :: lrow
+     integer, intent(in)      :: lcol
+     integer, intent(in)      :: nrow
+     integer, intent(in)      :: ncol
+     integer, intent(in)      :: nz
+     integer, intent(in)      :: print_lvl
+!----------------------------------------------------------------------
+     integer                  :: i, j, k
+!**********************************************************************
+ 
+!      part 1: nz = 1
+       do i = 1, nrow
+         do j = 1, ncol
+          if(boson_info_r(i) /= boson_info_c(j)) h1_onmo_bas(i,j,1) = 0.0d0
+         end do
+       end do
+
+!      part 2: nz >= 1
+       if(nz > 1)then
+         do k = 2, nz
+           do i = 1, nrow
+             do j = 1, ncol
+               h1_onmo_bas(i,j,k) = 0.0d0
+             end do
+           end do
+         end do
+       end if
+
+  end subroutine make_spinfree_h1_onmo
+!**********************************************************************
 
   subroutine hello_dirx2c()
 !**********************************************************************
 
     print '(/18x,a)', ' *****************************************************************'
     print '( 18x,a)', ' *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***'
-    print '( 18x,a)', ' ***          written by Stefan Knecht and Trond Saue,         ***'
-    print '( 18x,a)', ' *** Universities of Strasbourg, Toulouse and Odense 2010-2011 ***'
+    print '(18x,a )', ' ***                                                           ***'
+    print '(18x,a )', ' *** library version:  1.0 (August 2012)                       ***'
+    print '(18x,a )', ' ***                                                           ***'
+    print '(18x,a )', ' *** authors:          - Stefan Knecht                         ***'
+    print '(18x,a )', ' ***                   - Trond Saue                            ***'
+    print '(18x,a )', ' *** contributors:     - Hans Joergen Aagaard Jensen           ***'
+    print '(18x,a )', ' ***                   - Miroslav Ilias                        ***'
+    print '(18x,a )', ' ***                   - Michal Repisky                        ***'
+    print '(18x,a )', ' *** features:         - X2C                                   ***'
+    print '(18x,a )', ' ***                   - X2C-spinfree                          ***'
+    print '(18x,a )', ' ***                   - X2C-molecular-mean-field (X2Cmmf)     ***'
+    print '(18x,a )', ' ***                                                           ***'
+    print '( 18x,a)', ' *** Universities of Strasbourg, Toulouse, Odense and Tromsoe  ***'
     print '(18x,a/)', ' *****************************************************************'
 
-  end subroutine
+  end subroutine hello_dirx2c
 !**********************************************************************
 
   subroutine goodbye_dirx2c()
@@ -1291,7 +1364,7 @@ contains
     print '( 18x,a)', ' ***       Calculation continues in two-component mode.        ***'
     print '(18x,a/)', ' *****************************************************************'
 
-  end subroutine
+  end subroutine goodbye_dirx2c
 !**********************************************************************
 
 end module x2c_utils

@@ -180,6 +180,7 @@ contains
          x2c_prep_bnccorr = bncron.and..not.onesys
          x2c_1e_system    = onesys
          x2c_mdirac       = mdirac
+         x2c_spinfree     = spinfr
   
 !        initialize real*8
          x2c_cspeed = cval
