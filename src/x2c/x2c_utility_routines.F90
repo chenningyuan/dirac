@@ -1391,22 +1391,22 @@ contains
   subroutine hello_dirx2c()
 !**********************************************************************
 
-    print '(/18x,a)', ' *****************************************************************'
-    print '( 18x,a)', ' *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***'
-    print '(18x,a )', ' ***                                                           ***'
-    print '(18x,a )', ' *** library version:  1.0 (August 2012)                       ***'
-    print '(18x,a )', ' ***                                                           ***'
-    print '(18x,a )', ' *** authors:          - Stefan Knecht                         ***'
-    print '(18x,a )', ' ***                   - Trond Saue                            ***'
-    print '(18x,a )', ' *** contributors:     - Hans Joergen Aagaard Jensen           ***'
-    print '(18x,a )', ' ***                   - Miroslav Ilias                        ***'
-    print '(18x,a )', ' ***                   - Michal Repisky                        ***'
-    print '(18x,a )', ' *** features:         - X2C                                   ***'
-    print '(18x,a )', ' ***                   - X2C-spinfree                          ***'
-    print '(18x,a )', ' ***                   - X2C-molecular-mean-field (X2Cmmf)     ***'
-    print '(18x,a )', ' ***                                                           ***'
-    print '( 18x,a)', ' *** Universities of Strasbourg, Toulouse, Odense and Tromsoe  ***'
-    print '(18x,a/)', ' *****************************************************************'
+    print '(/18x,a)', ' *********************************************************************'
+    print '( 18x,a)', ' ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** library version:  1.0 (August 2012)                           ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** authors:          - Stefan Knecht                             ***'
+    print '(18x,a )', ' ***                   - Trond Saue                                ***'
+    print '(18x,a )', ' *** contributors:     - Hans Joergen Aagaard Jensen               ***'
+    print '(18x,a )', ' ***                   - Miroslav Ilias                            ***'
+    print '(18x,a )', ' ***                   - Michal Repisky                            ***'
+    print '(18x,a )', ' *** features:         - X2C                                       ***'
+    print '(18x,a )', ' ***                   - X2C-spinfree                              ***'
+    print '(18x,a )', ' ***                   - X2C-molecular-mean-field (X2Cmmf)         ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '( 18x,a)', ' *** Universities of Odense, Toulouse, Banska Bystrica and Tromsoe ***'
+    print '(18x,a/)', ' *********************************************************************'
 
   end subroutine hello_dirx2c
 !**********************************************************************
@@ -1414,10 +1414,10 @@ contains
   subroutine goodbye_dirx2c()
 !**********************************************************************
 
-    print '(/18x,a)', ' *****************************************************************'
-    print '( 18x,a)', ' ***            X2C transformation ended properly.             ***'
-    print '( 18x,a)', ' ***       Calculation continues in two-component mode.        ***'
-    print '(18x,a/)', ' *****************************************************************'
+    print '(/18x,a)', ' *********************************************************************'
+    print '( 18x,a)', ' ***               X2C transformation ended properly.              ***'
+    print '( 18x,a)', ' ***          Calculation continues in two-component mode.         ***'
+    print '(18x,a/)', ' *********************************************************************'
 
   end subroutine goodbye_dirx2c
 !**********************************************************************

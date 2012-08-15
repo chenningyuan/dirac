@@ -870,7 +870,7 @@ contains
 !      end if
        open(99,file='blubb_oo',status='replace',form='unformatted',&
             access='sequential',action="readwrite",position='rewind')
-       read(99) (scr_mat1(i),i=1, nr_ao_L**2*4)
+       write(99) (scr_mat1(i),i=1, nr_ao_L**2*4)
        close(99,status='keep')
 #undef blubb_blubb_aooso
 #endif
