@@ -9144,6 +9144,8 @@ CMI   if (dirbss_verbose) write(lupri,*)
         CALL QUIT('AMFIIN: Wrong x,y,z quaternions !')
       ENDIF   
 
+      iprint = iprint_save
+      iprint = 5
       DO IANUC = 1, NICHARGE
 
        ISREMOVED = 0
@@ -9351,7 +9353,7 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
 
         CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
       ENDIF
-!     iprint = iprint_save
+      iprint = iprint_save
 
       CALL QEXIT('AMFIIN')
       RETURN

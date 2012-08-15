@@ -29,8 +29,7 @@
 !
 module atomic_oo_order_so_correction
 
-  use memory_allocator 
-  use x2c_utils
+  use atomic_oo_order_so_correction_cfg 
 
   implicit none
 

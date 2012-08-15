@@ -38,6 +38,7 @@ module x2c_pct_ao
       pick_LL_block_saao_bas,            &
       read_fock_matrices_saao_basis_x2c, &
       write_fock_matrices_saao_basis_x2c,&
+      make_two_e_fock_so_exclusive,      &
       print_x2cmat
 #ifdef MOD_INTEREST
   use module_interest_interface
@@ -143,7 +144,7 @@ contains
 !      step 2: picture-change transform the 1e-/2e-Fock matrices
 !      ---------------------------------------------------------
        if(defining_h1mat == 2 .and. .not. is_1e_system)then
-#ifdef not_needed_at_all
+!#ifdef not_needed_at_all
          call pctrafo_fockmatrices_4cto2c_saao_bas(naosh_ls,                   &
                                                    nr_ao_L,                    &
                                                    naosh_all,                  &
@@ -159,7 +160,7 @@ contains
                                                    file_name_1e_fock_matrix,   &
                                                    file_name_2e_fock_matrices, &
                                                    print_lvl)
-#else
+!#else
 !        the picture-change transformation of the 1e/2e-Fock matrices in AO basis
 !        is superfluous - for completeness we delete the files here.
 !        stefan - june 2011
@@ -169,7 +170,7 @@ contains
          open(99,file=file_name_1e_fock_matrix,status='old',form='unformatted',        &
               access='sequential',action="readwrite",position='rewind')
          close(99,status='delete')
-#endif
+!#endif
        end if
 
 !      step 3: picture-change transform the list of 1e property operator
@@ -833,6 +834,46 @@ contains
                                                print_lvl)
        close(fh,status='keep')
 
+#define blubb_blubb_aooso
+#ifdef blubb_blubb_aooso
+       scr_mat2   = 0
+       scr_mat1   = 0
+       op_fer_rep = 0
+       open(99,file='blubb_oo',status='old',form='unformatted',&
+            access='sequential',action="readwrite",position='rewind')
+       read(99) (scr_mat1(i),i=1, naosh_ls**2*nz)
+       close(99,status='keep')
+
+       call make_two_e_fock_so_exclusive(scr_mat1,nr_ao_L,nr_ao_L,nz)
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 2fock-before tra',6)
+!      end if
+       call perform_pct_saao_bas(scr_mat1(fock_mat_offset),    &
+                                 pctmat,                       &
+                                 scr_mat2,                     &
+                                 naosh_ls,                     &
+                                 nr_ao_L,                      &
+                                 naosh_all,                    &
+                                 naosh_L,                      &
+                                 nfsym,                        &
+                                 nz,                           &
+                                 ipq_off_in,                   &
+                                 ioff_aomx,                    &
+                                 op_fer_rep,                   &
+                                 op_bs_to_fs,                  &
+                                 .true.,                       &
+                                 print_lvl)
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2fock-tra',6)
+!      end if
+       open(99,file='blubb_oo',status='replace',form='unformatted',&
+            access='sequential',action="readwrite",position='rewind')
+       read(99) (scr_mat1(i),i=1, nr_ao_L**2*4)
+       close(99,status='keep')
+#undef blubb_blubb_aooso
+#endif
        call dealloc(scr_mat2)
        call dealloc(scr_mat1)
        call dealloc(pctmat)

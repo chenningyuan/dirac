@@ -64,7 +64,7 @@ C
       CALL QENTER('TWOFCK')
 #include "memint.h"
       iprint_save = iprint
-      iprint = 0
+      iprint = 5
 C
       IF(IPRINT.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
@@ -237,6 +237,12 @@ C
 C       Reindex to sorted basis
 C       =======================
 C
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('Unsorted FMAT before half-phases inserted',-1)
+          WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
+          CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,IREP),LUPRI)
+        ENDIF
         CALL BUTOBS(FMAT(1,1,I),NZ,WORK,LWORK)
         CALL BUTOBS(DMAT(1,1,I),NZ,WORK,LWORK)
         IREP = ISYMOP(I)-1

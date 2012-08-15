@@ -55,6 +55,7 @@ module x2c_utils
   public get_saomo_x2c
   public get_boson_irrep_info
   public make_spinfree_h1_onmo
+  public make_two_e_fock_so_exclusive
   public hello_dirx2c
   public goodbye_dirx2c
 
@@ -1283,6 +1284,7 @@ contains
 
   end subroutine get_boson_irrep_info
 !**********************************************************************
+
   subroutine make_spinfree_h1_onmo(                            &
                                    h1_onmo_bas,                & 
                                    lrow,                       &
@@ -1331,6 +1333,59 @@ contains
        end if
 
   end subroutine make_spinfree_h1_onmo
+!**********************************************************************
+
+  subroutine make_two_e_fock_so_exclusive(                            &
+                                          Gmat,                       & 
+                                          nrow,                       &
+                                          ncol,                       &
+                                          nz                          &
+                                         )
+!**********************************************************************
+!
+!    purpose: retain only two-electron spin-orbit elements in 2-el Fock matrix
+!
+!**********************************************************************
+     real(8), intent(inout)   :: Gmat(2*nrow,2*ncol,4)
+     integer, intent(in)      :: nrow
+     integer, intent(in)      :: ncol
+     integer, intent(in)      :: nz
+!----------------------------------------------------------------------
+     integer                  :: i, j
+!**********************************************************************
+
+!      check dimensionalities
+       if(nz /= 4) stop '2-el Fock matrix is not in quaternion format'
+ 
+       if(nrow /= ncol) stop '2-el Fock matrix is not in MDIRAC format'
+
+!      take out scalar parts
+       do j=1,nrow
+         do i=1,nrow
+           !> quaternion(0) 
+           Gmat(i     ,j     ,1) = 0.0d0                 ! ll
+           Gmat(i+nrow,j     ,1) = 0.0d0                 ! sl
+           Gmat(i     ,j+nrow,1) = 0.0d0                 ! sl
+           Gmat(i+nrow,j+nrow,1) = 0.0d0                 ! ss
+           !> quaternion(i) 
+           Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
+           Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) ! sl
+           Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) ! sl
+           Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) ! ss
+           !> quaternion(j) 
+           Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
+           Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) ! sl
+           Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) ! sl
+           Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) ! ss
+           !> quaternion(k) 
+           Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
+           Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) ! sl
+           Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) ! sl
+           Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) ! ss
+         enddo
+       enddo
+
+  end subroutine make_two_e_fock_so_exclusive
 !**********************************************************************
 
   subroutine hello_dirx2c()

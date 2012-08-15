@@ -1390,6 +1390,24 @@ C
 #endif
 
 
+#define blubb_blubb_aooso
+#ifdef blubb_blubb_aooso
+         !fixme: michal for InteRest                            
+         call dzero(fock,N2BBASXQ*nopen)
+         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
+     &               NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+         CALL HEADER(
+     &   'scfcyc: full twofock 2-electron Fock matrix for you',-1)
+!        CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+         open(99,file='blubb_oo',status='replace',form='unformatted',
+     &        access='sequential',action="readwrite",position='rewind')
+         write(99) (fock(i),i=1,N2BBASXQ)
+         close(99,status='keep')
+         call dzero(fock,N2BBASXQ*nopen)
+#undef blubb_blubb_aooso
+#endif
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -4153,7 +4171,7 @@ C
         ENDDO
 
          iprham_svae = iprham
-!        iprham = 5
+         iprham = 5
 C ... control print out of the matrix to be diagonalized
          IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -4594,7 +4612,7 @@ C
         ENDDO
       ENDIF
    
-      IF (IPRINT.GE.4) THEN
+!     IF (IPRINT.GE.4) THEN
        CALL HEADER('*** Output from INIBOS ***',-1)
        write(lupri,'(2X,A,L1)') 'flag on S_L resorting, SORTLS=',SORTLS
        write(lupri,'(2X,A,I1,A,I3,A,I3,A,I3)')
@@ -4603,7 +4621,7 @@ C
        write(lupri,'(2X,A,/,4X,25I3)')
      & 'boson irreps of each MO (from pos. to el.):',
      &                (IBOS(J),J=1,NORB(IFRP))
-      ENDIF
+!     ENDIF
 
       RETURN
       END
