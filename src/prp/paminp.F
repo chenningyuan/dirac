@@ -1532,7 +1532,7 @@ CMI ... inform about the assigned PCOMB
            WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
          ENDIF
          PCOMB_SAVE = PCOMB
-         PCOMB(1:1)='0'
+         !PCOMB(1:1)='0'
          WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "e_EDM operator -",PNAME,
      &   '=> assigned matrix structure ',PCOMB_SAVE," --> ",PCOMB
          IF (NPCOMP.EQ.3) THEN

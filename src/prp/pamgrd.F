@@ -652,6 +652,16 @@ C
           CALL PRQMAT(PRPAO(I2BASX(I1,I2)+1,1),NFBAS(I1,0),NFBAS(I2,0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
 
+          IF (IPRINT.GE.10) THEN
+            CALL HEADER(
+     &      'PRPMA1: Symm.blocked MO-coefficients',-1)
+            WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
+     &      '* Fermion ircop no.',I1,I2,' of ',NFSYM
+            CALL PRQMAT(CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
+     &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
+            CALL FLSHFO(LUPRI)
+          ENDIF
+
           CALL HEADER('PRPMA1: Symm.blocked MO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &    '* Fermion irps no.',I1,I2,' of ',NFSYM
@@ -660,16 +670,6 @@ C
           CALL FLSHFO(LUPRI)
          ENDIF
 !
-         IF (IPRINT.GE.10) THEN
-          CALL HEADER(
-     &    'PRPMA1: Symm.blocked MO-coefficients',-1)
-          WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
-     &    '* Fermion ircop no.',I1,I2,' of ',NFSYM
-          CALL PRQMAT(CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
-     &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
-          CALL FLSHFO(LUPRI)
-         ENDIF
-         
       ENDDO
 C
 C     Print section

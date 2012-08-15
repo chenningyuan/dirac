@@ -2994,10 +2994,6 @@ C
      &          TM2(LR2,LC2,*),IQTM2(*),
      &          BUF(LBUF)
       DIMENSION IQW(4)
-CMI   .... IPRINT threshold 
-      DATA IPRLIM / 200 /
-!     DATA IPRLIM /   4 /
-
 C
       CALL QENTER('QTRANS')
 C
@@ -3046,7 +3042,7 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
          
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.12) THEN
             CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
 
             WRITE(LUPRI,'(2X,A,4I2)')
@@ -3072,7 +3068,7 @@ C
      &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &               D0,IQW,BUF,NRAO,NCMO,NZW)
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.13) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &      'QTRANS: First part transformation matrix W, W=FC;'//
      &      ' IQW=',(IQW(IZ),IZ=1,NZW)
@@ -3087,7 +3083,7 @@ C
      &               'N','N',IQW,BUF,NRAO,NCMO,NZW,
      &               FADD,IQMO,FMO,LRMO,LCMO,NZMO)
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.13) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &     'QTRANS: Second part of transformation H,H=(C+).W; '//
      &     'IQMO=',(IQMO(IZ),IZ=1,NZMO)
@@ -3128,7 +3124,7 @@ C
 C
         ENDIF
         IF(IPRINT.GE.11) THEN
-          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
+          CALL HEADER('QTRANS: AO-to-MO-transformed matrix',-1)
           CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
         ENDIF
 C
