@@ -863,7 +863,7 @@ C
 C   19. BETA   
 C       [beta]P * beta times scalar operator
 C
-C   20 .is occupied - iS.P         * dot-product of sigma and vector operator
+C   20 .SIGMADOT - iS.P         * dot-product of sigma and vector operator
 C
 C   21. iBETAGAM
 C       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
@@ -906,7 +906,7 @@ C
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-     &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
+     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
      &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
 C
       CALL QENTER('XPRINP')
@@ -1018,7 +1018,7 @@ C          =================================================
 C
            IF ( I .GT. I_FOCKMAT ) THEN
 C             (the first five entries in TABKW are not operator types)
-CMI      ---- assignement of IPTYP needed in further routines -----
+CMI      ---- assignement of the IPTYP is needed in other routines -----
               IPTYP = I - I_FOCKMAT
               NLABEL= 0
               NFAC  = 0
@@ -1042,12 +1042,11 @@ C
  
            ! ... initialize ...
            TRS_FLIP=.FALSE.
-           ! write(LUPRI,*) 'operatorik:',I,KEYWD(1:LKW)
 
 !mi     ...jump on operator types according to the variable I prepared above, I : 1-26
 !           4-8 are operators characteritics, TABKW(1-5)
            GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1,1,1,1), I
+     &            1,1,1,1,1,1,1,1,1,1,1,3,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1066,7 +1065,7 @@ C&&&&    Two components: [XYZ]AVECTOR
 C          note that the minus in the second component
 C          is introduced later
          GO TO 300
-C&&&&    Three components: ALPHADOT
+C&&&&    Three components: ALPHADOT, SIGMADOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
@@ -1491,7 +1490,7 @@ C
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 C
-C        "i BETA ALPHA" and "i BETA GAMMA5" :
+C        "i BETA ALPHA" and "i BETA GAMMA5" , miro: also SIGMADOT
 C
     4    PCOMB = '0+-0'
          GO TO 100
@@ -1527,6 +1526,7 @@ CMI ... inform about the assigned PCOMB
 
 ! miro 7 June 2012 exception: for PLABEL(1:5)="e_EDM" assign PCOMB(1:1)='0'
       IF (PNAME(1:5).EQ.'e_EDM') THEN
+         !todo: hard assign 000+ structure
          IF (PCOMB.NE.'+00+') THEN 
            PCOMB = '+00+' ! assig as for SIGMA type of operator
            WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
@@ -2343,9 +2343,9 @@ C
 C     Point group symmetry
 C     ====================
 C
-C     Matrix operator
+C     Matrix operator, JM4REP(JM4(1,ITYP))
       IAREP    = JM4REP(IAIND)
-C     Scalar operator
+C     Scalar operator, IPRLREP (IPRPLBL(1,INDXPR))
       IBREP    = IPRLREP(IBIND)
 C     Total point gropu symmetry of the operator, first component..
       ICREP(1) = IBTXOR(IAREP,IBREP)
@@ -2414,7 +2414,7 @@ C     Total time reversal symmetry of the 4-comp.operator
       IF (IPRINT.GE.15) THEN
         CALL HEADER('Output from PRPSYM',-1)
         WRITE(LUPRI,'(2X,4(A,I2))')
-     &  'IAIND=',IAIND,' IBIND=',IBIND,
+     &  'IAIND=JM4(1,ITYP)',IAIND,' IBIND=IPRLBL(INDXPR)',IBIND,
      &  ' IATIM=',IATIM,' IBTIM=',IBTIM
         WRITE(LUPRI,'(2X,1(A,I2))')
      &  'ICTIM(1)=',ICTIM(1)
@@ -2435,6 +2435,15 @@ C     ==========================================
         IBTIM       = IPRLTYP(IBIND)
         ICTIM(ILBL) = IATIM*IBTIM
         DIFTIM      = DIFTIM.AND.(ICTIM(ILBL).NE.ICTIM(1))
+
+        IF (IPRINT.GE.15) THEN
+          WRITE(LUPRI,'(2X,4(A,I2))')
+     &  'IAIND=JM4(ILBL,ITYP)',IAIND,' IBIND=IPRLBL(ILBL,INDXPR)',IBIND,
+     &  ' IATIM=',IATIM,' IBTIM=',IBTIM
+        WRITE(LUPRI,'(2X,1(A,I2))')
+     &  'ICTIM(ILBL)=',ICTIM(ILBL)
+        ENDIF
+
    20 CONTINUE
 !     error message
       IF(DIFSYM.OR.DIFTIM) THEN
@@ -2462,8 +2471,9 @@ C
         CALL QUIT('PRPSYM: Components of different symmetry !!!')
       ENDIF
 
-CMI   ... assign symmetries
+CMI   ... assign point group symemtry - only one !
       IPRPSYM(INDXPR) = ICREP(1)+1
+CMI   ... assign time rev.symmetry
       IPRPTIM(INDXPR) = ICTIM(1)
 
 CMI ... control printout is always worth 

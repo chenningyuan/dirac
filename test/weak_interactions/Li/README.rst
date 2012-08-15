@@ -1,10 +1,10 @@
 
-Symmetry of operarators
-~~~~~~~~~~~~~~~~~~~~~~~~
+Symmetry of operators
+~~~~~~~~~~~~~~~~~~~~~
 
 
 D2h
-diagonal sigma_x, sigma_y, sigma_z  :  B2g  B2g  B1g (T-)
+diagonal sigma_x, sigma_y, sigma_z  :  B3g  B2g  B1g (T-)
            diagonal NEF 001,002,003 :  B3u  B2u  B1u (T+)
                 total symm product  :   Au   Au   Au
 
