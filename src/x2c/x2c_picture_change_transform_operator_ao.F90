@@ -29,7 +29,6 @@
 !
 module x2c_pct_ao
 
-  use memory_allocator
   use x2c_fio
   use x2c_cb_interface, only:            &
       init_x2c_cb,                       &
@@ -176,8 +175,8 @@ contains
 !      step 3: picture-change transform the list of 1e property operator
 !      -------------------------------------------------------------------
        allocate(prop_op_name(num_prp_op*16))
-       call alloc(prop_op_dgsym,num_prp_op)
-       call alloc(prop_op_trsym,num_prp_op)
+       allocate(prop_op_dgsym(num_prp_op))
+       allocate(prop_op_trsym(num_prp_op))
 
 !      initialize property operator attributes
        call init_x2c_cb(.false.,           &
@@ -210,8 +209,8 @@ contains
                                        spherical_on,        &
                                        print_lvl)
 
-       call dealloc(prop_op_dgsym)
-       call dealloc(prop_op_trsym)
+       deallocate(prop_op_dgsym)
+       deallocate(prop_op_trsym)
        deallocate(prop_op_name)
 
   end subroutine pctrafo_all_op_driver
@@ -303,7 +302,7 @@ contains
          j = j + naosh_all(i)*naosh_L(i)*nz
        end do
 !      allocate pct-matrix
-       call alloc(pctmat,j)
+       allocate(pctmat(j))
        pctmat = 0
 
 !      step 1: read picture-change transformation matrix U in SA-AO basis from global file
@@ -332,8 +331,8 @@ contains
 
 !      allocate two matrices for pct-procedure of each property operator
 !      idea: for optimal reuse of the matrices allocate with full dimensionality
-       call alloc(scr_mat1,naosh_ls**2 * nz)
-       call alloc(scr_mat2,naosh_ls**2 * nz)
+       allocate(scr_mat1(naosh_ls**2 * nz))
+       allocate(scr_mat2(naosh_ls**2 * nz))
        scr_mat1        = 0
        scr_mat2        = 0
 
@@ -441,9 +440,9 @@ contains
        end do
 
        deallocate(quat_array_filled_tmp)
-       call dealloc(scr_mat2)
-       call dealloc(scr_mat1)
-       call dealloc(pctmat)
+       deallocate(scr_mat2)
+       deallocate(scr_mat1)
+       deallocate(pctmat)
 
        close(int1_4c_file,status='keep')
 
@@ -506,7 +505,7 @@ contains
        lwrk = is_len_wrk
 
 !      allocate first required scratch matrix
-       call alloc(scr_mat1,naosh_ls**2 * nz)
+       allocate(scr_mat1(naosh_ls**2 * nz))
        scr_mat1 = 0
 
 !      step 1: get the 4c bare-nucleus corrected 1e Dirac Hamiltonian in SA-AO basis
@@ -546,7 +545,7 @@ contains
        end do
 
 !      allocate pct-matrix (2nd required matrix)
-       call alloc(pctmat,j)
+       allocate(pctmat(j))
        pctmat = 0
 
 !      initialize offset
@@ -565,7 +564,7 @@ contains
 !              out: op_2c^++ --> scr_mat1
 
 !      allocate third required matrix
-       call alloc(scr_mat2,naosh_ls**2 * nz)
+       allocate(scr_mat2(naosh_ls**2 * nz))
        scr_mat2   = 0
        op_fer_rep = 0
 
@@ -626,9 +625,9 @@ contains
        end if
 #endif
 
-       call dealloc(scr_mat2)
-       call dealloc(pctmat)
-       call dealloc(scr_mat1)
+       deallocate(scr_mat2)
+       deallocate(pctmat)
+       deallocate(scr_mat1)
 
   end subroutine pctrafo_h1bnccorr_4cto2c_saao_bas
 
@@ -700,7 +699,7 @@ contains
          j = j + naosh_all(i)*naosh_L(i)*nz
        end do
 !      allocate pct-matrix
-       call alloc(pctmat,j)
+       allocate(pctmat(j))
        pctmat = 0
 
 !      initialize offset
@@ -712,8 +711,8 @@ contains
        end do
 
 !      allocate scratch matrices
-       call alloc(scr_mat1,naosh_ls**2 * nz * nr_2e_fock_matrices)
-       call alloc(scr_mat2,naosh_ls**2 * nz)
+       allocate(scr_mat1(naosh_ls**2 * nz * nr_2e_fock_matrices))
+       allocate(scr_mat2(naosh_ls**2 * nz))
        scr_mat2   = 0
        scr_mat1 = 0
 
@@ -874,9 +873,9 @@ contains
        close(99,status='keep')
 #undef blubb_blubb_aooso
 #endif
-       call dealloc(scr_mat2)
-       call dealloc(scr_mat1)
-       call dealloc(pctmat)
+       deallocate(scr_mat2)
+       deallocate(scr_mat1)
+       deallocate(pctmat)
 
   end subroutine pctrafo_fockmatrices_4cto2c_saao_bas
 

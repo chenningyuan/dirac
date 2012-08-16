@@ -36,7 +36,6 @@ module x2c_def_h1_4c
 #ifdef MOD_INTEREST
       use module_interest_interface
 #endif
-  use memory_allocator
   use x2c_import_exportC1
   use x2c_fio
   use x2c_cb_interface, only:         &

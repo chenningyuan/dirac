@@ -28,7 +28,6 @@
 !
 module x2c_h1mat_base
 
-  use memory_allocator
   use x2c_fio
   use x2c_cb_interface, only:         &
       reset_x2c_cb_onefck

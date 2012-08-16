@@ -30,7 +30,6 @@ module x2c_cb_interface
 !          hide as much as you can for public - it will save us lots of trouble in future
 
   use x2cmod_cfg
-  use memory_allocator
 
   implicit none
 

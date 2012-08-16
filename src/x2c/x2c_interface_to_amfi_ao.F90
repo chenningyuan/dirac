@@ -28,7 +28,6 @@
 !
 module x2c_amfi_interface
 
-  use memory_allocator
   use x2c_fio
   use x2c_utils, only:                 &
       pick_LL_block_saao_bas,          &
@@ -262,16 +261,16 @@ contains
 
 
 !      allocate temporary matrices for AMFI module
-       call alloc(itmp_mat1,sph_fun_L)
-       call alloc(itmp_mat2,sph_fun_L)
-       call alloc(itmp_mat3,sph_fun_L)
-       call alloc(itmp_mat4,sph_fun_L)
-       call alloc(itmp_mat5,sph_fun_L)
-       call alloc(itmp_mat6,sph_fun_L)
-       call alloc(itmp_mat7,sph_fun_L*2)
-       call alloc(itmp_mat8,nuclei_totnum)
-       call alloc(itmp_mat9,nuclei_totnum)
-       call alloc(rcha_pnuc,nuclei_totnum)
+       allocate(itmp_mat1(sph_fun_L)    )
+       allocate(itmp_mat2(sph_fun_L)    )
+       allocate(itmp_mat3(sph_fun_L)    )
+       allocate(itmp_mat4(sph_fun_L)    )
+       allocate(itmp_mat5(sph_fun_L)    )
+       allocate(itmp_mat6(sph_fun_L)    )
+       allocate(itmp_mat7(sph_fun_L*2)  )
+       allocate(itmp_mat8(nuclei_totnum))
+       allocate(itmp_mat9(nuclei_totnum))
+       allocate(rcha_pnuc(nuclei_totnum))
 
 !      ------------------------------
 !      step 2. add AMFI contributions
@@ -279,7 +278,7 @@ contains
 !        out: AMFI (spherical) -> scr1_mat
 
 !      allocate first scratch matrix
-       call alloc(scr1_mat,naosh_ls*naosh_ls*4)
+       allocate(scr1_mat(naosh_ls*naosh_ls*4))
        scr1_mat = 0.0d0
 
        call amfiin(scr1_mat,               &
@@ -310,23 +309,23 @@ contains
 
 !      release scratch memory
        deallocate(clab_int)
-       call dealloc(itmp_mat1)
-       call dealloc(itmp_mat2)
-       call dealloc(itmp_mat3)
-       call dealloc(itmp_mat4)
-       call dealloc(itmp_mat5)
-       call dealloc(itmp_mat6)
-       call dealloc(itmp_mat7)
-       call dealloc(itmp_mat8)
-       call dealloc(itmp_mat9)
-       call dealloc(rcha_pnuc)
+       deallocate(itmp_mat1)
+       deallocate(itmp_mat2)
+       deallocate(itmp_mat3)
+       deallocate(itmp_mat4)
+       deallocate(itmp_mat5)
+       deallocate(itmp_mat6)
+       deallocate(itmp_mat7)
+       deallocate(itmp_mat8)
+       deallocate(itmp_mat9)
+       deallocate(rcha_pnuc)
 
 
 !      set up the proper factors for the backtransformation
        call sphgen(1,2,.true.,wrk,lwrk,print_lvl)
 
 !      allocate scratch space
-       call alloc(scr2_mat,naosh_ls*naosh_ls*4)
+       allocate(scr2_mat(naosh_ls*naosh_ls*4))
        scr2_mat = 0
 
 !      a. transform from spherical Gaussian AO basis to cartesian Gaussian AO basis
@@ -445,8 +444,8 @@ contains
        end if
 
 !      release scratch space
-       call dealloc(scr1_mat)
-       call dealloc(scr2_mat)
+       deallocate(scr1_mat)
+       deallocate(scr2_mat)
 
   end subroutine x2c_interface2old_amfi
 

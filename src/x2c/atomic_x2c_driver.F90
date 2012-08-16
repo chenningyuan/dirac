@@ -36,7 +36,6 @@ module atomic_x2c
 !
 
   use atomic_x2c_cfg
-  use memory_allocator  
 
   implicit none
 

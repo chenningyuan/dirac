@@ -27,7 +27,6 @@
 !
 module x2c_pct_mo_coefficients
 
-  use memory_allocator
   use x2c_fio
   use x2c_utils, only:                 &
       print_x2cmat
@@ -121,11 +120,11 @@ contains
        l = max(naosh_ls*naosh_ls*nz,k*4*nz+8) ! see rsjaco and qdiag memory requests 
                                               ! for further explanation of this odd dimensioning
 
-       call alloc(scratch1,dimension_for_2mat)
-       call alloc(scratch2,j)
-       call alloc(scratch3,l)
-       call alloc(scratch4,k)
-       call alloc(scratch5,k)
+       allocate(scratch1(dimension_for_2mat))
+       allocate(scratch2(j)                 )
+       allocate(scratch3(l)                 )
+       allocate(scratch4(k)                 )
+       allocate(scratch5(k)                 )
        scratch1 = 0       
        scratch2 = 0
        scratch3 = 0
@@ -203,11 +202,11 @@ contains
 
 !      step 2: release memory
 !      ----------------------
-       call dealloc(scratch5)
-       call dealloc(scratch4)
-       call dealloc(scratch3)
-       call dealloc(scratch2)
-       call dealloc(scratch1)
+       deallocate(scratch5)
+       deallocate(scratch4)
+       deallocate(scratch3)
+       deallocate(scratch2)
+       deallocate(scratch1)
 
   end subroutine x2c_pctrafo_mo_coefficients_driver
 
@@ -377,7 +376,7 @@ contains
 !      step 4: write 2c MO coefficients back to file
 !      ---------------------------------------------
  
-       call alloc(dimension_info,3,nfsym)
+       allocate(dimension_info(3,nfsym))
 !      if(.false.)then
        if(.true.)then
        print *, 'compress...'
@@ -474,7 +473,7 @@ contains
        write(fh) (boson_irreps_jz_eigenvalues(i),i=1,ndim_2c_bj)
 
        close(fh,status='keep')
-       call dealloc(dimension_info)
+       deallocate(dimension_info)
 
   end subroutine x2c_pctrafo_4cto2c_mo_coefficients
 !**********************************************************************
@@ -642,7 +641,7 @@ contains
        do i = 1, nfsym
          l = l + norb_dim(i)
        end do
-       call alloc(original_eigen_values,l)
+       allocate(original_eigen_values(l))
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
 !      call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
        call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,15)
@@ -724,7 +723,7 @@ contains
          offset_2  = offset_2 + nesh_dim(i) * nesh_dim(i) * nz
        end do
 
-       call dealloc(original_eigen_values)
+       deallocate(original_eigen_values)
        
   end subroutine x2c_diagonalize_2c_fock_operator_onmo
 !**********************************************************************
@@ -789,8 +788,8 @@ contains
      integer, allocatable        :: boson_irreps_jz_eigenvalues(:)
 !----------------------------------------------------------------------
 
-       call alloc(dimension_info,3,nfsym)
-       call alloc(boson_irreps_jz_eigenvalues,nesh_dim_total)
+       allocate(dimension_info(3,nfsym))
+       allocate(boson_irreps_jz_eigenvalues(nesh_dim_total))
 
 !      read eigenvalues, boson irreps and new MO coefficients in orthonormal basis from file X2CMAT
        open(fh,file='X2CMAT',status='old',form='unformatted',access='sequential',action='read',position='rewind')
@@ -876,8 +875,8 @@ contains
        write(fh) (boson_irreps_jz_eigenvalues(i),i=1,ndim_2c_bj)
        close(fh,status='keep')
 
-       call dealloc(boson_irreps_jz_eigenvalues)
-       call dealloc(dimension_info)
+       deallocate(boson_irreps_jz_eigenvalues)
+       deallocate(dimension_info)
 
   end subroutine x2c_molecular_mean_field_mos
 

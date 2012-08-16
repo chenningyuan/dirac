@@ -29,7 +29,6 @@
 !
 module x2c_h1inf2c_mo2ao
 
-  use memory_allocator
   use x2c_fio
   use x2c_utils, only:                 &
       construct_saomo_overlap_half_tr, &

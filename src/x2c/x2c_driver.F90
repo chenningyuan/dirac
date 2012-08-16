@@ -81,9 +81,6 @@ module dirx2c
 !                            end of "roadmap" of the X2C code
 ! ---------------------------------------------------------------------------------------
 !
-#ifdef PRG_DIRAC
-  use memory_allocator
-#endif
 ! x2c modules
   use x2cmod_cfg
   use x2c_cb_interface
@@ -226,7 +223,7 @@ contains
          do i = 1, nr_fsym
            dimension_for_2mat = max(dimension_for_2mat,ioff_aomat_x(i,i)+1+nr_ao_total_x2c*nr_ao_all(i)*nr_quat)
          end do
-         call alloc(xmat,dimension_for_2mat)
+         allocate(xmat(dimension_for_2mat))
          xmat    = 0.0d0
          is_allocated_dyn  = dimension_for_2mat
 
@@ -249,9 +246,9 @@ contains
 !        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
          j                               = dimension_for_2mat
          if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
-         call alloc(scr2mat,nr_ao_total_x2c**2 * nr_quat)
-         call alloc(scr1mat,j)
-         call alloc(eigvl  ,nr_ao_total_x2c)
+         allocate(scr2mat(nr_ao_total_x2c**2 * nr_quat))
+         allocate(scr1mat(j))
+         allocate(eigvl(nr_ao_total_x2c))
 
          scr1mat = 0.0d0
          scr2mat = 0.0d0
@@ -385,11 +382,11 @@ contains
 
 !        free top-level scratch memory and possibly re-allocate scr1mat with appropriate size
 !        ------------------------------------------------------------------------------------
-         call dealloc(eigvl)
+         deallocate(eigvl)
          if(x2c_is_defining_h1mat < 1)then
-           call dealloc(scr1mat)
+           deallocate(scr1mat)
 !          reallocate with full size
-           call alloc(scr1mat,dimension_for_2mat)
+           allocate(scr1mat(dimension_for_2mat))
            scr1mat = 0.0d0
          end if
 !
@@ -439,9 +436,9 @@ contains
                       x2c_do_spherical)
 
 !        free memory
-         call dealloc(scr1mat)
-         call dealloc(scr2mat)
-         call dealloc(xmat)
+         deallocate(scr1mat)
+         deallocate(scr2mat)
+         deallocate(xmat)
 
          close(x2c_Sao_scrF,status="delete")
 
@@ -750,7 +747,7 @@ contains
                                     print_lvl)
  
 !      allocate scratch matrix with appropriate dimension
-       call alloc(eigvl  ,max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c))
+       allocate(eigvl(max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c)))
        eigvl   = 0.0d0
 
 !      set new maximum allowed length of wrk array allocations
@@ -850,7 +847,7 @@ contains
                                       print_lvl)
 
 !      free scratch memory
-       call dealloc(eigvl)
+       deallocate(eigvl)
 
        close(x2c_file_scr,status="delete")
 
