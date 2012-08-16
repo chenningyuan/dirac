@@ -14,7 +14,7 @@
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *READIN
-.UNCONTRACTED
+#.UNCONTRACTED
 **HAMILTONIAN
 .PRINT
 2
