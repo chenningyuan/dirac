@@ -3047,6 +3047,7 @@ C
 
             WRITE(LUPRI,'(2X,A,4I2)')
      &      'QTRANS: The AO matrix; IQAO=',(IQAO(IZ),IZ=1,NZAO)
+            WRITE(LUPRI,'(2X,A,A1)') ' Time rev=',TREV
             CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
 
             WRITE(LUPRI,'(/2X,A,4I2)')
@@ -3113,7 +3114,13 @@ C
      &       'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
      &       'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
      &        D0,IQW,BUF,NRMO,NCAO,NZW)
-C
+
+	  IF(IPRINT.GE.15) THEN
+        CALL HEADER('QTRANS:first part of transformation,W = (C+)F ',-1)
+        CALL PRQMAT(BUF,NRMO,NCAO,NRMO,NCAO,NZW,IQW,LUPRI)       
+	  ENDIF
+	 
+C 
 C         Second part of transformation: H = WC
 C         -------------------------------------
 C
@@ -3123,8 +3130,9 @@ C
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
         ENDIF
+		
         IF(IPRINT.GE.11) THEN
-          CALL HEADER('QTRANS: AO-to-MO-transformed matrix',-1)
+          CALL HEADER('QTRANS: Final AO-to-MO-transformed matrix',-1)
           CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
         ENDIF
 C
