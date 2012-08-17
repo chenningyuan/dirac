@@ -748,8 +748,8 @@ C           inactive density matrix...
 C
  
             NI  = NISH(I2) - NFRO(I2)
-            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-            JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+            II  = IORB(I2)  +  NPSH(I2) + NFRO(I2)              + 1
+            JI  = ICMOQ(I2) + (NPSH(I2) + NFRO(I2))*NFBAS(I2,0) + 1
 C
 C          Generate modified density matrix as transformation MO to AO
 C
@@ -787,8 +787,8 @@ C
      &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
      &                  NZ,IPQTOQ(1,IREP),
      &                  BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),
-     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,IREP),
+     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                  IPRXRS)
 C
 C
@@ -4536,33 +4536,35 @@ C
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #else
-            CALL QGEMM(NORBT,NORBT,NORBT,D1,
-     &           'T','N',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
+!ST&hjaaj   Transposed complex representation of matrix will
+!           transform to -j transformed quaterion representation of that matrix
+            CALL QGEMM(NORBT,NORBT,NORBT,-D1,
+     &           'N','J',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
      &           'N','N',IPQTOQ(1,0),WORK(KDVF),NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #endif
 C
-C           Take symmetric/antisymmetric combinations to form BMAT
+C           Take symmetric/antisymmetric combinations to form Hermitian DMAT
 C
-#ifdef UNDEF
-            IH = IHRMOP(IM)
-            IZOFF = 1
-            DO IZ = 1,NZ
-               IQ = IPQTOQ(IZ,IREP)
-               IS = IHQMAT(IQ,IH)
-               IF(IS.EQ.1) THEN
-                  CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
-               ELSEIF(IS.EQ.2) THEN
-                  CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
-               ENDIF
-               IZOFF = IZOFF + N2ORBX
-            ENDDO
-#endif
+!  Note:    DMOLI3 is written only for half of the one-index trasformation of 
+!           active density matrix
+!           IH = IHRMOP(IM)
+!           IZOFF = 1
+!           DO IZ = 1,NZ
+!              IQ = IPQTOQ(IZ,IREP)
+!              IS = IHQMAT(IQ,IH)
+!              IF(IS.EQ.1) THEN
+!                 CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
+!              ELSEIF(IS.EQ.2) THEN
+!                 CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
+!              ENDIF
+!              IZOFF = IZOFF + N2ORBX
+!           ENDDO
 C
             IF(IPRXRS.GE.8) THEN
                WRITE(LUPRI,'(A,I5)')
-     &              '* DMOLI: DV * B (e-e) vector no.:',I
+     &              '* DMOLI: BT * DV (e-e) vector no.:',I
                CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
             END IF
@@ -4692,8 +4694,10 @@ C           FIXME: run over symmetries instead of transforming the
 C           whole matrix.
 C
             CALL DVSCT(DV,WORK(KDVF))
-            CALL QGEMM(NORBT,NORBT,NORBT,D1,
-     &           'T','N',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
+!ST&hjaaj   Transposed complex representation of matrix will
+!           transform to -j transformed quaterion representation of that matrix
+            CALL QGEMM(NORBT,NORBT,NORBT,-D1,
+     &           'N','J',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
      &           'N','N',IPQTOQ(1,0),WORK(KDVF),NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-p',WORK,1,KFRSAV,KFREE,LFREE)
