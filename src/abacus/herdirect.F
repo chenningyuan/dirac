@@ -400,7 +400,7 @@ C
 C
          IPREAD = JPRINT
          HERMIT = .FALSE.
-         CALL READIN(WORK,LWORK,HERMIT)
+         CALL READIN(HERMIT)
 C
 C        consistency check
 C

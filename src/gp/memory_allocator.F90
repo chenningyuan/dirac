@@ -60,6 +60,8 @@
          use allocator_internal_P_3d_I 
          use allocator_internal_P_4d_I 
                   
+         use allocator_legacy_dirac
+
          implicit none
          
          private
@@ -72,6 +74,9 @@
 
          public allocator_set_max
          public allocator_get_max
+
+         public legacy_lwork_get
+         public legacy_lwork_set
 
 ! making some stuff public
          public allocator_get_available_mem

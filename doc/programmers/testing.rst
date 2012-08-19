@@ -131,7 +131,7 @@ Example::
   from:Eigenvalues
   to:HOMO - LUMO
 
-In this example we have two subtest. First we test Electronic energy and 7
+In this example we have two subtests. First we test Electronic energy and 7
 following lines using tolerance 0.000000001, then we test Eigenvalues using
 tolerance 1.E-5.  We need to specify 1.E-5 for the second subtest otherwise
 runtest defaults to 0.0001.

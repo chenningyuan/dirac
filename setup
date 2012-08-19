@@ -374,9 +374,10 @@ def configure_default_compilers():
     if not args.fc:
         args.fc = 'gfortran'
     if args.mpi == 'on':
-        args.fc = 'mpif90'
-        args.cc = 'mpicc'
-        args.cxx = 'mpicxx'
+        if not args.cc:
+           args.cc = 'mpicc'
+        if not args.cxx:
+           args.cxx = 'mpicxx'
 
 configure_ubuntu = configure_default_compilers
 configure_fedora = configure_default_compilers
