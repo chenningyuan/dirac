@@ -48,6 +48,9 @@ C***********************************************************************
       use pcmmod_cfg
       use pcm_write
 #endif
+#ifdef MOD_AOOSOC 
+      use atomic_oo_order_so_correction_cfg
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -210,6 +213,7 @@ C
 !     *OPENRSP
 !     *X2C
 !     *PCM
+!     *AooSOC
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
 
@@ -227,6 +231,20 @@ C
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
       end if
+#ifdef MOD_AOOSOC
+      if(aoomod)then
+        write(lupri,*) ' * atomic oo-order SOC module active'
+        if(x2c)then
+          write(lupri,*) '   - add 2e-SOCs to the X2C Hamiltonian'
+        else
+          if(.not.x2cmod_mmf) call quit(' for now AooSOC requires'//
+     &      ' .X2Cmmf in atomic runs')
+          x2c_2c_mmf_mos = aoo_2c_mmf_mos
+          write(lupri,*) '   - generate 2e-SOCs from the mean-field'//
+     &                   ' Hamiltonian after an initial 4c SCF'
+        end if
+      end if
+#endif
 ! RDR Polarizable Continuum Model calculation
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
@@ -2267,7 +2285,6 @@ CMI =====================================================================
          x2c        = .false.
 !        keep the x2cmod_x2c value in order to identify to which module
 !        to switch in dirscf.F --> subroutine PSIDHF
-!        x2cmod_x2c = .false.
        end if
        WRITE(LUPRI,'(A)')
      &  ' * after the four-component SCF step switch to'// 
@@ -5223,6 +5240,7 @@ CMI&& Activate 4c-2c MO transformation
           x2c                   = .true.
           x2cmod_x2c            = .true.
           x2cmod_mmf            = .true.
+          x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
           MOLMF3                = .TRUE.

@@ -21,8 +21,7 @@
 !
 !
 ! module containing the driver routines for the addition of atomic-mean-field
-! one- and two-electron spin-orbit corrections to the hamiltonian in DIRAC-sorted 
-! SA-AO basis. 
+! two-electron spin-orbit corrections to the hamiltonian in DIRAC-sorted SA-AO basis. 
 !
 ! written by sknecht july 2010
 !
@@ -32,6 +31,9 @@ module x2c_amfi_interface
   use x2c_utils, only:                 &
       pick_LL_block_saao_bas,          &
       print_x2cmat
+#ifdef MOD_AOOSOC
+  use atomic_oo_order_so_correction
+#endif
 
   implicit none
 
@@ -73,8 +75,8 @@ contains
                              print_lvl)
 !**********************************************************************
 !
-!    purpose: driver routine pointing to the appropriate AMFI interface 
-!             routine according to the value x2c_add_amfi.
+!    purpose: driver routine pointing to the appropriate Dirac-2e-SOC/external 
+!             AMFI interface routine according to the value x2c_add_amfi.
 !             The resulting hamiltonian h1+AMFI is stored on the global file 
 !             X2CMAT and the "hamiltonian level" is set to its appropriate 
 !             value (see read_1fock_x2c/dirx2c_utils.F90 for a detailed list 
@@ -134,10 +136,17 @@ contains
                                      x2c_file_amf,         &
                                      x2c_file_glb,         &
                                      print_lvl)
-         is_final_ham_lvl = -3
        else
-         call quit('unknown AMFI interface in x2c module')
+#ifdef MOD_AOOSOC
+         call put_atomic_oo_order_so_correction(           &
+                                               print_lvl   &
+                                               )
+#else
+         call quit('unknown 2e-SOC interface in x2c module')
+#endif
        end if
+
+       is_final_ham_lvl = -3
 
   end subroutine x2c_amfi_driver
 

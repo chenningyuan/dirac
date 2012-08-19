@@ -2599,6 +2599,13 @@ C*****************************************************************************
       use x2c_fio
       use x2c_pct_mo_coefficients, only: 
      &    x2c_molecular_mean_field_mos
+#ifdef MOD_AOOSOC
+      use module_aoosoc_pfg
+      use module_aoosoc_init, only:
+     &    aoosoc_init
+      use atomic_oo_order_so_correction, only:
+     &    get_atomic_oo_order_so_correction
+#endif
 !
 #include "implicit.h"
 #include "priunit.h"
@@ -2628,6 +2635,10 @@ C   PAMIOU: LUTMAT
       integer              :: is_defining_h1mat
       integer              :: ndim_lowmat
       integer              :: lulmat = 99
+#ifdef MOD_AOOSOC
+      real(8), allocatable :: dmat_aoosoc(:)
+      real(8), allocatable :: cmo_aoosoc(:)
+#endif
 
       CALL QENTER('GMOTRA')
 
@@ -2867,8 +2878,13 @@ C         2) do picture change transformation of integrals on AOPROPER
               END DO
             end if
 
+#ifdef MOD_AOOSOC
+!           initialize atomic oo-order 2e-SOC module
+            call aoosoc_init()
+#endif
 !           optimized x2c module
             call x2c_driver(x2cmod_fragment_x2c,.true.)
+
 !           re-allocate 
             call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
 #include "memint.h"
@@ -3098,6 +3114,7 @@ C
       CLOSE(LUTMAT,STATUS='KEEP')
 !
       if(x2c.and.x2cmod_mmf)then
+        if(x2c_2c_mmf_mos)then
 
 !       perform the final step for the molecular mean-field procedure within the X2C-module
 !       ------------------------------------------------------------------------------------
@@ -3115,6 +3132,27 @@ C
      &                                    i2tmt,i2tmot,icmoq,ntmo,
      &                                    nfbas,nesh,nz,nzt,nfsym,
      &                                    nesht,ipqtoq,iprham)
+      else ! generate 2e-SOC in the atomic run
+#ifdef MOD_AOOSOC
+!
+!       release memory
+        CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
+        call dealloc(work)
+
+!       generate density matri(x/ces) - incoming variable to aoosoc module
+        allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
+        allocate(cmo_aoosoc(ncmotq))
+        call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
+        deallocate(cmo_aoosoc)
+
+        call get_atomic_oo_order_so_correction(dmat_aoosoc,iprham)
+        deallocate(dmat_aoosoc)
+#else
+        call quit('generation of  atomic oo-order 2e-SOC not active'//
+     &            ' in this version')
+#endif
+      
+        end if ! x2c_2c_mmf_mos .equiv. .true.
       end if ! x2cmod_mmf .equiv. .true.
 
 !     final output
@@ -3155,8 +3193,11 @@ C
       END IF
 C
 C     Memory deallocation
-      CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
-      if(allocated(work)) call dealloc(work)
+      if(allocated(work))then
+        CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
+        call dealloc(work)
+      end if
+
  10   CONTINUE
 
       CALL QEXIT('GMOTRA')

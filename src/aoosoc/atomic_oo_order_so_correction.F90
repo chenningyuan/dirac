@@ -30,6 +30,7 @@
 module atomic_oo_order_so_correction
 
   use atomic_oo_order_so_correction_cfg 
+  use module_aoosoc_pfg 
 
   implicit none
 
@@ -42,10 +43,11 @@ contains
 
 !----------------------------------------------------------------------
   subroutine get_atomic_oo_order_so_correction(            &
-                                               print_lvl,  &
-                                               xmat)
+                                               dmat,       &
+                                               print_lvl   &
+                                               )
 !**********************************************************************
-     real(8), optional, intent(in)      :: xmat(*)
+     real(8), intent(in)                :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      integer                            :: i

@@ -30,6 +30,9 @@ module x2c_cb_interface
 !          hide as much as you can for public - it will save us lots of trouble in future
 
   use x2cmod_cfg
+#ifdef MOD_AOOSOC
+  use atomic_oo_order_so_correction_cfg
+#endif
 
   implicit none
 
@@ -95,11 +98,20 @@ contains
            x2c_add_amfi = -1
          end if
 
-!        common block variables for AMFI(old +new(?))
+!        common block variables for Diracs 2e-SOC or the old AMFI
          if(x2c_add_amfi > 0)then
-           x2c_tot_charge_for_mfsum = imfch
-           x2c_amfi_order           = isorder_amfi_x2c
-           x2c_max_quant_num        = mxqn
+#ifdef MOD_AOOSOC
+           if(aoomod)then ! Dirac oo-order 2e-SOC
+             x2c_amfi_order           = aoo_soc_order
+             x2c_add_amfi             = 2
+           else ! AMFI corrections by B. Schimmelpfennig
+#endif
+             x2c_tot_charge_for_mfsum = imfch
+             x2c_amfi_order           = isorder_amfi_x2c
+             x2c_max_quant_num        = mxqn
+#ifdef MOD_AOOSOC
+           end if
+#endif
          end if
 
 !        set file unit on common block in dcbgen.h

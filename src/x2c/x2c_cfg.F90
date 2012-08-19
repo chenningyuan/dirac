@@ -52,6 +52,7 @@ module x2cmod_cfg
   logical, public :: x2c_mdirac              =  .false. ! .true. if MDIRAC in DIRAC is active
   logical, public :: x2c_spinfree            =  .false. ! .true. if spinfree in DIRAC is active
   logical, public :: x2cmod_mmf              =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
+  logical, public :: x2c_2c_mmf_mos          =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
                                                         ! but i think it's much nicer (more intuitive name for programmers) 
                                                         ! to have this logical on the outside of the X2Cmod - stefan, may 2011
   logical, public :: x2c_fock_saao_basis     =  .false.

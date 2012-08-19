@@ -96,9 +96,6 @@ module dirx2c
   use x2c_h1mat_base
   use x2c_pct_mo_coefficients
   use x2c_import_exportC1
-#ifdef MOD_AOOSOC
-  use atomic_oo_order_so_correction
-#endif
 
   implicit none
 
@@ -443,8 +440,8 @@ contains
          close(x2c_Sao_scrF,status="delete")
 
 !        --------------------------------------------------------------------------------------------------
-!        step 1.6: add AMFI contributions in case
-!                  h1 == bare-nucleus 1e Dirac-Hamiltonian (or extended Huckel guess) .and. AMFI is desired
+!        step 1.6: add oo-order 2e-SOC or AMFI contributions in case
+!                  h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
 !        --------------------------------------------------------------------------------------------------
          if(x2c_add_amfi > 0)then
 
@@ -474,13 +471,6 @@ contains
                                 x2c_cspeed,                        &
                                 x2c_prt)
          end if
-
-!        put DIRACs SO-correction based on the 4c-fock SO-elements for each atom type
-!        -------------------------------------------------------------------------------
-#ifdef MOD_AOOSOC
-         call put_atomic_oo_order_so_correction(                      &
-                                                x2c_prt)
-#endif
 
          close(x2c_famfi,status="delete")
 
