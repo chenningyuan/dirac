@@ -32,8 +32,8 @@ module x2c_h1inf2c_mo2ao
   use x2c_fio
   use x2c_utils, only:                 &
       construct_saomo_overlap_half_tr, &
-      pick_LL_block_saao_bas,          &
       print_x2cmat
+  use picture_change_operations
 
   implicit none
 

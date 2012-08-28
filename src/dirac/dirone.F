@@ -2635,9 +2635,11 @@ C   PAMIOU: LUTMAT
       integer              :: is_defining_h1mat
       integer              :: ndim_lowmat
       integer              :: lulmat = 99
+      character(len=12)    :: flabel
 #ifdef MOD_AOOSOC
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
+      real(8), allocatable :: pctm_aoosoc(:)
 #endif
 
       CALL QENTER('GMOTRA')
@@ -3142,10 +3144,35 @@ C
 !       generate density matri(x/ces) - incoming variable to aoosoc module
         allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
         allocate(cmo_aoosoc(ncmotq))
+        CALL reacmo_no_work(LUCOEF,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
         call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
         deallocate(cmo_aoosoc)
 
-        call get_atomic_oo_order_so_correction(dmat_aoosoc,iprham)
+        allocate(pctm_aoosoc(ntbas(0)**2*4))
+        open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &       access='sequential',action='readwrite',
+     &       position='rewind')
+
+!       initialize offset
+        ioff_pct_mat = 1
+        do i = 1, nfsym
+          write(flabel,'(a11,i1)') 'pctmtAO   0',i
+          if(nfbas(i,0) * nfbas(i,1) > 0)then
+            call x2c_read(flabel,pctm_aoosoc(ioff_pct_mat),
+     &                   nfbas(i,0) * nfbas(i,1)*nz,lux2c)
+          end if
+          ioff_pct_mat  = ioff_pct_mat + nfbas(i,0) * nfbas(i,1) * nz
+        end do
+
+        close(lux2c,status='keep')
+
+        call get_atomic_oo_order_so_correction(
+     &                                         dmat_aoosoc,
+     &                                         pctm_aoosoc,
+     &                                         iprham
+     &                                         )
+
+        deallocate(pctm_aoosoc)
         deallocate(dmat_aoosoc)
 #else
         call quit('generation of  atomic oo-order 2e-SOC not active'//

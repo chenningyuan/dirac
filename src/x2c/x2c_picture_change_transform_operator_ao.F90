@@ -34,7 +34,6 @@ module x2c_pct_ao
       init_x2c_cb,                       &
       reset_x2c_cb_onefck
   use x2c_utils, only:                   &
-      pick_LL_block_saao_bas,            &
       read_fock_matrices_saao_basis_x2c, &
       write_fock_matrices_saao_basis_x2c,&
       make_two_e_fock_so_exclusive,      &
@@ -42,6 +41,9 @@ module x2c_pct_ao
 #ifdef MOD_INTEREST
   use module_interest_interface
 #endif
+
+! general dirac module
+  use picture_change_operations
 
   implicit none
 
@@ -879,152 +881,5 @@ contains
 
   end subroutine pctrafo_fockmatrices_4cto2c_saao_bas
 
-!**********************************************************************
-  subroutine perform_pct_saao_bas(op_matrix_2c_ll,     &
-                                  pctmat,              &
-                                  scr_mat1,            &
-                                  naosh_ls,            &
-                                  nr_ao_L,             &
-                                  naosh_all,           &
-                                  naosh_L,             &
-                                  nfsym,               &
-                                  nz,                  &
-                                  ipq_off_in,          &
-                                  ioff_aomx,           &
-                                  op_fer_rep,          &
-                                  op_bs_to_fs,         &
-                                  op_2c_ll,            &
-                                  print_lvl)   
-!**********************************************************************
-!
-!    purpose: perform the picture-change transformation of a four-component
-!             (property) operator X_4c using the total pct-matrix U:
-!
-!             ===================================
-!             equation: X_2c^++ = U^+ * X_4c * U
-!             ===================================
-!
-!             if op_2c_ll == .true. : return only the upper op_2c^++ block (remaining parts zeroed out)
-!             if op_2c_ll == .false.: return full four-component matrix block containing the
-!                                     pct-transformed op_2c^++ block
-!
-!             input : 4c-operator matrix    --> op_matrix_2c_ll; pct-matrix --> pctmat 
-!             output: 2c^++-operator matrix --> op_matrix_2c_ll
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout) :: op_matrix_2c_ll(naosh_ls**2,nz)
-     real(8), intent(inout) :: scr_mat1(naosh_ls**2,nz)
-     real(8), intent(in)    :: pctmat(*)
-     integer, intent(in)    :: naosh_ls
-     integer, intent(in)    :: nr_ao_L
-     integer, intent(in)    :: naosh_all(nfsym)
-     integer, intent(in)    :: naosh_L(nfsym)
-     integer, intent(in)    :: nfsym
-     integer, intent(in)    :: nz
-     integer, intent(in)    :: ipq_off_in(4,0:7)
-     integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
-     integer, intent(in)    :: print_lvl
-     integer, intent(in)    :: op_fer_rep
-     integer, intent(in)    :: op_bs_to_fs(0:7,1:2)
-     logical, intent(in)    :: op_2c_ll
-!----------------------------------------------------------------------
-     integer                :: i
-     integer                :: k
-     integer                :: ik
-     integer                :: nbas1_f_i
-     integer                :: nbasL_f_i
-     integer                :: nbas1_f_ik
-     integer                :: nbasL_f_ik
-     integer                :: op_sym
-     integer                :: ioff_pct_mat_dag
-     integer                :: ioff_pct_mat
-!**********************************************************************
-
-!      initialize offset for pctmat+
-       ioff_pct_mat_dag = 1
-
-!      step 1: perform pct in DIRAC-sorted SA-AO basis
-!      ------------------------------------------------------------------------------
-
-!      operator: map fermion to boson symmetry
-       op_sym = op_bs_to_fs(op_fer_rep,1)
-
-       do i = 1, nfsym
-
-         ik = mod(i+op_sym,2) + 1
-
-!        set dimensions for matrices used in the subroutine
-         nbas1_f_i  = naosh_all(i)
-         nbasL_f_i  = naosh_L(i)
-         nbas1_f_ik = naosh_all(ik)
-         nbasL_f_ik = naosh_L(ik)
-
-         if(naosh_L(i) > 0 .and. naosh_L(ik) > 0)then
-
-!          determine offset for pctmat
-           ioff_pct_mat = 1
-           if(ik == 2) ioff_pct_mat = 1 + naosh_L(1) * naosh_all(1) * nz
-
-!          perform picture-change transformation: 
-!          X_2c = pctmat+ * X_4c * pctmat
-!          scr_mat1 = pctmat+ * op_matrix_2c_ll * pctmat
-           call qtrans90('AOMO','S',val_d0,                      &
-                         nbas1_f_i,                              &
-                         nbas1_f_ik,                             &
-                         nbasL_f_i,                              &
-                         nbasL_f_ik,                             &
-                         op_matrix_2c_ll(1+ioff_aomx(i,ik),1),   &
-                         naosh_ls,                               &
-                         naosh_ls,                               &
-                         nz,                                     &
-                         ipq_off_in(1,op_fer_rep),               &
-                         scr_mat1(1+ioff_aomx(i,ik),1),          &
-                         naosh_ls,                               &
-                         naosh_ls,                               &
-                         nz,                                     &
-                         ipq_off_in(1,op_fer_rep),               &
-                         pctmat(ioff_pct_mat_dag),               &
-                         nbas1_f_i,                              &
-                         nbasL_f_i,                              &
-                         nz,                                     &
-                         ipq_off_in(1,0),                        &
-                         pctmat(ioff_pct_mat),                   &
-                         nbas1_f_ik,                             &
-                         nbasL_f_ik,                             &
-                         nz,                                     &
-                         ipq_off_in(1,0),                        &
-                         print_lvl)
-          
-         end if
-
-!        update offset for pctmat+
-         ioff_pct_mat_dag  = ioff_pct_mat_dag + naosh_L(i) * naosh_all(i) * nz
-
-       end do
-
-!      step 2: return pct-operator in DIRAC-sorted SA-AO basis on array op_matrix_2c_ll
-!      ------------------------------------------------------------------------------
-!              case a. op_2c_ll == .true. : return upper op_2c++ block (remaining parts zeroed out)
-!              case b. op_2c_ll == .false.: return full 4c block with upper op_2c++ block containing the pct-operator
-
-       if(op_2c_ll)then
-         op_matrix_2c_ll = 0
-         call pick_LL_block_saao_bas(scr_mat1,            &
-                                     op_matrix_2c_ll,     &
-                                     naosh_L,             &
-                                     naosh_all,           &
-                                     naosh_ls,            &
-                                     nr_ao_L,             &
-                                     nfsym,               &
-                                     nz,                  &
-                                     op_fer_rep,          &
-                                     op_bs_to_fs)
-       else 
-         call dcopy(naosh_ls**2 * nz,scr_mat1,1,op_matrix_2c_ll,1)
-       end if
-
-  end subroutine perform_pct_saao_bas
-
-!**********************************************************************
 
 end module x2c_pct_ao

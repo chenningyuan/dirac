@@ -62,6 +62,7 @@ contains
 !   local variables
 !   ----------------------------------------------------------------------------
     integer             :: i, j, k, l, m
+    integer             :: ier
 !   ----------------------------------------------------------------------------
 
       aoo_prt               = iprham
@@ -127,6 +128,26 @@ contains
         nr_2e_fock_matrices        = nfmat
         aoo_intflg                 = intflg
       end if
+
+      j = nucind
+!     j = 0
+!     do i = 1, nucind
+!       do k = 1, nucdeg(i)
+!         j = j + 1
+!       end do
+!     end do
+
+    !> interface atomic/molecular data
+       allocate( atom(j), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
+       do i=1,size(atom)
+         atom(i) = type_atom( charge(i), &
+                              cord(1,i), &
+                              cord(2,i), &
+                              cord(3,i)  &   
+                            )
+       enddo
+    !> end
+
 ! 
   end subroutine
 !**********************************************************************

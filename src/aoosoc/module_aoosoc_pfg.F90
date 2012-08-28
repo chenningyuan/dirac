@@ -58,11 +58,23 @@ module module_aoosoc_pfg
   integer            :: aoo_bs_to_fs(0:7, 2)                   =  0
   integer            :: aoo_num_nuclei_i                       =  0
   integer            :: aoo_num_nuclei_d                       =  0
+  integer            :: aoo_is_nuclei                          =  0
   integer            :: aoo_pointer_quat(0:7, 1:2)             =  0
   integer            :: aoo_bs_irrep_mat(1:4, 0:7)             =  0
   integer            :: aoo_iqmult_trip_q(1:4, 1:4, 1:4)       =  0
   integer            :: aoo_pointer_quat_op(0:7)               =  0
   integer            :: nr_2e_fock_matrices                    =  0
   integer            :: aoo_intflg                             =  0
+
+  !> definition of "atom" data type 
+  type type_atom
+        real(8) :: charge 
+        real(8) :: coordinate_x
+        real(8) :: coordinate_y
+        real(8) :: coordinate_z
+  end  type
+  type(type_atom), allocatable :: atom(:)
+  !> end
+
 
 end module

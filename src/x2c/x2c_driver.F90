@@ -88,7 +88,7 @@ module dirx2c
   use x2c_get_h1inf2c_mo
   use x2c_decoupling_mat
   use x2c_h1inf2c_mo2ao
-  use x2c_amfi_interface
+  use x2c_2e_soc_interface
   use x2c_pct_ao
   use x2c_fio
   use x2c_utils
@@ -445,31 +445,31 @@ contains
 !        --------------------------------------------------------------------------------------------------
          if(x2c_add_amfi > 0)then
 
-           call x2c_amfi_driver(final_ham_lvl_x2c,                 &
-                                x2c_add_amfi,                      &
-                                nr_ao_total_x2c,                   &
-                                nr_ao_large_x2c,                   &
-                                nr_ao_all,                         &
-                                nr_ao_l,                           &
-                                nr_fsym,                           &
-                                nr_quat,                           &
-                                x2c_bs_irrep_mat,                  &
-                                x2c_cb_pq_to_uq,                   &
-                                x2c_cb_uq_to_pq,                   &
-                                x2c_iqmult_trip_q,                 &
-                                x2c_bs_to_fs,                      &
-                                x2c_pointer_quat,                  &
-                                x2c_pointer_quat_op,               &
-                                x2c_max_quant_num,                 &
-                                num_nuclei,                        &
-                                x2c_tot_charge_for_mfsum,          &
-                                x2c_amfi_order,                    &
-                                lwrk,                              &
-                                x2c_do_spherical,                  &
-                                x2c_famfi,                         &
-                                x2c_funit,                         &
-                                x2c_cspeed,                        &
-                                x2c_prt)
+           call x2c_add_2e_so_corrections(final_ham_lvl_x2c,                 &
+                                          x2c_add_amfi,                      &
+                                          nr_ao_total_x2c,                   &
+                                          nr_ao_large_x2c,                   &
+                                          nr_ao_all,                         &
+                                          nr_ao_l,                           &
+                                          nr_fsym,                           &
+                                          nr_quat,                           &
+                                          x2c_bs_irrep_mat,                  &
+                                          x2c_cb_pq_to_uq,                   &
+                                          x2c_cb_uq_to_pq,                   &
+                                          x2c_iqmult_trip_q,                 &
+                                          x2c_bs_to_fs,                      &
+                                          x2c_pointer_quat,                  &
+                                          x2c_pointer_quat_op,               &
+                                          x2c_max_quant_num,                 &
+                                          num_nuclei,                        &
+                                          x2c_tot_charge_for_mfsum,          &
+                                          x2c_amfi_order,                    &
+                                          lwrk,                              &
+                                          x2c_do_spherical,                  &
+                                          x2c_famfi,                         &
+                                          x2c_funit,                         &
+                                          x2c_cspeed,                        &
+                                          x2c_prt)
          end if
 
          close(x2c_famfi,status="delete")

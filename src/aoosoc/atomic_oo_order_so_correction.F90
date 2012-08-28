@@ -30,6 +30,7 @@
 module atomic_oo_order_so_correction
 
   use atomic_oo_order_so_correction_cfg 
+  use atomic_oo_order_so_correction_utils 
   use module_aoosoc_pfg 
 
   implicit none
@@ -44,16 +45,81 @@ contains
 !----------------------------------------------------------------------
   subroutine get_atomic_oo_order_so_correction(            &
                                                dmat,       &
+                                               pct_mat,    &
                                                print_lvl   &
                                                )
 !**********************************************************************
-     real(8), intent(in)                :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
+     real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
+     real(8), intent(in)                :: pct_mat(*)
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      integer                            :: i
-     integer, allocatable               :: boson_info(:)
-     logical                            :: sbsave
+     real(8), allocatable               :: fmat(:)
 !----------------------------------------------------------------------
+
+      allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
+
+!     get full (scalar+spin-orbit) 2e-fock matrix
+      call get_scso_2e_fock(                          &
+                            dmat,                     &
+                            fmat,                     &
+                            nrows,                    &
+                            ncols,                    &
+                            nr_2e_fock_matrices,      &
+                            aoo_intflg,               &
+                            aoo_mdirac,               &
+                            nr_quat,                  &
+                            print_lvl                 &
+                           )
+
+
+      if(print_lvl > -1)then
+        CALL HEADER( &
+        'blubb aoosoc twofock 2-electron Fock matrix for you',-1)
+        CALL PRQMAT(fmat,nr_ao_total_aoo,nr_ao_total_aoo,nr_ao_total_aoo,nr_ao_total_aoo, &
+                    nr_quat,aoo_cb_pq_to_uq(1,0),6)
+      end if
+
+!     get pure 2e-SO-fock matrix
+      call make_so_2e_fock(                            &
+                           fmat,                       & 
+                           nrows/2,                    &
+                           ncols/2,                    &
+                           nr_quat                     &
+                          )
+
+!     normalize (picture-change transform) 2e-SO-fock matrix
+      call get_normalized_2e_soc(                      &
+                                 fmat,                 &
+                                 pct_mat,              &
+                                 dmat,                 &
+                                 nrows,                &
+                                 ncols,                &
+                                 nr_2e_fock_matrices,  &
+                                 nr_ao_total_aoo,      &
+                                 nr_ao_large_aoo,      &
+                                 nr_ao_all,            &
+                                 nr_ao_l,              &
+                                 nr_fsym,              &
+                                 nr_quat,              &
+                                 aoo_cb_pq_to_uq,      &
+                                 ioff_aomat_x,         &
+                                 aoo_bs_to_fs,         &
+                                 print_lvl)
+
+!     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
+      call dump_normalized_2e_soc(                            &
+                                  fmat,                       & 
+                                  nrows,                      &
+                                  ncols,                      &
+                                  nr_quat,                    &
+                                  file_name_aoo_contributions,&
+                                  nint(atom(1)%charge),       &
+                                  aoo_fsoc                    &
+                                 )
+     
+!     release memory for atom type
+      if(allocated(atom)) deallocate(atom)                             
 
   end subroutine get_atomic_oo_order_so_correction
 !----------------------------------------------------------------------
@@ -69,6 +135,20 @@ contains
      integer, allocatable               :: boson_info(:)
      logical                            :: sbsave
 !----------------------------------------------------------------------
+
+!     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
+      call read_normalized_2e_soc(                            &
+                                  fmat,                       & 
+                                  nrows,                      &
+                                  ncols,                      &
+                                  nr_quat,                    &
+                                  file_name_aoo_contributions,&
+                                  nint(atom(i)%charge),       &
+                                  aoo_fsoc                    &
+                                 )
+
+!     release memory for atom type
+      if(allocated(atom)) deallocate(atom)                             
 
   end subroutine put_atomic_oo_order_so_correction
 !----------------------------------------------------------------------

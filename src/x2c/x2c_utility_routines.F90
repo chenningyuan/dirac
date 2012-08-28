@@ -44,7 +44,6 @@ module x2c_utils
   public generic_interface_ao2mo_mo2ao
   public store_aomo_trafo_matrices
   public x2c_lowd2c
-  public pick_LL_block_saao_bas
   public print_x2cmat
   public print_x2cmtx
   public read_1fock_x2c
@@ -674,86 +673,6 @@ contains
   end subroutine x2c_lowd2c
 
 !**********************************************************************
-  subroutine pick_LL_block_saao_bas(opmat_4c,            &
-                                    opmat_2c,            &  
-                                    naosh_L,             &
-                                    naosh_all,           &
-                                    naosh_ls,            &
-                                    nr_ao_L,             &
-                                    nfsym,               &
-                                    nz,                  &
-                                    op_fer_rep,          &
-                                    op_bs_to_fs)          
-!**********************************************************************
-!
-!    purpose: 
-!             pick out LL-block of a given operator in full 4c-SA-AO basis
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout) :: opmat_4c(*)
-     real(8), intent(inout) :: opmat_2c(*)
-     integer, intent(in)    :: naosh_L(nfsym)
-     integer, intent(in)    :: naosh_all(nfsym)
-     integer, intent(in)    :: naosh_ls
-     integer, intent(in)    :: nr_ao_L
-     integer, intent(in)    :: nfsym
-     integer, intent(in)    :: nz
-     integer, intent(in)    :: op_fer_rep
-     integer, intent(in)    :: op_bs_to_fs(0:7,1:2)
-!----------------------------------------------------------------------
-     integer                :: i
-     integer                :: j
-     integer                :: k
-     integer                :: jk
-     integer                :: op_sym
-     integer                :: ioff_off_LS
-     integer                :: ioff_off_LS_f
-     integer                :: ioff_off_L
-     integer                :: ioff_off_L_f
-!**********************************************************************
-
-!      operator: map fermion to boson symmetry
-       op_sym = op_bs_to_fs(op_fer_rep,1)
-      
-       do i = 1, nz
-
-!        initialize offset
-         ioff_off_LS = (i-1) * naosh_ls * naosh_ls + 1
-         ioff_off_L  = (i-1) * nr_ao_L  * nr_ao_L  + 1
- 
-         do j = 1, nfsym
-
-           jk   = mod(j+op_sym,2) + 1
-
-           if(j == 1 .and. jk == 1)then
-             ioff_off_LS_f = ioff_off_LS
-             ioff_off_L_f  = ioff_off_L
-           else if (j == 1 .and. jk == 2)then 
-             ioff_off_LS_f = ioff_off_LS + naosh_ls * naosh_all(1)
-             ioff_off_L_f  = ioff_off_L  + nr_ao_L  * naosh_L(1)
-           else if (j == 2 .and. jk == 1)then 
-             ioff_off_LS_f = ioff_off_LS + naosh_all(1)
-             ioff_off_L_f  = ioff_off_L  + naosh_L(1)
-           else if (j == 2 .and. jk == 2)then 
-             ioff_off_LS_f = ioff_off_LS + naosh_ls *naosh_all(1)  + naosh_all(1)
-             ioff_off_L_f  = ioff_off_L  + nr_ao_L  *naosh_L(1)    + naosh_L(1)
-           end if
-
-           do k = 1, naosh_L(jk)
-             call dcopy(naosh_L(j),                                   &
-                        opmat_4c(ioff_off_LS_f + (k-1) * naosh_ls),   &
-                        1,                                            &
-                        opmat_2c(ioff_off_L_f  + (k-1) * nr_ao_L),    &
-                        1)
-           end do
-
-         end do
-       end do
-
-  end subroutine pick_LL_block_saao_bas
-
-
-!**********************************************************************
   subroutine print_x2cmat(xmat,        &
                           ndim_x,      &
                           ndim_y,      &
@@ -1063,8 +982,8 @@ contains
 !      -------------------------
        inquire(unit=fh,name=file_name)
 
-!      step 2: read matrix elements from file
-!      --------------------------------------
+!      step 2: write matrix elements to file
+!      -------------------------------------
        rewind fh
        write(info_text,'(a74)') 'X2C molecular-mean-field run: picture-change transformed fock matrix/ces. '
        write(fh) info_text
