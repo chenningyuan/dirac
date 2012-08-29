@@ -1599,7 +1599,7 @@
         endif 
       ENDDO
       write(lupri,*) iwwcount, &
-        ' vectors found from',nocc,' vectors suitable for 2H analysis'
+        ' vectors found from',N1,' vectors suitable for 2H analysis'
       CLOSE(IO_LAN,STATUS='DELETE')
 !|
 !|
@@ -1658,7 +1658,7 @@
       end select
 
 !  write relevant data in this symmetry to the DNM file
-!  symmetry, # of analyzed vectors, matrix dimension
+!  symmetry, # of analyzed vectors, sum of occupied orbitals
 
       write(IO_LAN) ibeta, iwwcount, no_sum
 
