@@ -2856,7 +2856,7 @@ C
           TWOCOMP = .TRUE.
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
-          CALL READIN(WORK,LWORK,.FALSE.)
+          CALL READIN(.FALSE.)
           CALL SETDC1(IPREAD)
           IPREAD = IPREAD + 5
 C.........reset NEWPRP to re-initialize AOPROPER
@@ -3687,226 +3687,6 @@ C
       CALL QEXIT('GTOVLT')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck heinz */
-      SUBROUTINE HEINZ(WORK,LWORK)
-C*****************************************************************************
-C
-C     Solve one-electron systems with finite nuclei and project
-C     out all free positronic solutions
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-      DIMENSION WORK(LWORK)
-      CALL QENTER('HEINZ')
-#include "memint.h"
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFBUF,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVBUF,N2BBASX ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMAT,N2TMT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
-      CALL HEINZ2(WORK(KCMO),WORK(KEIG),WORK(KFAO),WORK(KFMO),
-     &            WORK(KFBUF),WORK(KVBUF),
-     &            WORK(KTMAT),WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
-     &            WORK(KFREE),LFREE,IPRGEN)
-C
-      CALL MEMREL('HEINZ',WORK,KWORK,KWORK,KFREE,LFREE)      
-      CALL QEXIT('HEINZ')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck heinz2 */
-      SUBROUTINE HEINZ2(CMO,EIG,FAO,FMO,FBUF,VBUF,TMAT,
-     &                  FTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
-C*****************************************************************************
-C
-C     Solve one-electron systems with finite nuclei and project
-C     out all free positronic solutions
-C
-C*****************************************************************************
-      use codata
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(DP5 = 0.5D0,D0 = 0.0D0)
-C
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-      LOGICAL FIRST(NZ)
-      DIMENSION CMO(*),EIG(*),FAO(N2BBASX,NZ),FMO(*),FBUF(N2BBASX,NZ),
-     &          VBUF(N2BBASX),TMAT(*),OP1INT(*),FTRI(NNBBASX,NZ),
-     &          WORK(LWORK)
-C
-C     Initialize
-C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOPROPER')
-      DO IZ = 1,NZ
-        FIRST(IZ) = .TRUE.
-      ENDDO
-C
-C     MAKE ONE-ELECTRON FOCK MATRIX MINUS NUCLEAR ATTRACTION
-C     ======================================================
-C
-      CALL DZERO(FBUF,N2BBASXQ)
-C
-C     Beta matrix
-C     ===========
-C
-      IOP = IPBETAMT
-      CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &         OP1INT,FIRST,IPRHAM)
-C
-C     Kinetic energy
-C     ==============
-C
-      IOP = IPKINERG
-      CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &           OP1INT,FIRST,IPRHAM)
-C
-C     Make full matrix
-C     ================
-C
-      DO IZ = 1,NZ
-        IF(FIRST(IZ)) THEN
-          CALL DZERO(FBUF(1,IZ),N2BBASX)
-        ELSE
-          IQ = IPQTOQ(IZ,0)
-          IH = IHQMAT(IQ,1)
-          IF(IH.EQ.1) THEN        
-            CALL DSPTSI(NTBAS(0),FTRI(1,IZ),FBUF(1,IZ))
-          ELSEIF(IH.EQ.2) THEN
-            CALL DAPTGE(NTBAS(0),FTRI(1,IZ),FBUF(1,IZ))
-          ENDIF
-        ENDIF
-      ENDDO
-C
-C     Reindex to sorted basis
-C     =======================
-C
-      CALL BUTOBS(FBUF,NZ,WORK,LWORK)
-C
-C     KEEP NUCLEAR ATTRACTION IN SEPARATE BUFFER
-C
-      CALL DZERO(VBUF,N2BBASX)
-C
-C     Nuclear attraction integrals
-C     ============================
-C
-      FIRST(1) = .TRUE.
-      IOP = IPMOLFLD
-      CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
-C
-C     Make full matrix
-C     ================
-C
-      CALL DSPTSI(NTBAS(0),FTRI(1,1),VBUF)
-      CALL BUTOBS(VBUF,1,WORK,LWORK)
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
-C
-C     Get MO-transformation matrix
-C     ============================
-C
-      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','HEINZ')
-      CALL READT(LUTMAT,N2TMT,TMAT)
-      CLOSE(LUTMAT,STATUS='KEEP')
-C
-      A = ALPHAC
-      N =  1
-      DN = N
-      K = -1
-      IF(K.GT.0) THEN
-        L = K
-        J2 = 2*L - 1
-      ELSE
-        L = -(K+1)
-        J2 = 2*L + 1
-      ENDIF
-      NREL = N - ABS(K)
-C
-      IOFF = NPSH(1)*NFBAS(1,0)+1
-      DO IZ = 1,137
-C
-        Z = IZ
-        Z2 = Z*Z
-        ZM2 = 1.0D0/Z2
-C
-C     Analytical value of one-electron energy
-C
-        GAMMA = SQRT(K**2-(Z*A)**2)
-        APPN = SQRT((NREL+GAMMA)**2+(Z*A)**2)
-        EREL = -Z**2/((1+SQRT(1-(Z*A/APPN)**2))*APPN**2)
-        ENREL = -DP5*(Z/N)*(Z/N)
-C
-C     MAKE CURRENT FOCK MATRIX
-C     ========================
-C
-        CALL DCOPY(N2BBASXQ,FBUF,1,FAO,1)      
-        CALL DAXPY(N2BBASX,Z,VBUF,1,FAO(1,1),1)
-C
-C     SOLVE WITHOUT PROJECTION
-C
-        CALL QTRANS('AOMO','S',D0,NFBAS(1,0),NFBAS(1,0),
-     &              NORB(1),NORB(1),
-     &              FAO,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &              FMO,NORB(1),NORB(1),NZ,IPQTOQ(1,0),
-     &              TMAT,NFBAS(1,0),NORB(1),NZ,IPQTOQ(1,0),
-     &              TMAT,NFBAS(1,0),NORB(1),NZ,IPQTOQ(1,0),
-     &              WORK,LWORK,IPRGEN)
-        IF(DOJACO) THEN
-          CALL RSJACO(NORB(1),NORB(1),NORB(1),FMO,
-     &                EIG,1,1,0,CMO,WORK,LWORK)
-         ELSE
-           CALL QDIAG(NZ,NORB(1),FMO,NORB(1),NORB(1),
-     &             EIG,1,CMO,NORB(1),
-     &             NORB(1),WORK,LWORK,IERR)
-         ENDIF
-         EFULL = EIG(NPSH(1)+1)
-C
-C     SOLVE WITH PROJECTION
-C
-        CALL QTRANS('AOMO','S',D0,NFBAS(1,0),NFBAS(1,0),
-     &                         NESH(1),NESH(1),
-     &              FAO,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &              FMO,NESH(1),NESH(1),NZ,IPQTOQ(1,0),
-     &              TMAT(IOFF),NFBAS(1,0),NFORB(1,0),NZ,IPQTOQ(1,0),
-     &              TMAT(IOFF),NFBAS(1,0),NFORB(1,0),NZ,IPQTOQ(1,0),
-     &              WORK,LWORK,IPRGEN)
-        IF(DOJACO) THEN
-          CALL RSJACO(NESH(1),NESH(1),NESH(1),FMO,
-     &                EIG,1,1,0,CMO,WORK,LWORK)
-        ELSE
-          CALL QDIAG(NZ,NESH(1),FMO,NESH(1),NESH(1),
-     &             EIG,1,CMO,NESH(1),NESH(1),WORK,LWORK,IERR)
-        ENDIF
-        EPROJ = EIG(1)
-        EINT  = EIG(2)
-        EFULL = EFULL
-        EPROJ = EPROJ
-        EREL  = EREL
-        ENREL = ENREL
-        WRITE(LUPRI,'(I3,4F20.10)') IZ,EFULL,EREL,ENREL,EINT
-        IVAL = 0
-        CALL PREIGV(EIG,NESH(1),IVAL,WORK,LWORK)
-        CALL FLSHFO(LUPRI)
-      ENDDO
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reno */
       SUBROUTINE RENO(LDM,NDIM,SMAT)
@@ -4166,7 +3946,9 @@ CMI .. mover before diagonalization which can destroy SMAT
 C
 C     Diagonalize overlap matrix
 C
+#ifdef MOD_UNRELEASED
       IF (.NOT.DOQJACO) THEN
+#endif
          IF (LOWJACO) THEN
             CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
          ELSE
@@ -4179,6 +3961,7 @@ c    It would be better to rewrite the code below instead..
                CALL QUIT('Diagonalization of overlap matrix failed')
             ENDIF
          ENDIF
+#ifdef MOD_UNRELEASED
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
@@ -4203,7 +3986,7 @@ CMI   ... (quaternion) Jacobi diagonalization routine
         CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1) ! resort
         CALL MEMREL('LOWGEN',WORK,KSMAT,KSMAT,KFREE,LFREE)
       ENDIF
-
+#endif
 !    ... ensure V_ij = U_ij/SQRT(s_j)
       NV = 0
       DO I = 1,NS
@@ -6044,7 +5827,9 @@ C
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
 
+#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
+#endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL),WORK(KFREE),LFREE)
@@ -6060,12 +5845,14 @@ C
      &        'LINSYM: Errorneous QDIAG diagonalization of Jz_LL !')
               ENDIF
             ENDIF
+#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,IDUMMY,.TRUE.,2)
             DO II=1,NL
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
+#endif
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6093,7 +5880,9 @@ C
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
+#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
+#endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS),WORK(KFREE),LFREE)
@@ -6109,12 +5898,14 @@ C
      &        'LINSYM: Errorneous QDIAG diagonalization of Jz_SS !')
               ENDIF
             ENDIF
+#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,.TRUE.,2)
             DO II=1,NS
               EIG(IEIGP+II-1)=WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
+#endif
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')

@@ -1,0 +1,63 @@
+**DIRAC
+.TITLE
+ B+ to B
+.WAVE F
+.ANALYZE
+.4INDEX
+**INTEGRALS
+.PRINT
+1
+.NUCMOD
+1
+*READIN
+#.UNCONTRACTED
+**HAMILTONIAN
+.LEVY-LEBLOND
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+.HSFS
+*SCF
+.EVCCNV
+1.0E-10 1.0E-8
+.ERGCNV
+1.0E-10 1.0E-8
+.CNVINT
+0.01 0.0001
+.CLOSED SHELL
+4 
+*HSFS
+#.PRINT
+#1
+.CONV
+9
+.METHOD
+csd
+csv
+#csu
+.END
+.INPUT
+ B+ test with DIRAC-HSFS-CCSD, 2p active space; 1s(2) frozen; STO-2G contr. basis set 2s1p
+  3 80 08  4  4  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+  4
+hvvv
+  1
+  4 
+  0 
+9
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all
+**MOLTRA
+# 1s(2) frozen spinors
+.ACTIVE
+energy -4.0 1000.0 1.0
+*END OF
+
+ # active space 2p
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1  INTERFACE="DIRAC6" DEBUG=F  &END
+ &CCENER NTOL=08 &END
+ &CCFSPC MAXIT=50, NACTH=0,0, NACTP=3,3, FSSECT=1,1,0,0,0,0  &END
+

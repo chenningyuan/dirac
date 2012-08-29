@@ -59,17 +59,26 @@ end subroutine close_dirac_hsfs_file
 end module DIRAC_HSFS
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine PAMHSFSCC(WORK,LWORK)
+subroutine PAMHSFSCC
 !----------------------------------------------------------------------------
 ! Main launching subroutine for HSFSCC methods from DIRAC
 !
-! called from main/dirac.Fa
+! called from main/dirac.F
 !----------------------------------------------------------------------------
+use memory_allocator
+use allocator_cfg
+
 implicit none
-integer, intent(in) :: LWORK
-real*8, intent(in) :: WORK(LWORK)
-  call HSFS_STUFF(WORK,LWORK)
-  call HIGH_SECTOR_FSCC_METHODS
+real(8), allocatable :: WORK(:)
+integer :: lwork, WORK_memsize
+
+LWORK = WORK_memsize
+call alloc(WORK,LWORK,id='WORK in PAMHSFSCC')
+
+call HSFS_STUFF(WORK,LWORK)
+call HIGH_SECTOR_FSCC_METHODS
+call dealloc(WORK,id='WORK in PAMHSFSCC')
+
 end subroutine PAMHSFSCC
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -402,7 +411,7 @@ do isp=1, nsp
      boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
      if (iprint_hsfs >= 2) then
        write(LUPRI,*) '- irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
-     endif
+      endif
   endif
 enddo
 

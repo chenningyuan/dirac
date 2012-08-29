@@ -74,8 +74,12 @@ module xc_mpi
    end interface
 #endif
 
+#ifdef VAR_MPI_32BIT_INT
+   integer(4)         :: ierr
+#else
    integer            :: ierr
-   integer, parameter :: irank_master        = 0
+#endif
+   integer, parameter :: irank_master = 0
 
 contains
 

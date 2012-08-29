@@ -3374,14 +3374,17 @@ subroutine prt(name,tit,iparm)
  if (getiprint()>=2) then
    nsize=ije1(nij1)
    ! print out basic info - header -  about the indexed data
-   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1,(i1unpack2(ij1(i)),i2unpack2(ij1(i)),ije1(i-1)+1,ije1(i),i=1,nij1)
-   110 format(1x,'prt: title="',a,'" id:"',a,'", size=',i7,' iii1=',i4,' iiv1=',i4,' nij1=',i7, & 
-             ' ij records:'/(5(2x,2i2,' #',i5,'...',i5,';')))
+   write (LUPRI,110) tit,name,nsize,iii1,iiv1,nij1
+   110 format(1x,'prt: title="',a,'" id:"',a,'", size=',i7,' iii1=',i4,' iiv1=',i4,' nij1=',i7)
    call flush(LUPRI)
  endif
 
  if (getiprint() >=3) then
-   write(LUPRI,'(3x,a,d8.3)') 'printout limit:',flim
+   ! first print out ij records - first two indexes 
+   write (LUPRI,111) (i1unpack2(ij1(i)),i2unpack2(ij1(i)),ije1(i-1)+1,ije1(i),i=1,nij1)
+   111 format(2x,'ij records:',(5(2x,2i2,' #',i5,'...',i5,';')))
+   call flush(LUPRI)
+   write(LUPRI,'(3x,a,d8.3,a)') 'printout limit:',flim,' of indexed quantities:'
    istrt1=nstrt(1,num-1)+2*nij1+4 ! position of indexes on array igen
    istrt2=nstrt(2,num-1)          ! position of indexed data on array gen
    io=0
@@ -3389,14 +3392,10 @@ subroutine prt(name,tit,iparm)
      if (abs(gen(istrt2+i)).ge.flim) then ! get if greater than limit
        io=io+1
        a(io)=gen(istrt2+i)
-       !ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
-       ind(1,io)=i1unpack4(igen(istrt1+i))
-       !ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
-       ind(2,io)=i2unpack4(igen(istrt1+i))
-       !ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
-       ind(3,io)=i3unpack4(igen(istrt1+i))
-       !ind(4,io)=iand(           igen(istrt1+i),z'ff')
-       ind(4,io)=i4unpack4(igen(istrt1+i))
+       ind(1,io)=i1unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-24),z'ff')
+       ind(2,io)=i2unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-16),z'ff')
+       ind(3,io)=i3unpack4(igen(istrt1+i)) ! instead of iand(ishft(igen(istrt1+i),-8) ,z'ff')
+       ind(4,io)=i4unpack4(igen(istrt1+i)) ! instead of iand(           igen(istrt1+i),z'ff')
        if (io.eq.6) then ! print out indexed data
          write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
          call flush(LUPRI)
@@ -3737,6 +3736,7 @@ subroutine rdin
 !     read (5,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       read (LUCMD,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       write(LUPRI,'(4x,a,i3)') "norb read in, norb=",norb
+      write(LUPRI,'(2x,a,200a1)') 'orbital types:',(cc(i),i=1,norb)
 
       do 110 i=1,norb
       do 105 j=1,5
@@ -3868,17 +3868,17 @@ subroutine rdsym
 !
 !  gets in symmetry information
 !
-!  Called from each method (executable)
+!  Called from each method (former executable, now subroutine)
 !
 !----------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use sym_mod
       use dpd_mod
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
-#include "implicit.h"
+implicit none
 #include "priunit.h"
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
@@ -3886,123 +3886,121 @@ subroutine rdsym
 !     common /dpd/ nir,igmt(8,8),ici(200)
 #endif
 
-      dimension itemp(64) ! 8x8
-      data itemp / 1,2,3,4,5,6,7,8,2,1,4,3,6,5,8,7,3,4,1,2,7,8,5,6,     &
-            4,3,2,1,8,7,6,5,5,6,7,8,1,2,3,4,6,5,8,7,2,1,4,3,            &
-            7,8,5,6,3,4,1,2,8,7,6,5,4,3,2,1 /
+  integer :: itemp(64) ! 8x8
+ !mi: identical with Dirac group mult.table
+  data itemp / 1,2,3,4,5,6,7,8,   & 
+               2,1,4,3,6,5,8,7,   & 
+               3,4,1,2,7,8,5,6,   &
+               4,3,2,1,8,7,6,5,   & 
+               5,6,7,8,1,2,3,4,   & 
+               6,5,8,7,2,1,4,3,   &
+               7,8,5,6,3,4,1,2,   & 
+               8,7,6,5,4,3,2,1 /
+  logical :: rdsym_called=.false.  
+  integer :: ios,i,j,ii
 
-      ! mi: save time - no typing of input, data ready
-      !logical :: no_inter_rd=.true.
-      logical :: no_inter_rd=.false.
-      logical :: rdsym_called=.false.  
-
-      if (rdsym_called) then    
+  if (rdsym_called) then    
         write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
         return
-      else
-        write(LUPRI,*) '...continuing rdsym procedure...'
-      endif
+  else
+        write(LUPRI,'(2x,a)') '...continuing with the rdsym procedure...'
+  endif
 
-      if (no_inter_rd) then
-       nclass=4
-       write(LUPRI,'(/,2x,a,i3)') 'rdsym: nclass variable set to',nclass
-      else
-        write(LUPRI,'(/,2x,a,$)') 'Reading "nclass" variable:'
-        read (LUCMD,*,iostat=ios) nclass
-        if (ios.ne.0) then
+  write(LUPRI,'(/,2x,a,$)') 'Reading "nclass" variable...'
+  read (LUCMD,*,iostat=ios) nclass
+  if (ios.ne.0) then
           write(LUPRI,*) 'error in reading nclass, read nclass=',nclass
           call quit('rdsym: error in reading nclass!')
-        endif
-      endif
-      write(LUPRI,'(2x,a,i2)') 'read nclass=',nclass
+  endif
+  write(LUPRI,'(2x,a,i2)') 'get value nclass=',nclass
 
-      write(LUPRI,'(/,2x,a)')  & 
-        'Number of of orbitals (20i3) per symmetry(1-nclass):'
-
-      if (no_inter_rd) then
-        do i=1,nclass
-          iclass(i)=0
-        enddo
-        iclass(1)=7; iclass(2)=0; iclass(3)=1; iclass(4)=1
-        write(LUPRI,'(/,4x,a,/)') 'Hard set orbitals  7 0 1 1 now in !!'
-      else
+  write(LUPRI,'(/,2x,a)')  & 
+ 'Reading number of of orbitals (20i3) per symmetry(1-nclass):'
 
 !  --- read iclass in FREE-FORMAT ---
-!     read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
 !     read (LUCMD,1000,iostat=ios) (iclass(i),i=1,nclass)
-      read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)
-1000  format(20i3)
-      if (ios.ne.0) then
-        write(LUPRI,*) 'error in reading iclass, so far read iclass(i):'
-        write(LUPRI,*) (iclass(i),i=1,nclass)
-        call quit('error in reading iclass!')
-      endif
-
-      endif
-
-      write (LUPRI,1100) nclass,(iclass(i),i=1,nclass)
-1100  format(/,i4,' orb classes; # of orbs ',30i3)
+  1000  format(20i3)
+  read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)
+  if (ios.ne.0) then
+      write(LUPRI,*) 'error in reading iclass, so far read iclass(i):'
+      write(LUPRI,*) (iclass(i),i=1,nclass)
+      call quit('error in reading iclass!')
+  endif
+  ! print out orbitals occupation what was read
+  write (LUPRI,1100) nclass,(iclass(i),i=1,nclass)
+  1100  format(i4,' orb classes; # of orbs ',8i3)
 
 !c-------------------------------------------------
 !c  isym is  0 for orbs remaining invariant
 !c  isym is  1 for orbs changing sign
 !c  isym is -1 for orbs doing neither
 !c-------------------------------------------------
-      nsym=1
+  write(LUPRI,'(1x,a)') 'reading orbitals symmetry operations characteristics:'
+  nsym=1
+  110 continue
+  !read (LUCMD,1000) (isym(i,nsym),i=1,nclass)
+  read (LUCMD,*,iostat=ios) (isym(i,nsym),i=1,nclass)
+  if (ios.ne.0) then
+    write(LUPRI,*) 'error in reading isym, so far read nsym=',nsym
+    write (LUPRI,*) 'nclass=',nclass,' current i=',i
+    write (LUPRI,*) 'isym(i,nsym):',(isym(i,nsym),i=1,nclass)
+    call quit('error in reading isym numbers !')
+  endif
+  ! if reads "9", finish the input reading
+  if (isym(1,nsym).ge.9) go to 120 
+  ! in between print out what was read
+  write (LUPRI,1200) nsym,(isym(i,nsym),i=1,nclass)
+  1200  format(' isym(',i3,')=',30i3)
+  nsym=nsym+1
+  go to 110 ! read again
 
-110   continue
-      if (no_inter_rd) then
-         do i=1,nclass
-           isym(i,nsym)=0
-         enddo
-        ! isym(1,nsym)=9
-      else
-!       read (*,1000) (isym(i,nsym),i=1,nclass)
-        read (LUCMD,1000) (isym(i,nsym),i=1,nclass)
-      endif
-
-      !if (isym(1,nsym).ge.9) go to 120
-      if (isym(1,nsym).ge.9.or.no_inter_rd) go to 120
-
-      write (LUPRI,1200) nsym,(isym(i,nsym),i=1,nclass)
-1200  format(' isym(',i3,')=',30i3)
-
-      nsym=nsym+1
-      go to 110
-120   nsym=nsym-1
-
+! end of reading
+  120 nsym=nsym-1
 
 !  ----   fill ibias, ici   ----- 
+! ibias(:)  - pointer to the final element in symmtry class
+! iclass(:) - 
+! ici(:) - 
       ibias(1)=0
       do 140 i=1,nclass
 140   ibias(i+1)=ibias(i)+iclass(i)
       do 20 i=1,nclass
         do 30 j=ibias(i)+1,ibias(i+1)
-          ici(j)=i
+          ici(j)=i ! 
 30      continue
 20    continue
 
-      ii=0
-      do 40 i=1,8
-        do 50 j=1,8
-          ii=ii+1
-          igmt(i,j)=itemp(ii) ! MI: igmt multiplication table ?
-50      continue
-40    continue
+! printout iclass,ibias,ici
+  do i=1, nclass
+    write(LUPRI,'(i1,a,i1,a,i2,a,8i2)') & 
+    i,'.irrep:',iclass(i),' ibias:',ibias(i),' ici:',(ici(j),j=ibias(i)+1,ibias(i+1))
+  enddo
 
-! MI: nir should be the number of irreducible representations ?
-      if (nclass.eq.1) then
-        nir=1
-      else
-        nir=2**nsym
-      end if
+! fill group (matrix) multiplication table
+  ii=0
+  do i=1,8
+    do j=1,8
+      ii=ii+1
+      igmt(i,j)=itemp(ii)
+    enddo    
+  enddo    
+
+! set the number of  (irreducible representations ?) - nir
+  if (nclass.eq.1) then
+    nir=1
+  else
+    nir=2**nsym
+  end if
+  write(LUPRI,'(a,i3)') 'set nir=',nir
+
+! print out the matrix multiplication table
+  write(LUPRI,'(/,1x,a)') 'matrix (group) multiplication table:'
+  do i=1,nir
+    write(LUPRI,'(8i3)') (igmt(i,j),j=1,nclass)
+  enddo
  
-      rdsym_called = .true. 
-      write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
-      call flush (LUPRI)
+  rdsym_called = .true. 
+  write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
+  call flush(LUPRI)
 
-       ! write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
-
-      return
 end subroutine rdsym
-

@@ -205,5 +205,9 @@ integer :: istat
   ! ... fill hermitian (real, quaternion) matrix
   CALL PREPMATRIX
   ! ... call of the external diagonalization routine ...
+#ifdef MOD_UNRELEASED
   CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
+#else
+  CALL QUIT('QJACOI is not in this version !')
+#endif
 END PROGRAM

@@ -27,8 +27,8 @@
 .CLOSED SHELL
 4 
 *HSFS
-.PRINT
-1
+#.PRINT
+#1
 .CONV
 9
 .METHOD
@@ -38,13 +38,14 @@ csv
 .END
 .INPUT
  B+ test with DIRAC-HSFS-CCSD, 2p active space; no frozen
-  2 80 08  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+  3 80 08  4  3  0  0  0  0  0  0  0  0  0  0  0  0  0  7
   5
 hhvvv
   4
   3  1  1  0
-  0  0  0  0
-9
+  0  1  0  0
+  0  0  1  0
+9 0 0 0
 **ANALYZE
 .MULPOP
 *MULPOP

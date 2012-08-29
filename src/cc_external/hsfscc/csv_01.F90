@@ -1077,12 +1077,13 @@ subroutine diag7_csv
 end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine diag3a_csv
+! handle diagram 3a of Uzi's notes
 implicit none
 #include "priunit.h"
   call mult("vh  ","tc3 ","s2  ",131)
   call add("vv0 ",1.d0,"s2  ",-1.d0,"vv0 ")
-  call prt("s2  ","-diag3a ",3)
-  call prtime("diag3a  ",0,1)
+  call prt("s2  ","diag3a_csv",3)
+  call prtime("diag3a_csv",0,1)
 return
 end subroutine
 ! ***************************************************
@@ -1112,18 +1113,19 @@ subroutine diag4a_csv
    call add("va1 ",2.d0,"hphp",-1.d0,"s2  ")
    call mult("ta1 ","s2  ","s3  ",222)
    call add("tb1 ",1.d0,"s3  ",1.d0,"tb1 ")
-   call prt("s3  ","diag4a  ",3)
-   call prtime("diag4a  ",0,1)
+   call prt("s3  ","diag4a_csv",3)
+   call prtime("diag4a_csv",0,1)
 end subroutine
 ! *****************************************************
 subroutine diag4b_csv
+! handle diagram 4b
   implicit none
 #include "priunit.h"
      call add("vva1",2.d0,"vphp",-1.d0,"s2  ")
      call mult("s2  ","tc1 ","s3  ",222)
      call add("tb1 ",1.d0,"s3  ",1.d0,"tb1 ")
-     call prt("s3  ","diag4b  ",3)
-     call prtime("diag4b  ",0,1)
+     call prt("s3  ","diag4b_csv",3)
+     call prtime("diag4b_csv",0,1)
 end subroutine
 ! ********************************************
 subroutine diag5a_csv

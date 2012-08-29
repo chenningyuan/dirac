@@ -23,9 +23,9 @@ else()
         )
 endif()
 
-# handle Doxygen, code documentation tool 
+set(Doxygen_FIND_QUIETLY TRUE)
 include(FindDoxygen)
-if (DOXYGEN_FOUND)
+if(DOXYGEN_FOUND)
     configure_file(
         ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
         ${PROJECT_BINARY_DIR}/Doxyfile

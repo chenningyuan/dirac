@@ -55,6 +55,7 @@ C                    input and start-up --> "modularize"
 C
 C***********************************************************************
       use symmetry_setup_krci
+      use krci_cfg
       use os_utils
 #include "implicit.h"
 #include "priunit.h"
@@ -90,11 +91,11 @@ C
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
-     &            '.THRPCI','.xxxxxx','.MIN MK','.MAX MK','.GASSH ',
+     &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
-     &            '.DIPMOM','.MCANA ','.GAS SH','.xxxxxx','.xxxxxx'/
+     &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: tmp_symmetry_str
@@ -141,6 +142,7 @@ C
       LOWSORT_KRCI      = .FALSE.
       STATE_SELECT_KRCI = .FALSE.
       LOWSORT_KRCI      = .FALSE.
+      save_reordered_nos_krci = .false.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -182,6 +184,7 @@ C
          NKRCISSH(I) = 0
          NKRCIPSH(I) = 0
          NKRCIFRO(I) = 0
+         IKRCI_SVRONO(i)  = 0
          DO J = 1, MXMCGAS
             NKRCIGSH(I,J) = 0
             NKRCIGSP(I,J) = 0
@@ -228,6 +231,9 @@ C     some scratch
 !       fall back to default: 0
         IDOPARIO_KRCI = 0
       end if
+
+!     krci_cfg
+      krci_cfg_max_vec_block = -1
  
 C
 C     Process input for *KRCICALC
@@ -538,7 +544,8 @@ C&&& THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRCI_THRPCI
                GO TO 100
    22          CONTINUE
-C&&& xxx
+C&&& max vector block length to allocate
+                  READ(LUCMD,*) krci_cfg_max_vec_block
                GO TO 100
    23          CONTINUE
 C&&& MIN MK2: minimum value of 2 * MK
@@ -752,10 +759,13 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                GO TO 100
    44          CONTINUE
-C&&&  xxxxxx:  
+C&&&  SVRONO:  save reordered NOs rather than unsorted ones (the latter being the default)
+               save_reordered_nos_krci = .true.
                GO TO 100
    45          CONTINUE
-C&&&  xxxxxx:  
+C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+               save_reordered_nos_krci = .true.
+               READ(LUCMD,*) (IKRCI_SVRONO(I),I=1,NFSYM)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1210,7 +1220,7 @@ C
 
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRCI_CALC(WFTYP,WFCONV,WORK,LWORK)
+      SUBROUTINE KRCI_CALC(WFTYP,WFCONV)
 C***********************************************************************
 C
 C     Driver routine to KRCI_CALC_1
@@ -1224,6 +1234,8 @@ C
 C     Last revision :
 C
 C***********************************************************************
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1231,7 +1243,6 @@ C***********************************************************************
 C
       CHARACTER WFTYP*(*), KRCLCTYP*8
       LOGICAL   WFCONV
-      DIMENSION WORK(LWORK)
 C
 #include "maxorb.h"
 #include "dcbidx.h"
@@ -1249,9 +1260,14 @@ C
       LOGICAL EX, FILEOPEN
       INTEGER RENAME
 C
+      real(8), allocatable :: WORK(:)
+
+      CALL QENTER('KRCI_CALC')
+
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
 C
-      CALL QENTER('KRCI_CALC')
+      call alloc(WORK,LWORK,id='WORK in KRCI_CALC')
 C
 C
 C     Determine the wave function type
@@ -1414,6 +1430,7 @@ C     *** Memory deallocation ***************************
 C     ***************************************************
 C
       CALL MEMREL('KRCI_CALC',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(WORK)
 C
       CALL QEXIT('KRCI_CALC')
       RETURN
