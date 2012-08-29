@@ -1,7 +1,7 @@
       COMMON/KRCC_CTCCP/
 ! Hamiltonian
      &             KLSOBEX,KLLSOBEX,KLIBSOBEX,
-     &             KLIHIND,KSIGNNHX,KLABEXTP,
+     &             KLIHIND,KLIHINDOP,KSIGNNHX,KLABEXTP,
      &             KNH22,KNH21,KNH12,KNH20,
      &             KNH11,KNH02,KNH10,KNH01,KNH00,
 ! Cluster operator

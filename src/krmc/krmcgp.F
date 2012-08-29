@@ -1205,6 +1205,7 @@ C
       CALL GTOVLX(WORK(KSAO),D1)
       WRITE (LUPRI,'(/A)')
      &   ' -> Gram-Schmidt orthonormalizing MO coefficients.'
+      call flshfo(lupri)
 C
 C     Gram-Schmidt orthogonalize coefficients
 C
@@ -1264,6 +1265,7 @@ C               because we want to start with the occupied orbitals
             END DO
          END IF
 C
+         CALL MEMCHK('after first QNORM',WORK,1)
          CALL MEMREL('RGMCMO.QNORM',WORK,KWORK,KSCR1,KFREE,LFREE)
 C
          IF (IPROPT .GE. 10) THEN
@@ -2527,12 +2529,14 @@ C     Reference value for two times Delta M_K projection (coupling range)
      &                 global_communicator)
 #endif
       MK2DEL_CI = MK2DEL
-      IF ((.not.SPINFR).and.(.not.LEVYLE).and.MK2DEL_CI.eq.0) THEN
-           WRITE(LUWRT,*) 'Spin-dependent calculation and MK2DEL = 0.'
-           WRITE(LUWRT,*) 'This is not allowed.'
-           CALL QUIT( ' *** ERROR *** Spin-dependent calculation'//
-     &                ' and MK2DEL = 0.' ) 
-      END IF
+
+!     IF ((.not.SPINFR).and.(.not.LEVYLE).and.MK2DEL_CI.eq.0) THEN
+!          WRITE(LUWRT,*) 'Spin-dependent calculation and MK2DEL = 0.'
+!          WRITE(LUWRT,*) 'This is not allowed.'
+!          CALL QUIT( ' *** ERROR *** Spin-dependent calculation'//
+!    &                ' and MK2DEL = 0.' ) 
+!     END IF
+
 C     COMHAM option
       IF (ISEQCI(1,1) .LT. 0 ) THEN
 C        ISEQCI(1,1) = MAXCIT from KRMC/KRCI

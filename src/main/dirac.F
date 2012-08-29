@@ -22,7 +22,7 @@
 C FILE    : dirac.F
 C
 C***********************************************************************
-      SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,LWORK)
+      SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD)
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -30,12 +30,19 @@ C
 C
 #include "infpar.h"
 #include "dgroup.h"
+#ifdef VAR_OMP
+      INTEGER omp_get_num_procs
+#endif
 C
-      DIMENSION WORK(LWORK)
 C
 C     Set up basic information for parallel execution, to be stored in the
 C     common block infpar
 C
+#ifdef VAR_OMP
+         write(lupri,'(//A,I5)')
+     &   ' * openMP activated, number of threads:',
+     &   omp_get_num_procs()
+#endif
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
@@ -62,31 +69,31 @@ C
       write(lupri, '(//a)') 'Execution time and host'
       write(lupri, '(a)')   '-----------------------'
       CALL TSTAMP(' ',LUPRI)
-      CALL DIRCTL(WORK,LWORK)
+      CALL DIRCTL()
 C
 C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
-      CALL TSTAMP(' ',LUPRI)
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
-      SUBROUTINE DIRCTL(WORK,LWORK)
+      SUBROUTINE DIRCTL()
 
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
       use dirac_cfg
 
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-      DIMENSION WORK(LWORK)
+#include "dgroup.h"
+
 C
       CALL QENTER('DIRCTL')
 C
@@ -94,7 +101,7 @@ C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
 C***********************************************************************
 C
-      CALL PAMINP(WORK,LWORK)
+      CALL PAMINP()
 
       IF ( INPTES ) RETURN
 C
@@ -103,14 +110,14 @@ C*****  E C P  I N T E G R A L  M O D U L E  ***************************
 C***********************************************************************
 C
 !#ifdef MOD_ECP
-!      IF (ECPCALC) CALL ECPINT(WORK,LWORK)
+!      IF (ECPCALC) CALL RECP()
 !#endif
 C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
 C***********************************************************************
 
-      CALL PAMSET(WORK,LWORK)
+      CALL PAMSET()
 
 
 
@@ -123,15 +130,16 @@ C***********************************************************************
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
         if (nbsym > 1) then
-          call quit('Polarizable Continuum Model calculation cannot     &
-     & handle symmetry!')
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle symmetry!')
         end if
         if (bss.or.x2c) then
-          call quit('Polarizable Continuum Model calculation not        &
-     & working with X2C Hamiltonian!')
+          call quit('Polarizable Continuum Model calculation not '//
+     & 'working with X2C Hamiltonian!')
         end if
         call init_pcm 
-        print *, 'after pcm init'
+        call print_pcm
+        print *, 'PCMSolver initialized.'
       end if
 #endif
 
@@ -142,9 +150,9 @@ C***********************************************************************
 C
       IF(.NOT.DOHRM) THEN
          IF (OPTIMI) THEN
-            CALL PAMGEO(WORK,LWORK)
+            CALL PAMGEO()
          ELSE
-            CALL PAMDRV(WORK,LWORK)
+            CALL PAMDRV()
          ENDIF
       END IF
 C
@@ -152,6 +160,12 @@ C***********************************************************************
 C*****  T  E  R  M  I  N  A  T  I  O  N  *******************************
 C***********************************************************************
 C
+
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
+!     clean up Gen1Int interface
+      call gen1int_host_finalize()
+#endif
+
       if (doxml) then
          call xml_end('output')
          call xml_end('task') ! started om dirrdn.F
@@ -160,7 +174,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamdrv */
-      SUBROUTINE PAMDRV(WORK,LWORK)
+      SUBROUTINE PAMDRV()
 C***********************************************************************
 C
 C     Driver for DIRAC - main part
@@ -178,33 +192,31 @@ C
 #include "dcbgen.h"
 #include "dcbpsi.h"
 C
-      DIMENSION WORK(LWORK)
-C
       CALL QENTER('PAMDRV')
 C
 C***********************************************************************
 C*****  Read (C1/formatted) MO coefficients   **************************
 C***********************************************************************
 C
-      IF(DOPIN.or.dopin_i3) CALL PCMOIN(WORK,LWORK)
-      IF(DOACIN) CALL ACMOIN(WORK,LWORK)
+      CALL PCMOIN()
+      IF(DOACIN) CALL ACMOIN()
 C
 C     Extend RKB coeffcients with complementary UKB space
 C
-      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK,IPRGEN)
+      IF(DORKBIMP) CALL RKBIMP(IPRGEN)
 C
 C***********************************************************************
 C*****  G E T    W A V E    F U N C T I O N   **************************
 C***********************************************************************
 C
-      IF(DOPSI .OR. DOTRA) CALL PAMPSI(WORK,LWORK)
+      IF(DOPSI .OR. DOTRA) CALL PAMPSI()
 C
 C***********************************************************************
 C*****  Write(C1/formatted) MO coefficients   **************************
 C***********************************************************************
 C
-      IF(DOACUT) CALL ACMOUT(WORK,LWORK)
-      IF(DOPUT) CALL PCMOUT(WORK,LWORK)
+      IF(DOACUT) CALL ACMOUT()
+      IF(DOPUT) CALL PCMOUT()
 C
 C***********************************************************************
 C*****  A N A L Y S I S    M O D U L E  ********************************
@@ -212,14 +224,14 @@ C***********************************************************************
 C
       IF(DOANA .AND. .NOT.
      & ((dirac_cfg_scf_calculation.AND.DOPSI).OR.(DOKRMC.AND.DOPSI))) 
-     &   CALL PAMANA(WORK,LWORK)
+     &   CALL PAMANA()
 C
 C
 C***********************************************************************
 C*****  R E S P O N S E    M O D U L E  ********************************
 C***********************************************************************
 C
-      IF(DOPRP) CALL PAMPRP(WORK,LWORK)
+      IF(DOPRP) CALL PAMPRP()
 
 C
 C***********************************************************************
@@ -244,7 +256,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pampsi */
-      SUBROUTINE PAMPSI(WORK,LWORK)
+      SUBROUTINE PAMPSI()
 C***********************************************************************
 C
 C     Wave function module
@@ -259,7 +271,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "dcbham.h"
 C
-      DIMENSION WORK(LWORK)
       LOGICAL   WFCONV
 C
 #include "dcbgen.h"
@@ -274,7 +285,7 @@ C It ought to be implemented for other wave function types as well.
 C TF, Nov. 2003:  Done for KRMC. 
 C
 C     Reorder/rotate orbitals prior to SCF-calculations
-      IF(L1ORBM) CALL PREORB(WORK,LWORK)
+      IF(L1ORBM) CALL PREORB()
 C
 C***********************************************************************
 C***** D I R A C - H A R T R E E - F O C K *****************************
@@ -296,7 +307,7 @@ C        *** Call PSIDHF for Roothaan/DIIS iterations  ***
 C        *************************************************
 C
          IF (MAXITR.GT.0.OR.MAXITR2.GT.0) THEN
-            CALL PSIDHF(WFCONV,WORK,LWORK)
+            CALL PSIDHF(WFCONV)
          END IF
 C
 C        *************************************************
@@ -306,13 +317,13 @@ C
          IF ( .NOT. NOQCDHF .AND. 
      &        .NOT. dirac_cfg_dft_calculation .AND.
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
-            CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
+            CALL PSIOPT('SCF  ',WFCONV)
          END IF
 C........Export mean-field integrals
-CTROND         IF(DOMFI) CALL PAMFI(WORK,LWORK)
-CTROND         IF(.TRUE.) CALL PAMFI(WORK,LWORK)
+CTROND         IF(DOMFI) CALL PAMFI()
+CTROND         IF(.TRUE.) CALL PAMFI()
 C
-         IF(DOANA) CALL PAMANA(WORK,LWORK)
+         IF(DOANA) CALL PAMANA()
          IF(.NOT.WFCONV) THEN
 C        ... DHF not converged;
             WRITE (LUPRI,'(//A)')
@@ -321,7 +332,7 @@ C        ... DHF not converged;
          END IF
       END IF
 C     Post orbital modifications
-      IF(L2ORBM) CALL PSTORB(WORK,LWORK)
+      IF(L2ORBM) CALL PSTORB()
 C
 C***********************************************************************
 C***** R E S O L V E    O P E N - S H E L L  S T A T E S ***************
@@ -333,7 +344,7 @@ C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
             CALL TDHFORB('RESOLVE')
          END IF
-         CALL RESOLV(WORK,LWORK)
+         CALL RESOLV()
       END IF
 C
 C***********************************************************************
@@ -346,20 +357,20 @@ C        *************************************************
 C        *** Call PSIMP2 for MP2 Energy/wave function  ***
 C        *************************************************
 C
-         CALL PSIMP2(WORK,LWORK)
+         CALL PSIMP2()
       END IF
 C
 C***********************************************************************
 C***** M O D I F I E D   V I R T U A L   O R B I T A L S ***************
 C***********************************************************************
 C
-      IF(DOMVO.AND.DOPSI) CALL MVOGEN(WORK,LWORK)
+      IF(DOMVO.AND.DOPSI) CALL MVOGEN()
 C
 C***********************************************************************
 C***** M P 2   N A T U R A L   O R B I T A L S *************************
 C***********************************************************************
 C
-      IF(DOMP2NO.AND.DOPSI) CALL MP2NOGEN(WORK,LWORK)
+      IF(DOMP2NO.AND.DOPSI) CALL MP2NOGEN()
 C
 C***********************************************************************
 C***** K R - M C S C F *************************************************
@@ -385,39 +396,50 @@ C        calculate proper 2-electron integrals
          dirac_cfg_mcsrdft_calculation = .true.
          endif
 C
-         CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
-         IF(DOANA) CALL PAMANA(WORK,LWORK)
+         CALL PSIOPT('MCSCF',WFCONV)
+         IF(DOANA) CALL PAMANA()
       END IF
 C
 C***********************************************************************
 C***** I N D E X  T R A N S F O R M A T I O N **************************
 C***********************************************************************
 C
-      IF(DOTRA) CALL PAMTRA(WORK,LWORK)
+      IF(DOTRA) CALL PAMTRA()
 C
 C***********************************************************************
 C***** R E L C C S D  M O D U L E **************************************
 C***********************************************************************
 C
-      IF(DOCCM.AND.DOPSI) CALL PAMCCM(WORK,LWORK)
+      IF(DOCCM.AND.DOPSI) CALL PAMCCM()
+
+#if defined (MOD_HSCC)
+!     Hilbert Space Coupled Cluster module
+      IF (DOHSCC.AND.DOPSI) CALL PAMHSMRCC()
+#endif
+
+#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
+!     High Sectors Fock Space Coupled Cluster module
+      IF (DOHSFS.AND.DOPSI) CALL PAMHSFSCC()
+#endif
+
 C
 C***********************************************************************
 C***** D I R R C I   M O D U L E ***************************************
 C***********************************************************************
 C
-      IF(DOCIM.AND.DOPSI) CALL PAMCIM(WORK,LWORK)
+      IF(DOCIM.AND.DOPSI) CALL PAMCIM()
 
 C***********************************************************************
 C***** L U C I T A  M O D U L E ****************************************
 C***********************************************************************
 C
-      IF(DOLUCT.AND.DOPSI) CALL PAMLUCITA(WORK,LWORK)
+      IF(DOLUCT.AND.DOPSI) CALL PAMLUCITA()
 C
 C***********************************************************************
 C***** R E L A D C  M O D U L E ****************************************
 C***********************************************************************
 C
-      IF(DOADC.AND.DOPSI) CALL PAMADC(WORK,LWORK)
+      IF(DOADC.AND.DOPSI) CALL PAMADC()
 C
 C***********************************************************************
 C***** C O S C I        stand-alone version of RESOLVE   ***************
@@ -434,7 +456,7 @@ C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
 !@d         CALL TDHFORB('RESOLVE')
 !@d      END IF
-         CALL SY_COSCI(WORK,LWORK)
+         CALL SY_COSCI()
       END IF
 
       IF (DOGASCIP .AND. DOPSI) THEN
@@ -457,7 +479,7 @@ C        ... reset dcbopt.h
          CALL TKRCIORB
          CALL SETDC2(0)
 C
-         CALL KRCI_CALC('KR-CI ',WFCONV,WORK,LWORK)
+         CALL KRCI_CALC('KR-CI ',WFCONV)
       END IF
 C
 C***********************************************************************
@@ -479,26 +501,13 @@ C
          CALL SETDC2(0)
 C         CALL SETDCBIDX()
 C
-         CALL PAMKRCC(WORK,LWORK)
+         CALL PAMKRCC()
 #else
             CALL QUIT(
      &  ' KR-CC module not included in this version')
 #endif
       END IF
 C
-
-C
-C***********************************************************************
-C***** High Sect F S C C  M O D U L E **********************************
-C***********************************************************************
-C
-#ifdef MOD_HSFS
-!     ... interface from HSFS module
-      IF (DOHSFS) THEN
-        CALL HSFS_STUFF(WORK,LWORK)
-      ENDIF
-#endif
-
       CALL QEXIT('PAMPSI')
       RETURN
 C
@@ -641,7 +650,7 @@ C
          NGAS_DC = 0
          IF (NCESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR)
+            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
             NGSP(2,NGAS_DC) = 2*NCESRT
             DO I = 1,NFSYM
                NGSH(I,NGAS_DC) = NCESR(I)
@@ -659,7 +668,7 @@ Cxx      XELEC = D2*NCESRT
 Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
 Cxx         NGSP(1,NGAS_DC) = NINT(XELEC)
 Cxx         NGSP(2,NGAS_DC) = NINT(XELEC)
-            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR)
+            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
             NGSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
 Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
@@ -676,7 +685,7 @@ Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
                NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             END DO
          ELSE
-            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NALEL-LVL_CIESR if not virt gas space
+            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
 C
 C        reset number of active orbitals
@@ -718,6 +727,8 @@ C
       MOPT_MAXBCK    = MAXBCK
       IOPT_ISTATE    = 1
       JKRRUNTYPE     = 0
+      ISVRONO(1)     = 0
+      ISVRONO(2)     = 0
 C
 C     Set common block DCROPT
 C
@@ -739,6 +750,7 @@ C
       OPT_CHCKJZ     = .FALSE.
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
       no1pdens_save  = .true.
+      save_reordered_nos = .false.
 C
 C     Set common block DCCOPT
 C
@@ -770,18 +782,77 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "maxash.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
 #include "dcbdhf.h"
+      integer :: nasht_tmp, igas_tmp, accum_act(2)
 C
       CALL QENTER('TKRMCORB')
 C
 C
       NGAS_DC= NKRMCGAS
       MK2REF = NKRMC_MK2REF
+
+!     set active spaces and other derived variables for the full CI option
+      if(KRMC_full_ci)then
+        nasht_tmp = 0
+        DO I = 1,NFSYM
+          NKRMCASH(I) = NESH(I) - NKRMCISH(I)
+          nasht_tmp   = NESH(I) - NKRMCISH(I) + nasht_tmp
+        END DO
+        NKRMC_MAXMK2 = 2*MIN(NKRMCAELEC,nasht_tmp) - NKRMCAELEC
+        NKRMC_MINMK2 = NKRMCAELEC-2*MIN(NKRMCAELEC,nasht_tmp)
+        NKRMC_MK2DEL = NKRMC_MAXMK2
+        igas_tmp     = 0
+        accum_act(1) = 0
+        accum_act(2) = 0
+        do 
+          igas_tmp = igas_tmp + 1
+          if(NKRMCGSH(1,igas_tmp) == -9999)then
+            do i = 1, nfsym
+              NKRMCGSH(I,igas_tmp) = NKRMCASH(I) - accum_act(i)
+            end do
+            exit
+          else
+            do i = 1, nfsym
+              accum_act(i) = accum_act(i) + NKRMCGSH(I,igas_tmp)
+            end do
+          end if
+        end do
+!       print some extra info
+        write(lupri,*) 
+     &  '  *** extra info from TKRMCORB for full CI option ***'
+        write(lupri,*) 
+     &  '  ---------------------------------------------------'
+        write(lupri,*) 
+     &  '     total # of active orbitals: ', nasht_tmp
+
+        do i = 1, ngas_dc
+          WRITE(LUPRI,'(A,I3,A,2I4)')
+     &         '   - GAS space ',I,'       : ',
+     &         (NKRMCGSH(J,I),J=1,NFSYM)
+          WRITE(LUPRI,'(A,I3,A1,I3,A)')
+     &    '    (constraints: min/max active electrons after space : ',
+     &         NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
+        end do
+        write(lupri,*) 
+     &  '  ---------------------------------------------------'
+
+!       test for maximum # of orbitals
+!       if(nasht_tmp > 5)then
+        if(nasht_tmp > MAXASH)then
+          WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &         ' *** ERROR in *TKRMCORB *** Too many active orbitals: ',
+     &         nasht_tmp, ' -- max is ',MAXASH
+          CALL QUIT('*** ERROR in *TKRMCORB: Too many active orbitals!')
+        end if
+
+      end if ! full ci option
+
       MK2DEL = NKRMC_MK2DEL
       MINMK2 = NKRMC_MINMK2
       MAXMK2 = NKRMC_MAXMK2
@@ -829,6 +900,8 @@ C
       JKRRUNTYPE     = 1
 !     information from dcbdhf.h
       nopen_mc       = nopen
+      ISVRONO(1)     = IKRMC_SVRONO(1)
+      ISVRONO(2)     = IKRMC_SVRONO(2)
 C
 C     Set common block DCROPT
 C
@@ -841,12 +914,13 @@ C
 C
 C     Set common block DCLOPT
 C
-      OPT_SKIPEE     = KRMC_SKIPEE
-      OPT_SKIPEP     = KRMC_SKIPEP
-      OPT_NOCI       = KRMC_NOCI
-      OPT_UCIBOS     = KRMC_UCIBOS
-      OPT_CHCKJZ     = KRMC_CHCKJZ
-      no1pdens_save  = KRMC_NO1pdens
+      OPT_SKIPEE         = KRMC_SKIPEE
+      OPT_SKIPEP         = KRMC_SKIPEP
+      OPT_NOCI           = KRMC_NOCI
+      OPT_UCIBOS         = KRMC_UCIBOS
+      OPT_CHCKJZ         = KRMC_CHCKJZ
+      no1pdens_save      = KRMC_NO1pdens
+      save_reordered_nos = krmc_save_reordered_nos
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -948,6 +1022,8 @@ C
       JKRRUNTYPE     = 2
 !     information from dcbdhf.h
       nopen_mc       = nopen
+      ISVRONO(1)     = IKRCI_SVRONO(1)
+      ISVRONO(2)     = IKRCI_SVRONO(2)
 C
 C     Set common block DCROPT
 C
@@ -971,6 +1047,7 @@ C
       if(linear) opt_chckjz = .true.
 !     opt_chckjz = .true.
       no1pdens_save  = .true.
+      save_reordered_nos = save_reordered_nos_krci
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.
@@ -1020,7 +1097,7 @@ C
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirnod */
-      SUBROUTINE DIRNOD(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,MWORK)
+      SUBROUTINE DIRNOD(IPARCAL,IMYTID,IMPARID,INUMNOD)
 C***********************************************************************
 C
 C     Menu file for slave nodes. Check whether the program needs a slave
@@ -1031,21 +1108,20 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
-#include "implicit.h"
+      implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 #include "infpar.h"
       DIMENSION ISTAT(df_mpi_status_size)
       LOGICAL NEWTASK
+      integer :: IMPARID, INUMNOD, IMYTID, ITASK, ICHECK_MPI2, IPARCAL
+      real*8 :: CPU1, WALL1
 C
 C
-      DIMENSION WORK(MWORK)
       integer :: sleep_time=15
-C
+
       CALL QENTER('DIRNOD')
-      LWORK = MWORK
-#include "memint.h"
 C
 C     Transfer variables to common blocks
 C
@@ -1138,17 +1214,17 @@ C
 C
 C        Start calculating integrals for Fock matrices.
 C
-         CALL HERNOD(WORK,LWORK)
+         CALL HERNOD()
       ELSE IF (ITASK .EQ. 2) THEN
 C
 C        Start calculating integrals for MOLTRA.
 C
-          CALL TRANOD(WORK,LWORK)
+          CALL TRANOD()
       ELSE IF (ITASK .EQ. 3) THEN
 C
 C        Start coupled cluster calculation.
 C
-         CALL CCNOD(WORK,LWORK)
+         CALL CCNOD()
       ELSE IF (ITASK .EQ. 4) THEN
 C        Enter the DFT module
          call xcint_launch_slave_process()
@@ -1158,17 +1234,17 @@ C        Enter the DFT module
 C
 C        Enter the LUCITA module
 C
-         CALL LUCITA_NODE(WORK,LWORK)
+         CALL LUCITA_NODE()
       ELSE IF (ITASK .EQ. 6) THEN
 C
 C        start KRMC-LUCIAREL calculation.
 C
-         CALL LUCIAREL_NODE(WORK,LWORK)
+         CALL LUCIAREL_NODE()
       ELSE IF (ITASK .EQ. 7) THEN
 C
 C        start KR-MCSCF calculation.
 C
-         CALL KRMC_NODE_DRIVER(WORK,LWORK)
+         CALL KRMC_NODE_DRIVER()
 #endif /* VAR_MPI2 */
       ELSE
 C
@@ -1187,8 +1263,7 @@ C
  999  CALL QEXIT('DIRNOD')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirnod2 */
-      SUBROUTINE DIRNOD2(WORK,MWORK)
+      SUBROUTINE DIRNOD2()
 C***********************************************************************
 C
 C     Another menu file for slave nodes. This can be used to change the type
@@ -1206,11 +1281,7 @@ C
       LOGICAL NEWTASK
 C
 C
-      DIMENSION WORK(MWORK)
-C
       CALL QENTER('DIRNOD2')
-      LWORK = MWORK
-#include "memint.h"
 C
  100  CONTINUE
 C
@@ -1250,17 +1321,17 @@ C
 C
 C        Start calculating integrals for Fock matrices.
 C
-         CALL HERNOD(WORK,LWORK)
+         CALL HERNOD()
       ELSE IF (ITASK .EQ. 2) THEN
 C
 C        Start calculating integrals for MOLTRA.
 C
-          CALL TRANOD(WORK,LWORK)
+          CALL TRANOD()
       ELSE IF (ITASK .EQ. 3) THEN
 C
 C        Start coupled cluster calculation.
 C
-         CALL CCNOD(WORK,LWORK)
+         CALL CCNOD()
       ELSE IF (ITASK .EQ. 4) THEN
 C        Enter the DFT module
          call xcint_launch_slave_process()
@@ -1270,17 +1341,17 @@ C        Enter the DFT module
 C
 C        Enter the LUCITA module
 C
-         CALL LUCITA_NODE(WORK,LWORK)
+         CALL LUCITA_NODE()
       ELSE IF (ITASK .EQ. 6) THEN
 C
 C        start KRMC-LUCIAREL calculation.
 C
-         CALL LUCIAREL_NODE(WORK,LWORK)
+         CALL LUCIAREL_NODE()
       ELSE IF (ITASK .EQ. 7) THEN
 C
 C        start KR-MCSCF calculation.
 C
-         CALL KRMC_NODE_DRIVER(WORK,LWORK)
+         CALL KRMC_NODE_DRIVER()
 #endif /* VAR_MPI2 */
       ELSE
 C

@@ -14,8 +14,6 @@ Water molecule. Levy-Leblond calculation. Spin-spin couplings
 **WAVE FUNCTIONS
 .SCF
 **PROPERTIES
-#.SPIN-SPIN
-#.DSO
 .NMR
 *LINEAR RESPONSE
 .PRINT

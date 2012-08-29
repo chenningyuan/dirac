@@ -1,5 +1,0 @@
-!
-! This test calculates the hcn ionization spectrum with a small test basis.
-!
-! The  run is ONLY for testing pruposes : it is NOT a good approximation
-! to use a basis set that is small as this one 

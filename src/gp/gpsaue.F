@@ -3372,6 +3372,7 @@ C
       RETURN
       END
 
+#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qjacobi */
         SUBROUTINE QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT) 
@@ -5711,6 +5712,7 @@ C     ... do own check
 
       RETURN
       END
+#endif /* MOD_UNRELEASED */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prdiag */
       SUBROUTINE PRDIAG(A,LRA,N)

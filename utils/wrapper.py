@@ -37,17 +37,16 @@ be deleted at the end of a run.
 		     help="Do not create an archive file.")
     group.add_option('--backup', type='int', default=1, dest='backup_level',
 		     help="Set backup level for output files [default: %default]. Set to 0 for no backup.")
-
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
                      metavar='[NAME=]FILE]')
-    group.add_option('--allow-empty-infiles', action='store_true', dest="allow_empty_infiles",default=False,
-		     help="Do not stop if infiles do not exist.")
     group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
 		     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
     group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
 		     help='Copy FILE from temporary directory after the calculation',
                      metavar='NAME[=FILE]')
+    group.add_option('-p', '--pcm', type='string', action='callback', callback=W.pcm_callback,
+                     help='PCM calculation: parse PCM input and copy it to scratch')
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Temporary directory options')
@@ -90,7 +89,7 @@ be deleted at the end of a run.
     W.tmppath = options.tmppath
     W.tmpbase = options.tmpbase
     W.keeptmp = options.keeptmp
-    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP','PEDRA.OUT','cavity.off']
+    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP','cavity.off','PEDRA.OUT', 'PCM_mep_asc']
 
     # Detect file types in args from the file names, set up job name
     molpath = None
@@ -155,8 +154,6 @@ be deleted at the end of a run.
     W.stdin = None
     if not options.noarchive:
         W.archive = jobname+'.tgz'
-    if options.allow_empty_infiles:
-        W.allow_empty_infiles = True
 
     # Append executable itself to the commands to be run
     if options.executable is None:
@@ -215,12 +212,12 @@ class Wrapper:
         self.archive = None
         self.archpatterns = []
         self.verbose = False
-        self.allow_empty_infiles = False
         self.workdir = None
         self.env = os.environ.copy()
         self.remote_hosts = set() # Duplicate tmpdir and stage in on these hosts
         self.rsh = 'ssh'
         self.rcp = 'scp'
+        self.do_pcm = False 
 
     def define_callback(self, option, opt, value, parser):
 	if '=' in value:
@@ -252,7 +249,20 @@ class Wrapper:
 	    self.copyout.append([value])
 
     def command_callback(self, option, opt, value, parser):
-	self.cmdlines.append(shlex.split(value))        
+	self.cmdlines.append(shlex.split(value))       
+ 
+    def pcm_callback(self, option, opt, value, parser):
+        if value is None: 
+            sys.exit('No .pcm file specified') 
+        else:
+            self.copyin.append([value,'pcmsolver.inp'])
+	if 'PCMSOLVER_PARSE' in os.environ.keys():
+	    self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver']) 
+	else:
+            self.copyin.append(['pcmsolver','pcmsolver'])
+#        self.archpatterns.append('PEDRA.OUT')
+#        self.archpatterns.append('cavity.off')
+        self.do_pcm = True
 
     def setup(self):
         try:
@@ -306,7 +316,7 @@ class Wrapper:
                 else:
                     print >> sys.stderr, "Wrapper: Cannot determine type of archive file",a,"quitting."
                     sys.exit(1)
-                    t.extractall(path=self.tmppath)
+                t.extractall(path=self.tmppath)
             except:
                 print >> sys.stderr, "Wrapper: Error extracting files from '"+a+"', quitting."
                 raise
@@ -327,9 +337,7 @@ class Wrapper:
                     print >> sys.stderr, "Wrapper: File copy failed, quitting."
                     raise
             else:
-                if not self.allow_empty_infiles:
-                    print >> sys.stderr, "Wrapper: File copy failed, source file nonexistent, quitting."
-                    raise
+                print >> sys.stderr, "Wrapper: File copy of %s failed, source file nonexistent." % src
         for h in self.remote_hosts:
             try:
                 self.run_cmd([self.rcp]+glob.glob(os.path.join(self.tmppath,'*'))+[h+':'+self.tmppath])
@@ -341,7 +349,13 @@ class Wrapper:
         try:
             if self.verbose: print "Wrapper: Copying '"+src+"' to '"+dst+"'"
             if len(rep) == 0:
-                shutil.copy2(src,dst)
+                if src.endswith('.gz') and not dst.endswith('.gz'):
+                    # -ifile.gz=file
+                    # guzip file after copyin
+                    shutil.copy2(src, dst+'.gz')
+                    os.system('gunzip %s.gz' % dst)
+                else:
+                    shutil.copy2(src,dst)
             else:
                 if self.verbose:
                     for r in rep:
@@ -388,7 +402,13 @@ class Wrapper:
         for f in self.copyout:
             try:
                 if len(f) == 2:
-                    cpout(os.path.join(self.tmppath,f[0]),f[1])
+                    if f[1].endswith('.gz') and not f[0].endswith('.gz'):
+                        # -gfile=file.gz
+                        # gzip file and add file.gz=file.gz to cpout
+                        os.system('gzip %s' % os.path.join(self.tmppath, f[0]))
+                        cpout(os.path.join(self.tmppath,f[0]+'.gz'),f[1])
+                    else:
+                        cpout(os.path.join(self.tmppath,f[0]),f[1])
                 else: # allow patterns in copyout if there is no = 
                     for ff in glob.glob(os.path.join(self.tmppath,f[0])):
                         cpout(ff)
@@ -446,7 +466,8 @@ class Wrapper:
     def run(self):
         try:
             os.chdir(self.tmppath)
-            os.system('./pcmsolver --dryrun')
+            if self.do_pcm:
+		os.system('./pcmsolver --dryrun')
             for cmd in self.cmdlines:
                 self.run_cmd(cmd)
         finally:

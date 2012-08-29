@@ -6,7 +6,7 @@
       character*7 DIRACONE
       COMMON/KRCC_CLUNIT/LUIN,LUOUT,
      &              LUDIA,LUC,LUHC,
-     &              LUSC1,LUSC2,LUSC3,
+     &              LUSC1,LUSC2,LUSC3,LUSC4,LUSC5,
      &              LUSC41,
      &              LUSC81,LUSC82,
 *   Added for MRCC

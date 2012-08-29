@@ -1,3 +1,5 @@
-$ERROR 1.E-7
+$ERROR 1.E-8
+Nlines 5:Final geometry
 
-Nlines 1:Electronic energy
+$ERROR 1.E-9
+Nlines 1:Energy at final geometry is

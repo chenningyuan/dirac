@@ -52,6 +52,7 @@ module x2c_cb_interface
 contains
 
   subroutine init_x2c_cb(init_x2c_cb_blocks,   &
+                         prop_op_nopct,        &
                          prop_op_dgsym,        &
                          prop_op_trsym,        &
                          prop_op_name)
@@ -74,6 +75,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     logical, intent(in)                         :: init_x2c_cb_blocks
+    logical, optional, intent(out)              :: prop_op_nopct
     integer, optional, intent(out)              :: prop_op_dgsym(*)
     integer, optional, intent(out)              :: prop_op_trsym(*)
     character (len=16), optional, intent(out)   :: prop_op_name(*)
@@ -187,8 +189,8 @@ contains
          if(x2c_4c_fock_mtx_defh1)then
 !          converged 4c-Fock-Dirac operator
            x2c_is_defining_h1mat      =  2
-           scf_iter_counter           = -1
-           diis_counter               = -1
+           scf_iter_counter           = niter
+           diis_counter               = mxdiis
            nr_2e_fock_matrices        = nfmat
            file_name_1e_fock_matrix   = 'DFFCK1'
            file_name_2e_fock_matrices = 'DFFCK2'
@@ -213,6 +215,7 @@ contains
              prop_op_trsym(i) = iprptim(i)
              prop_op_name(i)  = prpnam(i)
            end do
+           prop_op_nopct      = nopct
          end if
 
        end if ! initialize x2c information from Dirac common blocks
@@ -350,7 +353,7 @@ contains
          close(fh,status='delete')
 !
 !        initialize sub-block diagonalization in DFDIAG
-         if(linear) sub_bl = .true.
+         if(linear .or. spinfr) sub_bl = .true.
        end if
 
 !      step 2: recalculate offsets and globally used pointers

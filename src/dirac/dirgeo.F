@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgeo */
-      SUBROUTINE PAMGEO(WORK,LWORK)
+      SUBROUTINE PAMGEO()
 C*****************************************************************************
 C
 C     Module for geometry optimization
@@ -66,16 +66,14 @@ C       We want the analytical gradient, check whether it is implemented
      *     //' function type).'
         ENDIF
       ENDIF
-      WRKDLM = 0.0D00
-      IWOFF  = 0
-      CALL OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+      CALL OPTMIN()
 C
       CALL QEXIT('PAMGEO')
       RETURN
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck exedir */
-      SUBROUTINE EXEDIR(WORK,LWORK)
+      SUBROUTINE EXEDIR()
 C*****************************************************************************
 C
 C     (c) 1997/07/09 by J. Thyssen
@@ -85,8 +83,8 @@ C
 C     Last revision: 1997/07/08 jth
 C
 C*****************************************************************************
+      use dirac_cfg
 #include "implicit.h"
-      DIMENSION WORK(LWORK)
       LOGICAL FIRST
       SAVE FIRST
       DATA FIRST /.TRUE./
@@ -94,6 +92,7 @@ C
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
+#include "dcbham.h"
 C
       CALL QENTER('EXEDIR')
 C
@@ -116,14 +115,14 @@ C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
 C***********************************************************************
 C
-         CALL PAMINP(WORK,LWORK)
+         CALL PAMINP()
          IF ( INPTES ) RETURN
 C
 C*****************************************************************************
 C*****  S E T U P  -  M O D U L E  *******************************************
 C*****************************************************************************
 C
-         CALL PAMSET(WORK,LWORK)
+         CALL PAMSET()
       END IF
 C
 C
@@ -135,21 +134,21 @@ C     Always do wave function
       DOPSI = .TRUE.
 C
 C
-      IF(DOPIN) CALL PCMOIN(WORK,LWORK)
+      CALL PCMOIN()
 C
 C     Since there is no fun in doing a geometry optimization
 C     without a wave function, PAMPSI is always called.
 C
-      CALL PAMPSI(WORK,LWORK)
-      IF(DOACUT) CALL ACMOUT(WORK,LWORK)
-      IF(DOPUT) CALL PCMOUT(WORK,LWORK)
+      CALL PAMPSI()
+      IF(DOACUT) CALL ACMOUT()
+      IF(DOPUT) CALL PCMOUT()
 C
 C
 C*****************************************************************************
 C*****  A N A L Y S I S    M O D U L E  **************************************
 C*****************************************************************************
 C
-      IF(DOANA) CALL PAMANA(WORK,LWORK)
+      IF(DOANA) CALL PAMANA()
 C
 C
 C*****************************************************************************
@@ -157,13 +156,7 @@ C*****  R E S P O N S E    M O D U L E  **************************************
 C*****************************************************************************
 C
 C
-      IF (DOPRP) CALL PAMPRP(WORK,LWORK)
-C
-C*****************************************************************************
-C***** H E I N Z *************************************************************
-C*****************************************************************************
-C
-      IF(DOHEINZ) CALL HEINZ(WORK,LWORK)
+      IF (DOPRP) CALL PAMPRP()
 C
 C
       CALL FLSHFO(LUPRI)

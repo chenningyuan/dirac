@@ -23,7 +23,7 @@ C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamset */
-      SUBROUTINE PAMSET(WORK,LWORK)
+      SUBROUTINE PAMSET()
 C***********************************************************************
 C
 C     Subroutine for setting dimensions and generate overlap and Lowdin
@@ -33,11 +33,13 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
+      use memory_allocator
       use visual_cfg
       use x2cmod_cfg
 #ifdef MOD_CAP
-      USE Memory
+      use memory
 #endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -51,11 +53,18 @@ C
 #include "cbihr1.h"
 #include "cbirea.h"
 #include "infpar.h"
+
+#ifdef BUILD_GEN1INT
+#include "gen1int.h"
+#endif
 C
       LOGICAL TWOBUF,GOFAST,TOBE
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
 
       CALL QENTER('PAMSET')
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in PAMSET')
+
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
 C     Attempt a restart unless geometry optimization
@@ -74,7 +83,7 @@ C
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
         IPREAD = IPREAD - 5
-        CALL READIN(WORK,LWORK,.FALSE.)
+        CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
         IPREAD = IPREAD + 5
       ENDIF
@@ -87,6 +96,14 @@ C
 #ifdef MOD_ECP
       IF (ECPCALC) CALL RECP
 #endif
+
+#ifdef BUILD_GEN1INT
+!     test suite of gen1int interface
+      if (test_gen1int) then
+         call gen1int_host_test(lwork, work, lupri, iprdef)
+      end if
+#endif
+
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
 !     gosia: don't restart and don't generate integrals if visual_cfg_london
@@ -154,6 +171,7 @@ C
       CALL RELINF
 C
       CALL TIMER('PAMSET',TIMSTR,TIMEND)
+      call dealloc(WORK)
       CALL QEXIT('PAMSET')
       RETURN
       END

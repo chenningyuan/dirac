@@ -531,11 +531,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (CC_ALONE)
-      SUBROUTINE CCMAIN (MAXCORE,IUNIN,IUNUT,CA,INTFCE)
-#else
-      SUBROUTINE CCMAIN (CC,MAXCORE,IUNIN,IUNUT,CA,INTFCE)
-#endif
+      SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
       use memory_allocator
       use allocator_parameters, only : klongint, kreal 
@@ -573,12 +569,6 @@ C     CC is the static memory  (when called as subroutine)
 C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
-#if defined (CC_ALONE)
-      This construction works for most systems
-      REAL*8, ALLOCATABLE:: CC(:)
-#else
-      REAL*8 CC(MAXCORE)
-#endif
       PARAMETER (MAXSP=1000)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
@@ -639,10 +629,6 @@ C     Memory and I/O setup section
 C     ----------------------------
 C
       call allocator_get_available_mem(total_mem_new)
-#if defined (VAR_MPI) && defined (VAR_IFORT)
-!mi: control printout because of "forrtl: error (65): floating invalid"
-      print *,'check: total_mem_new=',total_mem_new
-#endif
       maxcor = nint((total_mem_new/8.0d0),kind(8))
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
@@ -722,45 +708,41 @@ C     ---------------------------------------------------
 C
       ICALC = 1
       ALLOC_ME = .FALSE.
-      KFREE = 1
-      LFREE = MAXCOR
 C 
       MXCORR1 = 0
 
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSP,IREPSPI)
+      CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
 
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
       IF (DOENER) THEN
          MXCORR1 = 0
-         CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
+         CALL CCENER (ICALC,MXCORR1,EPS)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
       IF (DOFOPR) THEN
          MXCORR1 = 0
-         CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
+         CALL CCFOPR (ICALC,NSP,IREPSPI,MXCORR1,EPS)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
       IF (DOSOPR) THEN
          MXCORR1 = 0
-         CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
+         CALL CCHESS (ICALC,MXCORR1,EPS,NSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
       IF (DOFSPC) THEN
          MXCORR1 = 0
-         CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
-     &               IREPSP,IREPSPI)
+         CALL CCFSPC(ICALC,MXCORR1,EPS1,EPS,NSP,IREPSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
 C excitation energy code (e.g. rpa) is disabled
 C     IF (DOEXCIT) THEN
 C        MXCORR1 = 0
-C        CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
+C        CALL CCEXC (ICALC,MXCORR1,EPS,NSP,IREPSPI)
 C        MXCORR = MAX(MXCORR,MXCORR1)
 C     ENDIF
 C
@@ -768,13 +750,6 @@ C MXCORR is a cumulative maximum of individual memory requirements
 C and MAXCOR is the fixed maximum of core memory available on this
 C node. ===> if any subroutine would need more core memory we quit.
 
-C
-C  Allocate the memory and check if it is a standalone version
-C
-#if defined (CC_ALONE)
-      ALLOCATE (CC(MXCORR))
-#endif
-C
       WRITE (IW,1001) MXCORR
 C
       CALL GETTIM(CPU2,WALL2)
@@ -789,11 +764,9 @@ C     ----------------------
 C
       ICALC = 2
       ALLOC_ME = .TRUE.
-      KFREE = 1
-      LFREE = MXCORR
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
-      IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
+      IF (DOSORT) CALL CCSETI (ICALC,MXCORR,EPS,
      &                         NSP,IREPSP,IREPSPI)
 
       CALL XTIME(5,2,'Sorting of integrals          ')
@@ -804,7 +777,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOENER) CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
+      IF (DOENER) CALL CCENER (ICALC,MXCORR,EPS)
       CALL GETTIM(CPU2,WALL2)
       CPUE = CPUE + CPU2 - CPU1
       CPU1 = CPU2
@@ -812,8 +785,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,
-     &            LFREE,MXCORR,EPS)
+      IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
       CALL GETTIM(CPU2,WALL2)
       CPUFO = CPUFO + CPU2 - CPU1
       CPU1 = CPU2
@@ -821,8 +793,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOSOPR) CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                         NSP,IREPSPI)
+      IF (DOSOPR) CALL CCHESS (ICALC,MXCORR,EPS,NSP,IREPSPI)
       CALL GETTIM(CPU2,WALL2)
       CPUSO = CPUSO + CPU2 - CPU1
       CPU1 = CPU2
@@ -830,8 +801,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
-     &                         NSP,IREPSP,IREPSPI)
+      IF (DOFSPC) CALL CCFSPC(ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
       CALL GETTIM(CPU2,WALL2)
       CPUFS = CPUFS + CPU2 - CPU1
       CPU1 = CPU2
@@ -1881,8 +1851,7 @@ C
      &       //T40,8(1X,A4))
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                   NSP,IREPSP,IREPSPI)
+      SUBROUTINE CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -1920,7 +1889,6 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
 C
@@ -1952,8 +1920,6 @@ C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
-      KFRSAV=KFREE
-      LFRSAV=LFREE
 C
       call allocator_get_words_inuse(start_mem_use)
 C
@@ -2034,8 +2000,6 @@ C
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
-         KFREE = KFRSAV
-         LFREE = LFRSAV
          GOTO 450
       ENDIF
 C
@@ -2055,7 +2019,7 @@ C
      &            IREPSPI,a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
      &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
-     &            a_FVV,BREIT,SRTALL,INTERFACE,CC)
+     &            a_FVV,BREIT,SRTALL,INTERFACE)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
@@ -2085,10 +2049,9 @@ C
 1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
+      SUBROUTINE CCENER (ICALC,MXCORR,EPS)
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
-
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2126,7 +2089,6 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       REAL*8 TOL
       LOGICAL ALLOC_ME
@@ -2272,6 +2234,8 @@ C
          WRITE (IW,1008) MXITCC,MXDIMCC,10.0D0**(-NTOLCC)
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
+
+
          TOL = 10.0D0**(-NTOLCC)
 C
 C        Initialize T1 and T2 amplitudes
@@ -2332,7 +2296,6 @@ C
          ENDIF
 C
  421     CONTINUE
-         call dealloc(a_S2  )
          call dealloc(a_AZ  )
          call dealloc(a_H   )
          call dealloc(a_HO  )
@@ -2414,6 +2377,7 @@ C
       call dealloc(a_T1  , id="fvo")
       call dealloc(a_T2  , id="fvo")
       call dealloc(a_S1  , id="s1")
+      call dealloc(a_S2  , id="s2")
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -2432,8 +2396,7 @@ C
 1012  FORMAT (/' Skipping CCSD(T) calculation')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,
-     &                   MXCORR,EPS)
+      SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2480,7 +2443,6 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
@@ -2506,10 +2468,12 @@ C
       integer(kind=klongint) :: mxcr    = 0
       integer(kind=klongint) :: mxcorr
       integer                :: freemem = 0
+      integer                :: work_memsize
 C
 C---------------Executable code--------------------------------------
 C
       call allocator_get_words_inuse(start_mem_use)
+      call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
          WRITE (IW,*) ' CCSD gradient not yet implemented,'
@@ -2606,7 +2570,12 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-      NBUF3 = freemem / RCW
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+      NBUF3 = (freemem - work_memsize) / RCW
 C
 C     Allocate now also this remaining work array
 C
@@ -2713,17 +2682,17 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-      NBUF3 = freemem / RCW
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+      NBUF3 = (freemem - work_memsize) / RCW 
 C
 C     Allocate now also this remaining work array
 C
       call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 C
-C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
-C
-      KFREE = 1
-      LFREE = NBUF3*RCW 
-
       call allocator_get_words_inuse(current_mem_use)
       mxcorr = current_mem_use - start_mem_use
 
@@ -2739,15 +2708,14 @@ C
 C         this means that, for the time being, we can deallocate everything? 
 #if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
-             IF (ICALC.EQ.2) CALL DIRNOD2(a_BUF3,NBUF3)
-             RETURN
+             IF (ICALC.EQ.2) CALL DIRNOD2()
+             goto 431
           ENDIF
 #endif
 C
 C        Get MP2 amplitudes and lambdas
 C
          CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
-
 C
 C        Get amplitude part of density matrix
 C
@@ -2781,8 +2749,6 @@ C
 C
           CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
          END IF
-C
-c        CALL MEMCHK('mp2g 2.1',CC,1)
 C
 C        Release the slaves (in case of parallel runs)
 C
@@ -2830,8 +2796,7 @@ C
      &         " Check that you specified DOENER and DOCCSD !")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                   NSP,IREPSPI)
+      SUBROUTINE CCHESS (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2859,7 +2824,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       DIMENSION IREPSPI(*)
 C
@@ -3003,8 +2967,7 @@ C
      &        " at frequency :",F15.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                  NSP,IREPSPI)
+      SUBROUTINE CCEXC (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -3032,7 +2995,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3155,8 +3117,7 @@ C
      &        /" Calculate",I3," excitation energies for irrep ",A4)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCFSPC (ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
-     &                  NSP,IREPSP,IREPSPI)
+      SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -3181,7 +3142,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS1(*),EPS(*)
       DIMENSION IREPSP(*),IREPSPI(*)
 C
@@ -3240,8 +3200,6 @@ CMI ... more print out
 C
 C Allocate space for the Fock space CCSD energy calculation
 C
-      KFRSAV = KFREE
-      LFRSAV = LFREE
       MXCORR = 0
 C
 C  Set up symmetry tables and parallel distribution list
@@ -3253,8 +3211,7 @@ C
 C     Ask for the memory requirements of the modules
 C
       MXCORR1 = 0
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSP,IREPSPI)
+      CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
       MXCORR = MAX(MXCORR,MXCORR1)
 C
 C     Set restart on sorted integrals to false
@@ -3317,15 +3274,12 @@ C
 C     Allocate the work array
 C
       call alloc( a_BUF3 , NBUF3*RCW , id="buf3")
-      write (*,*) 'debug, kind buf3 :',kind(a_BUF3)
 
       call allocator_get_available_mem(total_mem_new)
       mxcorr= nint((total_mem_new/kind(a_BUF3)),kind(8))
 C
       IF (ICALC.LE.1) THEN
          WRITE (IW,1001) "Fock space CCSD energies",MXCORR
-         KFREE = KFRSAV
-         LFREE = LFRSAV
 C
 C        Reset symmetry tables to normal (single reference CC use)
 C

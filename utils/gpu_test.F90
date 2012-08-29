@@ -153,10 +153,11 @@ REAL(kind=size_of_real),   ALLOCATABLE :: WORK_r(:)
 integer, allocatable :: ipiv(:), ipiv1(:)
 
 ! extra stuff for checking QR-decomposition from SGEQRF ouputs
-real(kind=size_of_real),  allocatable:: H_r(:,:),Q_r(:,:),Q1_r(:,:),v_r(:) , A1_r(:,:), A2_r(:,:)
+real(kind=size_of_real),  allocatable:: H_r(:,:),Q_r(:,:),Q1_r(:,:),v_r(:), A1_r(:,:), A2_r(:,:)
+real(kind=size_of_real),  allocatable:: b1_r(:),b2_r(:)
 
 #if ARCH_64
-! 8-byte pointers on 64-bit architectures
+! 8-byte pointers on 64-bit architectures for CUDA routines (CULA does not need them)
 integer*8 :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
 #else
 integer   :: devPtrA,devPtrB,devPtrC,devPtrx,devPtry
@@ -1080,6 +1081,7 @@ subroutine sgeqrf_test
 end subroutine sgeqrf_test
 
 subroutine sgesv_test
+! test of solving linear equations;  A.x=b
 #if defined USE_CULA
 #if defined VAR_IFORT
   real(kind=size_of_real), external :: rand
@@ -1099,7 +1101,7 @@ subroutine sgesv_test
     stop "error in TAU_r, TAU1_r array allocation"
   else
     if (verb.ge.1) then
-      print *,"allocated arrays for solving linear equations"
+      print *,"allocated real*4 arrays TAU_r(n), TAU1_r(n) for solving linear equations"
     endif
   endif
   allocate(ipiv(n),ipiv1(n),STAT=AllocateStatus)
@@ -1107,27 +1109,46 @@ subroutine sgesv_test
     stop "error in ipiv, ipiv1 integer arrays allocation"
   else
     if (verb.ge.1) then
-      print *,"allocated integer arrays ipiv, ipiv1 for solving linear equations"
+      print *,"allocated integer arrays ipiv(n), ipiv1(n) for solving linear equations"
     endif
   endif
-! fill allocated objects A_r, B_r, TAU1_r, TAU_r with random data for later checking
-  if (verb.ge.3) then
-    write(*,"(2X,A)") "Matrix A and vector b for solving linear equations Ax=b:"
+
+  if (verb.ge.1) then
+     allocate(A1_r(n,n),A2_r(n,n),b1_r(n),b2_r(n),STAT=AllocateStatus)
+     if (AllocateStatus.ne.0) then
+        stop "error in A1_r(n,n),A2_r(n,n),b1_r(n),b2_r(n) allocations"
+     else
+        print *,"A1_r(n,n),A2_r(n,n),b1_r(n),b2_r(n) additional allocations OK." 
+     endif
   endif
+
+! fill allocated objects A_r, B_r, TAU1_r, TAU_r with random data for later checking
+  !write(*,"(2X,A)") "Matrix A[i,j]=-i+j*j and vector b[i]=i*i for solving linear equations Ax=b:"
+  !write(*,"(2X,A)") "Matrix A[i,j]=i+j and vector b[i]=i for solving linear equations Ax=b:"
+  write(*,"(2X,A)") "Matrix A[i,j]=rand(0) and vector b[i]=rand(0) for solving linear equations Ax=b:"
   do i=1,n
   do j=1,n
-     A_r(i,j) = rand(0);  B_r(i,j)=A_r(i,j)
-     !A_r(i,j) = float(i)+float(j);  B_r(i,j)=A_r(i,j)
-     !A_r(i,j) = float(i)+(float(j)*float(j));  B_r(i,j)=A_r(i,j)
+     A_r(i,j) = rand(0);  ! <= ONLY RANDOM WORKS !!!
+     !A_r(i,j) = float(i)+float(j);  
+     !A_r(i,j) = float(i)-(float(j)*float(j)); 
+     !A_r(i,j) = float(i)-(float(j)*float(j))-(float(i)*float(j)); 
+     B_r(i,j)=A_r(i,j)
      if (verb.ge.3) then
         write(*,"(7X,A,i2,A,i2,a,f12.7)")  "A[",i,",",j,"]=",A_r(i,j)
      endif
+     if (verb.ge.1) then
+       A1_r(i,j)=A_r(i,j);A2_r(i,j)=A_r(i,j)
+     endif
   enddo
-     TAU_r(i) = rand(0);  TAU1_r(i) = TAU_r(i) 
-     !TAU_r(i) = float(i);  TAU1_r(i) = TAU_r(i) 
-     !TAU_r(i) = float(i+1);  TAU1_r(i) = TAU_r(i) 
+     TAU_r(i) = rand(0) ! <= ONLY RANDOM WORKS!!!
+     !TAU_r(i) = float(i)*float(i)-1
+     !TAU_r(i) = 2*float(i)*float(i)-1
+     TAU1_r(i) = TAU_r(i)
      if (verb.ge.3) then
         write(*,"(7X,A,I2,A,f12.7)") "b[",i,"]=",TAU_r(i)
+     endif
+     if (verb.ge.1) then
+       b1_r(i) = TAU_r(i); b2_r(i) = TAU_r(i)
      endif
   enddo
   stat = CULA_INITIALIZE(); call check_cula_status(stat)
@@ -1138,13 +1159,14 @@ subroutine sgesv_test
   call system_clock( count=c2 )
   call check_cula_status(stat)
   call print_time("GPU CULA_SGESV")
-
   stat = CULA_SHUTDOWN(); call check_cula_status(stat)
-  ! now lapack sgesv with time measurement...
+
+  ! now CPU lapack sgesv with time measurement...
   call system_clock( c1, cr, cm )
   call sgesv(n, 1 , B_r, n , ipiv1, TAU1_r, n, stat )
   call system_clock( count=c2 )
   IF (stat.ne.0) then
+    print *,'CPU LAPACK SGESV returning error argument (check manual):',stat 
     stop "error in CPU LAPACK SGESV ..."
   else
     if (verb.ge.1) then
@@ -1164,9 +1186,24 @@ subroutine sgesv_test
       print *,i,TAU_r(i),TAU1_r(i),TAU_r(i)-TAU1_r(i)
     endif
   enddo
-  write(*,"(1X,A,D11.6)") '*** FINAL CONTROL OF RESULTS - GPU CULA_SGESV vs CPU SGESV averaged absolute diffs are ',diffs/float(n)
+  write(*,"(1X,A,D11.6)") & 
+  '*** FINAL CONTROL OF RESULTS - roots GPU CULA_SGESV vs CPU SGESV averaged absolute diffs are ',diffs/float(n)
+  ! -------------------------------------------------------- !
+  ! ---- HARD CHECK OF ROOTS against relation A.x-b=0   ----
+  ! -------------------------------------------------------- !
+  if (verb.ge.1) then
+    !now perform CPU lib routine:  y = beta*y+alpha*A*x
+    call sgemv('n',n,n,+1.0e0,A1_r,n,TAU1_r,1,-1.0e0,b1_r,1) ! CPU - vector b1_r should be zero
+    write(*,"(2X,A,D11.6)") 'CPU SGESV Ax-b=0 vector control output, norm: ',snrm2(n,b1_r,1)
+
+    stat = CULA_INITIALIZE(); call check_cula_status(stat)
+    stat=cula_sgemv('n',n,n,+1.0e0,A2_r,n,TAU_r,1,-1.0e0,b2_r,1) ! GPU - vector b2_r should be zero
+    stat = CULA_SHUTDOWN(); call check_cula_status(stat)
+    write(*,"(2X,A,D11.6)") 'GPU SGESV Ax-b=0 vector control output, norm: ',snrm2(n,b2_r,1)
+  endif
+
 #else
- print *,'sorry, CULA library is not active'
+ print *,'sorry, CULA library (at least free version) is not active'
 #endif
 end subroutine sgesv_test
 

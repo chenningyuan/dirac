@@ -1235,6 +1235,7 @@ C
             IDXG2U(IORBI) = -1
             IDXG2S(IORBI) = -1
 C
+            IDXP2G(IPSHI) = IORBI
          END DO
          DO I = 1, NISH(IFSYM)
             IORBI = IORBI + 1

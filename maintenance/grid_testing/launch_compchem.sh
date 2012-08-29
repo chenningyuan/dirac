@@ -74,8 +74,7 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scr
 
 #####################################################################
 
-echo -e "\n --- Launching quick runtest --- \n "; 
-
+#echo -e "\n --- Launching quick runtest --- \n "; 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
 #python ./runtest --verbose --quick --mpi=2  #  works

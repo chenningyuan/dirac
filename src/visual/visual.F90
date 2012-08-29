@@ -26,16 +26,14 @@ module visual
   use codata
   use ao_eval
   use interface_ao
-  use matrix_defop
-  use matrix_genop, only: copy_matrix_sym
+  use matrix_defop_old
+  use matrix_genop_old, only: copy_matrix_sym
   use dirac_interface
-#ifdef MOD_UNRELEASED
   use visual_london
   use xc_london_c1
-#endif
   use visual_integrate
   use visual_in_point
-
+  use electrostatic_potential
 
   implicit none
 
@@ -89,6 +87,7 @@ contains
 
     integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
     type(matrix) :: D_mo_dagger, TP, TM, T
+    logical, allocatable :: matrix_is_unperturbed(:)
 !   ----------------------------------------------------------------------------
 
     max_ao_g_order = 0
@@ -178,22 +177,22 @@ contains
 
        close(file_unit)
     else
-!      read from DFCOEF       
+!      read from DFCOEF
 
        call read_mo_coef(cmo_from_file)
 
 !      find occupation
-      
+
        call alloc(eigenvalues, norbt)
        eigenvalues = 0.0d0
-      
+
        call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
        call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
-      
+
        close(file_unit, status = 'keep')
        write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
 
-!fixme verify whether this is really needed      
+!fixme verify whether this is really needed
 !      when i introduced it i needed it so that certain arrays were properly set
 !      when restarting from DFCOEF
        call fndocc(eigenvalues, .true.)
@@ -231,7 +230,6 @@ contains
 
     call init_mat(D_mo, norbt, norbt)
 
-#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
 
        D_mo%elms = 0.0d0
@@ -243,62 +241,66 @@ contains
        D_0 = C*(D_mo*dag(C))
        D_0 = 2.0d0*D_0
 
+       if (.not. visual_cfg_london_skip_ro) then
+          ! get T^B matrix in MO basis
 
-!      get T^B matrix in MO basis
+          call init_mat(D_con_mo, norbt, norbt)
+          D_con_mo%elms = 0.0d0
 
-       call init_mat(D_con_mo, norbt, norbt)
-       D_con_mo%elms = 0.0d0
+          if (visual_cfg_london_none) then
 
-       if (visual_cfg_london_none) then
+             call init_mat(D_con_mo_ai, norbt, norbt)
+             D_con_mo_ai%elms = 0.0d0
 
-          call init_mat(D_con_mo_ai, norbt, norbt)
-          D_con_mo_ai%elms = 0.0d0
+             call get_d_con_mo(D_con_mo, occupation, &
+                               D_con_mo_ai = D_con_mo_ai)
 
-          call get_d_con_mo(D_con_mo, &
-                            D_con_mo_ai = D_con_mo_ai)
+             call copy_matrix_sym(D_con_mo_ai, D_con_mo)
 
-          call copy_matrix_sym(D_con_mo_ai, D_con_mo)
+          else
 
-       else
+             call get_d_con_mo(D_con_mo, occupation)
 
-          call get_d_con_mo(D_con_mo)
+          end if
 
-       end if
-
-       if (.not. levyle) then
-!         radovan: magic factor for levyle
-!                  need to find the reason for it
-          D_con_mo = 0.5d0*D_con_mo
-          if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
-       end if       
+          if (.not. levyle) then
+!            radovan: magic factor for levyle
+!                     need to find the reason for it
+             D_con_mo = 0.5d0*D_con_mo
+             if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
+          end if
 
 
-!      build 'modified' (by T^B) density matrices:
+!         build 'modified' (by T^B) density matrices:
 
-       call init_mat(D_con, norbt, norbt)
-       D_con%elms = 0.0d0
-       call copy_matrix_sym(D_con, D_con_mo)
+          call init_mat(D_con, norbt, norbt)
+          D_con%elms = 0.0d0
+          call copy_matrix_sym(D_con, D_con_mo)
 
-       if (nfsym == 2) then
-          call get_mdm_con(D_con,                     &
-                           D_con_mo,                  &
-                           C, Cig, Csg,               &
-                           Ciu = Ciu,                 &
-                           Csu = Csu)
-       else
-          call get_mdm_con(D_con,                     &
-                           D_con_mo,                  &
-                           C, Cig, Csg)
+          if (nfsym == 2) then
+             call get_mdm_con(D_con,                     &
+                              D_con_mo,                  &
+                              C, Cig, Csg,               &
+                              Ciu = Ciu,                 &
+                              Csu = Csu)
+          else
+             call get_mdm_con(D_con,                     &
+                              D_con_mo,                  &
+                              C, Cig, Csg)
+          end if
        end if
 
     end if
-#endif
+
+    allocate(matrix_is_unperturbed(visual_cfg_nr_dmat))
+    matrix_is_unperturbed = .false.
 
     do imat = 1, visual_cfg_nr_dmat
 
        if (visual_cfg_dmat_file(imat) == 'DFCOEF') then
+          matrix_is_unperturbed(imat) = .true.
 !         get unperturbed density matrix
-      
+
           D_mo%elms = 0.0d0
           do m = 1, norbt
              D_mo%elms((m - 1)*norbt + m) = occupation(m)
@@ -368,7 +370,6 @@ contains
     end if
 
     do imat = 1, visual_cfg_nr_dmat
-#ifdef MOD_UNRELEASED
        if (visual_cfg_london) then
           if (visual_cfg_london_skip_kappa) then
 !            zero out kappa contribution
@@ -380,11 +381,13 @@ contains
 !            dirty trick add D_con on top of D
 !            on trunk we will have to check that this only
 !            happes to the current, mag field, and so on
-             D(imat) = D(imat) + D_con
+             if (.not. matrix_is_unperturbed(imat)) then
+                ! don't do it with unp matrices, otherwise double counting
+                D(imat) = D(imat) + D_con
+             end if
           end if
 
        end if
-#endif
 
 !      scale density matrix
        D(imat) = 2.0d0*D(imat)
@@ -411,6 +414,7 @@ contains
 !   deallocate various things
 !   =========================
 
+    deallocate(matrix_is_unperturbed)
     call dealloc(occupation)
 
     C    = 0
@@ -430,16 +434,16 @@ contains
                       max_ao_m_order, &
                       .false.)
 
-    call alloc(ao,     nr_ao_slices*nr_ao_cartesian)
-    call alloc(buffer, nr_ao_slices*nr_ao_cartesian)
+    call alloc(ao,     nr_ao_slices*nr_ao_cartesian*max_batch_length)
+    call alloc(buffer, nr_ao_slices*nr_ao_cartesian*max_batch_length)
 
-#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
-       D_con_mo = 0
-       D_con    = 0
-       if (visual_cfg_london_none) D_con_mo_ai = 0
+       if (.not. visual_cfg_london_skip_ro) then
+          D_con_mo = 0
+          D_con    = 0
+          if (visual_cfg_london_none) D_con_mo_ai = 0
+       end if
     end if
-#endif
 
 
 !   plot and integrate
@@ -474,11 +478,6 @@ contains
     do imat = 1, visual_cfg_nr_dmat
        D(imat) = 0
     end do
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-       D_con = 0
-    end if
-#endif
 
     end subroutine
 
@@ -496,7 +495,7 @@ contains
       type(matrix)         :: D(nr_dmat)
       type(matrix)         :: D_0
       real(8), intent(in)  :: ao(*)
-      real(8), intent(in)  :: buffer(*)
+      real(8)              :: buffer(*)
 !     --------------------------------------------------------------------------
       real(8), allocatable :: q(:, :)
       real(8), allocatable :: atom_xyz(:, :)
@@ -519,6 +518,9 @@ contains
       integer              :: lunit_line_vector
       real(8), allocatable :: temp(:, :)
       real(8), allocatable :: temp2(:, :, :, :)
+      real(8), allocatable :: res(:)
+      real(8), allocatable :: xyz(:, :)
+      real(8), allocatable :: xyzk(:, :)
 !     --------------------------------------------------------------------------
 
       i = 1
@@ -557,7 +559,7 @@ contains
               form   = 'formatted')
       end if
 
-      if (visual_cfg_3d) then
+      if (visual_cfg_3d .or. visual_cfg_3d_fast) then
          open(lunit_3d_cube,           &
               file   = 'plot.3d.cube', &
               status = 'new',          &
@@ -661,7 +663,7 @@ contains
                r(2),                              &
                r(3),                              &
                q(1:3, 1)
-        
+
          end do
       end if
 
@@ -716,7 +718,7 @@ contains
          end do
       end if
 
-      if (visual_cfg_3d) then
+      if (visual_cfg_3d .or. visual_cfg_3d_fast) then
 
 !        step_3d(*, 0)  coordinates of initial point
 !        step_3d(*, 1)  step vector for the "x"-direction
@@ -839,42 +841,93 @@ contains
 
          allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 3))
 
+         if (visual_cfg_3d_fast) then
+            if (visual_cfg_ncube(3) > max_batch_length) then
+               print *, 'error: visual_cfg_ncube(3) > max_batch_length'
+               stop 1
+            end if
+            allocate(res(visual_cfg_ncube(3)))
+            allocate(xyz(3, visual_cfg_ncube(3)))
+            allocate(xyzk(visual_cfg_ncube(3), 3))
+         end if
+
          do icube = 1, visual_cfg_ncube(1)
             do jcube = 1, visual_cfg_ncube(2)
-               do kcube = 1, visual_cfg_ncube(3)
 
-                  r(1) = step_3d(1, 0) + (icube-1)*step_3d(1, 1) &
-                                       + (jcube-1)*step_3d(1, 2) &
-                                       + (kcube-1)*step_3d(1, 3)
-                  r(2) = step_3d(2, 0) + (icube-1)*step_3d(2, 1) &
-                                       + (jcube-1)*step_3d(2, 2) &
-                                       + (kcube-1)*step_3d(2, 3)
-                  r(3) = step_3d(3, 0) + (icube-1)*step_3d(3, 1) &
-                                       + (jcube-1)*step_3d(3, 2) &
-                                       + (kcube-1)*step_3d(3, 3)
+               if (visual_cfg_3d_fast) then
+                  do kcube = 1, visual_cfg_ncube(3)
+                     xyz(1, kcube) = step_3d(1, 0) + (icube-1)*step_3d(1, 1) &
+                                                   + (jcube-1)*step_3d(1, 2) &
+                                                   + (kcube-1)*step_3d(1, 3)
+                     xyz(2, kcube) = step_3d(2, 0) + (icube-1)*step_3d(2, 1) &
+                                                   + (jcube-1)*step_3d(2, 2) &
+                                                   + (kcube-1)*step_3d(2, 3)
+                     xyz(3, kcube) = step_3d(3, 0) + (icube-1)*step_3d(3, 1) &
+                                                   + (jcube-1)*step_3d(3, 2) &
+                                                   + (kcube-1)*step_3d(3, 3)
+                  end do
+                  do kcube = 1, visual_cfg_ncube(3)
+                     xyzk(kcube, 1) = xyz(1, kcube)
+                     xyzk(kcube, 2) = xyz(2, kcube)
+                     xyzk(kcube, 3) = xyz(3, kcube)
+                  end do
+                  call get_ao(visual_cfg_ncube(3), &
+                              xyzk(1, 1),           &
+                              xyzk(1, 2),           &
+                              xyzk(1, 3),           &
+                              ao,                  &
+                              buffer)
+                  call get_esp(visual_cfg_ncube(3), &
+                               res,                 &
+                               D(1)%irep,           &
+                               D(1)%nrow,           &
+                               D(1)%elms,           &
+                               xyz)
+                  do kcube = 1, visual_cfg_ncube(3)
+                     q(0, kcube) = res(kcube)
+                  end do
+               else
+                  do kcube = 1, visual_cfg_ncube(3)
 
-                  call get_quantity_in_point(visual_cfg_nr_dmat, &
-                                             D,                  &
-                                             D_0,                &
-                                             r(1),               &
-                                             r(2),               &
-                                             r(3),               &
-                                             ao,                 &
-                                             buffer,             &
-                                             q(0, kcube))
+                     r(1) = step_3d(1, 0) + (icube-1)*step_3d(1, 1) &
+                                          + (jcube-1)*step_3d(1, 2) &
+                                          + (kcube-1)*step_3d(1, 3)
+                     r(2) = step_3d(2, 0) + (icube-1)*step_3d(2, 1) &
+                                          + (jcube-1)*step_3d(2, 2) &
+                                          + (kcube-1)*step_3d(2, 3)
+                     r(3) = step_3d(3, 0) + (icube-1)*step_3d(3, 1) &
+                                          + (jcube-1)*step_3d(3, 2) &
+                                          + (kcube-1)*step_3d(3, 3)
 
-                  write(lunit_3d_vector, '(6e13.5)') &
-                     r(1:3),                         &
-                     q(1:3, kcube)
-                  write(lunit_3d_scalar, '(4e13.5)') &
-                     r(1:3),                         &
-                     q(0, kcube)
-                  temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
-               end do
+                     call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                                D,                  &
+                                                D_0,                &
+                                                r(1),               &
+                                                r(2),               &
+                                                r(3),               &
+                                                ao,                 &
+                                                buffer,             &
+                                                q(0, kcube))
+
+                     write(lunit_3d_vector, '(6e13.5)') &
+                        r(1:3),                         &
+                        q(1:3, kcube)
+                     write(lunit_3d_scalar, '(4e13.5)') &
+                        r(1:3),                         &
+                        q(0, kcube)
+                     temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
+                  end do
+               end if
                write(lunit_3d_cube, '(6e13.5)')  &
                   (q(0, m), m = 1, visual_cfg_ncube(3))
             end do
          end do
+
+         if (visual_cfg_3d_fast) then
+            deallocate(res)
+            deallocate(xyz)
+            deallocate(xyzk)
+         end if
 
          do kcube = 1, visual_cfg_ncube(3)
             do jcube = 1, visual_cfg_ncube(2)
@@ -887,15 +940,17 @@ contains
          deallocate(temp2)
       end if
 
-      if (visual_cfg_2d)   close(lunit_2d_scalar,     status = 'keep')
-      if (visual_cfg_2d)   close(lunit_2d_vector,     status = 'keep')
-      if (visual_cfg_2d)   close(lunit_2d_flow,       status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_cube,       status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_scalar,     status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_vector,     status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_vector_vtk, status = 'keep')
-      if (visual_cfg_line) close(lunit_line_scalar,   status = 'keep')
-      if (visual_cfg_line) close(lunit_line_vector,   status = 'keep')
+      if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
+      if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
+
+      if (visual_cfg_2d) close(lunit_2d_scalar, status = 'keep')
+      if (visual_cfg_2d) close(lunit_2d_vector, status = 'keep')
+      if (visual_cfg_2d) close(lunit_2d_flow,   status = 'keep')
+
+      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_cube,       status = 'keep')
+      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_scalar,     status = 'keep')
+      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_vector,     status = 'keep')
+      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_vector_vtk, status = 'keep')
 
       deallocate(q)
       deallocate(atom_xyz)
@@ -903,63 +958,41 @@ contains
    end subroutine
 
 
-      subroutine setup_orbital_string(occupation)
+   subroutine setup_orbital_string(occupation)
 
-      real(8)              :: occupation(norbt)
+      ! this routine will set up occupation vector
+      ! based on **VISUAL
+      !          .OCCUPATION
+      ! if this is not given, then it will occupy all
+      ! "occupied" electrons with 1.0
+      real(8) :: occupation(norbt)
 
-      integer, allocatable :: kvec(:)
-      integer              :: i, ifsym, nvec, ioff, ishift
+      integer :: i, ifsym, ioff
 
       occupation = 0.0d0
 
       ioff = 0
-
       do ifsym = 1, nfsym
-
-        ioff = ioff + npsh(ifsym)
-
-        if (visual_cfg_use_orbital_string) then
-
-          call alloc(kvec, norb(ifsym))
-          kvec = 0
-          nvec = 1
-
-          call numlst(visual_cfg_orbital_string(ifsym), &
-     &                kvec, &
-     &                norb(ifsym), &
-     &               -npsh(ifsym), &
-     &                nesh(ifsym), &
-     &                ifsym, &
-     &                nvec)
-
-          write(*, *) '--------------------------------------------------------------'
-          write(*, *) 'visual.F90: selected orbitals (in solution vector)'
-          write(*, *) 'in fermion symmetry: ', ifsym
-          write(*, *) 'electronic index, (absolute index): '
-          do i = 1, nvec
-            ishift = kvec(i)
-            if (ishift < 0) ishift = ishift + 1
-            occupation(ioff + ishift) = 1.0d0
-            write(*, *) ishift, '(', ioff + ishift, ')'
-          end do
-          write(*, *) '--------------------------------------------------------------'
-
-          call dealloc(kvec)
-
-
-        else
-
-          do i = 1, nish(ifsym)
-            occupation(ioff + i) = 1.0d0
-          end do
-
-        end if
-
-        ioff = ioff + nesh(ifsym)
-
+         ioff = ioff + npsh(ifsym)
+         if (visual_cfg_use_orbital_string) then
+            do i = 1, nish(ifsym) + nash(ifsym) + nssh(ifsym)
+               occupation(ioff + i) = visual_cfg_occupation(i, ifsym)
+            end do
+         else
+            if (nash(ifsym) > 0) then
+               print *, 'ERROR: with open shells you should use .OCCUPATION'
+               print *, '       otherwise occupation will be wrong'
+               print *, '       so we better stop here'
+               stop 1
+            end if
+            do i = 1, nish(ifsym)
+               occupation(ioff + i) = 1.0d0
+            end do
+         end if
+         ioff = ioff + nesh(ifsym)
       end do
 
-      end subroutine
+   end subroutine
 
       SUBROUTINE SETUP_FO_DMAT_AO(IXVECTOR, &
      &                            STRING, D_mo)

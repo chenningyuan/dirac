@@ -21,8 +21,6 @@
 
 module xc_london_c1
 
-#ifdef MOD_UNRELEASED
-
 ! radovan: this is the "equation on paper approach" to LAO XC
 !
 !      (+) the code is very close to equations
@@ -290,6 +288,7 @@ contains
    subroutine j_dia(j,            &
                     lao,          &
                     gauge_origin, &
+                    irep,         &
                     mat_dim,      &
                     dmat,         &
                     ao,           &
@@ -299,6 +298,7 @@ contains
       real(8), intent(out)   :: j(3, 3)
       logical, intent(in)    :: lao
       real(8), intent(in)    :: gauge_origin(3)
+      integer, intent(in)    :: irep
       integer, intent(in)    :: mat_dim
       real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
       real(8), intent(in)    :: ao(mat_dim)
@@ -307,29 +307,43 @@ contains
       integer                :: k, l, ixyz
       real(8)                :: f
       real(8)                :: q(3)
+      integer                :: iblock, nr1, nr2, st1, st2
 !     --------------------------------------------------------------------------
+
+      if (lao .and. nr_boson_ireps > 1) then
+         print *, 'ERROR: lao diamagnetic current only works in C1 sym'
+         stop 1
+      end if
 
       q = 0.0d0
 
-      if (lao) then
-         do k = 1, nr_ao_large
-            do l = 1, nr_ao_large
-               f = ao(k)*ao(l)*dmat(l, k, 1)
-               do ixyz = 1, 3
-                  q(ixyz) = q(ixyz) + (r(ixyz) - ao_center_xyz(l, ixyz))*f
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+         st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+         if (lao) then
+            do k = st1, st1 + nr1 - 1
+               do l = st2, st2 + nr2 - 1
+                  f = ao(k)*ao(l)*dmat(l, k, 1)
+                  do ixyz = 1, 3
+                     q(ixyz) = q(ixyz) + (r(ixyz) - ao_center_xyz(l, ixyz))*f
+                  end do
                end do
             end do
-         end do
-      else
-         do k = 1, nr_ao_large
-            do l = 1, nr_ao_large
-               f = ao(k)*ao(l)*dmat(l, k, 1)
-               do ixyz = 1, 3
-                  q(ixyz) = q(ixyz) + (r(ixyz) - gauge_origin(ixyz))*f
+         else
+            do k = st1, st1 + nr1 - 1
+               do l = st2, st2 + nr2 - 1
+                  f = ao(k)*ao(l)*dmat(l, k, 1)
+                  do ixyz = 1, 3
+                     q(ixyz) = q(ixyz) + (r(ixyz) - gauge_origin(ixyz))*f
+                  end do
                end do
             end do
-         end do
-      end if
+         end if
+      end do
 
       j = 0.0d0
 
@@ -346,5 +360,4 @@ contains
 
    end subroutine
 
-#endif /* #ifdef MOD_UNRELEASED */
 end module

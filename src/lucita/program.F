@@ -472,21 +472,18 @@ C
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 C
-      write(LUWRTOUT,*) ' '
-      WRITE(LUWRTOUT,'(3X,A)')
+      WRITE(LUWRTOUT,'(/3X,A)')
      & '=============================================================='
       WRITE(LUWRTOUT,'(3X,A)')
      & '==> allocation of two CI vectors and one resolution vector <=='
-      write(LUWRTOUT,*) ' '
-      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+      WRITE(LUWRTOUT,'(/3X,A,1X,I15)')
      & 'current available free memory in double words:',LMEMFREE_PTR
       WRITE(LUWRTOUT,'(3X,A,1X,I15)')
      & 'allocate two CI vectors each of length:       ',LBLOCK
       WRITE(LUWRTOUT,'(3X,A,1X,I15)')
      & 'allocate resolution vector of length:         ',LSCR2
-      WRITE(LUWRTOUT,'(3X,A)')
+      WRITE(LUWRTOUT,'(3X,A/)')
      & '=============================================================='
-      write(LUWRTOUT,*) ' '
       CALL FLSHFO(LUWRTOUT)
 C
       IF(IDIAG.EQ.2) THEN
@@ -928,7 +925,7 @@ C      CALL SLASK
 *                                                                     *
 ***********************************************************************
 C
-      SUBROUTINE PAMLUCITA(WRK,LWRK)
+      SUBROUTINE PAMLUCITA()
 C
 C L U C I A
 C
@@ -951,7 +948,6 @@ C
 #include "infpar.h"
 #include "priunit.h"
 #include "parluci.h"
-      DIMENSION WRK(LWRK)
 *
 *----------------Executable code--------------------------------------
 *
@@ -975,7 +971,7 @@ C
 C     Enter the generic LUCITA routine (master becomes 
 C     now somewhat like primus inter pares -- "first among equals")
 C     -------------------------------------------------------------
-      CALL PAMLU(WRK,LWRK,IN,IW)
+      CALL PAMLU(IN,IW)
 C
 C     return the slaves to the general menu routine
 C     ---------------------------------------------
@@ -988,7 +984,7 @@ C
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE PAMLU(WRK,LWRK,IUNIN,IUNUT)
+      SUBROUTINE PAMLU(IUNIN,IUNUT)
 *
 * L U C I A
 *
@@ -1006,6 +1002,9 @@ C
 *
       use os_utils
       use interface_to_mpi
+
+      use memory_allocator
+
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
 #if defined (VAR_MPI2)
@@ -1030,13 +1029,17 @@ C
 #include "luctinp.h"
 *.Memory
 #include "wrkspc.inc"
-      DIMENSION WRK(LWRK)
 C     character line and machinename
       CHARACTER*72 CARD
       CHARACTER*255 MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
       INTEGER*8 K_OFFSET, K8BASE_LUCITA
       integer global_scratch_disk
+
+      real(8), allocatable :: WRK(:)
+C
+      call legacy_lwork_get(LWRK)
+      call alloc(WRK,LWRK,id='WRK in PAMLU')
 C
       MIN_ONE    = - 1
       NAMELENGTH =   0
@@ -1047,7 +1050,7 @@ CSK   IW = IUNUT
       LUCIWT = LUOUT
       LUWRT = LUOUT
 C 
-      CALL QENTER('REST ')
+      CALL QENTER('PAMLU ')
 C     No floating point underflow
       CALL XUFLOW
 C     Assign diskunits
@@ -1059,10 +1062,16 @@ C
 C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK,WORK,K_OFFSET)
-      KBASE_LUCITA = K_OFFSET
+      KBASE_LUCITA  = K_OFFSET
+      KADD          = KBASE_LUCITA + LWRK ! i*4 evaluation
+      K8BASE_LUCITA = K_OFFSET     + LWRK ! i*8 evaluation
+      IF (K8BASE_LUCITA .ne. KADD) THEN
+         CALL QUIT(
+     &   'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4')
+      END IF
 C
       MXPWRD = LWRK
-      KADD = MXPWRD
+      KADD   = MXPWRD
       CALL MEMMAN(KBASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 C     Call input conversion program MOLUC (subroutine now)
@@ -1527,7 +1536,8 @@ C     I_RESTRT_CC.EQ.1
         CALL PR_MATML_STAT
       END IF
 *
-      CALL QEXIT('REST ')
+      call dealloc(WRK)
+      CALL QEXIT('PAMLU ')
 *
 *     eliminate scratch units:
       close(unit=LU91,status='DELETE')
@@ -1540,7 +1550,7 @@ C
       CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
 #endif
 C
-      WRITE (LUOUT,*) '                          '
+      WRITE (LUOUT,*) ' Lucita says:'
       WRITE (LUOUT,*) ' I am home from the loops '
 *
       CALL FLSHFO(LUOUT)
@@ -5636,7 +5646,7 @@ C
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCITA_NODE */
-      SUBROUTINE LUCITA_NODE(WRK,LWRK)
+      SUBROUTINE LUCITA_NODE()
 *
 *     LUCITA routine (DIRAC interface) for the slaves
 *
@@ -5667,7 +5677,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "luctinp.h"
 *.Memory
 #include "wrkspc.inc"
-      DIMENSION WRK(LWRK)
 C     DIMENSION IMOKW(NTABLE)
       CHARACTER*10 INTFCE, WORD3*7
       CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3
@@ -5735,12 +5744,12 @@ C
 *
 *     pointer in DIRAC.INP should now be positioned behind *LUCITA
 *
-      CALL LUCITA_INP(WORD,.FALSE.,WORK,LWRK)
-      CALL LUCITA_INP(WORD,.TRUE.,WORK,LWRK)
+      CALL LUCITA_INP(WORD,.FALSE.)
+      CALL LUCITA_INP(WORD,.TRUE.)
 *
 *     now let's call the working routine!
 *
-      CALL PAMLU(WRK,LWRK,LUCMD,MSLVOUT)
+      CALL PAMLU(LUCMD,MSLVOUT)
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
 *

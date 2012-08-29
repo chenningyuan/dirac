@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmoin */
-      SUBROUTINE PCMOIN(WORK,LWORK)
+      SUBROUTINE PCMOIN()
 C*****************************************************************************
 C
 C     Read coefficients from formatted DFPCMO and
@@ -31,33 +31,44 @@ C
 C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: a_CMO(:),a_EIG(:)
+      integer, allocatable :: a_IBG(:)
+      logical :: file_is_there
+
       CALL QENTER('PCMOIN')
-#include "memint.h"
-C
-C     Memory allocation
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG ,NORBT   ,WORK,KFREE,LFREE)
-C
-      CALL PCMOI1(WORK(KCMO),WORK(KEIG),WORK(KIBG),WORK(KFREE),LFREE)
-C
-C     Memory deallocation
-      CALL MEMREL('PCMOIN',WORK,KWORK,KWORK,KFREE,LFREE)
-C
+
+      ! check whether DFPCMO is there, if not, simply return quietly
+      inquire(file='DFPCMO', exist=file_is_there)
+      if (.not. file_is_there) then
+         call qexit('PCMOIN')
+         return
+      end if
+
+      call alloc(a_CMO, N2BBASXQ, id="CMO in PCMOIN")
+      call alloc(a_EIG, NORBT,    id="EIG in PCMOIN")
+      call alloc(a_IBG, NORBT,    id="IBG in PCMOIN")
+
+      CALL PCMOI1(a_CMO, a_EIG, a_IBG)
+
+      call dealloc(a_EIG)
+      call dealloc(a_CMO)
+      call dealloc(a_IBG)
+
       CALL QEXIT('PCMOIN')
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmout */
-      SUBROUTINE PCMOUT(WORK,LWORK)
+      SUBROUTINE PCMOUT()
 C*****************************************************************************
 C
 C     Read coefficients from unformatted DFCOEF and
@@ -66,26 +77,30 @@ C
 C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: a_CMO(:),a_EIG(:)
+      integer, allocatable :: a_IBG(:)
+
       CALL QENTER('PCMOUT')
-#include "memint.h"
-C
-C     Memory allocation
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG ,NORBT   ,WORK,KFREE,LFREE)
-C
-      CALL PCMOU1(WORK(KCMO),WORK(KEIG),WORK(KIBG),WORK(KFREE),LFREE)
-C
-C     Memory deallocation
-      CALL MEMREL('PCMOUT',WORK,KWORK,KWORK,KFREE,LFREE)
-C
+
+      call alloc(a_CMO, N2BBASXQ, id="CMO in PCMOUT")
+      call alloc(a_EIG, NORBT,    id="EIG in PCMOUT")
+      call alloc(a_IBG, NORBT,    id="IBG in PCMOUT")
+
+      CALL PCMOU1(a_CMO, a_EIG, a_IBG)
+
+      call dealloc(a_CMO, id="CMO in PCMOUT")
+      call dealloc(a_EIG, id="EIG in PCMOUT")
+      call dealloc(a_IBG, id="IBG in PCMOUT")
+
       CALL QEXIT('PCMOUT')
 C
       RETURN
@@ -497,7 +512,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmoi1 */
-      SUBROUTINE PCMOI1(CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE PCMOI1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
 C     Read DHF/KRMCSCF-coefficients and eigenvalues from FORMATTED file
@@ -517,8 +532,11 @@ C
 #include "dgroup.h"
       LOGICAL TOBE
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
       DIMENSION IDIM(3,2)
+
+      integer :: itest, ierr
+
 C
 C     Get coefficients from DFPCMO
 C
@@ -528,44 +546,93 @@ C
      &      'PCMOIN: Formatted file DFPCMO not found !'
           CALL QUIT('PCMOIN: Formatted file DFPCMO not found !')
       ENDIF
+
       WRITE(LUPRI,'(2X,A,$)') 'Reading formatted DFPCMO file...'
       CALL FLUSH(LUPRI)
+
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
      +     ACCESS='SEQUENTIAL')
-      READ (LUCOEF,'(A74)',IOSTAT=IOS) TEXT
-      READ (LUCOEF,'(I4,6I10)',IOSTAT=IOS) 
-     &      NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM)
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (I4,6I10)')
-      ENDIF
-      READ (LUCOEF,'(D24.16)',IOSTAT=IOS) TOTERG
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (D24.16)')
-      ENDIF
-      READ (LUCOEF,'(6F22.16)',IOSTAT=IOS) (CMO(I),I=1,NCMOTQ)
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (6F22.16)')
-      ENDIF
-      READ (LUCOEF,'(6D22.12)',IOSTAT=IOS) (EIG(I),I=1,NORBT)
-      IF (IOS.NE.0) THEN
-       CALL QUIT('PCMOI1: error in reading (6D22.12)')
-      ENDIF
 
-      IF (.NOT.DOPIN_I3) THEN
-        READ (LUCOEF,'(66I2)',IOSTAT=IOS) (IBEIG(I),I=1,NORBT)
-        IF (IOS.NE.0) THEN
-          WRITE(LUPRI,*) 
-          WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
-          CALL QUIT('PCMOI1: error in IBEIG(DFPCMO) reading (66I2)')
-        ENDIF
-      ELSE
-        READ (LUCOEF,'(66I3)',IOSTAT=IOS) (IBEIG(I),I=1,NORBT)
-        IF (IOS.NE.0) THEN
-          WRITE(LUPRI,*) 
-          WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
-          CALL QUIT('PCMOI1: error in IBEIG(DFPCMO) reading (66I3)')
-        ENDIF
-      ENDIF
+      rewind lucoef
+
+      ! read title line
+      read(lucoef, *, iostat=ierr) text
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: title line')
+      end if
+
+      read(lucoef, *, iostat=ierr) itest
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: symmetry information')
+      end if
+      backspace lucoef
+
+      read(lucoef, *, iostat=ierr) nsym, ((idim(i,j),i = 1,3),j=1,itest)
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: symmetry information')
+      end if
+
+      read(lucoef, *, iostat=ierr) toterg
+      if (ierr /= 0) then
+         call quit('error reading DFPCMO: energy')
+      end if
+
+      n = ncmotq
+      l = 6
+      k = 0 
+      ! read full lines
+      do i = 1, int(n/l)
+         read(lucoef, *, iostat=ierr) cmo(k+1:k+l)
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: coefficients')
+         end if
+         k = k + l
+      end do
+      if (mod(n, l) > 0) then
+         ! read incomplete line
+         read(lucoef, *, iostat=ierr) cmo(k+1:k+mod(n, l))
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: coefficients')
+         end if
+      end if
+
+      n = norbt
+      l = 6
+      k = 0 
+      ! read full lines
+      do i = 1, int(n/l)
+         read(lucoef, *, iostat=ierr) eig(k+1:k+l)
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: eigenvalues')
+         end if
+         k = k + l
+      end do
+      if (mod(n, l) > 0) then
+         ! read incomplete line
+         read(lucoef, *, iostat=ierr) eig(k+1:k+mod(n, l))
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: eigenvalues')
+         end if
+      end if
+
+      n = norbt
+      l = 66
+      k = 0 
+      ! read full lines
+      do i = 1, int(n/l)
+         read(lucoef, *, iostat=ierr) ibeig(k+1:k+l)
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: ibeig')
+         end if
+         k = k + l
+      end do
+      if (mod(n, l) > 0) then
+         ! read incomplete line
+         read(lucoef, *, iostat=ierr) ibeig(k+1:k+mod(n, l))
+         if (ierr /= 0) then
+            call quit('error reading DFPCMO: ibeig')
+         end if
+      end if
 
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A)') 'Done.'
@@ -599,7 +666,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmou1 */
-      SUBROUTINE PCMOU1(CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE PCMOU1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
 C     Write DHF/KRMCSCF-coefficients and eigenvalues to FORMATTED file
@@ -617,11 +684,10 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL TOBE, TOBEK, I3_IBEIG
+      LOGICAL TOBE, TOBEK
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
       DIMENSION IDIM(3,2)
-#include "memint.h"
 C
 C     Get coefficients from either KRMCSCF or DFCOEF 
 C
@@ -659,21 +725,13 @@ C       ... set to zero
         IREADMO = 3
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
         CLOSE(LUCOEF,STATUS='KEEP')
         IREADMO = 2
       END IF
 C
 C     Write coefficients to DFPCMO
 C
-      I3_IBEIG=.FALSE. 
-      DO I=1,NORBT
-       IF (IABS(IBEIG(I)).GE.10) THEN
-         I3_IBEIG=.TRUE.
-         EXIT ! exit cycle
-       ENDIF
-      ENDDO
       DO I = 1,NFSYM
         IDIM(1,I) = NPSH(I)
         IDIM(2,I) = NESH(I)
@@ -683,21 +741,13 @@ C
      &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
-! miro: watch up formats of data, beacause for very larges systems one
-! might get ** due to size overflow
       WRITE(LUCOEF,'(A74)') TEXT
-      WRITE(LUCOEF,'(I4,6I10)') NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM)
-      WRITE(LUCOEF,'(D24.16)') TOTERG
+      WRITE(LUCOEF,'((XI0),6(XI0))') NFSYM,((IDIM(I,J),I = 1,3),
+     &                                                  J=1,NFSYM)
+      WRITE(LUCOEF,'(E24.16)') TOTERG
       WRITE(LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
-      WRITE(LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
-      IF (I3_IBEIG) THEN
-        WRITE(LUCOEF,'(66I3)') (IBEIG(I),I=1,NORBT)
-        WRITE(LUPRI,'(2X,A)') 'DFPCMO: IBEIG written in 66I3 format,'
-     &  //' use .PCMOI3 for reading.'
-      ELSE
-        WRITE(LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
-        WRITE(LUPRI,'(2X,A)') 'DFPCMO: IBEIG written in 66I2 format'
-      ENDIF
+      WRITE(LUCOEF,'(6E22.12)') (EIG(I),I=1,NORBT)
+      WRITE(LUCOEF,'(66(XI0))') (IBEIG(I),I=1,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -1872,7 +1922,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmout */
-      SUBROUTINE ACMOUT(WORK,LWORK)
+      SUBROUTINE ACMOUT()
 C*****************************************************************************
 C
 C     Read coefficients from unformatted DFCOEF, 
@@ -1909,17 +1959,23 @@ C
 C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-      DIMENSION WORK(LWORK)
+      integer, parameter   :: LWORK = 1000000
+      real(8), allocatable :: WORK(:)
       CALL QENTER('ACMOUT')
 #include "memint.h"
 C
 C     Memory allocation
+      call alloc(WORK,LWORK,id='WORK in ACMOUT')
+
       CALL MEMGET('REAL',KCMO1,N2BBASX*4,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO2,N2BBASX*4,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG1,NORBT   ,WORK,KFREE,LFREE)
@@ -1935,6 +1991,7 @@ C
 C
 C     Memory deallocation
       CALL MEMREL('ACMOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(WORK)
 C
       CALL QEXIT('ACMOUT')
 C
@@ -2499,12 +2556,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck preorb */
-      SUBROUTINE PREORB(WORK,LWORK)
+      SUBROUTINE PREORB()
 C***********************************************************************
 C
 C     Manipulation of DFCOEF prior to wave function calculation
 C
 C***********************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2513,7 +2573,9 @@ C
 #include "dcbreo.h"
 #include "dcbrot.h"
       LOGICAL TOBE
-      DIMENSION WORK(LWORK)
+
+      integer, parameter   :: LWORK = 1000000
+      real(8), allocatable :: WORK(:)
 C
 #include "memint.h"
 C
@@ -2522,13 +2584,14 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
 C     Memory allocation
+      call alloc(WORK,LWORK,id='WORK in PREORB')
       CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
 C
 C     Read coefficients, eigenvalues and irrep identification 
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREMOD')
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREORB')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
      &            WORK(KIBG),TOTERG,14,WORK,KFREE,LFREE)
 C
@@ -2548,30 +2611,37 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Memory deallocation
-      CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('PREORB',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(WORK)
       RETURN
 C
  1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'PREMOD: Coefficient file not found !'
-      CALL QUIT('PREMOD: Coefficients not found !')
+      WRITE(LUPRI,'(A)') 'PREORB: Coefficient file not found !'
+      CALL QUIT('PREORB: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck pstorb */
-      SUBROUTINE PSTORB(WORK,LWORK)
+      SUBROUTINE PSTORB()
 C***********************************************************************
 C
 C     Manipulation of DFCOEF after a wave function calculation
 C
 C***********************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
       LOGICAL TOBE, TOBEK
-      DIMENSION WORK(LWORK)
 C
+
+      integer, parameter   :: LWORK = 1000000
+      real(8), allocatable :: WORK(:)
+
 #include "memint.h"
 C
 C     check if file KRMCSCF or DFCOEF is present
@@ -2587,6 +2657,7 @@ C     check if file KRMCSCF or DFCOEF is present
       if(tobek .and. tobe) tobe = .false.
 C
 C     Memory allocation
+      call alloc(WORK,LWORK,id='WORK in PSTORB')
       CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
@@ -2595,7 +2666,8 @@ C
      &            tobek,WORK(KFREE),LFREE)
 C
 C     Memory deallocation
-      CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('PSTORB',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(WORK)
       RETURN
 C
  1000 CONTINUE
@@ -3516,7 +3588,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmout */
-      SUBROUTINE ACMOIN(WORK,LWORK)
+      SUBROUTINE ACMOIN()
 C*****************************************************************************
 C
 C     Read coefficients in C1 symmetry from unformatted DFACMO,
@@ -3525,17 +3597,24 @@ C
 C     Written by T. Saue Mar 3 2008
 C
 C***********************************************************************
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "cbirea.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-      DIMENSION WORK(LWORK)
+
+      integer, parameter   :: LWORK = 1000000
+      real(8), allocatable :: WORK(:)
+
       CALL QENTER('ACMOIN')
+
 #include "memint.h"
 C
 C     Memory allocation
+      call alloc(WORK,LWORK,id='WORK in ACMOIN')
       CALL MEMGET('REAL',KCMO1,N2BBASX*4 ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO2,N2BBASX*4 ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG1,NORBT     ,WORK,KFREE,LFREE)
@@ -3552,6 +3631,7 @@ C
 C
 C     Memory deallocation
       CALL MEMREL('ACMOIN',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(WORK)
 C
       CALL QEXIT('ACMOIN')
 C
@@ -3984,7 +4064,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp */
-      SUBROUTINE RKBIMP(WORK,LWORK,IPRINT)
+      SUBROUTINE RKBIMP(IPRINT)
 C***********************************************************************
 C
 C     Import RKB coefficients and add complementary UKB space
@@ -3992,6 +4072,9 @@ C
 C     Written by T. Saue Feb 22 2010
 C
 C***********************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4002,8 +4085,11 @@ C
 #include "dgroup.h"
       LOGICAL TOBE
       CHARACTER TEXT*74
-      DIMENSION WORK(LWORK)
       DIMENSION IDIM(3,2)
+
+      integer, parameter   :: LWORK = 1000000
+      real(8), allocatable :: WORK(:)
+
 #include "memint.h"
 C     Check for the presence of coefficient file
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
@@ -4028,6 +4114,7 @@ C.......and calculate space needed to store UKB complement in orthonormal basis
 C.........Read coefficients, eigenvalues and boson irreps
           IOPT=14
           REWIND LUCOEF
+          call alloc(WORK,LWORK,id='WORK in RKBIMP')
           CALL MEMGET('REAL',KCBUF,NBUF  ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
@@ -4081,6 +4168,7 @@ C.........Backtransform UKB complement
           CALL MEMREL('RKBIMP',WORK,KWORK,KWORK,KFREE,LFREE)
           CLOSE(LUTMAT,STATUS='KEEP')
           CLOSE(LUCOEF,STATUS='KEEP')
+          call dealloc(WORK)
         ELSE
           CLOSE(LUCOEF,STATUS='KEEP')          
           WRITE(LUPRI,'(A)')

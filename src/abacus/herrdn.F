@@ -244,7 +244,7 @@ C        Slaves are already initialized before coming here.
       RETURN
       END
 C  /* Deck readin */
-      SUBROUTINE READIN(WORK,LWORK,HERMIT)
+      SUBROUTINE READIN(HERMIT)
 C     Based on
 C       READIN:Input processing routine for  M O L E C U L E.
 C         Jan Almlof, Stockholm, Dec. 1971.
@@ -270,6 +270,7 @@ C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
         USE READ_XYZFILE
+        use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -288,7 +289,6 @@ C
 #include "cbirea.h"
 C
       CHARACTER(LEN=8) :: moltype
-      REAL(KIND=8)     :: WORK(LWORK)
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
@@ -308,6 +308,9 @@ C     JHS
 #include "chrsgn.h"
 #include "aosotr.h"
 #include "infpar.h"
+
+      integer, parameter   :: LWORK = 1000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -315,6 +318,8 @@ C     iteration.
 C
       IF (RDINPC) RETURN
       RDINPC = .TRUE.
+C
+      call alloc(WORK,LWORK,id='WORK in READIN')
 C
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPREAD .GT.  0) THEN
@@ -403,9 +408,10 @@ C               These are the only two extensions at the moment.
       CALL GPCLOSE(LUINFO,'KEEP')
       IF (IPREAD .GT. 20) CALL REAPRI
 
+      call dealloc(WORK)
       RETURN
       END
-C  /* Deck readi1 */
+C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C******************************************************************************
@@ -722,6 +728,15 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
 #endif
      &            DOOWN,blk)
+
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
+!     initialize basis sets (large and small components) used in Gen1Int interface
+      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
+     &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
+     &                       NUC(:,1:2), NRC(:,1:2), KPRIM,
+     &                       ALPHA(:,:,1:2), CPRIMU(:,:,:,1:2))
+#endif
+
 C
 C     *************************************************
 C     ***** Print orbital and geometry input data *****
@@ -1000,7 +1015,7 @@ C
         QEXP = D0
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
             READ(LUINFO,'(a)', ADVANCE='yes') str
             BACKSPACE(LUINFO)
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
@@ -1012,7 +1027,7 @@ C
             ENDIF
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
-            IF (ADDSTO) NSETS = 2
+            IF (DOHUCKEL) NSETS = 2
             BSET  = 'Basis'
             READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)',IOSTAT=IOS)
      &                           Q,NONT(I),
@@ -1024,7 +1039,7 @@ C
             ENDIF
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
-              ADDSTO = .FALSE.
+              DOHUCKEL = .FALSE.
 culfek: Not relevant for Dirac at this point.
 c              WRITE (LUPRI,'(/A)') ' No Huckel start guess due to '//
 c     &             'nuclear charge larger than 18'
@@ -1619,7 +1634,7 @@ C
 C              Get basis set from basis set library
 C              ===================================
 C
-               ELSE IF ((BASIS .OR. (ADDSTO .AND. J .EQ. 2))) THEN
+               ELSE IF ((BASIS .OR. (DOHUCKEL .AND. J .EQ. 2))) THEN
                   KAOVEC = KBLOCK + 1 - IBLOCK(2)
                   CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
@@ -2169,7 +2184,7 @@ C*****************************************************************************
       IF (IORBD .GT. MXCORB) GOTO 5010
       IF (IPRIM .GT. MXPRIM) GOTO 5020
 
-      IF (ADDSTO) THEN
+      IF (DOHUCKEL) THEN
          NSMLSH = ISHELL - NLRGSH
          NORBS  = IORB
          NSMALL = IORBD - NLARGE
@@ -2675,7 +2690,6 @@ C
 #if defined (NEW_DIRAC_DENSFIT_PROCESSING)
          IF (NLARGE_FIT.GT.0) THEN
 #else
-         write (*,*) 'debug: nbasiaux =',nbasisaux
          IF (NBASISAUX.GT.0) THEN
 #endif
             CALL HEADER('Fit Functions, Global/Large Component',-1)
@@ -4528,7 +4542,7 @@ C
                   IPCEN(NSORB)  = NCENT(IA)
                   ICLASS(NSORB) = IC
 #ifndef PRG_DIRAC
-                  IF (IC .EQ. 2 .AND. ADDSTO) THEN
+                  IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
                      HUCCHR = CHARGE(NCENT(IA))
@@ -6833,17 +6847,21 @@ C   .... prevent segmentation of L shells...
             NDEG  = NUCDEG(ICENT)
             KBCH  = IBLOCK
 CMI         ... charge, highest angular momentum
+!          skip AMFI contributions with l > 5 (h, i, ... functions)
+!          stefan - nov 2011: simple fix/approximation for the time
+!                             being...
+           imax_l = min(IQM(I)-1,4)
            IF (N.EQ.1) THEN
             WRITE(LUTMP2,*) NINT(CHARGE(MNCENT)) 
-            WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
-C           WRITE (lupri,*) '*****  charge,iqm:',CHARGE(MNCENT),IQM(I)-1
+            WRITE (LUTMP2,*) CHARGE(MNCENT),imax_l
+!sk         WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
            ENDIF
             II = 0
             DO 200 J = 1, IQM(I)
-           IF (N.EQ.1) THEN
-C            write(lupri,*)
-C    &       '  >>>  momentum J=',J,' JCO(J,I)=',JCO(J,I)
-           ENDIF
+!          IF (N.EQ.1) THEN
+!            write(lupri,*)
+!    &       '  >>>  momentum J=',J,' JCO(J,I)=',JCO(J,I)
+!          ENDIF
 CMI           .... segmentation of L blocks ...not desirable for AMFI...
                IF (JCO(J,I).GT.1) THEN
                 KBCH_SAVE=KBCH
@@ -6863,14 +6881,18 @@ CMI           .... segmentation of L blocks ...not desirable for AMFI...
                   IF (NNUC .EQ. 0) GO TO 200
                 IF (N.EQ.1) THEN
                  IF (JCO(J,I).EQ.1) THEN
-                  WRITE (LUTMP2,*) NNUC,NNRC
-C                 WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
-C    &                '  -> NNUC,NNRC:',NNUC,NNRC
+                   if(j .lt. 6)then ! up to g functions
+                     WRITE (LUTMP2,*) NNUC,NNRC
+                   end if
+!                   WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
+!    &                  '  -> NNUC,NNRC:',NNUC,NNRC
                  ELSE
                   IF (K.EQ.1) THEN
-                    WRITE (LUTMP2,*) NNUCT,NNRCT
-C                   WRITE (lupri,*) 
-C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    if(j .lt. 6)then ! up to g functions
+                      WRITE (LUTMP2,*) NNUCT,NNRCT
+!                     WRITE (lupri,*) 
+!    &                 '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    end if
                   ENDIF
                  ENDIF
                 ENDIF
@@ -6880,11 +6902,20 @@ C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
                   IF (N .EQ. 1) THEN
-                     DO 410 M = 1, NNUC
-                        IPRIMD = IPRIMD + 1
-                           WRITE (LUTMP2,'(F24.11)') PRIEXP(IPSTRT-1+M)
-C                          WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
- 410                 CONTINUE
+                     if(j .lt. 6)then ! up to g functions
+                       DO 410 M = 1, NNUC
+                         IPRIMD = IPRIMD + 1
+                         WRITE (LUTMP2,'(F24.11)') PRIEXP(IPSTRT-1+M)
+!                        WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
+ 410                   CONTINUE
+                     else
+                       IPRIMD = IPRIMD + NNUC
+#ifdef X2C_debug
+                       WRITE (lupri,'(a,i4)') 'mnf input writing:'//
+     &             ' skipped angular momentum functions > 5 (h,i,...)',
+     &               NNUC
+#endif
+                     end if
                   END IF
  210           CONTINUE
  200        CONTINUE

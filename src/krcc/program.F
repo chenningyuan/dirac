@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PAMKRCC(WORK,LWORK)
+      SUBROUTINE PAMKRCC()
 C***********************************************************************
 C
 C Getting information from Dirac and setting up strings etc.
@@ -11,6 +11,8 @@ C
 C common blocks needs cleaning!!!!!!!!!!!!!!!!
 C
 C***********************************************************************
+      use memory_allocator
+
 #include "implicit.inc"
 #include "ipoist8.inc"
 *. Parameters for dimensioning
@@ -28,17 +30,21 @@ C will probably have to delete most of these again
 C added by lasse
 #include "cintfo.inc"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
+
+      CALL QENTER('KRCC ')
 C
+      call legacy_lwork_get(LWORK)
 C
 #include "memint.h"
-C
-      CALL QENTER('KRCC ')
+      call alloc(WORK,LWORK,id='WORK in PAMKRCC')
+
 *. Ratio beteeen real and integer word length
       CALL ZIRAT_KRCC !ok
 * First make an entry on memory to look for
       IONE = 1
       CALL MEMGET('INTE',KLOOK,IONE,WORK,KFREE,LFREE)
+      KCC1 = KLOOK
 * First do transformation and get integrals from DIRAC
       CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
 *. Assign diskunits 
@@ -108,6 +114,7 @@ C
      &                WORK,KFREE,LFREE)
 
 
+      call dealloc(WORK)
 *
       CALL QEXIT('KRCC ')
 *
@@ -242,7 +249,6 @@ C Hardwirering of optimizer
         LSBSPJA = 0
       END IF
       CALL MEMGET('REAL',KSBSPJA,LSBSPJA,WORK,KFREE,LFREE)
-      CALL MEMCHK_KRCC(WORK)
 *
 *
 *. Will now choose a reference determinant based on input!
@@ -478,6 +484,9 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
 *. Alpha- and beta-excitations constituting the spinorbital excitations
 *. Number
       CALL MEMCHK_KRCC(WORK)
+      DO I =1,1000
+      print*,' Here should be aspecial fix for HE where 2 is included'
+      END DO
       CALL SPOBEX_TO_ABOBEX_CC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,NGAS,
      &     1,NAOBEX_TP,NBOBEX_TP,IDUMMY,IDUMMY)
 *. And the alpha-and beta-excitations
@@ -542,6 +551,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
 *
 * NOT SURE IDIM_TCC_KRCC WORKS AS IT SHOULD!!!! LASSE
 * Should be moved since T is resorted!!!!! Lasse 2011 dont ignore
+* Is now after the sorted T so it should be fine
       CALL IDIM_TCC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,ITOP_SM,
      &     MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
      &     WORK(KLLSOBEX_CC),WORK(KLIBSOBEX_CC),LEN_T_VEC_CC,
@@ -551,9 +561,10 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
       IF(NTEST.GE.100) WRITE(6,*) ' After IDIM_TCC section '
       MX_ST_TSOSO_MX =  MX_ST_TSOSO
 C temp change in size
-      MX_ST_TSOSO_BLK_MX = 2*MX_ST_TSOSO_BLK
+      MX_ST_TSOSO_BLK_MX = 4*MX_ST_TSOSO_BLK
       N_CC_AMP = LEN_T_VEC_CC
 *. Hard wire info for unit operator stored as last spinorbital excitation
+*. Now as first operator! Lasse
 C  ISTVC2(IVEC,IBASE,IFACT,NDIM)
       IONE = 1
 C
@@ -606,7 +617,7 @@ C Now with automated restart. Lasse
 * ==========================================
 *
 *. New optimizer
-      CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),WORK(KDIA),
+      CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),
      &                   WORK(KVEC1),WORK(KVEC2),CCTYPE,ECC,
      &                   WORK,KFREE,LFREE)
       STOP 'CC ENERGY HAS BEEN OPTIMIZED'

@@ -1,5 +1,4 @@
 **DIRAC
-#.WAVE FUNCTION
 **HAMILTONIAN
 .LVCORR
 **INTEGRALS
@@ -19,8 +18,9 @@
  -53.25135    !this is to get integrated nr in ppm
 .GAUGE
  9.0 8.0 7.0
-.ORBSTR
-1..5
+.OCCUPATION
+ 1
+ 1 1-5 1.0
 .NODIRECT
 .NOKAPPA
 *END OF

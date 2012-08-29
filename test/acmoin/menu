@@ -3,24 +3,25 @@ H_lin.inp H_lin.mol --get=DFACMO
 
 # Export coefficients to Cs symmetry
 H_Cs.inp H_Cs.mol --get=DFCOEF --put=DFACMO 
-sh python -c 'import shutil; shutil.move("DFCOEF","cf.H")'
-sh python -c 'import os; os.remove("DFACMO")'
-sh ln -sf cf.H DFHAT1
-sh ln -sf cf.H DFHAT2
-sh ln -sf cf.H DFHAT3
+mv DFCOEF cf.H
+rm DFACMO
+cp cf.H DFHAT1
+cp cf.H DFHAT2
+cp cf.H DFHAT3
 
 # Run calculation for Nitrogen in linear symmetry
 N_lin.inp N_lin.mol --get="DFCOEF DFACMO" 
-sh python -c 'import shutil; shutil.move("DFCOEF","cf.C")'
-sh ln -s cf.C DFCAT
+mv DFCOEF cf.C
+cp cf.C  DFCAT
 
 # Export coefficients to Cs symmetry
 N_Cs.inp N_Cs.mol --get=DFCOEF --put=DFACMO 
-sh python -c 'import shutil; shutil.move("DFCOEF","cf.N")'
-sh python -c 'import os; os.remove("DFACMO")'
-sh ln -sf cf.N DFNNNN
+mv DFCOEF cf.N
+rm DFACMO
+cp cf.N DFNNNN
 
-# Run calculation for Ammonia
+# Run calculation for Ammonia; note that it is flat ...
 NH3.inp NH3.mol --put="DFNNNN DFHAT1 DFHAT2 DFHAT3"  
 
-sh python -c 'import os; os.remove("DFNNNN"); os.remove("DFCAT"); os.remove("DFHAT1"); os.remove("DFHAT2"); os.remove("DFHAT3"); os.remove("cf.H"); os.remove("cf.N");os.remove("cf.C")'
+#clean all generated files at the end
+rm DFNNNN DFCAT DFHAT1 DFHAT2 DFHAT3 cf.H cf.N cf.C

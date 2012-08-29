@@ -10,7 +10,7 @@
 !> and perturbed Fock matrices. 
 module prop_contribs
 
-   use matrix_defop
+   use matrix_defop_old
    use fc
 
 #ifdef PRG_DIRAC
@@ -18,7 +18,6 @@ module prop_contribs
    use openrsp_cfg
    use openrsp_interface_1el
    use openrsp_interface_2el
-   use character_processing
    use memory_allocator
 #elif defined(BUILD_AORSP)
    use dalton_ifc,    &
@@ -2816,5 +2815,23 @@ contains
    end subroutine
 #endif /*LSDALTON_ONLY*/
 
+   function prefix_zeros(i, n)
+
+!     prefix_zeros(137, 6) returns '000137'
+
+!     --------------------------------------------------------------------------
+      integer,      intent(in) :: i
+      integer,      intent(in) :: n
+      character(n)             :: prefix_zeros
+!     --------------------------------------------------------------------------
+      integer                  :: k
+      character(1)             :: c09(0:9) = (/'0','1','2','3','4','5','6','7','8','9'/)
+!     --------------------------------------------------------------------------
+
+      do k = 1, n
+         prefix_zeros(n-k+1:n-k+1) = c09(mod(i, 10**k)/10**(k-1))
+      end do
+
+   end function
 
 end module

@@ -687,8 +687,8 @@ CMI  ... printout with symmetry classification ...real energies only...
  1025 FORMAT(//' Relative real eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
      +       //' Level  eigenvalue (eV) ',
-     +      ' Eigenvalue (cm-1)',2X,8A4/)
- 1030 FORMAT(I5,F19.9,F18.6,8(I4))
+     +      ' Eigenvalue (cm-1)',2X,8(A4,'|')/)
+ 1030 FORMAT(I5,F19.9,F18.6,2X,8(I4,'|'))
 
       CALL FLSHFO(LUPRI)
       RETURN
@@ -902,7 +902,7 @@ C
      +       ' Classification in the Abelian subgroup',
      +       //' Level  eigenvalue (eV) ',
      +      ' Eigenvalue (cm-1)',2X,8A4/)
- 1030 FORMAT(I5,F19.9,F18.6,8(I4))
+ 1030 FORMAT(I5,F19.9,F18.6,2X,8I4)
  1035 FORMAT(/'Real Vector:',/(1x,6f12.7))
  1055 FORMAT(//'Energy ',I5,':',F12.9,' (au)',3X,F12.5,' (eV)',3X,F19.5
      +       ,' (cm-1)')
@@ -1168,9 +1168,9 @@ C
  135  FORMAT(/' **WARNING** Unknown timer function'/,
      &        ' ** no action taken')
  220  FORMAT(/'------ Timing report (in CPU seconds) of module ',A/)
- 222  FORMAT(' Time in ',A30,T33,F12.3,' seconds')
+ 222  FORMAT(' Time in ',A30,T40,F12.3,' seconds')
  223  FORMAT(T37,'-------------',/,T25,'Sum: ',F12.3,' seconds',
-     &       /,T37,'-------------')
+     &      /T37,'-------------')
  224  FORMAT(' Timer ',I3,' not used for measurements')
  330  FORMAT(//,T37,'Master',T46,'--------- Slaves ------------'//,
      &          T2,'Timer',T37,'Master',T46,'Minimum',T56,'Maximum',

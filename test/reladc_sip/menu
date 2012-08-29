@@ -1,0 +1,11 @@
+quick
+
+adclevel3_real.inp ne_d2h.mol --mw=64 --aw=130
+hcn_complex_3.inp hcn_cs.mol  --mw=64 --aw=130
+
+regular
+
+adclevel1_real.inp ne_d2h.mol --mw=64 --aw=130
+adclevel2_real.inp ne_d2h.mol --mw=64 --aw=130
+hcn_complex_1.inp hcn_cs.mol  --mw=64 --aw=130
+hcn_complex_2.inp hcn_cs.mol  --mw=64 --aw=130
