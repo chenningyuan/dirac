@@ -723,6 +723,10 @@
     logical found                                     !if found required data from SIRIFC
     integer start_ao, end_ao                          !start and end addresses of AOs
     integer imo                                       !incremental recorder over MOs
+#ifdef PRG_DIRAC
+      print *, 'error: gen1int_host_get_cube not available in DIRAC'
+      stop 1
+#else
 #if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
@@ -833,13 +837,8 @@
       rewind(LUSIFC)
       ! reads the molecular orbital coefficients
       wrk_space(1:NCMOT) = 0.0_REALK
-#ifdef PRG_DIRAC
-      print *, 'error: RD_SIRIFC not available in DIRAC'
-      stop 1
-#else
       call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(NCMOT+1), &
                      len_work-NCMOT)
-#endif
       if (.not.found) then
         stop "gen1int_host_get_cube>> CMO is not found on SIRIFC!"
       end if
@@ -1015,6 +1014,7 @@
     deallocate(grid_points)
     return
 100 format("gen1int_host_get_cube>> ",A,I8)
+#endif /* ifdef PRG_DIRAC */
   end subroutine gen1int_host_get_cube
 
 #if defined(VAR_MPI)
@@ -1159,6 +1159,10 @@
     logical, parameter :: PROP_PRINT = .false.            !if printing referenced property integrals
     integer, parameter :: NUM_PQUAD = 40                  !number of integration points for DSO integrals
     integer len_free                                      !length of free Dalton/Dirac workspace
+#ifdef PRG_DIRAC
+      print *, 'error: gen1int_host_test not available in DIRAC'
+      stop 1
+#else
 #if !defined (PRG_DIRAC)
     integer base_free                                     !base address of free Dalton/Dirac workspace
 #endif
@@ -1302,6 +1306,7 @@
     return
 100 format("gen1int_host_test>> ",A,I8)
 110 format("gen1int_host_test>> ",A,Es16.6)
+#endif /* ifdef PRG_DIRAC */
   end subroutine gen1int_host_test
 
   ! private subroutines
@@ -1549,6 +1554,10 @@
     logical close_sirifc    !if closing SIRIFC afterwards
     integer ierr            !error information
     logical found           !if found required data from SIRIFC
+#ifdef PRG_DIRAC
+      print *, 'error: gen1int_host_get_dens not available in DIRAC'
+      stop 1
+#else
     ! start of active part of one-electron density matrix (MO)
     start_dv_mo = 1+NCMOT
     ! start of active part of one-electron density matrix (AO)
@@ -1572,26 +1581,16 @@
     rewind(LUSIFC)
     ! reads the molecular orbital coefficients
     wrk_space(1:NCMOT) = 0.0_REALK
-#ifdef PRG_DIRAC
-      print *, 'error: RD_SIRIFC not available in DIRAC'
-      stop 1
-#else
     call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(start_left_wrk), &
                    len_left_wrk)
-#endif
     if (.not.found) then
       stop "gen1int_host_get_dens>> CMO is not found on SIRIFC!"
     end if
     ! reads active part of one-electron density matrix (MO)
     if (get_dv) then
       wrk_space(start_dv_mo:start_dv_mo+NNASHX-1) = 0.0_REALK
-#ifdef PRG_DIRAC
-      print *, 'error: RD_SIRIFC not available in DIRAC'
-      stop 1
-#else
       call RD_SIRIFC("DV", found, wrk_space(start_dv_mo), &
                      wrk_space(start_left_wrk), len_left_wrk)
-#endif
       if (.not.found) then
         stop "gen1int_host_get_dens>> DV is not found on SIRIFC!"
       end if
@@ -1632,4 +1631,5 @@
                       values=wrk_space(start_ao_dens), &
                       trans=.false.)
     return
+#endif /* ifdef PRG_DIRAC */
   end subroutine gen1int_host_get_dens
