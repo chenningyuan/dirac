@@ -3766,7 +3766,7 @@ C             print*,'NCREA,NANNI',NCREA,NANNI
 *. Local scratch for occ of reference alpha and beta
       INTEGER IREF_AL(MXPNGAS),IREF_BE(MXPNGAS)
 *
-      NTEST = 00
+      NTEST = 100
 *
       IDUM = 0
 C     CALL MEMCHK_KRCC(WORK)
@@ -4162,16 +4162,16 @@ C?    WRITE(6,*) ' SPOBEX_TO_ABOBEX_CC : NSPOBEX_TP = ', NSPOBEX_TP
       END DO
 *     ^ End of loop over IAB
 * Temp fix for He
-      NAOBEX_TP = NAOBEX_TP + 1
-      NBOBEX_TP = NBOBEX_TP + 1
-      IAOBEX_TP(1,NAOBEX_TP) = 0
-      IAOBEX_TP(2,NAOBEX_TP) = 2
-      IAOBEX_TP(3,NAOBEX_TP) = 1
-      IAOBEX_TP(4,NAOBEX_TP) = 0
-      IBOBEX_TP(1,NBOBEX_TP) = 0
-      IBOBEX_TP(2,NBOBEX_TP) = 2
-      IBOBEX_TP(3,NBOBEX_TP) = 1
-      IBOBEX_TP(4,NBOBEX_TP) = 0
+C     NAOBEX_TP = NAOBEX_TP + 1
+C     NBOBEX_TP = NBOBEX_TP + 1
+C     IAOBEX_TP(1,NAOBEX_TP) = 0
+C     IAOBEX_TP(2,NAOBEX_TP) = 2
+C     IAOBEX_TP(3,NAOBEX_TP) = 1
+C     IAOBEX_TP(4,NAOBEX_TP) = 0
+C     IBOBEX_TP(1,NBOBEX_TP) = 0
+C     IBOBEX_TP(2,NBOBEX_TP) = 2
+C     IBOBEX_TP(3,NBOBEX_TP) = 1
+C     IBOBEX_TP(4,NBOBEX_TP) = 0
 *
       NTEST = 00
       IF(NTEST.GE.3) THEN
@@ -4397,7 +4397,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 0003
+      NTEST = 0005
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM
@@ -5062,6 +5062,9 @@ C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
 *
       CALL MEMCHK_KRCC(WORK)
       CALL MEMREL('INT12',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
+* NINTER20 not counted since not in use
+      ITOTTYPE = NINTER10 + NINTER01 + NINTER11 + NINTER02 + NINTER12
+      WRITE(6,*) ' Total number of intermediate types',ITOTTYPE
 *
       RETURN
       END
@@ -6406,7 +6409,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END DO
       END DO
-      IF(IH.NE.NHOLE.AND.IP.NE.NPART) RETURN
+      IF(IH.NE.NHOLE.OR.IP.NE.NPART) RETURN
       IF(NTEST.EQ.100) WRITE(6,*) " right number of holes ",NHOLE,NPART
       
 *
@@ -7479,7 +7482,7 @@ C     Double group
 *
 * Find the number of operators with given N,Mk,Mub
 *
-      print*,'NGAS,IDIMOP',NGAS,IDIMOP
+C     print*,'NGAS,IDIMOP',NGAS,IDIMOP
       DO I =1,IDIMOP
         CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
         IVECS(N,MK,MUB) = IVECS(N,MK,MUB) + 1
