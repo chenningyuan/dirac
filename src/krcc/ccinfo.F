@@ -3766,7 +3766,7 @@ C             print*,'NCREA,NANNI',NCREA,NANNI
 *. Local scratch for occ of reference alpha and beta
       INTEGER IREF_AL(MXPNGAS),IREF_BE(MXPNGAS)
 *
-      NTEST = 100
+      NTEST = 00
 *
       IDUM = 0
 C     CALL MEMCHK_KRCC(WORK)
@@ -4397,7 +4397,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 0005
+      NTEST = 0000
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM

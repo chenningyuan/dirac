@@ -132,7 +132,7 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
       INTEGER NGSOB(MXPOBS,*), NGSOB2(MXPOBS,*)
       INTEGER NGSOBT(*), NGSOBT2(*), IHPVGAS_AB(MXPNGAS,2)
 *
-      NTEST = 100
+      NTEST = 00
        print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
        print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
@@ -318,7 +318,7 @@ C
 C Add the integrals to inactive fock matrix
 C
                       FI(IPOS) = HALF * (XOUT + XOUT2) + FI(IPOS)
-                      print*,'XOUT,XOUT2,IPOS',XOUT,XOUT2,IPOS
+C                     print*,'XOUT,XOUT2,IPOS',XOUT,XOUT2,IPOS
                       END DO
                     END DO
                   end do

@@ -648,7 +648,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 *
       NTESTL = 1
 C     NTEST = max(NTESTL,IPRNT)
-      NTEST = 2
+      NTEST = 1
 *
 * Constants
       IZERO = 0
