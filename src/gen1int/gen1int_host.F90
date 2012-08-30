@@ -65,7 +65,7 @@
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
     integer ierr  !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
@@ -75,7 +75,7 @@
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                           num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_INIT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -86,7 +86,7 @@
     return
   end subroutine gen1int_host_init
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   !> \brief initializes Gen1Int interface, for instance, creates the AO sub-shells
   !>        of host program (based on \fn(ORBPRO) subroutine by getting the unnormalized
   !>        contraction coefficients); should be called before any calculation
@@ -194,13 +194,13 @@
     type(prop_comp_t) prop_comp  !operator of property integrals with non-zero components
     type(geom_tree_t) geom_tree  !N-ary tree for total geometric derivatives
     integer ierr                 !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_GET_INT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -234,7 +234,7 @@
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_tree=geom_tree,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_ints=num_ints,       &
@@ -246,7 +246,7 @@
     else
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_ints=num_ints,       &
@@ -259,7 +259,7 @@
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
     if (order_geo_total>=0) call Gen1IntAPIGeoTreeDestroy(geom_tree=geom_tree)
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -268,7 +268,7 @@
     return
   end subroutine gen1int_host_get_int
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   !> \brief evaluates the one-electron property integral matrices on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -392,13 +392,13 @@
     type(geom_tree_t) geom_tree  !N-ary tree for total geometric derivatives
     integer idens                !incremental recorder over AO density matrices
     integer ierr                 !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_GET_EXPT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -438,7 +438,7 @@
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_tree=geom_tree,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_dens=num_dens,       &
@@ -451,7 +451,7 @@
     else
       call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
                                     geom_type=geom_type,     &
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
                                     api_comm=MPI_COMM_WORLD, &
 #endif
                                     num_dens=num_dens,       &
@@ -465,7 +465,7 @@
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
     if (order_geo_total>=0) call Gen1IntAPIGeoTreeDestroy(geom_tree=geom_tree)
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -474,7 +474,7 @@
     return
   end subroutine gen1int_host_get_expt
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   !> \brief evaluates the one-electron property expectation values on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -727,7 +727,7 @@
       print *, 'error: gen1int_host_get_cube not available in DIRAC'
       stop 1
 #else
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
 #include "iprtyp.h"
     ! wakes up workers
@@ -1017,7 +1017,7 @@
 #endif /* ifdef PRG_DIRAC */
   end subroutine gen1int_host_get_cube
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   subroutine gen1int_worker_get_cube(len_work, wrk_space, io_viewer, level_print)
     use gen1int_matrix
     use gen1int_api
@@ -1362,7 +1362,7 @@
     type(geom_tree_t), intent(inout) :: geom_tree
     integer len_name  !length of property name
     integer ierr      !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
     ! broadcasts input arguments
     call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1421,7 +1421,7 @@
     return
   end subroutine gen1int_host_prop_create
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   !> \brief creates the operator of property integrals and N-ary tree for total
   !>        geometric derivatives on worker processors by the arguments from manager
   !> \author Bin Gao

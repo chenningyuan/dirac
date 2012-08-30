@@ -90,7 +90,7 @@ module gen1int_matrix
 
   ! public subroutines for test suite of Gen1Int interface
   public :: MatCreate
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   public :: MatBcast
 #endif
   public :: MatDestroy
@@ -518,7 +518,7 @@ module gen1int_matrix
     end if
   end subroutine MatCreate
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   !> \brief broadcasts matrix
   !> \author Bin Gao
   !> \date 2012-05-13
