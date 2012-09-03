@@ -103,7 +103,7 @@ C     END IF
 *. Set index ordering array for intermediate
 * Should be set to max excitation level
 C     IF(IDEBUG.NE.1) THEN
-        IDEBUG = 1
+        IDEBUG = 0
 C     END IF
       print*,'IDEBUG',IDEBUG
       DO I=1,40
@@ -203,7 +203,7 @@ C       ICOUNT = 0
           IF(IPOSCON(IH).GE.1) THEN
 * IPERM determines if a new reordering of intemediates is needed
 * Still to be used
-                  DO I =1,IPERM(IH)  
+            DO I =1,IPERM(IH)  
               print*,'IPERM(IH),I',IPERM(IH),I
               IF(NTEST.GE.100) THEN
                 WRITE(6,*) 'Number of possible contractions ',
@@ -277,6 +277,8 @@ C    &                           NHOLE,NPART,NHOLEV,NPARTV)
 C        stop 'chechk above call'
 C        Idea so far is to compare for sort one to see if that is buggy
 C        or if it is sort 7
+           IF(J.EQ.1) THEN
+C first of this type of contraction
            print*,'about to enter M_TO_EX_DX_FORMAT'
            IDIMEXDX = 0
            CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
@@ -296,6 +298,7 @@ C    &                            INTEGRALS(IOFF_M),
 * Will now pass down WORK(KMTOEXDX) instead of integrals due to resort
            print*,'IDIMEXDX,IOFF_M',IDIMEXDX,IOFF_M
            print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
+          END IF
 C     NTEST = 1000
 C     IF(NTEST.GE.1000) THEN
 C       WRITE(6,*) ' Information from EMTHET_COM '
@@ -319,7 +322,10 @@ C       WRITE(6,*) '============================='
 C       WRITE(6,*) ' Output T-amplitudes for intermediates'
 C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
 C     END IF
+              IF(J.EQ.IPOSCONPERM(I,IH)) THEN
+C last of this possible contraction
               CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
+              END IF
                   END IF
       IF(IDEBUG.EQ.1) THEN
         print*,'about to print info for you are looking for'
@@ -901,7 +907,7 @@ C
 *. Changed from squared to cubed by Lasse
       DIMENSION TSCR1(*),TSCR2(*)
 *. For a batch of coefficients for Operator
-*. Operator accessed as OP(EX,D2,D1) so
+*. Operator accessed as OP(EX,D1) so
       DIMENSION OPSCR(*)
 *. For part of Hamiltonian
       INTEGER ISM_CAAB_D1(4,*), INM_CAAB_D1(4,*)
@@ -3421,11 +3427,6 @@ C
         WRITE(6,*)
         CALL MEMCHK_KRCC(WORK)
       END IF
-C     DO I=1,MX_ST_TSOSO_BLK_MX*NSMST
-C       DO J=1,4
-C       print*,'ISTR_D1,I,J',ISTR_D1(I,J),I,J
-C       END DO
-C     END DO
 *
 *. Number of C/A A/B indeces 
 *. D1
@@ -3913,39 +3914,38 @@ C      SIGN_DE = 1.0D0
         ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
         ISM_A = IADJSYM(ISM_A)
         DO ISM_CA = 1, NSMST
+         IUB = 1
+         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
+     &        ISM_CA,NEL_CA,NSTR_CA,
+     &        IOCC_CA, NTOOB,0,IDUM,IDUM,
+     &        WORK,KFREE,LFREE)
+         IF(NSTR_CA.EQ.0) CYCLE
          ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
+         IUB = 2
+         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CB,NGAS,
+     &        ISM_CB,NEL_CB,NSTR_CB,
+     &        IOCC_CB, NTOOB,0,IDUM,IDUM,
+     &        WORK,KFREE,LFREE)
+         IF(NSTR_CB.EQ.0) CYCLE
          DO ISM_AAA = 1, NSMST
           ISM_AA = IADJSYM(ISM_AAA)
           ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-C         print*,'ISM_A,ISM_CB,ISM_AB',ISM_A,ISM_CB,ISM_AB
 C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
           ISM_ALPHA = (ISM_AA-1)*NSMST + ISM_CA
           ISM_BETA  = (ISM_AB-1)*NSMST + ISM_CB
 *. obtain strings
           IUB = 1
-C        print*,'ISM_CA,NEL_CA,NTOOB',ISM_CA,NEL_CA,NTOOB
-          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
-     &         ISM_CA,NEL_CA,NSTR_CA,
-     &         IOCC_CA, NTOOB,0,IDUM,IDUM,
-     &         WORK,KFREE,LFREE)
-C         print*,'ISM_CB,NEL_CB',ISM_CB,NEL_CB
-          IUB = 2
-          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CB,NGAS,
-     &         ISM_CB,NEL_CB,NSTR_CB,
-     &         IOCC_CB, NTOOB,0,IDUM,IDUM,
-     &         WORK,KFREE,LFREE)
-C         print*,'ISM_AA,NEL_AA',ISM_AA,NEL_AA
-          IUB = 1
           CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AA,NGAS,
      &         ISM_AA,NEL_AA,NSTR_AA,
      &         IOCC_AA, NTOOB,0,IDUM,IDUM,
      &         WORK,KFREE,LFREE)
-C         print*,'ISM_AB,NEL_AB',ISM_AB,NEL_AB
+         IF(NSTR_AA.EQ.0) CYCLE
           IUB = 2
           CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AB,NGAS,
      &         ISM_AB,NEL_AB,NSTR_AB,
      &         IOCC_AB, NTOOB,0,IDUM,IDUM,
      &         WORK,KFREE,LFREE)
+         IF(NSTR_AB.EQ.0) CYCLE
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
           IF(NTEST.GE.100) THEN
            WRITE(6,*) ' The number of strings '
