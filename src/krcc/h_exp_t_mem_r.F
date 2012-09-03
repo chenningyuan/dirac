@@ -28,7 +28,7 @@
 * Setting a default batch length. Increase or decrease according to
 * memory available and speed
 *
-      LCCB = 8100
+      LCCB = 13000
       WRITE(6,*) ' Batch lenght LCCB ',LCCB
 *
 *.1 : KCCF : Intermediate F-vectors for needed out of space 
@@ -140,8 +140,10 @@ C     CALL MEMGET('REAL',KLTSCR3,LEN,WORK,KFREE,LFREE)
 C will now instead calculate it from largest block of integrals.
 C Lasse
 C This may not be true for the intermediates!!!
+C Should move this allocation
       CALL FIND_LARGEST_DIFF_FOR_NEIGHBOURS(LOPSCR,IOFFINTTYPE,
      &                                      NSPOBEX_TP)
+      LOPSCR = LOPSCR*20
       CALL MEMGET('REAL',KLOPSCR,LOPSCR,WORK,KFREE,LFREE)
 *. Number and symmetries of each substring for 6 complete T-blocks 
 *. Largest number of strings in intermediate arrays

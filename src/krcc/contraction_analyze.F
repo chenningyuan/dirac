@@ -377,9 +377,9 @@
         CALL ISETVC(ITEMP,IZERO,ILENGTH)
         DO I =ISTART,NUMCON
           DO J =1,ICOUNT
-            IF(INUMCON(J,I-1).NE.INUMCON(J,I)) THEN
+            IF(INUMCON(J,ISTART-1).NE.INUMCON(J,I)) THEN
               ISIM(I)  = 1
-              EXIT
+C             EXIT
             END IF
           END DO  
         END DO
@@ -1202,7 +1202,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       INTEGER IEX(4*NGAS),IDX(4*NGAS)
       INTEGER ICONN(2*NRANK),IHINDEX(40),IEXD1234(2*NRANK),IORD(4)
 *
-      NTEST = 100
+      NTEST = 00
 *
       IF(NTEST.GE.100) THEN
         IF(IWAY.EQ.0) THEN
@@ -1585,7 +1585,7 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
       INTEGER IFREEOP(4*NGAS),IGRP_FREE(MXPNGAS)
       INTEGER IOCC_FREE(MX_ST_TSOSO_BLK_MX)
 *
-      NTEST = 100
+      NTEST = 00
 *
       IZERO = 0
       NORB = 0 !not needed
@@ -1945,7 +1945,7 @@ C             print*,'---------------------------'
 *
       INTEGER IEX(NGAS,4),IDX(NGAS,4)
 *
-      NTEST = 100
+      NTEST = 00
       IMAP = 0
 *
 * First find the index (indices) to be contracted
