@@ -451,6 +451,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
      &     WORK(KIBSOX_FOR_OX),WORK(KISOX_FOR_OX),NAEL,NBEL,IREFSPC,
      &     IRECOM,WORK,KFREE,LFREE)
       NSPOBEX_TPE = NSPOBEX_TP_CC + 1
+      print*,'NSPOBEX_TPE',NSPOBEX_TPE
       CALL MEMCHK_KRCC(WORK)
 *. Add unit-operator as last spinorbital excitation
       IZERO = 0

@@ -852,20 +852,20 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
         WRITE(6,*) ' Input Cluster operator types '
         CALL WRT_SPOX_TP_CC_KRCC(IMOP,NMOP)
       END IF
-      print*,'NOP,NMOP',NOP,NMOP
+C     print*,'NOP,NMOP',NOP,NMOP
 *
       CALL ISETVC(IMTOH,0,NOP) 
 *
       DO IHOP =1,NOP
 * Analyze H operator
         CALL ANALYZE_OP(HOP(1,IOP(IHOP)),NGAS,INH,IMK,IMUB)
-        print*,'INH,IMK,IMUB',INH,IMK,IMUB
+C       print*,'INH,IMK,IMUB',INH,IMK,IMUB
 * Find non-zero indices
         CALL NONZERO_INDX(HOP(1,IOP(IHOP)),INH,INDX,IDIFFINDX,NGAS)
 * Compare indices to intermediate
         ISTART = IVECS(INH,IMK,IMUB)
         IEND = IVECF(INH,IMK,IMUB)
-        print*,'ISTART,IEND',ISTART,IEND
+C       print*,'ISTART,IEND',ISTART,IEND
         DO I = ISTART,IEND
           ISIM = 0
           DO J = 1,IDIFFINDX
@@ -1202,7 +1202,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       INTEGER IEX(4*NGAS),IDX(4*NGAS)
       INTEGER ICONN(2*NRANK),IHINDEX(40),IEXD1234(2*NRANK),IORD(4)
 *
-      NTEST = 00
+      NTEST = 100
 *
       IF(NTEST.GE.100) THEN
         IF(IWAY.EQ.0) THEN
@@ -1585,7 +1585,7 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
       INTEGER IFREEOP(4*NGAS),IGRP_FREE(MXPNGAS)
       INTEGER IOCC_FREE(MX_ST_TSOSO_BLK_MX)
 *
-      NTEST = 00
+      NTEST = 100
 *
       IZERO = 0
       NORB = 0 !not needed
@@ -1925,7 +1925,7 @@ C             print*,'---------------------------'
 * indices in an intermediate are contracted.
 * There are three distinct cases resulting in 9 different sortings: 
 * First case : The index (or indicies) contracted are the only one of
-*              it's kind i.e. there are no moe possible indices of this
+*              it's kind i.e. there are no more possible indices of this
 *              CAAB kind left in the resulting operator => IMAP = 1
 * Second case : Only one of two possible indices are contracted will
 *               give two seperate cases:
@@ -1945,7 +1945,7 @@ C             print*,'---------------------------'
 *
       INTEGER IEX(NGAS,4),IDX(NGAS,4)
 *
-      NTEST = 00
+      NTEST = 100
       IMAP = 0
 *
 * First find the index (indices) to be contracted
@@ -1964,6 +1964,7 @@ C             print*,'---------------------------'
 * Two indices then IMAP = 1
 * 
       NINDEX = NCA + NCB + NAA + NAB
+      print*,'NINDEX,NCA,NCB,NAA,NAB',NINDEX,NCA,NCB,NAA,NAB
       IF(NINDEX.EQ.2) THEN
         IMAP = 1
         RETURN
@@ -2457,7 +2458,12 @@ C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
 !            IOFF_CA = NSTR_CAR * (ISTR_CAE- 1) + IOFF_CA
              IOFF_CA=IOFF_CA+IOFF_CBE+IOFF_AAE+IOFF_ABE
              ICOUNT = ICOUNT + 1
-             OUTT(ICOUNT) = T(IOFF_CA)
+             IF(ISTR_CAE.GT.ISTR_CAD) THEN
+               SIGN = 1.0D0
+             ELSE
+               SIGN = -1.0D0
+             END IF
+             OUTT(ICOUNT) = SIGN*T(IOFF_CA)
             ELSE 
              ICOUNT = ICOUNT + 1
 ! Next line only for show
@@ -2553,7 +2559,12 @@ C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
 !            IOFF_CA = NSTR_CAR * (ISTR_CAE- 1) + IOFF_CA
              IOFF_CB=IOFF_CB+IOFF_CAE+IOFF_AAE+IOFF_ABE
              ICOUNT = ICOUNT + 1
-             OUTT(ICOUNT) = T(IOFF_CB)
+             IF(ISTR_CBE.GT.ISTR_CBD) THEN
+               SIGN = 1.0D0
+             ELSE
+               SIGN = -1.0D0
+             END IF
+             OUTT(ICOUNT) = SIGN*T(IOFF_CB)
             ELSE 
              ICOUNT = ICOUNT + 1
 ! Next line only for show

@@ -89,6 +89,7 @@ C     INTEGER IBSOX_FOR_OX(*),NSOX_FOR_OX(*),ISOX_FOR_OX(*)
       INTEGER IMINDEX(40) !Should be put on common block. Like IHINDEX
 *. Output CC vector function
       DIMENSION CC_VEC_FNC(*)
+      DIMENSION CC_AMP_EXTRA(N_CC_AMP+1)
 *
 C     NTEST = 1000
 C     IF(NTEST.GE.1000) THEN
@@ -101,8 +102,15 @@ C     END IF
 *
 *. Set index ordering array for intermediate
 * Should be set to max excitation level
+C     IF(IDEBUG.NE.1) THEN
+        IDEBUG = 1
+C     END IF
+      print*,'IDEBUG',IDEBUG
       DO I=1,40
         IMINDEX(I) = I
+      END DO
+      DO I =1,NSPOBEX_TO
+        print*,'LSPOBEX_TO,I',LSPOBEX_TO(I),I
       END DO
 *
       IDUM = -1
@@ -228,6 +236,11 @@ C               ICOUNT = 0
              print*,'IH,IHOP,ICOUNT',IH,IHOP,ICOUNT
              print*,'IBSPOBEX(IHCTP)',IBSPOBEX(IHCTP)
              print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
+      IF(IDEBUG.EQ.1) THEN
+      DO II =1,N_CC_AMP+1
+        CC_AMP_EXTRA(II) = CC_VEC_FNC(II)
+      END DO
+      END IF
 * Should perhaps pass down only the part of the integrals needed?
                   IF(IFHM.EQ.1) THEN
 C     NTEST = 1000
@@ -259,6 +272,11 @@ C     END IF
 * way the fetching of these will become very simple in GET_OPINT4_REL.
 * At the moment making the mapping here. Could probably be moved out to
 * speed up things.
+C        CALL RANK_FOR_CAAB_KRCC(IHTP(1,IHOP),NEX,NDEEX,
+C    &                           NHOLE,NPART,NHOLEV,NPARTV)
+C        stop 'chechk above call'
+C        Idea so far is to compare for sort one to see if that is buggy
+C        or if it is sort 7
            print*,'about to enter M_TO_EX_DX_FORMAT'
            IDIMEXDX = 0
            CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
@@ -303,6 +321,15 @@ C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
 C     END IF
               CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
                   END IF
+      IF(IDEBUG.EQ.1) THEN
+        print*,'about to print info for you are looking for'
+        DO II =1,N_CC_AMP+1
+          DIFF = CC_VEC_FNC(II) - CC_AMP_EXTRA(II)
+          IF(ABS(DIFF).GT.0.0D0) THEN
+            PRINT*,II,DIFF
+          END IF
+        END DO
+      END IF
                 END DO
               END IF
             END DO
@@ -378,6 +405,8 @@ C     PARAMETER(MXPCONN = 4*4*4*4)
       INTEGER IHEXP(3,2*NRANK)
       INTEGER ID1(4*NGAS), IEX(4*NGAS)
       INTEGER IORD(4),IEXD1234(2*NRANK)
+* Temp debug arrays
+      DIMENSION HDIFF(LHT1234)
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN 
@@ -399,6 +428,10 @@ C     PARAMETER(MXPCONN = 4*4*4*4)
           WRITE(6,*) ' HCT1234 : Input block of CC vector function '
           CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
         END IF
+* Remove the next three lines
+        DO I=1,LHT1234
+          HDIFF(I) = HT1234(I)
+        END DO
       END IF
 *
 *. Find all possible contractions of H operator with the NTOP T operators
@@ -430,6 +463,12 @@ C     print*,'LHT1234',LHT1234
       IF(NTEST.GE.1000) THEN
          WRITE(6,*) ' HCT1234 : Output block of CC vector function '
          CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
+* Remove the next five lines
+        DO I=1,LHT1234
+          HDIFF(I) = HT1234(I) - HDIFF(I)
+        END DO
+         WRITE(6,*) ' HCT1234 : Contribution from this contraction '
+         CALL WRTMAT(HDIFF,1,LHT1234,1,LHT1234)
       END IF
 *
       RETURN
@@ -740,6 +779,8 @@ C IPERM_PARITY(IPERM,NELMNT)
 * Reducing this to just one operator 
 *
 * Lasse 2011
+*
+* This routine is redundant and should be eliminated
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -1105,7 +1146,10 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
 *. Number of D1 strings with given symmetry
         ND1_TOT = LEN_TCCBLK_REL(NO1DX(1,1),NO1DX(1,2),NO1DX(1,3),
      &         NO1DX(1,4),ID1SM,NSMST)
-      IF(ND1_TOT.GE.LB.OR.NEX_TOT.GE.LB.OR.NK1_TOT.GE.LB) STOP 'batch'
+      IF(ND1_TOT.GE.LB.OR.NEX_TOT.GE.LB.OR.NK1_TOT.GE.LB) THEN
+        print*,'ND1_TOT,NEX_TOT,NK1_TOT,LB',ND1_TOT,NEX_TOT,NK1_TOT,LB
+        STOP 'batch'
+      END IF
         IF(ND1_TOT.GT.0.AND.NEX_TOT.GT.0.AND.NK1_TOT.GT.0) THEN
 *. Number of batches of excitation part of O
 C         print*,'ND1_TOT,NEX_TOT',ND1_TOT,NEX_TOT
@@ -3769,6 +3813,7 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
       INTEGER IHTPM(NHTPM),IHTP(4*NGAS,NHTP)
       INTEGER IMTOH(NHTP),IHINDEX(4,NHTP)
       DIMENSION INTEGRALS(*),ONEE(*),T(*)
+      DIMENSION ADDING(10000)
 *. Local scratch ! not so pretty
 * Times two since we will not loop over more than two electron operators
 C     INTEGER IOCC_CA(2*MX_ST_TSOSO_BLK_MX)
@@ -3776,10 +3821,10 @@ C     INTEGER IOCC_CB(2*MX_ST_TSOSO_BLK_MX)
 C     INTEGER IOCC_AA(2*MX_ST_TSOSO_BLK_MX)
 C     INTEGER IOCC_AB(2*MX_ST_TSOSO_BLK_MX)
 * temporary increase for helium
-      INTEGER IOCC_CA(4*MX_ST_TSOSO_BLK_MX)
-      INTEGER IOCC_CB(4*MX_ST_TSOSO_BLK_MX)
-      INTEGER IOCC_AA(4*MX_ST_TSOSO_BLK_MX)
-      INTEGER IOCC_AB(4*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_CA(8*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_CB(8*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AA(8*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AB(8*MX_ST_TSOSO_BLK_MX)
 *. Local scratch
       INTEGER IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS)
       INTEGER IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
@@ -3790,7 +3835,7 @@ C    &        NSPOBEX_TP,NHTPM,NHTP,NGAS,MX_ST_TSOSO_BLK_MX,MXPNGAS
       DO I=1,4
         IJKL_ORIG(I) = 2000
       END DO
-      NTEST = 000
+      NTEST = 001
 *
 * ===========================================================
       ISM = 1
@@ -3841,8 +3886,10 @@ C      print*,'IHTYPE',IHTYPE
 *. Find the sign to bring the Hamiltonian operator to cluster operator
 *. order. Now go from order defined in GET_HX_RELA to cluster operator.
        ISIGN_DE = IPERM_PARITY(IHINDEX(1,IHTYPE),2*N)
+       print*,'ISIGN_DE from perm parity',ISIGN_DE
 * Not sure if this sign is correct yet!!!
-       IF(ABS(MUB).EQ.2.OR.MK.GT.0) ISIGN_DE = - ISIGN_DE
+       IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) ISIGN_DE = - ISIGN_DE
+       print*,'ISIGN_DE after possible change',ISIGN_DE
 C      IF(ABS(MUB).EQ.2) ISIGN_DE = - ISIGN_DE
 C      IF(MK.GT.0) ISIGN_DE = - ISIGN_DE
 C      print*,'ITSS,IHTYPE,ISIGN_DE',ITSS,IHTYPE,ISIGN_DE
@@ -3912,10 +3959,10 @@ C         IF(NEL_CA*NSTR_CA.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM CA'
 C         IF(NEL_CB*NSTR_CB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
 C         IF(NEL_AA*NSTR_AA.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
 C         IF(NEL_AB*NSTR_AB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
-          IF(NEL_CA*NSTR_CA.GT.4*MX_ST_TSOSO_BLK_MX) STOP 'DIM CA'
-          IF(NEL_CB*NSTR_CB.GT.4*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
-          IF(NEL_AA*NSTR_AA.GT.4*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
-          IF(NEL_AB*NSTR_AB.GT.4*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
+          IF(NEL_CA*NSTR_CA.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM CA'
+          IF(NEL_CB*NSTR_CB.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
+          IF(NEL_AA*NSTR_AA.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
+          IF(NEL_AB*NSTR_AB.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
           ISTRTOT = NSTR_AB * NSTR_AA * NSTR_CB * NSTR_CA
           IF(ISTRTOT.EQ.0) CYCLE
           DO I_AB = 1, NSTR_AB
@@ -3925,7 +3972,7 @@ C         IF(NEL_AB*NSTR_AB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
                I_CA_MIN = 1
              DO I_CA = I_CA_MIN, NSTR_CA
               IT = IT + 1
-              IF(NTEST.GE.1) THEN
+              IF(NTEST.GE.100) THEN
                WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
                WRITE(6,'(A)')
@@ -4029,12 +4076,13 @@ C              print*,'IOFF,NTOOB,I_C,I_A,IT',IOFF,NTOOB,I_C,I_A,IT
                WRITE(6,*) ' You should not be here! '
                STOP ' Cannot add integrals and intermediates '
               END IF
-              IF(NTEST.GE.1) THEN
+              IF(NTEST.GE.100) THEN
                WRITE(6,*) ' Adding amplitude ',T(IT),
      &                    ' to integral ',XOUT
               END IF
 * Now add integral and amplitude
                T(IT) = T(IT) + SIGN_DE*XOUT
+C              print*,'T(IT),IT',T(IT),IT
 C              T(IT) = T(IT) + XOUT
              END DO
 *            ^ End of loop over alpha creation strings
@@ -4058,5 +4106,36 @@ C              T(IT) = T(IT) + XOUT
         CALL WRTMAT(T,1,IT,1,IT)
       END IF
 *
+      RETURN
+      END
+*
+      SUBROUTINE ABS_DIFF(A,B,NDIM)
+*
+#include "implicit.inc"
+*
+      DIMENSION A(NDIM),B(NDIM)
+*
+      DIFF = 0.0D0
+      DO I=1,NDIM
+        DIFF = ABS(A(I) -B(I)) + DIFF
+        print*,'A,B,I',A(I),B(I),I
+      END DO
+*
+      print*,'DIFF',DIFF
+      RETURN
+      END
+      SUBROUTINE ABS_DIFF2(A,B,NDIM)
+*
+#include "implicit.inc"
+*
+      DIMENSION A(NDIM),B(NDIM)
+*
+      DIFF = 0.0D0
+      DO I=1,NDIM
+        DIFF = ABS(A(I) -B(I)) + DIFF
+        print*,'A,B,I',A(I),B(I),I
+      END DO
+*
+      print*,'DIFF',DIFF
       RETURN
       END

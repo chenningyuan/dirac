@@ -206,9 +206,10 @@ def int32_run(s):
 class filter_task:
      def __init__(self, precision, ignore_sign, start_string, start_is_regex, \
                   end_string='', end_is_regex=False, end_is_including=False, plus_nr_lines=0, \
-                  compare_everything=False):
+                  compare_everything=False, nr_of_floats=0):
          self.precision          = precision
          self.ignore_sign        = ignore_sign
+         self.nr_of_floats       = nr_of_floats
          self.start_string       = start_string
          self.start_is_regex     = start_is_regex
          self.end_string         = end_string
@@ -235,6 +236,8 @@ def read_filter(filter_file):
 
     (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
 
+    nr_of_floats = 0
+
     for line in s:
         # the syntax ($ERROR, $IGNORESIGN, ...) is for backwards copmatibility
         # with DIRAC's old perl scripts - if you change it here, please change it globally in DIRAC repo
@@ -242,12 +245,15 @@ def read_filter(filter_file):
             precision = float(line.split()[-1])
         if '$IGNORESIGN' in line:
             ignore_sign = True
+        if '$NR_OF_FLOATS' in line:
+            nr_of_floats = int(line.split()[-1])
         if (line.lower()[0:10] == 'everything'):
             filter_task_l.append(filter_task(precision,      \
                                              ignore_sign,    \
                                              start_string,   \
                                              start_is_regex, \
-                                             compare_everything=True))
+                                             compare_everything=True, \
+                                             nr_of_floats=nr_of_floats))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:5] == 'from:'):
             start_string = line[5:].rstrip()
@@ -261,14 +267,16 @@ def read_filter(filter_file):
                                              ignore_sign,    \
                                              start_string,   \
                                              start_is_regex, \
-                                             plus_nr_lines=nr_lines))
+                                             plus_nr_lines=nr_lines, \
+                                             nr_of_floats=nr_of_floats))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:3] == 'to:'):
             filter_task_l.append(filter_task(precision,      \
                                              ignore_sign,    \
                                              start_string,   \
                                              start_is_regex, \
-                                             end_string=line[3:].rstrip()))
+                                             end_string=line[3:].rstrip(), \
+                                             nr_of_floats=nr_of_floats))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:5] == 'tore:'):
             filter_task_l.append(filter_task(precision,                    \
@@ -276,7 +284,8 @@ def read_filter(filter_file):
                                              start_string,                 \
                                              start_is_regex,               \
                                              end_string=line[5:].rstrip(), \
-                                             end_is_regex=True))
+                                             end_is_regex=True, \
+                                             nr_of_floats=nr_of_floats))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:4] == 'toi:'):
             filter_task_l.append(filter_task(precision,                    \
@@ -284,7 +293,8 @@ def read_filter(filter_file):
                                              start_string,                 \
                                              start_is_regex,               \
                                              end_string=line[4:].rstrip(), \
-                                             end_is_including=True))
+                                             end_is_including=True, \
+                                             nr_of_floats=nr_of_floats))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
         if (line.lower()[0:6] == 'toire:'):
             filter_task_l.append(filter_task(precision,                    \
@@ -293,25 +303,28 @@ def read_filter(filter_file):
                                              start_is_regex,               \
                                              end_string=line[6:].rstrip(), \
                                              end_is_regex=True,            \
-                                             end_is_including=True))
+                                             end_is_including=True, \
+                                             nr_of_floats=nr_of_floats))
             (precision, ignore_sign, start_string, start_is_regex) = set_filter_defaults()
 
     return filter_task_l
 
 #-------------------------------------------------------------------------------
 
-def extract_and_compare_floats(log_file,   \
-                               output,     \
-                               output_ref, \
-                               line_l,     \
-                               line_l_ref, \
-                               precision,  \
+def extract_and_compare_floats(log_file,     \
+                               output,       \
+                               output_ref,   \
+                               line_l,       \
+                               line_l_ref,   \
+                               nr_of_floats, \
+                               precision,    \
                                ignore_sign):
     """
     in:  output      a list of strings (= a file)
          output_ref  a list of strings (= a file)
          line_l      list of integers that correspond to line numbers in python numbering
          line_l_ref  list of integers that correspond to line numbers in python numbering
+    if nr_of_floats > 0 then it will only compare the first nr_of_floats in each line
     """
 
     numeric_const_pattern = r"""
@@ -334,7 +347,10 @@ def extract_and_compare_floats(log_file,   \
     f_to_line_ref = []
     for x in line_l:
         for line in x:
+            i = 0
             for w in output[line].split():
+                i += 1
+                if (nr_of_floats > 0) and (i > nr_of_floats): break
                 # do not consider words like TzB1g
                 # otherwise we would extract 1 later
                 if re.match(r'^[0-9\.eEdD\+\-]*$', w):
@@ -347,7 +363,10 @@ def extract_and_compare_floats(log_file,   \
 
     for x in line_l_ref:
         for line in x:
+            i = 0
             for w in output_ref[line].split():
+                i += 1
+                if (nr_of_floats > 0) and (i > nr_of_floats): break
                 if re.match(r'^[0-9\.eEdD\+\-]*$', w):
                     for m in p.findall(w):
                          m = pd.sub('e', m)
@@ -692,12 +711,13 @@ class run:
                      for x in line_l_ref:
                          for line in x:
                              ref_result.write(output_ref[line])
-                     extract_and_compare_floats(log_file,              \
-                                                output,                \
-                                                output_ref,            \
-                                                line_l,                \
-                                                line_l_ref,            \
-                                                filter_task.precision, \
+                     extract_and_compare_floats(log_file,                 \
+                                                output,                   \
+                                                output_ref,               \
+                                                line_l,                   \
+                                                line_l_ref,               \
+                                                filter_task.nr_of_floats, \
+                                                filter_task.precision,    \
                                                 filter_task.ignore_sign)
          log_file.close()
          own_result.close()

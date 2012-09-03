@@ -1968,7 +1968,10 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-      integer, parameter   :: LWORK = 1000000
+      !radovan: this hard limit is stupid
+      !         i increased it from 1000000 to 5000000
+      !         but this has to be done dynamically
+      integer, parameter   :: LWORK = 5000000
       real(8), allocatable :: WORK(:)
       CALL QENTER('ACMOUT')
 #include "memint.h"

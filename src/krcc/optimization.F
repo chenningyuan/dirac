@@ -485,9 +485,10 @@ C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
         END IF
 *. Dump to LU_CCAMP
       OPEN(Unit=LU_CCAMP,File='CCAMP',Status='UNKNOWN',
-     &     Form='UNFORMATTED')
+C    &     Form='UNFORMATTED')
+     &     Form='FORMATTED')
         CALL REWINO(LU_CCAMP)
-        I_FORMATTED = 0
+        I_FORMATTED = 1
 C        print*,'2*N_CC_AMP ',2*N_CC_AMP
         IF(I_FORMATTED.EQ.1) THEN
           WRITE(LU_CCAMP,'(I9)') N_CC_AMP

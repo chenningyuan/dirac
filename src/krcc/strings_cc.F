@@ -22,7 +22,7 @@
       DIMENSION IOCTYP(MXPNGAS)
 *
       CALL QENTER('STRTY')
-      NTEST = 100
+      NTEST = 00
 *. As input NCISPC GAS spaces IGSOCCX are given.
 * Obtain space that contains all these as special cases
 *
@@ -1159,7 +1159,6 @@ C
       DO IGRP = 1, NGRP
         NSTRIN = NSTFGP(IGRP)
         LSTRIN = NSTRIN*NELFGP(IGRP)
-        print*,'NSTRIN,LSTRIN',NSTRIN,LSTRIN
         CALL MEMGET('INTE',KOCSTR(IGRP),LSTRIN,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KSTREO(IGRP),NSTRIN,WORK,KFREE,LFREE)
         IF(PNTGRP.GE.5) THEN
@@ -1387,9 +1386,6 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
       IORB2L = IORB2F+NORB2-1
       IORB3F = IORB2L + 1
       IORB3L = IORB3F+NORB3-1
-      print*,'IORB1L,IORB2F,IORB2L,IORB3F,IORB3L',
-     &        IORB1L,IORB2F,IORB2L,IORB3F,IORB3L
-c     print*,'NELMX1,NELMN1,NELMN3,NELMX3',NELMX1,NELMN1,NELMN3,NELMX3
 * Loop over possible partitionings between RAS1,RAS2,RAS3
       DO 1001 IEL1 = NELMX1,NELMN1,-1
       DO 1003 IEL3 = NELMN3,NELMX3, 1
@@ -1463,7 +1459,6 @@ C                   ISYMST_REL(STRING,NEL)
 COLD         ITYP = IOCTP2(IOC,NEL,IOTYP)
 C                   IOCTP2(STRING,NEL)
 *
-             print*,'ISYM',ISYM
              NSTASO(ISYM,IOTYP) = NSTASO(ISYM,IOTYP)+ 1
 *
            IF( IEL3 .NE. 0 ) GOTO 903
@@ -1533,12 +1528,6 @@ C
 *.Scratch arrays
       DIMENSION IOC(*),LSTASO(NOCTYP,NSMST)
 *
-C     print*,'printing input'
-C     print*,'NSMST,NACOB,NEL',NSMST,NACOB,NEL
-C     print*,'istaso'
-C     CALL IWRTMA(ISTASO,1,NSMST,1,10)
-C     print*,'Z'
-C     CALL IWRTMA(Z,1,NACOB,1,NEL)
 *
       CALL ISETVC(LSTASO,0,NOCTYP*NSMST)
 *
@@ -1645,7 +1634,6 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
                IF(NTEST.GT.500) CALL IWRTMA(IOC,1,NEL,1,NEL)
                CALL ICOPVE(IOC,STRING(1,LACTU),NEL)
                IF(NTEST.GT.500) CALL IWRTMA(STRING,1,NEL,1,LACTU+1)
-C              print*,'STRING(1,LACTU)',STRING(1,LACTU)
              END IF
 *
            IF( IEL3 .NE. 0 ) GOTO 903
@@ -1684,8 +1672,7 @@ C              print*,'STRING(1,LACTU)',STRING(1,LACTU)
         WRITE(6,*) ' ============================================'
         CALL IWRTMA(IREORD,1,NPR,1,NPR)
       END IF
-C       print*,'writing STRING'
-C       CALL IWRTMA(STRING,1,NEL,1,NSTRIN)
+*
       RETURN
       END
 *
@@ -1889,13 +1876,6 @@ C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
         WRITE(6,*)
          WRITE(6,*) ' Number of input electrons ', NEL
       END IF
-C     WRITE(6,*) ' Reorder array NEWORD '
-C     CALL IWRTMA(NEWORD,1,NSTINO,1,NSTINO)
-C     print*,' see NACOB',NACOB
-C     print*,'writing out strings'
-C     CALL IWRTMA(STRING,1,NEL,1,NSTINI)
-C     print*,'writing out Z'
-C     CALL IWRTMA(STRING,1,NORB,1,NEL+1)
 *
       DO 1000 ISTRIN = 1,NSTINI
 C?    write(6,*) ' Input string ',istrin,(string(i,istrin),i=1,nel)
@@ -2224,7 +2204,6 @@ C#include "memint.h"
      &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                 DUMMY,JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
-C     print*,'NSPOBEX_TP',NSPOBEX_TP
 *
 *. and the actual spin-orbital excitations
       CALL MEMGET('INTE',KLSOBEX,4*NGAS*NSPOBEX_TP,WORK,KFREE,LFREE)
@@ -2358,12 +2337,7 @@ C     print*,'NSPOBEX_TP',NSPOBEX_TP
       do IGAS=2,NGAS,1
         MXNELGS(IGAS)= IGSOCCX(IGAS,2,JCMBSPC)-IGSOCCX(IGAS-1,1,JCMBSPC)
         MXNELGS(IGAS)= min(MXNELGS(IGAS),2*NOBPT(IGAS))
-C       print*,'MXNELGS(IGAS),2*NOBPT(IGAS)',MXNELGS(IGAS),2*NOBPT(IGAS)
       end do
-C      do IGAS=1,NGAS
-C        write(6,*) 'MXNELGS(IGAS),IGAS',MXNELGS(IGAS),IGAS
-C      end do
-C      print*,'JCMBSPC',JCMBSPC
 *
 *. Delta MK = 0 terms
 *
@@ -2371,16 +2345,13 @@ C      print*,'JCMBSPC',JCMBSPC
 * a+i alpha a j alpha
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
-C          print*,'INSIDE GAS.'
           if (NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1) then
-C              print*,'INSIDE if block.'
               CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
               IHX_LOC(IGAS+(1-1)*NGAS) = 1
               IHX_LOC(JGAS+(3-1)*NGAS) = 1
 *. Is this excitation type included ?
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
-C             print*,'INCLUDED',INCLUDED
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
                 CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
@@ -3235,7 +3206,6 @@ C     print*,'NHX at the end',NHX
       ONE = 1.0D0
 *
       NHX = 0
-C     print*,'IHTYPE = ',IHTYPE
 *
 
 * Determine maximum number of electrons per GAS first:
@@ -3246,12 +3216,7 @@ C     print*,'IHTYPE = ',IHTYPE
       do IGAS=2,NGAS,1
         MXNELGS(IGAS)= IGSOCCX(IGAS,2,JCMBSPC)-IGSOCCX(IGAS-1,1,JCMBSPC)
         MXNELGS(IGAS)= min(MXNELGS(IGAS),2*NOBPT(IGAS))
-C       print*,'MXNELGS(IGAS),2*NOBPT(IGAS)',MXNELGS(IGAS),2*NOBPT(IGAS)
       end do
-C      do IGAS=1,NGAS
-C        write(6,*) 'MXNELGS(IGAS),IGAS',MXNELGS(IGAS),IGAS
-C      end do
-C      print*,'JCMBSPC',JCMBSPC
 *
 *. Delta MK = 0 terms
 *
@@ -3259,10 +3224,8 @@ C      print*,'JCMBSPC',JCMBSPC
 * a+i alpha a j alpha
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
-C          print*,'INSIDE GAS.'
           if (NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1) then
-C              print*,'INSIDE if block.'
               CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
               IHX_LOC(IGAS+(1-1)*NGAS) = 1
               IHX_LOC(JGAS+(3-1)*NGAS) = 1
@@ -4528,8 +4491,6 @@ C     CALL MEMCHK_KRCC(WORK)
          CALL IWRTMA(NELFGS,1,NGAS,1,NGAS)
          call memchk_KRCC(WORK)
       END IF
-C     print*,'in the middle'
-C     CALL MEMCHK_KRCC(WORK)
 *
 *. Loop over symmetries of each GAS
 *
@@ -4803,6 +4764,7 @@ C     CALL MEMCHK_KRCC(WORK)
       CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
+      print*,'sort m11'
       CALL SORT_OP_3_INDEX(WORK(KINTM11),NINTER11,NGAS,
      &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT11_IDXS),WORK(KINT11_IDXF),
@@ -4826,6 +4788,7 @@ C     CALL MEMCHK_KRCC(WORK)
       CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
+      print*,'sort m02'
       CALL SORT_OP_3_INDEX(WORK(KINTM02),NINTER02,NGAS,
      &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT02_IDXS),WORK(KINT02_IDXF),
@@ -4849,6 +4812,7 @@ C     CALL MEMCHK_KRCC(WORK)
       CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
 *
+      print*,'sort m20'
       CALL SORT_OP_3_INDEX(WORK(KINTM20),NINTER20,NGAS,
      &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KINT20_IDXS),WORK(KINT20_IDXF),
@@ -4871,6 +4835,7 @@ C     CALL MEMCHK_KRCC(WORK)
       CALL MEMGET('INTE',KHELP_IDX,NINTER12,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
       CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+      print*,'sort m12'
 *
       CALL SORT_OP_3_INDEX(WORK(KINTM12),NINTER12,NGAS,
      &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
@@ -5033,7 +4998,7 @@ C     CALL MEMCHK_KRCC(WORK)
       NHTOT=NH22+NH21+NH12+NH20+NH11+NH02+NH10+NH01+NH00
       IF(NHTOT.NE.NHTP) STOP ' Error in HTYPE_PH_CONTRACTIONS '
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Number of Hamiltonian Types ',NHTOT
         WRITE(6,*) ' 2 Particles 2 Holes ',NH22
@@ -5190,7 +5155,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *. Scratch
       INTEGER ITEMP(2*NGAS,NOBEX_TP)
 *
-      NTEST = 100
+      NTEST = 00
 *
 * First find number of different creation and annihilation types
 *

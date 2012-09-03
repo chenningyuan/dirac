@@ -15,6 +15,8 @@
 !31.694892311     31.697929171    31.710456488   31.694813334
 !31.728053774     31.729803925    31.737085455   31.728023719
 !
-!
-!
-!
+
+Likewise the Spin-Orbit Fock Space Coupled Cluster (SO-FSCC) method
+is utilized for the same calculations.
+
+

@@ -148,10 +148,36 @@ C      end do
      &     WORK(KLSTR5),WORK(KLSTR6),WORK(KLSTR7),WORK(KLSTR8),
      &     WORK,KFREE,LFREE)
       END IF
+C
+C New addition by Lasse. Calculate the energy
+C
+      CALL FOCK_ENERGY(ESOMETHING,T,NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE))
 *
 C?    WRITE(6,*) ' Enforced stop in GENCC_F_DIAG_M '
 C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
       CALL MEMREL('F_DIAG',WORK,KFDIA_AL,KFDIA_AL,KFREE,LFREE)
+*
+      RETURN
+      END
+*
+      SUBROUTINE FOCK_ENERGY(ECC,T,NTOOB,DIA_AL,DIA_BL)
+*
+* Should be made 
+*
+#include "implicit.inc"
+      DIMENSION T(*),DIA_AL(NTOOB),DIA_BL(NTOOB)
+      INTEGER IDUM(2)
+*
+      ECC = 0.0D0
+*
+      IDUM(1) = 1
+      IDUM(2) = 4
+      DO I=1,2
+        ECC = T(IDUM(I)) + DIA_AL(I) + ECC
+        print*,'T(IDUM(I)),DIA_AL(I),DIA_BL(I),I,ECC',
+     &          T(IDUM(I)),DIA_AL(I),DIA_BL(I),I,ECC
+      END DO
+      print*,'ECC',ECC
 *
       RETURN
       END
@@ -171,7 +197,7 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 C       print*,'IFETCH',IFETCH
         DIA_AL(I) = FOCK(IFETCH)
         DIA_BE(I) = FOCK(IFETCH)
-C       print*,'DIA_AL(I),I',DIA_AL(I),I
+        print*,'DIA_AL(I),I',DIA_AL(I),I
       END DO
 *
       RETURN
@@ -244,7 +270,7 @@ C     INTEGER IOBSM(*),LOBSM(*)
       CALL SETVEC(FI_AL,ZERO,NORBT)
       CALL SETVEC(FI_BE,ZERO,NORBT)
 *
-      NTEST = 100
+      NTEST = 00
       print*,'ISYMPACK,NSMOB',ISYMPACK,NSMOB
       print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN

@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#PBS -S /bin/bash
+#PBS -N cdash_buildup
+### Declare myprogram non-rerunable
+#PBS -r n
+#PBS -l nodes=2
+#PBS -l walltime=6:00:00
+#PBS -l mem=4g
+#PBS -j oe
+#PBS -q batch
+
+echo "Host is: "; hostname -f
+
+source $HOME/intel/bin/compilervars.sh intel64
+echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+
+# my cmake stuff
+export PATH=/home/milias/bin/cmake/bin:$PATH
+echo "My own CMake is in PATH."
+# my most recent python 2.7.1 #
+#export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
+echo "My PATH=$PATH"
+echo "which make:"; which make
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "Running DIRAC cdash buildup at "$timestamp
+
+DIRAC=/home/milias/Work/qch/software/dirac/trunk
+#
+BUILD=build_GNU_OpenMPI_MKL_ILP64
+
+cd $DIRAC
+
+#./pamadm -a --hscc --hsfsdyn --auto
+./pamadm -a 
+
+cd $DIRAC
+
+export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="linux.grid_UMB_ompi_GNU_mkl_ilp64" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF --force $BUILD
+cd $DIRAC/$BUILD
+make Experimental 
+
+#
+# run static dirac
+#
+BUILD_STATIC=build_ompi_ifort_icc_ilp64_static
+#cd $DIRAC
+#/bin/rm -rf $BUILD_STATIC
+#./setup --fc=ifort --cc=icc --cpp=icpc  --int64 --static -D BUILDNAME="linux.fe6_Odense.ifort_icc_ilp64_STATIC" -D VERBOSE_OUTPUT=ON -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --build-dir=$BUILD_STATIC
+#cd $DIRAC/$BUILD_STATIC
+#make dirac.x
+#make info_ext
+#make Experimental 
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "buildup finished at "$timestamp
+exit 0
