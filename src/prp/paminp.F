@@ -863,10 +863,14 @@ C
 C   19. BETA   
 C       [beta]P * beta times scalar operator
 C
-C   20 .SIGMADOT - iS.P         * dot-product of sigma and vector operator
+C   20 .SIGMADOT 
+C       iS.P * OFF-DIAGONAL dot-product of sigma and vector operator
 C
 C   21. iBETAGAM
 C       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
+C
+C   22 .DSIGMADOT 
+C       iS.P * DIAGONAL dot-product of sigma and vector operator
 C   
 C
 C  Operator types 5,6 and 7 form the components of a vectorproduct 
@@ -906,7 +910,7 @@ C
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
+     &           'SIGMADOT', 'iBETAGAM', 'DSIGMADO', 'XXXXXXXX',
      &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
 C
       CALL QENTER('XPRINP')
@@ -1043,10 +1047,10 @@ C
            ! ... initialize ...
            TRS_FLIP=.FALSE.
 
-!mi     ...jump on operator types according to the variable I prepared above, I : 1-26
+!mi     ...jump on operator types according to the variable I prepared above, I : 1-27
 !           4-8 are operators characteritics, TABKW(1-5)
            GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1,1,3,1), I
+     &            1,1,1,1,1,1,1,1,1,1,1,3,1,3), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1065,7 +1069,7 @@ C&&&&    Two components: [XYZ]AVECTOR
 C          note that the minus in the second component
 C          is introduced later
          GO TO 300
-C&&&&    Three components: ALPHADOT, SIGMADOT
+C&&&&    Three components: ALPHADOT, SIGMADOT, DSIGMADOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
@@ -1459,8 +1463,9 @@ C ... fix the LS block for the LevyLe option
 C          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.21) THEN
-           CALL QUIT('XPRADD: Illegal IPTYP (not 1-20)!')
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.22) THEN
+           WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
+           CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,
      &          1,1,1,3,3,3,4,4,4,3,4,4),IPTYP
@@ -1532,7 +1537,7 @@ CMI ... inform about the assigned PCOMB
            WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
          ENDIF
          PCOMB_SAVE = PCOMB
-         !PCOMB(1:1)='0'
+         PCOMB(1:1)='0'
          WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "e_EDM operator -",PNAME,
      &   '=> assigned matrix structure ',PCOMB_SAVE," --> ",PCOMB
          IF (NPCOMP.EQ.3) THEN
@@ -2568,7 +2573,7 @@ C
       GOTO 30
       ENDIF
       GO TO (1,2,3,4,5,6,7,8,9,10,11,12,
-     &       13,14,15,16,17,18,19,20,21), ITYP
+     &       13,14,15,16,17,18,19,20,21,22), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2650,11 +2655,15 @@ C
       GOTO 200
    20 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'SIGMADOT : [sigma.P]'
+     &   'SIGMADOT, offdiagonal : [sigma.P]'
       GOTO 200
    21 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'BETAGAMMA5 : i[beta gamma5]P'
+      GOTO 200
+   22 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'SIGMADOT, diagonal : [sigma.P]'
       GOTO 200
 C
   200 CONTINUE
