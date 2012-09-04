@@ -245,7 +245,7 @@ use densfit_common
 ! definition_center  : Structure with all the relevant information
 !
   integer(KINT), intent(out)                :: ierr
-  integer(KINT), intent(in )                :: ld_DM
+  integer(KINT), intent(in )                :: ld_DM, n_fit
   type(center_definition), intent(in)       :: definition_center_A, definition_center_B
   real(KREAL), intent(in)                   :: Density_AB(ld_DM,*)
   real(KREAL), intent(out)                  :: weight_matrix(n_fit,n_fit), weight_vector(n_fit)
