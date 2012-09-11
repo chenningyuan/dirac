@@ -377,9 +377,9 @@
         CALL ISETVC(ITEMP,IZERO,ILENGTH)
         DO I =ISTART,NUMCON
           DO J =1,ICOUNT
-            IF(INUMCON(J,I-1).NE.INUMCON(J,I)) THEN
+            IF(INUMCON(J,ISTART-1).NE.INUMCON(J,I)) THEN
               ISIM(I)  = 1
-              EXIT
+C             EXIT
             END IF
           END DO  
         END DO
@@ -852,20 +852,20 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
         WRITE(6,*) ' Input Cluster operator types '
         CALL WRT_SPOX_TP_CC_KRCC(IMOP,NMOP)
       END IF
-      print*,'NOP,NMOP',NOP,NMOP
+C     print*,'NOP,NMOP',NOP,NMOP
 *
       CALL ISETVC(IMTOH,0,NOP) 
 *
       DO IHOP =1,NOP
 * Analyze H operator
         CALL ANALYZE_OP(HOP(1,IOP(IHOP)),NGAS,INH,IMK,IMUB)
-        print*,'INH,IMK,IMUB',INH,IMK,IMUB
+C       print*,'INH,IMK,IMUB',INH,IMK,IMUB
 * Find non-zero indices
         CALL NONZERO_INDX(HOP(1,IOP(IHOP)),INH,INDX,IDIFFINDX,NGAS)
 * Compare indices to intermediate
         ISTART = IVECS(INH,IMK,IMUB)
         IEND = IVECF(INH,IMK,IMUB)
-        print*,'ISTART,IEND',ISTART,IEND
+C       print*,'ISTART,IEND',ISTART,IEND
         DO I = ISTART,IEND
           ISIM = 0
           DO J = 1,IDIFFINDX
@@ -1173,7 +1173,9 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       RETURN
       END
 *
-      SUBROUTINE M_TO_EX_DX_FORMAT(IWAY,IDIMEXDX,OUTT,NRANK,ISM,
+      SUBROUTINE M_TO_EX_DX_FORMAT(IWAY,IDIMEXDX,OUTT,NRANK,
+     &                             IHSM,ITSM,
+     &                             IFHM,IHINDEX,
      &                             MTYPE,TTYPE,RESTYPE,T,
      &                             WORK,KFREE,LFREE)
 *
@@ -1187,6 +1189,8 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 * 3. Perform mapping
 * Lasse 2011
 *
+* Extended to also include the Hamiltonian. Lasse 2012
+*
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -1196,11 +1200,11 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 #include "orbinp.inc"
 #include "symm.inc"
 *
-      INTEGER MTYPE(4*NGAS),TTYPE(4*NGAS),RESTYPE(4*NGAS)
+      INTEGER MTYPE(4*NGAS),TTYPE(4*NGAS),RESTYPE(4*NGAS),IHINDEX(*)
       DIMENSION OUTT(IDIMEXDX),T(*),WORK(*)
 * Local scratch
       INTEGER IEX(4*NGAS),IDX(4*NGAS)
-      INTEGER ICONN(2*NRANK),IHINDEX(40),IEXD1234(2*NRANK),IORD(4)
+      INTEGER ICONN(2*NRANK),IEXD1234(2*NRANK),IORD(4)
 *
       NTEST = 00
 *
@@ -1210,7 +1214,11 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
         ELSE
           WRITE(6,*) ' Will perform the mapping '
         END IF
-        WRITE(6,*) ' Intermediate '
+        IF(IFHM.EQ.1) THEN
+          WRITE(6,*) ' Hamiltonian '
+        ELSE
+          WRITE(6,*) ' Intermediate '
+        END IF
         CALL WRT_SPOX_TP_CC_KRCC(MTYPE,1)
         WRITE(6,*) ' Cluster operator '
         CALL WRT_SPOX_TP_CC_KRCC(TTYPE,1)
@@ -1222,10 +1230,6 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       CALL CONTR_POS_REL_1T(MTYPE,TTYPE,RESTYPE,NGAS,ICONN,NRANK)
       NTOP = 1
-* Fill IHINDEX
-      DO I=1,40
-        IHINDEX(I) = I
-      END DO
       CALL HTYPE_TO_ED_KRCC(MTYPE,IHINDEX,NHOP,ICONN,NTOP,NRANK,
      &                   IDX,IEX,IEXD1234,IORD,ISIGN_DE)
       CALL MEMCHK_KRCC(WORK)
@@ -1239,14 +1243,465 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
 * Second find out which type of mapping is needed!
 *
-      CALL MAP_TYPE_ORI_TO_EX_DX_SORT(IEX,IDX,NGAS,IMAP)
+      IF(IFHM.EQ.2) THEN
+        CALL MAP_TYPE_ORI_TO_EX_DX_SORT(IEX,IDX,NGAS,IMAP)
+      END IF
 *
 * Finally find the dimension of the new array if IWAY = 0
 * else perform the mapping
 *
-      CALL IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
-     &                ISM,OUTT,IDIMEXDX,T,
-     &                WORK,KFREE,LFREE)
+      IF(IFHM.EQ.2) THEN
+        CALL IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+     &                  IHSM,OUTT,IDIMEXDX,T,
+     &                  WORK,KFREE,LFREE)
+      ELSE
+        CALL OPCT1234M_REL_SETUP(IWAY,IEX,IDX,TTYPE,OUTT,IDIMEXDX,
+     &                           ITSM,IHSM,IEXD1234,ISIGN_DE,IFHM,
+     &                           T,NRANK,
+     &                           WORK,KFREE,LFREE)
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE OPCT1234M_REL_SETUP(IWAY,IOEX,IO1DX,IT1,OUTT,IDIM,
+     &                               IT1SM,IOPSM,IOPINDX,ISIGN,IFHM,
+     &                               INTEGRALS,NRANK,
+     &                               WORK,KFREE,LFREE)
+*
+* Master routine for contracting operator with upto 4 operators
+*
+* Jeppe Olsen, April 2003 ( I hope it will be working before May ..)
+*
+* Reducing this to just one operator 
+*
+* Lasse 2011
+*
+* This routine is redundant and should be eliminated
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+#include "cc_scr2.inc"
+C
+      DIMENSION WORK(*),INTEGRALS(*)
+*
+      CALL OPCT1234_REL_SETUP(IWAY,IOEX,IO1DX,IT1,IDIM,
+     &    IT1SM,IOPSM,LCCB,
+     &    WORK(KIX1_CA),WORK(KSX1_CA),WORK(KIX1_CB),WORK(KSX1_CB),
+     &    WORK(KIX1_AA),WORK(KSX1_AA),WORK(KIX1_AB),WORK(KSX1_AB),
+     &    WORK(KIX2_CA),WORK(KSX2_CA),WORK(KIX2_CB),WORK(KSX2_CB),
+     &    WORK(KIX2_AA),WORK(KSX2_AA),WORK(KIX2_AB),WORK(KSX2_AB),
+     &    WORK(KLOCK1),WORK(KLOCL1),
+     &    WORK(KLSTOCC1),WORK(KLSTOCC2),WORK(KLSTOCC3),WORK(KLSTOCC4),
+     &    WORK(KLTSCR1),WORK(KLTSCR2),
+     &    OUTT,
+     &    WORK(KLSMD1),
+     &    WORK(KLSMEX),WORK(KLSMK1),WORK(KLSML1),
+     &    WORK(KLNMD1),
+     &    WORK(KLNMEX),WORK(KLNMK1),WORK(KLNML1),
+     &    IOPINDX,NRANK,
+     &    WORK(KLZ),WORK(KLZSCR),WORK(KLSTREO),
+     &    ISIGN,IFHM,INTEGRALS,
+     &    WORK,KFREE,LFREE)
+*
+      RETURN
+      END
+*
+      SUBROUTINE OPCT1234_REL_SETUP(IWAY,IOEX,IO1DX,IT1,IDIM,
+     &           IT1SM,IOPSM,LB,
+     &           IX1_CA,SX1_CA,IX1_CB,SX1_CB,
+     &           IX1_AA,SX1_AA,IX1_AB,SX1_AB,
+     &           IX2_CA,SX2_CA,IX2_CB,SX2_CB,
+     &           IX2_AA,SX2_AA,IX2_AB,SX2_AB,
+     &           IOC_K1,IOC_L1,
+     &           ISTR_D1,
+     &           ISTR_EX,ISTR_K,ISTR_L,
+     &           TSCR1,TSCR2,
+     &           OPSCR,
+     &           ISM_CAAB_D1,
+     &           ISM_CAAB_EX,ISM_CAAB_K,ISM_CAAB_L,
+     &           INM_CAAB_D1,
+     &           INM_CAAB_EX,INM_CAAB_K,INM_CAAB_L,
+     &           IEXD1234_INDX,NRANK,
+     &           IZ,IZSCR,ISTREO,
+     &           ISIGNG,IFHM,INTEGRALS,
+     &           WORK,KFREE,LFREE)
+*
+* Will perform some of the setup and dimensioning otherwise done in
+* OPCT1234_REL. Here the integrals will be batched and stored in batches
+* for easy fetching in OPCT1234_REL. This will reduce the fetching time
+* of integrals since same contractions are fetched in the same manner.
+* Only the needed setup to find the integrals is in use.
+*
+* There should be some cleaning of this routine. Lasse 2012
+*
+*
+* Contract indeces of Operator O with indeces of 
+* excitation operator T1,T2, T3, T4
+*
+* Operator O is defined by an operator part IOEX, and 
+* deexcitation parts IO1DX,IO2DX,IO3DX,IO4DX.
+*
+* LB   : Batch size for D1 and EX at the moment. 
+*        May have to do this dynamic
+*
+* Jeppe Olsen, May 2000, Finished March 2003 ( Well it became July 2003)
+*                        and even November 2004
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "ctcc.inc"
+#include "symm.inc"
+*. Input   
+      INTEGER IOEX(NGAS,4),IO1DX(NGAS,4)
+      INTEGER IT1(NGAS,4)
+      DIMENSION INTEGRALS(*)
+      DIMENSION WORK(*)
+*. Map of index EXD1234 operator to original index of Hamiltonian
+      INTEGER IEXD1234_INDX(2*NRANK)
+*. Output
+C     DIMENSION OT1234(*)
+*
+*. Local scratch
+*
+*. Occupation of conjugated operators
+      INTEGER IO1DX_DAG(4*NGAS)
+*
+*. Occupation of gasspaces for various strings 
+*. Number of strings per sym of the various string supergroups
+      INTEGER NOEX(8,4),NO1DX(8,4)
+      INTEGER NT1(8,4)
+      INTEGER NK1(8,4)
+      INTEGER NL1(8,4)
+*. Offsets of strings with given sym for the strings of various CC ops
+      INTEGER IBOEX(8,4),IBO1DX(8,4)
+*. Offset in operators to strings with given sym
+      INTEGER IBT1_TCC(8,8,8)
+      INTEGER IBL1_TCC(8,8,8)
+*
+      INTEGER IB_D1K1(8,8,4) 
+      INTEGER IB_EXK1(8,8,4)
+*
+*
+*. Scratch through parameter list. 
+*
+*. IX1_* : Number of operators in operator * Largest C or A string
+      DIMENSION IX1_CA(*),SX1_CA(*),IX1_CB(*),SX1_CB(*)
+      DIMENSION IX1_AA(*),SX1_AA(*),IX1_AB(*),SX1_AB(*)
+*. IX2, SX2
+      DIMENSION IX2_CA(*),SX2_CA(*),IX2_CB(*),SX2_CB(*)
+      DIMENSION IX2_AA(*),SX2_AA(*),IX2_AB(*),SX2_AB(*)
+*
+*. ISTR_D1, ISTR_K, ISTR_L : for occupations of strings  
+      INTEGER ISTR_D1(*)
+      INTEGER ISTR_EX(*)
+      INTEGER ISTR_K(*), ISTR_L(*) 
+*. For occupation of intermediate strings
+      INTEGER IOC_K1(NGAS,4)
+      INTEGER IOC_L1(NGAS,4)
+*. For intermediates with both strings batched
+*. Changed from squared to cubed by Lasse
+      DIMENSION TSCR1(*),TSCR2(*)
+*. For a batch of coefficients for Operator
+*. Operator accessed as OP(EX,D1) so
+      DIMENSION OPSCR(*)
+*. For part of Hamiltonian
+      INTEGER ISM_CAAB_D1(4,*), INM_CAAB_D1(4,*)
+      INTEGER ISM_CAAB_EX(4,*), INM_CAAB_EX(4,*)
+*. For CC operators
+      INTEGER ISM_CAAB_K(4,*), INM_CAAB_K(4,*)
+      INTEGER ISM_CAAB_L(4,*), INM_CAAB_L(4,*)
+*
+      INTEGER IZ(*), IZSCR(*), ISTREO(*)
+*
+* The story goes as
+*
+* Part 1 : O, T1 => OT1(l1) in TSCR4
+*
+*    Loop over symmetry of D1
+*    Loop over batches  of D1
+*
+*    Loop over batches of Ex
+*      Fetch O as O(d1,ex)
+*      Loop over batches of K1
+*        T1(I) => T1(d1,k1)
+*        OT1(ex,k1) = sum(d1) O(d1,ex)T1(d1,k1)
+*        OT1(ex,k1) => OT1(l1)
+*      End of loop over batches of K1
+*    End of loop over bathces of Ex
+*    End of loop over batches of d1
+*    End of loop over symmetry of D1
+* ( We now have OT1(l1), all l1 in batch)    
+*
+*
+* - That's all she wrote
+*
+*
+      ZERO = 0.0D0
+      ONE = 1.0D0
+      IOFFM = 1
+      IDIM = 0
+*
+      NTEST = 00 
+      IF(NTEST.GE.100 )THEN
+        WRITE(6,*) ' OPCT1234_REL_SETUP entered '
+        WRITE(6,*) ' ==================== '
+        WRITE(6,*) ' Ex Deex1 Deex2 Deex3 Deex4 ' 
+        WRITE(6,*)
+        CALL WRT_SPOX_TP_CC_KRCC(IOEX,1)
+        CALL WRT_SPOX_TP_CC_KRCC(IO1DX,1)
+        WRITE(6,*) 
+        WRITE(6,*) ' Form of T1 T2 T3 T4'
+        CALL WRT_SPOX_TP_CC_KRCC(IT1,1)
+        CALL MEMCHK_KRCC(WORK)
+*
+      END IF
+C     NTEST = 0
+      SIGNG = DFLOAT(ISIGNG)
+*. Symmetry of final type  
+      IF(NTEST.GE.100) WRITE(6,*) ' IT1SM : ',IT1SM
+C correct multiplication. Still to be named IL4SM? No IL1SM
+      IL1SM = IDBGMULT(IOPSM,IT1SM) ! check sym 2011 correct
+      IF(NTEST.GE.100) THEN 
+        WRITE(6,*) ' Symmetry of OT1234 = ', IL1SM
+      END IF
+*
+* =================================================
+* Occupation of the various gas spaces for strings 
+* =================================================
+*
+*. K1 = O1DX  I1 
+      CALL NEW_CAAB_OC(IOC_K1,IT1,IO1DX,1,1,NGAS)
+*. L1 = OEX K1 
+      CALL NEW_CAAB_OC(IOC_L1,IOC_K1,IOEX,2,1,NGAS)
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Occupation of K1, K2, K3, K4 '
+        CALL WRT_SPOX_TP_CC_KRCC(IOC_K1,1)
+        WRITE(6,*) ' Occupation of L1, L2, L3, L4 '
+        CALL WRT_SPOX_TP_CC_KRCC(IOC_L1,1)
+      END IF
+*
+* =============================================================
+*. Obtain symmetry-dimensions and -offsets for various strings
+* =============================================================
+*
+      DO I_CAAB = 1, 4
+       call evenodd(IEO,I_CAAB)
+       IF(IEO.EQ.1) THEN
+         IUB = 1
+       ELSE
+         IUB = 2
+       END IF
+       IF(I_CAAB.GE.3) THEN
+         ICA = 2
+       ELSE
+         ICA = 1
+       END IF
+C NST_SPGP_CC_REL should be checked!
+C check with nst_spgrp_dbg from sigden.
+       CALL NST_SPGP_CC_REL(IOEX(1,I_CAAB),NOEX(1,I_CAAB),IUB,ICA)
+       CALL ZBASE(NOEX(1,I_CAAB),IBOEX(1,I_CAAB),NSMST)
+*. D1
+       CALL NST_SPGP_CC_REL(IO1DX(1,I_CAAB),NO1DX(1,I_CAAB),IUB,ICA)
+       CALL ZBASE(NO1DX(1,I_CAAB),IBO1DX(1,I_CAAB),NSMST)
+*. T1
+       CALL NST_SPGP_CC_REL(IT1(1,I_CAAB),NT1(1,I_CAAB),IUB,ICA)
+*. K1
+       CALL NST_SPGP_CC_REL(IOC_K1(1,I_CAAB),NK1(1,I_CAAB),IUB,ICA)
+*. L1   
+       CALL NST_SPGP_CC_REL(IOC_L1(1,I_CAAB),NL1(1,I_CAAB),IUB,ICA)
+*
+      END DO
+*. We now have the various dimensions, so we can write T1,T2,T3,T4 if 
+*. required
+*
+* ============================
+*. Offsets to T1, T2, T3, T4
+* ============================
+*
+*. T1
+      CALL Z_TCC_OFF2_REL(IBT1_TCC,LEN_T1,NT1(1,1),NT1(1,2),NT1(1,3),
+     &                NT1(1,4),IT1SM,NSMST)
+*
+*
+* ========================
+*.  D1{\dagger} K1  => T1 mapping
+* =========================
+*
+*. Obtain D1{\dagger}
+      CALL CONJ_CAAB(IO1DX,IO1DX_DAG,NGAS,SP_D1K1)
+      CALL T1T2_TO_T12_MAP_REL(IO1DX_DAG,IOC_K1,IT1,
+     &     IX1_CA,SX1_CA,IX1_CB,SX1_CB,IX1_AA,SX1_AA,IX1_AB,SX1_AB,
+     &     IB_D1K1,ISTR_D1,ISTR_K,ISTREO,IZ,IZSCR,SIGN_D1K1,
+     &     WORK,KFREE,LFREE)
+*
+* ======================
+* Ex K1 => L1 mapping
+* ======================
+*
+      CALL T1T2_TO_T12_MAP_REL(IOEX,IOC_K1,IOC_L1,
+     &     IX2_CA,SX2_CA,IX2_CB,SX2_CB,IX2_AA,SX2_AA,IX2_AB,SX2_AB,
+     &     IB_EXK1,ISTR_K,ISTR_L,ISTREO,IZ,IZSCR,SIGN_EXK1,
+     &     WORK,KFREE,LFREE)
+*
+*. And the individual strings : all symmetries constructed
+*. D1 strings 
+*. Since ISTR_D1 is only for scratch space in T1T2_TO_T12_MAP_REL
+      CALL STR_CAAB_REL(IO1DX,ISTR_D1,
+     &                  WORK,KFREE,LFREE)
+*. Ex strings 
+      CALL STR_CAAB_REL(IOEX,ISTR_EX,
+     &                  WORK,KFREE,LFREE)
+*. Batch length : Should allow to vary 
+      LD1_BAT = LB
+      LEX_BAT = LB
+*. Symmetry of Op T1, Op T1 T2, Op T1 T2 T3, Op T1 T2 T3 T4
+*
+* Check Op for annihilation symmetry
+*
+* IOPT1SM now final symmetry
+      IOPT1SM    = IDBGMULT(IOPSM,IT1SM)
+C see if I have to rename 2011
+      IOPT1234SM = IOPT1SM
+*
+* Needs to be changed Lasse 2011
+*
+      L1SM = IOPT1SM ! I think
+*. Number of L1 strings with sym L1SM
+      NL1_TOT = LEN_TCCBLK_REL(NL1(1,1),NL1(1,2),NL1(1,3),
+     &              NL1(1,4),L1SM,NSMST)
+*. Offsets for L1 with sym L1SM
+      CALL Z_TCC_OFF2_REL(IBL1_TCC,LEN_L1,NL1(1,1),
+     &     NL1(1,2),NL1(1,3),NL1(1,4),L1SM,NSMST)
+*
+* Thinks this should be new start Lasse
+*
+* ==============================================================
+* Part 1 O1(d1,ex) T1(i) => OT1(l1) in TSCR4
+* ==============================================================
+*
+* Part 1 : Obtain in TSCR4 OT1(l1) for all l1 of correct sym
+*
+* Length of OT1(l1)
+      LEN_OT1 = NL1_TOT!*ID2_BATLEN*ID3_BATLEN*ID4_BATLEN
+*
+C     ZERO = 0.0D0
+C     CALL SETVEC(WORK(KLTSCR4),ZERO,LEN_OT1)
+*. Loop 1 can be realized in a number of different ways. 
+*. The present approach minimizes the number of times 
+*  integrals must be fetched 
+*
+      DO ID1SM = 1, NSMST
+*. Obtain exsm from OP(ex,d4,d3,d2,d1) have symmetry IOPSM
+        IF(NTEST.GE.100) WRITE(6,*) ' ID1SM = ', ID1SM
+C
+C Not sure about EXsym
+C
+C again symmetry 2011
+C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
+        ID1234SM = ID1SM
+        IEXSM = IDBGMULT(IOPSM,IADJSYM(ID1234SM))
+        K1SM = IDBGMULT(IT1SM,ID1SM)
+*. Number of K1 strings with sym K1SM
+        NK1_TOT = LEN_TCCBLK_REL(NK1(1,1),NK1(1,2),NK1(1,3), !!
+     &            NK1(1,4),K1SM,NSMST)
+        IF(NTEST.GE.100) WRITE(6,*) 'K1SM, NK1_TOT ,IEXSM = ', 
+     &                               K1SM, NK1_TOT ,IEXSM
+*. Number of excitations strings in O with this symmetry
+        NEX_TOT = LEN_TCCBLK_REL(NOEX(1,1),NOEX(1,2),NOEX(1,3),
+     &            NOEX(1,4),IEXSM,NSMST)
+*. Number of D1 strings with given symmetry
+        ND1_TOT = LEN_TCCBLK_REL(NO1DX(1,1),NO1DX(1,2),NO1DX(1,3),
+     &         NO1DX(1,4),ID1SM,NSMST)
+C     IF(ND1_TOT.GE.LB.OR.NEX_TOT.GE.LB) THEN
+C       print*,'ND1_TOT,NEX_TOT,LB',ND1_TOT,NEX_TOT,LB
+C       STOP 'batch'
+C     END IF
+        IF(ND1_TOT.GT.0.AND.NEX_TOT.GT.0.AND.NK1_TOT.GT.0) THEN
+*. Number of batches of excitation part of O
+C         print*,'ND1_TOT,NEX_TOT',ND1_TOT,NEX_TOT
+          NEX_BAT = NEX_TOT/LEX_BAT
+          IF(NEX_BAT*LEX_BAT.LT.NEX_TOT) NEX_BAT = NEX_BAT + 1
+*. Number of D1 batches
+          ND1_BAT = ND1_TOT/LD1_BAT
+          IF(ND1_BAT*LD1_BAT.LT.ND1_TOT) ND1_BAT=ND1_BAT+1
+*. Loop over D1 batches
+          ID1SM_NEW = 1
+          IF(NTEST.GE.100) WRITE(6,*) 'ND1_TOT, ND1_BAT ', 
+     &                                 ND1_TOT, ND1_BAT
+          DO ID1_BAT = 1, ND1_BAT
+            IF(NTEST.GE.100) WRITE(6,*) ' ID1_BAT = ', ID1_BAT
+            ID1_START = (ID1_BAT-1)*LD1_BAT + 1
+            ID1_STOP  = MIN(ND1_TOT,ID1_START+LD1_BAT-1)
+            ID1_BATLEN = ID1_STOP-ID1_START+1
+            IF(NTEST.GE.100) 
+     &      WRITE(6,*) ' ID1_STOP, ID1_START, ID1_BATLEN ',
+     &                   ID1_STOP, ID1_START, ID1_BATLEN
+*. Generate ID1 strings for given sym and batch
+            CALL ISMNM_FOR_TCC_BAT_REL(NO1DX,ISM_CAAB_D1,INM_CAAB_D1,
+     &           ID1SM,ID1_BATLEN,ID1SM_NEW,
+     &           ISM_C1_D1,ISM_CA1_D1,ISM_AA1_D1,
+     &           INM_AB1_D1,INM_AA1_D1,INM_CA1_D1,INM_CB1_D1,
+     &           ISM_CINI_D1,ISM_CAINI_D1,ISM_AAINI_D1,      
+     &           INM_ABINI_D1,INM_AAINI_D1,INM_CAINI_D1,INM_CBINI_D1,
+     &           0)
+            ID1SM_NEW = 0
+*
+* all excitation operators in one shot. 
+* As we only have limited ISM, INM, the integrals (d1,d2,d3,d4,ex)
+* are obtained in batches 
+            IEXSM_NEW = 1
+            DO IEX_BAT = 1, NEX_BAT
+              IF(NTEST.GE.100) WRITE(6,*) ' IEX_BAT = ', IEX_BAT
+              IEX_START = (IEX_BAT-1)*LB + 1
+              IEX_STOP  = MIN(NEX_TOT,IEX_START+LB-1)
+              IEX_BATLEN = IEX_STOP - IEX_START + 1
+*. Generate IEX strings for given sym and batch
+              CALL ISMNM_FOR_TCC_BAT_REL(NOEX,ISM_CAAB_EX,INM_CAAB_EX,
+     &             IEXSM,IEX_BATLEN,IEXSM_NEW,
+     &             ISM_C1_EX,ISM_CA1_EX,ISM_AA1_EX,
+     &             INM_AB1_EX,INM_AA1_EX,INM_CA1_EX,INM_CB1_EX,
+     &             ISM_CINI_EX,ISM_CAINI_EX,ISM_AAINI_EX,      
+     &             INM_ABINI_EX,INM_AAINI_EX,INM_CAINI_EX,INM_CBINI_EX,
+     &             0)
+              IEXSM_NEW = 0
+*. Length of EXD2D3D4
+              LEN_EXD234 = IEX_BATLEN
+*. Obtain integrals OP(D1,EX)
+              IOFF = 1 + (IEX_START-1)*ID1_BATLEN
+*
+              IF(IWAY.EQ.1) THEN
+              IOFF = IOFFM
+              CALL GET_OPINT4_REL(OPSCR(IOFF),
+     &           IO1DX,ID1_BATLEN,INM_CAAB_D1(1,1),ISM_CAAB_D1(1,1),
+     &           ISTR_D1,IBO1DX,
+     &           IOEX,IEX_BATLEN,INM_CAAB_EX(1,1),ISM_CAAB_EX(1,1),
+     &           ISTR_EX,IBOEX,IEXD1234_INDX,IFHM,
+     &           NRANK,INTEGRALS,IOFFM,
+     &           WORK,KFREE,LFREE)
+               END IF
+*
+               IDIM = IDIM + ID1_BATLEN*IEX_BATLEN
+            END DO
+*           ^ End of loop over batches of excitation operators OEX
+*
+            SIGNX = SP_D1K1*SIGN_D1K1
+            SIGN_LK = SIGN_EXK1
+            SIGNG = FLOAT(ISIGNG)
+*
+          END DO
+*         ^ End of loop over D1 batch
+        END IF
+*       ^ End if there were nonvanishing dimensions
+      END DO
+*     ^ End of loop over symmetries of D1
 *
       RETURN
       END
@@ -1761,9 +2216,19 @@ C             print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
 C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
               IF(IWAY.EQ.1) THEN
               IF(IMAP.EQ.1) THEN
+C              IF(IFHM.EQ.1) THEN
+C              CALL SORT_H(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
+C    &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
+C    &                     NEL_ABE,NEL_AAE,NEL_CBE,NEL_CAE,
+C    &                     NEL_ABD,NEL_AAD,NEL_CBD,NEL_CAD,
+C    &                     IOCC_ABE,IOCC_AAE,IOCC_CBE,IOCC_CAE,
+C    &                     IOCC_ABD,IOCC_AAD,IOCC_CBD,IOCC_CAD,
+C    &                     NSTR_TOT,IEXD1234,NRANK,ISIGN_DE,T,OUTT)
+C              ELSE
                CALL SORT_1(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
      &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
      &                     NSTR_TOT,T,OUTT)
+C              END IF
               ELSE IF(IMAP.EQ.2) THEN
                CALL REDUCE_OP(IEX,IDX,IFREEOP,NGAS,3)
                STOP ' Not yet implemented '
@@ -1809,7 +2274,9 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
      &                     NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
      &                     NSTR_TOT,T,OUTT)
               ELSE IF(IMAP.EQ.8) THEN
+               STOP ' Not yet implemented '
               ELSE IF(IMAP.EQ.9) THEN
+               STOP ' Not yet implemented '
               ELSE 
                STOP ' IMAP not set in IDIM_EX_DX'
               END IF
@@ -1838,6 +2305,70 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
           WRITE(6,*) ' The new EX,DX order '
           CALL WRTMAT(OUTT,1,IDIMEXDX,1,IDIMEXDX)
         END IF
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE SORT_H(NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE,
+     &                  NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
+     &                  NEL_ABE,NEL_AAE,NEL_CBE,NEL_CAE,
+     &                  NEL_ABD,NEL_AAD,NEL_CBD,NEL_CAD,
+     &                  IOCC_ABE,IOCC_AAE,IOCC_CBE,IOCC_CAE,
+     &                  IOCC_ABD,IOCC_AAD,IOCC_CBD,IOCC_CAD,
+     &                  NSTR_TOT,IEXD1234,NRANK,ISIGN_DE,T,OUTT)
+*
+#include "implicit.inc"
+*
+      DIMENSION T(*),OUTT(*)
+      INTEGER IOCC_ABE(*),IOCC_AAE(*),IOCC_CBE(*),IOCC_CAE(*)
+      INTEGER IOCC_ABD(*),IOCC_AAD(*),IOCC_CBD(*),IOCC_CAD(*)
+      INTEGER IEXD1234(2*NRANK)
+* Local scratch
+      INTEGER IOFF(4)
+*
+      NTEST = 00
+*
+      IF(NTEST.GE.10) THEN
+        WRITE(6,*) ' Welcome to sorting routine for the Hamiltonian '
+      END IF
+*
+      ICOUNT = 0
+* Find the offset
+      IF(NEL_CAE.GE.1) THEN
+        CALL ICOPVE(IOCC_CAE,IOFF,NDIM)
+      END IF
+*
+      DO ISTR_CAE = 1,NSTR_CAE
+      DO ISTR_ABE = 1,NSTR_ABE
+       DO ISTR_AAE = 1,NSTR_AAE
+        DO ISTR_CBE = 1,NSTR_CBE
+          DO ISTR_ABD = 1,NSTR_ABD
+           DO ISTR_AAD = 1,NSTR_AAD
+            DO ISTR_CBD = 1,NSTR_CBD
+             DO ISTR_CAD = 1,NSTR_CAD
+              ICOUNT = ICOUNT + 1
+C             print*,'IOFF_CA,ICOUNT',IOFF_CA,ICOUNT
+C             print*,'---------------------------'
+              OUTT(ICOUNT) = T(IOFF_CA)
+             END DO
+            END DO
+           END DO
+          END DO
+         END DO
+        END DO
+       END DO
+      END DO
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Original order of M '
+        DO I =1,NSTR_TOT
+          WRITE(6,*) ' M ',T(I)
+        END DO
+        WRITE(6,*) ' EX,DX order '
+        DO I =1,ICOUNT
+          WRITE(6,*) ' EX,DX ',OUTT(I)
+        END DO
       END IF
 *
       RETURN
@@ -1925,7 +2456,7 @@ C             print*,'---------------------------'
 * indices in an intermediate are contracted.
 * There are three distinct cases resulting in 9 different sortings: 
 * First case : The index (or indicies) contracted are the only one of
-*              it's kind i.e. there are no moe possible indices of this
+*              it's kind i.e. there are no more possible indices of this
 *              CAAB kind left in the resulting operator => IMAP = 1
 * Second case : Only one of two possible indices are contracted will
 *               give two seperate cases:
@@ -1964,6 +2495,7 @@ C             print*,'---------------------------'
 * Two indices then IMAP = 1
 * 
       NINDEX = NCA + NCB + NAA + NAB
+c     print*,'NINDEX,NCA,NCB,NAA,NAB',NINDEX,NCA,NCB,NAA,NAB
       IF(NINDEX.EQ.2) THEN
         IMAP = 1
         RETURN
@@ -2457,7 +2989,12 @@ C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
 !            IOFF_CA = NSTR_CAR * (ISTR_CAE- 1) + IOFF_CA
              IOFF_CA=IOFF_CA+IOFF_CBE+IOFF_AAE+IOFF_ABE
              ICOUNT = ICOUNT + 1
-             OUTT(ICOUNT) = T(IOFF_CA)
+             IF(ISTR_CAE.GT.ISTR_CAD) THEN
+               SIGN = 1.0D0
+             ELSE
+               SIGN = -1.0D0
+             END IF
+             OUTT(ICOUNT) = SIGN*T(IOFF_CA)
             ELSE 
              ICOUNT = ICOUNT + 1
 ! Next line only for show
@@ -2553,7 +3090,12 @@ C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
 !            IOFF_CA = NSTR_CAR * (ISTR_CAE- 1) + IOFF_CA
              IOFF_CB=IOFF_CB+IOFF_CAE+IOFF_AAE+IOFF_ABE
              ICOUNT = ICOUNT + 1
-             OUTT(ICOUNT) = T(IOFF_CB)
+             IF(ISTR_CBE.GT.ISTR_CBD) THEN
+               SIGN = 1.0D0
+             ELSE
+               SIGN = -1.0D0
+             END IF
+             OUTT(ICOUNT) = SIGN*T(IOFF_CB)
             ELSE 
              ICOUNT = ICOUNT + 1
 ! Next line only for show

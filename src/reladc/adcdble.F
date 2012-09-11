@@ -466,6 +466,9 @@ c  we do Mulliken-type ADC population analysis after diagonalization
 c  since in this part of the program we have access to all the symmetry
 c  information we need. Since we need only the 2h part we can make use
 c  of the TMATVEC matrix, the eigenvectors of the Lanczos matrix.
+c
+c  in the corresponding symmetry DESREP
+c
 c  ATT in this F90 routine an include symm.inc does not work!
 c  therefore we have to transfer the relevant arrays to TWOHPOP
 c  especially MULTB(64,64,2), NOOT(*) and NO(*)

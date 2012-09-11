@@ -1,0 +1,29 @@
+!
+**DIRAC
+.TITLE
+Magnesium atom. Spin-orbit fockspace test calculations.
+.WAVE F
+.4INDEX
+**HAMILTONIAN
+.INTFLG 
+1 1 0
+**WAVE FUNCTIONS
+.RELCCSD
+# for pure RELCCSD step the input must contain SCF occupations
+*SCF
+.EVCCNV
+1.0E-10 1.0E-7
+.CNVINT
+0.01 0.0001
+.CLOSED SHELL
+4 6
+**MOLTRA
+.ACTIVE
+energy -1000.0 1000.0 1.0
+energy -1000.0 1000.0 1.0
+*END OF
+
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F &END
+ &CCFSPC MAXIT=100, NACTH=0,0,0,0, NACTP=8,8,3,3, FSSECT=1,1,0,0,1,0, DOIH=T &END
+ &CCIH EPMIN=1.15, EPMAX=1.40  &END
+
