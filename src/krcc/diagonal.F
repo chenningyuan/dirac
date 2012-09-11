@@ -197,7 +197,7 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 C       print*,'IFETCH',IFETCH
         DIA_AL(I) = FOCK(IFETCH)
         DIA_BE(I) = FOCK(IFETCH)
-        print*,'DIA_AL(I),I',DIA_AL(I),I
+C       print*,'DIA_AL(I),I',DIA_AL(I),I
       END DO
 *
       RETURN
@@ -271,8 +271,8 @@ C     INTEGER IOBSM(*),LOBSM(*)
       CALL SETVEC(FI_BE,ZERO,NORBT)
 *
       NTEST = 00
-      print*,'ISYMPACK,NSMOB',ISYMPACK,NSMOB
-      print*,'NORBT',NORBT
+C     print*,'ISYMPACK,NSMOB',ISYMPACK,NSMOB
+C     print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' FI_HS : Initial 1 e integral list '
         CALL APRBLM2(T,NTOOBS,NTOOBS,NSMOB,ISYMPACK)
