@@ -26,9 +26,9 @@
       DIMENSION WORK(*)
 *
 * Setting a default batch length. Increase or decrease according to
-* memory available and speed
+* memory available and speed. Moved to input and default is set there!
 *
-      LCCB = 13000
+C     LCCB = 130
       WRITE(6,*) ' Batch lenght LCCB ',LCCB
 *
 *.1 : KCCF : Intermediate F-vectors for needed out of space 

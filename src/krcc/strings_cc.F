@@ -839,7 +839,6 @@ C       CALL MEMCHK_KRCC(WORK)
 *       types of strings (Annihilation mapping not installed)
 *
       DO IGRP = 1, NGRP
-        print*,' IGRP ',IGRP,' ISTAC(IGRP,2) ',ISTAC(IGRP,2)
         IF(ISTAC(IGRP,2).NE.0) THEN
           IGAS = IGSFGP(IGRP)
           NGSOBP = NOBPT(IGAS)
