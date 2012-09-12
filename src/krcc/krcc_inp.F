@@ -30,7 +30,7 @@ C
       SAVE SET
       DATA TABLE /'.MAX CC','.MK2REF','.MK2DEL','.GASSH ','.GASSPC',
      &            '.MXCCVE','.PRINT ','.NACTEL','.NOCOVA','.E_CONV',
-     &            '.GASSHK','.INACTI','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.GASSHK','.INACTI','.IBATCH','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -207,6 +207,9 @@ C&&& GASSHK: GAS setup for spinors
                READ(LUCMD,*) (KRCC_NISH(I),I=1,NFSYM)
                GO TO 100
    13          CONTINUE
+C&&& IBATCH: Change default batch length according to memory and speed
+                 READ(LUCMD,*) LCCB
+                 IKWSET(13) = 1
                GO TO 100
    14          CONTINUE
                GO TO 100
@@ -304,6 +307,16 @@ C
         END IF
       END IF
 C
+C Default batch length
+C
+      IF(IKWSET(13).EQ.0) THEN
+        WRITE(6,*) ' Batch lengt set to default 1000'
+        WRITE(6,*) ' Decrease to reduce memory or increase for speed'
+        LCCB = 1000
+      ELSE
+        WRITE(6,*) ' You have changed the default batch length to',LCCB
+      END IF
+C
 C Setting some defaults that i am too lazy to change in the code
 C
         NCMBSPC = ISPC
@@ -312,7 +325,7 @@ C
           LCMBSPC(ICISPC) = 1
           ICMBSPC(1,ICISPC) = ICISPC
         END DO
-        LCSBLK = 5000000
+        LCSBLK = 6000000
 C
 C     Print section
 C     =============

@@ -460,7 +460,6 @@
          read(get_file_unit(), *) visual_cfg_london_component
       end if
 
-#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.NONE  ')) then
          visual_cfg_london_none      = .true.
       end if
@@ -476,7 +475,6 @@
       if (kw_matches(word, '.NOKAPP')) then
          visual_cfg_london_skip_kappa = .true.
       end if
-#endif
 
       call check_whether_kw_found(word, kw_section)
 
