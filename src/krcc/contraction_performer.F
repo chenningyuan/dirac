@@ -89,28 +89,20 @@ C     INTEGER IBSOX_FOR_OX(*),NSOX_FOR_OX(*),ISOX_FOR_OX(*)
       INTEGER IMINDEX(40) !Should be put on common block. Like IHINDEX
 *. Output CC vector function
       DIMENSION CC_VEC_FNC(*)
-      DIMENSION CC_AMP_EXTRA(N_CC_AMP+1)
 *
-C     NTEST = 1000
-C     IF(NTEST.GE.1000) THEN
-C       WRITE(6,*) ' Information from EMTHET_COM '
-C       WRITE(6,*) ' ============================='
-C       WRITE(6,*) ' Input T-amplitudes '
-C       CALL WRTMAT(T,1,N_CC_AMP,1,N_CC_AMP)
-C       print*,'N_CC_AMP',N_CC_AMP
-C     END IF
+      NTEST = 000
+      IF(NTEST.GE.1000) THEN
+        WRITE(6,*) ' Information from EMTHET_COM '
+        WRITE(6,*) ' ============================='
+        WRITE(6,*) ' Number of amplitudes = ',N_CC_AMP
+        WRITE(6,*) ' Input T-amplitudes '
+        CALL WRTMAT(T,1,N_CC_AMP,1,N_CC_AMP)
+      END IF
 *
 *. Set index ordering array for intermediate
 * Should be set to max excitation level
-C     IF(IDEBUG.NE.1) THEN
-        IDEBUG = 1
-C     END IF
-      print*,'IDEBUG',IDEBUG
       DO I=1,40
         IMINDEX(I) = I
-      END DO
-      DO I =1,NSPOBEX_TO
-        print*,'LSPOBEX_TO,I',LSPOBEX_TO(I),I
       END DO
 *
       IDUM = -1
@@ -137,7 +129,7 @@ C format.
             ISPINORBIT = 0
           ELSE
             ISPINORBIT = 1
-            print*,'Kramers projection flipping'
+C           print*,'Kramers projection flipping'
           END IF
 C         IF(NRANK.EQ.2) CYCLE
           IF(NTEST.GE.100) THEN
@@ -175,6 +167,7 @@ C         IF(NRANK.EQ.2) CYCLE
           print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
           print*,'NSPOBEX_TO',NSPOBEX_TO
           IF(IHCTP.GE.1) THEN
+              IFHM = 0
           CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,NRANK,
      &         IFHM,INTEGRALS,
      &         ISPOBEX_TP(1,IT1),
@@ -182,29 +175,21 @@ C         IF(NRANK.EQ.2) CYCLE
 C    &         T(IT1_B),
      &         ONE,
      &         CC_VEC_FNC(IBSPOBEX_TO(IHCTP)),
-     &         LCCFBLK,IRESOP(1,IHCTP),PERM_FAC,
+     &         LCCFBLK,IRESOP(1,IHCTP),
      &         WORK,KFREE,LFREE)
-C     NTEST = 1000
-C     IF(NTEST.GE.1000) THEN
-C       WRITE(6,*) ' Information from EMTHET_COM '
-C       WRITE(6,*) '============================='
-C       WRITE(6,*) ' Output T-amplitudes '
-C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
-C     END IF
           END IF
         END IF
 *
 * One commutator
 *
-C       ICOUNT = 0
         IF(NCOMMU.EQ.1) THEN
 * Loop over the number of possible contractions
-          print*,'IPOSCON(IH),IH',IPOSCON(IH),IH
+C         print*,'IPOSCON(IH),IH',IPOSCON(IH),IH
           IF(IPOSCON(IH).GE.1) THEN
 * IPERM determines if a new reordering of intemediates is needed
 * Still to be used
-                  DO I =1,IPERM(IH)  
-              print*,'IPERM(IH),I',IPERM(IH),I
+            DO I =1,IPERM(IH)  
+C             print*,'IPERM(IH),I',IPERM(IH),I
               IF(NTEST.GE.100) THEN
                 WRITE(6,*) 'Number of possible contractions ',
      &          IPOSCONPERM(I,IH),' for contraction number ',I
@@ -215,12 +200,12 @@ C       ICOUNT = 0
                 PERM_FAC = DFLOAT(IPREFAC(I,IH))
                 PERM_FAC = 1.0D0 !try this
 C               stop 'PERM_FAC set to one'
-                print*,'PERM_FAC',PERM_FAC
-                print*,'IPOSCONPERM(I,IH)',IPOSCONPERM(I,IH)
+C               print*,'PERM_FAC',PERM_FAC
+C               print*,'IPOSCONPERM(I,IH)',IPOSCONPERM(I,IH)
 C               ICOUNT = 0
                 DO J=1,IPOSCONPERM(I,IH)
                   ICOUNT = ICOUNT + 1
-                  print*,'ICOUNT,J',ICOUNT,J
+C                 print*,'ICOUNT,J',ICOUNT,J
                   IF(NTEST.GE.100) THEN
                    WRITE(6,*) ' Operator contracted with ',IOPT(ICOUNT)
                    CALL WRT_SPOX_TP_CC_KRCC(ITOP(1,IOPT(ICOUNT)),1)
@@ -231,40 +216,60 @@ C               ICOUNT = 0
                   IHCTP = IOPRES(ICOUNT) !resultant operator
                   IT1_B = IBSPOBEX(IT1)
                   LCCFBLK = LSPOBEX_TO(IHCTP)
-             print*,'IT1,IHCTP,IT1_B,LCCFBLK',IT1,IHCTP,IT1_B,LCCFBLK
-             print*,'KFREE,LFREE',KFREE,LFREE
-             print*,'IH,IHOP,ICOUNT',IH,IHOP,ICOUNT
-             print*,'IBSPOBEX(IHCTP)',IBSPOBEX(IHCTP)
-             print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
-      IF(IDEBUG.EQ.1) THEN
-      DO II =1,N_CC_AMP+1
-        CC_AMP_EXTRA(II) = CC_VEC_FNC(II)
-      END DO
-      END IF
+C            print*,'IT1,IHCTP,IT1_B,LCCFBLK',IT1,IHCTP,IT1_B,LCCFBLK
+C            print*,'KFREE,LFREE',KFREE,LFREE
+C            print*,'IH,IHOP,ICOUNT',IH,IHOP,ICOUNT
+C            print*,'IBSPOBEX(IHCTP)',IBSPOBEX(IHCTP)
+C            print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
 * Should perhaps pass down only the part of the integrals needed?
                   IF(IFHM.EQ.1) THEN
-C     NTEST = 1000
-C     IF(NTEST.GE.1000) THEN
-C       WRITE(6,*) ' Information from EMTHET_COM '
-C       WRITE(6,*) '============================='
-C       WRITE(6,*) ' Input T-amplitudes for Hamiltonian'
-C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
-C     END IF
+C Sort integrals in the way they should be fetched i.e. do not fetch
+C integrals on the inside
+            ITRY = 1
+            IF(ITRY.GE.1) THEN
+           IF(J.EQ.1) THEN
+C first of this type of contraction
+C          print*,'about to enter M_TO_EX_DX_FORMAT for hamiltonian'
+           IDIMEXDX = 0
+           CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,
+     &                            IHSM,ITSM,
+     &                            IFHM,IHINDEX(1,IHOP),
+     &                            IHTP(1,IHOP),
+     &                            ITOP(1,IOPT(ICOUNT)),
+     &                            IRESOP(1,IOPRES(ICOUNT)),
+     &                            INTEGRALS,
+     &                            WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KMTOEXDX,IDIMEXDX,WORK,KFREE,LFREE)
+           CALL M_TO_EX_DX_FORMAT(1,IDIMEXDX,WORK(KMTOEXDX),NRANK,
+     &                            IHSM,ITSM,
+     &                            IFHM,IHINDEX(1,IHOP),
+     &                            IHTP(1,IHOP),
+     &                            ITOP(1,IOPT(ICOUNT)),
+     &                            IRESOP(1,IOPRES(ICOUNT)),
+C    &                            INTEGRALS(IBSPOBEX_H(IHOP)),
+     &                            INTEGRALS,
+     &                            WORK,KFREE,LFREE)
+* Will now pass down WORK(KMTOEXDX) instead of integrals due to resort
+C          print*,'IDIMEXDX,IOFF_M for Hamiltonian',IDIMEXDX,IOFF_M,IH
+C          print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
+          END IF
+              END IF
+C
               CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),1,NRANK,
-     &             IFHM,INTEGRALS,
+     &             IFHM,WORK(KMTOEXDX),
+C    &             IFHM,INTEGRALS,
      &             ISPOBEX_TP(1,IT1),
      &             ITSM,IHSM,
      &             T(IT1_B),
      &             CC_VEC_FNC(IBSPOBEX_TO(IHCTP)),
-     &             LCCFBLK,IRESOP(1,IHCTP),PERM_FAC,
+     &             LCCFBLK,IRESOP(1,IHCTP),
      &             WORK,KFREE,LFREE)
-C     NTEST = 1000
-C     IF(NTEST.GE.1000) THEN
-C       WRITE(6,*) ' Information from EMTHET_COM '
-C       WRITE(6,*) '============================='
-C       WRITE(6,*) ' Output T-amplitudes for Hamiltonians'
-C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
-C     END IF
+              IF(ITRY.GE.1) THEN
+              IF(J.EQ.IPOSCONPERM(I,IH)) THEN
+C last of this possible contraction
+              CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
+              END IF
+              END IF
                   ELSE
 * Will now make an injective mapping of the cluster amplitudes to be
 * fetched to the EX,DX format where there is no restrictions on indices
@@ -277,59 +282,45 @@ C    &                           NHOLE,NPART,NHOLEV,NPARTV)
 C        stop 'chechk above call'
 C        Idea so far is to compare for sort one to see if that is buggy
 C        or if it is sort 7
-           print*,'about to enter M_TO_EX_DX_FORMAT'
+           IF(J.EQ.1) THEN
+C first of this type of contraction
+C          print*,'about to enter M_TO_EX_DX_FORMAT'
            IDIMEXDX = 0
-           CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
+           CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,
+     &                            IHSM,ITSM,
+     &                            IFHM,IMINDEX,
      &                            IHTP(1,IHOP),
      &                            ITOP(1,IOPT(ICOUNT)),
      &                            IRESOP(1,IOPRES(ICOUNT)),
      &                            INTEGRALS,
      &                            WORK,KFREE,LFREE)
            CALL MEMGET('REAL',KMTOEXDX,IDIMEXDX,WORK,KFREE,LFREE)
-           CALL M_TO_EX_DX_FORMAT(1,IDIMEXDX,WORK(KMTOEXDX),NRANK,IHSM,
+           CALL M_TO_EX_DX_FORMAT(1,IDIMEXDX,WORK(KMTOEXDX),NRANK,
+     &                            IHSM,ITSM,
+     &                            IFHM,IMINDEX,
      &                            IHTP(1,IHOP),
      &                            ITOP(1,IOPT(ICOUNT)),
      &                            IRESOP(1,IOPRES(ICOUNT)),
-C    &                            INTEGRALS(IOFF_M),
      &                            INTEGRALS(IBSPOBEX_H(IHOP)),
      &                            WORK,KFREE,LFREE)
 * Will now pass down WORK(KMTOEXDX) instead of integrals due to resort
-           print*,'IDIMEXDX,IOFF_M',IDIMEXDX,IOFF_M
-           print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
-C     NTEST = 1000
-C     IF(NTEST.GE.1000) THEN
-C       WRITE(6,*) ' Information from EMTHET_COM '
-C       WRITE(6,*) '============================='
-C       WRITE(6,*) ' Input T-amplitudes for intermediates'
-C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
-C     END IF
-               print*,'entering HCT1234_REL for intermediate'
+C          print*,'IDIMEXDX,IOFF_M',IDIMEXDX,IOFF_M
+C          print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
+          END IF
+C              print*,'entering HCT1234_REL for intermediate'
               CALL HCT1234_REL(IHTP(1,IHOP),IMINDEX,1,NRANK,
      &             IFHM,WORK(KMTOEXDX),
      &             ISPOBEX_TP(1,IT1),
      &             ITSM,IHSM,
      &             T(IT1_B),
      &             CC_VEC_FNC(IBSPOBEX_TO(IHCTP)),
-     &             LCCFBLK,IRESOP(1,IHCTP),PERM_FAC,
+     &             LCCFBLK,IRESOP(1,IHCTP),
      &             WORK,KFREE,LFREE)
-C     NTEST = 1000
-C     IF(NTEST.GE.1000) THEN
-C       WRITE(6,*) ' Information from EMTHET_COM '
-C       WRITE(6,*) '============================='
-C       WRITE(6,*) ' Output T-amplitudes for intermediates'
-C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
-C     END IF
+              IF(J.EQ.IPOSCONPERM(I,IH)) THEN
+C last of this possible contraction
               CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
+              END IF
                   END IF
-      IF(IDEBUG.EQ.1) THEN
-        print*,'about to print info for you are looking for'
-        DO II =1,N_CC_AMP+1
-          DIFF = CC_VEC_FNC(II) - CC_AMP_EXTRA(II)
-          IF(ABS(DIFF).GT.0.0D0) THEN
-            PRINT*,II,DIFF
-          END IF
-        END DO
-      END IF
                 END DO
               END IF
             END DO
@@ -337,17 +328,6 @@ C     END IF
             IF(NTEST.GE.100) THEN
               WRITE(6,*) ' No possible contractions '
             END IF
-* Stupid temp solution! No longer needed!
-C           IF(IFHM.EQ.2) THEN
-C             print*,'Will dimension an unused array'
-C             IDIMEXDX = 0
-C             CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
-C    &                              IHTP(1,IHOP),
-C    &                              ITOP(1,IOPT(ICOUNT)),
-C    &                              IRESOP(1,IOPRES(ICOUNT)),
-C    &                              INTEGRALS,
-C    &                              WORK,KFREE,LFREE)
-C           END IF
           END IF
         END IF
 * The new offset for the intermediate is now
@@ -356,14 +336,14 @@ C           END IF
       END DO
 *     ^ End of loop over H-operators
 *
-C     NTEST = 1000
-C     IF(NTEST.GE.1000) THEN
-C       WRITE(6,*) ' Information from EMTHET_COM '
-C       WRITE(6,*) '============================='
-C       WRITE(6,*) ' Output T-amplitudes '
-C       CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
-C       CALL MEMCHK_KRCC(WORK)
-C     END IF
+      NTEST = 000
+      IF(NTEST.GE.1000) THEN
+        WRITE(6,*) ' Information from EMTHET_COM '
+        WRITE(6,*) '============================='
+        WRITE(6,*) ' Output T-amplitudes '
+        CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
+        CALL MEMCHK_KRCC(WORK)
+      END IF
 *
       RETURN
       END
@@ -371,7 +351,7 @@ C     END IF
       SUBROUTINE HCT1234_REL(IHCAAB,IHINDEX,NTOP,NRANK,
      &                   IFHM,INTEGRALS,IT1,
      &                   IT1SM,IHSM,T1,
-     &                   HT1234,LHT1234,IRESOP,PERM_FAC,
+     &                   HT1234,LHT1234,IRESOP,
      &                   WORK,KFREE,LFREE)
 *
 * All possible contractions of a given type of the Hamiltonian 
@@ -456,7 +436,7 @@ C     DO JCONN = 1, NCONN
 * Commented out no longer needed things (good vocabulary today)
       CALL OPCT1234M_REL(IEX,ID1,IT1,T1,HT1234,IT1SM,
      &                   IHSM,IEXD1234,ISIGN_DE,IFHM,
-     &                   INTEGRALS,NRANK,PERM_FAC,
+     &                   INTEGRALS,NRANK,
      &                   WORK,KFREE,LFREE)
 *
 C     print*,'LHT1234',LHT1234
@@ -494,7 +474,7 @@ C     print*,'LHT1234',LHT1234
         WRITE(6,*) ' Resultant operator '
         CALL WRT_SPOX_TP_CC_KRCC(IRESOP,1)
       END IF
-      print*,'NRANK',NRANK
+C     print*,'NRANK',NRANK
 * First assume none will be contracted
       CALL ISETVC(ICONN,0,2*NRANK)
 * Now to find those that will by comparing IHCAAB and IRESOP
@@ -769,7 +749,7 @@ C IPERM_PARITY(IPERM,NELMNT)
 *
       SUBROUTINE OPCT1234M_REL(IOEX,IO1DX,IT1,T1,OT1234,IT1SM,
      &                    IOPSM,IOPINDX,ISIGN,IFHM,
-     &                    INTEGRALS,NRANK,PERM_FAC,
+     &                    INTEGRALS,NRANK,
      &                    WORK,KFREE,LFREE)
 *
 * Master routine for contracting operator with upto 4 operators
@@ -805,7 +785,7 @@ C
      &    WORK(KLNMEX),WORK(KLNMK1),WORK(KLNML1),
      &    IOPINDX,NRANK,
      &    WORK(KLZ),WORK(KLZSCR),WORK(KLSTREO),
-     &    ISIGN,IFHM,INTEGRALS,PERM_FAC,
+     &    ISIGN,IFHM,INTEGRALS,
      &    WORK,KFREE,LFREE)
 *
       RETURN
@@ -827,7 +807,7 @@ C
      &           INM_CAAB_EX,INM_CAAB_K,INM_CAAB_L,
      &           IEXD1234_INDX,NRANK,
      &           IZ,IZSCR,ISTREO,
-     &           ISIGNG,IFHM,INTEGRALS,PERM_FAC,
+     &           ISIGNG,IFHM,INTEGRALS,
      &           WORK,KFREE,LFREE)
 *
 * Contract indeces of Operator O with indeces of 
@@ -901,7 +881,7 @@ C
 *. Changed from squared to cubed by Lasse
       DIMENSION TSCR1(*),TSCR2(*)
 *. For a batch of coefficients for Operator
-*. Operator accessed as OP(EX,D2,D1) so
+*. Operator accessed as OP(EX,D1) so
       DIMENSION OPSCR(*)
 *. For part of Hamiltonian
       INTEGER ISM_CAAB_D1(4,*), INM_CAAB_D1(4,*)
@@ -953,6 +933,7 @@ C
         CALL MEMCHK_KRCC(WORK)
 *
       END IF
+      NTEST = 0
       SIGNG = DFLOAT(ISIGNG)
 *. Symmetry of final type  
       IF(NTEST.GE.100) WRITE(6,*) ' IT1SM : ',IT1SM
@@ -1065,32 +1046,12 @@ C check with nst_spgrp_dbg from sigden.
 *. Batch length : Should allow to vary 
       LD1_BAT = LB
       LEX_BAT = LB
-      LKL_BAT = LB 
-C     print*,'LB',LB
-*. Calculate length of TSCR4, TSCR5 and TSCR6. Memory saving by Lasse
-*. Do not allocate more than what is needed
 *. Assumes at the moment static batching. 
-*. This is no longer needed since it goes directly to output
-C     NL1_TOT_MAX = 0
-*
-C     DO IISYM = 1,NSMST
-C       NL1_TOT_INT = LEN_TCCBLK_REL(NL1(1,1),NL1(1,2),NL1(1,3),
-C    &                               NL1(1,4),IISYM,NSMST)
-C       NL1_TOT_MAX = MAX(NL1_TOT_MAX,NL1_TOT_INT)
-C     END DO
-*
-C     LEN4 = NL1_TOT_MAX
-C May only need one scratch vector! 2011
-C     CALL MEMGET('REAL',KLTSCR4,LEN4,WORK,KFREE,LFREE)
-*. Symmetry of Op T1, Op T1 T2, Op T1 T2 T3, Op T1 T2 T3 T4
 *
 * Check Op for annihilation symmetry
 *
 * IOPT1SM now final symmetry
       IOPT1SM    = IDBGMULT(IOPSM,IT1SM)
-C     IOPT12SM   = IDBGMULT(IOPT1SM,IT2SM)
-C     IOPT123SM  = IDBGMULT(IOPT12SM,IT3SM)
-C     IOPT1234SM = IDBGMULT(IOPT123SM,IT4SM)
 C see if I have to rename 2011
       IOPT1234SM = IOPT1SM
 *
@@ -1146,10 +1107,11 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
 *. Number of D1 strings with given symmetry
         ND1_TOT = LEN_TCCBLK_REL(NO1DX(1,1),NO1DX(1,2),NO1DX(1,3),
      &         NO1DX(1,4),ID1SM,NSMST)
-      IF(ND1_TOT.GE.LB.OR.NEX_TOT.GE.LB.OR.NK1_TOT.GE.LB) THEN
-        print*,'ND1_TOT,NEX_TOT,NK1_TOT,LB',ND1_TOT,NEX_TOT,NK1_TOT,LB
-        STOP 'batch'
-      END IF
+C     IF(ND1_TOT.GE.LB.OR.NEX_TOT.GE.LB.OR.NK1_TOT.GE.LB) THEN
+C     IF(ND1_TOT.GE.LB.OR.NEX_TOT.GE.LB) THEN
+C       print*,'ND1_TOT,NEX_TOT,NK1_TOT,LB',ND1_TOT,NEX_TOT,NK1_TOT,LB
+C       STOP 'batch'
+C     END IF
         IF(ND1_TOT.GT.0.AND.NEX_TOT.GT.0.AND.NK1_TOT.GT.0) THEN
 *. Number of batches of excitation part of O
 C         print*,'ND1_TOT,NEX_TOT',ND1_TOT,NEX_TOT
@@ -1203,13 +1165,18 @@ C         print*,'ND1_TOT,NEX_TOT',ND1_TOT,NEX_TOT
 *. Obtain integrals OP(D1,EX)
               IOFF = 1 + (IEX_START-1)*ID1_BATLEN
 *
+              IF(IFHM.GE.1) THEN
+              CALL GET_OPINT5_REL(OPSCR(IOFF),ID1_BATLEN,IEX_BATLEN,
+     &                            INTEGRALS,IOFFM)
+              ELSE
               CALL GET_OPINT4_REL(OPSCR(IOFF),
      &           IO1DX,ID1_BATLEN,INM_CAAB_D1(1,1),ISM_CAAB_D1(1,1),
      &           ISTR_D1,IBO1DX,
      &           IOEX,IEX_BATLEN,INM_CAAB_EX(1,1),ISM_CAAB_EX(1,1),
      &           ISTR_EX,IBOEX,IEXD1234_INDX,IFHM,
-     &           NRANK,INTEGRALS,PERM_FAC,IOFFM,
+     &           NRANK,INTEGRALS,IOFFM,
      &           WORK,KFREE,LFREE)
+              END IF
 *
             END DO
 *           ^ End of loop over batches of excitation operators OEX
@@ -3353,7 +3320,7 @@ C     END IF
      &IOD1X,LD1,INM_CAAB_D1,ISM_CAAB_D1,ISTR_D1,IBO1DX,
      &IOEX ,LEX,INM_CAAB_EX,ISM_CAAB_EX,ISTR_EX,IBOEX,
      &IEXD1234_INDX,IFHM,
-     &NRANK,INTEGRALS,PERM_FAC,IOFFM,
+     &NRANK,INTEGRALS,IOFFM,
      &WORK,KFREE,LFREE)
 *
 * Fetch batch of operator integrals ordered as O(D1,EX) 
@@ -3396,13 +3363,9 @@ C
 * 
 *. Local scratch
 *
-C     INTEGER IOCC(4),ICREA(4),IANNI(4)
-      character*4 TYPE
       INTEGER JEXSTR(2*NRANK),JD1STR(2*NRANK)
       INTEGER IJKL_EDD(2*NRANK), IJKL_ORIG(2*NRANK)
       INTEGER NOP_D1_CAAB(4),NOP_EX_CAAB(4)
-C
-      INTEGER IKPERM(4),IKFAC
 *
 * At the moment only two electron integrals are on integrals
 *
@@ -3421,14 +3384,10 @@ C
         WRITE(6,*)
         CALL MEMCHK_KRCC(WORK)
       END IF
-C     DO I=1,MX_ST_TSOSO_BLK_MX*NSMST
-C       DO J=1,4
-C       print*,'ISTR_D1,I,J',ISTR_D1(I,J),I,J
-C       END DO
-C     END DO
 *
 *. Number of C/A A/B indeces 
 *. D1
+      IF(IFHM.EQ.1.OR.IFHM.EQ.0) THEN !Fetch integrals
       NOP_D1_CA = IELSUM(IOD1X(1,1),NGAS)
       NOP_D1_CB = IELSUM(IOD1X(1,2),NGAS)
       NOP_D1_AA = IELSUM(IOD1X(1,3),NGAS)
@@ -3470,7 +3429,7 @@ C     END DO
       INT = 0
 C     print*,'LEX,LD1',LEX,LD1
 * Integrals or intermediates?
-      IF(IFHM.EQ.1) THEN !Fetch integrals
+C     IF(IFHM.EQ.1) THEN !Fetch integrals
       DO JEX = 1, LEX
 C     WRITE(6,*) ' EX string : '
 *. Should be looked at for general operator. Is okay since the strings
@@ -3539,7 +3498,7 @@ C             print*,'IOFF',IOFF
               ELSE
                 XOUT = 0.0D0
               END IF
-              OPSCR(INT) = PERM_FAC*XOUT
+              OPSCR(INT) = XOUT
             END IF
           IF(NTEST.GE.100) THEN 
             WRITE(6,*) ' INT, OPSCR(INT) = ', INT, OPSCR(INT)
@@ -3549,10 +3508,9 @@ C             print*,'IOFF',IOFF
         END DO
       END DO
       ELSE IF(IFHM.EQ.2) THEN ! A simple copy and paste with offset
-C       CALL COPVEC(INTEGRALS(IOFFM),OPSCR,LEX*LD1)
-        CALL COP_SCA_VEC(OPSCR,INTEGRALS(IOFFM),PERM_FAC,LEX*LD1)
-        IOFFM = IOFFM + LEX*LD1
+        CALL COPVEC(INTEGRALS(IOFFM),OPSCR,LEX*LD1)
       END IF
+      IOFFM = IOFFM + LEX*LD1
 
 *
       NTEST = 00
@@ -3563,6 +3521,34 @@ C       CALL COPVEC(INTEGRALS(IOFFM),OPSCR,LEX*LD1)
          WRITE(6,*)
          CALL WRTMAT(OPSCR,LEX,LD1,LEX,LD1)
          CALL MEMCHK_KRCC(WORK)
+      END IF
+*
+      RETURN
+      END 
+*
+      SUBROUTINE GET_OPINT5_REL(OPSCR,LD1,LEX,
+     &                          INTEGRALS,IOFFM)
+*
+* Now integrals come sorted in batches so just copy and paste them
+*
+* Lasse 2012
+*
+#include "implicit.inc"
+*
+      DIMENSION INTEGRALS(*)
+*. Output
+      DIMENSION OPSCR(*)
+*
+      CALL COPVEC(INTEGRALS(IOFFM),OPSCR,LEX*LD1)
+      IOFFM = IOFFM + LEX*LD1
+*
+      NTEST = 00
+      IF(NTEST.GE.100) THEN 
+         WRITE(6,*)
+         WRITE(6,*) ' Output matrix from GET_OPINT5 as X(D4D3D2EX,D1)' 
+         WRITE(6,*) ' ============================================= '
+         WRITE(6,*)
+         CALL WRTMAT(OPSCR,LEX,LD1,LEX,LD1)
       END IF
 *
       RETURN
@@ -3602,7 +3588,7 @@ C       CALL COPVEC(INTEGRALS(IOFFM),OPSCR,LEX*LD1)
      &                       NOP_CAAB(3),LIST_AA,IB_AA)
       IOFF = IOFF + NOP_CAAB(3)
       END IF
-*. AA
+*. AB
       IF(NOP_CAAB(4).NE.0) THEN
       CALL GET_STR_FROM_LIST(ISTRING(IOFF),INUM_CAAB(4),ISYM_CAAB(4),
      &                       NOP_CAAB(4),LIST_AB,IB_AB)
@@ -3813,7 +3799,6 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
       INTEGER IHTPM(NHTPM),IHTP(4*NGAS,NHTP)
       INTEGER IMTOH(NHTP),IHINDEX(4,NHTP)
       DIMENSION INTEGRALS(*),ONEE(*),T(*)
-      DIMENSION ADDING(10000)
 *. Local scratch ! not so pretty
 * Times two since we will not loop over more than two electron operators
 C     INTEGER IOCC_CA(2*MX_ST_TSOSO_BLK_MX)
@@ -3835,7 +3820,7 @@ C    &        NSPOBEX_TP,NHTPM,NHTP,NGAS,MX_ST_TSOSO_BLK_MX,MXPNGAS
       DO I=1,4
         IJKL_ORIG(I) = 2000
       END DO
-      NTEST = 001
+      NTEST = 000
 *
 * ===========================================================
       ISM = 1
@@ -3886,16 +3871,16 @@ C      print*,'IHTYPE',IHTYPE
 *. Find the sign to bring the Hamiltonian operator to cluster operator
 *. order. Now go from order defined in GET_HX_RELA to cluster operator.
        ISIGN_DE = IPERM_PARITY(IHINDEX(1,IHTYPE),2*N)
-       print*,'ISIGN_DE from perm parity',ISIGN_DE
+C      print*,'ISIGN_DE from perm parity',ISIGN_DE
 * Not sure if this sign is correct yet!!!
        IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) ISIGN_DE = - ISIGN_DE
-       print*,'ISIGN_DE after possible change',ISIGN_DE
+C      print*,'ISIGN_DE after possible change',ISIGN_DE
 C      IF(ABS(MUB).EQ.2) ISIGN_DE = - ISIGN_DE
 C      IF(MK.GT.0) ISIGN_DE = - ISIGN_DE
 C      print*,'ITSS,IHTYPE,ISIGN_DE',ITSS,IHTYPE,ISIGN_DE
        SIGN_DE = DFLOAT(ISIGN_DE) 
 C      SIGN_DE = 1.0D0
-       CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHTYPE),1)
+C      CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHTYPE),1)
 *. Transform from occupations to groups
        CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+0*NGAS,ITSS),IGRP_CA,1)
        CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+1*NGAS,ITSS),IGRP_CB,1)
@@ -3913,39 +3898,38 @@ C      SIGN_DE = 1.0D0
         ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
         ISM_A = IADJSYM(ISM_A)
         DO ISM_CA = 1, NSMST
+         IUB = 1
+         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
+     &        ISM_CA,NEL_CA,NSTR_CA,
+     &        IOCC_CA, NTOOB,0,IDUM,IDUM,
+     &        WORK,KFREE,LFREE)
+         IF(NSTR_CA.EQ.0) CYCLE
          ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
+         IUB = 2
+         CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CB,NGAS,
+     &        ISM_CB,NEL_CB,NSTR_CB,
+     &        IOCC_CB, NTOOB,0,IDUM,IDUM,
+     &        WORK,KFREE,LFREE)
+         IF(NSTR_CB.EQ.0) CYCLE
          DO ISM_AAA = 1, NSMST
           ISM_AA = IADJSYM(ISM_AAA)
           ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-C         print*,'ISM_A,ISM_CB,ISM_AB',ISM_A,ISM_CB,ISM_AB
 C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
           ISM_ALPHA = (ISM_AA-1)*NSMST + ISM_CA
           ISM_BETA  = (ISM_AB-1)*NSMST + ISM_CB
 *. obtain strings
           IUB = 1
-C        print*,'ISM_CA,NEL_CA,NTOOB',ISM_CA,NEL_CA,NTOOB
-          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
-     &         ISM_CA,NEL_CA,NSTR_CA,
-     &         IOCC_CA, NTOOB,0,IDUM,IDUM,
-     &         WORK,KFREE,LFREE)
-C         print*,'ISM_CB,NEL_CB',ISM_CB,NEL_CB
-          IUB = 2
-          CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CB,NGAS,
-     &         ISM_CB,NEL_CB,NSTR_CB,
-     &         IOCC_CB, NTOOB,0,IDUM,IDUM,
-     &         WORK,KFREE,LFREE)
-C         print*,'ISM_AA,NEL_AA',ISM_AA,NEL_AA
-          IUB = 1
           CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AA,NGAS,
      &         ISM_AA,NEL_AA,NSTR_AA,
      &         IOCC_AA, NTOOB,0,IDUM,IDUM,
      &         WORK,KFREE,LFREE)
-C         print*,'ISM_AB,NEL_AB',ISM_AB,NEL_AB
+         IF(NSTR_AA.EQ.0) CYCLE
           IUB = 2
           CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AB,NGAS,
      &         ISM_AB,NEL_AB,NSTR_AB,
      &         IOCC_AB, NTOOB,0,IDUM,IDUM,
      &         WORK,KFREE,LFREE)
+         IF(NSTR_AB.EQ.0) CYCLE
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
           IF(NTEST.GE.100) THEN
            WRITE(6,*) ' The number of strings '

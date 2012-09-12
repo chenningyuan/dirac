@@ -1211,7 +1211,7 @@ C Routine to see if there has been a change in the type of integral
 C
 #include "implicit.inc"
 C from 1 to
-      NTEST = 100
+      NTEST = 00
       ICHANGE = 0
       IF(ISUM.NE.IISUM) ICHANGE = 1
 C

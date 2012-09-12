@@ -2145,7 +2145,6 @@ C#include "memint.h"
 *.Local memory
 *
 *.  Largest NOCTPA*NOCTPB
-      print*,'entering LCISPC_KRCC'
 C     CALL MEMCHK_KRCC(WORK)
       MXNOCAB = 0
       DO IMS2 = 1, NMS2VAL
@@ -2155,16 +2154,11 @@ C     CALL MEMCHK_KRCC(WORK)
         MXNOCAB = MAX(MXNOCAB,NOCAB)
       END DO
 C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
-      print*,'MXNOCAB',MXNOCAB
       CALL MEMGET('REAL',KLIOIO,MXNOCAB,WORK,KFREE,LFREE)
-      print*,'KFREE,LFREE',KFREE,LFREE
-      CALL TEST_ARRAY(WORK(KLIOIO),MXNOCAB)
+C     CALL TEST_ARRAY(WORK(KLIOIO),MXNOCAB)
 C     CALL MEMCHK_KRCC(WORK)
-      print*,'after KLIOIO'
 *
-      print*,'NSMST',NSMST
       CALL MEMGET('REAL',KLBLTP,NSMST,WORK,KFREE,LFREE)
-      print*,'after KLBLTP'
 *. Obtain array giving symmetry of sigma v reflection times string
 *. symmetry.
 *. Array defining symmetry combinations of internal strings
@@ -2177,7 +2171,6 @@ C     CALL MEMCHK_KRCC(WORK)
       MXSOOB = 0
 C     CALL MEMCHK_KRCC(WORK)
 *. Loop over MS2 spaces
-      print*,'NMS2VAL,NICISP',NMS2VAL,NICISP
       DO IMS2 = 1, NMS2VAL
         IATP = IST_FOR_DT(1,IMS2)
         IBTP = IST_FOR_DT(2,IMS2)

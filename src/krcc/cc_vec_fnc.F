@@ -89,7 +89,6 @@ C     DIMENSION DUMMY(1000)
       INTEGER ISX(2*MXPNGAS*MXPNGAS)
 C     DIMENSION M11_EXTRA(LEN_M11_VEC_CC)
 C     DIMENSION M02_EXTRA(LEN_M02_VEC_CC)
-      DIMENSION CC_AMP_EXTRA(N_CC_AMP+1)
 *
       REAL*8 INPRDD, INPROD
 *
@@ -104,7 +103,7 @@ C     DIMENSION M02_EXTRA(LEN_M02_VEC_CC)
       ONE = 1.0D0
       DOUBLE = 2.0D0 !!! forgot it?
 * Debug
-      ISKIP = 300 ! from which commutator to skip
+      ISKIP = 3 ! from which commutator to skip
 *         
 * Real or complex algebra
       IF(IRECOM.EQ.1) THEN
@@ -278,7 +277,7 @@ C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
       CALL MEMCHK_KRCC(WORK)
       print*,'after scalev'
       END IF !ISKIP
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * H22 -- 12 -- M10
 *
@@ -299,7 +298,7 @@ C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
      &     WORK,KFREE,LFREE)
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * H21 -- 11 -- M10
 *
@@ -385,7 +384,7 @@ C     end do
       CALL SCALVE(WORK(KM12),HALF,LEN_M12_VEC_CC)
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * M12 + H12 -- 10 -- M02 
 *
@@ -422,7 +421,7 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
       END IF !ISKIP
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * H22 -- 20 -- M02
 *
@@ -489,9 +488,10 @@ C     CALL ABS_DIFF(WORK(KM02),M02_EXTRA,LEN_M02_VEC_CC)
 *
 * H22 -- 11 -- M11 (multiply by 1/2)
 *
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
+      print*,'H22 to M11 is now in session'
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11),IONE,IHM,
      &     IFHM,WORK(KT_CC), 
@@ -649,7 +649,7 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
 C     print*,'writing out the M01 intermediate'
 C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
       END IF !ISKIP
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
 *
@@ -685,7 +685,7 @@ C     print*,'writing out the M01 intermediate'
 C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * H22 -- 21 -- M01
 *
@@ -705,7 +705,7 @@ C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
       END IF !ISKIP
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * H21 -- 20 -- M01
 *
@@ -726,7 +726,7 @@ C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
       END IF !ISKIP
-      IF(ISKIP.GE.30) THEN
+      IF(ISKIP.GE.3) THEN
 *
 * H12 -- 11 -- M01
 *
@@ -755,9 +755,6 @@ C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
       CALL MEMCHK_KRCC(WORK)
       IF(ISKIP.GE.2) THEN
       print*,' adding M01 and H01'
-      IDONT = 1
-      IF(IDONT.GE.1) THEN
-C     CALL COPVEC(WORK(KM01),CC_AMP_EXTRA,N_CC_AMP)
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH01,WORK(KNH01),
      &                                   NINTER01,WORK(KINTM01),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
@@ -767,24 +764,9 @@ C    &                                   DUMMY,DUMMY,
      &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
-      print*,'dudud'
-C     CALL VECSUM(CC_AMP_EXTRA,WORK(KM01),CC_AMP_EXTRA,
-C    &            1.0D0,-1.0D0,N_CC_AMP)
-C     DO I =1,N_CC_AMP
-C       DIFF = CC_AMP_EXTRA(I)
-C       IF(ABS(DIFF).GT.0.0D0) THEN
-C         PRINT*,I,DIFF
-C       END IF
-C     END DO
-      ELSE
-        print*,'not adding H01'
-      END IF
 *
 * And now the contraction
 *
-C     DO I =1,N_CC_AMP+1
-C       CC_AMP_EXTRA(I) = CC_VEC(I)
-C     END DO
       print*,'second contraction for M01'
       IHM = 2
       IFHM = 2 !intermediates are fetched
@@ -801,13 +783,6 @@ C     END DO
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-C     print*,'about to print info for you are looking for'
-C     DO I =1,N_CC_AMP+1
-C       DIFF = CC_VEC(I) - CC_AMP_EXTRA(I)
-C       IF(ABS(DIFF).GT.0.0D0) THEN
-C         PRINT*,I,DIFF
-C       END IF
-C     END DO
       END IF !ISKIP
 22    CONTINUE
       CALL MEMCHK_KRCC(WORK)

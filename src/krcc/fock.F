@@ -133,8 +133,8 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
       INTEGER NGSOBT(*), NGSOBT2(*), IHPVGAS_AB(MXPNGAS,2)
 *
       NTEST = 00
-       print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
-       print*,'NORBT',NORBT
+C      print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
+C      print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' FI_HS : Initial 1 e integral list '
 C       CALL APRBLM2(T,NTOOBS,NTOOBS,NSMOB,ISYMPACK)
@@ -342,7 +342,7 @@ C           ^ JGAS
 C         ^ NGASOCC
         end do
 C       ^ IGAS
-       NTEST = 100
+C
        IF(NTEST.GE.100) THEN
        WRITE(6,*) ' Printing entire inactive Fock-matrix '
          DO I = 1, ISIDE
