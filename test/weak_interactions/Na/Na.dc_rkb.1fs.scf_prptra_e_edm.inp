@@ -4,7 +4,7 @@
 .WAVE F ! Activate integral and wave functions modules
 #.PROPERTIES ! Activate property module (dipole moment; polarizability...)
 .ANALYZE
-#.4INDEX
+.4INDEX
 **GENERAL
 .DIRECT
 1 1 1
@@ -18,11 +18,7 @@
 **HAMILTONIAN
 .PRINT
 2
-# add perturbation
-.OPERATOR
- ZDIPLEN
- COMFACTOR
- +0.001
+!.ONESYS
 .INTFLG
 1 1 0
 #.URKBAL
@@ -32,7 +28,7 @@
 *SCF
 # 1s(2) 2s(2) 2p(6)
 .CLOSED SHELL
-10
+10 
 # 3s(1)
 .OPEN SHELL
 1
@@ -50,10 +46,9 @@ all
 **MOLTRA
 .SCHEME
 6
-# take all occupied shells into consideration
+# 3s(1), 3p(0) shells only 
 .ACTIVE
-all 
-all 
+6..9 
 .PRPTRA
 *PRPTRA
 # we need this print level to get all operator matrix elements
@@ -61,41 +56,11 @@ all
 3
 # eEDM operators
 .OPERATOR
- 'e_EDM x' 
- XSIGMA
- 'NEF 001'
+ 'e_EDM' 
+ DSIGMADOT
+ 'XNUCFIEL'
+ 'YNUCFIEL'
+ 'ZNUCFIEL'
  COMFACTOR
  2.00D0
-.OPERATOR
- 'e_EDM y' 
- YSIGMA
- 'NEF 002'
- COMFACTOR
- 2.00D0
-.OPERATOR
- 'e_EDM z' 
- ZSIGMA
- 'NEF 003'
- COMFACTOR
- 2.00D0
-# dipole operators
-.OPERATOR
- XDIPLEN
- COMFACTOR
- 1.00D0
-.OPERATOR
- YDIPLEN
- COMFACTOR
- 1.00D0
-.OPERATOR
- ZDIPLEN
- COMFACTOR
- 1.00D0 
 *END OF
-
- &RELCCSD TIMING=T, IPRNT=1, DOSORT=T, DOENER=F, DOFOPR=F, DOSOPR=T, NELEC=3,2,3,3  &END
- &CCSOPR MAXIT=50, NTOL=10, NAOPER=3, NBOPER=3,
-   NAMEA='e_EDM x','e_EDM y','e_EDM z',
-   NAMEB='XDIPLEN','YDIPLEN','ZDIPLEN',
- &END
-

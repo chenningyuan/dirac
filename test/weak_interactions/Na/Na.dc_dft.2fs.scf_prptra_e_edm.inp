@@ -18,21 +18,25 @@
 **HAMILTONIAN
 .PRINT
 2
-!.ONESYS
 .INTFLG
 1 1 0
 #.URKBAL
+.DFT
+ PBE0
+*DFT
+.ALDA
+**GRID
+.ZIPGRID
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
-.RELCCSD
 *SCF
 # 1s(2) 2s(2) 2p(6)
 .CLOSED SHELL
-10  
+4 6
 # 3s(1)
 .OPEN SHELL
 1
-1/2
+1/2,0
 .INTFLG ! Specify what 2-el.integrals to include
 1 1 0
 .EVCCNV ! Energy convergence...
@@ -43,12 +47,14 @@
 *MULPOP
 .VECPOP
 all   
+all   
 **MOLTRA
 .SCHEME
 6
-# take all occupied shells into consideration
+# all shells
 .ACTIVE
-all 
+3..3   
+4..6 
 .PRPTRA
 *PRPTRA
 # we need this print level to get all operator matrix elements
@@ -56,41 +62,11 @@ all
 3
 # eEDM operators
 .OPERATOR
- 'e_EDM x' 
- XSIGMA
- 'NEF 001'
+ 'e_EDM' 
+ DSIGMADOT
+ 'XNUCFIEL'
+ 'YNUCFIEL'
+ 'ZNUCFIEL'
  COMFACTOR
  2.00D0
-.OPERATOR
- 'e_EDM y' 
- YSIGMA
- 'NEF 002'
- COMFACTOR
- 2.00D0
-.OPERATOR
- 'e_EDM z' 
- ZSIGMA
- 'NEF 003'
- COMFACTOR
- 2.00D0
-# dipole operators
-.OPERATOR
- XDIPLEN
- COMFACTOR
- 1.00D0
-.OPERATOR
- YDIPLEN
- COMFACTOR
- 1.00D0
-.OPERATOR
- ZDIPLEN
- COMFACTOR
- 1.00D0 
 *END OF
-
- &RELCCSD TIMING=T, IPRNT=1, DOSORT=T, DOENER=F, DOFOPR=F, DOSOPR=T, NELEC=6,5,  &END
- &CCSOPR MAXIT=50, NTOL=10, NAOPER=3, NBOPER=3,
-   NAMEA='e_EDM x','e_EDM y','e_EDM z',
-   NAMEB='XDIPLEN','YDIPLEN','ZDIPLEN',
- &END
-

@@ -21,10 +21,11 @@
 !.ONESYS
 .INTFLG
 1 1 0
-#.URKBAL
+# unrestricted kinetic balance
+.URKBAL
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
-.RELCCSD
+#.RELCCSD
 *SCF
 # 1s(2) 2s(2) 2p(6)
 .CLOSED SHELL
@@ -47,34 +48,22 @@ all
 **MOLTRA
 .SCHEME
 6
-# take all occupied shells into consideration
+# all shells
 .ACTIVE
-all 
-all 
+3..3   
+4..6 
 .PRPTRA
 *PRPTRA
 # we need this print level to get all operator matrix elements
 .PRINT
 3
-# dipole operators
+# eEDM operators
 .OPERATOR
- XDIPLEN
+ 'e_EDM' 
+ DSIGMADOT
+ 'XNUCFIEL'
+ 'YNUCFIEL'
+ 'ZNUCFIEL'
  COMFACTOR
- 1.00D0
-.OPERATOR
- YDIPLEN
- COMFACTOR
- 1.00D0
-.OPERATOR
- ZDIPLEN
- COMFACTOR
- 1.00D0 
+ 2.00D0
 *END OF
-
- &RELCCSD TIMING=T, IPRNT=1, DOSORT=T, DOENER=F, DOFOPR=F, DOSOPR=T, NELEC=3,2,3,3  &END
- &CCSORT USEOE=F, NORECMP=F  &END
- &CCSOPR MAXIT=50, NTOL=10, NAOPER=3, NBOPER=3,
-   NAMEA='XDIPLEN','YDIPLEN','ZDIPLEN',
-   NAMEB='XDIPLEN','YDIPLEN','ZDIPLEN',
- &END
-
