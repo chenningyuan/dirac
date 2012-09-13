@@ -1,0 +1,67 @@
+**DIRAC
+.TITLE
+  MgF, ^2Sigma
+.WAVE F 
+.ANALYZE
+.4INDEX
+**GENERAL
+.DIRECT
+1 1 1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.PRINT
+2
+.INTFLG
+1 1 0
+# T- operator - employ it only with the KU wave-function !
+# this operator is carrying factor of 2 !
+.OPERATOR
+ 'e_EDM'
+ DSIGMADOT
+ 'XNUCFIEL'
+ 'YNUCFIEL'
+ 'ZNUCFIEL'
+ COMFACTOR
+ 0.0000
+# TRS_FLIP
+**WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
+.SCF
+.RELCCSD
+*SCF
+.CLOSED SHELL
+20  
+.OPEN SHELL
+1
+1/2
+.INTFLG ! Specify what 2-el.integrals to include
+1 1 0
+.EVCCNV ! Energy convergence...
+1.0D-10  1.0D-6
+#################################################
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+1..28
+**MOLTRA
+.SCHEME
+6
+# take all electrons into correlation
+.ACTIVE
+all
+*END OF
+
+ # all 21 MgF electrons in the active space
+ &RELCCSD TIMING=T, IPRNT=1, DOSORT=T, DOENER=T, DOFOPR=F, DOSOPR=F, NELEC=11,10,  &END
+ &CCENER MAXIT=40 DOMP2=T, DOCCSD=T, DOCCSDT=T &END
+ &CCSORT USEOE=T &END
+ &CCSOPR MAXIT=50, NTOL=10, NAOPER=1, NBOPER=3,
+   NAMEA='e_EDM',
+   NAMEB='XDIPLEN','YDIPLEN','ZDIPLEN',
+ &END
