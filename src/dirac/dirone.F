@@ -6342,7 +6342,7 @@ C
       NPSHMF(IFRP) = NPSH(IFRP) - NP
       NESHMF(IFRP) = NESH(IFRP) - NE
       DO I = 1,NFRO(IFRP)
-        IVEC(I) = IVEC(I) + NPSH(IFRP) - NDEL(2)
+        IVEC(I) = IVEC(I) + NPSH(IFRP)
       ENDDO
 C
 C     Write index array to file
