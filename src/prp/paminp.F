@@ -2046,7 +2046,7 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASLB = 'CAPDVE' 
       ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
         CLASLB = 'CAPD_VD' 
-CMI  EDM operator (Muherjee, Sahoo, Narataj, Das)
+CMI  EDM operator [Nataraj2007]_, [Mukherjee2009]_
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
         CLASLB = 'KINENER'
 !    another e_EDM operator of Flambaum
@@ -2382,7 +2382,7 @@ CMI  remove this part (THEN block) if everythink goes well and keep only ELSE br
 
       IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
      &   (IAIND.GE.16 .AND.IAIND.LE.18)) THEN
-C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA
+C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA, i*BETA*GAMMA5
         IATIM = 1
       ELSE
 C       [XYZ]SIGMA, [XYZ]ALPHA, but i*BETA*GAMMA5 has to be treated extra
@@ -2390,20 +2390,20 @@ C       [XYZ]SIGMA, [XYZ]ALPHA, but i*BETA*GAMMA5 has to be treated extra
       ENDIF
 
 CMI    exception for the i*BETA*GAMMA5 operator
-      IF (ITYP.EQ.21) THEN
-        IATIM=-1 !
+       IF (ITYP.EQ.21) THEN
+         IATIM=+1 !
          WRITE(LUPRI,'(2X,A)')
      &    'i*BETA*GAMMA5 operator, setting IATIM=-1' 
-!    &    'FYI: i*BETA*GAMMA5 operator' 
       ENDIF
 
       ELSE
 !  -------------------------------------------------------------------------------------------------
-!   Simplification branch:
-!       ...only  scalar , gamma5, and beta matrix operators have IATIM=+1, the rest has IATIM=-1
-! FYI: only this part (ELSE block) is to be kept for the future
+!   Simplification: determine IATIM according to ITYP parameter
+!   (this part of the code (ELSE block) is to be kept for the future)
+!
+!  scalar , gamma5, beta, i*betagamma5  matrix operators have IATIM=+1, the rest has IATIM=-1
 !  --------------------------------------------------------------------------------------------------
-       IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19) THEN
+       IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19.OR.ITYP.EQ.21) THEN
         IATIM=+1
        ELSE ! the rest ....
         IATIM=-1

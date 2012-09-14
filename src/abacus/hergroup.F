@@ -1276,8 +1276,8 @@ C
 C
 C     21.    i*BETA*GAMMA5 * scalar operator
 C     ===========================================
-C     occupies imaginary part of the LS block
-C     carries symmetry of gamma5
+C     occupies (as imaginary elements) off-diagonal block (0+-0)
+C     carries symmetry of gamma5 (xyz)
 C
       MCMP(21)    =  1
       JM4 (1,21)  =  4 
