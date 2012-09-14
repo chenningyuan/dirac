@@ -5990,7 +5990,9 @@ C
      &     'Operator no.',I,':',PRPNAM(INDXPR)
           CALL PRSYMB(LUPRI,'-',75,0)
           CALL WRIXPR(I,INDXPR)
-C         Operator must be totally symmetric
+
+!         Operator must be totally symmetric within molecular point group
+!
           ISYXPR = IPRPSYM(INDXPR)-1
           IF(ISYXPR.NE.0) THEN
              SYMSTP = .TRUE.
@@ -6007,25 +6009,20 @@ C         Operator must be totally symmetric
      &       GROUPS(IGROUP),' :{',
      &       (SYMOP(KSOP(J-1)),J=1,NELM),'} '
           ENDIF
-C         Operator must be symmetric under time reversal
+
+!         Operator must be symmetric under time reversal only for Kramers restricted 
+!         wave-functions !
           ITRXPR = IPRPTIM(INDXPR)
           IF(ITRXPR.NE.1) THEN
-           IF (PRPLBL(INDXPR).NE.'CAP_IM  '.AND.
-     &         PRPLBL(INDXPR).NE.'EDM ') THEN
-            SYMSTP = .TRUE.
-            WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
-            WRITE(LUPRI,'(4X,A,A)')
-     &       'The operator is not totally symmetric under ',
-     &       'time reversal'
+            WRITE(LUPRI,'(4X,A)') '***** HAMINP WARNING *****'
+            WRITE(LUPRI,'(4X,A,A8,A)') 'The operator ',PRPNAM(INDXPR),
+     &      ' is not totally symmetric under time reversal !'
+
             WRITE(LUPRI,'(4X,A)') '* Possible actions:'
             WRITE(LUPRI,'(6X,A)')
-     &       '1. Include operator as perturbation.'
-           ELSE
-            WRITE(LUPRI,'(4X,A)') '***** HAMINP NOTE *****'
-            WRITE(LUPRI,'(4X,A,A8,A)') 'Operator ',PRPLBL(INDXPR),
-     &      ' is time reversal antisymmetric - designed'//
-     &      ' only for the complex FSCC method.....'
-           ENDIF
+     &     '1. Use it with Kramers unrestricted wave functions (RelCC).'
+            WRITE(LUPRI,'(6X,A)')
+     &     '2. Include operator as perturbation for response methods.'
           ENDIF
         ENDDO
 CMI  ... treat the INPERR as in paminp.F - proper input is required
@@ -6248,7 +6245,8 @@ C
 C
  500  CONTINUE
 C
-      IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator !')
+      IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
+     &                     ' molecular point group symmetry!')
 C
       CALL QEXIT('HAMINP')
       RETURN
