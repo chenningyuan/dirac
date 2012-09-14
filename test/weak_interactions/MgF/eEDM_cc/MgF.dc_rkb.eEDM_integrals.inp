@@ -1,0 +1,34 @@
+**DIRAC
+.TITLE
+  MgF, ^2Sigma
+.WAVE F 
+**GENERAL
+.DIRECT
+1 1 1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.PRINT
+5
+.INTFLG
+1 1 0
+# T- operator - employ it only with the KU wave-function !
+# this operator is carrying factor of 2 !
+.OPERATOR
+ 'e_EDM'
+ DSIGMADOT
+ 'XNUCFIEL'
+ 'YNUCFIEL'
+ 'ZNUCFIEL'
+ COMFACTOR
+ 2.0000
+.ONESYS
+**WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
+#.SCF
+#.RELCCSD
+*END OF
