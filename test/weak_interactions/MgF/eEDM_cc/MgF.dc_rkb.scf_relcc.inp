@@ -19,17 +19,6 @@
 2
 .INTFLG
 1 1 0
-# T- operator - employ it only with the KU wave-function !
-# this operator is carrying factor of 2 !
-.OPERATOR
- 'e_EDM'
- DSIGMADOT
- 'XNUCFIEL'
- 'YNUCFIEL'
- 'ZNUCFIEL'
- COMFACTOR
- 0.0000
-# TRS_FLIP
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
 .RELCCSD

@@ -16,20 +16,16 @@
 .UNCONTRACTED
 **HAMILTONIAN
 .PRINT
-2
+1
 .INTFLG
 1 1 0
-# T- operator - employ it only with the KU wave-function !
-# this operator is carrying factor of 2 !
+### EDM ###
 .OPERATOR
- 'e_EDM'
- DSIGMADOT
- 'XNUCFIEL'
- 'YNUCFIEL'
- 'ZNUCFIEL'
+ 'Heff_EDM'
+ iBETAGAM
+ EDM
  COMFACTOR
- 0.002
-# TRS_FLIP
+ 0.0005
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 #.SCF
 .RELCCSD
