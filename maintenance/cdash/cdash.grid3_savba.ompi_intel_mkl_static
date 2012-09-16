@@ -29,13 +29,16 @@ cd $DIRAC
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
+# download fresh clone...
+git pull
+
 pamadm -a
 
-./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="linux.grid3_SAVBA_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
+./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
 
 cd $DIRAC/$BUILD
  cmake ..
- ExperimentalUpdate
+ #make ExperimentalUpdate
  make ExperimentalConfigure
  make ExperimentalBuild
  make ExperimentalSubmit
@@ -47,19 +50,28 @@ echo "build finished at "$timestamp
 ### continue with the launching for the grid  ###
 #################################################
 
-# create the reduced tar-file ...
-
+# create the reduced tar-file containing all important stuff ...
+cd $DIRAC
 ### prepare own build with all files ready...
 /bin/rm -rf $DIRAC/build
 mkdir $DIRAC/build
 cp $DIRAC/$BUILD/dirac.x $DIRAC/build/.
+# copy there the cmake static
 cp -R /home/ilias/bin/cmake_static/* $DIRAC/build/.
+# copy there the mpirun static
 cp /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun  $DIRAC/build/.
 
 echo -e "\n now packing... "
 
-cat "--scratch=$PWD ; --global-scratch-disk" > diracrc_grid
+#cat "--scratch=$PWD ; --global-scratch-disk" > diracrc_grid
 tar cvzf dirac_test_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest test  basis  basis_dalton cmake build diracrc_grid
 
+# initialize your certificate from grid computing
+
+# delete the old package from the SE
+
+# copy the tar-packge onto SE
+
+# launch extra script with glite
 
 exit 0
