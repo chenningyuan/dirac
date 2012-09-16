@@ -1,0 +1,65 @@
+#!/bin/bash
+
+echo "Working host is: "; hostname -f
+
+source $HOME/intel/bin/compilervars.sh intel64
+echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+
+# My own OpenMPI Intel static
+export PATH=/home/ilias/bin/openmpi_i32lp64_intel_static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_intel_static/lib:$LD_LIBRARY_PATH
+
+# my cmake stuff
+export PATH=/home/ilias/bin/cmake_static:$PATH
+echo "My own CMake is in PATH."
+# my most recent python 2.7.1 #
+#export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
+echo "My PATH=$PATH"
+#echo "which make:"; which make
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "Running DIRAC cdash buildup at "$timestamp
+
+DIRAC=/home/ilias/qch_work/software/dirac_git/trunk_current
+#
+BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
+
+cd $DIRAC
+
+export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+
+pamadm -a
+
+./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="linux.grid3_SAVBA_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
+
+cd $DIRAC/$BUILD
+ cmake ..
+ ExperimentalUpdate
+ make ExperimentalConfigure
+ make ExperimentalBuild
+ make ExperimentalSubmit
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "build finished at "$timestamp
+
+#################################################
+### continue with the launching for the grid  ###
+#################################################
+
+# create the reduced tar-file ...
+
+### prepare own build with all files ready...
+/bin/rm -rf $DIRAC/build
+mkdir $DIRAC/build
+cp $DIRAC/$BUILD/dirac.x $DIRAC/build/.
+cp -R /home/ilias/bin/cmake_static/* $DIRAC/build/.
+cp /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun  $DIRAC/build/.
+
+echo -e "\n now packing... "
+
+cat "--scratch=$PWD ; --global-scratch-disk" > diracrc_grid
+tar cvzf dirac_test_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest test  basis  basis_dalton cmake build diracrc_grid
+
+
+exit 0
